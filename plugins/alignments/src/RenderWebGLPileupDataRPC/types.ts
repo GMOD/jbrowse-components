@@ -133,6 +133,13 @@ export interface WebGLPileupDataResult {
   modificationColors: Uint8Array // packed RGBA (4 bytes per mod), alpha encodes probability
   numModifications: number
 
+  // Modification coverage data - stacked colored bars in coverage area
+  modCovPositions: Uint32Array // position offsets from regionStart
+  modCovYOffsets: Float32Array // cumulative height below segment (normalized 0-1)
+  modCovHeights: Float32Array // segment height (normalized 0-1)
+  modCovColors: Uint8Array // packed RGBA, 4 bytes per segment
+  numModCovSegments: number
+
   // Layout info
   maxY: number
   numReads: number

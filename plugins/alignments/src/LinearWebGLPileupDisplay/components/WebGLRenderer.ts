@@ -115,6 +115,8 @@ uniform vec3 u_colorPairLR;       // lightgrey
 uniform vec3 u_colorPairRL;       // teal
 uniform vec3 u_colorPairRR;       // #3a3a9d (dark blue)
 uniform vec3 u_colorPairLL;       // green
+uniform vec3 u_colorModificationFwd;  // #c8c8c8
+uniform vec3 u_colorModificationRev;  // #c8dcc8
 
 out vec4 v_color;
 
@@ -226,6 +228,18 @@ vec3 insertSizeAndOrientationColor(float insertSize, float pairOrientation) {
   return insertSizeColor(insertSize);
 }
 
+// Color scheme 7: modifications/methylation mode
+// Reverse strand reads get slightly green tint to distinguish from forward
+// (helpful because C-G is flipped on reverse strand reads)
+vec3 modificationsColor(float flags) {
+  // Check flag 16 (0x10) for reverse strand
+  bool isReverse = mod(floor(flags / 16.0), 2.0) > 0.5;
+  if (isReverse) {
+    return u_colorModificationRev;
+  }
+  return u_colorModificationFwd;
+}
+
 void main() {
   int vid = gl_VertexID % 9;
 
@@ -295,6 +309,7 @@ void main() {
   else if (u_colorScheme == 4) color = firstOfPairColor(a_flags, a_strand);
   else if (u_colorScheme == 5) color = pairOrientationColor(a_pairOrientation);
   else if (u_colorScheme == 6) color = insertSizeAndOrientationColor(a_insertSize, a_pairOrientation);
+  else if (u_colorScheme == 7) color = modificationsColor(a_flags);
   else color = vec3(0.6);
 
   // Darken highlighted feature
@@ -444,6 +459,64 @@ void main() {
 `
 
 const SNP_COVERAGE_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = v_color;
+}
+`
+
+// Modification coverage vertex shader - renders colored stacked bars at exact positions
+// Like SNP coverage but uses per-instance RGBA color instead of color type lookup
+const MOD_COVERAGE_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+in float a_position;       // position offset from regionStart
+in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
+in float a_segmentHeight; // height of this segment (normalized 0-1)
+in vec4 a_color;          // RGBA color (normalized from Uint8)
+
+uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
+uniform float u_coverageHeight;
+uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+
+out vec4 v_color;
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float domainWidth = u_visibleRange.y - u_visibleRange.x;
+  float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+  float x2 = (a_position + 1.0 - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
+
+  // Ensure minimum width of 1 pixel
+  float minWidth = 2.0 / u_canvasWidth;
+  if (x2 - x1 < minWidth) {
+    float mid = (x1 + x2) * 0.5;
+    x1 = mid - minWidth * 0.5;
+    x2 = mid + minWidth * 0.5;
+  }
+
+  float sx = mix(x1, x2, localX);
+
+  // Y: stacked from bottom of coverage area with offset padding
+  float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
+  float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * effectiveHeight / u_canvasHeight) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * effectiveHeight / u_canvasHeight) * 2.0;
+  float sy = mix(segmentBot, segmentTop, localY);
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  v_color = a_color;
+}
+`
+
+const MOD_COVERAGE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
 out vec4 fragColor;
@@ -1170,6 +1243,9 @@ export interface ColorPalette {
   colorHardclip: RGBColor // red (#f00)
   // Coverage color
   colorCoverage: RGBColor // light grey
+  // Modification mode read colors
+  colorModificationFwd: RGBColor // #c8c8c8
+  colorModificationRev: RGBColor // #c8dcc8 (slightly green)
 }
 
 // Default colors matching shared/color.ts fillColor values and theme
@@ -1195,6 +1271,9 @@ export const defaultColorPalette: ColorPalette = {
   colorHardclip: [1, 0, 0], // red (#f00)
   // Coverage color
   colorCoverage: [0.8, 0.8, 0.8], // light grey (#cccccc)
+  // Modification mode read colors
+  colorModificationFwd: [0.784, 0.784, 0.784], // #c8c8c8
+  colorModificationRev: [0.784, 0.863, 0.784], // #c8dcc8
 }
 
 export interface RenderState {
@@ -1257,6 +1336,8 @@ interface GPUBuffers {
   hardclipCount: number
   modificationVAO: WebGLVertexArrayObject | null
   modificationCount: number
+  modCoverageVAO: WebGLVertexArrayObject | null
+  modCoverageCount: number
 }
 
 export class WebGLRenderer {
@@ -1275,6 +1356,7 @@ export class WebGLRenderer {
   private softclipProgram: WebGLProgram
   private hardclipProgram: WebGLProgram
   private modificationProgram: WebGLProgram
+  private modCoverageProgram: WebGLProgram
 
   private buffers: GPUBuffers | null = null
   private glBuffers: WebGLBuffer[] = []
@@ -1294,6 +1376,7 @@ export class WebGLRenderer {
   private softclipUniforms: Record<string, WebGLUniformLocation | null> = {}
   private hardclipUniforms: Record<string, WebGLUniformLocation | null> = {}
   private modificationUniforms: Record<string, WebGLUniformLocation | null> = {}
+  private modCoverageUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -1358,6 +1441,10 @@ export class WebGLRenderer {
       MODIFICATION_VERTEX_SHADER,
       MODIFICATION_FRAGMENT_SHADER,
     )
+    this.modCoverageProgram = this.createProgram(
+      MOD_COVERAGE_VERTEX_SHADER,
+      MOD_COVERAGE_FRAGMENT_SHADER,
+    )
 
     this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
 
@@ -1390,6 +1477,8 @@ export class WebGLRenderer {
       'u_colorPairRL',
       'u_colorPairRR',
       'u_colorPairLL',
+      'u_colorModificationFwd',
+      'u_colorModificationRev',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
@@ -1476,6 +1565,13 @@ export class WebGLRenderer {
     ])
     this.cacheUniforms(this.modificationProgram, this.modificationUniforms, [
       ...cigarUniformsWithWidth,
+    ])
+    this.cacheUniforms(this.modCoverageProgram, this.modCoverageUniforms, [
+      'u_visibleRange',
+      'u_coverageHeight',
+      'u_coverageYOffset',
+      'u_canvasHeight',
+      'u_canvasWidth',
     ])
 
     gl.enable(gl.BLEND)
@@ -1580,6 +1676,9 @@ export class WebGLRenderer {
       if (this.buffers.modificationVAO) {
         gl.deleteVertexArray(this.buffers.modificationVAO)
       }
+      if (this.buffers.modCoverageVAO) {
+        gl.deleteVertexArray(this.buffers.modCoverageVAO)
+      }
     }
 
     if (data.numReads === 0) {
@@ -1650,6 +1749,8 @@ export class WebGLRenderer {
       hardclipCount: 0,
       modificationVAO: null,
       modificationCount: 0,
+      modCoverageVAO: null,
+      modCoverageCount: 0,
     }
   }
 
@@ -2055,6 +2156,60 @@ export class WebGLRenderer {
     }
   }
 
+  uploadModCoverageFromTypedArrays(data: {
+    modCovPositions: Uint32Array
+    modCovYOffsets: Float32Array
+    modCovHeights: Float32Array
+    modCovColors: Uint8Array // packed RGBA, 4 bytes per segment
+    numModCovSegments: number
+  }) {
+    const gl = this.gl
+
+    if (!this.buffers) {
+      return
+    }
+
+    if (this.buffers.modCoverageVAO) {
+      gl.deleteVertexArray(this.buffers.modCoverageVAO)
+      this.buffers.modCoverageVAO = null
+    }
+
+    if (data.numModCovSegments > 0) {
+      const modCoverageVAO = gl.createVertexArray()
+      gl.bindVertexArray(modCoverageVAO)
+      this.uploadBuffer(
+        this.modCoverageProgram,
+        'a_position',
+        new Float32Array(data.modCovPositions),
+        1,
+      )
+      this.uploadBuffer(
+        this.modCoverageProgram,
+        'a_yOffset',
+        data.modCovYOffsets,
+        1,
+      )
+      this.uploadBuffer(
+        this.modCoverageProgram,
+        'a_segmentHeight',
+        data.modCovHeights,
+        1,
+      )
+      this.uploadNormalizedUint8Buffer(
+        this.modCoverageProgram,
+        'a_color',
+        data.modCovColors,
+        4,
+      )
+      gl.bindVertexArray(null)
+
+      this.buffers.modCoverageVAO = modCoverageVAO
+      this.buffers.modCoverageCount = data.numModCovSegments
+    } else {
+      this.buffers.modCoverageCount = 0
+    }
+  }
+
   private uploadBuffer(
     program: WebGLProgram,
     attrib: string,
@@ -2247,8 +2402,40 @@ export class WebGLRenderer {
       gl.bindVertexArray(this.buffers.coverageVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.coverageCount)
 
-      // Draw SNP coverage on top (at exact 1bp positions, now as offsets)
-      if (this.buffers.snpCoverageVAO && this.buffers.snpCoverageCount > 0) {
+      // Draw modification coverage bars OR SNP coverage bars (not both)
+      if (
+        state.showModifications &&
+        this.buffers.modCoverageVAO &&
+        this.buffers.modCoverageCount > 0
+      ) {
+        gl.useProgram(this.modCoverageProgram)
+        gl.uniform2f(
+          this.modCoverageUniforms.u_visibleRange!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform1f(
+          this.modCoverageUniforms.u_coverageHeight!,
+          state.coverageHeight,
+        )
+        gl.uniform1f(
+          this.modCoverageUniforms.u_coverageYOffset!,
+          state.coverageYOffset,
+        )
+        gl.uniform1f(this.modCoverageUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.modCoverageUniforms.u_canvasWidth!, canvasWidth)
+
+        gl.bindVertexArray(this.buffers.modCoverageVAO)
+        gl.drawArraysInstanced(
+          gl.TRIANGLES,
+          0,
+          6,
+          this.buffers.modCoverageCount,
+        )
+      } else if (
+        this.buffers.snpCoverageVAO &&
+        this.buffers.snpCoverageCount > 0
+      ) {
         gl.useProgram(this.snpCoverageProgram)
         gl.uniform2f(
           this.snpCoverageUniforms.u_visibleRange!,
@@ -2413,12 +2600,20 @@ export class WebGLRenderer {
     gl.uniform3f(this.readUniforms.u_colorPairRL!, ...colors.colorPairRL)
     gl.uniform3f(this.readUniforms.u_colorPairRR!, ...colors.colorPairRR)
     gl.uniform3f(this.readUniforms.u_colorPairLL!, ...colors.colorPairLL)
+    gl.uniform3f(
+      this.readUniforms.u_colorModificationFwd!,
+      ...colors.colorModificationFwd,
+    )
+    gl.uniform3f(
+      this.readUniforms.u_colorModificationRev!,
+      ...colors.colorModificationRev,
+    )
 
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, this.buffers.readCount)
 
-    // Draw CIGAR features if enabled
-    if (state.showMismatches) {
+    // Draw CIGAR features if enabled (suppress when showing modifications overlay)
+    if (state.showMismatches && !state.showModifications) {
       // Draw gaps (deletions)
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
         gl.useProgram(this.gapProgram)
@@ -2758,6 +2953,9 @@ export class WebGLRenderer {
       if (this.buffers.modificationVAO) {
         gl.deleteVertexArray(this.buffers.modificationVAO)
       }
+      if (this.buffers.modCoverageVAO) {
+        gl.deleteVertexArray(this.buffers.modCoverageVAO)
+      }
     }
     if (this.lineVAO) {
       gl.deleteVertexArray(this.lineVAO)
@@ -2777,5 +2975,6 @@ export class WebGLRenderer {
     gl.deleteProgram(this.softclipProgram)
     gl.deleteProgram(this.hardclipProgram)
     gl.deleteProgram(this.modificationProgram)
+    gl.deleteProgram(this.modCoverageProgram)
   }
 }

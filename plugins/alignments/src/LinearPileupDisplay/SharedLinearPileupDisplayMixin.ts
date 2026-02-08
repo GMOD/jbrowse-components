@@ -579,9 +579,12 @@ export function SharedLinearPileupDisplayMixin(
          * #method
          */
         colorSchemeSubMenuItems() {
+          const { type } = self.colorBy
           return [
             {
               label: 'Normal',
+              type: 'radio' as const,
+              checked: type === 'normal',
               onClick: () => {
                 self.setColorScheme({
                   type: 'normal',
@@ -590,6 +593,8 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Mapping quality',
+              type: 'radio' as const,
+              checked: type === 'mappingQuality',
               onClick: () => {
                 self.setColorScheme({
                   type: 'mappingQuality',
@@ -598,6 +603,8 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Strand',
+              type: 'radio' as const,
+              checked: type === 'strand',
               onClick: () => {
                 self.setColorScheme({
                   type: 'strand',
@@ -606,6 +613,8 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Per-base quality',
+              type: 'radio' as const,
+              checked: type === 'perBaseQuality',
               onClick: () => {
                 self.setColorScheme({
                   type: 'perBaseQuality',
@@ -614,6 +623,8 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Per-base lettering',
+              type: 'radio' as const,
+              checked: type === 'perBaseLettering',
               onClick: () => {
                 self.setColorScheme({
                   type: 'perBaseLettering',
@@ -622,6 +633,8 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'First-of-pair strand',
+              type: 'radio' as const,
+              checked: type === 'stranded',
               onClick: () => {
                 self.setColorScheme({
                   type: 'stranded',
@@ -630,6 +643,8 @@ export function SharedLinearPileupDisplayMixin(
             },
             {
               label: 'Color by tag...',
+              type: 'radio' as const,
+              checked: type === 'tag',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   ColorByTagDialog,

@@ -288,12 +288,16 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Insert size and orientation',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSizeAndOrientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'insertSizeAndOrientation' })
                 },
               },
               {
                 label: 'Strand',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'strand',
                 onClick: () => {
                   self.setColorScheme({ type: 'strand' })
                 },

@@ -18,6 +18,10 @@ import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { reaction } from 'mobx'
 
+import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
+import { getModificationsSubMenu } from '../shared/menuItems.ts'
+import { setupModificationsAutorun } from '../shared/setupModificationsAutorun.ts'
+
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { ColorBy, FilterBy } from '../shared/types'
@@ -132,6 +136,7 @@ export const ColorScheme = {
   firstOfPairStrand: 4,
   pairOrientation: 5,
   insertSizeAndOrientation: 6,
+  modifications: 7,
 } as const
 
 /**
@@ -143,6 +148,7 @@ export default function stateModelFactory(
   return types
     .compose(
       BaseLinearDisplay,
+      SharedModificationsMixin(),
       types.model('LinearWebGLPileupDisplay', {
         /**
          * #property
@@ -192,6 +198,7 @@ export default function stateModelFactory(
       rpcData: null as WebGLPileupDataResult | null,
       loadedRegion: null as Region | null,
       isLoading: false,
+      statusMessage: undefined as string | undefined,
       error: null as Error | null,
       webglRef: null as unknown,
       currentDomainX: null as [number, number] | null,
@@ -225,6 +232,10 @@ export default function stateModelFactory(
 
       get colorBy(): ColorBy {
         return self.colorBySetting ?? getConf(self, 'colorBy')
+      },
+
+      get modificationThreshold() {
+        return this.colorBy?.modifications?.threshold ?? 10
       },
 
       get filterBy(): FilterBy {
@@ -322,6 +333,9 @@ export default function stateModelFactory(
             return ColorScheme.pairOrientation
           case 'insertSizeAndOrientation':
             return ColorScheme.insertSizeAndOrientation
+          case 'modifications':
+          case 'methylation':
+            return ColorScheme.modifications
           default:
             return ColorScheme.normal
         }
@@ -344,6 +358,14 @@ export default function stateModelFactory(
           self.loadedRegion.refName === visibleRegion.refName &&
           visibleRegion.start >= self.loadedRegion.start &&
           visibleRegion.end <= self.loadedRegion.end
+        )
+      },
+
+      get showLoading() {
+        return (
+          self.isLoading ||
+          !self.featureDensityStatsReady ||
+          !this.visibleRegion
         )
       },
 
@@ -466,6 +488,10 @@ export default function stateModelFactory(
         self.isLoading = loading
       },
 
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
+      },
+
       setError(error: Error | null) {
         self.error = error
       },
@@ -539,7 +565,6 @@ export default function stateModelFactory(
 
       // Stubs required by LinearAlignmentsDisplay
       setConfig(_config: unknown) {},
-      setFeatureDensityStatsLimit(_stats: unknown) {},
 
       getFeatureByID(_blockKey: string, _id: string) {
         return undefined
@@ -642,6 +667,11 @@ export default function stateModelFactory(
               region,
               filterBy: self.filterBy,
               colorBy: self.colorBy,
+              statusCallback: (msg: string) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
             },
           )) as WebGLPileupDataResult
 
@@ -681,9 +711,12 @@ export default function stateModelFactory(
           addDisposer(
             self,
             reaction(
-              () => self.visibleRegion,
-              region => {
-                if (!region) {
+              () => ({
+                region: self.visibleRegion,
+                ready: self.featureDensityStatsReadyAndRegionNotTooLarge,
+              }),
+              ({ region, ready }) => {
+                if (!region || !ready) {
                   return
                 }
                 const { loadedRegion } = self
@@ -716,7 +749,10 @@ export default function stateModelFactory(
               () => self.filterBy,
               () => {
                 const visibleRegion = self.visibleRegion
-                if (visibleRegion) {
+                if (
+                  visibleRegion &&
+                  self.featureDensityStatsReadyAndRegionNotTooLarge
+                ) {
                   fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
                     console.error('Failed to fetch features:', e)
                   })
@@ -733,7 +769,10 @@ export default function stateModelFactory(
               () => self.colorBy.type,
               () => {
                 const visibleRegion = self.visibleRegion
-                if (visibleRegion) {
+                if (
+                  visibleRegion &&
+                  self.featureDensityStatsReadyAndRegionNotTooLarge
+                ) {
                   fetchFeaturesImpl(visibleRegion).catch((e: unknown) => {
                     console.error('Failed to fetch features:', e)
                   })
@@ -741,6 +780,11 @@ export default function stateModelFactory(
               },
             ),
           )
+
+          setupModificationsAutorun(self, () => {
+            const view = getContainingView(self) as LGV
+            return view.initialized
+          })
         },
       }
     })
@@ -755,57 +799,66 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Normal',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'normal',
                 onClick: () => {
                   self.setColorScheme({ type: 'normal' })
                 },
               },
               {
                 label: 'Strand',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'strand',
                 onClick: () => {
                   self.setColorScheme({ type: 'strand' })
                 },
               },
               {
                 label: 'Mapping quality',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'mappingQuality',
                 onClick: () => {
                   self.setColorScheme({ type: 'mappingQuality' })
                 },
               },
               {
                 label: 'Insert size',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSize',
                 onClick: () => {
                   self.setColorScheme({ type: 'insertSize' })
                 },
               },
               {
                 label: 'First of pair strand',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'firstOfPairStrand',
                 onClick: () => {
                   self.setColorScheme({ type: 'firstOfPairStrand' })
                 },
               },
               {
                 label: 'Pair orientation',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'pairOrientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'pairOrientation' })
                 },
               },
               {
                 label: 'Insert size and orientation',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSizeAndOrientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'insertSizeAndOrientation' })
                 },
               },
               {
                 label: 'Modifications',
-                onClick: () => {
-                  self.setColorScheme({ type: 'modifications' })
-                },
-              },
-              {
-                label: 'Methylation (CpG)',
-                onClick: () => {
-                  self.setColorScheme({ type: 'methylation' })
-                },
+                type: 'subMenu',
+                subMenu: getModificationsSubMenu(self, {
+                  includeMethylation: true,
+                }),
               },
             ],
           },
@@ -840,12 +893,20 @@ export default function stateModelFactory(
         ]
       },
     }))
-    .actions(self => ({
-      async renderSvg(opts?: ExportSvgDisplayOptions) {
-        const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
-      },
-    }))
+    .actions(self => {
+      const superReload = self.reload
+      return {
+        async reload() {
+          self.setLoadedRegion(null)
+          self.setRpcData(null)
+          await superReload()
+        },
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
+        },
+      }
+    })
 }
 
 export type LinearWebGLPileupDisplayStateModel = ReturnType<

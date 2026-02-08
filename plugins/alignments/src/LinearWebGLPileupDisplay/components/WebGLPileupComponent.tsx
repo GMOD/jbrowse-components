@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingTrack,
   getContainingView,
@@ -61,6 +63,9 @@ function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorHardclip: parseColorToRGB(palette.hardclip),
     // Coverage color (light grey)
     colorCoverage: [0.8, 0.8, 0.8],
+    // Modification mode read colors
+    colorModificationFwd: parseColorToRGB(palette.modificationFwd),
+    colorModificationRev: parseColorToRGB(palette.modificationRev),
   }
 }
 
@@ -121,7 +126,8 @@ interface LinearWebGLPileupDisplayModel {
   height: number
   rpcData: WebGLPileupDataResult | null
   loadedRegion: { refName: string; start: number; end: number } | null
-  isLoading: boolean
+  showLoading: boolean
+  statusMessage?: string
   error: Error | null
   featureHeight: number
   featureSpacing: number
@@ -133,6 +139,11 @@ interface LinearWebGLPileupDisplayModel {
   showInterbaseIndicators: boolean
   showModifications: boolean
   maxY: number
+  regionTooLarge: boolean
+  regionTooLargeReason: string
+  featureDensityStats?: { bytes?: number; featureDensity?: number }
+  setFeatureDensityStatsLimit: (s?: unknown) => void
+  reload: () => void
   featureIdUnderMouse: string | undefined
   coverageTicks?: CoverageTicks
   currentRangeY: [number, number]
@@ -221,7 +232,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const {
     rpcData,
-    isLoading,
+    statusMessage,
     error,
     featureHeight,
     featureSpacing,
@@ -532,6 +543,15 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         indicatorPositions: rpcData.indicatorPositions,
         indicatorColorTypes: rpcData.indicatorColorTypes,
         numIndicators: rpcData.numIndicators,
+      })
+
+      // Upload modification coverage data
+      renderer.uploadModCoverageFromTypedArrays({
+        modCovPositions: rpcData.modCovPositions,
+        modCovYOffsets: rpcData.modCovYOffsets,
+        modCovHeights: rpcData.modCovHeights,
+        modCovColors: rpcData.modCovColors,
+        numModCovSegments: rpcData.numModCovSegments,
       })
     }
 
@@ -1813,7 +1833,13 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     )
   }
 
-  const isReady = width !== undefined && labelBpRange !== null
+  if (model.regionTooLarge) {
+    return (
+      <div style={{ padding: 16 }}>
+        <TooLargeMessage model={model} />
+      </div>
+    )
+  }
 
   return (
     <div
@@ -1940,7 +1966,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         </div>
       ) : null}
 
-      {(isLoading || !isReady) && (
+      {model.showLoading && (
         <div
           style={{
             position: 'absolute',
@@ -1952,7 +1978,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             borderRadius: 4,
           }}
         >
-          {isLoading ? 'Loading features...' : 'Initializing...'}
+          <LoadingEllipses
+            message={statusMessage || 'Loading'}
+          />
         </div>
       )}
     </div>

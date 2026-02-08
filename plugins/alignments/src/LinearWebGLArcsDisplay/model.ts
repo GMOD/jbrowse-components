@@ -289,24 +289,32 @@ export default function stateModelFactory(
             subMenu: [
               {
                 label: 'Insert size and orientation',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSizeAndOrientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'insertSizeAndOrientation' })
                 },
               },
               {
                 label: 'Orientation only',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'orientation',
                 onClick: () => {
                   self.setColorScheme({ type: 'orientation' })
                 },
               },
               {
                 label: 'Insert size only',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'insertSize',
                 onClick: () => {
                   self.setColorScheme({ type: 'insertSize' })
                 },
               },
               {
                 label: 'Gradient',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'gradient',
                 onClick: () => {
                   self.setColorScheme({ type: 'gradient' })
                 },

@@ -345,6 +345,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               subMenu: [
                 {
                   label: 'Pair orientation',
+                  type: 'radio' as const,
+                  checked: self.colorBy.type === 'pairOrientation',
                   onClick: () => {
                     self.setColorScheme({
                       type: 'pairOrientation',
@@ -360,6 +362,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Insert size',
+                  type: 'radio' as const,
+                  checked: self.colorBy.type === 'insertSize',
                   onClick: () => {
                     self.setColorScheme({
                       type: 'insertSize',

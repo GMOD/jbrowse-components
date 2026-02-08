@@ -532,6 +532,101 @@ function computeNoncovCoverage(
   }
 }
 
+function computeModificationCoverage(
+  modifications: ModificationEntry[],
+  maxDepth: number,
+  regionStart: number,
+): {
+  positions: Uint32Array
+  yOffsets: Float32Array
+  heights: Float32Array
+  colors: Uint8Array
+  count: number
+} {
+  if (modifications.length === 0 || maxDepth === 0) {
+    return {
+      positions: new Uint32Array(0),
+      yOffsets: new Float32Array(0),
+      heights: new Float32Array(0),
+      colors: new Uint8Array(0),
+      count: 0,
+    }
+  }
+
+  // Group by position → aggregate counts per unique color (r,g,b key)
+  const byPosition = new Map<
+    number,
+    Map<string, { r: number; g: number; b: number; count: number }>
+  >()
+
+  for (const mod of modifications) {
+    if (mod.position < regionStart) {
+      continue
+    }
+    let colorMap = byPosition.get(mod.position)
+    if (!colorMap) {
+      colorMap = new Map()
+      byPosition.set(mod.position, colorMap)
+    }
+    const key = `${mod.r},${mod.g},${mod.b}`
+    let entry = colorMap.get(key)
+    if (!entry) {
+      entry = { r: mod.r, g: mod.g, b: mod.b, count: 0 }
+      colorMap.set(key, entry)
+    }
+    entry.count++
+  }
+
+  // Build stacked segments
+  const segments: {
+    position: number
+    yOffset: number
+    height: number
+    r: number
+    g: number
+    b: number
+  }[] = []
+
+  for (const [position, colorMap] of byPosition) {
+    let yOffset = 0
+    for (const entry of colorMap.values()) {
+      const height = entry.count / maxDepth
+      segments.push({
+        position,
+        yOffset,
+        height,
+        r: entry.r,
+        g: entry.g,
+        b: entry.b,
+      })
+      yOffset += height
+    }
+  }
+
+  const positions = new Uint32Array(segments.length)
+  const yOffsets = new Float32Array(segments.length)
+  const heights = new Float32Array(segments.length)
+  const colors = new Uint8Array(segments.length * 4)
+
+  for (const [i, seg] of segments.entries()) {
+    positions[i] = seg.position - regionStart
+    yOffsets[i] = seg.yOffset
+    heights[i] = seg.height
+    colors[i * 4] = seg.r
+    colors[i * 4 + 1] = seg.g
+    colors[i * 4 + 2] = seg.b
+    colors[i * 4 + 3] = 255
+  }
+
+  return {
+    positions,
+    yOffsets,
+    heights,
+    colors,
+    count: segments.length,
+  }
+}
+
 export async function executeRenderWebGLPileupData({
   pluginManager,
   args,
@@ -564,13 +659,8 @@ export async function executeRenderWebGLPileupData({
     assemblyName: region.assemblyName ?? '',
   }
 
-  const featuresArray = await updateStatus(
-    'Fetching alignments',
-    statusCallback,
-    () =>
-      firstValueFrom(
-        dataAdapter.getFeatures(regionWithAssembly, args).pipe(toArray()),
-      ),
+  const featuresArray = await firstValueFrom(
+    dataAdapter.getFeatures(regionWithAssembly, args).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -593,7 +683,7 @@ export async function executeRenderWebGLPileupData({
       seqAdapter
         .getFeatures({
           ...regionWithAssembly,
-          refName: region.refName,
+          refName: region.originalRefName || region.refName,
           start: Math.max(0, regionStart - 1),
           end: Math.ceil(region.end) + 1,
         })
@@ -679,6 +769,7 @@ export async function executeRenderWebGLPileupData({
           const mmTag = getTagAlt(feature, 'MM', 'Mm')
           if (mmTag) {
             const cigarString = feature.get('CIGAR') as string | undefined
+            const seq = feature.get('seq') as string | undefined
             if (cigarString) {
               const cigarOps = parseCigar2(cigarString)
               const modThreshold =
@@ -720,11 +811,12 @@ export async function executeRenderWebGLPileupData({
               getMethBins(feature, cigarOps)
 
             const featureEnd = feature.get('end')
+            const regionEnd = Math.ceil(region.end)
             const rSeq = regionSequence.toLowerCase()
 
             for (
               let i = Math.max(0, regionStart - featureStart);
-              i < featureEnd - featureStart;
+              i < Math.min(featureEnd - featureStart, regionEnd - featureStart);
               i++
             ) {
               const j = i + featureStart
@@ -997,6 +1089,12 @@ export async function executeRenderWebGLPileupData({
     insertions,
     softclips,
     hardclips,
+    coverage.maxDepth,
+    regionStart,
+  )
+
+  const modCoverage = computeModificationCoverage(
+    modifications,
     coverage.maxDepth,
     regionStart,
   )
@@ -1284,6 +1382,12 @@ export async function executeRenderWebGLPileupData({
     indicatorPositions: noncovCoverage.indicatorPositions,
     indicatorColorTypes: noncovCoverage.indicatorColorTypes,
 
+    modCovPositions: modCoverage.positions,
+    modCovYOffsets: modCoverage.yOffsets,
+    modCovHeights: modCoverage.heights,
+    modCovColors: modCoverage.colors,
+    numModCovSegments: modCoverage.count,
+
     // Convert Map to plain object for RPC serialization
     tooltipData: Object.fromEntries(tooltipData),
 
@@ -1341,6 +1445,10 @@ export async function executeRenderWebGLPileupData({
     result.modificationPositions.buffer,
     result.modificationYs.buffer,
     result.modificationColors.buffer,
+    result.modCovPositions.buffer,
+    result.modCovYOffsets.buffer,
+    result.modCovHeights.buffer,
+    result.modCovColors.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)
