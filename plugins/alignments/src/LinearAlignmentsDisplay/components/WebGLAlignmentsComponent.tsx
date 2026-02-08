@@ -385,14 +385,71 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       cloudColorScheme: colorSchemeIndex,
     }
 
-    // All modes use renderBlocks for multi-region support
-    const regions = model.visibleRegions
-    const blocks = regions.map(r => ({
-      regionNumber: r.regionNumber,
-      domainX: [r.start, r.end] as [number, number],
-      screenStartPx: r.screenStartPx,
-      screenEndPx: r.screenEndPx,
-    }))
+    // Compute blocks from displayedRegions + view state.
+    // This avoids dependency on dynamicBlocks which shift on scroll.
+    if (!view) {
+      return
+    }
+    const { bpPerPx, displayedRegions } = view
+    const dataMap =
+      renderingMode === 'arcs'
+        ? model.arcsState.rpcDataMap
+        : renderingMode === 'cloud'
+          ? model.cloudState.rpcDataMap
+          : model.rpcDataMap
+
+    const blocks: {
+      regionNumber: number
+      domainX: [number, number]
+      screenStartPx: number
+      screenEndPx: number
+    }[] = []
+
+    for (const [regionNumber] of dataMap) {
+      const region = displayedRegions[regionNumber]
+      if (!region) {
+        continue
+      }
+      const result = view.bpToPx({
+        refName: region.refName,
+        coord: region.start,
+        regionNumber,
+      })
+      if (!result) {
+        continue
+      }
+      const regionScreenStartPx = result.offsetPx - view.offsetPx
+      const regionWidthPx = (region.end - region.start) / bpPerPx
+
+      if (renderingMode === 'arcs') {
+        // Arcs use the full region domain for globally stable curve shapes
+        blocks.push({
+          regionNumber,
+          domainX: [region.start, region.end],
+          screenStartPx: regionScreenStartPx,
+          screenEndPx: regionScreenStartPx + regionWidthPx,
+        })
+      } else {
+        // Pileup/cloud/coverage need viewport-clipped domain for HP shader
+        // precision — the domain must be small (viewport-sized) so that the
+        // HP split can maintain sub-pixel accuracy on large chromosomes
+        const clippedScreenStart = Math.max(0, regionScreenStartPx)
+        const clippedScreenEnd = Math.min(width, regionScreenStartPx + regionWidthPx)
+        if (clippedScreenStart >= clippedScreenEnd) {
+          continue
+        }
+        const bpStart =
+          region.start + (clippedScreenStart - regionScreenStartPx) * bpPerPx
+        const bpEnd =
+          region.start + (clippedScreenEnd - regionScreenStartPx) * bpPerPx
+        blocks.push({
+          regionNumber,
+          domainX: [bpStart, bpEnd],
+          screenStartPx: clippedScreenStart,
+          screenEndPx: clippedScreenEnd,
+        })
+      }
+    }
 
     renderer.renderBlocks(blocks, { ...commonState, domainX: [0, 0] })
   }, [
