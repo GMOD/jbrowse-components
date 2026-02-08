@@ -21,6 +21,8 @@ export interface RenderWebGLFeatureDataArgs {
     reversed?: boolean
   }
   bpPerPx: number
+  colorByCDS?: boolean
+  sequenceAdapter?: Record<string, unknown>
 }
 
 export interface WebGLFeatureDataResult {
@@ -60,10 +62,21 @@ export interface WebGLFeatureDataResult {
   // Floating labels metadata
   floatingLabelsData: FloatingLabelsDataMap
 
+  // Peptide data for amino acid overlay (only when colorByCDS is true)
+  peptideData?: PeptideOverlayData
+
   // Layout info
   maxY: number
   totalHeight: number
 }
+
+export interface PeptideOverlayEntry {
+  protein: string
+  featureJson: Record<string, unknown>
+  transcriptId: string
+}
+
+export type PeptideOverlayData = Record<string, PeptideOverlayEntry>
 
 export interface FlatbushItem {
   featureId: string

@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -100,6 +104,24 @@ export default function stateModelFactory(
           self.trackShowDescriptions ??
           getConf(self, ['renderer', 'showDescriptions'])
         )
+      },
+
+      get colorByCDS() {
+        const view = getContainingView(self) as LGV
+        return (view as unknown as { colorByCDS?: boolean }).colorByCDS ?? false
+      },
+
+      get sequenceAdapter() {
+        const { assemblyManager } = getSession(self)
+        const track = getContainingTrack(self)
+        const assemblyNames = readConfObject(
+          track.configuration,
+          'assemblyNames',
+        ) as string[]
+        const assembly = assemblyManager.get(assemblyNames[0]!)
+        return assembly
+          ? getConf(assembly, ['sequence', 'adapter'])
+          : undefined
       },
 
       get visibleRegion() {
@@ -362,6 +384,8 @@ export default function stateModelFactory(
               rendererConfig,
               region,
               bpPerPx,
+              colorByCDS: self.colorByCDS,
+              sequenceAdapter: self.sequenceAdapter,
             },
           )) as WebGLFeatureDataResult
 
@@ -475,6 +499,29 @@ export default function stateModelFactory(
                     (e: unknown) => {
                       console.error(
                         'Failed to refresh after label settings change:',
+                        e,
+                      )
+                    },
+                  )
+                }
+              },
+              { delay: 100 },
+            ),
+          )
+
+          // React to colorByCDS changes
+          addDisposer(
+            self,
+            reaction(
+              () => self.colorByCDS,
+              () => {
+                if (self.loadedRegion) {
+                  const view = getContainingView(self) as LGV
+                  const bpPerPx = view.bpPerPx
+                  fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(
+                    (e: unknown) => {
+                      console.error(
+                        'Failed to refresh after colorByCDS change:',
                         e,
                       )
                     },

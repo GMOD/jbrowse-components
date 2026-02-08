@@ -11,6 +11,7 @@
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, measureText, updateStatus } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -18,27 +19,33 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { darken, lighten } from '@mui/material'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { createFeatureFloatingLabels } from '../CanvasFeatureRenderer/floatingLabels.ts'
 import { layoutFeature } from '../CanvasFeatureRenderer/layout/layoutFeature.ts'
+import { fetchPeptideData } from '../CanvasFeatureRenderer/peptides/peptideUtils.ts'
+import { prepareAminoAcidData } from '../CanvasFeatureRenderer/peptides/prepareAminoAcidData.ts'
 import {
   getBoxColor,
   getStrokeColor,
   isUTR,
 } from '../CanvasFeatureRenderer/util.ts'
+import { shouldRenderPeptideBackground } from '../CanvasFeatureRenderer/zoomThresholds.ts'
 
 import type {
   FeatureLabelData,
   FlatbushItem,
   FloatingLabelsDataMap,
+  PeptideOverlayData,
   RenderWebGLFeatureDataArgs,
   SubfeatureInfo,
   WebGLFeatureDataResult,
 } from './types.ts'
+import type { AggregatedAminoAcid } from '../CanvasFeatureRenderer/peptides/aggregateAminoAcids.ts'
 import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.ts'
-import type { LayoutRecord } from '../CanvasFeatureRenderer/types.ts'
+import type { LayoutRecord, PeptideData } from '../CanvasFeatureRenderer/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -117,6 +124,49 @@ interface LayoutRecordWithLabels extends LayoutRecord {
   totalHeightWithLabels?: number
 }
 
+function emitCodonRects(
+  rects: RectData[],
+  aminoAcids: AggregatedAminoAcid[],
+  baseColor: string,
+  featureStart: number,
+  featureEnd: number,
+  regionStart: number,
+  y: number,
+  height: number,
+  strand: number,
+  reversed: boolean,
+) {
+  const baseHex = colord(baseColor).toHex()
+  const color1 = lighten(baseHex, 0.2)
+  const color2 = darken(baseHex, 0.1)
+  const effectiveStrand = strand * (reversed ? -1 : 1)
+  const featureLen = featureEnd - featureStart
+
+  for (let i = 0; i < aminoAcids.length; i++) {
+    const aa = aminoAcids[i]!
+    const bgColor = i % 2 === 1 ? color2 : color1
+
+    let startBp: number
+    let endBp: number
+    if (effectiveStrand === -1) {
+      startBp = featureStart + (featureLen - aa.endIndex - 1)
+      endBp = featureStart + (featureLen - aa.startIndex)
+    } else {
+      startBp = featureStart + aa.startIndex
+      endBp = featureStart + aa.endIndex + 1
+    }
+
+    rects.push({
+      startOffset: Math.max(0, startBp - regionStart),
+      endOffset: endBp - regionStart,
+      y,
+      height,
+      color: colorToUint32(bgColor),
+      type: 0,
+    })
+  }
+}
+
 function collectRenderData(
   layoutRecords: LayoutRecordWithLabels[],
   regionStart: number,
@@ -125,6 +175,8 @@ function collectRenderData(
   configContext: RenderConfigContext,
   theme: unknown,
   reversed: boolean,
+  colorByCDS: boolean,
+  peptideDataMap?: Map<string, PeptideData>,
 ): {
   rects: RectData[]
   lines: LineData[]
@@ -157,7 +209,7 @@ function collectRenderData(
       feature,
       config: config as any,
       configContext,
-      colorByCDS: false,
+      colorByCDS,
       theme: theme as any,
     })
     const strokeColor = getStrokeColor({
@@ -255,17 +307,19 @@ function collectRenderData(
       })
 
       // Draw children (exons, CDS, UTRs)
+      const transcriptPeptide = peptideDataMap?.get(transcriptFeature.id())
       for (const childLayout of transcriptLayout.children) {
         const childFeature = childLayout.feature
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
         const childIsUTR = isUTR(childFeature)
+        const childType = childFeature.get('type') as string
 
         const childColor = getBoxColor({
           feature: childFeature,
           config: config as any,
           configContext,
-          colorByCDS: false,
+          colorByCDS,
           theme: theme as any,
         })
         const childColorUint = colorToUint32(childColor)
@@ -278,17 +332,52 @@ function collectRenderData(
           childHeight = transcriptLayout.height * UTR_HEIGHT_FRACTION
         }
 
-        rects.push({
-          startOffset: childStart - regionStart,
-          endOffset: childEnd - regionStart,
-          y: childTopPx,
-          height: childHeight,
-          color: childColorUint,
-          type: childIsUTR ? 1 : 0,
-        })
-
-        // Note: We don't add exon/CDS/UTR to subfeatureInfos for hit detection
-        // Only transcript and gene level features are clickable
+        // For CDS features with peptide data, emit per-codon rects
+        if (
+          childType === 'CDS' &&
+          transcriptPeptide?.protein &&
+          !childIsUTR
+        ) {
+          const aminoAcids = prepareAminoAcidData(
+            transcriptFeature,
+            transcriptPeptide.protein,
+            childStart,
+            childEnd,
+            transcriptStrand,
+          )
+          if (aminoAcids.length > 0) {
+            emitCodonRects(
+              rects,
+              aminoAcids,
+              childColor,
+              childStart,
+              childEnd,
+              regionStart,
+              childTopPx,
+              childHeight,
+              transcriptStrand,
+              reversed,
+            )
+          } else {
+            rects.push({
+              startOffset: childStart - regionStart,
+              endOffset: childEnd - regionStart,
+              y: childTopPx,
+              height: childHeight,
+              color: childColorUint,
+              type: 0,
+            })
+          }
+        } else {
+          rects.push({
+            startOffset: childStart - regionStart,
+            endOffset: childEnd - regionStart,
+            y: childTopPx,
+            height: childHeight,
+            color: childColorUint,
+            type: childIsUTR ? 1 : 0,
+          })
+        }
       }
 
       // Add transcript-level hit detection entry (spans entire transcript area)
@@ -358,7 +447,7 @@ function collectRenderData(
             feature: childFeature,
             config: config as any,
             configContext,
-            colorByCDS: false,
+            colorByCDS,
             theme: theme as any,
           })
           const childColorUint = colorToUint32(childColor)
@@ -442,6 +531,8 @@ export async function executeRenderWebGLFeatureData({
     rendererConfig,
     region,
     bpPerPx: requestedBpPerPx,
+    colorByCDS,
+    sequenceAdapter,
     statusCallback = () => {},
     stopToken,
   } = args as RenderWebGLFeatureDataArgs & {
@@ -480,7 +571,15 @@ export async function executeRenderWebGLFeatureData({
   const mockTheme = {
     palette: {
       text: { secondary: '#666666' },
-      framesCDS: [],
+      framesCDS: [
+        null,
+        { main: '#FF8080' },
+        { main: '#80FF80' },
+        { main: '#8080FF' },
+        { main: '#8080FF' },
+        { main: '#80FF80' },
+        { main: '#FF8080' },
+      ],
     },
   }
 
@@ -646,6 +745,69 @@ export async function executeRenderWebGLFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
+  // Fetch peptide data when colorByCDS is enabled and zoomed in enough
+  let peptideDataMap: Map<string, PeptideData> | undefined
+  let peptideOverlayData: PeptideOverlayData | undefined
+  if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
+    const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+    const features = new Map(deduped.map(f => [f.id(), f]))
+    const mockRenderProps = {
+      sessionId,
+      sequenceAdapter,
+      colorByCDS: true,
+      bpPerPx,
+      regions: [
+        {
+          ...region,
+          assemblyName: region.assemblyName ?? '',
+        },
+      ],
+    }
+    peptideDataMap = await updateStatus(
+      'Fetching peptide data',
+      statusCallback,
+      async () =>
+        fetchPeptideData(
+          pluginManager,
+          mockRenderProps as any,
+          features,
+        ),
+    )
+
+    // Build overlay data for the component (for amino acid text rendering)
+    if (peptideDataMap.size > 0) {
+      peptideOverlayData = {}
+      for (const [transcriptId, pData] of peptideDataMap.entries()) {
+        if (pData.protein) {
+          const transcript = features.get(transcriptId)
+          if (!transcript) {
+            // transcript may be a child of a gene feature
+            for (const feat of features.values()) {
+              const subs = feat.get('subfeatures')
+              if (subs) {
+                for (const sub of subs) {
+                  if (sub.id() === transcriptId) {
+                    peptideOverlayData[transcriptId] = {
+                      protein: pData.protein,
+                      featureJson: sub.toJSON(),
+                      transcriptId,
+                    }
+                  }
+                }
+              }
+            }
+          } else {
+            peptideOverlayData[transcriptId] = {
+              protein: pData.protein,
+              featureJson: transcript.toJSON(),
+              transcriptId,
+            }
+          }
+        }
+      }
+    }
+  }
+
   const {
     rects,
     lines,
@@ -662,6 +824,8 @@ export async function executeRenderWebGLFeatureData({
       configContext,
       mockTheme,
       region.reversed ?? false,
+      !!colorByCDS && shouldRenderPeptideBackground(bpPerPx),
+      peptideDataMap,
     ),
   )
 
@@ -759,6 +923,8 @@ export async function executeRenderWebGLFeatureData({
     subfeatureInfos,
 
     floatingLabelsData,
+
+    peptideData: peptideOverlayData,
 
     maxY,
     totalHeight: maxY,
