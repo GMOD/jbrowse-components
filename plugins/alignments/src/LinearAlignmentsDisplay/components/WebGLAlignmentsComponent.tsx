@@ -125,10 +125,23 @@ export interface IndicatorHitResult {
   counts: { insertion: number; softclip: number; hardclip: number }
 }
 
+interface VisibleRegionBlock {
+  refName: string
+  regionNumber: number
+  start: number
+  end: number
+  assemblyName: string
+  screenStartPx: number
+  screenEndPx: number
+}
+
 interface LinearAlignmentsDisplayModel {
   height: number
   rpcData: WebGLPileupDataResult | null
+  rpcDataMap: Map<number, WebGLPileupDataResult>
   loadedRegion: { refName: string; start: number; end: number } | null
+  loadedRegions: Map<number, { refName: string; start: number; end: number }>
+  visibleRegions: VisibleRegionBlock[]
   showLoading: boolean
   statusMessage?: string
   error: Error | null
@@ -165,10 +178,12 @@ interface LinearAlignmentsDisplayModel {
   renderingMode: 'pileup' | 'arcs' | 'cloud'
   arcsState: {
     rpcData: WebGLArcsDataResult | null
+    rpcDataMap: Map<number, WebGLArcsDataResult>
     lineWidth: number
   }
   cloudState: {
     rpcData: WebGLCloudDataResult | null
+    rpcDataMap: Map<number, WebGLCloudDataResult>
   }
 }
 
@@ -245,6 +260,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const {
     rpcData,
+    rpcDataMap,
     statusMessage,
     error,
     featureHeight,
@@ -257,6 +273,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showInterbaseIndicators,
     showModifications,
     renderingMode,
+    visibleRegions,
   } = model
 
   // Use measured dimensions from ResizeObserver (preferred, passive)
@@ -273,8 +290,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     [minOffset, maxOffset],
   )
 
-  // Compute visible range directly from view state - this is the single source of truth
-  // Returns null if view is not ready
+  // Compute visible range for the primary (first) refName from view state.
+  // Returns null if view is not ready. For multi-ref views, returns the range
+  // for only the first refName's blocks.
   const getVisibleBpRange = useCallback((): [number, number] | null => {
     if (!view?.initialized || width === undefined) {
       return null
@@ -288,93 +306,111 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             start: number
             end: number
             offsetPx?: number
+            widthPx?: number
           }[]
         }
       }
     ).dynamicBlocks
     const contentBlocks = dynamicBlocks?.contentBlocks as
-      | { refName: string; start: number; end: number; offsetPx?: number }[]
+      | {
+          refName: string
+          start: number
+          end: number
+          offsetPx?: number
+          widthPx?: number
+        }[]
       | undefined
     if (!contentBlocks || contentBlocks.length === 0) {
       return null
     }
     const first = contentBlocks[0]
-    const last = contentBlocks[contentBlocks.length - 1]
-    if (!first || first.refName !== last?.refName) {
-      // Multi-ref view - not supported yet
+    if (!first) {
       return null
     }
 
-    // Compute visible range from view's coordinate system
-    // This matches exactly how gridlines compute positions
+    const last = contentBlocks[contentBlocks.length - 1]
+    if (first.refName === last?.refName) {
+      // Single-ref: compute visible range from view's coordinate system
+      const bpPerPx = view.bpPerPx
+      const blockOffsetPx = first.offsetPx ?? 0
+      const deltaPx = view.offsetPx - blockOffsetPx
+      const deltaBp = deltaPx * bpPerPx
+
+      const rangeStart = first.start + deltaBp
+      const rangeEnd = rangeStart + width * bpPerPx
+      return [rangeStart, rangeEnd]
+    }
+
+    // Multi-ref view: return the range for the first refName only
+    // (used for domain sync and backward-compat)
     const bpPerPx = view.bpPerPx
     const blockOffsetPx = first.offsetPx ?? 0
     const deltaPx = view.offsetPx - blockOffsetPx
     const deltaBp = deltaPx * bpPerPx
 
     const rangeStart = first.start + deltaBp
-    const rangeEnd = rangeStart + width * bpPerPx
+    const blockEndPx = blockOffsetPx + (first.widthPx ?? 0)
+    const clippedEndPx = Math.min(view.offsetPx + width, blockEndPx)
+    const rangeEnd =
+      first.start + (clippedEndPx - blockOffsetPx) * bpPerPx
     return [rangeStart, rangeEnd]
   }, [view, width])
 
-  // Render to WebGL canvas with explicit domain - used for immediate rendering
-  // during interaction without waiting for MobX reaction
-  const renderWithDomain = useCallback(
-    (domainX: [number, number], canvasW?: number) => {
-      const w = canvasW ?? width
-      if (!rendererRef.current || w === undefined) {
-        return
-      }
+  // Render to WebGL canvas - reads domain from MobX view state (used by scheduled renders)
+  const renderNow = useCallback(() => {
+    const renderer = rendererRef.current
+    if (!renderer || width === undefined) {
+      return
+    }
 
-      rendererRef.current.render({
-        domainX,
-        rangeY: model.currentRangeY,
-        colorScheme: colorSchemeIndex,
-        featureHeight,
-        featureSpacing,
-        showCoverage,
-        coverageHeight,
-        coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-        showMismatches,
-        showInterbaseCounts,
-        showInterbaseIndicators,
-        showModifications,
-        canvasWidth: w,
-        canvasHeight: height,
-        highlightedFeatureIndex: model.highlightedFeatureIndex,
-        selectedFeatureIndex: model.selectedFeatureIndex,
-        colors: colorPalette,
-        renderingMode,
-        arcLineWidth: model.arcsState.lineWidth,
-        cloudColorScheme: colorSchemeIndex,
-      })
-    },
-    [
-      model,
-      colorSchemeIndex,
-      colorPalette,
+    const commonState = {
+      rangeY: model.currentRangeY,
+      colorScheme: colorSchemeIndex,
       featureHeight,
       featureSpacing,
       showCoverage,
       coverageHeight,
+      coverageYOffset: YSCALEBAR_LABEL_OFFSET,
       showMismatches,
       showInterbaseCounts,
       showInterbaseIndicators,
       showModifications,
+      canvasWidth: width,
+      canvasHeight: height,
+      highlightedFeatureIndex: model.highlightedFeatureIndex,
+      selectedFeatureIndex: model.selectedFeatureIndex,
+      colors: colorPalette,
       renderingMode,
-      width,
-      height,
-    ],
-  )
-
-  // Render to WebGL canvas - reads domain from MobX view state (used by scheduled renders)
-  const renderNow = useCallback(() => {
-    const visibleBpRange = getVisibleBpRange()
-    if (!visibleBpRange) {
-      return
+      arcLineWidth: model.arcsState.lineWidth,
+      cloudColorScheme: colorSchemeIndex,
     }
-    renderWithDomain(visibleBpRange)
-  }, [getVisibleBpRange, renderWithDomain])
+
+    // All modes use renderBlocks for multi-region support
+    const regions = model.visibleRegions
+    const blocks = regions.map(r => ({
+      regionNumber: r.regionNumber,
+      domainX: [r.start, r.end] as [number, number],
+      screenStartPx: r.screenStartPx,
+      screenEndPx: r.screenEndPx,
+    }))
+
+    renderer.renderBlocks(blocks, { ...commonState, domainX: [0, 0] })
+  }, [
+    model,
+    colorSchemeIndex,
+    colorPalette,
+    featureHeight,
+    featureSpacing,
+    showCoverage,
+    coverageHeight,
+    showMismatches,
+    showInterbaseCounts,
+    showInterbaseIndicators,
+    showModifications,
+    renderingMode,
+    width,
+    height,
+  ])
 
   const scheduleRender = useCallback(() => {
     if (renderRAFRef.current !== null) {
@@ -494,140 +530,176 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // to prevent race conditions during rapid scrolling where coverage
   // rectangles could be rendered with stale SNP data (or vice versa)
   useEffect(() => {
-    if (!rendererRef.current || !rpcData || rpcData.numReads === 0) {
+    if (!rendererRef.current) {
       return
     }
 
     const renderer = rendererRef.current
+    let maxYVal = 0
 
-    // Upload read data
-    renderer.uploadFromTypedArrays({
-      regionStart: rpcData.regionStart,
-      readPositions: rpcData.readPositions,
-      readYs: rpcData.readYs,
-      readFlags: rpcData.readFlags,
-      readMapqs: rpcData.readMapqs,
-      readInsertSizes: rpcData.readInsertSizes,
-      readPairOrientations: rpcData.readPairOrientations,
-      readStrands: rpcData.readStrands,
-      readTagColors: rpcData.readTagColors,
-      numReads: rpcData.numReads,
-      maxY: rpcData.maxY,
-    })
-    setMaxY(rpcData.maxY)
-    model.setMaxY(rpcData.maxY)
+    // Always use per-region uploads; clean up any legacy single-entry buffers
+    renderer.clearLegacyBuffers()
 
-    // Upload CIGAR data
-    renderer.uploadCigarFromTypedArrays({
-      gapPositions: rpcData.gapPositions,
-      gapYs: rpcData.gapYs,
-      gapTypes: rpcData.gapTypes,
-      numGaps: rpcData.numGaps,
-      mismatchPositions: rpcData.mismatchPositions,
-      mismatchYs: rpcData.mismatchYs,
-      mismatchBases: rpcData.mismatchBases,
-      numMismatches: rpcData.numMismatches,
-      insertionPositions: rpcData.insertionPositions,
-      insertionYs: rpcData.insertionYs,
-      insertionLengths: rpcData.insertionLengths,
-      numInsertions: rpcData.numInsertions,
-      softclipPositions: rpcData.softclipPositions,
-      softclipYs: rpcData.softclipYs,
-      softclipLengths: rpcData.softclipLengths,
-      numSoftclips: rpcData.numSoftclips,
-      hardclipPositions: rpcData.hardclipPositions,
-      hardclipYs: rpcData.hardclipYs,
-      hardclipLengths: rpcData.hardclipLengths,
-      numHardclips: rpcData.numHardclips,
-    })
+    for (const [regionNumber, data] of rpcDataMap) {
+      if (data.numReads === 0) {
+        continue
+      }
 
-    // Upload modification data
-    renderer.uploadModificationsFromTypedArrays({
-      modificationPositions: rpcData.modificationPositions,
-      modificationYs: rpcData.modificationYs,
-      modificationColors: rpcData.modificationColors,
-      numModifications: rpcData.numModifications,
-    })
+      const uploadRead = renderer.uploadFromTypedArraysForRegion.bind(
+        renderer,
+        regionNumber,
+      )
+      const uploadCigar = renderer.uploadCigarFromTypedArraysForRegion.bind(
+        renderer,
+        regionNumber,
+      )
+      const uploadMods =
+        renderer.uploadModificationsFromTypedArraysForRegion.bind(
+          renderer,
+          regionNumber,
+        )
+      const uploadCov = renderer.uploadCoverageFromTypedArraysForRegion.bind(
+        renderer,
+        regionNumber,
+      )
+      const uploadModCov =
+        renderer.uploadModCoverageFromTypedArraysForRegion.bind(
+          renderer,
+          regionNumber,
+        )
 
-    // Upload coverage/SNP data in the same effect
-    if (showCoverage) {
-      renderer.uploadCoverageFromTypedArrays({
-        coverageDepths: rpcData.coverageDepths,
-        coverageMaxDepth: rpcData.coverageMaxDepth,
-        coverageBinSize: rpcData.coverageBinSize,
-        coverageStartOffset: rpcData.coverageStartOffset,
-        numCoverageBins: rpcData.numCoverageBins,
-        snpPositions: rpcData.snpPositions,
-        snpYOffsets: rpcData.snpYOffsets,
-        snpHeights: rpcData.snpHeights,
-        snpColorTypes: rpcData.snpColorTypes,
-        numSnpSegments: rpcData.numSnpSegments,
-        noncovPositions: rpcData.noncovPositions,
-        noncovYOffsets: rpcData.noncovYOffsets,
-        noncovHeights: rpcData.noncovHeights,
-        noncovColorTypes: rpcData.noncovColorTypes,
-        noncovMaxCount: rpcData.noncovMaxCount,
-        numNoncovSegments: rpcData.numNoncovSegments,
-        indicatorPositions: rpcData.indicatorPositions,
-        indicatorColorTypes: rpcData.indicatorColorTypes,
-        numIndicators: rpcData.numIndicators,
+      uploadRead({
+        regionStart: data.regionStart,
+        readPositions: data.readPositions,
+        readYs: data.readYs,
+        readFlags: data.readFlags,
+        readMapqs: data.readMapqs,
+        readInsertSizes: data.readInsertSizes,
+        readPairOrientations: data.readPairOrientations,
+        readStrands: data.readStrands,
+        readTagColors: data.readTagColors,
+        numReads: data.numReads,
+        maxY: data.maxY,
+      })
+      if (data.maxY > maxYVal) {
+        maxYVal = data.maxY
+      }
+
+      uploadCigar({
+        gapPositions: data.gapPositions,
+        gapYs: data.gapYs,
+        gapTypes: data.gapTypes,
+        numGaps: data.numGaps,
+        mismatchPositions: data.mismatchPositions,
+        mismatchYs: data.mismatchYs,
+        mismatchBases: data.mismatchBases,
+        numMismatches: data.numMismatches,
+        insertionPositions: data.insertionPositions,
+        insertionYs: data.insertionYs,
+        insertionLengths: data.insertionLengths,
+        numInsertions: data.numInsertions,
+        softclipPositions: data.softclipPositions,
+        softclipYs: data.softclipYs,
+        softclipLengths: data.softclipLengths,
+        numSoftclips: data.numSoftclips,
+        hardclipPositions: data.hardclipPositions,
+        hardclipYs: data.hardclipYs,
+        hardclipLengths: data.hardclipLengths,
+        numHardclips: data.numHardclips,
       })
 
-      // Upload modification coverage data
-      renderer.uploadModCoverageFromTypedArrays({
-        modCovPositions: rpcData.modCovPositions,
-        modCovYOffsets: rpcData.modCovYOffsets,
-        modCovHeights: rpcData.modCovHeights,
-        modCovColors: rpcData.modCovColors,
-        numModCovSegments: rpcData.numModCovSegments,
+      uploadMods({
+        modificationPositions: data.modificationPositions,
+        modificationYs: data.modificationYs,
+        modificationColors: data.modificationColors,
+        numModifications: data.numModifications,
       })
+
+      if (showCoverage) {
+        uploadCov({
+          coverageDepths: data.coverageDepths,
+          coverageMaxDepth: data.coverageMaxDepth,
+          coverageBinSize: data.coverageBinSize,
+          coverageStartOffset: data.coverageStartOffset,
+          numCoverageBins: data.numCoverageBins,
+          snpPositions: data.snpPositions,
+          snpYOffsets: data.snpYOffsets,
+          snpHeights: data.snpHeights,
+          snpColorTypes: data.snpColorTypes,
+          numSnpSegments: data.numSnpSegments,
+          noncovPositions: data.noncovPositions,
+          noncovYOffsets: data.noncovYOffsets,
+          noncovHeights: data.noncovHeights,
+          noncovColorTypes: data.noncovColorTypes,
+          noncovMaxCount: data.noncovMaxCount,
+          numNoncovSegments: data.numNoncovSegments,
+          indicatorPositions: data.indicatorPositions,
+          indicatorColorTypes: data.indicatorColorTypes,
+          numIndicators: data.numIndicators,
+        })
+
+        uploadModCov({
+          modCovPositions: data.modCovPositions,
+          modCovYOffsets: data.modCovYOffsets,
+          modCovHeights: data.modCovHeights,
+          modCovColors: data.modCovColors,
+          numModCovSegments: data.numModCovSegments,
+        })
+      }
+    }
+
+    if (maxYVal > 0) {
+      setMaxY(maxYVal)
+      model.setMaxY(maxYVal)
     }
 
     scheduleRenderRef.current()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rpcData, showCoverage])
+  }, [rpcDataMap, showCoverage])
 
-  // Upload arcs data to GPU when arcsState.rpcData changes
-  const arcsRpcData = model.arcsState.rpcData
+  // Upload arcs data to GPU per-region when arcsState.rpcDataMap changes
+  const arcsRpcDataMap = model.arcsState.rpcDataMap
   useEffect(() => {
-    if (!rendererRef.current || !arcsRpcData || renderingMode !== 'arcs') {
+    if (!rendererRef.current || renderingMode !== 'arcs') {
       return
     }
-    // uploadArcsFromTypedArrays calls ensureBuffers internally,
-    // so no need to create dummy pileup buffers first
-    rendererRef.current.uploadArcsFromTypedArrays({
-      regionStart: arcsRpcData.regionStart,
-      arcX1: arcsRpcData.arcX1,
-      arcX2: arcsRpcData.arcX2,
-      arcColorTypes: arcsRpcData.arcColorTypes,
-      arcIsArc: arcsRpcData.arcIsArc,
-      numArcs: arcsRpcData.numArcs,
-      linePositions: arcsRpcData.linePositions,
-      lineYs: arcsRpcData.lineYs,
-      lineColorTypes: arcsRpcData.lineColorTypes,
-      numLines: arcsRpcData.numLines,
-    })
+    const renderer = rendererRef.current
+    for (const [regionNumber, data] of arcsRpcDataMap) {
+      renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
+        regionStart: data.regionStart,
+        arcX1: data.arcX1,
+        arcX2: data.arcX2,
+        arcColorTypes: data.arcColorTypes,
+        arcIsArc: data.arcIsArc,
+        numArcs: data.numArcs,
+        linePositions: data.linePositions,
+        lineYs: data.lineYs,
+        lineColorTypes: data.lineColorTypes,
+        numLines: data.numLines,
+      })
+    }
     scheduleRenderRef.current()
-  }, [arcsRpcData, renderingMode])
+  }, [arcsRpcDataMap, renderingMode])
 
-  // Upload cloud data to GPU when cloudState.rpcData changes
-  const cloudRpcData = model.cloudState.rpcData
+  // Upload cloud data to GPU per-region when cloudState.rpcDataMap changes
+  const cloudRpcDataMap = model.cloudState.rpcDataMap
   useEffect(() => {
-    if (!rendererRef.current || !cloudRpcData || renderingMode !== 'cloud') {
+    if (!rendererRef.current || renderingMode !== 'cloud') {
       return
     }
-    // uploadCloudFromTypedArrays calls ensureBuffers internally,
-    // so no need to create dummy pileup buffers first
-    rendererRef.current.uploadCloudFromTypedArrays({
-      regionStart: cloudRpcData.regionStart,
-      chainPositions: cloudRpcData.chainPositions,
-      chainYs: cloudRpcData.chainYs,
-      chainFlags: cloudRpcData.chainFlags,
-      chainColorTypes: cloudRpcData.chainColorTypes,
-      numChains: cloudRpcData.numChains,
-    })
+    const renderer = rendererRef.current
+    for (const [regionNumber, data] of cloudRpcDataMap) {
+      renderer.uploadCloudFromTypedArraysForRegion(regionNumber, {
+        regionStart: data.regionStart,
+        chainPositions: data.chainPositions,
+        chainYs: data.chainYs,
+        chainFlags: data.chainFlags,
+        chainColorTypes: data.chainColorTypes,
+        numChains: data.numChains,
+      })
+    }
     scheduleRenderRef.current()
-  }, [cloudRpcData, renderingMode])
+  }, [cloudRpcDataMap, renderingMode])
 
   // Re-render on settings change
   useEffect(() => {
@@ -647,7 +719,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showInterbaseIndicators,
     showModifications,
     renderingMode,
-    rpcData,
+    rpcDataMap,
   ])
 
   // Re-render when container dimensions change (from ResizeObserver)
@@ -786,6 +858,48 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
   }, [model])
 
+  // Resolve which rpcData + visible bp range to use for a given canvasX.
+  // For multi-ref views, finds the block the click falls in.
+  const resolveBlockForCanvasX = useCallback(
+    (
+      canvasX: number,
+    ):
+      | {
+          rpcData: WebGLPileupDataResult
+          bpRange: [number, number]
+          blockStartPx: number
+          blockWidth: number
+          refName: string
+        }
+      | undefined => {
+      const view = viewRef.current
+      if (!view?.initialized) {
+        return undefined
+      }
+
+      const regions = model.visibleRegions
+      const dataMap = model.rpcDataMap
+
+      // Always use region-based lookup
+      for (const r of regions) {
+        if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
+          const data = dataMap.get(r.regionNumber)
+          if (data) {
+            return {
+              rpcData: data,
+              bpRange: [r.start, r.end],
+              blockStartPx: r.screenStartPx,
+              blockWidth: r.screenEndPx - r.screenStartPx,
+              refName: r.refName,
+            }
+          }
+        }
+      }
+      return undefined
+    },
+    [model],
+  )
+
   // Hit test to find feature at given canvas coordinates
   // Returns { id, index } or undefined
   const hitTestFeature = useCallback(
@@ -793,23 +907,23 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       canvasX: number,
       canvasY: number,
     ): { id: string; index: number } | undefined => {
-      const view = viewRef.current
       const w = widthRef.current
-      if (!view?.initialized || w === undefined || !rpcData) {
+      if (w === undefined) {
         return undefined
       }
 
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (!visibleBpRange) {
+      const resolved = resolveBlockForCanvasX(canvasX)
+      if (!resolved) {
         return undefined
       }
+      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
 
-      // Convert canvas X to genomic coordinate
-      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
-      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+      // Convert canvas X to genomic coordinate (relative to block start)
+      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
+      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
 
       // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - rpcData.regionStart
+      const posOffset = genomicPos - blockData.regionStart
 
       // Convert canvas Y to row number (accounting for Y scroll)
       const rowHeight = featureHeight + featureSpacing
@@ -829,7 +943,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Search through reads to find one at this position
       // Only check reads that are in the target row for efficiency
-      const { readPositions, readYs, readIds, numReads } = rpcData
+      const { readPositions, readYs, readIds, numReads } = blockData
       for (let i = 0; i < numReads; i++) {
         const y = readYs[i]
         if (y !== row) {
@@ -851,7 +965,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       return undefined
     },
     [
-      rpcData,
+      resolveBlockForCanvasX,
       featureHeight,
       featureSpacing,
       showCoverage,
@@ -863,23 +977,23 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Hit test for CIGAR items (mismatches, insertions, gaps, clips)
   const hitTestCigarItem = useCallback(
     (canvasX: number, canvasY: number): CigarHitResult | undefined => {
-      const view = viewRef.current
       const w = widthRef.current
-      if (!view?.initialized || w === undefined || !rpcData) {
+      if (w === undefined) {
         return undefined
       }
 
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (!visibleBpRange) {
+      const resolved = resolveBlockForCanvasX(canvasX)
+      if (!resolved) {
         return undefined
       }
+      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
 
-      // Convert canvas X to genomic coordinate
-      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
-      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+      // Convert canvas X to genomic coordinate (relative to block start)
+      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
+      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
 
       // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - rpcData.regionStart
+      const posOffset = genomicPos - blockData.regionStart
 
       // Convert canvas Y to row number (accounting for Y scroll)
       const rowHeight = featureHeight + featureSpacing
@@ -923,7 +1037,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         hardclipLengths,
         numHardclips,
         regionStart,
-      } = rpcData
+      } = blockData
 
       // Check mismatches first (they're visually prominent)
       // Mismatches are 1bp features - use floor to determine which base mouse is over
@@ -972,7 +1086,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check gaps (deletions/skips - have start and end)
-      const { gapTypes } = rpcData
+      const { gapTypes } = blockData
       for (let i = 0; i < numGaps; i++) {
         const y = gapYs[i]
         if (y !== row) {
@@ -1043,7 +1157,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       return undefined
     },
     [
-      rpcData,
+      resolveBlockForCanvasX,
       featureHeight,
       featureSpacing,
       showCoverage,
@@ -1055,33 +1169,27 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Hit test for coverage area (grey bars + SNP segments)
   const hitTestCoverage = useCallback(
     (canvasX: number, canvasY: number): CoverageHitResult | undefined => {
-      const view = viewRef.current
       const w = widthRef.current
-      if (
-        !view?.initialized ||
-        w === undefined ||
-        !rpcData ||
-        !showCoverage ||
-        canvasY > coverageHeight
-      ) {
+      if (w === undefined || !showCoverage || canvasY > coverageHeight) {
         return undefined
       }
 
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (!visibleBpRange) {
+      const resolved = resolveBlockForCanvasX(canvasX)
+      if (!resolved) {
         return undefined
       }
+      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
 
-      // Convert canvas X to genomic coordinate
-      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
-      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+      // Convert canvas X to genomic coordinate (relative to block start)
+      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
+      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
 
       // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - rpcData.regionStart
+      const posOffset = genomicPos - blockData.regionStart
 
       // Find coverage bin for this position
       const { coverageDepths, coverageBinSize, coverageMaxDepth, regionStart } =
-        rpcData
+        blockData
       const binIndex = Math.floor(posOffset / coverageBinSize)
       if (binIndex < 0 || binIndex >= coverageDepths.length) {
         return undefined
@@ -1107,7 +1215,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         noncovHeights,
         noncovColorTypes,
         numNoncovSegments,
-      } = rpcData
+      } = blockData
 
       // Integer position for exact matching
       const intPosOffset = Math.floor(posOffset)
@@ -1158,7 +1266,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           ) {
             const typeName = noncovNames[colorType - 1]!
             // Convert normalized height back to count using noncovMaxCount
-            const count = Math.round(height * rpcData.noncovMaxCount)
+            const count = Math.round(height * blockData.noncovMaxCount)
             noncovCounts[typeName]! += count
           }
         }
@@ -1178,20 +1286,17 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         snps,
       }
     },
-    [rpcData, showCoverage, coverageHeight],
+    [resolveBlockForCanvasX, showCoverage, coverageHeight],
   )
 
   // Hit test for interbase indicators (triangles at top)
   const hitTestIndicator = useCallback(
     (canvasX: number, canvasY: number): IndicatorHitResult | undefined => {
-      const view = viewRef.current
       const w = widthRef.current
       // Indicators are at the very top (within first ~5px)
       // Only hit test if indicators are being shown
       if (
-        !view?.initialized ||
         w === undefined ||
-        !rpcData ||
         !showCoverage ||
         !showInterbaseIndicators ||
         canvasY > 5
@@ -1199,17 +1304,18 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return undefined
       }
 
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (!visibleBpRange) {
+      const resolved = resolveBlockForCanvasX(canvasX)
+      if (!resolved) {
         return undefined
       }
+      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
 
-      // Convert canvas X to genomic coordinate
-      const bpPerPx = (visibleBpRange[1] - visibleBpRange[0]) / w
-      const genomicPos = visibleBpRange[0] + canvasX * bpPerPx
+      // Convert canvas X to genomic coordinate (relative to block start)
+      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
+      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
 
       // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - rpcData.regionStart
+      const posOffset = genomicPos - blockData.regionStart
 
       // Hit tolerance for indicators (7px triangle width)
       const hitToleranceBp = Math.max(1, bpPerPx * 5)
@@ -1223,7 +1329,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         noncovColorTypes,
         numNoncovSegments,
         regionStart,
-      } = rpcData
+      } = blockData
 
       for (let i = 0; i < numIndicators; i++) {
         const pos = indicatorPositions[i]
@@ -1248,7 +1354,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
                 noncovColorType <= 3
               ) {
                 const typeName = noncovNames[noncovColorType - 1]!
-                const count = Math.round(height * rpcData.noncovMaxCount)
+                const count = Math.round(height * blockData.noncovMaxCount)
                 counts[typeName] += count
               }
             }
@@ -1265,7 +1371,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       return undefined
     },
-    [rpcData, showCoverage, showInterbaseIndicators],
+    [resolveBlockForCanvasX, showCoverage, showInterbaseIndicators],
   )
 
   const handleCanvasMouseMove = useCallback(
@@ -1290,6 +1396,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const canvasX = e.clientX - rect.left
       const canvasY = e.clientY - rect.top
 
+      // Resolve which block this canvasX belongs to (for tooltip data lookup)
+      const blockInfo = resolveBlockForCanvasX(canvasX)
+      const blockRpcData = blockInfo?.rpcData
+
       // Check for indicator hits first (triangles at top of coverage)
       const indicatorHit = hitTestIndicator(canvasX, canvasY)
       if (indicatorHit) {
@@ -1297,9 +1407,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         model.setFeatureIdUnderMouse(undefined)
 
         // Look up detailed tooltip data from rpcData
-        const posOffset = indicatorHit.position - (rpcData?.regionStart ?? 0)
-        const tooltipBin = rpcData?.tooltipData[posOffset]
-        const refName = model.loadedRegion?.refName
+        const posOffset =
+          indicatorHit.position - (blockRpcData?.regionStart ?? 0)
+        const tooltipBin = blockRpcData?.tooltipData[posOffset]
+        const refName = blockInfo?.refName
 
         if (tooltipBin) {
           // Use structured tooltip data
@@ -1342,16 +1453,17 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         model.setFeatureIdUnderMouse(undefined)
 
         // Look up detailed tooltip data from rpcData
-        const posOffset = coverageHit.position - (rpcData?.regionStart ?? 0)
+        const posOffset =
+          coverageHit.position - (blockRpcData?.regionStart ?? 0)
         // For coverage, check nearby positions in tooltipData (within 1bp)
-        let tooltipBin = rpcData?.tooltipData[posOffset]
+        let tooltipBin = blockRpcData?.tooltipData[posOffset]
         if (!tooltipBin) {
           // Check adjacent positions
           tooltipBin =
-            rpcData?.tooltipData[posOffset - 1] ||
-            rpcData?.tooltipData[posOffset + 1]
+            blockRpcData?.tooltipData[posOffset - 1] ||
+            blockRpcData?.tooltipData[posOffset + 1]
         }
-        const refName = model.loadedRegion?.refName
+        const refName = blockInfo?.refName
 
         if (tooltipBin || coverageHit.depth > 0) {
           // Build tooltip bin data - use detailed data if available, otherwise use basic coverage info
@@ -1482,7 +1594,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       hitTestIndicator,
       model,
       handleMouseMove,
-      rpcData,
+      resolveBlockForCanvasX,
     ],
   )
 
@@ -1507,7 +1619,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (cigarHit) {
         // Also get the feature hit to find the read ID
         const featureHit = hitTestFeature(canvasX, canvasY)
-        const refName = model.loadedRegion?.refName ?? ''
+        const blockHit = resolveBlockForCanvasX(canvasX)
+        const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
 
         if (featureHit) {
           model.setSelectedFeatureIndex(featureHit.index)
@@ -1580,7 +1693,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         }
       }
     },
-    [hitTestFeature, hitTestCigarItem, model],
+    [hitTestFeature, hitTestCigarItem, resolveBlockForCanvasX, model],
   )
 
   const handleContextMenu = useCallback(
