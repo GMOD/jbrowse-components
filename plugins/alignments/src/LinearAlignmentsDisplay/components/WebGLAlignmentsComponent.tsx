@@ -273,7 +273,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showInterbaseIndicators,
     showModifications,
     renderingMode,
-    visibleRegions,
   } = model
 
   // Use measured dimensions from ResizeObserver (preferred, passive)
@@ -391,12 +390,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       return
     }
     const { bpPerPx, displayedRegions } = view
-    const dataMap =
-      renderingMode === 'arcs'
-        ? model.arcsState.rpcDataMap
-        : renderingMode === 'cloud'
-          ? model.cloudState.rpcDataMap
-          : model.rpcDataMap
+    // Always use pileup rpcDataMap for block building — it drives buffersMap
+    // which holds coverage data needed by all modes. Mode-specific data
+    // (arcs/cloud) is drawn on top when available.
+    const dataMap = model.rpcDataMap
 
     const blocks: {
       regionNumber: number
@@ -934,21 +931,36 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return undefined
       }
 
-      const regions = model.visibleRegions
+      // Use displayedRegions + view state to match rendering positions
+      const { bpPerPx, displayedRegions } = view
       const dataMap = model.rpcDataMap
 
-      // Always use region-based lookup
-      for (const r of regions) {
-        if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
-          const data = dataMap.get(r.regionNumber)
-          if (data) {
-            return {
-              rpcData: data,
-              bpRange: [r.start, r.end],
-              blockStartPx: r.screenStartPx,
-              blockWidth: r.screenEndPx - r.screenStartPx,
-              refName: r.refName,
-            }
+      for (const [regionNumber, data] of dataMap) {
+        const region = displayedRegions[regionNumber]
+        if (!region) {
+          continue
+        }
+        const result = view.bpToPx({
+          refName: region.refName,
+          coord: region.start,
+          regionNumber,
+        })
+        if (!result) {
+          continue
+        }
+        const regionScreenStartPx = result.offsetPx - view.offsetPx
+        const regionWidthPx = (region.end - region.start) / bpPerPx
+
+        if (
+          canvasX >= regionScreenStartPx &&
+          canvasX < regionScreenStartPx + regionWidthPx
+        ) {
+          return {
+            rpcData: data,
+            bpRange: [region.start, region.end],
+            blockStartPx: regionScreenStartPx,
+            blockWidth: regionWidthPx,
+            refName: region.refName,
           }
         }
       }

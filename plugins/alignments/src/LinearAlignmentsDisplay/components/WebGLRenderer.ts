@@ -1793,10 +1793,6 @@ export class WebGLRenderer {
       this.buffers = buffers
 
       const regionStart = buffers.regionStart
-      const domainOffset: [number, number] = [
-        block.domainX[0] - regionStart,
-        block.domainX[1] - regionStart,
-      ]
 
       // Scissor to this block's screen region, clipped to viewport
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
@@ -1808,27 +1804,41 @@ export class WebGLRenderer {
       gl.enable(gl.SCISSOR_TEST)
       gl.scissor(scissorX, 0, scissorW, canvasHeight)
 
+      // Compute viewport-clipped domain: the genomic range corresponding to
+      // the visible portion of this block. Needed for shaders that map domain
+      // to [-1,1] clip space (pileup, coverage, cloud) since the per-block
+      // gl.viewport maps [-1,1] to the visible screen region.
+      const fullBlockWidth = block.screenEndPx - block.screenStartPx
+      const bpPerPx =
+        fullBlockWidth > 0
+          ? (block.domainX[1] - block.domainX[0]) / fullBlockWidth
+          : 1
+      const clippedDomainStart =
+        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedDomainEnd =
+        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const clippedDomainOffset: [number, number] = [
+        clippedDomainStart - regionStart,
+        clippedDomainEnd - regionStart,
+      ]
+
       // Per-block viewport: maps shader's [-1,1] clip space to this block's
-      // screen region. This means the existing HP domain-to-clipspace mapping
-      // (which maps viewport-clipped domain to [-1,1]) automatically renders
-      // to the correct screen position without any shader changes.
-      // Pass blockWidth as canvasWidth so pixel calculations (chevron width,
-      // min bar width) are correct for the block's scale.
+      // screen region. Pass blockWidth as canvasWidth so pixel calculations
+      // (chevron width, min bar width) are correct for the block's scale.
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
       const blockState: RenderState = {
         ...state,
-        domainX: block.domainX,
+        domainX: [clippedDomainStart, clippedDomainEnd] as [number, number],
         canvasWidth: scissorW,
       }
 
-      // Draw coverage for this block
-      this.renderCoverage(blockState, domainOffset, colors)
+      // Draw coverage for this block (always uses viewport-clipped domain)
+      this.renderCoverage(blockState, clippedDomainOffset, colors)
 
       if (mode === 'arcs') {
         // Arcs use full-canvas viewport with global positioning uniforms.
         // Restore full viewport so arc positions are globally stable.
         gl.viewport(0, 0, canvasWidth, canvasHeight)
-        const fullBlockWidth = block.screenEndPx - block.screenStartPx
         this.renderArcs(
           { ...state, domainX: block.domainX },
           block.screenStartPx,
@@ -1837,7 +1847,7 @@ export class WebGLRenderer {
       } else if (mode === 'cloud') {
         this.renderCloud(blockState)
       } else {
-        this.renderPileup(blockState, domainOffset, colors, scissorX)
+        this.renderPileup(blockState, clippedDomainOffset, colors, scissorX)
       }
     }
 

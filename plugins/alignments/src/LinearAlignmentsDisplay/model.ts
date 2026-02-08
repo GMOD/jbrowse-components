@@ -744,6 +744,11 @@ export default function stateModelFactory(
 
       setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud') {
         self.renderingMode = mode
+        if (mode === 'pileup') {
+          self.colorBySetting = { type: 'normal' }
+        } else if (mode === 'arcs' || mode === 'cloud') {
+          self.colorBySetting = { type: 'insertSizeAndOrientation' }
+        }
       },
 
       // Stubs required by LinearAlignmentsDisplay
@@ -927,6 +932,16 @@ export default function stateModelFactory(
         try {
           const sequenceAdapter = getSequenceAdapter(session, region)
 
+          // Always fetch pileup data (includes coverage) regardless of mode
+          await fetchPileupData(
+            session,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            regionNumber,
+          )
+
+          // Fetch mode-specific data in addition to pileup
           if (self.renderingMode === 'arcs') {
             await fetchArcsData(
               session,
@@ -937,14 +952,6 @@ export default function stateModelFactory(
             )
           } else if (self.renderingMode === 'cloud') {
             await fetchCloudData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-              regionNumber,
-            )
-          } else {
-            await fetchPileupData(
               session,
               adapterConfig,
               sequenceAdapter,
