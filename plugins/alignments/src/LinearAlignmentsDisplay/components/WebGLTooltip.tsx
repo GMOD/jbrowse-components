@@ -128,6 +128,10 @@ const CoverageTooltipContents = forwardRef<
   const { position, depth, snps, deletions, interbase } = bin
   const location = formatLocation(refName, position)
 
+  if (deletions) {
+    console.log(`[tooltip] position=${position} has deletions: count=${deletions.count} lengths=${deletions.minLen}-${deletions.maxLen}bp`)
+  }
+
   const snpEntries = Object.entries(snps)
   const interbaseEntries = Object.entries(interbase)
 

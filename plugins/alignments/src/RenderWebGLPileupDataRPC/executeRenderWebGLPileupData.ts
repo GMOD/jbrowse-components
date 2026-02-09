@@ -1403,7 +1403,11 @@ export async function executeRenderWebGLPileupData({
     const length = gap.end - gap.start
     const targetMap = gap.type === 'deletion' ? deletionsByPos : skipsByPos
 
-    // Add to each position the gap covers
+    if (gap.type === 'deletion') {
+      console.log(`[gap] ${gap.type} from genomicPos ${gap.start}-${gap.end} (offsets ${startOffset}-${endOffset}) length=${length}bp`)
+    }
+
+    // Add to each position the gap covers (covers = overlaps with the 1bp position)
     for (let pos = startOffset; pos < endOffset; pos++) {
       let lengths = targetMap.get(pos)
       if (!lengths) {
@@ -1433,6 +1437,9 @@ export async function executeRenderWebGLPileupData({
     const maxLen = Math.max(...lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.deletions = { count: lengths.length, minLen, maxLen, avgLen }
+    if (lengths.length > 0) {
+      console.log(`[deletion] posOffset=${posOffset} genomicPos=${regionStart + posOffset} count=${lengths.length} lengths=${lengths}`)
+    }
   }
 
   for (const [posOffset, lengths] of skipsByPos) {
