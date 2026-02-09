@@ -47,6 +47,7 @@ interface GapData {
   start: number
   end: number
   type: 'deletion' | 'skip' // distinguish between deletions and intron skips
+  strand: number
 }
 
 interface MismatchData {
@@ -666,6 +667,60 @@ function computeModificationCoverage(
   }
 }
 
+function computeSashimiJunctions(
+  gaps: GapData[],
+  regionStart: number,
+) {
+  const junctions = new Map<
+    string,
+    { start: number; end: number; fwd: number; rev: number }
+  >()
+
+  for (const gap of gaps) {
+    if (gap.type !== 'skip') {
+      continue
+    }
+    const key = `${gap.start}:${gap.end}`
+    let j = junctions.get(key)
+    if (!j) {
+      j = { start: gap.start, end: gap.end, fwd: 0, rev: 0 }
+      junctions.set(key, j)
+    }
+    if (gap.strand === 1) {
+      j.fwd++
+    } else {
+      j.rev++
+    }
+  }
+
+  // Emit separate arcs for forward and reverse strands at each junction
+  const arcs: { start: number; end: number; count: number; colorType: number }[] = []
+  for (const j of junctions.values()) {
+    if (j.fwd > 0) {
+      arcs.push({ start: j.start, end: j.end, count: j.fwd, colorType: 0 })
+    }
+    if (j.rev > 0) {
+      arcs.push({ start: j.start, end: j.end, count: j.rev, colorType: 1 })
+    }
+  }
+
+  const n = arcs.length
+  const sashimiX1 = new Float32Array(n)
+  const sashimiX2 = new Float32Array(n)
+  const sashimiScores = new Float32Array(n)
+  const sashimiColorTypes = new Uint8Array(n)
+
+  for (let i = 0; i < n; i++) {
+    const arc = arcs[i]!
+    sashimiX1[i] = arc.start - regionStart
+    sashimiX2[i] = arc.end - regionStart
+    sashimiScores[i] = Math.log(arc.count + 1)
+    sashimiColorTypes[i] = arc.colorType
+  }
+
+  return { sashimiX1, sashimiX2, sashimiScores, sashimiColorTypes, numSashimiArcs: n }
+}
+
 export async function executeRenderWebGLPileupData({
   pluginManager,
   args,
@@ -789,6 +844,7 @@ export async function executeRenderWebGLPileupData({
               start: featureStart + mm.start,
               end: featureStart + mm.start + mm.length,
               type: mm.type,
+              strand,
             })
           } else if (mm.type === 'mismatch') {
             mismatchesData.push({
@@ -1237,7 +1293,7 @@ export async function executeRenderWebGLPileupData({
     let bin = tooltipData.get(posOffset)
     if (!bin) {
       // Find depth at this position from coverage bins
-      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: mm.position,
@@ -1285,7 +1341,7 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, data] of insertionsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1350,7 +1406,7 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of deletionsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1370,7 +1426,7 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of skipsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1405,7 +1461,7 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of softclipsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1440,7 +1496,7 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of hardclipsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor(posOffset / coverage.binSize)
+      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1456,6 +1512,8 @@ export async function executeRenderWebGLPileupData({
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.interbase.hardclip = { count: lengths.length, minLen, maxLen, avgLen }
   }
+
+  const sashimi = computeSashimiJunctions(gapsData, regionStart)
 
   const result: WebGLPileupDataResult = {
     regionStart,
@@ -1495,6 +1553,8 @@ export async function executeRenderWebGLPileupData({
     modCovHeights: modCoverage.heights,
     modCovColors: modCoverage.colors,
     numModCovSegments: modCoverage.count,
+
+    ...sashimi,
 
     // Convert Map to plain object for RPC serialization
     tooltipData: Object.fromEntries(tooltipData),
@@ -1558,6 +1618,10 @@ export async function executeRenderWebGLPileupData({
     result.modCovHeights.buffer,
     result.modCovColors.buffer,
     result.readTagColors.buffer,
+    result.sashimiX1.buffer,
+    result.sashimiX2.buffer,
+    result.sashimiScores.buffer,
+    result.sashimiColorTypes.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

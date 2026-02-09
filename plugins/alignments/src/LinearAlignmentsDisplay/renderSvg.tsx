@@ -44,6 +44,7 @@ export async function renderSvg(
     coverageDepths,
     coverageMaxDepth,
     coverageBinSize,
+    coverageStartOffset,
     numCoverageBins,
     regionStart,
     snpPositions,
@@ -71,7 +72,7 @@ export async function renderSvg(
       continue
     }
 
-    const binStart = regionStart + i * coverageBinSize
+    const binStart = regionStart + coverageStartOffset + i * coverageBinSize
     const binEnd = binStart + coverageBinSize
 
     if (binEnd < viewStart || binStart > viewEnd) {

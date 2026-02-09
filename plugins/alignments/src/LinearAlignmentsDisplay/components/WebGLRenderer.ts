@@ -50,8 +50,11 @@ import {
   NONCOV_HISTOGRAM_VERTEX_SHADER,
   NUM_ARC_COLORS,
   NUM_LINE_COLORS,
+  NUM_SASHIMI_COLORS,
   READ_FRAGMENT_SHADER,
   READ_VERTEX_SHADER,
+  SASHIMI_ARC_FRAGMENT_SHADER,
+  SASHIMI_ARC_VERTEX_SHADER,
   SNP_COVERAGE_FRAGMENT_SHADER,
   SNP_COVERAGE_VERTEX_SHADER,
   SOFTCLIP_FRAGMENT_SHADER,
@@ -59,6 +62,7 @@ import {
   arcColorPalette,
   arcLineColorPalette,
   defaultColorPalette,
+  sashimiColorPalette,
   splitPositionWithFrac,
 } from './shaders/index.ts'
 
@@ -94,6 +98,8 @@ export interface RenderState {
   arcLineWidth?: number
   // Cloud-specific
   cloudColorScheme?: number
+  // Sashimi arcs (splice junctions overlaid on coverage)
+  showSashimiArcs?: boolean
 }
 
 interface GPUBuffers {
@@ -142,6 +148,9 @@ interface GPUBuffers {
   // Cloud mode
   cloudVAO: WebGLVertexArrayObject | null
   cloudCount: number
+  // Sashimi arcs (splice junctions)
+  sashimiVAO: WebGLVertexArrayObject | null
+  sashimiCount: number
 }
 
 export class WebGLRenderer {
@@ -193,6 +202,12 @@ export class WebGLRenderer {
   private arcInstanceBuffers: WebGLBuffer[] = []
   private arcUniforms: Record<string, WebGLUniformLocation | null> = {}
   private arcLineUniforms: Record<string, WebGLUniformLocation | null> = {}
+
+  // Sashimi mode
+  private sashimiProgram: WebGLProgram | null = null
+  private sashimiInstanceBuffers: WebGLBuffer[] = []
+  private sashimiInstanceBuffersMap = new Map<number, WebGLBuffer[]>()
+  private sashimiUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   // Cloud mode
   private cloudProgram: WebGLProgram | null = null
@@ -450,6 +465,28 @@ export class WebGLRenderer {
     this.arcTemplateBuffer = gl.createBuffer()!
     gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, templateData, gl.STATIC_DRAW)
+
+    // Sashimi program (reuses arc template buffer)
+    this.sashimiProgram = this.createProgram(
+      SASHIMI_ARC_VERTEX_SHADER,
+      SASHIMI_ARC_FRAGMENT_SHADER,
+    )
+    this.cacheUniforms(this.sashimiProgram, this.sashimiUniforms, [
+      'u_bpStartOffset',
+      'u_bpRegionLength',
+      'u_canvasWidth',
+      'u_canvasHeight',
+      'u_coverageOffset',
+      'u_coverageHeight',
+      'u_blockStartPx',
+      'u_blockWidth',
+    ])
+    for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
+      this.sashimiUniforms[`u_sashimiColors[${i}]`] = gl.getUniformLocation(
+        this.sashimiProgram,
+        `u_sashimiColors[${i}]`,
+      )
+    }
 
     // Cloud program
     this.cloudProgram = this.createProgram(
@@ -1383,6 +1420,8 @@ export class WebGLRenderer {
       arcLineCount: 0,
       cloudVAO: null,
       cloudCount: 0,
+      sashimiVAO: null,
+      sashimiCount: 0,
     }
   }
 
@@ -1529,6 +1568,114 @@ export class WebGLRenderer {
   }
 
   /**
+   * Upload sashimi arc data from pre-computed typed arrays (splice junctions)
+   */
+  uploadSashimiFromTypedArrays(data: {
+    sashimiX1: Float32Array
+    sashimiX2: Float32Array
+    sashimiScores: Float32Array
+    sashimiColorTypes: Uint8Array
+    numSashimiArcs: number
+  }) {
+    const gl = this.gl
+
+    if (!this.buffers || !this.sashimiProgram) {
+      return
+    }
+
+    // Clean up old sashimi VAO
+    if (this.buffers.sashimiVAO) {
+      gl.deleteVertexArray(this.buffers.sashimiVAO)
+      this.buffers.sashimiVAO = null
+    }
+    for (const buf of this.sashimiInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.sashimiInstanceBuffers = []
+
+    if (data.numSashimiArcs > 0) {
+      const sashimiVAO = gl.createVertexArray()
+      gl.bindVertexArray(sashimiVAO)
+
+      const stride = 2 * 4 // 2 floats * 4 bytes
+
+      // Per-vertex: template t values (reuse arcTemplateBuffer)
+      const tLoc = gl.getAttribLocation(this.sashimiProgram, 'a_t')
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
+      gl.enableVertexAttribArray(tLoc)
+      gl.vertexAttribPointer(tLoc, 1, gl.FLOAT, false, stride, 0)
+
+      // Per-vertex: side (-1 or +1)
+      const sideLoc = gl.getAttribLocation(this.sashimiProgram, 'a_side')
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
+      gl.enableVertexAttribArray(sideLoc)
+      gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
+
+      // Per-instance: a_x1
+      const x1Buf = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, x1Buf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.sashimiX1, gl.STATIC_DRAW)
+      const x1Loc = gl.getAttribLocation(this.sashimiProgram, 'a_x1')
+      gl.enableVertexAttribArray(x1Loc)
+      gl.vertexAttribPointer(x1Loc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(x1Loc, 1)
+      this.sashimiInstanceBuffers.push(x1Buf)
+
+      // Per-instance: a_x2
+      const x2Buf = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, x2Buf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.sashimiX2, gl.STATIC_DRAW)
+      const x2Loc = gl.getAttribLocation(this.sashimiProgram, 'a_x2')
+      gl.enableVertexAttribArray(x2Loc)
+      gl.vertexAttribPointer(x2Loc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(x2Loc, 1)
+      this.sashimiInstanceBuffers.push(x2Buf)
+
+      // Per-instance: a_colorType
+      const colorFloat = new Float32Array(data.sashimiColorTypes.length)
+      for (let i = 0; i < data.sashimiColorTypes.length; i++) {
+        colorFloat[i] = data.sashimiColorTypes[i]!
+      }
+      const colorBuf = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, colorFloat, gl.STATIC_DRAW)
+      const colorLoc = gl.getAttribLocation(this.sashimiProgram, 'a_colorType')
+      gl.enableVertexAttribArray(colorLoc)
+      gl.vertexAttribPointer(colorLoc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(colorLoc, 1)
+      this.sashimiInstanceBuffers.push(colorBuf)
+
+      // Per-instance: a_lineWidth (from sashimiScores)
+      const lwBuf = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, lwBuf)
+      gl.bufferData(gl.ARRAY_BUFFER, data.sashimiScores, gl.STATIC_DRAW)
+      const lwLoc = gl.getAttribLocation(this.sashimiProgram, 'a_lineWidth')
+      gl.enableVertexAttribArray(lwLoc)
+      gl.vertexAttribPointer(lwLoc, 1, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribDivisor(lwLoc, 1)
+      this.sashimiInstanceBuffers.push(lwBuf)
+
+      gl.bindVertexArray(null)
+      this.buffers.sashimiVAO = sashimiVAO
+      this.buffers.sashimiCount = data.numSashimiArcs
+    } else {
+      this.buffers.sashimiCount = 0
+    }
+  }
+
+  /**
+   * Upload sashimi data for a specific region
+   */
+  uploadSashimiFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadSashimiFromTypedArrays']>[0],
+  ) {
+    this.activateRegion(regionNumber)
+    this.uploadSashimiFromTypedArrays(data)
+    this.deactivateRegion(regionNumber)
+  }
+
+  /**
    * Upload cloud data from pre-computed typed arrays (from RPC worker)
    */
   uploadCloudFromTypedArrays(data: {
@@ -1636,6 +1783,10 @@ export class WebGLRenderer {
       gl.deleteBuffer(buf)
     }
     this.arcInstanceBuffers = []
+    for (const buf of this.sashimiInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.sashimiInstanceBuffers = []
     for (const buf of this.cloudGLBuffers) {
       gl.deleteBuffer(buf)
     }
@@ -1650,6 +1801,8 @@ export class WebGLRenderer {
     this.buffers = this.buffersMap.get(regionNumber) ?? null
     this.glBuffers = this.glBuffersMap.get(regionNumber) ?? []
     this.arcInstanceBuffers = this.arcInstanceBuffersMap.get(regionNumber) ?? []
+    this.sashimiInstanceBuffers =
+      this.sashimiInstanceBuffersMap.get(regionNumber) ?? []
     this.cloudGLBuffers = this.cloudGLBuffersMap.get(regionNumber) ?? []
   }
 
@@ -1663,11 +1816,16 @@ export class WebGLRenderer {
     }
     this.glBuffersMap.set(regionNumber, this.glBuffers)
     this.arcInstanceBuffersMap.set(regionNumber, this.arcInstanceBuffers)
+    this.sashimiInstanceBuffersMap.set(
+      regionNumber,
+      this.sashimiInstanceBuffers,
+    )
     this.cloudGLBuffersMap.set(regionNumber, this.cloudGLBuffers)
     // Reset to null so stale pointers don't linger
     this.buffers = null
     this.glBuffers = []
     this.arcInstanceBuffers = []
+    this.sashimiInstanceBuffers = []
     this.cloudGLBuffers = []
   }
 
@@ -1835,6 +1993,17 @@ export class WebGLRenderer {
       // Draw coverage for this block (always uses viewport-clipped domain)
       this.renderCoverage(blockState, clippedBpOffset, colors)
 
+      // Draw sashimi arcs overlaid on coverage (uses full-canvas viewport like arcs)
+      if (state.showSashimiArcs && state.showCoverage) {
+        gl.viewport(0, 0, canvasWidth, canvasHeight)
+        this.renderSashimiArcs(
+          { ...state, bpRangeX: block.bpRangeX },
+          block.screenStartPx,
+          fullBlockWidth,
+        )
+        gl.viewport(scissorX, 0, scissorW, canvasHeight)
+      }
+
       if (mode === 'arcs') {
         // Arcs use full-canvas viewport with global positioning uniforms.
         // Restore full viewport so arc positions are globally stable.
@@ -1888,6 +2057,11 @@ export class WebGLRenderer {
 
     // Draw coverage first (at top) — shared across all modes
     this.renderCoverage(state, domainOffset, colors)
+
+    // Draw sashimi arcs overlaid on coverage
+    if (state.showSashimiArcs && state.showCoverage) {
+      this.renderSashimiArcs(state)
+    }
 
     const mode = state.renderingMode ?? 'pileup'
 
@@ -2568,6 +2742,58 @@ export class WebGLRenderer {
     gl.bindVertexArray(null)
   }
 
+  private renderSashimiArcs(
+    state: RenderState,
+    blockStartPx = 0,
+    blockWidth = state.canvasWidth,
+  ) {
+    const gl = this.gl
+    if (!this.buffers || !this.sashimiProgram) {
+      return
+    }
+
+    if (!this.buffers.sashimiVAO || this.buffers.sashimiCount === 0) {
+      return
+    }
+
+    const { canvasWidth, canvasHeight } = state
+    const coverageOffset = state.showCoverage ? state.coverageYOffset : 0
+    const coverageHeight = state.coverageHeight
+
+    gl.useProgram(this.sashimiProgram)
+
+    const bpStartOffset = state.bpRangeX[0] - this.buffers.regionStart
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
+
+    gl.uniform1f(this.sashimiUniforms.u_bpStartOffset!, bpStartOffset)
+    gl.uniform1f(this.sashimiUniforms.u_bpRegionLength!, regionLengthBp)
+    gl.uniform1f(this.sashimiUniforms.u_canvasWidth!, canvasWidth)
+    gl.uniform1f(this.sashimiUniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(this.sashimiUniforms.u_blockStartPx!, blockStartPx)
+    gl.uniform1f(this.sashimiUniforms.u_blockWidth!, blockWidth)
+    gl.uniform1f(this.sashimiUniforms.u_coverageOffset!, coverageOffset)
+    gl.uniform1f(this.sashimiUniforms.u_coverageHeight!, coverageHeight)
+
+    for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
+      const c = sashimiColorPalette[i]!
+      gl.uniform3f(
+        this.sashimiUniforms[`u_sashimiColors[${i}]`]!,
+        c[0],
+        c[1],
+        c[2],
+      )
+    }
+
+    gl.bindVertexArray(this.buffers.sashimiVAO)
+    gl.drawArraysInstanced(
+      gl.TRIANGLE_STRIP,
+      0,
+      (ARC_CURVE_SEGMENTS + 1) * 2,
+      this.buffers.sashimiCount,
+    )
+    gl.bindVertexArray(null)
+  }
+
   private renderCloud(state: RenderState) {
     const gl = this.gl
     if (!this.buffers || !this.cloudProgram) {
@@ -2654,6 +2880,9 @@ export class WebGLRenderer {
     if (buffers.cloudVAO) {
       gl.deleteVertexArray(buffers.cloudVAO)
     }
+    if (buffers.sashimiVAO) {
+      gl.deleteVertexArray(buffers.sashimiVAO)
+    }
   }
 
   destroy() {
@@ -2676,6 +2905,12 @@ export class WebGLRenderer {
       }
     }
     this.arcInstanceBuffersMap.clear()
+    for (const bufs of this.sashimiInstanceBuffersMap.values()) {
+      for (const buf of bufs) {
+        gl.deleteBuffer(buf)
+      }
+    }
+    this.sashimiInstanceBuffersMap.clear()
     for (const bufs of this.cloudGLBuffersMap.values()) {
       for (const buf of bufs) {
         gl.deleteBuffer(buf)
@@ -2722,6 +2957,13 @@ export class WebGLRenderer {
     }
     if (this.arcLineProgram) {
       gl.deleteProgram(this.arcLineProgram)
+    }
+    // Sashimi cleanup
+    for (const buf of this.sashimiInstanceBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    if (this.sashimiProgram) {
+      gl.deleteProgram(this.sashimiProgram)
     }
     // Cloud cleanup
     for (const buf of this.cloudGLBuffers) {

@@ -6,8 +6,12 @@ export {
   ARC_VERTEX_SHADER,
   NUM_ARC_COLORS,
   NUM_LINE_COLORS,
+  NUM_SASHIMI_COLORS,
+  SASHIMI_ARC_FRAGMENT_SHADER,
+  SASHIMI_ARC_VERTEX_SHADER,
   arcColorPalette,
   arcLineColorPalette,
+  sashimiColorPalette,
 } from './arcShaders.ts'
 export {
   GAP_FRAGMENT_SHADER,

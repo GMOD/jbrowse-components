@@ -150,6 +150,13 @@ export interface WebGLPileupDataResult {
   modCovColors: Uint8Array // packed RGBA, 4 bytes per segment
   numModCovSegments: number
 
+  // Sashimi arc data (splice junctions from skip gaps)
+  sashimiX1: Float32Array // bp offsets from regionStart (junction start)
+  sashimiX2: Float32Array // bp offsets from regionStart (junction end)
+  sashimiScores: Float32Array // per-arc line width = Math.log(count + 1)
+  sashimiColorTypes: Uint8Array // 0=forward, 1=reverse
+  numSashimiArcs: number
+
   // Layout info
   maxY: number
   numReads: number

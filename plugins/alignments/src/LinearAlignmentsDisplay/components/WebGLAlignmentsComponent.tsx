@@ -135,6 +135,101 @@ interface VisibleRegionBlock {
   screenEndPx: number
 }
 
+interface ResolvedBlock {
+  rpcData: WebGLPileupDataResult
+  bpRange: [number, number]
+  blockStartPx: number
+  blockWidth: number
+  refName: string
+}
+
+function canvasToGenomicCoords(
+  canvasX: number,
+  canvasY: number,
+  resolved: ResolvedBlock,
+  featureHeight: number,
+  featureSpacing: number,
+  showCoverage: boolean,
+  coverageHeight: number,
+  rangeY: [number, number],
+) {
+  const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
+  const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
+  const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
+  const posOffset = genomicPos - rpcData.regionStart
+  const rowHeight = featureHeight + featureSpacing
+  const scrolledY = canvasY + rangeY[0]
+  const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
+  const row = Math.floor(adjustedY / rowHeight)
+  const yWithinRow = adjustedY - row * rowHeight
+  return { bpPerPx, genomicPos, posOffset, row, adjustedY, yWithinRow }
+}
+
+function getCanvasCoords(
+  e: React.MouseEvent,
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  canvasRectRef: React.RefObject<DOMRect | null>,
+) {
+  const canvas = canvasRef.current
+  if (!canvas) {
+    return undefined
+  }
+  let rect = canvasRectRef.current
+  if (!rect) {
+    rect = canvas.getBoundingClientRect()
+    canvasRectRef.current = rect
+  }
+  return { canvasX: e.clientX - rect.left, canvasY: e.clientY - rect.top }
+}
+
+function formatCigarTooltip(cigarHit: CigarHitResult) {
+  const pos = cigarHit.position.toLocaleString()
+  switch (cigarHit.type) {
+    case 'mismatch':
+      return `SNP: ${cigarHit.base} at ${pos}`
+    case 'insertion':
+      return cigarHit.sequence && cigarHit.sequence.length <= 20
+        ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
+        : `Insertion (${cigarHit.length}bp) at ${pos}`
+    case 'deletion':
+      return `Deletion (${cigarHit.length}bp) at ${pos}`
+    case 'skip':
+      return `Skip/Intron (${cigarHit.length}bp) at ${pos}`
+    case 'softclip':
+      return `Soft clip (${cigarHit.length}bp) at ${pos}`
+    case 'hardclip':
+      return `Hard clip (${cigarHit.length}bp) at ${pos}`
+  }
+}
+
+function uploadRegionDataToGPU(
+  renderer: WebGLRenderer,
+  rpcDataMap: Map<number, WebGLPileupDataResult>,
+  showCoverage: boolean,
+) {
+  renderer.clearLegacyBuffers()
+  let maxYVal = 0
+  for (const [regionNumber, data] of rpcDataMap) {
+    if (data.numReads === 0) {
+      continue
+    }
+    renderer.uploadFromTypedArraysForRegion(regionNumber, data)
+    renderer.uploadCigarFromTypedArraysForRegion(regionNumber, data)
+    renderer.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
+    if (data.maxY > maxYVal) {
+      maxYVal = data.maxY
+    }
+    if (showCoverage) {
+      renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
+      renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
+      if (data.numSashimiArcs > 0) {
+        renderer.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
+      }
+    }
+  }
+  return maxYVal
+}
+
 interface LinearAlignmentsDisplayModel {
   height: number
   rpcData: WebGLPileupDataResult | null
@@ -154,6 +249,7 @@ interface LinearAlignmentsDisplayModel {
   showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
+  showSashimiArcs: boolean
   maxY: number
   regionTooLarge: boolean
   regionTooLargeReason: string
@@ -272,6 +368,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showInterbaseCounts,
     showInterbaseIndicators,
     showModifications,
+    showSashimiArcs,
     renderingMode,
     visibleRegions,
   } = model
@@ -351,8 +448,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     const rangeStart = first.start + deltaBp
     const blockEndPx = blockOffsetPx + (first.widthPx ?? 0)
     const clippedEndPx = Math.min(view.offsetPx + width, blockEndPx)
-    const rangeEnd =
-      first.start + (clippedEndPx - blockOffsetPx) * bpPerPx
+    const rangeEnd = first.start + (clippedEndPx - blockOffsetPx) * bpPerPx
     return [rangeStart, rangeEnd]
   }, [view, width])
 
@@ -375,6 +471,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       showInterbaseCounts,
       showInterbaseIndicators,
       showModifications,
+      showSashimiArcs,
       canvasWidth: width,
       canvasHeight: height,
       highlightedFeatureIndex: model.highlightedFeatureIndex,
@@ -407,6 +504,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showInterbaseCounts,
     showInterbaseIndicators,
     showModifications,
+    showSashimiArcs,
     renderingMode,
     width,
     height,
@@ -533,126 +631,15 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     if (!rendererRef.current) {
       return
     }
-
-    const renderer = rendererRef.current
-    let maxYVal = 0
-
-    // Always use per-region uploads; clean up any legacy single-entry buffers
-    renderer.clearLegacyBuffers()
-
-    for (const [regionNumber, data] of rpcDataMap) {
-      if (data.numReads === 0) {
-        continue
-      }
-
-      const uploadRead = renderer.uploadFromTypedArraysForRegion.bind(
-        renderer,
-        regionNumber,
-      )
-      const uploadCigar = renderer.uploadCigarFromTypedArraysForRegion.bind(
-        renderer,
-        regionNumber,
-      )
-      const uploadMods =
-        renderer.uploadModificationsFromTypedArraysForRegion.bind(
-          renderer,
-          regionNumber,
-        )
-      const uploadCov = renderer.uploadCoverageFromTypedArraysForRegion.bind(
-        renderer,
-        regionNumber,
-      )
-      const uploadModCov =
-        renderer.uploadModCoverageFromTypedArraysForRegion.bind(
-          renderer,
-          regionNumber,
-        )
-
-      uploadRead({
-        regionStart: data.regionStart,
-        readPositions: data.readPositions,
-        readYs: data.readYs,
-        readFlags: data.readFlags,
-        readMapqs: data.readMapqs,
-        readInsertSizes: data.readInsertSizes,
-        readPairOrientations: data.readPairOrientations,
-        readStrands: data.readStrands,
-        readTagColors: data.readTagColors,
-        numReads: data.numReads,
-        maxY: data.maxY,
-      })
-      if (data.maxY > maxYVal) {
-        maxYVal = data.maxY
-      }
-
-      uploadCigar({
-        gapPositions: data.gapPositions,
-        gapYs: data.gapYs,
-        gapTypes: data.gapTypes,
-        numGaps: data.numGaps,
-        mismatchPositions: data.mismatchPositions,
-        mismatchYs: data.mismatchYs,
-        mismatchBases: data.mismatchBases,
-        numMismatches: data.numMismatches,
-        insertionPositions: data.insertionPositions,
-        insertionYs: data.insertionYs,
-        insertionLengths: data.insertionLengths,
-        numInsertions: data.numInsertions,
-        softclipPositions: data.softclipPositions,
-        softclipYs: data.softclipYs,
-        softclipLengths: data.softclipLengths,
-        numSoftclips: data.numSoftclips,
-        hardclipPositions: data.hardclipPositions,
-        hardclipYs: data.hardclipYs,
-        hardclipLengths: data.hardclipLengths,
-        numHardclips: data.numHardclips,
-      })
-
-      uploadMods({
-        modificationPositions: data.modificationPositions,
-        modificationYs: data.modificationYs,
-        modificationColors: data.modificationColors,
-        numModifications: data.numModifications,
-      })
-
-      if (showCoverage) {
-        uploadCov({
-          coverageDepths: data.coverageDepths,
-          coverageMaxDepth: data.coverageMaxDepth,
-          coverageBinSize: data.coverageBinSize,
-          coverageStartOffset: data.coverageStartOffset,
-          numCoverageBins: data.numCoverageBins,
-          snpPositions: data.snpPositions,
-          snpYOffsets: data.snpYOffsets,
-          snpHeights: data.snpHeights,
-          snpColorTypes: data.snpColorTypes,
-          numSnpSegments: data.numSnpSegments,
-          noncovPositions: data.noncovPositions,
-          noncovYOffsets: data.noncovYOffsets,
-          noncovHeights: data.noncovHeights,
-          noncovColorTypes: data.noncovColorTypes,
-          noncovMaxCount: data.noncovMaxCount,
-          numNoncovSegments: data.numNoncovSegments,
-          indicatorPositions: data.indicatorPositions,
-          indicatorColorTypes: data.indicatorColorTypes,
-          numIndicators: data.numIndicators,
-        })
-
-        uploadModCov({
-          modCovPositions: data.modCovPositions,
-          modCovYOffsets: data.modCovYOffsets,
-          modCovHeights: data.modCovHeights,
-          modCovColors: data.modCovColors,
-          numModCovSegments: data.numModCovSegments,
-        })
-      }
-    }
-
+    const maxYVal = uploadRegionDataToGPU(
+      rendererRef.current,
+      rpcDataMap,
+      showCoverage,
+    )
     if (maxYVal > 0) {
       setMaxY(maxYVal)
       model.setMaxY(maxYVal)
     }
-
     scheduleRenderRef.current()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcDataMap, showCoverage])
@@ -861,17 +848,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Resolve which rpcData + visible bp range to use for a given canvasX.
   // For multi-ref views, finds the block the click falls in.
   const resolveBlockForCanvasX = useCallback(
-    (
-      canvasX: number,
-    ):
-      | {
-          rpcData: WebGLPileupDataResult
-          bpRange: [number, number]
-          blockStartPx: number
-          blockWidth: number
-          refName: string
-        }
-      | undefined => {
+    (canvasX: number): ResolvedBlock | undefined => {
       const view = viewRef.current
       if (!view?.initialized) {
         return undefined
@@ -906,49 +883,33 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       canvasX: number,
       canvasY: number,
     ): { id: string; index: number } | undefined => {
-      const w = widthRef.current
-      if (w === undefined) {
+      if (widthRef.current === undefined) {
         return undefined
       }
-
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
         return undefined
       }
-      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
-
-      // Convert canvas X to genomic coordinate (relative to block start)
-      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-
-      // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - blockData.regionStart
-
-      // Convert canvas Y to row number (accounting for Y scroll)
-      const rowHeight = featureHeight + featureSpacing
-      const scrolledY = canvasY + model.currentRangeY[0]
-      // Adjust for coverage height if shown
-      const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
-      if (adjustedY < 0) {
-        return undefined
-      }
-      const row = Math.floor(adjustedY / rowHeight)
-
-      // Also check if we're within the feature height (not in spacing)
-      const yWithinRow = adjustedY - row * rowHeight
-      if (yWithinRow > featureHeight) {
+      const { posOffset, row, adjustedY, yWithinRow } =
+        canvasToGenomicCoords(
+          canvasX,
+          canvasY,
+          resolved,
+          featureHeight,
+          featureSpacing,
+          showCoverage,
+          coverageHeight,
+          model.currentRangeY,
+        )
+      if (adjustedY < 0 || yWithinRow > featureHeight) {
         return undefined
       }
 
-      // Search through reads to find one at this position
-      // Only check reads that are in the target row for efficiency
-      const { readPositions, readYs, readIds, numReads } = blockData
+      const { readPositions, readYs, readIds, numReads } = resolved.rpcData
       for (let i = 0; i < numReads; i++) {
-        const y = readYs[i]
-        if (y !== row) {
+        if (readYs[i] !== row) {
           continue
         }
-
         const startOffset = readPositions[i * 2]
         const endOffset = readPositions[i * 2 + 1]
         if (
@@ -960,7 +921,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           return { id: readIds[i]!, index: i }
         }
       }
-
       return undefined
     },
     [
@@ -976,41 +936,29 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Hit test for CIGAR items (mismatches, insertions, gaps, clips)
   const hitTestCigarItem = useCallback(
     (canvasX: number, canvasY: number): CigarHitResult | undefined => {
-      const w = widthRef.current
-      if (w === undefined) {
+      if (widthRef.current === undefined) {
         return undefined
       }
-
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
         return undefined
       }
-      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
-
-      // Convert canvas X to genomic coordinate (relative to block start)
-      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-
-      // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - blockData.regionStart
-
-      // Convert canvas Y to row number (accounting for Y scroll)
-      const rowHeight = featureHeight + featureSpacing
-      const scrolledY = canvasY + model.currentRangeY[0]
-      // Adjust for coverage height if shown
-      const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
-      if (adjustedY < 0) {
+      const { bpPerPx, posOffset, row, adjustedY, yWithinRow } =
+        canvasToGenomicCoords(
+          canvasX,
+          canvasY,
+          resolved,
+          featureHeight,
+          featureSpacing,
+          showCoverage,
+          coverageHeight,
+          model.currentRangeY,
+        )
+      if (adjustedY < 0 || yWithinRow > featureHeight) {
         return undefined
       }
-      const row = Math.floor(adjustedY / rowHeight)
+      const blockData = resolved.rpcData
 
-      // Check if within feature height
-      const yWithinRow = adjustedY - row * rowHeight
-      if (yWithinRow > featureHeight) {
-        return undefined
-      }
-
-      // Hit tolerance for interbase features (insertions, hardclips)
       const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
 
       // Check mismatches first (1bp features covering [pos, pos+1))
@@ -1168,28 +1116,33 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Hit test for coverage area (grey bars + SNP segments)
   const hitTestCoverage = useCallback(
     (canvasX: number, canvasY: number): CoverageHitResult | undefined => {
-      const w = widthRef.current
-      if (w === undefined || !showCoverage || canvasY > coverageHeight) {
+      if (
+        widthRef.current === undefined ||
+        !showCoverage ||
+        canvasY > coverageHeight
+      ) {
         return undefined
       }
-
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
         return undefined
       }
-      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
-
-      // Convert canvas X to genomic coordinate (relative to block start)
+      const blockData = resolved.rpcData
+      const { bpRange, blockStartPx, blockWidth } = resolved
       const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
       const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-
-      // Convert genomic position to offset from regionStart
       const posOffset = genomicPos - blockData.regionStart
 
-      // Find coverage bin for this position
-      const { coverageDepths, coverageBinSize, coverageMaxDepth, regionStart } =
-        blockData
-      const binIndex = Math.floor(posOffset / coverageBinSize)
+      const {
+        coverageDepths,
+        coverageBinSize,
+        coverageStartOffset,
+        coverageMaxDepth,
+        regionStart,
+      } = blockData
+      const binIndex = Math.floor(
+        (posOffset - coverageStartOffset) / coverageBinSize,
+      )
       if (binIndex < 0 || binIndex >= coverageDepths.length) {
         return undefined
       }
@@ -1280,7 +1233,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       return {
         type: 'coverage',
-        position: regionStart + binIndex * coverageBinSize,
+        position: regionStart + coverageStartOffset + binIndex * coverageBinSize,
         depth,
         snps,
       }
@@ -1291,32 +1244,24 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Hit test for interbase indicators (triangles at top)
   const hitTestIndicator = useCallback(
     (canvasX: number, canvasY: number): IndicatorHitResult | undefined => {
-      const w = widthRef.current
-      // Indicators are at the very top (within first ~5px)
-      // Only hit test if indicators are being shown
       if (
-        w === undefined ||
+        widthRef.current === undefined ||
         !showCoverage ||
         !showInterbaseIndicators ||
         canvasY > 5
       ) {
         return undefined
       }
-
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
         return undefined
       }
-      const { rpcData: blockData, bpRange, blockStartPx, blockWidth } = resolved
-
-      // Convert canvas X to genomic coordinate (relative to block start)
+      const blockData = resolved.rpcData
+      const { bpRange, blockStartPx, blockWidth } = resolved
       const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
+      const posOffset =
+        bpRange[0] + (canvasX - blockStartPx) * bpPerPx - blockData.regionStart
 
-      // Convert genomic position to offset from regionStart
-      const posOffset = genomicPos - blockData.regionStart
-
-      // Hit tolerance for indicators (7px triangle width)
       const hitToleranceBp = Math.max(1, bpPerPx * 5)
 
       const {
@@ -1375,25 +1320,16 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      // If dragging, handle pan instead of hover
       if (dragRef.current.isDragging) {
         handleMouseMove(e)
         return
       }
 
-      const canvas = canvasRef.current
-      if (!canvas) {
+      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+      if (!coords) {
         return
       }
-
-      let rect = canvasRectRef.current
-      if (!rect) {
-        rect = canvas.getBoundingClientRect()
-        canvasRectRef.current = rect
-      }
-
-      const canvasX = e.clientX - rect.left
-      const canvasY = e.clientY - rect.top
+      const { canvasX, canvasY } = coords
 
       // Resolve which block this canvasX belongs to (for tooltip data lookup)
       const blockInfo = resolveBlockForCanvasX(canvasX)
@@ -1518,35 +1454,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const cigarHit = hitTestCigarItem(canvasX, canvasY)
       if (cigarHit) {
         setOverCigarItem(true)
-
-        // Format CIGAR item tooltip
-        const pos = cigarHit.position.toLocaleString()
-        let tooltipText: string
-        switch (cigarHit.type) {
-          case 'mismatch':
-            tooltipText = `SNP: ${cigarHit.base} at ${pos}`
-            break
-          case 'insertion':
-            // Only show sequence in tooltip if it's short (<=20bp)
-            tooltipText =
-              cigarHit.sequence && cigarHit.sequence.length <= 20
-                ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
-                : `Insertion (${cigarHit.length}bp) at ${pos}`
-            break
-          case 'deletion':
-            tooltipText = `Deletion (${cigarHit.length}bp) at ${pos}`
-            break
-          case 'skip':
-            tooltipText = `Skip/Intron (${cigarHit.length}bp) at ${pos}`
-            break
-          case 'softclip':
-            tooltipText = `Soft clip (${cigarHit.length}bp) at ${pos}`
-            break
-          case 'hardclip':
-            tooltipText = `Hard clip (${cigarHit.length}bp) at ${pos}`
-            break
-        }
-        model.setMouseoverExtraInformation(tooltipText)
+        model.setMouseoverExtraInformation(formatCigarTooltip(cigarHit))
 
         // Still do feature hit test to keep highlight on underlying read
         const hit = hitTestFeature(canvasX, canvasY)
@@ -1599,21 +1507,139 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      const canvas = canvasRef.current
-      if (!canvas) {
+      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+      if (!coords) {
+        return
+      }
+      const { canvasX, canvasY } = coords
+
+      // Check for indicator clicks first (triangles at top of coverage)
+      const indicatorHit = hitTestIndicator(canvasX, canvasY)
+      if (indicatorHit) {
+        const blockHit = resolveBlockForCanvasX(canvasX)
+        const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
+        const blockRpcData = blockHit?.rpcData
+        const posOffset =
+          indicatorHit.position - (blockRpcData?.regionStart ?? 0)
+        const tooltipBin = blockRpcData?.tooltipData[posOffset]
+
+        const session = getSession(model)
+        if (isSessionModelWithWidgets(session)) {
+          const featureData: Record<string, unknown> = {
+            uniqueId: `indicator-${indicatorHit.indicatorType}-${refName}-${indicatorHit.position}`,
+            name: `Coverage ${CIGAR_TYPE_LABELS[indicatorHit.indicatorType] ?? indicatorHit.indicatorType}`,
+            type: indicatorHit.indicatorType,
+            refName,
+            start: indicatorHit.position,
+            end: indicatorHit.position + 1,
+          }
+
+          if (tooltipBin) {
+            const interbaseEntry =
+              tooltipBin.interbase[indicatorHit.indicatorType]
+            if (interbaseEntry) {
+              featureData.count = `${interbaseEntry.count}/${tooltipBin.depth}`
+              featureData.size =
+                interbaseEntry.minLen === interbaseEntry.maxLen
+                  ? `${interbaseEntry.minLen}bp`
+                  : `${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
+              if (interbaseEntry.topSeq) {
+                featureData.sequence = interbaseEntry.topSeq
+              }
+            }
+            featureData.depth = tooltipBin.depth
+          } else {
+            const { counts } = indicatorHit
+            featureData.count =
+              counts.insertion + counts.softclip + counts.hardclip
+          }
+
+          const featureWidget = session.addWidget(
+            'BaseFeatureWidget',
+            'baseFeature',
+            {
+              featureData,
+              view: getContainingView(model),
+              track: getContainingTrack(model),
+            },
+          )
+          session.showWidget(featureWidget)
+        }
         return
       }
 
-      let rect = canvasRectRef.current
-      if (!rect) {
-        rect = canvas.getBoundingClientRect()
-        canvasRectRef.current = rect
+      // Check for coverage SNP clicks (significant SNPs in coverage bars)
+      const coverageHit = hitTestCoverage(canvasX, canvasY)
+      if (coverageHit) {
+        const blockHit = resolveBlockForCanvasX(canvasX)
+        const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
+        const blockRpcData = blockHit?.rpcData
+        const posOffset =
+          coverageHit.position - (blockRpcData?.regionStart ?? 0)
+        const tooltipBin =
+          blockRpcData?.tooltipData[posOffset] ??
+          blockRpcData?.tooltipData[posOffset - 1] ??
+          blockRpcData?.tooltipData[posOffset + 1]
+
+        // Only open widget if there's meaningful data
+        const hasSNPs = coverageHit.snps.some(
+          s =>
+            s.base === 'A' ||
+            s.base === 'C' ||
+            s.base === 'G' ||
+            s.base === 'T',
+        )
+        const hasInterbase = coverageHit.snps.some(
+          s =>
+            s.base === 'insertion' ||
+            s.base === 'softclip' ||
+            s.base === 'hardclip',
+        )
+        if (hasSNPs || hasInterbase || tooltipBin) {
+          const session = getSession(model)
+          if (isSessionModelWithWidgets(session)) {
+            const featureData: Record<string, unknown> = {
+              uniqueId: `coverage-${refName}-${coverageHit.position}`,
+              name: 'Coverage',
+              type: 'coverage',
+              refName,
+              start: coverageHit.position,
+              end: coverageHit.position + 1,
+              depth: coverageHit.depth,
+            }
+
+            if (tooltipBin) {
+              for (const [base, entry] of Object.entries(tooltipBin.snps)) {
+                featureData[`SNP ${base.toUpperCase()}`] =
+                  `${entry.count}/${tooltipBin.depth} (${entry.fwd}(+) ${entry.rev}(-))`
+              }
+              for (const [type, entry] of Object.entries(
+                tooltipBin.interbase,
+              )) {
+                featureData[type] = `${entry.count} (${entry.minLen}-${entry.maxLen}bp)`
+              }
+            } else {
+              for (const snp of coverageHit.snps) {
+                featureData[snp.base] = snp.count
+              }
+            }
+
+            const featureWidget = session.addWidget(
+              'BaseFeatureWidget',
+              'baseFeature',
+              {
+                featureData,
+                view: getContainingView(model),
+                track: getContainingTrack(model),
+              },
+            )
+            session.showWidget(featureWidget)
+          }
+          return
+        }
       }
 
-      const canvasX = e.clientX - rect.left
-      const canvasY = e.clientY - rect.top
-
-      // Check for CIGAR item clicks first (they're on top)
+      // Check for CIGAR item clicks (they're on top of reads)
       const cigarHit = hitTestCigarItem(canvasX, canvasY)
       if (cigarHit) {
         // Also get the feature hit to find the read ID
@@ -1640,27 +1666,19 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           // Add type-specific fields
           if (cigarHit.type === 'mismatch' && cigarHit.base) {
             featureData.base = cigarHit.base
-            featureData.description = `${cigarHit.base} at ${refName}:${cigarHit.position.toLocaleString()}`
           } else if (cigarHit.type === 'insertion') {
             featureData.length = cigarHit.length
             if (cigarHit.sequence) {
               featureData.sequence = cigarHit.sequence
-              featureData.description = `${cigarHit.length}bp insertion: ${cigarHit.sequence}`
-            } else {
-              featureData.description = `${cigarHit.length}bp insertion`
             }
           } else if (cigarHit.type === 'deletion') {
             featureData.length = cigarHit.length
-            featureData.description = `${cigarHit.length}bp deletion`
           } else if (cigarHit.type === 'skip') {
             featureData.length = cigarHit.length
-            featureData.description = `${cigarHit.length}bp skip (intron)`
           } else if (cigarHit.type === 'softclip') {
             featureData.length = cigarHit.length
-            featureData.description = `${cigarHit.length}bp soft clip`
           } else if (cigarHit.type === 'hardclip') {
             featureData.length = cigarHit.length
-            featureData.description = `${cigarHit.length}bp hard clip`
           }
 
           // Include read ID if available
@@ -1692,26 +1710,23 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         }
       }
     },
-    [hitTestFeature, hitTestCigarItem, resolveBlockForCanvasX, model],
+    [
+      hitTestFeature,
+      hitTestCigarItem,
+      hitTestCoverage,
+      hitTestIndicator,
+      resolveBlockForCanvasX,
+      model,
+    ],
   )
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      const canvas = canvasRef.current
-      if (!canvas) {
+      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+      if (!coords) {
         return
       }
-
-      let rect = canvasRectRef.current
-      if (!rect) {
-        rect = canvas.getBoundingClientRect()
-        canvasRectRef.current = rect
-      }
-
-      const canvasX = e.clientX - rect.left
-      const canvasY = e.clientY - rect.top
-
-      const hit = hitTestFeature(canvasX, canvasY)
+      const hit = hitTestFeature(coords.canvasX, coords.canvasY)
       if (hit) {
         e.preventDefault()
         // For now, open feature widget on right-click (same as left-click)

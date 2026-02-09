@@ -222,12 +222,13 @@ void main() {
     return;
   }
 
-  // Compute chevron bp position along the line
+  // Compute chevron clip-space position along the line
+  // Use line start as HP uint base, then add fractional bp offset in clip space
+  // to avoid uint truncation causing uneven spacing at high zoom
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
-  uint chevronAbsX = a_position.x + u_regionStart + uint(chevronOffsetBp);
-
-  vec2 splitX = hpSplitUint(chevronAbsX);
-  float cx = hpToClipX(splitX, u_bpRangeX);
+  uint lineAbsStart = a_position.x + u_regionStart;
+  vec2 splitStart = hpSplitUint(lineAbsStart);
+  float cx = hpToClipX(splitStart, u_bpRangeX) + chevronOffsetBp / u_bpRangeX.z * 2.0;
 
   float yPx = a_y - u_scrollY;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -281,6 +282,8 @@ void main() {
 `
 
 // Arrow vertex shader - strand direction arrows at feature ends
+// Matches canvas style: horizontal line stem + filled triangle arrowhead
+// 9 vertices per instance: 6 for stem rect (2 triangles) + 3 for arrowhead
 const ARROW_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
@@ -302,8 +305,7 @@ out vec4 v_color;
 ${HP_GLSL_FUNCTIONS}
 
 void main() {
-  // Arrow: 3 vertices for triangle
-  int vid = gl_VertexID % 3;
+  int vid = gl_VertexID % 9;
 
   uint absX = a_x + u_regionStart;
   vec2 splitX = hpSplitUint(absX);
@@ -312,33 +314,36 @@ void main() {
   float yPx = a_y - u_scrollY;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  // Arrow size
-  float arrowWidth = 7.0 / u_canvasWidth * 2.0;
-  float arrowHeight = min(a_height * 0.8, 8.0) / u_canvasHeight * 2.0;
+  // Match canvas: arrowOffset=7px total, arrowSize=5px tall
+  float stemLength = 7.0 / u_canvasWidth * 2.0;
+  float stemHalf = 0.5 / u_canvasHeight * 2.0;
+  float headWidth = 3.5 / u_canvasWidth * 2.0;
+  float headHalf = 2.5 / u_canvasHeight * 2.0;
 
+  float dir = a_direction;
+
+  // Stem rect: vertices 0-5 (two triangles)
+  // From cx to cx + stemLength/2 (the first half of the 7px line)
+  // Head triangle: vertices 6-8
+  // From cx + stemLength/2 to cx + stemLength
   float sx, sy;
-  if (a_direction > 0.0) {
-    // Right-pointing arrow >
-    if (vid == 0) {
-      sx = cx;
-      sy = cy + arrowHeight * 0.5;
-    } else if (vid == 1) {
-      sx = cx;
-      sy = cy - arrowHeight * 0.5;
-    } else {
-      sx = cx + arrowWidth;
-      sy = cy;
-    }
+  if (vid < 6) {
+    // Stem rectangle (thin 1px quad from feature edge to arrowhead base)
+    float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+    float localY = (vid == 0 || vid == 1 || vid == 4) ? -1.0 : 1.0;
+    sx = cx + localX * stemLength * 0.5 * dir;
+    sy = cy + localY * stemHalf;
   } else {
-    // Left-pointing arrow <
-    if (vid == 0) {
-      sx = cx;
-      sy = cy + arrowHeight * 0.5;
-    } else if (vid == 1) {
-      sx = cx;
-      sy = cy - arrowHeight * 0.5;
+    // Arrowhead triangle (from midpoint to tip)
+    int hvid = vid - 6;
+    if (hvid == 0) {
+      sx = cx + stemLength * 0.5 * dir;
+      sy = cy + headHalf;
+    } else if (hvid == 1) {
+      sx = cx + stemLength * 0.5 * dir;
+      sy = cy - headHalf;
     } else {
-      sx = cx - arrowWidth;
+      sx = cx + stemLength * dir;
       sy = cy;
     }
   }
@@ -825,7 +830,7 @@ export class WebGLFeatureRenderer {
         gl.uniform1f(this.arrowUniforms.u_scrollY!, scrollY)
 
         gl.bindVertexArray(buffers.arrowVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, buffers.arrowCount)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.arrowCount)
       }
     }
 

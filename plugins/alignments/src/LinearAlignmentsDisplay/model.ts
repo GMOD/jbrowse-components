@@ -189,6 +189,10 @@ export default function stateModelFactory(
         /**
          * #property
          */
+        showSashimiArcs: true,
+        /**
+         * #property
+         */
         showCoverage: true,
         /**
          * #property
@@ -720,6 +724,10 @@ export default function stateModelFactory(
 
       setFeatureHeight(height: number) {
         self.featureHeightSetting = height
+      },
+
+      setShowSashimiArcs(show: boolean) {
+        self.showSashimiArcs = show
       },
 
       setShowCoverage(show: boolean) {
@@ -1283,10 +1291,20 @@ export default function stateModelFactory(
           },
         }
 
+        const sashimiItem = {
+          label: self.showSashimiArcs
+            ? 'Hide sashimi arcs'
+            : 'Show sashimi arcs',
+          onClick: () => {
+            self.setShowSashimiArcs(!self.showSashimiArcs)
+          },
+        }
+
         // Pileup-specific menu items
         const pileupItems = [
           colorByMenu,
           coverageItem,
+          sashimiItem,
           {
             label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
             onClick: () => {

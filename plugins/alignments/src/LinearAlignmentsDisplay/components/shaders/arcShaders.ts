@@ -139,6 +139,99 @@ void main() {
 }
 `
 
+// ---- Sashimi arc shader constants ----
+export const NUM_SASHIMI_COLORS = 2
+
+// Pink forward, blue reverse (matches SVG sashimi)
+export const sashimiColorPalette: RGBColor[] = [
+  [1.0, 0.667, 0.667],
+  [0.627, 0.627, 1.0],
+]
+
+export const SASHIMI_ARC_VERTEX_SHADER = `#version 300 es
+precision highp float;
+in float a_t;
+in float a_side;
+in float a_x1;
+in float a_x2;
+in float a_colorType;
+in float a_lineWidth;
+
+uniform float u_bpStartOffset;
+uniform float u_bpRegionLength;
+uniform float u_canvasWidth;
+uniform float u_canvasHeight;
+uniform float u_blockStartPx;
+uniform float u_blockWidth;
+uniform float u_coverageOffset;
+uniform float u_coverageHeight;
+uniform vec3 u_sashimiColors[${NUM_SASHIMI_COLORS}];
+
+out vec4 v_color;
+out float v_dist;
+out float v_lineWidth;
+
+vec2 evalCurve(float t) {
+  float mt = 1.0 - t;
+  float mt2 = mt * mt;
+  float mt3 = mt2 * mt;
+  float t2 = t * t;
+  float t3 = t2 * t;
+  float x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
+  float destY = u_coverageHeight;
+  float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
+  float pxPerBp = u_blockWidth / u_bpRegionLength;
+  float screenX = u_blockStartPx + (x_bp - u_bpStartOffset) * pxPerBp;
+  return vec2(screenX, y_px);
+}
+
+void main() {
+  vec2 pos = evalCurve(a_t);
+  float eps = 1.0 / ${ARC_CURVE_SEGMENTS}.0;
+  float t0 = max(a_t - eps * 0.5, 0.0);
+  float t1 = min(a_t + eps * 0.5, 1.0);
+  vec2 p0 = evalCurve(t0);
+  vec2 p1 = evalCurve(t1);
+  vec2 tangent = p1 - p0;
+  float tangentLen = length(tangent);
+  vec2 normal;
+  if (tangentLen > 0.001) {
+    tangent /= tangentLen;
+    normal = vec2(-tangent.y, tangent.x);
+  } else {
+    normal = vec2(0.0, 1.0);
+  }
+  float halfWidth = a_lineWidth * 0.5 + 0.5;
+  pos += normal * halfWidth * a_side;
+  float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
+  float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
+  gl_Position = vec4(clipX, clipY, 0.0, 1.0);
+  v_dist = a_side * halfWidth;
+  v_lineWidth = a_lineWidth;
+  int idx = int(a_colorType + 0.5);
+  if (idx < ${NUM_SASHIMI_COLORS}) {
+    v_color = vec4(u_sashimiColors[idx], 1.0);
+  } else {
+    v_color = vec4(u_sashimiColors[0], 1.0);
+  }
+}
+`
+
+export const SASHIMI_ARC_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+in float v_dist;
+in float v_lineWidth;
+out vec4 fragColor;
+void main() {
+  float halfWidth = v_lineWidth * 0.5;
+  float d = abs(v_dist);
+  float aa = fwidth(v_dist);
+  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  fragColor = vec4(v_color.rgb, v_color.a * alpha);
+}
+`
+
 export const ARC_LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
