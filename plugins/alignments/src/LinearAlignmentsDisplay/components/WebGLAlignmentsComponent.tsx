@@ -168,17 +168,14 @@ function canvasToGenomicCoords(
 function getCanvasCoords(
   e: React.MouseEvent,
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  canvasRectRef: React.RefObject<DOMRect | null>,
 ) {
   const canvas = canvasRef.current
   if (!canvas) {
     return undefined
   }
-  let rect = canvasRectRef.current
-  if (!rect) {
-    rect = canvas.getBoundingClientRect()
-    canvasRectRef.current = rect
-  }
+  // Always get fresh rect - getBoundingClientRect() is fast and avoids
+  // stale coordinates when canvas moves (e.g., during scroll)
+  const rect = canvas.getBoundingClientRect()
   return { canvasX: e.clientX - rect.left, canvasY: e.clientY - rect.top }
 }
 
@@ -340,8 +337,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     startHeight: 0,
   })
 
-  // Cache canvas bounding rect to avoid forced layout on every wheel event
-  const canvasRectRef = useRef<DOMRect | null>(null)
 
   const view = getContainingView(model) as LinearGenomeViewModel | undefined
   const viewId = view?.id
@@ -725,10 +720,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
   }, [])
 
-  // Invalidate cached rect when container resizes
-  useEffect(() => {
-    canvasRectRef.current = null
-  }, [measuredDims.width, measuredDims.height])
 
   // Refs for values used in wheel handler that we don't want as dependencies
   const maxYRef = useRef(maxY)
@@ -1120,8 +1111,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         !showCoverage ||
         canvasY > coverageHeight
       ) {
+        if (canvasY > coverageHeight) console.log(`[coverage] rejected: canvasY ${canvasY.toFixed(1)} > coverageHeight ${coverageHeight}`)
         return undefined
       }
+      console.log(`[coverage] hitTest: canvasY=${canvasY.toFixed(1)} < coverageHeight=${coverageHeight}`)
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
         return undefined
@@ -1337,10 +1330,15 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         !showSashimiArcs ||
         canvasY > coverageHeight
       ) {
+        if (widthRef.current === undefined) console.log('[sashimi] width undefined')
+        if (!showCoverage) console.log('[sashimi] coverage not shown')
+        if (!showSashimiArcs) console.log('[sashimi] arcs not shown')
+        if (canvasY > coverageHeight) console.log(`[sashimi] canvasY (${canvasY.toFixed(1)}) > coverageHeight (${coverageHeight})`)
         return undefined
       }
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
+        console.log('[sashimi] block not resolved for canvasX')
         return undefined
       }
       const { rpcData, bpRange, blockStartPx, blockWidth, refName } = resolved
@@ -1353,12 +1351,14 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         regionStart,
       } = rpcData
       if (numSashimiArcs === 0) {
+        console.log('[sashimi] No arcs in data')
         return undefined
       }
 
       // CPU-based Bezier curve picking (fast enough for hover)
       const pxPerBp = blockWidth / (bpRange[1] - bpRange[0])
       const bpStartOffset = bpRange[0] - regionStart
+      console.log(`[sashimi] hitTest: canvasX=${canvasX.toFixed(1)} canvasY=${canvasY.toFixed(1)} numArcs=${numSashimiArcs} pxPerBp=${pxPerBp.toFixed(6)} blockStartPx=${blockStartPx} blockWidth=${blockWidth}`)
 
       for (let i = 0; i < numSashimiArcs; i++) {
         const x1 = sashimiX1[i]!
@@ -1380,6 +1380,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const samplesPerBp = pxPerBp / 10 // Sample roughly every 10 pixels
         const steps = Math.max(16, Math.min(256, Math.ceil(arcWidthBp * samplesPerBp)))
         let hit = false
+        let minDist = Infinity
         for (let s = 0; s <= steps; s++) {
           const t = s / steps
           const mt = 1 - t
@@ -1393,11 +1394,16 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           const screenY = coverageHeight - yPx
           const dx = canvasX - screenX
           const dy = canvasY - screenY
-          if (dx * dx + dy * dy < hitTolerance * hitTolerance) {
+          const distSq = dx * dx + dy * dy
+          if (distSq < minDist) {
+            minDist = distSq
+          }
+          if (distSq < hitTolerance * hitTolerance) {
             hit = true
             break
           }
         }
+        console.log(`[sashimi ${i}] x1=${x1} x2=${x2} lineW=${lineWidth.toFixed(2)} tolerance=${hitTolerance.toFixed(1)} steps=${steps} minDist=${Math.sqrt(minDist).toFixed(1)} hit=${hit}`)
         if (hit) {
           const colorType = sashimiColorTypes[i]!
           const count = sashimiCounts[i]!
@@ -1422,7 +1428,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return
       }
 
-      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+      const coords = getCanvasCoords(e, canvasRef)
       if (!coords) {
         return
       }
@@ -1631,7 +1637,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+      const coords = getCanvasCoords(e, canvasRef)
       if (!coords) {
         return
       }
@@ -1847,7 +1853,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
+      const coords = getCanvasCoords(e, canvasRef)
       if (!coords) {
         return
       }
