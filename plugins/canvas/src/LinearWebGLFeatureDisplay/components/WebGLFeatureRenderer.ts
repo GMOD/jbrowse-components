@@ -155,32 +155,78 @@ void main() {
 }
 `
 
+// Max visible chevrons per intron line per frame - only need enough to cover
+// the viewport width (~screen_width / 25px spacing ≈ 80)
+const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
+
 // Chevron vertex shader - V-shaped strand indicators on introns
+// Uses line start/end as instance data and computes chevron positions in shader.
+// Only renders chevrons visible in the current viewport by computing which
+// chevron indices fall within the viewport bp range.
 const CHEVRON_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-in uint a_x;           // X offset from regionStart
+in uvec2 a_position;   // [startOffset, endOffset] from regionStart (same as line)
 in float a_y;          // centerY in pixels
 in float a_direction;  // -1 for <, 1 for >
 in uvec4 a_color;
 
-uniform vec3 u_bpRangeX;
+uniform vec3 u_bpRangeX;      // [bpStartHi, bpStartLo, viewportLengthBp]
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 uniform float u_scrollY;
+uniform float u_bpPerPx;
 
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
 
 void main() {
-  // Chevron: 4 vertices per chevron (2 lines forming < or >)
+  // Each instance is a line segment; vertices encode multiple chevrons
+  // 4 vertices per chevron (2 lines forming < or >)
+  int localChevronIndex = gl_VertexID / 4;
   int vid = gl_VertexID % 4;
 
-  uint absX = a_x + u_regionStart;
-  vec2 splitX = hpSplitUint(absX);
+  float lineLengthBp = float(a_position.y - a_position.x);
+  float lineWidthPx = lineLengthBp / u_bpPerPx;
+  float chevronSpacingPx = 25.0;
+
+  // Skip if line too small for any chevrons or no direction
+  if (a_direction == 0.0 || lineWidthPx < chevronSpacingPx * 0.5) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    v_color = vec4(0.0);
+    return;
+  }
+
+  // Compute total chevrons for the full line (uncapped)
+  int totalChevrons = max(1, int(floor(lineWidthPx / chevronSpacingPx)));
+  float bpSpacing = lineLengthBp / float(totalChevrons + 1);
+
+  // Find the viewport bp range relative to line start
+  float viewportStartBp = u_bpRangeX.x + u_bpRangeX.y - float(u_regionStart) - float(a_position.x);
+  float viewportEndBp = viewportStartBp + u_bpRangeX.z;
+
+  // Compute which chevron indices are visible in the viewport
+  // chevron i is at bp position: bpSpacing * (i + 1)
+  int firstVisible = max(0, int(floor(viewportStartBp / bpSpacing)) - 1);
+  int lastVisible = min(totalChevrons - 1, int(ceil(viewportEndBp / bpSpacing)));
+
+  int globalChevronIndex = firstVisible + localChevronIndex;
+
+  // Discard if outside visible range or beyond total
+  if (globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    v_color = vec4(0.0);
+    return;
+  }
+
+  // Compute chevron bp position along the line
+  float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
+  uint chevronAbsX = a_position.x + u_regionStart + uint(chevronOffsetBp);
+
+  vec2 splitX = hpSplitUint(chevronAbsX);
   float cx = hpToClipX(splitX, u_bpRangeX);
 
   float yPx = a_y - u_scrollY;
@@ -332,14 +378,6 @@ interface GPUBuffers {
 }
 
 // Store line data for dynamic chevron generation
-interface LineDataForChevrons {
-  positions: Uint32Array
-  ys: Float32Array
-  colors: Uint32Array
-  directions: Int8Array
-  count: number
-}
-
 export class WebGLFeatureRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
@@ -350,10 +388,10 @@ export class WebGLFeatureRenderer {
   private arrowProgram: WebGLProgram
 
   private buffersMap = new Map<number, GPUBuffers>()
-  private lineDataMap = new Map<number, LineDataForChevrons>()
   private glBuffersMap = new Map<number, WebGLBuffer[]>()
   private chevronVAOMap = new Map<number, WebGLVertexArrayObject>()
   private chevronGlBuffersMap = new Map<number, WebGLBuffer[]>()
+  private chevronLineCountMap = new Map<number, number>()
   private _bufferTarget: WebGLBuffer[] = []
 
   private rectUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -406,11 +444,10 @@ export class WebGLFeatureRenderer {
       'u_canvasHeight',
       'u_scrollY',
     ])
-    this.cacheUniforms(
-      this.chevronProgram,
-      this.chevronUniforms,
-      commonUniforms,
-    )
+    this.cacheUniforms(this.chevronProgram, this.chevronUniforms, [
+      ...commonUniforms,
+      'u_bpPerPx',
+    ])
     this.cacheUniforms(this.arrowProgram, this.arrowUniforms, commonUniforms)
 
     gl.enable(gl.BLEND)
@@ -512,22 +549,33 @@ export class WebGLFeatureRenderer {
       gl.bindVertexArray(null)
     }
 
-    // Store line data for dynamic chevron generation at render time
-    const lineData: LineDataForChevrons | null =
-      data.numLines > 0
-        ? {
-            positions: data.linePositions,
-            ys: data.lineYs,
-            colors: data.lineColors,
-            directions: data.lineDirections,
-            count: data.numLines,
-          }
-        : null
+    // Upload chevron VAO from line data (chevrons computed in shader)
+    this.deleteChevronBuffersForRegion(regionNumber)
+    if (data.numLines > 0) {
+      const savedBufferTarget = this._bufferTarget
+      this._bufferTarget = []
+      const chevronVAO = gl.createVertexArray()!
+      gl.bindVertexArray(chevronVAO)
+      this.uploadUintBuffer(
+        this.chevronProgram,
+        'a_position',
+        data.linePositions,
+        2,
+      )
+      this.uploadFloatBuffer(this.chevronProgram, 'a_y', data.lineYs, 1)
+      this.uploadFloatBuffer(
+        this.chevronProgram,
+        'a_direction',
+        new Float32Array(data.lineDirections),
+        1,
+      )
+      this.uploadColorBuffer(this.chevronProgram, 'a_color', data.lineColors)
+      gl.bindVertexArray(null)
 
-    if (lineData) {
-      this.lineDataMap.set(regionNumber, lineData)
-    } else {
-      this.lineDataMap.delete(regionNumber)
+      this.chevronVAOMap.set(regionNumber, chevronVAO)
+      this.chevronGlBuffersMap.set(regionNumber, this._bufferTarget)
+      this.chevronLineCountMap.set(regionNumber, data.numLines)
+      this._bufferTarget = savedBufferTarget
     }
 
     // Upload arrows
@@ -711,19 +759,32 @@ export class WebGLFeatureRenderer {
         gl.drawArraysInstanced(gl.LINES, 0, 2, buffers.lineCount)
       }
 
-      // Generate and draw chevrons dynamically
-      const lineData = this.lineDataMap.get(block.regionNumber)
-      if (lineData && lineData.count > 0) {
-        this.renderDynamicChevronsForBlock(
-          block.regionNumber,
-          regionStart,
-          block.bpRangeX,
+      // Draw chevrons (computed in shader from line data)
+      const chevronVAO = this.chevronVAOMap.get(block.regionNumber)
+      const chevronLineCount = this.chevronLineCountMap.get(block.regionNumber)
+      if (chevronVAO && chevronLineCount && chevronLineCount > 0) {
+        gl.useProgram(this.chevronProgram)
+        gl.uniform3f(
+          this.chevronUniforms.u_bpRangeX!,
           bpStartHi,
           bpStartLo,
           clippedLengthBp,
-          scissorW,
-          canvasHeight,
-          scrollY,
+        )
+        gl.uniform1ui(
+          this.chevronUniforms.u_regionStart!,
+          Math.floor(regionStart),
+        )
+        gl.uniform1f(this.chevronUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.chevronUniforms.u_canvasWidth!, scissorW)
+        gl.uniform1f(this.chevronUniforms.u_scrollY!, scrollY)
+        gl.uniform1f(this.chevronUniforms.u_bpPerPx!, bpPerPx)
+
+        gl.bindVertexArray(chevronVAO)
+        gl.drawArraysInstanced(
+          gl.LINES,
+          0,
+          MAX_VISIBLE_CHEVRONS_PER_LINE * 4,
+          chevronLineCount,
         )
       }
 
@@ -773,119 +834,6 @@ export class WebGLFeatureRenderer {
     gl.viewport(0, 0, canvasWidth, canvasHeight)
   }
 
-  private renderDynamicChevronsForBlock(
-    regionNumber: number,
-    regionStart: number,
-    bpRangeX: [number, number],
-    bpStartHi: number,
-    bpStartLo: number,
-    regionLengthBp: number,
-    blockWidth: number,
-    canvasHeight: number,
-    scrollY: number,
-  ) {
-    const gl = this.gl
-    const lineData = this.lineDataMap.get(regionNumber)
-    if (!lineData) {
-      return
-    }
-
-    const CHEVRON_PIXEL_SPACING = 25
-    const bpPerPx = (bpRangeX[1] - bpRangeX[0]) / blockWidth
-
-    const chevronXs: number[] = []
-    const chevronYs: number[] = []
-    const chevronDirections: number[] = []
-    const chevronColors: number[] = []
-
-    for (let i = 0; i < lineData.count; i++) {
-      const direction = lineData.directions[i]
-      if (direction === undefined || direction === 0) {
-        continue
-      }
-
-      const startOffset = lineData.positions[i * 2]!
-      const endOffset = lineData.positions[i * 2 + 1]!
-      const y = lineData.ys[i]!
-      const color = lineData.colors[i]!
-
-      const startBp = regionStart + startOffset
-      const endBp = regionStart + endOffset
-      const lineWidthPx = (endBp - startBp) / bpPerPx
-
-      if (lineWidthPx < CHEVRON_PIXEL_SPACING * 0.5) {
-        continue
-      }
-
-      const numChevrons = Math.max(
-        1,
-        Math.floor(lineWidthPx / CHEVRON_PIXEL_SPACING),
-      )
-      const bpSpacing = (endBp - startBp) / (numChevrons + 1)
-
-      for (let j = 1; j <= numChevrons; j++) {
-        const chevronBp = startBp + bpSpacing * j
-        chevronXs.push(Math.floor(chevronBp - regionStart))
-        chevronYs.push(y)
-        chevronDirections.push(direction)
-        chevronColors.push(color)
-      }
-    }
-
-    if (chevronXs.length === 0) {
-      return
-    }
-
-    this.deleteChevronBuffersForRegion(regionNumber)
-    this._bufferTarget = []
-
-    const chevronVAO = gl.createVertexArray()!
-    gl.bindVertexArray(chevronVAO)
-    this.uploadUintBuffer(
-      this.chevronProgram,
-      'a_x',
-      new Uint32Array(chevronXs),
-      1,
-    )
-    this.uploadFloatBuffer(
-      this.chevronProgram,
-      'a_y',
-      new Float32Array(chevronYs),
-      1,
-    )
-    this.uploadFloatBuffer(
-      this.chevronProgram,
-      'a_direction',
-      new Float32Array(chevronDirections),
-      1,
-    )
-    this.uploadColorBuffer(
-      this.chevronProgram,
-      'a_color',
-      new Uint32Array(chevronColors),
-    )
-    gl.bindVertexArray(null)
-
-    this.chevronVAOMap.set(regionNumber, chevronVAO)
-    this.chevronGlBuffersMap.set(regionNumber, this._bufferTarget)
-
-    // Draw chevrons
-    gl.useProgram(this.chevronProgram)
-    gl.uniform3f(
-      this.chevronUniforms.u_bpRangeX!,
-      bpStartHi,
-      bpStartLo,
-      regionLengthBp,
-    )
-    gl.uniform1ui(this.chevronUniforms.u_regionStart!, Math.floor(regionStart))
-    gl.uniform1f(this.chevronUniforms.u_canvasHeight!, canvasHeight)
-    gl.uniform1f(this.chevronUniforms.u_canvasWidth!, blockWidth)
-    gl.uniform1f(this.chevronUniforms.u_scrollY!, scrollY)
-
-    gl.bindVertexArray(chevronVAO)
-    gl.drawArraysInstanced(gl.LINES, 0, 4, chevronXs.length)
-  }
-
   pruneStaleRegions(activeRegionNumbers: Set<number>) {
     for (const regionNumber of [...this.buffersMap.keys()]) {
       if (!activeRegionNumbers.has(regionNumber)) {
@@ -920,7 +868,6 @@ export class WebGLFeatureRenderer {
       }
       this.buffersMap.delete(regionNumber)
     }
-    this.lineDataMap.delete(regionNumber)
     this.deleteChevronBuffersForRegion(regionNumber)
   }
 
@@ -938,6 +885,7 @@ export class WebGLFeatureRenderer {
       gl.deleteVertexArray(chevronVAO)
       this.chevronVAOMap.delete(regionNumber)
     }
+    this.chevronLineCountMap.delete(regionNumber)
   }
 
   destroy() {
