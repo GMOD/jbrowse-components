@@ -2104,9 +2104,7 @@ export class WebGLRenderer {
     // Compute high-precision split domain for reads (12-bit split approach).
     // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
     // reads would "stick" at integer bp positions and snap when crossing boundaries.
-    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
-      state.bpRangeX[0],
-    )
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     // Draw reads
@@ -2132,11 +2130,7 @@ export class WebGLRenderer {
         domainOffset[0],
         domainOffset[1],
       )
-      gl.uniform2f(
-        this.gapUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
+      gl.uniform2f(this.gapUniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
       gl.uniform1f(this.gapUniforms.u_featureHeight!, state.featureHeight)
       gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
       gl.uniform1f(this.gapUniforms.u_coverageOffset!, coverageOffset)
@@ -2699,7 +2693,6 @@ export class WebGLRenderer {
       gl.bindVertexArray(this.buffers.indicatorVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
     }
-
   }
 
   private renderArcs(
@@ -2751,9 +2744,7 @@ export class WebGLRenderer {
     if (this.buffers.arcLineVAO && this.buffers.arcLineCount > 0) {
       gl.useProgram(this.arcLineProgram)
 
-      const [bpStartHi, bpStartLo] = splitPositionWithFrac(
-        state.bpRangeX[0],
-      )
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
       const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
       gl.uniform3f(
@@ -2843,7 +2834,6 @@ export class WebGLRenderer {
       this.buffers.sashimiCount,
     )
     gl.bindVertexArray(null)
-    this.pickingDirty = true
   }
 
   private renderCloud(state: RenderState) {
@@ -2858,9 +2848,7 @@ export class WebGLRenderer {
 
     const { canvasHeight } = state
 
-    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
-      state.bpRangeX[0],
-    )
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     gl.useProgram(this.cloudProgram)

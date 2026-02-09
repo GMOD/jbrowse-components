@@ -667,10 +667,7 @@ function computeModificationCoverage(
   }
 }
 
-function computeSashimiJunctions(
-  gaps: GapData[],
-  regionStart: number,
-) {
+function computeSashimiJunctions(gaps: GapData[], regionStart: number) {
   const junctions = new Map<
     string,
     { start: number; end: number; fwd: number; rev: number }
@@ -694,7 +691,12 @@ function computeSashimiJunctions(
   }
 
   // Emit separate arcs for forward and reverse strands at each junction
-  const arcs: { start: number; end: number; count: number; colorType: number }[] = []
+  const arcs: {
+    start: number
+    end: number
+    count: number
+    colorType: number
+  }[] = []
   for (const j of junctions.values()) {
     if (j.fwd > 0) {
       arcs.push({ start: j.start, end: j.end, count: j.fwd, colorType: 0 })
@@ -1302,7 +1304,9 @@ export async function executeRenderWebGLPileupData({
     let bin = tooltipData.get(posOffset)
     if (!bin) {
       // Find depth at this position from coverage bins
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: mm.position,
@@ -1350,7 +1354,9 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, data] of insertionsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1415,7 +1421,9 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of deletionsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1435,7 +1443,9 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of skipsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1470,7 +1480,9 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of softclipsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1505,7 +1517,9 @@ export async function executeRenderWebGLPileupData({
   for (const [posOffset, lengths] of hardclipsByPos) {
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = {
         position: regionStart + posOffset,
@@ -1564,7 +1578,6 @@ export async function executeRenderWebGLPileupData({
     numModCovSegments: modCoverage.count,
 
     ...sashimi,
-    sashimiRefName: region.refName,
 
     // Convert Map to plain object for RPC serialization
     tooltipData: Object.fromEntries(tooltipData),

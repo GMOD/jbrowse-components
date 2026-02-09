@@ -171,6 +171,10 @@ out vec4 v_color;
 out float v_dist;
 out float v_lineWidth;
 
+// CRITICAL: This Bezier curve formula MUST match the CPU version in:
+// WebGLAlignmentsComponent.tsx:hitTestSashimiArc (around line 1389)
+// If either implementation changes, the other MUST be updated to match,
+// otherwise picking and rendering will be out of sync.
 vec2 evalCurve(float t) {
   float mt = 1.0 - t;
   float mt2 = mt * mt;

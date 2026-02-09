@@ -1376,6 +1376,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const lineWidth = rpcData.sashimiScores[i]!
         const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
 
+        // CRITICAL: This Bezier curve formula MUST match the GPU version in:
+        // shaders/arcShaders.ts:evalCurve (around line 180)
+        // If either implementation changes, the other MUST be updated to match,
+        // otherwise picking and rendering will be out of sync.
         // sample the bezier curve with more samples for better accuracy
         const steps = 64
         let hit = false
