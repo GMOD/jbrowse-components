@@ -1130,10 +1130,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         !showCoverage ||
         canvasY > coverageHeight
       ) {
-        if (canvasY > coverageHeight) console.log(`[coverage] rejected: canvasY ${canvasY.toFixed(1)} > coverageHeight ${coverageHeight}`)
         return undefined
       }
-      console.log(`[coverage] hitTest: canvasY=${canvasY.toFixed(1)} < coverageHeight=${coverageHeight}`)
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
         return undefined
@@ -1349,15 +1347,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         !showSashimiArcs ||
         canvasY > coverageHeight
       ) {
-        if (widthRef.current === undefined) console.log('[sashimi] width undefined')
-        if (!showCoverage) console.log('[sashimi] coverage not shown')
-        if (!showSashimiArcs) console.log('[sashimi] arcs not shown')
-        if (canvasY > coverageHeight) console.log(`[sashimi] canvasY (${canvasY.toFixed(1)}) > coverageHeight (${coverageHeight})`)
         return undefined
       }
       const resolved = resolveBlockForCanvasX(canvasX)
       if (!resolved) {
-        console.log('[sashimi] block not resolved for canvasX')
         return undefined
       }
       const { rpcData, bpRange, blockStartPx, blockWidth, refName } = resolved
@@ -1370,14 +1363,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         regionStart,
       } = rpcData
       if (numSashimiArcs === 0) {
-        console.log('[sashimi] No arcs in data')
         return undefined
       }
 
       // CPU-based Bezier curve picking (fast enough for hover)
       const pxPerBp = blockWidth / (bpRange[1] - bpRange[0])
       const bpStartOffset = bpRange[0] - regionStart
-      console.log(`[sashimi] hitTest: canvasX=${canvasX.toFixed(1)} canvasY=${canvasY.toFixed(1)} numArcs=${numSashimiArcs} pxPerBp=${pxPerBp.toFixed(6)} blockStartPx=${blockStartPx} blockWidth=${blockWidth}`)
 
       for (let i = 0; i < numSashimiArcs; i++) {
         const x1 = sashimiX1[i]!
@@ -1422,7 +1413,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             break
           }
         }
-        console.log(`[sashimi ${i}] x1=${x1} x2=${x2} lineW=${lineWidth.toFixed(2)} tolerance=${hitTolerance.toFixed(1)} steps=${steps} minDist=${Math.sqrt(minDist).toFixed(1)} hit=${hit}`)
         if (hit) {
           const colorType = sashimiColorTypes[i]!
           const count = sashimiCounts[i]!
