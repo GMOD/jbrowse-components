@@ -140,11 +140,13 @@ const CoverageTooltipContents = forwardRef<
   { bin: CoverageTooltipBin; refName?: string }
 >(function CoverageTooltipContents2({ bin, refName }, ref) {
   const { classes } = useStyles()
-  const { position, depth, snps, deletions, interbase } = bin
+  const { position, depth, snps, deletions, interbase, modifications } = bin
   const location = formatLocation(refName, position)
 
   const snpEntries = Object.entries(snps)
   const interbaseEntries = Object.entries(interbase)
+  const modEntries = modifications ? Object.entries(modifications) : []
+  const hasModifications = modEntries.length > 0
 
   return (
     <div ref={ref}>
@@ -167,17 +169,37 @@ const CoverageTooltipContents = forwardRef<
             <td />
             <td />
           </tr>
-          {snpEntries.map(([base, data]) => (
-            <tr key={base}>
-              <td />
-              <td>{base.toUpperCase()}</td>
-              <td className={classes.td}>{data.count}</td>
-              <td>{pct(data.count, depth)}</td>
-              <td>
-                {data.fwd}(+) {data.rev}(-)
-              </td>
-            </tr>
-          ))}
+          {hasModifications
+            ? modEntries.map(([, data]) => (
+                <tr key={data.name}>
+                  <td>
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        background: data.color,
+                      }}
+                    />
+                  </td>
+                  <td>{data.name}</td>
+                  <td className={classes.td}>{data.count}</td>
+                  <td>{pct(data.count, depth)}</td>
+                  <td>
+                    {data.fwd}(+) {data.rev}(-)
+                  </td>
+                </tr>
+              ))
+            : snpEntries.map(([base, data]) => (
+                <tr key={base}>
+                  <td />
+                  <td>{base.toUpperCase()}</td>
+                  <td className={classes.td}>{data.count}</td>
+                  <td>{pct(data.count, depth)}</td>
+                  <td>
+                    {data.fwd}(+) {data.rev}(-)
+                  </td>
+                </tr>
+              ))}
           {deletions && (
             <tr>
               <td />

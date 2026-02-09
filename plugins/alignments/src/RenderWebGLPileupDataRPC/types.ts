@@ -56,6 +56,17 @@ export interface CoverageTooltipBin {
       topSeq?: string
     }
   >
+  // Modification data: modType -> { count, fwd, rev, color, name }
+  modifications?: Record<
+    string,
+    {
+      count: number
+      fwd: number
+      rev: number
+      color: string
+      name: string
+    }
+  >
 }
 
 export interface WebGLPileupDataResult {
@@ -168,6 +179,9 @@ export interface WebGLPileupDataResult {
   numSnpSegments: number
   numNoncovSegments: number
   numIndicators: number
+
+  // All detected modification types in this region (detected during feature processing)
+  detectedModifications: string[]
 
   // Simplex modification types detected in this region (detected during feature processing)
   simplexModifications: string[]

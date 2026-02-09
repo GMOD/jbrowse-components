@@ -231,6 +231,11 @@ export default function stateModelFactory(
          * For backwards compatibility: migration from old LinearSNPCoverageDisplay
          */
         jexlFilters: types.optional(types.array(types.string), []),
+        /**
+         * #property
+         * User override: maximum byte size allowed (set by "Force load")
+         */
+        userByteSizeLimit: types.maybe(types.number),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -276,6 +281,7 @@ export default function stateModelFactory(
       isLoading: false,
       statusMessage: undefined as string | undefined,
       error: null as Error | null,
+      featureDensityStats: undefined as { bytes?: number; featureDensity?: number } | undefined,
       webglRef: null as unknown,
       currentBpRangeX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
@@ -284,7 +290,6 @@ export default function stateModelFactory(
       selectedFeatureIndex: -1,
       colorTagMap: {} as Record<string, string>,
       tagsReady: true,
-      forceLoadLargeRegions: false,
       // From SharedModificationsMixin
       visibleModifications: observable.map<string, any>({}),
       simplexModifications: new Set<string>(),
@@ -539,10 +544,7 @@ export default function stateModelFactory(
        * Returns { ok: true } if renderable, or { ok: false, reason: string } if too large.
        * Pass forceLoad=true to skip the size check (used when user explicitly approves).
        */
-      async checkRegionRenderable(region: Region, forceLoad = false) {
-        if (forceLoad) {
-          return { ok: true }
-        }
+      async checkRegionRenderable(region: Region) {
         try {
           const track = getContainingTrack(self)
           const adapterConfig = getConf(track, 'adapter')
@@ -570,10 +572,15 @@ export default function stateModelFactory(
             return { ok: true } // No stats, allow fetch
           }
 
+          // Store stats for potential force load action
+          self.featureDensityStats = stats
+
           const { bytes = 0, fetchSizeLimit } = stats
-          if (fetchSizeLimit && bytes > fetchSizeLimit) {
+          // Use user override if set, otherwise use the default fetch size limit
+          const limit = self.userByteSizeLimit ?? fetchSizeLimit
+          if (limit && bytes > limit) {
             const mb = (bytes / (1024 * 1024)).toFixed(2)
-            const limitMb = (fetchSizeLimit / (1024 * 1024)).toFixed(2)
+            const limitMb = (limit / (1024 * 1024)).toFixed(2)
             return {
               ok: false,
               reason: `Requested too much data (${mb} Mb). Limit is ${limitMb} Mb.`,
@@ -709,13 +716,18 @@ export default function stateModelFactory(
         const next = new Map(self.rpcDataMap)
         if (data) {
           next.set(regionNumber, data)
+          // Update visible modifications from newly detected modifications
+          if (data.detectedModifications?.length > 0) {
+            self.updateVisibleModifications(data.detectedModifications)
+          }
         } else {
           next.delete(regionNumber)
         }
         self.rpcDataMap = next
+
         // Update maxY to be max across all regions
         let maxY = 0
-        for (const d of self.rpcDataMap.values()) {
+        for (const d of next.values()) {
           if (d.maxY > maxY) {
             maxY = d.maxY
           }
@@ -871,8 +883,10 @@ export default function stateModelFactory(
         }
       },
 
-      toggleForceLoadLargeRegions() {
-        self.forceLoadLargeRegions = !self.forceLoadLargeRegions
+      setFeatureDensityStatsLimit(stats?: { bytes?: number; featureDensity?: number }) {
+        if (stats?.bytes) {
+          self.userByteSizeLimit = stats.bytes
+        }
       },
 
       updateVisibleModifications(uniqueModifications: string[]) {
@@ -1202,7 +1216,7 @@ export default function stateModelFactory(
               // Validate all visible regions are renderable before fetching
               try {
                 const results = await Promise.all(
-                  regions.map(r => self.checkRegionRenderable(r, self.forceLoadLargeRegions)),
+                  regions.map(r => self.checkRegionRenderable(r)),
                 )
                 const failedCheck = results.find(r => !r.ok)
                 if (failedCheck && failedCheck.reason) {

@@ -25,6 +25,7 @@ import { detectSimplexModifications } from '../ModificationParser/detectSimplexM
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
+import { getModificationName } from '../shared/modificationData.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
 import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
@@ -84,6 +85,7 @@ interface ModificationEntry {
   featureId: string
   position: number // absolute genomic position
   base: string // canonical base (e.g., 'C' for 5mC)
+  modType: string // modification type code (e.g., 'm', 'h')
   isSimplex: boolean
   strand: number // -1=reverse, 1=forward
   r: number
@@ -737,12 +739,6 @@ function computeModificationCoverage(
     >
   >()
 
-  // Debug: track per-position feature IDs and strand info
-  const debugFeaturesByPosition = new Map<
-    number,
-    { featureId: string; strand: number }[]
-  >()
-
   for (const mod of modifications) {
     if (mod.position < regionStart) {
       continue
@@ -766,14 +762,6 @@ function computeModificationCoverage(
       colorMap.set(key, entry)
     }
     entry.count++
-
-    // Debug: track which features and strands contribute to each position
-    let debugEntries = debugFeaturesByPosition.get(mod.position)
-    if (!debugEntries) {
-      debugEntries = []
-      debugFeaturesByPosition.set(mod.position, debugEntries)
-    }
-    debugEntries.push({ featureId: mod.featureId, strand: mod.strand })
   }
 
   // Build stacked segments using modifiable/detectable formula
@@ -857,37 +845,6 @@ function computeModificationCoverage(
         (modifiable / depthAtPosition) * (entry.count / detectable)
       const height = modFraction * (depthAtPosition / regionMaxDepth)
 
-      // Debug logging for first 5 positions
-      if (segments.length < 5) {
-        const debugEntries = debugFeaturesByPosition.get(position) ?? []
-        const uniqueFeatureIds = new Set(debugEntries.map(e => e.featureId))
-        const fwdModCount = debugEntries.filter(e => e.strand === 1).length
-        const revModCount = debugEntries.filter(e => e.strand === -1).length
-        const fwdDepthHere = fwdDepths
-          ? (fwdDepths[binIdx] ?? 0)
-          : 'N/A'
-        const revDepthHere = revDepths
-          ? (revDepths[binIdx] ?? 0)
-          : 'N/A'
-        console.log(
-          `[MOD_COV_DEBUG] pos=${position} base=${entry.base} refbase=${refbase} ` +
-            `count=${entry.count} depth=${depthAtPosition} modifiable=${modifiable} ` +
-            `detectable=${detectable} modFraction=${modFraction.toFixed(4)} ` +
-            `height=${height.toFixed(4)} regionMaxDepth=${regionMaxDepth} ` +
-            `totalFeatureEntries=${debugEntries.length} uniqueFeatures=${uniqueFeatureIds.size} ` +
-            `isSimplex=${entry.isSimplex} baseCounts=${JSON.stringify(baseCounts)} ` +
-            `fwdMods=${fwdModCount} revMods=${revModCount} ` +
-            `fwdDepth=${fwdDepthHere} revDepth=${revDepthHere} ` +
-            `strandBaseCounts=${JSON.stringify(strandBaseCounts)} ` +
-            `binIdx=${binIdx} depthStartOffset=${depthStartOffset}`,
-        )
-        if (entry.count > depthAtPosition) {
-          console.warn(
-            `[MOD_COV_OVERCOUNT] count(${entry.count}) > depth(${depthAtPosition}) at pos ${position}!`,
-          )
-        }
-      }
-
       if (!Number.isNaN(height)) {
         segments.push({
           position,
@@ -899,44 +856,6 @@ function computeModificationCoverage(
         })
         yOffset += height
       }
-    }
-  }
-
-  // Debug summary
-  const maxHeight = segments.reduce((max, s) => Math.max(max, s.yOffset + s.height), 0)
-  const overcountPositions = [...byPosition.entries()].filter(([pos]) => {
-    const bIdx = Math.floor(pos - regionStart - depthStartOffset)
-    const depth = depths[bIdx] ?? 0
-    const posColorMap = byPosition.get(pos)!
-    const totalCount = [...posColorMap.values()].reduce((sum, e) => sum + e.count, 0)
-    return totalCount > depth
-  })
-  console.log(
-    `[MOD_COV_SUMMARY] total modifications=${modifications.length} ` +
-      `positions with mods=${byPosition.size} segments=${segments.length} ` +
-      `maxStackedHeight=${maxHeight.toFixed(4)} regionMaxDepth=${regionMaxDepth} ` +
-      `overcountPositions=${overcountPositions.length}`,
-  )
-  if (overcountPositions.length > 0) {
-    for (const [pos] of overcountPositions.slice(0, 3)) {
-      const bIdx = Math.floor(pos - regionStart - depthStartOffset)
-      const depth = depths[bIdx] ?? 0
-      const posColorMap = byPosition.get(pos)!
-      const totalCount = [...posColorMap.values()].reduce(
-        (sum, e) => sum + e.count,
-        0,
-      )
-      const debugEntries = debugFeaturesByPosition.get(pos) ?? []
-      const fwdModCount = debugEntries.filter(e => e.strand === 1).length
-      const revModCount = debugEntries.filter(e => e.strand === -1).length
-      const fwdD = fwdDepths ? (fwdDepths[bIdx] ?? 0) : 'N/A'
-      const revD = revDepths ? (revDepths[bIdx] ?? 0) : 'N/A'
-      console.warn(
-        `[MOD_COV_OVERCOUNT_DETAIL] pos=${pos} totalModCount=${totalCount} depth=${depth} ` +
-          `fwdMods=${fwdModCount} revMods=${revModCount} fwdDepth=${fwdD} revDepth=${revD} ` +
-          `depthsLen=${depths.length} binIdx=${bIdx} ` +
-          `inRange=${bIdx >= 0 && bIdx < depths.length}`,
-      )
     }
   }
 
@@ -1217,30 +1136,38 @@ export async function executeRenderWebGLPileupData({
         }
       }
 
-      // Extract modifications from MM tag (only when color by modifications)
-      if (colorBy?.type === 'modifications') {
-        const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
-        if (mmTag) {
-          const cigarString = feature.get('CIGAR') as string | undefined
-          if (cigarString) {
-            const cigarOps = parseCigar2(cigarString)
-            const modThreshold = (colorBy.modifications?.threshold ?? 10) / 100
+      // Always scan for modifications to detect what's available (for menu)
+      // but only add to rendering data if colorBy is set to modifications
+      const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
+      if (mmTag) {
+        const cigarString = feature.get('CIGAR') as string | undefined
+        if (cigarString) {
+          const cigarOps = parseCigar2(cigarString)
 
-            // Parse mod positions to detect simplex modifications
-            const fstrand = feature.get('strand') as -1 | 0 | 1
-            const seq = feature.get('seq') as string | undefined
-            const simplexSet = seq
-              ? detectSimplexModifications(getModPositions(mmTag, seq, fstrand))
-              : new Set<string>()
+          // Parse mod positions to detect simplex modifications
+          const fstrand = feature.get('strand') as -1 | 0 | 1
+          const seq = feature.get('seq') as string | undefined
+          const simplexSet = seq
+            ? detectSimplexModifications(getModPositions(mmTag, seq, fstrand))
+            : new Set<string>()
 
-            const mods = getMaxProbModAtEachPosition(feature, cigarOps)
-            if (mods) {
-              // sparse array - use forEach
-              // eslint-disable-next-line unicorn/no-array-for-each
-              mods.forEach(({ prob, type, base }, refPos) => {
-                if (prob < modThreshold) {
-                  return
-                }
+          const mods = getMaxProbModAtEachPosition(feature, cigarOps)
+          if (mods) {
+            const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
+
+            // sparse array - use forEach
+            // eslint-disable-next-line unicorn/no-array-for-each
+            mods.forEach(({ prob, type, base }, refPos) => {
+              // Always track detected modification type (for menu)
+              detectedModifications.add(type)
+
+              // Track simplex modifications
+              if (simplexSet.has(type)) {
+                detectedSimplexModifications.add(type)
+              }
+
+              // Only add to rendering data if color by modifications and above threshold
+              if (colorBy?.type === 'modifications' && prob >= modThreshold) {
                 const color = getColorForModification(type)
                 const [r, g, b] = parseRgbColor(color)
                 const alpha = Math.min(
@@ -1251,6 +1178,7 @@ export async function executeRenderWebGLPileupData({
                   featureId,
                   position: featureStart + refPos,
                   base: base.toUpperCase(),
+                  modType: type,
                   isSimplex: simplexSet.has(type),
                   strand: strand === -1 ? -1 : 1,
                   r,
@@ -1258,14 +1186,8 @@ export async function executeRenderWebGLPileupData({
                   b,
                   a: alpha,
                 })
-                // Track detected modification type
-                detectedModifications.add(type)
-                // Track simplex modifications
-                if (simplexSet.has(type)) {
-                  detectedSimplexModifications.add(type)
-                }
-              })
-            }
+              }
+            })
           }
         }
       }
@@ -1303,6 +1225,7 @@ export async function executeRenderWebGLPileupData({
                     featureId,
                     position: j,
                     base: 'C',
+                    modType: 'm',
                     isSimplex: false,
                     strand: methStrand,
                     r: 255,
@@ -1316,6 +1239,7 @@ export async function executeRenderWebGLPileupData({
                     featureId,
                     position: j,
                     base: 'C',
+                    modType: 'm',
                     isSimplex: false,
                     strand: methStrand,
                     r: 0,
@@ -1330,6 +1254,7 @@ export async function executeRenderWebGLPileupData({
                   featureId,
                   position: j,
                   base: 'C',
+                  modType: 'm',
                   isSimplex: false,
                   strand: strand === -1 ? -1 : 1,
                   r: 0,
@@ -1349,6 +1274,7 @@ export async function executeRenderWebGLPileupData({
                     featureId,
                     position: j + 1,
                     base: 'C',
+                    modType: 'h',
                     isSimplex: false,
                     strand: methStrand,
                     r: 255,
@@ -1363,6 +1289,7 @@ export async function executeRenderWebGLPileupData({
                     featureId,
                     position: j + 1,
                     base: 'C',
+                    modType: 'h',
                     isSimplex: false,
                     strand: methStrand,
                     r: 128,
@@ -1899,6 +1826,49 @@ export async function executeRenderWebGLPileupData({
     bin.interbase.hardclip = { count: lengths.length, minLen, maxLen, avgLen }
   }
 
+  // Process modifications for tooltip data
+  if (modifications.length > 0) {
+    for (const mod of modifications) {
+      if (mod.position < regionStart) {
+        continue
+      }
+      const posOffset = mod.position - regionStart
+      let bin = tooltipData.get(posOffset)
+      if (!bin) {
+        const binIdx = Math.floor(
+          (posOffset - coverage.startOffset) / coverage.binSize,
+        )
+        const depth = coverage.depths[binIdx] ?? 0
+        bin = {
+          position: mod.position,
+          depth,
+          snps: {},
+          interbase: {},
+        }
+        tooltipData.set(posOffset, bin)
+      }
+      if (!bin.modifications) {
+        bin.modifications = {}
+      }
+      const modKey = mod.modType
+      if (!bin.modifications[modKey]) {
+        bin.modifications[modKey] = {
+          count: 0,
+          fwd: 0,
+          rev: 0,
+          color: getColorForModification(mod.modType),
+          name: getModificationName(mod.modType),
+        }
+      }
+      bin.modifications[modKey].count++
+      if (mod.strand === 1) {
+        bin.modifications[modKey].fwd++
+      } else {
+        bin.modifications[modKey].rev++
+      }
+    }
+  }
+
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
   const result: WebGLPileupDataResult = {
@@ -1957,6 +1927,9 @@ export async function executeRenderWebGLPileupData({
     numModifications: modificationArrays.modificationPositions.length,
     numSnpSegments: snpCoverage.count,
     numNoncovSegments: noncovCoverage.segmentCount,
+
+    // All detected modification types in this region
+    detectedModifications: Array.from(detectedModifications),
 
     // Simplex modification types detected in this region
     simplexModifications: Array.from(detectedSimplexModifications),

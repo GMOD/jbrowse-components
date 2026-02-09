@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import {
   getContainingTrack,
   getContainingView,
@@ -9,7 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
-import { useTheme } from '@mui/material'
+import { Button, useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -20,7 +19,9 @@ import {
   getInsertionRectWidthPx,
   getInsertionType,
 } from '../model.ts'
+import BlockMsg from './BlockMsg.tsx'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import LoadingOverlay from './LoadingOverlay.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import {
@@ -1466,23 +1467,26 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     const isTooLarge = error.message.includes('too much data')
     return (
       <div style={{ padding: 16 }}>
-        <div style={{ color: '#c00', marginBottom: 8 }}>Error: {error.message}</div>
-        {isTooLarge && (
-          <button
-            onClick={() => model.toggleForceLoadLargeRegions()}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#f0ad4e',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            Force Load Anyway
-          </button>
-        )}
+        <BlockMsg
+          severity="error"
+          message={error.message}
+          action={
+            isTooLarge && (
+              <Button
+                onClick={() => {
+                  if (model.featureDensityStats) {
+                    model.setFeatureDensityStatsLimit(model.featureDensityStats)
+                    model.reload()
+                  }
+                }}
+                size="small"
+                color="inherit"
+              >
+                Force load
+              </Button>
+            )
+          }
+        />
       </div>
     )
   }
@@ -1607,21 +1611,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         />
       ) : null}
 
-      {model.showLoading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(255,255,255,0.9)',
-            padding: '8px 16px',
-            borderRadius: 4,
-          }}
-        >
-          <LoadingEllipses message={statusMessage || 'Loading'} />
-        </div>
-      )}
+      <LoadingOverlay statusMessage={statusMessage} isVisible={model.showLoading} />
     </div>
   )
 })
