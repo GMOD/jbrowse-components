@@ -145,7 +145,7 @@ export default function stateModelFactory(
             const blockRegionNumber = block.regionNumber ?? 0
 
             const prev = regions[regions.length - 1]
-            if (prev && prev.regionNumber === blockRegionNumber) {
+            if (prev?.regionNumber === blockRegionNumber) {
               prev.end = bpEnd
               prev.screenEndPx = clippedScreenEnd
             } else {
@@ -226,8 +226,7 @@ export default function stateModelFactory(
         for (const vr of visibleRegions) {
           const loaded = self.loadedRegions.get(vr.regionNumber)
           if (
-            !loaded ||
-            loaded.refName !== vr.refName ||
+            loaded?.refName !== vr.refName ||
             vr.start < loaded.start ||
             vr.end > loaded.end
           ) {
@@ -408,8 +407,7 @@ export default function stateModelFactory(
                   for (const vr of visibleRegions) {
                     const loaded = self.loadedRegions.get(vr.regionNumber)
                     if (
-                      loaded &&
-                      loaded.refName === vr.refName &&
+                      loaded?.refName === vr.refName &&
                       vr.start >= loaded.start &&
                       vr.end <= loaded.end
                     ) {

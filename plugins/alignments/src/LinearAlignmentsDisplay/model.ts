@@ -362,7 +362,7 @@ export default function stateModelFactory(
 
             // Merge with previous region if same regionNumber
             const prev = regions[regions.length - 1]
-            if (prev && prev.regionNumber === blockRegionNumber) {
+            if (prev?.regionNumber === blockRegionNumber) {
               prev.end = bpEnd
               prev.screenEndPx = clippedScreenEnd
             } else {
@@ -555,8 +555,7 @@ export default function stateModelFactory(
           const mapq = rpcData.readMapqs[idx]
           const strand = flags !== undefined && flags & 16 ? '-' : '+'
           const name = rpcData.readNames[idx] ?? ''
-          const refName =
-            displayedRegions[regionNumber]?.refName ?? 'unknown'
+          const refName = displayedRegions[regionNumber]?.refName ?? 'unknown'
           return {
             id: featureId,
             name,
@@ -1326,8 +1325,7 @@ export default function stateModelFactory(
               label: 'Normal',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 7 &&
-                self.noSpacingSetting === false,
+                self.featureHeight === 7 && self.noSpacingSetting === false,
               onClick: () => {
                 self.setFeatureHeight(7)
                 self.setNoSpacing(false)
@@ -1337,8 +1335,7 @@ export default function stateModelFactory(
               label: 'Compact',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 2 &&
-                self.noSpacingSetting === true,
+                self.featureHeight === 2 && self.noSpacingSetting === true,
               onClick: () => {
                 self.setFeatureHeight(2)
                 self.setNoSpacing(true)
@@ -1348,8 +1345,7 @@ export default function stateModelFactory(
               label: 'Super-compact',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 1 &&
-                self.noSpacingSetting === true,
+                self.featureHeight === 1 && self.noSpacingSetting === true,
               onClick: () => {
                 self.setFeatureHeight(1)
                 self.setNoSpacing(true)

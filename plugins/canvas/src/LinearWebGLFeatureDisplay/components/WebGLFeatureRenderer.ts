@@ -559,7 +559,7 @@ export class WebGLFeatureRenderer {
     if (data.numLines > 0) {
       const savedBufferTarget = this._bufferTarget
       this._bufferTarget = []
-      const chevronVAO = gl.createVertexArray()!
+      const chevronVAO = gl.createVertexArray()
       gl.bindVertexArray(chevronVAO)
       this.uploadUintBuffer(
         this.chevronProgram,
@@ -690,10 +690,7 @@ export class WebGLFeatureRenderer {
     gl.vertexAttribDivisor(loc, 1)
   }
 
-  renderBlocks(
-    blocks: FeatureRenderBlock[],
-    state: FeatureRenderState,
-  ) {
+  renderBlocks(blocks: FeatureRenderBlock[], state: FeatureRenderState) {
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight, scrollY } = state
@@ -738,8 +735,7 @@ export class WebGLFeatureRenderer {
       const clippedBpEnd =
         block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
-      const [bpStartHi, bpStartLo] =
-        splitPositionWithFrac(clippedBpStart)
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       const regionStart = buffers.regionStart
@@ -753,10 +749,7 @@ export class WebGLFeatureRenderer {
           bpStartLo,
           clippedLengthBp,
         )
-        gl.uniform1ui(
-          this.lineUniforms.u_regionStart!,
-          Math.floor(regionStart),
-        )
+        gl.uniform1ui(this.lineUniforms.u_regionStart!, Math.floor(regionStart))
         gl.uniform1f(this.lineUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.lineUniforms.u_scrollY!, scrollY)
 
@@ -801,10 +794,7 @@ export class WebGLFeatureRenderer {
         bpStartLo,
         clippedLengthBp,
       )
-      gl.uniform1ui(
-        this.rectUniforms.u_regionStart!,
-        Math.floor(regionStart),
-      )
+      gl.uniform1ui(this.rectUniforms.u_regionStart!, Math.floor(regionStart))
       gl.uniform1f(this.rectUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.rectUniforms.u_canvasWidth!, scissorW)
       gl.uniform1f(this.rectUniforms.u_scrollY!, scrollY)
@@ -840,7 +830,7 @@ export class WebGLFeatureRenderer {
   }
 
   pruneStaleRegions(activeRegionNumbers: Set<number>) {
-    for (const regionNumber of [...this.buffersMap.keys()]) {
+    for (const regionNumber of this.buffersMap.keys()) {
       if (!activeRegionNumbers.has(regionNumber)) {
         this.deleteBuffersForRegion(regionNumber)
       }
@@ -848,7 +838,7 @@ export class WebGLFeatureRenderer {
   }
 
   clearAllBuffers() {
-    for (const regionNumber of [...this.buffersMap.keys()]) {
+    for (const regionNumber of this.buffersMap.keys()) {
       this.deleteBuffersForRegion(regionNumber)
     }
   }

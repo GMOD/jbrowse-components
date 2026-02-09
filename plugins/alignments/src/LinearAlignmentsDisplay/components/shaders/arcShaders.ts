@@ -144,8 +144,8 @@ export const NUM_SASHIMI_COLORS = 2
 
 // Pink forward, blue reverse (matches SVG sashimi)
 export const sashimiColorPalette: RGBColor[] = [
-  [1.0, 0.667, 0.667],
-  [0.627, 0.627, 1.0],
+  [1, 0.667, 0.667],
+  [0.627, 0.627, 1],
 ]
 
 export const SASHIMI_ARC_VERTEX_SHADER = `#version 300 es

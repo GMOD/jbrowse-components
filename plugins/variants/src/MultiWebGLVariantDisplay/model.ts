@@ -67,7 +67,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             const blockRegionNumber = block.regionNumber ?? 0
 
             const prev = regions[regions.length - 1]
-            if (prev && prev.regionNumber === blockRegionNumber) {
+            if (prev?.regionNumber === blockRegionNumber) {
               prev.end = bpEnd
               prev.screenEndPx = clippedScreenEnd
             } else {

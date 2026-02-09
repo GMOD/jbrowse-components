@@ -558,24 +558,14 @@ export class WebGLWiggleRenderer {
       const clippedBpEnd =
         block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
-      const [bpStartHi, bpStartLo] =
-        splitPositionWithFrac(clippedBpStart)
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
-      gl.uniform3f(
-        uniforms.u_bpRangeX!,
-        bpStartHi,
-        bpStartLo,
-        clippedLengthBp,
-      )
+      gl.uniform3f(uniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
       gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
 
       let vao: WebGLVertexArrayObject
-      if (renderingType === 'line') {
-        vao = buffers.lineVAO!
-      } else {
-        vao = buffers.featureVAO
-      }
+      vao = renderingType === 'line' ? buffers.lineVAO! : buffers.featureVAO
 
       gl.bindVertexArray(vao)
 
@@ -614,9 +604,7 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
-      state.bpRangeX[0],
-    )
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     let program: WebGLProgram
@@ -638,12 +626,7 @@ export class WebGLWiggleRenderer {
     }
 
     gl.useProgram(program)
-    gl.uniform3f(
-      uniforms.u_bpRangeX!,
-      bpStartHi,
-      bpStartLo,
-      regionLengthBp,
-    )
+    gl.uniform3f(uniforms.u_bpRangeX!, bpStartHi, bpStartLo, regionLengthBp)
     gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
     gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
     gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
@@ -681,7 +664,7 @@ export class WebGLWiggleRenderer {
   }
 
   pruneStaleRegions(activeRegionNumbers: Set<number>) {
-    for (const regionNumber of [...this.buffersMap.keys()]) {
+    for (const regionNumber of this.buffersMap.keys()) {
       if (!activeRegionNumbers.has(regionNumber)) {
         this.deleteBuffersForRegion(regionNumber)
       }
@@ -689,7 +672,7 @@ export class WebGLWiggleRenderer {
   }
 
   clearAllBuffers() {
-    for (const regionNumber of [...this.buffersMap.keys()]) {
+    for (const regionNumber of this.buffersMap.keys()) {
       this.deleteBuffersForRegion(regionNumber)
     }
   }

@@ -1343,13 +1343,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (!resolved) {
         return undefined
       }
-      const {
-        rpcData,
-        bpRange,
-        blockStartPx,
-        blockWidth,
-        refName,
-      } = resolved
+      const { rpcData, bpRange, blockStartPx, blockWidth, refName } = resolved
       const {
         sashimiX1,
         sashimiX2,

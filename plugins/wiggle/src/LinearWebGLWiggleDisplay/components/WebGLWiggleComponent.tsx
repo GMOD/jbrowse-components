@@ -13,7 +13,7 @@ import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
-import type { WiggleRenderBlock, RenderingType } from './WebGLWiggleRenderer.ts'
+import type { RenderingType, WiggleRenderBlock } from './WebGLWiggleRenderer.ts'
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

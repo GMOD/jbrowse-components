@@ -1,6 +1,9 @@
 import fetchMock from 'jest-fetch-mock'
 
-import { RemoteFileWithRangeCache, clearCache } from './RemoteFileWithRangeCache.ts'
+import {
+  RemoteFileWithRangeCache,
+  clearCache,
+} from './RemoteFileWithRangeCache.ts'
 
 // Disable jest-fetch-mock so our custom mock fetch functions work
 fetchMock.disableMocks()
@@ -21,7 +24,10 @@ function slice(start: number, end: number) {
 // Mock fetch that serves range requests from fileData and tracks calls
 function createMockFetch() {
   const calls: { start: number; end: number }[] = []
-  const mockFetch = async (_url: string | URL | Request, init?: RequestInit) => {
+  const mockFetch = async (
+    _url: string | URL | Request,
+    init?: RequestInit,
+  ) => {
     const range = new Headers(init?.headers).get('range')
     if (range) {
       const m = /bytes=(\d+)-(\d+)/.exec(range)
@@ -43,7 +49,11 @@ function makeFile(mockFetch: typeof globalThis.fetch) {
   })
 }
 
-async function fetchRange(file: RemoteFileWithRangeCache, start: number, end: number) {
+async function fetchRange(
+  file: RemoteFileWithRangeCache,
+  start: number,
+  end: number,
+) {
   const res = await file.fetch('http://example.com/data.bin', {
     headers: { range: `bytes=${start}-${end}` },
   })

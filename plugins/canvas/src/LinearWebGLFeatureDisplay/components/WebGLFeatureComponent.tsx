@@ -543,7 +543,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   // Compute floating label positions (multi-region aware)
   const floatingLabelElements = useMemo(() => {
-    if (!view?.initialized || !width || !bpPerPx || visibleRegions.length === 0) {
+    if (
+      !view?.initialized ||
+      !width ||
+      !bpPerPx ||
+      visibleRegions.length === 0
+    ) {
       return null
     }
 
@@ -556,7 +561,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       }
 
       const regionStart = data.regionStart
-      const blockBpPerPx = (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+      const blockBpPerPx =
+        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
 
       for (const [featureId, labelData] of Object.entries(
         data.floatingLabelsData,
@@ -634,7 +640,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         continue
       }
 
-      const blockBpPerPx = (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+      const blockBpPerPx =
+        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
 
       for (const [i, item] of data.aminoAcidOverlay.entries()) {
         if (item.endBp < vr.start || item.startBp > vr.end) {
@@ -699,9 +706,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         if (!data) {
           continue
         }
-        const feature = data.flatbushItems.find(
-          f => f.featureId === featureId,
-        )
+        const feature = data.flatbushItems.find(f => f.featureId === featureId)
         if (!feature) {
           continue
         }
@@ -743,10 +748,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       key: string,
     ) => {
       for (const vr of visibleRegions) {
-        if (
-          subfeature.endBp < vr.start ||
-          subfeature.startBp > vr.end
-        ) {
+        if (subfeature.endBp < vr.start || subfeature.startBp > vr.end) {
           continue
         }
 
