@@ -291,10 +291,6 @@ export default function stateModelFactory(
         self.error = error
       },
 
-      setMaxY(y: number) {
-        self.maxY = y
-      },
-
       setFeatureIdUnderMouse(featureId: string | null) {
         ;(self as any).featureIdUnderMouse = featureId
       },
@@ -451,6 +447,25 @@ export default function stateModelFactory(
         }
       }
 
+      function refetchAllLoadedRegions(bpPerPx: number) {
+        self.setLoading(true)
+        self.setError(null)
+        const promises: Promise<void>[] = []
+        for (const [regionNumber, region] of self.loadedRegions) {
+          promises.push(
+            fetchFeaturesForRegion(region, regionNumber, bpPerPx),
+          )
+        }
+        Promise.all(promises)
+          .then(() => {
+            self.setLoading(false)
+          })
+          .catch((e: unknown) => {
+            console.error('Failed to refetch features:', e)
+            self.setLoading(false)
+          })
+      }
+
       let prevDisplayedRegionsStr = ''
 
       return {
@@ -526,23 +541,7 @@ export default function stateModelFactory(
               },
               bpPerPx => {
                 if (bpPerPx && self.needsLayoutRefresh) {
-                  // Re-fetch all loaded regions with new bpPerPx
-                  self.setLoading(true)
-                  self.setError(null)
-                  const promises: Promise<void>[] = []
-                  for (const [regionNumber, region] of self.loadedRegions) {
-                    promises.push(
-                      fetchFeaturesForRegion(region, regionNumber, bpPerPx),
-                    )
-                  }
-                  Promise.all(promises)
-                    .then(() => {
-                      self.setLoading(false)
-                    })
-                    .catch((e: unknown) => {
-                      console.error('Failed to refresh layout:', e)
-                      self.setLoading(false)
-                    })
+                  refetchAllLoadedRegions(bpPerPx)
                 }
               },
               { delay: 500 },
@@ -560,26 +559,7 @@ export default function stateModelFactory(
               () => {
                 if (self.loadedRegions.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view.bpPerPx
-                  self.setLoading(true)
-                  self.setError(null)
-                  const promises: Promise<void>[] = []
-                  for (const [regionNumber, region] of self.loadedRegions) {
-                    promises.push(
-                      fetchFeaturesForRegion(region, regionNumber, bpPerPx),
-                    )
-                  }
-                  Promise.all(promises)
-                    .then(() => {
-                      self.setLoading(false)
-                    })
-                    .catch((e: unknown) => {
-                      console.error(
-                        'Failed to refresh after label settings change:',
-                        e,
-                      )
-                      self.setLoading(false)
-                    })
+                  refetchAllLoadedRegions(view.bpPerPx)
                 }
               },
               { delay: 100 },
@@ -594,26 +574,7 @@ export default function stateModelFactory(
               () => {
                 if (self.loadedRegions.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view.bpPerPx
-                  self.setLoading(true)
-                  self.setError(null)
-                  const promises: Promise<void>[] = []
-                  for (const [regionNumber, region] of self.loadedRegions) {
-                    promises.push(
-                      fetchFeaturesForRegion(region, regionNumber, bpPerPx),
-                    )
-                  }
-                  Promise.all(promises)
-                    .then(() => {
-                      self.setLoading(false)
-                    })
-                    .catch((e: unknown) => {
-                      console.error(
-                        'Failed to refresh after colorByCDS change:',
-                        e,
-                      )
-                      self.setLoading(false)
-                    })
+                  refetchAllLoadedRegions(view.bpPerPx)
                 }
               },
               { delay: 100 },

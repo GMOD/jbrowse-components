@@ -258,8 +258,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   renderWithBlocksRef.current = renderWithBlocks
   const viewRef = useRef(view)
   viewRef.current = view
-  const widthRef = useRef(width)
-  widthRef.current = width
 
   // Initialize WebGL
   useEffect(() => {

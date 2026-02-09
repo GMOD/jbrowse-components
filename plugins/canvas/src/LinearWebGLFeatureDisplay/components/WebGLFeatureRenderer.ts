@@ -101,7 +101,7 @@ void main() {
 }
 `
 
-const RECT_FRAGMENT_SHADER = `#version 300 es
+const SIMPLE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
 out vec4 fragColor;
@@ -152,15 +152,6 @@ void main() {
     float(a_color.b) / 255.0,
     float(a_color.a) / 255.0
   );
-}
-`
-
-const LINE_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-in vec4 v_color;
-out vec4 fragColor;
-void main() {
-  fragColor = v_color;
 }
 `
 
@@ -243,15 +234,6 @@ void main() {
 }
 `
 
-const CHEVRON_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-in vec4 v_color;
-out vec4 fragColor;
-void main() {
-  fragColor = v_color;
-}
-`
-
 // Arrow vertex shader - strand direction arrows at feature ends
 const ARROW_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -326,15 +308,6 @@ void main() {
 }
 `
 
-const ARROW_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-in vec4 v_color;
-out vec4 fragColor;
-void main() {
-  fragColor = v_color;
-}
-`
-
 export interface FeatureRenderState {
   scrollY: number
   canvasWidth: number
@@ -380,7 +353,6 @@ export class WebGLFeatureRenderer {
   private lineDataMap = new Map<number, LineDataForChevrons>()
   private glBuffersMap = new Map<number, WebGLBuffer[]>()
   private chevronVAOMap = new Map<number, WebGLVertexArrayObject>()
-  private chevronCountMap = new Map<number, number>()
   private chevronGlBuffersMap = new Map<number, WebGLBuffer[]>()
   private _bufferTarget: WebGLBuffer[] = []
 
@@ -405,19 +377,19 @@ export class WebGLFeatureRenderer {
 
     this.rectProgram = this.createProgram(
       RECT_VERTEX_SHADER,
-      RECT_FRAGMENT_SHADER,
+      SIMPLE_FRAGMENT_SHADER,
     )
     this.lineProgram = this.createProgram(
       LINE_VERTEX_SHADER,
-      LINE_FRAGMENT_SHADER,
+      SIMPLE_FRAGMENT_SHADER,
     )
     this.chevronProgram = this.createProgram(
       CHEVRON_VERTEX_SHADER,
-      CHEVRON_FRAGMENT_SHADER,
+      SIMPLE_FRAGMENT_SHADER,
     )
     this.arrowProgram = this.createProgram(
       ARROW_VERTEX_SHADER,
-      ARROW_FRAGMENT_SHADER,
+      SIMPLE_FRAGMENT_SHADER,
     )
 
     const commonUniforms = [
@@ -895,7 +867,6 @@ export class WebGLFeatureRenderer {
     gl.bindVertexArray(null)
 
     this.chevronVAOMap.set(regionNumber, chevronVAO)
-    this.chevronCountMap.set(regionNumber, chevronXs.length)
     this.chevronGlBuffersMap.set(regionNumber, this._bufferTarget)
 
     // Draw chevrons
@@ -967,7 +938,6 @@ export class WebGLFeatureRenderer {
       gl.deleteVertexArray(chevronVAO)
       this.chevronVAOMap.delete(regionNumber)
     }
-    this.chevronCountMap.delete(regionNumber)
   }
 
   destroy() {
