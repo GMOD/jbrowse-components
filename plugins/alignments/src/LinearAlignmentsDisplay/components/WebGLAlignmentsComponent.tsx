@@ -1366,16 +1366,16 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const destY = coverageHeight
 
         // Arc thickness from score: Math.log(count + 1)
-        // Scale hit tolerance generously for thin arcs: more samples + larger tolerance
+        // Hit tolerance: 4px on either side of the curve
         const lineWidth = rpcData.sashimiScores[i]!
-        const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
+        const hitTolerance = lineWidth + 8
 
         // CRITICAL: This Bezier curve formula MUST match the GPU version in:
         // shaders/arcShaders.ts:evalCurve (around line 180)
         // If either implementation changes, the other MUST be updated to match,
         // otherwise picking and rendering will be out of sync.
-        // sample the bezier curve with more samples for better accuracy
-        const steps = 64
+        // Sample the bezier curve for hit detection
+        const steps = 32
         let hit = false
         for (let s = 0; s <= steps; s++) {
           const t = s / steps

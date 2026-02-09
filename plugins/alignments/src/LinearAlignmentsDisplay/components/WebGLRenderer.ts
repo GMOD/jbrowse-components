@@ -1584,8 +1584,6 @@ export class WebGLRenderer {
     sashimiScores: Float32Array
     sashimiColorTypes: Uint8Array
     numSashimiArcs: number
-    regionStart?: number
-    refName?: string
   }) {
     const gl = this.gl
 
