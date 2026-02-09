@@ -1,6 +1,11 @@
 // this is a little polyfill for running in workers that
-// contains just enough stubbing to make webpack style-loader
-// think that it is actually inserting styles into the DOM
+// contains just enough stubbing to make various libraries
+// think that they are running in a DOM environment
+
+// stub React Fast Refresh globals that Vite's React plugin injects into .tsx
+// files — these don't exist in the worker scope
+self.$RefreshReg$ = () => {}
+self.$RefreshSig$ = () => s => s
 
 self.window = {
   addEventListener() {},

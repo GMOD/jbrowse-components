@@ -95,9 +95,9 @@ async function loadScript(scriptUrl: string) {
     await globalThis.importScripts(scriptUrl)
     return
   }
-  throw new Error(
-    'cannot figure out how to load external JS scripts in this environment',
-  )
+
+  // fallback to dynamic import for environments that don't support importScripts
+  await import(/* @vite-ignore */ scriptUrl)
 }
 
 export function isCJSPluginDefinition(
