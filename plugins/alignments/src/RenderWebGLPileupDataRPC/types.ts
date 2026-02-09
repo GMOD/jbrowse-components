@@ -155,6 +155,7 @@ export interface WebGLPileupDataResult {
   sashimiX2: Float32Array // bp offsets from regionStart (junction end)
   sashimiScores: Float32Array // per-arc line width = Math.log(count + 1)
   sashimiColorTypes: Uint8Array // 0=forward, 1=reverse
+  sashimiCounts: Uint32Array // actual read counts per junction
   numSashimiArcs: number
 
   // Layout info

@@ -23,6 +23,7 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform int u_highlightedIndex;  // Feature index to highlight (-1 = none)
+uniform int u_highlightOnlyMode;  // 1 = only draw highlighted instance as overlay
 uniform float u_canvasWidth;
 
 // Color uniforms - these match shared/color.ts and theme colors
@@ -159,6 +160,15 @@ vec3 modificationsColor(float flags) {
 }
 
 void main() {
+  // In highlight-only mode, discard all non-highlighted instances
+  if (u_highlightOnlyMode == 1) {
+    if (u_highlightedIndex < 0 || gl_InstanceID != u_highlightedIndex) {
+      gl_Position = vec4(0.0);
+      v_color = vec4(0.0);
+      return;
+    }
+  }
+
   int vid = gl_VertexID % 9;
 
   // Convert offsets to absolute positions, then apply high-precision 12-bit split
@@ -190,7 +200,15 @@ void main() {
 
   float sx;
   float sy;
-  if (vid < 6) {
+  if (u_highlightOnlyMode == 1) {
+    // Highlight overlay: simple rectangle, no chevrons
+    float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+    float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+    sx = mix(sx1, sx2, localX);
+    sy = mix(syBot, syTop, localY);
+    // Collapse chevron vertices to rectangle corner
+    if (vid >= 6) { sx = sx1; sy = syTop; }
+  } else if (vid < 6) {
     // Vertices 0-5: rectangle body (same as before)
     float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
@@ -219,6 +237,11 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
+  if (u_highlightOnlyMode == 1) {
+    v_color = vec4(0.0, 0.0, 0.0, 0.4);
+    return;
+  }
+
   vec3 color;
   if (u_colorScheme == 0) color = normalColor();
   else if (u_colorScheme == 1) color = strandColor(a_strand);
@@ -230,11 +253,6 @@ void main() {
   else if (u_colorScheme == 7) color = modificationsColor(a_flags);
   else if (u_colorScheme == 8) color = a_tagColor;
   else color = vec3(0.6);
-
-  // Darken highlighted feature
-  if (u_highlightedIndex >= 0 && gl_InstanceID == u_highlightedIndex) {
-    color = color * 0.7;
-  }
 
   v_color = vec4(color, 1.0);
 }

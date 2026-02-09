@@ -49,7 +49,7 @@ export const defaultColorPalette: ColorPalette = {
   // Indel/clip colors (theme)
   colorInsertion: [0.502, 0, 0.502], // purple (#800080)
   colorDeletion: [0.502, 0.502, 0.502], // grey (#808080)
-  colorSkip: [0.592, 0.722, 0.788], // teal/blue (#97b8c9)
+  colorSkip: [0.0, 0.478, 0.478], // teal (#007a7a)
   colorSoftclip: [0, 0, 1], // blue (#00f)
   colorHardclip: [1, 0, 0], // red (#f00)
   // Coverage color

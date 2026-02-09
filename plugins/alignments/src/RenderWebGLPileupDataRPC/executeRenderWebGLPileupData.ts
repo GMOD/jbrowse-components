@@ -709,6 +709,7 @@ function computeSashimiJunctions(
   const sashimiX2 = new Float32Array(n)
   const sashimiScores = new Float32Array(n)
   const sashimiColorTypes = new Uint8Array(n)
+  const sashimiCounts = new Uint32Array(n)
 
   for (let i = 0; i < n; i++) {
     const arc = arcs[i]!
@@ -716,9 +717,10 @@ function computeSashimiJunctions(
     sashimiX2[i] = arc.end - regionStart
     sashimiScores[i] = Math.log(arc.count + 1)
     sashimiColorTypes[i] = arc.colorType
+    sashimiCounts[i] = arc.count
   }
 
-  return { sashimiX1, sashimiX2, sashimiScores, sashimiColorTypes, numSashimiArcs: n }
+  return { sashimiX1, sashimiX2, sashimiScores, sashimiColorTypes, sashimiCounts, numSashimiArcs: n }
 }
 
 export async function executeRenderWebGLPileupData({
@@ -1513,7 +1515,7 @@ export async function executeRenderWebGLPileupData({
     bin.interbase.hardclip = { count: lengths.length, minLen, maxLen, avgLen }
   }
 
-  const sashimi = computeSashimiJunctions(gapsData, regionStart)
+  const sashimi = computeSashimiJunctions(gaps, regionStart)
 
   const result: WebGLPileupDataResult = {
     regionStart,
@@ -1622,6 +1624,7 @@ export async function executeRenderWebGLPileupData({
     result.sashimiX2.buffer,
     result.sashimiScores.buffer,
     result.sashimiColorTypes.buffer,
+    result.sashimiCounts.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

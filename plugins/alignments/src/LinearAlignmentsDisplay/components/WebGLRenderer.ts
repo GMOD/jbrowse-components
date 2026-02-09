@@ -220,6 +220,7 @@ export class WebGLRenderer {
       antialias: true,
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
+      stencil: true,
     })
 
     if (!gl) {
@@ -304,6 +305,7 @@ export class WebGLRenderer {
       'u_coverageOffset',
       'u_canvasHeight',
       'u_highlightedIndex',
+      'u_highlightOnlyMode',
       'u_canvasWidth',
       // Color uniforms
       'u_colorFwdStrand',
@@ -382,6 +384,7 @@ export class WebGLRenderer {
       ...cigarUniforms,
       'u_colorDeletion',
       'u_colorSkip',
+      'u_eraseMode',
     ])
     this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
       ...cigarUniformsWithWidth,
@@ -676,6 +679,8 @@ export class WebGLRenderer {
         arcLineCount: 0,
         cloudVAO: null,
         cloudCount: 0,
+        sashimiVAO: null,
+        sashimiCount: 0,
       }
       return
     }
@@ -767,6 +772,8 @@ export class WebGLRenderer {
       arcLineCount: 0,
       cloudVAO: null,
       cloudCount: 0,
+      sashimiVAO: null,
+      sashimiCount: 0,
     }
   }
 
@@ -1936,7 +1943,8 @@ export class WebGLRenderer {
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.stencilMask(0xff)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
     const colors: ColorPalette = { ...defaultColorPalette, ...state.colors }
     const mode = state.renderingMode ?? 'pileup'
@@ -2041,7 +2049,8 @@ export class WebGLRenderer {
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.stencilMask(0xff)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
     if (!this.buffers) {
       return
@@ -2105,6 +2114,40 @@ export class WebGLRenderer {
     gl.enable(gl.SCISSOR_TEST)
     gl.scissor(scissorX, 0, canvasWidth, canvasHeight - coverageOffset)
 
+    // Stencil pass: mark skip (intron) regions so reads don't draw there
+    if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
+      gl.enable(gl.STENCIL_TEST)
+      gl.stencilMask(0xff)
+      gl.clear(gl.STENCIL_BUFFER_BIT)
+      gl.stencilFunc(gl.ALWAYS, 1, 0xff)
+      gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE)
+      gl.colorMask(false, false, false, false)
+
+      gl.useProgram(this.gapProgram)
+      gl.uniform2f(
+        this.gapUniforms.u_bpRangeX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.gapUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(this.gapUniforms.u_featureHeight!, state.featureHeight)
+      gl.uniform1f(this.gapUniforms.u_featureSpacing!, state.featureSpacing)
+      gl.uniform1f(this.gapUniforms.u_coverageOffset!, coverageOffset)
+      gl.uniform1f(this.gapUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1i(this.gapUniforms.u_eraseMode!, 1)
+
+      gl.bindVertexArray(this.buffers.gapVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.gapCount)
+
+      gl.colorMask(true, true, true, true)
+      gl.stencilFunc(gl.EQUAL, 0, 0xff)
+      gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP)
+    }
+
     gl.useProgram(this.readProgram)
     // Use high-precision split domain for reads (vec3: hi, lo, extent)
     gl.uniform3f(
@@ -2144,12 +2187,16 @@ export class WebGLRenderer {
       ...colors.colorModificationRev,
     )
 
+    gl.uniform1i(this.readUniforms.u_highlightOnlyMode!, 0)
+
     gl.bindVertexArray(this.buffers.readVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, this.buffers.readCount)
 
+    gl.disable(gl.STENCIL_TEST)
+
     // Draw CIGAR features if enabled (suppress when showing modifications overlay)
     if (state.showMismatches && !state.showModifications) {
-      // Draw gaps (deletions)
+      // Draw gaps (deletions and skips)
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
         gl.useProgram(this.gapProgram)
         gl.uniform2f(
@@ -2178,6 +2225,7 @@ export class WebGLRenderer {
           colors.colorSkip[1],
           colors.colorSkip[2],
         )
+        gl.uniform1i(this.gapUniforms.u_eraseMode!, 0)
 
         gl.bindVertexArray(this.buffers.gapVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.gapCount)
@@ -2352,6 +2400,16 @@ export class WebGLRenderer {
 
       gl.bindVertexArray(this.buffers.modificationVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.modificationCount)
+    }
+
+    // Highlight overlay pass: draw the highlighted read at full extent
+    // so the highlight covers intron/skip regions too
+    if (state.highlightedFeatureIndex >= 0) {
+      gl.useProgram(this.readProgram)
+      gl.uniform1i(this.readUniforms.u_highlightOnlyMode!, 1)
+      gl.bindVertexArray(this.buffers.readVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, this.buffers.readCount)
+      gl.uniform1i(this.readUniforms.u_highlightOnlyMode!, 0)
     }
 
     gl.disable(gl.SCISSOR_TEST)
@@ -2639,16 +2697,6 @@ export class WebGLRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.buffers.indicatorCount)
     }
 
-    // Draw separator line at bottom of coverage area
-    const lineY = 1 - (state.coverageHeight / canvasHeight) * 2
-    gl.useProgram(this.lineProgram)
-    gl.uniform4f(this.lineUniforms.u_color!, 0.7, 0.7, 0.7, 1)
-
-    const lineData = new Float32Array([-1, lineY, 1, lineY])
-    gl.bindVertexArray(this.lineVAO)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW)
-    gl.drawArrays(gl.LINES, 0, 2)
   }
 
   private renderArcs(

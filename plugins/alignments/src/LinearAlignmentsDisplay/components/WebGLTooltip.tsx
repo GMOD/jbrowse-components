@@ -222,7 +222,20 @@ interface IndicatorTooltipData {
   refName?: string
 }
 
-type TooltipDataType = CoverageTooltipData | IndicatorTooltipData | string
+interface SashimiTooltipData {
+  type: 'sashimi'
+  start: number
+  end: number
+  score: number
+  strand: string
+  refName: string
+}
+
+type TooltipDataType =
+  | CoverageTooltipData
+  | IndicatorTooltipData
+  | SashimiTooltipData
+  | string
 
 /**
  * Custom Tooltip for LinearAlignmentsDisplay
@@ -310,6 +323,30 @@ const WebGLTooltip = observer(function WebGLTooltip({
         </>
       )
     }
+  }
+
+  // Sashimi arc tooltip
+  if (
+    tooltipData &&
+    typeof tooltipData === 'object' &&
+    tooltipData.type === 'sashimi'
+  ) {
+    const { start, end, score, strand, refName } = tooltipData
+    return (
+      <BaseTooltip clientPoint={{ x, y }}>
+        <div>
+          <div>
+            <strong>Intron/Skip</strong>
+          </div>
+          <div>
+            Location: {refName}:{toLocale(start)}-{toLocale(end)}
+          </div>
+          <div>Length: {toLocale(end - start)} bp</div>
+          <div>Reads supporting junction: {score}</div>
+          <div>Strand: {strand}</div>
+        </div>
+      </BaseTooltip>
+    )
   }
 
   // Coverage tooltip with flag-style display (vertical line indicator)

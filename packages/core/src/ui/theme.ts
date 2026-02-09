@@ -106,7 +106,7 @@ const insertion = '#800080'
 const deletion = '#808080'
 const hardclip = '#f00'
 const softclip = '#00f'
-const skip = '#97b8c9'
+const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
 

@@ -890,17 +890,16 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (!resolved) {
         return undefined
       }
-      const { posOffset, row, adjustedY, yWithinRow } =
-        canvasToGenomicCoords(
-          canvasX,
-          canvasY,
-          resolved,
-          featureHeight,
-          featureSpacing,
-          showCoverage,
-          coverageHeight,
-          model.currentRangeY,
-        )
+      const { posOffset, row, adjustedY, yWithinRow } = canvasToGenomicCoords(
+        canvasX,
+        canvasY,
+        resolved,
+        featureHeight,
+        featureSpacing,
+        showCoverage,
+        coverageHeight,
+        model.currentRangeY,
+      )
       if (adjustedY < 0 || yWithinRow > featureHeight) {
         return undefined
       }
@@ -1233,7 +1232,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       return {
         type: 'coverage',
-        position: regionStart + coverageStartOffset + binIndex * coverageBinSize,
+        position:
+          regionStart + coverageStartOffset + binIndex * coverageBinSize,
         depth,
         snps,
       }
@@ -1318,6 +1318,91 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     [resolveBlockForCanvasX, showCoverage, showInterbaseIndicators],
   )
 
+  const hitTestSashimiArc = useCallback(
+    (
+      canvasX: number,
+      canvasY: number,
+    ):
+      | {
+          start: number
+          end: number
+          score: number
+          strand: number
+          refName: string
+        }
+      | undefined => {
+      if (
+        widthRef.current === undefined ||
+        !showCoverage ||
+        !showSashimiArcs ||
+        canvasY > coverageHeight
+      ) {
+        return undefined
+      }
+      const resolved = resolveBlockForCanvasX(canvasX)
+      if (!resolved) {
+        return undefined
+      }
+      const { rpcData, bpRange, blockStartPx, blockWidth, refName } = resolved
+      const {
+        sashimiX1,
+        sashimiX2,
+        sashimiCounts,
+        sashimiColorTypes,
+        numSashimiArcs,
+        regionStart,
+      } = rpcData
+      if (numSashimiArcs === 0) {
+        return undefined
+      }
+
+      const pxPerBp = blockWidth / (bpRange[1] - bpRange[0])
+      const bpStartOffset = bpRange[0] - regionStart
+      const hitTolerance = 6
+
+      for (let i = 0; i < numSashimiArcs; i++) {
+        const x1 = sashimiX1[i]!
+        const x2 = sashimiX2[i]!
+        const destY = coverageHeight
+
+        // sample the bezier curve and check distance to mouse
+        const steps = 32
+        let hit = false
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps
+          const mt = 1 - t
+          const mt2 = mt * mt
+          const mt3 = mt2 * mt
+          const t2 = t * t
+          const t3 = t2 * t
+          const xBp = mt3 * x1 + 3 * mt2 * t * x1 + 3 * mt * t2 * x2 + t3 * x2
+          const yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
+          const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
+          const screenY = coverageHeight - yPx
+          const dx = canvasX - screenX
+          const dy = canvasY - screenY
+          if (dx * dx + dy * dy < hitTolerance * hitTolerance) {
+            hit = true
+            break
+          }
+        }
+        if (hit) {
+          const colorType = sashimiColorTypes[i]!
+          const count = sashimiCounts[i]!
+          return {
+            start: regionStart + x1,
+            end: regionStart + x2,
+            score: count,
+            strand: colorType === 0 ? 1 : -1,
+            refName,
+          }
+        }
+      }
+      return undefined
+    },
+    [resolveBlockForCanvasX, showCoverage, showSashimiArcs, coverageHeight],
+  )
+
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (dragRef.current.isDragging) {
@@ -1375,6 +1460,32 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           model.setMouseoverExtraInformation(tooltipText)
         }
 
+        if (model.highlightedFeatureIndex !== -1) {
+          model.setHighlightedFeatureIndex(-1)
+        }
+        return
+      }
+
+      // Check for sashimi arc hits (splice junction arcs overlaid on coverage)
+      const sashimiHit = hitTestSashimiArc(canvasX, canvasY)
+      if (sashimiHit) {
+        setOverCigarItem(true)
+        model.setFeatureIdUnderMouse(undefined)
+        const strandLabel =
+          sashimiHit.strand === 1
+            ? '+'
+            : sashimiHit.strand === -1
+              ? '-'
+              : 'unknown'
+        const tooltipData = JSON.stringify({
+          type: 'sashimi',
+          start: sashimiHit.start,
+          end: sashimiHit.end,
+          score: sashimiHit.score,
+          strand: strandLabel,
+          refName: sashimiHit.refName,
+        })
+        model.setMouseoverExtraInformation(tooltipData)
         if (model.highlightedFeatureIndex !== -1) {
           model.setHighlightedFeatureIndex(-1)
         }
@@ -1499,6 +1610,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       hitTestCigarItem,
       hitTestCoverage,
       hitTestIndicator,
+      hitTestSashimiArc,
       model,
       handleMouseMove,
       resolveBlockForCanvasX,
@@ -1616,7 +1728,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
               for (const [type, entry] of Object.entries(
                 tooltipBin.interbase,
               )) {
-                featureData[type] = `${entry.count} (${entry.minLen}-${entry.maxLen}bp)`
+                featureData[type] =
+                  `${entry.count} (${entry.minLen}-${entry.maxLen}bp)`
               }
             } else {
               for (const snp of coverageHit.snps) {
@@ -2139,29 +2252,16 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           }}
           style={{
             position: 'absolute',
-            top: coverageHeight - 3,
+            top: coverageHeight - YSCALEBAR_LABEL_OFFSET,
             left: 0,
             right: 0,
-            height: 6,
+            height: YSCALEBAR_LABEL_OFFSET,
             cursor: 'row-resize',
-            background: 'transparent',
+            background: resizeHandleHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
             zIndex: 10,
           }}
           title="Drag to resize coverage track"
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: 2,
-              left: 0,
-              right: 0,
-              height: 2,
-              background: theme.palette.divider,
-              opacity: resizeHandleHovered ? 0.5 : 0,
-              transition: 'opacity 0.15s ease',
-            }}
-          />
-        </div>
+        />
       ) : null}
 
       {model.showLoading && (

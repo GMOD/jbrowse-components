@@ -22,10 +22,18 @@ uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform vec3 u_colorDeletion;
 uniform vec3 u_colorSkip;
+uniform int u_eraseMode;  // 0=normal draw, 1=stencil pass (skip gaps at full height)
 
 out vec4 v_color;
 
 void main() {
+  // In erase mode, collapse non-skip gaps to zero area
+  if (u_eraseMode == 1 && a_type == 0u) {
+    gl_Position = vec4(0.0);
+    v_color = vec4(0.0);
+    return;
+  }
+
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
@@ -35,11 +43,18 @@ void main() {
   float sx2 = (float(a_position.y) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
-  // Gap fills the full feature height (like normal renderer)
   float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
   float yTopPx = y * rowHeight - u_rangeY.x;
   float yBotPx = yTopPx + u_featureHeight;
+
+  // In normal mode, skips render as a 1px line centered in the row
+  // In erase mode, skips render at full feature height (for stencil mask)
+  if (u_eraseMode == 0 && a_type == 1u) {
+    float midPx = (yTopPx + yBotPx) * 0.5;
+    yTopPx = midPx;
+    yBotPx = midPx + 1.0;
+  }
 
   float pileupTop = 1.0 - (u_coverageOffset / u_canvasHeight) * 2.0;
   float pxToClip = 2.0 / u_canvasHeight;
