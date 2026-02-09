@@ -11,7 +11,7 @@
  */
 
 import type { ColorPalette } from './shaders/index.ts'
-import type { GPUBuffers, RenderState } from './WebGLRenderer.ts'
+import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
  * CoverageRenderer orchestrates rendering of coverage data including coverage bars,
@@ -234,6 +234,3 @@ export class CoverageRenderer {
     }
   }
 }
-
-// Type-only import to satisfy parent type reference
-import type { WebGLRenderer } from './WebGLRenderer.ts'

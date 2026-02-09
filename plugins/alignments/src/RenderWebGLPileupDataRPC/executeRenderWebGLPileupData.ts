@@ -21,6 +21,9 @@ import { toArray } from 'rxjs/operators'
 
 import { parseCigar2 } from '../MismatchParser/index.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
+import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
+import { getModPositions } from '../ModificationParser/getModPositions.ts'
+import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
@@ -79,6 +82,9 @@ interface HardclipData {
 interface ModificationEntry {
   featureId: string
   position: number // absolute genomic position
+  base: string // canonical base (e.g., 'C' for 5mC)
+  isSimplex: boolean
+  strand: number // -1=reverse, 1=forward
   r: number
   g: number
   b: number
@@ -222,8 +228,11 @@ function computeCoverage(
   gaps: GapData[],
   regionStart: number,
   regionEnd: number,
+  trackStrands?: boolean,
 ): {
   depths: Float32Array
+  fwdDepths?: Float32Array
+  revDepths?: Float32Array
   maxDepth: number
   binSize: number
   startOffset: number
@@ -299,7 +308,54 @@ function computeCoverage(
     }
   }
 
-  return { depths, maxDepth: maxDepth || 1, binSize, startOffset }
+  // Optionally compute strand-separated depth for modification coverage
+  let fwdDepths: Float32Array | undefined
+  let revDepths: Float32Array | undefined
+  if (trackStrands) {
+    const fwdEvents: { pos: number; delta: number }[] = []
+    const revEvents: { pos: number; delta: number }[] = []
+    for (const f of features) {
+      if (f.strand === 1) {
+        fwdEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+      } else if (f.strand === -1) {
+        revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+      } else {
+        // Unknown strand: count in both
+        fwdEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+        revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
+      }
+    }
+    // Gaps reduce coverage on both strands (we don't track gap strand separately)
+    for (const g of gaps) {
+      fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+    }
+    fwdEvents.sort((a, b) => a.pos - b.pos)
+    revEvents.sort((a, b) => a.pos - b.pos)
+
+    fwdDepths = new Float32Array(numBins)
+    revDepths = new Float32Array(numBins)
+
+    let fwdDepth = 0
+    let fwdIdx = 0
+    let revDepth = 0
+    let revIdx = 0
+    for (let binIdx = 0; binIdx < numBins; binIdx++) {
+      const binEnd = actualStart + (binIdx + 1) * binSize
+      while (fwdIdx < fwdEvents.length && fwdEvents[fwdIdx]!.pos < binEnd) {
+        fwdDepth += fwdEvents[fwdIdx]!.delta
+        fwdIdx++
+      }
+      while (revIdx < revEvents.length && revEvents[revIdx]!.pos < binEnd) {
+        revDepth += revEvents[revIdx]!.delta
+        revIdx++
+      }
+      fwdDepths[binIdx] = Math.max(0, fwdDepth)
+      revDepths[binIdx] = Math.max(0, revDepth)
+    }
+  }
+
+  return { depths, fwdDepths, revDepths, maxDepth: maxDepth || 1, binSize, startOffset }
 }
 
 interface SNPCoverageEntry {
@@ -590,8 +646,14 @@ function computeNoncovCoverage(
 
 function computeModificationCoverage(
   modifications: ModificationEntry[],
-  maxDepth: number,
+  mismatches: MismatchData[],
+  depths: Float32Array,
+  regionMaxDepth: number,
+  fwdDepths: Float32Array | undefined,
+  revDepths: Float32Array | undefined,
+  depthStartOffset: number,
   regionStart: number,
+  regionSequence: string | undefined,
 ): {
   positions: Uint32Array
   yOffsets: Float32Array
@@ -599,7 +661,7 @@ function computeModificationCoverage(
   colors: Uint8Array
   count: number
 } {
-  if (modifications.length === 0 || maxDepth === 0) {
+  if (modifications.length === 0) {
     return {
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
@@ -609,10 +671,50 @@ function computeModificationCoverage(
     }
   }
 
-  // Group by position → aggregate counts per unique color (r,g,b key)
+  // Build per-position SNP counts by base and strand from mismatches
+  const snpByPosition = new Map<
+    number,
+    {
+      baseCounts: Record<string, number>
+      strandBaseCounts: Record<string, { fwd: number; rev: number }>
+    }
+  >()
+  for (const mm of mismatches) {
+    if (mm.position < regionStart) {
+      continue
+    }
+    let entry = snpByPosition.get(mm.position)
+    if (!entry) {
+      entry = { baseCounts: {}, strandBaseCounts: {} }
+      snpByPosition.set(mm.position, entry)
+    }
+    const base = String.fromCharCode(mm.base)
+    entry.baseCounts[base] = (entry.baseCounts[base] ?? 0) + 1
+    if (!entry.strandBaseCounts[base]) {
+      entry.strandBaseCounts[base] = { fwd: 0, rev: 0 }
+    }
+    if (mm.strand === 1) {
+      entry.strandBaseCounts[base].fwd++
+    } else {
+      entry.strandBaseCounts[base].rev++
+    }
+  }
+
+  // Group modifications by position → aggregate counts per unique color (r,g,b key)
+  // Also track base and isSimplex per color group
   const byPosition = new Map<
     number,
-    Map<string, { r: number; g: number; b: number; count: number }>
+    Map<
+      string,
+      {
+        r: number
+        g: number
+        b: number
+        count: number
+        base: string
+        isSimplex: boolean
+      }
+    >
   >()
 
   for (const mod of modifications) {
@@ -627,13 +729,20 @@ function computeModificationCoverage(
     const key = `${mod.r},${mod.g},${mod.b}`
     let entry = colorMap.get(key)
     if (!entry) {
-      entry = { r: mod.r, g: mod.g, b: mod.b, count: 0 }
+      entry = {
+        r: mod.r,
+        g: mod.g,
+        b: mod.b,
+        count: 0,
+        base: mod.base,
+        isSimplex: mod.isSimplex,
+      }
       colorMap.set(key, entry)
     }
     entry.count++
   }
 
-  // Build stacked segments
+  // Build stacked segments using modifiable/detectable formula
   const segments: {
     position: number
     yOffset: number
@@ -644,13 +753,100 @@ function computeModificationCoverage(
   }[] = []
 
   for (const [position, colorMap] of byPosition) {
+    const binIdx = Math.floor(position - regionStart - depthStartOffset)
+    const depthAtPosition = depths[binIdx] ?? 0
+    if (depthAtPosition === 0) {
+      continue
+    }
+
+    // Get refbase from regionSequence (+1 offset for the 1bp padding)
+    const refbase = regionSequence
+      ? (regionSequence[position - regionStart + 1] ?? 'N').toUpperCase()
+      : 'N'
+
+    // Build per-base counts including ref bases
+    const snpEntry = snpByPosition.get(position)
+    const snpBaseCounts = snpEntry?.baseCounts ?? {}
+    const snpStrandBaseCounts = snpEntry?.strandBaseCounts ?? {}
+
+    // Total mismatched bases at this position
+    const totalSnp = Object.values(snpBaseCounts).reduce((a, b) => a + b, 0)
+    const refCount = Math.max(0, depthAtPosition - totalSnp)
+
+    // Build full base counts including refbase
+    const baseCounts: Record<string, number> = { ...snpBaseCounts }
+    baseCounts[refbase] = (baseCounts[refbase] ?? 0) + refCount
+
+    // Build strand-separated base counts
+    const strandBaseCounts: Record<string, { fwd: number; rev: number }> = {}
+    for (const [base, sc] of Object.entries(snpStrandBaseCounts)) {
+      strandBaseCounts[base] = { ...sc }
+    }
+
+    // Add ref base strand counts from fwd/rev depths
+    if (fwdDepths && revDepths) {
+      const fwdDepthAtPosition = fwdDepths[binIdx] ?? 0
+      const revDepthAtPosition = revDepths[binIdx] ?? 0
+      let snpFwd = 0
+      let snpRev = 0
+      for (const sc of Object.values(snpStrandBaseCounts)) {
+        snpFwd += sc.fwd
+        snpRev += sc.rev
+      }
+      const refFwd = Math.max(0, fwdDepthAtPosition - snpFwd)
+      const refRev = Math.max(0, revDepthAtPosition - snpRev)
+      if (!strandBaseCounts[refbase]) {
+        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
+      }
+      strandBaseCounts[refbase].fwd += refFwd
+      strandBaseCounts[refbase].rev += refRev
+    } else {
+      if (!strandBaseCounts[refbase]) {
+        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
+      }
+      strandBaseCounts[refbase].fwd += refCount
+    }
+
     let yOffset = 0
     for (const entry of colorMap.values()) {
-      const height = entry.count / maxDepth
+      const { modifiable, detectable } = calculateModificationCounts({
+        base: entry.base,
+        isSimplex: entry.isSimplex,
+        refbase,
+        baseCounts,
+        strandBaseCounts,
+      })
+
+      const height =
+        detectable > 0 && modifiable > 0
+          ? (modifiable / regionMaxDepth) * (entry.count / detectable)
+          : entry.count / regionMaxDepth
+
+      const normalizedDepth = depthAtPosition / regionMaxDepth
+      if (yOffset + height > normalizedDepth + 0.001) {
+        console.log('[mod-overflow]', {
+          position,
+          depthAtPosition,
+          regionMaxDepth,
+          normalizedDepth,
+          modifiable,
+          detectable,
+          count: entry.count,
+          height,
+          yOffset,
+          total: yOffset + height,
+          base: entry.base,
+          isSimplex: entry.isSimplex,
+          refbase,
+          baseCounts: JSON.stringify(baseCounts),
+          binIdx,
+        })
+      }
+
       segments.push({
         position,
         yOffset,
-        height,
+        height: Math.min(1, height),
         r: entry.r,
         g: entry.g,
         b: entry.b,
@@ -797,7 +993,7 @@ export async function executeRenderWebGLPileupData({
   // Fetched with 1bp padding on each side so we can detect CpG dinucleotides
   // at region boundaries. The +1 offset in sequence indexing accounts for this.
   let regionSequence: string | undefined
-  if (colorBy?.type === 'methylation' && sequenceAdapter) {
+  if ((colorBy?.type === 'methylation' || colorBy?.type === 'modifications') && sequenceAdapter) {
     const seqAdapter = (
       await getAdapter(pluginManager, sessionId, sequenceAdapter)
     ).dataAdapter as BaseFeatureDataAdapter
@@ -915,17 +1111,25 @@ export async function executeRenderWebGLPileupData({
 
       // Extract modifications from MM tag (only when color by modifications)
       if (colorBy?.type === 'modifications') {
-        const mmTag = getTagAlt(feature, 'MM', 'Mm')
+        const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
         if (mmTag) {
           const cigarString = feature.get('CIGAR') as string | undefined
           if (cigarString) {
             const cigarOps = parseCigar2(cigarString)
             const modThreshold = (colorBy.modifications?.threshold ?? 10) / 100
+
+            // Parse mod positions to detect simplex modifications
+            const fstrand = feature.get('strand') as -1 | 0 | 1
+            const seq = feature.get('seq') as string | undefined
+            const simplexSet = seq
+              ? detectSimplexModifications(getModPositions(mmTag, seq, fstrand))
+              : new Set<string>()
+
             const mods = getMaxProbModAtEachPosition(feature, cigarOps)
             if (mods) {
               // sparse array - use forEach
               // eslint-disable-next-line unicorn/no-array-for-each
-              mods.forEach(({ prob, type }, refPos) => {
+              mods.forEach(({ prob, type, base }, refPos) => {
                 if (prob < modThreshold) {
                   return
                 }
@@ -938,6 +1142,9 @@ export async function executeRenderWebGLPileupData({
                 modificationsData.push({
                   featureId,
                   position: featureStart + refPos,
+                  base: base.toUpperCase(),
+                  isSimplex: simplexSet.has(type),
+                  strand: strand === -1 ? -1 : 1,
                   r,
                   g,
                   b,
@@ -971,6 +1178,7 @@ export async function executeRenderWebGLPileupData({
             const l2 = rSeq[j - regionStart + 2]
 
             if (l1 === 'c' && l2 === 'g') {
+              const methStrand = strand === -1 ? -1 : 1
               // CpG site found - check for methylation at C position
               if (methBins[i]) {
                 const p = methProbs[i] || 0
@@ -980,6 +1188,9 @@ export async function executeRenderWebGLPileupData({
                   modificationsData.push({
                     featureId,
                     position: j,
+                    base: 'C',
+                    isSimplex: false,
+                    strand: methStrand,
                     r: 255,
                     g: 0,
                     b: 0,
@@ -990,6 +1201,9 @@ export async function executeRenderWebGLPileupData({
                   modificationsData.push({
                     featureId,
                     position: j,
+                    base: 'C',
+                    isSimplex: false,
+                    strand: methStrand,
                     r: 0,
                     g: 0,
                     b: 255,
@@ -1001,6 +1215,9 @@ export async function executeRenderWebGLPileupData({
                 modificationsData.push({
                   featureId,
                   position: j,
+                  base: 'C',
+                  isSimplex: false,
+                  strand: strand === -1 ? -1 : 1,
                   r: 0,
                   g: 0,
                   b: 255,
@@ -1017,6 +1234,9 @@ export async function executeRenderWebGLPileupData({
                   modificationsData.push({
                     featureId,
                     position: j + 1,
+                    base: 'C',
+                    isSimplex: false,
+                    strand: methStrand,
                     r: 255,
                     g: 192,
                     b: 203,
@@ -1028,6 +1248,9 @@ export async function executeRenderWebGLPileupData({
                   modificationsData.push({
                     featureId,
                     position: j + 1,
+                    base: 'C',
+                    isSimplex: false,
+                    strand: methStrand,
                     r: 128,
                     g: 0,
                     b: 128,
@@ -1268,10 +1491,12 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
+  const trackStrands = colorBy?.type === 'modifications'
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
-    async () => computeCoverage(features, gaps, regionStart, regionEnd),
+    async () =>
+      computeCoverage(features, gaps, regionStart, regionEnd, trackStrands),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -1292,8 +1517,14 @@ export async function executeRenderWebGLPileupData({
 
   const modCoverage = computeModificationCoverage(
     modifications,
+    mismatches,
+    coverage.depths,
     coverage.maxDepth,
+    coverage.fwdDepths,
+    coverage.revDepths,
+    coverage.startOffset,
     regionStart,
+    regionSequence,
   )
 
   // Build tooltip data for positions with SNPs or interbase events

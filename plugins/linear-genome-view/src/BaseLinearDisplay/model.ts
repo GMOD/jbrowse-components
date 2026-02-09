@@ -437,7 +437,6 @@ function stateModelFactory() {
          */
         async reload() {
           self.setError()
-          self.setCurrStatsBpPerPx(0)
           self.clearFeatureDensityStats()
           for (const val of self.blockState.values()) {
             val.doReload()

@@ -9,7 +9,7 @@
 
 import { splitPositionWithFrac } from './shaders/index.ts'
 import type { ColorPalette } from './shaders/index.ts'
-import type { GPUBuffers, RenderState } from './WebGLRenderer.ts'
+import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
  * PileupRenderer orchestrates rendering of reads and CIGAR features in pileup mode.
@@ -145,49 +145,49 @@ export class PileupRenderer {
 
     gl.disable(gl.STENCIL_TEST)
 
-    // Draw CIGAR features if enabled (suppress when showing modifications overlay)
+    // Draw gaps (deletions and skips) - always draw regardless of modifications
+    if (state.showMismatches && buffers.gapVAO && buffers.gapCount > 0) {
+      gl.useProgram(this.parent.gapProgram)
+      gl.uniform2f(
+        this.parent.gapUniforms.u_bpRangeX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.parent.gapUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(
+        this.parent.gapUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.parent.gapUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
+      gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
+      gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform3f(
+        this.parent.gapUniforms.u_colorDeletion!,
+        colors.colorDeletion[0],
+        colors.colorDeletion[1],
+        colors.colorDeletion[2],
+      )
+      gl.uniform3f(
+        this.parent.gapUniforms.u_colorSkip!,
+        colors.colorSkip[0],
+        colors.colorSkip[1],
+        colors.colorSkip[2],
+      )
+      gl.uniform1i(this.parent.gapUniforms.u_eraseMode!, 0)
+
+      gl.bindVertexArray(buffers.gapVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.gapCount)
+    }
+
+    // Draw mismatches only when not showing modifications
     if (state.showMismatches && !state.showModifications) {
-      // Draw gaps (deletions and skips)
-      if (buffers.gapVAO && buffers.gapCount > 0) {
-        gl.useProgram(this.parent.gapProgram)
-        gl.uniform2f(
-          this.parent.gapUniforms.u_bpRangeX!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform2f(
-          this.parent.gapUniforms.u_rangeY!,
-          state.rangeY[0],
-          state.rangeY[1],
-        )
-        gl.uniform1f(
-          this.parent.gapUniforms.u_featureHeight!,
-          state.featureHeight,
-        )
-        gl.uniform1f(
-          this.parent.gapUniforms.u_featureSpacing!,
-          state.featureSpacing,
-        )
-        gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
-        gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform3f(
-          this.parent.gapUniforms.u_colorDeletion!,
-          colors.colorDeletion[0],
-          colors.colorDeletion[1],
-          colors.colorDeletion[2],
-        )
-        gl.uniform3f(
-          this.parent.gapUniforms.u_colorSkip!,
-          colors.colorSkip[0],
-          colors.colorSkip[1],
-          colors.colorSkip[2],
-        )
-        gl.uniform1i(this.parent.gapUniforms.u_eraseMode!, 0)
-
-        gl.bindVertexArray(buffers.gapVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.gapCount)
-      }
-
       // Draw mismatches
       if (buffers.mismatchVAO && buffers.mismatchCount > 0) {
         gl.useProgram(this.parent.mismatchProgram)
@@ -236,45 +236,47 @@ export class PileupRenderer {
         gl.bindVertexArray(buffers.mismatchVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.mismatchCount)
       }
+    }
 
-      // Draw insertions
-      // Each insertion is 3 rectangles (bar + 2 ticks) = 18 vertices
-      if (buffers.insertionVAO && buffers.insertionCount > 0) {
-        gl.useProgram(this.parent.insertionProgram)
-        gl.uniform2f(
-          this.parent.insertionUniforms.u_bpRangeX!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform2f(
-          this.parent.insertionUniforms.u_rangeY!,
-          state.rangeY[0],
-          state.rangeY[1],
-        )
-        gl.uniform1f(
-          this.parent.insertionUniforms.u_featureHeight!,
-          state.featureHeight,
-        )
-        gl.uniform1f(
-          this.parent.insertionUniforms.u_featureSpacing!,
-          state.featureSpacing,
-        )
-        gl.uniform1f(
-          this.parent.insertionUniforms.u_coverageOffset!,
-          coverageOffset,
-        )
-        gl.uniform1f(this.parent.insertionUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.parent.insertionUniforms.u_canvasWidth!, canvasWidth)
-        // Insertion color uniform from theme
-        gl.uniform3f(
-          this.parent.insertionUniforms.u_colorInsertion!,
-          ...colors.colorInsertion,
-        )
+    // Draw insertions - always draw regardless of modifications
+    if (state.showMismatches && buffers.insertionVAO && buffers.insertionCount > 0) {
+      gl.useProgram(this.parent.insertionProgram)
+      gl.uniform2f(
+        this.parent.insertionUniforms.u_bpRangeX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.parent.insertionUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(
+        this.parent.insertionUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.parent.insertionUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
+      gl.uniform1f(
+        this.parent.insertionUniforms.u_coverageOffset!,
+        coverageOffset,
+      )
+      gl.uniform1f(this.parent.insertionUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.parent.insertionUniforms.u_canvasWidth!, canvasWidth)
+      // Insertion color uniform from theme
+      gl.uniform3f(
+        this.parent.insertionUniforms.u_colorInsertion!,
+        ...colors.colorInsertion,
+      )
 
-        gl.bindVertexArray(buffers.insertionVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, buffers.insertionCount)
-      }
+      gl.bindVertexArray(buffers.insertionVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, buffers.insertionCount)
+    }
 
+    // Draw clips and mismatches only when not showing modifications
+    if (state.showMismatches && !state.showModifications) {
       // Draw soft clips
       if (buffers.softclipVAO && buffers.softclipCount > 0) {
         gl.useProgram(this.parent.softclipProgram)
@@ -515,6 +517,3 @@ export class PileupRenderer {
     gl.bindVertexArray(null)
   }
 }
-
-// Type-only import to satisfy parent type reference
-import type { WebGLRenderer } from './WebGLRenderer.ts'

@@ -4,7 +4,7 @@ import {
 } from '../../model.ts'
 
 // Gap (deletion/skip) vertex shader - colored rectangles over reads
-// Deletions are grey (#808080), skips are teal/blue (#97b8c9)
+// Deletions are dark grey (#404040), skips are teal/blue (#97b8c9)
 // Uses integer attributes for compact representation
 export const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;

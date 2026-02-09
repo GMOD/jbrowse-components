@@ -50,7 +50,7 @@ export const defaultColorPalette: ColorPalette = {
   colorBaseT: toRgb('#f44336'),
   // Theme defaults from packages/core/src/ui/theme.ts
   colorInsertion: toRgb('#800080'),
-  colorDeletion: toRgb('#808080'),
+  colorDeletion: toRgb('#404040'),
   colorSkip: toRgb('#009a8a'),
   colorSoftclip: toRgb('#00f'),
   colorHardclip: toRgb('#f00'),

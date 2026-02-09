@@ -4,10 +4,19 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { BaseLinearDisplayModel } from '../model.ts'
 
-// stats estimation autorun calls getFeatureDensityStats against the data
-// adapter which by default uses featureDensity, but can also respond with a
-// byte size estimate and fetch size limit (data adapter can define what is too
-// much data)
+/**
+ * Autorun that fetches feature density statistics from the data adapter.
+ *
+ * Stats provide:
+ * - featureDensity: features per base pair (for density-based limits)
+ * - bytes: estimated data size to fetch (for byte-based limits)
+ * - fetchSizeLimit: adapter-defined max bytes (optional)
+ *
+ * Optimization: Once we have stats with featureDensity, we don't re-fetch
+ * on zoom changes. Stats are estimates and "good enough" across zoom levels.
+ * This prevents redundant RPC calls while still protecting against loading
+ * too much data.
+ */
 export default async function autorunFeatureDensityStats(
   self: BaseLinearDisplayModel,
 ) {
@@ -19,7 +28,6 @@ export default async function autorunFeatureDensityStats(
     if (
       !view.initialized ||
       !view.staticBlocks.contentBlocks.length ||
-      view.bpPerPx === self.currStatsBpPerPx ||
       self.error
     ) {
       return
@@ -28,12 +36,10 @@ export default async function autorunFeatureDensityStats(
     // don't re-estimate featureDensity even if zoom level changes,
     // jbrowse 1-style assume it's sort of representative
     if (self.featureDensityStats?.featureDensity !== undefined) {
-      self.setCurrStatsBpPerPx(view.bpPerPx)
       return
     }
 
     self.clearFeatureDensityStats()
-    self.setCurrStatsBpPerPx(view.bpPerPx)
     const stats = await self.getFeatureDensityStats()
     if (isAlive(self)) {
       self.setFeatureDensityStats(stats)

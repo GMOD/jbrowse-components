@@ -19,18 +19,32 @@ type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 /**
  * #stateModel FeatureDensityMixin
  * #category display
+ *
+ * Manages feature density statistics and "too large" region warnings.
+ *
+ * State machine:
+ * 1. On zoom change, autorun fetches density stats from adapter
+ * 2. Stats are compared against limits (byte size or feature density)
+ * 3. If region too large, warning shown with "Force load" button
+ * 4. User can click "Force load" to set override (userBpPerPxLimit or userByteSizeLimit)
+ * 5. Override persists until user zooms out further (triggering new warning)
+ *
+ * Key insight: Stats are estimates. We don't require them to be perfectly
+ * synchronized with current zoom level - having ANY stats or user override
+ * is sufficient to proceed with data fetching.
  */
 export default function FeatureDensityMixin() {
   return types
     .model({
       /**
        * #property
+       * User override: maximum bpPerPx allowed (set by "Force load")
        */
       userBpPerPxLimit: types.maybe(types.number),
       /**
        * #property
+       * User override: maximum byte size allowed (set by "Force load")
        */
-
       userByteSizeLimit: types.maybe(types.number),
     })
     .volatile(() => ({
@@ -38,7 +52,6 @@ export default function FeatureDensityMixin() {
         | undefined
         | Promise<FeatureDensityStats>,
       featureDensityStats: undefined as undefined | FeatureDensityStats,
-      currStatsBpPerPx: 0,
     }))
     .views(self => ({
       /**
@@ -65,12 +78,18 @@ export default function FeatureDensityMixin() {
       },
       /**
        * #getter
+       * Stats are "ready" if we have ANY information to make decisions:
+       * - Auto-fetched stats from adapter, OR
+       * - User has clicked "Force load" (user override set)
+       *
+       * We don't require stats to be synchronized with current zoom level.
+       * Stats are estimates and having slightly stale stats is fine.
        */
       get featureDensityStatsReady() {
-        const view = getContainingView(self) as LGV
         return (
-          self.currStatsBpPerPx === view.bpPerPx &&
-          (!!self.featureDensityStats || !!self.userBpPerPxLimit)
+          !!self.featureDensityStats ||
+          !!self.userBpPerPxLimit ||
+          !!self.userByteSizeLimit
         )
       },
 
@@ -97,12 +116,6 @@ export default function FeatureDensityMixin() {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setCurrStatsBpPerPx(n: number) {
-        self.currStatsBpPerPx = n
-      },
       /**
        * #action
        */
@@ -155,11 +168,16 @@ export default function FeatureDensityMixin() {
     .views(self => ({
       /**
        * #getter
-       * region is too large if:
-       * - stats are ready
-       * - region is greater than 20kb (don't warn when zoomed in less than that)
-       * - and bytes is greater than max allowed bytes or density greater than max
-       *   density
+       * Determines if the region is too large to safely render.
+       *
+       * Returns false if:
+       * - Stats not ready yet
+       * - Region is small (<20kb) - no need to warn when zoomed in
+       *
+       * Returns true if:
+       * - Byte limit exceeded (checked first, most definitive), OR
+       * - User has force-loaded before and current zoom exceeds that limit, OR
+       * - Feature density exceeds threshold (fallback if no byte limit)
        */
       get regionTooLarge() {
         const view = getContainingView(self) as LGV
@@ -169,12 +187,16 @@ export default function FeatureDensityMixin() {
         ) {
           return false
         }
-        return (
-          self.currentBytesRequested > self.maxAllowableBytes ||
-          (self.userBpPerPxLimit
-            ? view.bpPerPx > self.userBpPerPxLimit
-            : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
-        )
+
+        if (self.currentBytesRequested > self.maxAllowableBytes) {
+          return true
+        }
+
+        if (self.userBpPerPxLimit) {
+          return view.bpPerPx > self.userBpPerPxLimit
+        }
+
+        return self.currentFeatureScreenDensity > self.maxFeatureScreenDensity
       },
 
       /**

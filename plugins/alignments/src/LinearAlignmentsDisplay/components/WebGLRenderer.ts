@@ -61,7 +61,6 @@ import {
   SOFTCLIP_VERTEX_SHADER,
   arcColorPalette,
   arcLineColorPalette,
-  defaultColorPalette,
   sashimiColorPalette,
   splitPositionWithFrac,
 } from './shaders/index.ts'
@@ -95,8 +94,8 @@ export interface RenderState {
   highlightedFeatureIndex: number
   // Selected feature for outline (-1 means no selection)
   selectedFeatureIndex: number
-  // Optional color palette - uses defaultColorPalette if not provided
-  colors?: Partial<ColorPalette>
+  // Color palette from theme
+  colors: ColorPalette
   // Rendering mode - 'pileup' (default), 'arcs', or 'cloud'
   renderingMode?: 'pileup' | 'arcs' | 'cloud'
   // Arcs-specific
@@ -1963,7 +1962,7 @@ export class WebGLRenderer {
     gl.stencilMask(0xff)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
 
-    const colors: ColorPalette = { ...defaultColorPalette, ...state.colors }
+    const colors = state.colors
     const mode = state.renderingMode ?? 'pileup'
 
     for (const block of blocks) {
@@ -2079,7 +2078,7 @@ export class WebGLRenderer {
       state.bpRangeX[0] - regionStart,
       state.bpRangeX[1] - regionStart,
     ]
-    const colors: ColorPalette = { ...defaultColorPalette, ...state.colors }
+    const colors = state.colors
 
     // Draw coverage first (at top) — shared across all modes
     this.coverageRenderer.render(state, domainOffset, colors)
