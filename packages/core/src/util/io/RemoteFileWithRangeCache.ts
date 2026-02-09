@@ -1,46 +1,38 @@
-import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
 import { RemoteFile } from 'generic-filehandle2'
 
-type BinaryRangeFetch = (
-  url: string,
-  start: number,
-  end: number,
-  options?: { headers?: HeadersInit; stopToken?: string },
-) => Promise<BinaryRangeResponse>
+const CHUNK_SIZE = 128 * 1024 // 128KiB
+const CACHE_NAME = 'jbrowse-range-cache'
 
-export interface BinaryRangeResponse {
-  headers: Record<string, string>
-  requestDate: Date
-  responseDate: Date
-  buffer: Uint8Array
-}
+const hasCacheAPI = typeof caches !== 'undefined'
+let mapCache = new Map<string, Uint8Array>()
 
-const fetchers: Record<string, BinaryRangeFetch> = {}
-
-function binaryRangeFetch(
-  url: string,
-  start: number,
-  end: number,
-  options: { headers?: HeadersInit; stopToken?: string } = {},
-): Promise<BinaryRangeResponse> {
-  const fetcher = fetchers[url]
-  if (!fetcher) {
-    throw new Error(`fetch not registered for ${url}`)
+async function getCached(key: string) {
+  if (hasCacheAPI) {
+    const cache = await caches.open(CACHE_NAME)
+    const res = await cache.match(key)
+    if (res) {
+      return new Uint8Array(await res.arrayBuffer())
+    }
+  } else {
+    return mapCache.get(key)
   }
-  return fetcher(url, start, end, options)
+  return undefined
 }
 
-const globalRangeCache = new HttpRangeFetcher({
-  // @ts-expect-error
-  fetch: binaryRangeFetch,
-  size: 500 * 1024 ** 2, // 500MiB
-  chunkSize: 128 * 1024, // 128KiB
-  maxFetchSize: 100 * 1024 ** 2, // 100MiB
-  minimumTTL: 24 * 60 * 60 * 1000, // 1 day
-})
+async function putCached(key: string, buffer: Uint8Array) {
+  if (hasCacheAPI) {
+    const cache = await caches.open(CACHE_NAME)
+    await cache.put(new Request(key), new Response(buffer))
+  } else {
+    mapCache.set(key, buffer)
+  }
+}
 
 export function clearCache() {
-  globalRangeCache.reset()
+  if (hasCacheAPI) {
+    caches.delete(CACHE_NAME).catch(() => {})
+  }
+  mapCache = new Map()
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
@@ -48,11 +40,6 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     url: string | RequestInfo,
     init?: RequestInit,
   ): Promise<Response> {
-    const str = String(url)
-    if (!fetchers[str]) {
-      fetchers[str] = this.fetchBinaryRange.bind(this)
-    }
-    // if it is a range request, route it through the range cache
     const range = new Headers(init?.headers).get('range')
     if (range) {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
@@ -60,58 +47,65 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         const [, start, end] = rangeParse
         const s = Number.parseInt(start!, 10)
         const e = Number.parseInt(end!, 10)
-        const len = e - s
-        const { buffer, headers } = (await globalRangeCache.getRange(
-          `${url}`,
-          s,
-          len + 1,
-        )) as BinaryRangeResponse
-        return new Response(buffer as BodyInit, {
-          status: 206,
-          headers,
-        })
+        const buffer = await this.getCachedRange(String(url), s, e)
+        return new Response(buffer, { status: 206 })
       }
     }
     return super.fetch(url, init)
   }
 
-  public async fetchBinaryRange(
-    url: string,
-    start: number,
-    end: number,
-    options: { headers?: HeadersInit; stopToken?: string } = {},
-  ): Promise<BinaryRangeResponse> {
-    const requestDate = new Date()
+  private async getCachedRange(url: string, start: number, end: number) {
+    const startChunk = Math.floor(start / CHUNK_SIZE)
+    const endChunk = Math.floor(end / CHUNK_SIZE)
+
+    const buffers: Uint8Array[] = []
+    for (let i = startChunk; i <= endChunk; i++) {
+      buffers.push(await this.getChunk(url, i))
+    }
+
+    if (buffers.length === 1) {
+      const sliceStart = start - startChunk * CHUNK_SIZE
+      return buffers[0]!.subarray(sliceStart, sliceStart + (end - start + 1))
+    }
+
+    const totalLen = buffers.reduce((acc, b) => acc + b.length, 0)
+    const combined = new Uint8Array(totalLen)
+    let offset = 0
+    for (const buf of buffers) {
+      combined.set(buf, offset)
+      offset += buf.length
+    }
+
+    const sliceStart = start - startChunk * CHUNK_SIZE
+    return combined.subarray(sliceStart, sliceStart + (end - start + 1))
+  }
+
+  private async getChunk(url: string, chunkNum: number) {
+    const sep = url.includes('?') ? '&' : '?'
+    const cacheKey = `${url}${sep}__jb_chunk=${chunkNum}`
+
+    const cached = await getCached(cacheKey)
+    if (cached) {
+      return cached
+    }
+
+    const chunkStart = chunkNum * CHUNK_SIZE
+    const chunkEnd = chunkStart + CHUNK_SIZE - 1
     const res = await super.fetch(url, {
-      ...options,
-      headers: {
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...options.headers,
-        range: `bytes=${start}-${end}`,
-      },
+      headers: { range: `bytes=${chunkStart}-${chunkEnd}` },
     })
-    const responseDate = new Date()
     if (!res.ok) {
-      const errorMessage = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}`
-      const hint = ' (should be 206 for range requests)'
-      throw new Error(`${errorMessage}${res.status === 200 ? hint : ''}`)
+      const hint =
+        res.status === 200 ? ' (should be 206 for range requests)' : ''
+      throw Object.assign(
+        new Error(
+          `HTTP ${res.status} fetching ${url} bytes ${chunkStart}-${chunkEnd}${hint}`,
+        ),
+        { status: res.status },
+      )
     }
-
-    // translate the Headers object into a regular key -> value object.
-    // will miss duplicate headers of course
-
-    const headers: Record<string, any> = {}
-    for (const [k, v] of res.headers.entries()) {
-      headers[k] = v
-    }
-
-    // return the response headers, and the data buffer
-    const arrayBuffer = await res.arrayBuffer()
-    return {
-      headers,
-      requestDate,
-      responseDate,
-      buffer: new Uint8Array(arrayBuffer),
-    }
+    const buffer = new Uint8Array(await res.arrayBuffer())
+    await putCached(cacheKey, buffer)
+    return buffer
   }
 }
