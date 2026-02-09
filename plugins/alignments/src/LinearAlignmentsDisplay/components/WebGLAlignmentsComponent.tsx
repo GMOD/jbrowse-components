@@ -1544,11 +1544,15 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             position: coverageHit.position,
             depth: coverageHit.depth,
             snps: {},
+            delskips: {},
             interbase: {},
           }
-          // Remove delskips from coverage tooltip - users see skip stats via sashimi arcs instead
-          if (bin && 'delskips' in bin) {
-            delete bin.delskips
+          // Remove skips from delskips (keep deletions only)
+          // Users see skip/splice junction stats via sashimi arcs instead
+          if (bin && 'delskips' in bin && bin.delskips) {
+            bin.delskips = Object.fromEntries(
+              Object.entries(bin.delskips).filter(([type]) => type === 'deletion'),
+            )
           }
           // If no tooltipBin but we have basic SNP data from hit test, include it
           if (!tooltipBin && coverageHit.snps.length > 0) {
