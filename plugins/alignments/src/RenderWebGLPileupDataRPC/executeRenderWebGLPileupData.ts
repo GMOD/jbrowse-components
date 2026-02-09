@@ -869,15 +869,22 @@ export async function executeRenderWebGLPileupData({
         | undefined
       if (featureMismatches) {
         for (const mm of featureMismatches) {
-          if (mm.type === 'deletion' || mm.type === 'skip') {
-            // Use effectiveStrand for skip features (sashimi arcs) to respect XS/TS/ts tags
-            const gapStrand = mm.type === 'skip' ? getEffectiveStrand(feature) : strand
+          if (mm.type === 'deletion') {
             gapsData.push({
               featureId,
               start: featureStart + mm.start,
               end: featureStart + mm.start + mm.length,
               type: mm.type,
-              strand: gapStrand,
+              strand,
+            })
+          } else if (mm.type === 'skip') {
+            // Use effectiveStrand for skip features (sashimi arcs) to respect XS/TS/ts tags
+            gapsData.push({
+              featureId,
+              start: featureStart + mm.start,
+              end: featureStart + mm.start + mm.length,
+              type: mm.type,
+              strand: getEffectiveStrand(feature),
             })
           } else if (mm.type === 'mismatch') {
             mismatchesData.push({

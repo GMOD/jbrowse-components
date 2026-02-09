@@ -1528,14 +1528,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         // Look up detailed tooltip data from rpcData
         const posOffset =
           coverageHit.position - (blockRpcData?.regionStart ?? 0)
-        // For coverage, check nearby positions in tooltipData (within 1bp)
-        let tooltipBin = blockRpcData?.tooltipData[posOffset]
-        if (!tooltipBin) {
-          // Check adjacent positions
-          tooltipBin =
-            blockRpcData?.tooltipData[posOffset - 1] ||
-            blockRpcData?.tooltipData[posOffset + 1]
-        }
+        // Use exact position's data only - don't check adjacent positions
+        // This prevents tooltip from showing stale data from neighboring positions
+        const tooltipBin = blockRpcData?.tooltipData[posOffset]
         const refName = blockInfo?.refName
 
         if (tooltipBin || coverageHit.depth > 0) {
