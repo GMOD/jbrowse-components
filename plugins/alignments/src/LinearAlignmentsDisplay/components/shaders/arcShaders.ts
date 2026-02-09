@@ -34,8 +34,8 @@ in float a_x2;
 in float a_colorType;
 in float a_isArc;
 
-uniform float u_domainStartOffset;
-uniform float u_domainExtent;
+uniform float u_bpStartOffset;
+uniform float u_bpRegionLength;
 uniform float u_canvasWidth;
 uniform float u_canvasHeight;
 uniform float u_blockStartPx;
@@ -75,7 +75,7 @@ vec2 evalCurve(float t) {
   float radius = (a_x2 - a_x1) / 2.0;
   float absrad = abs(radius);
   float cx = a_x1 + radius;
-  float pxPerBp = u_blockWidth / u_domainExtent;
+  float pxPerBp = u_blockWidth / u_bpRegionLength;
   float absradPx = absrad * pxPerBp;
   float availableHeight = u_canvasHeight - u_coverageOffset;
   float destY = min(availableHeight, absradPx);
@@ -94,7 +94,7 @@ vec2 evalCurve(float t) {
     x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
     y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   }
-  float screenX = u_blockStartPx + (x_bp - u_domainStartOffset) * pxPerBp;
+  float screenX = u_blockStartPx + (x_bp - u_bpStartOffset) * pxPerBp;
   return vec2(screenX, y_px);
 }
 
@@ -145,7 +145,7 @@ precision highp int;
 in uint a_position;
 in float a_y;
 in float a_colorType;
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -161,8 +161,8 @@ void main() {
   uint absPos = a_position + u_regionStart;
   vec2 splitPos = hpSplitUint(absPos);
   // Map genomic position to block-relative pixel, then to global clip space
-  float domainFrac = hpScaleLinear(splitPos, u_domainX);
-  float screenX = u_blockStartPx + domainFrac * u_blockWidth;
+  float normalizedBpPos = hpScaleLinear(splitPos, u_bpRangeX);
+  float screenX = u_blockStartPx + normalizedBpPos * u_blockWidth;
   float sx = (screenX / u_canvasWidth) * 2.0 - 1.0;
   float sy = 1.0 - ((a_y + u_coverageOffset) / u_canvasHeight) * 2.0;
   gl_Position = vec4(sx, sy, 0.0, 1.0);

@@ -5,7 +5,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 interface UseWebGLViewInteractionProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
   view: LinearGenomeViewModel | undefined
-  onRender: (domainX: [number, number]) => void
+  onRender: (bpRangeX: [number, number]) => void
 }
 
 /**

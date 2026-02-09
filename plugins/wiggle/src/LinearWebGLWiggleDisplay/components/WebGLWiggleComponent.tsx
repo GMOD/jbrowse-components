@@ -108,7 +108,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
-    (domainX: [number, number]) => {
+    (bpRangeX: [number, number]) => {
       const renderer = rendererRef.current
       if (!renderer) {
         return
@@ -122,7 +122,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
 
       renderer.render({
-        domainX,
+        bpRangeX,
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
         color: parseColor(model.color),
@@ -183,7 +183,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     for (const vr of visibleRegions) {
       blocks.push({
         regionNumber: vr.regionNumber,
-        domainX: [vr.start, vr.end],
+        bpRangeX: [vr.start, vr.end],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
       })

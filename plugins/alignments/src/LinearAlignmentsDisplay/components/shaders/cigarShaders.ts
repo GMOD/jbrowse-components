@@ -14,7 +14,7 @@ in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in uint a_y;          // pileup row
 in uint a_type;       // 0=deletion, 1=skip
 
-uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
+uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -30,9 +30,9 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float sx1 = (float(a_position.x) - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (float(a_position.y) - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float sx1 = (float(a_position.x) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+  float sx2 = (float(a_position.y) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
   // Gap fills the full feature height (like normal renderer)
@@ -73,7 +73,7 @@ in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in uint a_base;       // ASCII character code (65='A', 67='C', 71='G', 84='T', etc.)
 
-uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
+uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -95,9 +95,9 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float pos = float(a_position);
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float sx1 = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (pos + 1.0 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float sx1 = (pos - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+  float sx2 = (pos + 1.0 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -162,7 +162,7 @@ in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in uint a_length;     // insertion length
 
-uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
+uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -202,12 +202,12 @@ void main() {
 
   float pos = float(a_position);
   float len = float(a_length);
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float bpPerPx = domainWidth / u_canvasWidth;
+  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float bpPerPx = regionLengthBp / u_canvasWidth;
   float pxPerBp = 1.0 / bpPerPx;
 
   // Center position in clip space
-  float cxClip = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float cxClip = (pos - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
   // Adaptive large insertion rendering:
   // - When zoomed in enough to read text: show wide box for text label
@@ -328,7 +328,7 @@ in uint a_position;  // Position offset from regionStart
 in uint a_y;         // pileup row
 in uint a_length;    // clip length
 
-uniform vec2 u_domainX;
+uniform vec2 u_bpRangeX;
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -347,8 +347,8 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float pos = float(a_position);
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float bpPerPx = domainWidth / u_canvasWidth;
+  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float bpPerPx = regionLengthBp / u_canvasWidth;
 
   // Soft clip bar width
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
@@ -356,8 +356,8 @@ void main() {
   float x1 = pos - barWidthBp * 0.5;
   float x2 = pos + barWidthBp * 0.5;
 
-  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx1 = (x1 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+  float sx2 = (x2 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
   // Ensure minimum width
   float minWidth = 2.0 / u_canvasWidth;
@@ -405,7 +405,7 @@ in uint a_position;  // Position offset from regionStart
 in uint a_y;         // pileup row
 in uint a_length;    // clip length
 
-uniform vec2 u_domainX;
+uniform vec2 u_bpRangeX;
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -424,8 +424,8 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float pos = float(a_position);
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float bpPerPx = domainWidth / u_canvasWidth;
+  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float bpPerPx = regionLengthBp / u_canvasWidth;
 
   // Hard clip bar width
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
@@ -433,8 +433,8 @@ void main() {
   float x1 = pos - barWidthBp * 0.5;
   float x2 = pos + barWidthBp * 0.5;
 
-  float sx1 = (x1 - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (x2 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float sx1 = (x1 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+  float sx2 = (x2 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
   // Ensure minimum width
   float minWidth = 2.0 / u_canvasWidth;
@@ -482,7 +482,7 @@ in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in vec4 a_color;      // RGBA color (normalized from Uint8)
 
-uniform vec2 u_domainX;  // [domainStart, domainEnd] as offsets
+uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -498,9 +498,9 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float pos = float(a_position);
-  float domainWidth = u_domainX.y - u_domainX.x;
-  float sx1 = (pos - u_domainX.x) / domainWidth * 2.0 - 1.0;
-  float sx2 = (pos + 1.0 - u_domainX.x) / domainWidth * 2.0 - 1.0;
+  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float sx1 = (pos - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+  float sx2 = (pos + 1.0 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;

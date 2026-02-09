@@ -11,14 +11,14 @@ vec2 hpSplitUint(uint value) {
   return vec2(float(hi), float(lo));
 }
 
-float hpScaleLinear(vec2 splitPos, vec3 domain) {
-  float hi = splitPos.x - domain.x;
-  float lo = splitPos.y - domain.y;
-  return (hi + lo) / domain.z;
+float hpScaleLinear(vec2 splitPos, vec3 bpRange) {
+  float hi = splitPos.x - bpRange.x;
+  float lo = splitPos.y - bpRange.y;
+  return (hi + lo) / bpRange.z;
 }
 
-float hpToClipX(vec2 splitPos, vec3 domain) {
-  return hpScaleLinear(splitPos, domain) * 2.0 - 1.0;
+float hpToClipX(vec2 splitPos, vec3 bpRange) {
+  return hpScaleLinear(splitPos, bpRange) * 2.0 - 1.0;
 }
 `
 

@@ -67,7 +67,7 @@ import type { ColorPalette } from './shaders/index.ts'
 export type { ColorPalette, RGBColor } from './shaders/index.ts'
 
 export interface RenderState {
-  domainX: [number, number] // absolute genomic positions
+  bpRangeX: [number, number] // absolute genomic positions
   rangeY: [number, number]
   colorScheme: number
   featureHeight: number
@@ -280,7 +280,7 @@ export class WebGLRenderer {
     gl.bindVertexArray(null)
 
     this.cacheUniforms(this.readProgram, this.readUniforms, [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_rangeY',
       'u_colorScheme',
@@ -355,7 +355,7 @@ export class WebGLRenderer {
     ])
 
     const cigarUniforms = [
-      'u_domainX',
+      'u_bpRangeX',
       'u_rangeY',
       'u_featureHeight',
       'u_featureSpacing',
@@ -403,8 +403,8 @@ export class WebGLRenderer {
     )
 
     this.cacheUniforms(this.arcProgram, this.arcUniforms, [
-      'u_domainStartOffset',
-      'u_domainExtent',
+      'u_bpStartOffset',
+      'u_bpRegionLength',
       'u_canvasWidth',
       'u_canvasHeight',
       'u_coverageOffset',
@@ -421,7 +421,7 @@ export class WebGLRenderer {
     }
 
     this.cacheUniforms(this.arcLineProgram, this.arcLineUniforms, [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
       'u_coverageOffset',
@@ -457,7 +457,7 @@ export class WebGLRenderer {
       CLOUD_FRAGMENT_SHADER,
     )
     this.cacheUniforms(this.cloudProgram, this.cloudUniforms, [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_featureHeight',
       'u_canvasHeight',
@@ -1761,7 +1761,7 @@ export class WebGLRenderer {
   renderBlocks(
     blocks: {
       regionNumber: number
-      domainX: [number, number]
+      bpRangeX: [number, number]
       screenStartPx: number
       screenEndPx: number
     }[],
@@ -1811,15 +1811,15 @@ export class WebGLRenderer {
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const bpPerPx =
         fullBlockWidth > 0
-          ? (block.domainX[1] - block.domainX[0]) / fullBlockWidth
+          ? (block.bpRangeX[1] - block.bpRangeX[0]) / fullBlockWidth
           : 1
-      const clippedDomainStart =
-        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedDomainEnd =
-        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-      const clippedDomainOffset: [number, number] = [
-        clippedDomainStart - regionStart,
-        clippedDomainEnd - regionStart,
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const clippedBpOffset: [number, number] = [
+        clippedBpStart - regionStart,
+        clippedBpEnd - regionStart,
       ]
 
       // Per-block viewport: maps shader's [-1,1] clip space to this block's
@@ -1828,26 +1828,26 @@ export class WebGLRenderer {
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
       const blockState: RenderState = {
         ...state,
-        domainX: [clippedDomainStart, clippedDomainEnd] as [number, number],
+        bpRangeX: [clippedBpStart, clippedBpEnd] as [number, number],
         canvasWidth: scissorW,
       }
 
       // Draw coverage for this block (always uses viewport-clipped domain)
-      this.renderCoverage(blockState, clippedDomainOffset, colors)
+      this.renderCoverage(blockState, clippedBpOffset, colors)
 
       if (mode === 'arcs') {
         // Arcs use full-canvas viewport with global positioning uniforms.
         // Restore full viewport so arc positions are globally stable.
         gl.viewport(0, 0, canvasWidth, canvasHeight)
         this.renderArcs(
-          { ...state, domainX: block.domainX },
+          { ...state, bpRangeX: block.bpRangeX },
           block.screenStartPx,
           fullBlockWidth,
         )
       } else if (mode === 'cloud') {
         this.renderCloud(blockState)
       } else {
-        this.renderPileup(blockState, clippedDomainOffset, colors, scissorX)
+        this.renderPileup(blockState, clippedBpOffset, colors, scissorX)
       }
     }
 
@@ -1881,8 +1881,8 @@ export class WebGLRenderer {
     // Common preamble for all rendering modes
     const regionStart = this.buffers.regionStart
     const domainOffset: [number, number] = [
-      state.domainX[0] - regionStart,
-      state.domainX[1] - regionStart,
+      state.bpRangeX[0] - regionStart,
+      state.bpRangeX[1] - regionStart,
     ]
     const colors: ColorPalette = { ...defaultColorPalette, ...state.colors }
 
@@ -1918,10 +1918,10 @@ export class WebGLRenderer {
     // Compute high-precision split domain for reads (12-bit split approach).
     // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
     // reads would "stick" at integer bp positions and snap when crossing boundaries.
-    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
-      state.domainX[0],
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
+      state.bpRangeX[0],
     )
-    const domainExtent = state.domainX[1] - state.domainX[0]
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     // Draw reads
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
@@ -1934,10 +1934,10 @@ export class WebGLRenderer {
     gl.useProgram(this.readProgram)
     // Use high-precision split domain for reads (vec3: hi, lo, extent)
     gl.uniform3f(
-      this.readUniforms.u_domainX!,
-      domainStartHi,
-      domainStartLo,
-      domainExtent,
+      this.readUniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
     )
     // Pass regionStart so shader can convert offsets to absolute positions (must be integer)
     gl.uniform1ui(this.readUniforms.u_regionStart!, Math.floor(regionStart))
@@ -1979,7 +1979,7 @@ export class WebGLRenderer {
       if (this.buffers.gapVAO && this.buffers.gapCount > 0) {
         gl.useProgram(this.gapProgram)
         gl.uniform2f(
-          this.gapUniforms.u_domainX!,
+          this.gapUniforms.u_bpRangeX!,
           domainOffset[0],
           domainOffset[1],
         )
@@ -2013,7 +2013,7 @@ export class WebGLRenderer {
       if (this.buffers.mismatchVAO && this.buffers.mismatchCount > 0) {
         gl.useProgram(this.mismatchProgram)
         gl.uniform2f(
-          this.mismatchUniforms.u_domainX!,
+          this.mismatchUniforms.u_bpRangeX!,
           domainOffset[0],
           domainOffset[1],
         )
@@ -2048,7 +2048,7 @@ export class WebGLRenderer {
       if (this.buffers.insertionVAO && this.buffers.insertionCount > 0) {
         gl.useProgram(this.insertionProgram)
         gl.uniform2f(
-          this.insertionUniforms.u_domainX!,
+          this.insertionUniforms.u_bpRangeX!,
           domainOffset[0],
           domainOffset[1],
         )
@@ -2082,7 +2082,7 @@ export class WebGLRenderer {
       if (this.buffers.softclipVAO && this.buffers.softclipCount > 0) {
         gl.useProgram(this.softclipProgram)
         gl.uniform2f(
-          this.softclipUniforms.u_domainX!,
+          this.softclipUniforms.u_bpRangeX!,
           domainOffset[0],
           domainOffset[1],
         )
@@ -2116,7 +2116,7 @@ export class WebGLRenderer {
       if (this.buffers.hardclipVAO && this.buffers.hardclipCount > 0) {
         gl.useProgram(this.hardclipProgram)
         gl.uniform2f(
-          this.hardclipUniforms.u_domainX!,
+          this.hardclipUniforms.u_bpRangeX!,
           domainOffset[0],
           domainOffset[1],
         )
@@ -2155,7 +2155,7 @@ export class WebGLRenderer {
     ) {
       gl.useProgram(this.modificationProgram)
       gl.uniform2f(
-        this.modificationUniforms.u_domainX!,
+        this.modificationUniforms.u_bpRangeX!,
         domainOffset[0],
         domainOffset[1],
       )
@@ -2212,13 +2212,13 @@ export class WebGLRenderer {
         ]
 
         const sx1 =
-          ((splitStart[0]! - domainStartHi + splitStart[1]! - domainStartLo) /
-            domainExtent) *
+          ((splitStart[0]! - bpStartHi + splitStart[1]! - bpStartLo) /
+            regionLengthBp) *
             2 -
           1
         const sx2 =
-          ((splitEnd[0]! - domainStartHi + splitEnd[1]! - domainStartLo) /
-            domainExtent) *
+          ((splitEnd[0]! - bpStartHi + splitEnd[1]! - bpStartLo) /
+            regionLengthBp) *
             2 -
           1
 
@@ -2235,7 +2235,7 @@ export class WebGLRenderer {
         gl.useProgram(this.lineProgram)
         gl.uniform4f(this.lineUniforms.u_color!, 0, 0, 0, 1) // Black outline
 
-        const bpPerPx = domainExtent / canvasWidth
+        const bpPerPx = regionLengthBp / canvasWidth
         const strand = this.buffers.readStrands[idx]
         const showChevron = bpPerPx < 10 && state.featureHeight > 5
         const chevronClip = (5 / canvasWidth) * 2
@@ -2494,12 +2494,12 @@ export class WebGLRenderer {
     if (this.buffers.arcVAO && this.buffers.arcCount > 0) {
       gl.useProgram(this.arcProgram)
 
-      const domainStartOffset = state.domainX[0] - this.buffers.regionStart
-      const domainExtent = state.domainX[1] - state.domainX[0]
+      const bpStartOffset = state.bpRangeX[0] - this.buffers.regionStart
+      const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
       const coverageOffset = state.showCoverage ? state.coverageHeight : 0
-      gl.uniform1f(this.arcUniforms.u_domainStartOffset!, domainStartOffset)
-      gl.uniform1f(this.arcUniforms.u_domainExtent!, domainExtent)
+      gl.uniform1f(this.arcUniforms.u_bpStartOffset!, bpStartOffset)
+      gl.uniform1f(this.arcUniforms.u_bpRegionLength!, regionLengthBp)
       gl.uniform1f(this.arcUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform1f(this.arcUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.arcUniforms.u_blockStartPx!, blockStartPx)
@@ -2526,16 +2526,16 @@ export class WebGLRenderer {
     if (this.buffers.arcLineVAO && this.buffers.arcLineCount > 0) {
       gl.useProgram(this.arcLineProgram)
 
-      const [domainStartHi, domainStartLo] = splitPositionWithFrac(
-        state.domainX[0],
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(
+        state.bpRangeX[0],
       )
-      const domainExtent = state.domainX[1] - state.domainX[0]
+      const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
       gl.uniform3f(
-        this.arcLineUniforms.u_domainX!,
-        domainStartHi,
-        domainStartLo,
-        domainExtent,
+        this.arcLineUniforms.u_bpRangeX!,
+        bpStartHi,
+        bpStartLo,
+        regionLengthBp,
       )
       gl.uniform1ui(
         this.arcLineUniforms.u_regionStart!,
@@ -2580,17 +2580,17 @@ export class WebGLRenderer {
 
     const { canvasHeight } = state
 
-    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
-      state.domainX[0],
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
+      state.bpRangeX[0],
     )
-    const domainExtent = state.domainX[1] - state.domainX[0]
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     gl.useProgram(this.cloudProgram)
     gl.uniform3f(
-      this.cloudUniforms.u_domainX!,
-      domainStartHi,
-      domainStartLo,
-      domainExtent,
+      this.cloudUniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
     )
     gl.uniform1ui(
       this.cloudUniforms.u_regionStart!,

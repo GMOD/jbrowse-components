@@ -225,7 +225,7 @@ export default function stateModelFactory(
       statusMessage: undefined as string | undefined,
       error: null as Error | null,
       webglRef: null as unknown,
-      currentDomainX: null as [number, number] | null,
+      currentBpRangeX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
       highlightedFeatureIndex: -1,
@@ -367,7 +367,7 @@ export default function stateModelFactory(
 
       /**
        * Get the primary visible region from the parent view.
-       * Uses currentDomainX if set by the WebGL component (source of truth during/after interaction)
+       * Uses currentBpRangeX if set by the WebGL component (source of truth during/after interaction)
        * Falls back to first visibleRegion for initial load
        */
       get visibleRegion() {
@@ -384,11 +384,11 @@ export default function stateModelFactory(
 
           // If WebGL component has set the domain directly, use that
           // This is the source of truth during and after interaction
-          if (self.currentDomainX) {
+          if (self.currentBpRangeX) {
             return {
               refName: first.refName,
-              start: self.currentDomainX[0],
-              end: self.currentDomainX[1],
+              start: self.currentBpRangeX[0],
+              end: self.currentBpRangeX[1],
               assemblyName: first.assemblyName,
             }
           }
@@ -657,10 +657,10 @@ export default function stateModelFactory(
         self.setHeight(clampedHeight)
       },
 
-      setCurrentDomain(domainX: [number, number]) {
-        const cur = self.currentDomainX
-        if (cur?.[0] !== domainX[0] || cur[1] !== domainX[1]) {
-          self.currentDomainX = domainX
+      setCurrentBpRange(bpRangeX: [number, number]) {
+        const cur = self.currentBpRangeX
+        if (cur?.[0] !== bpRangeX[0] || cur[1] !== bpRangeX[1]) {
+          self.currentBpRangeX = bpRangeX
         }
       },
 

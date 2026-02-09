@@ -2,11 +2,11 @@
  * Split a position including its fractional part for smooth scrolling.
  *
  * Same as splitPosition but preserves the fractional component in the low part.
- * This is critical for the domain start position - without preserving fractional
+ * This is critical for the region start position - without preserving fractional
  * precision, scrolling appears jerky as reads "stick" at integer bp boundaries
  * and then snap to new positions.
  *
- * Used for domain start which can have sub-bp scroll offsets.
+ * Used for the region start which can have sub-bp scroll offsets.
  */
 export function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
@@ -24,10 +24,10 @@ export function splitPositionWithFrac(value: number): [number, number] {
  * The 12-bit split approach:
  * - Split 32-bit position into high bits (multiples of 4096) and low bits (0-4095)
  * - Each part has fewer significant digits, reducing Float32 rounding errors
- * - Subtract domain high/low parts separately, then combine
+ * - Subtract bpRange high/low parts separately, then combine
  * - This preserves precision even for positions like 200,000,000 bp
  *
- * Note: domain.y (low part) may include a fractional component for smooth scrolling.
+ * Note: bpRange.y (low part) may include a fractional component for smooth scrolling.
  * Read positions are integers, but the domain start can have sub-bp precision.
  */
 export const HP_GLSL_FUNCTIONS = `
@@ -43,16 +43,16 @@ vec2 hpSplitUint(uint value) {
   return vec2(float(hi), float(lo));
 }
 
-// Calculate normalized position (0-1) from split position and domain
-// domain.xy = [domainStartHi, domainStartLo], domain.z = domainExtent
-float hpScaleLinear(vec2 splitPos, vec3 domain) {
-  float hi = splitPos.x - domain.x;  // High parts subtracted (similar magnitude)
-  float lo = splitPos.y - domain.y;  // Low parts subtracted (both 0-4095)
-  return (hi + lo) / domain.z;       // Combine and normalize
+// Calculate normalized position (0-1) from split position and bpRange
+// bpRange.xy = [bpStartHi, bpStartLo], bpRange.z = regionLengthBp
+float hpScaleLinear(vec2 splitPos, vec3 bpRange) {
+  float hi = splitPos.x - bpRange.x;  // High parts subtracted (similar magnitude)
+  float lo = splitPos.y - bpRange.y;  // Low parts subtracted (both 0-4095)
+  return (hi + lo) / bpRange.z;       // Combine and normalize
 }
 
-// Calculate clip-space X from split position and domain
-float hpToClipX(vec2 splitPos, vec3 domain) {
-  return hpScaleLinear(splitPos, domain) * 2.0 - 1.0;
+// Calculate clip-space X from split position and bpRange
+float hpToClipX(vec2 splitPos, vec3 bpRange) {
+  return hpScaleLinear(splitPos, bpRange) * 2.0 - 1.0;
 }
 `

@@ -63,7 +63,7 @@ export default function stateModelFactory(
       loadedRegions: new Map<number, Region>(),
       isLoading: false,
       error: null as Error | null,
-      currentDomainX: null as [number, number] | null,
+      currentBpRangeX: null as [number, number] | null,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -195,11 +195,11 @@ export default function stateModelFactory(
             return null
           }
 
-          if (self.currentDomainX) {
+          if (self.currentBpRangeX) {
             return {
               refName: first.refName,
-              start: self.currentDomainX[0],
-              end: self.currentDomainX[1],
+              start: self.currentBpRangeX[0],
+              end: self.currentBpRangeX[1],
               assemblyName: first.assemblyName,
             }
           }
@@ -319,8 +319,8 @@ export default function stateModelFactory(
         self.error = error
       },
 
-      setCurrentDomain(domainX: [number, number]) {
-        self.currentDomainX = domainX
+      setCurrentBpRange(bpRangeX: [number, number]) {
+        self.currentBpRangeX = bpRangeX
       },
 
       setColor(color?: string) {

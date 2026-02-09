@@ -231,7 +231,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     for (const vr of visibleRegions) {
       blocks.push({
         regionNumber: vr.regionNumber,
-        domainX: [vr.start, vr.end],
+        bpRangeX: [vr.start, vr.end],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
       })

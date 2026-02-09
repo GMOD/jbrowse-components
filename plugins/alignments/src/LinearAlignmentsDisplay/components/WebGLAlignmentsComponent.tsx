@@ -166,7 +166,7 @@ interface LinearAlignmentsDisplayModel {
   highlightedFeatureIndex: number
   selectedFeatureIndex: number
   setMaxY: (y: number) => void
-  setCurrentDomain: (domain: [number, number]) => void
+  setCurrentBpRange: (domain: [number, number]) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setHighlightedFeatureIndex: (index: number) => void
@@ -389,12 +389,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     const regions = model.visibleRegions
     const blocks = regions.map(r => ({
       regionNumber: r.regionNumber,
-      domainX: [r.start, r.end] as [number, number],
+      bpRangeX: [r.start, r.end] as [number, number],
       screenStartPx: r.screenStartPx,
       screenEndPx: r.screenEndPx,
     }))
 
-    renderer.renderBlocks(blocks, { ...commonState, domainX: [0, 0] })
+    renderer.renderBlocks(blocks, { ...commonState, bpRangeX: [0, 0] })
   }, [
     model,
     colorSchemeIndex,
@@ -495,7 +495,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       const visibleBpRange = getVisibleBpRangeRef.current()
       if (visibleBpRange) {
-        model.setCurrentDomain(visibleBpRange)
+        model.setCurrentBpRange(visibleBpRange)
       }
     })
 

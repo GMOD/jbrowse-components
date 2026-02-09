@@ -14,7 +14,7 @@ in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
 in vec3 a_tagColor;          // per-read tag color (normalized 0-1 from Uint8)
 
-uniform vec3 u_domainX;  // [domainStartHi, domainStartLo, domainExtent]
+uniform vec3 u_bpRangeX;  // [bpStartHi, bpStartLo, regionLengthBp]
 uniform uint u_regionStart;  // Base position for converting offsets to absolute
 uniform vec2 u_rangeY;
 uniform int u_colorScheme;
@@ -166,8 +166,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
 
   // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
@@ -184,8 +184,8 @@ void main() {
 
   // Chevron width: 5px in clip space, only when zoomed in and feature tall enough
   float chevronClip = 5.0 / u_canvasWidth * 2.0;
-  float domainExtent = u_domainX.z;
-  float bpPerPx = domainExtent / u_canvasWidth;
+  float regionLengthBp = u_bpRangeX.z;
+  float bpPerPx = regionLengthBp / u_canvasWidth;
   bool showChevron = bpPerPx < 10.0 && u_featureHeight > 5.0;
 
   float sx;

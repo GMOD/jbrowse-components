@@ -50,7 +50,7 @@ in float a_y;          // top Y in pixels
 in float a_height;     // height in pixels
 in uvec4 a_color;      // RGBA as uint8s packed
 
-uniform vec3 u_domainX;     // [domainStartHi, domainStartLo, domainExtent]
+uniform vec3 u_bpRangeX;     // [bpStartHi, bpStartLo, regionLengthBp]
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -69,8 +69,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
 
   // Ensure minimum width
   float minWidth = 2.0 / u_canvasWidth;
@@ -119,7 +119,7 @@ in uvec2 a_position;   // [startOffset, endOffset] from regionStart
 in float a_y;          // centerY in pixels
 in uvec4 a_color;
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_scrollY;
@@ -136,8 +136,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
 
   float sx = (vid == 0) ? sx1 : sx2;
 
@@ -165,7 +165,7 @@ in float a_y;          // centerY in pixels
 in float a_direction;  // -1 for <, 1 for >
 in uvec4 a_color;
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -181,7 +181,7 @@ void main() {
 
   uint absX = a_x + u_regionStart;
   vec2 splitX = hpSplitUint(absX);
-  float cx = hpToClipX(splitX, u_domainX);
+  float cx = hpToClipX(splitX, u_bpRangeX);
 
   float yPx = a_y - u_scrollY;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -245,7 +245,7 @@ in float a_direction;  // -1 for left-pointing, 1 for right-pointing
 in float a_height;
 in uvec4 a_color;
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -261,7 +261,7 @@ void main() {
 
   uint absX = a_x + u_regionStart;
   vec2 splitX = hpSplitUint(absX);
-  float cx = hpToClipX(splitX, u_domainX);
+  float cx = hpToClipX(splitX, u_bpRangeX);
 
   float yPx = a_y - u_scrollY;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -316,7 +316,7 @@ export interface FeatureRenderState {
 
 export interface FeatureRenderBlock {
   regionNumber: number
-  domainX: [number, number]
+  bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
 }
@@ -393,7 +393,7 @@ export class WebGLFeatureRenderer {
     )
 
     const commonUniforms = [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
       'u_canvasWidth',
@@ -401,7 +401,7 @@ export class WebGLFeatureRenderer {
     ]
     this.cacheUniforms(this.rectProgram, this.rectUniforms, commonUniforms)
     this.cacheUniforms(this.lineProgram, this.lineUniforms, [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
       'u_scrollY',
@@ -676,18 +676,18 @@ export class WebGLFeatureRenderer {
       gl.scissor(scissorX, 0, scissorW, canvasHeight)
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
 
-      // Compute viewport-clipped domain for HP precision
+      // Compute viewport-clipped genomic bp range for high-precision float split
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const domainExtent = block.domainX[1] - block.domainX[0]
-      const bpPerPx = domainExtent / fullBlockWidth
-      const clippedDomainStart =
-        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedDomainEnd =
-        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+      const bpPerPx = regionLengthBp / fullBlockWidth
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
-      const [domainStartHi, domainStartLo] =
-        splitPositionWithFrac(clippedDomainStart)
-      const clippedExtent = clippedDomainEnd - clippedDomainStart
+      const [bpStartHi, bpStartLo] =
+        splitPositionWithFrac(clippedBpStart)
+      const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       const regionStart = buffers.regionStart
 
@@ -695,10 +695,10 @@ export class WebGLFeatureRenderer {
       if (buffers.lineVAO && buffers.lineCount > 0) {
         gl.useProgram(this.lineProgram)
         gl.uniform3f(
-          this.lineUniforms.u_domainX!,
-          domainStartHi,
-          domainStartLo,
-          clippedExtent,
+          this.lineUniforms.u_bpRangeX!,
+          bpStartHi,
+          bpStartLo,
+          clippedLengthBp,
         )
         gl.uniform1ui(
           this.lineUniforms.u_regionStart!,
@@ -717,10 +717,10 @@ export class WebGLFeatureRenderer {
         this.renderDynamicChevronsForBlock(
           block.regionNumber,
           regionStart,
-          block.domainX,
-          domainStartHi,
-          domainStartLo,
-          clippedExtent,
+          block.bpRangeX,
+          bpStartHi,
+          bpStartLo,
+          clippedLengthBp,
           scissorW,
           canvasHeight,
           scrollY,
@@ -730,10 +730,10 @@ export class WebGLFeatureRenderer {
       // Draw rectangles (exons, CDS, UTRs)
       gl.useProgram(this.rectProgram)
       gl.uniform3f(
-        this.rectUniforms.u_domainX!,
-        domainStartHi,
-        domainStartLo,
-        clippedExtent,
+        this.rectUniforms.u_bpRangeX!,
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
       )
       gl.uniform1ui(
         this.rectUniforms.u_regionStart!,
@@ -750,10 +750,10 @@ export class WebGLFeatureRenderer {
       if (buffers.arrowVAO && buffers.arrowCount > 0) {
         gl.useProgram(this.arrowProgram)
         gl.uniform3f(
-          this.arrowUniforms.u_domainX!,
-          domainStartHi,
-          domainStartLo,
-          clippedExtent,
+          this.arrowUniforms.u_bpRangeX!,
+          bpStartHi,
+          bpStartLo,
+          clippedLengthBp,
         )
         gl.uniform1ui(
           this.arrowUniforms.u_regionStart!,
@@ -776,10 +776,10 @@ export class WebGLFeatureRenderer {
   private renderDynamicChevronsForBlock(
     regionNumber: number,
     regionStart: number,
-    domainX: [number, number],
-    domainStartHi: number,
-    domainStartLo: number,
-    domainExtent: number,
+    bpRangeX: [number, number],
+    bpStartHi: number,
+    bpStartLo: number,
+    regionLengthBp: number,
     blockWidth: number,
     canvasHeight: number,
     scrollY: number,
@@ -791,7 +791,7 @@ export class WebGLFeatureRenderer {
     }
 
     const CHEVRON_PIXEL_SPACING = 25
-    const bpPerPx = (domainX[1] - domainX[0]) / blockWidth
+    const bpPerPx = (bpRangeX[1] - bpRangeX[0]) / blockWidth
 
     const chevronXs: number[] = []
     const chevronYs: number[] = []
@@ -872,10 +872,10 @@ export class WebGLFeatureRenderer {
     // Draw chevrons
     gl.useProgram(this.chevronProgram)
     gl.uniform3f(
-      this.chevronUniforms.u_domainX!,
-      domainStartHi,
-      domainStartLo,
-      domainExtent,
+      this.chevronUniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
     )
     gl.uniform1ui(this.chevronUniforms.u_regionStart!, Math.floor(regionStart))
     gl.uniform1f(this.chevronUniforms.u_canvasHeight!, canvasHeight)

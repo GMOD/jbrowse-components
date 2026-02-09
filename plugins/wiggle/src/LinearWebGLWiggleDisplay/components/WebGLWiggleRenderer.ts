@@ -20,7 +20,7 @@ precision highp int;
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in float a_score;     // score value
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform vec2 u_domainY;     // [min, max] score domain
@@ -45,8 +45,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
   float sx = mix(sx1, sx2, localX);
 
   // Y position based on score
@@ -85,7 +85,7 @@ precision highp int;
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in float a_score;     // score value
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform vec2 u_domainY;     // [min, max] score domain
@@ -109,8 +109,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
   float sx = mix(sx1, sx2, localX);
 
   // Density fills the full height
@@ -145,7 +145,7 @@ in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in float a_score;     // score value
 in float a_prevScore; // previous score for connecting lines
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform vec2 u_domainY;     // [min, max] score domain
@@ -171,8 +171,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
 
   float scoreYPos = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
   float prevScoreY = scoreToY(a_prevScore, u_domainY, u_canvasHeight, u_scaleType);
@@ -237,7 +237,7 @@ void main() {
 export type RenderingType = 'xyplot' | 'density' | 'line'
 
 export interface WiggleRenderState {
-  domainX: [number, number]
+  bpRangeX: [number, number]
   domainY: [number, number]
   scaleType: 'linear' | 'log'
   color: [number, number, number]
@@ -252,7 +252,7 @@ export interface WiggleRenderState {
 
 export interface WiggleRenderBlock {
   regionNumber: number
-  domainX: [number, number]
+  bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
 }
@@ -308,7 +308,7 @@ export class WebGLWiggleRenderer {
     )
 
     const uniformNames = [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
       'u_domainY',
@@ -471,7 +471,7 @@ export class WebGLWiggleRenderer {
 
   renderBlocks(
     blocks: WiggleRenderBlock[],
-    state: Omit<WiggleRenderState, 'domainX'>,
+    state: Omit<WiggleRenderState, 'bpRangeX'>,
   ) {
     const gl = this.gl
     const canvas = this.canvas
@@ -551,22 +551,22 @@ export class WebGLWiggleRenderer {
 
       // Compute viewport-clipped domain
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const domainExtent = block.domainX[1] - block.domainX[0]
-      const bpPerPx = domainExtent / fullBlockWidth
-      const clippedDomainStart =
-        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedDomainEnd =
-        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+      const bpPerPx = regionLengthBp / fullBlockWidth
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
-      const [domainStartHi, domainStartLo] =
-        splitPositionWithFrac(clippedDomainStart)
-      const clippedExtent = clippedDomainEnd - clippedDomainStart
+      const [bpStartHi, bpStartLo] =
+        splitPositionWithFrac(clippedBpStart)
+      const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       gl.uniform3f(
-        uniforms.u_domainX!,
-        domainStartHi,
-        domainStartLo,
-        clippedExtent,
+        uniforms.u_bpRangeX!,
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
       )
       gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
 
@@ -614,10 +614,10 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
-      state.domainX[0],
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
+      state.bpRangeX[0],
     )
-    const domainExtent = state.domainX[1] - state.domainX[0]
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     let program: WebGLProgram
     let uniforms: Record<string, WebGLUniformLocation | null>
@@ -639,10 +639,10 @@ export class WebGLWiggleRenderer {
 
     gl.useProgram(program)
     gl.uniform3f(
-      uniforms.u_domainX!,
-      domainStartHi,
-      domainStartLo,
-      domainExtent,
+      uniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
     )
     gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
     gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)

@@ -145,7 +145,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
-    (domainX: [number, number]) => {
+    (bpRangeX: [number, number]) => {
       const renderer = rendererRef.current
       if (!renderer) {
         return
@@ -158,7 +158,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const height = model.height
 
       renderer.render({
-        domainX,
+        bpRangeX,
         domainY: domain,
         scaleType: model.scaleType as 'linear' | 'log',
         canvasWidth: totalWidth,
@@ -213,7 +213,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     for (const vr of visibleRegions) {
       blocks.push({
         regionNumber: vr.regionNumber,
-        domainX: [vr.start, vr.end],
+        bpRangeX: [vr.start, vr.end],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
       })

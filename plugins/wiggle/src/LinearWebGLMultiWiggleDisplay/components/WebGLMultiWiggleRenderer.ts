@@ -34,7 +34,7 @@ in float a_score;     // score value
 in float a_rowIndex;  // which row (source) this feature belongs to
 in vec3 a_color;      // RGB color for this source
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform vec2 u_domainY;     // [min, max] score domain
@@ -57,8 +57,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
   float sx = mix(sx1, sx2, localX);
 
   // Calculate row dimensions
@@ -98,7 +98,7 @@ in float a_score;     // score value
 in float a_rowIndex;  // which row (source) this feature belongs to
 in vec3 a_color;      // RGB color for this source
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform vec2 u_domainY;     // [min, max] score domain
@@ -121,8 +121,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
   float sx = mix(sx1, sx2, localX);
 
   // Calculate row dimensions
@@ -158,7 +158,7 @@ in float a_prevScore; // previous score for connecting lines
 in float a_rowIndex;  // which row (source) this feature belongs to
 in vec3 a_color;      // RGB color for this source
 
-uniform vec3 u_domainX;
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform vec2 u_domainY;     // [min, max] score domain
@@ -179,8 +179,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_domainX);
-  float sx2 = hpToClipX(splitEnd, u_domainX);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
 
   // Calculate row dimensions
   float rowHeight = getRowHeight(u_canvasHeight, u_numRows, u_rowPadding);
@@ -244,7 +244,7 @@ export interface SourceRenderData {
 }
 
 export interface MultiWiggleRenderState {
-  domainX: [number, number]
+  bpRangeX: [number, number]
   domainY: [number, number]
   scaleType: 'linear' | 'log'
   canvasWidth: number
@@ -255,7 +255,7 @@ export interface MultiWiggleRenderState {
 
 export interface MultiWiggleRenderBlock {
   regionNumber: number
-  domainX: [number, number]
+  bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
 }
@@ -310,7 +310,7 @@ export class WebGLMultiWiggleRenderer {
     )
 
     const uniformNames = [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
       'u_domainY',
@@ -463,7 +463,7 @@ export class WebGLMultiWiggleRenderer {
 
   renderBlocks(
     blocks: MultiWiggleRenderBlock[],
-    state: Omit<MultiWiggleRenderState, 'domainX'>,
+    state: Omit<MultiWiggleRenderState, 'bpRangeX'>,
   ) {
     const gl = this.gl
     const canvas = this.canvas
@@ -523,22 +523,22 @@ export class WebGLMultiWiggleRenderer {
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
 
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const domainExtent = block.domainX[1] - block.domainX[0]
-      const bpPerPx = domainExtent / fullBlockWidth
-      const clippedDomainStart =
-        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedDomainEnd =
-        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+      const bpPerPx = regionLengthBp / fullBlockWidth
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
-      const [domainStartHi, domainStartLo] =
-        splitPositionWithFrac(clippedDomainStart)
-      const clippedExtent = clippedDomainEnd - clippedDomainStart
+      const [bpStartHi, bpStartLo] =
+        splitPositionWithFrac(clippedBpStart)
+      const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       gl.uniform3f(
-        uniforms.u_domainX!,
-        domainStartHi,
-        domainStartLo,
-        clippedExtent,
+        uniforms.u_bpRangeX!,
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
       )
       gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
       gl.uniform1f(uniforms.u_numRows!, buffers.numRows)
@@ -586,10 +586,10 @@ export class WebGLMultiWiggleRenderer {
       return
     }
 
-    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
-      state.domainX[0],
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(
+      state.bpRangeX[0],
     )
-    const domainExtent = state.domainX[1] - state.domainX[0]
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     let program: WebGLProgram
     let uniforms: Record<string, WebGLUniformLocation | null>
@@ -611,10 +611,10 @@ export class WebGLMultiWiggleRenderer {
 
     gl.useProgram(program)
     gl.uniform3f(
-      uniforms.u_domainX!,
-      domainStartHi,
-      domainStartLo,
-      domainExtent,
+      uniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
     )
     gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
     gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
