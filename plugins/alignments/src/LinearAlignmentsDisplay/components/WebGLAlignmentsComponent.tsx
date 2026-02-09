@@ -24,52 +24,34 @@ import {
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
+import {
+  buildColorPaletteFromTheme,
+  canvasToGenomicCoords,
+  formatCigarTooltip,
+  getCanvasCoords,
+  uploadRegionDataToGPU,
+} from './alignmentComponentUtils'
+import {
+  hitTestCigarItem as hitTestCigarItemFn,
+  hitTestCoverage as hitTestCoverageFn,
+  hitTestFeature as hitTestFeatureFn,
+  hitTestIndicator as hitTestIndicatorFn,
+  hitTestSashimiArc as hitTestSashimiArcFn,
+} from './hitTesting'
 
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
+import type {
+  CigarHitResult,
+  CoverageHitResult,
+  IndicatorHitResult,
+  SashimiArcHitResult,
+} from './hitTesting'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
-
-function parseColorToRGB(color: string): RGBColor {
-  const { r, g, b } = colord(color).toRgb()
-  return [r / 255, g / 255, b / 255]
-}
-
-/**
- * Build a ColorPalette from the MUI theme
- */
-function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
-  const { palette } = theme
-  return {
-    // Read/alignment colors from shared/color.ts
-    colorFwdStrand: parseColorToRGB(fillColor.color_fwd_strand),
-    colorRevStrand: parseColorToRGB(fillColor.color_rev_strand),
-    colorNostrand: parseColorToRGB(fillColor.color_nostrand),
-    colorPairLR: parseColorToRGB(fillColor.color_pair_lr),
-    colorPairRL: parseColorToRGB(fillColor.color_pair_rl),
-    colorPairRR: parseColorToRGB(fillColor.color_pair_rr),
-    colorPairLL: parseColorToRGB(fillColor.color_pair_ll),
-    // Base colors from theme
-    colorBaseA: parseColorToRGB(palette.bases.A.main),
-    colorBaseC: parseColorToRGB(palette.bases.C.main),
-    colorBaseG: parseColorToRGB(palette.bases.G.main),
-    colorBaseT: parseColorToRGB(palette.bases.T.main),
-    // Indel/clip colors from theme
-    colorInsertion: parseColorToRGB(palette.insertion),
-    colorDeletion: parseColorToRGB(palette.deletion),
-    colorSkip: parseColorToRGB(palette.skip),
-    colorSoftclip: parseColorToRGB(palette.softclip),
-    colorHardclip: parseColorToRGB(palette.hardclip),
-    // Coverage color (light grey)
-    colorCoverage: [0.8, 0.8, 0.8],
-    // Modification mode read colors
-    colorModificationFwd: parseColorToRGB(palette.modificationFwd),
-    colorModificationRev: parseColorToRGB(palette.modificationRev),
-  }
-}
 
 interface FeatureInfo {
   id: string
@@ -82,49 +64,6 @@ interface FeatureInfo {
   refName: string
 }
 
-// Types for CIGAR item hit testing
-type CigarItemType =
-  | 'mismatch'
-  | 'insertion'
-  | 'deletion'
-  | 'skip'
-  | 'softclip'
-  | 'hardclip'
-
-interface CigarHitResult {
-  type: CigarItemType
-  index: number
-  position: number // genomic position
-  length?: number
-  base?: string // for mismatches
-  sequence?: string // for insertions
-}
-
-const CIGAR_TYPE_LABELS: Record<string, string> = {
-  mismatch: 'SNP/Mismatch',
-  insertion: 'Insertion',
-  deletion: 'Deletion',
-  skip: 'Skip (Intron)',
-  softclip: 'Soft Clip',
-  hardclip: 'Hard Clip',
-}
-
-// Types for coverage area hit testing
-export interface CoverageHitResult {
-  type: 'coverage'
-  position: number // genomic position
-  depth: number
-  snps: { base: string; count: number }[] // SNP counts at this position
-}
-
-// Types for indicator hit testing
-export interface IndicatorHitResult {
-  type: 'indicator'
-  position: number // genomic position
-  indicatorType: 'insertion' | 'softclip' | 'hardclip'
-  counts: { insertion: number; softclip: number; hardclip: number }
-}
-
 interface VisibleRegionBlock {
   refName: string
   regionNumber: number
@@ -133,111 +72,6 @@ interface VisibleRegionBlock {
   assemblyName: string
   screenStartPx: number
   screenEndPx: number
-}
-
-interface ResolvedBlock {
-  rpcData: WebGLPileupDataResult
-  bpRange: [number, number]
-  blockStartPx: number
-  blockWidth: number
-  refName: string
-}
-
-function canvasToGenomicCoords(
-  canvasX: number,
-  canvasY: number,
-  resolved: ResolvedBlock,
-  featureHeight: number,
-  featureSpacing: number,
-  showCoverage: boolean,
-  coverageHeight: number,
-  rangeY: [number, number],
-) {
-  const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
-  const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-  const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-  const posOffset = genomicPos - rpcData.regionStart
-  const rowHeight = featureHeight + featureSpacing
-  const scrolledY = canvasY + rangeY[0]
-  const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
-  const row = Math.floor(adjustedY / rowHeight)
-  const yWithinRow = adjustedY - row * rowHeight
-  return { bpPerPx, genomicPos, posOffset, row, adjustedY, yWithinRow }
-}
-
-function getCanvasCoords(
-  e: React.MouseEvent,
-  canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  canvasRectRef: React.RefObject<{ rect: DOMRect; timestamp: number } | null>,
-) {
-  const canvas = canvasRef.current
-  if (!canvas) {
-    return undefined
-  }
-
-  const now = Date.now()
-  let cached = canvasRectRef.current
-
-  // Invalidate cache if older than 100ms (catches scroll events and repositioning)
-  if (cached && now - cached.timestamp < 100) {
-    return {
-      canvasX: e.clientX - cached.rect.left,
-      canvasY: e.clientY - cached.rect.top,
-    }
-  }
-
-  // Get fresh rect and cache it with timestamp
-  const rect = canvas.getBoundingClientRect()
-  canvasRectRef.current = { rect, timestamp: now }
-  return { canvasX: e.clientX - rect.left, canvasY: e.clientY - rect.top }
-}
-
-function formatCigarTooltip(cigarHit: CigarHitResult) {
-  const pos = cigarHit.position.toLocaleString()
-  switch (cigarHit.type) {
-    case 'mismatch':
-      return `SNP: ${cigarHit.base} at ${pos}`
-    case 'insertion':
-      return cigarHit.sequence && cigarHit.sequence.length <= 20
-        ? `Insertion (${cigarHit.length}bp): ${cigarHit.sequence} at ${pos}`
-        : `Insertion (${cigarHit.length}bp) at ${pos}`
-    case 'deletion':
-      return `Deletion (${cigarHit.length}bp) at ${pos}`
-    case 'skip':
-      return `Skip/Intron (${cigarHit.length}bp) at ${pos}`
-    case 'softclip':
-      return `Soft clip (${cigarHit.length}bp) at ${pos}`
-    case 'hardclip':
-      return `Hard clip (${cigarHit.length}bp) at ${pos}`
-  }
-}
-
-function uploadRegionDataToGPU(
-  renderer: WebGLRenderer,
-  rpcDataMap: Map<number, WebGLPileupDataResult>,
-  showCoverage: boolean,
-) {
-  renderer.clearLegacyBuffers()
-  let maxYVal = 0
-  for (const [regionNumber, data] of rpcDataMap) {
-    if (data.numReads === 0) {
-      continue
-    }
-    renderer.uploadFromTypedArraysForRegion(regionNumber, data)
-    renderer.uploadCigarFromTypedArraysForRegion(regionNumber, data)
-    renderer.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
-    if (data.maxY > maxYVal) {
-      maxYVal = data.maxY
-    }
-    if (showCoverage) {
-      renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
-      renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
-      if (data.numSashimiArcs > 0) {
-        renderer.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
-      }
-    }
-  }
-  return maxYVal
 }
 
 interface LinearAlignmentsDisplayModel {
@@ -888,547 +722,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   // Hit test to find feature at given canvas coordinates
   // Returns { id, index } or undefined
-  const hitTestFeature = useCallback(
-    (
-      canvasX: number,
-      canvasY: number,
-    ): { id: string; index: number } | undefined => {
-      if (widthRef.current === undefined) {
-        return undefined
-      }
-      const resolved = resolveBlockForCanvasX(canvasX)
-      if (!resolved) {
-        return undefined
-      }
-      const { posOffset, row, adjustedY, yWithinRow } = canvasToGenomicCoords(
-        canvasX,
-        canvasY,
-        resolved,
-        featureHeightSetting,
-        featureSpacing,
-        showCoverage,
-        coverageHeight,
-        model.currentRangeY,
-      )
-      if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
-        return undefined
-      }
 
-      const { readPositions, readYs, readIds, numReads } = resolved.rpcData
-      for (let i = 0; i < numReads; i++) {
-        if (readYs[i] !== row) {
-          continue
-        }
-        const startOffset = readPositions[i * 2]
-        const endOffset = readPositions[i * 2 + 1]
-        if (
-          startOffset !== undefined &&
-          endOffset !== undefined &&
-          posOffset >= startOffset &&
-          posOffset <= endOffset
-        ) {
-          return { id: readIds[i]!, index: i }
-        }
-      }
-      return undefined
-    },
-    [
-      resolveBlockForCanvasX,
-      featureHeightSetting,
-      featureSpacing,
-      showCoverage,
-      coverageHeight,
-      model,
-    ],
-  )
 
-  // Hit test for CIGAR items (mismatches, insertions, gaps, clips)
-  const hitTestCigarItem = useCallback(
-    (canvasX: number, canvasY: number): CigarHitResult | undefined => {
-      if (widthRef.current === undefined) {
-        return undefined
-      }
-      const resolved = resolveBlockForCanvasX(canvasX)
-      if (!resolved) {
-        return undefined
-      }
-      const { bpPerPx, posOffset, row, adjustedY, yWithinRow } =
-        canvasToGenomicCoords(
-          canvasX,
-          canvasY,
-          resolved,
-          featureHeightSetting,
-          featureSpacing,
-          showCoverage,
-          coverageHeight,
-          model.currentRangeY,
-        )
-      if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
-        return undefined
-      }
-      const blockData = resolved.rpcData
-
-      const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
-
-      // Check mismatches first (1bp features covering [pos, pos+1))
-      const {
-        mismatchPositions,
-        mismatchYs,
-        mismatchBases,
-        numMismatches,
-        insertionPositions,
-        insertionYs,
-        insertionLengths,
-        insertionSequences,
-        numInsertions,
-        gapPositions,
-        gapYs,
-        numGaps,
-        softclipPositions,
-        softclipYs,
-        softclipLengths,
-        numSoftclips,
-        hardclipPositions,
-        hardclipYs,
-        hardclipLengths,
-        numHardclips,
-        regionStart,
-      } = blockData
-
-      // Check mismatches first (they're visually prominent)
-      // Mismatches are 1bp features - use floor to determine which base mouse is over
-      const mouseBaseOffset = Math.floor(posOffset)
-      for (let i = 0; i < numMismatches; i++) {
-        const y = mismatchYs[i]
-        if (y !== row) {
-          continue
-        }
-        const pos = mismatchPositions[i]
-        if (pos !== undefined && mouseBaseOffset === pos) {
-          const baseCode = mismatchBases[i]!
-          return {
-            type: 'mismatch',
-            index: i,
-            position: regionStart + pos,
-            base: String.fromCharCode(baseCode),
-          }
-        }
-      }
-
-      // Check insertions (rendered as markers at interbase positions)
-      // Large insertions (>=10bp) are rendered as wider rectangles when zoomed in
-      for (let i = 0; i < numInsertions; i++) {
-        const y = insertionYs[i]
-        if (y !== row) {
-          continue
-        }
-        const pos = insertionPositions[i]
-        if (pos !== undefined) {
-          const len = insertionLengths[i] ?? 0
-          const pxPerBp = 1 / bpPerPx
-          // Get visual width from helper, add 2px buffer for easier clicking
-          const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
-          const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-          if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
-            return {
-              type: 'insertion',
-              index: i,
-              position: regionStart + pos,
-              length: len,
-              sequence: insertionSequences[i] || undefined,
-            }
-          }
-        }
-      }
-
-      // Check gaps (deletions/skips - have start and end)
-      const { gapTypes } = blockData
-      for (let i = 0; i < numGaps; i++) {
-        const y = gapYs[i]
-        if (y !== row) {
-          continue
-        }
-        const startPos = gapPositions[i * 2]
-        const endPos = gapPositions[i * 2 + 1]
-        if (
-          startPos !== undefined &&
-          endPos !== undefined &&
-          posOffset >= startPos &&
-          posOffset <= endPos
-        ) {
-          // gapTypes: 0 = deletion, 1 = skip
-          const gapType = gapTypes[i]
-          return {
-            type: gapType === 1 ? 'skip' : 'deletion',
-            index: i,
-            position: regionStart + startPos,
-            length: endPos - startPos,
-          }
-        }
-      }
-
-      // Check softclips
-      for (let i = 0; i < numSoftclips; i++) {
-        const y = softclipYs[i]
-        if (y !== row) {
-          continue
-        }
-        const pos = softclipPositions[i]
-        const len = softclipLengths[i]
-        // Softclips are rendered as blocks starting at their position
-        if (
-          pos !== undefined &&
-          len !== undefined &&
-          posOffset >= pos &&
-          posOffset <= pos + len
-        ) {
-          return {
-            type: 'softclip',
-            index: i,
-            position: regionStart + pos,
-            length: len,
-          }
-        }
-      }
-
-      // Check hardclips
-      for (let i = 0; i < numHardclips; i++) {
-        const y = hardclipYs[i]
-        if (y !== row) {
-          continue
-        }
-        const pos = hardclipPositions[i]
-        const len = hardclipLengths[i]
-        // Hardclips are rendered as markers at their position
-        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
-          return {
-            type: 'hardclip',
-            index: i,
-            position: regionStart + pos,
-            length: len,
-          }
-        }
-      }
-
-      return undefined
-    },
-    [
-      resolveBlockForCanvasX,
-      featureHeightSetting,
-      featureSpacing,
-      showCoverage,
-      coverageHeight,
-      model,
-    ],
-  )
-
-  // Hit test for coverage area (grey bars + SNP segments)
-  const hitTestCoverage = useCallback(
-    (canvasX: number, canvasY: number): CoverageHitResult | undefined => {
-      if (
-        widthRef.current === undefined ||
-        !showCoverage ||
-        canvasY > coverageHeight
-      ) {
-        return undefined
-      }
-      const resolved = resolveBlockForCanvasX(canvasX)
-      if (!resolved) {
-        return undefined
-      }
-      const blockData = resolved.rpcData
-      const { bpRange, blockStartPx, blockWidth } = resolved
-      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-      const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-      const posOffset = genomicPos - blockData.regionStart
-
-      const {
-        coverageDepths,
-        coverageBinSize,
-        coverageStartOffset,
-        coverageMaxDepth,
-        regionStart,
-      } = blockData
-      const binIndex = Math.floor(
-        (posOffset - coverageStartOffset) / coverageBinSize,
-      )
-      if (binIndex < 0 || binIndex >= coverageDepths.length) {
-        return undefined
-      }
-
-      const depth = coverageDepths[binIndex]
-      if (depth === undefined || depth === 0) {
-        return undefined
-      }
-
-      // Collect SNPs at this position
-      const snps: { base: string; count: number }[] = []
-      const baseNames = ['A', 'C', 'G', 'T']
-      const snpCounts: Record<string, number> = { A: 0, C: 0, G: 0, T: 0 }
-
-      // Look for SNP segments at this position
-      const {
-        snpPositions,
-        snpHeights,
-        snpColorTypes,
-        numSnpSegments,
-        noncovPositions,
-        noncovHeights,
-        noncovColorTypes,
-        numNoncovSegments,
-      } = blockData
-
-      // Integer position for exact matching
-      const intPosOffset = Math.floor(posOffset)
-
-      for (let i = 0; i < numSnpSegments; i++) {
-        const snpPos = snpPositions[i]
-        if (snpPos === intPosOffset) {
-          const colorType = snpColorTypes[i]
-          const height = snpHeights[i]
-          if (
-            colorType !== undefined &&
-            height !== undefined &&
-            colorType >= 1 &&
-            colorType <= 4
-          ) {
-            const baseName = baseNames[colorType - 1]!
-            // Convert normalized height back to count
-            const count = Math.round(height * coverageMaxDepth)
-            snpCounts[baseName]! += count
-          }
-        }
-      }
-
-      for (const [base, count] of Object.entries(snpCounts)) {
-        if (count > 0) {
-          snps.push({ base, count })
-        }
-      }
-
-      // Also collect noncov (interbase) data at this position
-      const noncovCounts: Record<string, number> = {
-        insertion: 0,
-        softclip: 0,
-        hardclip: 0,
-      }
-      const noncovNames = ['insertion', 'softclip', 'hardclip']
-
-      for (let i = 0; i < numNoncovSegments; i++) {
-        const noncovPos = noncovPositions[i]
-        if (noncovPos === intPosOffset) {
-          const colorType = noncovColorTypes[i]
-          const height = noncovHeights[i]
-          if (
-            colorType !== undefined &&
-            height !== undefined &&
-            colorType >= 1 &&
-            colorType <= 3
-          ) {
-            const typeName = noncovNames[colorType - 1]!
-            // Convert normalized height back to count using noncovMaxCount
-            const count = Math.round(height * blockData.noncovMaxCount)
-            noncovCounts[typeName]! += count
-          }
-        }
-      }
-
-      // Add noncov items to snps array with different formatting
-      for (const [type, count] of Object.entries(noncovCounts)) {
-        if (count > 0) {
-          snps.push({ base: type, count })
-        }
-      }
-
-      return {
-        type: 'coverage',
-        position:
-          regionStart + coverageStartOffset + binIndex * coverageBinSize,
-        depth,
-        snps,
-      }
-    },
-    [resolveBlockForCanvasX, showCoverage, coverageHeight],
-  )
-
-  // Hit test for interbase indicators (triangles at top)
-  const hitTestIndicator = useCallback(
-    (canvasX: number, canvasY: number): IndicatorHitResult | undefined => {
-      if (
-        widthRef.current === undefined ||
-        !showCoverage ||
-        !showInterbaseIndicators ||
-        canvasY > 5
-      ) {
-        return undefined
-      }
-      const resolved = resolveBlockForCanvasX(canvasX)
-      if (!resolved) {
-        return undefined
-      }
-      const blockData = resolved.rpcData
-      const { bpRange, blockStartPx, blockWidth } = resolved
-      const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-      const posOffset =
-        bpRange[0] + (canvasX - blockStartPx) * bpPerPx - blockData.regionStart
-
-      const hitToleranceBp = Math.max(1, bpPerPx * 5)
-
-      const {
-        indicatorPositions,
-        indicatorColorTypes,
-        numIndicators,
-        noncovPositions,
-        noncovHeights,
-        noncovColorTypes,
-        numNoncovSegments,
-        regionStart,
-      } = blockData
-
-      for (let i = 0; i < numIndicators; i++) {
-        const pos = indicatorPositions[i]
-        if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
-          const colorType = indicatorColorTypes[i]
-          const types = ['insertion', 'softclip', 'hardclip'] as const
-          const indicatorType = types[(colorType ?? 1) - 1] ?? 'insertion'
-
-          // Collect counts for all interbase types at this position
-          const counts = { insertion: 0, softclip: 0, hardclip: 0 }
-          const noncovNames = ['insertion', 'softclip', 'hardclip'] as const
-
-          for (let j = 0; j < numNoncovSegments; j++) {
-            const noncovPos = noncovPositions[j]
-            if (noncovPos === pos) {
-              const noncovColorType = noncovColorTypes[j]
-              const height = noncovHeights[j]
-              if (
-                noncovColorType !== undefined &&
-                height !== undefined &&
-                noncovColorType >= 1 &&
-                noncovColorType <= 3
-              ) {
-                const typeName = noncovNames[noncovColorType - 1]!
-                const count = Math.round(height * blockData.noncovMaxCount)
-                counts[typeName] += count
-              }
-            }
-          }
-
-          return {
-            type: 'indicator',
-            position: regionStart + pos,
-            indicatorType,
-            counts,
-          }
-        }
-      }
-
-      return undefined
-    },
-    [resolveBlockForCanvasX, showCoverage, showInterbaseIndicators],
-  )
-
-  const hitTestSashimiArc = useCallback(
-    (
-      canvasX: number,
-      canvasY: number,
-    ):
-      | {
-          start: number
-          end: number
-          score: number
-          strand: number
-          refName: string
-        }
-      | undefined => {
-      if (
-        widthRef.current === undefined ||
-        !showCoverage ||
-        !showSashimiArcs ||
-        canvasY > coverageHeight
-      ) {
-        return undefined
-      }
-      const resolved = resolveBlockForCanvasX(canvasX)
-      if (!resolved) {
-        return undefined
-      }
-      const { rpcData, bpRange, blockStartPx, blockWidth, refName } = resolved
-      const {
-        sashimiX1,
-        sashimiX2,
-        sashimiCounts,
-        sashimiColorTypes,
-        numSashimiArcs,
-        regionStart,
-      } = rpcData
-      if (numSashimiArcs === 0) {
-        return undefined
-      }
-
-      // CPU-based Bezier curve picking (fast enough for hover)
-      const pxPerBp = blockWidth / (bpRange[1] - bpRange[0])
-      const bpStartOffset = bpRange[0] - regionStart
-
-      for (let i = 0; i < numSashimiArcs; i++) {
-        const x1 = sashimiX1[i]!
-        const x2 = sashimiX2[i]!
-        const destY = coverageHeight * (0.8 / 0.75)
-
-        // Arc thickness from score: Math.log(count + 1)
-        // Adaptive hit tolerance: easier to hover over thin arcs
-        const lineWidth = rpcData.sashimiScores[i]!
-        const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
-
-        // CRITICAL: This Bezier curve formula MUST match the GPU version in:
-        // shaders/arcShaders.ts:evalCurve (around line 178-190)
-        // If either implementation changes, the other MUST be updated to match,
-        // otherwise picking and rendering will be out of sync.
-        // Sample the bezier curve for hit detection
-        // Adaptive sampling based on arc width in bp
-        const arcWidthBp = Math.abs(x2 - x1)
-        const samplesPerBp = pxPerBp / 10 // Sample roughly every 10 pixels
-        const steps = Math.max(16, Math.min(256, Math.ceil(arcWidthBp * samplesPerBp)))
-        let hit = false
-        let minDist = Infinity
-        for (let s = 0; s <= steps; s++) {
-          const t = s / steps
-          const mt = 1 - t
-          const mt2 = mt * mt
-          const mt3 = mt2 * mt
-          const t2 = t * t
-          const t3 = t2 * t
-          const xBp = mt3 * x1 + 3 * mt2 * t * x1 + 3 * mt * t2 * x2 + t3 * x2
-          const yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
-          const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
-          const screenY = 0.9 * coverageHeight - yPx
-          const dx = canvasX - screenX
-          const dy = canvasY - screenY
-          const distSq = dx * dx + dy * dy
-          if (distSq < minDist) {
-            minDist = distSq
-          }
-          if (distSq < hitTolerance * hitTolerance) {
-            hit = true
-            break
-          }
-        }
-        if (hit) {
-          const colorType = sashimiColorTypes[i]!
-          const count = sashimiCounts[i]!
-          return {
-            start: regionStart + x1,
-            end: regionStart + x2,
-            score: count,
-            strand: colorType === 0 ? 1 : -1,
-            refName,
-          }
-        }
-      }
-      return undefined
-    },
-    [resolveBlockForCanvasX, showCoverage, showSashimiArcs, coverageHeight],
-  )
 
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -1448,7 +743,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const blockRpcData = blockInfo?.rpcData
 
       // Check for indicator hits first (triangles at top of coverage)
-      const indicatorHit = hitTestIndicator(canvasX, canvasY)
+      const indicatorResolved = resolveBlockForCanvasX(canvasX)
+      const indicatorHit = hitTestIndicatorFn(indicatorResolved, canvasY, showCoverage, showInterbaseIndicators)
       if (indicatorHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -1495,7 +791,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check for sashimi arc hits (splice junction arcs overlaid on coverage)
-      const sashimiHit = hitTestSashimiArc(canvasX, canvasY)
+      const sashimiResolved = resolveBlockForCanvasX(canvasX)
+      const sashimiHit = hitTestSashimiArcFn(canvasX, canvasY, sashimiResolved, showCoverage, showSashimiArcs, coverageHeight)
       if (sashimiHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -1521,7 +818,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check for coverage area hits (grey bars + SNP segments)
-      const coverageHit = hitTestCoverage(canvasX, canvasY)
+      const coverageHit = hitTestCoverageFn(canvasX, canvasY, resolveBlockForCanvasX(canvasX), showCoverage, coverageHeight)
       if (coverageHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -1574,13 +871,17 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check for CIGAR items (they're drawn on top of reads)
-      const cigarHit = hitTestCigarItem(canvasX, canvasY)
+      const cigarResolvedBlock = resolveBlockForCanvasX(canvasX)
+      const cigarCoords2 = cigarResolvedBlock ? canvasToGenomicCoords(canvasX, canvasY, cigarResolvedBlock, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
+      const cigarHit = cigarResolvedBlock && cigarCoords2 ? hitTestCigarItemFn(cigarResolvedBlock, cigarCoords2, featureHeightSetting) : undefined
       if (cigarHit) {
         setOverCigarItem(true)
         model.setMouseoverExtraInformation(formatCigarTooltip(cigarHit))
 
         // Still do feature hit test to keep highlight on underlying read
-        const hit = hitTestFeature(canvasX, canvasY)
+        const featureResolved1 = resolveBlockForCanvasX(canvasX)
+        const featureCoords1 = featureResolved1 ? canvasToGenomicCoords(canvasX, canvasY, featureResolved1, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
+        const hit = featureResolved1 && featureCoords1 ? hitTestFeatureFn(canvasX, canvasY, featureResolved1, featureCoords1, featureHeightSetting) : undefined
         const featureId = hit?.id
         const featureIndex = hit?.index ?? -1
         model.setFeatureIdUnderMouse(featureId)
@@ -1594,7 +895,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       setOverCigarItem(false)
 
       // Fall back to feature hit testing
-      const hit = hitTestFeature(canvasX, canvasY)
+      const featureResolved2 = resolveBlockForCanvasX(canvasX)
+      const featureCoords2_2 = featureResolved2 ? canvasToGenomicCoords(canvasX, canvasY, featureResolved2, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
+      const hit = featureResolved2 && featureCoords2_2 ? hitTestFeatureFn(canvasX, canvasY, featureResolved2, featureCoords2_2, featureHeightSetting) : undefined
       const featureId = hit?.id
       const featureIndex = hit?.index ?? -1
 
@@ -1618,14 +921,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
     },
     [
-      hitTestFeature,
-      hitTestCigarItem,
-      hitTestCoverage,
-      hitTestIndicator,
-      hitTestSashimiArc,
       model,
       handleMouseMove,
       resolveBlockForCanvasX,
+      featureHeightSetting,
+      featureSpacing,
+      showCoverage,
+      coverageHeight,
     ],
   )
 
@@ -1638,7 +940,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const { canvasX, canvasY } = coords
 
       // Check for indicator clicks first (triangles at top of coverage)
-      const indicatorHit = hitTestIndicator(canvasX, canvasY)
+      const indicatorResolved = resolveBlockForCanvasX(canvasX)
+      const indicatorHit = hitTestIndicatorFn(indicatorResolved, canvasY, showCoverage, showInterbaseIndicators)
       if (indicatorHit) {
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
@@ -1693,7 +996,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check for coverage SNP clicks (significant SNPs in coverage bars)
-      const coverageHit = hitTestCoverage(canvasX, canvasY)
+      const coverageResolved = resolveBlockForCanvasX(canvasX)
+      const coverageHit = hitTestCoverageFn(canvasX, canvasY, coverageResolved, showCoverage, coverageHeight)
       if (coverageHit) {
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
@@ -1762,10 +1066,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check for CIGAR item clicks (they're on top of reads)
-      const cigarHit = hitTestCigarItem(canvasX, canvasY)
+      const cigarResolved = resolveBlockForCanvasX(canvasX)
+      const cigarCoords = cigarResolved ? canvasToGenomicCoords(canvasX, canvasY, cigarResolved, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
+      const cigarHit = cigarResolved && cigarCoords ? hitTestCigarItemFn(cigarResolved, cigarCoords, featureHeightSetting) : undefined
       if (cigarHit) {
         // Also get the feature hit to find the read ID
-        const featureHit = hitTestFeature(canvasX, canvasY)
+        const featureHit = cigarResolved && cigarCoords ? hitTestFeatureFn(canvasX, canvasY, cigarResolved, cigarCoords, featureHeightSetting) : undefined
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
 
@@ -1822,7 +1128,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return
       }
 
-      const hit = hitTestFeature(canvasX, canvasY)
+      const featureResolved = resolveBlockForCanvasX(canvasX)
+      const featureCoords = featureResolved ? canvasToGenomicCoords(canvasX, canvasY, featureResolved, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
+      const hit = featureResolved && featureCoords ? hitTestFeatureFn(canvasX, canvasY, featureResolved, featureCoords, featureHeightSetting) : undefined
       if (hit) {
         model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
@@ -1833,11 +1141,11 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
     },
     [
-      hitTestFeature,
-      hitTestCigarItem,
-      hitTestCoverage,
-      hitTestIndicator,
       resolveBlockForCanvasX,
+      featureHeightSetting,
+      featureSpacing,
+      showCoverage,
+      coverageHeight,
       model,
     ],
   )
@@ -1848,7 +1156,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (!coords) {
         return
       }
-      const hit = hitTestFeature(coords.canvasX, coords.canvasY)
+      const contextResolved = resolveBlockForCanvasX(coords.canvasX)
+      const contextCoords = contextResolved ? canvasToGenomicCoords(coords.canvasX, coords.canvasY, contextResolved, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
+      const hit = contextResolved && contextCoords ? hitTestFeatureFn(coords.canvasX, coords.canvasY, contextResolved, contextCoords, featureHeightSetting) : undefined
       if (hit) {
         e.preventDefault()
         // For now, open feature widget on right-click (same as left-click)
@@ -1856,7 +1166,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         model.selectFeatureById(hit.id)
       }
     },
-    [hitTestFeature, model],
+    [model, resolveBlockForCanvasX, featureHeightSetting, featureSpacing, showCoverage, coverageHeight],
   )
 
   // Coverage height resize handlers
