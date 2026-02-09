@@ -410,6 +410,8 @@ export class WebGLRenderer {
       'u_coverageOffset',
       'u_lineWidthPx',
       'u_gradientHue',
+      'u_blockStartPx',
+      'u_blockWidth',
     ])
     for (let i = 0; i < NUM_ARC_COLORS; i++) {
       this.arcUniforms[`u_arcColors[${i}]`] = gl.getUniformLocation(
@@ -423,6 +425,9 @@ export class WebGLRenderer {
       'u_regionStart',
       'u_canvasHeight',
       'u_coverageOffset',
+      'u_blockStartPx',
+      'u_blockWidth',
+      'u_canvasWidth',
     ])
     for (let i = 0; i < NUM_LINE_COLORS; i++) {
       this.arcLineUniforms[`u_arcLineColors[${i}]`] = gl.getUniformLocation(
@@ -1788,33 +1793,66 @@ export class WebGLRenderer {
       this.buffers = buffers
 
       const regionStart = buffers.regionStart
-      const domainOffset: [number, number] = [
-        block.domainX[0] - regionStart,
-        block.domainX[1] - regionStart,
-      ]
 
-      // Scissor to this block's screen region
-      // WebGL scissor Y is from bottom, so flip
-      const scissorX = Math.floor(block.screenStartPx)
-      const scissorW = Math.ceil(block.screenEndPx - block.screenStartPx)
+      // Scissor to this block's screen region, clipped to viewport
+      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
+      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+      const scissorW = scissorEnd - scissorX
+      if (scissorW <= 0) {
+        continue
+      }
       gl.enable(gl.SCISSOR_TEST)
       gl.scissor(scissorX, 0, scissorW, canvasHeight)
 
-      // Create a per-block state with adjusted domainX
-      const blockState: RenderState = { ...state, domainX: block.domainX }
+      // Compute viewport-clipped domain: the genomic range corresponding to
+      // the visible portion of this block. Needed for shaders that map domain
+      // to [-1,1] clip space (pileup, coverage, cloud) since the per-block
+      // gl.viewport maps [-1,1] to the visible screen region.
+      const fullBlockWidth = block.screenEndPx - block.screenStartPx
+      const bpPerPx =
+        fullBlockWidth > 0
+          ? (block.domainX[1] - block.domainX[0]) / fullBlockWidth
+          : 1
+      const clippedDomainStart =
+        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedDomainEnd =
+        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const clippedDomainOffset: [number, number] = [
+        clippedDomainStart - regionStart,
+        clippedDomainEnd - regionStart,
+      ]
 
-      // Draw coverage for this block
-      this.renderCoverage(blockState, domainOffset, colors)
+      // Per-block viewport: maps shader's [-1,1] clip space to this block's
+      // screen region. Pass blockWidth as canvasWidth so pixel calculations
+      // (chevron width, min bar width) are correct for the block's scale.
+      gl.viewport(scissorX, 0, scissorW, canvasHeight)
+      const blockState: RenderState = {
+        ...state,
+        domainX: [clippedDomainStart, clippedDomainEnd] as [number, number],
+        canvasWidth: scissorW,
+      }
+
+      // Draw coverage for this block (always uses viewport-clipped domain)
+      this.renderCoverage(blockState, clippedDomainOffset, colors)
 
       if (mode === 'arcs') {
-        this.renderArcs(blockState)
+        // Arcs use full-canvas viewport with global positioning uniforms.
+        // Restore full viewport so arc positions are globally stable.
+        gl.viewport(0, 0, canvasWidth, canvasHeight)
+        this.renderArcs(
+          { ...state, domainX: block.domainX },
+          block.screenStartPx,
+          fullBlockWidth,
+        )
       } else if (mode === 'cloud') {
         this.renderCloud(blockState)
       } else {
-        this.renderPileup(blockState, domainOffset, colors)
+        this.renderPileup(blockState, clippedDomainOffset, colors, scissorX)
       }
     }
 
+    // Restore full viewport and disable scissor
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
     gl.disable(gl.SCISSOR_TEST)
     this.buffers = null
   }
@@ -1867,6 +1905,7 @@ export class WebGLRenderer {
     state: RenderState,
     domainOffset: [number, number],
     colors: ColorPalette,
+    scissorX = 0,
   ) {
     const gl = this.gl
     if (!this.buffers || this.buffers.readCount === 0) {
@@ -1887,9 +1926,10 @@ export class WebGLRenderer {
     // Draw reads
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
 
-    // Enable scissor test to clip pileup to area below coverage
+    // Scissor clips pileup to area below coverage, within the block's X range.
+    // gl.scissor uses window coordinates, so we must use the block's scissorX.
     gl.enable(gl.SCISSOR_TEST)
-    gl.scissor(0, 0, canvasWidth, canvasHeight - coverageOffset)
+    gl.scissor(scissorX, 0, canvasWidth, canvasHeight - coverageOffset)
 
     gl.useProgram(this.readProgram)
     // Use high-precision split domain for reads (vec3: hi, lo, extent)
@@ -2437,7 +2477,11 @@ export class WebGLRenderer {
     gl.drawArrays(gl.LINES, 0, 2)
   }
 
-  private renderArcs(state: RenderState) {
+  private renderArcs(
+    state: RenderState,
+    blockStartPx = 0,
+    blockWidth = state.canvasWidth,
+  ) {
     const gl = this.gl
     if (!this.buffers || !this.arcProgram || !this.arcLineProgram) {
       return
@@ -2458,6 +2502,8 @@ export class WebGLRenderer {
       gl.uniform1f(this.arcUniforms.u_domainExtent!, domainExtent)
       gl.uniform1f(this.arcUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform1f(this.arcUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.arcUniforms.u_blockStartPx!, blockStartPx)
+      gl.uniform1f(this.arcUniforms.u_blockWidth!, blockWidth)
       gl.uniform1f(this.arcUniforms.u_coverageOffset!, coverageOffset)
       gl.uniform1f(this.arcUniforms.u_lineWidthPx!, lineWidth)
       gl.uniform1f(this.arcUniforms.u_gradientHue!, 0)
@@ -2496,6 +2542,9 @@ export class WebGLRenderer {
         Math.floor(this.buffers.regionStart),
       )
       gl.uniform1f(this.arcLineUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.arcLineUniforms.u_blockStartPx!, blockStartPx)
+      gl.uniform1f(this.arcLineUniforms.u_blockWidth!, blockWidth)
+      gl.uniform1f(this.arcLineUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform1f(
         this.arcLineUniforms.u_coverageOffset!,
         state.showCoverage ? state.coverageHeight : 0,

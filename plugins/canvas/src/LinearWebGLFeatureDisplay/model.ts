@@ -73,12 +73,11 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      rpcData: null as WebGLFeatureDataResult | null,
-      loadedRegion: null as Region | null,
-      layoutBpPerPx: null as number | null, // bpPerPx used for current layout
+      rpcDataMap: new Map<number, WebGLFeatureDataResult>(),
+      loadedRegions: new Map<number, Region>(),
+      layoutBpPerPxMap: new Map<number, number>(),
       isLoading: false,
       error: null as Error | null,
-      currentDomainX: null as [number, number] | null,
       maxY: 0,
       featureIdUnderMouse: null as string | null,
     }))
@@ -122,87 +121,125 @@ export default function stateModelFactory(
         return assembly ? getConf(assembly, ['sequence', 'adapter']) : undefined
       },
 
-      get visibleRegion() {
+      get visibleRegions() {
         try {
           const view = getContainingView(self) as LGV
           if (!view.initialized) {
-            return null
+            return []
           }
           const blocks = view.dynamicBlocks.contentBlocks
-          const first = blocks[0]
-          if (!first) {
-            return null
-          }
-
-          if (self.currentDomainX) {
-            return {
-              refName: first.refName,
-              start: self.currentDomainX[0],
-              end: self.currentDomainX[1],
-              assemblyName: first.assemblyName,
-            }
-          }
-
-          const last = blocks[blocks.length - 1]
-          if (first.refName !== last?.refName) {
-            return {
-              refName: first.refName,
-              start: first.start,
-              end: first.end,
-              assemblyName: first.assemblyName,
-            }
+          if (blocks.length === 0) {
+            return []
           }
 
           const bpPerPx = view.bpPerPx
-          const blockOffsetPx = first.offsetPx
-          const deltaPx = view.offsetPx - blockOffsetPx
-          const deltaBp = deltaPx * bpPerPx
+          const regions: {
+            refName: string
+            regionNumber: number
+            start: number
+            end: number
+            assemblyName: string
+            screenStartPx: number
+            screenEndPx: number
+          }[] = []
 
-          const viewportStart = first.start + deltaBp
-          const viewportEnd = viewportStart + view.width * bpPerPx
+          for (const block of blocks) {
+            const blockScreenStart = block.offsetPx - view.offsetPx
+            const blockScreenEnd = blockScreenStart + block.widthPx
 
-          return {
-            refName: first.refName,
-            start: viewportStart,
-            end: viewportEnd,
-            assemblyName: first.assemblyName,
+            const clippedScreenStart = Math.max(0, blockScreenStart)
+            const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
+            if (clippedScreenStart >= clippedScreenEnd) {
+              continue
+            }
+
+            const bpStart =
+              block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
+            const bpEnd =
+              block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
+
+            const blockRegionNumber = block.regionNumber ?? 0
+
+            const prev = regions[regions.length - 1]
+            if (prev && prev.regionNumber === blockRegionNumber) {
+              prev.end = bpEnd
+              prev.screenEndPx = clippedScreenEnd
+            } else {
+              regions.push({
+                refName: block.refName,
+                regionNumber: blockRegionNumber,
+                start: bpStart,
+                end: bpEnd,
+                assemblyName: block.assemblyName,
+                screenStartPx: clippedScreenStart,
+                screenEndPx: clippedScreenEnd,
+              })
+            }
           }
+          return regions
         } catch {
-          return null
+          return []
         }
       },
 
-      get isWithinLoadedRegion(): boolean {
-        const visibleRegion = this.visibleRegion
-        if (!self.loadedRegion || !visibleRegion) {
+      get isWithinLoadedRegions() {
+        const visibleRegions = this.visibleRegions
+        if (visibleRegions.length === 0) {
           return false
         }
-        return (
-          self.loadedRegion.refName === visibleRegion.refName &&
-          visibleRegion.start >= self.loadedRegion.start &&
-          visibleRegion.end <= self.loadedRegion.end
-        )
-      },
-
-      get needsLayoutRefresh(): boolean {
-        if (!self.layoutBpPerPx) {
-          return false
-        }
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized) {
+        for (const vr of visibleRegions) {
+          const loaded = self.loadedRegions.get(vr.regionNumber)
+          if (
+            !loaded ||
+            loaded.refName !== vr.refName ||
+            vr.start < loaded.start ||
+            vr.end > loaded.end
+          ) {
             return false
           }
-          // Re-layout if zoom changed by more than 2x in either direction
-          const ratio = view.bpPerPx / self.layoutBpPerPx
-          return ratio > 2 || ratio < 0.5
+        }
+        return true
+      },
+
+      get needsLayoutRefresh() {
+        try {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized || self.layoutBpPerPxMap.size === 0) {
+            return false
+          }
+          for (const layoutBpPerPx of self.layoutBpPerPxMap.values()) {
+            const ratio = view.bpPerPx / layoutBpPerPx
+            if (ratio > 2 || ratio < 0.5) {
+              return true
+            }
+          }
+          return false
         } catch {
           return false
         }
       },
 
       getFeatureById(featureId: string): FlatbushItem | undefined {
-        return self.rpcData?.flatbushItems.find(f => f.featureId === featureId)
+        for (const data of self.rpcDataMap.values()) {
+          const found = data.flatbushItems.find(f => f.featureId === featureId)
+          if (found) {
+            return found
+          }
+        }
+        return undefined
+      },
+
+      // Find a loaded region that contains the given bp range
+      findLoadedRegionForFeature(
+        startBp: number,
+        endBp: number,
+      ): Region | undefined {
+        for (const region of self.loadedRegions.values()) {
+          if (startBp >= region.start && endBp <= region.end) {
+            return region
+          }
+        }
+        return undefined
       },
 
       get featureWidgetType() {
@@ -213,19 +250,37 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcData(data: WebGLFeatureDataResult | null) {
-        self.rpcData = data
-        if (data) {
-          self.maxY = data.maxY
+      setRpcDataForRegion(
+        regionNumber: number,
+        data: WebGLFeatureDataResult,
+      ) {
+        const next = new Map(self.rpcDataMap)
+        next.set(regionNumber, data)
+        self.rpcDataMap = next
+        // Update maxY from all regions
+        let globalMaxY = 0
+        for (const d of next.values()) {
+          globalMaxY = Math.max(globalMaxY, d.maxY)
         }
+        self.maxY = globalMaxY
       },
 
-      setLoadedRegion(region: Region | null) {
-        self.loadedRegion = region
+      setLoadedRegionForRegion(regionNumber: number, region: Region) {
+        const next = new Map(self.loadedRegions)
+        next.set(regionNumber, region)
+        self.loadedRegions = next
       },
 
-      setLayoutBpPerPx(bpPerPx: number) {
-        self.layoutBpPerPx = bpPerPx
+      setLayoutBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
+        const next = new Map(self.layoutBpPerPxMap)
+        next.set(regionNumber, bpPerPx)
+        self.layoutBpPerPxMap = next
+      },
+
+      clearAllRpcData() {
+        self.rpcDataMap = new Map()
+        self.loadedRegions = new Map()
+        self.layoutBpPerPxMap = new Map()
       },
 
       setLoading(loading: boolean) {
@@ -234,14 +289,6 @@ export default function stateModelFactory(
 
       setError(error: Error | null) {
         self.error = error
-      },
-
-      setMaxY(y: number) {
-        self.maxY = y
-      },
-
-      setCurrentDomain(domainX: [number, number]) {
-        self.currentDomainX = domainX
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
@@ -278,7 +325,6 @@ export default function stateModelFactory(
       },
 
       showContextMenuForFeature(featureInfo: FlatbushItem) {
-        // Create a SimpleFeature from the FlatbushItem for the context menu
         const feature = new SimpleFeature({
           id: featureInfo.featureId,
           data: {
@@ -303,11 +349,15 @@ export default function stateModelFactory(
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
 
-        if (!self.loadedRegion) {
+        // Find a loaded region that contains this feature
+        const region = self.findLoadedRegionForFeature(
+          featureInfo.startBp,
+          featureInfo.endBp,
+        )
+        if (!region) {
           return
         }
 
-        // If clicking on a subfeature, we need to fetch the parent feature
         const featureIdToFetch = subfeatureInfo
           ? subfeatureInfo.parentFeatureId
           : featureInfo.featureId
@@ -320,7 +370,7 @@ export default function stateModelFactory(
               sessionId: session.id,
               adapterConfig,
               featureId: featureIdToFetch,
-              region: self.loadedRegion,
+              region,
             },
           )) as { feature: Record<string, unknown> | undefined }
 
@@ -329,7 +379,6 @@ export default function stateModelFactory(
               result.feature as Parameters<typeof SimpleFeature.fromJSON>[0],
             )
 
-            // If we clicked on a subfeature, find it within the parent
             if (subfeatureInfo) {
               const subfeature = findSubfeatureById(
                 parentFeature,
@@ -338,7 +387,6 @@ export default function stateModelFactory(
               if (subfeature) {
                 self.selectFeature(subfeature)
               } else {
-                // Fallback to parent if subfeature not found
                 self.selectFeature(parentFeature)
               }
             } else {
@@ -352,7 +400,11 @@ export default function stateModelFactory(
       }),
     }))
     .actions(self => {
-      async function fetchFeaturesImpl(region: Region, bpPerPx: number) {
+      async function fetchFeaturesForRegion(
+        region: Region,
+        regionNumber: number,
+        bpPerPx: number,
+      ) {
         const session = getSession(self)
         const { rpcManager } = session
         const track = getContainingTrack(self)
@@ -362,12 +414,8 @@ export default function stateModelFactory(
           return
         }
 
-        self.setLoading(true)
-        self.setError(null)
-
         try {
           const baseRendererConfig = getConf(self, 'renderer') || {}
-          // Merge track-level overrides for showLabels and showDescriptions
           const rendererConfig = {
             ...baseRendererConfig,
             showLabels: self.showLabels,
@@ -387,77 +435,99 @@ export default function stateModelFactory(
             },
           )) as WebGLFeatureDataResult
 
-          self.setRpcData(result)
-          self.setLoadedRegion({
+          self.setRpcDataForRegion(regionNumber, result)
+          self.setLoadedRegionForRegion(regionNumber, {
             refName: region.refName,
             start: region.start,
             end: region.end,
           })
-          self.setLayoutBpPerPx(bpPerPx)
-          self.setLoading(false)
+          self.setLayoutBpPerPxForRegion(regionNumber, bpPerPx)
         } catch (e) {
           self.setError(e instanceof Error ? e : new Error(String(e)))
-          self.setLoading(false)
         }
       }
 
+      function refetchAllLoadedRegions(bpPerPx: number) {
+        self.setLoading(true)
+        self.setError(null)
+        const promises: Promise<void>[] = []
+        for (const [regionNumber, region] of self.loadedRegions) {
+          promises.push(
+            fetchFeaturesForRegion(region, regionNumber, bpPerPx),
+          )
+        }
+        Promise.all(promises)
+          .then(() => {
+            self.setLoading(false)
+          })
+          .catch((e: unknown) => {
+            console.error('Failed to refetch features:', e)
+            self.setLoading(false)
+          })
+      }
+
+      let prevDisplayedRegionsStr = ''
+
       return {
-        fetchFeatures(region: Region, bpPerPx: number) {
-          fetchFeaturesImpl(region, bpPerPx).catch((e: unknown) => {
-            console.error('Failed to fetch features:', e)
-          })
-        },
-
-        handleNeedMoreData(requestedRegion: { start: number; end: number }) {
-          const visibleRegion = self.visibleRegion
-          if (!visibleRegion) {
-            return
-          }
-
-          const view = getContainingView(self) as LGV
-          const bpPerPx = view.bpPerPx
-
-          const width = requestedRegion.end - requestedRegion.start
-          const expandedRegion = {
-            refName: visibleRegion.refName,
-            start: Math.max(0, requestedRegion.start - width),
-            end: requestedRegion.end + width,
-            assemblyName: visibleRegion.assemblyName,
-          }
-
-          fetchFeaturesImpl(expandedRegion, bpPerPx).catch((e: unknown) => {
-            console.error('Failed to fetch features:', e)
-          })
-        },
-
         afterAttach() {
-          // React to region changes (panning)
+          // Reaction: fetch data for all visible regions
           addDisposer(
             self,
             reaction(
-              () => self.visibleRegion,
-              region => {
-                if (region && !self.isWithinLoadedRegion) {
+              () => ({
+                visibleRegions: self.visibleRegions,
+                isWithinLoaded: self.isWithinLoadedRegions,
+              }),
+              ({ visibleRegions, isWithinLoaded }) => {
+                if (visibleRegions.length > 0 && !isWithinLoaded) {
+                  self.setLoading(true)
+                  self.setError(null)
+
                   const view = getContainingView(self) as LGV
                   const bpPerPx = view.bpPerPx
-                  const width = region.end - region.start
-                  const expandedRegion = {
-                    ...region,
-                    start: Math.max(0, region.start - width * 2),
-                    end: region.end + width * 2,
+                  const promises: Promise<void>[] = []
+
+                  for (const vr of visibleRegions) {
+                    const loaded = self.loadedRegions.get(vr.regionNumber)
+                    if (
+                      loaded &&
+                      loaded.refName === vr.refName &&
+                      vr.start >= loaded.start &&
+                      vr.end <= loaded.end
+                    ) {
+                      continue
+                    }
+                    const width = vr.end - vr.start
+                    const expandedRegion = {
+                      refName: vr.refName,
+                      start: Math.max(0, vr.start - width * 2),
+                      end: vr.end + width * 2,
+                      assemblyName: vr.assemblyName,
+                    }
+                    promises.push(
+                      fetchFeaturesForRegion(
+                        expandedRegion,
+                        vr.regionNumber,
+                        bpPerPx,
+                      ),
+                    )
                   }
-                  fetchFeaturesImpl(expandedRegion, bpPerPx).catch(
-                    (e: unknown) => {
+
+                  Promise.all(promises)
+                    .then(() => {
+                      self.setLoading(false)
+                    })
+                    .catch((e: unknown) => {
                       console.error('Failed to fetch features:', e)
-                    },
-                  )
+                      self.setLoading(false)
+                    })
                 }
               },
               { delay: 300, fireImmediately: true },
             ),
           )
 
-          // React to zoom changes (re-layout when zoom changes significantly)
+          // Reaction: re-layout when zoom changes significantly
           addDisposer(
             self,
             reaction(
@@ -470,18 +540,15 @@ export default function stateModelFactory(
                 }
               },
               bpPerPx => {
-                if (bpPerPx && self.needsLayoutRefresh && self.loadedRegion) {
-                  const region = self.loadedRegion
-                  fetchFeaturesImpl(region, bpPerPx).catch((e: unknown) => {
-                    console.error('Failed to refresh layout:', e)
-                  })
+                if (bpPerPx && self.needsLayoutRefresh) {
+                  refetchAllLoadedRegions(bpPerPx)
                 }
               },
-              { delay: 500 }, // Debounce zoom changes
+              { delay: 500 },
             ),
           )
 
-          // React to label/description setting changes
+          // Reaction: re-fetch on label/description setting changes
           addDisposer(
             self,
             reaction(
@@ -490,43 +557,58 @@ export default function stateModelFactory(
                 showDescriptions: self.showDescriptions,
               }),
               () => {
-                if (self.loadedRegion) {
+                if (self.loadedRegions.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view.bpPerPx
-                  fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(
-                    (e: unknown) => {
-                      console.error(
-                        'Failed to refresh after label settings change:',
-                        e,
-                      )
-                    },
-                  )
+                  refetchAllLoadedRegions(view.bpPerPx)
                 }
               },
               { delay: 100 },
             ),
           )
 
-          // React to colorByCDS changes
+          // Reaction: re-fetch on colorByCDS changes
           addDisposer(
             self,
             reaction(
               () => self.colorByCDS,
               () => {
-                if (self.loadedRegion) {
+                if (self.loadedRegions.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const bpPerPx = view.bpPerPx
-                  fetchFeaturesImpl(self.loadedRegion, bpPerPx).catch(
-                    (e: unknown) => {
-                      console.error(
-                        'Failed to refresh after colorByCDS change:',
-                        e,
-                      )
-                    },
-                  )
+                  refetchAllLoadedRegions(view.bpPerPx)
                 }
               },
               { delay: 100 },
+            ),
+          )
+
+          // Reaction: clear data when displayedRegions identity changes
+          addDisposer(
+            self,
+            reaction(
+              () => {
+                try {
+                  const view = getContainingView(self) as LGV
+                  return JSON.stringify(
+                    view.displayedRegions.map(r => ({
+                      refName: r.refName,
+                      start: r.start,
+                      end: r.end,
+                    })),
+                  )
+                } catch {
+                  return ''
+                }
+              },
+              regionStr => {
+                if (
+                  prevDisplayedRegionsStr !== '' &&
+                  regionStr !== prevDisplayedRegionsStr
+                ) {
+                  self.clearAllRpcData()
+                }
+                prevDisplayedRegionsStr = regionStr
+              },
+              { fireImmediately: true },
             ),
           )
         },

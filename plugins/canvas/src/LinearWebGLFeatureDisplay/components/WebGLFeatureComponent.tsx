@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
 
+import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
 import type {
   FlatbushItem,
   SubfeatureInfo,
@@ -16,18 +17,27 @@ import type {
 } from '../../RenderWebGLFeatureDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+type LGV = LinearGenomeViewModel
+
+interface VisibleRegion {
+  refName: string
+  regionNumber: number
+  start: number
+  end: number
+  assemblyName: string
+  screenStartPx: number
+  screenEndPx: number
+}
+
 interface LinearWebGLFeatureDisplayModel {
   height: number
-  rpcData: WebGLFeatureDataResult | null
-  loadedRegion: { refName: string; start: number; end: number } | null
+  rpcDataMap: Map<number, WebGLFeatureDataResult>
+  visibleRegions: VisibleRegion[]
   isLoading: boolean
   error: Error | null
   maxY: number
-  selectedFeatureId: string | undefined // from base class computed
+  selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
-  setMaxY: (y: number) => void
-  setCurrentDomain: (domain: [number, number]) => void
-  handleNeedMoreData: (region: { start: number; end: number }) => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
   selectFeatureById: (
     featureInfo: FlatbushItem,
@@ -47,8 +57,8 @@ export interface Props {
   model: LinearWebGLFeatureDisplayModel
 }
 
-// Cache for reconstructed Flatbush indexes
-interface FlatbushCache {
+// Cache for reconstructed Flatbush indexes per region
+interface FlatbushRegionCache {
   featureIndex: Flatbush | null
   subfeatureIndex: Flatbush | null
   flatbushData: ArrayBuffer | null
@@ -56,11 +66,10 @@ interface FlatbushCache {
 }
 
 function getOrCreateFlatbushIndexes(
-  cache: FlatbushCache,
+  cache: FlatbushRegionCache,
   flatbushData: ArrayBuffer,
   subfeatureFlatbushData: ArrayBuffer,
 ): { featureIndex: Flatbush | null; subfeatureIndex: Flatbush | null } {
-  // Check if we need to rebuild feature index
   if (cache.flatbushData !== flatbushData) {
     cache.flatbushData = flatbushData
     cache.featureIndex = null
@@ -73,7 +82,6 @@ function getOrCreateFlatbushIndexes(
     }
   }
 
-  // Check if we need to rebuild subfeature index
   if (cache.subfeatureFlatbushData !== subfeatureFlatbushData) {
     cache.subfeatureFlatbushData = subfeatureFlatbushData
     cache.subfeatureIndex = null
@@ -92,9 +100,8 @@ function getOrCreateFlatbushIndexes(
   }
 }
 
-// Helper to perform hit detection
 function performHitDetection(
-  cache: FlatbushCache,
+  cache: FlatbushRegionCache,
   flatbushData: ArrayBuffer,
   flatbushItems: FlatbushItem[],
   subfeatureFlatbushData: ArrayBuffer,
@@ -138,6 +145,49 @@ function performHitDetection(
   return { feature, subfeature }
 }
 
+function performMultiRegionHitDetection(
+  cacheMap: Map<number, FlatbushRegionCache>,
+  rpcDataMap: Map<number, WebGLFeatureDataResult>,
+  visibleRegions: VisibleRegion[],
+  mouseXPx: number,
+  yPos: number,
+) {
+  for (const vr of visibleRegions) {
+    if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
+      continue
+    }
+    const data = rpcDataMap.get(vr.regionNumber)
+    if (!data) {
+      continue
+    }
+    let cache = cacheMap.get(vr.regionNumber)
+    if (!cache) {
+      cache = {
+        featureIndex: null,
+        subfeatureIndex: null,
+        flatbushData: null,
+        subfeatureFlatbushData: null,
+      }
+      cacheMap.set(vr.regionNumber, cache)
+    }
+
+    const blockWidth = vr.screenEndPx - vr.screenStartPx
+    const bpPerPx = (vr.end - vr.start) / blockWidth
+    const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
+
+    return performHitDetection(
+      cache,
+      data.flatbushData,
+      data.flatbushItems,
+      data.subfeatureFlatbushData,
+      data.subfeatureInfos,
+      bpPos,
+      yPos,
+    )
+  }
+  return { feature: null, subfeature: null }
+}
+
 const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
@@ -152,92 +202,47 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const [hoveredSubfeature, setHoveredSubfeature] =
     useState<SubfeatureInfo | null>(null)
   const [scrollY, setScrollY] = useState(0)
-  const flatbushCacheRef = useRef<FlatbushCache>({
-    featureIndex: null,
-    subfeatureIndex: null,
-    flatbushData: null,
-    subfeatureFlatbushData: null,
-  })
+  const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
 
   const scrollYRef = useRef(0)
   const renderRAFRef = useRef<number | null>(null)
   const selfUpdateRef = useRef(false)
-  const pendingDataRequestRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  )
-  const lastRequestedRegionRef = useRef<{ start: number; end: number } | null>(
-    null,
-  )
 
-  const view = getContainingView(model) as LinearGenomeViewModel | undefined
+  const view = getContainingView(model) as LGV | undefined
 
-  const { rpcData, isLoading, error } = model
+  const { rpcDataMap, isLoading, error } = model
 
   const width =
     measuredDims.width ?? (view?.initialized ? view.width : undefined)
   const height = model.height
 
-  const getVisibleBpRange = useCallback((): [number, number] | null => {
-    if (!view?.initialized || width === undefined) {
-      return null
-    }
-
-    const dynamicBlocks = (
-      view as unknown as {
-        dynamicBlocks?: {
-          contentBlocks?: {
-            refName: string
-            start: number
-            end: number
-            offsetPx?: number
-          }[]
-        }
-      }
-    ).dynamicBlocks
-    const contentBlocks = dynamicBlocks?.contentBlocks
-    if (!contentBlocks || contentBlocks.length === 0) {
-      return null
-    }
-    const first = contentBlocks[0]
-    const last = contentBlocks[contentBlocks.length - 1]
-    if (!first || first.refName !== last?.refName) {
-      return null
-    }
-
-    const bpPerPx = view.bpPerPx
-    const blockOffsetPx = first.offsetPx ?? 0
-    const deltaPx = view.offsetPx - blockOffsetPx
-    const deltaBp = deltaPx * bpPerPx
-
-    const rangeStart = first.start + deltaBp
-    const rangeEnd = rangeStart + width * bpPerPx
-    return [rangeStart, rangeEnd]
-  }, [view, width])
-
-  const renderWithDomain = useCallback(
-    (domainX: [number, number], canvasW?: number) => {
-      const w = canvasW ?? width
-      if (!rendererRef.current || w === undefined) {
-        return
-      }
-
-      rendererRef.current.render({
-        domainX,
-        scrollY: scrollYRef.current,
-        canvasWidth: w,
-        canvasHeight: height,
-      })
-    },
-    [width, height],
-  )
-
-  const renderNow = useCallback(() => {
-    const visibleBpRange = getVisibleBpRange()
-    if (!visibleBpRange) {
+  const renderWithBlocks = useCallback(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !view?.initialized || width === undefined) {
       return
     }
-    renderWithDomain(visibleBpRange)
-  }, [getVisibleBpRange, renderWithDomain])
+
+    const visibleRegions = model.visibleRegions
+    if (visibleRegions.length === 0) {
+      return
+    }
+
+    const blocks: FeatureRenderBlock[] = []
+    for (const vr of visibleRegions) {
+      blocks.push({
+        regionNumber: vr.regionNumber,
+        domainX: [vr.start, vr.end],
+        screenStartPx: vr.screenStartPx,
+        screenEndPx: vr.screenEndPx,
+      })
+    }
+
+    renderer.renderBlocks(blocks, {
+      scrollY: scrollYRef.current,
+      canvasWidth: Math.round(view.width),
+      canvasHeight: height,
+    })
+  }, [view, width, height, model])
 
   const scheduleRender = useCallback(() => {
     if (renderRAFRef.current !== null) {
@@ -245,70 +250,14 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
     renderRAFRef.current = requestAnimationFrame(() => {
       renderRAFRef.current = null
-      renderNow()
+      renderWithBlocks()
     })
-  }, [renderNow])
+  }, [renderWithBlocks])
 
-  const checkDataNeeds = useCallback(() => {
-    const visibleBpRange = getVisibleBpRange()
-    if (!visibleBpRange) {
-      return
-    }
-    const loadedRegion = model.loadedRegion
-    if (!loadedRegion || model.isLoading) {
-      return
-    }
-
-    const buffer = (visibleBpRange[1] - visibleBpRange[0]) * 0.5
-    const needsData =
-      visibleBpRange[0] - buffer < loadedRegion.start ||
-      visibleBpRange[1] + buffer > loadedRegion.end
-
-    if (needsData) {
-      if (pendingDataRequestRef.current) {
-        clearTimeout(pendingDataRequestRef.current)
-      }
-      pendingDataRequestRef.current = setTimeout(() => {
-        if (model.isLoading) {
-          return
-        }
-        const currentRange = getVisibleBpRange()
-        if (!currentRange) {
-          return
-        }
-        const requested = lastRequestedRegionRef.current
-        if (
-          requested &&
-          currentRange[0] >= requested.start &&
-          currentRange[1] <= requested.end
-        ) {
-          return
-        }
-        lastRequestedRegionRef.current = {
-          start: currentRange[0],
-          end: currentRange[1],
-        }
-        model.handleNeedMoreData({
-          start: currentRange[0],
-          end: currentRange[1],
-        })
-        pendingDataRequestRef.current = null
-      }, 200)
-    }
-  }, [getVisibleBpRange, model])
-
-  const renderNowRef = useRef(renderNow)
-  renderNowRef.current = renderNow
-  const renderWithDomainRef = useRef(renderWithDomain)
-  renderWithDomainRef.current = renderWithDomain
-  const checkDataNeedsRef = useRef(checkDataNeeds)
-  checkDataNeedsRef.current = checkDataNeeds
-  const getVisibleBpRangeRef = useRef(getVisibleBpRange)
-  getVisibleBpRangeRef.current = getVisibleBpRange
+  const renderWithBlocksRef = useRef(renderWithBlocks)
+  renderWithBlocksRef.current = renderWithBlocks
   const viewRef = useRef(view)
   viewRef.current = view
-  const widthRef = useRef(width)
-  widthRef.current = width
 
   // Initialize WebGL
   useEffect(() => {
@@ -350,12 +299,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           return
         }
 
-        const visibleBpRange = getVisibleBpRangeRef.current()
-        if (visibleBpRange) {
-          model.setCurrentDomain(visibleBpRange)
-        }
-
-        renderNowRef.current()
+        renderWithBlocksRef.current()
       } catch {
         // Model may have been detached from state tree
       }
@@ -366,35 +310,45 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
   }, [view, model])
 
-  // Upload features to GPU from RPC typed arrays
+  // Upload features to GPU from RPC typed arrays (per region)
   useEffect(() => {
-    if (!rendererRef.current || !rpcData || rpcData.numRects === 0) {
+    const renderer = rendererRef.current
+    if (!renderer) {
       return
     }
 
-    rendererRef.current.uploadFromTypedArrays({
-      regionStart: rpcData.regionStart,
-      rectPositions: rpcData.rectPositions,
-      rectYs: rpcData.rectYs,
-      rectHeights: rpcData.rectHeights,
-      rectColors: rpcData.rectColors,
-      numRects: rpcData.numRects,
-      linePositions: rpcData.linePositions,
-      lineYs: rpcData.lineYs,
-      lineColors: rpcData.lineColors,
-      lineDirections: rpcData.lineDirections,
-      numLines: rpcData.numLines,
-      arrowXs: rpcData.arrowXs,
-      arrowYs: rpcData.arrowYs,
-      arrowDirections: rpcData.arrowDirections,
-      arrowHeights: rpcData.arrowHeights,
-      arrowColors: rpcData.arrowColors,
-      numArrows: rpcData.numArrows,
-    })
-    model.setMaxY(rpcData.maxY)
+    if (rpcDataMap.size === 0) {
+      renderer.clearAllBuffers()
+      return
+    }
+
+    const activeRegions = new Set<number>()
+    for (const [regionNumber, data] of rpcDataMap) {
+      activeRegions.add(regionNumber)
+      renderer.uploadForRegion(regionNumber, {
+        regionStart: data.regionStart,
+        rectPositions: data.rectPositions,
+        rectYs: data.rectYs,
+        rectHeights: data.rectHeights,
+        rectColors: data.rectColors,
+        numRects: data.numRects,
+        linePositions: data.linePositions,
+        lineYs: data.lineYs,
+        lineColors: data.lineColors,
+        lineDirections: data.lineDirections,
+        numLines: data.numLines,
+        arrowXs: data.arrowXs,
+        arrowYs: data.arrowYs,
+        arrowDirections: data.arrowDirections,
+        arrowHeights: data.arrowHeights,
+        arrowColors: data.arrowColors,
+        numArrows: data.numArrows,
+      })
+    }
+    renderer.pruneStaleRegions(activeRegions)
 
     scheduleRender()
-  }, [rpcData, model, scheduleRender])
+  }, [rpcDataMap, scheduleRender])
 
   // Re-render when container dimensions change
   useEffect(() => {
@@ -403,17 +357,9 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
   }, [rendererReady, measuredDims.width, measuredDims.height, scheduleRender])
 
-  // Reset data request tracking
-  useEffect(() => {
-    lastRequestedRegionRef.current = null
-  }, [model.loadedRegion])
-
   // Cleanup
   useEffect(() => {
     return () => {
-      if (pendingDataRequestRef.current) {
-        clearTimeout(pendingDataRequestRef.current)
-      }
       if (renderRAFRef.current) {
         cancelAnimationFrame(renderRAFRef.current)
       }
@@ -429,9 +375,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const handleWheel = (e: WheelEvent) => {
       const view = viewRef.current
-      const width = widthRef.current
-
-      if (!view?.initialized || width === undefined) {
+      if (!view?.initialized) {
         return
       }
 
@@ -444,32 +388,10 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         e.stopPropagation()
         const newOffsetPx = view.offsetPx + e.deltaX
 
-        const dynamicBlocks = (
-          view as unknown as {
-            dynamicBlocks?: {
-              contentBlocks?: {
-                refName: string
-                start: number
-                end: number
-                offsetPx?: number
-              }[]
-            }
-          }
-        ).dynamicBlocks?.contentBlocks
-        const first = dynamicBlocks?.[0]
-        if (first) {
-          const blockOffsetPx = first.offsetPx ?? 0
-          const deltaPx = newOffsetPx - blockOffsetPx
-          const deltaBp = deltaPx * view.bpPerPx
-          const rangeStart = first.start + deltaBp
-          const rangeEnd = rangeStart + width * view.bpPerPx
+        selfUpdateRef.current = true
+        view.setNewView(view.bpPerPx, newOffsetPx)
 
-          renderWithDomainRef.current([rangeStart, rangeEnd])
-          selfUpdateRef.current = true
-          view.setNewView(view.bpPerPx, newOffsetPx)
-        }
-
-        checkDataNeedsRef.current()
+        renderWithBlocksRef.current()
         return
       }
 
@@ -484,9 +406,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         const panAmount = e.deltaY * 0.5
         const newScrollY = Math.max(0, scrollYRef.current + panAmount)
         scrollYRef.current = newScrollY
-        // Update state to trigger floating labels re-render
         setScrollY(newScrollY)
-        renderNowRef.current()
+        renderWithBlocksRef.current()
       }
     }
 
@@ -503,75 +424,46 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       return
     }
 
-    const getMouseBpAndY = (
-      e: MouseEvent,
-    ): { bpPos: number; yPos: number } | null => {
-      const view = viewRef.current
-      const w = widthRef.current
-      if (!view?.initialized || w === undefined) {
-        return null
-      }
-
-      const visibleRange = getVisibleBpRangeRef.current()
-      if (!visibleRange) {
-        return null
-      }
-
+    const getMouseInfo = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
-
-      const rangeWidth = visibleRange[1] - visibleRange[0]
-      const bpPos = visibleRange[0] + (mouseX / w) * rangeWidth
       const yPos = mouseY + scrollYRef.current
-
-      return { bpPos, yPos }
+      return { mouseX, mouseY, yPos }
     }
 
     const handleMouseMove = (e: MouseEvent) => {
-      const rpcData = model.rpcData
-      if (!rpcData) {
+      const rpcDataMap = model.rpcDataMap
+      if (rpcDataMap.size === 0) {
         setTooltip(null)
         setHoveredFeature(null)
         setHoveredSubfeature(null)
         return
       }
 
-      const pos = getMouseBpAndY(e)
-      if (!pos) {
-        setTooltip(null)
-        setHoveredFeature(null)
-        setHoveredSubfeature(null)
-        return
-      }
+      const { mouseX, mouseY, yPos } = getMouseInfo(e)
 
-      const { feature, subfeature } = performHitDetection(
-        flatbushCacheRef.current,
-        rpcData.flatbushData,
-        rpcData.flatbushItems,
-        rpcData.subfeatureFlatbushData,
-        rpcData.subfeatureInfos,
-        pos.bpPos,
-        pos.yPos,
+      const { feature, subfeature } = performMultiRegionHitDetection(
+        flatbushCacheMapRef.current,
+        rpcDataMap,
+        model.visibleRegions,
+        mouseX,
+        yPos,
       )
 
       if (subfeature) {
-        // Hovering over a transcript - show transcript tooltip, highlight transcript only
-        const rect = canvas.getBoundingClientRect()
         setTooltip({
-          x: e.clientX - rect.left + 10,
-          y: e.clientY - rect.top + 10,
+          x: mouseX + 10,
+          y: mouseY + 10,
           text: subfeature.tooltip ?? subfeature.type,
         })
         setHoveredFeature(feature)
         setHoveredSubfeature(subfeature)
         model.setFeatureIdUnderMouse(feature?.featureId ?? null)
       } else if (feature) {
-        // Hovering over gene (but not a specific transcript) - show gene tooltip, highlight gene
-        const rect = canvas.getBoundingClientRect()
         setTooltip({
-          x: e.clientX - rect.left + 10,
-          y: e.clientY - rect.top + 10,
+          x: mouseX + 10,
+          y: mouseY + 10,
           text: feature.tooltip,
         })
         setHoveredFeature(feature)
@@ -593,24 +485,18 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     const handleClick = (e: MouseEvent) => {
-      const rpcData = model.rpcData
-      if (!rpcData) {
+      if (model.rpcDataMap.size === 0) {
         return
       }
 
-      const pos = getMouseBpAndY(e)
-      if (!pos) {
-        return
-      }
+      const { mouseX, yPos } = getMouseInfo(e)
 
-      const { feature, subfeature } = performHitDetection(
-        flatbushCacheRef.current,
-        rpcData.flatbushData,
-        rpcData.flatbushItems,
-        rpcData.subfeatureFlatbushData,
-        rpcData.subfeatureInfos,
-        pos.bpPos,
-        pos.yPos,
+      const { feature, subfeature } = performMultiRegionHitDetection(
+        flatbushCacheMapRef.current,
+        model.rpcDataMap,
+        model.visibleRegions,
+        mouseX,
+        yPos,
       )
 
       if (feature) {
@@ -620,24 +506,18 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault()
-      const rpcData = model.rpcData
-      if (!rpcData) {
+      if (model.rpcDataMap.size === 0) {
         return
       }
 
-      const pos = getMouseBpAndY(e)
-      if (!pos) {
-        return
-      }
+      const { mouseX, yPos } = getMouseInfo(e)
 
-      const { feature } = performHitDetection(
-        flatbushCacheRef.current,
-        rpcData.flatbushData,
-        rpcData.flatbushItems,
-        rpcData.subfeatureFlatbushData,
-        rpcData.subfeatureInfos,
-        pos.bpPos,
-        pos.yPos,
+      const { feature } = performMultiRegionHitDetection(
+        flatbushCacheMapRef.current,
+        model.rpcDataMap,
+        model.visibleRegions,
+        mouseX,
+        yPos,
       )
 
       if (feature) {
@@ -655,245 +535,251 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvas.removeEventListener('click', handleClick)
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [model, model.rpcData])
+  }, [model])
 
-  // Compute floating label positions
-  // Need to include view.bpPerPx and view.offsetPx in deps so labels update on pan/zoom
   const bpPerPx = view?.bpPerPx
   const offsetPx = view?.offsetPx
+  const visibleRegions = model.visibleRegions
 
+  // Compute floating label positions (multi-region aware)
   const floatingLabelElements = useMemo(() => {
-    if (
-      !rpcData?.floatingLabelsData ||
-      !view?.initialized ||
-      !width ||
-      !bpPerPx
-    ) {
-      return null
-    }
-
-    const regionStart = rpcData.regionStart
-    const visibleRange = getVisibleBpRange()
-    if (!visibleRange) {
+    if (!view?.initialized || !width || !bpPerPx || visibleRegions.length === 0) {
       return null
     }
 
     const elements: React.ReactElement[] = []
 
-    for (const [featureId, labelData] of Object.entries(
-      rpcData.floatingLabelsData,
-    )) {
-      const featureStartBp = labelData.minX + regionStart
-      const featureEndBp = labelData.maxX + regionStart
-
-      // Check if feature is in visible range
-      if (featureEndBp < visibleRange[0] || featureStartBp > visibleRange[1]) {
+    for (const vr of visibleRegions) {
+      const data = rpcDataMap.get(vr.regionNumber)
+      if (!data?.floatingLabelsData) {
         continue
       }
 
-      const featureLeftPx = (featureStartBp - visibleRange[0]) / bpPerPx
-      const featureRightPx = (featureEndBp - visibleRange[0]) / bpPerPx
-      const featureWidth = featureRightPx - featureLeftPx
+      const regionStart = data.regionStart
+      const blockBpPerPx = (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
 
-      // Use labelData for visual positioning (not flatbushItem which includes hit box padding)
-      const featureBottomPx = labelData.topY + labelData.featureHeight
+      for (const [featureId, labelData] of Object.entries(
+        data.floatingLabelsData,
+      )) {
+        const featureStartBp = labelData.minX + regionStart
+        const featureEndBp = labelData.maxX + regionStart
 
-      for (const [i, label] of labelData.floatingLabels.entries()) {
-        const { text, relativeY, color } = label
-        const labelPadding = 2 // Small gap between feature and label
-        const labelY = featureBottomPx - scrollY + relativeY + labelPadding
-        const labelWidth = measureText(text, 11)
-
-        // Calculate floating position (clamped to feature bounds and viewport)
-        let labelX: number
-        if (labelWidth > featureWidth) {
-          // Label wider than feature - anchor to feature left
-          labelX = featureLeftPx
-        } else {
-          // Float within feature bounds, clamped to viewport
-          // Label should stay visible (not go off left edge of viewport)
-          // but also not extend past the feature's right edge
-          const minX = Math.max(0, featureLeftPx)
-          const maxX = featureRightPx - labelWidth
-          labelX = Math.min(Math.max(minX, 0), maxX)
+        if (featureEndBp < vr.start || featureStartBp > vr.end) {
+          continue
         }
+
+        const featureLeftPx =
+          vr.screenStartPx + (featureStartBp - vr.start) / blockBpPerPx
+        const featureRightPx =
+          vr.screenStartPx + (featureEndBp - vr.start) / blockBpPerPx
+        const featureWidth = featureRightPx - featureLeftPx
+
+        const featureBottomPx = labelData.topY + labelData.featureHeight
+
+        for (const [i, label] of labelData.floatingLabels.entries()) {
+          const { text, relativeY, color } = label
+          const labelPadding = 2
+          const labelY = featureBottomPx - scrollY + relativeY + labelPadding
+          const labelWidth = measureText(text, 11)
+
+          let labelX: number
+          if (labelWidth > featureWidth) {
+            labelX = featureLeftPx
+          } else {
+            const minX = Math.max(vr.screenStartPx, featureLeftPx)
+            const maxX = featureRightPx - labelWidth
+            labelX = Math.min(Math.max(minX, 0), maxX)
+          }
+
+          elements.push(
+            <div
+              key={`${vr.regionNumber}-${featureId}-${i}`}
+              style={{
+                position: 'absolute',
+                transform: `translate(${labelX}px, ${labelY}px)`,
+                fontSize: 11,
+                color,
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {text}
+            </div>,
+          )
+        }
+      }
+    }
+
+    return elements.length > 0 ? elements : null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rpcDataMap, view, width, bpPerPx, offsetPx, visibleRegions, scrollY])
+
+  // Compute amino acid letter overlay (multi-region aware)
+  const aminoAcidOverlayElements = useMemo(() => {
+    if (
+      !view?.initialized ||
+      !width ||
+      !bpPerPx ||
+      !shouldRenderPeptideText(bpPerPx) ||
+      visibleRegions.length === 0
+    ) {
+      return null
+    }
+
+    const elements: React.ReactElement[] = []
+
+    for (const vr of visibleRegions) {
+      const data = rpcDataMap.get(vr.regionNumber)
+      if (!data?.aminoAcidOverlay) {
+        continue
+      }
+
+      const blockBpPerPx = (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+
+      for (const [i, item] of data.aminoAcidOverlay.entries()) {
+        if (item.endBp < vr.start || item.startBp > vr.end) {
+          continue
+        }
+
+        const leftPx =
+          vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx
+        const rightPx =
+          vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx
+        const centerPx = (leftPx + rightPx) / 2
+        const topPx = item.topPx - scrollY
+        const fontSize = Math.min(item.heightPx - 2, 12)
 
         elements.push(
           <div
-            key={`${featureId}-${i}`}
+            key={`${vr.regionNumber}-${i}`}
             style={{
               position: 'absolute',
-              transform: `translate(${labelX}px, ${labelY}px)`,
-              fontSize: 11,
-              color,
+              left: centerPx,
+              top: topPx,
+              height: item.heightPx,
+              transform: 'translateX(-50%)',
+              fontSize,
+              lineHeight: `${item.heightPx}px`,
+              color: item.isStopOrNonTriplet ? 'red' : 'black',
               pointerEvents: 'none',
               whiteSpace: 'nowrap',
             }}
           >
-            {text}
+            {item.aminoAcid}
+            {item.proteinIndex + 1}
           </div>,
         )
       }
     }
 
     return elements.length > 0 ? elements : null
-    // offsetPx needed here
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rpcData, view, width, bpPerPx, offsetPx, getVisibleBpRange, scrollY])
+  }, [rpcDataMap, view, width, bpPerPx, offsetPx, visibleRegions, scrollY])
 
-  // Compute amino acid letter overlay from precomputed worker data
-  const aminoAcidOverlayElements = useMemo(() => {
+  // Compute highlight overlays for hovered and selected features (multi-region aware)
+  const highlightOverlays = useMemo(() => {
     if (
-      !rpcData?.aminoAcidOverlay ||
       !view?.initialized ||
       !width ||
       !bpPerPx ||
-      !shouldRenderPeptideText(bpPerPx)
+      visibleRegions.length === 0
     ) {
-      return null
-    }
-
-    const visibleRange = getVisibleBpRange()
-    if (!visibleRange) {
-      return null
-    }
-
-    const elements: React.ReactElement[] = []
-
-    for (const [i, item] of rpcData.aminoAcidOverlay.entries()) {
-      if (item.endBp < visibleRange[0] || item.startBp > visibleRange[1]) {
-        continue
-      }
-
-      const leftPx = (item.startBp - visibleRange[0]) / bpPerPx
-      const rightPx = (item.endBp - visibleRange[0]) / bpPerPx
-      const centerPx = (leftPx + rightPx) / 2
-      const topPx = item.topPx - scrollY
-      const fontSize = Math.min(item.heightPx - 2, 12)
-
-      elements.push(
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: centerPx,
-            top: topPx,
-            height: item.heightPx,
-            transform: 'translateX(-50%)',
-            fontSize,
-            lineHeight: `${item.heightPx}px`,
-            color: item.isStopOrNonTriplet ? 'red' : 'black',
-            pointerEvents: 'none',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {item.aminoAcid}
-          {item.proteinIndex + 1}
-        </div>,
-      )
-    }
-
-    return elements.length > 0 ? elements : null
-    // offsetPx needed here
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rpcData, view, width, bpPerPx, offsetPx, getVisibleBpRange, scrollY])
-
-  // Compute highlight overlays for hovered and selected features
-  const highlightOverlays = useMemo(() => {
-    if (!rpcData || !view?.initialized || !width || !bpPerPx) {
-      return null
-    }
-
-    const visibleRange = getVisibleBpRange()
-    if (!visibleRange) {
       return null
     }
 
     const overlays: React.ReactElement[] = []
 
-    // Helper to add overlay for a gene (top-level feature)
     const addFeatureOverlay = (
       featureId: string,
       color: string,
       key: string,
     ) => {
-      const feature = rpcData.flatbushItems.find(f => f.featureId === featureId)
-      if (!feature) {
-        return
+      for (const vr of visibleRegions) {
+        const data = rpcDataMap.get(vr.regionNumber)
+        if (!data) {
+          continue
+        }
+        const feature = data.flatbushItems.find(
+          f => f.featureId === featureId,
+        )
+        if (!feature) {
+          continue
+        }
+
+        if (feature.endBp < vr.start || feature.startBp > vr.end) {
+          continue
+        }
+
+        const blockBpPerPx =
+          (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+        const leftPx =
+          vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
+        const rightPx =
+          vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
+        const featureWidth = rightPx - leftPx
+        const topPx = feature.topPx - scrollY
+        const heightPx = feature.bottomPx - feature.topPx
+
+        overlays.push(
+          <div
+            key={`${key}-${vr.regionNumber}`}
+            style={{
+              position: 'absolute',
+              left: leftPx,
+              top: topPx,
+              width: featureWidth,
+              height: heightPx,
+              backgroundColor: color,
+              pointerEvents: 'none',
+            }}
+          />,
+        )
       }
-
-      // Check if feature is in visible range
-      if (
-        feature.endBp < visibleRange[0] ||
-        feature.startBp > visibleRange[1]
-      ) {
-        return
-      }
-
-      const leftPx = (feature.startBp - visibleRange[0]) / bpPerPx
-      const rightPx = (feature.endBp - visibleRange[0]) / bpPerPx
-      const featureWidth = rightPx - leftPx
-      const topPx = feature.topPx - scrollY
-      const heightPx = feature.bottomPx - feature.topPx
-
-      overlays.push(
-        <div
-          key={key}
-          style={{
-            position: 'absolute',
-            left: leftPx,
-            top: topPx,
-            width: featureWidth,
-            height: heightPx,
-            backgroundColor: color,
-            pointerEvents: 'none',
-          }}
-        />,
-      )
     }
 
-    // Helper to add overlay for a subfeature (transcript)
     const addSubfeatureOverlay = (
       subfeature: SubfeatureInfo,
       color: string,
       key: string,
     ) => {
-      // Check if subfeature is in visible range
-      if (
-        subfeature.endBp < visibleRange[0] ||
-        subfeature.startBp > visibleRange[1]
-      ) {
-        return
+      for (const vr of visibleRegions) {
+        if (
+          subfeature.endBp < vr.start ||
+          subfeature.startBp > vr.end
+        ) {
+          continue
+        }
+
+        const blockBpPerPx =
+          (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+        const leftPx =
+          vr.screenStartPx + (subfeature.startBp - vr.start) / blockBpPerPx
+        const rightPx =
+          vr.screenStartPx + (subfeature.endBp - vr.start) / blockBpPerPx
+        const featureWidth = rightPx - leftPx
+        const topPx = subfeature.topPx - scrollY
+        const heightPx = subfeature.bottomPx - subfeature.topPx
+
+        overlays.push(
+          <div
+            key={`${key}-${vr.regionNumber}`}
+            style={{
+              position: 'absolute',
+              left: leftPx,
+              top: topPx,
+              width: featureWidth,
+              height: heightPx,
+              backgroundColor: color,
+              pointerEvents: 'none',
+            }}
+          />,
+        )
       }
-
-      const leftPx = (subfeature.startBp - visibleRange[0]) / bpPerPx
-      const rightPx = (subfeature.endBp - visibleRange[0]) / bpPerPx
-      const featureWidth = rightPx - leftPx
-      const topPx = subfeature.topPx - scrollY
-      const heightPx = subfeature.bottomPx - subfeature.topPx
-
-      overlays.push(
-        <div
-          key={key}
-          style={{
-            position: 'absolute',
-            left: leftPx,
-            top: topPx,
-            width: featureWidth,
-            height: heightPx,
-            backgroundColor: color,
-            pointerEvents: 'none',
-          }}
-        />,
-      )
     }
 
-    // Add hover highlight
     if (hoveredSubfeature) {
-      // Hovering over a transcript - highlight just the transcript
       addSubfeatureOverlay(hoveredSubfeature, 'rgba(0, 0, 0, 0.15)', 'hover')
     } else if (hoveredFeature) {
-      // Hovering over gene but not a specific transcript - highlight the gene
       addFeatureOverlay(
         hoveredFeature.featureId,
         'rgba(0, 0, 0, 0.15)',
@@ -901,7 +787,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
     }
 
-    // Add selection highlight (blue tint)
     if (
       model.selectedFeatureId &&
       model.selectedFeatureId !== hoveredFeature?.featureId &&
@@ -915,15 +800,14 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return overlays.length > 0 ? overlays : null
-    // offsetPx needed here
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    rpcData,
+    rpcDataMap,
     view,
     width,
     bpPerPx,
     offsetPx,
-    getVisibleBpRange,
+    visibleRegions,
     scrollY,
     hoveredFeature,
     hoveredSubfeature,
@@ -936,8 +820,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     )
   }
 
-  const visibleBpRange = getVisibleBpRange()
-  const isReady = width !== undefined && visibleBpRange !== null
+  const isReady = width !== undefined && view?.initialized
 
   return (
     <div

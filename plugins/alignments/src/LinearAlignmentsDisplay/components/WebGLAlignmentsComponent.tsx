@@ -880,7 +880,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const regions = model.visibleRegions
       const dataMap = model.rpcDataMap
 
-      // Always use region-based lookup
       for (const r of regions) {
         if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
           const data = dataMap.get(r.regionNumber)

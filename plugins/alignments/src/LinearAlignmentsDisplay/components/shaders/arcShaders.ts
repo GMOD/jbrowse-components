@@ -38,6 +38,8 @@ uniform float u_domainStartOffset;
 uniform float u_domainExtent;
 uniform float u_canvasWidth;
 uniform float u_canvasHeight;
+uniform float u_blockStartPx;
+uniform float u_blockWidth;
 uniform float u_coverageOffset;
 uniform float u_lineWidthPx;
 uniform float u_gradientHue;
@@ -73,7 +75,7 @@ vec2 evalCurve(float t) {
   float radius = (a_x2 - a_x1) / 2.0;
   float absrad = abs(radius);
   float cx = a_x1 + radius;
-  float pxPerBp = u_canvasWidth / u_domainExtent;
+  float pxPerBp = u_blockWidth / u_domainExtent;
   float absradPx = absrad * pxPerBp;
   float availableHeight = u_canvasHeight - u_coverageOffset;
   float destY = min(availableHeight, absradPx);
@@ -92,7 +94,7 @@ vec2 evalCurve(float t) {
     x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
     y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   }
-  float screenX = (x_bp - u_domainStartOffset) * pxPerBp;
+  float screenX = u_blockStartPx + (x_bp - u_domainStartOffset) * pxPerBp;
   return vec2(screenX, y_px);
 }
 
@@ -146,7 +148,10 @@ in float a_colorType;
 uniform vec3 u_domainX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
+uniform float u_canvasWidth;
 uniform float u_coverageOffset;
+uniform float u_blockStartPx;
+uniform float u_blockWidth;
 uniform vec3 u_arcLineColors[${NUM_LINE_COLORS}];
 out vec4 v_color;
 
@@ -155,7 +160,10 @@ ${HP_GLSL_FUNCTIONS}
 void main() {
   uint absPos = a_position + u_regionStart;
   vec2 splitPos = hpSplitUint(absPos);
-  float sx = hpToClipX(splitPos, u_domainX);
+  // Map genomic position to block-relative pixel, then to global clip space
+  float domainFrac = hpScaleLinear(splitPos, u_domainX);
+  float screenX = u_blockStartPx + domainFrac * u_blockWidth;
+  float sx = (screenX / u_canvasWidth) * 2.0 - 1.0;
   float sy = 1.0 - ((a_y + u_coverageOffset) / u_canvasHeight) * 2.0;
   gl_Position = vec4(sx, sy, 0.0, 1.0);
   int idx = int(a_colorType + 0.5);
