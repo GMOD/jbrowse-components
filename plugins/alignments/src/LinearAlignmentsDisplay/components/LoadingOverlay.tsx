@@ -1,37 +1,29 @@
 import { cx, keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 
 const useStyles = makeStyles()({
-  container: {
-    position: 'fixed',
+  overlay: {
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(2px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundImage:
+      'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)',
     pointerEvents: 'none',
-    zIndex: 1000,
+    zIndex: 1,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     opacity: 0,
-    transition: 'opacity 0.3s ease-in-out',
+    paddingTop: '20px',
   },
   visible: {
     opacity: 1,
-    pointerEvents: 'auto',
-  },
-  content: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    padding: '24px 32px',
-    borderRadius: 8,
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-    textAlign: 'center',
   },
   dots: {
-    fontSize: '1rem',
-    fontWeight: 400,
-    color: '#333',
+    fontSize: '0.8rem',
+    fontWeight: 300,
     '&::after': {
       display: 'inline-block',
       content: '""',
@@ -56,13 +48,11 @@ export default function LoadingOverlay({
 }) {
   const { classes } = useStyles()
   return (
-    <div
-      className={cx(classes.container, isVisible && classes.visible)}
+    <span
+      className={cx(classes.overlay, isVisible && classes.visible)}
       data-testid={isVisible ? 'loading-overlay' : undefined}
     >
-      <div className={classes.content}>
-        <span className={classes.dots}>{statusMessage || 'Loading'}</span>
-      </div>
-    </div>
+      <span className={classes.dots}>{statusMessage || 'Loading'}</span>
+    </span>
   )
 }

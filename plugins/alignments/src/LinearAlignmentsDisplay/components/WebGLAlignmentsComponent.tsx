@@ -746,7 +746,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for indicator hits first (triangles at top of coverage)
       const indicatorResolved = resolveBlockForCanvasX(canvasX)
-      const indicatorHit = hitTestIndicatorFn(indicatorResolved, canvasY, showCoverage, showInterbaseIndicators)
+      const indicatorHit = hitTestIndicatorFn(canvasX, canvasY, indicatorResolved, showCoverage, showInterbaseIndicators)
       if (indicatorHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -943,7 +943,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for indicator clicks first (triangles at top of coverage)
       const indicatorResolved = resolveBlockForCanvasX(canvasX)
-      const indicatorHit = hitTestIndicatorFn(indicatorResolved, canvasY, showCoverage, showInterbaseIndicators)
+      const indicatorHit = hitTestIndicatorFn(canvasX, canvasY, indicatorResolved, showCoverage, showInterbaseIndicators)
       if (indicatorHit) {
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''

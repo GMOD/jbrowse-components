@@ -411,8 +411,9 @@ export function hitTestCoverage(
  * Hit test for interbase indicators (triangles at top of coverage)
  */
 export function hitTestIndicator(
-  resolved: ResolvedBlock | undefined,
+  canvasX: number,
   canvasY: number,
+  resolved: ResolvedBlock | undefined,
   showCoverage: boolean,
   showInterbaseIndicators: boolean,
 ): IndicatorHitResult | undefined {
@@ -429,12 +430,9 @@ export function hitTestIndicator(
   const { bpRange, blockStartPx, blockWidth } = resolved
   const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
 
-  // Calculate canvas position relative to this block
-  const blockRelativeX = blockStartPx
-  const canvasX = blockRelativeX + (blockStartPx !== undefined ? 0 : 0)
-
-  const posOffset =
-    bpRange[0] + (canvasX - blockStartPx) * bpPerPx - blockData.regionStart
+  // Calculate genomic position from canvas coordinates
+  const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
+  const posOffset = genomicPos - blockData.regionStart
 
   const hitToleranceBp = Math.max(1, bpPerPx * 5)
 

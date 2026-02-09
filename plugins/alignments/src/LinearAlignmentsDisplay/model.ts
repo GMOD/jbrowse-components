@@ -231,11 +231,6 @@ export default function stateModelFactory(
          * For backwards compatibility: migration from old LinearSNPCoverageDisplay
          */
         jexlFilters: types.optional(types.array(types.string), []),
-        /**
-         * #property
-         * User override: maximum byte size allowed (set by "Force load")
-         */
-        userByteSizeLimit: types.maybe(types.number),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -278,10 +273,9 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLPileupDataResult>(),
       loadedRegions: new Map<number, Region>(),
-      isLoading: false,
-      statusMessage: undefined as string | undefined,
+      isLoading: true,
+      statusMessage: 'Loading',
       error: null as Error | null,
-      featureDensityStats: undefined as { bytes?: number; featureDensity?: number } | undefined,
       webglRef: null as unknown,
       currentBpRangeX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
@@ -537,61 +531,6 @@ export default function stateModelFactory(
 
       get showLoading() {
         return self.isLoading || !this.visibleRegion
-      },
-
-      /**
-       * Check if a region is too large to render based on adapter's byte estimate.
-       * Returns { ok: true } if renderable, or { ok: false, reason: string } if too large.
-       * Pass forceLoad=true to skip the size check (used when user explicitly approves).
-       */
-      async checkRegionRenderable(region: Region) {
-        try {
-          const track = getContainingTrack(self)
-          const adapterConfig = getConf(track, 'adapter')
-          if (!adapterConfig) {
-            return { ok: true } // No adapter config, allow fetch
-          }
-
-          // Get the adapter instance to call getMultiRegionFeatureDensityStats
-          const session = getSession(self)
-          const { rpcManager } = session
-          const sessionId = getRpcSessionId(self)
-
-          // Call adapter method to get byte estimate and fetch size limit
-          const stats = (await rpcManager.call(
-            sessionId,
-            'CoreGetFeatureDensityStats',
-            {
-              sessionId,
-              adapterConfig,
-              regions: [region],
-            },
-          )) as { bytes?: number; fetchSizeLimit?: number } | undefined
-
-          if (!stats) {
-            return { ok: true } // No stats, allow fetch
-          }
-
-          // Store stats for potential force load action
-          self.featureDensityStats = stats
-
-          const { bytes = 0, fetchSizeLimit } = stats
-          // Use user override if set, otherwise use the default fetch size limit
-          const limit = self.userByteSizeLimit ?? fetchSizeLimit
-          if (limit && bytes > limit) {
-            const mb = (bytes / (1024 * 1024)).toFixed(2)
-            const limitMb = (limit / (1024 * 1024)).toFixed(2)
-            return {
-              ok: false,
-              reason: `Requested too much data (${mb} Mb). Limit is ${limitMb} Mb.`,
-            }
-          }
-
-          return { ok: true }
-        } catch (e) {
-          console.warn('[checkRegionRenderable] error checking region:', e)
-          return { ok: true } // On error, allow fetch to proceed
-        }
       },
 
       get features(): Map<string, Feature> {
@@ -883,11 +822,6 @@ export default function stateModelFactory(
         }
       },
 
-      setFeatureDensityStatsLimit(stats?: { bytes?: number; featureDensity?: number }) {
-        if (stats?.bytes) {
-          self.userByteSizeLimit = stats.bytes
-        }
-      },
 
       updateVisibleModifications(uniqueModifications: string[]) {
         for (const modType of uniqueModifications) {
@@ -1087,13 +1021,6 @@ export default function stateModelFactory(
         region: Region,
         regionNumber: number,
       ) {
-        // Check if region is renderable before attempting fetch
-        const renderCheck = await self.checkRegionRenderable(region)
-        if (!renderCheck.ok) {
-          self.setError(new Error(renderCheck.reason))
-          return
-        }
-
         const session = getSession(self)
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
@@ -1104,6 +1031,7 @@ export default function stateModelFactory(
 
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
+        console.log(`[fetchFeaturesForRegion] Starting fetch for region ${regionNumber}: ${region.refName}:${region.start}-${region.end}`)
         self.setLoading(true)
         self.setError(null)
 
@@ -1149,6 +1077,7 @@ export default function stateModelFactory(
             end: region.end,
             assemblyName: region.assemblyName,
           })
+          console.log(`[fetchFeaturesForRegion] Fetch complete for region ${regionNumber}`)
           self.setLoading(false)
         } catch (e) {
           if (fetchGenerations.get(regionNumber) !== gen) {
@@ -1187,6 +1116,25 @@ export default function stateModelFactory(
         }
       }
 
+      // Fast re-fetch when only colorBy changes - skip size checks since region is already safe
+      function refetchAllVisibleRegionsForColorChange() {
+        const regions = self.visibleRegions
+        for (const region of regions) {
+          const width = region.end - region.start
+          const expandedRegion = {
+            refName: region.refName,
+            start: Math.max(0, region.start - width * 2),
+            end: region.end + width * 2,
+            assemblyName: region.assemblyName,
+          }
+          fetchFeaturesForRegion(expandedRegion, region.regionNumber).catch(
+            (e: unknown) => {
+              console.error('Failed to fetch features:', e)
+            },
+          )
+        }
+      }
+
       return {
         fetchFeatures(region: Region, regionNumber = 0) {
           fetchFeaturesForRegion(region, regionNumber).catch((e: unknown) => {
@@ -1195,16 +1143,16 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
-          // Fetch data when the visible regions approach the edge of
-          // loaded data.  Uses a 50% viewport buffer so we prefetch
-          // before the user actually scrolls past the loaded boundary.
           // Fetch data when the visible regions approach the edge of loaded data.
-          // Uses a 50% viewport buffer so we prefetch before the user actually scrolls past the loaded boundary.
+          // Waits for base class feature density stats before proceeding.
           addDisposer(
             self,
-            autorun(async () => {
+            autorun(() => {
               const view = getContainingView(self) as LGV
               if (!view.initialized) {
+                return
+              }
+              if (!self.featureDensityStatsReadyAndRegionNotTooLarge) {
                 return
               }
 
@@ -1213,28 +1161,7 @@ export default function stateModelFactory(
                 return
               }
 
-              // Validate all visible regions are renderable before fetching
-              try {
-                const results = await Promise.all(
-                  regions.map(r => self.checkRegionRenderable(r)),
-                )
-                const failedCheck = results.find(r => !r.ok)
-                if (failedCheck && failedCheck.reason) {
-                  if (isAlive(self)) {
-                    self.setError(new Error(failedCheck.reason))
-                  }
-                  return
-                }
-                // All regions pass validation, proceed with fetch
-                if (isAlive(self)) {
-                  self.setError(null)
-                  fetchAllVisibleRegions()
-                }
-              } catch (e) {
-                if (isAlive(self)) {
-                  console.warn('Error validating regions:', e)
-                }
-              }
+              fetchAllVisibleRegions()
             }, { delay: 300, name: 'LinearAlignmentsDisplay:fetchVisibleRegions' }),
           )
 
@@ -1268,10 +1195,15 @@ export default function stateModelFactory(
                 if (colorType === 'tag' && !tagsReady) {
                   return
                 }
-                if (self.featureDensityStatsReadyAndRegionNotTooLarge) {
-                  self.clearAllRpcData()
-                  fetchAllVisibleRegions()
-                }
+                // When colorBy changes, re-fetch immediately without size checks
+                // (region was already safe on first load, just need new rendering data)
+                console.log('[colorBy reaction] Color changed to:', colorType)
+                self.setLoading(true)
+                self.setStatusMessage('Loading')
+                self.setError(null)
+                self.clearAllRpcData()
+                console.log('[colorBy reaction] RPC data cleared, fetching...')
+                refetchAllVisibleRegionsForColorChange()
               },
               { name: 'LinearAlignmentsDisplay:refetchOnColorByChange' },
             ),

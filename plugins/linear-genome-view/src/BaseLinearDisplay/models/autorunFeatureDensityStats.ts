@@ -33,15 +33,19 @@ export default async function autorunFeatureDensityStats(
       return
     }
 
-    // don't re-estimate featureDensity even if zoom level changes,
-    // jbrowse 1-style assume it's sort of representative
-    if (self.featureDensityStats?.featureDensity !== undefined) {
+    // don't re-estimate even if zoom level changes,
+    // jbrowse 1-style assume it's sort of representative.
+    // check for existence of stats (not just featureDensity) to avoid
+    // infinite loop with adapters that return bytes but no featureDensity
+    if (self.featureDensityStats !== undefined) {
       return
     }
 
     self.clearFeatureDensityStats()
+    console.debug('[autorunFeatureDensityStats] fetching stats')
     const stats = await self.getFeatureDensityStats()
     if (isAlive(self)) {
+      console.debug('[autorunFeatureDensityStats] got stats', stats)
       self.setFeatureDensityStats(stats)
     }
   } catch (e) {

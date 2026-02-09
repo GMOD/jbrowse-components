@@ -214,8 +214,12 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
    * we return the configured fetchSizeLimit, and the bytes for the region
    */
   async getMultiRegionFeatureDensityStats(regions: Region[]) {
+    const startTime = performance.now()
+    console.log('[CramAdapter] Estimating bytes for regions...')
     const bytes = await this.bytesForRegions(regions)
+    const elapsed = performance.now() - startTime
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
+    console.log(`[CramAdapter] Byte estimation took ${elapsed.toFixed(1)}ms, bytes=${bytes}, limit=${fetchSizeLimit}`)
     return {
       bytes,
       fetchSizeLimit,
@@ -226,7 +230,12 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
    * get the approximate number of bytes queried from the file for the given
    * query regions
    */
+  private callCount = 0
   private async bytesForRegions(regions: Region[]) {
+    this.callCount++
+    const callNum = this.callCount
+    console.log(`[CramAdapter.bytesForRegions] CALL #${callNum} from:`, new Error().stack?.split('\n')[2])
+
     const { cram } = this.configure()
     const blockResults = await Promise.all(
       regions.map(region => {
@@ -238,6 +247,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       }),
     )
 
-    return sum(blockResults.flat().map(a => a.sliceBytes))
+    const result = sum(blockResults.flat().map(a => a.sliceBytes))
+    console.log(`[CramAdapter.bytesForRegions] CALL #${callNum} completed`)
+    return result
   }
 }
