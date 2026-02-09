@@ -14,7 +14,7 @@ in uint a_rowIndex;     // row (sample) index
 in vec4 a_color;        // pre-computed RGBA color (normalized 0-1)
 in uint a_shapeType;    // 0=rect, 1=tri-right, 2=tri-left, 3=tri-down
 
-uniform vec3 u_domainX;         // [hi, lo, extent] for HP math
+uniform vec3 u_bpRangeX;        // [startHi, startLo, lengthBp] for HP math
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -32,8 +32,8 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float clipX1 = hpToClipX(splitStart, u_domainX);
-  float clipX2 = hpToClipX(splitEnd, u_domainX);
+  float clipX1 = hpToClipX(splitStart, u_bpRangeX);
+  float clipX2 = hpToClipX(splitEnd, u_bpRangeX);
 
   // ensure minimum width of 2 pixels
   float pixelWidth = (clipX2 - clipX1) * u_canvasWidth * 0.5;
@@ -96,13 +96,13 @@ void main() {
 
 export interface VariantRenderBlock {
   regionNumber: number
-  domainX: [number, number]
+  bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
 }
 
 export interface VariantRenderState {
-  domainX: [number, number]
+  bpRangeX: [number, number]
   canvasWidth: number
   canvasHeight: number
   rowHeight: number
@@ -139,7 +139,7 @@ export class WebGLVariantRenderer {
 
     this.program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
     this.uniforms = cacheUniforms(gl, this.program, [
-      'u_domainX',
+      'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
       'u_canvasWidth',
@@ -243,17 +243,15 @@ export class WebGLVariantRenderer {
       return
     }
 
-    const [domainStartHi, domainStartLo] = splitPositionWithFrac(
-      state.domainX[0],
-    )
-    const domainExtent = state.domainX[1] - state.domainX[0]
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     gl.useProgram(this.program)
     gl.uniform3f(
-      this.uniforms.u_domainX!,
-      domainStartHi,
-      domainStartLo,
-      domainExtent,
+      this.uniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
     )
     gl.uniform1ui(
       this.uniforms.u_regionStart!,
@@ -271,7 +269,7 @@ export class WebGLVariantRenderer {
 
   renderBlocks(
     blocks: VariantRenderBlock[],
-    state: Omit<VariantRenderState, 'domainX' | 'regionStart'>,
+    state: Omit<VariantRenderState, 'bpRangeX' | 'regionStart'>,
   ) {
     const gl = this.gl
     const canvas = this.canvas
@@ -312,24 +310,23 @@ export class WebGLVariantRenderer {
       gl.scissor(scissorX, 0, scissorW, canvasHeight)
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
 
-      // Compute viewport-clipped domain for HP precision
+      // Compute viewport-clipped genomic bp range for HP precision
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const domainExtent = block.domainX[1] - block.domainX[0]
-      const bpPerPx = domainExtent / fullBlockWidth
-      const clippedDomainStart =
-        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedDomainEnd =
-        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+      const bpPerPx = regionLengthBp / fullBlockWidth
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
-      const [domainStartHi, domainStartLo] =
-        splitPositionWithFrac(clippedDomainStart)
-      const clippedExtent = clippedDomainEnd - clippedDomainStart
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
+      const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       gl.uniform3f(
-        this.uniforms.u_domainX!,
-        domainStartHi,
-        domainStartLo,
-        clippedExtent,
+        this.uniforms.u_bpRangeX!,
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
       )
       gl.uniform1f(this.uniforms.u_canvasWidth!, scissorW)
 

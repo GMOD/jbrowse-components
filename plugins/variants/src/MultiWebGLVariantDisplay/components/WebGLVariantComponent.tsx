@@ -142,7 +142,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
 
     const blocks = regions.map(r => ({
       regionNumber: r.regionNumber,
-      domainX: [r.start, r.end] as [number, number],
+      bpRangeX: [r.start, r.end] as [number, number],
       screenStartPx: r.screenStartPx,
       screenEndPx: r.screenEndPx,
     }))
@@ -200,13 +200,13 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       }
 
       const blockWidth = region.screenEndPx - region.screenStartPx
-      const domainExtent = region.end - region.start
-      const bpPerPx = domainExtent / blockWidth
+      const regionLengthBp = region.end - region.start
+      const bpPerPx = regionLengthBp / blockWidth
       const bpPadding = MIN_HIT_TARGET_PX * bpPerPx
 
       const genomicPos =
         region.start +
-        ((mouseX - region.screenStartPx) / blockWidth) * domainExtent
+        ((mouseX - region.screenStartPx) / blockWidth) * regionLengthBp
       const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
       const source = sources[rowIdx]
       if (!source) {
