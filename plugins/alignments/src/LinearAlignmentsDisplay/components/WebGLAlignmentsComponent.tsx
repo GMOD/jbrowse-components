@@ -27,6 +27,7 @@ import { WebGLRenderer } from './WebGLRenderer.ts'
 
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
+import type { RenderState } from './WebGLRenderer.ts'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
@@ -1343,7 +1344,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (!resolved) {
         return undefined
       }
-      const { rpcData, bpRange, blockStartPx, blockWidth, refName } = resolved
+      const {
+        rpcData,
+        bpRange,
+        blockStartPx,
+        blockWidth,
+        refName,
+      } = resolved
       const {
         sashimiX1,
         sashimiX2,
@@ -1356,17 +1363,22 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return undefined
       }
 
+      // CPU-based Bezier curve picking (fast enough for hover)
       const pxPerBp = blockWidth / (bpRange[1] - bpRange[0])
       const bpStartOffset = bpRange[0] - regionStart
-      const hitTolerance = 6
 
       for (let i = 0; i < numSashimiArcs; i++) {
         const x1 = sashimiX1[i]!
         const x2 = sashimiX2[i]!
         const destY = coverageHeight
 
-        // sample the bezier curve and check distance to mouse
-        const steps = 32
+        // Arc thickness from score: Math.log(count + 1)
+        // Scale hit tolerance generously for thin arcs: more samples + larger tolerance
+        const lineWidth = rpcData.sashimiScores[i]!
+        const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
+
+        // sample the bezier curve with more samples for better accuracy
+        const steps = 64
         let hit = false
         for (let s = 0; s <= steps; s++) {
           const t = s / steps

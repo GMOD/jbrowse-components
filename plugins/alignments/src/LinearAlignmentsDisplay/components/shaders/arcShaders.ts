@@ -156,6 +156,7 @@ in float a_x1;
 in float a_x2;
 in float a_colorType;
 in float a_lineWidth;
+in float a_featureId;
 
 uniform float u_bpStartOffset;
 uniform float u_bpRegionLength;
@@ -170,6 +171,7 @@ uniform vec3 u_sashimiColors[${NUM_SASHIMI_COLORS}];
 out vec4 v_color;
 out float v_dist;
 out float v_lineWidth;
+flat out float v_featureId;
 
 vec2 evalCurve(float t) {
   float mt = 1.0 - t;
@@ -208,6 +210,7 @@ void main() {
   gl_Position = vec4(clipX, clipY, 0.0, 1.0);
   v_dist = a_side * halfWidth;
   v_lineWidth = a_lineWidth;
+  v_featureId = a_featureId;
   int idx = int(a_colorType + 0.5);
   if (idx < ${NUM_SASHIMI_COLORS}) {
     v_color = vec4(u_sashimiColors[idx], 1.0);
@@ -229,6 +232,30 @@ void main() {
   float aa = fwidth(v_dist);
   float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
   fragColor = vec4(v_color.rgb, v_color.a * alpha);
+}
+`
+
+export const SASHIMI_ARC_PICKING_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+flat in float v_featureId;
+in float v_dist;
+in float v_lineWidth;
+out vec4 fragColor;
+void main() {
+  float halfWidth = v_lineWidth * 0.5;
+  float d = abs(v_dist);
+  float aa = fwidth(v_dist);
+  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+
+  if (alpha < 0.5) {
+    discard;
+  }
+
+  float id = v_featureId;
+  float r = mod(id, 256.0) / 255.0;
+  float g = mod(floor(id / 256.0), 256.0) / 255.0;
+  float b = mod(floor(id / 65536.0), 256.0) / 255.0;
+  fragColor = vec4(r, g, b, 1.0);
 }
 `
 

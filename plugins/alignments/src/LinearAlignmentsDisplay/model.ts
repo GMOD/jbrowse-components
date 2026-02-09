@@ -135,6 +135,9 @@ const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
 const ColorByTagDialog = lazy(
   () => import('../LinearPileupDisplay/components/ColorByTagDialog.tsx'),
 )
+const SetFeatureHeightDialog = lazy(
+  () => import('../shared/components/SetFeatureHeightDialog.tsx'),
+)
 
 export const ColorScheme = {
   normal: 0,
@@ -185,7 +188,11 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        featureHeightSetting: types.maybe(types.number),
+        featureHeight: types.maybe(types.number),
+        /**
+         * #property
+         */
+        noSpacing: types.maybe(types.boolean),
         /**
          * #property
          */
@@ -272,11 +279,18 @@ export default function stateModelFactory(
         return self.filterBySetting ?? getConf(self, 'filterBy')
       },
 
-      get featureHeight(): number {
-        return self.featureHeightSetting ?? getConf(self, 'featureHeight') ?? 7
+      get featureHeightSetting(): number {
+        return self.featureHeight ?? getConf(self, 'featureHeight') ?? 7
+      },
+
+      get noSpacingSetting(): boolean | undefined {
+        return self.noSpacing
       },
 
       get featureSpacing(): number {
+        if (self.noSpacing !== undefined) {
+          return self.noSpacing ? 0 : 2
+        }
         return getConf(self, 'featureSpacing') ?? 1
       },
 
@@ -649,7 +663,7 @@ export default function stateModelFactory(
       setMaxY(y: number) {
         self.maxY = y
         // Auto-resize height based on content
-        const rowHeight = self.featureHeight + self.featureSpacing
+        const rowHeight = self.featureHeightSetting + self.featureSpacing
         const pileupHeight = y * rowHeight
         const totalHeight =
           (self.showCoverage ? self.coverageHeight : 0) + pileupHeight + 10
@@ -722,8 +736,12 @@ export default function stateModelFactory(
         self.filterBySetting = filterBy
       },
 
-      setFeatureHeight(height: number) {
-        self.featureHeightSetting = height
+      setFeatureHeight(height?: number) {
+        self.featureHeight = height
+      },
+
+      setNoSpacing(flag?: boolean) {
+        self.noSpacing = flag
       },
 
       setShowSashimiArcs(show: boolean) {
@@ -1300,9 +1318,62 @@ export default function stateModelFactory(
           },
         }
 
+        const featureHeightMenu = {
+          label: 'Set feature height...',
+          type: 'subMenu' as const,
+          subMenu: [
+            {
+              label: 'Normal',
+              type: 'radio' as const,
+              checked:
+                self.featureHeight === 7 &&
+                self.noSpacingSetting === false,
+              onClick: () => {
+                self.setFeatureHeight(7)
+                self.setNoSpacing(false)
+              },
+            },
+            {
+              label: 'Compact',
+              type: 'radio' as const,
+              checked:
+                self.featureHeight === 2 &&
+                self.noSpacingSetting === true,
+              onClick: () => {
+                self.setFeatureHeight(2)
+                self.setNoSpacing(true)
+              },
+            },
+            {
+              label: 'Super-compact',
+              type: 'radio' as const,
+              checked:
+                self.featureHeight === 1 &&
+                self.noSpacingSetting === true,
+              onClick: () => {
+                self.setFeatureHeight(1)
+                self.setNoSpacing(true)
+              },
+            },
+            {
+              label: 'Custom',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetFeatureHeightDialog,
+                  {
+                    model: self,
+                    handleClose,
+                  },
+                ])
+              },
+            },
+          ],
+        }
+
         // Pileup-specific menu items
         const pileupItems = [
           colorByMenu,
+          featureHeightMenu,
           coverageItem,
           sashimiItem,
           {

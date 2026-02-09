@@ -720,7 +720,14 @@ function computeSashimiJunctions(
     sashimiCounts[i] = arc.count
   }
 
-  return { sashimiX1, sashimiX2, sashimiScores, sashimiColorTypes, sashimiCounts, numSashimiArcs: n }
+  return {
+    sashimiX1,
+    sashimiX2,
+    sashimiScores,
+    sashimiColorTypes,
+    sashimiCounts,
+    numSashimiArcs: n,
+  }
 }
 
 export async function executeRenderWebGLPileupData({
@@ -1557,6 +1564,7 @@ export async function executeRenderWebGLPileupData({
     numModCovSegments: modCoverage.count,
 
     ...sashimi,
+    sashimiRefName: region.refName,
 
     // Convert Map to plain object for RPC serialization
     tooltipData: Object.fromEntries(tooltipData),
