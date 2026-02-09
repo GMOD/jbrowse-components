@@ -137,6 +137,26 @@ function baseToAscii(base: string): number {
   return base.toUpperCase().charCodeAt(0)
 }
 
+// Compute effective strand from XS/TS/ts tags (better than raw strand for RNA-seq)
+// XS = strand for sequence, TS = strand for template, ts = strand information
+function getEffectiveStrand(feature: Feature): number {
+  const tags = feature.get('tags') as Record<string, string> | undefined
+  const strand = feature.get('strand') ?? 0
+  const xs = tags?.XS || tags?.TS
+  const ts = tags?.ts
+
+  if (xs === '+') {
+    return 1
+  } else if (xs === '-') {
+    return -1
+  } else if (ts === '+') {
+    return 1
+  } else if (ts === '-') {
+    return strand === 1 ? -1 : 1
+  }
+  return strand === -1 ? -1 : strand === 1 ? 1 : 0
+}
+
 // Pair orientation encoding for shader
 // Based on orientationTypes from util.ts - maps pair_orientation strings to integers
 // Supports 'fr' orientation type (most common for Illumina)
@@ -850,12 +870,14 @@ export async function executeRenderWebGLPileupData({
       if (featureMismatches) {
         for (const mm of featureMismatches) {
           if (mm.type === 'deletion' || mm.type === 'skip') {
+            // Use effectiveStrand for skip features (sashimi arcs) to respect XS/TS/ts tags
+            const gapStrand = mm.type === 'skip' ? getEffectiveStrand(feature) : strand
             gapsData.push({
               featureId,
               start: featureStart + mm.start,
               end: featureStart + mm.start + mm.length,
               type: mm.type,
-              strand,
+              strand: gapStrand,
             })
           } else if (mm.type === 'mismatch') {
             mismatchesData.push({
@@ -1403,10 +1425,6 @@ export async function executeRenderWebGLPileupData({
     const length = gap.end - gap.start
     const targetMap = gap.type === 'deletion' ? deletionsByPos : skipsByPos
 
-    if (gap.type === 'deletion') {
-      console.log(`[gap] ${gap.type} from genomicPos ${gap.start}-${gap.end} (offsets ${startOffset}-${endOffset}) length=${length}bp`)
-    }
-
     // Add to each position the gap covers (covers = overlaps with the 1bp position)
     for (let pos = startOffset; pos < endOffset; pos++) {
       let lengths = targetMap.get(pos)
@@ -1437,9 +1455,6 @@ export async function executeRenderWebGLPileupData({
     const maxLen = Math.max(...lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.deletions = { count: lengths.length, minLen, maxLen, avgLen }
-    if (lengths.length > 0) {
-      console.log(`[deletion] posOffset=${posOffset} genomicPos=${regionStart + posOffset} count=${lengths.length} lengths=${lengths}`)
-    }
   }
 
   for (const [posOffset, lengths] of skipsByPos) {
