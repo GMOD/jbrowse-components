@@ -1460,31 +1460,32 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const refName = blockInfo?.refName
 
         if (tooltipBin) {
-          // Use structured tooltip data
           const tooltipData = JSON.stringify({
             type: 'indicator',
-            indicatorType: indicatorHit.indicatorType,
             bin: tooltipBin,
             refName,
           })
           model.setMouseoverExtraInformation(tooltipData)
         } else {
-          // Fallback to simple tooltip
-          const pos = indicatorHit.position.toLocaleString()
+          // Fallback: show basic counts when detailed bin data unavailable
           const { counts } = indicatorHit
           const total = counts.insertion + counts.softclip + counts.hardclip
-          const parts: string[] = []
-          if (counts.insertion > 0) {
-            parts.push(`Insertions: ${counts.insertion}`)
+          const interbaseData: Record<string, { count: number; minLen: number; maxLen: number; avgLen: number }> = {}
+          for (const type of ['insertion', 'softclip', 'hardclip'] as const) {
+            if (counts[type] > 0) {
+              interbaseData[type] = { count: counts[type], minLen: 0, maxLen: 0, avgLen: 0 }
+            }
           }
-          if (counts.softclip > 0) {
-            parts.push(`Soft clips: ${counts.softclip}`)
-          }
-          if (counts.hardclip > 0) {
-            parts.push(`Hard clips: ${counts.hardclip}`)
-          }
-          const tooltipText = `<b>Interbase events at ${pos}</b><br>Total: ${total}<br>${parts.join('<br>')}`
-          model.setMouseoverExtraInformation(tooltipText)
+          const tooltipData = JSON.stringify({
+            type: 'indicator',
+            bin: {
+              position: indicatorHit.position,
+              depth: total,
+              interbase: interbaseData,
+            },
+            refName,
+          })
+          model.setMouseoverExtraInformation(tooltipData)
         }
 
         if (model.highlightedFeatureIndex !== -1) {

@@ -141,7 +141,7 @@ function baseToAscii(base: string): number {
 // XS = strand for sequence, TS = strand for template, ts = strand information
 function getEffectiveStrand(feature: Feature): number {
   const tags = feature.get('tags') as Record<string, string> | undefined
-  const strand = feature.get('strand') ?? 0
+  const fstrand = feature.get('strand') ?? 0
   const xs = tags?.XS || tags?.TS
   const ts = tags?.ts
 
@@ -149,12 +149,8 @@ function getEffectiveStrand(feature: Feature): number {
     return 1
   } else if (xs === '-') {
     return -1
-  } else if (ts === '+') {
-    return 1
-  } else if (ts === '-') {
-    return strand === 1 ? -1 : 1
   }
-  return strand === -1 ? -1 : strand === 1 ? 1 : 0
+  return (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
 }
 
 // Pair orientation encoding for shader

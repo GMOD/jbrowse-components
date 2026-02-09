@@ -25,6 +25,19 @@ const useStyles = makeStyles()(theme => ({
   td: {
     whiteSpace: 'nowrap',
   },
+  interbaseContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5em',
+  },
+  interbaseTitle: {
+    fontWeight: 600,
+  },
+  interbaseStat: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '1em',
+  },
 }))
 
 function pct(n: number, total = 1) {
@@ -57,64 +70,66 @@ const SimpleTooltipContents = forwardRef<HTMLDivElement, TooltipProps>(
   },
 )
 
-// Interbase tooltip - matches LinearSNPCoverageDisplay/components/TooltipContents InterbaseTooltip
+// Interbase tooltip - minimal layout showing all interbase types at position
 function InterbaseTooltip({
-  type,
-  count,
+  interbaseData,
   total,
-  minLen,
-  maxLen,
-  avgLen,
-  topSeq,
   location,
   tdClass,
-  reactRef,
 }: {
-  type: string
-  count: number
+  interbaseData: Record<
+    string,
+    {
+      count: number
+      minLen: number
+      maxLen: number
+      avgLen: number
+      topSeq?: string
+    }
+  >
   total: number
-  minLen: number
-  maxLen: number
-  avgLen: number
-  topSeq?: string
   location: string
   tdClass: string
-  reactRef: React.Ref<HTMLDivElement>
 }) {
-  const sizeStr =
-    minLen === maxLen
-      ? `${minLen}bp`
-      : `${minLen}-${maxLen}bp (avg ${avgLen.toFixed(1)}bp)`
+  const { classes } = useStyles()
 
   return (
-    <div ref={reactRef}>
-      <table>
-        <caption>{location}</caption>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Count</th>
-            <th>% of Reads</th>
-            <th>Size</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{getInterbaseTypeLabel(type)}</td>
-            <td className={tdClass}>{count}</td>
-            <td>{pct(count, total)}</td>
-            <td>{sizeStr}</td>
-          </tr>
-          {topSeq ? (
-            <tr>
-              <td colSpan={4}>
-                Most common sequence:{' '}
-                {topSeq.length > 20 ? `${topSeq.slice(0, 20)}...` : topSeq}
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+    <div className={classes.interbaseContainer}>
+      <div className={classes.interbaseTitle}>Interbase events at {location}</div>
+
+      {Object.entries(interbaseData).map(([type, data]) => {
+        const sizeStr =
+          data.minLen === data.maxLen
+            ? `${data.minLen}bp`
+            : `${data.minLen}-${data.maxLen}bp (avg ${data.avgLen.toFixed(1)}bp)`
+
+        return (
+          <div key={type}>
+            <div style={{ fontWeight: 500 }}>
+              {getInterbaseTypeLabel(type)}
+            </div>
+            <div className={classes.interbaseStat}>
+              <span>Count:</span>
+              <span>{data.count}</span>
+            </div>
+            <div className={classes.interbaseStat}>
+              <span>% of Reads:</span>
+              <span>{pct(data.count, total)}</span>
+            </div>
+            {(data.minLen > 0 || data.maxLen > 0) && (
+              <div className={classes.interbaseStat}>
+                <span>Size:</span>
+                <span>{sizeStr}</span>
+              </div>
+            )}
+            {data.topSeq && (
+              <div style={{ marginTop: '0.25em' }}>
+                Most common: {data.topSeq}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -279,30 +294,23 @@ const WebGLTooltip = observer(function WebGLTooltip({
     }
   }
 
-  // Indicator tooltip - show focused interbase item
+  // Indicator tooltip - show all interbase events at position
   if (
     tooltipData &&
     typeof tooltipData === 'object' &&
     tooltipData.type === 'indicator'
   ) {
-    const { indicatorType, bin, refName } = tooltipData
-    const interbaseData = bin.interbase[indicatorType]
-    if (interbaseData) {
+    const { bin, refName } = tooltipData
+    if (Object.keys(bin.interbase).length > 0) {
       const location = formatLocation(refName, bin.position)
       return (
         <>
           <BaseTooltip clientPoint={{ x, y }}>
             <InterbaseTooltip
-              type={indicatorType}
-              count={interbaseData.count}
+              interbaseData={bin.interbase}
               total={bin.depth}
-              minLen={interbaseData.minLen}
-              maxLen={interbaseData.maxLen}
-              avgLen={interbaseData.avgLen}
-              topSeq={interbaseData.topSeq}
               location={location}
               tdClass={classes.td}
-              reactRef={null}
             />
           </BaseTooltip>
           {offsetMouseCoord && (

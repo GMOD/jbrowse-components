@@ -10,50 +10,9 @@ import type { ClickMapItem } from '../../SNPCoverageRenderer/types.ts'
 import type { BaseCoverageBin } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(() => ({
   td: {
     whiteSpace: 'nowrap',
-  },
-  interbaseContainer: {
-    padding: theme.spacing(1.5),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-  },
-  interbaseTitle: {
-    fontSize: '1.1em',
-    fontWeight: 600,
-    marginBottom: theme.spacing(0.5),
-  },
-  interbaseLocation: {
-    fontSize: '0.85em',
-    color: theme.palette.text.secondary,
-    marginBottom: theme.spacing(1),
-  },
-  interbaseStat: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing(0.75),
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-    borderRadius: 4,
-  },
-  interbaseLabel: {
-    fontSize: '0.9em',
-    fontWeight: 500,
-  },
-  interbaseValue: {
-    fontSize: '0.95em',
-    fontWeight: 600,
-    color: theme.palette.primary.main,
-  },
-  interbaseSequence: {
-    padding: theme.spacing(1),
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.03)',
-    borderRadius: 4,
-    fontSize: '0.85em',
-    fontFamily: 'monospace',
-    wordBreak: 'break-all',
   },
 }))
 
@@ -579,7 +538,6 @@ function InterbaseTooltip({
   tdClass: string
   reactRef: React.Ref<HTMLDivElement>
 }) {
-  const { classes } = useStyles()
   const { type, count, total, avgLength, minLength, maxLength, topSequence } =
     item
 
@@ -593,37 +551,15 @@ function InterbaseTooltip({
         : ''
 
   return (
-    <div ref={reactRef} className={classes.interbaseContainer}>
-      <div className={classes.interbaseTitle}>
-        {getInterbaseTypeLabel(type)}
+    <div ref={reactRef}>
+      <div>
+        <strong>Interbase events at {location}</strong>
       </div>
-      <div className={classes.interbaseLocation}>{location}</div>
-
-      <div className={classes.interbaseStat}>
-        <span className={classes.interbaseLabel}>Count</span>
-        <span className={classes.interbaseValue}>{count}</span>
-      </div>
-
-      <div className={classes.interbaseStat}>
-        <span className={classes.interbaseLabel}>% of Reads</span>
-        <span className={classes.interbaseValue}>{pct(count, total)}</span>
-      </div>
-
-      {sizeStr && (
-        <div className={classes.interbaseStat}>
-          <span className={classes.interbaseLabel}>Size</span>
-          <span className={classes.interbaseValue}>{sizeStr}</span>
-        </div>
-      )}
-
-      {topSequence && (
-        <div style={{ marginTop: '0.5em' }}>
-          <div className={classes.interbaseLabel} style={{ marginBottom: '0.5em' }}>
-            Most common sequence:
-          </div>
-          <div className={classes.interbaseSequence}>{topSequence}</div>
-        </div>
-      )}
+      <div style={{ fontWeight: 500 }}>{getInterbaseTypeLabel(type)}</div>
+      <div>Count: {count}</div>
+      <div>% of Reads: {pct(count, total)}</div>
+      {sizeStr && <div>Size: {sizeStr}</div>}
+      {topSequence && <div>Most common: {topSequence}</div>}
     </div>
   )
 }

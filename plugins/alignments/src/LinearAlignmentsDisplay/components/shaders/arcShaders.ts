@@ -182,10 +182,13 @@ vec2 evalCurve(float t) {
   float t2 = t * t;
   float t3 = t2 * t;
   float x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
+  // Quadratic Bezier peaks at 0.75 of destY. Scale destY so the peak reaches
+  // 0.8*coverageHeight amplitude (from 0.9 to 0.1 of coverage height)
   float destY = u_coverageHeight * (0.8 / 0.75);
   float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   float pxPerBp = u_blockWidth / u_bpRegionLength;
   float screenX = u_blockStartPx + (x_bp - u_bpStartOffset) * pxPerBp;
+  // Arc baseline at 0.9*coverageHeight, peaks at 0.1*coverageHeight
   return vec2(screenX, 0.9 * u_coverageHeight - y_px);
 }
 

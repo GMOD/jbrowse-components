@@ -40,8 +40,8 @@ const SNPCoverageTooltip = observer(function SNPCoverageTooltip(props: {
   const { featureUnderMouse: feat, mouseoverExtraInformation } = model
   const { classes } = useStyles()
 
-  // Show interbase indicator tooltip when hovering over one
-  if (mouseoverExtraInformation && !feat) {
+  // Show interbase indicator tooltip with priority over coverage features
+  if (mouseoverExtraInformation) {
     const x = clientMouseCoord[0] + 5
     const y = clientMouseCoord[1]
     const { item, refName } = JSON.parse(mouseoverExtraInformation) as {
