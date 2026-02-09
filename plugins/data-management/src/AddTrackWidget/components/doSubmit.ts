@@ -47,7 +47,9 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
   } else if (trackConfig && trackAdapter) {
     const { trackId } = trackConfig
     session.addTrackConf(trackConfig)
-    view?.showTrack?.(trackId)
+    if (view?.assemblyNames?.includes(model.assembly)) {
+      view.showTrack(trackId)
+    }
 
     if (
       isElectron &&

@@ -111,6 +111,8 @@ export default function SharedWiggleMixin(
             currStatsBpPerPx: number
             scoreMin: number
             scoreMax: number
+            scoreMeanMin?: number
+            scoreMeanMax?: number
             statsRegion?: string
           }
         | undefined,
@@ -128,10 +130,18 @@ export default function SharedWiggleMixin(
           currStatsBpPerPx: number
           scoreMin: number
           scoreMax: number
+          scoreMeanMin?: number
+          scoreMeanMax?: number
         },
         statsRegion?: string,
       ) {
-        const { currStatsBpPerPx, scoreMin, scoreMax } = stats
+        const {
+          currStatsBpPerPx,
+          scoreMin,
+          scoreMax,
+          scoreMeanMin,
+          scoreMeanMax,
+        } = stats
         const EPSILON = 0.000001
         if (
           !self.stats ||
@@ -143,6 +153,8 @@ export default function SharedWiggleMixin(
             currStatsBpPerPx,
             scoreMin,
             scoreMax,
+            scoreMeanMin,
+            scoreMeanMax,
             statsRegion,
           }
         }
@@ -378,13 +390,23 @@ export default function SharedWiggleMixin(
          * #getter
          */
         get domain() {
-          const { stats, scaleType, minScore, maxScore } = self
+          const { stats, scaleType, minScore, maxScore, rendererConfig } = self
           if (!stats) {
             return undefined
           }
 
+          const { summaryScoreMode } = rendererConfig
+          const useMeanStats =
+            summaryScoreMode === 'mean' || summaryScoreMode === 'avg'
+          const domainMin = useMeanStats
+            ? (stats.scoreMeanMin ?? stats.scoreMin)
+            : stats.scoreMin
+          const domainMax = useMeanStats
+            ? (stats.scoreMeanMax ?? stats.scoreMax)
+            : stats.scoreMax
+
           const ret = getNiceDomain({
-            domain: [stats.scoreMin, stats.scoreMax],
+            domain: [domainMin, domainMax],
             bounds: [minScore, maxScore],
             scaleType,
           })

@@ -73,6 +73,11 @@ export default function SearchResultsTable({
         // region visible, xref #1703
         model.showAllRegions()
       }
+      await pluginManager.evaluateAsyncExtensionPoint(
+        'LinearGenomeView-searchResultSelected',
+        undefined,
+        { session, result, model, assemblyName },
+      )
     }
   }
   return (

@@ -22,6 +22,15 @@ export interface VariantDisplayModel {
   regionTooLargeReason: string
   featuresReady: boolean
   statusMessage?: string
+  visibleRegions: {
+    refName: string
+    regionNumber: number
+    start: number
+    end: number
+    assemblyName: string
+    screenStartPx: number
+    screenEndPx: number
+  }[]
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   selectFeature: (feature: { id(): string }) => void
@@ -69,23 +78,6 @@ function findSmallestOverlappingFeature(
     }
   }
   return best
-}
-
-function getDomain(view: LGV) {
-  const blocks = view.dynamicBlocks.contentBlocks
-  const first = blocks[0]
-  if (!first) {
-    return undefined
-  }
-  const last = blocks[blocks.length - 1]
-  if (first.refName !== last?.refName) {
-    return [first.start, first.end] as const
-  }
-  const bpPerPx = view.bpPerPx
-  const blockOffsetPx = first.offsetPx
-  const deltaPx = view.offsetPx - blockOffsetPx
-  const domainStart = first.start + deltaPx * bpPerPx
-  return [domainStart, domainStart + view.width * bpPerPx] as const
 }
 
 const WebGLVariantComponent = observer(function WebGLVariantComponent({
@@ -140,22 +132,27 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       return
     }
 
-    const domain = getDomain(view)
-    if (!domain) {
+    const regions = model.visibleRegions
+    if (regions.length === 0) {
       return
     }
 
     const width = Math.round(view.dynamicBlocks.totalWidthPx)
     const height = model.availableHeight
 
+    const blocks = regions.map(r => ({
+      regionNumber: r.regionNumber,
+      domainX: [r.start, r.end] as [number, number],
+      screenStartPx: r.screenStartPx,
+      screenEndPx: r.screenEndPx,
+    }))
+
     rafRef.current = requestAnimationFrame(() => {
-      renderer.render({
-        domainX: [domain[0], domain[1]],
+      renderer.renderBlocks(blocks, {
         canvasWidth: width,
         canvasHeight: height,
         rowHeight: model.rowHeight,
         scrollTop: model.scrollTop,
-        regionStart: cellDataRef.current?.regionStart ?? 0,
       })
     })
 
@@ -171,6 +168,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     model.rowHeight,
     model.scrollTop,
     model.sources,
+    model.visibleRegions,
     view,
     view.initialized,
     view.bpPerPx,
@@ -191,17 +189,24 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       const rect = canvas.getBoundingClientRect()
       const mouseX = eventClientX - rect.left
       const mouseY = eventClientY - rect.top
-      const w = Math.round(view.dynamicBlocks.totalWidthPx)
 
-      const domain = getDomain(view)
-      if (!domain) {
+      const regions = model.visibleRegions
+      // Find which region block the mouse is in
+      const region = regions.find(
+        r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
+      )
+      if (!region) {
         return undefined
       }
 
-      const bpPerPx = (domain[1] - domain[0]) / w
+      const blockWidth = region.screenEndPx - region.screenStartPx
+      const domainExtent = region.end - region.start
+      const bpPerPx = domainExtent / blockWidth
       const bpPadding = MIN_HIT_TARGET_PX * bpPerPx
 
-      const genomicPos = domain[0] + (mouseX / w) * (domain[1] - domain[0])
+      const genomicPos =
+        region.start +
+        ((mouseX - region.screenStartPx) / blockWidth) * domainExtent
       const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
       const source = sources[rowIdx]
       if (!source) {

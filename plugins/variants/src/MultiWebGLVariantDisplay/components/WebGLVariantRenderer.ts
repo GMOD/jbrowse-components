@@ -94,6 +94,13 @@ void main() {
 }
 `
 
+export interface VariantRenderBlock {
+  regionNumber: number
+  domainX: [number, number]
+  screenStartPx: number
+  screenEndPx: number
+}
+
 export interface VariantRenderState {
   domainX: [number, number]
   canvasWidth: number
@@ -260,6 +267,79 @@ export class WebGLVariantRenderer {
     gl.bindVertexArray(this.buffers.vao)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.cellCount)
     gl.bindVertexArray(null)
+  }
+
+  renderBlocks(
+    blocks: VariantRenderBlock[],
+    state: Omit<VariantRenderState, 'domainX' | 'regionStart'>,
+  ) {
+    const gl = this.gl
+    const canvas = this.canvas
+    const { canvasWidth, canvasHeight } = state
+
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+    }
+
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+
+    if (!this.buffers || this.buffers.cellCount === 0 || blocks.length === 0) {
+      return
+    }
+
+    gl.useProgram(this.program)
+    gl.uniform1f(this.uniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(this.uniforms.u_rowHeight!, state.rowHeight)
+    gl.uniform1f(this.uniforms.u_scrollTop!, state.scrollTop)
+    gl.uniform1ui(
+      this.uniforms.u_regionStart!,
+      Math.floor(this.buffers.regionStart),
+    )
+
+    gl.enable(gl.SCISSOR_TEST)
+
+    for (const block of blocks) {
+      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
+      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+      const scissorW = scissorEnd - scissorX
+      if (scissorW <= 0) {
+        continue
+      }
+
+      gl.scissor(scissorX, 0, scissorW, canvasHeight)
+      gl.viewport(scissorX, 0, scissorW, canvasHeight)
+
+      // Compute viewport-clipped domain for HP precision
+      const fullBlockWidth = block.screenEndPx - block.screenStartPx
+      const domainExtent = block.domainX[1] - block.domainX[0]
+      const bpPerPx = domainExtent / fullBlockWidth
+      const clippedDomainStart =
+        block.domainX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedDomainEnd =
+        block.domainX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+
+      const [domainStartHi, domainStartLo] =
+        splitPositionWithFrac(clippedDomainStart)
+      const clippedExtent = clippedDomainEnd - clippedDomainStart
+
+      gl.uniform3f(
+        this.uniforms.u_domainX!,
+        domainStartHi,
+        domainStartLo,
+        clippedExtent,
+      )
+      gl.uniform1f(this.uniforms.u_canvasWidth!, scissorW)
+
+      gl.bindVertexArray(this.buffers.vao)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.cellCount)
+      gl.bindVertexArray(null)
+    }
+
+    gl.disable(gl.SCISSOR_TEST)
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
   }
 
   private deleteBuffers() {

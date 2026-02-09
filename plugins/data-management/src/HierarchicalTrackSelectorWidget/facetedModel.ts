@@ -10,7 +10,7 @@ import { autorun, observable } from 'mobx'
 
 import { getRowStr } from './components/faceted/util.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
-import { matches } from './util.ts'
+import { matches, matchesMetadata } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -137,7 +137,11 @@ export function facetedStateTreeF() {
         const session = getSession(self)
         const { allTrackConfigurations, filterText } = self
         return allTrackConfigurations
-          .filter(conf => matches(filterText, conf, session))
+          .filter(
+            conf =>
+              matches(filterText, conf, session) ||
+              matchesMetadata(filterText, conf),
+          )
           .map(
             track =>
               ({
