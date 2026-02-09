@@ -168,14 +168,27 @@ function canvasToGenomicCoords(
 function getCanvasCoords(
   e: React.MouseEvent,
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  canvasRectRef: React.RefObject<{ rect: DOMRect; timestamp: number } | null>,
 ) {
   const canvas = canvasRef.current
   if (!canvas) {
     return undefined
   }
-  // Always get fresh rect - getBoundingClientRect() is fast and avoids
-  // stale coordinates when canvas moves (e.g., during scroll)
+
+  const now = Date.now()
+  let cached = canvasRectRef.current
+
+  // Invalidate cache if older than 100ms (catches scroll events and repositioning)
+  if (cached && now - cached.timestamp < 100) {
+    return {
+      canvasX: e.clientX - cached.rect.left,
+      canvasY: e.clientY - cached.rect.top,
+    }
+  }
+
+  // Get fresh rect and cache it with timestamp
   const rect = canvas.getBoundingClientRect()
+  canvasRectRef.current = { rect, timestamp: now }
   return { canvasX: e.clientX - rect.left, canvasY: e.clientY - rect.top }
 }
 
@@ -319,6 +332,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const [maxY, setMaxY] = useState(0)
   const [rendererReady, setRendererReady] = useState(false)
+
+  // Cache canvas bounding rect with timestamp for smart invalidation
+  // 100ms threshold catches scroll and repositioning events
+  const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
+    null,
+  )
 
   // Rendering and data loading
   const renderRAFRef = useRef<number | null>(null)
@@ -1428,7 +1447,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return
       }
 
-      const coords = getCanvasCoords(e, canvasRef)
+      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
       if (!coords) {
         return
       }
@@ -1637,7 +1656,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      const coords = getCanvasCoords(e, canvasRef)
+      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
       if (!coords) {
         return
       }
@@ -1853,7 +1872,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      const coords = getCanvasCoords(e, canvasRef)
+      const coords = getCanvasCoords(e, canvasRef, canvasRectRef)
       if (!coords) {
         return
       }
