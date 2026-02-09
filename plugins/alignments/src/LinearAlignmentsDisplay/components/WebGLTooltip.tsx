@@ -125,11 +125,10 @@ const CoverageTooltipContents = forwardRef<
   { bin: CoverageTooltipBin; refName?: string }
 >(function CoverageTooltipContents2({ bin, refName }, ref) {
   const { classes } = useStyles()
-  const { position, depth, snps, delskips, interbase } = bin
+  const { position, depth, snps, interbase } = bin
   const location = formatLocation(refName, position)
 
   const snpEntries = Object.entries(snps)
-  const delskipEntries = Object.entries(delskips)
   const interbaseEntries = Object.entries(interbase)
 
   return (
@@ -164,24 +163,6 @@ const CoverageTooltipContents = forwardRef<
               </td>
             </tr>
           ))}
-          {delskipEntries.map(([type, data]) => {
-            const typeLabel = type === 'deletion' ? 'Deletion' : 'Skip/Intron'
-            const sizeStr =
-              data.minLen === data.maxLen
-                ? `${data.minLen}bp`
-                : `${data.minLen}-${data.maxLen}bp`
-            return (
-              <tr key={type}>
-                <td />
-                <td>
-                  {typeLabel} ({sizeStr})
-                </td>
-                <td className={classes.td}>{data.count}</td>
-                <td>{pct(data.count, depth)}</td>
-                <td />
-              </tr>
-            )
-          })}
           {interbaseEntries.map(([type, data]) => {
             const typeLabel = getInterbaseTypeLabel(type)
             const sizeStr =
