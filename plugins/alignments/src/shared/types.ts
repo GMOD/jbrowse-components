@@ -30,7 +30,8 @@ type BinType = Record<string, BinEntry>
 // - snps feature if they contribute to coverage
 // - mods feature for read modifications like methylation
 // - noncov are insertions/clip features that don't contribute to coverage
-// - delskips deletions or introns that don't contribute to coverage
+// - deletions gaps in reads (misaligned sequence)
+// - skips introns (spliced regions in reference)
 export interface BaseCoverageBin {
   refbase?: string
   depth: number
@@ -39,7 +40,8 @@ export interface BaseCoverageBin {
   snps: BinType
   mods: BinType
   nonmods: BinType
-  delskips: BinType
+  deletions: BinType
+  skips: BinType
   noncov: BinType
 }
 
@@ -70,7 +72,8 @@ type PreBinType = Record<string, PreBinEntry>
 // - mods feature for read modifications like methylation
 // - nonmods feature for read modifications like methylation (2-color)
 // - noncov are insertions/clip features that don't contribute to coverage
-// - delskips deletions or introns that don't contribute to coverage
+// - deletions gaps in reads (misaligned sequence)
+// - skips introns (spliced regions in reference)
 export interface PreBaseCoverageBin extends PreBaseCoverageBinSubtypes {
   refbase?: string
   depth: number
@@ -82,7 +85,8 @@ export interface PreBaseCoverageBinSubtypes {
   snps: PreBinType
   mods: PreBinType
   nonmods: PreBinType
-  delskips: PreBinType
+  deletions: PreBinType
+  skips: PreBinType
   noncov: PreBinType
 }
 

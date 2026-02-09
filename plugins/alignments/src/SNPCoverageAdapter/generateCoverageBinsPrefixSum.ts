@@ -33,7 +33,8 @@ export interface LazyBin {
   snps?: Record<string, PreBinEntry>
   mods?: Record<string, PreBinEntry>
   nonmods?: Record<string, PreBinEntry>
-  delskips?: Record<string, PreBinEntry>
+  deletions?: Record<string, PreBinEntry>
+  skips?: Record<string, PreBinEntry>
   noncov?: Record<string, PreBinEntry>
 }
 
@@ -49,7 +50,8 @@ export function finalizeLazyBin(bin: LazyBin): PreBaseCoverageBin {
   bin.snps ??= {}
   bin.mods ??= {}
   bin.nonmods ??= {}
-  bin.delskips ??= {}
+  bin.deletions ??= {}
+  bin.skips ??= {}
   bin.noncov ??= {}
   return bin as PreBaseCoverageBin
 }
@@ -250,8 +252,7 @@ export async function generateCoverageBinsPrefixSum({
         lengthMin: Infinity,
         lengthMax: -Infinity,
       },
-      delskips:
-        delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : undefined,
+      deletions: delDepth > 0 ? { deletion: createDeletionEntry(delDepth) } : undefined,
     }
   }
 

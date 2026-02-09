@@ -182,11 +182,11 @@ vec2 evalCurve(float t) {
   float t2 = t * t;
   float t3 = t2 * t;
   float x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
-  float destY = u_coverageHeight;
+  float destY = u_coverageHeight * (0.8 / 0.75);
   float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   float pxPerBp = u_blockWidth / u_bpRegionLength;
   float screenX = u_blockStartPx + (x_bp - u_bpStartOffset) * pxPerBp;
-  return vec2(screenX, u_coverageHeight - y_px);
+  return vec2(screenX, 0.9 * u_coverageHeight - y_px);
 }
 
 void main() {

@@ -1278,10 +1278,8 @@ export async function executeRenderWebGLPileupData({
       position: number
       depth: number
       snps: Record<string, { count: number; fwd: number; rev: number }>
-      delskips: Record<
-        string,
-        { count: number; minLen: number; maxLen: number; avgLen: number }
-      >
+      deletions?: { count: number; minLen: number; maxLen: number; avgLen: number }
+      skips?: { count: number; minLen: number; maxLen: number; avgLen: number }
       interbase: Record<
         string,
         {
@@ -1312,7 +1310,6 @@ export async function executeRenderWebGLPileupData({
         position: mm.position,
         depth,
         snps: {},
-        delskips: {},
         interbase: {},
       }
       tooltipData.set(posOffset, bin)
@@ -1362,7 +1359,6 @@ export async function executeRenderWebGLPileupData({
         position: regionStart + posOffset,
         depth,
         snps: {},
-        delskips: {},
         interbase: {},
       }
       tooltipData.set(posOffset, bin)
@@ -1429,7 +1425,6 @@ export async function executeRenderWebGLPileupData({
         position: regionStart + posOffset,
         depth,
         snps: {},
-        delskips: {},
         interbase: {},
       }
       tooltipData.set(posOffset, bin)
@@ -1437,7 +1432,7 @@ export async function executeRenderWebGLPileupData({
     const minLen = Math.min(...lengths)
     const maxLen = Math.max(...lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
-    bin.delskips.deletion = { count: lengths.length, minLen, maxLen, avgLen }
+    bin.deletions = { count: lengths.length, minLen, maxLen, avgLen }
   }
 
   for (const [posOffset, lengths] of skipsByPos) {
@@ -1451,7 +1446,6 @@ export async function executeRenderWebGLPileupData({
         position: regionStart + posOffset,
         depth,
         snps: {},
-        delskips: {},
         interbase: {},
       }
       tooltipData.set(posOffset, bin)
@@ -1459,7 +1453,7 @@ export async function executeRenderWebGLPileupData({
     const minLen = Math.min(...lengths)
     const maxLen = Math.max(...lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
-    bin.delskips.skip = { count: lengths.length, minLen, maxLen, avgLen }
+    bin.skips = { count: lengths.length, minLen, maxLen, avgLen }
   }
 
   // Process softclips for interbase tooltip data
@@ -1488,7 +1482,6 @@ export async function executeRenderWebGLPileupData({
         position: regionStart + posOffset,
         depth,
         snps: {},
-        delskips: {},
         interbase: {},
       }
       tooltipData.set(posOffset, bin)
@@ -1525,7 +1518,6 @@ export async function executeRenderWebGLPileupData({
         position: regionStart + posOffset,
         depth,
         snps: {},
-        delskips: {},
         interbase: {},
       }
       tooltipData.set(posOffset, bin)

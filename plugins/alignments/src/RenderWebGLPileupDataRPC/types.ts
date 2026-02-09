@@ -37,16 +37,20 @@ export interface CoverageTooltipBin {
   depth: number // total reads at this position
   // SNP data: base -> { count, fwd, rev }
   snps: Record<string, { count: number; fwd: number; rev: number }>
-  // Deletion/skip data: type -> { count, minLen, maxLen, avgLen }
-  delskips: Record<
-    string,
-    {
-      count: number
-      minLen: number
-      maxLen: number
-      avgLen: number
-    }
-  >
+  // Deletion data: { count, minLen, maxLen, avgLen }
+  deletions?: {
+    count: number
+    minLen: number
+    maxLen: number
+    avgLen: number
+  }
+  // Skip/intron data (splice junctions): { count, minLen, maxLen, avgLen }
+  skips?: {
+    count: number
+    minLen: number
+    maxLen: number
+    avgLen: number
+  }
   // Interbase data: type -> { count, minLen, maxLen, avgLen, topSeq }
   interbase: Record<
     string,

@@ -1373,7 +1373,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       for (let i = 0; i < numSashimiArcs; i++) {
         const x1 = sashimiX1[i]!
         const x2 = sashimiX2[i]!
-        const destY = coverageHeight
+        const destY = coverageHeight * (0.8 / 0.75)
 
         // Arc thickness from score: Math.log(count + 1)
         // Adaptive hit tolerance: easier to hover over thin arcs
@@ -1381,7 +1381,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
 
         // CRITICAL: This Bezier curve formula MUST match the GPU version in:
-        // shaders/arcShaders.ts:evalCurve (around line 180)
+        // shaders/arcShaders.ts:evalCurve (around line 178-190)
         // If either implementation changes, the other MUST be updated to match,
         // otherwise picking and rendering will be out of sync.
         // Sample the bezier curve for hit detection
@@ -1401,7 +1401,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           const xBp = mt3 * x1 + 3 * mt2 * t * x1 + 3 * mt * t2 * x2 + t3 * x2
           const yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
           const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
-          const screenY = coverageHeight - yPx
+          const screenY = 0.9 * coverageHeight - yPx
           const dx = canvasX - screenX
           const dy = canvasY - screenY
           const distSq = dx * dx + dy * dy
@@ -1544,15 +1544,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             position: coverageHit.position,
             depth: coverageHit.depth,
             snps: {},
-            delskips: {},
             interbase: {},
-          }
-          // Remove skips from delskips (keep deletions only)
-          // Users see skip/splice junction stats via sashimi arcs instead
-          if (bin && 'delskips' in bin && bin.delskips) {
-            bin.delskips = Object.fromEntries(
-              Object.entries(bin.delskips).filter(([type]) => type === 'deletion'),
-            )
           }
           // If no tooltipBin but we have basic SNP data from hit test, include it
           if (!tooltipBin && coverageHit.snps.length > 0) {

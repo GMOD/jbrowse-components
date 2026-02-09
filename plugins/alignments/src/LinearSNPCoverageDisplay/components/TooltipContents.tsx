@@ -371,7 +371,7 @@ function BinTooltip({
   tdClass: string
   reactRef: React.Ref<HTMLDivElement>
 }) {
-  const { refbase, readsCounted, ref, snps, mods, nonmods, delskips, noncov } =
+  const { refbase, readsCounted, ref, snps, mods, nonmods, deletions, skips, noncov } =
     bin
 
   return (
@@ -387,7 +387,7 @@ function BinTooltip({
             readsCounted={readsCounted}
           />
           <ModificationRows
-            info={{ snps, mods, nonmods, delskips, noncov }}
+            info={{ snps, mods, nonmods, deletions, skips, noncov }}
             readsCounted={readsCounted}
             model={model}
             tdClass={tdClass}

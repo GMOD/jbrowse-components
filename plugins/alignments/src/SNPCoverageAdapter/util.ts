@@ -51,7 +51,8 @@ export function createEmptyBin(): PreBaseCoverageBin {
     ref: createPreBinEntry(),
     mods: {},
     nonmods: {},
-    delskips: {},
+    deletions: {},
+    skips: {},
     noncov: {},
   }
 }
