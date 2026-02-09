@@ -54,7 +54,6 @@ import {
   READ_FRAGMENT_SHADER,
   READ_VERTEX_SHADER,
   SASHIMI_ARC_FRAGMENT_SHADER,
-  SASHIMI_ARC_PICKING_FRAGMENT_SHADER,
   SASHIMI_ARC_VERTEX_SHADER,
   SNP_COVERAGE_FRAGMENT_SHADER,
   SNP_COVERAGE_VERTEX_SHADER,
@@ -101,14 +100,6 @@ export interface RenderState {
   cloudColorScheme?: number
   // Sashimi arcs (splice junctions overlaid on coverage)
   showSashimiArcs?: boolean
-}
-
-interface SashimiArcData {
-  start: number
-  end: number
-  score: number
-  strand: number
-  refName: string
 }
 
 interface GPUBuffers {
@@ -159,9 +150,7 @@ interface GPUBuffers {
   cloudCount: number
   // Sashimi arcs (splice junctions)
   sashimiVAO: WebGLVertexArrayObject | null
-  sashimiPickingVAO: WebGLVertexArrayObject | null
   sashimiCount: number
-  regionNumber: number
 }
 
 export class WebGLRenderer {
@@ -220,32 +209,6 @@ export class WebGLRenderer {
   private sashimiInstanceBuffers: WebGLBuffer[] = []
   private sashimiInstanceBuffersMap = new Map<number, WebGLBuffer[]>()
   private sashimiUniforms: Record<string, WebGLUniformLocation | null> = {}
-
-  // Sashimi picking
-  private sashimiPickingProgram: WebGLProgram | null = null
-  private sashimiPickingInstanceBuffersMap = new Map<number, WebGLBuffer[]>()
-  private sashimiPickingUniforms: Record<string, WebGLUniformLocation | null> = {}
-
-  // Picking framebuffer (shared for picking operations)
-  private pickingFramebuffer: WebGLFramebuffer | null = null
-  private pickingTexture: WebGLTexture | null = null
-  private pickingPixel = new Uint8Array(4)
-  private pickingDirty = false
-
-  // Cached sashimi arc data for feature lookup after picking
-  private sashimiArcDataMap = new Map<number, SashimiArcData[]>()
-
-  // Last render params for lazy picking
-  private lastSashimiRenderParams: {
-    bpStartOffset?: number
-    regionLengthBp?: number
-    canvasWidth?: number
-    canvasHeight?: number
-    coverageOffset?: number
-    coverageHeight?: number
-    blockStartPx?: number
-    blockWidth?: number
-  } = {}
 
   // Cloud mode
   private cloudProgram: WebGLProgram | null = null
@@ -525,28 +488,6 @@ export class WebGLRenderer {
     for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
       this.sashimiUniforms[`u_sashimiColors[${i}]`] = gl.getUniformLocation(
         this.sashimiProgram,
-        `u_sashimiColors[${i}]`,
-      )
-    }
-
-    // Sashimi picking program (for offscreen framebuffer rendering)
-    this.sashimiPickingProgram = this.createProgram(
-      SASHIMI_ARC_VERTEX_SHADER,
-      SASHIMI_ARC_PICKING_FRAGMENT_SHADER,
-    )
-    this.cacheUniforms(this.sashimiPickingProgram, this.sashimiPickingUniforms, [
-      'u_bpStartOffset',
-      'u_bpRegionLength',
-      'u_canvasWidth',
-      'u_canvasHeight',
-      'u_coverageOffset',
-      'u_coverageHeight',
-      'u_blockStartPx',
-      'u_blockWidth',
-    ])
-    for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
-      this.sashimiPickingUniforms[`u_sashimiColors[${i}]`] = gl.getUniformLocation(
-        this.sashimiPickingProgram,
         `u_sashimiColors[${i}]`,
       )
     }
@@ -1657,25 +1598,10 @@ export class WebGLRenderer {
       gl.deleteVertexArray(this.buffers.sashimiVAO)
       this.buffers.sashimiVAO = null
     }
-    // Clean up old picking VAO
-    if (this.buffers.sashimiPickingVAO) {
-      gl.deleteVertexArray(this.buffers.sashimiPickingVAO)
-      this.buffers.sashimiPickingVAO = null
-    }
     for (const buf of this.sashimiInstanceBuffers) {
       gl.deleteBuffer(buf)
     }
     this.sashimiInstanceBuffers = []
-
-    // Clean up old picking buffers
-    const regionNumber = this.buffers.regionNumber
-    const oldPickingBuffers = this.sashimiPickingInstanceBuffersMap.get(regionNumber)
-    if (oldPickingBuffers) {
-      for (const buf of oldPickingBuffers) {
-        gl.deleteBuffer(buf)
-      }
-      this.sashimiPickingInstanceBuffersMap.delete(regionNumber)
-    }
 
     if (data.numSashimiArcs > 0) {
       const sashimiVAO = gl.createVertexArray()
@@ -1742,88 +1668,8 @@ export class WebGLRenderer {
       gl.bindVertexArray(null)
       this.buffers.sashimiVAO = sashimiVAO
       this.buffers.sashimiCount = data.numSashimiArcs
-
-      // Create picking VAO (reuses template buffer and instance buffers)
-      if (this.sashimiPickingProgram && data.sashimiStarts && data.sashimiEnds && data.sashimiStrands) {
-        const sashimiPickingVAO = gl.createVertexArray()
-        gl.bindVertexArray(sashimiPickingVAO)
-
-        // Per-vertex attributes (reuse arcTemplateBuffer)
-        const tLoc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_t')
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
-        gl.enableVertexAttribArray(tLoc)
-        gl.vertexAttribPointer(tLoc, 1, gl.FLOAT, false, stride, 0)
-
-        const sideLoc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_side')
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.arcTemplateBuffer)
-        gl.enableVertexAttribArray(sideLoc)
-        gl.vertexAttribPointer(sideLoc, 1, gl.FLOAT, false, stride, 4)
-
-        // Per-instance attributes (reuse existing instance buffers)
-        const x1Loc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_x1')
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.sashimiInstanceBuffers[0])
-        gl.enableVertexAttribArray(x1Loc)
-        gl.vertexAttribPointer(x1Loc, 1, gl.FLOAT, false, 0, 0)
-        gl.vertexAttribDivisor(x1Loc, 1)
-
-        const x2Loc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_x2')
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.sashimiInstanceBuffers[1])
-        gl.enableVertexAttribArray(x2Loc)
-        gl.vertexAttribPointer(x2Loc, 1, gl.FLOAT, false, 0, 0)
-        gl.vertexAttribDivisor(x2Loc, 1)
-
-        const colorLoc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_colorType')
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.sashimiInstanceBuffers[2])
-        gl.enableVertexAttribArray(colorLoc)
-        gl.vertexAttribPointer(colorLoc, 1, gl.FLOAT, false, 0, 0)
-        gl.vertexAttribDivisor(colorLoc, 1)
-
-        const lwLoc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_lineWidth')
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.sashimiInstanceBuffers[3])
-        gl.enableVertexAttribArray(lwLoc)
-        gl.vertexAttribPointer(lwLoc, 1, gl.FLOAT, false, 0, 0)
-        gl.vertexAttribDivisor(lwLoc, 1)
-
-        // New featureId buffer
-        const featureIds = new Float32Array(data.numSashimiArcs)
-        for (let i = 0; i < data.numSashimiArcs; i++) {
-          featureIds[i] = i + 1 // 1-based indexing
-        }
-        const featureIdBuf = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, featureIdBuf)
-        gl.bufferData(gl.ARRAY_BUFFER, featureIds, gl.STATIC_DRAW)
-        const featureIdLoc = gl.getAttribLocation(this.sashimiPickingProgram, 'a_featureId')
-        gl.enableVertexAttribArray(featureIdLoc)
-        gl.vertexAttribPointer(featureIdLoc, 1, gl.FLOAT, false, 0, 0)
-        gl.vertexAttribDivisor(featureIdLoc, 1)
-
-        gl.bindVertexArray(null)
-        this.buffers.sashimiPickingVAO = sashimiPickingVAO
-
-        // Store picking buffers
-        const pickingBuffers: WebGLBuffer[] = [featureIdBuf]
-        this.sashimiPickingInstanceBuffersMap.set(regionNumber, pickingBuffers)
-
-        // Store arc metadata for feature lookup after picking
-        const regionStart = data.regionStart ?? this.buffers.regionStart
-        const arcData: SashimiArcData[] = []
-        for (let i = 0; i < data.numSashimiArcs; i++) {
-          arcData.push({
-            start: regionStart + data.sashimiX1[i]!,
-            end: regionStart + data.sashimiX2[i]!,
-            score: data.sashimiScores[i]!,
-            strand: data.sashimiColorTypes[i]! === 0 ? 1 : -1,
-            refName: data.refName ?? '',
-          })
-        }
-        this.sashimiArcDataMap.set(regionNumber, arcData)
-
-        this.pickingDirty = true
-      }
     } else {
       this.buffers.sashimiCount = 0
-      // Clear stale arc data when arcs are removed
-      this.sashimiArcDataMap.delete(regionNumber)
     }
   }
 
@@ -2202,33 +2048,6 @@ export class WebGLRenderer {
     if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
       canvas.width = canvasWidth
       canvas.height = canvasHeight
-
-      // Recreate picking framebuffer with new canvas dimensions
-      if (this.pickingFramebuffer) {
-        gl.deleteFramebuffer(this.pickingFramebuffer)
-      }
-      if (this.pickingTexture) {
-        gl.deleteTexture(this.pickingTexture)
-      }
-
-      this.pickingFramebuffer = gl.createFramebuffer()
-      this.pickingTexture = gl.createTexture()
-
-      gl.bindTexture(gl.TEXTURE_2D, this.pickingTexture)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvasWidth, canvasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFramebuffer)
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickingTexture, 0)
-
-      const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-      if (status !== gl.FRAMEBUFFER_COMPLETE) {
-        console.error('Picking framebuffer incomplete:', status)
-      }
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-      this.pickingDirty = true
     }
 
     gl.viewport(0, 0, canvasWidth, canvasHeight)
@@ -3027,126 +2846,6 @@ export class WebGLRenderer {
     this.pickingDirty = true
   }
 
-  private renderSashimiPicking(
-    state: RenderState,
-    blockStartPx = 0,
-    blockWidth = state.canvasWidth,
-  ) {
-    const gl = this.gl
-    if (!this.buffers || !this.sashimiPickingProgram || !this.buffers.sashimiPickingVAO) {
-      return
-    }
-
-    if (this.buffers.sashimiCount === 0) {
-      return
-    }
-
-    const canvasWidth = this.canvas.width
-    const canvasHeight = this.canvas.height
-    const coverageOffset = state.showCoverage ? state.coverageYOffset : 0
-    const coverageHeight = state.coverageHeight
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFramebuffer)
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
-    gl.clearColor(0, 0, 0, 0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.disable(gl.BLEND)
-
-    gl.useProgram(this.sashimiPickingProgram)
-
-    const bpStartOffset = state.bpRangeX[0] - this.buffers.regionStart
-    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
-
-    gl.uniform1f(this.sashimiPickingUniforms.u_bpStartOffset!, bpStartOffset)
-    gl.uniform1f(this.sashimiPickingUniforms.u_bpRegionLength!, regionLengthBp)
-    gl.uniform1f(this.sashimiPickingUniforms.u_canvasWidth!, canvasWidth)
-    gl.uniform1f(this.sashimiPickingUniforms.u_canvasHeight!, canvasHeight)
-    gl.uniform1f(this.sashimiPickingUniforms.u_blockStartPx!, blockStartPx)
-    gl.uniform1f(this.sashimiPickingUniforms.u_blockWidth!, blockWidth)
-    gl.uniform1f(this.sashimiPickingUniforms.u_coverageOffset!, coverageOffset)
-    gl.uniform1f(this.sashimiPickingUniforms.u_coverageHeight!, coverageHeight)
-
-    for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
-      const c = sashimiColorPalette[i]!
-      gl.uniform3f(
-        this.sashimiPickingUniforms[`u_sashimiColors[${i}]`]!,
-        c[0],
-        c[1],
-        c[2],
-      )
-    }
-
-    gl.bindVertexArray(this.buffers.sashimiPickingVAO)
-    gl.drawArraysInstanced(
-      gl.TRIANGLE_STRIP,
-      0,
-      (ARC_CURVE_SEGMENTS + 1) * 2,
-      this.buffers.sashimiCount,
-    )
-    gl.bindVertexArray(null)
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    gl.enable(gl.BLEND)
-
-    this.lastSashimiRenderParams = {
-      bpStartOffset,
-      regionLengthBp,
-      canvasWidth,
-      canvasHeight,
-      coverageOffset,
-      coverageHeight,
-      blockStartPx,
-      blockWidth,
-    }
-  }
-
-  pickSashimiArc(
-    x: number,
-    y: number,
-    state: RenderState,
-  ): SashimiArcData | null {
-    if (!this.gl || !this.canvas || !this.pickingFramebuffer) {
-      return null
-    }
-
-    if (this.pickingDirty) {
-      this.renderSashimiPicking(state)
-      this.pickingDirty = false
-    }
-
-    const gl = this.gl
-    const canvasX = Math.floor(x * this.devicePixelRatio)
-    const canvasY = Math.floor(y * this.devicePixelRatio)
-    const canvasHeight = this.canvas.height
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFramebuffer)
-    gl.readPixels(
-      canvasX,
-      canvasHeight - canvasY,
-      1,
-      1,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      this.pickingPixel,
-    )
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
-    const [r, g, b] = this.pickingPixel
-    if (r === 0 && g === 0 && b === 0) {
-      return null
-    }
-
-    const featureIndex = r + g * 256 + b * 65536 - 1
-
-    const regionNumber = this.buffers?.regionNumber ?? 0
-    const arcData = this.sashimiArcDataMap.get(regionNumber)
-    if (!arcData || featureIndex < 0 || featureIndex >= arcData.length) {
-      return null
-    }
-
-    return arcData[featureIndex]
-  }
-
   private renderCloud(state: RenderState) {
     const gl = this.gl
     if (!this.buffers || !this.cloudProgram) {
@@ -3318,23 +3017,6 @@ export class WebGLRenderer {
     if (this.sashimiProgram) {
       gl.deleteProgram(this.sashimiProgram)
     }
-    // Sashimi picking cleanup
-    if (this.pickingFramebuffer) {
-      gl.deleteFramebuffer(this.pickingFramebuffer)
-    }
-    if (this.pickingTexture) {
-      gl.deleteTexture(this.pickingTexture)
-    }
-    if (this.sashimiPickingProgram) {
-      gl.deleteProgram(this.sashimiPickingProgram)
-    }
-    for (const bufs of this.sashimiPickingInstanceBuffersMap.values()) {
-      for (const buf of bufs) {
-        gl.deleteBuffer(buf)
-      }
-    }
-    this.sashimiPickingInstanceBuffersMap.clear()
-    this.sashimiArcDataMap.clear()
     // Cloud cleanup
     for (const buf of this.cloudGLBuffers) {
       gl.deleteBuffer(buf)

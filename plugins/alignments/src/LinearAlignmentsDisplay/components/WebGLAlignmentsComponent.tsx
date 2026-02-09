@@ -27,7 +27,6 @@ import { WebGLRenderer } from './WebGLRenderer.ts'
 
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
-import type { RenderState } from './WebGLRenderer.ts'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
