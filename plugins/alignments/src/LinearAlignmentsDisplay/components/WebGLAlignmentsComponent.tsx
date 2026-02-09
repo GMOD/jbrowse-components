@@ -359,7 +359,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     rpcDataMap,
     statusMessage,
     error,
-    featureHeight,
+    featureHeightSetting,
     featureSpacing,
     colorSchemeIndex,
     showCoverage,
@@ -462,7 +462,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     const commonState = {
       rangeY: model.currentRangeY,
       colorScheme: colorSchemeIndex,
-      featureHeight,
+      featureHeight: featureHeightSetting,
       featureSpacing,
       showCoverage,
       coverageHeight,
@@ -496,7 +496,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     model,
     colorSchemeIndex,
     colorPalette,
-    featureHeight,
+    featureHeightSetting,
     featureSpacing,
     showCoverage,
     coverageHeight,
@@ -697,7 +697,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     rendererReady,
     colorSchemeIndex,
     colorPalette,
-    featureHeight,
+    featureHeightSetting,
     featureSpacing,
     showCoverage,
     coverageHeight,
@@ -733,8 +733,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Refs for values used in wheel handler that we don't want as dependencies
   const maxYRef = useRef(maxY)
   maxYRef.current = maxY
-  const featureHeightRef = useRef(featureHeight)
-  featureHeightRef.current = featureHeight
+  const featureHeightRef = useRef(featureHeightSetting)
+  featureHeightRef.current = featureHeightSetting
   const featureSpacingRef = useRef(featureSpacing)
   featureSpacingRef.current = featureSpacing
 
@@ -894,13 +894,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         canvasX,
         canvasY,
         resolved,
-        featureHeight,
+        featureHeightSetting,
         featureSpacing,
         showCoverage,
         coverageHeight,
         model.currentRangeY,
       )
-      if (adjustedY < 0 || yWithinRow > featureHeight) {
+      if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
         return undefined
       }
 
@@ -924,7 +924,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     },
     [
       resolveBlockForCanvasX,
-      featureHeight,
+      featureHeightSetting,
       featureSpacing,
       showCoverage,
       coverageHeight,
@@ -947,13 +947,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           canvasX,
           canvasY,
           resolved,
-          featureHeight,
+          featureHeightSetting,
           featureSpacing,
           showCoverage,
           coverageHeight,
           model.currentRangeY,
         )
-      if (adjustedY < 0 || yWithinRow > featureHeight) {
+      if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
         return undefined
       }
       const blockData = resolved.rpcData
@@ -1104,7 +1104,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     },
     [
       resolveBlockForCanvasX,
-      featureHeight,
+      featureHeightSetting,
       featureSpacing,
       showCoverage,
       coverageHeight,
@@ -1366,16 +1366,19 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const destY = coverageHeight
 
         // Arc thickness from score: Math.log(count + 1)
-        // Hit tolerance: 4px on either side of the curve
+        // Adaptive hit tolerance: easier to hover over thin arcs
         const lineWidth = rpcData.sashimiScores[i]!
-        const hitTolerance = lineWidth + 8
+        const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
 
         // CRITICAL: This Bezier curve formula MUST match the GPU version in:
         // shaders/arcShaders.ts:evalCurve (around line 180)
         // If either implementation changes, the other MUST be updated to match,
         // otherwise picking and rendering will be out of sync.
         // Sample the bezier curve for hit detection
-        const steps = 32
+        // Adaptive sampling based on arc width in bp
+        const arcWidthBp = Math.abs(x2 - x1)
+        const samplesPerBp = pxPerBp / 10 // Sample roughly every 10 pixels
+        const steps = Math.max(16, Math.min(256, Math.ceil(arcWidthBp * samplesPerBp)))
         let hit = false
         for (let s = 0; s <= steps; s++) {
           const t = s / steps
@@ -1922,7 +1925,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     const pxPerBp = 1 / bpPerPx
     const charWidth = 6.5
     const canRenderText = pxPerBp >= charWidth
-    const rowHeight = featureHeight + featureSpacing
+    const rowHeight = featureHeightSetting + featureSpacing
     const rangeY = model.currentRangeY
     const pileupYOffset = showCoverage ? coverageHeight : 0
 
@@ -1963,7 +1966,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Calculate Y position (center of feature)
-      const yPx = y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+      const yPx = y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
       // Skip if out of view vertically
       if (yPx < pileupYOffset || yPx > height) {
@@ -1999,7 +2002,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const xPx = (pos - bpRange[0]) / bpPerPx
 
       // Calculate Y position (centered in feature)
-      const yPx = y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+      const yPx = y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
       // Skip if out of view vertically
       if (yPx < pileupYOffset || yPx > height) {
@@ -2047,7 +2050,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
         const xPx = (pos - bpRange[0]) / bpPerPx
         const yPx =
-          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
         if (yPx < pileupYOffset || yPx > height) {
           continue
@@ -2080,7 +2083,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
         const xPx = (pos - bpRange[0]) / bpPerPx
         const yPx =
-          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
         if (yPx < pileupYOffset || yPx > height) {
           continue
@@ -2117,7 +2120,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const xPx = (startPx + endPx) / 2
 
         const yPx =
-          y * rowHeight + featureHeight / 2 - rangeY[0] + pileupYOffset
+          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
         if (yPx < pileupYOffset || yPx > height) {
           continue
@@ -2139,7 +2142,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     labelBpRange,
     width,
     height,
-    featureHeight,
+    featureHeightSetting,
     featureSpacing,
     showMismatches,
     showCoverage,
