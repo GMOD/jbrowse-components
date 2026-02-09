@@ -15,15 +15,15 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
-import { reaction } from 'mobx'
+import { autorun, reaction } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
-import { SharedModificationsMixin } from '../shared/SharedModificationsMixin.ts'
+import { getColorForModification } from '../util.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
-import { setupModificationsAutorun } from '../shared/setupModificationsAutorun.ts'
 
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
@@ -160,7 +160,6 @@ export default function stateModelFactory(
   return types
     .compose(
       BaseLinearDisplay,
-      SharedModificationsMixin(),
       types.model('LinearAlignmentsDisplay', {
         /**
          * #property
@@ -285,6 +284,11 @@ export default function stateModelFactory(
       selectedFeatureIndex: -1,
       colorTagMap: {} as Record<string, string>,
       tagsReady: true,
+      forceLoadLargeRegions: false,
+      // From SharedModificationsMixin
+      visibleModifications: observable.map<string, any>({}),
+      simplexModifications: new Set<string>(),
+      modificationsReady: false,
     }))
     .views(self => ({
       /**
@@ -307,6 +311,13 @@ export default function stateModelFactory(
        */
       renderProps() {
         return { notReady: true }
+      },
+
+      /**
+       * Get list of visible modification types
+       */
+      get visibleModificationTypes() {
+        return [...self.visibleModifications.keys()]
       },
 
       get colorBy(): ColorBy {
@@ -361,68 +372,61 @@ export default function stateModelFactory(
        * Returns an array of regions with screen pixel positions.
        */
       get visibleRegions() {
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized) {
-            return []
-          }
-          const blocks = view.dynamicBlocks.contentBlocks
-          if (blocks.length === 0) {
-            return []
-          }
-
-          const bpPerPx = view.bpPerPx
-          const regions: {
-            refName: string
-            regionNumber: number
-            start: number
-            end: number
-            assemblyName: string
-            screenStartPx: number
-            screenEndPx: number
-          }[] = []
-
-          // Group blocks by regionNumber and compute viewport-clipped ranges
-          for (const block of blocks) {
-            const blockScreenStart = block.offsetPx - view.offsetPx
-            const blockScreenEnd = blockScreenStart + block.widthPx
-
-            // Clip to viewport
-            const clippedScreenStart = Math.max(0, blockScreenStart)
-            const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
-            if (clippedScreenStart >= clippedScreenEnd) {
-              continue
-            }
-
-            // Compute bp range for the clipped screen range
-            const bpStart =
-              block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
-            const bpEnd =
-              block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
-
-            const blockRegionNumber = block.regionNumber ?? 0
-
-            // Merge with previous region if same regionNumber
-            const prev = regions[regions.length - 1]
-            if (prev?.regionNumber === blockRegionNumber) {
-              prev.end = bpEnd
-              prev.screenEndPx = clippedScreenEnd
-            } else {
-              regions.push({
-                refName: block.refName,
-                regionNumber: blockRegionNumber,
-                start: bpStart,
-                end: bpEnd,
-                assemblyName: block.assemblyName,
-                screenStartPx: clippedScreenStart,
-                screenEndPx: clippedScreenEnd,
-              })
-            }
-          }
-          return regions
-        } catch {
+        const view = getContainingView(self) as LGV
+        const blocks = view.dynamicBlocks.contentBlocks
+        if (blocks.length === 0) {
           return []
         }
+
+        const bpPerPx = view.bpPerPx
+        const regions: {
+          refName: string
+          regionNumber: number
+          start: number
+          end: number
+          assemblyName: string
+          screenStartPx: number
+          screenEndPx: number
+        }[] = []
+
+        // Group blocks by regionNumber and compute viewport-clipped ranges
+        for (const block of blocks) {
+          const blockScreenStart = block.offsetPx - view.offsetPx
+          const blockScreenEnd = blockScreenStart + block.widthPx
+
+          // Clip to viewport
+          const clippedScreenStart = Math.max(0, blockScreenStart)
+          const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
+          if (clippedScreenStart >= clippedScreenEnd) {
+            continue
+          }
+
+          // Compute bp range for the clipped screen range
+          const bpStart =
+            block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
+          const bpEnd =
+            block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
+
+          const blockRegionNumber = block.regionNumber ?? 0
+
+          // Merge with previous region if same regionNumber
+          const prev = regions[regions.length - 1]
+          if (prev?.regionNumber === blockRegionNumber) {
+            prev.end = bpEnd
+            prev.screenEndPx = clippedScreenEnd
+          } else {
+            regions.push({
+              refName: block.refName,
+              regionNumber: blockRegionNumber,
+              start: bpStart,
+              end: bpEnd,
+              assemblyName: block.assemblyName,
+              screenStartPx: clippedScreenStart,
+              screenEndPx: clippedScreenEnd,
+            })
+          }
+        }
+        return regions
       },
 
       /**
@@ -527,11 +531,60 @@ export default function stateModelFactory(
       },
 
       get showLoading() {
-        return (
-          self.isLoading ||
-          !self.featureDensityStatsReady ||
-          !this.visibleRegion
-        )
+        return self.isLoading || !this.visibleRegion
+      },
+
+      /**
+       * Check if a region is too large to render based on adapter's byte estimate.
+       * Returns { ok: true } if renderable, or { ok: false, reason: string } if too large.
+       * Pass forceLoad=true to skip the size check (used when user explicitly approves).
+       */
+      async checkRegionRenderable(region: Region, forceLoad = false) {
+        if (forceLoad) {
+          return { ok: true }
+        }
+        try {
+          const track = getContainingTrack(self)
+          const adapterConfig = getConf(track, 'adapter')
+          if (!adapterConfig) {
+            return { ok: true } // No adapter config, allow fetch
+          }
+
+          // Get the adapter instance to call getMultiRegionFeatureDensityStats
+          const session = getSession(self)
+          const { rpcManager } = session
+          const sessionId = getRpcSessionId(self)
+
+          // Call adapter method to get byte estimate and fetch size limit
+          const stats = (await rpcManager.call(
+            sessionId,
+            'CoreGetFeatureDensityStats',
+            {
+              sessionId,
+              adapterConfig,
+              regions: [region],
+            },
+          )) as { bytes?: number; fetchSizeLimit?: number } | undefined
+
+          if (!stats) {
+            return { ok: true } // No stats, allow fetch
+          }
+
+          const { bytes = 0, fetchSizeLimit } = stats
+          if (fetchSizeLimit && bytes > fetchSizeLimit) {
+            const mb = (bytes / (1024 * 1024)).toFixed(2)
+            const limitMb = (fetchSizeLimit / (1024 * 1024)).toFixed(2)
+            return {
+              ok: false,
+              reason: `Requested too much data (${mb} Mb). Limit is ${limitMb} Mb.`,
+            }
+          }
+
+          return { ok: true }
+        } catch (e) {
+          console.warn('[checkRegionRenderable] error checking region:', e)
+          return { ok: true } // On error, allow fetch to proceed
+        }
       },
 
       get features(): Map<string, Feature> {
@@ -818,6 +871,38 @@ export default function stateModelFactory(
         }
       },
 
+      toggleForceLoadLargeRegions() {
+        self.forceLoadLargeRegions = !self.forceLoadLargeRegions
+      },
+
+      updateVisibleModifications(uniqueModifications: string[]) {
+        for (const modType of uniqueModifications) {
+          if (!self.visibleModifications.has(modType)) {
+            self.visibleModifications.set(modType, {
+              type: modType,
+              base: '',
+              strand: '',
+              color: getColorForModification(modType),
+            })
+          }
+        }
+      },
+
+      setSimplexModifications(simplex: string[]) {
+        const currentSet = self.simplexModifications
+        if (
+          simplex.length === currentSet.size &&
+          simplex.every(s => currentSet.has(s))
+        ) {
+          return
+        }
+        self.simplexModifications = new Set(simplex)
+      },
+
+      setModificationsReady(flag: boolean) {
+        self.modificationsReady = flag
+      },
+
       // Stubs required by LinearAlignmentsDisplay
       setConfig(_config: unknown) {},
 
@@ -928,6 +1013,11 @@ export default function stateModelFactory(
           },
         )) as WebGLPileupDataResult
         self.setRpcData(regionNumber, result)
+        // Mark modifications as ready since we detected what's available
+        self.setModificationsReady(true)
+        if (result.simplexModifications) {
+          self.setSimplexModifications(result.simplexModifications)
+        }
       }
 
       async function fetchArcsData(
@@ -983,6 +1073,13 @@ export default function stateModelFactory(
         region: Region,
         regionNumber: number,
       ) {
+        // Check if region is renderable before attempting fetch
+        const renderCheck = await self.checkRegionRenderable(region)
+        if (!renderCheck.ok) {
+          self.setError(new Error(renderCheck.reason))
+          return
+        }
+
         const session = getSession(self)
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
@@ -1043,6 +1140,7 @@ export default function stateModelFactory(
           if (fetchGenerations.get(regionNumber) !== gen) {
             return
           }
+          console.error('Failed to fetch features:', e)
           self.setError(e instanceof Error ? e : new Error(String(e)))
           self.setLoading(false)
         }
@@ -1050,9 +1148,6 @@ export default function stateModelFactory(
 
       function fetchAllVisibleRegions() {
         const regions = self.visibleRegions
-        if (!self.featureDensityStatsReadyAndRegionNotTooLarge) {
-          return
-        }
         for (const region of regions) {
           const loaded = self.loadedRegions.get(region.regionNumber)
           const buffer = (region.end - region.start) * 0.5
@@ -1089,21 +1184,44 @@ export default function stateModelFactory(
           // Fetch data when the visible regions approach the edge of
           // loaded data.  Uses a 50% viewport buffer so we prefetch
           // before the user actually scrolls past the loaded boundary.
+          // Fetch data when the visible regions approach the edge of loaded data.
+          // Uses a 50% viewport buffer so we prefetch before the user actually scrolls past the loaded boundary.
           addDisposer(
             self,
-            reaction(
-              () => ({
-                regions: self.visibleRegions,
-                ready: self.featureDensityStatsReadyAndRegionNotTooLarge,
-              }),
-              ({ regions, ready }) => {
-                if (regions.length === 0 || !ready) {
+            autorun(async () => {
+              const view = getContainingView(self) as LGV
+              if (!view.initialized) {
+                return
+              }
+
+              const regions = self.visibleRegions
+              if (regions.length === 0) {
+                return
+              }
+
+              // Validate all visible regions are renderable before fetching
+              try {
+                const results = await Promise.all(
+                  regions.map(r => self.checkRegionRenderable(r, self.forceLoadLargeRegions)),
+                )
+                const failedCheck = results.find(r => !r.ok)
+                if (failedCheck && failedCheck.reason) {
+                  if (isAlive(self)) {
+                    self.setError(new Error(failedCheck.reason))
+                  }
                   return
                 }
-                fetchAllVisibleRegions()
-              },
-              { delay: 300, fireImmediately: true },
-            ),
+                // All regions pass validation, proceed with fetch
+                if (isAlive(self)) {
+                  self.setError(null)
+                  fetchAllVisibleRegions()
+                }
+              } catch (e) {
+                if (isAlive(self)) {
+                  console.warn('Error validating regions:', e)
+                }
+              }
+            }, { delay: 300, name: 'LinearAlignmentsDisplay:fetchVisibleRegions' }),
           )
 
           // Re-fetch when filter changes
@@ -1117,6 +1235,7 @@ export default function stateModelFactory(
                   fetchAllVisibleRegions()
                 }
               },
+              { name: 'LinearAlignmentsDisplay:refetchOnFilterChange' },
             ),
           )
 
@@ -1140,6 +1259,7 @@ export default function stateModelFactory(
                   fetchAllVisibleRegions()
                 }
               },
+              { name: 'LinearAlignmentsDisplay:refetchOnColorByChange' },
             ),
           )
 
@@ -1182,7 +1302,7 @@ export default function stateModelFactory(
                   }
                 }
               },
-              { fireImmediately: true },
+              { fireImmediately: true, name: 'LinearAlignmentsDisplay:fetchTagValues' },
             ),
           )
 
@@ -1200,6 +1320,7 @@ export default function stateModelFactory(
                 self.cloudState.clearAllRpcData()
                 fetchAllVisibleRegions()
               },
+              { name: 'LinearAlignmentsDisplay:clearOnDisplayedRegionsChange' },
             ),
           )
 
@@ -1218,13 +1339,9 @@ export default function stateModelFactory(
                 self.cloudState.clearAllRpcData()
                 fetchAllVisibleRegions()
               },
+              { name: 'LinearAlignmentsDisplay:refetchOnModeChange' },
             ),
           )
-
-          setupModificationsAutorun(self, () => {
-            const view = getContainingView(self) as LGV
-            return view.initialized
-          })
         },
       }
     })

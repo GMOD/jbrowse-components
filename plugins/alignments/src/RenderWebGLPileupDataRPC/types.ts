@@ -168,4 +168,7 @@ export interface WebGLPileupDataResult {
   numSnpSegments: number
   numNoncovSegments: number
   numIndicators: number
+
+  // Simplex modification types detected in this region (detected during feature processing)
+  simplexModifications: string[]
 }

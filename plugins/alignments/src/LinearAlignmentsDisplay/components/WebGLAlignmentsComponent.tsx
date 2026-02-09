@@ -444,7 +444,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       if (visibleBpRange) {
         model.setCurrentBpRange(visibleBpRange)
       }
-    })
+    }, { name: 'WebGLAlignmentsComponent:domainSync' })
 
     // Re-render when view or model visual state changes
     const disposeRender = autorun(() => {
@@ -464,7 +464,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       } = model
 
       renderNowRef.current()
-    })
+    }, { name: 'WebGLAlignmentsComponent:render' })
 
     return () => {
       disposeDomainSync()
@@ -1463,8 +1463,27 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   ])
 
   if (error) {
+    const isTooLarge = error.message.includes('too much data')
     return (
-      <div style={{ color: '#c00', padding: 16 }}>Error: {error.message}</div>
+      <div style={{ padding: 16 }}>
+        <div style={{ color: '#c00', marginBottom: 8 }}>Error: {error.message}</div>
+        {isTooLarge && (
+          <button
+            onClick={() => model.toggleForceLoadLargeRegions()}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#f0ad4e',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            Force Load Anyway
+          </button>
+        )}
+      </div>
     )
   }
 

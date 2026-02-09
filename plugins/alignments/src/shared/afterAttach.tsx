@@ -42,12 +42,16 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
   }
 
   // first autorun instantly draws if bpPerPx changes
-  createAutorun(self, async () => {
-    const view = getContainingView(self) as LGV
-    if (view.bpPerPx !== self.lastDrawnBpPerPx) {
-      draw(view)
-    }
-  })
+  createAutorun(
+    self,
+    async () => {
+      const view = getContainingView(self) as LGV
+      if (view.bpPerPx !== self.lastDrawnBpPerPx) {
+        draw(view)
+      }
+    },
+    { name: 'afterAttach:drawOnBpPerPxChange' },
+  )
 
   // second autorun draws after delay 1000 e.g. if offsetPx changes
   createAutorun(
@@ -56,6 +60,6 @@ export function doAfterAttach<T extends IAnyStateTreeNode>(
       const view = getContainingView(self) as LGV
       draw(view)
     },
-    { delay: 1000 },
+    { delay: 1000, name: 'afterAttach:drawOnOffsetPxChange' },
   )
 }

@@ -125,7 +125,7 @@ export function createAutorun(
           self.setError?.(e)
         }
       }
-    }, opts),
+    }, { ...opts, name: opts?.name ?? 'sharedAlignmentsAutorun' }),
   )
 }
 

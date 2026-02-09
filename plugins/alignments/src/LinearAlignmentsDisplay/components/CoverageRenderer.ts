@@ -101,6 +101,12 @@ export class CoverageRenderer {
       gl.uniform1f(this.parent.modCoverageUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.parent.modCoverageUniforms.u_canvasWidth!, canvasWidth)
 
+      // Scissor clips modification bars to the coverage area, equivalent to
+      // the canvas boundary clipping in the reference canvas renderer
+      const scissorY = canvasHeight - state.coverageHeight
+      gl.enable(gl.SCISSOR_TEST)
+      gl.scissor(0, scissorY, canvasWidth, state.coverageHeight)
+
       gl.bindVertexArray(this.parent.buffers.modCoverageVAO)
       gl.drawArraysInstanced(
         gl.TRIANGLES,
@@ -108,6 +114,8 @@ export class CoverageRenderer {
         6,
         this.parent.buffers.modCoverageCount,
       )
+
+      gl.disable(gl.SCISSOR_TEST)
     } else if (
       this.parent.buffers.snpCoverageVAO &&
       this.parent.buffers.snpCoverageCount > 0

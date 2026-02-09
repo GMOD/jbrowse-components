@@ -51,6 +51,7 @@ interface GapData {
   end: number
   type: 'deletion' | 'skip' // distinguish between deletions and intron skips
   strand: number
+  featureStrand: number // original feature strand for depth computation
 }
 
 interface MismatchData {
@@ -223,6 +224,27 @@ function computeLayout(features: FeatureData[]): Map<string, number> {
  * @param regionEnd - Integer end position (use Math.ceil of view region)
  * @returns Coverage depths per bin, with bin[i] representing position regionStart + i*binSize
  */
+// Compute the extent of features beyond the requested region, limited to
+// 1x extension on each side (3x total) to avoid pathological cases
+function getFeatureExtent(
+  features: { start: number; end: number }[],
+  regionStart: number,
+  regionEnd: number,
+) {
+  const maxExtension = regionEnd - regionStart
+  let actualStart = regionStart
+  let actualEnd = regionEnd
+  for (const f of features) {
+    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
+      actualStart = f.start
+    }
+    if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
+      actualEnd = f.end
+    }
+  }
+  return { actualStart, actualEnd }
+}
+
 function computeCoverage(
   features: FeatureData[],
   gaps: GapData[],
@@ -246,21 +268,11 @@ function computeCoverage(
     }
   }
 
-  // Extend region to cover the extent of features, but limit to 3x the
-  // requested region size to avoid pathological cases (e.g., reads spanning
-  // entire genomes could create massive coverage arrays)
-  const requestedLength = regionEnd - regionStart
-  const maxExtension = requestedLength // Allow 1x extension on each side (3x total)
-  let actualStart = regionStart
-  let actualEnd = regionEnd
-  for (const f of features) {
-    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
-      actualStart = f.start
-    }
-    if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
-      actualEnd = f.end
-    }
-  }
+  const { actualStart, actualEnd } = getFeatureExtent(
+    features,
+    regionStart,
+    regionEnd,
+  )
 
   // startOffset is the offset from regionStart where coverage bins begin
   // (negative if features extend before regionStart)
@@ -325,10 +337,17 @@ function computeCoverage(
         revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
       }
     }
-    // Gaps reduce coverage on both strands (we don't track gap strand separately)
+    // Gaps reduce coverage on the strand they belong to
     for (const g of gaps) {
-      fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-      revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      if (g.featureStrand === 1) {
+        fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      } else if (g.featureStrand === -1) {
+        revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      } else {
+        // Unknown strand: reduce both
+        fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+        revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
+      }
     }
     fwdEvents.sort((a, b) => a.pos - b.pos)
     revEvents.sort((a, b) => a.pos - b.pos)
@@ -654,6 +673,7 @@ function computeModificationCoverage(
   depthStartOffset: number,
   regionStart: number,
   regionSequence: string | undefined,
+  regionSequenceStart: number,
 ): {
   positions: Uint32Array
   yOffsets: Float32Array
@@ -717,6 +737,12 @@ function computeModificationCoverage(
     >
   >()
 
+  // Debug: track per-position feature IDs and strand info
+  const debugFeaturesByPosition = new Map<
+    number,
+    { featureId: string; strand: number }[]
+  >()
+
   for (const mod of modifications) {
     if (mod.position < regionStart) {
       continue
@@ -740,6 +766,14 @@ function computeModificationCoverage(
       colorMap.set(key, entry)
     }
     entry.count++
+
+    // Debug: track which features and strands contribute to each position
+    let debugEntries = debugFeaturesByPosition.get(mod.position)
+    if (!debugEntries) {
+      debugEntries = []
+      debugFeaturesByPosition.set(mod.position, debugEntries)
+    }
+    debugEntries.push({ featureId: mod.featureId, strand: mod.strand })
   }
 
   // Build stacked segments using modifiable/detectable formula
@@ -761,7 +795,7 @@ function computeModificationCoverage(
 
     // Get refbase from regionSequence (+1 offset for the 1bp padding)
     const refbase = regionSequence
-      ? (regionSequence[position - regionStart + 1] ?? 'N').toUpperCase()
+      ? (regionSequence[position - regionSequenceStart + 1] ?? 'N').toUpperCase()
       : 'N'
 
     // Build per-base counts including ref bases
@@ -817,41 +851,92 @@ function computeModificationCoverage(
         strandBaseCounts,
       })
 
-      const height =
-        detectable > 0 && modifiable > 0
-          ? (modifiable / regionMaxDepth) * (entry.count / detectable)
-          : entry.count / regionMaxDepth
+      // Same formula as reference: (modifiable / score0) * (count / detectable)
+      // scaled to normalized space by * (score0 / regionMaxDepth)
+      const modFraction =
+        (modifiable / depthAtPosition) * (entry.count / detectable)
+      const height = modFraction * (depthAtPosition / regionMaxDepth)
 
-      const normalizedDepth = depthAtPosition / regionMaxDepth
-      if (yOffset + height > normalizedDepth + 0.001) {
-        console.log('[mod-overflow]', {
-          position,
-          depthAtPosition,
-          regionMaxDepth,
-          normalizedDepth,
-          modifiable,
-          detectable,
-          count: entry.count,
-          height,
-          yOffset,
-          total: yOffset + height,
-          base: entry.base,
-          isSimplex: entry.isSimplex,
-          refbase,
-          baseCounts: JSON.stringify(baseCounts),
-          binIdx,
-        })
+      // Debug logging for first 5 positions
+      if (segments.length < 5) {
+        const debugEntries = debugFeaturesByPosition.get(position) ?? []
+        const uniqueFeatureIds = new Set(debugEntries.map(e => e.featureId))
+        const fwdModCount = debugEntries.filter(e => e.strand === 1).length
+        const revModCount = debugEntries.filter(e => e.strand === -1).length
+        const fwdDepthHere = fwdDepths
+          ? (fwdDepths[binIdx] ?? 0)
+          : 'N/A'
+        const revDepthHere = revDepths
+          ? (revDepths[binIdx] ?? 0)
+          : 'N/A'
+        console.log(
+          `[MOD_COV_DEBUG] pos=${position} base=${entry.base} refbase=${refbase} ` +
+            `count=${entry.count} depth=${depthAtPosition} modifiable=${modifiable} ` +
+            `detectable=${detectable} modFraction=${modFraction.toFixed(4)} ` +
+            `height=${height.toFixed(4)} regionMaxDepth=${regionMaxDepth} ` +
+            `totalFeatureEntries=${debugEntries.length} uniqueFeatures=${uniqueFeatureIds.size} ` +
+            `isSimplex=${entry.isSimplex} baseCounts=${JSON.stringify(baseCounts)} ` +
+            `fwdMods=${fwdModCount} revMods=${revModCount} ` +
+            `fwdDepth=${fwdDepthHere} revDepth=${revDepthHere} ` +
+            `strandBaseCounts=${JSON.stringify(strandBaseCounts)} ` +
+            `binIdx=${binIdx} depthStartOffset=${depthStartOffset}`,
+        )
+        if (entry.count > depthAtPosition) {
+          console.warn(
+            `[MOD_COV_OVERCOUNT] count(${entry.count}) > depth(${depthAtPosition}) at pos ${position}!`,
+          )
+        }
       }
 
-      segments.push({
-        position,
-        yOffset,
-        height: Math.min(1, height),
-        r: entry.r,
-        g: entry.g,
-        b: entry.b,
-      })
-      yOffset += height
+      if (!Number.isNaN(height)) {
+        segments.push({
+          position,
+          yOffset,
+          height,
+          r: entry.r,
+          g: entry.g,
+          b: entry.b,
+        })
+        yOffset += height
+      }
+    }
+  }
+
+  // Debug summary
+  const maxHeight = segments.reduce((max, s) => Math.max(max, s.yOffset + s.height), 0)
+  const overcountPositions = [...byPosition.entries()].filter(([pos]) => {
+    const bIdx = Math.floor(pos - regionStart - depthStartOffset)
+    const depth = depths[bIdx] ?? 0
+    const posColorMap = byPosition.get(pos)!
+    const totalCount = [...posColorMap.values()].reduce((sum, e) => sum + e.count, 0)
+    return totalCount > depth
+  })
+  console.log(
+    `[MOD_COV_SUMMARY] total modifications=${modifications.length} ` +
+      `positions with mods=${byPosition.size} segments=${segments.length} ` +
+      `maxStackedHeight=${maxHeight.toFixed(4)} regionMaxDepth=${regionMaxDepth} ` +
+      `overcountPositions=${overcountPositions.length}`,
+  )
+  if (overcountPositions.length > 0) {
+    for (const [pos] of overcountPositions.slice(0, 3)) {
+      const bIdx = Math.floor(pos - regionStart - depthStartOffset)
+      const depth = depths[bIdx] ?? 0
+      const posColorMap = byPosition.get(pos)!
+      const totalCount = [...posColorMap.values()].reduce(
+        (sum, e) => sum + e.count,
+        0,
+      )
+      const debugEntries = debugFeaturesByPosition.get(pos) ?? []
+      const fwdModCount = debugEntries.filter(e => e.strand === 1).length
+      const revModCount = debugEntries.filter(e => e.strand === -1).length
+      const fwdD = fwdDepths ? (fwdDepths[bIdx] ?? 0) : 'N/A'
+      const revD = revDepths ? (revDepths[bIdx] ?? 0) : 'N/A'
+      console.warn(
+        `[MOD_COV_OVERCOUNT_DETAIL] pos=${pos} totalModCount=${totalCount} depth=${depth} ` +
+          `fwdMods=${fwdModCount} revMods=${revModCount} fwdDepth=${fwdD} revDepth=${revD} ` +
+          `depthsLen=${depths.length} binIdx=${bIdx} ` +
+          `inRange=${bIdx >= 0 && bIdx < depths.length}`,
+      )
     }
   }
 
@@ -989,11 +1074,28 @@ export async function executeRenderWebGLPileupData({
   // All position offsets throughout this function use regionStart as the reference point.
   const regionStart = Math.floor(region.start)
 
-  // Fetch reference sequence for methylation coloring (requires CpG site detection)
-  // Fetched with 1bp padding on each side so we can detect CpG dinucleotides
-  // at region boundaries. The +1 offset in sequence indexing accounts for this.
+  // Fetch reference sequence for methylation/modification coloring.
+  // Covers the full feature extent (not just visible region) so modification
+  // bars render correctly for reads extending beyond the view.
+  // 1bp padding on each side for CpG dinucleotide detection at boundaries.
   let regionSequence: string | undefined
+  let regionSequenceStart = regionStart
   if ((colorBy?.type === 'methylation' || colorBy?.type === 'modifications') && sequenceAdapter) {
+    const regionEnd0 = Math.ceil(region.end)
+    let seqFetchStart = regionStart
+    let seqFetchEnd = regionEnd0
+    const maxExtension = regionEnd0 - regionStart
+    for (const f of featuresArray) {
+      const s = f.get('start') as number
+      const e = f.get('end') as number
+      if (s < seqFetchStart && s >= regionStart - maxExtension) {
+        seqFetchStart = s
+      }
+      if (e > seqFetchEnd && e <= regionEnd0 + maxExtension) {
+        seqFetchEnd = e
+      }
+    }
+    regionSequenceStart = seqFetchStart
     const seqAdapter = (
       await getAdapter(pluginManager, sessionId, sequenceAdapter)
     ).dataAdapter as BaseFeatureDataAdapter
@@ -1002,13 +1104,17 @@ export async function executeRenderWebGLPileupData({
         .getFeatures({
           ...regionWithAssembly,
           refName: region.originalRefName || region.refName,
-          start: Math.max(0, regionStart - 1),
-          end: Math.ceil(region.end) + 1,
+          start: Math.max(0, seqFetchStart - 1),
+          end: seqFetchEnd + 1,
         })
         .pipe(toArray()),
     )
     regionSequence = seqFeats[0]?.get('seq')
   }
+
+  // Track detected modification types (MM tags) found in this region
+  const detectedModifications = new Set<string>()
+  const detectedSimplexModifications = new Set<string>()
 
   const {
     features,
@@ -1068,6 +1174,7 @@ export async function executeRenderWebGLPileupData({
               end: featureStart + mm.start + mm.length,
               type: mm.type,
               strand,
+              featureStrand: strand,
             })
           } else if (mm.type === 'skip') {
             // Use effectiveStrand for skip features (sashimi arcs) to respect XS/TS/ts tags
@@ -1077,6 +1184,7 @@ export async function executeRenderWebGLPileupData({
               end: featureStart + mm.start + mm.length,
               type: mm.type,
               strand: getEffectiveStrand(feature),
+              featureStrand: strand,
             })
           } else if (mm.type === 'mismatch') {
             mismatchesData.push({
@@ -1150,6 +1258,12 @@ export async function executeRenderWebGLPileupData({
                   b,
                   a: alpha,
                 })
+                // Track detected modification type
+                detectedModifications.add(type)
+                // Track simplex modifications
+                if (simplexSet.has(type)) {
+                  detectedSimplexModifications.add(type)
+                }
               })
             }
           }
@@ -1174,8 +1288,8 @@ export async function executeRenderWebGLPileupData({
             i++
           ) {
             const j = i + featureStart
-            const l1 = rSeq[j - regionStart + 1]
-            const l2 = rSeq[j - regionStart + 2]
+            const l1 = rSeq[j - regionSequenceStart + 1]
+            const l2 = rSeq[j - regionSequenceStart + 2]
 
             if (l1 === 'c' && l2 === 'g') {
               const methStrand = strand === -1 ? -1 : 1
@@ -1525,6 +1639,7 @@ export async function executeRenderWebGLPileupData({
     coverage.startOffset,
     regionStart,
     regionSequence,
+    regionSequenceStart,
   )
 
   // Build tooltip data for positions with SNPs or interbase events
@@ -1842,6 +1957,9 @@ export async function executeRenderWebGLPileupData({
     numModifications: modificationArrays.modificationPositions.length,
     numSnpSegments: snpCoverage.count,
     numNoncovSegments: noncovCoverage.segmentCount,
+
+    // Simplex modification types detected in this region
+    simplexModifications: Array.from(detectedSimplexModifications),
     numIndicators: noncovCoverage.indicatorCount,
   }
 
