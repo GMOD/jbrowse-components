@@ -11,20 +11,7 @@
 
 import { ARC_CURVE_SEGMENTS, arcColorPalette, arcLineColorPalette, sashimiColorPalette, splitPositionWithFrac } from './shaders/index.ts'
 import { NUM_ARC_COLORS, NUM_LINE_COLORS, NUM_SASHIMI_COLORS } from './shaders/index.ts'
-
-// Import RenderState interface directly without importing the class
-// to avoid circular dependency
-import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
-
-interface GPUBuffers {
-  regionStart: number
-  arcVAO: WebGLVertexArrayObject | null
-  arcCount: number
-  arcLineVAO: WebGLVertexArrayObject | null
-  arcLineCount: number
-  sashimiVAO: WebGLVertexArrayObject | null
-  sashimiCount: number
-}
+import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
  * ArcsRenderer orchestrates rendering of arc geometry including bezier curves,

@@ -11,25 +11,7 @@
  */
 
 import type { ColorPalette } from './shaders/index.ts'
-
-// Import RenderState interface directly without importing the class
-// to avoid circular dependency
-import type { RenderState } from './WebGLRenderer.ts'
-
-interface GPUBuffers {
-  regionStart: number
-  coverageVAO: WebGLVertexArrayObject | null
-  coverageCount: number
-  binSize: number
-  snpCoverageVAO: WebGLVertexArrayObject | null
-  snpCoverageCount: number
-  noncovHistogramVAO: WebGLVertexArrayObject | null
-  noncovHistogramCount: number
-  indicatorVAO: WebGLVertexArrayObject | null
-  indicatorCount: number
-  modCoverageVAO: WebGLVertexArrayObject | null
-  modCoverageCount: number
-}
+import type { GPUBuffers, RenderState } from './WebGLRenderer.ts'
 
 /**
  * CoverageRenderer orchestrates rendering of coverage data including coverage bars,

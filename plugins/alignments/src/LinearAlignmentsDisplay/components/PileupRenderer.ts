@@ -9,31 +9,7 @@
 
 import { splitPositionWithFrac } from './shaders/index.ts'
 import type { ColorPalette } from './shaders/index.ts'
-
-// Import RenderState interface directly without importing the class
-// to avoid circular dependency
-import type { RenderState } from './WebGLRenderer.ts'
-
-interface GPUBuffers {
-  regionStart: number
-  readVAO: WebGLVertexArrayObject
-  readCount: number
-  readPositions: Uint32Array
-  readYs: Uint16Array
-  readStrands: Int8Array
-  gapVAO: WebGLVertexArrayObject | null
-  gapCount: number
-  mismatchVAO: WebGLVertexArrayObject | null
-  mismatchCount: number
-  insertionVAO: WebGLVertexArrayObject | null
-  insertionCount: number
-  softclipVAO: WebGLVertexArrayObject | null
-  softclipCount: number
-  hardclipVAO: WebGLVertexArrayObject | null
-  hardclipCount: number
-  modificationVAO: WebGLVertexArrayObject | null
-  modificationCount: number
-}
+import type { GPUBuffers, RenderState } from './WebGLRenderer.ts'
 
 /**
  * PileupRenderer orchestrates rendering of reads and CIGAR features in pileup mode.

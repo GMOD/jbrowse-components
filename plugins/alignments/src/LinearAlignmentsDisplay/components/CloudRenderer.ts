@@ -9,16 +9,7 @@
  */
 
 import { splitPositionWithFrac } from './shaders/index.ts'
-
-// Import RenderState interface directly without importing the class
-// to avoid circular dependency
-import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
-
-interface GPUBuffers {
-  regionStart: number
-  cloudVAO: WebGLVertexArrayObject | null
-  cloudCount: number
-}
+import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
  * CloudRenderer orchestrates rendering of cloud mode visualization.

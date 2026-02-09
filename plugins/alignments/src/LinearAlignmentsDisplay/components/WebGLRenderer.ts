@@ -107,7 +107,7 @@ export interface RenderState {
   showSashimiArcs?: boolean
 }
 
-interface GPUBuffers {
+export interface GPUBuffers {
   // Reference point for all position offsets
   regionStart: number
   readVAO: WebGLVertexArrayObject
@@ -161,7 +161,6 @@ interface GPUBuffers {
 export class WebGLRenderer {
   gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-  private devicePixelRatio = window.devicePixelRatio || 1
 
   readProgram: WebGLProgram
   coverageProgram: WebGLProgram
@@ -1973,7 +1972,7 @@ export class WebGLRenderer {
         continue
       }
 
-      // Set this.buffers so private render methods can use it
+      // Set this.buffers so sub-renderers can access it via parent
       this.buffers = buffers
 
       const regionStart = buffers.regionStart
