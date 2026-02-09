@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
-import { linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
+import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -8,7 +8,7 @@ import type { Feature } from '@jbrowse/core/util'
 /**
  * #config LGVSyntenyDisplay
  * extends config
- * - [LinearPileupDisplay](../linearpileupdisplay)
+ * - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
  */
 function configSchemaF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {
@@ -44,7 +44,7 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearPileupDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: linearAlignmentsDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

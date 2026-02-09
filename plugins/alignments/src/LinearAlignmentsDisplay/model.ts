@@ -112,7 +112,7 @@ export function getInsertionRectWidthPx(
   return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
 }
 
-interface Region {
+export interface Region {
   refName: string
   start: number
   end: number
@@ -133,7 +133,7 @@ const WebGLAlignmentsComponent = lazy(
 
 const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
 const ColorByTagDialog = lazy(
-  () => import('../LinearPileupDisplay/components/ColorByTagDialog.tsx'),
+  () => import('../shared/components/ColorByTagDialog.tsx'),
 )
 const SetFeatureHeightDialog = lazy(
   () => import('../shared/components/SetFeatureHeightDialog.tsx'),
@@ -227,8 +227,50 @@ export default function stateModelFactory(
          * #property
          */
         cloudState: types.optional(CloudSubModel, {}),
+        /**
+         * #property
+         * For backwards compatibility: migration from old LinearSNPCoverageDisplay
+         */
+        jexlFilters: types.optional(types.array(types.string), []),
       }),
     )
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
+      }
+
+      // Migrate LinearSNPCoverageDisplay snapshots to LinearAlignmentsDisplay
+      if (snap.type === 'LinearSNPCoverageDisplay') {
+        const {
+          type,
+          showArcs,
+          minArcScore,
+          showInterbaseCounts,
+          showInterbaseIndicators,
+          colorBySetting,
+          filterBySetting,
+          jexlFilters,
+          ...rest
+        } = snap
+
+        return {
+          ...rest,
+          type: 'LinearAlignmentsDisplay',
+          showSashimiArcs: showArcs ?? true,
+          showInterbaseCounts: showInterbaseCounts ?? true,
+          showInterbaseIndicators: showInterbaseIndicators ?? true,
+          showCoverage: true,
+          coverageHeight: 45,
+          showMismatches: true,
+          renderingMode: 'pileup',
+          colorBySetting,
+          filterBySetting,
+          jexlFilters: jexlFilters ?? [],
+        }
+      }
+
+      return snap
+    })
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLPileupDataResult>(),
       loadedRegions: new Map<number, Region>(),

@@ -7,7 +7,6 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
@@ -25,6 +24,7 @@ import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import {
+  CIGAR_TYPE_LABELS,
   buildColorPaletteFromTheme,
   canvasToGenomicCoords,
   formatCigarTooltip,
@@ -45,6 +45,7 @@ import type {
   CigarHitResult,
   CoverageHitResult,
   IndicatorHitResult,
+  ResolvedBlock,
   SashimiArcHitResult,
 } from './hitTesting'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
@@ -84,7 +85,7 @@ interface LinearAlignmentsDisplayModel {
   showLoading: boolean
   statusMessage?: string
   error: Error | null
-  featureHeight: number
+  featureHeightSetting: number
   featureSpacing: number
   colorSchemeIndex: number
   showCoverage: boolean
@@ -1035,14 +1036,18 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
             if (tooltipBin) {
               for (const [base, entry] of Object.entries(tooltipBin.snps)) {
-                featureData[`SNP ${base.toUpperCase()}`] =
-                  `${entry.count}/${tooltipBin.depth} (${entry.fwd}(+) ${entry.rev}(-))`
+                if (entry) {
+                  featureData[`SNP ${base.toUpperCase()}`] =
+                    `${entry.count}/${tooltipBin.depth} (${entry.fwd}(+) ${entry.rev}(-))`
+                }
               }
               for (const [type, entry] of Object.entries(
                 tooltipBin.interbase,
               )) {
-                featureData[type] =
-                  `${entry.count} (${entry.minLen}-${entry.maxLen}bp)`
+                if (entry) {
+                  featureData[type] =
+                    `${entry.count} (${entry.minLen}-${entry.maxLen}bp)`
+                }
               }
             } else {
               for (const snp of coverageHit.snps) {

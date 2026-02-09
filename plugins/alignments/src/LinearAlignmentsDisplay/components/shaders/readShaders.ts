@@ -42,8 +42,9 @@ out vec4 v_color;
 ${HP_GLSL_FUNCTIONS}
 
 // Color scheme 0: normal - grey base color (matches PileupRenderer default)
+// Uses colorPairLR (lightgrey) which matches old PileupRenderer's default 'lightgrey' color
 vec3 normalColor() {
-  return u_colorNostrand;
+  return u_colorPairLR;
 }
 
 // Color scheme 1: strand - red for forward, blue for reverse

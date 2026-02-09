@@ -6,6 +6,7 @@
  */
 
 import { colord } from '@jbrowse/core/util/colord'
+import { fillColor } from '../../shared/color.ts'
 import { WebGLRenderer } from './WebGLRenderer'
 
 import type { ColorPalette, RGBColor } from './WebGLRenderer'
@@ -13,10 +14,7 @@ import type { CigarHitResult } from './hitTesting'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
 import type { Theme } from '@mui/material'
 
-/**
- * Convert a color string to normalized RGB (0-1 range)
- */
-export function parseColorToRGB(color: string): RGBColor {
+function toRgb(color: string): RGBColor {
   const { r, g, b } = colord(color).toRgb()
   return [r / 255, g / 255, b / 255]
 }
@@ -28,29 +26,29 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
   const { palette } = theme
   return {
     // Read/alignment colors from shared/color.ts
-    colorFwdStrand: parseColorToRGB((theme as any).fillColor?.color_fwd_strand || '#0073e6'),
-    colorRevStrand: parseColorToRGB((theme as any).fillColor?.color_rev_strand || '#e60000'),
-    colorNostrand: parseColorToRGB((theme as any).fillColor?.color_nostrand || '#808080'),
-    colorPairLR: parseColorToRGB((theme as any).fillColor?.color_pair_lr || '#0073e6'),
-    colorPairRL: parseColorToRGB((theme as any).fillColor?.color_pair_rl || '#e60000'),
-    colorPairRR: parseColorToRGB((theme as any).fillColor?.color_pair_rr || '#e60000'),
-    colorPairLL: parseColorToRGB((theme as any).fillColor?.color_pair_ll || '#0073e6'),
+    colorFwdStrand: toRgb(fillColor.color_fwd_strand),
+    colorRevStrand: toRgb(fillColor.color_rev_strand),
+    colorNostrand: toRgb(fillColor.color_nostrand),
+    colorPairLR: toRgb(fillColor.color_pair_lr),
+    colorPairRL: toRgb(fillColor.color_pair_rl),
+    colorPairRR: toRgb(fillColor.color_pair_rr),
+    colorPairLL: toRgb(fillColor.color_pair_ll),
     // Base colors from theme
-    colorBaseA: parseColorToRGB((palette as any).bases.A.main),
-    colorBaseC: parseColorToRGB((palette as any).bases.C.main),
-    colorBaseG: parseColorToRGB((palette as any).bases.G.main),
-    colorBaseT: parseColorToRGB((palette as any).bases.T.main),
+    colorBaseA: toRgb(palette.bases.A.main),
+    colorBaseC: toRgb(palette.bases.C.main),
+    colorBaseG: toRgb(palette.bases.G.main),
+    colorBaseT: toRgb(palette.bases.T.main),
     // Indel/clip colors from theme
-    colorInsertion: parseColorToRGB((palette as any).insertion),
-    colorDeletion: parseColorToRGB((palette as any).deletion),
-    colorSkip: parseColorToRGB((palette as any).skip),
-    colorSoftclip: parseColorToRGB((palette as any).softclip),
-    colorHardclip: parseColorToRGB((palette as any).hardclip),
+    colorInsertion: toRgb(palette.insertion),
+    colorDeletion: toRgb(palette.deletion),
+    colorSkip: toRgb(palette.skip),
+    colorSoftclip: toRgb(palette.softclip),
+    colorHardclip: toRgb(palette.hardclip),
     // Coverage color (light grey)
-    colorCoverage: [0.8, 0.8, 0.8],
+    colorCoverage: toRgb('#cccccc'),
     // Modification mode read colors
-    colorModificationFwd: parseColorToRGB((palette as any).modificationFwd),
-    colorModificationRev: parseColorToRGB((palette as any).modificationRev),
+    colorModificationFwd: toRgb(palette.modificationFwd),
+    colorModificationRev: toRgb(palette.modificationRev),
   }
 }
 

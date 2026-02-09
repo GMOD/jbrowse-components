@@ -207,3 +207,56 @@ export type MismatchType =
 export interface FeatureWithMismatchIterator extends Feature {
   forEachMismatch(callback: MismatchCallback): void
 }
+
+export interface InterbaseIndicatorItem {
+  type: 'insertion' | 'softclip' | 'hardclip'
+  base: string
+  count: number
+  total: number
+  avgLength?: number
+  minLength?: number
+  maxLength?: number
+  topSequence?: string
+  start: number
+}
+
+export interface SNPItem {
+  type: 'snp'
+  base: string
+  count: number
+  total: number
+  refbase?: string
+  avgQual?: number
+  fwdCount: number
+  revCount: number
+  bin?: BaseCoverageBin
+  start: number
+  end: number
+}
+
+export interface ModificationItem {
+  type: 'modification'
+  modType: string
+  base: string
+  count: number
+  total: number
+  avgProb?: number
+  fwdCount: number
+  revCount: number
+  isUnmodified: boolean
+  start: number
+}
+
+export type ClickMapItem = InterbaseIndicatorItem | SNPItem | ModificationItem
+
+const typeLabels: Record<string, string> = {
+  insertion: 'Insertion',
+  softclip: 'Soft clip',
+  hardclip: 'Hard clip',
+  snp: 'SNP',
+  modification: 'Modification',
+}
+
+export function getInterbaseTypeLabel(type: string) {
+  return typeLabels[type] ?? type
+}

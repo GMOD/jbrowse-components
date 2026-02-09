@@ -6,7 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { observer } from 'mobx-react'
 
-import { getInterbaseTypeLabel } from '../../SNPCoverageRenderer/types.ts'
+import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
 import type { CoverageTooltipBin } from '../../RenderWebGLPileupDataRPC/types'
 import type { Feature } from '@jbrowse/core/util'

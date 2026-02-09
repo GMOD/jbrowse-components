@@ -1,4 +1,4 @@
-import { cssColorToRgb } from './colors.ts'
+import { toRgb } from './colors.ts'
 import { HP_GLSL_FUNCTIONS } from './utils.ts'
 import { fillColor } from '../../../shared/color.ts'
 
@@ -10,19 +10,19 @@ export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2
 
 export const arcColorPalette: RGBColor[] = [
-  cssColorToRgb(fillColor.color_pair_lr),
-  cssColorToRgb(fillColor.color_longinsert),
-  cssColorToRgb(fillColor.color_shortinsert),
-  cssColorToRgb(fillColor.color_interchrom),
-  cssColorToRgb(fillColor.color_pair_ll),
-  cssColorToRgb(fillColor.color_pair_rr),
-  cssColorToRgb(fillColor.color_pair_rl),
-  cssColorToRgb(fillColor.color_longread_rev_fwd),
+  toRgb(fillColor.color_pair_lr),
+  toRgb(fillColor.color_longinsert),
+  toRgb(fillColor.color_shortinsert),
+  toRgb(fillColor.color_interchrom),
+  toRgb(fillColor.color_pair_ll),
+  toRgb(fillColor.color_pair_rr),
+  toRgb(fillColor.color_pair_rl),
+  toRgb(fillColor.color_longread_rev_fwd),
 ]
 
 export const arcLineColorPalette: RGBColor[] = [
-  cssColorToRgb(fillColor.color_interchrom),
-  cssColorToRgb(fillColor.color_longinsert),
+  toRgb(fillColor.color_interchrom),
+  toRgb(fillColor.color_longinsert),
 ]
 
 export const ARC_VERTEX_SHADER = `#version 300 es
