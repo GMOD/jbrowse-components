@@ -1534,28 +1534,18 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const refName = blockInfo?.refName
 
         if (tooltipBin || coverageHit.depth > 0) {
-          // Build tooltip bin data - use detailed data if available, otherwise use basic coverage info
-          const bin = tooltipBin ?? {
+          let bin = tooltipBin ?? {
             position: coverageHit.position,
             depth: coverageHit.depth,
             snps: {},
             interbase: {},
           }
-          // If no tooltipBin but we have basic SNP data from hit test, include it
+          // Add basic SNP data from hit test if no detailed tooltip bin exists
           if (!tooltipBin && coverageHit.snps.length > 0) {
             for (const snp of coverageHit.snps) {
-              if (
-                snp.base === 'A' ||
-                snp.base === 'C' ||
-                snp.base === 'G' ||
-                snp.base === 'T'
-              ) {
+              if (snp.base === 'A' || snp.base === 'C' || snp.base === 'G' || snp.base === 'T') {
                 bin.snps[snp.base] = { count: snp.count, fwd: 0, rev: 0 }
-              } else if (
-                snp.base === 'insertion' ||
-                snp.base === 'softclip' ||
-                snp.base === 'hardclip'
-              ) {
+              } else if (snp.base === 'insertion' || snp.base === 'softclip' || snp.base === 'hardclip') {
                 bin.interbase[snp.base] = {
                   count: snp.count,
                   minLen: 0,
@@ -1709,10 +1699,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const blockRpcData = blockHit?.rpcData
         const posOffset =
           coverageHit.position - (blockRpcData?.regionStart ?? 0)
-        const tooltipBin =
-          blockRpcData?.tooltipData[posOffset] ??
-          blockRpcData?.tooltipData[posOffset - 1] ??
-          blockRpcData?.tooltipData[posOffset + 1]
+        const tooltipBin = blockRpcData?.tooltipData[posOffset]
 
         // Only open widget if there's meaningful data
         const hasSNPs = coverageHit.snps.some(

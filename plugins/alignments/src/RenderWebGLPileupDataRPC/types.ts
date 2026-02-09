@@ -31,7 +31,8 @@ export interface RenderWebGLPileupDataArgs {
   stopToken?: string
 }
 
-// Detailed tooltip data for a coverage position (SNPs + interbase)
+// Detailed tooltip data for a coverage position (SNPs + deletions + interbase)
+// Note: Skips (splice junctions) appear in sashimi arc tooltips, not coverage tooltips
 export interface CoverageTooltipBin {
   position: number // absolute genomic position
   depth: number // total reads at this position
@@ -39,13 +40,6 @@ export interface CoverageTooltipBin {
   snps: Record<string, { count: number; fwd: number; rev: number }>
   // Deletion data: { count, minLen, maxLen, avgLen }
   deletions?: {
-    count: number
-    minLen: number
-    maxLen: number
-    avgLen: number
-  }
-  // Skip/intron data (splice junctions): { count, minLen, maxLen, avgLen }
-  skips?: {
     count: number
     minLen: number
     maxLen: number
