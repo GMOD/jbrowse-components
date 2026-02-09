@@ -2,7 +2,7 @@ import { RemoteFile } from 'generic-filehandle2'
 
 import pLimit from '../p-limit.ts'
 
-const CHUNK_SIZE = 128 * 1024 // 128KiB
+const CHUNK_SIZE = 256 * 1024 // 128KiB
 const CACHE_NAME = 'jbrowse-range-cache'
 
 const hasCacheAPI = typeof caches !== 'undefined'

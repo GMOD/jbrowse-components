@@ -1,9 +1,14 @@
+import fetchMock from 'jest-fetch-mock'
+
 import { RemoteFileWithRangeCache, clearCache } from './RemoteFileWithRangeCache.ts'
 
-const CHUNK = 128 * 1024
+// Disable jest-fetch-mock so our custom mock fetch functions work
+fetchMock.disableMocks()
+
+const CHUNK = 256 * 1024
 
 // Deterministic 1MB "file" where each byte equals its position mod 256
-const FILE_SIZE = 1024 * 1024
+const FILE_SIZE = 2 * 1024 * 1024
 const fileData = new Uint8Array(FILE_SIZE)
 for (let i = 0; i < FILE_SIZE; i++) {
   fileData[i] = i % 256
@@ -150,5 +155,47 @@ describe('RemoteFileWithRangeCache', () => {
     const result = await fetchRange(file, start, end)
     expect(result).toEqual(slice(start, end))
     expect(result).toHaveLength(1001)
+  })
+
+  test('fetch error propagates with status', async () => {
+    const mockFetch = async () => new Response('', { status: 404 })
+    const file = makeFile(mockFetch)
+    await expect(fetchRange(file, 0, 99)).rejects.toThrow('HTTP 404')
+    await expect(fetchRange(file, 0, 99)).rejects.toHaveProperty('status', 404)
+  })
+
+  test('multiple disjoint gaps produce separate fetches', async () => {
+    const { calls, mockFetch } = createMockFetch()
+    const file = makeFile(mockFetch)
+
+    // Prime chunks 0 and 2, leaving 1 and 3 as separate gaps
+    await fetchRange(file, 0, CHUNK - 1)
+    await fetchRange(file, CHUNK * 2, CHUNK * 3 - 1)
+    expect(calls).toHaveLength(2)
+
+    // Request chunks 0-3: should fetch chunk 1 and chunk 3 separately
+    const result = await fetchRange(file, 0, CHUNK * 4 - 1)
+    expect(result).toEqual(slice(0, CHUNK * 4 - 1))
+    expect(calls).toHaveLength(4)
+    expect(calls[2]!.start).toBe(CHUNK)
+    expect(calls[2]!.end).toBe(CHUNK * 2 - 1)
+    expect(calls[3]!.start).toBe(CHUNK * 3)
+    expect(calls[3]!.end).toBe(CHUNK * 4 - 1)
+  })
+
+  test('different URLs do not share cache', async () => {
+    const { calls, mockFetch } = createMockFetch()
+    const file = makeFile(mockFetch)
+
+    await fetchRange(file, 0, 99)
+    expect(calls).toHaveLength(1)
+
+    // Same range but different URL should trigger a new fetch
+    const res = await file.fetch('http://example.com/other.bin', {
+      headers: { range: 'bytes=0-99' },
+    })
+    const result = new Uint8Array(await res.arrayBuffer())
+    expect(result).toEqual(slice(0, 99))
+    expect(calls).toHaveLength(2)
   })
 })
