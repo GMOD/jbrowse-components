@@ -1017,10 +1017,18 @@ export default function stateModelFactory(
         self.cloudState.setRpcData(regionNumber, result)
       }
 
+      // Central chokepoint: ALL data fetches go through here.
+      // The regionTooLarge guard lives here so it is structurally
+      // impossible to bypass, no matter how many callers are added.
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
       ) {
+        if (!self.featureDensityStatsReadyAndRegionNotTooLarge) {
+          console.debug('[fetchFeaturesForRegion] blocked: statsReady=', self.featureDensityStatsReady, 'regionTooLarge=', self.regionTooLarge)
+          return
+        }
+
         const session = getSession(self)
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
@@ -1031,7 +1039,7 @@ export default function stateModelFactory(
 
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
-        console.log(`[fetchFeaturesForRegion] Starting fetch for region ${regionNumber}: ${region.refName}:${region.start}-${region.end}`)
+        console.debug(`[fetchFeaturesForRegion] Starting fetch for region ${regionNumber}: ${region.refName}:${region.start}-${region.end}`)
         self.setLoading(true)
         self.setError(null)
 
@@ -1077,7 +1085,7 @@ export default function stateModelFactory(
             end: region.end,
             assemblyName: region.assemblyName,
           })
-          console.log(`[fetchFeaturesForRegion] Fetch complete for region ${regionNumber}`)
+          console.debug(`[fetchFeaturesForRegion] Fetch complete for region ${regionNumber}`)
           self.setLoading(false)
         } catch (e) {
           if (fetchGenerations.get(regionNumber) !== gen) {
@@ -1116,7 +1124,6 @@ export default function stateModelFactory(
         }
       }
 
-      // Fast re-fetch when only colorBy changes - skip size checks since region is already safe
       function refetchAllVisibleRegionsForColorChange() {
         const regions = self.visibleRegions
         for (const region of regions) {
@@ -1152,7 +1159,15 @@ export default function stateModelFactory(
               if (!view.initialized) {
                 return
               }
-              if (!self.featureDensityStatsReadyAndRegionNotTooLarge) {
+              const ready = self.featureDensityStatsReadyAndRegionNotTooLarge
+              console.debug(
+                '[LinearAlignmentsDisplay:fetchVisibleRegions]',
+                'featureDensityStatsReady:', self.featureDensityStatsReady,
+                'regionTooLarge:', self.regionTooLarge,
+                'featureDensityStats:', self.featureDensityStats,
+                'ready:', ready,
+              )
+              if (!ready) {
                 return
               }
 
@@ -1171,10 +1186,8 @@ export default function stateModelFactory(
             reaction(
               () => self.filterBy,
               () => {
-                if (self.featureDensityStatsReadyAndRegionNotTooLarge) {
-                  self.clearAllRpcData()
-                  fetchAllVisibleRegions()
-                }
+                self.clearAllRpcData()
+                fetchAllVisibleRegions()
               },
               { name: 'LinearAlignmentsDisplay:refetchOnFilterChange' },
             ),
@@ -1197,12 +1210,12 @@ export default function stateModelFactory(
                 }
                 // When colorBy changes, re-fetch immediately without size checks
                 // (region was already safe on first load, just need new rendering data)
-                console.log('[colorBy reaction] Color changed to:', colorType)
+                console.debug('[colorBy reaction] Color changed to:', colorType)
                 self.setLoading(true)
                 self.setStatusMessage('Loading')
                 self.setError(null)
                 self.clearAllRpcData()
-                console.log('[colorBy reaction] RPC data cleared, fetching...')
+                console.debug('[colorBy reaction] RPC data cleared, fetching...')
                 refetchAllVisibleRegionsForColorChange()
               },
               { name: 'LinearAlignmentsDisplay:refetchOnColorByChange' },

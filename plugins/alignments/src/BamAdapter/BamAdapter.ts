@@ -164,27 +164,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  private callCount = 0
   async getMultiRegionFeatureDensityStats(
     regions: Region[],
     opts?: BaseOptions,
   ) {
-    this.callCount++
-    const callNum = this.callCount
-    console.log(`[BamAdapter.getMultiRegionFeatureDensityStats] CALL #${callNum} from:`, new Error().stack?.split('\n')[2])
-
     const { bam } = this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
-      const startTime = performance.now()
-      console.log(`[BamAdapter] CALL #${callNum} Estimating bytes for regions...`)
       const bytes = await bam.estimatedBytesForRegions(regions)
-      const elapsed = performance.now() - startTime
-      console.log(`[BamAdapter] CALL #${callNum} Byte estimation took ${elapsed.toFixed(1)}ms, bytes=${bytes}, limit=${fetchSizeLimit}`)
-
-      // If we already exceed the limit significantly, no need for exact count
-      // This short-circuits expensive I/O if the answer is clearly "too large"
+      console.debug(`[BamAdapter] bytes=${bytes}, limit=${fetchSizeLimit}`)
       return {
         bytes,
         fetchSizeLimit,

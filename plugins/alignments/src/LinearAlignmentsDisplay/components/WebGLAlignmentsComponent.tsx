@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
-import { Button, useTheme } from '@mui/material'
+import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -38,6 +38,7 @@ import {
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
   hitTestSashimiArc as hitTestSashimiArcFn,
+  INTERBASE_TYPES,
 } from './hitTesting'
 
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
@@ -191,7 +192,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     startY: 0,
     startHeight: 0,
   })
-
 
   const view = getContainingView(model) as LinearGenomeViewModel | undefined
   const viewId = view?.id
@@ -434,38 +434,44 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
 
     // Sync domain to model only when view pan/zoom changes
-    const disposeDomainSync = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
-      if (!initialized) {
-        return
-      }
+    const disposeDomainSync = autorun(
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
+        if (!initialized) {
+          return
+        }
 
-      const visibleBpRange = getVisibleBpRangeRef.current()
-      if (visibleBpRange) {
-        model.setCurrentBpRange(visibleBpRange)
-      }
-    }, { name: 'WebGLAlignmentsComponent:domainSync' })
+        const visibleBpRange = getVisibleBpRangeRef.current()
+        if (visibleBpRange) {
+          model.setCurrentBpRange(visibleBpRange)
+        }
+      },
+      { name: 'WebGLAlignmentsComponent:domainSync' },
+    )
 
     // Re-render when view or model visual state changes
-    const disposeRender = autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
-      if (!initialized) {
-        return
-      }
+    const disposeRender = autorun(
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
+        if (!initialized) {
+          return
+        }
 
-      const {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        currentRangeY: _ry,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        highlightedFeatureIndex: _hi,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        selectedFeatureIndex: _si,
-      } = model
+        const {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          currentRangeY: _ry,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          highlightedFeatureIndex: _hi,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          selectedFeatureIndex: _si,
+        } = model
 
-      renderNowRef.current()
-    }, { name: 'WebGLAlignmentsComponent:render' })
+        renderNowRef.current()
+      },
+      { name: 'WebGLAlignmentsComponent:render' },
+    )
 
     return () => {
       disposeDomainSync()
@@ -574,7 +580,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
     }
   }, [])
-
 
   // Refs for values used in wheel handler that we don't want as dependencies
   const maxYRef = useRef(maxY)
@@ -725,8 +730,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // Hit test to find feature at given canvas coordinates
   // Returns { id, index } or undefined
 
-
-
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (dragRef.current.isDragging) {
@@ -746,7 +749,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for indicator hits first (triangles at top of coverage)
       const indicatorResolved = resolveBlockForCanvasX(canvasX)
-      const indicatorHit = hitTestIndicatorFn(canvasX, canvasY, indicatorResolved, showCoverage, showInterbaseIndicators)
+      const indicatorHit = hitTestIndicatorFn(
+        canvasX,
+        canvasY,
+        indicatorResolved,
+        showCoverage,
+        showInterbaseIndicators,
+      )
       if (indicatorHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -768,10 +777,18 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           // Fallback: show basic counts when detailed bin data unavailable
           const { counts } = indicatorHit
           const total = counts.insertion + counts.softclip + counts.hardclip
-          const interbaseData: Record<string, { count: number; minLen: number; maxLen: number; avgLen: number }> = {}
-          for (const type of ['insertion', 'softclip', 'hardclip'] as const) {
+          const interbaseData: Record<
+            string,
+            { count: number; minLen: number; maxLen: number; avgLen: number }
+          > = {}
+          for (const type of INTERBASE_TYPES) {
             if (counts[type] > 0) {
-              interbaseData[type] = { count: counts[type], minLen: 0, maxLen: 0, avgLen: 0 }
+              interbaseData[type] = {
+                count: counts[type],
+                minLen: 0,
+                maxLen: 0,
+                avgLen: 0,
+              }
             }
           }
           const tooltipData = JSON.stringify({
@@ -794,7 +811,14 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for sashimi arc hits (splice junction arcs overlaid on coverage)
       const sashimiResolved = resolveBlockForCanvasX(canvasX)
-      const sashimiHit = hitTestSashimiArcFn(canvasX, canvasY, sashimiResolved, showCoverage, showSashimiArcs, coverageHeight)
+      const sashimiHit = hitTestSashimiArcFn(
+        canvasX,
+        canvasY,
+        sashimiResolved,
+        showCoverage,
+        showSashimiArcs,
+        coverageHeight,
+      )
       if (sashimiHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -820,7 +844,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Check for coverage area hits (grey bars + SNP segments)
-      const coverageHit = hitTestCoverageFn(canvasX, canvasY, resolveBlockForCanvasX(canvasX), showCoverage, coverageHeight)
+      const coverageHit = hitTestCoverageFn(
+        canvasX,
+        canvasY,
+        resolveBlockForCanvasX(canvasX),
+        showCoverage,
+        coverageHeight,
+      )
       if (coverageHit) {
         setOverCigarItem(true)
         model.setFeatureIdUnderMouse(undefined)
@@ -843,9 +873,18 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
           // Add basic SNP data from hit test if no detailed tooltip bin exists
           if (!tooltipBin && coverageHit.snps.length > 0) {
             for (const snp of coverageHit.snps) {
-              if (snp.base === 'A' || snp.base === 'C' || snp.base === 'G' || snp.base === 'T') {
+              if (
+                snp.base === 'A' ||
+                snp.base === 'C' ||
+                snp.base === 'G' ||
+                snp.base === 'T'
+              ) {
                 bin.snps[snp.base] = { count: snp.count, fwd: 0, rev: 0 }
-              } else if (snp.base === 'insertion' || snp.base === 'softclip' || snp.base === 'hardclip') {
+              } else if (
+                snp.base === 'insertion' ||
+                snp.base === 'softclip' ||
+                snp.base === 'hardclip'
+              ) {
                 bin.interbase[snp.base] = {
                   count: snp.count,
                   minLen: 0,
@@ -874,16 +913,54 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for CIGAR items (they're drawn on top of reads)
       const cigarResolvedBlock = resolveBlockForCanvasX(canvasX)
-      const cigarCoords2 = cigarResolvedBlock ? canvasToGenomicCoords(canvasX, canvasY, cigarResolvedBlock, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
-      const cigarHit = cigarResolvedBlock && cigarCoords2 ? hitTestCigarItemFn(cigarResolvedBlock, cigarCoords2, featureHeightSetting) : undefined
+      const cigarCoords2 = cigarResolvedBlock
+        ? canvasToGenomicCoords(
+            canvasX,
+            canvasY,
+            cigarResolvedBlock,
+            featureHeightSetting,
+            featureSpacing,
+            showCoverage,
+            coverageHeight,
+            model.currentRangeY,
+          )
+        : undefined
+      const cigarHit =
+        cigarResolvedBlock && cigarCoords2
+          ? hitTestCigarItemFn(
+              cigarResolvedBlock,
+              cigarCoords2,
+              featureHeightSetting,
+            )
+          : undefined
       if (cigarHit) {
         setOverCigarItem(true)
         model.setMouseoverExtraInformation(formatCigarTooltip(cigarHit))
 
         // Still do feature hit test to keep highlight on underlying read
         const featureResolved1 = resolveBlockForCanvasX(canvasX)
-        const featureCoords1 = featureResolved1 ? canvasToGenomicCoords(canvasX, canvasY, featureResolved1, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
-        const hit = featureResolved1 && featureCoords1 ? hitTestFeatureFn(canvasX, canvasY, featureResolved1, featureCoords1, featureHeightSetting) : undefined
+        const featureCoords1 = featureResolved1
+          ? canvasToGenomicCoords(
+              canvasX,
+              canvasY,
+              featureResolved1,
+              featureHeightSetting,
+              featureSpacing,
+              showCoverage,
+              coverageHeight,
+              model.currentRangeY,
+            )
+          : undefined
+        const hit =
+          featureResolved1 && featureCoords1
+            ? hitTestFeatureFn(
+                canvasX,
+                canvasY,
+                featureResolved1,
+                featureCoords1,
+                featureHeightSetting,
+              )
+            : undefined
         const featureId = hit?.id
         const featureIndex = hit?.index ?? -1
         model.setFeatureIdUnderMouse(featureId)
@@ -898,8 +975,28 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Fall back to feature hit testing
       const featureResolved2 = resolveBlockForCanvasX(canvasX)
-      const featureCoords2_2 = featureResolved2 ? canvasToGenomicCoords(canvasX, canvasY, featureResolved2, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
-      const hit = featureResolved2 && featureCoords2_2 ? hitTestFeatureFn(canvasX, canvasY, featureResolved2, featureCoords2_2, featureHeightSetting) : undefined
+      const featureCoords2_2 = featureResolved2
+        ? canvasToGenomicCoords(
+            canvasX,
+            canvasY,
+            featureResolved2,
+            featureHeightSetting,
+            featureSpacing,
+            showCoverage,
+            coverageHeight,
+            model.currentRangeY,
+          )
+        : undefined
+      const hit =
+        featureResolved2 && featureCoords2_2
+          ? hitTestFeatureFn(
+              canvasX,
+              canvasY,
+              featureResolved2,
+              featureCoords2_2,
+              featureHeightSetting,
+            )
+          : undefined
       const featureId = hit?.id
       const featureIndex = hit?.index ?? -1
 
@@ -943,7 +1040,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for indicator clicks first (triangles at top of coverage)
       const indicatorResolved = resolveBlockForCanvasX(canvasX)
-      const indicatorHit = hitTestIndicatorFn(canvasX, canvasY, indicatorResolved, showCoverage, showInterbaseIndicators)
+      const indicatorHit = hitTestIndicatorFn(
+        canvasX,
+        canvasY,
+        indicatorResolved,
+        showCoverage,
+        showInterbaseIndicators,
+      )
       if (indicatorHit) {
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
@@ -999,7 +1102,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for coverage SNP clicks (significant SNPs in coverage bars)
       const coverageResolved = resolveBlockForCanvasX(canvasX)
-      const coverageHit = hitTestCoverageFn(canvasX, canvasY, coverageResolved, showCoverage, coverageHeight)
+      const coverageHit = hitTestCoverageFn(
+        canvasX,
+        canvasY,
+        coverageResolved,
+        showCoverage,
+        coverageHeight,
+      )
       if (coverageHit) {
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
@@ -1073,11 +1182,34 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       // Check for CIGAR item clicks (they're on top of reads)
       const cigarResolved = resolveBlockForCanvasX(canvasX)
-      const cigarCoords = cigarResolved ? canvasToGenomicCoords(canvasX, canvasY, cigarResolved, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
-      const cigarHit = cigarResolved && cigarCoords ? hitTestCigarItemFn(cigarResolved, cigarCoords, featureHeightSetting) : undefined
+      const cigarCoords = cigarResolved
+        ? canvasToGenomicCoords(
+            canvasX,
+            canvasY,
+            cigarResolved,
+            featureHeightSetting,
+            featureSpacing,
+            showCoverage,
+            coverageHeight,
+            model.currentRangeY,
+          )
+        : undefined
+      const cigarHit =
+        cigarResolved && cigarCoords
+          ? hitTestCigarItemFn(cigarResolved, cigarCoords, featureHeightSetting)
+          : undefined
       if (cigarHit) {
         // Also get the feature hit to find the read ID
-        const featureHit = cigarResolved && cigarCoords ? hitTestFeatureFn(canvasX, canvasY, cigarResolved, cigarCoords, featureHeightSetting) : undefined
+        const featureHit =
+          cigarResolved && cigarCoords
+            ? hitTestFeatureFn(
+                canvasX,
+                canvasY,
+                cigarResolved,
+                cigarCoords,
+                featureHeightSetting,
+              )
+            : undefined
         const blockHit = resolveBlockForCanvasX(canvasX)
         const refName = blockHit?.refName ?? model.loadedRegion?.refName ?? ''
 
@@ -1115,11 +1247,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             featureData.length = cigarHit.length
           }
 
-          // Include read ID if available
-          if (featureHit?.id) {
-            featureData.readId = featureHit.id
-          }
-
           const featureWidget = session.addWidget(
             'BaseFeatureWidget',
             'baseFeature',
@@ -1135,8 +1262,28 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       const featureResolved = resolveBlockForCanvasX(canvasX)
-      const featureCoords = featureResolved ? canvasToGenomicCoords(canvasX, canvasY, featureResolved, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
-      const hit = featureResolved && featureCoords ? hitTestFeatureFn(canvasX, canvasY, featureResolved, featureCoords, featureHeightSetting) : undefined
+      const featureCoords = featureResolved
+        ? canvasToGenomicCoords(
+            canvasX,
+            canvasY,
+            featureResolved,
+            featureHeightSetting,
+            featureSpacing,
+            showCoverage,
+            coverageHeight,
+            model.currentRangeY,
+          )
+        : undefined
+      const hit =
+        featureResolved && featureCoords
+          ? hitTestFeatureFn(
+              canvasX,
+              canvasY,
+              featureResolved,
+              featureCoords,
+              featureHeightSetting,
+            )
+          : undefined
       if (hit) {
         model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
@@ -1163,8 +1310,28 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return
       }
       const contextResolved = resolveBlockForCanvasX(coords.canvasX)
-      const contextCoords = contextResolved ? canvasToGenomicCoords(coords.canvasX, coords.canvasY, contextResolved, featureHeightSetting, featureSpacing, showCoverage, coverageHeight, model.currentRangeY) : undefined
-      const hit = contextResolved && contextCoords ? hitTestFeatureFn(coords.canvasX, coords.canvasY, contextResolved, contextCoords, featureHeightSetting) : undefined
+      const contextCoords = contextResolved
+        ? canvasToGenomicCoords(
+            coords.canvasX,
+            coords.canvasY,
+            contextResolved,
+            featureHeightSetting,
+            featureSpacing,
+            showCoverage,
+            coverageHeight,
+            model.currentRangeY,
+          )
+        : undefined
+      const hit =
+        contextResolved && contextCoords
+          ? hitTestFeatureFn(
+              coords.canvasX,
+              coords.canvasY,
+              contextResolved,
+              contextCoords,
+              featureHeightSetting,
+            )
+          : undefined
       if (hit) {
         e.preventDefault()
         // For now, open feature widget on right-click (same as left-click)
@@ -1172,7 +1339,14 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         model.selectFeatureById(hit.id)
       }
     },
-    [model, resolveBlockForCanvasX, featureHeightSetting, featureSpacing, showCoverage, coverageHeight],
+    [
+      model,
+      resolveBlockForCanvasX,
+      featureHeightSetting,
+      featureSpacing,
+      showCoverage,
+      coverageHeight,
+    ],
   )
 
   // Coverage height resize handlers
@@ -1279,7 +1453,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Calculate Y position (center of feature)
-      const yPx = y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
+      const yPx =
+        y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
       // Skip if out of view vertically
       if (yPx < pileupYOffset || yPx > height) {
@@ -1315,7 +1490,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       const xPx = (pos - bpRange[0]) / bpPerPx
 
       // Calculate Y position (centered in feature)
-      const yPx = y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
+      const yPx =
+        y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
 
       // Skip if out of view vertically
       if (yPx < pileupYOffset || yPx > height) {
@@ -1463,38 +1639,29 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     model,
   ])
 
-  if (error) {
-    const isTooLarge = error.message.includes('too much data')
-    return (
-      <div style={{ padding: 16 }}>
-        <BlockMsg
-          severity="error"
-          message={error.message}
-          action={
-            isTooLarge && (
-              <Button
-                onClick={() => {
-                  if (model.featureDensityStats) {
-                    model.setFeatureDensityStatsLimit(model.featureDensityStats)
-                    model.reload()
-                  }
-                }}
-                size="small"
-                color="inherit"
-              >
-                Force load
-              </Button>
-            )
-          }
-        />
-      </div>
-    )
-  }
+  // Always render the canvas so the WebGL renderer stays attached to the
+  // same DOM element. Overlay error/too-large messages on top instead of
+  // replacing the canvas (which would leave the renderer pointing at a
+  // detached node after Force Load).
+  const showBanner = !!error || model.regionTooLarge
 
-  if (model.regionTooLarge) {
+  if (showBanner) {
     return (
-      <div style={{ padding: 16 }}>
-        <TooLargeMessage model={model} />
+      <div
+        ref={measureRef}
+        style={{ position: 'relative', width: '100%', height }}
+      >
+        <canvas
+          ref={canvasRef}
+          width={0}
+          height={0}
+          style={{ display: 'none' }}
+        />
+        {error ? (
+          <BlockMsg severity="error" message={error.message} />
+        ) : (
+          <TooLargeMessage model={model} />
+        )}
       </div>
     )
   }
@@ -1611,7 +1778,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         />
       ) : null}
 
-      <LoadingOverlay statusMessage={statusMessage} isVisible={model.showLoading} />
+      <LoadingOverlay
+        statusMessage={statusMessage}
+        isVisible={model.showLoading}
+      />
     </div>
   )
 })

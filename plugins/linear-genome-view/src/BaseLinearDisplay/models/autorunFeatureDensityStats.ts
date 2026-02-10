@@ -1,5 +1,6 @@
 import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { untracked } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
 import type { BaseLinearDisplayModel } from '../model.ts'
@@ -12,10 +13,18 @@ import type { BaseLinearDisplayModel } from '../model.ts'
  * - bytes: estimated data size to fetch (for byte-based limits)
  * - fetchSizeLimit: adapter-defined max bytes (optional)
  *
- * Optimization: Once we have stats with featureDensity, we don't re-fetch
- * on zoom changes. Stats are estimates and "good enough" across zoom levels.
- * This prevents redundant RPC calls while still protecting against loading
- * too much data.
+ * Tracked observables (trigger re-runs on zoom/scroll):
+ *   view.initialized, view.staticBlocks.contentBlocks, self.error
+ *
+ * featureDensityStats is read via untracked() so that setting new stats
+ * does NOT trigger a re-run (which would cause an infinite loop with
+ * byte-based adapters like BAM/CRAM that return bytes but no featureDensity).
+ *
+ * For featureDensity-based adapters: stats are cached forever (featureDensity
+ * scales naturally with bpPerPx in the regionTooLarge getter).
+ *
+ * For byte-based adapters: stats are re-fetched on view changes so the byte
+ * estimate stays current as the user zooms in/out.
  */
 export default async function autorunFeatureDensityStats(
   self: BaseLinearDisplayModel,
@@ -30,19 +39,26 @@ export default async function autorunFeatureDensityStats(
       !view.staticBlocks.contentBlocks.length ||
       self.error
     ) {
+      console.debug('[autorunFeatureDensityStats] skipping: initialized=', view.initialized, 'blocks=', view.staticBlocks.contentBlocks.length, 'error=', !!self.error)
       return
     }
 
-    // don't re-estimate even if zoom level changes,
-    // jbrowse 1-style assume it's sort of representative.
-    // check for existence of stats (not just featureDensity) to avoid
-    // infinite loop with adapters that return bytes but no featureDensity
-    if (self.featureDensityStats !== undefined) {
+    // Read featureDensityStats WITHOUT tracking to avoid infinite loop.
+    // The autorun re-runs when the VIEW changes (blocks/zoom), not when
+    // stats change.
+    const currentStats = untracked(() => self.featureDensityStats)
+
+    // featureDensity-based adapters: cache forever, featureDensity scales
+    // with bpPerPx automatically in the regionTooLarge getter
+    if (currentStats?.featureDensity !== undefined) {
+      console.debug('[autorunFeatureDensityStats] have featureDensity, skipping')
       return
     }
 
-    self.clearFeatureDensityStats()
-    console.debug('[autorunFeatureDensityStats] fetching stats')
+    // Byte-based adapters (or first fetch): re-fetch for current view.
+    // Clear the cached promise so getFeatureDensityStats makes a fresh RPC call.
+    self.setFeatureDensityStatsP(undefined)
+    console.debug('[autorunFeatureDensityStats] fetching stats for', view.staticBlocks.contentBlocks.length, 'blocks')
     const stats = await self.getFeatureDensityStats()
     if (isAlive(self)) {
       console.debug('[autorunFeatureDensityStats] got stats', stats)

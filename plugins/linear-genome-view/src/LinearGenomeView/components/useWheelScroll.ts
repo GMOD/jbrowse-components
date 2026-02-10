@@ -55,9 +55,14 @@ export function useWheelScroll(
     let samples = [] as number[]
     const curr = ref.current
 
-    // if ctrl is held down, zoom in with y-scroll, else scroll horizontally
-    // with x-scroll
+    // When scrollZoom is off: ctrl+wheel zooms, regular wheel scrolls
+    // When scrollZoom is on: regular wheel zooms, ctrl+wheel scrolls page (inverted)
     function onWheel(event: WheelEvent) {
+      // When scrollZoom is on and ctrl is held, allow default page scroll
+      if (event.ctrlKey && model.scrollZoom) {
+        return
+      }
+
       if (event.ctrlKey) {
         event.preventDefault()
         // Dynamically detect pinch-to-zoom vs wheel scroll by examining deltaY magnitude.

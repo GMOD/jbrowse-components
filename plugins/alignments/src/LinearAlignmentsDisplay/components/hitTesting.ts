@@ -74,6 +74,50 @@ export interface CigarCoords {
   yWithinRow: number
 }
 
+// Constants for interbase types
+export const INTERBASE_TYPES = ['insertion', 'softclip', 'hardclip'] as const
+export type InterbaseType = (typeof INTERBASE_TYPES)[number]
+
+/**
+ * Helper: Calculate base pairs per pixel for a block
+ */
+function calculateBpPerPx(bpRange: [number, number], blockWidth: number): number {
+  return (bpRange[1] - bpRange[0]) / blockWidth
+}
+
+/**
+ * Helper: Convert canvas X coordinate to genomic position
+ */
+function canvasXToGenomicPosition(
+  canvasX: number,
+  bpRange: [number, number],
+  blockStartPx: number,
+  bpPerPx: number,
+): number {
+  return bpRange[0] + (canvasX - blockStartPx) * bpPerPx
+}
+
+/**
+ * Helper: Convert canvas X coordinate to position offset within region
+ */
+function canvasXToPosOffset(
+  canvasX: number,
+  resolved: ResolvedBlock,
+): { genomicPos: number; posOffset: number; bpPerPx: number } {
+  const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
+  const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
+  const genomicPos = canvasXToGenomicPosition(canvasX, bpRange, blockStartPx, bpPerPx)
+  const posOffset = genomicPos - rpcData.regionStart
+  return { genomicPos, posOffset, bpPerPx }
+}
+
+/**
+ * Helper: Map interbase color type (1-3) to type name
+ */
+function getInterbaseTypeName(colorType: number): InterbaseType {
+  return INTERBASE_TYPES[(colorType - 1) % 3] ?? 'insertion'
+}
+
 /**
  * Hit test for a feature (read/alignment) at the given canvas coordinates.
  * Returns feature ID and index if hit, undefined otherwise.
@@ -295,10 +339,7 @@ export function hitTestCoverage(
   }
 
   const blockData = resolved.rpcData
-  const { bpRange, blockStartPx, blockWidth } = resolved
-  const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-  const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-  const posOffset = genomicPos - blockData.regionStart
+  const { posOffset } = canvasXToPosOffset(canvasX, resolved)
 
   const {
     coverageDepths,
@@ -370,7 +411,6 @@ export function hitTestCoverage(
     softclip: 0,
     hardclip: 0,
   }
-  const noncovNames = ['insertion', 'softclip', 'hardclip']
 
   for (let i = 0; i < numNoncovSegments; i++) {
     const noncovPos = noncovPositions[i]
@@ -383,10 +423,10 @@ export function hitTestCoverage(
         colorType >= 1 &&
         colorType <= 3
       ) {
-        const typeName = noncovNames[colorType - 1]!
+        const typeName = getInterbaseTypeName(colorType)
         // Convert normalized height back to count using noncovMaxCount
         const count = Math.round(height * blockData.noncovMaxCount)
-        noncovCounts[typeName]! += count
+        noncovCounts[typeName] += count
       }
     }
   }
@@ -427,13 +467,7 @@ export function hitTestIndicator(
   }
 
   const blockData = resolved.rpcData
-  const { bpRange, blockStartPx, blockWidth } = resolved
-  const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-
-  // Calculate genomic position from canvas coordinates
-  const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
-  const posOffset = genomicPos - blockData.regionStart
-
+  const { posOffset, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
   const hitToleranceBp = Math.max(1, bpPerPx * 5)
 
   const {
@@ -451,12 +485,10 @@ export function hitTestIndicator(
     const pos = indicatorPositions[i]
     if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
       const colorType = indicatorColorTypes[i]
-      const types = ['insertion', 'softclip', 'hardclip'] as const
-      const indicatorType = types[(colorType ?? 1) - 1] ?? 'insertion'
+      const indicatorType = getInterbaseTypeName(colorType ?? 1)
 
       // Collect counts for all interbase types at this position
       const counts = { insertion: 0, softclip: 0, hardclip: 0 }
-      const noncovNames = ['insertion', 'softclip', 'hardclip'] as const
 
       for (let j = 0; j < numNoncovSegments; j++) {
         const noncovPos = noncovPositions[j]
@@ -469,7 +501,7 @@ export function hitTestIndicator(
             noncovColorType >= 1 &&
             noncovColorType <= 3
           ) {
-            const typeName = noncovNames[noncovColorType - 1]!
+            const typeName = getInterbaseTypeName(noncovColorType)
             const count = Math.round(height * blockData.noncovMaxCount)
             counts[typeName] += count
           }
