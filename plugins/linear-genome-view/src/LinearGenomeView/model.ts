@@ -1413,14 +1413,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * Returns the currently visible content blocks with regionNumber guaranteed.
-         * ContentBlocks from calculateDynamicBlocks always have regionNumber set.
-         * Used by WebGL displays for per-region data fetching.
+         * Returns the currently visible content blocks with screen pixel
+         * positions and regionNumber guaranteed.
+         * Used by WebGL displays for per-region data fetching and rendering.
          */
         get visibleRegions() {
-          return this.dynamicBlocks.contentBlocks as Array<
-            BaseBlock & { regionNumber: number }
-          >
+          return this.dynamicBlocks.contentBlocks.map(block => ({
+            refName: block.refName,
+            start: block.start,
+            end: block.end,
+            assemblyName: block.assemblyName,
+            reversed: block.reversed,
+            regionNumber: block.regionNumber!,
+            offsetPx: block.offsetPx,
+            widthPx: block.widthPx,
+            screenStartPx: block.offsetPx - self.offsetPx,
+            screenEndPx: block.offsetPx - self.offsetPx + block.widthPx,
+          }))
         },
 
         /**
@@ -1852,10 +1861,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.displayedRegions.length > 0
           ? this.pxToBp(self.width / 2)
           : undefined
-      },
-
-      get visibleRegions() {
-        return self.dynamicBlocks.contentBlocks
       },
 
       /**
