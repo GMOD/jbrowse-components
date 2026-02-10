@@ -1562,6 +1562,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.5.0
         version: 5.5.0(mobx@6.15.0)
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:^
+        version: link:../canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../circular-view

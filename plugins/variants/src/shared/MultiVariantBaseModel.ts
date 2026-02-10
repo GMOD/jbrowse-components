@@ -6,9 +6,11 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
-  SimpleFeature,
   getContainingTrack,
+  getContainingView,
   getSession,
+  isSelectionContainer,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
@@ -42,7 +44,7 @@ import type {
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
@@ -181,6 +183,18 @@ export default function MultiVariantBaseModelF(
       /**
        * #volatile
        */
+      showLegend: true,
+      /**
+       * #volatile
+       */
+      regionTooLarge: false,
+      /**
+       * #volatile
+       */
+      regionTooLargeReason: '',
+      /**
+       * #volatile
+       */
       sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
@@ -242,21 +256,15 @@ export default function MultiVariantBaseModelF(
         )
       },
 
-      /**
-       * #getter
-       * Returns the renderer configuration from config
-       */
-      get rendererConfig() {
-        const configBlob = getConf(self, ['renderer']) || {}
-        return configBlob as Omit<typeof configBlob, symbol>
+      get featureWidgetType() {
+        return {
+          type: 'VariantFeatureWidget',
+          id: 'variantFeature',
+        }
       },
 
-      /**
-       * #getter
-       * Returns the renderer type name from config
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
+      get featureDensityStatsReadyAndRegionNotTooLarge() {
+        return !self.regionTooLarge
       },
     }))
     .actions(self => ({
@@ -265,6 +273,54 @@ export default function MultiVariantBaseModelF(
        */
       setJexlFilters(f?: string[]) {
         self.jexlFilters = cast(f)
+      },
+      /**
+       * #action
+       */
+      setShowLegend(s: boolean) {
+        self.showLegend = s
+      },
+      /**
+       * #action
+       */
+      setRegionTooLarge(val: boolean, reason?: string) {
+        self.regionTooLarge = val
+        self.regionTooLargeReason = reason ?? ''
+      },
+      /**
+       * #action
+       */
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSelectionContainer(session)) {
+          session.setSelection(feature)
+        }
+        if (isSessionModelWithWidgets(session)) {
+          const { rpcManager } = session
+          const sessionId = getRpcSessionId(self)
+          const track = getContainingTrack(self)
+          const view = getContainingView(self)
+          const adapterConfig = getConf(track, 'adapter')
+          const { type, id } = self.featureWidgetType
+          rpcManager
+            .call(sessionId, 'CoreGetMetadata', { adapterConfig })
+            .then(descriptions => {
+              if (isAlive(self)) {
+                session.showWidget(
+                  session.addWidget(type, id, {
+                    featureData: feature.toJSON(),
+                    view,
+                    track,
+                    descriptions,
+                  }),
+                )
+              }
+            })
+            .catch((e: unknown) => {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            })
+        }
       },
       /**
        * #action
@@ -642,7 +698,6 @@ export default function MultiVariantBaseModelF(
           return {
             ...superRenderProps(),
             ...getParentRenderProps(self),
-            config: self.rendererConfig,
           }
         },
       }
@@ -889,30 +944,13 @@ export default function MultiVariantBaseModelF(
       renderingProps() {
         return {
           displayModel: self,
-          async onFeatureClick(_: React.MouseEvent, featureId: string) {
-            const session = getSession(self)
-            const { rpcManager } = session
-            try {
-              const sessionId = getRpcSessionId(self)
-              const track = getContainingTrack(self)
-
-              const { feature } = (await rpcManager.call(
-                sessionId,
-                'MultiVariantGetFeatureDetails',
-                {
-                  featureId,
-                  sessionId,
-                  trackInstanceId: track.id,
-                  rendererType: self.rendererTypeName,
-                },
-              )) as { feature: SimpleFeatureSerialized | undefined }
-
-              if (isAlive(self) && feature) {
-                self.selectFeature(new SimpleFeature(feature))
+          onFeatureClick(_: React.MouseEvent, featureId: string) {
+            const features = self.featuresVolatile
+            if (features) {
+              const feature = features.find(f => f.id() === featureId)
+              if (feature && isAlive(self)) {
+                self.selectFeature(feature)
               }
-            } catch (e) {
-              console.error(e)
-              session.notifyError(`${e}`, e)
             }
           },
         }

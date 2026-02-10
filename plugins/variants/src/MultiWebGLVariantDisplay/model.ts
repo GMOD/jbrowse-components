@@ -34,9 +34,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get DisplayMessageComponent() {
         return WebGLVariantComponent
       },
-      get rendererTypeName() {
-        return 'MultiVariantRenderer'
-      },
       get featureWidgetType() {
         return {
           type: 'VariantFeatureWidget',

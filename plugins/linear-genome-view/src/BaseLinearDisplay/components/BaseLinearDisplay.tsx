@@ -41,7 +41,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
     showTooltipsEnabled,
   } = model
   const theme = useTheme()
-  const legendItems = model.legendItems(theme)
+  const legendItems = model.legendItems?.(theme) ?? []
   return (
     <div
       ref={ref}

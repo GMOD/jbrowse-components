@@ -1,4 +1,5 @@
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import { Suspense } from 'react'
+
 import { observer } from 'mobx-react'
 
 import LegendBar from './MultiVariantLegendBar.tsx'
@@ -6,8 +7,13 @@ import TreeSidebar from './TreeSidebar.tsx'
 
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
 
+type Model = MultiVariantBaseModel & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  DisplayMessageComponent: React.ComponentType<any>
+}
+
 interface ScrollableVariantContainerProps {
-  model: MultiVariantBaseModel
+  model: Model
   topOffset?: number
   testId?: string
 }
@@ -44,7 +50,9 @@ const ScrollableVariantContainer = observer(
             width: '100%',
           }}
         >
-          <BaseLinearDisplayComponent model={model} />
+          <Suspense fallback={null}>
+            <model.DisplayMessageComponent model={model} />
+          </Suspense>
         </div>
       </div>
     )

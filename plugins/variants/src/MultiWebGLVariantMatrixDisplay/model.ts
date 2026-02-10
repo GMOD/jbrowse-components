@@ -38,9 +38,6 @@ export default function stateModelFactory(
       get prefersOffset() {
         return true
       },
-      get rendererTypeName() {
-        return 'MultiVariantRenderer'
-      },
       get featureWidgetType() {
         return {
           type: 'VariantFeatureWidget',

@@ -1,6 +1,5 @@
-import { useRef } from 'react'
+import { Suspense, useRef } from 'react'
 
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshair from './MultiVariantCrosshairs.tsx'
@@ -10,11 +9,15 @@ import { useMouseTracking } from '../hooks/useMouseTracking.ts'
 
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
 
+type Model = MultiVariantBaseModel & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  DisplayMessageComponent: React.ComponentType<any>
+}
+
 const MultiVariantBaseDisplayComponent = observer(
-  function MultiVariantBaseDisplayComponent(props: {
-    model: MultiVariantBaseModel
-  }) {
+  function MultiVariantBaseDisplayComponent(props: { model: Model }) {
     const { model } = props
+    const { DisplayMessageComponent } = model
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
@@ -25,7 +28,9 @@ const MultiVariantBaseDisplayComponent = observer(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <BaseLinearDisplayComponent {...props} />
+        <Suspense fallback={null}>
+          <DisplayMessageComponent model={model} />
+        </Suspense>
         <TreeSidebar model={model} />
         <LegendBar model={model} />
 

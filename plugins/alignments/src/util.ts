@@ -14,7 +14,7 @@ import type { IAutorunOptions } from 'mobx'
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {
   const tags = feature.get('tags')
-  return tags[tag] ?? tags[alt]
+  return tags !== undefined ? (tags[tag] ?? tags[alt]) : undefined
 }
 
 // orientation definitions from igv.js, see also
