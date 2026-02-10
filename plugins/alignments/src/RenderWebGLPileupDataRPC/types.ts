@@ -70,6 +70,20 @@ export interface CoverageTooltipBin {
   >
 }
 
+// Internal type for modification data during processing
+export interface ModificationEntry {
+  featureId: string
+  position: number
+  base: string
+  modType: string
+  isSimplex: boolean
+  strand: number
+  r: number
+  g: number
+  b: number
+  prob: number
+}
+
 export interface WebGLPileupDataResult {
   // Integer reference point for all positions (floor of view region start).
   // All position data in this result is stored as integer offsets from regionStart.

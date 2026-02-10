@@ -379,24 +379,18 @@ export class WebGLMultiWiggleRenderer {
         allPositions,
         2,
       ),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.xyplotProgram,
         'a_score',
         allScores,
         1,
       ),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.xyplotProgram,
         'a_rowIndex',
         allRowIndices,
         1,
       ),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.xyplotProgram,
         'a_color',
@@ -412,32 +406,24 @@ export class WebGLMultiWiggleRenderer {
 
     glBuffers.push(
       ...this.uploadUintBuffer(this.lineProgram, 'a_position', allPositions, 2),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.lineProgram,
         'a_score',
         allScores,
         1,
       ),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.lineProgram,
         'a_prevScore',
         allPrevScores,
         1,
       ),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.lineProgram,
         'a_rowIndex',
         allRowIndices,
         1,
       ),
-    )
-    glBuffers.push(
       ...this.uploadBufferReturnHandles(
         this.lineProgram,
         'a_color',

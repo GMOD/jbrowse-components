@@ -10,7 +10,7 @@
 
 import { splitPositionWithFrac } from './shaders/index.ts'
 
-import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
  * CloudRenderer orchestrates rendering of cloud mode visualization.

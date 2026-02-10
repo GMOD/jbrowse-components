@@ -639,7 +639,7 @@ function stateModelFactoryNoFeatureDensity() {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgDisplayOptions) {
+      async renderSvg(opts: ExportSvgDisplayOptions): Promise<JSX.Element> {
         const { renderBaseLinearDisplaySvg } = await import('./renderSvg.tsx')
         return renderBaseLinearDisplaySvg(self as BaseLinearDisplayModel, opts)
       },

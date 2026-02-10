@@ -131,7 +131,6 @@ const FloatingLabels = observer(function FloatingLabels({
   const { offsetPx } = view
   const featureLabels = model.floatingLabelData
 
-  // @ts-expect-error
   const { onFeatureClick, onFeatureContextMenu, onMouseMove } =
     model.renderingProps()
 

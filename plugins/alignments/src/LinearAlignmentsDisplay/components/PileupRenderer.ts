@@ -9,7 +9,7 @@
 
 import { splitPositionWithFrac } from './shaders/index.ts'
 
-import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 import type { ColorPalette } from './shaders/index.ts'
 
 /**

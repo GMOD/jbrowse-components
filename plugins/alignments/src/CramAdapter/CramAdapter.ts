@@ -216,7 +216,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   async getMultiRegionFeatureDensityStats(regions: Region[]) {
     const bytes = await this.bytesForRegions(regions)
     const fetchSizeLimit = this.getConf('fetchSizeLimit')
-    console.debug(`[CramAdapter] bytes=${bytes}, limit=${fetchSizeLimit}`)
     return {
       bytes,
       fetchSizeLimit,

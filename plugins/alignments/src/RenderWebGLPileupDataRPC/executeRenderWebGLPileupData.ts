@@ -1515,7 +1515,7 @@ export async function executeRenderWebGLPileupData({
       modificationColors[i * 4] = m.r
       modificationColors[i * 4 + 1] = m.g
       modificationColors[i * 4 + 2] = m.b
-      modificationColors[i * 4 + 3] = m.a
+      modificationColors[i * 4 + 3] = Math.round(m.prob * 255)
     }
 
     return {
@@ -1615,6 +1615,17 @@ export async function executeRenderWebGLPileupData({
           maxLen: number
           avgLen: number
           topSeq?: string
+        }
+      >
+      modifications?: Record<
+        string,
+        {
+          count: number
+          fwd: number
+          rev: number
+          probabilityTotal: number
+          color: string
+          name: string
         }
       >
     }
@@ -1873,6 +1884,7 @@ export async function executeRenderWebGLPileupData({
           depth,
           snps: {},
           interbase: {},
+          modifications: {},
         }
         tooltipData.set(posOffset, bin)
       }

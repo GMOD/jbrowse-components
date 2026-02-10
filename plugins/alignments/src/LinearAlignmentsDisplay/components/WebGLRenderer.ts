@@ -63,10 +63,6 @@ import {
   SNP_COVERAGE_VERTEX_SHADER,
   SOFTCLIP_FRAGMENT_SHADER,
   SOFTCLIP_VERTEX_SHADER,
-  arcColorPalette,
-  arcLineColorPalette,
-  sashimiColorPalette,
-  splitPositionWithFrac,
 } from './shaders/index.ts'
 
 import type { ColorPalette } from './shaders/index.ts'

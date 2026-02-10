@@ -12,6 +12,8 @@
  * for tooltip and selection purposes.
  */
 
+import { getInsertionRectWidthPx } from '../model.ts'
+
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
 
 // Types for CIGAR item hit testing
@@ -245,7 +247,6 @@ export function hitTestCigarItem(
       const len = insertionLengths[i] ?? 0
       const pxPerBp = 1 / bpPerPx
       // Get visual width from helper, add 2px buffer for easier clicking
-      const { getInsertionRectWidthPx } = require('../model')
       const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
       const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
       if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
@@ -383,6 +384,7 @@ export function hitTestCoverage(
     noncovHeights,
     noncovColorTypes,
     numNoncovSegments,
+    noncovMaxCount,
   } = blockData
 
   // Integer position for exact matching
@@ -429,12 +431,13 @@ export function hitTestCoverage(
         colorType !== undefined &&
         height !== undefined &&
         colorType >= 1 &&
-        colorType <= 3
+        colorType <= 3 &&
+        noncovMaxCount !== undefined
       ) {
         const typeName = getInterbaseTypeName(colorType)
         // Convert normalized height back to count using noncovMaxCount
-        const count = Math.round(height * blockData.noncovMaxCount)
-        noncovCounts[typeName] += count
+        const count = Math.round(height * noncovMaxCount)
+        noncovCounts[typeName] = (noncovCounts[typeName] ?? 0) + count
       }
     }
   }

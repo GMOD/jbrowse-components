@@ -12,11 +12,9 @@ import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { fillColor } from '../../shared/color.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 import {
   YSCALEBAR_LABEL_OFFSET,
-  getInsertionRectWidthPx,
   getInsertionType,
 } from '../model.ts'
 import BlockMsg from './BlockMsg.tsx'
@@ -31,7 +29,7 @@ import {
   formatCigarTooltip,
   getCanvasCoords,
   uploadRegionDataToGPU,
-} from './alignmentComponentUtils'
+} from './alignmentComponentUtils.ts'
 import {
   INTERBASE_TYPES,
   hitTestCigarItem as hitTestCigarItemFn,
@@ -39,22 +37,14 @@ import {
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
   hitTestSashimiArc as hitTestSashimiArcFn,
-} from './hitTesting'
+} from './hitTesting.ts'
 
+import type { ResolvedBlock } from './hitTesting.ts'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
-import type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
-import type {
-  CigarHitResult,
-  CoverageHitResult,
-  IndicatorHitResult,
-  ResolvedBlock,
-  SashimiArcHitResult,
-} from './hitTesting'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { Theme } from '@mui/material'
 
 interface FeatureInfo {
   id: string
@@ -220,7 +210,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showModifications,
     showSashimiArcs,
     renderingMode,
-    visibleRegions,
   } = model
 
   // Use measured dimensions from ResizeObserver (preferred, passive)
@@ -1146,17 +1135,19 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
             if (tooltipBin) {
               for (const [base, entry] of Object.entries(tooltipBin.snps)) {
-                if (entry) {
+                const snpEntry = entry as { count: number; fwd: number; rev: number } | undefined
+                if (snpEntry) {
                   featureData[`SNP ${base.toUpperCase()}`] =
-                    `${entry.count}/${tooltipBin.depth} (${entry.fwd}(+) ${entry.rev}(-))`
+                    `${snpEntry.count}/${tooltipBin.depth} (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
                 }
               }
               for (const [type, entry] of Object.entries(
                 tooltipBin.interbase,
               )) {
-                if (entry) {
+                const interbaseEntry = entry as { count: number; minLen: number; maxLen: number; avgLen: number; topSeq?: string } | undefined
+                if (interbaseEntry) {
                   featureData[type] =
-                    `${entry.count} (${entry.minLen}-${entry.maxLen}bp)`
+                    `${interbaseEntry.count} (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
                 }
               }
             } else {
@@ -1299,6 +1290,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       featureSpacing,
       showCoverage,
       coverageHeight,
+      showInterbaseIndicators,
       model,
     ],
   )

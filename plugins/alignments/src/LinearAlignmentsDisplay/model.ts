@@ -605,7 +605,7 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LGV
         const displayedRegions = view.displayedRegions
         for (const [regionNumber, rpcData] of self.rpcDataMap) {
-          if (!rpcData?.readIds) {
+          if (!rpcData.readIds) {
             continue
           }
           const idx = rpcData.readIds.indexOf(featureId)
@@ -706,8 +706,15 @@ export default function stateModelFactory(
         if (data) {
           next.set(regionNumber, data)
           // Update visible modifications from newly detected modifications
-          if (data.detectedModifications?.length > 0) {
-            self.updateVisibleModifications(data.detectedModifications)
+          for (const modType of data.detectedModifications) {
+            if (!self.visibleModifications.has(modType)) {
+              self.visibleModifications.set(modType, {
+                type: modType,
+                base: '',
+                strand: '',
+                color: getColorForModification(modType),
+              })
+            }
           }
         } else {
           next.delete(regionNumber)
@@ -748,7 +755,7 @@ export default function stateModelFactory(
       },
 
       setStatusMessage(msg?: string) {
-        self.statusMessage = msg
+        self.statusMessage = msg ?? ''
       },
 
       setError(error: Error | null) {
@@ -871,7 +878,7 @@ export default function stateModelFactory(
         self.renderingMode = mode
         if (mode === 'pileup') {
           self.colorBySetting = { type: 'normal' }
-        } else if (mode === 'arcs' || mode === 'cloud') {
+        } else {
           self.colorBySetting = { type: 'insertSizeAndOrientation' }
         }
       },
@@ -1026,9 +1033,7 @@ export default function stateModelFactory(
         self.setRpcData(regionNumber, result)
         // Mark modifications as ready since we detected what's available
         self.setModificationsReady(true)
-        if (result.simplexModifications) {
-          self.setSimplexModifications(result.simplexModifications)
-        }
+        self.setSimplexModifications(result.simplexModifications)
       }
 
       async function fetchArcsData(

@@ -700,7 +700,7 @@ export default function stateModelFactory(pm: PluginManager) {
               URL.revokeObjectURL(url)
               canvas.toBlob(blob => {
                 if (blob) {
-                  saveAs(blob, opts.filename || 'image.png')
+                  saveAs(blob, opts.filename || 'image.png', { autoBom: false })
                   resolve()
                 } else {
                   reject(
@@ -721,6 +721,7 @@ export default function stateModelFactory(pm: PluginManager) {
           saveAs(
             new Blob([html], { type: 'image/svg+xml' }),
             opts.filename || 'image.svg',
+            { autoBom: false },
           )
         }
       },

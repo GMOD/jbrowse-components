@@ -1,7 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { FlatbushEntry } from './flatbushType.ts'
-import type { FlatbushItem } from '../PileupRenderer/types.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
 /**
@@ -36,7 +35,7 @@ export function LinearReadDisplayWithLayoutMixin() {
        * #volatile
        * Array of mismatch data for Flatbush spatial index
        */
-      mismatchItems: [] as FlatbushItem[],
+      mismatchItems: [] as FlatbushEntry[],
     }))
     .actions(self => ({
       /**
@@ -71,7 +70,7 @@ export function LinearReadDisplayWithLayoutMixin() {
        * #action
        * Set the mismatch data for Flatbush index
        */
-      setMismatchItems(items: FlatbushItem[]) {
+      setMismatchItems(items: FlatbushEntry[]) {
         self.mismatchItems = items
       },
     }))

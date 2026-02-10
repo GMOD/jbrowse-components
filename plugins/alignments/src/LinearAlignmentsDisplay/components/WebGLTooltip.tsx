@@ -75,7 +75,6 @@ function InterbaseTooltip({
   interbaseData,
   total,
   location,
-  tdClass,
 }: {
   interbaseData: Record<
     string,

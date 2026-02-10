@@ -20,7 +20,7 @@ import {
   splitPositionWithFrac,
 } from './shaders/index.ts'
 
-import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
  * ArcsRenderer orchestrates rendering of arc geometry including bezier curves,

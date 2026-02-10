@@ -173,7 +173,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     if (bam.index) {
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
       const bytes = await bam.estimatedBytesForRegions(regions)
-      console.debug(`[BamAdapter] bytes=${bytes}, limit=${fetchSizeLimit}`)
       return {
         bytes,
         fetchSizeLimit,
