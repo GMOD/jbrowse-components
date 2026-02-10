@@ -24,11 +24,14 @@ export function getId(id: string, index: string | number) {
     .join('-')
 }
 
-export async function getFeatureDensityStatsPre(self: {
-  adapterConfig?: AnyConfigurationModel
-  setStatusMessage: (arg: string) => void
-  effectiveRpcDriverName?: string
-}) {
+export async function getFeatureDensityStatsPre(
+  self: {
+    adapterConfig?: AnyConfigurationModel
+    setStatusMessage: (arg: string) => void
+    effectiveRpcDriverName?: string
+  },
+  stopToken?: string,
+) {
   const view = getContainingView(self) as LinearGenomeViewModel
   const regions = view.staticBlocks.contentBlocks
 
@@ -45,6 +48,7 @@ export async function getFeatureDensityStatsPre(self: {
       sessionId,
       regions,
       adapterConfig,
+      stopToken,
       rpcDriverName: effectiveRpcDriverName,
       statusCallback: (message: string) => {
         if (isAlive(self)) {

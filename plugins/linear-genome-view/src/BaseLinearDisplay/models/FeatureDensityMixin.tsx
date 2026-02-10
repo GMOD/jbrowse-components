@@ -3,7 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
+import createFeatureDensityStatsAutorun from './autorunFeatureDensityStats.ts'
 import { getDisplayStr, getFeatureDensityStatsPre } from './util.ts'
 import TooLargeMessage from '../components/TooLargeMessage.tsx'
 
@@ -13,7 +13,7 @@ import type { Region } from '@jbrowse/core/util/types'
 
 type LGV = LinearGenomeViewModel
 
-type AutorunSelf = Parameters<typeof autorunFeatureDensityStats>[0]
+type AutorunSelf = Parameters<typeof createFeatureDensityStatsAutorun>[0]
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
 /**
@@ -109,8 +109,8 @@ export default function FeatureDensityMixin() {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() =>
-            autorunFeatureDensityStats(self as unknown as AutorunSelf),
+          autorun(
+            createFeatureDensityStatsAutorun(self as unknown as AutorunSelf),
           ),
         )
       },

@@ -54,24 +54,23 @@ const CollapseIntronsDialog = lazy(
 type LGV = LinearGenomeViewModel
 
 /**
- * #stateModel BaseLinearDisplay
+ * #stateModel BaseLinearDisplayNoFeatureDensity
  * #category display
  *
- * BaseLinearDisplay is used as the basis for many linear genome view tracks.
- * It is block based, and can use 'static blocks' or 'dynamic blocks'
+ * Core BaseLinearDisplay without FeatureDensityMixin. Use this as a base for
+ * displays that manage their own "region too large" logic (e.g.
+ * LinearAlignmentsDisplay which does inline byte estimation).
  *
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [FeatureDensityMixin](../featuredensitymixin)
  */
-function stateModelFactory() {
+function stateModelFactoryNoFeatureDensity() {
   return types
     .compose(
-      'BaseLinearDisplay',
+      'BaseLinearDisplayNoFeatureDensity',
       BaseDisplay,
       TrackHeightMixin(),
-      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -437,7 +436,6 @@ function stateModelFactory() {
          */
         async reload() {
           self.setError()
-          self.clearFeatureDensityStats()
           for (const val of self.blockState.values()) {
             val.doReload()
           }
@@ -632,7 +630,7 @@ function stateModelFactory() {
       renderProps() {
         return {
           ...getParentRenderProps(self),
-          notReady: !self.featureDensityStatsReady,
+          notReady: false,
           rpcDriverName: self.effectiveRpcDriverName,
         }
       },
@@ -707,6 +705,52 @@ function stateModelFactory() {
       const { blockState, ...rest } = r
       return rest
     })
+}
+
+export const BaseLinearDisplayNoFeatureDensity =
+  stateModelFactoryNoFeatureDensity()
+
+export type BaseLinearDisplayNoFeatureDensityStateModel =
+  typeof BaseLinearDisplayNoFeatureDensity
+export type BaseLinearDisplayNoFeatureDensityModel =
+  Instance<BaseLinearDisplayNoFeatureDensityStateModel>
+
+/**
+ * #stateModel BaseLinearDisplay
+ * #category display
+ *
+ * BaseLinearDisplay is used as the basis for many linear genome view tracks.
+ * It is block based, and can use 'static blocks' or 'dynamic blocks'
+ *
+ * extends
+ * - [BaseLinearDisplayNoFeatureDensity](../baselineardisplaynoFeaturedensity)
+ * - [FeatureDensityMixin](../featuredensitymixin)
+ */
+function stateModelFactory() {
+  return types
+    .compose(
+      'BaseLinearDisplay',
+      stateModelFactoryNoFeatureDensity(),
+      FeatureDensityMixin(),
+    )
+    .actions(self => {
+      const { reload: superReload } = self
+      return {
+        async reload() {
+          self.clearFeatureDensityStats()
+          superReload()
+        },
+      }
+    })
+    .views(self => ({
+      renderProps() {
+        return {
+          ...getParentRenderProps(self),
+          notReady: !self.featureDensityStatsReady,
+          rpcDriverName: self.effectiveRpcDriverName,
+        }
+      },
+    }))
 }
 
 export const BaseLinearDisplay = stateModelFactory()
