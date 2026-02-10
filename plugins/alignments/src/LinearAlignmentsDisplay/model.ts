@@ -18,7 +18,7 @@ import {
 import { observable } from 'mobx'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
-import { autorun, reaction } from 'mobx'
+import { autorun, reaction, untracked } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
@@ -1039,7 +1039,7 @@ export default function stateModelFactory(
 
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
-        console.debug(`[fetchFeaturesForRegion] Starting fetch for region ${regionNumber}: ${region.refName}:${region.start}-${region.end}`)
+        console.debug(`[fetchFeaturesForRegion] gen=${gen} region ${regionNumber}: ${region.refName}:${region.start}-${region.end}`, new Error().stack?.split('\n').slice(1, 4).join('\n'))
         self.setLoading(true)
         self.setError(null)
 
@@ -1099,6 +1099,7 @@ export default function stateModelFactory(
 
       function fetchAllVisibleRegions() {
         const regions = self.visibleRegions
+        console.debug(`[fetchAllVisibleRegions] ${regions.length} visible regions, ${self.loadedRegions.size} loaded`, new Error().stack?.split('\n').slice(1, 3).join('\n'))
         for (const region of regions) {
           const loaded = self.loadedRegions.get(region.regionNumber)
           const buffer = (region.end - region.start) * 0.5
@@ -1108,6 +1109,7 @@ export default function stateModelFactory(
             region.end + buffer > loaded.end
 
           if (needsData) {
+            console.debug(`[fetchAllVisibleRegions] region ${region.regionNumber} needs data: loaded=${!!loaded}, ${region.refName}:${Math.round(region.start)}-${Math.round(region.end)}`)
             const width = region.end - region.start
             const expandedRegion = {
               refName: region.refName,
@@ -1159,15 +1161,19 @@ export default function stateModelFactory(
               if (!view.initialized) {
                 return
               }
-              const ready = self.featureDensityStatsReadyAndRegionNotTooLarge
-              console.debug(
-                '[LinearAlignmentsDisplay:fetchVisibleRegions]',
-                'featureDensityStatsReady:', self.featureDensityStatsReady,
-                'regionTooLarge:', self.regionTooLarge,
-                'featureDensityStats:', self.featureDensityStats,
-                'ready:', ready,
-              )
-              if (!ready) {
+
+              // Track featureDensityStatsReady (flips once false→true).
+              // Read regionTooLarge via untracked() so that stats VALUE
+              // changes (e.g. new byte estimate after zoom) don't trigger
+              // a redundant re-fetch.  The chokepoint in
+              // fetchFeaturesForRegion re-checks at call time.
+              if (!self.featureDensityStatsReady) {
+                console.debug('[autorun:fetchVisibleRegions] stats not ready')
+                return
+              }
+              const tooLarge = untracked(() => self.regionTooLarge)
+              if (tooLarge) {
+                console.debug('[autorun:fetchVisibleRegions] region too large')
                 return
               }
 
@@ -1176,6 +1182,7 @@ export default function stateModelFactory(
                 return
               }
 
+              console.debug('[autorun:fetchVisibleRegions] calling fetchAllVisibleRegions')
               fetchAllVisibleRegions()
             }, { delay: 300, name: 'LinearAlignmentsDisplay:fetchVisibleRegions' }),
           )

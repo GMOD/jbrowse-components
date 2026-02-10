@@ -26,6 +26,11 @@ import type { BaseLinearDisplayModel } from '../model.ts'
  * For byte-based adapters: stats are re-fetched on view changes so the byte
  * estimate stays current as the user zooms in/out.
  */
+
+// Per-display generation counter.  When the autorun re-fires (e.g. blocks
+// change during reload), only the latest generation's result is applied.
+const statsGenerations = new WeakMap<BaseLinearDisplayModel, number>()
+
 export default async function autorunFeatureDensityStats(
   self: BaseLinearDisplayModel,
 ) {
@@ -39,7 +44,6 @@ export default async function autorunFeatureDensityStats(
       !view.staticBlocks.contentBlocks.length ||
       self.error
     ) {
-      console.debug('[autorunFeatureDensityStats] skipping: initialized=', view.initialized, 'blocks=', view.staticBlocks.contentBlocks.length, 'error=', !!self.error)
       return
     }
 
@@ -51,18 +55,21 @@ export default async function autorunFeatureDensityStats(
     // featureDensity-based adapters: cache forever, featureDensity scales
     // with bpPerPx automatically in the regionTooLarge getter
     if (currentStats?.featureDensity !== undefined) {
-      console.debug('[autorunFeatureDensityStats] have featureDensity, skipping')
       return
     }
 
     // Byte-based adapters (or first fetch): re-fetch for current view.
     // Clear the cached promise so getFeatureDensityStats makes a fresh RPC call.
+    const gen = (statsGenerations.get(self) ?? 0) + 1
+    statsGenerations.set(self, gen)
     self.setFeatureDensityStatsP(undefined)
-    console.debug('[autorunFeatureDensityStats] fetching stats for', view.staticBlocks.contentBlocks.length, 'blocks')
+    console.debug('[autorunFeatureDensityStats] fetching stats, gen=', gen)
     const stats = await self.getFeatureDensityStats()
-    if (isAlive(self)) {
-      console.debug('[autorunFeatureDensityStats] got stats', stats)
+    if (isAlive(self) && gen === statsGenerations.get(self)) {
+      console.debug('[autorunFeatureDensityStats] got stats, gen=', gen, stats)
       self.setFeatureDensityStats(stats)
+    } else {
+      console.debug('[autorunFeatureDensityStats] discarding stale stats, gen=', gen, 'current=', statsGenerations.get(self))
     }
   } catch (e) {
     console.error(e)

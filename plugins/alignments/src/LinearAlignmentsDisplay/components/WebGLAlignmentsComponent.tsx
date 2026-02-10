@@ -1645,6 +1645,13 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   // detached node after Force Load).
   const showBanner = !!error || model.regionTooLarge
 
+  useEffect(() => {
+    if (showBanner) {
+      model.setFeatureIdUnderMouse(undefined)
+      model.setMouseoverExtraInformation(undefined)
+    }
+  }, [showBanner, model])
+
   if (showBanner) {
     return (
       <div
