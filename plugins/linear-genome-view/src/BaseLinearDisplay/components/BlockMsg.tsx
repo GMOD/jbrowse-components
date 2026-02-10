@@ -9,7 +9,10 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
   },
   content: {
-    maxWidth: '100%',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    maxWidth: '80%',
     textAlign: 'center',
   },
 })

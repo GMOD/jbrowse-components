@@ -244,7 +244,7 @@ export default function stateModelFactory(
       }
 
       // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
       const { blockState, showLegend, showTooltips, ...cleaned } = snap
       snap = cleaned
 
@@ -290,6 +290,7 @@ export default function stateModelFactory(
     .volatile(() => ({
       featureIdUnderMouse: undefined as undefined | string,
       mouseoverExtraInformation: undefined as string | undefined,
+      contextMenuFeature: undefined as Feature | undefined,
       userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
@@ -927,6 +928,10 @@ export default function stateModelFactory(
 
       setMouseoverExtraInformation(extra?: string) {
         self.mouseoverExtraInformation = extra
+      },
+
+      setContextMenuFeature(feature?: Feature) {
+        self.contextMenuFeature = feature
       },
 
       async selectFeatureById(featureId: string) {
@@ -1747,6 +1752,10 @@ export default function stateModelFactory(
 
         return [modeMenu, ...modeItems]
       },
+
+      contextMenuItems() {
+        return [] as { label: string; onClick: () => void; icon?: any }[]
+      },
     }))
     .actions(self => {
       const superReload = self.reload
@@ -1761,7 +1770,7 @@ export default function stateModelFactory(
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts)
+          return renderSvg(self as LinearAlignmentsDisplayModel, opts)
         },
       }
     })
