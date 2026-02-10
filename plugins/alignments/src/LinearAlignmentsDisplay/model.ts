@@ -21,7 +21,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
-import { observable, reaction } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
@@ -393,12 +393,40 @@ export default function stateModelFactory(
         return iter.done ? null : iter.value
       },
 
-      /**
-       * Get visible regions from the parent view.
-       */
       get visibleRegions() {
         const view = getContainingView(self) as LGV
         return view.visibleRegions
+      },
+
+      get fetchRegions() {
+        const view = getContainingView(self) as LGV
+        const regionMap = new Map<
+          number,
+          {
+            refName: string
+            start: number
+            end: number
+            assemblyName?: string
+            regionNumber: number
+          }
+        >()
+        for (const block of view.staticBlocks.contentBlocks) {
+          const regionNumber = block.regionNumber!
+          const existing = regionMap.get(regionNumber)
+          if (existing) {
+            existing.start = Math.min(existing.start, block.start)
+            existing.end = Math.max(existing.end, block.end)
+          } else {
+            regionMap.set(regionNumber, {
+              refName: block.refName,
+              start: block.start,
+              end: block.end,
+              assemblyName: block.assemblyName,
+              regionNumber,
+            })
+          }
+        }
+        return [...regionMap.values()]
       },
 
       /**
@@ -1157,48 +1185,32 @@ export default function stateModelFactory(
         }
       }
 
-      function expandRegion(region: {
-        refName: string
-        start: number
-        end: number
-        assemblyName?: string
-      }) {
-        const width = region.end - region.start
-        return {
-          refName: region.refName,
-          start: Math.max(0, region.start - width),
-          end: region.end + width,
-          assemblyName: region.assemblyName,
-        }
-      }
-
       function fetchAllVisibleRegions() {
-        const regions = self.visibleRegions
+        const regions = self.fetchRegions
         for (const region of regions) {
           const loaded = self.loadedRegions.get(region.regionNumber)
-          const buffer = (region.end - region.start) * 0.5
-          const needsData =
-            !loaded ||
-            region.start - buffer < loaded.start ||
-            region.end + buffer > loaded.end
-
-          if (needsData) {
-            const visibleRegion = {
-              refName: region.refName,
-              start: region.start,
-              end: region.end,
-              assemblyName: region.assemblyName,
-            }
-            fetchFeaturesForRegion(
-              expandRegion(region),
-              visibleRegion,
-              region.regionNumber,
-            ).catch((e: unknown) => {
-              console.error('Failed to fetch features:', e)
-            })
+          if (
+            loaded &&
+            loaded.refName === region.refName &&
+            region.start >= loaded.start &&
+            region.end <= loaded.end
+          ) {
+            continue
           }
+          fetchFeaturesForRegion(
+            region,
+            region,
+            region.regionNumber,
+          ).catch((e: unknown) => {
+            console.error('Failed to fetch features:', e)
+          })
         }
       }
+
+      let prevColorType: string | undefined
+      let prevColorTag: string | undefined
+      let prevTagsReady: boolean | undefined
+      let prevInvalidationKey: string | undefined
 
       return {
         fetchFeatures(region: Region, regionNumber = 0) {
@@ -1210,160 +1222,133 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
-          // Single reaction drives all data fetching. Tracks:
-          //   - visibleRegions: fires on zoom/pan
-          //   - fetchToken: fires when anything invalidates data (reload,
-          //     filter change, colorBy change, etc.)
-          //
-          // The effect function reads loadedRegions to decide what needs
-          // fetching, but since reaction effects are untracked, completing
-          // a fetch (which updates loadedRegions) does NOT re-trigger this.
+          // Autorun: drives all data fetching. Tracks visibleRegions and
+          // fetchToken (fires when anything invalidates data: reload,
+          // filter change, colorBy change, etc.)
           addDisposer(
             self,
-            reaction(
+            autorun(
               () => {
                 const view = getContainingView(self) as LGV
                 if (!view.initialized) {
-                  return undefined
-                }
-                const regions = self.visibleRegions
-                if (regions.length === 0) {
-                  return undefined
-                }
-                return { regions, token: self.fetchToken }
-              },
-              data => {
-                if (!data) {
                   return
                 }
+                const regions = self.fetchRegions
+                if (regions.length === 0) {
+                  return
+                }
+                // Track fetchToken so bumps trigger re-fetch
+                const _token = self.fetchToken
                 fetchAllVisibleRegions()
               },
               {
-                delay: 300,
-                fireImmediately: true,
                 name: 'LinearAlignmentsDisplay:fetchVisibleRegions',
+                delay: 300,
               },
             ),
           )
 
-          // Re-fetch when filter changes
+          // Autorun: invalidate data when filter, displayedRegions, or
+          // rendering mode/arcs settings change
           addDisposer(
             self,
-            reaction(
-              () => self.filterBy,
+            autorun(
               () => {
-                self.clearAllRpcData()
-                self.bumpFetchToken()
+                const view = getContainingView(self) as LGV
+                const key = JSON.stringify({
+                  filterBy: self.filterBy,
+                  displayedRegions: view.displayedRegions.map(r => ({
+                    refName: r.refName,
+                    start: r.start,
+                    end: r.end,
+                  })),
+                  mode: self.renderingMode,
+                  drawInter: self.arcsState.drawInter,
+                  drawLongRange: self.arcsState.drawLongRange,
+                })
+                if (
+                  prevInvalidationKey !== undefined &&
+                  key !== prevInvalidationKey
+                ) {
+                  self.clearAllRpcData()
+                  self.arcsState.clearAllRpcData()
+                  self.cloudState.clearAllRpcData()
+                  self.bumpFetchToken()
+                }
+                prevInvalidationKey = key
               },
-              { name: 'LinearAlignmentsDisplay:refetchOnFilterChange' },
+              { name: 'LinearAlignmentsDisplay:invalidateData' },
             ),
           )
 
-          // Re-fetch when colorBy changes (modifications/methylation/tag modes
-          // require different worker-side processing).
+          // Autorun: re-fetch when colorBy changes (modifications/methylation/tag
+          // modes require different worker-side processing).
           // For tag mode, also re-fetch when tagsReady becomes true (colorTagMap populated).
           addDisposer(
             self,
-            reaction(
-              () => ({
-                colorType: self.colorBy.type,
-                tag: self.colorBy.tag,
-                tagsReady: self.tagsReady,
-              }),
-              ({ colorType, tagsReady }) => {
-                if (colorType === 'tag' && !tagsReady) {
-                  return
+            autorun(
+              () => {
+                const colorType = self.colorBy.type
+                const tag = self.colorBy.tag
+                const tagsReady = self.tagsReady
+                if (
+                  prevColorType !== undefined &&
+                  (colorType !== prevColorType ||
+                    tag !== prevColorTag ||
+                    tagsReady !== prevTagsReady)
+                ) {
+                  if (!(colorType === 'tag' && !tagsReady)) {
+                    self.setLoading(true)
+                    self.setStatusMessage('Loading')
+                    self.setError(null)
+                    self.clearAllRpcData()
+                    self.bumpFetchToken()
+                  }
                 }
-                self.setLoading(true)
-                self.setStatusMessage('Loading')
-                self.setError(null)
-                self.clearAllRpcData()
-                self.bumpFetchToken()
+                prevColorType = colorType
+                prevColorTag = tag
+                prevTagsReady = tagsReady
               },
               { name: 'LinearAlignmentsDisplay:refetchOnColorByChange' },
             ),
           )
 
-          // Fetch unique tag values when colorBy.type is 'tag' and tags not yet ready
+          // Autorun: fetch unique tag values when colorBy.type is 'tag' and tags not yet ready
           addDisposer(
             self,
-            reaction(
-              () => ({
-                tag: self.colorBy.tag,
-                tagsReady: self.tagsReady,
-                region: self.visibleRegion,
-              }),
-              async ({ tag, tagsReady, region }) => {
+            autorun(
+              () => {
+                const tag = self.colorBy.tag
+                const tagsReady = self.tagsReady
+                const region = self.visibleRegion
                 if (!tag || tagsReady || !region) {
                   return
                 }
-                try {
-                  const session = getSession(self)
-                  const track = getContainingTrack(self)
-                  const adapterConfig = getConf(track, 'adapter')
-                  const sessionId = getRpcSessionId(self)
-                  const vals = (await session.rpcManager.call(
+                const session = getSession(self)
+                const track = getContainingTrack(self)
+                const adapterConfig = getConf(track, 'adapter')
+                const sessionId = getRpcSessionId(self)
+                session.rpcManager
+                  .call(sessionId, 'PileupGetGlobalValueForTag', {
+                    adapterConfig,
+                    tag,
                     sessionId,
-                    'PileupGetGlobalValueForTag',
-                    {
-                      adapterConfig,
-                      tag,
-                      sessionId,
-                      regions: [region],
-                    },
-                  )) as string[]
-                  if (isAlive(self)) {
-                    self.updateColorTagMap(vals)
-                    self.setTagsReady(true)
-                  }
-                } catch (e) {
-                  console.error('Failed to fetch tag values:', e)
-                  if (isAlive(self)) {
-                    self.setTagsReady(true)
-                  }
-                }
+                    regions: [region],
+                  })
+                  .then((vals: string[]) => {
+                    if (isAlive(self)) {
+                      self.updateColorTagMap(vals)
+                      self.setTagsReady(true)
+                    }
+                  })
+                  .catch((e: unknown) => {
+                    console.error('Failed to fetch tag values:', e)
+                    if (isAlive(self)) {
+                      self.setTagsReady(true)
+                    }
+                  })
               },
-              {
-                fireImmediately: true,
-                name: 'LinearAlignmentsDisplay:fetchTagValues',
-              },
-            ),
-          )
-
-          // Clear all data when displayedRegions changes (region indices become stale)
-          addDisposer(
-            self,
-            reaction(
-              () => {
-                const view = getContainingView(self) as LGV
-                return view.displayedRegions
-              },
-              () => {
-                self.clearAllRpcData()
-                self.arcsState.clearAllRpcData()
-                self.cloudState.clearAllRpcData()
-                self.bumpFetchToken()
-              },
-              { name: 'LinearAlignmentsDisplay:clearOnDisplayedRegionsChange' },
-            ),
-          )
-
-          // Re-fetch when rendering mode changes or arcs-specific settings change
-          addDisposer(
-            self,
-            reaction(
-              () => ({
-                mode: self.renderingMode,
-                drawInter: self.arcsState.drawInter,
-                drawLongRange: self.arcsState.drawLongRange,
-              }),
-              () => {
-                self.clearAllRpcData()
-                self.arcsState.clearAllRpcData()
-                self.cloudState.clearAllRpcData()
-                self.bumpFetchToken()
-              },
-              { name: 'LinearAlignmentsDisplay:refetchOnModeChange' },
+              { name: 'LinearAlignmentsDisplay:fetchTagValues' },
             ),
           )
         },

@@ -16,7 +16,7 @@ import {
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { reaction } from 'mobx'
+import { autorun } from 'mobx'
 
 import type {
   FlatbushItem,
@@ -147,8 +147,39 @@ export default function stateModelFactory(
         return view.visibleRegions
       },
 
+      get fetchRegions() {
+        const view = getContainingView(self) as LGV
+        const regionMap = new Map<
+          number,
+          {
+            refName: string
+            start: number
+            end: number
+            assemblyName?: string
+            regionNumber: number
+          }
+        >()
+        for (const block of view.staticBlocks.contentBlocks) {
+          const regionNumber = block.regionNumber!
+          const existing = regionMap.get(regionNumber)
+          if (existing) {
+            existing.start = Math.min(existing.start, block.start)
+            existing.end = Math.max(existing.end, block.end)
+          } else {
+            regionMap.set(regionNumber, {
+              refName: block.refName,
+              start: block.start,
+              end: block.end,
+              assemblyName: block.assemblyName,
+              regionNumber,
+            })
+          }
+        }
+        return [...regionMap.values()]
+      },
+
       get isWithinLoadedRegions() {
-        const visibleRegions = this.visibleRegions
+        const visibleRegions = this.fetchRegions
         if (visibleRegions.length === 0) {
           return false
         }
@@ -341,9 +372,8 @@ export default function stateModelFactory(
           )) as { feature: Record<string, unknown> | undefined }
 
           if (result.feature && isAlive(self)) {
-            const parentFeature = new SimpleFeature(
-              result.feature as Parameters<typeof SimpleFeature.fromJSON>[0],
-            )
+            // @ts-expect-error
+            const parentFeature = new SimpleFeature(result.feature)
 
             if (subfeatureInfo) {
               const subfeature = findSubfeatureById(
@@ -409,7 +439,8 @@ export default function stateModelFactory(
           })
           self.setLayoutBpPerPxForRegion(regionNumber, bpPerPx)
         } catch (e) {
-          self.setError(e instanceof Error ? e : new Error(String(e)))
+          console.error(e)
+          self.setError(e)
         }
       }
 
@@ -431,27 +462,32 @@ export default function stateModelFactory(
       }
 
       let prevDisplayedRegionsStr = ''
+      let prevShowLabels: boolean | undefined
+      let prevShowDescriptions: boolean | undefined
+      let prevColorByCDS: boolean | undefined
+      let prevSettingsInitialized = false
 
       return {
         afterAttach() {
-          // Reaction: fetch data for all visible regions
+          // Autorun: fetch data for all visible regions
           addDisposer(
             self,
-            reaction(
-              () => ({
-                visibleRegions: self.visibleRegions,
-                isWithinLoaded: self.isWithinLoadedRegions,
-              }),
-              ({ visibleRegions, isWithinLoaded }) => {
-                if (visibleRegions.length > 0 && !isWithinLoaded) {
+            autorun(
+              () => {
+                const view = getContainingView(self) as LinearGenomeViewModel
+                if (!view.initialized) {
+                  return
+                }
+                const fetchRegions = self.fetchRegions
+                const isWithinLoaded = self.isWithinLoadedRegions
+                if (fetchRegions.length > 0 && !isWithinLoaded) {
                   self.setLoading(true)
                   self.setError(null)
 
-                  const view = getContainingView(self) as LGV
                   const bpPerPx = view.bpPerPx
                   const promises: Promise<void>[] = []
 
-                  for (const vr of visibleRegions) {
+                  for (const vr of fetchRegions) {
                     const loaded = self.loadedRegions.get(vr.regionNumber)
                     if (
                       loaded?.refName === vr.refName &&
@@ -460,16 +496,9 @@ export default function stateModelFactory(
                     ) {
                       continue
                     }
-                    const width = vr.end - vr.start
-                    const expandedRegion = {
-                      refName: vr.refName,
-                      start: Math.max(0, vr.start - width * 2),
-                      end: vr.end + width * 2,
-                      assemblyName: vr.assemblyName,
-                    }
                     promises.push(
                       fetchFeaturesForRegion(
-                        expandedRegion,
+                        vr,
                         vr.regionNumber,
                         bpPerPx,
                       ),
@@ -486,83 +515,75 @@ export default function stateModelFactory(
                     })
                 }
               },
-              { delay: 300, fireImmediately: true },
+              {
+                name: 'FetchVisibleRegions',
+                delay: 300,
+              },
             ),
           )
 
-          // Reaction: re-layout when zoom changes significantly
+          // Autorun: re-layout when zoom changes significantly
           addDisposer(
             self,
-            reaction(
+            autorun(
               () => {
-                try {
-                  const view = getContainingView(self) as LGV
-                  return view.initialized ? view.bpPerPx : null
-                } catch {
-                  return null
-                }
-              },
-              bpPerPx => {
-                if (bpPerPx && self.needsLayoutRefresh) {
-                  refetchAllLoadedRegions(bpPerPx)
-                }
-              },
-              { delay: 500 },
-            ),
-          )
-
-          // Reaction: re-fetch on label/description setting changes
-          addDisposer(
-            self,
-            reaction(
-              () => ({
-                showLabels: self.showLabels,
-                showDescriptions: self.showDescriptions,
-              }),
-              () => {
-                if (self.loadedRegions.size > 0) {
-                  const view = getContainingView(self) as LGV
+                const view = getContainingView(self) as LGV
+                if (view.initialized && self.needsLayoutRefresh) {
                   refetchAllLoadedRegions(view.bpPerPx)
                 }
               },
-              { delay: 100 },
+              {
+                name: 'ZoomLayoutRefresh',
+                delay: 500,
+              },
             ),
           )
 
-          // Reaction: re-fetch on colorByCDS changes
+          // Autorun: re-fetch when label/description/colorByCDS settings change
           addDisposer(
             self,
-            reaction(
-              () => self.colorByCDS,
+            autorun(
               () => {
-                if (self.loadedRegions.size > 0) {
-                  const view = getContainingView(self) as LGV
-                  refetchAllLoadedRegions(view.bpPerPx)
+                const showLabels = self.showLabels
+                const showDescriptions = self.showDescriptions
+                const colorByCDS = self.colorByCDS
+                if (
+                  prevSettingsInitialized &&
+                  (showLabels !== prevShowLabels ||
+                    showDescriptions !== prevShowDescriptions ||
+                    colorByCDS !== prevColorByCDS)
+                ) {
+                  if (self.loadedRegions.size > 0) {
+                    const view = getContainingView(self) as LGV
+                    refetchAllLoadedRegions(view.bpPerPx)
+                  }
                 }
+                prevSettingsInitialized = true
+                prevShowLabels = showLabels
+                prevShowDescriptions = showDescriptions
+                prevColorByCDS = colorByCDS
               },
-              { delay: 100 },
+              {
+                name: 'SettingsRefetch',
+                delay: 100,
+              },
             ),
           )
 
-          // Reaction: clear data when displayedRegions identity changes
+          // Autorun: clear data when displayedRegions identity changes
           addDisposer(
             self,
-            reaction(
+            autorun(
               () => {
-                try {
-                  const view = getContainingView(self) as LGV
-                  return JSON.stringify(
-                    view.displayedRegions.map(r => ({
-                      refName: r.refName,
-                      start: r.start,
-                      end: r.end,
-                    })),
-                  )
-                } catch {
-                  return ''
-                }
-              },
-              regionStr => {
+                let regionStr = ''
+                const view = getContainingView(self) as LGV
+                regionStr = JSON.stringify(
+                  view.displayedRegions.map(r => ({
+                    refName: r.refName,
+                    start: r.start,
+                    end: r.end,
+                  })),
+                )
                 if (
                   prevDisplayedRegionsStr !== '' &&
                   regionStr !== prevDisplayedRegionsStr
@@ -571,7 +592,9 @@ export default function stateModelFactory(
                 }
                 prevDisplayedRegionsStr = regionStr
               },
-              { fireImmediately: true },
+              {
+                name: 'DisplayedRegionsChange',
+              },
             ),
           )
         },

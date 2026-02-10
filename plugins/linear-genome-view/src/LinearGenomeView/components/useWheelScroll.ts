@@ -58,8 +58,8 @@ export function useWheelScroll(
     // When scrollZoom is off: ctrl+wheel zooms, regular wheel scrolls
     // When scrollZoom is on: regular wheel zooms, ctrl+wheel scrolls page (inverted)
     function onWheel(event: WheelEvent) {
-      // When scrollZoom is on and ctrl is held, allow default page scroll
-      if (event.ctrlKey && model.scrollZoom) {
+      // When scrollZoom is on and shift is held, allow default page scroll
+      if (event.shiftKey && model.scrollZoom) {
         return
       }
 
