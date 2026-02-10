@@ -49,7 +49,7 @@ function findSubfeatureById(
   return undefined
 }
 
-interface Region {
+export interface Region {
   refName: string
   start: number
   end: number

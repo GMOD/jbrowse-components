@@ -27,7 +27,7 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-interface Region {
+export interface Region {
   refName: string
   start: number
   end: number

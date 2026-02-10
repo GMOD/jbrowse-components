@@ -361,6 +361,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     renderingMode,
     width,
     height,
+    view.visibleRegions,
   ])
 
   const scheduleRender = useCallback(() => {
@@ -1046,6 +1047,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Set tooltip info
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (featureId && isChainMode && hit && featureResolved2) {
         const refName = featureResolved2.refName
         model.setMouseoverExtraInformation(

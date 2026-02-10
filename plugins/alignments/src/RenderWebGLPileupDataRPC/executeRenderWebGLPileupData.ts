@@ -31,10 +31,7 @@ import {
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
-import {
-  filterForPairs,
-  getInsertSizeStats,
-} from '../shared/insertSizeStats.ts'
+import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import { getModificationName } from '../shared/modificationData.ts'
 import {
   baseToAscii,

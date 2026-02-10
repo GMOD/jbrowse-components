@@ -479,8 +479,8 @@ export default function stateModelFactory(
             }
           }
 
-          // Use visibleRegions (handles multi-ref)
-          const regions = this.visibleRegions
+          // Use view's visible regions (handles multi-ref)
+          const regions = view.visibleRegions
           if (regions.length === 0) {
             return null
           }
@@ -670,7 +670,7 @@ export default function stateModelFactory(
           return undefined
         }
         const { rpcData, idx, startOffset, endOffset } = hit
-        const yRow = rpcData.readYs?.[idx]
+        const yRow = rpcData.readYs[idx]
         if (yRow === undefined) {
           return undefined
         }
@@ -1345,7 +1345,8 @@ export default function stateModelFactory(
                   return
                 }
                 // Track fetchToken so bumps trigger re-fetch
-                const _token = self.fetchToken
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                self.fetchToken
                 fetchAllVisibleRegions()
               },
               {

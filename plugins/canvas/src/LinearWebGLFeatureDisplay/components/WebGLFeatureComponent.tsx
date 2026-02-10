@@ -242,7 +242,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvasWidth: Math.round(view.width),
       canvasHeight: height,
     })
-  }, [view, width, height, model])
+  }, [view, width, height])
 
   const scheduleRender = useCallback(() => {
     if (renderRAFRef.current !== null) {
@@ -280,10 +280,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   // Re-render when view state changes
   useEffect(() => {
-    if (!view) {
-      return
-    }
-
     const dispose = autorun(() => {
       try {
         // Access observables to subscribe
@@ -375,7 +371,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const handleWheel = (e: WheelEvent) => {
       const view = viewRef.current
-      if (!view?.initialized) {
+      if (!view.initialized) {
         return
       }
 
@@ -535,16 +531,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvas.removeEventListener('click', handleClick)
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
-  const bpPerPx = view?.bpPerPx
-  const offsetPx = view?.offsetPx
+  const bpPerPx = view.bpPerPx
+  const offsetPx = view.offsetPx
   const visibleRegions = view.visibleRegions
 
   // Compute floating label positions (multi-region aware)
   const floatingLabelElements = useMemo(() => {
     if (
-      !view?.initialized ||
+      !view.initialized ||
       !width ||
       !bpPerPx ||
       visibleRegions.length === 0
@@ -623,7 +620,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   // Compute amino acid letter overlay (multi-region aware)
   const aminoAcidOverlayElements = useMemo(() => {
     if (
-      !view?.initialized ||
+      !view.initialized ||
       !width ||
       !bpPerPx ||
       !shouldRenderPeptideText(bpPerPx) ||
@@ -686,7 +683,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   // Compute highlight overlays for hovered and selected features (multi-region aware)
   const highlightOverlays = useMemo(() => {
     if (
-      !view?.initialized ||
+      !view.initialized ||
       !width ||
       !bpPerPx ||
       visibleRegions.length === 0
@@ -822,7 +819,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     )
   }
 
-  const isReady = width !== undefined && view?.initialized
+  const isReady = width !== undefined && view.initialized
 
   return (
     <div

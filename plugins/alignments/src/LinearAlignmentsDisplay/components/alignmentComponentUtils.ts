@@ -192,8 +192,10 @@ export function formatChainTooltip(
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
   const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
 
-  const lines = [`<b>${name}</b>`]
-  lines.push(`${refName}:${start.toLocaleString()}-${end.toLocaleString()}`)
+  const lines = [
+    `<b>${name}</b>`,
+    `${refName}:${start.toLocaleString()}-${end.toLocaleString()}`,
+  ]
 
   if (insertSize !== 0) {
     lines.push(`Template length: ${Math.abs(insertSize).toLocaleString()}`)

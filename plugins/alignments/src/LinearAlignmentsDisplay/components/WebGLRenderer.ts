@@ -628,6 +628,7 @@ export class WebGLRenderer {
     readChainHasSupp?: Uint8Array // 1 if chain contains supplementary reads
     numReads: number
     maxY: number
+    insertSizeStats?: { upper: number; lower: number }
   }) {
     const gl = this.gl
     // Save old buffers reference, then null out to prevent render() from
@@ -747,6 +748,8 @@ export class WebGLRenderer {
         arcLineCount: 0,
         cloudVAO: null,
         cloudCount: 0,
+        connectingLineVAO: null,
+        connectingLineCount: 0,
         sashimiVAO: null,
         sashimiCount: 0,
         insertSizeStats: data.insertSizeStats,

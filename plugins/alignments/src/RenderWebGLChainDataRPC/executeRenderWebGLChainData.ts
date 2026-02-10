@@ -282,7 +282,7 @@ export async function executeRenderWebGLChainData({
         insertSize: Math.abs(feature.get('template_length') ?? 400),
         pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
         strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
-        refName: feature.get('refName') ?? '',
+        refName: feature.get('refName'),
         nextRef: feature.get('next_ref'),
         pairOrientationStr: feature.get('pair_orientation'),
         templateLength: feature.get('template_length') ?? 0,
