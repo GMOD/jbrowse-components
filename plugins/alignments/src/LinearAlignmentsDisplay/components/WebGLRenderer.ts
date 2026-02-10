@@ -92,6 +92,10 @@ export interface RenderState {
   highlightedFeatureIndex: number
   // Selected feature for outline (-1 means no selection)
   selectedFeatureIndex: number
+  // Chain highlighting: all feature indices in the highlighted chain
+  highlightedChainIndices: number[]
+  // Chain selection: all feature indices in the selected chain
+  selectedChainIndices: number[]
   // Color palette from theme
   colors: ColorPalette
   // Rendering mode - 'pileup' (default), 'arcs', 'cloud', or 'linkedRead'
@@ -156,6 +160,11 @@ export interface GPUBuffers {
   // Sashimi arcs (splice junctions)
   sashimiVAO: WebGLVertexArrayObject | null
   sashimiCount: number
+  // Insert size statistics for threshold-based coloring
+  insertSizeStats?: {
+    upper: number
+    lower: number
+  }
 }
 
 export class WebGLRenderer {
@@ -334,6 +343,11 @@ export class WebGLRenderer {
       'u_colorPairLL',
       'u_colorModificationFwd',
       'u_colorModificationRev',
+      'u_colorLongInsert',
+      'u_colorShortInsert',
+      'u_insertSizeUpper',
+      'u_insertSizeLower',
+      'u_chainMode',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
@@ -727,6 +741,7 @@ export class WebGLRenderer {
         cloudCount: 0,
         sashimiVAO: null,
         sashimiCount: 0,
+        insertSizeStats: data.insertSizeStats,
       }
       return
     }
@@ -822,6 +837,7 @@ export class WebGLRenderer {
       connectingLineCount: 0,
       sashimiVAO: null,
       sashimiCount: 0,
+      insertSizeStats: data.insertSizeStats,
     }
   }
 
@@ -1479,6 +1495,7 @@ export class WebGLRenderer {
       connectingLineCount: 0,
       sashimiVAO: null,
       sashimiCount: 0,
+      insertSizeStats: undefined,
     }
   }
 

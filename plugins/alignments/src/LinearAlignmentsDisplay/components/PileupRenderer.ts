@@ -12,6 +12,79 @@ import { splitPositionWithFrac } from './shaders/index.ts'
 import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 import type { ColorPalette } from './shaders/index.ts'
 
+interface ClipRect {
+  sx1: number
+  sx2: number
+  syTop: number
+  syBot: number
+}
+
+function getChainBounds(
+  indices: number[],
+  readPositions: Uint32Array,
+  readYs: Uint16Array,
+) {
+  let minStart = Infinity
+  let maxEnd = -Infinity
+  let y = 0
+  for (const idx of indices) {
+    const s = readPositions[idx * 2]
+    const e = readPositions[idx * 2 + 1]
+    const row = readYs[idx]
+    if (s !== undefined && s < minStart) {
+      minStart = s
+    }
+    if (e !== undefined && e > maxEnd) {
+      maxEnd = e
+    }
+    if (row !== undefined) {
+      y = row
+    }
+  }
+  return minStart < Infinity ? { minStart, maxEnd, y } : undefined
+}
+
+function toClipRect(
+  absStart: number,
+  absEnd: number,
+  y: number,
+  state: RenderState,
+  bpStartHi: number,
+  bpStartLo: number,
+  regionLengthBp: number,
+  coverageOffset: number,
+  canvasHeight: number,
+): ClipRect {
+  const splitStart = [
+    Math.floor(absStart) - (Math.floor(absStart) & 0xfff),
+    Math.floor(absStart) & 0xfff,
+  ]
+  const splitEnd = [
+    Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff),
+    Math.floor(absEnd) & 0xfff,
+  ]
+  const sx1 =
+    ((splitStart[0]! - bpStartHi + splitStart[1]! - bpStartLo) /
+      regionLengthBp) *
+      2 -
+    1
+  const sx2 =
+    ((splitEnd[0]! - bpStartHi + splitEnd[1]! - bpStartLo) /
+      regionLengthBp) *
+      2 -
+    1
+
+  const rowHeight = state.featureHeight + state.featureSpacing
+  const yTopPx = y * rowHeight - state.rangeY[0]
+  const yBotPx = yTopPx + state.featureHeight
+  const pileupTop = 1 - (coverageOffset / canvasHeight) * 2
+  const pxToClip = 2 / canvasHeight
+  const syTop = pileupTop - yTopPx * pxToClip
+  const syBot = pileupTop - yBotPx * pxToClip
+
+  return { sx1, sx2, syTop, syBot }
+}
+
 /**
  * PileupRenderer orchestrates rendering of reads and CIGAR features in pileup mode.
  *
@@ -124,6 +197,11 @@ export class PileupRenderer {
       this.parent.readUniforms.u_highlightedIndex!,
       state.highlightedFeatureIndex,
     )
+    const mode = state.renderingMode ?? 'pileup'
+    gl.uniform1i(
+      this.parent.readUniforms.u_chainMode!,
+      mode === 'cloud' || mode === 'linkedRead' ? 1 : 0,
+    )
 
     // Set color uniforms for read shapes
     gl.uniform3f(
@@ -150,6 +228,21 @@ export class PileupRenderer {
       this.parent.readUniforms.u_colorModificationRev!,
       ...colors.colorModificationRev,
     )
+    gl.uniform3f(
+      this.parent.readUniforms.u_colorLongInsert!,
+      ...colors.colorLongInsert,
+    )
+    gl.uniform3f(
+      this.parent.readUniforms.u_colorShortInsert!,
+      ...colors.colorShortInsert,
+    )
+
+    // Set insert size thresholds (defaults for when stats are unavailable)
+    const stats = buffers.insertSizeStats
+    const upperThreshold = stats?.upper ?? 1e9
+    const lowerThreshold = stats?.lower ?? 0
+    gl.uniform1f(this.parent.readUniforms.u_insertSizeUpper!, upperThreshold)
+    gl.uniform1f(this.parent.readUniforms.u_insertSizeLower!, lowerThreshold)
 
     gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
 
@@ -408,11 +501,36 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.modificationCount)
     }
 
-    // Highlight overlay pass: draw the highlighted read at full extent
-    // so the highlight covers intron/skip regions too
-    if (state.highlightedFeatureIndex >= 0) {
+    // Highlight overlay pass
+    if (state.highlightedChainIndices.length > 0) {
+      // Chain highlight: single spanning rectangle covering the full chain extent
+      const bounds = getChainBounds(
+        state.highlightedChainIndices,
+        buffers.readPositions,
+        buffers.readYs,
+      )
+      if (bounds) {
+        const clip = toClipRect(
+          bounds.minStart + regionStart,
+          bounds.maxEnd + regionStart,
+          bounds.y,
+          state,
+          bpStartHi,
+          bpStartLo,
+          regionLengthBp,
+          coverageOffset,
+          canvasHeight,
+        )
+        this.drawFilledRect(gl, clip)
+      }
+    } else if (state.highlightedFeatureIndex >= 0) {
+      // Single-feature highlight (pileup mode)
       gl.useProgram(this.parent.readProgram)
       gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
+      gl.uniform1i(
+        this.parent.readUniforms.u_highlightedIndex!,
+        state.highlightedFeatureIndex,
+      )
       gl.bindVertexArray(buffers.readVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.readCount)
       gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
@@ -420,8 +538,28 @@ export class PileupRenderer {
 
     gl.disable(gl.SCISSOR_TEST)
 
-    // Draw selection outline if a feature is selected
-    if (
+    // Draw selection outline
+    if (state.selectedChainIndices.length > 0) {
+      const bounds = getChainBounds(
+        state.selectedChainIndices,
+        buffers.readPositions,
+        buffers.readYs,
+      )
+      if (bounds) {
+        const clip = toClipRect(
+          bounds.minStart + regionStart,
+          bounds.maxEnd + regionStart,
+          bounds.y,
+          state,
+          bpStartHi,
+          bpStartLo,
+          regionLengthBp,
+          coverageOffset,
+          canvasHeight,
+        )
+        this.drawOutlineRect(gl, clip, 0, canvasWidth, regionLengthBp, state)
+      }
+    } else if (
       state.selectedFeatureIndex >= 0 &&
       state.selectedFeatureIndex < buffers.readCount
     ) {
@@ -429,111 +567,91 @@ export class PileupRenderer {
       const startOffset = buffers.readPositions[idx * 2]
       const endOffset = buffers.readPositions[idx * 2 + 1]
       const y = buffers.readYs[idx]
-
       if (
         startOffset !== undefined &&
         endOffset !== undefined &&
         y !== undefined
       ) {
-        // Convert to absolute positions
-        const absStart = startOffset + regionStart
-        const absEnd = endOffset + regionStart
-
-        // Convert to clip-space X using high-precision split
-        const splitStart = [
-          Math.floor(absStart) - (Math.floor(absStart) & 0xfff),
-          Math.floor(absStart) & 0xfff,
-        ]
-        const splitEnd = [
-          Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff),
-          Math.floor(absEnd) & 0xfff,
-        ]
-
-        const sx1 =
-          ((splitStart[0]! - bpStartHi + splitStart[1]! - bpStartLo) /
-            regionLengthBp) *
-            2 -
-          1
-        const sx2 =
-          ((splitEnd[0]! - bpStartHi + splitEnd[1]! - bpStartLo) /
-            regionLengthBp) *
-            2 -
-          1
-
-        // Convert Y to clip-space
-        const rowHeight = state.featureHeight + state.featureSpacing
-        const yTopPx = y * rowHeight - state.rangeY[0]
-        const yBotPx = yTopPx + state.featureHeight
-        const pileupTop = 1 - (coverageOffset / canvasHeight) * 2
-        const pxToClip = 2 / canvasHeight
-        const syTop = pileupTop - yTopPx * pxToClip
-        const syBot = pileupTop - yBotPx * pxToClip
-
-        // Draw outline (chevron shape when zoomed in, rectangle otherwise)
-        gl.useProgram(this.parent.lineProgram)
-        gl.uniform4f(this.parent.lineUniforms.u_color!, 0, 0, 0, 1) // Black outline
-
-        const bpPerPx = regionLengthBp / canvasWidth
-        const strand = buffers.readStrands[idx]
-        const showChevron = bpPerPx < 10 && state.featureHeight > 5
-        const chevronClip = (5 / canvasWidth) * 2
-        const syMid = (syTop + syBot) / 2
-
-        let outlineData: Float32Array
-        if (showChevron && strand === 1) {
-          // Forward: chevron on right
-          outlineData = new Float32Array([
-            sx1,
-            syTop,
-            sx2,
-            syTop,
-            sx2 + chevronClip,
-            syMid,
-            sx2,
-            syBot,
-            sx1,
-            syBot,
-            sx1,
-            syTop,
-          ])
-        } else if (showChevron && strand === -1) {
-          // Reverse: chevron on left
-          outlineData = new Float32Array([
-            sx1,
-            syTop,
-            sx2,
-            syTop,
-            sx2,
-            syBot,
-            sx1,
-            syBot,
-            sx1 - chevronClip,
-            syMid,
-            sx1,
-            syTop,
-          ])
-        } else {
-          outlineData = new Float32Array([
-            sx1,
-            syTop,
-            sx2,
-            syTop,
-            sx2,
-            syBot,
-            sx1,
-            syBot,
-            sx1,
-            syTop,
-          ])
-        }
-
-        gl.bindVertexArray(this.parent.lineVAO)
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.parent.lineBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, outlineData, gl.DYNAMIC_DRAW)
-        gl.drawArrays(gl.LINE_STRIP, 0, outlineData.length / 2)
+        const clip = toClipRect(
+          startOffset + regionStart,
+          endOffset + regionStart,
+          y,
+          state,
+          bpStartHi,
+          bpStartLo,
+          regionLengthBp,
+          coverageOffset,
+          canvasHeight,
+        )
+        this.drawOutlineRect(
+          gl,
+          clip,
+          buffers.readStrands[idx] ?? 0,
+          canvasWidth,
+          regionLengthBp,
+          state,
+        )
       }
     }
 
     gl.bindVertexArray(null)
+  }
+
+  private drawFilledRect(gl: WebGL2RenderingContext, clip: ClipRect) {
+    const { sx1, sx2, syTop, syBot } = clip
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.useProgram(this.parent.lineProgram)
+    gl.uniform4f(this.parent.lineUniforms.u_color!, 0, 0, 0, 0.4)
+    const quadData = new Float32Array([
+      sx1, syTop, sx2, syTop, sx1, syBot,
+      sx1, syBot, sx2, syTop, sx2, syBot,
+    ])
+    gl.bindVertexArray(this.parent.lineVAO)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.parent.lineBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, quadData, gl.DYNAMIC_DRAW)
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
+  }
+
+  private drawOutlineRect(
+    gl: WebGL2RenderingContext,
+    clip: ClipRect,
+    strand: number,
+    canvasWidth: number,
+    regionLengthBp: number,
+    state: RenderState,
+  ) {
+    const { sx1, sx2, syTop, syBot } = clip
+    gl.useProgram(this.parent.lineProgram)
+    gl.uniform4f(this.parent.lineUniforms.u_color!, 0, 0, 0, 1)
+
+    const bpPerPx = regionLengthBp / canvasWidth
+    const showChevron = bpPerPx < 10 && state.featureHeight > 5
+    const chevronClip = (5 / canvasWidth) * 2
+    const syMid = (syTop + syBot) / 2
+
+    let outlineData: Float32Array
+    if (showChevron && strand === 1) {
+      outlineData = new Float32Array([
+        sx1, syTop, sx2, syTop,
+        sx2 + chevronClip, syMid,
+        sx2, syBot, sx1, syBot, sx1, syTop,
+      ])
+    } else if (showChevron && strand === -1) {
+      outlineData = new Float32Array([
+        sx1, syTop, sx2, syTop, sx2, syBot,
+        sx1, syBot, sx1 - chevronClip, syMid, sx1, syTop,
+      ])
+    } else {
+      outlineData = new Float32Array([
+        sx1, syTop, sx2, syTop, sx2, syBot,
+        sx1, syBot, sx1, syTop,
+      ])
+    }
+
+    gl.bindVertexArray(this.parent.lineVAO)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.parent.lineBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, outlineData, gl.DYNAMIC_DRAW)
+    gl.drawArrays(gl.LINE_STRIP, 0, outlineData.length / 2)
   }
 }

@@ -131,6 +131,10 @@ function getInterbaseTypeName(colorType: number): InterbaseType {
 /**
  * Hit test for a feature (read/alignment) at the given canvas coordinates.
  * Returns feature ID and index if hit, undefined otherwise.
+ *
+ * When isChainMode is true, each row is one chain, so hitting anywhere on
+ * the row (between reads or on the connecting line) counts as a hit —
+ * we just return the first read on that row.
  */
 export function hitTestFeature(
   canvasX: number,
@@ -138,6 +142,7 @@ export function hitTestFeature(
   resolved: ResolvedBlock | undefined,
   coords: CigarCoords | undefined,
   featureHeightSetting: number,
+  isChainMode?: boolean,
 ): { id: string; index: number } | undefined {
   if (!resolved || !coords) {
     return undefined
@@ -145,11 +150,48 @@ export function hitTestFeature(
 
   const { adjustedY, yWithinRow, posOffset, row } = coords
 
-  if (adjustedY < 0 || yWithinRow > featureHeightSetting) {
+  if (adjustedY < 0) {
     return undefined
   }
 
   const { readPositions, readYs, readIds, numReads } = resolved.rpcData
+
+  if (isChainMode) {
+    // In chain mode each row is one chain. Find the chain's bounding
+    // rectangle (min start to max end of all reads on the row) and check
+    // that the mouse X falls within it.
+    let firstIndex = -1
+    let chainMinStart = Infinity
+    let chainMaxEnd = -Infinity
+    for (let i = 0; i < numReads; i++) {
+      if (readYs[i] === row) {
+        if (firstIndex === -1) {
+          firstIndex = i
+        }
+        const startOffset = readPositions[i * 2]!
+        const endOffset = readPositions[i * 2 + 1]!
+        if (startOffset < chainMinStart) {
+          chainMinStart = startOffset
+        }
+        if (endOffset > chainMaxEnd) {
+          chainMaxEnd = endOffset
+        }
+      }
+    }
+    if (
+      firstIndex !== -1 &&
+      posOffset >= chainMinStart &&
+      posOffset <= chainMaxEnd
+    ) {
+      return { id: readIds[firstIndex]!, index: firstIndex }
+    }
+    return undefined
+  }
+
+  if (yWithinRow > featureHeightSetting) {
+    return undefined
+  }
+
   for (let i = 0; i < numReads; i++) {
     if (readYs[i] !== row) {
       continue

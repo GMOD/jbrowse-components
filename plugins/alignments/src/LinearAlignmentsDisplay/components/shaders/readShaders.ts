@@ -25,6 +25,7 @@ uniform float u_canvasHeight;
 uniform int u_highlightedIndex;  // Feature index to highlight (-1 = none)
 uniform int u_highlightOnlyMode;  // 1 = only draw highlighted instance as overlay
 uniform float u_canvasWidth;
+uniform int u_chainMode;  // 1 = cloud/linkedRead (always show chevrons)
 
 // Color uniforms - these match shared/color.ts and theme colors
 uniform vec3 u_colorFwdStrand;    // #EC8B8B
@@ -36,6 +37,12 @@ uniform vec3 u_colorPairRR;       // #3a3a9d (dark blue)
 uniform vec3 u_colorPairLL;       // green
 uniform vec3 u_colorModificationFwd;  // #c8c8c8
 uniform vec3 u_colorModificationRev;  // #c8dcc8
+uniform vec3 u_colorLongInsert;   // red
+uniform vec3 u_colorShortInsert;  // pink
+
+// Insert size thresholds (mean ± 3 SD)
+uniform float u_insertSizeUpper;  // Too long threshold
+uniform float u_insertSizeLower;  // Too short threshold
 
 out vec4 v_color;
 
@@ -83,28 +90,16 @@ vec3 mapqColor(float mapq) {
   return rgb + m;
 }
 
-// Color scheme 3: insert size - HSL based on template_length/10
-// Matches colorByInsertSize: hsl(abs(template_length)/10, 50%, 50%)
+// Color scheme 3: insert size - threshold-based (mean ± 3 SD)
+// Red for too long (> upper), pink for too short (< lower), default for normal
 vec3 insertSizeColor(float insertSize) {
-  float h = insertSize / 10.0 / 360.0;  // template_length/10 as hue
-  float s = 0.5;
-  float l = 0.5;
-
-  // HSL to RGB conversion
-  float c = (1.0 - abs(2.0 * l - 1.0)) * s;
-  float hp = h * 6.0;
-  float x = c * (1.0 - abs(mod(hp, 2.0) - 1.0));
-  float m = l - c / 2.0;
-
-  vec3 rgb;
-  if (hp < 1.0) rgb = vec3(c, x, 0.0);
-  else if (hp < 2.0) rgb = vec3(x, c, 0.0);
-  else if (hp < 3.0) rgb = vec3(0.0, c, x);
-  else if (hp < 4.0) rgb = vec3(0.0, x, c);
-  else if (hp < 5.0) rgb = vec3(x, 0.0, c);
-  else rgb = vec3(c, 0.0, x);
-
-  return rgb + m;
+  if (insertSize > u_insertSizeUpper) {
+    return u_colorLongInsert;  // red - too long
+  }
+  if (insertSize < u_insertSizeLower) {
+    return u_colorShortInsert;  // pink - too short
+  }
+  return u_colorPairLR;  // default (lightgrey) - normal
 }
 
 // Color scheme 4: first-of-pair strand (stranded RNA-seq simplified)
@@ -193,11 +188,11 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float syMid = (syTop + syBot) * 0.5;
 
-  // Chevron width: 5px in clip space, only when zoomed in and feature tall enough
+  // Chevron width: 5px in clip space
   float chevronClip = 5.0 / u_canvasWidth * 2.0;
   float regionLengthBp = u_bpRangeX.z;
   float bpPerPx = regionLengthBp / u_canvasWidth;
-  bool showChevron = bpPerPx < 10.0 && u_featureHeight > 5.0;
+  bool showChevron = (u_chainMode == 1 || bpPerPx < 10.0) && u_featureHeight > 3.0;
 
   float sx;
   float sy;

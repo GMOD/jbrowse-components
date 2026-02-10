@@ -318,6 +318,8 @@ export default function stateModelFactory(
       maxY: 0,
       highlightedFeatureIndex: -1,
       selectedFeatureIndex: -1,
+      highlightedChainIndices: [] as number[],
+      selectedChainIndices: [] as number[],
       colorTagMap: {} as Record<string, string>,
       tagsReady: true,
       // From SharedModificationsMixin
@@ -392,6 +394,34 @@ export default function stateModelFactory(
       get rpcData(): WebGLPileupDataResult | null {
         const iter = self.rpcDataMap.values().next()
         return iter.done ? null : iter.value
+      },
+
+      /**
+       * Chain index map: readName → array of feature indices
+       * Used in cloud/linkedRead modes for chain-level highlighting
+       * Cached as a MST getter so it only recomputes when rpcDataMap changes
+       */
+      get chainIndexMap() {
+        const map = new Map<string, number[]>()
+        if (
+          self.renderingMode === 'cloud' ||
+          self.renderingMode === 'linkedRead'
+        ) {
+          for (const data of self.rpcDataMap.values()) {
+            for (let i = 0; i < data.numReads; i++) {
+              const name = data.readNames[i]
+              if (name) {
+                let indices = map.get(name)
+                if (!indices) {
+                  indices = []
+                  map.set(name, indices)
+                }
+                indices.push(i)
+              }
+            }
+          }
+        }
+        return map
       },
 
       /**
@@ -788,6 +818,14 @@ export default function stateModelFactory(
 
       setSelectedFeatureIndex(index: number) {
         self.selectedFeatureIndex = index
+      },
+
+      setHighlightedChainIndices(indices: number[]) {
+        self.highlightedChainIndices = indices
+      },
+
+      setSelectedChainIndices(indices: number[]) {
+        self.selectedChainIndices = indices
       },
 
       setColorScheme(colorBy: ColorBy) {

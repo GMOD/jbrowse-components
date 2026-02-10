@@ -26,6 +26,8 @@ export interface ColorPalette {
   colorCoverage: RGBColor
   colorModificationFwd: RGBColor
   colorModificationRev: RGBColor
+  colorLongInsert: RGBColor
+  colorShortInsert: RGBColor
 }
 
 export function toRgb(color: string): RGBColor {
@@ -57,4 +59,6 @@ export const defaultColorPalette: ColorPalette = {
   colorCoverage: toRgb('#cccccc'),
   colorModificationFwd: toRgb('#c8c8c8'),
   colorModificationRev: toRgb('#c8dcc8'),
+  colorLongInsert: toRgb(fillColor.color_longinsert),
+  colorShortInsert: toRgb(fillColor.color_shortinsert),
 }

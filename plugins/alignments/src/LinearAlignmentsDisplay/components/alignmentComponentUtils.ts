@@ -49,6 +49,9 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     // Modification mode read colors
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),
+    // Insert size colors
+    colorLongInsert: toRgb(fillColor.color_longinsert),
+    colorShortInsert: toRgb(fillColor.color_shortinsert),
   }
 }
 

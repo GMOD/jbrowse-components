@@ -15,6 +15,7 @@ import {
 } from '../shared/arcUtils.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags.ts'
+import { computeCoverage } from '../shared/computeCoverage.ts'
 import { hasPairedReads } from '../shared/util.ts'
 import { orientationTypes } from '../util.ts'
 
@@ -359,6 +360,15 @@ export async function executeRenderWebGLArcsData({
     }
   }
 
+  // Compute basic depth coverage from feature start/end positions
+  const coverageFeatures = deduped.map(f => ({
+    start: f.get('start') as number,
+    end: f.get('end') as number,
+  }))
+  const intRegionStart = Math.floor(region.start)
+  const regionEnd = Math.ceil(region.end)
+  const coverage = computeCoverage(coverageFeatures, [], intRegionStart, regionEnd)
+
   return {
     regionStart,
     arcX1: new Float32Array(arcX1s),
@@ -370,5 +380,9 @@ export async function executeRenderWebGLArcsData({
     lineYs: new Float32Array(lineData.ys),
     lineColorTypes: new Float32Array(lineData.colorTypes),
     numLines: lineData.positions.length / 2,
+    coverageDepths: coverage.depths,
+    coverageMaxDepth: coverage.maxDepth,
+    coverageBinSize: coverage.binSize,
+    coverageStartOffset: coverage.startOffset,
   }
 }

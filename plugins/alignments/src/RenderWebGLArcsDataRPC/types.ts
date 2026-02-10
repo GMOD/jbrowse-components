@@ -11,4 +11,9 @@ export interface WebGLArcsDataResult {
   lineYs: Float32Array // y positions (2 per line: y0, y1)
   lineColorTypes: Float32Array // color types (2 per line)
   numLines: number
+  // Coverage data (basic depth from feature start/end, no CIGAR-level detail)
+  coverageDepths: Float32Array
+  coverageMaxDepth: number
+  coverageBinSize: number
+  coverageStartOffset: number
 }

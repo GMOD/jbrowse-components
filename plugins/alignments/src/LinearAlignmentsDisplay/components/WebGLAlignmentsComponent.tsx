@@ -94,12 +94,17 @@ interface LinearAlignmentsDisplayModel {
   currentRangeY: [number, number]
   highlightedFeatureIndex: number
   selectedFeatureIndex: number
+  highlightedChainIndices: number[]
+  selectedChainIndices: number[]
+  chainIndexMap: Map<string, number[]>
   setMaxY: (y: number) => void
   setCurrentBpRange: (domain: [number, number]) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setHighlightedFeatureIndex: (index: number) => void
   setSelectedFeatureIndex: (index: number) => void
+  setHighlightedChainIndices: (indices: number[]) => void
+  setSelectedChainIndices: (indices: number[]) => void
   setFeatureIdUnderMouse: (id: string | undefined) => void
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (featureId: string) => void
@@ -175,6 +180,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     startHeight: 0,
   })
 
+
   const view = getContainingView(model) as LinearGenomeViewModel | undefined
   const viewId = view?.id
 
@@ -203,6 +209,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     showSashimiArcs,
     renderingMode,
   } = model
+  const isChainMode =
+    renderingMode === 'cloud' || renderingMode === 'linkedRead'
 
   // Use measured dimensions from ResizeObserver (preferred, passive)
   // Fall back to view.width if not yet measured
@@ -307,6 +315,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       canvasHeight: height,
       highlightedFeatureIndex: model.highlightedFeatureIndex,
       selectedFeatureIndex: model.selectedFeatureIndex,
+      highlightedChainIndices: model.highlightedChainIndices,
+      selectedChainIndices: model.selectedChainIndices,
       colors: colorPalette,
       renderingMode,
       arcLineWidth: model.arcsState.lineWidth,
@@ -685,6 +695,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     if (model.highlightedFeatureIndex !== -1) {
       model.setHighlightedFeatureIndex(-1)
     }
+    if (model.highlightedChainIndices.length > 0) {
+      model.setHighlightedChainIndices([])
+    }
   }, [model])
 
   // Resolve which rpcData + visible bp range to use for a given canvasX.
@@ -797,6 +810,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         if (model.highlightedFeatureIndex !== -1) {
           model.setHighlightedFeatureIndex(-1)
         }
+        if (model.highlightedChainIndices.length > 0) {
+          model.setHighlightedChainIndices([])
+        }
         return
       }
 
@@ -830,6 +846,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         model.setMouseoverExtraInformation(tooltipData)
         if (model.highlightedFeatureIndex !== -1) {
           model.setHighlightedFeatureIndex(-1)
+        }
+        if (model.highlightedChainIndices.length > 0) {
+          model.setHighlightedChainIndices([])
         }
         return
       }
@@ -898,6 +917,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
         if (model.highlightedFeatureIndex !== -1) {
           model.setHighlightedFeatureIndex(-1)
+        }
+        if (model.highlightedChainIndices.length > 0) {
+          model.setHighlightedChainIndices([])
         }
         return
       }
@@ -986,6 +1008,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
               featureResolved2,
               featureCoords2_2,
               featureHeightSetting,
+              isChainMode,
             )
           : undefined
       const featureId = hit?.id
@@ -995,6 +1018,17 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
       if (model.highlightedFeatureIndex !== featureIndex) {
         model.setHighlightedFeatureIndex(featureIndex)
+      }
+
+      // In chain modes, highlight all reads in the chain
+      if (isChainMode && hit) {
+        const readName = featureResolved2?.rpcData.readNames[hit.index]
+        const chainIndices = readName
+          ? (model.chainIndexMap.get(readName) ?? [])
+          : []
+        model.setHighlightedChainIndices(chainIndices)
+      } else if (model.highlightedChainIndices.length > 0) {
+        model.setHighlightedChainIndices([])
       }
 
       // Set tooltip info
@@ -1020,6 +1054,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       featureSpacing,
       showCoverage,
       coverageHeight,
+      isChainMode,
     ],
   )
 
@@ -1287,14 +1322,27 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
               featureResolved,
               featureCoords,
               featureHeightSetting,
+              isChainMode,
             )
           : undefined
       if (hit) {
         model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
+
+        // In chain modes, select all reads in the chain
+        if (isChainMode) {
+          const readName = featureResolved?.rpcData.readNames[hit.index]
+          const chainIndices = readName
+            ? (model.chainIndexMap.get(readName) ?? [])
+            : []
+          model.setSelectedChainIndices(chainIndices)
+        }
       } else {
         if (model.selectedFeatureIndex !== -1) {
           model.setSelectedFeatureIndex(-1)
+        }
+        if (model.selectedChainIndices.length > 0) {
+          model.setSelectedChainIndices([])
         }
       }
     },
@@ -1306,6 +1354,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       coverageHeight,
       showInterbaseIndicators,
       model,
+      isChainMode,
     ],
   )
 
@@ -1336,6 +1385,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
               contextResolved,
               contextCoords,
               featureHeightSetting,
+              isChainMode,
             )
           : undefined
       if (hit) {
@@ -1352,6 +1402,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       featureSpacing,
       showCoverage,
       coverageHeight,
+      isChainMode,
     ],
   )
 

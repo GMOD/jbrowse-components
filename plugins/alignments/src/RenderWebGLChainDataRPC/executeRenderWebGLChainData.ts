@@ -35,11 +35,24 @@ import {
 } from '../shared/computeCoverage.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
-import { getModificationName } from '../shared/modificationData.ts'
-import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
+import {
+  baseToAscii,
+  getEffectiveStrand,
+  pairOrientationToNum,
+  parseCssColor,
+} from '../shared/webglRpcUtils.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
 import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types.ts'
+import type {
+  ChainFeatureData,
+  GapData,
+  HardclipData,
+  InsertionData,
+  MismatchData,
+  ModificationEntry,
+  SoftclipData,
+} from '../shared/webglRpcTypes.ts'
 import type { ChainStats } from '../shared/types.ts'
 import type { Mismatch } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -56,70 +69,6 @@ export interface RenderWebGLChainDataArgs extends RenderWebGLPileupDataArgs {
   height: number
 }
 
-interface FeatureData {
-  id: string
-  name: string
-  start: number
-  end: number
-  flags: number
-  mapq: number
-  insertSize: number
-  pairOrientation: number
-  strand: number
-  refName: string
-  nextRef: string | undefined
-  pairOrientationStr: string | undefined
-  templateLength: number
-}
-
-interface GapData {
-  featureId: string
-  start: number
-  end: number
-  type: 'deletion' | 'skip'
-  strand: number
-  featureStrand: number
-}
-
-interface MismatchData {
-  featureId: string
-  position: number
-  base: number
-  strand: number
-}
-
-interface InsertionData {
-  featureId: string
-  position: number
-  length: number
-  sequence?: string
-}
-
-interface SoftclipData {
-  featureId: string
-  position: number
-  length: number
-}
-
-interface HardclipData {
-  featureId: string
-  position: number
-  length: number
-}
-
-interface ModificationEntry {
-  featureId: string
-  position: number
-  base: string
-  modType: string
-  isSimplex: boolean
-  strand: number
-  r: number
-  g: number
-  b: number
-  prob: number
-}
-
 const CLOUD_HEIGHT_PADDING = 20
 const DEFAULT_MAX_DISTANCE = 10000
 
@@ -131,88 +80,7 @@ function createCloudScale(maxDistance: number, height: number) {
     .clamp(true)
 }
 
-function parseRgbColor(color: string): [number, number, number] {
-  const match = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(color)
-  if (match) {
-    return [+match[1]!, +match[2]!, +match[3]!]
-  }
-  return [128, 128, 128]
-}
-
-const namedColorMap: Record<string, [number, number, number]> = {
-  pink: [255, 192, 203],
-  lightblue: [173, 216, 230],
-  lightgreen: [144, 238, 144],
-  tan: [210, 180, 140],
-  lightsalmon: [255, 160, 122],
-  lightgrey: [200, 200, 200],
-}
-
-function parseCssColor(color: string): [number, number, number] {
-  const lower = color.toLowerCase().trim()
-  const named = namedColorMap[lower]
-  if (named) {
-    return named
-  }
-  const hex6 = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color)
-  if (hex6) {
-    return [
-      parseInt(hex6[1]!, 16),
-      parseInt(hex6[2]!, 16),
-      parseInt(hex6[3]!, 16),
-    ]
-  }
-  const hex3 = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(color)
-  if (hex3) {
-    return [
-      parseInt(hex3[1]! + hex3[1]!, 16),
-      parseInt(hex3[2]! + hex3[2]!, 16),
-      parseInt(hex3[3]! + hex3[3]!, 16),
-    ]
-  }
-  return parseRgbColor(color)
-}
-
-function baseToAscii(base: string) {
-  return base.toUpperCase().charCodeAt(0)
-}
-
-function getEffectiveStrand(feature: Feature) {
-  const tags = feature.get('tags') as Record<string, string> | undefined
-  const fstrand = feature.get('strand') ?? 0
-  const xs = tags?.XS || tags?.TS
-  const ts = tags?.ts
-  if (xs === '+') {
-    return 1
-  } else if (xs === '-') {
-    return -1
-  }
-  return (ts === '+' ? 1 : ts === '-' ? -1 : 0) * fstrand
-}
-
-function pairOrientationToNum(pairOrientation: string | undefined) {
-  if (!pairOrientation) {
-    return 0
-  }
-  switch (pairOrientation) {
-    case 'F1R2':
-    case 'F2R1':
-      return 1
-    case 'R1F2':
-    case 'R2F1':
-      return 2
-    case 'F1F2':
-    case 'F2F1':
-      return 3
-    case 'R1R2':
-    case 'R2R1':
-      return 4
-    default:
-      return 0
-  }
-}
-
-function getColorType(f: FeatureData, stats?: ChainStats) {
+function getColorType(f: ChainFeatureData, stats?: ChainStats) {
   const pairType = getPairedType({
     type: 'insertSizeAndOrientation',
     f: {
@@ -265,366 +133,6 @@ function computeChainLayout(
   return layoutMap
 }
 
-function getFeatureExtent(
-  features: { start: number; end: number }[],
-  regionStart: number,
-  regionEnd: number,
-) {
-  const maxExtension = regionEnd - regionStart
-  let actualStart = regionStart
-  let actualEnd = regionEnd
-  for (const f of features) {
-    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
-      actualStart = f.start
-    }
-    if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
-      actualEnd = f.end
-    }
-  }
-  return { actualStart, actualEnd }
-}
-
-function computeCoverage(
-  features: FeatureData[],
-  gaps: GapData[],
-  regionStart: number,
-  regionEnd: number,
-) {
-  if (features.length === 0) {
-    return {
-      depths: new Float32Array(0),
-      maxDepth: 0,
-      binSize: 1,
-      startOffset: 0,
-    }
-  }
-
-  const { actualStart, actualEnd } = getFeatureExtent(
-    features,
-    regionStart,
-    regionEnd,
-  )
-
-  const startOffset = actualStart - regionStart
-  const regionLength = actualEnd - actualStart
-  const binSize = 1
-  const numBins = regionLength
-
-  const events: { pos: number; delta: number }[] = []
-  for (const f of features) {
-    events.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
-  }
-  for (const g of gaps) {
-    events.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-  }
-  events.sort((a, b) => a.pos - b.pos)
-
-  const depths = new Float32Array(numBins)
-  let currentDepth = 0
-  let maxDepth = 0
-  let eventIdx = 0
-
-  for (let binIdx = 0; binIdx < numBins; binIdx++) {
-    const binEnd = actualStart + (binIdx + 1) * binSize
-    while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
-      currentDepth += events[eventIdx]!.delta
-      eventIdx++
-    }
-    depths[binIdx] = currentDepth
-    if (currentDepth > maxDepth) {
-      maxDepth = currentDepth
-    }
-  }
-
-  return {
-    depths,
-    maxDepth: maxDepth || 1,
-    binSize,
-    startOffset,
-  }
-}
-
-function computeSNPCoverage(
-  mismatches: MismatchData[],
-  maxDepth: number,
-  regionStart: number,
-) {
-  if (mismatches.length === 0 || maxDepth === 0) {
-    return {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colorTypes: new Uint8Array(0),
-      count: 0,
-    }
-  }
-
-  const snpByPosition = new Map<
-    number,
-    { position: number; a: number; c: number; g: number; t: number }
-  >()
-  for (const mm of mismatches) {
-    let entry = snpByPosition.get(mm.position)
-    if (!entry) {
-      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0 }
-      snpByPosition.set(mm.position, entry)
-    }
-    if (mm.base === 65) {
-      entry.a++
-    } else if (mm.base === 67) {
-      entry.c++
-    } else if (mm.base === 71) {
-      entry.g++
-    } else if (mm.base === 84) {
-      entry.t++
-    }
-  }
-
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    colorType: number
-  }[] = []
-
-  for (const entry of snpByPosition.values()) {
-    const total = entry.a + entry.c + entry.g + entry.t
-    if (total === 0) {
-      continue
-    }
-    let yOffset = 0
-    if (entry.a > 0) {
-      const height = entry.a / maxDepth
-      segments.push({ position: entry.position, yOffset, height, colorType: 1 })
-      yOffset += height
-    }
-    if (entry.c > 0) {
-      const height = entry.c / maxDepth
-      segments.push({ position: entry.position, yOffset, height, colorType: 2 })
-      yOffset += height
-    }
-    if (entry.g > 0) {
-      const height = entry.g / maxDepth
-      segments.push({ position: entry.position, yOffset, height, colorType: 3 })
-      yOffset += height
-    }
-    if (entry.t > 0) {
-      const height = entry.t / maxDepth
-      segments.push({ position: entry.position, yOffset, height, colorType: 4 })
-    }
-  }
-
-  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const positions = new Uint32Array(filteredSegments.length)
-  const yOffsets = new Float32Array(filteredSegments.length)
-  const heights = new Float32Array(filteredSegments.length)
-  const colorTypes = new Uint8Array(filteredSegments.length)
-
-  for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position - regionStart
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colorTypes[i] = seg.colorType
-  }
-
-  return { positions, yOffsets, heights, colorTypes, count: filteredSegments.length }
-}
-
-const MINIMUM_INDICATOR_READ_DEPTH = 7
-const INDICATOR_THRESHOLD = 0.3
-
-function computeNoncovCoverage(
-  insertions: InsertionData[],
-  softclips: SoftclipData[],
-  hardclips: HardclipData[],
-  maxDepth: number,
-  regionStart: number,
-) {
-  const noncovByPosition = new Map<
-    number,
-    { position: number; insertion: number; softclip: number; hardclip: number }
-  >()
-
-  for (const ins of insertions) {
-    let entry = noncovByPosition.get(ins.position)
-    if (!entry) {
-      entry = { position: ins.position, insertion: 0, softclip: 0, hardclip: 0 }
-      noncovByPosition.set(ins.position, entry)
-    }
-    entry.insertion++
-  }
-  for (const sc of softclips) {
-    let entry = noncovByPosition.get(sc.position)
-    if (!entry) {
-      entry = { position: sc.position, insertion: 0, softclip: 0, hardclip: 0 }
-      noncovByPosition.set(sc.position, entry)
-    }
-    entry.softclip++
-  }
-  for (const hc of hardclips) {
-    let entry = noncovByPosition.get(hc.position)
-    if (!entry) {
-      entry = { position: hc.position, insertion: 0, softclip: 0, hardclip: 0 }
-      noncovByPosition.set(hc.position, entry)
-    }
-    entry.hardclip++
-  }
-
-  if (noncovByPosition.size === 0) {
-    return {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colorTypes: new Uint8Array(0),
-      indicatorPositions: new Uint32Array(0),
-      indicatorColorTypes: new Uint8Array(0),
-      maxCount: 0,
-      segmentCount: 0,
-      indicatorCount: 0,
-    }
-  }
-
-  let maxCount = 1
-  for (const entry of noncovByPosition.values()) {
-    const total = entry.insertion + entry.softclip + entry.hardclip
-    if (total > maxCount) {
-      maxCount = total
-    }
-  }
-
-  const segments: { position: number; yOffset: number; height: number; colorType: number }[] = []
-  const indicators: { position: number; colorType: number }[] = []
-
-  for (const entry of noncovByPosition.values()) {
-    const total = entry.insertion + entry.softclip + entry.hardclip
-    if (total === 0) {
-      continue
-    }
-    let yOffset = 0
-    if (entry.insertion > 0) {
-      const height = entry.insertion / maxCount
-      segments.push({ position: entry.position, yOffset, height, colorType: 1 })
-      yOffset += height
-    }
-    if (entry.softclip > 0) {
-      const height = entry.softclip / maxCount
-      segments.push({ position: entry.position, yOffset, height, colorType: 2 })
-      yOffset += height
-    }
-    if (entry.hardclip > 0) {
-      const height = entry.hardclip / maxCount
-      segments.push({ position: entry.position, yOffset, height, colorType: 3 })
-    }
-    if (
-      maxDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
-      total > maxDepth * INDICATOR_THRESHOLD
-    ) {
-      let dominantType = 1
-      let dominantCount = entry.insertion
-      if (entry.softclip > dominantCount) {
-        dominantType = 2
-        dominantCount = entry.softclip
-      }
-      if (entry.hardclip > dominantCount) {
-        dominantType = 3
-      }
-      indicators.push({ position: entry.position, colorType: dominantType })
-    }
-  }
-
-  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const filteredIndicators = indicators.filter(ind => ind.position >= regionStart)
-
-  const positions = new Uint32Array(filteredSegments.length)
-  const yOffsets = new Float32Array(filteredSegments.length)
-  const heights = new Float32Array(filteredSegments.length)
-  const colorTypes = new Uint8Array(filteredSegments.length)
-
-  for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position - regionStart
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colorTypes[i] = seg.colorType
-  }
-
-  const indicatorPositions = new Uint32Array(filteredIndicators.length)
-  const indicatorColorTypes = new Uint8Array(filteredIndicators.length)
-  for (const [i, ind] of filteredIndicators.entries()) {
-    indicatorPositions[i] = ind.position - regionStart
-    indicatorColorTypes[i] = ind.colorType
-  }
-
-  return {
-    positions,
-    yOffsets,
-    heights,
-    colorTypes,
-    indicatorPositions,
-    indicatorColorTypes,
-    maxCount,
-    segmentCount: filteredSegments.length,
-    indicatorCount: filteredIndicators.length,
-  }
-}
-
-function computeSashimiJunctions(gaps: GapData[], regionStart: number) {
-  const junctions = new Map<
-    string,
-    { start: number; end: number; fwd: number; rev: number }
-  >()
-
-  for (const gap of gaps) {
-    if (gap.type !== 'skip') {
-      continue
-    }
-    const key = `${gap.start}:${gap.end}`
-    let j = junctions.get(key)
-    if (!j) {
-      j = { start: gap.start, end: gap.end, fwd: 0, rev: 0 }
-      junctions.set(key, j)
-    }
-    if (gap.strand === 1) {
-      j.fwd++
-    } else {
-      j.rev++
-    }
-  }
-
-  const arcs: { start: number; end: number; count: number; colorType: number }[] = []
-  for (const j of junctions.values()) {
-    if (j.fwd > 0) {
-      arcs.push({ start: j.start, end: j.end, count: j.fwd, colorType: 0 })
-    }
-    if (j.rev > 0) {
-      arcs.push({ start: j.start, end: j.end, count: j.rev, colorType: 1 })
-    }
-  }
-
-  const n = arcs.length
-  const sashimiX1 = new Float32Array(n)
-  const sashimiX2 = new Float32Array(n)
-  const sashimiScores = new Float32Array(n)
-  const sashimiColorTypes = new Uint8Array(n)
-  const sashimiCounts = new Uint32Array(n)
-
-  for (let i = 0; i < n; i++) {
-    const arc = arcs[i]!
-    sashimiX1[i] = arc.start - regionStart
-    sashimiX2[i] = arc.end - regionStart
-    sashimiScores[i] = Math.log(arc.count + 1)
-    sashimiColorTypes[i] = arc.colorType
-    sashimiCounts[i] = arc.count
-  }
-
-  return {
-    sashimiX1,
-    sashimiX2,
-    sashimiScores,
-    sashimiColorTypes,
-    sashimiCounts,
-    numSashimiArcs: n,
-  }
-}
 
 export async function executeRenderWebGLChainData({
   pluginManager,
@@ -719,7 +227,7 @@ export async function executeRenderWebGLChainData({
   } = await updateStatus('Processing alignments', statusCallback, async () => {
     const deduped = dedupe(featuresArray, (f: Feature) => f.id())
 
-    const featuresData: FeatureData[] = []
+    const featuresData: ChainFeatureData[] = []
     const gapsData: GapData[] = []
     const mismatchesData: MismatchData[] = []
     const insertionsData: InsertionData[] = []
@@ -831,7 +339,7 @@ export async function executeRenderWebGLChainData({
               }
               if (colorBy?.type === 'modifications' && prob >= modThreshold) {
                 const color = getColorForModification(type)
-                const [r, g, b] = parseRgbColor(color)
+                const [r, g, b] = parseCssColor(color)
                 modificationsData.push({
                   featureId,
                   position: featureStart + refPos,
@@ -1324,6 +832,9 @@ export async function executeRenderWebGLChainData({
 
     detectedModifications: Array.from(detectedModifications),
     simplexModifications: Array.from(detectedSimplexModifications),
+
+    // Insert size statistics (mean ± 3 SD thresholds)
+    insertSizeStats: chainStats,
   }
 
   const transferables = [
