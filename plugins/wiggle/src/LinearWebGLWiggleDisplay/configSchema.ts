@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 export default ConfigurationSchema(
-  'LinearWebGLWiggleDisplay',
+  'LinearWiggleDisplay',
   {
     defaultRendering: {
       type: 'stringEnum',
@@ -17,17 +17,17 @@ export default ConfigurationSchema(
     },
     color: {
       type: 'color',
-      defaultValue: '#0068d1',
+      defaultValue: '#f0f',
       description: 'Color for the wiggle bars',
     },
     posColor: {
       type: 'color',
-      defaultValue: '#f0636b',
+      defaultValue: '#0068d1',
       description: 'Color for positive scores (when using bicolor)',
     },
     negColor: {
       type: 'color',
-      defaultValue: '#3d8ec9',
+      defaultValue: '#f0636b',
       description: 'Color for negative scores (when using bicolor)',
     },
     bicolorPivot: {

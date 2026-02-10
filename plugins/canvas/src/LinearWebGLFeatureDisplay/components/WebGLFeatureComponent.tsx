@@ -222,7 +222,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       return
     }
 
-    const visibleRegions = model.visibleRegions
+    const visibleRegions = view.visibleRegions
     if (visibleRegions.length === 0) {
       return
     }
@@ -446,7 +446,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const { feature, subfeature } = performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         rpcDataMap,
-        model.visibleRegions,
+        view.visibleRegions,
         mouseX,
         yPos,
       )
@@ -494,7 +494,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const { feature, subfeature } = performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         model.rpcDataMap,
-        model.visibleRegions,
+        view.visibleRegions,
         mouseX,
         yPos,
       )
@@ -515,7 +515,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const { feature } = performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         model.rpcDataMap,
-        model.visibleRegions,
+        view.visibleRegions,
         mouseX,
         yPos,
       )
@@ -539,7 +539,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   const bpPerPx = view?.bpPerPx
   const offsetPx = view?.offsetPx
-  const visibleRegions = model.visibleRegions
+  const visibleRegions = view.visibleRegions
 
   // Compute floating label positions (multi-region aware)
   const floatingLabelElements = useMemo(() => {

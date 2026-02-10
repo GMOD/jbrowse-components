@@ -319,7 +319,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
 
     // All modes use renderBlocks for multi-region support
-    const regions = model.visibleRegions
+    const regions = view.visibleRegions
     const blocks = regions.map(r => ({
       regionNumber: r.regionNumber,
       bpRangeX: [r.start, r.end] as [number, number],
@@ -691,7 +691,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return undefined
       }
 
-      const regions = model.visibleRegions
+      const regions = view.visibleRegions
       const dataMap = model.rpcDataMap
 
       for (const r of regions) {

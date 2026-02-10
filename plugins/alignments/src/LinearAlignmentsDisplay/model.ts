@@ -122,6 +122,16 @@ export interface Region {
   assemblyName?: string
 }
 
+function getDisplayStr(totalBytes: number) {
+  if (Math.floor(totalBytes / 1000000) > 0) {
+    return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+  }
+  if (Math.floor(totalBytes / 1000) > 0) {
+    return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+  }
+  return `${Math.floor(totalBytes)} bytes`
+}
+
 function getSequenceAdapter(session: any, region: Region) {
   const assembly = region.assemblyName
     ? session.assemblyManager.get(region.assemblyName)
@@ -393,16 +403,6 @@ export default function stateModelFactory(
         return iter.done ? null : iter.value
       },
 
-      get visibleRegions() {
-        const view = getContainingView(self) as LGV
-        return view.visibleRegions
-      },
-
-      get fetchRegions() {
-        const view = getContainingView(self) as LGV
-        return view.staticRegions
-      },
-
       /**
        * Get the primary visible region from the parent view.
        * Uses currentBpRangeX if set by the WebGL component (source of truth during/after interaction)
@@ -542,10 +542,29 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      getFeatureInfoById(featureId: string) {
-        // Search across all loaded regionNumber data
-        const view = getContainingView(self) as LGV
-        const displayedRegions = view.displayedRegions
+      /**
+       * Compatibility getter for BreakpointSplitView overlay which reads
+       * display.scrollTop to position SVG curves. The WebGL display manages
+       * Y scrolling via currentRangeY[0] rather than the inherited scrollTop.
+       */
+      get scrollTop() {
+        return self.currentRangeY[0]
+      },
+
+      /**
+       * Effective coverage display height for BreakpointSplitView overlay
+       * Y offset. Returns 0 when coverage is hidden.
+       */
+      get coverageDisplayHeight() {
+        return self.showCoverage ? self.coverageHeight : 0
+      },
+
+      /**
+       * Find a feature by ID in rpcDataMap, returning the regionNumber,
+       * index, and rpcData entry. Shared by searchFeatureByID and
+       * getFeatureInfoById.
+       */
+      findFeatureInRpcData(featureId: string) {
         for (const [regionNumber, rpcData] of self.rpcDataMap) {
           const idx = rpcData.readIds.indexOf(featureId)
           if (idx === -1) {
@@ -553,28 +572,58 @@ export default function stateModelFactory(
           }
           const startOffset = rpcData.readPositions[idx * 2]
           const endOffset = rpcData.readPositions[idx * 2 + 1]
-          if (startOffset === undefined || endOffset === undefined) {
-            continue
-          }
-          const start = rpcData.regionStart + startOffset
-          const end = rpcData.regionStart + endOffset
-          const flags = rpcData.readFlags[idx]
-          const mapq = rpcData.readMapqs[idx]
-          const strand = flags !== undefined && flags & 16 ? '-' : '+'
-          const name = rpcData.readNames[idx] ?? ''
-          const refName = displayedRegions[regionNumber]?.refName ?? 'unknown'
-          return {
-            id: featureId,
-            name,
-            start,
-            end,
-            flags,
-            mapq,
-            strand,
-            refName,
+          if (startOffset !== undefined && endOffset !== undefined) {
+            return { regionNumber, idx, rpcData, startOffset, endOffset }
           }
         }
         return undefined
+      },
+
+      /**
+       * Return a LayoutRecord [left, top, right, bottom] for
+       * BreakpointSplitView overlay compatibility.
+       */
+      searchFeatureByID(
+        featureId: string,
+      ): [number, number, number, number] | undefined {
+        const hit = this.findFeatureInRpcData(featureId)
+        if (!hit) {
+          return undefined
+        }
+        const { rpcData, idx, startOffset, endOffset } = hit
+        const yRow = rpcData.readYs?.[idx]
+        if (yRow === undefined) {
+          return undefined
+        }
+        const rowHeight = self.featureHeightSetting + self.featureSpacing
+        const left = rpcData.regionStart + startOffset
+        const right = rpcData.regionStart + endOffset
+        const top = yRow * rowHeight
+        const bottom = top + self.featureHeightSetting
+        return [left, top, right, bottom]
+      },
+
+      getFeatureInfoById(featureId: string) {
+        const hit = this.findFeatureInRpcData(featureId)
+        if (!hit) {
+          return undefined
+        }
+        const { regionNumber, idx, rpcData, startOffset, endOffset } = hit
+        const view = getContainingView(self) as LGV
+        const flags = rpcData.readFlags[idx]
+        return {
+          id: featureId,
+          name: rpcData.readNames[idx] ?? '',
+          start: rpcData.regionStart + startOffset,
+          end: rpcData.regionStart + endOffset,
+          flags,
+          mapq: rpcData.readMapqs[idx],
+          strand: (flags !== undefined && flags & 16 ? '-' : '+') as
+            | '-'
+            | '+',
+          refName:
+            view.displayedRegions[regionNumber]?.refName ?? 'unknown',
+        }
       },
     }))
     .views(self => ({
@@ -933,16 +982,6 @@ export default function stateModelFactory(
     .actions(self => {
       const fetchGenerations = new Map<number, number>()
 
-      function getDisplayStr(totalBytes: number) {
-        if (Math.floor(totalBytes / 1000000) > 0) {
-          return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
-        }
-        if (Math.floor(totalBytes / 1000) > 0) {
-          return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
-        }
-        return `${Math.floor(totalBytes)} bytes`
-      }
-
       async function fetchPileupData(
         session: { rpcManager: any },
         adapterConfig: unknown,
@@ -1139,7 +1178,8 @@ export default function stateModelFactory(
       }
 
       function fetchAllVisibleRegions() {
-        const regions = self.fetchRegions
+        const view = getContainingView(self) as LGV
+        const regions = view.staticRegions
         for (const region of regions) {
           const loaded = self.loadedRegions.get(region.regionNumber)
           if (
@@ -1186,7 +1226,7 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const regions = self.fetchRegions
+                const regions = view.staticRegions
                 if (regions.length === 0) {
                   return
                 }

@@ -154,16 +154,6 @@ export default function stateModelFactory(
         return iter.done ? null : iter.value
       },
 
-      get visibleRegions() {
-        const view = getContainingView(self) as LGV
-        return view.visibleRegions
-      },
-
-      get fetchRegions() {
-        const view = getContainingView(self) as LGV
-        return view.staticRegions
-      },
-
       get visibleRegion() {
         try {
           const view = getContainingView(self) as LGV
@@ -357,8 +347,9 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
+                const view = getContainingView(self) as LGV
                 const promises: Promise<void>[] = []
-                for (const vr of self.fetchRegions) {
+                for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
                     loaded?.refName === vr.refName &&

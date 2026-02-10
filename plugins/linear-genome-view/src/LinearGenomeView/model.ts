@@ -1434,10 +1434,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * Returns static block content merged by regionNumber into single
-         * regions. Static blocks extend ~800px beyond the viewport, so these
-         * are pre-expanded fetch regions. Used by WebGL displays to decide
-         * what data to fetch.
+         * Merges staticBlocks back into one region per regionNumber. This
+         * undoes the 800px chunking that staticBlocks performs, but reuses
+         * its caching/stability so the result doesn't change on small pans.
+         * Used by WebGL displays as pre-expanded fetch regions.
          */
         get staticRegions() {
           const regionMap = new Map<

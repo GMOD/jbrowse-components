@@ -190,7 +190,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
-    const visibleRegions = model.visibleRegions
+    const visibleRegions = view.visibleRegions
     if (visibleRegions.length === 0) {
       return
     }
@@ -248,7 +248,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     model.height,
     model.scaleType,
     model.renderingType,
-    model.visibleRegions,
+    view.visibleRegions,
     model.domain,
     view.initialized,
     view.width,
