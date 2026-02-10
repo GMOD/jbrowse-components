@@ -132,33 +132,7 @@ export default function stateModelFactory(
 
       get fetchRegions() {
         const view = getContainingView(self) as LGV
-        const regionMap = new Map<
-          number,
-          {
-            refName: string
-            start: number
-            end: number
-            assemblyName?: string
-            regionNumber: number
-          }
-        >()
-        for (const block of view.staticBlocks.contentBlocks) {
-          const regionNumber = block.regionNumber!
-          const existing = regionMap.get(regionNumber)
-          if (existing) {
-            existing.start = Math.min(existing.start, block.start)
-            existing.end = Math.max(existing.end, block.end)
-          } else {
-            regionMap.set(regionNumber, {
-              refName: block.refName,
-              start: block.start,
-              end: block.end,
-              assemblyName: block.assemblyName,
-              regionNumber,
-            })
-          }
-        }
-        return [...regionMap.values()]
+        return view.staticRegions
       },
 
       get visibleRegion() {
@@ -211,24 +185,6 @@ export default function stateModelFactory(
         } catch {
           return null
         }
-      },
-
-      get isWithinLoadedRegions() {
-        const visibleRegions = this.fetchRegions
-        if (visibleRegions.length === 0) {
-          return false
-        }
-        for (const vr of visibleRegions) {
-          const loaded = self.loadedRegions.get(vr.regionNumber)
-          if (
-            loaded?.refName !== vr.refName ||
-            vr.start < loaded.start ||
-            vr.end > loaded.end
-          ) {
-            return false
-          }
-        }
-        return true
       },
 
       get domain(): [number, number] | undefined {
@@ -394,25 +350,21 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const fetchRegions = self.fetchRegions
-                const isWithinLoaded = self.isWithinLoadedRegions
-                if (fetchRegions.length > 0 && !isWithinLoaded) {
+                const promises: Promise<void>[] = []
+                for (const vr of self.fetchRegions) {
+                  const loaded = self.loadedRegions.get(vr.regionNumber)
+                  if (
+                    loaded?.refName === vr.refName &&
+                    vr.start >= loaded.start &&
+                    vr.end <= loaded.end
+                  ) {
+                    continue
+                  }
+                  promises.push(fetchFeaturesForRegion(vr, vr.regionNumber))
+                }
+                if (promises.length > 0) {
                   self.setLoading(true)
                   self.setError(null)
-
-                  const promises: Promise<void>[] = []
-                  for (const vr of fetchRegions) {
-                    const loaded = self.loadedRegions.get(vr.regionNumber)
-                    if (
-                      loaded?.refName === vr.refName &&
-                      vr.start >= loaded.start &&
-                      vr.end <= loaded.end
-                    ) {
-                      continue
-                    }
-                    promises.push(fetchFeaturesForRegion(vr, vr.regionNumber))
-                  }
-
                   Promise.all(promises)
                     .then(() => {
                       self.setLoading(false)

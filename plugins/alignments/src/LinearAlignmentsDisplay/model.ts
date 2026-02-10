@@ -400,33 +400,7 @@ export default function stateModelFactory(
 
       get fetchRegions() {
         const view = getContainingView(self) as LGV
-        const regionMap = new Map<
-          number,
-          {
-            refName: string
-            start: number
-            end: number
-            assemblyName?: string
-            regionNumber: number
-          }
-        >()
-        for (const block of view.staticBlocks.contentBlocks) {
-          const regionNumber = block.regionNumber!
-          const existing = regionMap.get(regionNumber)
-          if (existing) {
-            existing.start = Math.min(existing.start, block.start)
-            existing.end = Math.max(existing.end, block.end)
-          } else {
-            regionMap.set(regionNumber, {
-              refName: block.refName,
-              start: block.start,
-              end: block.end,
-              assemblyName: block.assemblyName,
-              regionNumber,
-            })
-          }
-        }
-        return [...regionMap.values()]
+        return view.staticRegions
       },
 
       /**
@@ -507,27 +481,6 @@ export default function stateModelFactory(
       get showModifications(): boolean {
         const t = this.colorBy.type
         return t === 'modifications' || t === 'methylation'
-      },
-
-      /**
-       * Check if current view is within loaded data region
-       */
-      get isWithinLoadedRegion(): boolean {
-        const regions = this.visibleRegions
-        if (regions.length === 0) {
-          return false
-        }
-        for (const region of regions) {
-          const loaded = self.loadedRegions.get(region.regionNumber)
-          if (
-            !loaded ||
-            region.start < loaded.start ||
-            region.end > loaded.end
-          ) {
-            return false
-          }
-        }
-        return true
       },
 
       get showLoading() {
