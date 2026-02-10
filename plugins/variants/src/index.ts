@@ -5,10 +5,6 @@ import LDDisplayF from './LDDisplay/index.ts'
 import LDRendererF from './LDRenderer/index.ts'
 import LDTrackF from './LDTrack/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
-import MultiLinearVariantDisplayF from './MultiLinearVariantDisplay/index.ts'
-import LinearVariantMatrixDisplayF from './MultiLinearVariantMatrixDisplay/index.ts'
-import LinearVariantMatrixRendererF from './MultiLinearVariantMatrixRenderer/index.ts'
-import MultiVariantRendererF from './MultiLinearVariantRenderer/index.ts'
 import MultiWebGLVariantDisplayF from './MultiWebGLVariantDisplay/index.ts'
 import MultiWebGLVariantMatrixDisplayF from './MultiWebGLVariantMatrixDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
@@ -47,14 +43,10 @@ export default class VariantsPlugin extends Plugin {
     LDTrackF(pluginManager)
     ExtensionPointsF(pluginManager)
     LinearVariantDisplayF(pluginManager)
-    LinearVariantMatrixDisplayF(pluginManager)
-    MultiLinearVariantDisplayF(pluginManager)
     MultiWebGLVariantDisplayF(pluginManager)
     MultiWebGLVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDRendererF(pluginManager)
-    MultiVariantRendererF(pluginManager)
-    LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
     WebGLLDDataRPCMethodsF(pluginManager)

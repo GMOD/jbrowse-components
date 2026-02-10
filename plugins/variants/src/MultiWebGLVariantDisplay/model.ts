@@ -17,10 +17,10 @@ const WebGLVariantComponent = lazy(
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
-      'MultiWebGLVariantDisplay',
+      'MultiLinearVariantDisplay',
       MultiVariantBaseModelF(configSchema),
       types.model({
-        type: types.literal('MultiWebGLVariantDisplay'),
+        type: types.literal('MultiLinearVariantDisplay'),
       }),
     )
     .volatile(() => ({
@@ -57,10 +57,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type MultiWebGLVariantDisplayStateModel = ReturnType<
+export type MultiLinearVariantDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type MultiWebGLVariantDisplayModel =
-  Instance<MultiWebGLVariantDisplayStateModel>
+export type MultiLinearVariantDisplayModel =
+  Instance<MultiLinearVariantDisplayStateModel>
 
 export default stateModelFactory

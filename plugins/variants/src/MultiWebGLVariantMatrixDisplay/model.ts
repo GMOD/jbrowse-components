@@ -18,10 +18,10 @@ export default function stateModelFactory(
 ) {
   return types
     .compose(
-      'WebGLVariantMatrixDisplay',
+      'LinearVariantMatrixDisplay',
       MultiVariantBaseModelF(configSchema),
       types.model({
-        type: types.literal('WebGLVariantMatrixDisplay'),
+        type: types.literal('LinearVariantMatrixDisplay'),
         lineZoneHeight: types.optional(types.number, 20),
       }),
     )
@@ -76,8 +76,8 @@ export default function stateModelFactory(
     })
 }
 
-export type MultiWebGLVariantMatrixDisplayStateModel = ReturnType<
+export type LinearVariantMatrixDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type MultiWebGLVariantMatrixDisplayModel =
-  Instance<MultiWebGLVariantMatrixDisplayStateModel>
+export type LinearVariantMatrixDisplayModel =
+  Instance<LinearVariantMatrixDisplayStateModel>
