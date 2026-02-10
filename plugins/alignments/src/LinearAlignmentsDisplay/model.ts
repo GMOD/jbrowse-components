@@ -30,7 +30,6 @@ import { getColorForModification } from '../util.ts'
 
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
-import type { WebGLCloudDataResult } from '../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -188,7 +187,7 @@ export default function stateModelFactory(
          * #property
          */
         renderingMode: types.optional(
-          types.enumeration(['pileup', 'arcs', 'cloud']),
+          types.enumeration(['pileup', 'arcs', 'cloud', 'linkedRead']),
           'pileup',
         ),
         /**
@@ -862,7 +861,7 @@ export default function stateModelFactory(
         self.showInterbaseIndicators = show
       },
 
-      setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud') {
+      setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead') {
         self.renderingMode = mode
         self.colorBySetting =
           mode === 'pileup'
@@ -1040,7 +1039,7 @@ export default function stateModelFactory(
         self.arcsState.setRpcData(regionNumber, result)
       }
 
-      async function fetchCloudData(
+      async function fetchChainData(
         session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
@@ -1050,17 +1049,27 @@ export default function stateModelFactory(
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
           sessionId,
-          'RenderWebGLCloudData',
+          'RenderWebGLChainData',
           {
             sessionId,
             adapterConfig,
             sequenceAdapter,
             region,
             filterBy: self.filterBy,
+            colorBy: self.colorBy,
+            colorTagMap: self.colorTagMap,
+            layoutMode: self.renderingMode as 'cloud' | 'linkedRead',
             height: self.height,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
+            },
           },
-        )) as WebGLCloudDataResult
-        self.cloudState.setRpcData(regionNumber, result)
+        )) as WebGLPileupDataResult
+        self.setRpcData(regionNumber, result)
+        self.setModificationsReady(true)
+        self.setSimplexModifications(result.simplexModifications)
       }
 
       // Estimate bytes for a region via adapter index (cheap, no feature fetch).
@@ -1127,32 +1136,37 @@ export default function stateModelFactory(
 
           const sequenceAdapter = getSequenceAdapter(session, fetchRegion)
 
-          // Always fetch pileup data (includes coverage) regardless of mode
-          await fetchPileupData(
-            session,
-            adapterConfig,
-            sequenceAdapter,
-            fetchRegion,
-            regionNumber,
-          )
-
-          // Fetch mode-specific data in addition to pileup
-          if (self.renderingMode === 'arcs') {
-            await fetchArcsData(
+          // Chain modes (cloud/linkedRead) produce all data in a single RPC
+          // (reads + coverage + connecting lines). Other modes fetch pileup
+          // for coverage and add mode-specific data on top.
+          if (
+            self.renderingMode === 'cloud' ||
+            self.renderingMode === 'linkedRead'
+          ) {
+            await fetchChainData(
               session,
               adapterConfig,
               sequenceAdapter,
               fetchRegion,
               regionNumber,
             )
-          } else if (self.renderingMode === 'cloud') {
-            await fetchCloudData(
+          } else {
+            await fetchPileupData(
               session,
               adapterConfig,
               sequenceAdapter,
               fetchRegion,
               regionNumber,
             )
+            if (self.renderingMode === 'arcs') {
+              await fetchArcsData(
+                session,
+                adapterConfig,
+                sequenceAdapter,
+                fetchRegion,
+                regionNumber,
+              )
+            }
           }
 
           // Discard stale responses from older requests for this regionNumber
@@ -1377,6 +1391,14 @@ export default function stateModelFactory(
               checked: self.renderingMode === 'cloud',
               onClick: () => {
                 self.setRenderingMode('cloud')
+              },
+            },
+            {
+              label: 'Linked read',
+              type: 'radio' as const,
+              checked: self.renderingMode === 'linkedRead',
+              onClick: () => {
+                self.setRenderingMode('linkedRead')
               },
             },
           ],
@@ -1642,8 +1664,8 @@ export default function stateModelFactory(
           },
         ]
 
-        // Cloud-specific menu items
-        const cloudItems = [
+        // Cloud and linked read modes share the same menu items
+        const chainItems = [
           {
             label: 'Color by...',
             subMenu: [
@@ -1663,15 +1685,41 @@ export default function stateModelFactory(
                   self.setColorScheme({ type: 'strand' })
                 },
               },
+              {
+                label: 'Normal',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'normal',
+                onClick: () => {
+                  self.setColorScheme({ type: 'normal' })
+                },
+              },
+              {
+                label: 'Mapping quality',
+                type: 'radio' as const,
+                checked: self.colorBy.type === 'mappingQuality',
+                onClick: () => {
+                  self.setColorScheme({ type: 'mappingQuality' })
+                },
+              },
             ],
+          },
+          featureHeightMenu,
+          coverageItem,
+          sashimiItem,
+          {
+            label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
+            onClick: () => {
+              self.setShowMismatches(!self.showMismatches)
+            },
           },
         ]
 
         const modeItems =
           self.renderingMode === 'arcs'
             ? arcsItems
-            : self.renderingMode === 'cloud'
-              ? cloudItems
+            : self.renderingMode === 'cloud' ||
+                self.renderingMode === 'linkedRead'
+              ? chainItems
               : pileupItems
 
         return [modeMenu, ...modeItems]

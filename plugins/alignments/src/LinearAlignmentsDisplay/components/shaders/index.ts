@@ -28,6 +28,10 @@ export {
   SOFTCLIP_VERTEX_SHADER,
 } from './cigarShaders.ts'
 export { CLOUD_FRAGMENT_SHADER, CLOUD_VERTEX_SHADER } from './cloudShaders.ts'
+export {
+  CONNECTING_LINE_FRAGMENT_SHADER,
+  CONNECTING_LINE_VERTEX_SHADER,
+} from './connectingLineShaders.ts'
 export type { ColorPalette, RGBColor } from './colors.ts'
 export { defaultColorPalette } from './colors.ts'
 export {

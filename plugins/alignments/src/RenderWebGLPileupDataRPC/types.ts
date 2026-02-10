@@ -200,4 +200,14 @@ export interface WebGLPileupDataResult {
 
   // Simplex modification types detected in this region (detected during feature processing)
   simplexModifications: string[]
+
+  // Connecting line data for chain modes (cloud/linkedRead)
+  // One line per chain, drawn at chain Y between min(start) and max(end)
+  connectingLinePositions?: Uint32Array // [startOffset, endOffset] pairs
+  connectingLineYs?: Uint16Array // row for each line
+  connectingLineColorTypes?: Uint8Array // 0=normal, 1=long insert, 2=short, 3=interchrom, 4=orientation
+  numConnectingLines?: number
+
+  // Chain layout metadata
+  maxDistance?: number // max chain distance (for cloud mode log scale)
 }

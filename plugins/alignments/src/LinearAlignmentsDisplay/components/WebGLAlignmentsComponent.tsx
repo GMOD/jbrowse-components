@@ -39,7 +39,6 @@ import {
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ResolvedBlock } from './hitTesting.ts'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
-import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -105,15 +104,11 @@ interface LinearAlignmentsDisplayModel {
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (featureId: string) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
-  renderingMode: 'pileup' | 'arcs' | 'cloud'
+  renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
   arcsState: {
     rpcData: WebGLArcsDataResult | null
     rpcDataMap: Map<number, WebGLArcsDataResult>
     lineWidth: number
-  }
-  cloudState: {
-    rpcData: WebGLCloudDataResult | null
-    rpcDataMap: Map<number, WebGLCloudDataResult>
   }
 }
 
@@ -510,25 +505,35 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     scheduleRenderRef.current()
   }, [arcsRpcDataMap, renderingMode])
 
-  // Upload cloud data to GPU per-region when cloudState.rpcDataMap changes
-  const cloudRpcDataMap = model.cloudState.rpcDataMap
+  // Upload connecting line data for chain modes (cloud/linkedRead)
+  // Chain modes store reads in rpcDataMap (handled by pileup upload above),
+  // but connecting lines need separate upload
   useEffect(() => {
-    if (!rendererRef.current || renderingMode !== 'cloud') {
+    if (!rendererRef.current) {
+      return
+    }
+    if (renderingMode !== 'cloud' && renderingMode !== 'linkedRead') {
       return
     }
     const renderer = rendererRef.current
-    for (const [regionNumber, data] of cloudRpcDataMap) {
-      renderer.uploadCloudFromTypedArraysForRegion(regionNumber, {
-        regionStart: data.regionStart,
-        chainPositions: data.chainPositions,
-        chainYs: data.chainYs,
-        chainFlags: data.chainFlags,
-        chainColorTypes: data.chainColorTypes,
-        numChains: data.numChains,
-      })
+    for (const [regionNumber, data] of rpcDataMap) {
+      if (
+        data.connectingLinePositions &&
+        data.connectingLineYs &&
+        data.connectingLineColorTypes &&
+        data.numConnectingLines
+      ) {
+        renderer.uploadConnectingLinesForRegion(regionNumber, {
+          regionStart: data.regionStart,
+          connectingLinePositions: data.connectingLinePositions,
+          connectingLineYs: data.connectingLineYs,
+          connectingLineColorTypes: data.connectingLineColorTypes,
+          numConnectingLines: data.numConnectingLines,
+        })
+      }
     }
     scheduleRenderRef.current()
-  }, [cloudRpcDataMap, renderingMode])
+  }, [rpcDataMap, renderingMode])
 
   // Re-render on settings change
   useEffect(() => {

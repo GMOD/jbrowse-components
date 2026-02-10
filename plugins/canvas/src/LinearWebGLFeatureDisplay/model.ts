@@ -259,12 +259,12 @@ export default function stateModelFactory(
         getSession(self).clearSelection()
       },
 
-      toggleShowLabels() {
-        self.trackShowLabels = !self.showLabels
+      setShowLabels(value: boolean) {
+        self.trackShowLabels = value
       },
 
-      toggleShowDescriptions() {
-        self.trackShowDescriptions = !self.showDescriptions
+      setShowDescriptions(value: boolean) {
+        self.trackShowDescriptions = value
       },
 
       showContextMenuForFeature(featureInfo: FlatbushItem) {
@@ -554,7 +554,7 @@ export default function stateModelFactory(
                 type: 'checkbox',
                 checked: self.showLabels,
                 onClick: () => {
-                  self.toggleShowLabels()
+                  self.setShowLabels(!self.showLabels)
                 },
               },
               {
@@ -562,7 +562,7 @@ export default function stateModelFactory(
                 type: 'checkbox',
                 checked: self.showDescriptions,
                 onClick: () => {
-                  self.toggleShowDescriptions()
+                  self.setShowDescriptions(!self.showDescriptions)
                 },
               },
             ],
