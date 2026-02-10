@@ -28,6 +28,7 @@ export interface ColorPalette {
   colorModificationRev: RGBColor
   colorLongInsert: RGBColor
   colorShortInsert: RGBColor
+  colorSupplementary: RGBColor
 }
 
 export function toRgb(color: string): RGBColor {
@@ -61,4 +62,5 @@ export const defaultColorPalette: ColorPalette = {
   colorModificationRev: toRgb('#c8dcc8'),
   colorLongInsert: toRgb(fillColor.color_longinsert),
   colorShortInsert: toRgb(fillColor.color_shortinsert),
+  colorSupplementary: toRgb(fillColor.color_supplementary),
 }

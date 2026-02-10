@@ -170,6 +170,7 @@ export interface GPUBuffers {
 export class WebGLRenderer {
   gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
+  dpr = window.devicePixelRatio || 1
 
   readProgram: WebGLProgram
   coverageProgram: WebGLProgram
@@ -345,6 +346,7 @@ export class WebGLRenderer {
       'u_colorModificationRev',
       'u_colorLongInsert',
       'u_colorShortInsert',
+      'u_colorSupplementary',
       'u_insertSizeUpper',
       'u_insertSizeLower',
       'u_chainMode',
@@ -618,6 +620,7 @@ export class WebGLRenderer {
     readPairOrientations: Uint8Array
     readStrands: Int8Array
     readTagColors: Uint8Array // RGB per read (3 bytes each), for tag coloring
+    readChainHasSupp?: Uint8Array // 1 if chain contains supplementary reads
     numReads: number
     maxY: number
   }) {
@@ -791,6 +794,21 @@ export class WebGLRenderer {
       if (loc >= 0) {
         gl.disableVertexAttribArray(loc)
         gl.vertexAttrib3f(loc, 0, 0, 0)
+      }
+    }
+    // Upload chain supplementary flag (only present in chain modes)
+    if (data.readChainHasSupp && data.readChainHasSupp.length > 0) {
+      this.uploadBuffer(
+        this.readProgram,
+        'a_chainHasSupp',
+        new Float32Array(data.readChainHasSupp),
+        1,
+      )
+    } else {
+      const loc = gl.getAttribLocation(this.readProgram, 'a_chainHasSupp')
+      if (loc >= 0) {
+        gl.disableVertexAttribArray(loc)
+        gl.vertexAttrib1f(loc, 0)
       }
     }
     gl.bindVertexArray(null)
@@ -2104,13 +2122,17 @@ export class WebGLRenderer {
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight } = state
+    this.dpr = window.devicePixelRatio || 1
+    const dpr = this.dpr
 
-    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
-      canvas.width = canvasWidth
-      canvas.height = canvasHeight
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
+    if (canvas.width !== bufW || canvas.height !== bufH) {
+      canvas.width = bufW
+      canvas.height = bufH
     }
 
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, bufW, bufH)
     gl.clearColor(0, 0, 0, 0)
     gl.stencilMask(0xff)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
@@ -2137,7 +2159,12 @@ export class WebGLRenderer {
         continue
       }
       gl.enable(gl.SCISSOR_TEST)
-      gl.scissor(scissorX, 0, scissorW, canvasHeight)
+      gl.scissor(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
 
       // Compute viewport-clipped domain: the genomic range corresponding to
       // the visible portion of this block. Needed for shaders that map domain
@@ -2160,7 +2187,12 @@ export class WebGLRenderer {
       // Per-block viewport: maps shader's [-1,1] clip space to this block's
       // screen region. Pass blockWidth as canvasWidth so pixel calculations
       // (chevron width, min bar width) are correct for the block's scale.
-      gl.viewport(scissorX, 0, scissorW, canvasHeight)
+      gl.viewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
       const blockState: RenderState = {
         ...state,
         bpRangeX: [clippedBpStart, clippedBpEnd] as [number, number],
@@ -2172,19 +2204,24 @@ export class WebGLRenderer {
 
       // Draw sashimi arcs overlaid on coverage (uses full-canvas viewport like arcs)
       if (state.showSashimiArcs && state.showCoverage) {
-        gl.viewport(0, 0, canvasWidth, canvasHeight)
+        gl.viewport(0, 0, bufW, bufH)
         this.arcsRenderer.renderSashimiArcs(
           { ...state, bpRangeX: block.bpRangeX },
           block.screenStartPx,
           fullBlockWidth,
         )
-        gl.viewport(scissorX, 0, scissorW, canvasHeight)
+        gl.viewport(
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          bufH,
+        )
       }
 
       if (mode === 'arcs') {
         // Arcs use full-canvas viewport with global positioning uniforms.
         // Restore full viewport so arc positions are globally stable.
-        gl.viewport(0, 0, canvasWidth, canvasHeight)
+        gl.viewport(0, 0, bufW, bufH)
         this.arcsRenderer.renderArcs(
           { ...state, bpRangeX: block.bpRangeX },
           block.screenStartPx,
@@ -2210,7 +2247,7 @@ export class WebGLRenderer {
     }
 
     // Restore full viewport and disable scissor
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, bufW, bufH)
     gl.disable(gl.SCISSOR_TEST)
     this.buffers = null
   }
@@ -2221,14 +2258,18 @@ export class WebGLRenderer {
 
     // Use passed-in dimensions to avoid forced layout from reading clientWidth/clientHeight
     const { canvasWidth, canvasHeight } = state
+    this.dpr = window.devicePixelRatio || 1
+    const dpr = this.dpr
 
-    // Handle resize - only update canvas buffer size if dimensions changed
-    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
-      canvas.width = canvasWidth
-      canvas.height = canvasHeight
+    // Handle resize - DPR-scaled buffer for crisp HiDPI rendering
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
+    if (canvas.width !== bufW || canvas.height !== bufH) {
+      canvas.width = bufW
+      canvas.height = bufH
     }
 
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, bufW, bufH)
     gl.clearColor(0, 0, 0, 0)
     gl.stencilMask(0xff)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)

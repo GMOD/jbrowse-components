@@ -27,7 +27,8 @@ vec3 getLineColor(float colorType) {
   if (colorType < 1.5) return vec3(0.85, 0.25, 0.25); // long insert: red
   if (colorType < 2.5) return vec3(0.25, 0.35, 0.85); // short insert: blue
   if (colorType < 3.5) return vec3(0.5, 0.0, 0.5); // interchrom: purple
-  return vec3(0.0, 0.5, 0.0); // orientation: green
+  if (colorType < 4.5) return vec3(0.0, 0.5, 0.0); // orientation: green
+  return vec3(0.941, 0.722, 0.471); // supplementary: #f0b878
 }
 
 void main() {

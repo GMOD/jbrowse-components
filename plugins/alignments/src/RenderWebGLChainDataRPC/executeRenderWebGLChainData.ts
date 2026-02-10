@@ -13,6 +13,7 @@
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, groupBy, max, min, updateStatus } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -531,6 +532,8 @@ export async function executeRenderWebGLChainData({
     hardclipArrays,
     modificationArrays,
     connectingLineArrays,
+    chainFlatbushData,
+    chainFirstReadIndices,
   } = await updateStatus('Computing chain layout', statusCallback, async () => {
     if (layoutMode === 'cloud') {
       // Cloud mode: log₂(distance) → discretize to virtual rows
@@ -564,6 +567,28 @@ export async function executeRenderWebGLChainData({
     }
     maxY += 1
 
+    // Detect which chains contain supplementary alignments (flag 0x800).
+    // If any read in a chain is supplementary, the entire chain is marked
+    // so the shader can color all its reads orange (matching canvas behavior).
+    const chainHasSupp = new Set<number>()
+    for (let chainIdx = 0; chainIdx < chains.length; chainIdx++) {
+      const chain = chains[chainIdx]!
+      for (const f of chain) {
+        if (f.flags & 2048) {
+          chainHasSupp.add(chainIdx)
+          break
+        }
+      }
+    }
+
+    // Map feature ID → chain index for supplementary lookup
+    const featureIdToChainIdx = new Map<string, number>()
+    for (let chainIdx = 0; chainIdx < chains.length; chainIdx++) {
+      for (const f of chains[chainIdx]!) {
+        featureIdToChainIdx.set(f.id, chainIdx)
+      }
+    }
+
     // Build read arrays with chain-aware Y positions
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
@@ -572,6 +597,7 @@ export async function executeRenderWebGLChainData({
     const readInsertSizes = new Float32Array(features.length)
     const readPairOrientations = new Uint8Array(features.length)
     const readStrands = new Int8Array(features.length)
+    const readChainHasSupp = new Uint8Array(features.length)
     const readIds: string[] = []
     const readNames: string[] = []
 
@@ -585,6 +611,8 @@ export async function executeRenderWebGLChainData({
       readInsertSizes[i] = f.insertSize
       readPairOrientations[i] = f.pairOrientation
       readStrands[i] = f.strand
+      const cIdx = featureIdToChainIdx.get(f.id)
+      readChainHasSupp[i] = cIdx !== undefined && chainHasSupp.has(cIdx) ? 1 : 0
       readIds.push(f.id)
       readNames.push(f.name)
     }
@@ -674,7 +702,10 @@ export async function executeRenderWebGLChainData({
         continue
       }
       const y = featureIdToY.get(chain[0]!.id) ?? 0
-      const colorType = getColorType(chain[0]!, chainStats)
+      // Supplementary chains get color type 5 (orange), overriding pair type
+      const colorType = chainHasSupp.has(cb.chainIdx)
+        ? 5
+        : getColorType(chain[0]!, chainStats)
       connectingLines.push({
         start: Math.max(0, cb.minStart - regionStart),
         end: cb.maxEnd - regionStart,
@@ -693,6 +724,36 @@ export async function executeRenderWebGLChainData({
       connectingLineColorTypes[i] = line.colorType
     }
 
+    // Build Flatbush spatial index for chain hit testing.
+    // Each chain gets one bounding box entry: X = [minStart, maxEnd] offsets,
+    // Y = chain row. chainFirstReadIndices maps Flatbush item → first read
+    // index in the features array.
+    const featureIdToIndex = new Map<string, number>()
+    for (const [i, f] of features.entries()) {
+      if (!featureIdToIndex.has(f.id)) {
+        featureIdToIndex.set(f.id, i)
+      }
+    }
+
+    let chainFlatbushData: ArrayBuffer | undefined
+    const chainFirstReadIndices = new Uint32Array(chainBounds.length)
+    if (chainBounds.length > 0) {
+      const flatbush = new Flatbush(chainBounds.length)
+      for (const [i, cb] of chainBounds.entries()) {
+        const chain = chains[cb.chainIdx]!
+        const y = featureIdToY.get(chain[0]!.id) ?? 0
+        flatbush.add(
+          Math.max(0, cb.minStart - regionStart),
+          y,
+          cb.maxEnd - regionStart,
+          y,
+        )
+        chainFirstReadIndices[i] = featureIdToIndex.get(chain[0]!.id) ?? 0
+      }
+      flatbush.finish()
+      chainFlatbushData = flatbush.data
+    }
+
     return {
       readArrays: {
         readPositions,
@@ -702,6 +763,7 @@ export async function executeRenderWebGLChainData({
         readInsertSizes,
         readPairOrientations,
         readStrands,
+        readChainHasSupp,
         readIds,
         readNames,
       },
@@ -717,6 +779,8 @@ export async function executeRenderWebGLChainData({
         connectingLineColorTypes,
         numConnectingLines: connectingLines.length,
       },
+      chainFlatbushData,
+      chainFirstReadIndices,
     }
   })
 
@@ -817,6 +881,10 @@ export async function executeRenderWebGLChainData({
     ...connectingLineArrays,
     maxDistance,
 
+    // Chain spatial index for hit testing
+    chainFlatbushData,
+    chainFirstReadIndices,
+
     maxY,
     numReads: features.length,
     numGaps: gapArrays.gapPositions.length / 2,
@@ -843,6 +911,7 @@ export async function executeRenderWebGLChainData({
     result.readFlags.buffer,
     result.readMapqs.buffer,
     result.readInsertSizes.buffer,
+    result.readChainHasSupp!.buffer,
     result.readPairOrientations.buffer,
     result.readStrands.buffer,
     result.gapPositions.buffer,
@@ -889,6 +958,8 @@ export async function executeRenderWebGLChainData({
     result.connectingLinePositions!.buffer,
     result.connectingLineYs!.buffer,
     result.connectingLineColorTypes!.buffer,
+    result.chainFirstReadIndices!.buffer,
+    ...(result.chainFlatbushData ? [result.chainFlatbushData] : []),
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

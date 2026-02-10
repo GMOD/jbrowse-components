@@ -12,6 +12,8 @@
  * for tooltip and selection purposes.
  */
 
+import Flatbush from '@jbrowse/core/util/flatbush'
+
 import { getInsertionRectWidthPx } from '../model.ts'
 
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
@@ -128,13 +130,52 @@ function getInterbaseTypeName(colorType: number): InterbaseType {
   return INTERBASE_TYPES[(colorType - 1) % 3] ?? 'insertion'
 }
 
+// Cache reconstructed Flatbush instances keyed by their ArrayBuffer
+const flatbushCache = new WeakMap<ArrayBuffer, Flatbush>()
+
+function getOrCreateFlatbush(data: ArrayBuffer) {
+  let fb = flatbushCache.get(data)
+  if (!fb) {
+    fb = Flatbush.from(data)
+    flatbushCache.set(data, fb)
+  }
+  return fb
+}
+
+/**
+ * Hit test for a chain (linked read group) using a Flatbush spatial index.
+ * Each chain is stored as a bounding box (minStart to maxEnd, at chain row).
+ * Returns the first read in the hit chain.
+ */
+export function hitTestChain(
+  coords: CigarCoords | undefined,
+  rpcData: WebGLPileupDataResult | undefined,
+) {
+  if (
+    !coords ||
+    !rpcData?.chainFlatbushData ||
+    !rpcData.chainFirstReadIndices
+  ) {
+    return undefined
+  }
+
+  const { adjustedY, posOffset, row } = coords
+  if (adjustedY < 0) {
+    return undefined
+  }
+
+  const fb = getOrCreateFlatbush(rpcData.chainFlatbushData)
+  const hits = fb.search(posOffset, row, posOffset, row)
+  if (hits.length === 0) {
+    return undefined
+  }
+  const readIdx = rpcData.chainFirstReadIndices[hits[0]!]!
+  return { id: rpcData.readIds[readIdx]!, index: readIdx }
+}
+
 /**
  * Hit test for a feature (read/alignment) at the given canvas coordinates.
  * Returns feature ID and index if hit, undefined otherwise.
- *
- * When isChainMode is true, each row is one chain, so hitting anywhere on
- * the row (between reads or on the connecting line) counts as a hit —
- * we just return the first read on that row.
  */
 export function hitTestFeature(
   canvasX: number,
@@ -142,7 +183,6 @@ export function hitTestFeature(
   resolved: ResolvedBlock | undefined,
   coords: CigarCoords | undefined,
   featureHeightSetting: number,
-  isChainMode?: boolean,
 ): { id: string; index: number } | undefined {
   if (!resolved || !coords) {
     return undefined
@@ -155,38 +195,6 @@ export function hitTestFeature(
   }
 
   const { readPositions, readYs, readIds, numReads } = resolved.rpcData
-
-  if (isChainMode) {
-    // In chain mode each row is one chain. Find the chain's bounding
-    // rectangle (min start to max end of all reads on the row) and check
-    // that the mouse X falls within it.
-    let firstIndex = -1
-    let chainMinStart = Infinity
-    let chainMaxEnd = -Infinity
-    for (let i = 0; i < numReads; i++) {
-      if (readYs[i] === row) {
-        if (firstIndex === -1) {
-          firstIndex = i
-        }
-        const startOffset = readPositions[i * 2]!
-        const endOffset = readPositions[i * 2 + 1]!
-        if (startOffset < chainMinStart) {
-          chainMinStart = startOffset
-        }
-        if (endOffset > chainMaxEnd) {
-          chainMaxEnd = endOffset
-        }
-      }
-    }
-    if (
-      firstIndex !== -1 &&
-      posOffset >= chainMinStart &&
-      posOffset <= chainMaxEnd
-    ) {
-      return { id: readIds[firstIndex]!, index: firstIndex }
-    }
-    return undefined
-  }
 
   if (yWithinRow > featureHeightSetting) {
     return undefined

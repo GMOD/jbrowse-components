@@ -97,6 +97,7 @@ export interface WebGLPileupDataResult {
   readInsertSizes: Float32Array // keep float (can be large/negative)
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
+  readChainHasSupp?: Uint8Array // 1 if chain contains supplementary reads, 0 otherwise
   readIds: string[] // feature IDs for hit testing
   readNames: string[] // read names (QNAME) for tooltip display
 
@@ -207,6 +208,10 @@ export interface WebGLPileupDataResult {
   connectingLineYs?: Uint16Array // row for each line
   connectingLineColorTypes?: Uint8Array // 0=normal, 1=long insert, 2=short, 3=interchrom, 4=orientation
   numConnectingLines?: number
+
+  // Flatbush R-tree over chain bounding boxes for spatial hit testing
+  chainFlatbushData?: ArrayBuffer
+  chainFirstReadIndices?: Uint32Array // maps Flatbush item index → first read index
 
   // Chain layout metadata
   maxDistance?: number // max chain distance (for cloud mode log scale)

@@ -13,6 +13,7 @@ in float a_insertSize;
 in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
 in vec3 a_tagColor;          // per-read tag color (normalized 0-1 from Uint8)
+in float a_chainHasSupp;     // 1 if chain contains supplementary reads
 
 uniform vec3 u_bpRangeX;  // [bpStartHi, bpStartLo, regionLengthBp]
 uniform uint u_regionStart;  // Base position for converting offsets to absolute
@@ -39,12 +40,15 @@ uniform vec3 u_colorModificationFwd;  // #c8c8c8
 uniform vec3 u_colorModificationRev;  // #c8dcc8
 uniform vec3 u_colorLongInsert;   // red
 uniform vec3 u_colorShortInsert;  // pink
+uniform vec3 u_colorSupplementary; // #f0b878 (light orange)
 
 // Insert size thresholds (mean ± 3 SD)
 uniform float u_insertSizeUpper;  // Too long threshold
 uniform float u_insertSizeLower;  // Too short threshold
 
 out vec4 v_color;
+out vec2 v_localPos;       // 0-1 UV within the feature rectangle
+out vec2 v_featureSizePx;  // feature width and height in pixels
 
 ${HP_GLSL_FUNCTIONS}
 
@@ -194,24 +198,33 @@ void main() {
   float bpPerPx = regionLengthBp / u_canvasWidth;
   bool showChevron = (u_chainMode == 1 || bpPerPx < 10.0) && u_featureHeight > 3.0;
 
+  // Feature size in pixels for stroke edge detection
+  float featureWidthPx = (sx2 - sx1) * u_canvasWidth * 0.5;
+  v_featureSizePx = vec2(featureWidthPx, u_featureHeight);
+
   float sx;
   float sy;
+  float localX;
+  float localY;
   if (u_highlightOnlyMode == 1) {
     // Highlight overlay: simple rectangle, no chevrons
-    float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
-    float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+    localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+    localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
     sx = mix(sx1, sx2, localX);
     sy = mix(syBot, syTop, localY);
     // Collapse chevron vertices to rectangle corner
-    if (vid >= 6) { sx = sx1; sy = syTop; }
+    if (vid >= 6) { sx = sx1; sy = syTop; localX = 0.5; localY = 0.5; }
   } else if (vid < 6) {
     // Vertices 0-5: rectangle body (same as before)
-    float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
-    float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+    localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+    localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
     sx = mix(sx1, sx2, localX);
     sy = mix(syBot, syTop, localY);
   } else if (showChevron) {
     // Vertices 6-8: chevron triangle tip
+    // localPos set to interior (0.5) so chevron doesn't get stroke
+    localX = 0.5;
+    localY = 0.5;
     if (a_strand > 0.5) {
       // Forward strand: triangle on right
       if (vid == 6) { sx = sx2; sy = syTop; }
@@ -228,9 +241,12 @@ void main() {
     }
   } else {
     // Chevrons disabled: degenerate triangle
+    localX = 0.5;
+    localY = 0.5;
     sx = sx1; sy = syTop;
   }
 
+  v_localPos = vec2(localX, localY);
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   if (u_highlightOnlyMode == 1) {
@@ -239,7 +255,10 @@ void main() {
   }
 
   vec3 color;
-  if (u_colorScheme == 0) color = normalColor();
+  // In chain mode, supplementary chains override all color schemes
+  if (u_chainMode == 1 && a_chainHasSupp > 0.5) {
+    color = u_colorSupplementary;
+  } else if (u_colorScheme == 0) color = normalColor();
   else if (u_colorScheme == 1) color = strandColor(a_strand);
   else if (u_colorScheme == 2) color = mapqColor(a_mapq);
   else if (u_colorScheme == 3) color = insertSizeColor(a_insertSize);
@@ -257,8 +276,20 @@ void main() {
 export const READ_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
+in vec2 v_localPos;
+in vec2 v_featureSizePx;
 out vec4 fragColor;
 void main() {
-  fragColor = v_color;
+  // Compute distance to nearest edge in pixels
+  float dx = min(v_localPos.x, 1.0 - v_localPos.x) * v_featureSizePx.x;
+  float dy = min(v_localPos.y, 1.0 - v_localPos.y) * v_featureSizePx.y;
+  float edgeDist = min(dx, dy);
+
+  // Only show stroke when the feature is large enough to have a visible interior
+  if (edgeDist < 1.0 && v_featureSizePx.x > 4.0 && v_featureSizePx.y > 4.0) {
+    fragColor = vec4(v_color.rgb * 0.7, v_color.a);
+  } else {
+    fragColor = v_color;
+  }
 }
 `

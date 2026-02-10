@@ -52,6 +52,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     // Insert size colors
     colorLongInsert: toRgb(fillColor.color_longinsert),
     colorShortInsert: toRgb(fillColor.color_shortinsert),
+    colorSupplementary: toRgb(fillColor.color_supplementary),
   }
 }
 
@@ -125,6 +126,88 @@ export const CIGAR_TYPE_LABELS: Record<string, string> = {
   skip: 'Skip (Intron)',
   softclip: 'Soft Clip',
   hardclip: 'Hard Clip',
+}
+
+const PAIR_ORIENTATION_NAMES = ['', 'LR', 'RL', 'RR', 'LL'] as const
+
+function getPairTypeDescription(
+  flags: number,
+  pairOrientation: number,
+  insertSize: number,
+  insertSizeStats?: { upper: number; lower: number },
+) {
+  // Unmapped mate
+  if (flags & 8) {
+    return 'Unmapped mate'
+  }
+  // Abnormal orientation (not LR)
+  if (pairOrientation > 1) {
+    const name = PAIR_ORIENTATION_NAMES[pairOrientation] ?? ''
+    if (name === 'RR') {
+      return 'Both mates reverse strand'
+    }
+    if (name === 'RL') {
+      return 'Outward facing pair'
+    }
+    if (name === 'LL') {
+      return 'Both mates forward strand'
+    }
+    return `Abnormal orientation (${name})`
+  }
+  // Insert size classification
+  const tlen = Math.abs(insertSize)
+  if (insertSizeStats) {
+    if (tlen > insertSizeStats.upper) {
+      return 'Long insert size'
+    }
+    if (tlen < insertSizeStats.lower) {
+      return 'Short insert size'
+    }
+  }
+  return undefined
+}
+
+/**
+ * Format chain/linked-read tooltip matching the canvas-based cloud display:
+ * name, location, template length, pair type, supplementary indicator
+ */
+export function formatChainTooltip(
+  rpcData: WebGLPileupDataResult,
+  idx: number,
+  refName: string,
+) {
+  const name = rpcData.readNames[idx] ?? ''
+  const startOffset = rpcData.readPositions[idx * 2]
+  const endOffset = rpcData.readPositions[idx * 2 + 1]
+  const start = startOffset !== undefined ? rpcData.regionStart + startOffset : 0
+  const end = endOffset !== undefined ? rpcData.regionStart + endOffset : 0
+  const flags = rpcData.readFlags[idx] ?? 0
+  const insertSize = rpcData.readInsertSizes[idx] ?? 0
+  const pairOrientation = rpcData.readPairOrientations[idx] ?? 0
+
+  const lines = [`<b>${name}</b>`]
+  lines.push(`${refName}:${start.toLocaleString()}-${end.toLocaleString()}`)
+
+  if (insertSize !== 0) {
+    lines.push(`Template length: ${Math.abs(insertSize).toLocaleString()}`)
+  }
+
+  const pairDesc = getPairTypeDescription(
+    flags,
+    pairOrientation,
+    insertSize,
+    rpcData.insertSizeStats,
+  )
+  if (pairDesc) {
+    lines.push(pairDesc)
+  }
+
+  // Check for supplementary alignment (flag 0x800)
+  if (flags & 2048) {
+    lines.push('Supplementary alignment')
+  }
+
+  return lines.join('<br>')
 }
 
 /**

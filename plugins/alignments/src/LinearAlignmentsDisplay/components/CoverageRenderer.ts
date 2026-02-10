@@ -106,9 +106,15 @@ export class CoverageRenderer {
 
       // Scissor clips modification bars to the coverage area, equivalent to
       // the canvas boundary clipping in the reference canvas renderer
-      const scissorY = canvasHeight - state.coverageHeight
+      const dpr = this.parent.dpr
+      const scissorY = Math.round((canvasHeight - state.coverageHeight) * dpr)
       gl.enable(gl.SCISSOR_TEST)
-      gl.scissor(0, scissorY, canvasWidth, state.coverageHeight)
+      gl.scissor(
+        0,
+        scissorY,
+        Math.round(canvasWidth * dpr),
+        Math.round(state.coverageHeight * dpr),
+      )
 
       gl.bindVertexArray(this.parent.buffers.modCoverageVAO)
       gl.drawArraysInstanced(

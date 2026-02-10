@@ -23,6 +23,7 @@ import {
   CIGAR_TYPE_LABELS,
   buildColorPaletteFromTheme,
   canvasToGenomicCoords,
+  formatChainTooltip,
   formatCigarTooltip,
   getCanvasCoords,
   uploadRegionDataToGPU,
@@ -31,6 +32,7 @@ import {
   INTERBASE_TYPES,
   hitTestCigarItem as hitTestCigarItemFn,
   hitTestCoverage as hitTestCoverageFn,
+  hitTestChain as hitTestChainFn,
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
   hitTestSashimiArc as hitTestSashimiArcFn,
@@ -1000,15 +1002,17 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             model.currentRangeY,
           )
         : undefined
-      const hit =
-        featureResolved2 && featureCoords2_2
+      // In chain modes, use Flatbush spatial index for hit testing.
+      // In normal mode, use per-read hit testing.
+      const hit = isChainMode
+        ? hitTestChainFn(featureCoords2_2, featureResolved2?.rpcData)
+        : featureResolved2 && featureCoords2_2
           ? hitTestFeatureFn(
               canvasX,
               canvasY,
               featureResolved2,
               featureCoords2_2,
               featureHeightSetting,
-              isChainMode,
             )
           : undefined
       const featureId = hit?.id
@@ -1032,7 +1036,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
 
       // Set tooltip info
-      if (featureId) {
+      if (featureId && isChainMode && hit && featureResolved2) {
+        const refName = featureResolved2.refName
+        model.setMouseoverExtraInformation(
+          formatChainTooltip(featureResolved2.rpcData, hit.index, refName),
+        )
+      } else if (featureId) {
         const info = model.getFeatureInfoById(featureId)
         if (info) {
           const tooltipText = `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${info.strand})`
@@ -1314,15 +1323,15 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             model.currentRangeY,
           )
         : undefined
-      const hit =
-        featureResolved && featureCoords
+      const hit = isChainMode
+        ? hitTestChainFn(featureCoords, featureResolved?.rpcData)
+        : featureResolved && featureCoords
           ? hitTestFeatureFn(
               canvasX,
               canvasY,
               featureResolved,
               featureCoords,
               featureHeightSetting,
-              isChainMode,
             )
           : undefined
       if (hit) {
@@ -1377,15 +1386,15 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             model.currentRangeY,
           )
         : undefined
-      const hit =
-        contextResolved && contextCoords
+      const hit = isChainMode
+        ? hitTestChainFn(contextCoords, contextResolved?.rpcData)
+        : contextResolved && contextCoords
           ? hitTestFeatureFn(
               coords.canvasX,
               coords.canvasY,
               contextResolved,
               contextCoords,
               featureHeightSetting,
-              isChainMode,
             )
           : undefined
       if (hit) {

@@ -122,9 +122,15 @@ export class PileupRenderer {
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
 
     // Scissor clips pileup to area below coverage, within the block's X range.
-    // gl.scissor uses window coordinates, so we must use the block's scissorX.
+    // gl.scissor uses device pixel coordinates (DPR-scaled).
+    const dpr = this.parent.dpr
     gl.enable(gl.SCISSOR_TEST)
-    gl.scissor(scissorX, 0, canvasWidth, canvasHeight - coverageOffset)
+    gl.scissor(
+      Math.round(scissorX * dpr),
+      0,
+      Math.round(canvasWidth * dpr),
+      Math.round((canvasHeight - coverageOffset) * dpr),
+    )
 
     // Stencil pass: mark skip (intron) regions so reads don't draw there
     if (buffers.gapVAO && buffers.gapCount > 0) {
@@ -235,6 +241,10 @@ export class PileupRenderer {
     gl.uniform3f(
       this.parent.readUniforms.u_colorShortInsert!,
       ...colors.colorShortInsert,
+    )
+    gl.uniform3f(
+      this.parent.readUniforms.u_colorSupplementary!,
+      ...colors.colorSupplementary,
     )
 
     // Set insert size thresholds (defaults for when stats are unavailable)
