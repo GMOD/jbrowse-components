@@ -77,7 +77,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
 export type {
   BaseLinearDisplayModel,
-  BaseLinearDisplayNoFeatureDensityModel,
   BlockModel,
   ExportSvgDisplayOptions,
   FloatingLabelData,
@@ -92,7 +91,6 @@ export {
 export {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
-  BaseLinearDisplayNoFeatureDensity,
   BlockMsg,
   FeatureDensityMixin,
   FloatingLegend,

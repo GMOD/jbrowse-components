@@ -1,6 +1,7 @@
 import { createElement, lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -16,8 +17,8 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
-  BaseLinearDisplayNoFeatureDensity,
   TooLargeMessage,
+  TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { observable, reaction } from 'mobx'
@@ -161,8 +162,10 @@ export default function stateModelFactory(
 ) {
   return types
     .compose(
-      BaseLinearDisplayNoFeatureDensity,
-      types.model('LinearAlignmentsDisplay', {
+      'LinearAlignmentsDisplay',
+      BaseDisplay,
+      TrackHeightMixin(),
+      types.model({
         /**
          * #property
          */
@@ -240,6 +243,18 @@ export default function stateModelFactory(
         return snap
       }
 
+      // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      snap = cleaned
+
+      // Rewrite "height" from older snapshots to "heightPreConfig"
+      // (previously handled by BaseLinearDisplayNoFeatureDensity)
+      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
+        const { height, ...rest } = snap
+        snap = { ...rest, heightPreConfig: height }
+      }
+
       // Migrate LinearSNPCoverageDisplay snapshots to LinearAlignmentsDisplay
       if (snap.type === 'LinearSNPCoverageDisplay') {
         const {
@@ -273,6 +288,8 @@ export default function stateModelFactory(
       return snap
     })
     .volatile(() => ({
+      featureIdUnderMouse: undefined as undefined | string,
+      mouseoverExtraInformation: undefined as string | undefined,
       userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
@@ -542,9 +559,6 @@ export default function stateModelFactory(
         return self.isLoading || !this.visibleRegion
       },
 
-      get features(): Map<string, Feature> {
-        return new Map()
-      },
       get regionTooLarge() {
         return self.regionTooLargeState
       },
@@ -907,15 +921,12 @@ export default function stateModelFactory(
         self.modificationsReady = flag
       },
 
-      // Stubs required by LinearAlignmentsDisplay
-      setConfig(_config: unknown) {},
-
-      getFeatureByID(_blockKey: string, _id: string) {
-        return undefined
+      setFeatureIdUnderMouse(feature?: string) {
+        self.featureIdUnderMouse = feature
       },
 
-      searchFeatureByID(_id: string) {
-        return undefined
+      setMouseoverExtraInformation(extra?: string) {
+        self.mouseoverExtraInformation = extra
       },
 
       async selectFeatureById(featureId: string) {

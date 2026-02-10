@@ -20,9 +20,9 @@ import BlockState, {
 import { getId } from './models/util.ts'
 import { ErrorBox } from '../LinearGenomeView/SVGErrorBox.tsx'
 
-import type { BaseLinearDisplayModel } from './model.ts'
 import type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
+import type { BaseLinearDisplayModel } from './model.ts'
 
 export async function renderBaseLinearDisplaySvg(
   self: BaseLinearDisplayModel,
