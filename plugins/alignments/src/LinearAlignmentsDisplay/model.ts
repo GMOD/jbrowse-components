@@ -332,7 +332,6 @@ export default function stateModelFactory(
       statusMessage: 'Loading',
       error: null as Error | null,
       webglRef: null as unknown,
-      currentBpRangeX: null as [number, number] | null,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
       highlightedFeatureIndex: -1,
@@ -451,11 +450,41 @@ export default function stateModelFactory(
         return iter.done ? null : iter.value
       },
 
-      /**
-       * Get the primary visible region from the parent view.
-       * Uses currentBpRangeX if set by the WebGL component (source of truth during/after interaction)
-       * Falls back to first visibleRegion for initial load
-       */
+      get visibleBpRange(): [number, number] | null {
+        try {
+          const view = getContainingView(self) as LGV
+          if (!view.initialized) {
+            return null
+          }
+          const blocks = view.dynamicBlocks.contentBlocks
+          const first = blocks[0]
+          if (!first) {
+            return null
+          }
+          const width = view.width
+          const bpPerPx = view.bpPerPx
+          const blockOffsetPx = first.offsetPx ?? 0
+          const deltaPx = view.offsetPx - blockOffsetPx
+          const deltaBp = deltaPx * bpPerPx
+
+          const last = blocks[blocks.length - 1]
+          if (first.refName === last?.refName) {
+            const rangeStart = first.start + deltaBp
+            const rangeEnd = rangeStart + width * bpPerPx
+            return [rangeStart, rangeEnd]
+          }
+
+          const rangeStart = first.start + deltaBp
+          const blockEndPx = blockOffsetPx + (first.widthPx ?? 0)
+          const clippedEndPx = Math.min(view.offsetPx + width, blockEndPx)
+          const rangeEnd =
+            first.start + (clippedEndPx - blockOffsetPx) * bpPerPx
+          return [rangeStart, rangeEnd]
+        } catch {
+          return null
+        }
+      },
+
       get visibleRegion() {
         try {
           const view = getContainingView(self) as LGV
@@ -468,18 +497,16 @@ export default function stateModelFactory(
             return null
           }
 
-          // If WebGL component has set the domain directly, use that
-          // This is the source of truth during and after interaction
-          if (self.currentBpRangeX) {
+          const bpRange = this.visibleBpRange
+          if (bpRange) {
             return {
               refName: first.refName,
-              start: self.currentBpRangeX[0],
-              end: self.currentBpRangeX[1],
+              start: bpRange[0],
+              end: bpRange[1],
               assemblyName: first.assemblyName,
             }
           }
 
-          // Use view's visible regions (handles multi-ref)
           const regions = view.visibleRegions
           if (regions.length === 0) {
             return null
@@ -845,13 +872,6 @@ export default function stateModelFactory(
         self.setHeight(clampedHeight)
       },
 
-      setCurrentBpRange(bpRangeX: [number, number]) {
-        const cur = self.currentBpRangeX
-        if (cur?.[0] !== bpRangeX[0] || cur[1] !== bpRangeX[1]) {
-          self.currentBpRangeX = bpRangeX
-        }
-      },
-
       setCurrentRangeY(rangeY: [number, number]) {
         const cur = self.currentRangeY
         if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
@@ -869,6 +889,15 @@ export default function stateModelFactory(
 
       setHighlightedChainIndices(indices: number[]) {
         self.highlightedChainIndices = indices
+      },
+
+      clearHighlights() {
+        if (self.highlightedFeatureIndex !== -1) {
+          self.highlightedFeatureIndex = -1
+        }
+        if (self.highlightedChainIndices.length > 0) {
+          self.highlightedChainIndices = []
+        }
       },
 
       setSelectedChainIndices(indices: number[]) {

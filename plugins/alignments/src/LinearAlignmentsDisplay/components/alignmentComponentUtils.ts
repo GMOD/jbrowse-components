@@ -10,7 +10,9 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillColor } from '../../shared/color.ts'
 
 import type { ColorPalette, RGBColor, WebGLRenderer } from './WebGLRenderer'
-import type { CigarHitResult } from './hitTesting'
+import { INTERBASE_TYPES } from './hitTesting.ts'
+
+import type { CigarHitResult, IndicatorHitResult, CoverageHitResult, SashimiArcHitResult } from './hitTesting'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
 import type { Theme } from '@mui/material'
 
@@ -243,6 +245,127 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
     case 'hardclip':
       return `Hard clip (${cigarHit.length}bp) at ${pos}`
   }
+}
+
+export function formatIndicatorTooltip(
+  indicatorHit: IndicatorHitResult,
+  blockRpcData: WebGLPileupDataResult | undefined,
+  refName: string | undefined,
+) {
+  const posOffset =
+    indicatorHit.position - (blockRpcData?.regionStart ?? 0)
+  const tooltipBin = blockRpcData?.tooltipData[posOffset]
+
+  if (tooltipBin) {
+    return JSON.stringify({
+      type: 'indicator',
+      bin: tooltipBin,
+      refName,
+    })
+  }
+  // Fallback: show basic counts when detailed bin data unavailable
+  const { counts } = indicatorHit
+  const total = counts.insertion + counts.softclip + counts.hardclip
+  const interbaseData: Record<
+    string,
+    { count: number; minLen: number; maxLen: number; avgLen: number }
+  > = {}
+  for (const type of INTERBASE_TYPES) {
+    if (counts[type] > 0) {
+      interbaseData[type] = {
+        count: counts[type],
+        minLen: 0,
+        maxLen: 0,
+        avgLen: 0,
+      }
+    }
+  }
+  return JSON.stringify({
+    type: 'indicator',
+    bin: {
+      position: indicatorHit.position,
+      depth: total,
+      interbase: interbaseData,
+    },
+    refName,
+  })
+}
+
+export function formatCoverageTooltip(
+  coverageHit: CoverageHitResult,
+  blockRpcData: WebGLPileupDataResult | undefined,
+  refName: string | undefined,
+) {
+  const posOffset =
+    coverageHit.position - (blockRpcData?.regionStart ?? 0)
+  const tooltipBin = blockRpcData?.tooltipData[posOffset]
+
+  if (tooltipBin || coverageHit.depth > 0) {
+    const bin = tooltipBin ?? {
+      position: coverageHit.position,
+      depth: coverageHit.depth,
+      snps: {},
+      interbase: {},
+    }
+    if (!tooltipBin && coverageHit.snps.length > 0) {
+      for (const snp of coverageHit.snps) {
+        if (
+          snp.base === 'A' ||
+          snp.base === 'C' ||
+          snp.base === 'G' ||
+          snp.base === 'T'
+        ) {
+          bin.snps[snp.base] = { count: snp.count, fwd: 0, rev: 0 }
+        } else if (
+          snp.base === 'insertion' ||
+          snp.base === 'softclip' ||
+          snp.base === 'hardclip'
+        ) {
+          bin.interbase[snp.base] = {
+            count: snp.count,
+            minLen: 0,
+            maxLen: 0,
+            avgLen: 0,
+          }
+        }
+      }
+    }
+
+    return JSON.stringify({
+      type: 'coverage',
+      bin,
+      refName,
+    })
+  }
+  return undefined
+}
+
+export function formatSashimiTooltip(sashimiHit: SashimiArcHitResult) {
+  const strandLabel =
+    sashimiHit.strand === 1
+      ? '+'
+      : sashimiHit.strand === -1
+        ? '-'
+        : 'unknown'
+  return JSON.stringify({
+    type: 'sashimi',
+    start: sashimiHit.start,
+    end: sashimiHit.end,
+    score: sashimiHit.score,
+    strand: strandLabel,
+    refName: sashimiHit.refName,
+  })
+}
+
+export function formatFeatureTooltip(
+  featureId: string,
+  getFeatureInfoById: (id: string) => { id: string; name: string; start: number; end: number; strand: string; refName: string } | undefined,
+) {
+  const info = getFeatureInfoById(featureId)
+  if (info) {
+    return `${info.name || info.id} ${info.refName}:${info.start.toLocaleString()}-${info.end.toLocaleString()} (${info.strand})`
+  }
+  return undefined
 }
 
 /**
