@@ -1413,6 +1413,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
+         * Returns the currently visible content blocks with regionNumber guaranteed.
+         * ContentBlocks from calculateDynamicBlocks always have regionNumber set.
+         * Used by WebGL displays for per-region data fetching.
+         */
+        get visibleRegions() {
+          return this.dynamicBlocks.contentBlocks as Array<
+            BaseBlock & { regionNumber: number }
+          >
+        },
+
+        /**
+         * #getter
          * a single "combo-locstring" representing all the regions visible on
          * the screen
          */

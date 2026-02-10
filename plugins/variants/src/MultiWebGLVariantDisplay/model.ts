@@ -28,64 +28,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .views(self => ({
       get visibleRegions() {
-        try {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          if (!view.initialized) {
-            return []
-          }
-          const blocks = view.dynamicBlocks.contentBlocks
-          if (blocks.length === 0) {
-            return []
-          }
-
-          const bpPerPx = view.bpPerPx
-          const regions: {
-            refName: string
-            regionNumber: number
-            start: number
-            end: number
-            assemblyName: string
-            screenStartPx: number
-            screenEndPx: number
-          }[] = []
-
-          for (const block of blocks) {
-            const blockScreenStart = block.offsetPx - view.offsetPx
-            const blockScreenEnd = blockScreenStart + block.widthPx
-
-            const clippedScreenStart = Math.max(0, blockScreenStart)
-            const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
-            if (clippedScreenStart >= clippedScreenEnd) {
-              continue
-            }
-
-            const bpStart =
-              block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
-            const bpEnd =
-              block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
-
-            const blockRegionNumber = block.regionNumber ?? 0
-
-            const prev = regions[regions.length - 1]
-            if (prev?.regionNumber === blockRegionNumber) {
-              prev.end = bpEnd
-              prev.screenEndPx = clippedScreenEnd
-            } else {
-              regions.push({
-                refName: block.refName,
-                regionNumber: blockRegionNumber,
-                start: bpStart,
-                end: bpEnd,
-                assemblyName: block.assemblyName,
-                screenStartPx: clippedScreenStart,
-                screenEndPx: clippedScreenEnd,
-              })
-            }
-          }
-          return regions
-        } catch {
-          return []
-        }
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.visibleRegions
       },
       get DisplayMessageComponent() {
         return WebGLVariantComponent

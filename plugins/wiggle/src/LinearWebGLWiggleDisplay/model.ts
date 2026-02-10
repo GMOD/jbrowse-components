@@ -1,13 +1,14 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { reaction } from 'mobx'
@@ -45,8 +46,10 @@ export default function stateModelFactory(
 ) {
   return types
     .compose(
-      BaseLinearDisplay,
-      types.model('LinearWebGLWiggleDisplay', {
+      'LinearWebGLWiggleDisplay',
+      BaseDisplay,
+      TrackHeightMixin(),
+      types.model({
         type: types.literal('LinearWebGLWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         colorSetting: types.maybe(types.string),
@@ -58,6 +61,23 @@ export default function stateModelFactory(
         renderingTypeSetting: types.maybe(types.string),
       }),
     )
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
+      }
+
+      // Strip properties from old BaseLinearDisplay snapshots
+      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      snap = cleaned
+
+      // Rewrite "height" from older snapshots to "heightPreConfig"
+      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
+        const { height, ...rest } = snap
+        snap = { ...rest, heightPreConfig: height }
+      }
+
+      return snap
+    })
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLWiggleDataResult>(),
       loadedRegions: new Map<number, Region>(),
@@ -123,64 +143,8 @@ export default function stateModelFactory(
       },
 
       get visibleRegions() {
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized) {
-            return []
-          }
-          const blocks = view.dynamicBlocks.contentBlocks
-          if (blocks.length === 0) {
-            return []
-          }
-
-          const bpPerPx = view.bpPerPx
-          const regions: {
-            refName: string
-            regionNumber: number
-            start: number
-            end: number
-            assemblyName: string
-            screenStartPx: number
-            screenEndPx: number
-          }[] = []
-
-          for (const block of blocks) {
-            const blockScreenStart = block.offsetPx - view.offsetPx
-            const blockScreenEnd = blockScreenStart + block.widthPx
-
-            const clippedScreenStart = Math.max(0, blockScreenStart)
-            const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
-            if (clippedScreenStart >= clippedScreenEnd) {
-              continue
-            }
-
-            const bpStart =
-              block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
-            const bpEnd =
-              block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
-
-            const blockRegionNumber = block.regionNumber ?? 0
-
-            const prev = regions[regions.length - 1]
-            if (prev?.regionNumber === blockRegionNumber) {
-              prev.end = bpEnd
-              prev.screenEndPx = clippedScreenEnd
-            } else {
-              regions.push({
-                refName: block.refName,
-                regionNumber: blockRegionNumber,
-                start: bpStart,
-                end: bpEnd,
-                assemblyName: block.assemblyName,
-                screenStartPx: clippedScreenStart,
-                screenEndPx: clippedScreenEnd,
-              })
-            }
-          }
-          return regions
-        } catch {
-          return []
-        }
+        const view = getContainingView(self) as LGV
+        return view.visibleRegions
       },
 
       get visibleRegion() {

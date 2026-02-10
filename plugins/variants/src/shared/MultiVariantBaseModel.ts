@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { set1 } from '@jbrowse/core/ui/colors'
 import {
@@ -10,9 +11,12 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { linearBareDisplayStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -58,7 +62,8 @@ const SetRowHeightDialog = lazy(
 /**
  * #stateModel MultiVariantBaseModel
  * extends
- * - [LinearBareDisplay](../linearbaredisplay)
+ * - [BaseDisplay](../basedisplay)
+ * - [TrackHeightMixin](../trackheightmixin)
  */
 export default function MultiVariantBaseModelF(
   configSchema: AnyConfigurationSchemaType,
@@ -66,7 +71,8 @@ export default function MultiVariantBaseModelF(
   return types
     .compose(
       'LinearVariantMatrixDisplay',
-      linearBareDisplayStateModelFactory(configSchema),
+      BaseDisplay,
+      TrackHeightMixin(),
       types.model({
         /**
          * #property
@@ -154,6 +160,23 @@ export default function MultiVariantBaseModelF(
         subtreeFilter: types.maybe(types.array(types.string)),
       }),
     )
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
+      }
+
+      // Strip properties from old BaseLinearDisplay snapshots
+      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      snap = cleaned
+
+      // Rewrite "height" from older snapshots to "heightPreConfig"
+      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
+        const { height, ...rest } = snap
+        snap = { ...rest, heightPreConfig: height }
+      }
+
+      return snap
+    })
     .volatile(() => ({
       /**
        * #volatile
@@ -217,6 +240,23 @@ export default function MultiVariantBaseModelF(
         return (
           self.renderingModeSetting ?? getConf(self as any, 'renderingMode')
         )
+      },
+
+      /**
+       * #getter
+       * Returns the renderer configuration from config
+       */
+      get rendererConfig() {
+        const configBlob = getConf(self, ['renderer']) || {}
+        return configBlob as Omit<typeof configBlob, symbol>
+      },
+
+      /**
+       * #getter
+       * Returns the renderer type name from config
+       */
+      get rendererTypeName() {
+        return getConf(self, ['renderer', 'type'])
       },
     }))
     .actions(self => ({
@@ -601,6 +641,7 @@ export default function MultiVariantBaseModelF(
         adapterProps() {
           return {
             ...superRenderProps(),
+            ...getParentRenderProps(self),
             config: self.rendererConfig,
           }
         },

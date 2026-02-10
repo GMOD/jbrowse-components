@@ -394,65 +394,11 @@ export default function stateModelFactory(
       },
 
       /**
-       * Get visible regions from all content blocks in the parent view.
-       * Returns an array of regions with screen pixel positions.
+       * Get visible regions from the parent view.
        */
       get visibleRegions() {
         const view = getContainingView(self) as LGV
-        const blocks = view.dynamicBlocks.contentBlocks
-        if (blocks.length === 0) {
-          return []
-        }
-
-        const bpPerPx = view.bpPerPx
-        const regions: {
-          refName: string
-          regionNumber: number
-          start: number
-          end: number
-          assemblyName: string
-          screenStartPx: number
-          screenEndPx: number
-        }[] = []
-
-        // Group blocks by regionNumber and compute viewport-clipped ranges
-        for (const block of blocks) {
-          const blockScreenStart = block.offsetPx - view.offsetPx
-          const blockScreenEnd = blockScreenStart + block.widthPx
-
-          // Clip to viewport
-          const clippedScreenStart = Math.max(0, blockScreenStart)
-          const clippedScreenEnd = Math.min(view.width, blockScreenEnd)
-          if (clippedScreenStart >= clippedScreenEnd) {
-            continue
-          }
-
-          // Compute bp range for the clipped screen range
-          const bpStart =
-            block.start + (clippedScreenStart - blockScreenStart) * bpPerPx
-          const bpEnd =
-            block.start + (clippedScreenEnd - blockScreenStart) * bpPerPx
-
-          const blockRegionNumber = block.regionNumber ?? 0
-
-          // Merge with previous region if same regionNumber
-          const prev = regions[regions.length - 1]
-          if (prev?.regionNumber === blockRegionNumber) {
-            prev.end = bpEnd
-            prev.screenEndPx = clippedScreenEnd
-          } else {
-            regions.push({
-              refName: block.refName,
-              regionNumber: blockRegionNumber,
-              start: bpStart,
-              end: bpEnd,
-              assemblyName: block.assemblyName,
-              screenStartPx: clippedScreenStart,
-              screenEndPx: clippedScreenEnd,
-            })
-          }
-        }
-        return regions
+        return view.visibleRegions
       },
 
       /**
