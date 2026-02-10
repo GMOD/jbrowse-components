@@ -259,7 +259,8 @@ export default function stateModelFactory(
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
       },
-
+    }))
+    .actions(self => ({
       selectFeature(feature: Feature) {
         const session = getSession(self)
         session.setSelection(feature)
