@@ -148,12 +148,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
   const [overCigarItem, setOverCigarItem] = useState(false)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
-  const [rendererReady, setRendererReady] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
   )
-  const renderRAFRef = useRef<number | null>(null)
   const dragRef = useRef({ isDragging: false, lastX: 0 })
   const resizeDragRef = useRef({
     isDragging: false,
@@ -173,13 +171,10 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     error,
     featureHeightSetting,
     featureSpacing,
-    colorSchemeIndex,
     showCoverage,
     coverageHeight,
     showMismatches,
-    showInterbaseCounts,
     showInterbaseIndicators,
-    showModifications,
     showSashimiArcs,
     renderingMode,
   } = model
@@ -199,24 +194,22 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   const widthRef = useRef(width)
   widthRef.current = width
 
-  function scheduleRender() {
-    if (renderRAFRef.current !== null) {
-      cancelAnimationFrame(renderRAFRef.current)
-    }
-    renderRAFRef.current = requestAnimationFrame(() => {
-      renderRAFRef.current = null
-      renderNow()
-    })
-  }
-
-  function renderNow() {
+  // Reads current state from model/view/refs and renders. When called inside
+  // an autorun, MobX tracks these reads automatically (tracking is call-stack
+  // based). When called imperatively from useEffects, it just renders.
+  function doRender() {
     const renderer = rendererRef.current
-    const w = width
-    if (!renderer || w === undefined) {
+    if (!renderer || !view?.initialized) {
       return
     }
-
-    const commonState = {
+    const regions = view.visibleRegions
+    const blocks = regions.map(r => ({
+      regionNumber: r.regionNumber,
+      bpRangeX: [r.start, r.end] as [number, number],
+      screenStartPx: r.screenStartPx,
+      screenEndPx: r.screenEndPx,
+    }))
+    renderer.renderBlocks(blocks, {
       rangeY: model.currentRangeY,
       colorScheme: model.colorSchemeIndex,
       featureHeight: model.featureHeightSetting,
@@ -229,7 +222,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       showInterbaseIndicators: model.showInterbaseIndicators,
       showModifications: model.showModifications,
       showSashimiArcs: model.showSashimiArcs,
-      canvasWidth: w,
+      canvasWidth: view.width,
       canvasHeight: model.height,
       highlightedFeatureIndex: model.highlightedFeatureIndex,
       selectedFeatureIndex: model.selectedFeatureIndex,
@@ -239,17 +232,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       renderingMode: model.renderingMode,
       arcLineWidth: model.arcsState.lineWidth,
       cloudColorScheme: model.colorSchemeIndex,
-    }
-
-    const regions = view.visibleRegions
-    const blocks = regions.map(r => ({
-      regionNumber: r.regionNumber,
-      bpRangeX: [r.start, r.end] as [number, number],
-      screenStartPx: r.screenStartPx,
-      screenEndPx: r.screenEndPx,
-    }))
-
-    renderer.renderBlocks(blocks, { ...commonState, bpRangeX: [0, 0] })
+      bpRangeX: [0, 0],
+    })
   }
 
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
@@ -544,10 +528,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         return
       }
       const deltaY = moveEvent.clientY - resizeDragRef.current.startY
-      const newHeight = Math.max(
-        20,
-        resizeDragRef.current.startHeight + deltaY,
-      )
+      const newHeight = Math.max(20, resizeDragRef.current.startHeight + deltaY)
       model.setCoverageHeight(newHeight)
     }
 
@@ -571,17 +552,12 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
     try {
       rendererRef.current = new WebGLRenderer(canvas)
-      setRendererReady(true)
     } catch (e) {
       console.error('Failed to initialize WebGL:', e)
     }
     return () => {
       rendererRef.current?.destroy()
       rendererRef.current = null
-      setRendererReady(false)
-      if (renderRAFRef.current) {
-        cancelAnimationFrame(renderRAFRef.current)
-      }
     }
   }, [])
 
@@ -593,7 +569,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
     const coordinator = getCoordinator(viewId)
     const unsubscribe = coordinator.subscribe(canvasId, () => {
-      renderNow()
+      doRender()
     })
     return () => {
       unsubscribe()
@@ -610,69 +586,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     }
     const dispose = autorun(
       () => {
-        const renderer = rendererRef.current
-        if (!renderer || !view.initialized) {
-          return
-        }
-
-        // Track view observables
-        const regions = view.visibleRegions
-        const viewWidth = view.width
-
-        // Track all model visual state
-        const {
-          currentRangeY,
-          highlightedFeatureIndex,
-          selectedFeatureIndex,
-          highlightedChainIndices,
-          selectedChainIndices,
-          colorSchemeIndex: cs,
-          featureHeightSetting: fh,
-          featureSpacing: fs,
-          showCoverage: sc,
-          coverageHeight: ch,
-          showMismatches: sm,
-          showInterbaseCounts: sic,
-          showInterbaseIndicators: sii,
-          showModifications: smod,
-          showSashimiArcs: ssa,
-          renderingMode: rm,
-          arcsState: { lineWidth },
-          height: h,
-        } = model
-
-        const blocks = regions.map(r => ({
-          regionNumber: r.regionNumber,
-          bpRangeX: [r.start, r.end] as [number, number],
-          screenStartPx: r.screenStartPx,
-          screenEndPx: r.screenEndPx,
-        }))
-
-        renderer.renderBlocks(blocks, {
-          rangeY: currentRangeY,
-          colorScheme: cs,
-          featureHeight: fh,
-          featureSpacing: fs,
-          showCoverage: sc,
-          coverageHeight: ch,
-          coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-          showMismatches: sm,
-          showInterbaseCounts: sic,
-          showInterbaseIndicators: sii,
-          showModifications: smod,
-          showSashimiArcs: ssa,
-          canvasWidth: viewWidth,
-          canvasHeight: h,
-          highlightedFeatureIndex,
-          selectedFeatureIndex,
-          highlightedChainIndices,
-          selectedChainIndices,
-          colors: colorPaletteRef.current,
-          renderingMode: rm,
-          arcLineWidth: lineWidth,
-          cloudColorScheme: cs,
-          bpRangeX: [0, 0],
-        })
+        doRender()
       },
       { name: 'WebGLAlignmentsComponent:render' },
     )
@@ -692,7 +606,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     if (maxYVal > 0) {
       model.setMaxY(maxYVal)
     }
-    scheduleRender()
+    doRender()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcDataMap, showCoverage])
 
@@ -717,7 +631,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         numLines: data.numLines,
       })
     }
-    scheduleRender()
+    doRender()
   }, [arcsRpcDataMap, renderingMode])
 
   // Upload connecting line data for chain modes
@@ -745,7 +659,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         })
       }
     }
-    scheduleRender()
+    doRender()
   }, [rpcDataMap, renderingMode])
 
   // Wheel handler (needs passive:false, must use addEventListener)
@@ -934,9 +848,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             right: 0,
             height: YSCALEBAR_LABEL_OFFSET,
             cursor: 'row-resize',
-            background: resizeHandleHovered
-              ? 'rgba(0,0,0,0.1)'
-              : 'transparent',
+            background: resizeHandleHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
             zIndex: 10,
           }}
           title="Drag to resize coverage track"
