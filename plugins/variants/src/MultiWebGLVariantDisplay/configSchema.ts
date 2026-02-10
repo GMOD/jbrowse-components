@@ -12,7 +12,7 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function configSchemaFactory() {
   return ConfigurationSchema(
-    'MultiWebGLVariantDisplay',
+    'MultiLinearVariantDisplay',
     {
       /**
        * #slot

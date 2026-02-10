@@ -2,9 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
-import DensityRendererF from './DensityRenderer/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
-import LinePlotRendererF from './LinePlotRenderer/index.ts'
 import LinearWebGLMultiWiggleDisplayF from './LinearWebGLMultiWiggleDisplay/index.ts'
 import LinearWebGLWiggleDisplayF from './LinearWebGLWiggleDisplay/index.ts'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
@@ -20,11 +18,6 @@ import {
   WiggleGetGlobalQuantitativeStats,
   WiggleGetMultiRegionQuantitativeStats,
 } from './WiggleRPC/rpcMethods.ts'
-import XYPlotRendererF, {
-  ReactComponent as XYPlotRendererReactComponent,
-  XYPlotRenderer,
-  configSchema as xyPlotRendererConfigSchema,
-} from './XYPlotRenderer/index.ts'
 import * as utils from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -39,9 +32,6 @@ export default class WigglePlugin extends Plugin {
     MultiQuantitativeTrackF(pm)
     LinearWebGLWiggleDisplayF(pm)
     LinearWebGLMultiWiggleDisplayF(pm)
-    LinePlotRendererF(pm)
-    XYPlotRendererF(pm)
-    DensityRendererF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     GuessAdapterF(pm)
@@ -56,9 +46,6 @@ export default class WigglePlugin extends Plugin {
   }
 
   exports = {
-    XYPlotRendererReactComponent,
-    XYPlotRenderer,
-    xyPlotRendererConfigSchema,
     utils,
   }
 }

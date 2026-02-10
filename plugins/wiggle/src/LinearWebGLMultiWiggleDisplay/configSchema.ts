@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 export default ConfigurationSchema(
-  'LinearWebGLMultiWiggleDisplay',
+  'MultiLinearWiggleDisplay',
   {
     height: {
       type: 'number',

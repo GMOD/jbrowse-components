@@ -11,7 +11,7 @@ function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'WebGLVariantMatrixDisplay',
+    'LinearVariantMatrixDisplay',
     {
       /**
        * #slot

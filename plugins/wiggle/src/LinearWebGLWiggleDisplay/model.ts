@@ -23,6 +23,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 type LGV = LinearGenomeViewModel
 
@@ -40,6 +41,7 @@ const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 export default function stateModelFactory(
+  _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types

@@ -15,7 +15,7 @@ export default function LinearWebGLWiggleDisplayF(
       name: 'LinearWiggleDisplay',
       displayName: 'Wiggle display',
       configSchema,
-      stateModel: stateModelFactory(configSchema),
+      stateModel: stateModelFactory(pluginManager, configSchema),
       trackType: 'QuantitativeTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,

@@ -1705,10 +1705,7 @@
           "type": "LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-          }
+          "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
         }
       ]
     },
@@ -2433,20 +2430,17 @@
       },
       "displays": [
         {
-          "type": "LinearBasicDisplay",
+          "type": "LinearWebGLFeatureDisplay",
           "displayId": "gff3_custom_tooltips_linear",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
-            "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
-            },
-            "showLabels": true,
-            "showDescriptions": true,
-            "subfeatureLabels": "below"
-          }
+          "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
+          "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+          "labels": {
+            "name": "jexl:get(feature,'name') || get(feature,'id')",
+            "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+          },
+          "showLabels": true,
+          "showDescriptions": true,
+          "subfeatureLabels": "below"
         }
       ]
     },
@@ -2465,18 +2459,15 @@
       },
       "displays": [
         {
-          "type": "LinearBasicDisplay",
+          "type": "LinearWebGLFeatureDisplay",
           "displayId": "gff3_mouseover_attr_linear",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
-            },
-            "showLabels": true,
-            "showDescriptions": false,
-            "subfeatureLabels": "below"
-          }
+          "labels": {
+            "name": "jexl:get(feature,'name') || get(feature,'id')",
+            "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+          },
+          "showLabels": true,
+          "showDescriptions": false,
+          "subfeatureLabels": "below"
         }
       ]
     },
@@ -2531,10 +2522,7 @@
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
           "jexlFilters": ["get(feature,'start')<8000"],
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
-          }
+          "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
         }
       ]
     }
