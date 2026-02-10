@@ -15,18 +15,17 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { observable } from 'mobx'
 import {
   BaseLinearDisplayNoFeatureDensity,
   TooLargeMessage,
 } from '@jbrowse/plugin-linear-genome-view'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
-import { reaction } from 'mobx'
+import { observable, reaction } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
-import { getColorForModification } from '../util.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
+import { getColorForModification } from '../util.ts'
 
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
@@ -555,9 +554,7 @@ export default function stateModelFactory(
       },
 
       regionCannotBeRenderedText(_region: any) {
-        return self.regionTooLargeState
-          ? 'Force load to see features'
-          : ''
+        return self.regionTooLargeState ? 'Force load to see features' : ''
       },
 
       regionCannotBeRendered(_region: any) {
@@ -686,9 +683,10 @@ export default function stateModelFactory(
         self.regionTooLargeReasonState = reason ?? ''
       },
 
-      setFeatureDensityStats(
-        stats?: { bytes?: number; fetchSizeLimit?: number },
-      ) {
+      setFeatureDensityStats(stats?: {
+        bytes?: number
+        fetchSizeLimit?: number
+      }) {
         self.featureDensityStats = stats
       },
 
@@ -877,7 +875,6 @@ export default function stateModelFactory(
           self.colorBySetting = { type: 'insertSizeAndOrientation' }
         }
       },
-
 
       updateVisibleModifications(uniqueModifications: string[]) {
         for (const modType of uniqueModifications) {
@@ -1084,11 +1081,9 @@ export default function stateModelFactory(
       }
 
       // Estimate bytes for a region via adapter index (cheap, no feature fetch).
-      // Returns true if the region is within limits, false if too large.
-      async function checkByteEstimate(
-        adapterConfig: unknown,
-        region: Region,
-      ) {
+      // Returns the stats without modifying model state — the caller applies
+      // state changes only after passing the generation staleness check.
+      async function fetchByteEstimate(adapterConfig: unknown, region: Region) {
         const session = getSession(self)
         const sessionId = getRpcSessionId(self)
         const stats = (await session.rpcManager.call(
@@ -1100,22 +1095,7 @@ export default function stateModelFactory(
             adapterConfig,
           },
         )) as { bytes?: number; fetchSizeLimit?: number } | undefined
-        self.setFeatureDensityStats(stats ?? undefined)
-        const fetchSizeLimit =
-          stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
-        const limit = self.userByteSizeLimit || fetchSizeLimit
-        console.debug(
-          `[checkByteEstimate] bytes=${stats?.bytes}, limit=${limit}, userByteSizeLimit=${self.userByteSizeLimit}, fetchSizeLimit=${fetchSizeLimit}`,
-        )
-        if (stats?.bytes && stats.bytes > limit) {
-          self.setRegionTooLarge(
-            true,
-            `Requested too much data (${getDisplayStr(stats.bytes)})`,
-          )
-          return false
-        }
-        self.setRegionTooLarge(false)
-        return true
+        return stats
       }
 
       // Central chokepoint: ALL data fetches go through here.
@@ -1136,21 +1116,31 @@ export default function stateModelFactory(
 
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
-        console.debug(`[fetchFeaturesForRegion] gen=${gen} region ${regionNumber}: ${fetchRegion.refName}:${Math.round(fetchRegion.start)}-${Math.round(fetchRegion.end)}`)
         self.setLoading(true)
         self.setError(null)
 
         try {
           // Byte estimation on the VISIBLE region (not the expanded fetch
-          // region) so that zooming in clears the warning promptly
-          const ok = await checkByteEstimate(adapterConfig, visibleRegion)
+          // region) so that zooming in clears the warning promptly.
+          // State is applied only after the generation check so that stale
+          // RPC responses from older zoom levels can't overwrite newer results.
+          const stats = await fetchByteEstimate(adapterConfig, visibleRegion)
           if (fetchGenerations.get(regionNumber) !== gen) {
             return
           }
-          if (!ok) {
+          self.setFeatureDensityStats(stats ?? undefined)
+          const fetchSizeLimit =
+            stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+          const limit = self.userByteSizeLimit || fetchSizeLimit
+          if (stats?.bytes && stats.bytes > limit) {
+            self.setRegionTooLarge(
+              true,
+              `Requested too much data (${getDisplayStr(stats.bytes)})`,
+            )
             self.setLoading(false)
             return
           }
+          self.setRegionTooLarge(false)
 
           const sequenceAdapter = getSequenceAdapter(session, fetchRegion)
 
@@ -1193,7 +1183,6 @@ export default function stateModelFactory(
             end: fetchRegion.end,
             assemblyName: fetchRegion.assemblyName,
           })
-          console.debug(`[fetchFeaturesForRegion] Fetch complete for region ${regionNumber}`)
           self.setLoading(false)
         } catch (e) {
           if (fetchGenerations.get(regionNumber) !== gen) {
@@ -1220,9 +1209,8 @@ export default function stateModelFactory(
         }
       }
 
-      function fetchAllVisibleRegions(caller: string) {
+      function fetchAllVisibleRegions() {
         const regions = self.visibleRegions
-        console.debug(`[fetchAllVisibleRegions] called from ${caller}, ${regions.length} visible regions, ${self.loadedRegions.size} loaded`)
         for (const region of regions) {
           const loaded = self.loadedRegions.get(region.regionNumber)
           const buffer = (region.end - region.start) * 0.5
@@ -1232,7 +1220,6 @@ export default function stateModelFactory(
             region.end + buffer > loaded.end
 
           if (needsData) {
-            console.debug(`[fetchAllVisibleRegions] region ${region.regionNumber} needs data: loaded=${!!loaded}, ${region.refName}:${Math.round(region.start)}-${Math.round(region.end)}`)
             const visibleRegion = {
               refName: region.refName,
               start: region.start,
@@ -1286,20 +1273,12 @@ export default function stateModelFactory(
                 if (!data) {
                   return
                 }
-                console.debug(`[reaction:fetchVisibleRegions] token=${data.token}`)
-                fetchAllVisibleRegions('reaction')
+                fetchAllVisibleRegions()
               },
               {
                 delay: 300,
                 fireImmediately: true,
                 name: 'LinearAlignmentsDisplay:fetchVisibleRegions',
-                // Compare by value so same regions + same token = no re-fire
-                equals: (a, b) =>
-                  a === b ||
-                  (a !== undefined &&
-                    b !== undefined &&
-                    a.token === b.token &&
-                    a.regions === b.regions),
               },
             ),
           )
@@ -1310,7 +1289,6 @@ export default function stateModelFactory(
             reaction(
               () => self.filterBy,
               () => {
-                console.debug('[filterBy reaction] filter changed')
                 self.clearAllRpcData()
                 self.bumpFetchToken()
               },
@@ -1333,7 +1311,6 @@ export default function stateModelFactory(
                 if (colorType === 'tag' && !tagsReady) {
                   return
                 }
-                console.debug('[colorBy reaction] Color changed to:', colorType)
                 self.setLoading(true)
                 self.setStatusMessage('Loading')
                 self.setError(null)
@@ -1383,7 +1360,10 @@ export default function stateModelFactory(
                   }
                 }
               },
-              { fireImmediately: true, name: 'LinearAlignmentsDisplay:fetchTagValues' },
+              {
+                fireImmediately: true,
+                name: 'LinearAlignmentsDisplay:fetchTagValues',
+              },
             ),
           )
 
@@ -1396,7 +1376,6 @@ export default function stateModelFactory(
                 return view.displayedRegions
               },
               () => {
-                console.debug('[displayedRegions reaction] regions changed')
                 self.clearAllRpcData()
                 self.arcsState.clearAllRpcData()
                 self.cloudState.clearAllRpcData()
@@ -1416,7 +1395,6 @@ export default function stateModelFactory(
                 drawLongRange: self.arcsState.drawLongRange,
               }),
               () => {
-                console.debug('[renderingMode reaction] mode changed')
                 self.clearAllRpcData()
                 self.arcsState.clearAllRpcData()
                 self.cloudState.clearAllRpcData()

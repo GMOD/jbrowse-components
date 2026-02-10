@@ -9,8 +9,17 @@
  * Extracted from WebGLRenderer to improve code organization.
  */
 
-import { ARC_CURVE_SEGMENTS, arcColorPalette, arcLineColorPalette, sashimiColorPalette, splitPositionWithFrac } from './shaders/index.ts'
-import { NUM_ARC_COLORS, NUM_LINE_COLORS, NUM_SASHIMI_COLORS } from './shaders/index.ts'
+import {
+  ARC_CURVE_SEGMENTS,
+  NUM_ARC_COLORS,
+  NUM_LINE_COLORS,
+  NUM_SASHIMI_COLORS,
+  arcColorPalette,
+  arcLineColorPalette,
+  sashimiColorPalette,
+  splitPositionWithFrac,
+} from './shaders/index.ts'
+
 import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
@@ -31,7 +40,11 @@ export class ArcsRenderer {
     blockWidth = state.canvasWidth,
   ) {
     const gl = this.parent.gl
-    if (!this.parent.buffers || !this.parent.arcProgram || !this.parent.arcLineProgram) {
+    if (
+      !this.parent.buffers ||
+      !this.parent.arcProgram ||
+      !this.parent.arcLineProgram
+    ) {
       return
     }
 
@@ -58,7 +71,12 @@ export class ArcsRenderer {
 
       for (let i = 0; i < NUM_ARC_COLORS; i++) {
         const c = arcColorPalette[i]!
-        gl.uniform3f(this.parent.arcUniforms[`u_arcColors[${i}]`]!, c[0], c[1], c[2])
+        gl.uniform3f(
+          this.parent.arcUniforms[`u_arcColors[${i}]`]!,
+          c[0],
+          c[1],
+          c[2],
+        )
       }
 
       gl.bindVertexArray(this.parent.buffers.arcVAO)
@@ -71,7 +89,10 @@ export class ArcsRenderer {
     }
 
     // Draw vertical lines for inter-chromosomal / long-range
-    if (this.parent.buffers.arcLineVAO && this.parent.buffers.arcLineCount > 0) {
+    if (
+      this.parent.buffers.arcLineVAO &&
+      this.parent.buffers.arcLineCount > 0
+    ) {
       gl.useProgram(this.parent.arcLineProgram)
 
       const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
@@ -124,7 +145,10 @@ export class ArcsRenderer {
       return
     }
 
-    if (!this.parent.buffers.sashimiVAO || this.parent.buffers.sashimiCount === 0) {
+    if (
+      !this.parent.buffers.sashimiVAO ||
+      this.parent.buffers.sashimiCount === 0
+    ) {
       return
     }
 

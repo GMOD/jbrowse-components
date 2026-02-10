@@ -95,7 +95,9 @@ function InterbaseTooltip({
 
   return (
     <div className={classes.interbaseContainer}>
-      <div className={classes.interbaseTitle}>Interbase events at {location}</div>
+      <div className={classes.interbaseTitle}>
+        Interbase events at {location}
+      </div>
 
       {Object.entries(interbaseData).map(([type, data]) => {
         const sizeStr =
@@ -105,9 +107,7 @@ function InterbaseTooltip({
 
         return (
           <div key={type}>
-            <div style={{ fontWeight: 500 }}>
-              {getInterbaseTypeLabel(type)}
-            </div>
+            <div style={{ fontWeight: 500 }}>{getInterbaseTypeLabel(type)}</div>
             <div className={classes.interbaseStat}>
               <span>Count:</span>
               <span>{data.count}</span>
@@ -145,7 +145,12 @@ const CoverageTooltipContents = forwardRef<
 
   const snpEntries = Object.entries(snps)
   const interbaseEntries = Object.entries(interbase)
-  const modEntries = modifications ? Object.entries(modifications) : []
+  // Sort modifications by name for consistent display order
+  const modEntries = modifications
+    ? Object.entries(modifications).sort((a, b) =>
+        a[1].name.localeCompare(b[1].name),
+      )
+    : []
   const hasModifications = modEntries.length > 0
 
   return (
@@ -158,6 +163,7 @@ const CoverageTooltipContents = forwardRef<
             <th>Base</th>
             <th># of Reads</th>
             <th>% of Reads</th>
+            {hasModifications && <th>Avg Prob</th>}
             <th>Strands</th>
           </tr>
         </thead>
@@ -167,28 +173,34 @@ const CoverageTooltipContents = forwardRef<
             <td>Total</td>
             <td>{depth}</td>
             <td />
+            {hasModifications && <td />}
             <td />
           </tr>
           {hasModifications
-            ? modEntries.map(([, data]) => (
-                <tr key={data.name}>
-                  <td>
-                    <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        background: data.color,
-                      }}
-                    />
-                  </td>
-                  <td>{data.name}</td>
-                  <td className={classes.td}>{data.count}</td>
-                  <td>{pct(data.count, depth)}</td>
-                  <td>
-                    {data.fwd}(+) {data.rev}(-)
-                  </td>
-                </tr>
-              ))
+            ? modEntries.map(([, data]) => {
+                const avgProb =
+                  data.count > 0 ? data.probabilityTotal / data.count : 0
+                return (
+                  <tr key={data.name}>
+                    <td>
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          background: data.color,
+                        }}
+                      />
+                    </td>
+                    <td>{data.name}</td>
+                    <td className={classes.td}>{data.count}</td>
+                    <td>{pct(data.count, depth)}</td>
+                    <td>{(avgProb * 100).toFixed(1)}%</td>
+                    <td>
+                      {data.fwd}(+) {data.rev}(-)
+                    </td>
+                  </tr>
+                )
+              })
             : snpEntries.map(([base, data]) => (
                 <tr key={base}>
                   <td />
@@ -221,11 +233,30 @@ const CoverageTooltipContents = forwardRef<
               data.minLen === data.maxLen
                 ? `${data.minLen}bp`
                 : `${data.minLen}-${data.maxLen}bp`
+            const shouldShowSeq = data.topSeq && data.minLen <= 10
+
+            // Build tooltip text for interbase histogram
+            const tooltipParts = [
+              typeLabel,
+              `Count: ${data.count}`,
+              `Size range: ${sizeStr}`,
+              `Avg size: ${data.avgLen.toFixed(1)}bp`,
+            ]
+            if (shouldShowSeq) {
+              tooltipParts.push(`Most common sequence: ${data.topSeq}`)
+            }
+            const tooltipText = tooltipParts.join('\n')
+
             return (
-              <tr key={type}>
+              <tr key={type} title={tooltipText}>
                 <td />
                 <td>
                   {typeLabel} ({sizeStr})
+                  {shouldShowSeq && (
+                    <div style={{ fontSize: '0.85em', marginTop: '0.25em' }}>
+                      Seq: {data.topSeq}
+                    </div>
+                  )}
                 </td>
                 <td className={classes.td}>{data.count}</td>
                 <td>{pct(data.count, depth)}</td>

@@ -154,7 +154,8 @@ describe('FeatureDensityMixin', () => {
   // The critical functionality (bug fix for force load) is validated below.
 
   test('initial state - stats not ready', () => {
-    const { Session, LinearGenomeModel, pluginManager } = createTestEnvironment()
+    const { Session, LinearGenomeModel, pluginManager } =
+      createTestEnvironment()
 
     const session = Session.create(
       {

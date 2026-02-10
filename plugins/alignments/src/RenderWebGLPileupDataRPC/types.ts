@@ -56,13 +56,14 @@ export interface CoverageTooltipBin {
       topSeq?: string
     }
   >
-  // Modification data: modType -> { count, fwd, rev, color, name }
+  // Modification data: modType -> { count, fwd, rev, probabilityTotal, color, name }
   modifications?: Record<
     string,
     {
       count: number
       fwd: number
       rev: number
+      probabilityTotal: number
       color: string
       name: string
     }

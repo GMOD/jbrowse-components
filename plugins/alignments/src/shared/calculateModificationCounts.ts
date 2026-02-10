@@ -19,8 +19,7 @@ export function calculateModificationCounts({
   strandBaseCounts: Record<string, { fwd: number; rev: number }>
 }) {
   if (base === 'N') {
-    const total =
-      Object.values(baseCounts).reduce((a, b) => a + b, 0)
+    const total = Object.values(baseCounts).reduce((a, b) => a + b, 0)
     return { modifiable: total, detectable: total }
   }
   const cmp = complementBase[base] ?? 'N'

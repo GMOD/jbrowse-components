@@ -10,8 +10,8 @@
  * Extracted from WebGLRenderer to improve code organization.
  */
 
-import type { ColorPalette } from './shaders/index.ts'
 import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { ColorPalette } from './shaders/index.ts'
 
 /**
  * CoverageRenderer orchestrates rendering of coverage data including coverage bars,
@@ -98,7 +98,10 @@ export class CoverageRenderer {
         this.parent.modCoverageUniforms.u_coverageYOffset!,
         state.coverageYOffset,
       )
-      gl.uniform1f(this.parent.modCoverageUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(
+        this.parent.modCoverageUniforms.u_canvasHeight!,
+        canvasHeight,
+      )
       gl.uniform1f(this.parent.modCoverageUniforms.u_canvasWidth!, canvasWidth)
 
       // Scissor clips modification bars to the coverage area, equivalent to
@@ -134,7 +137,10 @@ export class CoverageRenderer {
         this.parent.snpCoverageUniforms.u_coverageYOffset!,
         state.coverageYOffset,
       )
-      gl.uniform1f(this.parent.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(
+        this.parent.snpCoverageUniforms.u_canvasHeight!,
+        canvasHeight,
+      )
       gl.uniform1f(this.parent.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform3f(
         this.parent.snpCoverageUniforms.u_colorBaseA!,
@@ -238,7 +244,12 @@ export class CoverageRenderer {
       )
 
       gl.bindVertexArray(this.parent.buffers.indicatorVAO)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, this.parent.buffers.indicatorCount)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        3,
+        this.parent.buffers.indicatorCount,
+      )
     }
   }
 }

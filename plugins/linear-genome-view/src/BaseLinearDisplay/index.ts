@@ -1,6 +1,9 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
 export type { BlockModel } from './models/serverSideRenderedBlock.ts'
-export { BaseLinearDisplay, BaseLinearDisplayNoFeatureDensity } from './model.ts'
+export {
+  BaseLinearDisplay,
+  BaseLinearDisplayNoFeatureDensity,
+} from './model.ts'
 export type {
   BaseLinearDisplayModel,
   BaseLinearDisplayNoFeatureDensityModel,

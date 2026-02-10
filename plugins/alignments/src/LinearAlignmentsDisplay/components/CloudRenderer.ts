@@ -9,6 +9,7 @@
  */
 
 import { splitPositionWithFrac } from './shaders/index.ts'
+
 import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 /**
@@ -48,13 +49,19 @@ export class CloudRenderer {
       this.parent.cloudUniforms.u_regionStart!,
       Math.floor(this.parent.buffers.regionStart),
     )
-    gl.uniform1f(this.parent.cloudUniforms.u_featureHeight!, state.featureHeight)
+    gl.uniform1f(
+      this.parent.cloudUniforms.u_featureHeight!,
+      state.featureHeight,
+    )
     gl.uniform1f(this.parent.cloudUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(
       this.parent.cloudUniforms.u_coverageOffset!,
       state.showCoverage ? state.coverageHeight : 0,
     )
-    gl.uniform1i(this.parent.cloudUniforms.u_colorScheme!, state.cloudColorScheme ?? 0)
+    gl.uniform1i(
+      this.parent.cloudUniforms.u_colorScheme!,
+      state.cloudColorScheme ?? 0,
+    )
 
     gl.bindVertexArray(this.parent.buffers.cloudVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.parent.buffers.cloudCount)

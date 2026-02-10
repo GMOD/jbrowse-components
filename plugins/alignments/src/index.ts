@@ -7,8 +7,6 @@ import BamAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import PileupRPCMethodsF from './PileupRPC/index.ts'
-import PileupRendererF from './PileupRenderer/index.ts'
 import WebGLArcsDataRPCMethodsF from './RenderWebGLArcsDataRPC/index.ts'
 import WebGLCloudDataRPCMethodsF from './RenderWebGLCloudDataRPC/index.ts'
 import WebGLPileupDataRPCMethodsF from './RenderWebGLPileupDataRPC/index.ts'
@@ -24,8 +22,6 @@ export default class AlignmentsPlugin extends Plugin {
       BamAdapterF,
       AlignmentsTrackF,
       HtsgetBamAdapterF,
-      PileupRendererF,
-      PileupRPCMethodsF,
       WebGLPileupDataRPCMethodsF,
       WebGLArcsDataRPCMethodsF,
       WebGLCloudDataRPCMethodsF,

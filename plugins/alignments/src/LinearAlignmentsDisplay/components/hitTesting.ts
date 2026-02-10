@@ -81,7 +81,10 @@ export type InterbaseType = (typeof INTERBASE_TYPES)[number]
 /**
  * Helper: Calculate base pairs per pixel for a block
  */
-function calculateBpPerPx(bpRange: [number, number], blockWidth: number): number {
+function calculateBpPerPx(
+  bpRange: [number, number],
+  blockWidth: number,
+): number {
   return (bpRange[1] - bpRange[0]) / blockWidth
 }
 
@@ -106,7 +109,12 @@ function canvasXToPosOffset(
 ): { genomicPos: number; posOffset: number; bpPerPx: number } {
   const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
   const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
-  const genomicPos = canvasXToGenomicPosition(canvasX, bpRange, blockStartPx, bpPerPx)
+  const genomicPos = canvasXToGenomicPosition(
+    canvasX,
+    bpRange,
+    blockStartPx,
+    bpPerPx,
+  )
   const posOffset = genomicPos - rpcData.regionStart
   return { genomicPos, posOffset, bpPerPx }
 }
@@ -440,8 +448,7 @@ export function hitTestCoverage(
 
   return {
     type: 'coverage',
-    position:
-      regionStart + coverageStartOffset + binIndex * coverageBinSize,
+    position: regionStart + coverageStartOffset + binIndex * coverageBinSize,
     depth,
     snps,
   }
@@ -457,12 +464,7 @@ export function hitTestIndicator(
   showCoverage: boolean,
   showInterbaseIndicators: boolean,
 ): IndicatorHitResult | undefined {
-  if (
-    !showCoverage ||
-    !showInterbaseIndicators ||
-    canvasY > 5 ||
-    !resolved
-  ) {
+  if (!showCoverage || !showInterbaseIndicators || canvasY > 5 || !resolved) {
     return undefined
   }
 
@@ -577,7 +579,10 @@ export function hitTestSashimiArc(
     // Adaptive sampling based on arc width in bp
     const arcWidthBp = Math.abs(x2 - x1)
     const samplesPerBp = pxPerBp / 10 // Sample roughly every 10 pixels
-    const steps = Math.max(16, Math.min(256, Math.ceil(arcWidthBp * samplesPerBp)))
+    const steps = Math.max(
+      16,
+      Math.min(256, Math.ceil(arcWidthBp * samplesPerBp)),
+    )
     let hit = false
     for (let s = 0; s <= steps; s++) {
       const t = s / steps

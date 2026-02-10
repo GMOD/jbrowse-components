@@ -20,8 +20,8 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { parseCigar2 } from '../MismatchParser/index.ts'
-import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
+import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
@@ -91,7 +91,7 @@ interface ModificationEntry {
   r: number
   g: number
   b: number
-  a: number // alpha from probability
+  prob: number // probability (0-1)
 }
 
 // Parse "rgb(r,g,b)" string to [r,g,b]
@@ -376,7 +376,14 @@ function computeCoverage(
     }
   }
 
-  return { depths, fwdDepths, revDepths, maxDepth: maxDepth || 1, binSize, startOffset }
+  return {
+    depths,
+    fwdDepths,
+    revDepths,
+    maxDepth: maxDepth || 1,
+    binSize,
+    startOffset,
+  }
 }
 
 interface SNPCoverageEntry {
@@ -722,8 +729,9 @@ function computeModificationCoverage(
     }
   }
 
-  // Group modifications by position → aggregate counts per unique color (r,g,b key)
-  // Also track base and isSimplex per color group
+  // Group modifications by position → aggregate cumulative probability per unique color (r,g,b key)
+  // Track probabilityTotal (sum of probabilities) and probabilityCount (number of mods)
+  // for computing average probability for alpha, like the old SNPCoverageRenderer
   const byPosition = new Map<
     number,
     Map<
@@ -732,7 +740,8 @@ function computeModificationCoverage(
         r: number
         g: number
         b: number
-        count: number
+        probabilityTotal: number
+        probabilityCount: number
         base: string
         isSimplex: boolean
       }
@@ -755,13 +764,16 @@ function computeModificationCoverage(
         r: mod.r,
         g: mod.g,
         b: mod.b,
-        count: 0,
+        probabilityTotal: 0,
+        probabilityCount: 0,
         base: mod.base,
         isSimplex: mod.isSimplex,
       }
       colorMap.set(key, entry)
     }
-    entry.count++
+    // Accumulate the original probability value directly (no encoding/decoding)
+    entry.probabilityTotal += mod.prob
+    entry.probabilityCount++
   }
 
   // Build stacked segments using modifiable/detectable formula
@@ -772,6 +784,7 @@ function computeModificationCoverage(
     r: number
     g: number
     b: number
+    alpha: number
   }[] = []
 
   for (const [position, colorMap] of byPosition) {
@@ -783,7 +796,9 @@ function computeModificationCoverage(
 
     // Get refbase from regionSequence (+1 offset for the 1bp padding)
     const refbase = regionSequence
-      ? (regionSequence[position - regionSequenceStart + 1] ?? 'N').toUpperCase()
+      ? (
+          regionSequence[position - regionSequenceStart + 1] ?? 'N'
+        ).toUpperCase()
       : 'N'
 
     // Build per-base counts including ref bases
@@ -829,6 +844,8 @@ function computeModificationCoverage(
       strandBaseCounts[refbase].fwd += refCount
     }
 
+    // Iterate through colorMap in insertion order - since modifications array
+    // is pre-sorted by modType, the colorMap entries are already in sorted order
     let yOffset = 0
     for (const entry of colorMap.values()) {
       const { modifiable, detectable } = calculateModificationCounts({
@@ -839,11 +856,18 @@ function computeModificationCoverage(
         strandBaseCounts,
       })
 
-      // Same formula as reference: (modifiable / score0) * (count / detectable)
+      // Same formula as reference: (modifiable / score0) * (probabilityTotal / detectable)
+      // This uses cumulative probability instead of count for proper stacking
       // scaled to normalized space by * (score0 / regionMaxDepth)
       const modFraction =
-        (modifiable / depthAtPosition) * (entry.count / detectable)
+        (modifiable / depthAtPosition) * (entry.probabilityTotal / detectable)
       const height = modFraction * (depthAtPosition / regionMaxDepth)
+
+      // Compute average probability for alpha transparency
+      const avgProbability =
+        entry.probabilityCount > 0
+          ? entry.probabilityTotal / entry.probabilityCount
+          : 0
 
       if (!Number.isNaN(height)) {
         segments.push({
@@ -853,6 +877,7 @@ function computeModificationCoverage(
           r: entry.r,
           g: entry.g,
           b: entry.b,
+          alpha: Math.round(avgProbability * 255),
         })
         yOffset += height
       }
@@ -871,7 +896,7 @@ function computeModificationCoverage(
     colors[i * 4] = seg.r
     colors[i * 4 + 1] = seg.g
     colors[i * 4 + 2] = seg.b
-    colors[i * 4 + 3] = 255
+    colors[i * 4 + 3] = seg.alpha
   }
 
   return {
@@ -999,14 +1024,17 @@ export async function executeRenderWebGLPileupData({
   // 1bp padding on each side for CpG dinucleotide detection at boundaries.
   let regionSequence: string | undefined
   let regionSequenceStart = regionStart
-  if ((colorBy?.type === 'methylation' || colorBy?.type === 'modifications') && sequenceAdapter) {
+  if (
+    (colorBy?.type === 'methylation' || colorBy?.type === 'modifications') &&
+    sequenceAdapter
+  ) {
     const regionEnd0 = Math.ceil(region.end)
     let seqFetchStart = regionStart
     let seqFetchEnd = regionEnd0
     const maxExtension = regionEnd0 - regionStart
     for (const f of featuresArray) {
-      const s = f.get('start') as number
-      const e = f.get('end') as number
+      const s = f.get('start')
+      const e = f.get('end')
       if (s < seqFetchStart && s >= regionStart - maxExtension) {
         seqFetchStart = s
       }
@@ -1170,10 +1198,6 @@ export async function executeRenderWebGLPileupData({
               if (colorBy?.type === 'modifications' && prob >= modThreshold) {
                 const color = getColorForModification(type)
                 const [r, g, b] = parseRgbColor(color)
-                const alpha = Math.min(
-                  255,
-                  Math.round((prob * prob + 0.1) * 255),
-                )
                 modificationsData.push({
                   featureId,
                   position: featureStart + refPos,
@@ -1184,7 +1208,7 @@ export async function executeRenderWebGLPileupData({
                   r,
                   g,
                   b,
-                  a: alpha,
+                  prob,
                 })
               }
             })
@@ -1220,7 +1244,6 @@ export async function executeRenderWebGLPileupData({
                 const p = methProbs[i] || 0
                 // Red/blue gradient: red = methylated, blue = unmethylated
                 if (p > 0.5) {
-                  const alpha = Math.round((p - 0.5) * 2 * 255)
                   modificationsData.push({
                     featureId,
                     position: j,
@@ -1231,10 +1254,9 @@ export async function executeRenderWebGLPileupData({
                     r: 255,
                     g: 0,
                     b: 0,
-                    a: alpha,
+                    prob: p,
                   })
                 } else {
-                  const alpha = Math.round((1 - p * 2) * 255)
                   modificationsData.push({
                     featureId,
                     position: j,
@@ -1245,7 +1267,7 @@ export async function executeRenderWebGLPileupData({
                     r: 0,
                     g: 0,
                     b: 255,
-                    a: alpha,
+                    prob: p,
                   })
                 }
               } else {
@@ -1260,7 +1282,7 @@ export async function executeRenderWebGLPileupData({
                   r: 0,
                   g: 0,
                   b: 255,
-                  a: 255,
+                  prob: 0,
                 })
               }
 
@@ -1269,7 +1291,6 @@ export async function executeRenderWebGLPileupData({
                 const p = hydroxyMethProbs[i + 1] || 0
                 if (p > 0.5) {
                   // Pink
-                  const alpha = Math.round((p - 0.5) * 2 * 255)
                   modificationsData.push({
                     featureId,
                     position: j + 1,
@@ -1280,11 +1301,10 @@ export async function executeRenderWebGLPileupData({
                     r: 255,
                     g: 192,
                     b: 203,
-                    a: alpha,
+                    prob: p,
                   })
                 } else {
                   // Purple
-                  const alpha = Math.round((1 - p * 2) * 255)
                   modificationsData.push({
                     featureId,
                     position: j + 1,
@@ -1295,7 +1315,7 @@ export async function executeRenderWebGLPileupData({
                     r: 128,
                     g: 0,
                     b: 128,
-                    a: alpha,
+                    prob: p,
                   })
                 }
               }
@@ -1350,6 +1370,10 @@ export async function executeRenderWebGLPileupData({
         readTagColors[i * 3 + 2] = rgb[2]
       }
     }
+
+    // Sort modifications by modType for consistent ordering in both
+    // rendering (stacking) and tooltips - only needs to be done once here
+    modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
 
     return {
       features: featuresData,
@@ -1576,7 +1600,12 @@ export async function executeRenderWebGLPileupData({
       position: number
       depth: number
       snps: Record<string, { count: number; fwd: number; rev: number }>
-      deletions?: { count: number; minLen: number; maxLen: number; avgLen: number }
+      deletions?: {
+        count: number
+        minLen: number
+        maxLen: number
+        avgLen: number
+      }
       skips?: { count: number; minLen: number; maxLen: number; avgLen: number }
       interbase: Record<
         string,
@@ -1856,11 +1885,14 @@ export async function executeRenderWebGLPileupData({
           count: 0,
           fwd: 0,
           rev: 0,
+          probabilityTotal: 0,
           color: getColorForModification(mod.modType),
           name: getModificationName(mod.modType),
         }
       }
       bin.modifications[modKey].count++
+      // Accumulate probability directly (no encoding/decoding needed)
+      bin.modifications[modKey].probabilityTotal += mod.prob
       if (mod.strand === 1) {
         bin.modifications[modKey].fwd++
       } else {

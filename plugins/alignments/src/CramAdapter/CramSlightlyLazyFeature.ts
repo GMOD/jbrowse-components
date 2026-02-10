@@ -8,7 +8,7 @@ import {
   CODE_i,
 } from './const.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
-import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
+import { CHAR_FROM_CODE } from '../shared/cigarUtil.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,

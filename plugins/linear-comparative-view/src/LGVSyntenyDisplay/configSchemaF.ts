@@ -44,7 +44,8 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearAlignmentsDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration:
+        linearAlignmentsDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

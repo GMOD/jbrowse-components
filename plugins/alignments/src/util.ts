@@ -117,15 +117,18 @@ export function createAutorun(
 ) {
   addDisposer(
     self,
-    autorun(async function sharedAlignmentsAutorun() {
-      try {
-        await cb()
-      } catch (e) {
-        if (isAlive(self)) {
-          self.setError?.(e)
+    autorun(
+      async function sharedAlignmentsAutorun() {
+        try {
+          await cb()
+        } catch (e) {
+          if (isAlive(self)) {
+            self.setError?.(e)
+          }
         }
-      }
-    }, { ...opts, name: opts?.name ?? 'sharedAlignmentsAutorun' }),
+      },
+      { ...opts, name: opts?.name ?? 'sharedAlignmentsAutorun' },
+    ),
   )
 }
 

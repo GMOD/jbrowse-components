@@ -20,6 +20,10 @@
  * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
+import { ArcsRenderer } from './ArcsRenderer.ts'
+import { CloudRenderer } from './CloudRenderer.ts'
+import { CoverageRenderer } from './CoverageRenderer.ts'
+import { PileupRenderer } from './PileupRenderer.ts'
 import {
   ARC_CURVE_SEGMENTS,
   ARC_FRAGMENT_SHADER,
@@ -66,11 +70,6 @@ import {
 } from './shaders/index.ts'
 
 import type { ColorPalette } from './shaders/index.ts'
-
-import { PileupRenderer } from './PileupRenderer.ts'
-import { CoverageRenderer } from './CoverageRenderer.ts'
-import { ArcsRenderer } from './ArcsRenderer.ts'
-import { CloudRenderer } from './CloudRenderer.ts'
 
 export type { ColorPalette, RGBColor } from './shaders/index.ts'
 
@@ -187,8 +186,7 @@ export class WebGLRenderer {
   readUniforms: Record<string, WebGLUniformLocation | null> = {}
   coverageUniforms: Record<string, WebGLUniformLocation | null> = {}
   snpCoverageUniforms: Record<string, WebGLUniformLocation | null> = {}
-  noncovHistogramUniforms: Record<string, WebGLUniformLocation | null> =
-    {}
+  noncovHistogramUniforms: Record<string, WebGLUniformLocation | null> = {}
   indicatorUniforms: Record<string, WebGLUniformLocation | null> = {}
   lineUniforms: Record<string, WebGLUniformLocation | null> = {}
   gapUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -2040,7 +2038,12 @@ export class WebGLRenderer {
       } else if (mode === 'cloud') {
         this.cloudRenderer.render(blockState)
       } else {
-        this.pileupRenderer.render(blockState, clippedBpOffset, colors, scissorX)
+        this.pileupRenderer.render(
+          blockState,
+          clippedBpOffset,
+          colors,
+          scissorX,
+        )
       }
     }
 
@@ -2099,7 +2102,6 @@ export class WebGLRenderer {
       this.pileupRenderer.render(state, domainOffset, colors)
     }
   }
-
 
   private deleteBuffersVAOs(buffers: GPUBuffers) {
     const gl = this.gl

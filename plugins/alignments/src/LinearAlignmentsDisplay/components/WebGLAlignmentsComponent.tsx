@@ -33,12 +33,12 @@ import {
   uploadRegionDataToGPU,
 } from './alignmentComponentUtils'
 import {
+  INTERBASE_TYPES,
   hitTestCigarItem as hitTestCigarItemFn,
   hitTestCoverage as hitTestCoverageFn,
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
   hitTestSashimiArc as hitTestSashimiArcFn,
-  INTERBASE_TYPES,
 } from './hitTesting'
 
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
@@ -864,7 +864,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
         const refName = blockInfo?.refName
 
         if (tooltipBin || coverageHit.depth > 0) {
-          let bin = tooltipBin ?? {
+          const bin = tooltipBin ?? {
             position: coverageHit.position,
             depth: coverageHit.depth,
             snps: {},

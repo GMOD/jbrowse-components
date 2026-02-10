@@ -8,8 +8,9 @@
  */
 
 import { splitPositionWithFrac } from './shaders/index.ts'
-import type { ColorPalette } from './shaders/index.ts'
+
 import type { GPUBuffers, RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { ColorPalette } from './shaders/index.ts'
 
 /**
  * PileupRenderer orchestrates rendering of reads and CIGAR features in pileup mode.
@@ -72,8 +73,14 @@ export class PileupRenderer {
         state.rangeY[0],
         state.rangeY[1],
       )
-      gl.uniform1f(this.parent.gapUniforms.u_featureHeight!, state.featureHeight)
-      gl.uniform1f(this.parent.gapUniforms.u_featureSpacing!, state.featureSpacing)
+      gl.uniform1f(
+        this.parent.gapUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.parent.gapUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
       gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
       gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1i(this.parent.gapUniforms.u_eraseMode!, 1)
@@ -106,7 +113,10 @@ export class PileupRenderer {
     )
     gl.uniform1i(this.parent.readUniforms.u_colorScheme!, state.colorScheme)
     gl.uniform1f(this.parent.readUniforms.u_featureHeight!, state.featureHeight)
-    gl.uniform1f(this.parent.readUniforms.u_featureSpacing!, state.featureSpacing)
+    gl.uniform1f(
+      this.parent.readUniforms.u_featureSpacing!,
+      state.featureSpacing,
+    )
     gl.uniform1f(this.parent.readUniforms.u_coverageOffset!, coverageOffset)
     gl.uniform1f(this.parent.readUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(this.parent.readUniforms.u_canvasWidth!, canvasWidth)
@@ -124,7 +134,10 @@ export class PileupRenderer {
       this.parent.readUniforms.u_colorRevStrand!,
       ...colors.colorRevStrand,
     )
-    gl.uniform3f(this.parent.readUniforms.u_colorNostrand!, ...colors.colorNostrand)
+    gl.uniform3f(
+      this.parent.readUniforms.u_colorNostrand!,
+      ...colors.colorNostrand,
+    )
     gl.uniform3f(this.parent.readUniforms.u_colorPairLR!, ...colors.colorPairLR)
     gl.uniform3f(this.parent.readUniforms.u_colorPairRL!, ...colors.colorPairRL)
     gl.uniform3f(this.parent.readUniforms.u_colorPairRR!, ...colors.colorPairRR)
@@ -239,7 +252,11 @@ export class PileupRenderer {
     }
 
     // Draw insertions - always draw regardless of modifications
-    if (state.showMismatches && buffers.insertionVAO && buffers.insertionCount > 0) {
+    if (
+      state.showMismatches &&
+      buffers.insertionVAO &&
+      buffers.insertionCount > 0
+    ) {
       gl.useProgram(this.parent.insertionProgram)
       gl.uniform2f(
         this.parent.insertionUniforms.u_bpRangeX!,
@@ -381,7 +398,10 @@ export class PileupRenderer {
         this.parent.modificationUniforms.u_coverageOffset!,
         coverageOffset,
       )
-      gl.uniform1f(this.parent.modificationUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(
+        this.parent.modificationUniforms.u_canvasHeight!,
+        canvasHeight,
+      )
       gl.uniform1f(this.parent.modificationUniforms.u_canvasWidth!, canvasWidth)
 
       gl.bindVertexArray(buffers.modificationVAO)

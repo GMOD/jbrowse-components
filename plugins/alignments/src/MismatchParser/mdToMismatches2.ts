@@ -5,7 +5,7 @@ import {
   CIGAR_N,
   CIGAR_P,
   CIGAR_S,
-} from '../PileupRenderer/renderers/cigarUtil.ts'
+} from '../shared/cigarUtil.ts'
 
 import type { Mismatch } from '../shared/types.ts'
 

@@ -6,10 +6,10 @@
  */
 
 import { colord } from '@jbrowse/core/util/colord'
-import { fillColor } from '../../shared/color.ts'
-import { WebGLRenderer } from './WebGLRenderer'
 
-import type { ColorPalette, RGBColor } from './WebGLRenderer'
+import { fillColor } from '../../shared/color.ts'
+
+import type { ColorPalette, RGBColor, WebGLRenderer } from './WebGLRenderer'
 import type { CigarHitResult } from './hitTesting'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
 import type { Theme } from '@mui/material'
@@ -99,7 +99,7 @@ export function getCanvasCoords(
   }
 
   const now = Date.now()
-  let cached = canvasRectRef.current
+  const cached = canvasRectRef.current
 
   // Invalidate cache if older than 100ms (catches scroll events and repositioning)
   if (cached && now - cached.timestamp < 100) {
