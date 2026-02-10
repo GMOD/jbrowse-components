@@ -12,8 +12,8 @@ export default function LinearWebGLWiggleDisplayF(
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory
     return new DisplayType({
-      name: 'LinearWebGLWiggleDisplay',
-      displayName: 'WebGL Wiggle display',
+      name: 'LinearWiggleDisplay',
+      displayName: 'Wiggle display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'QuantitativeTrack',
@@ -22,3 +22,7 @@ export default function LinearWebGLWiggleDisplayF(
     })
   })
 }
+
+export { default as Tooltip } from './components/Tooltip.tsx'
+export { default as ReactComponent } from './components/WebGLWiggleComponent.tsx'
+export { default as modelFactory } from './model.ts'

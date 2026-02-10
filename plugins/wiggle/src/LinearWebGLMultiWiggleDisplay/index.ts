@@ -12,8 +12,8 @@ export default function LinearWebGLMultiWiggleDisplayF(
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory
     return new DisplayType({
-      name: 'LinearWebGLMultiWiggleDisplay',
-      displayName: 'WebGL Multi-Wiggle display',
+      name: 'MultiLinearWiggleDisplay',
+      displayName: 'Multi-Wiggle display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'MultiQuantitativeTrack',

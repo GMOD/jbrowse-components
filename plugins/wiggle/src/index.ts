@@ -7,19 +7,9 @@ import GuessAdapterF from './GuessAdapter/index.ts'
 import LinePlotRendererF from './LinePlotRenderer/index.ts'
 import LinearWebGLMultiWiggleDisplayF from './LinearWebGLMultiWiggleDisplay/index.ts'
 import LinearWebGLWiggleDisplayF from './LinearWebGLWiggleDisplay/index.ts'
-import LinearWiggleDisplayF, {
-  ReactComponent as LinearWiggleDisplayReactComponent,
-  modelFactory as linearWiggleDisplayModelFactory,
-} from './LinearWiggleDisplay/index.ts'
-import MultiDensityRendererF from './MultiDensityRenderer/index.ts'
-import MultiLineRendererF from './MultiLineRenderer/index.ts'
-import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
-import MultiRowLineRendererF from './MultiRowLineRenderer/index.ts'
-import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer/index.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
-import MultiXYPlotRendererF from './MultiXYPlotRenderer/index.ts'
 import QuantitativeTrackF from './QuantitativeTrack/index.ts'
 import RenderWebGLMultiWiggleDataRPCF from './RenderWebGLMultiWiggleDataRPC/index.ts'
 import RenderWebGLWiggleDataRPCF from './RenderWebGLWiggleDataRPC/index.ts'
@@ -48,17 +38,10 @@ export default class WigglePlugin extends Plugin {
     QuantitativeTrackF(pm)
     MultiQuantitativeTrackF(pm)
     LinearWebGLWiggleDisplayF(pm)
-    LinearWiggleDisplayF(pm)
     LinearWebGLMultiWiggleDisplayF(pm)
-    MultiLinearWiggleDisplayF(pm)
     LinePlotRendererF(pm)
     XYPlotRendererF(pm)
     DensityRendererF(pm)
-    MultiXYPlotRendererF(pm)
-    MultiRowXYPlotRendererF(pm)
-    MultiDensityRendererF(pm)
-    MultiLineRendererF(pm)
-    MultiRowLineRendererF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     GuessAdapterF(pm)
@@ -73,10 +56,8 @@ export default class WigglePlugin extends Plugin {
   }
 
   exports = {
-    LinearWiggleDisplayReactComponent,
     XYPlotRendererReactComponent,
     XYPlotRenderer,
-    linearWiggleDisplayModelFactory,
     xyPlotRendererConfigSchema,
     utils,
   }
@@ -89,7 +70,7 @@ export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   Tooltip,
   modelFactory as linearWiggleDisplayModelFactory,
-} from './LinearWiggleDisplay/index.ts'
+} from './LinearWebGLWiggleDisplay/index.ts'
 export type { TooltipContentsComponent } from './Tooltip.tsx'
 
 export type {

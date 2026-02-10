@@ -47,11 +47,11 @@ export default function stateModelFactory(
 ) {
   return types
     .compose(
-      'LinearWebGLMultiWiggleDisplay',
+      'MultiLinearWiggleDisplay',
       BaseDisplay,
       TrackHeightMixin(),
       types.model({
-        type: types.literal('LinearWebGLMultiWiggleDisplay'),
+        type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
@@ -508,7 +508,7 @@ export default function stateModelFactory(
     .actions(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
+        return renderSvg(self as LinearWebGLMultiWiggleDisplayModel, opts)
       },
     }))
     .postProcessSnapshot(snap => {

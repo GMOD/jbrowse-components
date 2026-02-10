@@ -37,20 +37,18 @@ const WebGLWiggleComponent = lazy(
   () => import('./components/WebGLWiggleComponent.tsx'),
 )
 const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
-const SetColorDialog = lazy(
-  () => import('../LinearWiggleDisplay/components/SetColorDialog.tsx'),
-)
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
-      'LinearWebGLWiggleDisplay',
+      'LinearWiggleDisplay',
       BaseDisplay,
       TrackHeightMixin(),
       types.model({
-        type: types.literal('LinearWebGLWiggleDisplay'),
+        type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         colorSetting: types.maybe(types.string),
         posColorSetting: types.maybe(types.string),
@@ -112,6 +110,18 @@ export default function stateModelFactory(
 
       get scaleType() {
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+      },
+
+      /**
+       * #method
+       * Returns adapter configuration. Can be overridden by subclasses to
+       * provide custom adapter configs (e.g., GC content display)
+       */
+      adapterProps() {
+        const track = getContainingTrack(self)
+        return {
+          adapterConfig: getConf(track, 'adapter'),
+        }
       },
 
       get renderingType() {
@@ -321,8 +331,7 @@ export default function stateModelFactory(
       ) {
         const session = getSession(self)
         const { rpcManager } = session
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter')
+        const { adapterConfig } = self.adapterProps()
 
         if (!adapterConfig) {
           return
@@ -521,7 +530,7 @@ export default function stateModelFactory(
     .actions(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self, opts)
+        return renderSvg(self as LinearWebGLWiggleDisplayModel, opts)
       },
     }))
     .postProcessSnapshot(snap => {
