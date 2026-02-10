@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWebGLFeatureDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 

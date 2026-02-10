@@ -100,6 +100,7 @@ export interface WebGLPileupDataResult {
   readChainHasSupp?: Uint8Array // 1 if chain contains supplementary reads, 0 otherwise
   readIds: string[] // feature IDs for hit testing
   readNames: string[] // read names (QNAME) for tooltip display
+  readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
 
   // Gap data (deletions/skips) - offsets from regionStart
   gapPositions: Uint32Array // [startOffset, endOffset] pairs

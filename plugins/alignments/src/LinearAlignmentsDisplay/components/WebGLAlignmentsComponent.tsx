@@ -7,7 +7,10 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
+import {
+  FloatingLegend,
+  TooLargeMessage,
+} from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -15,6 +18,7 @@ import { observer } from 'mobx-react'
 import { getContrastBaseMap } from '../../shared/util.ts'
 import { YSCALEBAR_LABEL_OFFSET, getInsertionType } from '../model.ts'
 import BlockMsg from './BlockMsg.tsx'
+import CloudYScaleBar from './CloudYScaleBar.tsx'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
 import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
@@ -30,19 +34,23 @@ import {
 } from './alignmentComponentUtils.ts'
 import {
   INTERBASE_TYPES,
+  hitTestChain as hitTestChainFn,
   hitTestCigarItem as hitTestCigarItemFn,
   hitTestCoverage as hitTestCoverageFn,
-  hitTestChain as hitTestChainFn,
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
   hitTestSashimiArc as hitTestSashimiArcFn,
 } from './hitTesting.ts'
 
+import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ResolvedBlock } from './hitTesting.ts'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 interface FeatureInfo {
   id: string
@@ -93,6 +101,9 @@ interface LinearAlignmentsDisplayModel {
   reload: () => void
   featureIdUnderMouse: string | undefined
   coverageTicks?: CoverageTicks
+  cloudTicks?: CloudTicks
+  showLegend: boolean | undefined
+  legendItems: LegendItem[]
   currentRangeY: [number, number]
   highlightedFeatureIndex: number
   selectedFeatureIndex: number
@@ -182,9 +193,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     startHeight: 0,
   })
 
-
-  const view = getContainingView(model) as LinearGenomeViewModel | undefined
-  const viewId = view?.id
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const viewId = view.id
 
   // Get theme for dynamic colors
   const theme = useTheme()
@@ -1826,6 +1836,27 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
             <CoverageYScaleBar model={model} orientation="left" />
           </g>
         </svg>
+      ) : null}
+
+      {model.cloudTicks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: showCoverage ? coverageHeight : 0,
+            left: 0,
+            pointerEvents: 'none',
+            height: model.cloudTicks.height,
+            width: 50,
+          }}
+        >
+          <g transform="translate(45, 0)">
+            <CloudYScaleBar model={model} orientation="left" />
+          </g>
+        </svg>
+      ) : null}
+
+      {isChainMode && model.showLegend ? (
+        <FloatingLegend items={model.legendItems} />
       ) : null}
 
       {showCoverage ? (

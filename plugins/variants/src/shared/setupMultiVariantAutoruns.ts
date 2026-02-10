@@ -8,7 +8,7 @@ import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
  * Sets up the autoruns for multi-variant displays.
  * This is shared between MultiLinearVariantDisplay and LinearVariantMatrixDisplay.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export function setupMultiVariantAutoruns(self: any) {
   getMultiVariantSourcesAutorun(self)
   getMultiVariantFeaturesAutorun(self)

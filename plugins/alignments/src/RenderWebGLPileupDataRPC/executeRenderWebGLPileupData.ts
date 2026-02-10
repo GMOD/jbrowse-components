@@ -31,6 +31,10 @@ import {
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
+import {
+  filterForPairs,
+  getInsertSizeStats,
+} from '../shared/insertSizeStats.ts'
 import { getModificationName } from '../shared/modificationData.ts'
 import {
   baseToAscii,
@@ -39,12 +43,9 @@ import {
   parseCssColor,
 } from '../shared/webglRpcUtils.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
-import {
-  filterForPairs,
-  getInsertSizeStats,
-} from '../shared/insertSizeStats.ts'
 
 import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
+import type { Mismatch } from '../shared/types'
 import type {
   FeatureData,
   GapData,
@@ -54,7 +55,6 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from '../shared/webglRpcTypes.ts'
-import type { Mismatch } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -79,7 +79,6 @@ function computeLayout(features: FeatureData[]): Map<string, number> {
 
   return layoutMap
 }
-
 
 function computeModificationCoverage(
   modifications: ModificationEntry[],
@@ -316,7 +315,6 @@ function computeModificationCoverage(
     count: segments.length,
   }
 }
-
 
 export async function executeRenderWebGLPileupData({
   pluginManager,
@@ -1262,7 +1260,7 @@ export async function executeRenderWebGLPileupData({
 
   // Calculate insert size statistics for coloring
   // Filter for properly paired reads (flags & 2) excluding secondary (256) and supplementary (2048)
-  const pairedInsertSizes = featuresData
+  const pairedInsertSizes = features
     .filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048))
     .map(f => f.insertSize)
 
@@ -1270,7 +1268,6 @@ export async function executeRenderWebGLPileupData({
     pairedInsertSizes.length > 0
       ? getInsertSizeStats(pairedInsertSizes)
       : undefined
-
 
   const result: WebGLPileupDataResult = {
     regionStart,

@@ -20,17 +20,20 @@ import {
   TooLargeMessage,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
+import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
+import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 
+import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
+import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -235,6 +238,22 @@ export default function stateModelFactory(
         /**
          * #property
          */
+        showYScalebar: true,
+        /**
+         * #property
+         */
+        showLegend: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        drawSingletons: true,
+        /**
+         * #property
+         */
+        drawProperPairs: true,
+        /**
+         * #property
+         */
         arcsState: types.optional(ArcsSubModel, {}),
         /**
          * #property
@@ -254,7 +273,7 @@ export default function stateModelFactory(
 
       // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
 
-      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      const { blockState, showTooltips, ...cleaned } = snap
       snap = cleaned
 
       // Rewrite "height" from older snapshots to "heightPreConfig"
@@ -569,6 +588,37 @@ export default function stateModelFactory(
 
         return { ticks, height, maxDepth }
       },
+
+      get cloudTicks(): CloudTicks | undefined {
+        if (self.renderingMode !== 'cloud' || !self.showYScalebar) {
+          return undefined
+        }
+        const iter = self.rpcDataMap.values().next()
+        const rpcData = iter.done ? undefined : iter.value
+        const maxDistance = rpcData?.maxDistance
+        if (!maxDistance || maxDistance <= 0) {
+          return undefined
+        }
+        const pileupHeight =
+          self.height - (self.showCoverage ? self.coverageHeight : 0)
+        if (pileupHeight <= 0) {
+          return undefined
+        }
+        const scale = scaleLog()
+          .base(2)
+          .domain([1, Math.max(2, maxDistance)])
+          .range([0, pileupHeight - 20])
+          .clamp(true)
+        const ticks = scale.ticks(6).map(value => ({
+          value,
+          y: scale(value),
+        }))
+        return { ticks, height: pileupHeight, maxDistance }
+      },
+
+      get legendItems(): LegendItem[] {
+        return getReadDisplayLegendItems(self.colorBySetting)
+      },
     }))
     .views(self => ({
       /**
@@ -647,11 +697,8 @@ export default function stateModelFactory(
           end: rpcData.regionStart + endOffset,
           flags,
           mapq: rpcData.readMapqs[idx],
-          strand: (flags !== undefined && flags & 16 ? '-' : '+') as
-            | '-'
-            | '+',
-          refName:
-            view.displayedRegions[regionNumber]?.refName ?? 'unknown',
+          strand: flags !== undefined && flags & 16 ? '-' : '+',
+          refName: view.displayedRegions[regionNumber]?.refName ?? 'unknown',
         }
       },
     }))
@@ -891,6 +938,22 @@ export default function stateModelFactory(
         self.showMismatches = show
       },
 
+      setShowYScalebar(show: boolean) {
+        self.showYScalebar = show
+      },
+
+      setShowLegend(show: boolean | undefined) {
+        self.showLegend = show
+      },
+
+      setDrawSingletons(flag: boolean) {
+        self.drawSingletons = flag
+      },
+
+      setDrawProperPairs(flag: boolean) {
+        self.drawProperPairs = flag
+      },
+
       setShowInterbaseCounts(show: boolean) {
         self.showInterbaseCounts = show
       },
@@ -1098,6 +1161,8 @@ export default function stateModelFactory(
             colorTagMap: self.colorTagMap,
             layoutMode: self.renderingMode as 'cloud' | 'linkedRead',
             height: self.height,
+            drawSingletons: self.drawSingletons,
+            drawProperPairs: self.drawProperPairs,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
                 self.setStatusMessage(msg)
@@ -1235,20 +1300,17 @@ export default function stateModelFactory(
         for (const region of regions) {
           const loaded = self.loadedRegions.get(region.regionNumber)
           if (
-            loaded &&
-            loaded.refName === region.refName &&
+            loaded?.refName === region.refName &&
             region.start >= loaded.start &&
             region.end <= loaded.end
           ) {
             continue
           }
-          fetchFeaturesForRegion(
-            region,
-            region,
-            region.regionNumber,
-          ).catch((e: unknown) => {
-            console.error('Failed to fetch features:', e)
-          })
+          fetchFeaturesForRegion(region, region, region.regionNumber).catch(
+            (e: unknown) => {
+              console.error('Failed to fetch features:', e)
+            },
+          )
         }
       }
 
@@ -1310,6 +1372,8 @@ export default function stateModelFactory(
                   mode: self.renderingMode,
                   drawInter: self.arcsState.drawInter,
                   drawLongRange: self.arcsState.drawLongRange,
+                  drawSingletons: self.drawSingletons,
+                  drawProperPairs: self.drawProperPairs,
                 })
                 if (
                   prevInvalidationKey !== undefined &&
@@ -1362,7 +1426,7 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
-              () => {
+              async () => {
                 const tag = self.colorBy.tag
                 const tagsReady = self.tagsReady
                 const region = self.visibleRegion
@@ -1373,27 +1437,31 @@ export default function stateModelFactory(
                 const track = getContainingTrack(self)
                 const adapterConfig = getConf(track, 'adapter')
                 const sessionId = getRpcSessionId(self)
-                session.rpcManager
-                  .call(sessionId, 'PileupGetGlobalValueForTag', {
-                    adapterConfig,
-                    tag,
+                try {
+                  const vals = (await session.rpcManager.call(
                     sessionId,
-                    regions: [region],
-                  })
-                  .then((vals: string[]) => {
-                    if (isAlive(self)) {
-                      self.updateColorTagMap(vals)
-                      self.setTagsReady(true)
-                    }
-                  })
-                  .catch((e: unknown) => {
-                    console.error('Failed to fetch tag values:', e)
-                    if (isAlive(self)) {
-                      self.setTagsReady(true)
-                    }
-                  })
+                    'PileupGetGlobalValueForTag',
+                    {
+                      adapterConfig,
+                      tag,
+                      sessionId,
+                      regions: [region],
+                    },
+                  )) as string[]
+                  if (isAlive(self)) {
+                    self.updateColorTagMap(vals)
+                    self.setTagsReady(true)
+                  }
+                } catch (e) {
+                  console.error('Failed to fetch tag values:', e)
+                  if (isAlive(self)) {
+                    self.setTagsReady(true)
+                  }
+                }
               },
-              { name: 'LinearAlignmentsDisplay:fetchTagValues' },
+              {
+                name: 'LinearAlignmentsDisplay:fetchTagValues',
+              },
             ),
           )
         },
@@ -1556,9 +1624,9 @@ export default function stateModelFactory(
               label: 'Compact',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 2 && self.noSpacingSetting === true,
+                self.featureHeight === 3 && self.noSpacingSetting === true,
               onClick: () => {
-                self.setFeatureHeight(2)
+                self.setFeatureHeight(3)
                 self.setNoSpacing(true)
               },
             },
@@ -1745,10 +1813,54 @@ export default function stateModelFactory(
           coverageItem,
           sashimiItem,
           {
-            label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
-            onClick: () => {
-              self.setShowMismatches(!self.showMismatches)
-            },
+            label: 'Show...',
+            subMenu: [
+              {
+                label: 'Legend',
+                type: 'checkbox',
+                checked: !!self.showLegend,
+                onClick: () => {
+                  self.setShowLegend(!self.showLegend)
+                },
+              },
+              {
+                label: 'Y-axis scalebar',
+                type: 'checkbox',
+                checked: self.showYScalebar,
+                onClick: () => {
+                  self.setShowYScalebar(!self.showYScalebar)
+                },
+              },
+              {
+                label: 'Mismatches',
+                type: 'checkbox',
+                checked: self.showMismatches,
+                onClick: () => {
+                  self.setShowMismatches(!self.showMismatches)
+                },
+              },
+            ],
+          },
+          {
+            label: 'Edit filters',
+            subMenu: [
+              {
+                label: 'Show singletons',
+                type: 'checkbox',
+                checked: self.drawSingletons,
+                onClick: () => {
+                  self.setDrawSingletons(!self.drawSingletons)
+                },
+              },
+              {
+                label: 'Show proper pairs',
+                type: 'checkbox',
+                checked: self.drawProperPairs,
+                onClick: () => {
+                  self.setDrawProperPairs(!self.drawProperPairs)
+                },
+              },
+            ],
           },
         ]
 

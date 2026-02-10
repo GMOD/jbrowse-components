@@ -34,8 +34,8 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
-import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
+import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
   baseToAscii,
   getEffectiveStrand,
@@ -44,7 +44,12 @@ import {
 } from '../shared/webglRpcUtils.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
-import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types.ts'
+import type {
+  RenderWebGLPileupDataArgs,
+  WebGLPileupDataResult,
+} from '../RenderWebGLPileupDataRPC/types.ts'
+import type { Mismatch } from '../shared/types'
+import type { ChainStats } from '../shared/types.ts'
 import type {
   ChainFeatureData,
   GapData,
@@ -54,8 +59,6 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from '../shared/webglRpcTypes.ts'
-import type { ChainStats } from '../shared/types.ts'
-import type { Mismatch } from '../shared/types'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -68,6 +71,8 @@ interface ExecuteParams {
 export interface RenderWebGLChainDataArgs extends RenderWebGLPileupDataArgs {
   layoutMode: 'cloud' | 'linkedRead'
   height: number
+  drawSingletons?: boolean
+  drawProperPairs?: boolean
 }
 
 const CLOUD_HEIGHT_PADDING = 20
@@ -109,9 +114,7 @@ function getColorType(f: ChainFeatureData, stats?: ChainStats) {
 }
 
 // Pileup layout for linkedRead mode — layouts chains by their overall bounds
-function computeChainLayout(
-  chains: { minStart: number; maxEnd: number }[],
-) {
+function computeChainLayout(chains: { minStart: number; maxEnd: number }[]) {
   const sorted = chains
     .map((c, i) => ({ ...c, idx: i }))
     .sort((a, b) => a.minStart - b.minStart)
@@ -134,7 +137,6 @@ function computeChainLayout(
   return layoutMap
 }
 
-
 export async function executeRenderWebGLChainData({
   pluginManager,
   args,
@@ -148,6 +150,8 @@ export async function executeRenderWebGLChainData({
     colorTagMap,
     layoutMode,
     height,
+    drawSingletons = true,
+    drawProperPairs = true,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -216,6 +220,33 @@ export async function executeRenderWebGLChainData({
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()
 
+  // Pre-filter: group raw features by read name and apply chain filters
+  // BEFORE expensive CIGAR processing. This avoids parsing CIGAR strings
+  // for reads that will be discarded.
+  const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+  let keptIds: Set<string> | undefined
+  if (!drawSingletons || !drawProperPairs) {
+    const byName = groupBy(deduped, (f: Feature) => f.get('name') ?? '')
+    let rawChains = Object.values(byName)
+    if (!drawSingletons) {
+      rawChains = rawChains.filter(c => c.length > 1)
+    }
+    if (!drawProperPairs) {
+      rawChains = rawChains.filter(
+        c => !c.every((f: Feature) => !!((f.get('flags') ?? 0) & 2)),
+      )
+    }
+    keptIds = new Set<string>()
+    for (const chain of rawChains) {
+      for (const f of chain) {
+        keptIds.add(f.id())
+      }
+    }
+  }
+  const keptFeatures = keptIds
+    ? deduped.filter(f => keptIds.has(f.id()))
+    : deduped
+
   const {
     features,
     gaps,
@@ -226,8 +257,6 @@ export async function executeRenderWebGLChainData({
     modifications,
     tagColors,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
-    const deduped = dedupe(featuresArray, (f: Feature) => f.id())
-
     const featuresData: ChainFeatureData[] = []
     const gapsData: GapData[] = []
     const mismatchesData: MismatchData[] = []
@@ -238,7 +267,7 @@ export async function executeRenderWebGLChainData({
     const tagColorValues: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
 
-    for (const feature of deduped) {
+    for (const feature of keptFeatures) {
       const featureId = feature.id()
       const featureStart = feature.get('start')
       const strand = feature.get('strand')
@@ -266,7 +295,9 @@ export async function executeRenderWebGLChainData({
         tagColorValues.push(val != null ? String(val) : '')
       }
 
-      const featureMismatches = feature.get('mismatches') as Mismatch[] | undefined
+      const featureMismatches = feature.get('mismatches') as
+        | Mismatch[]
+        | undefined
       if (featureMismatches) {
         for (const mm of featureMismatches) {
           if (mm.type === 'deletion') {
@@ -385,19 +416,74 @@ export async function executeRenderWebGLChainData({
               if (methBins[i]) {
                 const p = methProbs[i] || 0
                 if (p > 0.5) {
-                  modificationsData.push({ featureId, position: j, base: 'C', modType: 'm', isSimplex: false, strand: methStrand, r: 255, g: 0, b: 0, prob: p })
+                  modificationsData.push({
+                    featureId,
+                    position: j,
+                    base: 'C',
+                    modType: 'm',
+                    isSimplex: false,
+                    strand: methStrand,
+                    r: 255,
+                    g: 0,
+                    b: 0,
+                    prob: p,
+                  })
                 } else {
-                  modificationsData.push({ featureId, position: j, base: 'C', modType: 'm', isSimplex: false, strand: methStrand, r: 0, g: 0, b: 255, prob: p })
+                  modificationsData.push({
+                    featureId,
+                    position: j,
+                    base: 'C',
+                    modType: 'm',
+                    isSimplex: false,
+                    strand: methStrand,
+                    r: 0,
+                    g: 0,
+                    b: 255,
+                    prob: p,
+                  })
                 }
               } else {
-                modificationsData.push({ featureId, position: j, base: 'C', modType: 'm', isSimplex: false, strand: strand === -1 ? -1 : 1, r: 0, g: 0, b: 255, prob: 0 })
+                modificationsData.push({
+                  featureId,
+                  position: j,
+                  base: 'C',
+                  modType: 'm',
+                  isSimplex: false,
+                  strand: strand === -1 ? -1 : 1,
+                  r: 0,
+                  g: 0,
+                  b: 255,
+                  prob: 0,
+                })
               }
               if (hydroxyMethBins[i + 1]) {
                 const p = hydroxyMethProbs[i + 1] || 0
                 if (p > 0.5) {
-                  modificationsData.push({ featureId, position: j + 1, base: 'C', modType: 'h', isSimplex: false, strand: methStrand, r: 255, g: 192, b: 203, prob: p })
+                  modificationsData.push({
+                    featureId,
+                    position: j + 1,
+                    base: 'C',
+                    modType: 'h',
+                    isSimplex: false,
+                    strand: methStrand,
+                    r: 255,
+                    g: 192,
+                    b: 203,
+                    prob: p,
+                  })
                 } else {
-                  modificationsData.push({ featureId, position: j + 1, base: 'C', modType: 'h', isSimplex: false, strand: methStrand, r: 128, g: 0, b: 128, prob: p })
+                  modificationsData.push({
+                    featureId,
+                    position: j + 1,
+                    base: 'C',
+                    modType: 'h',
+                    isSimplex: false,
+                    strand: methStrand,
+                    r: 128,
+                    g: 0,
+                    b: 128,
+                    prob: p,
+                  })
                 }
               }
             }
@@ -424,7 +510,12 @@ export async function executeRenderWebGLChainData({
         const val = tagColorValues[i] ?? ''
         let rgb: [number, number, number]
         if (tag === 'XS' || tag === 'TS') {
-          rgb = val === '-' ? revStrandRgb : val === '+' ? fwdStrandRgb : nostrandRgb
+          rgb =
+            val === '-'
+              ? revStrandRgb
+              : val === '+'
+                ? fwdStrandRgb
+                : nostrandRgb
         } else if (tag === 'ts') {
           const featureStrand = featuresDatum.strand
           if (val === '-') {
@@ -459,7 +550,7 @@ export async function executeRenderWebGLChainData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Group features into chains by read name
+  // Group already-filtered features into chains by read name
   const featuresByName = groupBy(features, f => f.name)
   const chains = Object.values(featuresByName)
 
@@ -485,11 +576,16 @@ export async function executeRenderWebGLChainData({
   }
 
   // Compute chain bounds and distances
-  const chainBounds: { minStart: number; maxEnd: number; distance: number; chainIdx: number }[] = []
+  const chainBounds: {
+    minStart: number
+    maxEnd: number
+    distance: number
+    chainIdx: number
+  }[] = []
   let maxDistance = Number.MIN_VALUE
 
-  for (let chainIdx = 0; chainIdx < chains.length; chainIdx++) {
-    const chain = chains[chainIdx]!
+  for (const [chainIdx, chain_] of chains.entries()) {
+    const chain = chain_
     let minStart = Number.MAX_VALUE
     let maxEnd = Number.MIN_VALUE
     for (const f of chain) {
@@ -571,8 +667,8 @@ export async function executeRenderWebGLChainData({
     // If any read in a chain is supplementary, the entire chain is marked
     // so the shader can color all its reads orange (matching canvas behavior).
     const chainHasSupp = new Set<number>()
-    for (let chainIdx = 0; chainIdx < chains.length; chainIdx++) {
-      const chain = chains[chainIdx]!
+    for (const [chainIdx, chain_] of chains.entries()) {
+      const chain = chain_
       for (const f of chain) {
         if (f.flags & 2048) {
           chainHasSupp.add(chainIdx)
@@ -583,8 +679,8 @@ export async function executeRenderWebGLChainData({
 
     // Map feature ID → chain index for supplementary lookup
     const featureIdToChainIdx = new Map<string, number>()
-    for (let chainIdx = 0; chainIdx < chains.length; chainIdx++) {
-      for (const f of chains[chainIdx]!) {
+    for (const [chainIdx, chain] of chains.entries()) {
+      for (const f of chain) {
         featureIdToChainIdx.set(f.id, chainIdx)
       }
     }
@@ -600,6 +696,7 @@ export async function executeRenderWebGLChainData({
     const readChainHasSupp = new Uint8Array(features.length)
     const readIds: string[] = []
     const readNames: string[] = []
+    const readNextRefs: string[] = []
 
     for (const [i, f] of features.entries()) {
       const y = featureIdToY.get(f.id) ?? 0
@@ -615,15 +712,16 @@ export async function executeRenderWebGLChainData({
       readChainHasSupp[i] = cIdx !== undefined && chainHasSupp.has(cIdx) ? 1 : 0
       readIds.push(f.id)
       readNames.push(f.name)
+      readNextRefs.push(f.nextRef ?? '')
     }
 
     // Build gap/mismatch/insertion/clip/modification arrays with chain Y
-    const filteredGaps = gaps.filter(g => g.start >= regionStart)
-    const gapPositions = new Uint32Array(filteredGaps.length * 2)
-    const gapYs = new Uint16Array(filteredGaps.length)
-    const gapLengths = new Uint16Array(filteredGaps.length)
-    const gapTypes = new Uint8Array(filteredGaps.length)
-    for (const [i, g] of filteredGaps.entries()) {
+    const regionGaps = gaps.filter(g => g.start >= regionStart)
+    const gapPositions = new Uint32Array(regionGaps.length * 2)
+    const gapYs = new Uint16Array(regionGaps.length)
+    const gapLengths = new Uint16Array(regionGaps.length)
+    const gapTypes = new Uint8Array(regionGaps.length)
+    for (const [i, g] of regionGaps.entries()) {
       const y = featureIdToY.get(g.featureId) ?? 0
       gapPositions[i * 2] = g.start - regionStart
       gapPositions[i * 2 + 1] = g.end - regionStart
@@ -632,12 +730,12 @@ export async function executeRenderWebGLChainData({
       gapTypes[i] = g.type === 'deletion' ? 0 : 1
     }
 
-    const filteredMismatches = mismatches.filter(mm => mm.position >= regionStart)
-    const mismatchPositions = new Uint32Array(filteredMismatches.length)
-    const mismatchYs = new Uint16Array(filteredMismatches.length)
-    const mismatchBases = new Uint8Array(filteredMismatches.length)
-    const mismatchStrands = new Int8Array(filteredMismatches.length)
-    for (const [i, mm] of filteredMismatches.entries()) {
+    const regionMismatches = mismatches.filter(mm => mm.position >= regionStart)
+    const mismatchPositions = new Uint32Array(regionMismatches.length)
+    const mismatchYs = new Uint16Array(regionMismatches.length)
+    const mismatchBases = new Uint8Array(regionMismatches.length)
+    const mismatchStrands = new Int8Array(regionMismatches.length)
+    for (const [i, mm] of regionMismatches.entries()) {
       const y = featureIdToY.get(mm.featureId) ?? 0
       mismatchPositions[i] = mm.position - regionStart
       mismatchYs[i] = y
@@ -645,12 +743,14 @@ export async function executeRenderWebGLChainData({
       mismatchStrands[i] = mm.strand
     }
 
-    const filteredInsertions = insertions.filter(ins => ins.position >= regionStart)
-    const insertionPositions = new Uint32Array(filteredInsertions.length)
-    const insertionYs = new Uint16Array(filteredInsertions.length)
-    const insertionLengths = new Uint16Array(filteredInsertions.length)
+    const regionInsertions = insertions.filter(
+      ins => ins.position >= regionStart,
+    )
+    const insertionPositions = new Uint32Array(regionInsertions.length)
+    const insertionYs = new Uint16Array(regionInsertions.length)
+    const insertionLengths = new Uint16Array(regionInsertions.length)
     const insertionSequences: string[] = []
-    for (const [i, ins] of filteredInsertions.entries()) {
+    for (const [i, ins] of regionInsertions.entries()) {
       const y = featureIdToY.get(ins.featureId) ?? 0
       insertionPositions[i] = ins.position - regionStart
       insertionYs[i] = y
@@ -658,33 +758,35 @@ export async function executeRenderWebGLChainData({
       insertionSequences.push(ins.sequence ?? '')
     }
 
-    const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
-    const softclipPositions = new Uint32Array(filteredSoftclips.length)
-    const softclipYs = new Uint16Array(filteredSoftclips.length)
-    const softclipLengths = new Uint16Array(filteredSoftclips.length)
-    for (const [i, sc] of filteredSoftclips.entries()) {
+    const regionSoftclips = softclips.filter(sc => sc.position >= regionStart)
+    const softclipPositions = new Uint32Array(regionSoftclips.length)
+    const softclipYs = new Uint16Array(regionSoftclips.length)
+    const softclipLengths = new Uint16Array(regionSoftclips.length)
+    for (const [i, sc] of regionSoftclips.entries()) {
       const y = featureIdToY.get(sc.featureId) ?? 0
       softclipPositions[i] = sc.position - regionStart
       softclipYs[i] = y
       softclipLengths[i] = Math.min(65535, sc.length)
     }
 
-    const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
-    const hardclipPositions = new Uint32Array(filteredHardclips.length)
-    const hardclipYs = new Uint16Array(filteredHardclips.length)
-    const hardclipLengths = new Uint16Array(filteredHardclips.length)
-    for (const [i, hc] of filteredHardclips.entries()) {
+    const regionHardclips = hardclips.filter(hc => hc.position >= regionStart)
+    const hardclipPositions = new Uint32Array(regionHardclips.length)
+    const hardclipYs = new Uint16Array(regionHardclips.length)
+    const hardclipLengths = new Uint16Array(regionHardclips.length)
+    for (const [i, hc] of regionHardclips.entries()) {
       const y = featureIdToY.get(hc.featureId) ?? 0
       hardclipPositions[i] = hc.position - regionStart
       hardclipYs[i] = y
       hardclipLengths[i] = Math.min(65535, hc.length)
     }
 
-    const filteredModifications = modifications.filter(m => m.position >= regionStart)
-    const modificationPositions = new Uint32Array(filteredModifications.length)
-    const modificationYs = new Uint16Array(filteredModifications.length)
-    const modificationColors = new Uint8Array(filteredModifications.length * 4)
-    for (const [i, m] of filteredModifications.entries()) {
+    const regionModifications = modifications.filter(
+      m => m.position >= regionStart,
+    )
+    const modificationPositions = new Uint32Array(regionModifications.length)
+    const modificationYs = new Uint16Array(regionModifications.length)
+    const modificationColors = new Uint8Array(regionModifications.length * 4)
+    for (const [i, m] of regionModifications.entries()) {
       const y = featureIdToY.get(m.featureId) ?? 0
       modificationPositions[i] = m.position - regionStart
       modificationYs[i] = y
@@ -695,7 +797,12 @@ export async function executeRenderWebGLChainData({
     }
 
     // Build connecting lines: one per chain with 2+ reads
-    const connectingLines: { start: number; end: number; y: number; colorType: number }[] = []
+    const connectingLines: {
+      start: number
+      end: number
+      y: number
+      colorType: number
+    }[] = []
     for (const cb of chainBounds) {
       const chain = chains[cb.chainIdx]!
       if (chain.length < 2) {
@@ -727,7 +834,7 @@ export async function executeRenderWebGLChainData({
     // Build Flatbush spatial index for chain hit testing.
     // Each chain gets one bounding box entry: X = [minStart, maxEnd] offsets,
     // Y = chain row. chainFirstReadIndices maps Flatbush item → first read
-    // index in the features array.
+    // index in the (filtered) features array.
     const featureIdToIndex = new Map<string, number>()
     for (const [i, f] of features.entries()) {
       if (!featureIdToIndex.has(f.id)) {
@@ -766,13 +873,28 @@ export async function executeRenderWebGLChainData({
         readChainHasSupp,
         readIds,
         readNames,
+        readNextRefs,
       },
       gapArrays: { gapPositions, gapYs, gapLengths, gapTypes },
-      mismatchArrays: { mismatchPositions, mismatchYs, mismatchBases, mismatchStrands },
-      insertionArrays: { insertionPositions, insertionYs, insertionLengths, insertionSequences },
+      mismatchArrays: {
+        mismatchPositions,
+        mismatchYs,
+        mismatchBases,
+        mismatchStrands,
+      },
+      insertionArrays: {
+        insertionPositions,
+        insertionYs,
+        insertionLengths,
+        insertionSequences,
+      },
       softclipArrays: { softclipPositions, softclipYs, softclipLengths },
       hardclipArrays: { hardclipPositions, hardclipYs, hardclipLengths },
-      modificationArrays: { modificationPositions, modificationYs, modificationColors },
+      modificationArrays: {
+        modificationPositions,
+        modificationYs,
+        modificationColors,
+      },
       connectingLineArrays: {
         connectingLinePositions,
         connectingLineYs,
@@ -796,7 +918,11 @@ export async function executeRenderWebGLChainData({
 
   checkStopToken2(stopTokenCheck)
 
-  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const snpCoverage = computeSNPCoverage(
+    mismatches,
+    coverage.maxDepth,
+    regionStart,
+  )
   const noncovCoverage = computeNoncovCoverage(
     insertions,
     softclips,
@@ -816,7 +942,9 @@ export async function executeRenderWebGLChainData({
     const posOffset = mm.position - regionStart
     let bin = tooltipData.get(posOffset)
     if (!bin) {
-      const binIdx = Math.floor((posOffset - coverage.startOffset) / coverage.binSize)
+      const binIdx = Math.floor(
+        (posOffset - coverage.startOffset) / coverage.binSize,
+      )
       const depth = coverage.depths[binIdx] ?? 0
       bin = { position: mm.position, depth, snps: {}, interbase: {} }
       tooltipData.set(posOffset, bin)

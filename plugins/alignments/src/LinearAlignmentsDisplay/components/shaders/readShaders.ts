@@ -49,6 +49,7 @@ uniform float u_insertSizeLower;  // Too short threshold
 out vec4 v_color;
 out vec2 v_localPos;       // 0-1 UV within the feature rectangle
 out vec2 v_featureSizePx;  // feature width and height in pixels
+out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=chevron mode
 
 ${HP_GLSL_FUNCTIONS}
 
@@ -192,11 +193,11 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float syMid = (syTop + syBot) * 0.5;
 
-  // Chevron width: 5px in clip space
-  float chevronClip = 5.0 / u_canvasWidth * 2.0;
+  // Chevron width: 8px in clip space
+  float chevronClip = 8.0 / u_canvasWidth * 2.0;
   float regionLengthBp = u_bpRangeX.z;
   float bpPerPx = regionLengthBp / u_canvasWidth;
-  bool showChevron = (u_chainMode == 1 || bpPerPx < 10.0) && u_featureHeight > 3.0;
+  bool showChevron = (u_chainMode == 1 || bpPerPx < 10.0) && u_featureHeight >= 3.0;
 
   // Feature size in pixels for stroke edge detection
   float featureWidthPx = (sx2 - sx1) * u_canvasWidth * 0.5;
@@ -206,6 +207,7 @@ void main() {
   float sy;
   float localX;
   float localY;
+  float edgeFlags = 0.0;
   if (u_highlightOnlyMode == 1) {
     // Highlight overlay: simple rectangle, no chevrons
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
@@ -215,28 +217,40 @@ void main() {
     // Collapse chevron vertices to rectangle corner
     if (vid >= 6) { sx = sx1; sy = syTop; localX = 0.5; localY = 0.5; }
   } else if (vid < 6) {
-    // Vertices 0-5: rectangle body (same as before)
+    // Vertices 0-5: rectangle body
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
     sx = mix(sx1, sx2, localX);
     sy = mix(syBot, syTop, localY);
+    // Suppress stroke on the edge shared with the chevron
+    if (showChevron && a_strand > 0.5) {
+      edgeFlags = 1.0;   // suppress right edge
+    } else if (showChevron && a_strand < -0.5) {
+      edgeFlags = -1.0;  // suppress left edge
+    }
   } else if (showChevron) {
-    // Vertices 6-8: chevron triangle tip
-    // localPos set to interior (0.5) so chevron doesn't get stroke
-    localX = 0.5;
-    localY = 0.5;
+    // Vertices 6-8: chevron triangle
+    // Compute perpendicular distance from each vertex to the outer edges
+    // so the fragment shader can stroke the slanted edges
+    edgeFlags = 2.0;
+    float chevronWidthPx = 8.0;
+    float halfH = u_featureHeight * 0.5;
+    float altPx = chevronWidthPx * u_featureHeight / sqrt(halfH * halfH + chevronWidthPx * chevronWidthPx);
     if (a_strand > 0.5) {
-      // Forward strand: triangle on right
-      if (vid == 6) { sx = sx2; sy = syTop; }
-      else if (vid == 7) { sx = sx2; sy = syBot; }
-      else { sx = sx2 + chevronClip; sy = syMid; }
+      // Forward: vid6=top-right, vid7=bottom-right, vid8=tip
+      // Edge A = vid6→vid8 (top outer), Edge B = vid7→vid8 (bottom outer)
+      if (vid == 6) { sx = sx2; sy = syTop; localX = 0.0; localY = altPx; }
+      else if (vid == 7) { sx = sx2; sy = syBot; localX = altPx; localY = 0.0; }
+      else { sx = sx2 + chevronClip; sy = syMid; localX = 0.0; localY = 0.0; }
     } else if (a_strand < -0.5) {
-      // Reverse strand: triangle on left
-      if (vid == 6) { sx = sx1; sy = syTop; }
-      else if (vid == 7) { sx = sx1 - chevronClip; sy = syMid; }
-      else { sx = sx1; sy = syBot; }
+      // Reverse: vid6=top-left, vid7=tip, vid8=bottom-left
+      // Edge A = vid6→vid7 (top outer), Edge B = vid7→vid8 (bottom outer)
+      if (vid == 6) { sx = sx1; sy = syTop; localX = 0.0; localY = altPx; }
+      else if (vid == 7) { sx = sx1 - chevronClip; sy = syMid; localX = 0.0; localY = 0.0; }
+      else { sx = sx1; sy = syBot; localX = altPx; localY = 0.0; }
     } else {
       // No strand: degenerate triangle (invisible)
+      localX = 999.0; localY = 999.0;
       sx = sx1; sy = syTop;
     }
   } else {
@@ -247,6 +261,7 @@ void main() {
   }
 
   v_localPos = vec2(localX, localY);
+  v_edgeFlags = edgeFlags;
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
   if (u_highlightOnlyMode == 1) {
@@ -278,14 +293,24 @@ precision highp float;
 in vec4 v_color;
 in vec2 v_localPos;
 in vec2 v_featureSizePx;
+in float v_edgeFlags;
 out vec4 fragColor;
 void main() {
-  // Compute distance to nearest edge in pixels
-  float dx = min(v_localPos.x, 1.0 - v_localPos.x) * v_featureSizePx.x;
-  float dy = min(v_localPos.y, 1.0 - v_localPos.y) * v_featureSizePx.y;
-  float edgeDist = min(dx, dy);
+  float edgeDist;
+  if (v_edgeFlags > 1.5) {
+    // Chevron mode: v_localPos contains pixel distances to outer edges
+    edgeDist = min(v_localPos.x, v_localPos.y);
+  } else {
+    // Rectangle mode: v_localPos is 0-1 UV
+    float dx_left = v_localPos.x * v_featureSizePx.x;
+    float dx_right = (1.0 - v_localPos.x) * v_featureSizePx.x;
+    // Suppress stroke on edge shared with chevron
+    if (v_edgeFlags > 0.5) { dx_right = 999.0; }
+    if (v_edgeFlags < -0.5) { dx_left = 999.0; }
+    float dy = min(v_localPos.y, 1.0 - v_localPos.y) * v_featureSizePx.y;
+    edgeDist = min(min(dx_left, dx_right), dy);
+  }
 
-  // Only show stroke when the feature is large enough to have a visible interior
   if (edgeDist < 1.0 && v_featureSizePx.x > 4.0 && v_featureSizePx.y > 4.0) {
     fragColor = vec4(v_color.rgb * 0.7, v_color.a);
   } else {

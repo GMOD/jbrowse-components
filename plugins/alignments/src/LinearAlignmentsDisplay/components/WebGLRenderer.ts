@@ -543,14 +543,19 @@ export class WebGLRenderer {
       CONNECTING_LINE_VERTEX_SHADER,
       CONNECTING_LINE_FRAGMENT_SHADER,
     )
-    this.cacheUniforms(this.connectingLineProgram, this.connectingLineUniforms, [
-      'u_bpRangeX',
-      'u_regionStart',
-      'u_featureHeight',
-      'u_canvasHeight',
-      'u_scrollTop',
-      'u_coverageOffset',
-    ])
+    this.cacheUniforms(
+      this.connectingLineProgram,
+      this.connectingLineUniforms,
+      [
+        'u_bpRangeX',
+        'u_regionStart',
+        'u_featureHeight',
+        'u_featureSpacing',
+        'u_canvasHeight',
+        'u_scrollTop',
+        'u_coverageOffset',
+      ],
+    )
 
     // Initialize sub-renderers
     this.pileupRenderer = new PileupRenderer(this)
@@ -1900,7 +1905,8 @@ export class WebGLRenderer {
     this.sashimiInstanceBuffers =
       this.sashimiInstanceBuffersMap.get(regionNumber) ?? []
     this.cloudGLBuffers = this.cloudGLBuffersMap.get(regionNumber) ?? []
-    this.connectingLineGLBuffers = this.connectingLineGLBuffersMap.get(regionNumber) ?? []
+    this.connectingLineGLBuffers =
+      this.connectingLineGLBuffersMap.get(regionNumber) ?? []
   }
 
   /**
@@ -1918,7 +1924,10 @@ export class WebGLRenderer {
       this.sashimiInstanceBuffers,
     )
     this.cloudGLBuffersMap.set(regionNumber, this.cloudGLBuffers)
-    this.connectingLineGLBuffersMap.set(regionNumber, this.connectingLineGLBuffers)
+    this.connectingLineGLBuffersMap.set(
+      regionNumber,
+      this.connectingLineGLBuffers,
+    )
     // Reset to null so stale pointers don't linger
     this.buffers = null
     this.glBuffers = []
@@ -2060,14 +2069,6 @@ export class WebGLRenderer {
       1,
       false,
     )
-    this.uploadConnectingLineBuffer(
-      this.connectingLineProgram,
-      'a_colorType',
-      new Float32Array(data.connectingLineColorTypes),
-      1,
-      false,
-    )
-
     gl.bindVertexArray(null)
     this.buffers.connectingLineVAO = vao
     this.buffers.connectingLineCount = data.numConnectingLines

@@ -231,19 +231,39 @@ export function computeSNPCoverage(
     }
     let yOffset = 0
     if (entry.a > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.a / maxDepth, colorType: 1 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.a / maxDepth,
+        colorType: 1,
+      })
       yOffset += entry.a / maxDepth
     }
     if (entry.c > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.c / maxDepth, colorType: 2 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.c / maxDepth,
+        colorType: 2,
+      })
       yOffset += entry.c / maxDepth
     }
     if (entry.g > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.g / maxDepth, colorType: 3 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.g / maxDepth,
+        colorType: 3,
+      })
       yOffset += entry.g / maxDepth
     }
     if (entry.t > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.t / maxDepth, colorType: 4 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.t / maxDepth,
+        colorType: 4,
+      })
     }
   }
 
@@ -260,7 +280,13 @@ export function computeSNPCoverage(
     colorTypes[i] = seg.colorType
   }
 
-  return { positions, yOffsets, heights, colorTypes, count: filteredSegments.length }
+  return {
+    positions,
+    yOffsets,
+    heights,
+    colorTypes,
+    count: filteredSegments.length,
+  }
 }
 
 const MINIMUM_INDICATOR_READ_DEPTH = 7
@@ -328,7 +354,12 @@ export function computeNoncovCoverage(
     }
   }
 
-  const segments: { position: number; yOffset: number; height: number; colorType: number }[] = []
+  const segments: {
+    position: number
+    yOffset: number
+    height: number
+    colorType: number
+  }[] = []
   const indicators: { position: number; colorType: number }[] = []
 
   for (const entry of noncovByPosition.values()) {
@@ -338,15 +369,30 @@ export function computeNoncovCoverage(
     }
     let yOffset = 0
     if (entry.insertion > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.insertion / maxCount, colorType: 1 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.insertion / maxCount,
+        colorType: 1,
+      })
       yOffset += entry.insertion / maxCount
     }
     if (entry.softclip > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.softclip / maxCount, colorType: 2 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.softclip / maxCount,
+        colorType: 2,
+      })
       yOffset += entry.softclip / maxCount
     }
     if (entry.hardclip > 0) {
-      segments.push({ position: entry.position, yOffset, height: entry.hardclip / maxCount, colorType: 3 })
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.hardclip / maxCount,
+        colorType: 3,
+      })
     }
     if (
       maxDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
@@ -366,7 +412,9 @@ export function computeNoncovCoverage(
   }
 
   const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const filteredIndicators = indicators.filter(ind => ind.position >= regionStart)
+  const filteredIndicators = indicators.filter(
+    ind => ind.position >= regionStart,
+  )
 
   const positions = new Uint32Array(filteredSegments.length)
   const yOffsets = new Float32Array(filteredSegments.length)
@@ -403,7 +451,10 @@ export function computeNoncovCoverage(
 /**
  * Compute sashimi junction arcs from skip gaps
  */
-export function computeSashimiJunctions(gaps: CoverageGap[], regionStart: number) {
+export function computeSashimiJunctions(
+  gaps: CoverageGap[],
+  regionStart: number,
+) {
   const junctions = new Map<
     string,
     { start: number; end: number; fwd: number; rev: number }
@@ -426,7 +477,12 @@ export function computeSashimiJunctions(gaps: CoverageGap[], regionStart: number
     }
   }
 
-  const arcs: { start: number; end: number; count: number; colorType: number }[] = []
+  const arcs: {
+    start: number
+    end: number
+    count: number
+    colorType: number
+  }[] = []
   for (const j of junctions.values()) {
     if (j.fwd > 0) {
       arcs.push({ start: j.start, end: j.end, count: j.fwd, colorType: 0 })

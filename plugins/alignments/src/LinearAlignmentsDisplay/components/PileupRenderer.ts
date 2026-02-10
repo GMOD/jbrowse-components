@@ -69,8 +69,7 @@ function toClipRect(
       2 -
     1
   const sx2 =
-    ((splitEnd[0]! - bpStartHi + splitEnd[1]! - bpStartLo) /
-      regionLengthBp) *
+    ((splitEnd[0]! - bpStartHi + splitEnd[1]! - bpStartLo) / regionLengthBp) *
       2 -
     1
 
@@ -614,8 +613,18 @@ export class PileupRenderer {
     gl.useProgram(this.parent.lineProgram)
     gl.uniform4f(this.parent.lineUniforms.u_color!, 0, 0, 0, 0.4)
     const quadData = new Float32Array([
-      sx1, syTop, sx2, syTop, sx1, syBot,
-      sx1, syBot, sx2, syTop, sx2, syBot,
+      sx1,
+      syTop,
+      sx2,
+      syTop,
+      sx1,
+      syBot,
+      sx1,
+      syBot,
+      sx2,
+      syTop,
+      sx2,
+      syBot,
     ])
     gl.bindVertexArray(this.parent.lineVAO)
     gl.bindBuffer(gl.ARRAY_BUFFER, this.parent.lineBuffer)
@@ -637,25 +646,52 @@ export class PileupRenderer {
 
     const bpPerPx = regionLengthBp / canvasWidth
     const showChevron = bpPerPx < 10 && state.featureHeight > 5
-    const chevronClip = (5 / canvasWidth) * 2
+    const chevronClip = (8 / canvasWidth) * 2
     const syMid = (syTop + syBot) / 2
 
     let outlineData: Float32Array
     if (showChevron && strand === 1) {
       outlineData = new Float32Array([
-        sx1, syTop, sx2, syTop,
-        sx2 + chevronClip, syMid,
-        sx2, syBot, sx1, syBot, sx1, syTop,
+        sx1,
+        syTop,
+        sx2,
+        syTop,
+        sx2 + chevronClip,
+        syMid,
+        sx2,
+        syBot,
+        sx1,
+        syBot,
+        sx1,
+        syTop,
       ])
     } else if (showChevron && strand === -1) {
       outlineData = new Float32Array([
-        sx1, syTop, sx2, syTop, sx2, syBot,
-        sx1, syBot, sx1 - chevronClip, syMid, sx1, syTop,
+        sx1,
+        syTop,
+        sx2,
+        syTop,
+        sx2,
+        syBot,
+        sx1,
+        syBot,
+        sx1 - chevronClip,
+        syMid,
+        sx1,
+        syTop,
       ])
     } else {
       outlineData = new Float32Array([
-        sx1, syTop, sx2, syTop, sx2, syBot,
-        sx1, syBot, sx1, syTop,
+        sx1,
+        syTop,
+        sx2,
+        syTop,
+        sx2,
+        syBot,
+        sx1,
+        syBot,
+        sx1,
+        syTop,
       ])
     }
 

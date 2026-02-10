@@ -135,10 +135,16 @@ function getPairTypeDescription(
   pairOrientation: number,
   insertSize: number,
   insertSizeStats?: { upper: number; lower: number },
+  nextRef?: string,
+  refName?: string,
 ) {
   // Unmapped mate
   if (flags & 8) {
     return 'Unmapped mate'
+  }
+  // Inter-chromosomal mate
+  if (nextRef && refName && nextRef !== refName && nextRef !== '=') {
+    return `Inter-chromosomal (mate on ${nextRef})`
   }
   // Abnormal orientation (not LR)
   if (pairOrientation > 1) {
@@ -179,7 +185,8 @@ export function formatChainTooltip(
   const name = rpcData.readNames[idx] ?? ''
   const startOffset = rpcData.readPositions[idx * 2]
   const endOffset = rpcData.readPositions[idx * 2 + 1]
-  const start = startOffset !== undefined ? rpcData.regionStart + startOffset : 0
+  const start =
+    startOffset !== undefined ? rpcData.regionStart + startOffset : 0
   const end = endOffset !== undefined ? rpcData.regionStart + endOffset : 0
   const flags = rpcData.readFlags[idx] ?? 0
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
@@ -192,11 +199,14 @@ export function formatChainTooltip(
     lines.push(`Template length: ${Math.abs(insertSize).toLocaleString()}`)
   }
 
+  const nextRef = rpcData.readNextRefs?.[idx] ?? ''
   const pairDesc = getPairTypeDescription(
     flags,
     pairOrientation,
     insertSize,
     rpcData.insertSizeStats,
+    nextRef,
+    refName,
   )
   if (pairDesc) {
     lines.push(pairDesc)

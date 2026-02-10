@@ -1,8 +1,8 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import MultiVariantBaseDisplayComponent from '../shared/components/MultiVariantBaseDisplayComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import modelFactory from './model.ts'
+import MultiVariantBaseDisplayComponent from '../shared/components/MultiVariantBaseDisplayComponent.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

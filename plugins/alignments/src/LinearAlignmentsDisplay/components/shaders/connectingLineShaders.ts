@@ -9,11 +9,11 @@ precision highp int;
 
 in uvec2 a_position; // [startOffset, endOffset] from regionStart
 in float a_y;        // row number
-in float a_colorType; // 0=normal, 1=long, 2=short, 3=interchrom, 4=orientation
 
 uniform vec3 u_bpRangeX;       // [startHi, startLo, length] for HP position
 uniform uint u_regionStart;
 uniform float u_featureHeight;
+uniform float u_featureSpacing;
 uniform float u_canvasHeight;
 uniform float u_scrollTop;      // Y scroll offset in pixels
 uniform float u_coverageOffset; // coverage area height
@@ -21,15 +21,6 @@ uniform float u_coverageOffset; // coverage area height
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
-
-vec3 getLineColor(float colorType) {
-  if (colorType < 0.5) return vec3(0.7, 0.7, 0.7); // normal: light grey
-  if (colorType < 1.5) return vec3(0.85, 0.25, 0.25); // long insert: red
-  if (colorType < 2.5) return vec3(0.25, 0.35, 0.85); // short insert: blue
-  if (colorType < 3.5) return vec3(0.5, 0.0, 0.5); // interchrom: purple
-  if (colorType < 4.5) return vec3(0.0, 0.5, 0.0); // orientation: green
-  return vec3(0.941, 0.722, 0.471); // supplementary: #f0b878
-}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -44,18 +35,19 @@ void main() {
   float sx2 = hpToClipX(splitEnd, u_bpRangeX);
   float sx = mix(sx1, sx2, localX);
 
-  // Y positioning: center of the feature row, 1px tall line
-  float rowCenter = u_coverageOffset + a_y * u_featureHeight + u_featureHeight * 0.5 - u_scrollTop;
-  float lineHalfHeight = 0.5; // 1px line
-  float yTop = rowCenter - lineHalfHeight;
-  float yBot = rowCenter + lineHalfHeight;
+  // Y positioning: center of the feature row, exactly 1px tall line
+  float rowHeight = u_featureHeight + u_featureSpacing;
+  float rowCenter = u_coverageOffset + a_y * rowHeight + u_featureHeight * 0.5 - u_scrollTop;
+  float yTop = floor(rowCenter - 0.5);
+  float yBot = yTop + 1.0;
   float pxToClip = 2.0 / u_canvasHeight;
   float syTop = 1.0 - yTop * pxToClip;
   float syBot = 1.0 - yBot * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(getLineColor(a_colorType), 0.5);
+  // Plain grey line matching canvas LinearReadCloudDisplay (#6665)
+  v_color = vec4(0, 0, 0, 0.45);
 }
 `
 

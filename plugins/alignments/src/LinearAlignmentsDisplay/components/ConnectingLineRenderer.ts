@@ -28,7 +28,6 @@ export class ConnectingLineRenderer {
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
-    const rowHeight = state.featureHeight + state.featureSpacing
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
 
     gl.useProgram(this.parent.connectingLineProgram)
@@ -44,7 +43,11 @@ export class ConnectingLineRenderer {
     )
     gl.uniform1f(
       this.parent.connectingLineUniforms.u_featureHeight!,
-      rowHeight,
+      state.featureHeight,
+    )
+    gl.uniform1f(
+      this.parent.connectingLineUniforms.u_featureSpacing!,
+      state.featureSpacing,
     )
     gl.uniform1f(
       this.parent.connectingLineUniforms.u_canvasHeight!,

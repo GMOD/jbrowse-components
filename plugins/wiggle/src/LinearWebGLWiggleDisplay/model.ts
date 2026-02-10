@@ -17,13 +17,13 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { YSCALEBAR_LABEL_OFFSET, getNiceDomain, getScale } from '../util.ts'
 
 import type { WebGLWiggleDataResult } from '../RenderWebGLWiggleDataRPC/types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 type LGV = LinearGenomeViewModel
 
@@ -358,9 +358,7 @@ export default function stateModelFactory(
                   ) {
                     continue
                   }
-                  promises.push(
-                    fetchFeaturesForRegion(vr, vr.regionNumber),
-                  )
+                  promises.push(fetchFeaturesForRegion(vr, vr.regionNumber))
                 }
                 if (promises.length > 0) {
                   self.setLoading(true)

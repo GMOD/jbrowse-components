@@ -10,7 +10,6 @@ import { useMouseTracking } from '../hooks/useMouseTracking.ts'
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
 
 type Model = MultiVariantBaseModel & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DisplayMessageComponent: React.ComponentType<any>
 }
 

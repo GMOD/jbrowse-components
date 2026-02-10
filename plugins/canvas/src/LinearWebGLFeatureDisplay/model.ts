@@ -436,11 +436,7 @@ export default function stateModelFactory(
                     continue
                   }
                   promises.push(
-                    fetchFeaturesForRegion(
-                      vr,
-                      vr.regionNumber,
-                      bpPerPx,
-                    ),
+                    fetchFeaturesForRegion(vr, vr.regionNumber, bpPerPx),
                   )
                 }
                 if (promises.length > 0) {

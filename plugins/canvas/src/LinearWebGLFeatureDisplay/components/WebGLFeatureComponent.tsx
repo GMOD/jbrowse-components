@@ -208,17 +208,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const renderRAFRef = useRef<number | null>(null)
   const selfUpdateRef = useRef(false)
 
-  const view = getContainingView(model) as LGV | undefined
+  const view = getContainingView(model) as LGV
 
   const { rpcDataMap, isLoading, error } = model
 
   const width =
-    measuredDims.width ?? (view?.initialized ? view.width : undefined)
+    measuredDims.width ?? (view.initialized ? view.width : undefined)
   const height = model.height
 
   const renderWithBlocks = useCallback(() => {
     const renderer = rendererRef.current
-    if (!renderer || !view?.initialized || width === undefined) {
+    if (!renderer || !view.initialized || width === undefined) {
       return
     }
 
