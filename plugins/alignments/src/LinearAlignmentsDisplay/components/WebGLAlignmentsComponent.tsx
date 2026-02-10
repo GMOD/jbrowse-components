@@ -13,10 +13,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { getContrastBaseMap } from '../../shared/util.ts'
-import {
-  YSCALEBAR_LABEL_OFFSET,
-  getInsertionType,
-} from '../model.ts'
+import { YSCALEBAR_LABEL_OFFSET, getInsertionType } from '../model.ts'
 import BlockMsg from './BlockMsg.tsx'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
@@ -39,8 +36,8 @@ import {
   hitTestSashimiArc as hitTestSashimiArcFn,
 } from './hitTesting.ts'
 
-import type { ResolvedBlock } from './hitTesting.ts'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
+import type { ResolvedBlock } from './hitTesting.ts'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLCloudDataResult } from '../../RenderWebGLCloudDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
@@ -1009,6 +1006,8 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
       }
     },
     [
+      showInterbaseIndicators,
+      showSashimiArcs,
       model,
       handleMouseMove,
       resolveBlockForCanvasX,
@@ -1135,7 +1134,9 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 
             if (tooltipBin) {
               for (const [base, entry] of Object.entries(tooltipBin.snps)) {
-                const snpEntry = entry as { count: number; fwd: number; rev: number } | undefined
+                const snpEntry = entry as
+                  | { count: number; fwd: number; rev: number }
+                  | undefined
                 if (snpEntry) {
                   featureData[`SNP ${base.toUpperCase()}`] =
                     `${snpEntry.count}/${tooltipBin.depth} (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
@@ -1144,7 +1145,15 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
               for (const [type, entry] of Object.entries(
                 tooltipBin.interbase,
               )) {
-                const interbaseEntry = entry as { count: number; minLen: number; maxLen: number; avgLen: number; topSeq?: string } | undefined
+                const interbaseEntry = entry as
+                  | {
+                      count: number
+                      minLen: number
+                      maxLen: number
+                      avgLen: number
+                      topSeq?: string
+                    }
+                  | undefined
                 if (interbaseEntry) {
                   featureData[type] =
                     `${interbaseEntry.count} (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`

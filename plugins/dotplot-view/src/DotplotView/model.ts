@@ -684,6 +684,7 @@ export default function stateModelFactory(pm: PluginManager) {
           await import('./svgcomponents/SVGDotplotView.tsx')
         const html = await renderToSvg(self as DotplotViewModel, opts)
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
 
         if (opts.format === 'png') {

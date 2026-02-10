@@ -560,7 +560,8 @@ export class WebGLWiggleRenderer {
       gl.uniform3f(uniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
       gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
 
-      const vao = renderingType === 'line' ? buffers.lineVAO! : buffers.featureVAO
+      const vao =
+        renderingType === 'line' ? buffers.lineVAO! : buffers.featureVAO
 
       gl.bindVertexArray(vao)
 

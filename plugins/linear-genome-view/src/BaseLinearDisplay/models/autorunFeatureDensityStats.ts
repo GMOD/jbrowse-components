@@ -2,7 +2,6 @@ import { getContainingView, isAbortException } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/index.ts'
-import type { BaseLinearDisplayModel } from '../model.ts'
 
 /**
  * Autorun that fetches feature density statistics from the data adapter.
@@ -16,9 +15,14 @@ import type { BaseLinearDisplayModel } from '../model.ts'
  * Stats are estimates and "good enough" across zoom levels. This prevents
  * redundant RPC calls while still protecting against loading too much data.
  */
-export default async function autorunFeatureDensityStats(
-  self: BaseLinearDisplayModel,
-) {
+export default async function autorunFeatureDensityStats(self: {
+  error: unknown
+  featureDensityStats: unknown
+  getFeatureDensityStats: () => unknown
+  clearFeatureDensityStats: () => void
+  setError: (arg: unknown) => void
+  setFeatureDensityStats: (arg: unknown) => void
+}) {
   try {
     const view = getContainingView(self) as LinearGenomeViewModel
 

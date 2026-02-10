@@ -823,6 +823,7 @@ export function stateModelFactory(
       return {
         ...rest,
         // mst types wrong, nullish needed
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         ...(layout?.length ? { layout } : {}),
         ...(!showSidebar ? { showSidebar } : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),

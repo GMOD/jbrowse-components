@@ -431,8 +431,7 @@ export function hitTestCoverage(
         colorType !== undefined &&
         height !== undefined &&
         colorType >= 1 &&
-        colorType <= 3 &&
-        noncovMaxCount !== undefined
+        colorType <= 3
       ) {
         const typeName = getInterbaseTypeName(colorType)
         // Convert normalized height back to count using noncovMaxCount

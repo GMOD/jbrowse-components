@@ -605,9 +605,6 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LGV
         const displayedRegions = view.displayedRegions
         for (const [regionNumber, rpcData] of self.rpcDataMap) {
-          if (!rpcData.readIds) {
-            continue
-          }
           const idx = rpcData.readIds.indexOf(featureId)
           if (idx === -1) {
             continue
@@ -876,11 +873,10 @@ export default function stateModelFactory(
 
       setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud') {
         self.renderingMode = mode
-        if (mode === 'pileup') {
-          self.colorBySetting = { type: 'normal' }
-        } else {
-          self.colorBySetting = { type: 'insertSizeAndOrientation' }
-        }
+        self.colorBySetting =
+          mode === 'pileup'
+            ? { type: 'normal' }
+            : { type: 'insertSizeAndOrientation' }
       },
 
       updateVisibleModifications(uniqueModifications: string[]) {

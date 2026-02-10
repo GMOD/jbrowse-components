@@ -242,6 +242,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       }
       return undefined
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, view],
   )
 

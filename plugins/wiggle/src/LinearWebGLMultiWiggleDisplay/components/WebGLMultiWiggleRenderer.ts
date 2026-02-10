@@ -567,8 +567,7 @@ export class WebGLMultiWiggleRenderer {
       gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
       gl.uniform1f(uniforms.u_numRows!, buffers.numRows)
 
-      let vao: WebGLVertexArrayObject
-      vao =
+      const vao =
         renderingType === 'multirowline' ? buffers.lineVAO! : buffers.featureVAO
 
       gl.bindVertexArray(vao)

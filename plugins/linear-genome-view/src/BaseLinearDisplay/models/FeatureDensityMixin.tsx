@@ -13,7 +13,6 @@ import type { Region } from '@jbrowse/core/util/types'
 
 type LGV = LinearGenomeViewModel
 
-type AutorunSelf = Parameters<typeof createFeatureDensityStatsAutorun>[0]
 type FeatureDensityStatsSelf = Parameters<typeof getFeatureDensityStatsPre>[0]
 
 /**
@@ -107,12 +106,7 @@ export default function FeatureDensityMixin() {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            createFeatureDensityStatsAutorun(self as unknown as AutorunSelf),
-          ),
-        )
+        addDisposer(self, autorun(createFeatureDensityStatsAutorun(self)))
       },
     }))
     .actions(self => ({
