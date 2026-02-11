@@ -73,7 +73,7 @@
     "@jbrowse/text-indexing": "workspace:^",
     "@mui/icons-material": "^7.3.8",
     "@mui/material": "^7.3.8",
-    "@mui/x-data-grid": "^8.27.0",
+    "@mui/x-data-grid": "^8.27.1",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
@@ -92,7 +92,7 @@
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",
-    "@electron/packager": "^19.0.3",
+    "@electron/packager": "^19.0.5",
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
     "electron": "40.4.0",
