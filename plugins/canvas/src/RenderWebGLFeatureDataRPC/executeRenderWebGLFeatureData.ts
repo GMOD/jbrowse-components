@@ -547,6 +547,7 @@ export async function executeRenderWebGLFeatureData({
     bpPerPx: requestedBpPerPx,
     colorByCDS,
     sequenceAdapter,
+    showOnlyGenes,
     statusCallback = () => {},
     stopToken,
   } = args as RenderWebGLFeatureDataArgs & {
@@ -565,7 +566,7 @@ export async function executeRenderWebGLFeatureData({
     assemblyName: region.assemblyName ?? '',
   }
 
-  const featuresArray = await updateStatus(
+  let featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
     () =>
@@ -575,6 +576,10 @@ export async function executeRenderWebGLFeatureData({
   )
 
   checkStopToken2(stopTokenCheck)
+
+  if (showOnlyGenes) {
+    featuresArray = featuresArray.filter(f => f.get('type') === 'gene')
+  }
 
   // Genomic positions are integers, but region bounds from the view can be fractional.
   // Use floor to get integer reference point for storing position offsets.
@@ -817,9 +822,31 @@ export async function executeRenderWebGLFeatureData({
   let subfeatureFlatbushData = new ArrayBuffer(0)
 
   if (flatbushItems.length > 0) {
+    const reversed = region.reversed ?? false
     const featureIndex = new Flatbush(flatbushItems.length)
     for (const item of flatbushItems) {
-      featureIndex.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
+      let hitStartBp = item.startBp
+      let hitEndBp = item.endBp
+      const labelData = floatingLabelsData[item.featureId]
+      if (labelData) {
+        let maxLabelWidthPx = 0
+        for (const label of labelData.floatingLabels) {
+          const w = measureText(label.text, 11)
+          if (w > maxLabelWidthPx) {
+            maxLabelWidthPx = w
+          }
+        }
+        const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
+        if (maxLabelWidthPx > featureWidthPx) {
+          const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
+          if (reversed) {
+            hitStartBp -= extraBp
+          } else {
+            hitEndBp += extraBp
+          }
+        }
+      }
+      featureIndex.add(hitStartBp, item.topPx, hitEndBp, item.bottomPx)
     }
     featureIndex.finish()
     flatbushData = featureIndex.data

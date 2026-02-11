@@ -717,8 +717,18 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
         const leftPx =
           vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
-        const rightPx =
+        let rightPx =
           vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
+
+        // Expand to include label area
+        const labelData = data.floatingLabelsData[featureId]
+        if (labelData) {
+          for (const label of labelData.floatingLabels) {
+            const labelWidth = measureText(label.text, 11)
+            rightPx = Math.max(rightPx, leftPx + labelWidth)
+          }
+        }
+
         const featureWidth = rightPx - leftPx
         const topPx = feature.topPx - scrollY
         const heightPx = feature.bottomPx - feature.topPx
@@ -787,16 +797,58 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
     }
 
-    if (
-      model.selectedFeatureId &&
-      model.selectedFeatureId !== hoveredFeature?.featureId &&
-      model.selectedFeatureId !== hoveredSubfeature?.featureId
-    ) {
-      addFeatureOverlay(
-        model.selectedFeatureId,
-        'rgba(0, 100, 255, 0.2)',
-        'selected',
-      )
+    if (model.selectedFeatureId) {
+      for (const vr of visibleRegions) {
+        const data = rpcDataMap.get(vr.regionNumber)
+        if (!data) {
+          continue
+        }
+        const feature = data.flatbushItems.find(
+          f => f.featureId === model.selectedFeatureId,
+        )
+        if (!feature) {
+          continue
+        }
+        if (feature.endBp < vr.start || feature.startBp > vr.end) {
+          continue
+        }
+
+        const blockBpPerPx =
+          (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+        const leftPx =
+          vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
+        let rightPx =
+          vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
+
+        // Expand to include label area
+        const selLabelData = data.floatingLabelsData[model.selectedFeatureId]
+        if (selLabelData) {
+          for (const label of selLabelData.floatingLabels) {
+            const labelWidth = measureText(label.text, 11)
+            rightPx = Math.max(rightPx, leftPx + labelWidth)
+          }
+        }
+
+        const featureWidth = rightPx - leftPx
+        const topPx = feature.topPx - scrollY
+        const heightPx = feature.bottomPx - feature.topPx
+
+        overlays.push(
+          <div
+            key={`selected-${vr.regionNumber}`}
+            style={{
+              position: 'absolute',
+              left: leftPx - 2,
+              top: topPx - 2,
+              width: featureWidth + 4,
+              height: heightPx + 4,
+              border: '2px solid rgba(0, 100, 255, 0.8)',
+              borderRadius: 3,
+              pointerEvents: 'none',
+            }}
+          />,
+        )
+      }
     }
 
     return overlays.length > 0 ? overlays : null

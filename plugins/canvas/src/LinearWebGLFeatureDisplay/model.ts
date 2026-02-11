@@ -11,6 +11,7 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -73,6 +74,8 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         trackShowLabels: types.maybe(types.boolean),
         trackShowDescriptions: types.maybe(types.boolean),
+        trackGeneGlyphMode: types.maybe(types.string),
+        showOnlyGenes: false,
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -124,6 +127,23 @@ export default function stateModelFactory(
           self.trackShowDescriptions ??
           getConf(self, ['renderer', 'showDescriptions'])
         )
+      },
+
+      get geneGlyphMode(): string {
+        return (
+          self.trackGeneGlyphMode ??
+          getConf(self, ['renderer', 'geneGlyphMode'])
+        )
+      },
+
+      get selectedFeatureId() {
+        if (isAlive(self)) {
+          const { selection } = getSession(self)
+          if (isFeature(selection)) {
+            return selection.id()
+          }
+        }
+        return undefined
       },
 
       get colorByCDS() {
@@ -267,6 +287,14 @@ export default function stateModelFactory(
         self.trackShowDescriptions = value
       },
 
+      setGeneGlyphMode(value: string) {
+        self.trackGeneGlyphMode = value
+      },
+
+      setShowOnlyGenes(value: boolean) {
+        self.showOnlyGenes = value
+      },
+
       showContextMenuForFeature(featureInfo: FlatbushItem) {
         const feature = new SimpleFeature({
           id: featureInfo.featureId,
@@ -362,6 +390,7 @@ export default function stateModelFactory(
             ...baseRendererConfig,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
+            geneGlyphMode: self.geneGlyphMode,
           }
           const result = (await rpcManager.call(
             session.id ?? '',
@@ -374,6 +403,7 @@ export default function stateModelFactory(
               bpPerPx,
               colorByCDS: self.colorByCDS,
               sequenceAdapter: self.sequenceAdapter,
+              showOnlyGenes: self.showOnlyGenes,
             },
           )) as WebGLFeatureDataResult
 
@@ -419,6 +449,8 @@ export default function stateModelFactory(
       let prevShowLabels: boolean | undefined
       let prevShowDescriptions: boolean | undefined
       let prevColorByCDS: boolean | undefined
+      let prevGeneGlyphMode: string | undefined
+      let prevShowOnlyGenes: boolean | undefined
       let prevSettingsInitialized = false
 
       return {
@@ -493,11 +525,15 @@ export default function stateModelFactory(
                 const showLabels = self.showLabels
                 const showDescriptions = self.showDescriptions
                 const colorByCDS = self.colorByCDS
+                const geneGlyphMode = self.geneGlyphMode
+                const showOnlyGenes = self.showOnlyGenes
                 if (
                   prevSettingsInitialized &&
                   (showLabels !== prevShowLabels ||
                     showDescriptions !== prevShowDescriptions ||
-                    colorByCDS !== prevColorByCDS)
+                    colorByCDS !== prevColorByCDS ||
+                    geneGlyphMode !== prevGeneGlyphMode ||
+                    showOnlyGenes !== prevShowOnlyGenes)
                 ) {
                   if (self.loadedRegions.size > 0) {
                     refetchForCurrentView()
@@ -507,6 +543,8 @@ export default function stateModelFactory(
                 prevShowLabels = showLabels
                 prevShowDescriptions = showDescriptions
                 prevColorByCDS = colorByCDS
+                prevGeneGlyphMode = geneGlyphMode
+                prevShowOnlyGenes = showOnlyGenes
               },
               {
                 name: 'SettingsRefetch',
@@ -568,13 +606,38 @@ export default function stateModelFactory(
                   self.setShowDescriptions(!self.showDescriptions)
                 },
               },
+              {
+                label: 'Show only genes',
+                type: 'checkbox',
+                checked: self.showOnlyGenes,
+                onClick: () => {
+                  self.setShowOnlyGenes(!self.showOnlyGenes)
+                },
+              },
             ],
+          },
+          {
+            label: 'Gene glyph',
+            subMenu: (
+              [
+                { value: 'all', label: 'All transcripts' },
+                { value: 'longest', label: 'Longest transcript' },
+                { value: 'longestCoding', label: 'Longest coding transcript' },
+              ] as const
+            ).map(({ value, label }) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.geneGlyphMode === value,
+              onClick: () => {
+                self.setGeneGlyphMode(value)
+              },
+            })),
           },
         ]
       },
     }))
     .postProcessSnapshot(snap => {
-      const { trackShowLabels, trackShowDescriptions, ...rest } = snap as Omit<
+      const { trackShowLabels, trackShowDescriptions, trackGeneGlyphMode, showOnlyGenes, ...rest } = snap as Omit<
         typeof snap,
         symbol
       >
@@ -583,6 +646,8 @@ export default function stateModelFactory(
         // Only persist if explicitly set (not undefined)
         ...(trackShowLabels !== undefined && { trackShowLabels }),
         ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
+        ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),
+        ...(showOnlyGenes && { showOnlyGenes }),
       } as typeof snap
     })
 }

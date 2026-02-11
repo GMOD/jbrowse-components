@@ -23,6 +23,7 @@ export interface RenderWebGLFeatureDataArgs {
   bpPerPx: number
   colorByCDS?: boolean
   sequenceAdapter?: Record<string, unknown>
+  showOnlyGenes?: boolean
 }
 
 export interface WebGLFeatureDataResult {
