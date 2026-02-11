@@ -60,6 +60,12 @@ out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
 
+// Snap clip-space X to nearest pixel boundary
+float snapToPixelX(float clipX) {
+  float px = (clipX + 1.0) * 0.5 * u_canvasWidth;
+  return floor(px + 0.5) / u_canvasWidth * 2.0 - 1.0;
+}
+
 void main() {
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
@@ -69,29 +75,26 @@ void main() {
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);
   vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
+  float sx1 = snapToPixelX(hpToClipX(splitStart, u_bpRangeX));
+  float sx2 = snapToPixelX(hpToClipX(splitEnd, u_bpRangeX));
 
-  // Ensure minimum width
-  float minWidth = 2.0 / u_canvasWidth;
-  if (sx2 - sx1 < minWidth) {
-    float mid = (sx1 + sx2) * 0.5;
-    sx1 = mid - minWidth * 0.5;
-    sx2 = mid + minWidth * 0.5;
+  // Ensure minimum width of 1px
+  float onePixel = 2.0 / u_canvasWidth;
+  if (sx2 - sx1 < onePixel) {
+    sx2 = sx1 + onePixel;
   }
 
   float sx = mix(sx1, sx2, localX);
 
-  // Y position in clip space (top = 1, bottom = -1)
-  float yTopPx = a_y - u_scrollY;
-  float yBotPx = yTopPx + a_height;
+  // Y position snapped to pixel grid
+  float yTopPx = floor(a_y - u_scrollY + 0.5);
+  float yBotPx = floor(yTopPx + a_height + 0.5);
   float syTop = 1.0 - (yTopPx / u_canvasHeight) * 2.0;
   float syBot = 1.0 - (yBotPx / u_canvasHeight) * 2.0;
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Unpack RGBA color
   v_color = vec4(
     float(a_color.r) / 255.0,
     float(a_color.g) / 255.0,
@@ -141,7 +144,8 @@ void main() {
 
   float sx = (vid == 0) ? sx1 : sx2;
 
-  float yPx = a_y - u_scrollY;
+  // Snap Y to pixel grid for crisp lines
+  float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float sy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -230,7 +234,7 @@ void main() {
   vec2 splitStart = hpSplitUint(lineAbsStart);
   float cx = hpToClipX(splitStart, u_bpRangeX) + chevronOffsetBp / u_bpRangeX.z * 2.0;
 
-  float yPx = a_y - u_scrollY;
+  float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
   // Chevron size in clip space
@@ -311,7 +315,8 @@ void main() {
   vec2 splitX = hpSplitUint(absX);
   float cx = hpToClipX(splitX, u_bpRangeX);
 
-  float yPx = a_y - u_scrollY;
+  // Snap Y to pixel grid
+  float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
   // Match canvas: arrowOffset=7px total, arrowSize=5px tall
@@ -705,34 +710,14 @@ export class WebGLFeatureRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (blocks.length === 0) {
-      console.log('[WebGLFeatureRenderer] renderBlocks: no blocks')
       return
     }
-
-    console.log(
-      '[WebGLFeatureRenderer] renderBlocks:',
-      blocks.length,
-      'blocks, canvas:',
-      canvasWidth,
-      'x',
-      canvasHeight,
-      'buffersMap keys:',
-      [...this.buffersMap.keys()],
-    )
 
     gl.enable(gl.SCISSOR_TEST)
 
     for (const block of blocks) {
       const buffers = this.buffersMap.get(block.regionNumber)
       if (!buffers || buffers.rectCount === 0) {
-        console.log(
-          '[WebGLFeatureRenderer] block',
-          block.regionNumber,
-          'skipped: no buffers or rectCount=0, hasBuffers:',
-          !!buffers,
-          'rectCount:',
-          buffers?.rectCount,
-        )
         continue
       }
 
@@ -740,14 +725,6 @@ export class WebGLFeatureRenderer {
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
       if (scissorW <= 0) {
-        console.log(
-          '[WebGLFeatureRenderer] block',
-          block.regionNumber,
-          'skipped: scissorW<=0, screenStartPx:',
-          block.screenStartPx,
-          'screenEndPx:',
-          block.screenEndPx,
-        )
         continue
       }
 
@@ -767,21 +744,6 @@ export class WebGLFeatureRenderer {
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       const regionStart = buffers.regionStart
-
-      console.log(
-        '[WebGLFeatureRenderer] block',
-        block.regionNumber,
-        'rendering:',
-        'bpRange:', block.bpRangeX,
-        'screenPx:', [block.screenStartPx, block.screenEndPx],
-        'scissor:', [scissorX, scissorW],
-        'clippedBp:', [clippedBpStart, clippedBpEnd, clippedLengthBp],
-        'regionStart:', regionStart,
-        'bpStartHi:', bpStartHi,
-        'bpStartLo:', bpStartLo,
-        'rects:', buffers.rectCount,
-        'bpPerPx:', bpPerPx,
-      )
 
       // Draw lines first (introns)
       if (buffers.lineVAO && buffers.lineCount > 0) {

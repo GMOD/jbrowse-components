@@ -661,24 +661,14 @@ export async function executeRenderWebGLFeatureData({
       const deduped = dedupe(featuresArray, (f: Feature) => f.id())
       const features = new Map(deduped.map(f => [f.id(), f]))
 
-      console.log(
-        '[RPC executeRenderWebGLFeatureData] Computing layout:',
-        JSON.stringify({
-          featureCount: features.size,
-          regionStart,
-          regionEnd: region.end,
-          bpPerPx,
-          regionRefName: region.refName,
-          regionAssemblyName: region.assemblyName,
-        }),
-      )
-
-      const layout = new GranularRectLayout()
+      // Layout in pixel space so labels and padding don't blow up at
+      // zoomed-out levels (where bpPerPx is large)
+      const layout = new GranularRectLayout({ pitchX: 1 })
       const reversed = region.reversed ?? false
       const yPadding = 5
+      const maxGlyphExpansion = mockConfig.maxFeatureGlyphExpansion || 500
 
       const records: LayoutRecordWithLabels[] = []
-      let nullCount = 0
 
       for (const feature of features.values()) {
         const featureLayout = layoutFeature({
@@ -691,25 +681,29 @@ export async function executeRenderWebGLFeatureData({
 
         const featureStart = feature.get('start')
         const featureEnd = feature.get('end')
-        const leftPaddingBp = featureLayout.leftPadding * bpPerPx
-        const rightPaddingBp =
-          (featureLayout.totalLayoutWidth -
-            featureLayout.width -
-            featureLayout.leftPadding) *
-          bpPerPx
+        const featureWidthPx = (featureEnd - featureStart) / bpPerPx
 
-        let layoutStart: number
-        let layoutEnd: number
+        const leftPaddingPx = featureLayout.leftPadding
+        const rightPaddingPx =
+          featureLayout.totalLayoutWidth -
+          featureLayout.width -
+          featureLayout.leftPadding
+
+        // Convert feature bp bounds to pixel space for layout
+        const featureStartPx = (featureStart - regionStart) / bpPerPx
+        const featureEndPx = (featureEnd - regionStart) / bpPerPx
+
+        let layoutStartPx: number
+        let layoutEndPx: number
         if (reversed) {
-          layoutStart = featureStart - rightPaddingBp
-          layoutEnd = featureEnd + leftPaddingBp
+          layoutStartPx = featureStartPx - rightPaddingPx
+          layoutEndPx = featureEndPx + leftPaddingPx
         } else {
-          layoutStart = featureStart - leftPaddingBp
-          layoutEnd = featureEnd + rightPaddingBp
+          layoutStartPx = featureStartPx - leftPaddingPx
+          layoutEndPx = featureEndPx + rightPaddingPx
         }
 
-        // Manually add space for labels since the config callback system isn't available
-        // Match the JEXL expressions from config schema
+        // Add space for labels in pixel space (naturally bounded)
         const featureName = String(
           feature.get('name') || feature.get('id') || '',
         )
@@ -731,23 +725,23 @@ export async function executeRenderWebGLFeatureData({
           )
         }
 
-        // Extend layout bounds to account for label width
-        // Labels are positioned at the feature's left edge and extend rightward
-        const featureWidthPx = (featureEnd - featureStart) / bpPerPx
         if (maxLabelWidth > featureWidthPx) {
-          const extraLabelWidthBp = (maxLabelWidth - featureWidthPx) * bpPerPx
+          const extraPx = Math.min(
+            maxLabelWidth - featureWidthPx,
+            maxGlyphExpansion,
+          )
           if (reversed) {
-            layoutStart -= extraLabelWidthBp
+            layoutStartPx -= extraPx
           } else {
-            layoutEnd += extraLabelWidthBp
+            layoutEndPx += extraPx
           }
         }
 
         const layoutHeight = featureLayout.height + labelHeight + yPadding
         const topPx = layout.addRect(
           feature.id(),
-          layoutStart,
-          layoutEnd,
+          layoutStartPx,
+          layoutEndPx,
           layoutHeight,
           feature,
         )
@@ -757,24 +751,10 @@ export async function executeRenderWebGLFeatureData({
             feature,
             layout: featureLayout,
             topPx,
-            // Include the full height with labels for hit detection
             totalHeightWithLabels: layoutHeight,
           })
-        } else {
-          nullCount++
         }
       }
-
-      console.log(
-        '[RPC executeRenderWebGLFeatureData] Layout result:',
-        JSON.stringify({
-          totalFeatures: features.size,
-          layoutRecords: records.length,
-          nullCount,
-          maxY: layout.getTotalHeight(),
-          maxHeightReached: layout.maxHeightReached,
-        }),
-      )
 
       return {
         layoutRecords: records,

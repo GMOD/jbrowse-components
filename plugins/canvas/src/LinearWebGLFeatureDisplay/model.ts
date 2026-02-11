@@ -391,12 +391,19 @@ export default function stateModelFactory(
         }
       }
 
-      function refetchAllLoadedRegions(bpPerPx: number) {
+      function refetchForCurrentView() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
+        self.clearAllRpcData()
+        const bpPerPx = view.bpPerPx
+        const regions = view.staticRegions
         self.setLoading(true)
         self.setError(null)
         const promises: Promise<void>[] = []
-        for (const [regionNumber, region] of self.loadedRegions) {
-          promises.push(fetchFeaturesForRegion(region, regionNumber, bpPerPx))
+        for (const vr of regions) {
+          promises.push(fetchFeaturesForRegion(vr, vr.regionNumber, bpPerPx))
         }
         Promise.all(promises)
           .then(() => {
@@ -427,21 +434,6 @@ export default function stateModelFactory(
                 }
                 const bpPerPx = view.bpPerPx
                 const promises: Promise<void>[] = []
-                console.log(
-                  '[CanvasModel] FetchVisibleRegions autorun: bpPerPx=',
-                  bpPerPx,
-                  'staticRegions:',
-                  view.staticRegions.map(vr => ({
-                    regionNumber: vr.regionNumber,
-                    start: vr.start,
-                    end: vr.end,
-                  })),
-                  'loadedRegions:',
-                  [...self.loadedRegions.entries()].map(([k, v]) => ({
-                    regionNumber: k,
-                    ...v,
-                  })),
-                )
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
@@ -449,23 +441,8 @@ export default function stateModelFactory(
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
                   ) {
-                    console.log(
-                      '[CanvasModel] Region',
-                      vr.regionNumber,
-                      'already loaded, skipping',
-                    )
                     continue
                   }
-                  console.log(
-                    '[CanvasModel] Fetching region',
-                    vr.regionNumber,
-                    'start:',
-                    vr.start,
-                    'end:',
-                    vr.end,
-                    'loaded:',
-                    loaded,
-                  )
                   promises.push(
                     fetchFeaturesForRegion(vr, vr.regionNumber, bpPerPx),
                   )
@@ -498,13 +475,7 @@ export default function stateModelFactory(
               () => {
                 const view = getContainingView(self) as LGV
                 if (view.initialized && self.needsLayoutRefresh) {
-                  console.log(
-                    '[CanvasModel] ZoomLayoutRefresh triggered! bpPerPx=',
-                    view.bpPerPx,
-                    'layoutBpPerPxMap:',
-                    [...self.layoutBpPerPxMap.entries()],
-                  )
-                  refetchAllLoadedRegions(view.bpPerPx)
+                  refetchForCurrentView()
                 }
               },
               {
@@ -529,8 +500,7 @@ export default function stateModelFactory(
                     colorByCDS !== prevColorByCDS)
                 ) {
                   if (self.loadedRegions.size > 0) {
-                    const view = getContainingView(self) as LGV
-                    refetchAllLoadedRegions(view.bpPerPx)
+                    refetchForCurrentView()
                   }
                 }
                 prevSettingsInitialized = true
