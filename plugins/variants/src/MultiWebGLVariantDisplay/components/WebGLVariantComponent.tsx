@@ -320,9 +320,19 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
       />
-      {!model.webglCellData || model.regionTooLarge ? (
-        <LoadingOverlay model={model} />
-      ) : null}
+      <LoadingOverlay
+        statusMessage={
+          model.regionTooLarge
+            ? model.regionTooLargeReason
+            : model.statusMessage ||
+              (!model.sources
+                ? 'Loading samples'
+                : !model.featuresReady
+                  ? 'Loading features'
+                  : 'Computing display data')
+        }
+        isVisible={!model.webglCellData || model.regionTooLarge}
+      />
     </div>
   )
 })

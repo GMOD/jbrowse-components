@@ -705,14 +705,34 @@ export class WebGLFeatureRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (blocks.length === 0) {
+      console.log('[WebGLFeatureRenderer] renderBlocks: no blocks')
       return
     }
+
+    console.log(
+      '[WebGLFeatureRenderer] renderBlocks:',
+      blocks.length,
+      'blocks, canvas:',
+      canvasWidth,
+      'x',
+      canvasHeight,
+      'buffersMap keys:',
+      [...this.buffersMap.keys()],
+    )
 
     gl.enable(gl.SCISSOR_TEST)
 
     for (const block of blocks) {
       const buffers = this.buffersMap.get(block.regionNumber)
       if (!buffers || buffers.rectCount === 0) {
+        console.log(
+          '[WebGLFeatureRenderer] block',
+          block.regionNumber,
+          'skipped: no buffers or rectCount=0, hasBuffers:',
+          !!buffers,
+          'rectCount:',
+          buffers?.rectCount,
+        )
         continue
       }
 
@@ -720,6 +740,14 @@ export class WebGLFeatureRenderer {
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
       if (scissorW <= 0) {
+        console.log(
+          '[WebGLFeatureRenderer] block',
+          block.regionNumber,
+          'skipped: scissorW<=0, screenStartPx:',
+          block.screenStartPx,
+          'screenEndPx:',
+          block.screenEndPx,
+        )
         continue
       }
 
@@ -739,6 +767,21 @@ export class WebGLFeatureRenderer {
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       const regionStart = buffers.regionStart
+
+      console.log(
+        '[WebGLFeatureRenderer] block',
+        block.regionNumber,
+        'rendering:',
+        'bpRange:', block.bpRangeX,
+        'screenPx:', [block.screenStartPx, block.screenEndPx],
+        'scissor:', [scissorX, scissorW],
+        'clippedBp:', [clippedBpStart, clippedBpEnd, clippedLengthBp],
+        'regionStart:', regionStart,
+        'bpStartHi:', bpStartHi,
+        'bpStartLo:', bpStartLo,
+        'rects:', buffers.rectCount,
+        'bpPerPx:', bpPerPx,
+      )
 
       // Draw lines first (introns)
       if (buffers.lineVAO && buffers.lineCount > 0) {

@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
 import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
+import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
@@ -287,23 +288,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
           <YScaleBar model={model} />
         </svg>
       ) : null}
-      {model.isLoading ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width,
-            height,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(255,255,255,0.7)',
-          }}
-        >
-          Loading...
-        </div>
-      ) : null}
+      <LoadingOverlay statusMessage="Loading" isVisible={model.isLoading} />
     </div>
   )
 })

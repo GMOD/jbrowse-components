@@ -238,9 +238,14 @@ const WebGLVariantMatrixComponent = observer(
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}
         />
-        {!model.webglCellData || model.regionTooLarge ? (
-          <LoadingOverlay model={model} />
-        ) : null}
+        <LoadingOverlay
+          statusMessage={
+            model.regionTooLarge
+              ? model.regionTooLargeReason
+              : model.statusMessage || 'Computing display data'
+          }
+          isVisible={!model.webglCellData || model.regionTooLarge}
+        />
       </div>
     )
   },

@@ -7,6 +7,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
+import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
 
 import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
@@ -911,21 +912,10 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         </div>
       )}
 
-      {(isLoading || !isReady) && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(255,255,255,0.9)',
-            padding: '8px 16px',
-            borderRadius: 4,
-          }}
-        >
-          {isLoading ? 'Loading features...' : 'Initializing...'}
-        </div>
-      )}
+      <LoadingOverlay
+        statusMessage={isLoading ? 'Loading features' : 'Initializing'}
+        isVisible={isLoading || !isReady}
+      />
     </div>
   )
 })

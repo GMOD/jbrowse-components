@@ -20,8 +20,9 @@ const useStyles = makeStyles()({
     zIndex: 1,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     opacity: 0,
+    paddingTop: '20px',
   },
   visible: {
     opacity: 1,
