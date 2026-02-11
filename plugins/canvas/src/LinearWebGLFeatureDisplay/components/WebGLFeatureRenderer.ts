@@ -208,31 +208,31 @@ void main() {
   int totalChevrons = max(1, int(floor(lineWidthPx / chevronSpacingPx)));
   float bpSpacing = lineLengthBp / float(totalChevrons + 1);
 
-  // Find the viewport bp range relative to line start
+  // Find the viewport bp range relative to line start to window into visible chevrons
   float viewportStartBp = u_bpRangeX.x + u_bpRangeX.y - float(u_regionStart) - float(a_position.x);
   float viewportEndBp = viewportStartBp + u_bpRangeX.z;
 
   // Compute which chevron indices are visible in the viewport
-  // chevron i is at bp position: bpSpacing * (i + 1)
   int firstVisible = max(0, int(floor(viewportStartBp / bpSpacing)) - 1);
   int lastVisible = min(totalChevrons - 1, int(ceil(viewportEndBp / bpSpacing)));
 
   int globalChevronIndex = firstVisible + localChevronIndex;
 
   // Discard if outside visible range or beyond total
-  if (globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {
+  if (globalChevronIndex < 0 || globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     v_color = vec4(0.0);
     return;
   }
 
-  // Compute chevron clip-space position along the line
-  // Use line start as HP uint base, then add fractional bp offset in clip space
-  // to avoid uint truncation causing uneven spacing at high zoom
+  // Compute chevron position using HP arithmetic to avoid float precision loss.
+  // Split lineStart as uint (exact), then add fractional offset to the lo component.
+  // hpScaleLinear handles the (hi-hi) + (lo-lo) subtraction correctly.
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
-  uint lineAbsStart = a_position.x + u_regionStart;
-  vec2 splitStart = hpSplitUint(lineAbsStart);
-  float cx = hpToClipX(splitStart, u_bpRangeX) + chevronOffsetBp / u_bpRangeX.z * 2.0;
+  uint lineStartAbs = a_position.x + u_regionStart;
+  vec2 splitStart = hpSplitUint(lineStartAbs);
+  vec2 splitChevron = vec2(splitStart.x, splitStart.y + chevronOffsetBp);
+  float cx = hpToClipX(splitChevron, u_bpRangeX);
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -241,37 +241,17 @@ void main() {
   float chevronWidth = 5.0 / u_canvasWidth * 2.0;
   float chevronHeight = 4.0 / u_canvasHeight * 2.0;
 
+  // Chevron shape: 4 vertices forming two lines (< or >)
+  // vid 0,3 are the outer tips, vid 1,2 are the center point
+  // a_direction flips the X to mirror between < and >
+  float dir = a_direction;
   float sx, sy;
-  if (a_direction > 0.0) {
-    // > shape: point on right
-    if (vid == 0) {
-      sx = cx - chevronWidth * 0.5;
-      sy = cy + chevronHeight * 0.5;
-    } else if (vid == 1) {
-      sx = cx + chevronWidth * 0.5;
-      sy = cy;
-    } else if (vid == 2) {
-      sx = cx + chevronWidth * 0.5;
-      sy = cy;
-    } else {
-      sx = cx - chevronWidth * 0.5;
-      sy = cy - chevronHeight * 0.5;
-    }
+  if (vid == 1 || vid == 2) {
+    sx = cx + chevronWidth * 0.5 * dir;
+    sy = cy;
   } else {
-    // < shape: point on left
-    if (vid == 0) {
-      sx = cx + chevronWidth * 0.5;
-      sy = cy + chevronHeight * 0.5;
-    } else if (vid == 1) {
-      sx = cx - chevronWidth * 0.5;
-      sy = cy;
-    } else if (vid == 2) {
-      sx = cx - chevronWidth * 0.5;
-      sy = cy;
-    } else {
-      sx = cx + chevronWidth * 0.5;
-      sy = cy - chevronHeight * 0.5;
-    }
+    sx = cx - chevronWidth * 0.5 * dir;
+    sy = (vid == 0) ? cy + chevronHeight * 0.5 : cy - chevronHeight * 0.5;
   }
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);

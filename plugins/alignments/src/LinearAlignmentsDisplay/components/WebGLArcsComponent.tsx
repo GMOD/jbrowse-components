@@ -6,7 +6,6 @@ import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { formatFeatureTooltip } from './alignmentComponentUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -65,20 +64,13 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
     doRender()
   }, [arcsRpcDataMap])
 
+  // Read arc mouseover disabled - arc hit detection is complex and
+  // tooltips are not critical for this feature type
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
       e,
-      hit => {
-        model.setFeatureIdUnderMouse(hit.id)
-        if (model.highlightedFeatureIndex !== hit.index) {
-          model.setHighlightedFeatureIndex(hit.index)
-        }
-        if (model.highlightedChainIndices.length > 0) {
-          model.setHighlightedChainIndices([])
-        }
-        model.setMouseoverExtraInformation(
-          formatFeatureTooltip(hit.id, model.getFeatureInfoById),
-        )
+      () => {
+        // No tooltip for read arc hits
       },
       () => {
         model.setFeatureIdUnderMouse(undefined)

@@ -49,7 +49,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           model.setHighlightedChainIndices([])
         }
         model.setMouseoverExtraInformation(
-          formatFeatureTooltip(hit.id, model.getFeatureInfoById),
+          formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
         )
       },
       () => {

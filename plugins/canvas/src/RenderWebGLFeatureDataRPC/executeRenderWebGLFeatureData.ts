@@ -843,7 +843,7 @@ export async function executeRenderWebGLFeatureData({
 
   for (const [i, rect] of rects.entries()) {
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
-    rectPositions[i * 2 + 1] = rect.endOffset
+    rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
@@ -857,7 +857,7 @@ export async function executeRenderWebGLFeatureData({
 
   for (const [i, line] of lines.entries()) {
     linePositions[i * 2] = Math.max(0, line.startOffset)
-    linePositions[i * 2 + 1] = line.endOffset
+    linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
     lineYs[i] = line.y
     lineColors[i] = line.color
     lineDirections[i] = line.direction
