@@ -33,7 +33,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/material": "^7.3.7",
+    "@mui/material": "^7.3.8",
     "g2p_mapper": "^2.0.0",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",

@@ -1,7 +1,5 @@
 import { useMemo, useState, useTransition } from 'react'
 
-import { getEnv } from '@jbrowse/core/util'
-import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -22,7 +20,6 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   shownTrackIds: Set<GridRowId>
   selection: any[]
 }) {
-  const { pluginManager } = getEnv(model)
   const { view, faceted } = model
   const {
     rows,
@@ -100,12 +97,10 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
                 })
             })
           } else {
-            const root = getRoot(model)
-            const schema = pluginManager.pluggableConfigSchemaType('track')
             model.setSelection(
-              [...userSelectedIds.ids].map(id =>
-                resolveIdentifier(schema, root, id),
-              ),
+              [...userSelectedIds.ids]
+                .map(id => model.allTrackConfigurationTrackIdSet.get(id))
+                .filter(Boolean),
             )
           }
         })

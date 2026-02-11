@@ -4,7 +4,6 @@ import {
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
-import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
