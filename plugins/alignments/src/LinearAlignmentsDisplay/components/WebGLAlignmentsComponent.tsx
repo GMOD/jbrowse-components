@@ -1,6 +1,4 @@
-import {
-  TooLargeMessage,
-} from '@jbrowse/plugin-linear-genome-view'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'

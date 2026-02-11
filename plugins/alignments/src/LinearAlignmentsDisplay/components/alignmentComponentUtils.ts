@@ -7,12 +7,16 @@
 
 import { colord } from '@jbrowse/core/util/colord'
 
+import { INTERBASE_TYPES } from './hitTesting.ts'
 import { fillColor } from '../../shared/color.ts'
 
 import type { ColorPalette, RGBColor, WebGLRenderer } from './WebGLRenderer'
-import { INTERBASE_TYPES } from './hitTesting.ts'
-
-import type { CigarHitResult, IndicatorHitResult, CoverageHitResult, SashimiArcHitResult } from './hitTesting'
+import type {
+  CigarHitResult,
+  CoverageHitResult,
+  IndicatorHitResult,
+  SashimiArcHitResult,
+} from './hitTesting'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
 import type { Theme } from '@mui/material'
 
@@ -252,8 +256,7 @@ export function formatIndicatorTooltip(
   blockRpcData: WebGLPileupDataResult | undefined,
   refName: string | undefined,
 ) {
-  const posOffset =
-    indicatorHit.position - (blockRpcData?.regionStart ?? 0)
+  const posOffset = indicatorHit.position - (blockRpcData?.regionStart ?? 0)
   const tooltipBin = blockRpcData?.tooltipData[posOffset]
 
   if (tooltipBin) {
@@ -296,8 +299,7 @@ export function formatCoverageTooltip(
   blockRpcData: WebGLPileupDataResult | undefined,
   refName: string | undefined,
 ) {
-  const posOffset =
-    coverageHit.position - (blockRpcData?.regionStart ?? 0)
+  const posOffset = coverageHit.position - (blockRpcData?.regionStart ?? 0)
   const tooltipBin = blockRpcData?.tooltipData[posOffset]
 
   if (tooltipBin || coverageHit.depth > 0) {
@@ -342,11 +344,7 @@ export function formatCoverageTooltip(
 
 export function formatSashimiTooltip(sashimiHit: SashimiArcHitResult) {
   const strandLabel =
-    sashimiHit.strand === 1
-      ? '+'
-      : sashimiHit.strand === -1
-        ? '-'
-        : 'unknown'
+    sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : 'unknown'
   return JSON.stringify({
     type: 'sashimi',
     start: sashimiHit.start,
@@ -359,7 +357,18 @@ export function formatSashimiTooltip(sashimiHit: SashimiArcHitResult) {
 
 export function formatFeatureTooltip(
   featureId: string,
-  getFeatureInfoById: (id: string) => { id: string; name: string; start: number; end: number; strand: string; refName: string } | undefined,
+  getFeatureInfoById: (
+    id: string,
+  ) =>
+    | {
+        id: string
+        name: string
+        start: number
+        end: number
+        strand: string
+        refName: string
+      }
+    | undefined,
 ) {
   const info = getFeatureInfoById(featureId)
   if (info) {

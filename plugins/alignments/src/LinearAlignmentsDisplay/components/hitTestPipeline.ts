@@ -26,7 +26,11 @@ export type HitTestResult =
       featureHit?: { id: string; index: number }
       resolved: ResolvedBlock
     }
-  | { type: 'feature'; hit: { id: string; index: number }; resolved: ResolvedBlock }
+  | {
+      type: 'feature'
+      hit: { id: string; index: number }
+      resolved: ResolvedBlock
+    }
   | { type: 'none' }
 
 interface HitTestOptions {

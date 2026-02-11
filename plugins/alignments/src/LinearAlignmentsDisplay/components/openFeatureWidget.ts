@@ -7,7 +7,11 @@ import {
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 
-import type { CigarHitResult, IndicatorHitResult, CoverageHitResult } from './hitTesting.ts'
+import type {
+  CigarHitResult,
+  CoverageHitResult,
+  IndicatorHitResult,
+} from './hitTesting.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 
 interface ModelForWidget {
@@ -39,8 +43,7 @@ export function openIndicatorWidget(
   refName: string,
   blockRpcData: WebGLPileupDataResult | undefined,
 ) {
-  const posOffset =
-    indicatorHit.position - (blockRpcData?.regionStart ?? 0)
+  const posOffset = indicatorHit.position - (blockRpcData?.regionStart ?? 0)
   const tooltipBin = blockRpcData?.tooltipData[posOffset]
 
   const featureData: Record<string, unknown> = {
@@ -53,8 +56,7 @@ export function openIndicatorWidget(
   }
 
   if (tooltipBin) {
-    const interbaseEntry =
-      tooltipBin.interbase[indicatorHit.indicatorType]
+    const interbaseEntry = tooltipBin.interbase[indicatorHit.indicatorType]
     if (interbaseEntry) {
       featureData.count = `${interbaseEntry.count}/${tooltipBin.depth}`
       featureData.size =
@@ -68,8 +70,7 @@ export function openIndicatorWidget(
     featureData.depth = tooltipBin.depth
   } else {
     const { counts } = indicatorHit
-    featureData.count =
-      counts.insertion + counts.softclip + counts.hardclip
+    featureData.count = counts.insertion + counts.softclip + counts.hardclip
   }
 
   showWidget(model, featureData)
@@ -81,22 +82,15 @@ export function openCoverageWidget(
   refName: string,
   blockRpcData: WebGLPileupDataResult | undefined,
 ) {
-  const posOffset =
-    coverageHit.position - (blockRpcData?.regionStart ?? 0)
+  const posOffset = coverageHit.position - (blockRpcData?.regionStart ?? 0)
   const tooltipBin = blockRpcData?.tooltipData[posOffset]
 
   const hasSNPs = coverageHit.snps.some(
-    s =>
-      s.base === 'A' ||
-      s.base === 'C' ||
-      s.base === 'G' ||
-      s.base === 'T',
+    s => s.base === 'A' || s.base === 'C' || s.base === 'G' || s.base === 'T',
   )
   const hasInterbase = coverageHit.snps.some(
     s =>
-      s.base === 'insertion' ||
-      s.base === 'softclip' ||
-      s.base === 'hardclip',
+      s.base === 'insertion' || s.base === 'softclip' || s.base === 'hardclip',
   )
   if (!hasSNPs && !hasInterbase && !tooltipBin) {
     return

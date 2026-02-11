@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 
-import {
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'

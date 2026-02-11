@@ -7,8 +7,8 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
-import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
+import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
 import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
 import type {
@@ -694,171 +694,107 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const overlays: React.ReactElement[] = []
 
-    // Compute the screen rect for a feature, expanded to include label area
-    const getFeatureRect = (
-      featureId: string,
+    const getItemRect = (
+      item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
       vr: VisibleRegion,
-      data: WebGLFeatureDataResult,
     ) => {
-      const feature = data.flatbushItems.find(f => f.featureId === featureId)
-      if (!feature || feature.endBp < vr.start || feature.startBp > vr.end) {
-        return null
+      if (item.endBp < vr.start || item.startBp > vr.end) {
+        return undefined
       }
       const blockBpPerPx =
         (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-      const leftPx =
-        vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
-      let rightPx =
-        vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
-      const labelData = data.floatingLabelsData[featureId]
-      if (labelData) {
-        for (const label of labelData.floatingLabels) {
-          rightPx = Math.max(rightPx, leftPx + measureText(label.text, 11))
-        }
-      }
+      const leftPx = vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx
+      const rightPx = vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx
       return {
         leftPx,
         width: rightPx - leftPx,
-        topPx: feature.topPx - scrollY,
-        heightPx: feature.bottomPx - feature.topPx,
+        topPx: item.topPx - scrollY,
+        heightPx: item.bottomPx - item.topPx,
       }
     }
 
-    const addFeatureOverlay = (
-      featureId: string,
-      color: string,
-      key: string,
-    ) => {
+    const findItemForId = (featureId: string) => {
       for (const vr of visibleRegions) {
         const data = rpcDataMap.get(vr.regionNumber)
-        if (!data) {
-          continue
+        if (data) {
+          const feature = data.flatbushItems.find(
+            f => f.featureId === featureId,
+          )
+          if (feature) {
+            return { item: feature, vr, data }
+          }
+          const sub = data.subfeatureInfos.find(s => s.featureId === featureId)
+          if (sub) {
+            return { item: sub, vr, data: undefined }
+          }
         }
-        const rect = getFeatureRect(featureId, vr, data)
-        if (!rect) {
-          continue
-        }
-        overlays.push(
-          <div
-            key={`${key}-${vr.regionNumber}`}
-            style={{
-              position: 'absolute',
-              left: rect.leftPx,
-              top: rect.topPx,
-              width: rect.width,
-              height: rect.heightPx,
-              backgroundColor: color,
-              pointerEvents: 'none',
-            }}
-          />,
-        )
       }
+      return undefined
     }
 
-    const addSubfeatureOverlay = (
-      subfeature: SubfeatureInfo,
-      color: string,
+    const addOverlay = (
+      item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
+      style: React.CSSProperties,
       key: string,
+      extraWidth = 0,
+      padding = 0,
     ) => {
       for (const vr of visibleRegions) {
-        if (subfeature.endBp < vr.start || subfeature.startBp > vr.end) {
-          continue
-        }
-        const blockBpPerPx =
-          (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-        const leftPx =
-          vr.screenStartPx + (subfeature.startBp - vr.start) / blockBpPerPx
-        const rightPx =
-          vr.screenStartPx + (subfeature.endBp - vr.start) / blockBpPerPx
-        overlays.push(
-          <div
-            key={`${key}-${vr.regionNumber}`}
-            style={{
-              position: 'absolute',
-              left: leftPx,
-              top: subfeature.topPx - scrollY,
-              width: rightPx - leftPx,
-              height: subfeature.bottomPx - subfeature.topPx,
-              backgroundColor: color,
-              pointerEvents: 'none',
-            }}
-          />,
-        )
-      }
-    }
-
-    if (hoveredSubfeature) {
-      addSubfeatureOverlay(hoveredSubfeature, 'rgba(0, 0, 0, 0.15)', 'hover')
-    } else if (hoveredFeature) {
-      addFeatureOverlay(
-        hoveredFeature.featureId,
-        'rgba(0, 0, 0, 0.15)',
-        'hover',
-      )
-    }
-
-    if (model.selectedFeatureId) {
-      const selId = model.selectedFeatureId
-      let found = false
-      for (const vr of visibleRegions) {
-        const data = rpcDataMap.get(vr.regionNumber)
-        if (!data) {
-          continue
-        }
-        const rect = getFeatureRect(selId, vr, data)
+        const rect = getItemRect(item, vr)
         if (rect) {
-          found = true
           overlays.push(
             <div
-              key={`selected-${vr.regionNumber}`}
+              key={`${key}-${vr.regionNumber}`}
               style={{
                 position: 'absolute',
-                left: rect.leftPx - 2,
-                top: rect.topPx - 2,
-                width: rect.width + 4,
-                height: rect.heightPx + 4,
-                border: '2px solid rgba(0, 100, 255, 0.8)',
-                borderRadius: 3,
+                left: rect.leftPx - padding,
+                top: rect.topPx - padding,
+                width: rect.width + extraWidth + padding * 2,
+                height: rect.heightPx + padding * 2,
                 pointerEvents: 'none',
+                ...style,
               }}
             />,
           )
         }
       }
-      if (!found) {
-        for (const vr of visibleRegions) {
-          const data = rpcDataMap.get(vr.regionNumber)
-          if (!data) {
-            continue
-          }
-          const sub = data.subfeatureInfos.find(
-            s => s.featureId === selId,
-          )
-          if (sub && sub.endBp >= vr.start && sub.startBp <= vr.end) {
+    }
+
+    const hoverItem = hoveredSubfeature ?? hoveredFeature
+    if (hoverItem) {
+      addOverlay(hoverItem, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }, 'hover')
+    }
+
+    if (model.selectedFeatureId) {
+      const result = findItemForId(model.selectedFeatureId)
+      if (result) {
+        const { item, data } = result
+        let extraWidth = 0
+        if (data) {
+          const labelData = data.floatingLabelsData[model.selectedFeatureId]
+          if (labelData) {
             const blockBpPerPx =
-              (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-            const leftPx =
-              vr.screenStartPx + (sub.startBp - vr.start) / blockBpPerPx
-            const rightPx =
-              vr.screenStartPx + (sub.endBp - vr.start) / blockBpPerPx
-            overlays.push(
-              <div
-                key={`selected-${vr.regionNumber}`}
-                style={{
-                  position: 'absolute',
-                  left: leftPx - 2,
-                  top: sub.topPx - scrollY - 2,
-                  width: rightPx - leftPx + 4,
-                  height: sub.bottomPx - sub.topPx + 4,
-                  border: '2px solid rgba(0, 100, 255, 0.8)',
-                  borderRadius: 3,
-                  pointerEvents: 'none',
-                }}
-              />,
-            )
-            break
+              (result.vr.end - result.vr.start) /
+              (result.vr.screenEndPx - result.vr.screenStartPx)
+            const featureWidth = (item.endBp - item.startBp) / blockBpPerPx
+            for (const label of labelData.floatingLabels) {
+              extraWidth = Math.max(
+                extraWidth,
+                measureText(label.text, 11) - featureWidth,
+              )
+            }
           }
         }
+        addOverlay(
+          item,
+          {
+            border: '2px solid rgba(0, 100, 255, 0.8)',
+            borderRadius: 3,
+          },
+          'selected',
+          extraWidth,
+          2,
+        )
       }
     }
 
@@ -902,55 +838,24 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         }}
       />
 
-      {/* Feature highlight overlays */}
-      {highlightOverlays && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            overflow: 'hidden',
-          }}
-        >
-          {highlightOverlays}
-        </div>
-      )}
-
-      {/* Floating labels overlay */}
-      {floatingLabelElements && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            overflow: 'hidden',
-          }}
-        >
-          {floatingLabelElements}
-        </div>
-      )}
-
-      {/* Amino acid letter overlay */}
-      {aminoAcidOverlayElements && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            overflow: 'hidden',
-          }}
-        >
-          {aminoAcidOverlayElements}
-        </div>
+      {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
+        (elements, i) =>
+          elements ? (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                overflow: 'hidden',
+              }}
+            >
+              {elements}
+            </div>
+          ) : null,
       )}
 
       {/* Tooltip */}

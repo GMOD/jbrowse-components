@@ -637,10 +637,13 @@ export default function stateModelFactory(
       },
     }))
     .postProcessSnapshot(snap => {
-      const { trackShowLabels, trackShowDescriptions, trackGeneGlyphMode, showOnlyGenes, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const {
+        trackShowLabels,
+        trackShowDescriptions,
+        trackGeneGlyphMode,
+        showOnlyGenes,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
         // Only persist if explicitly set (not undefined)

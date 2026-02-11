@@ -26,9 +26,9 @@ import {
   openIndicatorWidget,
 } from './openFeatureWidget.ts'
 
-import type { ResolvedBlock } from './hitTesting.ts'
 import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
+import type { ResolvedBlock } from './hitTesting.ts'
 import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type {
