@@ -382,6 +382,7 @@ export default function stateModelFactory(
             refName: region.refName,
             start: region.start,
             end: region.end,
+            assemblyName: region.assemblyName,
           })
           self.setLayoutBpPerPxForRegion(regionNumber, bpPerPx)
         } catch (e) {
@@ -426,6 +427,21 @@ export default function stateModelFactory(
                 }
                 const bpPerPx = view.bpPerPx
                 const promises: Promise<void>[] = []
+                console.log(
+                  '[CanvasModel] FetchVisibleRegions autorun: bpPerPx=',
+                  bpPerPx,
+                  'staticRegions:',
+                  view.staticRegions.map(vr => ({
+                    regionNumber: vr.regionNumber,
+                    start: vr.start,
+                    end: vr.end,
+                  })),
+                  'loadedRegions:',
+                  [...self.loadedRegions.entries()].map(([k, v]) => ({
+                    regionNumber: k,
+                    ...v,
+                  })),
+                )
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
@@ -433,8 +449,23 @@ export default function stateModelFactory(
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
                   ) {
+                    console.log(
+                      '[CanvasModel] Region',
+                      vr.regionNumber,
+                      'already loaded, skipping',
+                    )
                     continue
                   }
+                  console.log(
+                    '[CanvasModel] Fetching region',
+                    vr.regionNumber,
+                    'start:',
+                    vr.start,
+                    'end:',
+                    vr.end,
+                    'loaded:',
+                    loaded,
+                  )
                   promises.push(
                     fetchFeaturesForRegion(vr, vr.regionNumber, bpPerPx),
                   )
@@ -467,6 +498,12 @@ export default function stateModelFactory(
               () => {
                 const view = getContainingView(self) as LGV
                 if (view.initialized && self.needsLayoutRefresh) {
+                  console.log(
+                    '[CanvasModel] ZoomLayoutRefresh triggered! bpPerPx=',
+                    view.bpPerPx,
+                    'layoutBpPerPxMap:',
+                    [...self.layoutBpPerPxMap.entries()],
+                  )
                   refetchAllLoadedRegions(view.bpPerPx)
                 }
               },

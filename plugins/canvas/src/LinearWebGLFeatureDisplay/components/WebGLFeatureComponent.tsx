@@ -220,13 +220,37 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const renderWithBlocks = useCallback(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized || width === undefined) {
+      console.log(
+        '[WebGLFeatureComponent] renderWithBlocks: not ready, renderer:',
+        !!renderer,
+        'initialized:',
+        view.initialized,
+        'width:',
+        width,
+      )
       return
     }
 
     const visibleRegions = view.visibleRegions
     if (visibleRegions.length === 0) {
+      console.log('[WebGLFeatureComponent] renderWithBlocks: no visible regions')
       return
     }
+
+    console.log(
+      '[WebGLFeatureComponent] renderWithBlocks: visibleRegions:',
+      visibleRegions.map(vr => ({
+        regionNumber: vr.regionNumber,
+        start: vr.start,
+        end: vr.end,
+        screenStartPx: vr.screenStartPx,
+        screenEndPx: vr.screenEndPx,
+      })),
+      'rpcDataMap keys:',
+      [...model.rpcDataMap.keys()],
+      'bpPerPx:',
+      view.bpPerPx,
+    )
 
     const blocks: FeatureRenderBlock[] = []
     for (const vr of visibleRegions) {
@@ -243,7 +267,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvasWidth: Math.round(view.width),
       canvasHeight: height,
     })
-  }, [view, width, height])
+  }, [view, width, height, model])
 
   const scheduleRender = useCallback(() => {
     if (renderRAFRef.current !== null) {

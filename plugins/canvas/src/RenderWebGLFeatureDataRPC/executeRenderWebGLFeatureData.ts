@@ -661,11 +661,24 @@ export async function executeRenderWebGLFeatureData({
       const deduped = dedupe(featuresArray, (f: Feature) => f.id())
       const features = new Map(deduped.map(f => [f.id(), f]))
 
+      console.log(
+        '[RPC executeRenderWebGLFeatureData] Computing layout:',
+        JSON.stringify({
+          featureCount: features.size,
+          regionStart,
+          regionEnd: region.end,
+          bpPerPx,
+          regionRefName: region.refName,
+          regionAssemblyName: region.assemblyName,
+        }),
+      )
+
       const layout = new GranularRectLayout()
       const reversed = region.reversed ?? false
       const yPadding = 5
 
       const records: LayoutRecordWithLabels[] = []
+      let nullCount = 0
 
       for (const feature of features.values()) {
         const featureLayout = layoutFeature({
@@ -747,8 +760,21 @@ export async function executeRenderWebGLFeatureData({
             // Include the full height with labels for hit detection
             totalHeightWithLabels: layoutHeight,
           })
+        } else {
+          nullCount++
         }
       }
+
+      console.log(
+        '[RPC executeRenderWebGLFeatureData] Layout result:',
+        JSON.stringify({
+          totalFeatures: features.size,
+          layoutRecords: records.length,
+          nullCount,
+          maxY: layout.getTotalHeight(),
+          maxHeightReached: layout.maxHeightReached,
+        }),
+      )
 
       return {
         layoutRecords: records,
