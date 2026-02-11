@@ -694,6 +694,36 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     const overlays: React.ReactElement[] = []
 
+    // Compute the screen rect for a feature, expanded to include label area
+    const getFeatureRect = (
+      featureId: string,
+      vr: VisibleRegion,
+      data: WebGLFeatureDataResult,
+    ) => {
+      const feature = data.flatbushItems.find(f => f.featureId === featureId)
+      if (!feature || feature.endBp < vr.start || feature.startBp > vr.end) {
+        return null
+      }
+      const blockBpPerPx =
+        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+      const leftPx =
+        vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
+      let rightPx =
+        vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
+      const labelData = data.floatingLabelsData[featureId]
+      if (labelData) {
+        for (const label of labelData.floatingLabels) {
+          rightPx = Math.max(rightPx, leftPx + measureText(label.text, 11))
+        }
+      }
+      return {
+        leftPx,
+        width: rightPx - leftPx,
+        topPx: feature.topPx - scrollY,
+        heightPx: feature.bottomPx - feature.topPx,
+      }
+    }
+
     const addFeatureOverlay = (
       featureId: string,
       color: string,
@@ -704,44 +734,19 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         if (!data) {
           continue
         }
-        const feature = data.flatbushItems.find(f => f.featureId === featureId)
-        if (!feature) {
+        const rect = getFeatureRect(featureId, vr, data)
+        if (!rect) {
           continue
         }
-
-        if (feature.endBp < vr.start || feature.startBp > vr.end) {
-          continue
-        }
-
-        const blockBpPerPx =
-          (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-        const leftPx =
-          vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
-        let rightPx =
-          vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
-
-        // Expand to include label area
-        const labelData = data.floatingLabelsData[featureId]
-        if (labelData) {
-          for (const label of labelData.floatingLabels) {
-            const labelWidth = measureText(label.text, 11)
-            rightPx = Math.max(rightPx, leftPx + labelWidth)
-          }
-        }
-
-        const featureWidth = rightPx - leftPx
-        const topPx = feature.topPx - scrollY
-        const heightPx = feature.bottomPx - feature.topPx
-
         overlays.push(
           <div
             key={`${key}-${vr.regionNumber}`}
             style={{
               position: 'absolute',
-              left: leftPx,
-              top: topPx,
-              width: featureWidth,
-              height: heightPx,
+              left: rect.leftPx,
+              top: rect.topPx,
+              width: rect.width,
+              height: rect.heightPx,
               backgroundColor: color,
               pointerEvents: 'none',
             }}
@@ -759,26 +764,21 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         if (subfeature.endBp < vr.start || subfeature.startBp > vr.end) {
           continue
         }
-
         const blockBpPerPx =
           (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
         const leftPx =
           vr.screenStartPx + (subfeature.startBp - vr.start) / blockBpPerPx
         const rightPx =
           vr.screenStartPx + (subfeature.endBp - vr.start) / blockBpPerPx
-        const featureWidth = rightPx - leftPx
-        const topPx = subfeature.topPx - scrollY
-        const heightPx = subfeature.bottomPx - subfeature.topPx
-
         overlays.push(
           <div
             key={`${key}-${vr.regionNumber}`}
             style={{
               position: 'absolute',
               left: leftPx,
-              top: topPx,
-              width: featureWidth,
-              height: heightPx,
+              top: subfeature.topPx - scrollY,
+              width: rightPx - leftPx,
+              height: subfeature.bottomPx - subfeature.topPx,
               backgroundColor: color,
               pointerEvents: 'none',
             }}
@@ -798,56 +798,67 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     if (model.selectedFeatureId) {
+      const selId = model.selectedFeatureId
+      let found = false
       for (const vr of visibleRegions) {
         const data = rpcDataMap.get(vr.regionNumber)
         if (!data) {
           continue
         }
-        const feature = data.flatbushItems.find(
-          f => f.featureId === model.selectedFeatureId,
-        )
-        if (!feature) {
-          continue
+        const rect = getFeatureRect(selId, vr, data)
+        if (rect) {
+          found = true
+          overlays.push(
+            <div
+              key={`selected-${vr.regionNumber}`}
+              style={{
+                position: 'absolute',
+                left: rect.leftPx - 2,
+                top: rect.topPx - 2,
+                width: rect.width + 4,
+                height: rect.heightPx + 4,
+                border: '2px solid rgba(0, 100, 255, 0.8)',
+                borderRadius: 3,
+                pointerEvents: 'none',
+              }}
+            />,
+          )
         }
-        if (feature.endBp < vr.start || feature.startBp > vr.end) {
-          continue
-        }
-
-        const blockBpPerPx =
-          (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-        const leftPx =
-          vr.screenStartPx + (feature.startBp - vr.start) / blockBpPerPx
-        let rightPx =
-          vr.screenStartPx + (feature.endBp - vr.start) / blockBpPerPx
-
-        // Expand to include label area
-        const selLabelData = data.floatingLabelsData[model.selectedFeatureId]
-        if (selLabelData) {
-          for (const label of selLabelData.floatingLabels) {
-            const labelWidth = measureText(label.text, 11)
-            rightPx = Math.max(rightPx, leftPx + labelWidth)
+      }
+      if (!found) {
+        for (const vr of visibleRegions) {
+          const data = rpcDataMap.get(vr.regionNumber)
+          if (!data) {
+            continue
+          }
+          const sub = data.subfeatureInfos.find(
+            s => s.featureId === selId,
+          )
+          if (sub && sub.endBp >= vr.start && sub.startBp <= vr.end) {
+            const blockBpPerPx =
+              (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+            const leftPx =
+              vr.screenStartPx + (sub.startBp - vr.start) / blockBpPerPx
+            const rightPx =
+              vr.screenStartPx + (sub.endBp - vr.start) / blockBpPerPx
+            overlays.push(
+              <div
+                key={`selected-${vr.regionNumber}`}
+                style={{
+                  position: 'absolute',
+                  left: leftPx - 2,
+                  top: sub.topPx - scrollY - 2,
+                  width: rightPx - leftPx + 4,
+                  height: sub.bottomPx - sub.topPx + 4,
+                  border: '2px solid rgba(0, 100, 255, 0.8)',
+                  borderRadius: 3,
+                  pointerEvents: 'none',
+                }}
+              />,
+            )
+            break
           }
         }
-
-        const featureWidth = rightPx - leftPx
-        const topPx = feature.topPx - scrollY
-        const heightPx = feature.bottomPx - feature.topPx
-
-        overlays.push(
-          <div
-            key={`selected-${vr.regionNumber}`}
-            style={{
-              position: 'absolute',
-              left: leftPx - 2,
-              top: topPx - 2,
-              width: featureWidth + 4,
-              height: heightPx + 4,
-              border: '2px solid rgba(0, 100, 255, 0.8)',
-              borderRadius: 3,
-              pointerEvents: 'none',
-            }}
-          />,
-        )
       }
     }
 
