@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -18,18 +16,14 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const base = useAlignmentsBase(model, true)
+  const base = useAlignmentsBase(model)
   const {
     canvasRef,
-    rendererRef,
     measureRef,
-    overCigarItem,
     resizeHandleHovered,
     setResizeHandleHovered,
     width,
-    height,
     contrastMap,
-    statusMessage,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
@@ -37,36 +31,9 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
     handleContextMenu,
     processMouseMove,
     processClick,
-    doRender,
-    visibleLabels,
   } = base
 
-  const { showCoverage, coverageHeight, rpcDataMap } = model
-
-  // Upload connecting line data for chain modes
-  useEffect(() => {
-    if (!rendererRef.current) {
-      return
-    }
-    const renderer = rendererRef.current
-    for (const [regionNumber, data] of rpcDataMap) {
-      if (
-        data.connectingLinePositions &&
-        data.connectingLineYs &&
-        data.connectingLineColorTypes &&
-        data.numConnectingLines
-      ) {
-        renderer.uploadConnectingLinesForRegion(regionNumber, {
-          regionStart: data.regionStart,
-          connectingLinePositions: data.connectingLinePositions,
-          connectingLineYs: data.connectingLineYs,
-          connectingLineColorTypes: data.connectingLineColorTypes,
-          numConnectingLines: data.numConnectingLines,
-        })
-      }
-    }
-    doRender()
-  }, [rpcDataMap])
+  const { height, showCoverage, coverageHeight } = model
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
@@ -86,14 +53,7 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
         )
       },
       () => {
-        model.setFeatureIdUnderMouse(undefined)
-        if (model.highlightedFeatureIndex !== -1) {
-          model.setHighlightedFeatureIndex(-1)
-        }
-        if (model.highlightedChainIndices.length > 0) {
-          model.setHighlightedChainIndices([])
-        }
-        model.setMouseoverExtraInformation(undefined)
+        model.clearMouseoverState()
       },
     )
   }
@@ -111,12 +71,7 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
         model.setSelectedChainIndices(chainIndices)
       },
       () => {
-        if (model.selectedFeatureIndex !== -1) {
-          model.setSelectedFeatureIndex(-1)
-        }
-        if (model.selectedChainIndices.length > 0) {
-          model.setSelectedChainIndices([])
-        }
+        model.clearSelection()
       },
     )
   }
@@ -135,7 +90,9 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
           width: width ?? '100%',
           height,
           cursor:
-            model.featureIdUnderMouse || overCigarItem ? 'pointer' : 'default',
+            model.featureIdUnderMouse || model.overCigarItem
+              ? 'pointer'
+              : 'default',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleCanvasMouseMove}
@@ -146,7 +103,7 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
       />
 
       <VisibleLabelsOverlay
-        labels={visibleLabels}
+        labels={model.visibleLabels}
         width={width}
         height={height}
         contrastMap={contrastMap}
@@ -212,7 +169,7 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
       ) : null}
 
       <LoadingOverlay
-        statusMessage={statusMessage}
+        statusMessage={model.statusMessage}
         isVisible={model.showLoading}
       />
     </div>

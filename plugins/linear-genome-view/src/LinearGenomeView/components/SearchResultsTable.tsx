@@ -4,7 +4,6 @@ import {
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
-import { getRoot, resolveIdentifier } from '@jbrowse/mobx-state-tree'
 import {
   Button,
   Paper,
@@ -47,12 +46,7 @@ export default function SearchResultsTable({
   }
 
   function getTrackName(trackId: string | undefined) {
-    if (trackId) {
-      const schema = pluginManager.pluggableConfigSchemaType('track')
-      const configuration = resolveIdentifier(schema, getRoot(model), trackId)
-      return configuration?.name?.value || ''
-    }
-    return ''
+    return trackId !== undefined ? session.getTracksById()[trackId]?.name : ''
   }
   async function handleClick(result: BaseResult) {
     if (result.hasLocation()) {

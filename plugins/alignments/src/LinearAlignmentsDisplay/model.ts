@@ -25,12 +25,16 @@ import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
+import { uploadRegionDataToGPU } from './components/alignmentComponentUtils.ts'
+import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
+import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
+import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
@@ -344,6 +348,9 @@ export default function stateModelFactory(
       visibleModifications: observable.map<string, any>({}),
       simplexModifications: new Set<string>(),
       modificationsReady: false,
+      overCigarItem: false,
+      webglRenderer: null as WebGLRenderer | null,
+      colorPalette: null as ColorPalette | null,
     }))
     .views(self => ({
       /**
@@ -463,7 +470,7 @@ export default function stateModelFactory(
           }
           const width = view.width
           const bpPerPx = view.bpPerPx
-          const blockOffsetPx = first.offsetPx ?? 0
+          const blockOffsetPx = first.offsetPx
           const deltaPx = view.offsetPx - blockOffsetPx
           const deltaBp = deltaPx * bpPerPx
 
@@ -475,7 +482,7 @@ export default function stateModelFactory(
           }
 
           const rangeStart = first.start + deltaBp
-          const blockEndPx = blockOffsetPx + (first.widthPx ?? 0)
+          const blockEndPx = blockOffsetPx + first.widthPx
           const clippedEndPx = Math.min(view.offsetPx + width, blockEndPx)
           const rangeEnd =
             first.start + (clippedEndPx - blockOffsetPx) * bpPerPx
@@ -645,6 +652,32 @@ export default function stateModelFactory(
 
       get legendItems(): LegendItem[] {
         return getReadDisplayLegendItems(self.colorBySetting)
+      },
+    }))
+    .views(self => ({
+      get visibleLabels(): VisibleLabel[] {
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return []
+        }
+        return computeVisibleLabels({
+          rpcData: self.rpcData,
+          labelBpRange: self.visibleBpRange,
+          width: view.width,
+          height: self.height,
+          featureHeightSetting: self.featureHeightSetting,
+          featureSpacing: self.featureSpacing,
+          showMismatches: self.showMismatches,
+          showCoverage: self.showCoverage,
+          coverageHeight: self.coverageHeight,
+          rangeY: self.currentRangeY,
+        })
+      },
+
+      get isChainMode() {
+        return (
+          self.renderingMode === 'cloud' || self.renderingMode === 'linkedRead'
+        )
       },
     }))
     .views(self => ({
@@ -857,6 +890,18 @@ export default function stateModelFactory(
         self.webglRef = ref
       },
 
+      setOverCigarItem(flag: boolean) {
+        self.overCigarItem = flag
+      },
+
+      setWebGLRenderer(renderer: WebGLRenderer | null) {
+        self.webglRenderer = renderer
+      },
+
+      setColorPalette(palette: ColorPalette | null) {
+        self.colorPalette = palette
+      },
+
       setMaxY(y: number) {
         self.maxY = y
         // Auto-resize height based on content
@@ -897,6 +942,27 @@ export default function stateModelFactory(
         }
         if (self.highlightedChainIndices.length > 0) {
           self.highlightedChainIndices = []
+        }
+      },
+
+      clearMouseoverState() {
+        self.featureIdUnderMouse = undefined
+        self.mouseoverExtraInformation = undefined
+        self.overCigarItem = false
+        if (self.highlightedFeatureIndex !== -1) {
+          self.highlightedFeatureIndex = -1
+        }
+        if (self.highlightedChainIndices.length > 0) {
+          self.highlightedChainIndices = []
+        }
+      },
+
+      clearSelection() {
+        if (self.selectedFeatureIndex !== -1) {
+          self.selectedFeatureIndex = -1
+        }
+        if (self.selectedChainIndices.length > 0) {
+          self.selectedChainIndices = []
         }
       },
 
@@ -1358,6 +1424,142 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
+          // Autorun: draw whenever rendering-relevant observables change
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                const palette = self.colorPalette
+                if (!renderer || !palette) {
+                  return
+                }
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const regions = view.visibleRegions
+                const blocks = regions.map(r => ({
+                  regionNumber: r.regionNumber,
+                  bpRangeX: [r.start, r.end] as [number, number],
+                  screenStartPx: r.screenStartPx,
+                  screenEndPx: r.screenEndPx,
+                }))
+                renderer.renderBlocks(blocks, {
+                  rangeY: self.currentRangeY,
+                  colorScheme: self.colorSchemeIndex,
+                  featureHeight: self.featureHeightSetting,
+                  featureSpacing: self.featureSpacing,
+                  showCoverage: self.showCoverage,
+                  coverageHeight: self.coverageHeight,
+                  coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+                  showMismatches: self.showMismatches,
+                  showInterbaseCounts: self.showInterbaseCounts,
+                  showInterbaseIndicators: self.showInterbaseIndicators,
+                  showModifications: self.showModifications,
+                  showSashimiArcs: self.showSashimiArcs,
+                  canvasWidth: view.width,
+                  canvasHeight: self.height,
+                  highlightedFeatureIndex: self.highlightedFeatureIndex,
+                  selectedFeatureIndex: self.selectedFeatureIndex,
+                  highlightedChainIndices: self.highlightedChainIndices,
+                  selectedChainIndices: self.selectedChainIndices,
+                  colors: palette,
+                  renderingMode: self.renderingMode as
+                    | 'pileup'
+                    | 'arcs'
+                    | 'cloud'
+                    | 'linkedRead',
+                  arcLineWidth: self.arcsState.lineWidth,
+                  cloudColorScheme: self.colorSchemeIndex,
+                  bpRangeX: [0, 0],
+                })
+              },
+              { name: 'LinearAlignmentsDisplay:draw' },
+            ),
+          )
+
+          // Autorun: upload pileup data to GPU when rpcDataMap changes
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer) {
+                  return
+                }
+                const maxYVal = uploadRegionDataToGPU(
+                  renderer,
+                  self.rpcDataMap,
+                  self.showCoverage,
+                )
+                if (maxYVal > 0) {
+                  self.setMaxY(maxYVal)
+                }
+              },
+              { name: 'LinearAlignmentsDisplay:uploadPileupData' },
+            ),
+          )
+
+          // Autorun: upload arcs data to GPU
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer) {
+                  return
+                }
+                const arcsRpcDataMap = self.arcsState.rpcDataMap
+                for (const [regionNumber, data] of arcsRpcDataMap) {
+                  renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
+                    regionStart: data.regionStart,
+                    arcX1: data.arcX1,
+                    arcX2: data.arcX2,
+                    arcColorTypes: data.arcColorTypes,
+                    arcIsArc: data.arcIsArc,
+                    numArcs: data.numArcs,
+                    linePositions: data.linePositions,
+                    lineYs: data.lineYs,
+                    lineColorTypes: data.lineColorTypes,
+                    numLines: data.numLines,
+                  })
+                }
+              },
+              { name: 'LinearAlignmentsDisplay:uploadArcsData' },
+            ),
+          )
+
+          // Autorun: upload connecting line data for chain modes
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer) {
+                  return
+                }
+                for (const [regionNumber, data] of self.rpcDataMap) {
+                  if (
+                    data.connectingLinePositions &&
+                    data.connectingLineYs &&
+                    data.connectingLineColorTypes &&
+                    data.numConnectingLines
+                  ) {
+                    renderer.uploadConnectingLinesForRegion(regionNumber, {
+                      regionStart: data.regionStart,
+                      connectingLinePositions: data.connectingLinePositions,
+                      connectingLineYs: data.connectingLineYs,
+                      connectingLineColorTypes: data.connectingLineColorTypes,
+                      numConnectingLines: data.numConnectingLines,
+                    })
+                  }
+                }
+              },
+              { name: 'LinearAlignmentsDisplay:uploadChainData' },
+            ),
+          )
+
           // Autorun: drives all data fetching. Tracks visibleRegions and
           // fetchToken (fires when anything invalidates data: reload,
           // filter change, colorBy change, etc.)

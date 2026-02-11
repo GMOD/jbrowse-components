@@ -2,10 +2,10 @@ import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
 import { readCachedConfig } from './renderConfig.ts'
 
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { RenderConfigContext } from './renderConfig.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { Theme } from '@mui/material'
 
 const MAX_LABEL_LENGTH = 50
 const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i

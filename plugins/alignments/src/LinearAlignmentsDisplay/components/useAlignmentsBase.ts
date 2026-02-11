@@ -1,13 +1,9 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
 
-import { getContrastBaseMap } from '../../shared/util.ts'
-import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
-import { getCoordinator, removeCoordinator } from './ViewCoordinator.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import {
   buildColorPaletteFromTheme,
@@ -16,20 +12,20 @@ import {
   formatIndicatorTooltip,
   formatSashimiTooltip,
   getCanvasCoords,
-  uploadRegionDataToGPU,
 } from './alignmentComponentUtils.ts'
-import { computeVisibleLabels } from './computeVisibleLabels.ts'
 import { performHitTest } from './hitTestPipeline.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
   openIndicatorWidget,
 } from './openFeatureWidget.ts'
+import { getContrastBaseMap } from '../../shared/util.ts'
 
 import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
+import type { ColorPalette } from './WebGLRenderer.ts'
+import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type { ResolvedBlock } from './hitTesting.ts'
-import type { WebGLArcsDataResult } from '../../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type {
   LegendItem,
@@ -47,41 +43,22 @@ interface FeatureInfo {
   refName: string
 }
 
-interface VisibleRegionBlock {
-  refName: string
-  regionNumber: number
-  start: number
-  end: number
-  assemblyName: string
-  screenStartPx: number
-  screenEndPx: number
-}
-
 export interface LinearAlignmentsDisplayModel {
   height: number
-  rpcData: WebGLPileupDataResult | null
   rpcDataMap: Map<number, WebGLPileupDataResult>
   loadedRegion: { refName: string; start: number; end: number } | null
-  loadedRegions: Map<number, { refName: string; start: number; end: number }>
-  visibleRegions: VisibleRegionBlock[]
-  visibleBpRange: [number, number] | null
   showLoading: boolean
   statusMessage?: string
   error: Error | null
   featureHeightSetting: number
   featureSpacing: number
-  colorSchemeIndex: number
   showCoverage: boolean
   coverageHeight: number
-  showMismatches: boolean
-  showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
-  showModifications: boolean
   showSashimiArcs: boolean
   maxY: number
   regionTooLarge: boolean
   regionTooLargeReason: string
-  featureDensityStats?: { bytes?: number; featureDensity?: number }
   setFeatureDensityStatsLimit: (s?: unknown) => void
   reload: () => void
   featureIdUnderMouse: string | undefined
@@ -95,7 +72,12 @@ export interface LinearAlignmentsDisplayModel {
   highlightedChainIndices: number[]
   selectedChainIndices: number[]
   chainIndexMap: Map<string, number[]>
-  setMaxY: (y: number) => void
+  overCigarItem: boolean
+  visibleLabels: VisibleLabel[]
+  isChainMode: boolean
+  setOverCigarItem: (flag: boolean) => void
+  setWebGLRenderer: (renderer: WebGLRenderer | null) => void
+  setColorPalette: (palette: ColorPalette | null) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setHighlightedFeatureIndex: (index: number) => void
@@ -103,16 +85,13 @@ export interface LinearAlignmentsDisplayModel {
   setHighlightedChainIndices: (indices: number[]) => void
   setSelectedChainIndices: (indices: number[]) => void
   clearHighlights: () => void
+  clearMouseoverState: () => void
+  clearSelection: () => void
   setFeatureIdUnderMouse: (id: string | undefined) => void
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (featureId: string) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
   renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
-  arcsState: {
-    rpcData: WebGLArcsDataResult | null
-    rpcDataMap: Map<number, WebGLArcsDataResult>
-    lineWidth: number
-  }
 }
 
 export interface FeatureHit {
@@ -120,16 +99,9 @@ export interface FeatureHit {
   index: number
 }
 
-export function useAlignmentsBase(
-  model: LinearAlignmentsDisplayModel,
-  isChainMode: boolean,
-) {
+export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGLRenderer | null>(null)
-  const canvasId = useId()
   const [measureRef, measuredDims] = useMeasure()
-
-  const [overCigarItem, setOverCigarItem] = useState(false)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
@@ -148,70 +120,28 @@ export function useAlignmentsBase(
   const contrastMap = useMemo(() => getContrastBaseMap(theme), [theme])
 
   const {
-    rpcData,
-    rpcDataMap,
-    statusMessage,
     featureHeightSetting,
     featureSpacing,
     showCoverage,
     coverageHeight,
-    showMismatches,
     showInterbaseIndicators,
     showSashimiArcs,
+    isChainMode,
   } = model
 
   const width =
-    measuredDims.width ?? (view?.initialized ? view.width : undefined)
-  const height = model.height
+    measuredDims.width ?? (view.initialized ? view.width : undefined)
 
-  const colorPaletteRef = useRef(colorPalette)
-  colorPaletteRef.current = colorPalette
   const viewRef = useRef(view)
-  viewRef.current = view
   const widthRef = useRef(width)
-  widthRef.current = width
 
-  function doRender() {
-    const renderer = rendererRef.current
-    if (!renderer || !view?.initialized) {
-      return
-    }
-    const regions = view.visibleRegions
-    const blocks = regions.map(r => ({
-      regionNumber: r.regionNumber,
-      bpRangeX: [r.start, r.end] as [number, number],
-      screenStartPx: r.screenStartPx,
-      screenEndPx: r.screenEndPx,
-    }))
-    renderer.renderBlocks(blocks, {
-      rangeY: model.currentRangeY,
-      colorScheme: model.colorSchemeIndex,
-      featureHeight: model.featureHeightSetting,
-      featureSpacing: model.featureSpacing,
-      showCoverage: model.showCoverage,
-      coverageHeight: model.coverageHeight,
-      coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-      showMismatches: model.showMismatches,
-      showInterbaseCounts: model.showInterbaseCounts,
-      showInterbaseIndicators: model.showInterbaseIndicators,
-      showModifications: model.showModifications,
-      showSashimiArcs: model.showSashimiArcs,
-      canvasWidth: view.width,
-      canvasHeight: model.height,
-      highlightedFeatureIndex: model.highlightedFeatureIndex,
-      selectedFeatureIndex: model.selectedFeatureIndex,
-      highlightedChainIndices: model.highlightedChainIndices,
-      selectedChainIndices: model.selectedChainIndices,
-      colors: colorPaletteRef.current,
-      renderingMode: model.renderingMode,
-      arcLineWidth: model.arcsState.lineWidth,
-      cloudColorScheme: model.colorSchemeIndex,
-      bpRangeX: [0, 0],
-    })
-  }
+  useEffect(() => {
+    viewRef.current = view
+    widthRef.current = width
+  })
 
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
-    if (!view?.initialized) {
+    if (!view.initialized) {
       return undefined
     }
 
@@ -248,7 +178,7 @@ export function useAlignmentsBase(
     }
     e.stopPropagation()
 
-    if (!view || width === undefined) {
+    if (width === undefined) {
       return
     }
 
@@ -256,8 +186,8 @@ export function useAlignmentsBase(
     dragRef.current.lastX = e.clientX
 
     if (dx !== 0) {
-      const minOffset = view.minOffset ?? 0
-      const maxOffset = view.maxOffset ?? Infinity
+      const minOffset = view.minOffset
+      const maxOffset = view.maxOffset
       const newOffsetPx = Math.max(
         minOffset,
         Math.min(maxOffset, view.offsetPx - dx),
@@ -272,10 +202,7 @@ export function useAlignmentsBase(
 
   function handleMouseLeave() {
     dragRef.current.isDragging = false
-    model.setFeatureIdUnderMouse(undefined)
-    model.setMouseoverExtraInformation(undefined)
-    setOverCigarItem(false)
-    model.clearHighlights()
+    model.clearMouseoverState()
   }
 
   function handleResizeMouseDown(e: React.MouseEvent) {
@@ -313,7 +240,6 @@ export function useAlignmentsBase(
     }
 
     const resolved = resolveBlockForCanvasX(coords.canvasX)
-
     const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
       showCoverage,
       showInterbaseIndicators,
@@ -327,7 +253,6 @@ export function useAlignmentsBase(
 
     if (result.type === 'feature') {
       e.preventDefault()
-      // TODO: implement proper context menu
       model.selectFeatureById(result.hit.id)
     }
   }
@@ -348,11 +273,9 @@ export function useAlignmentsBase(
     if (!coords) {
       return
     }
-    const { canvasX, canvasY } = coords
 
-    const resolved = resolveBlockForCanvasX(canvasX)
-
-    const result = performHitTest(canvasX, canvasY, resolved, {
+    const resolved = resolveBlockForCanvasX(coords.canvasX)
+    const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
       showCoverage,
       showInterbaseIndicators,
       showSashimiArcs,
@@ -364,7 +287,7 @@ export function useAlignmentsBase(
     })
 
     if (result.type === 'indicator') {
-      setOverCigarItem(true)
+      model.setOverCigarItem(true)
       model.setFeatureIdUnderMouse(undefined)
       model.setMouseoverExtraInformation(
         formatIndicatorTooltip(
@@ -378,7 +301,7 @@ export function useAlignmentsBase(
     }
 
     if (result.type === 'sashimi') {
-      setOverCigarItem(true)
+      model.setOverCigarItem(true)
       model.setFeatureIdUnderMouse(undefined)
       model.setMouseoverExtraInformation(formatSashimiTooltip(result.hit))
       model.clearHighlights()
@@ -386,7 +309,7 @@ export function useAlignmentsBase(
     }
 
     if (result.type === 'coverage') {
-      setOverCigarItem(true)
+      model.setOverCigarItem(true)
       model.setFeatureIdUnderMouse(undefined)
       model.setMouseoverExtraInformation(
         formatCoverageTooltip(
@@ -400,7 +323,7 @@ export function useAlignmentsBase(
     }
 
     if (result.type === 'cigar') {
-      setOverCigarItem(true)
+      model.setOverCigarItem(true)
       model.setMouseoverExtraInformation(formatCigarTooltip(result.hit))
       const featureId = result.featureHit?.id
       const featureIndex = result.featureHit?.index ?? -1
@@ -411,7 +334,7 @@ export function useAlignmentsBase(
       return
     }
 
-    setOverCigarItem(false)
+    model.setOverCigarItem(false)
 
     if (result.type === 'feature') {
       onFeature(result.hit, result.resolved)
@@ -445,22 +368,19 @@ export function useAlignmentsBase(
     })
 
     if (result.type === 'indicator') {
-      const refName =
-        result.resolved.refName ?? model.loadedRegion?.refName ?? ''
+      const refName = result.resolved.refName
       openIndicatorWidget(model, result.hit, refName, result.resolved.rpcData)
       return
     }
 
     if (result.type === 'coverage') {
-      const refName =
-        result.resolved.refName ?? model.loadedRegion?.refName ?? ''
+      const refName = result.resolved.refName
       openCoverageWidget(model, result.hit, refName, result.resolved.rpcData)
       return
     }
 
     if (result.type === 'cigar') {
-      const refName =
-        result.resolved.refName ?? model.loadedRegion?.refName ?? ''
+      const refName = result.resolved.refName
       if (result.featureHit) {
         model.setSelectedFeatureIndex(result.featureHit.index)
       }
@@ -477,71 +397,29 @@ export function useAlignmentsBase(
 
   // --- Effects ---
 
-  // Initialize WebGL renderer (DOM lifecycle)
+  // Initialize WebGL renderer and wire it to the model
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
       return
     }
+    let renderer: WebGLRenderer | null = null
     try {
-      rendererRef.current = new WebGLRenderer(canvas)
+      renderer = new WebGLRenderer(canvas)
+      model.setWebGLRenderer(renderer)
     } catch (e) {
       console.error('Failed to initialize WebGL:', e)
     }
     return () => {
-      rendererRef.current?.destroy()
-      rendererRef.current = null
+      renderer?.destroy()
+      model.setWebGLRenderer(null)
     }
-  }, [])
+  }, [model])
 
-  // Coordinator subscription for cross-canvas sync
+  // Sync theme-derived color palette to model
   useEffect(() => {
-    const viewId = view.id
-    if (!viewId) {
-      return
-    }
-    const coordinator = getCoordinator(viewId)
-    const unsubscribe = coordinator.subscribe(canvasId, () => {
-      doRender()
-    })
-    return () => {
-      unsubscribe()
-      if (coordinator.listenerCount === 0) {
-        removeCoordinator(viewId)
-      }
-    }
-  }, [view.id, canvasId])
-
-  // Single render autorun: tracks all relevant MobX observables and renders
-  useEffect(() => {
-    if (!view) {
-      return
-    }
-    const dispose = autorun(
-      () => {
-        doRender()
-      },
-      { name: 'WebGLAlignmentsComponent:render' },
-    )
-    return dispose
-  }, [view, model])
-
-  // Upload pileup data to GPU
-  useEffect(() => {
-    if (!rendererRef.current) {
-      return
-    }
-    const maxYVal = uploadRegionDataToGPU(
-      rendererRef.current,
-      rpcDataMap,
-      showCoverage,
-    )
-    if (maxYVal > 0) {
-      model.setMaxY(maxYVal)
-    }
-    doRender()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rpcDataMap, showCoverage])
+    model.setColorPalette(colorPalette)
+  }, [model, colorPalette])
 
   // Wheel handler (needs passive:false, must use addEventListener)
   useEffect(() => {
@@ -554,7 +432,7 @@ export function useAlignmentsBase(
       const v = viewRef.current
       const w = widthRef.current
 
-      if (!v?.initialized || w === undefined) {
+      if (!v.initialized || w === undefined) {
         return
       }
 
@@ -564,8 +442,8 @@ export function useAlignmentsBase(
       if (absX > 5 && absX > absY * 2) {
         e.preventDefault()
         e.stopPropagation()
-        const minOff = v.minOffset ?? 0
-        const maxOff = v.maxOffset ?? Infinity
+        const minOff = v.minOffset
+        const maxOff = v.maxOffset
         const newOffsetPx = Math.max(
           minOff,
           Math.min(maxOff, v.offsetPx + e.deltaX),
@@ -604,33 +482,13 @@ export function useAlignmentsBase(
     }
   }, [model])
 
-  // --- Derived state ---
-
-  const visibleLabels = computeVisibleLabels({
-    rpcData,
-    labelBpRange: model.visibleBpRange,
-    width,
-    height,
-    featureHeightSetting,
-    featureSpacing,
-    showMismatches,
-    showCoverage,
-    coverageHeight,
-    rangeY: model.currentRangeY,
-  })
-
   return {
     canvasRef,
-    rendererRef,
     measureRef,
-    overCigarItem,
     resizeHandleHovered,
     setResizeHandleHovered,
-    view,
     width,
-    height,
     contrastMap,
-    statusMessage,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
@@ -638,7 +496,5 @@ export function useAlignmentsBase(
     handleContextMenu,
     processMouseMove,
     processClick,
-    doRender,
-    visibleLabels,
   }
 }

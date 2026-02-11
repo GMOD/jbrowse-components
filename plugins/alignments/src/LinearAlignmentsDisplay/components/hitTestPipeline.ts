@@ -33,7 +33,7 @@ export type HitTestResult =
     }
   | { type: 'none' }
 
-interface HitTestOptions {
+export interface HitTestOptions {
   showCoverage: boolean
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
@@ -117,16 +117,15 @@ export function performHitTest(
       : undefined
   if (cigarHit && resolved) {
     // Also get the feature hit for the underlying read
-    const featureHit =
-      resolved && coords
-        ? hitTestFeatureFn(
-            canvasX,
-            canvasY,
-            resolved,
-            coords,
-            featureHeightSetting,
-          )
-        : undefined
+    const featureHit = coords
+      ? hitTestFeatureFn(
+          canvasX,
+          canvasY,
+          resolved,
+          coords,
+          featureHeightSetting,
+        )
+      : undefined
     return {
       type: 'cigar',
       hit: cigarHit,

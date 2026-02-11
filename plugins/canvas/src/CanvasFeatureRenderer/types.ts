@@ -3,7 +3,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, LastStopTokenCheck, Region } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
-import type { Theme } from '@mui/material'
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 
 export interface SequenceData {
   seq: string

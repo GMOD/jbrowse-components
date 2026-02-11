@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
@@ -15,18 +13,14 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const base = useAlignmentsBase(model, false)
+  const base = useAlignmentsBase(model)
   const {
     canvasRef,
-    rendererRef,
     measureRef,
-    overCigarItem,
     resizeHandleHovered,
     setResizeHandleHovered,
     width,
-    height,
     contrastMap,
-    statusMessage,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
@@ -34,53 +28,16 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
     handleContextMenu,
     processMouseMove,
     processClick,
-    doRender,
-    visibleLabels,
   } = base
 
-  const { showCoverage, coverageHeight } = model
+  const { height, showCoverage, coverageHeight } = model
 
-  // Upload arcs data to GPU
-  const arcsRpcDataMap = model.arcsState.rpcDataMap
-  useEffect(() => {
-    if (!rendererRef.current) {
-      return
-    }
-    const renderer = rendererRef.current
-    for (const [regionNumber, data] of arcsRpcDataMap) {
-      renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
-        regionStart: data.regionStart,
-        arcX1: data.arcX1,
-        arcX2: data.arcX2,
-        arcColorTypes: data.arcColorTypes,
-        arcIsArc: data.arcIsArc,
-        numArcs: data.numArcs,
-        linePositions: data.linePositions,
-        lineYs: data.lineYs,
-        lineColorTypes: data.lineColorTypes,
-        numLines: data.numLines,
-      })
-    }
-    doRender()
-  }, [arcsRpcDataMap])
-
-  // Read arc mouseover disabled - arc hit detection is complex and
-  // tooltips are not critical for this feature type
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
       e,
+      () => {},
       () => {
-        // No tooltip for read arc hits
-      },
-      () => {
-        model.setFeatureIdUnderMouse(undefined)
-        if (model.highlightedFeatureIndex !== -1) {
-          model.setHighlightedFeatureIndex(-1)
-        }
-        if (model.highlightedChainIndices.length > 0) {
-          model.setHighlightedChainIndices([])
-        }
-        model.setMouseoverExtraInformation(undefined)
+        model.clearMouseoverState()
       },
     )
   }
@@ -93,12 +50,7 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
         model.selectFeatureById(hit.id)
       },
       () => {
-        if (model.selectedFeatureIndex !== -1) {
-          model.setSelectedFeatureIndex(-1)
-        }
-        if (model.selectedChainIndices.length > 0) {
-          model.setSelectedChainIndices([])
-        }
+        model.clearSelection()
       },
     )
   }
@@ -117,7 +69,9 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
           width: width ?? '100%',
           height,
           cursor:
-            model.featureIdUnderMouse || overCigarItem ? 'pointer' : 'default',
+            model.featureIdUnderMouse || model.overCigarItem
+              ? 'pointer'
+              : 'default',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleCanvasMouseMove}
@@ -128,7 +82,7 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
       />
 
       <VisibleLabelsOverlay
-        labels={visibleLabels}
+        labels={model.visibleLabels}
         width={width}
         height={height}
         contrastMap={contrastMap}
@@ -175,7 +129,7 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
       ) : null}
 
       <LoadingOverlay
-        statusMessage={statusMessage}
+        statusMessage={model.statusMessage}
         isVisible={model.showLoading}
       />
     </div>

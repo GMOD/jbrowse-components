@@ -14,17 +14,14 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const base = useAlignmentsBase(model, false)
+  const base = useAlignmentsBase(model)
   const {
     canvasRef,
     measureRef,
-    overCigarItem,
     resizeHandleHovered,
     setResizeHandleHovered,
     width,
-    height,
     contrastMap,
-    statusMessage,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
@@ -32,10 +29,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     handleContextMenu,
     processMouseMove,
     processClick,
-    visibleLabels,
   } = base
 
-  const { showCoverage, coverageHeight } = model
+  const { height, showCoverage, coverageHeight } = model
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
@@ -53,14 +49,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         )
       },
       () => {
-        model.setFeatureIdUnderMouse(undefined)
-        if (model.highlightedFeatureIndex !== -1) {
-          model.setHighlightedFeatureIndex(-1)
-        }
-        if (model.highlightedChainIndices.length > 0) {
-          model.setHighlightedChainIndices([])
-        }
-        model.setMouseoverExtraInformation(undefined)
+        model.clearMouseoverState()
       },
     )
   }
@@ -73,12 +62,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         model.selectFeatureById(hit.id)
       },
       () => {
-        if (model.selectedFeatureIndex !== -1) {
-          model.setSelectedFeatureIndex(-1)
-        }
-        if (model.selectedChainIndices.length > 0) {
-          model.setSelectedChainIndices([])
-        }
+        model.clearSelection()
       },
     )
   }
@@ -97,7 +81,9 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           width: width ?? '100%',
           height,
           cursor:
-            model.featureIdUnderMouse || overCigarItem ? 'pointer' : 'default',
+            model.featureIdUnderMouse || model.overCigarItem
+              ? 'pointer'
+              : 'default',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleCanvasMouseMove}
@@ -108,7 +94,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       />
 
       <VisibleLabelsOverlay
-        labels={visibleLabels}
+        labels={model.visibleLabels}
         width={width}
         height={height}
         contrastMap={contrastMap}
@@ -155,7 +141,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       ) : null}
 
       <LoadingOverlay
-        statusMessage={statusMessage}
+        statusMessage={model.statusMessage}
         isVisible={model.showLoading}
       />
     </div>

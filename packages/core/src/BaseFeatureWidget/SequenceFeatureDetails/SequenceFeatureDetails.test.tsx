@@ -7,6 +7,10 @@ import { SequenceFeatureDetailsF } from './model.ts'
 import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
 
+afterEach(() => {
+  localStorage.clear()
+})
+
 const f = {
   start: 1200,
   end: 1500,
