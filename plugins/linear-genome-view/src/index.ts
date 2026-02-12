@@ -114,6 +114,7 @@ export {
   RefNameAutocomplete,
   SearchBox,
 } from './LinearGenomeView/index.ts'
+export { fetchResults } from './searchUtils.ts'
 export type {
   BpOffset,
   ExportSvgOptions,
