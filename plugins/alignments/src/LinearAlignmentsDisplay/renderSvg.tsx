@@ -1,5 +1,6 @@
 import type React from 'react'
 
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
@@ -13,18 +14,11 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-// Base colors for SNPs (matching theme defaults)
-const BASE_COLORS: Record<string, string> = {
-  A: '#00bf00',
-  C: '#4747ff',
-  G: '#ffa500',
-  T: '#f00',
-}
-
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
-  _opts?: ExportSvgDisplayOptions,
+  opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
+  const theme = createJBrowseTheme(opts?.theme)
   const view = getContainingView(model) as LGV
   const { offsetPx } = view
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -85,7 +79,11 @@ export async function renderSvg(
     const barHeight = normalizedDepth * effectiveHeight
     const y = coverageHeight - offset - barHeight
 
-    content += `<rect x="${x}" y="${y}" width="${w}" height="${barHeight}" fill="#ccc"/>`
+    const coverageColor =
+      theme.palette.mode === 'dark'
+        ? theme.palette.grey[700]
+        : theme.palette.grey[400]
+    content += `<rect x="${x}" y="${y}" width="${w}" height="${barHeight}" fill="${coverageColor}"/>`
   }
 
   // Draw SNP coverage bars on top
@@ -117,13 +115,16 @@ export async function renderSvg(
     const barH = segHeight * effectiveHeight
 
     const baseName = baseNames[colorType - 1]
-    const fillColor = baseName ? BASE_COLORS[baseName] : '#888'
+    const fillColor = baseName
+      ? theme.palette.bases[baseName as 'A' | 'C' | 'G' | 'T'].main
+      : theme.palette.grey[600]
 
     content += `<rect x="${x}" y="${barY}" width="${w}" height="${barH}" fill="${fillColor}"/>`
   }
 
   // Draw separator line at bottom of coverage area
-  content += `<line x1="0" y1="${coverageHeight}" x2="${width}" y2="${coverageHeight}" stroke="#aaa" stroke-width="1"/>`
+  const separatorColor = theme.palette.grey[500]
+  content += `<line x1="0" y1="${coverageHeight}" x2="${width}" y2="${coverageHeight}" stroke="${separatorColor}" stroke-width="1"/>`
 
   return (
     <>

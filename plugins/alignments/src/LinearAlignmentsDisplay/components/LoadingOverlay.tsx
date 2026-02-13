@@ -1,15 +1,15 @@
 import { cx, keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    backgroundImage:
-      'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.15),
+    backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 8px, ${alpha(theme.palette.text.primary, 0.05)} 8px, ${alpha(theme.palette.text.primary, 0.05)} 16px)`,
     pointerEvents: 'none',
     zIndex: 1,
     display: 'flex',
@@ -37,7 +37,7 @@ const useStyles = makeStyles()({
       `} 1.2s infinite ease-in-out`,
     },
   },
-})
+}))
 
 export default function LoadingOverlay({
   statusMessage,

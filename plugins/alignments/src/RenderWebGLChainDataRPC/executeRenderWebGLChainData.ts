@@ -113,11 +113,13 @@ function getColorType(f: ChainFeatureData, stats?: ChainStats) {
   }
 }
 
-// Pileup layout for linkedRead mode — layouts chains by their overall bounds
-function computeChainLayout(chains: { minStart: number; maxEnd: number }[]) {
+// Pileup layout for linkedRead mode — layouts chains by their length (smallest first)
+function computeChainLayout(
+  chains: { minStart: number; maxEnd: number; distance: number }[],
+) {
   const sorted = chains
     .map((c, i) => ({ ...c, idx: i }))
-    .sort((a, b) => a.minStart - b.minStart)
+    .sort((a, b) => a.distance - b.distance)
   const levels: number[] = []
   const layoutMap = new Map<number, number>()
 

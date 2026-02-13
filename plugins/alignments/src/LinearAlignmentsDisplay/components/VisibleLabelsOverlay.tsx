@@ -1,3 +1,4 @@
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
@@ -9,21 +10,24 @@ interface VisibleLabelsOverlayProps {
   contrastMap: Record<string, string>
 }
 
-const interbaseColorMap: Record<string, string> = {
-  insertion: '#800080',
-  softclip: '#0000ff',
-  hardclip: '#ff0000',
-}
-
 const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   labels,
   width,
   height,
   contrastMap,
 }: VisibleLabelsOverlayProps) {
+  const theme = useTheme()
+
   if (labels.length === 0) {
     return null
   }
+
+  const interbaseColorMap: Record<string, string> = {
+    insertion: theme.palette.insertion,
+    softclip: theme.palette.softclip,
+    hardclip: theme.palette.hardclip,
+  }
+
   return (
     <svg
       style={{
@@ -42,11 +46,11 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
             label.type === 'softclip' ||
             label.type === 'hardclip') &&
           label.text.startsWith('(')
-        let fillColor = '#fff'
+        let fillColor = theme.palette.common.white
         if (isSmallInterbase) {
-          fillColor = interbaseColorMap[label.type] ?? '#800080'
+          fillColor = interbaseColorMap[label.type]!
         } else if (label.type === 'mismatch') {
-          fillColor = contrastMap[label.text] ?? '#fff'
+          fillColor = contrastMap[label.text]!
         }
         return (
           <text

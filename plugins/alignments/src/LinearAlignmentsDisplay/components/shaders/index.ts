@@ -33,7 +33,6 @@ export {
   CONNECTING_LINE_VERTEX_SHADER,
 } from './connectingLineShaders.ts'
 export type { ColorPalette, RGBColor } from './colors.ts'
-export { defaultColorPalette } from './colors.ts'
 export {
   COVERAGE_FRAGMENT_SHADER,
   COVERAGE_VERTEX_SHADER,

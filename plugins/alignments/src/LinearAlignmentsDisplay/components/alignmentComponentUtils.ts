@@ -50,8 +50,10 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorSkip: toRgb(palette.skip),
     colorSoftclip: toRgb(palette.softclip),
     colorHardclip: toRgb(palette.hardclip),
-    // Coverage color (light grey)
-    colorCoverage: toRgb('#cccccc'),
+    // Coverage color from theme grey palette
+    colorCoverage: toRgb(
+      palette.mode === 'dark' ? palette.grey[700] : palette.grey[400],
+    ),
     // Modification mode read colors
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),

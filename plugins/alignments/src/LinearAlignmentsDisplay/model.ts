@@ -20,6 +20,10 @@ import {
   TooLargeMessage,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
@@ -38,7 +42,7 @@ import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
-import type { ColorBy, FilterBy } from '../shared/types'
+import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -157,6 +161,16 @@ const ColorByTagDialog = lazy(
 const SetFeatureHeightDialog = lazy(
   () => import('../shared/components/SetFeatureHeightDialog.tsx'),
 )
+const SortByTagDialog = lazy(
+  () => import('./components/SortByTagDialog.tsx'),
+)
+const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
+const FilterByTagDialog = lazy(
+  () => import('../shared/components/FilterByTagDialog.tsx'),
+)
+const SetMaxHeightDialog = lazy(
+  () => import('../shared/components/SetMaxHeightDialog.tsx'),
+)
 
 export const ColorScheme = {
   normal: 0,
@@ -263,6 +277,22 @@ export default function stateModelFactory(
          * #property
          */
         cloudState: types.optional(CloudSubModel, {}),
+        /**
+         * #property
+         */
+        showSoftClipping: false,
+        /**
+         * #property
+         */
+        mismatchAlpha: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        sortedBySetting: types.frozen<SortedBy | undefined>(),
+        /**
+         * #property
+         */
+        trackMaxHeight: types.maybe(types.number),
         /**
          * #property
          * For backwards compatibility: migration from old LinearSNPCoverageDisplay
@@ -410,7 +440,7 @@ export default function stateModelFactory(
       },
 
       get maxHeight(): number {
-        return getConf(self, 'maxHeight') ?? 1200
+        return self.trackMaxHeight ?? getConf(self, 'maxHeight') ?? 1200
       },
 
       /**
@@ -588,7 +618,7 @@ export default function stateModelFactory(
       },
 
       get sortedBy() {
-        return undefined
+        return self.sortedBySetting
       },
 
       get coverageTicks(): CoverageTicks | undefined {
@@ -984,16 +1014,16 @@ export default function stateModelFactory(
 
       updateColorTagMap(uniqueTag: string[]) {
         const colorPalette = [
-          '#BBCCEE',
-          'pink',
-          '#CCDDAA',
-          '#EEEEBB',
-          '#FFCCCC',
-          'lightblue',
-          'lightgreen',
-          'tan',
-          '#CCEEFF',
-          'lightsalmon',
+          '#90caf9',
+          '#f48fb1',
+          '#a5d6a7',
+          '#fff59d',
+          '#ffab91',
+          '#ce93d8',
+          '#80deea',
+          '#c5e1a5',
+          '#ffe082',
+          '#bcaaa4',
         ]
         const map = { ...self.colorTagMap }
         for (const value of uniqueTag) {
@@ -1007,6 +1037,56 @@ export default function stateModelFactory(
 
       setFilterBy(filterBy: FilterBy) {
         self.filterBySetting = filterBy
+      },
+
+      toggleSoftClipping() {
+        self.showSoftClipping = !self.showSoftClipping
+      },
+
+      toggleMismatchAlpha() {
+        self.mismatchAlpha = !self.mismatchAlpha
+      },
+
+      setSortedBy(type: string, tag?: string) {
+        const view = getContainingView(self) as LGV
+        const { centerLineInfo } = view
+        if (!centerLineInfo) {
+          return
+        }
+        const { refName, assemblyName, offset } = centerLineInfo
+        const centerBp = Math.round(offset) + 1
+        if (centerBp < 0 || !refName) {
+          return
+        }
+        self.sortedBySetting = {
+          type,
+          pos: centerBp,
+          refName,
+          assemblyName,
+          tag,
+        }
+      },
+
+      setSortedByAtPosition(type: string, pos: number, refName: string) {
+        const view = getContainingView(self) as LGV
+        const assemblyName = view.assemblyNames[0]
+        if (!assemblyName) {
+          return
+        }
+        self.sortedBySetting = {
+          type,
+          pos: pos + 1,
+          refName,
+          assemblyName,
+        }
+      },
+
+      clearSelected() {
+        self.sortedBySetting = undefined
+      },
+
+      setMaxHeight(n?: number) {
+        self.trackMaxHeight = n
       },
 
       setFeatureHeight(height?: number) {
@@ -1770,6 +1850,22 @@ export default function stateModelFactory(
               },
             },
             {
+              label: 'Per-base quality',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'perBaseQuality',
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseQuality' })
+              },
+            },
+            {
+              label: 'Per-base lettering',
+              type: 'radio' as const,
+              checked: self.colorBy.type === 'perBaseLettering',
+              onClick: () => {
+                self.setColorScheme({ type: 'perBaseLettering' })
+              },
+            },
+            {
               label: 'Insert size',
               type: 'radio' as const,
               checked: self.colorBy.type === 'insertSize',
@@ -1822,22 +1918,6 @@ export default function stateModelFactory(
           ],
         }
 
-        const coverageItem = {
-          label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
-          onClick: () => {
-            self.setShowCoverage(!self.showCoverage)
-          },
-        }
-
-        const sashimiItem = {
-          label: self.showSashimiArcs
-            ? 'Hide sashimi arcs'
-            : 'Show sashimi arcs',
-          onClick: () => {
-            self.setShowSashimiArcs(!self.showSashimiArcs)
-          },
-        }
-
         const featureHeightMenu = {
           label: 'Set feature height...',
           type: 'subMenu' as const,
@@ -1887,34 +1967,158 @@ export default function stateModelFactory(
           ],
         }
 
+        const showSubMenu = {
+          label: 'Show...',
+          icon: VisibilityIcon,
+          subMenu: [
+            {
+              label: 'Show soft clipping',
+              type: 'checkbox' as const,
+              checked: self.showSoftClipping,
+              onClick: () => {
+                self.toggleSoftClipping()
+              },
+            },
+            {
+              label: 'Show mismatches faded by quality',
+              type: 'checkbox' as const,
+              checked: !!self.mismatchAlpha,
+              onClick: () => {
+                self.toggleMismatchAlpha()
+              },
+            },
+            {
+              label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
+              type: 'checkbox' as const,
+              checked: self.showCoverage,
+              onClick: () => {
+                self.setShowCoverage(!self.showCoverage)
+              },
+            },
+            {
+              label: self.showSashimiArcs
+                ? 'Hide sashimi arcs'
+                : 'Show sashimi arcs',
+              type: 'checkbox' as const,
+              checked: self.showSashimiArcs,
+              onClick: () => {
+                self.setShowSashimiArcs(!self.showSashimiArcs)
+              },
+            },
+            {
+              label: self.showMismatches
+                ? 'Hide mismatches'
+                : 'Show mismatches',
+              type: 'checkbox' as const,
+              checked: self.showMismatches,
+              onClick: () => {
+                self.setShowMismatches(!self.showMismatches)
+              },
+            },
+            {
+              label: self.showInterbaseCounts
+                ? 'Hide interbase counts'
+                : 'Show interbase counts',
+              type: 'checkbox' as const,
+              checked: self.showInterbaseCounts,
+              onClick: () => {
+                self.setShowInterbaseCounts(!self.showInterbaseCounts)
+              },
+            },
+            {
+              label: self.showInterbaseIndicators
+                ? 'Hide interbase indicators'
+                : 'Show interbase indicators',
+              type: 'checkbox' as const,
+              checked: self.showInterbaseIndicators,
+              onClick: () => {
+                self.setShowInterbaseIndicators(!self.showInterbaseIndicators)
+              },
+            },
+          ],
+        }
+
+        const setMaxHeightItem = {
+          label: 'Set max track height...',
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              SetMaxHeightDialog,
+              { model: self, handleClose },
+            ])
+          },
+        }
+
+        const filterByItem = {
+          label: 'Filter by...',
+          icon: ClearAllIcon,
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              FilterByTagDialog,
+              { model: self, handleClose },
+            ])
+          },
+        }
+
+        const sortByMenu = {
+          label: 'Sort by...',
+          icon: SwapVertIcon,
+          subMenu: [
+            {
+              label: 'Start location',
+              onClick: () => {
+                self.setSortedBy('position')
+              },
+            },
+            {
+              label: 'Read strand',
+              onClick: () => {
+                self.setSortedBy('strand')
+              },
+            },
+            {
+              label: 'Base pair',
+              onClick: () => {
+                self.setSortedBy('basePair')
+              },
+            },
+            {
+              label: 'Sort by tag...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SortByTagDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Clear sort',
+              onClick: () => {
+                self.clearSelected()
+              },
+            },
+          ],
+        }
+
+        const groupByItem = {
+          label: 'Group by...',
+          icon: WorkspacesIcon,
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              GroupByDialog,
+              { model: self, handleClose },
+            ])
+          },
+        }
+
         // Pileup-specific menu items
         const pileupItems = [
-          colorByMenu,
           featureHeightMenu,
-          coverageItem,
-          sashimiItem,
-          {
-            label: self.showMismatches ? 'Hide mismatches' : 'Show mismatches',
-            onClick: () => {
-              self.setShowMismatches(!self.showMismatches)
-            },
-          },
-          {
-            label: self.showInterbaseCounts
-              ? 'Hide interbase counts'
-              : 'Show interbase counts',
-            onClick: () => {
-              self.setShowInterbaseCounts(!self.showInterbaseCounts)
-            },
-          },
-          {
-            label: self.showInterbaseIndicators
-              ? 'Hide interbase indicators'
-              : 'Show interbase indicators',
-            onClick: () => {
-              self.setShowInterbaseIndicators(!self.showInterbaseIndicators)
-            },
-          },
+          showSubMenu,
+          setMaxHeightItem,
+          filterByItem,
+          sortByMenu,
+          colorByMenu,
+          groupByItem,
         ]
 
         // Arcs-specific menu items
@@ -2042,8 +2246,20 @@ export default function stateModelFactory(
             ],
           },
           featureHeightMenu,
-          coverageItem,
-          sashimiItem,
+          {
+            label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
+            onClick: () => {
+              self.setShowCoverage(!self.showCoverage)
+            },
+          },
+          {
+            label: self.showSashimiArcs
+              ? 'Hide sashimi arcs'
+              : 'Show sashimi arcs',
+            onClick: () => {
+              self.setShowSashimiArcs(!self.showSashimiArcs)
+            },
+          },
           {
             label: 'Show...',
             subMenu: [
