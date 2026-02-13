@@ -21,6 +21,7 @@ import { autorun } from 'mobx'
 
 import type {
   FlatbushItem,
+  RenderWebGLFeatureDataResult,
   SubfeatureInfo,
   WebGLFeatureDataResult,
 } from '../RenderWebGLFeatureDataRPC/rpcTypes.ts'
@@ -87,8 +88,15 @@ export default function stateModelFactory(
         return snap
       }
 
-      // Strip properties from old BaseLinearDisplay snapshots
-      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      // Strip properties from old BaseLinearDisplay/FeatureDensityMixin snapshots
+      const {
+        blockState,
+        showLegend,
+        showTooltips,
+        userBpPerPxLimit,
+        userByteSizeLimit,
+        ...cleaned
+      } = snap
       snap = cleaned
 
       // Rewrite "height" from older snapshots to "heightPreConfig"
@@ -109,6 +117,9 @@ export default function stateModelFactory(
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuFeature: undefined as Feature | undefined,
+      regionTooLarge: false,
+      featureCount: 0,
+      userForceLoadLimit: undefined as number | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -164,6 +175,28 @@ export default function stateModelFactory(
           }
         }
         return undefined
+      },
+
+      get maxFeatureScreenDensity(): number {
+        return getConf(self, 'maxFeatureScreenDensity') ?? 0.3
+      },
+
+      get maxFeatureCount() {
+        if (self.userForceLoadLimit !== undefined) {
+          return self.userForceLoadLimit
+        }
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return undefined
+        }
+        return Math.round(this.maxFeatureScreenDensity * view.width)
+      },
+
+      get regionTooLargeReason() {
+        if (self.regionTooLarge) {
+          return `Too many features (${self.featureCount} in region)`
+        }
+        return ''
       },
 
       get colorByCDS() {
@@ -259,6 +292,8 @@ export default function stateModelFactory(
         self.rpcDataMap = new Map()
         self.loadedRegions = new Map()
         self.layoutBpPerPxMap = new Map()
+        self.regionTooLarge = false
+        self.featureCount = 0
       },
 
       setLoading(loading: boolean) {
@@ -279,6 +314,11 @@ export default function stateModelFactory(
 
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
+      },
+
+      setRegionTooLarge(tooLarge: boolean, count: number) {
+        self.regionTooLarge = tooLarge
+        self.featureCount = count
       },
     }))
     .actions(self => ({
@@ -394,51 +434,106 @@ export default function stateModelFactory(
       }),
     }))
     .actions(self => {
+      type FetchResult =
+        | {
+            tooLarge: true
+            featureCount: number
+          }
+        | {
+            tooLarge: false
+            regionNumber: number
+            data: WebGLFeatureDataResult
+            region: Region
+            bpPerPx: number
+          }
+
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
         bpPerPx: number,
-      ) {
+      ): Promise<FetchResult | undefined> {
         const session = getSession(self)
         const { rpcManager } = session
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter')
 
         if (!adapterConfig) {
-          return
+          return undefined
         }
 
-        try {
-          const result = (await rpcManager.call(
-            session.id ?? '',
-            'RenderWebGLFeatureData',
-            {
-              sessionId: session.id,
-              adapterConfig,
-              displayConfig: {
-                showLabels: self.showLabels,
-                showDescriptions: self.showDescriptions,
-                geneGlyphMode: self.effectiveGeneGlyphMode,
-              },
-              region,
-              bpPerPx,
-              colorByCDS: self.colorByCDS,
-              sequenceAdapter: self.sequenceAdapter,
-              showOnlyGenes: self.showOnlyGenes,
+        const result = (await rpcManager.call(
+          session.id ?? '',
+          'RenderWebGLFeatureData',
+          {
+            sessionId: session.id,
+            adapterConfig,
+            displayConfig: {
+              showLabels: self.showLabels,
+              showDescriptions: self.showDescriptions,
+              geneGlyphMode: self.effectiveGeneGlyphMode,
             },
-          )) as WebGLFeatureDataResult
+            region,
+            bpPerPx,
+            colorByCDS: self.colorByCDS,
+            sequenceAdapter: self.sequenceAdapter,
+            showOnlyGenes: self.showOnlyGenes,
+            maxFeatureCount: self.maxFeatureCount,
+          },
+        )) as RenderWebGLFeatureDataResult
 
-          self.setRpcDataForRegion(regionNumber, result)
-          self.setLoadedRegionForRegion(regionNumber, {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-            assemblyName: region.assemblyName,
-          })
-          self.setLayoutBpPerPxForRegion(regionNumber, bpPerPx)
+        if ('regionTooLarge' in result) {
+          return { tooLarge: true, featureCount: result.featureCount }
+        }
+        return { tooLarge: false, regionNumber, data: result, region, bpPerPx }
+      }
+
+      function applyFetchResults(results: (FetchResult | undefined)[]) {
+        let totalTooLargeCount = 0
+        let anyTooLarge = false
+        for (const r of results) {
+          if (r?.tooLarge) {
+            anyTooLarge = true
+            totalTooLargeCount += r.featureCount
+          }
+        }
+        if (anyTooLarge) {
+          self.clearAllRpcData()
+          self.setRegionTooLarge(true, totalTooLargeCount)
+        } else {
+          self.setRegionTooLarge(false, 0)
+          for (const r of results) {
+            if (r && !r.tooLarge) {
+              self.setRpcDataForRegion(r.regionNumber, r.data)
+              self.setLoadedRegionForRegion(r.regionNumber, r.region)
+              self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
+            }
+          }
+        }
+      }
+
+      async function fetchRegions(
+        regions: { region: Region; regionNumber: number }[],
+        bpPerPx: number,
+      ) {
+        self.setLoading(true)
+        self.setError(null)
+        try {
+          const promises = regions.map(({ region, regionNumber }) =>
+            fetchFeaturesForRegion(region, regionNumber, bpPerPx),
+          )
+          const results = await Promise.all(promises)
+          if (isAlive(self)) {
+            applyFetchResults(results)
+          }
         } catch (e) {
-          console.error(e)
-          self.setError(e)
+          console.error('Failed to fetch features:', e)
+          if (isAlive(self)) {
+            self.setError(e)
+          }
+        } finally {
+          if (isAlive(self)) {
+            self.setLoading(false)
+          }
         }
       }
 
@@ -449,21 +544,11 @@ export default function stateModelFactory(
         }
         self.clearAllRpcData()
         const bpPerPx = view.bpPerPx
-        const regions = view.staticRegions
-        self.setLoading(true)
-        self.setError(null)
-        const promises: Promise<void>[] = []
-        for (const vr of regions) {
-          promises.push(fetchFeaturesForRegion(vr, vr.regionNumber, bpPerPx))
-        }
-        Promise.all(promises)
-          .then(() => {
-            self.setLoading(false)
-          })
-          .catch((e: unknown) => {
-            console.error('Failed to refetch features:', e)
-            self.setLoading(false)
-          })
+        const regions = view.staticRegions.map(vr => ({
+          region: vr as Region,
+          regionNumber: vr.regionNumber,
+        }))
+        fetchRegions(regions, bpPerPx)
       }
 
       let prevDisplayedRegionsStr = ''
@@ -475,6 +560,14 @@ export default function stateModelFactory(
       let prevSettingsInitialized = false
 
       return {
+        reload() {
+          refetchForCurrentView()
+        },
+
+        setFeatureDensityStatsLimit(_stats?: unknown) {
+          self.userForceLoadLimit = self.featureCount + 1
+        },
+
         afterAttach() {
           // Autorun: fetch data for all visible regions
           addDisposer(
@@ -485,8 +578,9 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+
                 const bpPerPx = view.bpPerPx
-                const promises: Promise<void>[] = []
+                const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
@@ -496,22 +590,13 @@ export default function stateModelFactory(
                   ) {
                     continue
                   }
-                  promises.push(
-                    fetchFeaturesForRegion(vr, vr.regionNumber, bpPerPx),
-                  )
+                  needed.push({
+                    region: vr as Region,
+                    regionNumber: vr.regionNumber,
+                  })
                 }
-                if (promises.length > 0) {
-                  self.setLoading(true)
-                  self.setError(null)
-
-                  Promise.all(promises)
-                    .then(() => {
-                      self.setLoading(false)
-                    })
-                    .catch((e: unknown) => {
-                      console.error('Failed to fetch features:', e)
-                      self.setLoading(false)
-                    })
+                if (needed.length > 0) {
+                  fetchRegions(needed, bpPerPx)
                 }
               },
               {
@@ -605,6 +690,21 @@ export default function stateModelFactory(
       }
     })
     .views(self => ({
+      contextMenuItems() {
+        const feat = self.contextMenuFeature
+        if (!feat) {
+          return []
+        }
+        return [
+          {
+            label: 'Open feature details',
+            onClick: () => {
+              self.selectFeature(feat)
+            },
+          },
+        ]
+      },
+
       trackMenuItems() {
         return [
           {
@@ -668,7 +768,6 @@ export default function stateModelFactory(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        // Only persist if explicitly set (not undefined)
         ...(trackShowLabels !== undefined && { trackShowLabels }),
         ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
         ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),

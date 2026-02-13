@@ -10,6 +10,7 @@ import { useTheme } from '@mui/material'
 
 import { codonTable } from './drawSequenceWebGL.ts'
 
+import type { SequenceRegionData } from '../model.ts'
 import type { Frame } from '@jbrowse/core/util'
 
 function TranslationLetters({
@@ -19,8 +20,10 @@ function TranslationLetters({
   y,
   rowHeight,
   bpPerPx,
-  regionStart,
+  offsetPx,
   reversed,
+  visibleStartBp,
+  visibleEndBp,
 }: {
   seq: string
   seqStart: number
@@ -28,8 +31,10 @@ function TranslationLetters({
   y: number
   rowHeight: number
   bpPerPx: number
-  regionStart: number
+  offsetPx: number
   reversed: boolean
+  visibleStartBp: number
+  visibleEndBp: number
 }) {
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
@@ -38,22 +43,27 @@ function TranslationLetters({
   const frameShiftAdjustedSeqLength = seq.length - frameShift
   const multipleOfThreeLength =
     frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
-  const seqSliced = seq.slice(frameShift, frameShift + multipleOfThreeLength)
+  const sliceEnd = frameShift + multipleOfThreeLength
 
   const codonWidth = 3 / bpPerPx
   const fontSize = rowHeight - 2
-  let svg = ''
+  const parts: string[] = []
 
-  for (let i = 0; i < seqSliced.length; i += 3) {
-    const codon = seqSliced.slice(i, i + 3)
+  // clip to visible range (in sequence-local indices)
+  const clipStart = Math.max(0, Math.floor(visibleStartBp - seqStart) - 3)
+  const clipEnd = Math.min(seq.length, Math.ceil(visibleEndBp - seqStart) + 3)
+
+  // align clipStart to codon boundary within frame
+  const rawStart = Math.max(frameShift, clipStart)
+  const codonAlignedStart = rawStart - ((rawStart - frameShift) % 3)
+
+  for (let i = codonAlignedStart; i < Math.min(sliceEnd, clipEnd); i += 3) {
+    const codon = seq.slice(i, i + 3)
     const normalizedCodon = reversed ? revcom(codon) : codon
     const letter = codonTable[normalizedCodon] || ''
     const upperCodon = normalizedCodon.toUpperCase()
-    const bpOffset = seqStart + frameShift + i - regionStart
 
-    const x = reversed
-      ? (seq.length - (frameShift + i + 3)) / bpPerPx
-      : bpOffset / bpPerPx
+    const x = (seqStart + i) / bpPerPx - offsetPx
     const cx = x + codonWidth / 2
     const cy = y + rowHeight / 2
 
@@ -61,10 +71,12 @@ function TranslationLetters({
     const isStop = defaultStops.includes(upperCodon)
     const fill = isStart || isStop ? '#fff' : '#000'
 
-    svg += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`
+    parts.push(
+      `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`,
+    )
   }
 
-  return <g dangerouslySetInnerHTML={{ __html: svg }} />
+  return <g dangerouslySetInnerHTML={{ __html: parts.join('') }} />
 }
 
 function SequenceLetters({
@@ -73,30 +85,32 @@ function SequenceLetters({
   y,
   rowHeight,
   bpPerPx,
-  regionStart,
+  offsetPx,
   sequenceType,
-  reversed,
+  visibleStartBp,
+  visibleEndBp,
 }: {
   seq: string
   seqStart: number
   y: number
   rowHeight: number
   bpPerPx: number
-  regionStart: number
+  offsetPx: number
   sequenceType: string
-  reversed: boolean
+  visibleStartBp: number
+  visibleEndBp: number
 }) {
   const theme = useTheme()
   const w = 1 / bpPerPx
   const fontSize = rowHeight - 2
-  let svg = ''
+  const parts: string[] = []
 
-  for (let i = 0; i < seq.length; i++) {
+  const iStart = Math.max(0, Math.floor(visibleStartBp - seqStart))
+  const iEnd = Math.min(seq.length, Math.ceil(visibleEndBp - seqStart))
+
+  for (let i = iStart; i < iEnd; i++) {
     const letter = seq[i]!
-    const bpOffset = seqStart + i - regionStart
-    const x = reversed
-      ? (seq.length - i - 1) / bpPerPx
-      : bpOffset / bpPerPx
+    const x = (seqStart + i) / bpPerPx - offsetPx
     const cx = x + w / 2
     const cy = y + rowHeight / 2
 
@@ -111,16 +125,17 @@ function SequenceLetters({
       }
     }
 
-    svg += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`
+    parts.push(
+      `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`,
+    )
   }
 
-  return <g dangerouslySetInnerHTML={{ __html: svg }} />
+  return <g dangerouslySetInnerHTML={{ __html: parts.join('') }} />
 }
 
 export default function SequenceLettersOverlay({
-  seq,
-  seqStart,
-  regionStart,
+  sequenceData,
+  offsetPx,
   bpPerPx,
   rowHeight,
   showForward,
@@ -131,9 +146,8 @@ export default function SequenceLettersOverlay({
   width,
   totalHeight,
 }: {
-  seq: string
-  seqStart: number
-  regionStart: number
+  sequenceData: Map<number, SequenceRegionData>
+  offsetPx: number
   bpPerPx: number
   rowHeight: number
   showForward: boolean
@@ -150,6 +164,9 @@ export default function SequenceLettersOverlay({
     return null
   }
 
+  const visibleStartBp = offsetPx * bpPerPx
+  const visibleEndBp = (offsetPx + width) * bpPerPx
+
   const isDna = sequenceType === 'dna'
   const showReverseActual = isDna ? showReverse : false
   const showTranslationActual = isDna ? showTranslation : false
@@ -164,76 +181,86 @@ export default function SequenceLettersOverlay({
     : [forwardFrames, reverseFrames]
 
   const elements: React.ReactElement[] = []
-  let currentY = 0
 
-  for (const frame of topFrames) {
-    elements.push(
-      <TranslationLetters
-        key={`trans-${frame}`}
-        seq={seq}
-        seqStart={seqStart}
-        frame={frame}
-        y={currentY}
-        rowHeight={rowHeight}
-        bpPerPx={bpPerPx}
-        regionStart={regionStart}
-        reversed={reversed}
-      />,
-    )
-    currentY += rowHeight
-  }
+  for (const [regionNum, data] of sequenceData) {
+    const { seq, start: seqStart } = data
+    let currentY = 0
 
-  if (showForward) {
-    const fwdSeq = reversed ? complement(seq) : seq
-    elements.push(
-      <SequenceLetters
-        key="fwd-letters"
-        seq={fwdSeq}
-        seqStart={seqStart}
-        y={currentY}
-        rowHeight={rowHeight}
-        bpPerPx={bpPerPx}
-        regionStart={regionStart}
-        sequenceType={sequenceType}
-        reversed={reversed}
-      />,
-    )
-    currentY += rowHeight
-  }
+    for (const frame of topFrames) {
+      elements.push(
+        <TranslationLetters
+          key={`${regionNum}-trans-${frame}`}
+          seq={seq}
+          seqStart={seqStart}
+          frame={frame}
+          y={currentY}
+          rowHeight={rowHeight}
+          bpPerPx={bpPerPx}
+          offsetPx={offsetPx}
+          reversed={reversed}
+          visibleStartBp={visibleStartBp}
+          visibleEndBp={visibleEndBp}
+        />,
+      )
+      currentY += rowHeight
+    }
 
-  if (showReverseActual) {
-    const revSeq = reversed ? seq : complement(seq)
-    elements.push(
-      <SequenceLetters
-        key="rev-letters"
-        seq={revSeq}
-        seqStart={seqStart}
-        y={currentY}
-        rowHeight={rowHeight}
-        bpPerPx={bpPerPx}
-        regionStart={regionStart}
-        sequenceType={sequenceType}
-        reversed={reversed}
-      />,
-    )
-    currentY += rowHeight
-  }
+    if (showForward) {
+      const fwdSeq = reversed ? complement(seq) : seq
+      elements.push(
+        <SequenceLetters
+          key={`${regionNum}-fwd-letters`}
+          seq={fwdSeq}
+          seqStart={seqStart}
+          y={currentY}
+          rowHeight={rowHeight}
+          bpPerPx={bpPerPx}
+          offsetPx={offsetPx}
+          sequenceType={sequenceType}
+          visibleStartBp={visibleStartBp}
+          visibleEndBp={visibleEndBp}
+        />,
+      )
+      currentY += rowHeight
+    }
 
-  for (const frame of bottomFrames) {
-    elements.push(
-      <TranslationLetters
-        key={`rev-trans-${frame}`}
-        seq={seq}
-        seqStart={seqStart}
-        frame={frame}
-        y={currentY}
-        rowHeight={rowHeight}
-        bpPerPx={bpPerPx}
-        regionStart={regionStart}
-        reversed={!reversed}
-      />,
-    )
-    currentY += rowHeight
+    if (showReverseActual) {
+      const revSeq = reversed ? seq : complement(seq)
+      elements.push(
+        <SequenceLetters
+          key={`${regionNum}-rev-letters`}
+          seq={revSeq}
+          seqStart={seqStart}
+          y={currentY}
+          rowHeight={rowHeight}
+          bpPerPx={bpPerPx}
+          offsetPx={offsetPx}
+          sequenceType={sequenceType}
+          visibleStartBp={visibleStartBp}
+          visibleEndBp={visibleEndBp}
+        />,
+      )
+      currentY += rowHeight
+    }
+
+    for (const frame of bottomFrames) {
+      elements.push(
+        <TranslationLetters
+          key={`${regionNum}-rev-trans-${frame}`}
+          seq={seq}
+          seqStart={seqStart}
+          frame={frame}
+          y={currentY}
+          rowHeight={rowHeight}
+          bpPerPx={bpPerPx}
+          offsetPx={offsetPx}
+          reversed={!reversed}
+          visibleStartBp={visibleStartBp}
+          visibleEndBp={visibleEndBp}
+        />,
+      )
+      currentY += rowHeight
+    }
   }
 
   return (

@@ -6,9 +6,11 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 import { shouldRenderPeptideText } from '../../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 
 import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
 import type {
@@ -39,6 +41,10 @@ interface LinearWebGLFeatureDisplayModel {
   maxY: number
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
+  regionTooLarge: boolean
+  regionTooLargeReason: string
+  setFeatureDensityStatsLimit: () => void
+  reload: () => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (
@@ -198,6 +204,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     useState<SubfeatureInfo | null>(null)
   const [scrollY, setScrollY] = useState(0)
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
+  const uploadedDataRef = useRef(new Map<number, WebGLFeatureDataResult>())
 
   const scrollYRef = useRef(0)
   const renderRAFRef = useRef<number | null>(null)
@@ -310,12 +317,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     if (rpcDataMap.size === 0) {
       renderer.clearAllBuffers()
+      uploadedDataRef.current.clear()
       return
     }
 
     const activeRegions = new Set<number>()
     for (const [regionNumber, data] of rpcDataMap) {
       activeRegions.add(regionNumber)
+      if (uploadedDataRef.current.get(regionNumber) === data) {
+        continue
+      }
+      uploadedDataRef.current.set(regionNumber, data)
       renderer.uploadForRegion(regionNumber, {
         regionStart: data.regionStart,
         rectPositions: data.rectPositions,
@@ -335,6 +347,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         arrowColors: data.arrowColors,
         numArrows: data.numArrows,
       })
+    }
+    // Clean up stale entries from our tracking ref
+    for (const key of uploadedDataRef.current.keys()) {
+      if (!activeRegions.has(key)) {
+        uploadedDataRef.current.delete(key)
+      }
     }
     renderer.pruneStaleRegions(activeRegions)
 
@@ -746,31 +764,57 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       }
     }
 
+    const computeExtraWidth = (
+      featureId: string,
+      item: { startBp: number; endBp: number },
+      vr: VisibleRegion,
+      data: WebGLFeatureDataResult | undefined,
+    ) => {
+      if (!data) {
+        return 0
+      }
+      const labelData = data.floatingLabelsData[featureId]
+      if (!labelData) {
+        return 0
+      }
+      const blockBpPerPx =
+        (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
+      const featureWidthPx = (item.endBp - item.startBp) / blockBpPerPx
+      return computeLabelExtraWidth(labelData, featureWidthPx)
+    }
+
     const hoverItem = hoveredSubfeature ?? hoveredFeature
     if (hoverItem) {
-      addOverlay(hoverItem, { backgroundColor: 'rgba(0, 0, 0, 0.15)' }, 'hover')
+      let hoverExtraWidth = 0
+      if (hoveredFeature && !hoveredSubfeature) {
+        const result = findItemForId(hoveredFeature.featureId)
+        if (result?.data) {
+          hoverExtraWidth = computeExtraWidth(
+            hoveredFeature.featureId,
+            hoverItem,
+            result.vr,
+            result.data,
+          )
+        }
+      }
+      addOverlay(
+        hoverItem,
+        { backgroundColor: 'rgba(0, 0, 0, 0.15)' },
+        'hover',
+        hoverExtraWidth,
+      )
     }
 
     if (model.selectedFeatureId) {
       const result = findItemForId(model.selectedFeatureId)
       if (result) {
         const { item, data } = result
-        let extraWidth = 0
-        if (data) {
-          const labelData = data.floatingLabelsData[model.selectedFeatureId]
-          if (labelData) {
-            const blockBpPerPx =
-              (result.vr.end - result.vr.start) /
-              (result.vr.screenEndPx - result.vr.screenStartPx)
-            const featureWidth = (item.endBp - item.startBp) / blockBpPerPx
-            for (const label of labelData.floatingLabels) {
-              extraWidth = Math.max(
-                extraWidth,
-                measureText(label.text, 11) - featureWidth,
-              )
-            }
-          }
-        }
+        const extraWidth = computeExtraWidth(
+          model.selectedFeatureId,
+          item,
+          result.vr,
+          data,
+        )
         addOverlay(
           item,
           {
@@ -798,6 +842,10 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     hoveredSubfeature,
     model.selectedFeatureId,
   ])
+
+  if (model.regionTooLarge) {
+    return <TooLargeMessage model={model} />
+  }
 
   if (error) {
     return (

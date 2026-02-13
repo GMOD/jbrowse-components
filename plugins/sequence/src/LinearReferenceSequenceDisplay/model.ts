@@ -14,7 +14,6 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
-import type React from 'react'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -37,11 +36,9 @@ export interface LinearReferenceSequenceDisplayModel {
   sequenceType: string
   rowHeight: number
   sequenceHeight: number
-  DisplayMessageComponent: React.LazyExoticComponent<React.ComponentType<{ model: LinearReferenceSequenceDisplayModel }>>
-  configuration: Record<string, unknown>
 }
 
-const WebGLSequenceComponent = lazy(
+export const WebGLSequenceComponent = lazy(
   () => import('./components/WebGLSequenceComponent.tsx'),
 )
 
@@ -79,12 +76,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      /**
-       * #property
-       */
-      rowHeight: 15,
       sequenceData: new Map<number, SequenceRegionData>(),
-      error: undefined as unknown,
+      computedHeight: 50,
     }))
     .views(self => ({
       /**
@@ -118,55 +111,66 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .views(self => ({
+      get numRows() {
+        const { showTranslationActual, showReverseActual, showForwardActual } =
+          self
+        let n = 0
+        if (showForwardActual) {
+          n++
+        }
+        if (showReverseActual) {
+          n++
+        }
+        if (showForwardActual && showTranslationActual) {
+          n += 3
+        }
+        if (showReverseActual && showTranslationActual) {
+          n += 3
+        }
+        return n
+      },
+      get sequenceHeight() {
+        return this.numRows * 15
+      },
       /**
        * #getter
+       * override TrackHeightMixin height: use manual resize if set,
+       * otherwise use autorun-computed height
        */
-      get sequenceHeight() {
-        const {
-          rowHeight,
-          showTranslationActual,
-          showReverseActual,
-          showForwardActual,
-        } = self
-        const r1 =
-          showReverseActual && showTranslationActual ? rowHeight * 3 : 0
-        const r2 =
-          showForwardActual && showTranslationActual ? rowHeight * 3 : 0
-        const t = r1 + r2
-        const r = showReverseActual ? rowHeight : 0
-        const s = showForwardActual ? rowHeight : 0
-        return t + r + s
+      get height() {
+        return self.heightPreConfig ?? self.computedHeight
       },
-    }))
-    .views(() => ({
-      get DisplayMessageComponent() {
-        return WebGLSequenceComponent
+      get rowHeight() {
+        return this.numRows > 0 ? this.height / this.numRows : 15
       },
     }))
     .actions(self => ({
+      setComputedHeight(h: number) {
+        self.computedHeight = h
+      },
       setSequenceData(data: Map<number, SequenceRegionData>) {
         self.sequenceData = data
-      },
-      setError(err: unknown) {
-        self.error = err
       },
       /**
        * #action
        */
       toggleShowForward() {
         self.showForward = !self.showForward
+        self.heightPreConfig = undefined
       },
       /**
        * #action
        */
       toggleShowReverse() {
         self.showReverse = !self.showReverse
+        self.heightPreConfig = undefined
       },
       /**
        * #action
        */
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
+        self.heightPreConfig = undefined
       },
     }))
     .actions(self => ({
@@ -177,9 +181,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             function sequenceHeightAutorun() {
               const view = getContainingView(self) as LGV
               if (!view.initialized || view.bpPerPx > 3) {
-                self.setHeight(50)
+                self.setComputedHeight(50)
               } else {
-                self.setHeight(self.sequenceHeight)
+                self.setComputedHeight(self.sequenceHeight)
               }
             },
             { name: 'SequenceHeight' },

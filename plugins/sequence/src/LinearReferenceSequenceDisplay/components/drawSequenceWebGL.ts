@@ -1,10 +1,8 @@
 import {
-  complement,
   defaultCodonTable,
   defaultStarts,
   defaultStops,
   generateCodonTable,
-  revcom,
 } from '@jbrowse/core/util'
 
 import {
@@ -12,14 +10,11 @@ import {
   SEQUENCE_VERTEX_SHADER,
 } from './sequenceShaders.ts'
 
+import type { SequenceRegionData } from '../model.ts'
 import type { Frame } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 
-interface SequenceRegionData {
-  seq: string
-  start: number
-  end: number
-}
+type RGB = readonly [number, number, number]
 
 interface RenderSettings {
   showForward: boolean
@@ -29,9 +24,11 @@ interface RenderSettings {
   rowHeight: number
   reversed: boolean
   colorByCDS: boolean
+  showSequence: boolean
+  showBorders: boolean
 }
 
-function hexToRGB(hex: string) {
+function hexToRGB(hex: string): RGB {
   const h = hex.replace('#', '')
   const full =
     h.length === 3
@@ -46,27 +43,65 @@ function hexToRGB(hex: string) {
   ] as const
 }
 
-function getBaseColor(base: string, theme: Theme) {
-  // @ts-expect-error
-  const color = theme.palette.bases[base.toUpperCase()] as
-    | { main: string }
-    | undefined
-  if (color) {
-    return hexToRGB(color.main)
-  }
-  return [170, 170, 170] as const
+const DEFAULT_BASE_COLOR: RGB = [170, 170, 170]
+const DEFAULT_FRAME_COLOR: RGB = [200, 200, 200]
+
+interface ColorPalette {
+  baseColors: Map<string, RGB>
+  frameColors: Map<number, RGB>
+  frameCDSColors: Map<number, RGB>
+  startColor: RGB
+  stopColor: RGB
 }
 
-function getFrameColor(frame: Frame, colorByCDS: boolean, theme: Theme) {
-  const palette = colorByCDS ? theme.palette.framesCDS : theme.palette.frames
-  const entry = palette.at(frame)
-  if (entry) {
-    return hexToRGB(entry.main)
+function buildColorPalette(theme: Theme): ColorPalette {
+  const baseColors = new Map<string, RGB>()
+  for (const base of ['A', 'C', 'G', 'T']) {
+    // @ts-expect-error
+    const color = theme.palette.bases[base] as { main: string } | undefined
+    baseColors.set(base, color ? hexToRGB(color.main) : DEFAULT_BASE_COLOR)
   }
-  return [200, 200, 200] as const
+
+  const frameColors = new Map<number, RGB>()
+  const frameCDSColors = new Map<number, RGB>()
+  for (const frame of [1, 2, 3, -1, -2, -3] as Frame[]) {
+    const entry = theme.palette.frames.at(frame)
+    frameColors.set(frame, entry ? hexToRGB(entry.main) : DEFAULT_FRAME_COLOR)
+    const cdsEntry = theme.palette.framesCDS.at(frame)
+    frameCDSColors.set(
+      frame,
+      cdsEntry ? hexToRGB(cdsEntry.main) : DEFAULT_FRAME_COLOR,
+    )
+  }
+
+  return {
+    baseColors,
+    frameColors,
+    frameCDSColors,
+    startColor: hexToRGB(theme.palette.startCodon),
+    stopColor: hexToRGB(theme.palette.stopCodon),
+  }
 }
 
 const codonTable = generateCodonTable(defaultCodonTable)
+
+const complementMap: Record<string, string> = {
+  A: 'T',
+  T: 'A',
+  G: 'C',
+  C: 'G',
+  a: 't',
+  t: 'a',
+  g: 'c',
+  c: 'g',
+}
+
+const startsSet = new Set(defaultStarts)
+const stopsSet = new Set(defaultStops)
+
+// alpha=255 means border-eligible, alpha=254 means no border
+const BORDER_ALPHA = 255
+const NO_BORDER_ALPHA = 254
 
 class GeometryWriter {
   rects: Float32Array
@@ -90,7 +125,16 @@ class GeometryWriter {
     this.colors = newColors
   }
 
-  push(x: number, y: number, w: number, h: number, r: number, g: number, b: number) {
+  push(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    r: number,
+    g: number,
+    b: number,
+    border: boolean,
+  ) {
     if (this.count >= this.capacity) {
       this.grow()
     }
@@ -102,7 +146,7 @@ class GeometryWriter {
     this.colors[i] = r
     this.colors[i + 1] = g
     this.colors[i + 2] = b
-    this.colors[i + 3] = 255
+    this.colors[i + 3] = border ? BORDER_ALPHA : NO_BORDER_ALPHA
     this.count++
   }
 
@@ -118,9 +162,8 @@ class GeometryWriter {
 export function buildSequenceGeometry(
   data: SequenceRegionData,
   settings: RenderSettings,
-  theme: Theme,
+  palette: ColorPalette,
 ) {
-  const { seq, start } = data
   const {
     showForward,
     showReverse,
@@ -129,7 +172,10 @@ export function buildSequenceGeometry(
     rowHeight,
     reversed,
     colorByCDS,
+    showSequence,
+    showBorders,
   } = settings
+  const { seq, start } = data
   const isDna = sequenceType === 'dna'
   const showReverseActual = isDna ? showReverse : false
   const showTranslationActual = isDna ? showTranslation : false
@@ -143,30 +189,69 @@ export function buildSequenceGeometry(
     ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
     : [forwardFrames, reverseFrames]
 
-  // estimate: each base = 1 rect, each translation frame = 1 bg + ~1/3 codons highlighted
   const estimated = seq.length * 2 + topFrames.length + bottomFrames.length
   const writer = new GeometryWriter(estimated)
   let currentY = 0
 
   for (const frame of topFrames) {
-    writeTranslationRects(writer, seq, start, frame, currentY, rowHeight, reversed, colorByCDS, theme)
+    writeTranslationRects(
+      writer,
+      seq,
+      start,
+      frame,
+      currentY,
+      rowHeight,
+      reversed,
+      colorByCDS,
+      showBorders,
+      palette,
+    )
     currentY += rowHeight
   }
 
-  if (showForward) {
-    const fwdSeq = reversed ? complement(seq) : seq
-    writeBaseRects(writer, fwdSeq, start, currentY, rowHeight, theme)
+  if (showForward && showSequence) {
+    writeBaseRects(
+      writer,
+      seq,
+      start,
+      currentY,
+      rowHeight,
+      showBorders,
+      reversed,
+      false,
+      palette,
+    )
     currentY += rowHeight
   }
 
-  if (showReverseActual) {
-    const revSeq = reversed ? seq : complement(seq)
-    writeBaseRects(writer, revSeq, start, currentY, rowHeight, theme)
+  if (showReverseActual && showSequence) {
+    writeBaseRects(
+      writer,
+      seq,
+      start,
+      currentY,
+      rowHeight,
+      showBorders,
+      reversed,
+      true,
+      palette,
+    )
     currentY += rowHeight
   }
 
   for (const frame of bottomFrames) {
-    writeTranslationRects(writer, seq, start, frame, currentY, rowHeight, !reversed, colorByCDS, theme)
+    writeTranslationRects(
+      writer,
+      seq,
+      start,
+      frame,
+      currentY,
+      rowHeight,
+      !reversed,
+      colorByCDS,
+      showBorders,
+      palette,
+    )
     currentY += rowHeight
   }
 
@@ -179,13 +264,37 @@ function writeBaseRects(
   seqStart: number,
   y: number,
   height: number,
-  theme: Theme,
+  showBorders: boolean,
+  reversed: boolean,
+  useComplement: boolean,
+  palette: ColorPalette,
 ) {
+  const doComplement = reversed !== useComplement
   // eslint-disable-next-line unicorn/no-for-loop
   for (let i = 0; i < seq.length; i++) {
-    const [r, g, b] = getBaseColor(seq[i]!, theme)
-    writer.push(seqStart + i, y, 1, height, r, g, b)
+    let base = seq[i]!
+    if (doComplement) {
+      base = complementMap[base] ?? base
+    }
+    const [r, g, b] =
+      palette.baseColors.get(base.toUpperCase()) ?? DEFAULT_BASE_COLOR
+    writer.push(seqStart + i, y, 1, height, r, g, b, showBorders)
   }
+}
+
+function revcomCodonUpper(seq: string, i: number) {
+  const c0 = seq[i]!.toUpperCase()
+  const c1 = seq[i + 1]!.toUpperCase()
+  const c2 = seq[i + 2]!.toUpperCase()
+  return (
+    (complementMap[c2] ?? c2) +
+    (complementMap[c1] ?? c1) +
+    (complementMap[c0] ?? c0)
+  )
+}
+
+function codonUpper(seq: string, i: number) {
+  return seq[i]!.toUpperCase() + seq[i + 1]!.toUpperCase() + seq[i + 2]!.toUpperCase()
 }
 
 function writeTranslationRects(
@@ -197,10 +306,14 @@ function writeTranslationRects(
   height: number,
   reverse: boolean,
   colorByCDS: boolean,
-  theme: Theme,
+  showBorders: boolean,
+  palette: ColorPalette,
 ) {
-  const [bgR, bgG, bgB] = getFrameColor(frame, colorByCDS, theme)
-  writer.push(seqStart, y, seq.length, height, bgR, bgG, bgB)
+  const frameColorMap = colorByCDS
+    ? palette.frameCDSColors
+    : palette.frameColors
+  const [bgR, bgG, bgB] = frameColorMap.get(frame) ?? DEFAULT_FRAME_COLOR
+  const { startColor, stopColor } = palette
 
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
@@ -209,20 +322,76 @@ function writeTranslationRects(
   const frameShiftAdjustedSeqLength = seq.length - frameShift
   const multipleOfThreeLength =
     frameShiftAdjustedSeqLength - (frameShiftAdjustedSeqLength % 3)
-  const seqSliced = seq.slice(frameShift, frameShift + multipleOfThreeLength)
+  const sliceEnd = frameShift + multipleOfThreeLength
 
-  const startColor = hexToRGB(theme.palette.startCodon)
-  const stopColor = hexToRGB(theme.palette.stopCodon)
+  if (showBorders) {
+    if (frameShift > 0) {
+      writer.push(seqStart, y, frameShift, height, bgR, bgG, bgB, false)
+    }
+    const trailing = seq.length - sliceEnd
+    if (trailing > 0) {
+      writer.push(
+        seqStart + sliceEnd,
+        y,
+        trailing,
+        height,
+        bgR,
+        bgG,
+        bgB,
+        false,
+      )
+    }
 
-  for (let i = 0; i < seqSliced.length; i += 3) {
-    const codon = seqSliced.slice(i, i + 3)
-    const normalizedCodon = reverse ? revcom(codon) : codon
-    const upperCodon = normalizedCodon.toUpperCase()
+    for (let i = frameShift; i < sliceEnd; i += 3) {
+      const upperCodon = reverse
+        ? revcomCodonUpper(seq, i)
+        : codonUpper(seq, i)
 
-    if (defaultStarts.includes(upperCodon)) {
-      writer.push(seqStart + frameShift + i, y, 3, height, startColor[0], startColor[1], startColor[2])
-    } else if (defaultStops.includes(upperCodon)) {
-      writer.push(seqStart + frameShift + i, y, 3, height, stopColor[0], stopColor[1], stopColor[2])
+      let cr = bgR
+      let cg = bgG
+      let cb = bgB
+      if (startsSet.has(upperCodon)) {
+        cr = startColor[0]
+        cg = startColor[1]
+        cb = startColor[2]
+      } else if (stopsSet.has(upperCodon)) {
+        cr = stopColor[0]
+        cg = stopColor[1]
+        cb = stopColor[2]
+      }
+      writer.push(seqStart + i, y, 3, height, cr, cg, cb, true)
+    }
+  } else {
+    writer.push(seqStart, y, seq.length, height, bgR, bgG, bgB, false)
+
+    for (let i = frameShift; i < sliceEnd; i += 3) {
+      const upperCodon = reverse
+        ? revcomCodonUpper(seq, i)
+        : codonUpper(seq, i)
+
+      if (startsSet.has(upperCodon)) {
+        writer.push(
+          seqStart + i,
+          y,
+          3,
+          height,
+          startColor[0],
+          startColor[1],
+          startColor[2],
+          false,
+        )
+      } else if (stopsSet.has(upperCodon)) {
+        writer.push(
+          seqStart + i,
+          y,
+          3,
+          height,
+          stopColor[0],
+          stopColor[1],
+          stopColor[2],
+          false,
+        )
+      }
     }
   }
 }
@@ -266,6 +435,7 @@ export interface GLHandles {
   uBpPerPx: WebGLUniformLocation
   uCanvasWidth: WebGLUniformLocation
   uCanvasHeight: WebGLUniformLocation
+  uBorderWidth: WebGLUniformLocation
 }
 
 export function initGL(gl: WebGL2RenderingContext): GLHandles {
@@ -297,6 +467,7 @@ export function initGL(gl: WebGL2RenderingContext): GLHandles {
     uBpPerPx: gl.getUniformLocation(program, 'u_bpPerPx')!,
     uCanvasWidth: gl.getUniformLocation(program, 'u_canvasWidth')!,
     uCanvasHeight: gl.getUniformLocation(program, 'u_canvasHeight')!,
+    uBorderWidth: gl.getUniformLocation(program, 'u_borderWidth')!,
   }
 }
 
@@ -322,9 +493,13 @@ export function render(
   cssHeight: number,
 ) {
   const dpr = window.devicePixelRatio || 1
-  gl.canvas.width = cssWidth * dpr
-  gl.canvas.height = cssHeight * dpr
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  const w = Math.round(cssWidth * dpr)
+  const h = Math.round(cssHeight * dpr)
+  if (gl.canvas.width !== w || gl.canvas.height !== h) {
+    gl.canvas.width = w
+    gl.canvas.height = h
+  }
+  gl.viewport(0, 0, w, h)
   gl.clearColor(1, 1, 1, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -333,11 +508,11 @@ export function render(
   }
 
   gl.useProgram(handles.program)
-  // uniforms in CSS pixel space - gl.viewport handles DPR mapping
   gl.uniform1f(handles.uOffsetPx, offsetPx)
   gl.uniform1f(handles.uBpPerPx, bpPerPx)
   gl.uniform1f(handles.uCanvasWidth, cssWidth)
   gl.uniform1f(handles.uCanvasHeight, cssHeight)
+  gl.uniform1f(handles.uBorderWidth, 1 / bpPerPx >= 12 ? 1 : 0)
 
   gl.bindVertexArray(handles.vao)
   gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, instanceCount)
@@ -351,5 +526,5 @@ export function disposeGL(gl: WebGL2RenderingContext, handles: GLHandles) {
   gl.deleteProgram(handles.program)
 }
 
-export { codonTable }
-export type { RenderSettings, SequenceRegionData }
+export { buildColorPalette, codonTable }
+export type { ColorPalette, RenderSettings }

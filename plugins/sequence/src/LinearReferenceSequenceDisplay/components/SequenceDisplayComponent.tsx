@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { WebGLSequenceComponent } from '../model.ts'
+
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
@@ -9,7 +11,6 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 }: {
   model: LinearReferenceSequenceDisplayModel
 }) {
-  const { DisplayMessageComponent, height } = model
   return (
     <div
       style={{
@@ -17,11 +18,11 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
         whiteSpace: 'nowrap',
         textAlign: 'left',
         width: '100%',
-        minHeight: height,
+        minHeight: model.height,
       }}
     >
       <Suspense fallback={null}>
-        <DisplayMessageComponent model={model} />
+        <WebGLSequenceComponent model={model} />
       </Suspense>
     </div>
   )

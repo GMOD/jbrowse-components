@@ -28,6 +28,7 @@ export interface RenderWebGLFeatureDataArgs {
   colorByCDS?: boolean
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
+  maxFeatureCount?: number
 }
 
 export interface WebGLFeatureDataResult {
@@ -73,6 +74,15 @@ export interface WebGLFeatureDataResult {
   maxY: number
   totalHeight: number
 }
+
+export interface RegionTooLargeResult {
+  regionTooLarge: true
+  featureCount: number
+}
+
+export type RenderWebGLFeatureDataResult =
+  | WebGLFeatureDataResult
+  | RegionTooLargeResult
 
 export interface AminoAcidOverlayItem {
   startBp: number

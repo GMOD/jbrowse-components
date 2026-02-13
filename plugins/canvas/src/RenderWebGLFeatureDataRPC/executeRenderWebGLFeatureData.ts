@@ -36,6 +36,7 @@ import type {
   FlatbushItem,
   FloatingLabelsDataMap,
   RenderWebGLFeatureDataArgs,
+  RenderWebGLFeatureDataResult,
   SubfeatureInfo,
   WebGLFeatureDataResult,
 } from './rpcTypes.ts'
@@ -89,19 +90,32 @@ interface LayoutRecordWithLabels extends LayoutRecord {
   totalHeightWithLabels?: number
 }
 
-function emitCodonData(
-  rects: RectData[],
-  overlayItems: AminoAcidOverlayItem[],
-  aminoAcids: AggregatedAminoAcid[],
-  baseColor: string,
-  featureStart: number,
-  featureEnd: number,
-  regionStart: number,
-  y: number,
-  height: number,
-  strand: number,
-  reversed: boolean,
-) {
+function emitCodonData(opts: {
+  rects: RectData[]
+  overlayItems: AminoAcidOverlayItem[]
+  aminoAcids: AggregatedAminoAcid[]
+  baseColor: string
+  featureStart: number
+  featureEnd: number
+  regionStart: number
+  y: number
+  height: number
+  strand: number
+  reversed: boolean
+}) {
+  const {
+    rects,
+    overlayItems,
+    aminoAcids,
+    baseColor,
+    featureStart,
+    featureEnd,
+    regionStart,
+    y,
+    height,
+    strand,
+    reversed,
+  } = opts
   const baseHex = colord(baseColor).toHex()
   const color1 = lighten(baseHex, 0.2)
   const color2 = darken(baseHex, 0.1)
@@ -320,19 +334,19 @@ function collectRenderData(
             transcriptStrand,
           )
           if (aminoAcids.length > 0) {
-            emitCodonData(
+            emitCodonData({
               rects,
-              aminoAcidOverlay,
+              overlayItems: aminoAcidOverlay,
               aminoAcids,
-              childColor,
-              childStart,
-              childEnd,
+              baseColor: childColor,
+              featureStart: childStart,
+              featureEnd: childEnd,
               regionStart,
-              childTopPx,
-              childHeight,
-              transcriptStrand,
+              y: childTopPx,
+              height: childHeight,
+              strand: transcriptStrand,
               reversed,
-            )
+            })
           } else {
             rects.push({
               startOffset: childStart - regionStart,
@@ -499,7 +513,7 @@ export async function executeRenderWebGLFeatureData({
 }: {
   pluginManager: PluginManager
   args: RenderWebGLFeatureDataArgs
-}): Promise<WebGLFeatureDataResult> {
+}): Promise<RenderWebGLFeatureDataResult> {
   const {
     sessionId,
     adapterConfig,
@@ -509,6 +523,7 @@ export async function executeRenderWebGLFeatureData({
     colorByCDS,
     sequenceAdapter,
     showOnlyGenes,
+    maxFeatureCount,
     statusCallback = () => {},
     stopToken,
   } = args as RenderWebGLFeatureDataArgs & {
@@ -540,6 +555,16 @@ export async function executeRenderWebGLFeatureData({
 
   if (showOnlyGenes) {
     featuresArray = featuresArray.filter(f => f.get('type') === 'gene')
+  }
+
+  if (
+    maxFeatureCount !== undefined &&
+    featuresArray.length > maxFeatureCount
+  ) {
+    return {
+      regionTooLarge: true,
+      featureCount: featuresArray.length,
+    }
   }
 
   // Genomic positions are integers, but region bounds from the view can be fractional.
