@@ -152,7 +152,10 @@ await test('renderRegion with csi index', async () => {
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
-      ['bam', [fp('volvox-sorted.bam'), `index:${fp('volvox-sorted.bam.csi')}`]],
+      [
+        'bam',
+        [fp('volvox-sorted.bam'), `index:${fp('volvox-sorted.bam.csi')}`],
+      ],
     ],
     loc: 'ctgA:1000-2000',
   })
