@@ -18,11 +18,12 @@ export function printFileSizesAfterBuild(
 ) {
   const assets = (webpackStats.stats || [webpackStats])
     .map(stats =>
-      (stats
-        .toJson({ all: false, assets: true })
-        .assets || []).filter(asset => canReadAsset(asset.name))
+      (stats.toJson({ all: false, assets: true }).assets || [])
+        .filter(asset => canReadAsset(asset.name))
         .map(asset => {
-          const fileContents = fs.readFileSync(path.join(buildFolder, asset.name))
+          const fileContents = fs.readFileSync(
+            path.join(buildFolder, asset.name),
+          )
           return {
             folder: path.join(
               path.basename(buildFolder),

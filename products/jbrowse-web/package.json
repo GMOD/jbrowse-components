@@ -64,7 +64,6 @@
     "base64-js": "^1.5.1",
     "body-parser": "^2.2.2",
     "copy-to-clipboard": "^3.3.3",
-    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "dockview-core": "^4.13.1",
     "file-saver-es": "^2.0.5",

@@ -69,7 +69,9 @@ export async function packageApp(platform: string, arch: string) {
     }
   }
 
-  const appPaths = await packager(opts as unknown as Parameters<typeof packager>[0])
+  const appPaths = await packager(
+    opts as unknown as Parameters<typeof packager>[0],
+  )
 
   // Cleanup temp files
   fs.unlinkSync(path.join(BUILD, 'package.json'))

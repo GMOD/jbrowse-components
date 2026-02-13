@@ -94,7 +94,9 @@ function uploadToGitHub(artifacts: string[]) {
         stdio: 'inherit',
       })
     } catch (e) {
-      console.error(`  Failed to upload ${filename}: ${e instanceof Error ? e.message : e}`)
+      console.error(
+        `  Failed to upload ${filename}: ${e instanceof Error ? e.message : e}`,
+      )
     }
   }
 

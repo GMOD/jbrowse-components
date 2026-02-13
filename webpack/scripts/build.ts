@@ -5,8 +5,8 @@ import browserslist from 'browserslist'
 import chalk from 'chalk'
 import webpack from 'webpack'
 
-import paths from '../config/paths.ts'
-import { printFileSizesAfterBuild } from '../react-dev-utils/FileSizeReporter.ts'
+import { appBuild, appHtml, appIndexJs, appPublic } from '../config/paths.ts'
+import { printFileSizesAfterBuild } from '../FileSizeReporter.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -14,16 +14,14 @@ process.on('unhandledRejection', err => {
 
 process.env.NODE_ENV = 'production'
 
-// Check required files exist
-for (const filePath of [paths.appHtml, paths.appIndexJs]) {
+for (const filePath of [appHtml, appIndexJs]) {
   if (!fs.existsSync(filePath)) {
     console.error(`Required file not found: ${filePath}`)
     process.exit(1)
   }
 }
 
-// Check browserslist is configured
-if (browserslist.loadConfig({ path: paths.appPath }) == null) {
+if (browserslist.loadConfig({ path: process.cwd() }) == null) {
   console.error(
     chalk.red(
       'You must specify targeted browsers in package.json browserslist.',
@@ -45,11 +43,11 @@ function formatMessage(message: string | { message: string }) {
 }
 
 export default function buildWebpack(config: webpack.Configuration) {
-  fs.rmSync(paths.appBuild, { recursive: true, force: true })
-  fs.cpSync(paths.appPublic, paths.appBuild, {
+  fs.rmSync(appBuild, { recursive: true, force: true })
+  fs.cpSync(appPublic, appBuild, {
     recursive: true,
     dereference: true,
-    filter: file => file !== paths.appHtml,
+    filter: file => file !== appHtml,
   })
   return (
     build(config)
@@ -63,10 +61,10 @@ export default function buildWebpack(config: webpack.Configuration) {
           }
 
           console.log('File sizes:\n')
-          printFileSizesAfterBuild(stats, paths.appBuild)
+          printFileSizesAfterBuild(stats, appBuild)
           console.log()
 
-          const buildFolder = path.relative(process.cwd(), paths.appBuild)
+          const buildFolder = path.relative(process.cwd(), appBuild)
           console.log(
             `The ${chalk.cyan(buildFolder)} folder is ready to be deployed.`,
           )
@@ -93,41 +91,51 @@ function build(config: webpack.Configuration) {
   console.log('Creating an optimized production build...')
 
   const compiler = webpack(config)
-  return new Promise<{ stats: webpack.Stats; warnings: string[] }>((resolve, reject) => {
-    compiler.run((err, stats) => {
-      let messages
-      if (err) {
-        if (!err.message) {
-          reject(err)
+  return new Promise<{ stats: webpack.Stats; warnings: string[] }>(
+    (resolve, reject) => {
+      compiler.run((err, stats) => {
+        let messages
+        if (err) {
+          if (!err.message) {
+            reject(err)
+            return
+          }
+          messages = {
+            errors: [err.message],
+            warnings: [] as string[],
+          }
+        } else {
+          const statsData = stats!.toJson({
+            all: false,
+            warnings: true,
+            errors: true,
+          })
+          messages = {
+            errors: (
+              (statsData.errors || []) as (string | { message: string })[]
+            ).map(formatMessage),
+            warnings: (
+              (statsData.warnings || []) as (string | { message: string })[]
+            ).map(formatMessage),
+          }
+        }
+        if (messages.errors.length) {
+          if (messages.errors.length > 1) {
+            messages.errors.length = 1
+          }
+          reject(new Error(messages.errors.join('\n\n')))
           return
         }
-        messages = {
-          errors: [err.message],
-          warnings: [] as string[],
-        }
-      } else {
-        const statsData = stats!.toJson({ all: false, warnings: true, errors: true })
-        messages = {
-          errors: ((statsData.errors || []) as (string | { message: string })[]).map(formatMessage),
-          warnings: ((statsData.warnings || []) as (string | { message: string })[]).map(formatMessage),
-        }
-      }
-      if (messages.errors.length) {
-        if (messages.errors.length > 1) {
-          messages.errors.length = 1
-        }
-        reject(new Error(messages.errors.join('\n\n')))
-        return
-      }
 
-      if (writeStatsJson) {
-        fs.writeFileSync(
-          `${paths.appBuild}/bundle-stats.json`,
-          JSON.stringify(stats!.toJson()),
-        )
-      }
+        if (writeStatsJson) {
+          fs.writeFileSync(
+            `${appBuild}/bundle-stats.json`,
+            JSON.stringify(stats!.toJson()),
+          )
+        }
 
-      resolve({ stats: stats!, warnings: messages.warnings })
-    })
-  })
+        resolve({ stats: stats!, warnings: messages.warnings })
+      })
+    },
+  )
 }

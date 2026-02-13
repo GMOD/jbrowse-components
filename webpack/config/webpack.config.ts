@@ -1,29 +1,30 @@
 import { execSync } from 'child_process'
-import path from 'path'
 
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import webpack from 'webpack'
-import { WebpackManifestPlugin } from 'webpack-manifest-plugin'
 
-import paths, { moduleFileExtensions } from './paths.ts'
-import InlineChunkHtmlPlugin from '../react-dev-utils/InlineChunkHtmlPlugin.ts'
+import {
+  appBuild,
+  appHtml,
+  appIndexJs,
+  appSrc,
+  moduleFileExtensions,
+} from './paths.ts'
+import InlineChunkHtmlPlugin from '../InlineChunkHtmlPlugin.ts'
 
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
-const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
-function getWorkspaces(fromDir?: string) {
-  const cwd = fromDir || process.cwd()
+function getWorkspaces() {
   const workspacesStr = execSync('pnpm recursive list --json --depth=-1', {
-    cwd,
+    cwd: process.cwd(),
   }).toString()
-  return Object.values(JSON.parse(workspacesStr) as Record<string, { path: string }>).map(e => e.path)
+  return Object.values(
+    JSON.parse(workspacesStr) as Record<string, { path: string }>,
+  ).map(e => e.path)
 }
-
-const cssRegex = /\.css$/
-const cssModuleRegex = /\.module\.css$/
 
 export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
@@ -36,16 +37,13 @@ export default function webpackBuilder(): webpack.Configuration {
       isEnvDevelopment && 'style-loader',
       isEnvProduction && {
         loader: MiniCssExtractPlugin.loader,
-        options: paths.publicUrlOrPath.startsWith('.')
-          ? { publicPath: '../../' }
-          : {},
+        options: { publicPath: '../../' },
       },
       { loader: 'css-loader', options: cssOptions },
     ].filter(Boolean)
   }
 
   return {
-    ...(process.env.NO_CACHE ? { cache: false } : {}),
     target: ['browserslist'],
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
@@ -54,10 +52,10 @@ export default function webpackBuilder(): webpack.Configuration {
       ? shouldUseSourceMap
         ? 'source-map'
         : false
-      : 'eval' as const,
-    entry: paths.appIndexJs,
+      : ('eval' as const),
+    entry: appIndexJs,
     output: {
-      path: paths.appBuild,
+      path: appBuild,
       pathinfo: isEnvDevelopment,
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
@@ -66,32 +64,26 @@ export default function webpackBuilder(): webpack.Configuration {
         ? 'static/js/[name].[contenthash:8].chunk.js'
         : 'static/js/[name].chunk.js',
       assetModuleFilename: 'static/media/[name].[hash][ext]',
-      devtoolModuleFilenameTemplate: isEnvProduction
-        ? (info: { absoluteResourcePath: string }) =>
-            path
-              .relative(paths.appSrc, info.absoluteResourcePath)
-              .replace(/\\/g, '/')
-        : (info: { absoluteResourcePath: string }) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
       conditionNames: ['mui-modern', '...'],
-      modules: ['node_modules', paths.appNodeModules],
       extensions: moduleFileExtensions.map(ext => `.${ext}`),
-      plugins: [],
     },
     module: {
       strictExportPresence: true,
       rules: [
-        shouldUseSourceMap ? {
-          enforce: 'pre' as const,
-          test: /\.(js|mjs|jsx|ts|tsx|css)$/,
-          loader: 'source-map-loader',
-        } : false,
+        shouldUseSourceMap
+          ? {
+              enforce: 'pre' as const,
+              test: /\.(js|mjs|jsx|ts|tsx|css)$/,
+              loader: 'source-map-loader',
+            }
+          : false,
         {
           oneOf: [
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              include: [paths.appSrc, getWorkspaces()],
+              include: [appSrc, getWorkspaces()],
               loader: 'babel-loader',
               options: {
                 plugins: ['babel-plugin-react-compiler'],
@@ -102,8 +94,8 @@ export default function webpackBuilder(): webpack.Configuration {
               },
             },
             {
-              test: cssRegex,
-              exclude: cssModuleRegex,
+              test: /\.css$/,
+              exclude: /\.module\.css$/,
               use: getStyleLoaders({
                 importLoaders: 1,
                 sourceMap: isEnvProduction
@@ -114,7 +106,7 @@ export default function webpackBuilder(): webpack.Configuration {
               sideEffects: true,
             },
             {
-              test: cssModuleRegex,
+              test: /\.module\.css$/,
               use: getStyleLoaders({
                 importLoaders: 1,
                 sourceMap: isEnvProduction
@@ -134,7 +126,7 @@ export default function webpackBuilder(): webpack.Configuration {
     plugins: [
       new HtmlWebpackPlugin({
         inject: true,
-        template: paths.appHtml,
+        template: appHtml,
         ...(isEnvProduction && shouldMinimize
           ? {
               minify: {
@@ -153,12 +145,10 @@ export default function webpackBuilder(): webpack.Configuration {
           : {}),
       }),
       isEnvProduction &&
-        shouldInlineRuntimeChunk &&
-        new InlineChunkHtmlPlugin(HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'], [/runtime-.+[.]js/]),
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-        'process.env.PUBLIC_URL': JSON.stringify(paths.publicUrlOrPath.slice(0, -1)),
-      }),
+        new InlineChunkHtmlPlugin(
+          HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'],
+          [/runtime-.+[.]js/],
+        ),
       isEnvDevelopment &&
         shouldUseReactRefresh &&
         new ReactRefreshWebpackPlugin({ overlay: false }),
@@ -167,19 +157,6 @@ export default function webpackBuilder(): webpack.Configuration {
           filename: 'static/css/[name].[contenthash:8].css',
           chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
         }),
-      new WebpackManifestPlugin({
-        fileName: 'asset-manifest.json',
-        publicPath: paths.publicUrlOrPath,
-        generate: (seed, files, entrypoints) => ({
-          files: files.reduce((manifest, file) => {
-            manifest[file.name] = file.path
-            return manifest
-          }, seed),
-          entrypoints: entrypoints.main?.filter(
-            fileName => !fileName.endsWith('.map'),
-          ),
-        }),
-      }),
     ].filter(Boolean),
     performance: false,
     optimization: {

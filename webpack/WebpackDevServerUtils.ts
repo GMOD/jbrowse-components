@@ -23,16 +23,11 @@ function formatWebpackMessages(json: {
   }
 }
 
-export function prepareUrls(
-  protocol: string,
-  host: string,
-  port: number,
-  pathname = '/',
-) {
+export function prepareUrls(protocol: string, host: string, port: number) {
   const prettyHost = host === '0.0.0.0' || host === '::' ? 'localhost' : host
   return {
-    localUrlForTerminal: `${protocol}://${prettyHost}:${chalk.bold(port)}${pathname}`,
-    localUrlForBrowser: `${protocol}://${prettyHost}:${port}${pathname}`,
+    localUrlForTerminal: `${protocol}://${prettyHost}:${chalk.bold(port)}`,
+    localUrlForBrowser: `${protocol}://${prettyHost}:${port}`,
   }
 }
 
@@ -62,7 +57,12 @@ export function createCompiler({
 
   compiler.hooks.done.tap('done', (stats: webpack.Stats) => {
     const statsData = stats.toJson({ all: false, warnings: true, errors: true })
-    const messages = formatWebpackMessages(statsData as { errors: (string | { message: string })[]; warnings: (string | { message: string })[] })
+    const messages = formatWebpackMessages(
+      statsData as {
+        errors: (string | { message: string })[]
+        warnings: (string | { message: string })[]
+      },
+    )
     const isSuccessful = !messages.errors.length && !messages.warnings.length
 
     if (isSuccessful) {
@@ -104,7 +104,8 @@ export function choosePort(host: string, defaultPort: number) {
       const fallback = net.createServer()
       fallback.listen(0, host, () => {
         const addr = fallback.address()
-        const port = typeof addr === 'object' && addr ? addr.port : defaultPort + 1
+        const port =
+          typeof addr === 'object' && addr ? addr.port : defaultPort + 1
         fallback.close(() => {
           console.log(chalk.yellow(`Port ${defaultPort} in use, using ${port}`))
           resolve(port)

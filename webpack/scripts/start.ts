@@ -7,12 +7,11 @@ import webpack from 'webpack'
 // eslint-disable-next-line import/default
 import WebpackDevServer from 'webpack-dev-server'
 
-import paths from '../config/paths.ts'
 import {
   choosePort,
   createCompiler,
   prepareUrls,
-} from '../react-dev-utils/WebpackDevServerUtils.ts'
+} from '../WebpackDevServerUtils.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -20,8 +19,7 @@ process.on('unhandledRejection', err => {
 
 process.env.NODE_ENV = 'development'
 
-// Check browserslist is configured
-if (browserslist.loadConfig({ path: paths.appPath }) == null) {
+if (browserslist.loadConfig({ path: process.cwd() }) == null) {
   console.error(
     chalk.red(
       'You must specify targeted browsers in package.json browserslist.',
@@ -41,16 +39,9 @@ export default function startWebpack(config: webpack.Configuration) {
       }
 
       const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
-      const appName = JSON.parse(
-        fs.readFileSync(paths.appPath + '/package.json', 'utf8'),
-      ).name
+      const appName = JSON.parse(fs.readFileSync('package.json', 'utf8')).name
 
-      const urls = prepareUrls(
-        protocol,
-        HOST,
-        port,
-        paths.publicUrlOrPath.slice(0, -1),
-      )
+      const urls = prepareUrls(protocol, HOST, port)
 
       const compiler = createCompiler({
         appName,
