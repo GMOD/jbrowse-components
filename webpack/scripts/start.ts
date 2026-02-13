@@ -42,7 +42,7 @@ export default function startWebpack(config: webpack.Configuration) {
 
       const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
       const appName = JSON.parse(
-        fs.readFileSync(paths.appPackageJson, 'utf8'),
+        fs.readFileSync(paths.appPath + '/package.json', 'utf8'),
       ).name
 
       const urls = prepareUrls(
@@ -56,7 +56,6 @@ export default function startWebpack(config: webpack.Configuration) {
         appName,
         config,
         urls,
-        webpack,
       })
 
       const devServer = new WebpackDevServer({ host: HOST, port }, compiler)

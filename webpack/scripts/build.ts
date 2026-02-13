@@ -7,7 +7,6 @@ import webpack from 'webpack'
 
 import paths from '../config/paths.ts'
 import { printFileSizesAfterBuild } from '../react-dev-utils/FileSizeReporter.ts'
-import formatWebpackMessages from '../react-dev-utils/formatWebpackMessages.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -34,6 +33,16 @@ if (browserslist.loadConfig({ path: paths.appPath }) == null) {
 }
 
 const writeStatsJson = process.argv.includes('--stats')
+
+function formatMessage(message: string | { message: string }) {
+  if (typeof message === 'string') {
+    return message
+  }
+  if ('message' in message) {
+    return message.message
+  }
+  return String(message)
+}
 
 export default function buildWebpack(config: webpack.Configuration) {
   fs.rmSync(paths.appBuild, { recursive: true, force: true })
@@ -92,14 +101,16 @@ function build(config: webpack.Configuration) {
           reject(err)
           return
         }
-        messages = formatWebpackMessages({
+        messages = {
           errors: [err.message],
-          warnings: [],
-        })
+          warnings: [] as string[],
+        }
       } else {
-        messages = formatWebpackMessages(
-          stats!.toJson({ all: false, warnings: true, errors: true }) as { errors: (string | { message: string })[]; warnings: (string | { message: string })[] },
-        )
+        const statsData = stats!.toJson({ all: false, warnings: true, errors: true })
+        messages = {
+          errors: ((statsData.errors || []) as (string | { message: string })[]).map(formatMessage),
+          warnings: ((statsData.warnings || []) as (string | { message: string })[]).map(formatMessage),
+        }
       }
       if (messages.errors.length) {
         if (messages.errors.length > 1) {

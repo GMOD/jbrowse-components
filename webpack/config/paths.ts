@@ -5,46 +5,18 @@ const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = (relativePath: string) =>
   path.resolve(appDirectory, relativePath)
 
-function getPublicUrlOrPath(
-  isEnvDevelopment: boolean,
-  homepage: string | undefined,
-  envPublicUrl: string | undefined,
-) {
-  const url = envPublicUrl || homepage || '/'
-  if (isEnvDevelopment && url.startsWith('.')) {
-    return '/'
-  }
-  return url.endsWith('/') ? url : `${url}/`
-}
-
-const publicUrlOrPath = getPublicUrlOrPath(
-  process.env.NODE_ENV === 'development',
-  JSON.parse(fs.readFileSync(resolveApp('package.json'), 'utf8')).homepage,
-  process.env.PUBLIC_URL,
-)
-
-const buildPath = process.env.BUILD_PATH || 'build'
+const publicUrlOrPath =
+  process.env.NODE_ENV === 'development' ? '/' : './'
 
 export const moduleFileExtensions = ['mjs', 'js', 'ts', 'tsx', 'json', 'jsx']
 
-const resolveModule = (resolveFn: (p: string) => string, filePath: string) => {
-  const extension = moduleFileExtensions.find(ext =>
-    fs.existsSync(resolveFn(`${filePath}.${ext}`)),
-  )
-  return extension
-    ? resolveFn(`${filePath}.${extension}`)
-    : resolveFn(`${filePath}.js`)
-}
-
 export default {
   appPath: resolveApp('.'),
-  appBuild: resolveApp(buildPath),
+  appBuild: resolveApp(process.env.BUILD_PATH || 'build'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveModule(resolveApp, 'src/index'),
-  appPackageJson: resolveApp('package.json'),
+  appIndexJs: resolveApp('src/index.tsx'),
   appSrc: resolveApp('src'),
   appNodeModules: resolveApp('node_modules'),
   publicUrlOrPath,
-  moduleFileExtensions,
 }

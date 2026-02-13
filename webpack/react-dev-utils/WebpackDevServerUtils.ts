@@ -1,9 +1,27 @@
-import chalk from 'chalk'
-// @ts-expect-error no types available
-import detect from 'detect-port-alt'
-import type webpack from 'webpack'
+import net from 'net'
 
-import formatWebpackMessages from './formatWebpackMessages.ts'
+import chalk from 'chalk'
+import webpack from 'webpack'
+
+function formatMessage(message: string | { message: string }) {
+  if (typeof message === 'string') {
+    return message
+  }
+  if ('message' in message) {
+    return message.message
+  }
+  return String(message)
+}
+
+function formatWebpackMessages(json: {
+  errors: (string | { message: string })[]
+  warnings: (string | { message: string })[]
+}) {
+  return {
+    errors: json.errors.map(formatMessage),
+    warnings: json.warnings.map(formatMessage),
+  }
+}
 
 export function prepareUrls(
   protocol: string,
@@ -22,12 +40,10 @@ export function createCompiler({
   appName,
   config,
   urls,
-  webpack,
 }: {
   appName: string
   config: webpack.Configuration
   urls: { localUrlForTerminal: string; localUrlForBrowser: string }
-  webpack: typeof import('webpack')
 }) {
   let compiler: webpack.Compiler
   try {
@@ -77,10 +93,23 @@ export function createCompiler({
 }
 
 export function choosePort(host: string, defaultPort: number) {
-  return (detect as (port: number, host: string) => Promise<number>)(defaultPort, host).then((port: number) => {
-    if (port !== defaultPort) {
-      console.log(chalk.yellow(`Port ${defaultPort} in use, using ${port}`))
-    }
-    return port
+  return new Promise<number>(resolve => {
+    const server = net.createServer()
+    server.listen(defaultPort, host, () => {
+      server.close(() => {
+        resolve(defaultPort)
+      })
+    })
+    server.on('error', () => {
+      const fallback = net.createServer()
+      fallback.listen(0, host, () => {
+        const addr = fallback.address()
+        const port = typeof addr === 'object' && addr ? addr.port : defaultPort + 1
+        fallback.close(() => {
+          console.log(chalk.yellow(`Port ${defaultPort} in use, using ${port}`))
+          resolve(port)
+        })
+      })
+    })
   })
 }
