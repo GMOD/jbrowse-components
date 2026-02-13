@@ -7,10 +7,8 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import webpack from 'webpack'
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin'
 
-import getClientEnvironment from './env.ts'
 import paths, { moduleFileExtensions } from './paths.ts'
 import InlineChunkHtmlPlugin from '../react-dev-utils/InlineChunkHtmlPlugin.ts'
-import InterpolateHtmlPlugin from '../react-dev-utils/InterpolateHtmlPlugin.ts'
 
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
@@ -31,8 +29,7 @@ export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
   const isEnvProduction = process.env.NODE_ENV === 'production'
 
-  const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1))
-  const shouldUseReactRefresh = env.raw.FAST_REFRESH
+  const shouldUseReactRefresh = process.env.FAST_REFRESH !== 'false'
 
   const getStyleLoaders = (cssOptions: Record<string, unknown>) => {
     return [
@@ -158,8 +155,10 @@ export default function webpackBuilder(): webpack.Configuration {
       isEnvProduction &&
         shouldInlineRuntimeChunk &&
         new InlineChunkHtmlPlugin(HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'], [/runtime-.+[.]js/]),
-      new InterpolateHtmlPlugin(HtmlWebpackPlugin as unknown as InterpolateHtmlPlugin['htmlWebpackPlugin'], env.raw as Record<string, string>),
-      new webpack.DefinePlugin(env.stringified),
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+        'process.env.PUBLIC_URL': JSON.stringify(paths.publicUrlOrPath.slice(0, -1)),
+      }),
       isEnvDevelopment &&
         shouldUseReactRefresh &&
         new ReactRefreshWebpackPlugin({ overlay: false }),
