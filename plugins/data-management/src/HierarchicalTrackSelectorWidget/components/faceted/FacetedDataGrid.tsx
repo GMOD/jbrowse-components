@@ -1,5 +1,6 @@
 import { useMemo, useState, useTransition } from 'react'
 
+import { notEmpty } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -100,7 +101,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
             model.setSelection(
               [...userSelectedIds.ids]
                 .map(id => model.allTrackConfigurationTrackIdSet.get(id))
-                .filter(Boolean),
+                .filter(notEmpty),
             )
           }
         })
