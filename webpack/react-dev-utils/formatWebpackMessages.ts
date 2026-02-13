@@ -1,4 +1,4 @@
-function formatMessage(message) {
+function formatMessage(message: string | { message: string }) {
   if (typeof message === 'string') {
     return message
   }
@@ -8,7 +8,10 @@ function formatMessage(message) {
   return String(message)
 }
 
-export default function formatWebpackMessages(json) {
+export default function formatWebpackMessages(json: {
+  errors: (string | { message: string })[]
+  warnings: (string | { message: string })[]
+}) {
   return {
     errors: json.errors.map(formatMessage),
     warnings: json.warnings.map(formatMessage),

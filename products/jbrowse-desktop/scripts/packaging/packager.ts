@@ -43,7 +43,7 @@ export async function packageApp(platform: string, arch: string) {
         ? path.join(ASSETS, 'icon.icns')
         : undefined
 
-  const opts = {
+  const opts: Record<string, unknown> = {
     dir: BUILD,
     out: outDir,
     name: APP_NAME,
@@ -69,11 +69,11 @@ export async function packageApp(platform: string, arch: string) {
     }
   }
 
-  const appPaths = await packager(opts)
+  const appPaths = await packager(opts as unknown as Parameters<typeof packager>[0])
 
   // Cleanup temp files
   fs.unlinkSync(path.join(BUILD, 'package.json'))
   fs.unlinkSync(path.join(BUILD, 'app-update.yml'))
 
-  return appPaths[0]
+  return appPaths[0]!
 }

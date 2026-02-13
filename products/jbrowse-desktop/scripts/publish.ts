@@ -39,7 +39,7 @@ function parseArgs() {
 }
 
 function getArtifacts(platforms: string[]) {
-  const artifacts = []
+  const artifacts: string[] = []
 
   if (!fs.existsSync(DIST)) {
     return artifacts
@@ -93,8 +93,8 @@ function uploadToGitHub(artifacts: string[]) {
       execSync(`gh release upload "${tag}" "${artifact}" --clobber`, {
         stdio: 'inherit',
       })
-    } catch (err) {
-      console.error(`  Failed to upload ${filename}: ${err.message}`)
+    } catch (e) {
+      console.error(`  Failed to upload ${filename}: ${e instanceof Error ? e.message : e}`)
     }
   }
 

@@ -35,7 +35,6 @@ export async function notarizeMacApp(appPath: string) {
   await notarize({
     tool: 'notarytool',
     teamId: APPLE_TEAM_ID,
-    appBundleId: APP_ID,
     appPath,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASSWORD,

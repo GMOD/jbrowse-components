@@ -1,10 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
-import getPublicUrlOrPath from '../react-dev-utils/getPublicUrlOrPath.js'
+import getPublicUrlOrPath from '../react-dev-utils/getPublicUrlOrPath.ts'
 
 const appDirectory = fs.realpathSync(process.cwd())
-const resolveApp = relativePath => path.resolve(appDirectory, relativePath)
+const resolveApp = (relativePath: string) =>
+  path.resolve(appDirectory, relativePath)
 
 const publicUrlOrPath = getPublicUrlOrPath(
   process.env.NODE_ENV === 'development',
@@ -16,7 +17,7 @@ const buildPath = process.env.BUILD_PATH || 'build'
 
 export const moduleFileExtensions = ['mjs', 'js', 'ts', 'tsx', 'json', 'jsx']
 
-const resolveModule = (resolveFn, filePath) => {
+const resolveModule = (resolveFn: (p: string) => string, filePath: string) => {
   const extension = moduleFileExtensions.find(ext =>
     fs.existsSync(resolveFn(`${filePath}.${ext}`)),
   )

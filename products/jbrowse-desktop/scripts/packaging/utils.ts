@@ -58,9 +58,9 @@ export function generateLatestYml(files: string[]) {
     }
   }
 
-  if (files.length > 0 && fs.existsSync(path.join(DIST, files[0]))) {
+  if (files.length > 0 && fs.existsSync(path.join(DIST, files[0]!))) {
     lines.push(`path: ${files[0]}`)
-    lines.push(`sha512: ${sha512Base64(path.join(DIST, files[0]))}`)
+    lines.push(`sha512: ${sha512Base64(path.join(DIST, files[0]!))}`)
   }
 
   lines.push(`releaseDate: '${new Date().toISOString()}'`)

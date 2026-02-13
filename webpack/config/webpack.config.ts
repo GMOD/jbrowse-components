@@ -7,35 +7,35 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import webpack from 'webpack'
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin'
 
-import getClientEnvironment from './env.js'
-import modules from './modules.js'
-import paths, { moduleFileExtensions } from './paths.js'
-import InlineChunkHtmlPlugin from '../react-dev-utils/InlineChunkHtmlPlugin.js'
-import InterpolateHtmlPlugin from '../react-dev-utils/InterpolateHtmlPlugin.js'
+import getClientEnvironment from './env.ts'
+import modules from './modules.ts'
+import paths, { moduleFileExtensions } from './paths.ts'
+import InlineChunkHtmlPlugin from '../react-dev-utils/InlineChunkHtmlPlugin.ts'
+import InterpolateHtmlPlugin from '../react-dev-utils/InterpolateHtmlPlugin.ts'
 
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 const shouldMinimize = process.env.NO_MINIMIZE !== 'true'
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
-function getWorkspaces(fromDir) {
+function getWorkspaces(fromDir?: string) {
   const cwd = fromDir || process.cwd()
   const workspacesStr = execSync('pnpm recursive list --json --depth=-1', {
     cwd,
   }).toString()
-  return Object.values(JSON.parse(workspacesStr)).map(e => e.path)
+  return Object.values(JSON.parse(workspacesStr) as Record<string, { path: string }>).map(e => e.path)
 }
 
 const cssRegex = /\.css$/
 const cssModuleRegex = /\.module\.css$/
 
-export default function webpackBuilder() {
+export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
   const isEnvProduction = process.env.NODE_ENV === 'production'
 
   const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1))
   const shouldUseReactRefresh = env.raw.FAST_REFRESH
 
-  const getStyleLoaders = cssOptions => {
+  const getStyleLoaders = (cssOptions: Record<string, unknown>) => {
     return [
       isEnvDevelopment && 'style-loader',
       isEnvProduction && {
@@ -58,7 +58,7 @@ export default function webpackBuilder() {
       ? shouldUseSourceMap
         ? 'source-map'
         : false
-      : 'eval',
+      : 'eval' as const,
     entry: paths.appIndexJs,
     output: {
       path: paths.appBuild,
@@ -71,11 +71,11 @@ export default function webpackBuilder() {
         : 'static/js/[name].chunk.js',
       assetModuleFilename: 'static/media/[name].[hash][ext]',
       devtoolModuleFilenameTemplate: isEnvProduction
-        ? info =>
+        ? (info: { absoluteResourcePath: string }) =>
             path
               .relative(paths.appSrc, info.absoluteResourcePath)
               .replace(/\\/g, '/')
-        : info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+        : (info: { absoluteResourcePath: string }) => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     resolve: {
       conditionNames: ['mui-modern', '...'],
@@ -88,11 +88,11 @@ export default function webpackBuilder() {
     module: {
       strictExportPresence: true,
       rules: [
-        shouldUseSourceMap && {
-          enforce: 'pre',
+        shouldUseSourceMap ? {
+          enforce: 'pre' as const,
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
           loader: 'source-map-loader',
-        },
+        } : false,
         {
           oneOf: [
             {
@@ -135,7 +135,7 @@ export default function webpackBuilder() {
             },
           ],
         },
-      ].filter(Boolean),
+      ].filter(Boolean) as webpack.RuleSetRule[],
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -160,8 +160,8 @@ export default function webpackBuilder() {
       }),
       isEnvProduction &&
         shouldInlineRuntimeChunk &&
-        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
-      new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
+        new InlineChunkHtmlPlugin(HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'], [/runtime-.+[.]js/]),
+      new InterpolateHtmlPlugin(HtmlWebpackPlugin as unknown as InterpolateHtmlPlugin['htmlWebpackPlugin'], env.raw as Record<string, string>),
       new webpack.DefinePlugin(env.stringified),
       isEnvDevelopment &&
         shouldUseReactRefresh &&
@@ -179,7 +179,7 @@ export default function webpackBuilder() {
             manifest[file.name] = file.path
             return manifest
           }, seed),
-          entrypoints: entrypoints.main.filter(
+          entrypoints: entrypoints.main?.filter(
             fileName => !fileName.endsWith('.map'),
           ),
         }),

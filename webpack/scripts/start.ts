@@ -7,12 +7,12 @@ import webpack from 'webpack'
 // eslint-disable-next-line import/default
 import WebpackDevServer from 'webpack-dev-server'
 
-import paths from '../config/paths.js'
+import paths from '../config/paths.ts'
 import {
   choosePort,
   createCompiler,
   prepareUrls,
-} from '../react-dev-utils/WebpackDevServerUtils.js'
+} from '../react-dev-utils/WebpackDevServerUtils.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -30,10 +30,10 @@ if (browserslist.loadConfig({ path: paths.appPath }) == null) {
   process.exit(1)
 }
 
-const DEFAULT_PORT = Number.parseInt(process.env.PORT, 10) || 3000
+const DEFAULT_PORT = Number.parseInt(process.env.PORT || '3000', 10) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
-export default function startWebpack(config) {
+export default function startWebpack(config: webpack.Configuration) {
   return choosePort(HOST, DEFAULT_PORT)
     .then(port => {
       if (port == null) {

@@ -1,9 +1,16 @@
 import chalk from 'chalk'
+// @ts-expect-error no types available
 import detect from 'detect-port-alt'
+import type webpack from 'webpack'
 
-import formatWebpackMessages from './formatWebpackMessages.js'
+import formatWebpackMessages from './formatWebpackMessages.ts'
 
-export function prepareUrls(protocol, host, port, pathname = '/') {
+export function prepareUrls(
+  protocol: string,
+  host: string,
+  port: number,
+  pathname = '/',
+) {
   const prettyHost = host === '0.0.0.0' || host === '::' ? 'localhost' : host
   return {
     localUrlForTerminal: `${protocol}://${prettyHost}:${chalk.bold(port)}${pathname}`,
@@ -11,13 +18,23 @@ export function prepareUrls(protocol, host, port, pathname = '/') {
   }
 }
 
-export function createCompiler({ appName, config, urls, webpack }) {
-  let compiler
+export function createCompiler({
+  appName,
+  config,
+  urls,
+  webpack,
+}: {
+  appName: string
+  config: webpack.Configuration
+  urls: { localUrlForTerminal: string; localUrlForBrowser: string }
+  webpack: typeof import('webpack')
+}) {
+  let compiler: webpack.Compiler
   try {
     compiler = webpack(config)
-  } catch (err) {
+  } catch (e) {
     console.log(chalk.red('Failed to compile.'))
-    console.log(err.message || err)
+    console.log(e instanceof Error ? e.message : e)
     process.exit(1)
   }
 
@@ -27,9 +44,9 @@ export function createCompiler({ appName, config, urls, webpack }) {
 
   let isFirstCompile = true
 
-  compiler.hooks.done.tap('done', stats => {
+  compiler.hooks.done.tap('done', (stats: webpack.Stats) => {
     const statsData = stats.toJson({ all: false, warnings: true, errors: true })
-    const messages = formatWebpackMessages(statsData)
+    const messages = formatWebpackMessages(statsData as { errors: (string | { message: string })[]; warnings: (string | { message: string })[] })
     const isSuccessful = !messages.errors.length && !messages.warnings.length
 
     if (isSuccessful) {
@@ -59,8 +76,8 @@ export function createCompiler({ appName, config, urls, webpack }) {
   return compiler
 }
 
-export function choosePort(host, defaultPort) {
-  return detect(defaultPort, host).then(port => {
+export function choosePort(host: string, defaultPort: number) {
+  return (detect as (port: number, host: string) => Promise<number>)(defaultPort, host).then((port: number) => {
     if (port !== defaultPort) {
       console.log(chalk.yellow(`Port ${defaultPort} in use, using ${port}`))
     }

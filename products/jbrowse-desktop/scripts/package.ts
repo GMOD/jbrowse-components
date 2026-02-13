@@ -108,12 +108,16 @@ async function main() {
     process.exit(1)
   }
 
-  const builders: Record<string, (opts: { noInstaller: boolean }) => Promise<unknown>> = { linux: buildLinux, mac: buildMac, win: buildWindows }
+  const builders: Record<
+    string,
+    (opts: { noInstaller: boolean }) => Promise<unknown>
+  > = { linux: buildLinux, mac: buildMac, win: buildWindows }
 
   for (const platform of platforms) {
     try {
       await builders[platform]!({ noInstaller })
-    } catch (err) {
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e))
       console.error(`\n❌ Error building for ${platform}:`, err.message)
       if (process.env.DEBUG) {
         console.error(err.stack)

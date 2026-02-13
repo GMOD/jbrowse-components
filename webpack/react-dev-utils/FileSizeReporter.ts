@@ -3,21 +3,26 @@ import path from 'path'
 
 import chalk from 'chalk'
 
-function canReadAsset(asset) {
+function canReadAsset(asset: string) {
   return /\.(js|css)$/.test(asset)
 }
 
+interface StatsLike {
+  stats?: StatsLike[]
+  toJson: (opts: Record<string, boolean>) => { assets?: { name: string }[] }
+}
+
 export function printFileSizesAfterBuild(
-  webpackStats,
-  previousSizeMap,
-  buildFolder,
+  webpackStats: StatsLike,
+  previousSizeMap: { root: string; sizes: Record<string, number> },
+  buildFolder: string,
 ) {
   const root = previousSizeMap.root
   const assets = (webpackStats.stats || [webpackStats])
     .map(stats =>
-      stats
+      (stats
         .toJson({ all: false, assets: true })
-        .assets.filter(asset => canReadAsset(asset.name))
+        .assets || []).filter(asset => canReadAsset(asset.name))
         .map(asset => {
           const fileContents = fs.readFileSync(path.join(root, asset.name))
           return {
@@ -41,6 +46,6 @@ export function printFileSizesAfterBuild(
   }
 }
 
-export function measureFileSizesBeforeBuild(buildFolder) {
+export function measureFileSizesBeforeBuild(buildFolder: string) {
   return Promise.resolve({ root: buildFolder, sizes: {} })
 }

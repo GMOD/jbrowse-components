@@ -2,11 +2,11 @@ import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
 
-import paths from './paths.js'
+import paths from './paths.ts'
 
 const require = createRequire(import.meta.url)
 
-function getAdditionalModulePaths(options = {}) {
+function getAdditionalModulePaths(options: Record<string, string> = {}) {
   const baseUrl = options.baseUrl
   if (!baseUrl) {
     return ''
@@ -34,7 +34,7 @@ function getAdditionalModulePaths(options = {}) {
 function getModules() {
   const hasTsConfig = fs.existsSync(paths.appTsConfig)
 
-  let config = {}
+  let config: Record<string, Record<string, string>> = {}
   if (hasTsConfig) {
     const ts = require('typescript')
     config = ts.readConfigFile(paths.appTsConfig, ts.sys.readFile).config

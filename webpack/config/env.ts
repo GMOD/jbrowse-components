@@ -16,8 +16,10 @@ try {
 
 const REACT_APP = /^REACT_APP_/i
 
-export default function getClientEnvironment(publicUrl) {
-  const raw = Object.keys(process.env)
+export default function getClientEnvironment(publicUrl: string) {
+  const raw: Record<string, string | boolean | undefined> = Object.keys(
+    process.env,
+  )
     .filter(key => REACT_APP.test(key))
     .reduce(
       (env, key) => {
@@ -32,14 +34,17 @@ export default function getClientEnvironment(publicUrl) {
         WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
         FAST_REFRESH: process.env.FAST_REFRESH !== 'false',
         GIT_HASH: gitHash,
-      },
+      } as Record<string, string | boolean | undefined>,
     )
 
   const stringified = {
-    'process.env': Object.keys(raw).reduce((env, key) => {
-      env[key] = JSON.stringify(raw[key])
-      return env
-    }, {}),
+    'process.env': Object.keys(raw).reduce(
+      (env, key) => {
+        env[key] = JSON.stringify(raw[key])
+        return env
+      },
+      {} as Record<string, string>,
+    ),
   }
 
   return { raw, stringified }

@@ -1,7 +1,7 @@
 export default function getPublicUrlOrPath(
-  isEnvDevelopment,
-  homepage,
-  envPublicUrl,
+  isEnvDevelopment: boolean,
+  homepage: string | undefined,
+  envPublicUrl: string | undefined,
 ) {
   const url = envPublicUrl || homepage || '/'
   if (isEnvDevelopment && url.startsWith('.')) {

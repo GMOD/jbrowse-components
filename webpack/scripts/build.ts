@@ -5,12 +5,12 @@ import browserslist from 'browserslist'
 import chalk from 'chalk'
 import webpack from 'webpack'
 
-import paths from '../config/paths.js'
+import paths from '../config/paths.ts'
 import {
   measureFileSizesBeforeBuild,
   printFileSizesAfterBuild,
-} from '../react-dev-utils/FileSizeReporter.js'
-import formatWebpackMessages from '../react-dev-utils/formatWebpackMessages.js'
+} from '../react-dev-utils/FileSizeReporter.ts'
+import formatWebpackMessages from '../react-dev-utils/formatWebpackMessages.ts'
 
 process.on('unhandledRejection', err => {
   throw err
@@ -38,7 +38,7 @@ if (browserslist.loadConfig({ path: paths.appPath }) == null) {
 
 const writeStatsJson = process.argv.includes('--stats')
 
-export default function buildWebpack(config) {
+export default function buildWebpack(config: webpack.Configuration) {
   return (
     measureFileSizesBeforeBuild(paths.appBuild)
       .then(previousFileSizes => {
@@ -86,11 +86,14 @@ export default function buildWebpack(config) {
   )
 }
 
-function build(config, previousFileSizes) {
+function build(
+  config: webpack.Configuration,
+  previousFileSizes: { root: string; sizes: Record<string, number> },
+) {
   console.log('Creating an optimized production build...')
 
   const compiler = webpack(config)
-  return new Promise((resolve, reject) => {
+  return new Promise<{ stats: webpack.Stats; previousFileSizes: { root: string; sizes: Record<string, number> }; warnings: string[] }>((resolve, reject) => {
     compiler.run((err, stats) => {
       let messages
       if (err) {
@@ -104,7 +107,7 @@ function build(config, previousFileSizes) {
         })
       } else {
         messages = formatWebpackMessages(
-          stats.toJson({ all: false, warnings: true, errors: true }),
+          stats!.toJson({ all: false, warnings: true, errors: true }) as { errors: (string | { message: string })[]; warnings: (string | { message: string })[] },
         )
       }
       if (messages.errors.length) {
@@ -118,11 +121,11 @@ function build(config, previousFileSizes) {
       if (writeStatsJson) {
         fs.writeFileSync(
           `${paths.appBuild}/bundle-stats.json`,
-          JSON.stringify(stats.toJson()),
+          JSON.stringify(stats!.toJson()),
         )
       }
 
-      resolve({ stats, previousFileSizes, warnings: messages.warnings })
+      resolve({ stats: stats!, previousFileSizes, warnings: messages.warnings })
     })
   })
 }
