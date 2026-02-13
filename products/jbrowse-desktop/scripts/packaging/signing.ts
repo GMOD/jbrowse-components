@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { APP_ID, APPLE_TEAM_ID, DIST } from './config.js'
-import { ensureDir, log, run } from './utils.js'
+import { APP_ID, APPLE_TEAM_ID, DIST } from './config.ts'
+import { ensureDir, log, run } from './utils.ts'
 
-export async function signMacApp(appPath) {
+export async function signMacApp(appPath: string) {
   if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
     log('Skipping macOS code signing (APPLE_ID not set)')
     return
@@ -17,7 +17,7 @@ export async function signMacApp(appPath) {
   log('macOS app signed')
 }
 
-export async function notarizeMacApp(appPath) {
+export async function notarizeMacApp(appPath: string) {
   if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
     log('Skipping macOS notarization (APPLE_ID not set)')
     return
@@ -33,9 +33,7 @@ export async function notarizeMacApp(appPath) {
   const { notarize } = await import('@electron/notarize')
 
   await notarize({
-    tool: 'notarytool',
     teamId: APPLE_TEAM_ID,
-    appBundleId: APP_ID,
     appPath,
     appleId: process.env.APPLE_ID,
     appleIdPassword: process.env.APPLE_ID_PASSWORD,
@@ -44,7 +42,7 @@ export async function notarizeMacApp(appPath) {
   log('macOS app notarized')
 }
 
-export function signWindowsFile(filePath) {
+export function signWindowsFile(filePath: string) {
   if (!process.env.WINDOWS_SIGN_CREDENTIAL_ID) {
     log(`Skipping Windows code signing for ${path.basename(filePath)}`)
     return

@@ -33,7 +33,6 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@mui/material": "^7.3.8",
-    "crypto-js": "^4.2.0",
     "generic-filehandle2": "^2.0.18",
     "mobx": "^6.15.0"
   },

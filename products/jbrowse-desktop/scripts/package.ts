@@ -14,11 +14,11 @@
 import fs from 'fs'
 import path from 'path'
 
-import { BUILD, DIST, VERSION } from './packaging/config.js'
-import { buildLinux } from './packaging/linux.js'
-import { buildMac } from './packaging/mac.js'
-import { ensureDir, fileSize, log } from './packaging/utils.js'
-import { buildWindows } from './packaging/windows.js'
+import { BUILD, DIST, VERSION } from './packaging/config.ts'
+import { buildLinux } from './packaging/linux.ts'
+import { buildMac } from './packaging/mac.ts'
+import { ensureDir, fileSize, log } from './packaging/utils.ts'
+import { buildWindows } from './packaging/windows.ts'
 
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -47,7 +47,7 @@ function parseArgs() {
   return { platforms, noInstaller }
 }
 
-function printBanner(platforms) {
+function printBanner(platforms: string[]) {
   const macStatus = process.env.APPLE_ID
     ? '✓ Enabled'
     : '✗ Disabled (set APPLE_ID)'
@@ -108,12 +108,16 @@ async function main() {
     process.exit(1)
   }
 
-  const builders = { linux: buildLinux, mac: buildMac, win: buildWindows }
+  const builders: Record<
+    string,
+    (opts: { noInstaller: boolean }) => Promise<unknown>
+  > = { linux: buildLinux, mac: buildMac, win: buildWindows }
 
   for (const platform of platforms) {
     try {
-      await builders[platform]({ noInstaller })
-    } catch (err) {
+      await builders[platform]!({ noInstaller })
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e))
       console.error(`\n❌ Error building for ${platform}:`, err.message)
       if (process.env.DEBUG) {
         console.error(err.stack)

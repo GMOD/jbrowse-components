@@ -11,7 +11,7 @@ import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
 
-import { DIST, VERSION } from './packaging/config.js'
+import { DIST, VERSION } from './packaging/config.ts'
 
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -38,8 +38,8 @@ function parseArgs() {
   return { publish, platforms }
 }
 
-function getArtifacts(platforms) {
-  const artifacts = []
+function getArtifacts(platforms: string[]) {
+  const artifacts: string[] = []
 
   if (!fs.existsSync(DIST)) {
     return artifacts
@@ -80,7 +80,7 @@ function getArtifacts(platforms) {
   return artifacts
 }
 
-function uploadToGitHub(artifacts) {
+function uploadToGitHub(artifacts: string[]) {
   const tag = `v${VERSION}`
 
   console.log(`\nUploading ${artifacts.length} artifacts to release ${tag}...`)
@@ -93,8 +93,10 @@ function uploadToGitHub(artifacts) {
       execSync(`gh release upload "${tag}" "${artifact}" --clobber`, {
         stdio: 'inherit',
       })
-    } catch (err) {
-      console.error(`  Failed to upload ${filename}: ${err.message}`)
+    } catch (e) {
+      console.error(
+        `  Failed to upload ${filename}: ${e instanceof Error ? e.message : e}`,
+      )
     }
   }
 

@@ -11,14 +11,14 @@
     "./src/makeWorkerInstance": "./src/makeWorkerInstance.ts"
   },
   "scripts": {
-    "start": "NODE_ENV=development node scripts/start.js",
-    "build": "NODE_ENV=production node scripts/build.js",
+    "start": "NODE_ENV=development node scripts/start.ts",
+    "build": "NODE_ENV=production node scripts/build.ts",
     "prebuild": "rimraf build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "prepack": "pnpm build",
-    "test:browser": "node --experimental-strip-types browser-tests/runner.ts",
-    "test:browser:headed": "node --experimental-strip-types browser-tests/runner.ts --headed",
-    "test:browser:update": "node --experimental-strip-types browser-tests/runner.ts --update-snapshots"
+    "test:browser": "node browser-tests/runner.ts",
+    "test:browser:headed": "node browser-tests/runner.ts --headed",
+    "test:browser:update": "node browser-tests/runner.ts --update-snapshots"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.9",
@@ -64,7 +64,6 @@
     "base64-js": "^1.5.1",
     "body-parser": "^2.2.2",
     "copy-to-clipboard": "^3.3.3",
-    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "dockview-core": "^4.13.1",
     "file-saver-es": "^2.0.5",

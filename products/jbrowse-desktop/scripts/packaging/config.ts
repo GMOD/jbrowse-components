@@ -1,10 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-export const ROOT = path.resolve(__dirname, '../..')
+export const ROOT = path.resolve(import.meta.dirname, '../..')
 export const DIST = path.join(ROOT, 'dist')
 export const BUILD = path.join(ROOT, 'build')
 export const ASSETS = path.join(ROOT, 'assets')
