@@ -101,11 +101,13 @@ export const subfeaturesGlyph: Glyph = {
       return 0
     })
 
-    if (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') {
+    const effectiveMode =
+      geneGlyphMode === 'auto' && bpPerPx > 100 ? 'longest' : geneGlyphMode
+    if (effectiveMode === 'longest' || effectiveMode === 'longestCoding') {
       subfeatures = filterByGeneGlyphMode(
         subfeatures,
         transcriptTypes,
-        geneGlyphMode,
+        effectiveMode,
       )
     }
 

@@ -73,46 +73,8 @@ interface ArrowData {
 const UTR_HEIGHT_FRACTION = 0.65
 
 function colorToUint32(colorStr: string): number {
-  // Parse CSS color to RGBA packed as uint32
-  // For simplicity, handle common formats
-  if (colorStr.startsWith('#')) {
-    const hex = colorStr.slice(1)
-    if (hex.length === 6) {
-      const r = parseInt(hex.slice(0, 2), 16)
-      const g = parseInt(hex.slice(2, 4), 16)
-      const b = parseInt(hex.slice(4, 6), 16)
-      return (255 << 24) | (b << 16) | (g << 8) | r // ABGR for WebGL
-    }
-    if (hex.length === 8) {
-      const r = parseInt(hex.slice(0, 2), 16)
-      const g = parseInt(hex.slice(2, 4), 16)
-      const b = parseInt(hex.slice(4, 6), 16)
-      const a = parseInt(hex.slice(6, 8), 16)
-      return (a << 24) | (b << 16) | (g << 8) | r
-    }
-  }
-  if (colorStr.startsWith('rgb')) {
-    const match = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(
-      colorStr,
-    )
-    if (match) {
-      const r = parseInt(match[1]!, 10)
-      const g = parseInt(match[2]!, 10)
-      const b = parseInt(match[3]!, 10)
-      const a = match[4] ? Math.round(parseFloat(match[4]) * 255) : 255
-      return (a << 24) | (b << 16) | (g << 8) | r
-    }
-  }
-  // Named colors - just use a default
-  const namedColors: Record<string, number> = {
-    goldenrod: 0xff20a5da,
-    black: 0xff000000,
-    white: 0xffffffff,
-    red: 0xff0000ff,
-    green: 0xff00ff00,
-    blue: 0xffff0000,
-  }
-  return namedColors[colorStr.toLowerCase()] ?? 0xff808080
+  const { r, g, b, a } = colord(colorStr).toRgb()
+  return (Math.round(a * 255) << 24) | (b << 16) | (g << 8) | r
 }
 
 interface LayoutRecordWithLabels extends LayoutRecord {
@@ -493,7 +455,6 @@ function collectRenderData(
         y: rectTopPx,
         height: rectHeight,
         color: colorUint,
-        type: rectIsUTR ? 1 : 0,
       })
 
       // Add strand arrow for top-level features
@@ -858,7 +819,6 @@ export async function executeRenderWebGLFeatureData({
   const rectYs = new Float32Array(rects.length)
   const rectHeights = new Float32Array(rects.length)
   const rectColors = new Uint32Array(rects.length)
-  const rectTypes = new Uint8Array(rects.length)
 
   for (const [i, rect] of rects.entries()) {
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
@@ -866,7 +826,6 @@ export async function executeRenderWebGLFeatureData({
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
-    rectTypes[i] = rect.type
   }
 
   const linePositions = new Uint32Array(lines.length * 2)
@@ -903,7 +862,6 @@ export async function executeRenderWebGLFeatureData({
     rectYs,
     rectHeights,
     rectColors,
-    rectTypes,
     numRects: rects.length,
 
     linePositions,
@@ -938,7 +896,6 @@ export async function executeRenderWebGLFeatureData({
     result.rectYs.buffer,
     result.rectHeights.buffer,
     result.rectColors.buffer,
-    result.rectTypes.buffer,
     result.linePositions.buffer,
     result.lineYs.buffer,
     result.lineColors.buffer,

@@ -144,7 +144,7 @@ export default function stateModelFactory(
       },
 
       get geneGlyphMode(): string {
-        return self.trackGeneGlyphMode ?? 'all'
+        return self.trackGeneGlyphMode ?? 'auto'
       },
 
       get selectedFeatureId() {
@@ -632,6 +632,7 @@ export default function stateModelFactory(
             label: 'Gene glyph',
             subMenu: (
               [
+                { value: 'auto', label: 'Auto' },
                 { value: 'all', label: 'All transcripts' },
                 { value: 'longest', label: 'Longest transcript' },
                 { value: 'longestCoding', label: 'Longest coding transcript' },

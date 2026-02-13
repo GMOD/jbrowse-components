@@ -31,12 +31,16 @@ import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
-import { uploadRegionDataToGPU } from './components/alignmentComponentUtils.ts'
+import {
+  CIGAR_TYPE_LABELS,
+  uploadRegionDataToGPU,
+} from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 
+import type { CigarHitResult } from './components/hitTesting.ts'
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
@@ -356,6 +360,7 @@ export default function stateModelFactory(
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuFeature: undefined as Feature | undefined,
       contextMenuCoord: undefined as [number, number] | undefined,
+      contextMenuCigarHit: undefined as CigarHitResult | undefined,
       userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
@@ -1190,6 +1195,10 @@ export default function stateModelFactory(
 
       setContextMenuCoord(coord?: [number, number]) {
         self.contextMenuCoord = coord
+      },
+
+      setContextMenuCigarHit(hit?: CigarHitResult) {
+        self.contextMenuCigarHit = hit
       },
 
       async selectFeatureById(featureId: string) {
@@ -2387,11 +2396,45 @@ export default function stateModelFactory(
 
       contextMenuItems() {
         const feat = self.contextMenuFeature
-        if (!feat) {
-          return []
+        const cigarHit = self.contextMenuCigarHit
+        const items: {
+          label: string
+          icon?: unknown
+          onClick: () => void
+        }[] = []
+
+        if (cigarHit) {
+          const typeLabel =
+            CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
+          items.push({
+            label: `Sort by base at position`,
+            icon: SwapVertIcon,
+            onClick: () => {
+              const region = self.loadedRegion
+              if (region) {
+                self.setSortedByAtPosition(
+                  'basePair',
+                  cigarHit.position,
+                  region.refName,
+                )
+              }
+            },
+          })
+          items.push({
+            label: `Open ${typeLabel.toLowerCase()} details`,
+            icon: MenuOpenIcon,
+            onClick: () => {
+              const region = self.loadedRegion
+              if (region) {
+                const { openCigarWidget } = require('./components/openFeatureWidget.ts')
+                openCigarWidget(self, cigarHit, region.refName)
+              }
+            },
+          })
         }
-        return [
-          {
+
+        if (feat) {
+          items.push({
             label: 'Open feature details',
             icon: MenuOpenIcon,
             onClick: () => {
@@ -2410,8 +2453,8 @@ export default function stateModelFactory(
                 session.setSelection(feat)
               }
             },
-          },
-          {
+          })
+          items.push({
             label: 'Copy info to clipboard',
             icon: ContentCopyIcon,
             onClick: async () => {
@@ -2421,8 +2464,10 @@ export default function stateModelFactory(
               copy(JSON.stringify(rest, null, 4))
               session.notify('Copied to clipboard', 'success')
             },
-          },
-        ]
+          })
+        }
+
+        return items
       },
     }))
     .actions(self => {
