@@ -6,10 +6,7 @@ import chalk from 'chalk'
 import webpack from 'webpack'
 
 import paths from '../config/paths.ts'
-import {
-  measureFileSizesBeforeBuild,
-  printFileSizesAfterBuild,
-} from '../react-dev-utils/FileSizeReporter.ts'
+import { printFileSizesAfterBuild } from '../react-dev-utils/FileSizeReporter.ts'
 import formatWebpackMessages from '../react-dev-utils/formatWebpackMessages.ts'
 
 process.on('unhandledRejection', err => {
@@ -39,19 +36,16 @@ if (browserslist.loadConfig({ path: paths.appPath }) == null) {
 const writeStatsJson = process.argv.includes('--stats')
 
 export default function buildWebpack(config: webpack.Configuration) {
+  fs.rmSync(paths.appBuild, { recursive: true, force: true })
+  fs.cpSync(paths.appPublic, paths.appBuild, {
+    recursive: true,
+    dereference: true,
+    filter: file => file !== paths.appHtml,
+  })
   return (
-    measureFileSizesBeforeBuild(paths.appBuild)
-      .then(previousFileSizes => {
-        fs.rmSync(paths.appBuild, { recursive: true, force: true })
-        fs.cpSync(paths.appPublic, paths.appBuild, {
-          recursive: true,
-          dereference: true,
-          filter: file => file !== paths.appHtml,
-        })
-        return build(config, previousFileSizes)
-      })
+    build(config)
       .then(
-        ({ stats, previousFileSizes, warnings }) => {
+        ({ stats, warnings }) => {
           if (warnings.length) {
             console.log(chalk.yellow('Compiled with warnings.\n'))
             console.log(warnings.join('\n\n'))
@@ -60,7 +54,7 @@ export default function buildWebpack(config: webpack.Configuration) {
           }
 
           console.log('File sizes:\n')
-          printFileSizesAfterBuild(stats, previousFileSizes, paths.appBuild)
+          printFileSizesAfterBuild(stats, paths.appBuild)
           console.log()
 
           const buildFolder = path.relative(process.cwd(), paths.appBuild)
@@ -86,14 +80,11 @@ export default function buildWebpack(config: webpack.Configuration) {
   )
 }
 
-function build(
-  config: webpack.Configuration,
-  previousFileSizes: { root: string; sizes: Record<string, number> },
-) {
+function build(config: webpack.Configuration) {
   console.log('Creating an optimized production build...')
 
   const compiler = webpack(config)
-  return new Promise<{ stats: webpack.Stats; previousFileSizes: { root: string; sizes: Record<string, number> }; warnings: string[] }>((resolve, reject) => {
+  return new Promise<{ stats: webpack.Stats; warnings: string[] }>((resolve, reject) => {
     compiler.run((err, stats) => {
       let messages
       if (err) {
@@ -125,7 +116,7 @@ function build(
         )
       }
 
-      resolve({ stats: stats!, previousFileSizes, warnings: messages.warnings })
+      resolve({ stats: stats!, warnings: messages.warnings })
     })
   })
 }

@@ -1,11 +1,21 @@
 import fs from 'fs'
 import path from 'path'
 
-import getPublicUrlOrPath from '../react-dev-utils/getPublicUrlOrPath.ts'
-
 const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = (relativePath: string) =>
   path.resolve(appDirectory, relativePath)
+
+function getPublicUrlOrPath(
+  isEnvDevelopment: boolean,
+  homepage: string | undefined,
+  envPublicUrl: string | undefined,
+) {
+  const url = envPublicUrl || homepage || '/'
+  if (isEnvDevelopment && url.startsWith('.')) {
+    return '/'
+  }
+  return url.endsWith('/') ? url : `${url}/`
+}
 
 const publicUrlOrPath = getPublicUrlOrPath(
   process.env.NODE_ENV === 'development',
@@ -34,7 +44,6 @@ export default {
   appIndexJs: resolveModule(resolveApp, 'src/index'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
-  appTsConfig: resolveApp('tsconfig.json'),
   appNodeModules: resolveApp('node_modules'),
   publicUrlOrPath,
   moduleFileExtensions,

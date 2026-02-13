@@ -14,17 +14,15 @@ interface StatsLike {
 
 export function printFileSizesAfterBuild(
   webpackStats: StatsLike,
-  previousSizeMap: { root: string; sizes: Record<string, number> },
   buildFolder: string,
 ) {
-  const root = previousSizeMap.root
   const assets = (webpackStats.stats || [webpackStats])
     .map(stats =>
       (stats
         .toJson({ all: false, assets: true })
         .assets || []).filter(asset => canReadAsset(asset.name))
         .map(asset => {
-          const fileContents = fs.readFileSync(path.join(root, asset.name))
+          const fileContents = fs.readFileSync(path.join(buildFolder, asset.name))
           return {
             folder: path.join(
               path.basename(buildFolder),
@@ -44,8 +42,4 @@ export function printFileSizesAfterBuild(
       `  ${sizeKB.padStart(10)}  ${chalk.dim(asset.folder + path.sep)}${chalk.cyan(asset.name)}`,
     )
   }
-}
-
-export function measureFileSizesBeforeBuild(buildFolder: string) {
-  return Promise.resolve({ root: buildFolder, sizes: {} })
 }

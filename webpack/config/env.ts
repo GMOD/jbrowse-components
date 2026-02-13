@@ -14,28 +14,16 @@ try {
   // Not in a git repo
 }
 
-const REACT_APP = /^REACT_APP_/i
-
 export default function getClientEnvironment(publicUrl: string) {
-  const raw: Record<string, string | boolean | undefined> = Object.keys(
-    process.env,
-  )
-    .filter(key => REACT_APP.test(key))
-    .reduce(
-      (env, key) => {
-        env[key] = process.env[key]
-        return env
-      },
-      {
-        NODE_ENV: process.env.NODE_ENV || 'development',
-        PUBLIC_URL: publicUrl,
-        WDS_SOCKET_HOST: process.env.WDS_SOCKET_HOST,
-        WDS_SOCKET_PATH: process.env.WDS_SOCKET_PATH,
-        WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
-        FAST_REFRESH: process.env.FAST_REFRESH !== 'false',
-        GIT_HASH: gitHash,
-      } as Record<string, string | boolean | undefined>,
-    )
+  const raw: Record<string, string | boolean | undefined> = {
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    PUBLIC_URL: publicUrl,
+    WDS_SOCKET_HOST: process.env.WDS_SOCKET_HOST,
+    WDS_SOCKET_PATH: process.env.WDS_SOCKET_PATH,
+    WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
+    FAST_REFRESH: process.env.FAST_REFRESH !== 'false',
+    GIT_HASH: gitHash,
+  }
 
   const stringified = {
     'process.env': Object.keys(raw).reduce(

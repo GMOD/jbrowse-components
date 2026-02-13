@@ -33,7 +33,6 @@ export async function notarizeMacApp(appPath: string) {
   const { notarize } = await import('@electron/notarize')
 
   await notarize({
-    tool: 'notarytool',
     teamId: APPLE_TEAM_ID,
     appPath,
     appleId: process.env.APPLE_ID,

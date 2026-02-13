@@ -8,7 +8,6 @@ import webpack from 'webpack'
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin'
 
 import getClientEnvironment from './env.ts'
-import modules from './modules.ts'
 import paths, { moduleFileExtensions } from './paths.ts'
 import InlineChunkHtmlPlugin from '../react-dev-utils/InlineChunkHtmlPlugin.ts'
 import InterpolateHtmlPlugin from '../react-dev-utils/InterpolateHtmlPlugin.ts'
@@ -79,9 +78,7 @@ export default function webpackBuilder(): webpack.Configuration {
     },
     resolve: {
       conditionNames: ['mui-modern', '...'],
-      modules: ['node_modules', paths.appNodeModules].concat(
-        modules.additionalModulePaths || [],
-      ),
+      modules: ['node_modules', paths.appNodeModules],
       extensions: moduleFileExtensions.map(ext => `.${ext}`),
       plugins: [],
     },
