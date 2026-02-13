@@ -2,16 +2,20 @@ import { useEffect, useRef } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 import { observer } from 'mobx-react'
 
 import SequenceLettersOverlay from './SequenceLettersOverlay.tsx'
 import {
-  SequenceWebGLRenderer,
   buildSequenceGeometry,
+  disposeGL,
+  initGL,
+  render,
+  uploadGeometry,
 } from './drawSequenceWebGL.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
+import type { GLHandles } from './drawSequenceWebGL.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
@@ -32,42 +36,10 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<SequenceWebGLRenderer | null>(null)
+  const glRef = useRef<WebGL2RenderingContext | null>(null)
+  const handlesRef = useRef<GLHandles | null>(null)
+  const instanceCountRef = useRef(0)
 
-  if (view.bpPerPx > 3) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height,
-          width: '100%',
-        }}
-      >
-        Zoom in to see sequence
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height,
-          width: '100%',
-          color: 'red',
-        }}
-      >
-        {`${error}`}
-      </div>
-    )
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
@@ -78,38 +50,30 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
       console.error('WebGL2 not supported')
       return
     }
-    rendererRef.current = new SequenceWebGLRenderer(gl)
+    glRef.current = gl
+    handlesRef.current = initGL(gl)
     return () => {
-      rendererRef.current?.dispose()
-      rendererRef.current = null
+      if (glRef.current && handlesRef.current) {
+        disposeGL(glRef.current, handlesRef.current)
+      }
+      glRef.current = null
+      handlesRef.current = null
     }
   }, [])
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // geometry autorun: rebuilds typed arrays when data/settings change
   useEffect(() => {
     const disposer = autorun(
-      function sequenceWebGLDraw() {
-        const canvas = canvasRef.current
-        const renderer = rendererRef.current
-        if (!canvas || !renderer) {
+      function sequenceGeometryAutorun() {
+        const gl = glRef.current
+        const handles = handlesRef.current
+        if (!gl || !handles) {
           return
-        }
-        const { bpPerPx, offsetPx } = view
-        const dpr = window.devicePixelRatio || 1
-        const displayWidth = canvas.clientWidth
-        const displayHeight = canvas.clientHeight
-
-        if (
-          canvas.width !== displayWidth * dpr ||
-          canvas.height !== displayHeight * dpr
-        ) {
-          canvas.width = displayWidth * dpr
-          canvas.height = displayHeight * dpr
         }
 
         const regionEntries = [...sequenceData.entries()]
         if (regionEntries.length === 0) {
-          renderer.render(0, 1)
+          instanceCountRef.current = 0
           return
         }
 
@@ -147,12 +111,25 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
             mergedColors.set(g.colorBuf, offset * 4)
             offset += g.instanceCount
           }
-          renderer.uploadGeometry(mergedRects, mergedColors, totalRects)
+          uploadGeometry(gl, handles, mergedRects, mergedColors)
         }
+        instanceCountRef.current = totalRects
 
-        renderer.render(offsetPx * dpr, bpPerPx)
+        // render immediately after geometry upload so settings changes are visible
+        // (the render autorun only tracks offsetPx/bpPerPx)
+        // use untracked to avoid this autorun also tracking scroll position
+        untracked(() => {
+          const canvas = canvasRef.current
+          if (canvas) {
+            const cssWidth = canvas.clientWidth
+            const cssHeight = canvas.clientHeight
+            if (cssWidth > 0 && cssHeight > 0) {
+              render(gl, handles, totalRects, view.offsetPx, view.bpPerPx, cssWidth, cssHeight)
+            }
+          }
+        })
       },
-      { name: 'SequenceWebGLDraw' },
+      { name: 'SequenceGeometryAutorun' },
     )
     return () => {
       disposer()
@@ -167,6 +144,63 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     theme,
     view,
   ])
+
+  // render autorun: redraws on scroll/zoom, does NOT rebuild geometry
+  useEffect(() => {
+    const disposer = autorun(
+      function sequenceRenderAutorun() {
+        const gl = glRef.current
+        const handles = handlesRef.current
+        const canvas = canvasRef.current
+        if (!gl || !handles || !canvas) {
+          return
+        }
+        const { bpPerPx, offsetPx } = view
+        const cssWidth = canvas.clientWidth
+        const cssHeight = canvas.clientHeight
+        if (cssWidth > 0 && cssHeight > 0) {
+          render(gl, handles, instanceCountRef.current, offsetPx, bpPerPx, cssWidth, cssHeight)
+        }
+      },
+      { name: 'SequenceRenderAutorun' },
+    )
+    return () => {
+      disposer()
+    }
+  }, [view])
+
+  if (view.bpPerPx > 3) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height,
+          width: '100%',
+        }}
+      >
+        Zoom in to see sequence
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height,
+          width: '100%',
+          color: 'red',
+        }}
+      >
+        {`${error}`}
+      </div>
+    )
+  }
 
   const viewWidth = view.width
   const firstRegionData = [...sequenceData.values()][0]

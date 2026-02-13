@@ -74,12 +74,14 @@ const AlignmentsDisplayComponent = observer(
             onClose={() => {
               model.setContextMenuCoord(undefined)
               model.setContextMenuFeature(undefined)
+              model.setContextMenuCigarHit(undefined)
             }}
             slotProps={{
               transition: {
                 onExit: () => {
                   model.setContextMenuCoord(undefined)
                   model.setContextMenuFeature(undefined)
+                  model.setContextMenuCigarHit(undefined)
                 },
               },
             }}

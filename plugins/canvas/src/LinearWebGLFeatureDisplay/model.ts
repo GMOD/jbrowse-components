@@ -147,6 +147,15 @@ export default function stateModelFactory(
         return self.trackGeneGlyphMode ?? 'auto'
       },
 
+      get effectiveGeneGlyphMode(): string {
+        const mode = self.trackGeneGlyphMode ?? 'auto'
+        if (mode === 'auto') {
+          const view = getContainingView(self) as LGV
+          return view.bpPerPx > 100 ? 'longest' : 'all'
+        }
+        return mode
+      },
+
       get selectedFeatureId() {
         if (isAlive(self)) {
           const { selection } = getSession(self)
@@ -409,7 +418,7 @@ export default function stateModelFactory(
               displayConfig: {
                 showLabels: self.showLabels,
                 showDescriptions: self.showDescriptions,
-                geneGlyphMode: self.geneGlyphMode,
+                geneGlyphMode: self.effectiveGeneGlyphMode,
               },
               region,
               bpPerPx,
@@ -537,7 +546,7 @@ export default function stateModelFactory(
                 const showLabels = self.showLabels
                 const showDescriptions = self.showDescriptions
                 const colorByCDS = self.colorByCDS
-                const geneGlyphMode = self.geneGlyphMode
+                const geneGlyphMode = self.effectiveGeneGlyphMode
                 const showOnlyGenes = self.showOnlyGenes
                 if (
                   prevSettingsInitialized &&

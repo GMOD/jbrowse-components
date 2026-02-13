@@ -350,17 +350,6 @@ interface RegionGPUData {
   arrowCount: number
 }
 
-function unpackColorsToUint8(data: Uint32Array) {
-  const colors = new Uint8Array(data.length * 4)
-  for (const [i, datum] of data.entries()) {
-    colors[i * 4] = datum & 0xff
-    colors[i * 4 + 1] = (datum >> 8) & 0xff
-    colors[i * 4 + 2] = (datum >> 16) & 0xff
-    colors[i * 4 + 3] = (datum >> 24) & 0xff
-  }
-  return colors
-}
-
 export class WebGLFeatureRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
@@ -482,18 +471,18 @@ export class WebGLFeatureRenderer {
       rectPositions: Uint32Array
       rectYs: Float32Array
       rectHeights: Float32Array
-      rectColors: Uint32Array
+      rectColors: Uint8Array
       numRects: number
       linePositions: Uint32Array
       lineYs: Float32Array
-      lineColors: Uint32Array
+      lineColors: Uint8Array
       lineDirections: Int8Array
       numLines: number
       arrowXs: Uint32Array
       arrowYs: Float32Array
       arrowDirections: Int8Array
       arrowHeights: Float32Array
-      arrowColors: Uint32Array
+      arrowColors: Uint8Array
       numArrows: number
     },
   ) {
@@ -520,7 +509,7 @@ export class WebGLFeatureRenderer {
       // Create shared GL buffers for line data
       const linePosBuffer = this.createBuffer(data.linePositions)
       const lineYBuffer = this.createBuffer(data.lineYs)
-      const lineColorBuffer = this.createBuffer(unpackColorsToUint8(data.lineColors))
+      const lineColorBuffer = this.createBuffer(data.lineColors)
       glBuffers.push(linePosBuffer, lineYBuffer, lineColorBuffer)
 
       // Line VAO
@@ -665,9 +654,9 @@ export class WebGLFeatureRenderer {
   private uploadColorAttrib(
     program: WebGLProgram,
     attrib: string,
-    data: Uint32Array,
+    data: Uint8Array,
   ) {
-    const buffer = this.createBuffer(unpackColorsToUint8(data))
+    const buffer = this.createBuffer(data)
     this.bindNormalizedColorAttrib(program, attrib, buffer)
     return buffer
   }

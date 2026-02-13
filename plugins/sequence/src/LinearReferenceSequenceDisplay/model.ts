@@ -1,4 +1,7 @@
+import { lazy } from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   dedupe,
   getContainingTrack,
@@ -7,12 +10,13 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
+import type React from 'react'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -33,17 +37,24 @@ export interface LinearReferenceSequenceDisplayModel {
   sequenceType: string
   rowHeight: number
   sequenceHeight: number
+  DisplayMessageComponent: React.LazyExoticComponent<React.ComponentType<{ model: LinearReferenceSequenceDisplayModel }>>
+  configuration: Record<string, unknown>
 }
+
+const WebGLSequenceComponent = lazy(
+  () => import('./components/WebGLSequenceComponent.tsx'),
+)
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
- * base model `BaseLinearDisplay`
+ * base model `BaseDisplay` + `TrackHeightMixin`
  */
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearReferenceSequenceDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
       types.model({
         /**
          * #property
@@ -74,7 +85,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       rowHeight: 15,
       sequenceData: new Map<number, SequenceRegionData>(),
       error: undefined as unknown,
-      webGLComponent: undefined as AnyReactComponentType | undefined,
     }))
     .views(self => ({
       /**
@@ -86,7 +96,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #getter
-       * showReverse setting, it is NOT disabled for non-dna sequences
        */
       get showForwardActual() {
         return self.showForward
@@ -129,27 +138,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return t + r + s
       },
     }))
-    .views(self => ({
+    .views(() => ({
       get DisplayMessageComponent() {
-        return self.webGLComponent
-      },
-
-      renderProps() {
-        return { notReady: true }
-      },
-
-      /**
-       * #method
-       */
-      regionCannotBeRendered(/* region */) {
-        const view = getContainingView(self) as LGV
-        return view.bpPerPx > 3 ? 'Zoom in to see sequence' : undefined
-      },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return self.configuration.renderer.type
+        return WebGLSequenceComponent
       },
     }))
     .actions(self => ({
@@ -158,9 +149,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       setError(err: unknown) {
         self.error = err
-      },
-      setWebGLComponent(component: AnyReactComponentType) {
-        self.webGLComponent = component
       },
       /**
        * #action
@@ -180,25 +168,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
       },
+    }))
+    .actions(self => ({
       afterAttach() {
-        // lazy load WebGL component
-        import('./components/WebGLSequenceComponent.tsx')
-          .then(mod => {
-            if (isAlive(self)) {
-              this.setWebGLComponent(mod.default)
-            }
-          })
-          .catch((e: unknown) => {
-            console.error('Failed to load WebGLSequenceComponent', e)
-          })
-
-        // height autorun
         addDisposer(
           self,
           autorun(
             function sequenceHeightAutorun() {
               const view = getContainingView(self) as LGV
-              if (view.bpPerPx > 3) {
+              if (!view.initialized || view.bpPerPx > 3) {
                 self.setHeight(50)
               } else {
                 self.setHeight(self.sequenceHeight)
@@ -208,12 +186,11 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           ),
         )
 
-        // sequence data fetching
         makeAbortableReaction(
           self,
           () => {
             const view = getContainingView(self) as LGV
-            if (view.bpPerPx > 3) {
+            if (!view.initialized || view.bpPerPx > 3) {
               return undefined
             }
             return {
@@ -263,11 +240,11 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           () => {},
           result => {
             if (result) {
-              this.setSequenceData(result)
+              self.setSequenceData(result)
             }
           },
           err => {
-            this.setError(err)
+            self.setError(err)
           },
         )
       },

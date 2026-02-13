@@ -39,13 +39,13 @@ export interface WebGLFeatureDataResult {
   rectPositions: Uint32Array
   rectYs: Float32Array
   rectHeights: Float32Array
-  rectColors: Uint32Array
+  rectColors: Uint8Array
   numRects: number
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
   lineYs: Float32Array
-  lineColors: Uint32Array
+  lineColors: Uint8Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
   numLines: number
 
@@ -54,7 +54,7 @@ export interface WebGLFeatureDataResult {
   arrowYs: Float32Array
   arrowDirections: Int8Array
   arrowHeights: Float32Array
-  arrowColors: Uint32Array
+  arrowColors: Uint8Array
   numArrows: number
 
   // Hit detection

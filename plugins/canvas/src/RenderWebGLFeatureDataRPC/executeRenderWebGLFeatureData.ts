@@ -72,9 +72,17 @@ interface ArrowData {
 
 const UTR_HEIGHT_FRACTION = 0.65
 
-function colorToUint32(colorStr: string): number {
+function colorToUint32(colorStr: string) {
   const { r, g, b, a } = colord(colorStr).toRgb()
   return (Math.round(a * 255) << 24) | (b << 16) | (g << 8) | r
+}
+
+function writeColorBytes(out: Uint8Array, index: number, color: number) {
+  const o = index * 4
+  out[o] = color & 0xff
+  out[o + 1] = (color >> 8) & 0xff
+  out[o + 2] = (color >> 16) & 0xff
+  out[o + 3] = (color >> 24) & 0xff
 }
 
 interface LayoutRecordWithLabels extends LayoutRecord {
@@ -563,8 +571,6 @@ export async function executeRenderWebGLFeatureData({
     color3: '#357089',
     outline: '',
     height: 10,
-    showLabels: true,
-    showDescriptions: true,
     subfeatureLabels: 'none',
     displayMode: 'normal',
     maxFeatureGlyphExpansion: 500,
@@ -573,7 +579,6 @@ export async function executeRenderWebGLFeatureData({
     impliedUTRs: false,
     transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
     containerTypes: ['proteoform_orf'],
-    geneGlyphMode: 'all',
     displayDirectionalChevrons: true,
     labels: {
       name: '',
@@ -582,7 +587,6 @@ export async function executeRenderWebGLFeatureData({
       descriptionColor: 'blue',
       fontSize: 12,
     },
-    // Merge display settings
     ...displayConfig,
   }
 
@@ -818,26 +822,26 @@ export async function executeRenderWebGLFeatureData({
   const rectPositions = new Uint32Array(rects.length * 2)
   const rectYs = new Float32Array(rects.length)
   const rectHeights = new Float32Array(rects.length)
-  const rectColors = new Uint32Array(rects.length)
+  const rectColors = new Uint8Array(rects.length * 4)
 
   for (const [i, rect] of rects.entries()) {
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
     rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
-    rectColors[i] = rect.color
+    writeColorBytes(rectColors, i, rect.color)
   }
 
   const linePositions = new Uint32Array(lines.length * 2)
   const lineYs = new Float32Array(lines.length)
-  const lineColors = new Uint32Array(lines.length)
+  const lineColors = new Uint8Array(lines.length * 4)
   const lineDirections = new Int8Array(lines.length)
 
   for (const [i, line] of lines.entries()) {
     linePositions[i * 2] = Math.max(0, line.startOffset)
     linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
     lineYs[i] = line.y
-    lineColors[i] = line.color
+    writeColorBytes(lineColors, i, line.color)
     lineDirections[i] = line.direction
   }
 
@@ -845,14 +849,14 @@ export async function executeRenderWebGLFeatureData({
   const arrowYs = new Float32Array(arrows.length)
   const arrowDirections = new Int8Array(arrows.length)
   const arrowHeights = new Float32Array(arrows.length)
-  const arrowColors = new Uint32Array(arrows.length)
+  const arrowColors = new Uint8Array(arrows.length * 4)
 
   for (const [i, arrow] of arrows.entries()) {
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction
     arrowHeights[i] = arrow.height
-    arrowColors[i] = arrow.color
+    writeColorBytes(arrowColors, i, arrow.color)
   }
 
   const result: WebGLFeatureDataResult = {

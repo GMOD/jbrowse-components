@@ -35,12 +35,14 @@ import {
   CIGAR_TYPE_LABELS,
   uploadRegionDataToGPU,
 } from './components/alignmentComponentUtils.ts'
+import { openCigarWidget } from './components/openFeatureWidget.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 
 import type { CigarHitResult } from './components/hitTesting.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
@@ -2397,11 +2399,7 @@ export default function stateModelFactory(
       contextMenuItems() {
         const feat = self.contextMenuFeature
         const cigarHit = self.contextMenuCigarHit
-        const items: {
-          label: string
-          icon?: unknown
-          onClick: () => void
-        }[] = []
+        const items: MenuItem[] = []
 
         if (cigarHit) {
           const typeLabel =
@@ -2426,7 +2424,6 @@ export default function stateModelFactory(
             onClick: () => {
               const region = self.loadedRegion
               if (region) {
-                const { openCigarWidget } = require('./components/openFeatureWidget.ts')
                 openCigarWidget(self, cigarHit, region.refName)
               }
             },

@@ -271,16 +271,16 @@ export interface GLHandles {
 export function initGL(gl: WebGL2RenderingContext): GLHandles {
   const program = createProgram(gl, SEQUENCE_VERTEX_SHADER, SEQUENCE_FRAGMENT_SHADER)
 
-  const vao = gl.createVertexArray()!
+  const vao = gl.createVertexArray()
   gl.bindVertexArray(vao)
 
-  const rectBuffer = gl.createBuffer()!
+  const rectBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, rectBuffer)
   gl.enableVertexAttribArray(0)
   gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 0, 0)
   gl.vertexAttribDivisor(0, 1)
 
-  const colorBuffer = gl.createBuffer()!
+  const colorBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
   gl.enableVertexAttribArray(1)
   gl.vertexAttribPointer(1, 4, gl.UNSIGNED_BYTE, true, 0, 0)

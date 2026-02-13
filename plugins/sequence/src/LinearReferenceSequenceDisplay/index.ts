@@ -1,6 +1,6 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
+import SequenceDisplayComponent from './components/SequenceDisplayComponent.tsx'
 import { configSchema } from './configSchema.ts'
 import { modelFactory } from './model.ts'
 
@@ -18,7 +18,7 @@ export default function LinearReferenceSequenceDisplayF(
       displayName: 'Reference sequence display',
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: SequenceDisplayComponent,
     })
   })
 }

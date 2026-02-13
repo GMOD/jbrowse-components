@@ -25,7 +25,7 @@ import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { ColorPalette } from './WebGLRenderer.ts'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
-import type { ResolvedBlock } from './hitTesting.ts'
+import type { CigarHitResult, ResolvedBlock } from './hitTesting.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type {
   LegendItem,
@@ -92,6 +92,7 @@ export interface LinearAlignmentsDisplayModel {
   selectFeatureById: (featureId: string) => void
   setContextMenuFeatureById: (featureId: string) => void
   setContextMenuCoord: (coord?: [number, number]) => void
+  setContextMenuCigarHit: (hit?: CigarHitResult) => void
   contextMenuCoord: [number, number] | undefined
   contextMenuItems: () => { label: string; onClick: () => void; icon?: unknown }[]
   setContextMenuFeature: (feature?: unknown) => void
@@ -256,9 +257,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       isChainMode,
     })
 
-    if (result.type === 'feature') {
+    if (result.type === 'cigar') {
       e.preventDefault()
       model.setContextMenuCoord([e.clientX, e.clientY])
+      model.setContextMenuCigarHit(result.hit)
+      if (result.featureHit) {
+        model.setContextMenuFeatureById(result.featureHit.id)
+      }
+    } else if (result.type === 'feature') {
+      e.preventDefault()
+      model.setContextMenuCoord([e.clientX, e.clientY])
+      model.setContextMenuCigarHit(undefined)
       model.setContextMenuFeatureById(result.hit.id)
     }
   }
