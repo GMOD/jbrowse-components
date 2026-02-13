@@ -1,13 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 
-import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.js'
-import { packageApp } from './packager.js'
-import { signWindowsFile } from './signing.js'
-import { generateLatestYml, log, run, runQuiet } from './utils.js'
+import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
+import { packageApp } from './packager.ts'
+import { signWindowsFile } from './signing.ts'
+import { generateLatestYml, log, run, runQuiet } from './utils.ts'
 
 // Convert Unix path to Windows path for Wine (e.g., /home/user -> Z:\home\user)
-function toWinePath(unixPath) {
+function toWinePath(unixPath: string) {
   if (process.platform === 'win32') {
     return unixPath.replace(/\//g, '\\')
   }
@@ -15,7 +15,7 @@ function toWinePath(unixPath) {
   return runQuiet(`winepath -w "${unixPath}"`).replace(/\\/g, '\\\\')
 }
 
-function createNsisScript(appDir, outputExe, useWine) {
+function createNsisScript(appDir: string, outputExe: string, useWine: boolean) {
   let iconPath = path.join(ASSETS, 'installerIcon.ico')
   let appDirEscaped = appDir
   let outputExeEscaped = outputExe
@@ -123,7 +123,7 @@ function getNsisCommand() {
   }
 }
 
-async function createWindowsInstaller(electronAppDir) {
+async function createWindowsInstaller(electronAppDir: string) {
   const exeName = `${APP_NAME}-v${VERSION}-win.exe`
   const exePath = path.join(DIST, exeName)
 

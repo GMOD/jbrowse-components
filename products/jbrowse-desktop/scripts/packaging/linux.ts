@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.js'
-import { packageApp } from './packager.js'
-import { ensureDir, fileSizeMB, generateLatestYml, log, run } from './utils.js'
+import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
+import { packageApp } from './packager.ts'
+import { ensureDir, fileSizeMB, generateLatestYml, log, run } from './utils.ts'
 
 export async function buildLinux({ noInstaller = false } = {}) {
   log('Building Linux package...')

@@ -10,10 +10,10 @@ import {
   PRODUCT_NAME,
   ROOT,
   VERSION,
-} from './config.js'
-import { ensureDir, generateAppUpdateYml, log } from './utils.js'
+} from './config.ts'
+import { ensureDir, generateAppUpdateYml, log } from './utils.ts'
 
-export async function packageApp(platform, arch) {
+export async function packageApp(platform: string, arch: string) {
   log(`Packaging for ${platform}-${arch}...`)
 
   const { packager } = await import('@electron/packager')

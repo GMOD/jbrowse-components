@@ -11,7 +11,7 @@ import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
 
-import { DIST, VERSION } from './packaging/config.js'
+import { DIST, VERSION } from './packaging/config.ts'
 
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -38,7 +38,7 @@ function parseArgs() {
   return { publish, platforms }
 }
 
-function getArtifacts(platforms) {
+function getArtifacts(platforms: string[]) {
   const artifacts = []
 
   if (!fs.existsSync(DIST)) {
@@ -80,7 +80,7 @@ function getArtifacts(platforms) {
   return artifacts
 }
 
-function uploadToGitHub(artifacts) {
+function uploadToGitHub(artifacts: string[]) {
   const tag = `v${VERSION}`
 
   console.log(`\nUploading ${artifacts.length} artifacts to release ${tag}...`)
