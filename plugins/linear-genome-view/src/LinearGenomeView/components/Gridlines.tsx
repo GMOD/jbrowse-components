@@ -53,20 +53,6 @@ function RenderedBlockLines({
   const majorTickClass = `${classes.tick} ${classes.majorTick}`
   const minorTickClass = `${classes.tick} ${classes.minorTick}`
 
-  console.log('[Gridlines RenderedBlockLines]', {
-    blockKey: block.key,
-    start,
-    end,
-    reversed,
-    bpPerPx,
-    widthPx: block.widthPx,
-    numTicks: ticks.length,
-    samplePositions: ticks.slice(0, 5).map(({ base }) => ({
-      base,
-      x: (reversed ? end - base : base - start) / bpPerPx,
-    })),
-  })
-
   return (
     <ContentBlockComponent block={block}>
       {ticks.map(({ type, base }) => {
@@ -93,11 +79,6 @@ const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
   model: LGV
 }) {
   const { staticBlocks, bpPerPx } = model
-  console.log('[Gridlines RenderedVerticalGuides]', {
-    numBlocks: staticBlocks.blocks.length,
-    bpPerPx,
-    blockTypes: staticBlocks.blocks.map(b => b.type),
-  })
   return (
     <>
       {staticBlocks.map((block, index) => {
@@ -131,13 +112,6 @@ const Gridlines = observer(function Gridlines({
   const { classes } = useStyles()
   const { staticBlocks, offsetPx } = model
   const offsetLeft = staticBlocks.offsetPx - offsetPx
-  console.log('[Gridlines outer]', {
-    offsetPx,
-    staticBlocksOffsetPx: staticBlocks.offsetPx,
-    offsetLeft,
-    totalWidthPx: staticBlocks.totalWidthPx,
-    numBlocks: staticBlocks.blocks.length,
-  })
   return (
     <div className={classes.verticalGuidesZoomContainer}>
       <div

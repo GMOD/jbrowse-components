@@ -105,19 +105,6 @@ export function makeTicks(
       index += 1
     }
   }
-  console.log('[makeTicks]', {
-    start,
-    end,
-    bpPerPx,
-    gridPitch,
-    iterPitch,
-    minBase,
-    maxBase,
-    numTicks: ticks.length,
-    majorTicks: ticks.filter(t => t.type === 'major').length,
-    minorTicks: ticks.filter(t => t.type === 'minor').length,
-    tickBases: ticks.map(t => `${t.type}:${t.base}`).join(', '),
-  })
   return ticks
 }
 

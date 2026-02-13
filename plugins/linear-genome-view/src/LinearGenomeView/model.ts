@@ -1367,7 +1367,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (
             currentlyCalculatedStaticBlocks === undefined ||
             currentBlockKeys !== newKeys ||
-            bpPerPx !== prevBpPerPx
+            bpPerPx !== prevBpPerPx ||
+            width !== prevWidth
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys
