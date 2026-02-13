@@ -286,4 +286,13 @@ export default [
   '@jbrowse/core/util/rxjs',
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
   '@jbrowse/core/data_adapters/BaseAdapter',
+  '@jbrowse/core/jexl',
+
+  '@floating-ui/react',
+  'react-is',
+
+  '@emotion/cache',
+  '@emotion/react',
+  '@emotion/serialize',
+  '@emotion/utils',
 ]
