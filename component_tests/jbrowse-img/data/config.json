@@ -1,0 +1,41 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "localPath": "volvox.2bit"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_sv",
+      "name": "volvox structural variant test",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "localPath": "volvox.dup.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "localPath": "volvox.dup.vcf.gz.tbi"
+          }
+        }
+      }
+    }
+  ]
+}

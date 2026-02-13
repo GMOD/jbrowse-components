@@ -1,9 +1,9 @@
 import { useMemo, useState, useTransition } from 'react'
 
+import { notEmpty } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
-import { notEmpty } from '@jbrowse/core/util'
 
 import { computeInitialWidths } from './computeInitialWidths.ts'
 

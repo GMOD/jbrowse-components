@@ -30,10 +30,10 @@ pnpm test:browser:update
 Or run directly:
 
 ```bash
-node --experimental-strip-types browser-tests/runner.ts
-node --experimental-strip-types browser-tests/runner.ts --headed
-node --experimental-strip-types browser-tests/runner.ts --headed --slow-mo=100
-node --experimental-strip-types browser-tests/runner.ts --update-snapshots
+node browser-tests/runner.ts
+node browser-tests/runner.ts --headed
+node browser-tests/runner.ts --headed --slow-mo=100
+node browser-tests/runner.ts --update-snapshots
 ```
 
 ## How It Works
@@ -103,10 +103,10 @@ authentication testing.
 
 ```bash
 # Start OAuth server (port 3030)
-node --experimental-strip-types browser-tests/OAuthServer/app.ts
+node browser-tests/OAuthServer/app.ts
 
 # Start HTTP Basic Auth server (port 3040)
-node --experimental-strip-types browser-tests/HTTPBasicAuthServer/app.ts
+node browser-tests/HTTPBasicAuthServer/app.ts
 ```
 
 ### Testing Authentication
