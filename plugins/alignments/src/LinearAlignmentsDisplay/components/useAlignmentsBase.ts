@@ -90,6 +90,11 @@ export interface LinearAlignmentsDisplayModel {
   setFeatureIdUnderMouse: (id: string | undefined) => void
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (featureId: string) => void
+  setContextMenuFeatureById: (featureId: string) => void
+  setContextMenuCoord: (coord?: [number, number]) => void
+  contextMenuCoord: [number, number] | undefined
+  contextMenuItems: () => { label: string; onClick: () => void; icon?: unknown }[]
+  setContextMenuFeature: (feature?: unknown) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
   renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
 }
@@ -253,7 +258,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     if (result.type === 'feature') {
       e.preventDefault()
-      model.selectFeatureById(result.hit.id)
+      model.setContextMenuCoord([e.clientX, e.clientY])
+      model.setContextMenuFeatureById(result.hit.id)
     }
   }
 

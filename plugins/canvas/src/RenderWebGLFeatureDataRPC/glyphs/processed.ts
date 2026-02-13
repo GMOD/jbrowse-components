@@ -1,14 +1,8 @@
 import { getSubparts } from '../filterSubparts.ts'
 import { readCachedConfig } from '../renderConfig.ts'
-import { boxGlyph } from './box.ts'
-import { cdsGlyph } from './cds.ts'
-import {
-  drawSegmentedFeature,
-  getStrandArrowPadding,
-  layoutChild,
-} from './glyphUtils.ts'
+import { getStrandArrowPadding, layoutChild } from './glyphUtils.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export const processedTranscriptGlyph: Glyph = {
@@ -21,7 +15,6 @@ export const processedTranscriptGlyph: Glyph = {
       return false
     }
     const { transcriptTypes } = configContext
-    // Must be a transcript type with CDS children
     if (!transcriptTypes.includes(type)) {
       return false
     }
@@ -42,7 +35,6 @@ export const processedTranscriptGlyph: Glyph = {
     const strand = feature.get('strand') as number
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
-    // Get subparts with synthesized UTRs
     const subparts = getSubparts(feature, config)
     const children = subparts.map(child => {
       const childType = child.get('type')
@@ -62,9 +54,5 @@ export const processedTranscriptGlyph: Glyph = {
       leftPadding: arrowPadding.left,
       children,
     }
-  },
-
-  draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
-    drawSegmentedFeature(ctx, layout, dc, boxGlyph, cdsGlyph)
   },
 }

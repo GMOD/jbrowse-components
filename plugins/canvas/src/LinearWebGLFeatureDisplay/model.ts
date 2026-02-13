@@ -23,7 +23,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
   WebGLFeatureDataResult,
-} from '../RenderWebGLFeatureDataRPC/types.ts'
+} from '../RenderWebGLFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -59,6 +59,10 @@ export interface Region {
 
 const WebGLFeatureComponent = lazy(
   () => import('./components/WebGLFeatureComponent.tsx'),
+)
+
+const WebGLFeatureTooltip = lazy(
+  () => import('./components/WebGLFeatureTooltip.tsx'),
 )
 
 export default function stateModelFactory(
@@ -103,11 +107,24 @@ export default function stateModelFactory(
       error: null as Error | null,
       maxY: 0,
       featureIdUnderMouse: null as string | null,
+      mouseoverExtraInformation: undefined as string | undefined,
       contextMenuFeature: undefined as Feature | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
         return WebGLFeatureComponent
+      },
+
+      get TooltipComponent() {
+        return WebGLFeatureTooltip
+      },
+
+      get showTooltipsEnabled() {
+        return true
+      },
+
+      get showLegend() {
+        return false
       },
 
       renderProps() {
@@ -119,21 +136,15 @@ export default function stateModelFactory(
       },
 
       get showLabels(): boolean {
-        return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
+        return self.trackShowLabels ?? true
       },
 
       get showDescriptions(): boolean {
-        return (
-          self.trackShowDescriptions ??
-          getConf(self, ['renderer', 'showDescriptions'])
-        )
+        return self.trackShowDescriptions ?? true
       },
 
       get geneGlyphMode(): string {
-        return (
-          self.trackGeneGlyphMode ??
-          getConf(self, ['renderer', 'geneGlyphMode'])
-        )
+        return self.trackGeneGlyphMode ?? 'all'
       },
 
       get selectedFeatureId() {
@@ -251,6 +262,10 @@ export default function stateModelFactory(
 
       setFeatureIdUnderMouse(featureId: string | null) {
         ;(self as any).featureIdUnderMouse = featureId
+      },
+
+      setMouseoverExtraInformation(info: string | undefined) {
+        self.mouseoverExtraInformation = info
       },
 
       setContextMenuFeature(feature?: Feature) {
@@ -385,20 +400,17 @@ export default function stateModelFactory(
         }
 
         try {
-          const baseRendererConfig = getConf(self, 'renderer') || {}
-          const rendererConfig = {
-            ...baseRendererConfig,
-            showLabels: self.showLabels,
-            showDescriptions: self.showDescriptions,
-            geneGlyphMode: self.geneGlyphMode,
-          }
           const result = (await rpcManager.call(
             session.id ?? '',
             'RenderWebGLFeatureData',
             {
               sessionId: session.id,
               adapterConfig,
-              rendererConfig,
+              displayConfig: {
+                showLabels: self.showLabels,
+                showDescriptions: self.showDescriptions,
+                geneGlyphMode: self.geneGlyphMode,
+              },
               region,
               bpPerPx,
               colorByCDS: self.colorByCDS,

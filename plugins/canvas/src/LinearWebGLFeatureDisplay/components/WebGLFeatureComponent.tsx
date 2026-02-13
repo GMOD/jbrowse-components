@@ -7,7 +7,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
-import { shouldRenderPeptideText } from '../../CanvasFeatureRenderer/zoomThresholds.ts'
+import { shouldRenderPeptideText } from '../../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
 import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
@@ -15,7 +15,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
   WebGLFeatureDataResult,
-} from '../../RenderWebGLFeatureDataRPC/types.ts'
+} from '../../RenderWebGLFeatureDataRPC/rpcTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -40,18 +40,13 @@ interface LinearWebGLFeatureDisplayModel {
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
   setFeatureIdUnderMouse: (featureId: string | null) => void
+  setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (
     featureInfo: FlatbushItem,
     subfeatureInfo?: SubfeatureInfo,
   ) => void
   showContextMenuForFeature: (featureInfo: FlatbushItem) => void
   getFeatureById: (featureId: string) => FlatbushItem | undefined
-}
-
-interface TooltipState {
-  x: number
-  y: number
-  text: string
 }
 
 export interface Props {
@@ -196,7 +191,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const rendererRef = useRef<WebGLFeatureRenderer | null>(null)
   const [measureRef, measuredDims] = useMeasure()
   const [rendererReady, setRendererReady] = useState(false)
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
     null,
   )
@@ -432,7 +426,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     const handleMouseMove = (e: MouseEvent) => {
       const rpcDataMap = model.rpcDataMap
       if (rpcDataMap.size === 0) {
-        setTooltip(null)
+        model.setMouseoverExtraInformation(undefined)
         setHoveredFeature(null)
         setHoveredSubfeature(null)
         return
@@ -449,25 +443,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (subfeature) {
-        setTooltip({
-          x: mouseX + 10,
-          y: mouseY + 10,
-          text: subfeature.tooltip ?? subfeature.type,
-        })
+        model.setMouseoverExtraInformation(subfeature.tooltip ?? subfeature.type)
         setHoveredFeature(feature)
         setHoveredSubfeature(subfeature)
         model.setFeatureIdUnderMouse(feature?.featureId ?? null)
       } else if (feature) {
-        setTooltip({
-          x: mouseX + 10,
-          y: mouseY + 10,
-          text: feature.tooltip,
-        })
+        model.setMouseoverExtraInformation(feature.tooltip)
         setHoveredFeature(feature)
         setHoveredSubfeature(null)
         model.setFeatureIdUnderMouse(feature.featureId)
       } else {
-        setTooltip(null)
+        model.setMouseoverExtraInformation(undefined)
         setHoveredFeature(null)
         setHoveredSubfeature(null)
         model.setFeatureIdUnderMouse(null)
@@ -475,7 +461,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     const handleMouseLeave = () => {
-      setTooltip(null)
+      model.setMouseoverExtraInformation(undefined)
       setHoveredFeature(null)
       setHoveredSubfeature(null)
       model.setFeatureIdUnderMouse(null)
@@ -856,28 +842,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
               {elements}
             </div>
           ) : null,
-      )}
-
-      {/* Tooltip */}
-      {tooltip && (
-        <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x,
-            top: tooltip.y,
-            background: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            padding: '4px 8px',
-            borderRadius: 4,
-            fontSize: 12,
-            pointerEvents: 'none',
-            zIndex: 10,
-            maxWidth: 300,
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {tooltip.text}
-        </div>
       )}
 
       <LoadingOverlay

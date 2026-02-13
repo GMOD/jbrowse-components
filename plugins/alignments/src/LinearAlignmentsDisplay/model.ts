@@ -21,6 +21,8 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
@@ -353,6 +355,7 @@ export default function stateModelFactory(
       featureIdUnderMouse: undefined as undefined | string,
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuFeature: undefined as Feature | undefined,
+      contextMenuCoord: undefined as [number, number] | undefined,
       userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
@@ -1185,6 +1188,10 @@ export default function stateModelFactory(
         self.contextMenuFeature = feature
       },
 
+      setContextMenuCoord(coord?: [number, number]) {
+        self.contextMenuCoord = coord
+      },
+
       async selectFeatureById(featureId: string) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -1247,6 +1254,61 @@ export default function stateModelFactory(
             )
             session.showWidget(featureWidget)
             session.setSelection(feat)
+          }
+        } catch (e) {
+          console.error(e)
+          session.notifyError(`${e}`, e)
+        }
+      },
+
+    }))
+    .actions(self => ({
+      async setContextMenuFeatureById(featureId: string) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        try {
+          const track = getContainingTrack(self)
+          const adapterConfig = getConf(track, 'adapter')
+          const info = self.getFeatureInfoById(featureId)
+          if (!info) {
+            return
+          }
+          let assemblyName: string | undefined
+          for (const loaded of self.loadedRegions.values()) {
+            if (loaded.refName === info.refName) {
+              assemblyName = loaded.assemblyName
+              break
+            }
+          }
+          const region = {
+            refName: info.refName,
+            start: info.start,
+            end: info.end,
+            assemblyName,
+          }
+          const sequenceAdapter = getSequenceAdapter(session, region)
+          const sessionId = getRpcSessionId(self)
+          const { feature } = (await rpcManager.call(
+            sessionId,
+            'WebGLGetFeatureDetails',
+            {
+              sessionId,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              featureId,
+            },
+          )) as {
+            feature:
+              | (Record<string, unknown> & { uniqueId: string })
+              | undefined
+          }
+
+          if (isAlive(self) && feature) {
+            const feat = new SimpleFeature(
+              feature as ConstructorParameters<typeof SimpleFeature>[0],
+            )
+            self.setContextMenuFeature(feat)
           }
         } catch (e) {
           console.error(e)
@@ -2324,7 +2386,43 @@ export default function stateModelFactory(
       },
 
       contextMenuItems() {
-        return [] as { label: string; onClick: () => void; icon?: any }[]
+        const feat = self.contextMenuFeature
+        if (!feat) {
+          return []
+        }
+        return [
+          {
+            label: 'Open feature details',
+            icon: MenuOpenIcon,
+            onClick: () => {
+              const session = getSession(self)
+              if (isSessionModelWithWidgets(session)) {
+                const featureWidget = session.addWidget(
+                  'AlignmentsFeatureWidget',
+                  'alignmentFeature',
+                  {
+                    featureData: feat.toJSON(),
+                    view: getContainingView(self),
+                    track: getContainingTrack(self),
+                  },
+                )
+                session.showWidget(featureWidget)
+                session.setSelection(feat)
+              }
+            },
+          },
+          {
+            label: 'Copy info to clipboard',
+            icon: ContentCopyIcon,
+            onClick: async () => {
+              const { uniqueId, ...rest } = feat.toJSON()
+              const session = getSession(self)
+              const { default: copy } = await import('copy-to-clipboard')
+              copy(JSON.stringify(rest, null, 4))
+              session.notify('Copied to clipboard', 'success')
+            },
+          },
+        ]
       },
     }))
     .actions(self => {

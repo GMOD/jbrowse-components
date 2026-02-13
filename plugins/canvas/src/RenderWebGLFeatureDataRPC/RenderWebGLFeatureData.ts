@@ -1,7 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { RenderWebGLFeatureDataArgs } from './types.ts'
+import type { RenderWebGLFeatureDataArgs } from './rpcTypes.ts'
 
 export default class RenderWebGLFeatureData extends RpcMethodType {
   name = 'RenderWebGLFeatureData'

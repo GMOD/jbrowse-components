@@ -1,13 +1,7 @@
 import { readCachedConfig } from '../renderConfig.ts'
-import { boxGlyph } from './box.ts'
-import { cdsGlyph } from './cds.ts'
-import {
-  drawSegmentedFeature,
-  getStrandArrowPadding,
-  layoutChild,
-} from './glyphUtils.ts'
+import { getStrandArrowPadding, layoutChild } from './glyphUtils.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export const segmentsGlyph: Glyph = {
@@ -23,18 +17,15 @@ export const segmentsGlyph: Glyph = {
       return false
     }
     const { transcriptTypes, containerTypes } = configContext
-    // Not a coding transcript (those use ProcessedTranscript)
     if (transcriptTypes.includes(type)) {
       const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')
       if (hasCDS) {
         return false
       }
     }
-    // Not a container (gene)
     if (containerTypes.includes(type)) {
       return false
     }
-    // Not a top-level feature with nested subfeatures
     const isTopLevel = !feature.parent?.()
     const hasNestedSubfeatures = subfeatures.some(
       (f: Feature) => f.get('subfeatures')?.length,
@@ -77,9 +68,5 @@ export const segmentsGlyph: Glyph = {
       leftPadding: arrowPadding.left,
       children,
     }
-  },
-
-  draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
-    drawSegmentedFeature(ctx, layout, dc, boxGlyph, cdsGlyph)
   },
 }

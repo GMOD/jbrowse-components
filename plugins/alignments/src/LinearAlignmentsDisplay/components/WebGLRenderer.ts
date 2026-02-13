@@ -350,6 +350,7 @@ export class WebGLRenderer {
       'u_insertSizeUpper',
       'u_insertSizeLower',
       'u_chainMode',
+      'u_showStroke',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [

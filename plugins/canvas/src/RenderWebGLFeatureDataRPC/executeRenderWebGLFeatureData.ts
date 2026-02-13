@@ -23,16 +23,12 @@ import { darken, lighten } from '@mui/material'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { createFeatureFloatingLabels } from '../CanvasFeatureRenderer/floatingLabels.ts'
-import { layoutFeature } from '../CanvasFeatureRenderer/layout/layoutFeature.ts'
-import { fetchPeptideData } from '../CanvasFeatureRenderer/peptides/peptideUtils.ts'
-import { prepareAminoAcidData } from '../CanvasFeatureRenderer/peptides/prepareAminoAcidData.ts'
-import {
-  getBoxColor,
-  getStrokeColor,
-  isUTR,
-} from '../CanvasFeatureRenderer/util.ts'
-import { shouldRenderPeptideBackground } from '../CanvasFeatureRenderer/zoomThresholds.ts'
+import { createFeatureFloatingLabels } from './floatingLabels.ts'
+import { layoutFeature } from './layout/layoutFeature.ts'
+import { fetchPeptideData } from './peptides/peptideUtils.ts'
+import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
+import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
+import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
 import type {
   AminoAcidOverlayItem,
@@ -42,13 +38,10 @@ import type {
   RenderWebGLFeatureDataArgs,
   SubfeatureInfo,
   WebGLFeatureDataResult,
-} from './types.ts'
-import type { AggregatedAminoAcid } from '../CanvasFeatureRenderer/peptides/aggregateAminoAcids.ts'
-import type { RenderConfigContext } from '../CanvasFeatureRenderer/renderConfig.ts'
-import type {
-  LayoutRecord,
-  PeptideData,
-} from '../CanvasFeatureRenderer/types.ts'
+} from './rpcTypes.ts'
+import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
+import type { RenderConfigContext } from './renderConfig.ts'
+import type { LayoutRecord, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -59,7 +52,6 @@ interface RectData {
   y: number
   height: number
   color: number
-  type: number
 }
 
 interface LineData {
@@ -166,7 +158,7 @@ function emitCodonData(
       y,
       height,
       color: colorToUint32(bgColor),
-      type: 0,
+
     })
 
     overlayItems.push({
@@ -378,7 +370,7 @@ function collectRenderData(
               y: childTopPx,
               height: childHeight,
               color: childColorUint,
-              type: 0,
+        
             })
           }
         } else {
@@ -388,7 +380,7 @@ function collectRenderData(
             y: childTopPx,
             height: childHeight,
             color: childColorUint,
-            type: childIsUTR ? 1 : 0,
+
           })
         }
       }
@@ -478,7 +470,7 @@ function collectRenderData(
             y: childTopPx,
             height: childHeight,
             color: childColorUint,
-            type: childIsUTR ? 1 : 0,
+
           })
 
           // Note: We don't add simple child features to subfeatureInfos
@@ -542,7 +534,7 @@ export async function executeRenderWebGLFeatureData({
   const {
     sessionId,
     adapterConfig,
-    rendererConfig,
+    displayConfig,
     region,
     bpPerPx: requestedBpPerPx,
     colorByCDS,
@@ -629,8 +621,8 @@ export async function executeRenderWebGLFeatureData({
       descriptionColor: 'blue',
       fontSize: 12,
     },
-    // Merge any values from the passed config
-    ...rendererConfig,
+    // Merge display settings
+    ...displayConfig,
   }
 
   // Create default config context for WebGL rendering

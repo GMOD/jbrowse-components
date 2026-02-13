@@ -294,27 +294,30 @@ in vec4 v_color;
 in vec2 v_localPos;
 in vec2 v_featureSizePx;
 in float v_edgeFlags;
+uniform int u_showStroke;
 out vec4 fragColor;
 void main() {
-  float edgeDist;
-  if (v_edgeFlags > 1.5) {
-    // Chevron mode: v_localPos contains pixel distances to outer edges
-    edgeDist = min(v_localPos.x, v_localPos.y);
-  } else {
-    // Rectangle mode: v_localPos is 0-1 UV
-    float dx_left = v_localPos.x * v_featureSizePx.x;
-    float dx_right = (1.0 - v_localPos.x) * v_featureSizePx.x;
-    // Suppress stroke on edge shared with chevron
-    if (v_edgeFlags > 0.5) { dx_right = 999.0; }
-    if (v_edgeFlags < -0.5) { dx_left = 999.0; }
-    float dy = min(v_localPos.y, 1.0 - v_localPos.y) * v_featureSizePx.y;
-    edgeDist = min(min(dx_left, dx_right), dy);
-  }
+  if (u_showStroke == 1) {
+    float edgeDist;
+    if (v_edgeFlags > 1.5) {
+      // Chevron mode: v_localPos contains pixel distances to outer edges
+      edgeDist = min(v_localPos.x, v_localPos.y);
+    } else {
+      // Rectangle mode: v_localPos is 0-1 UV
+      float dx_left = v_localPos.x * v_featureSizePx.x;
+      float dx_right = (1.0 - v_localPos.x) * v_featureSizePx.x;
+      // Suppress stroke on edge shared with chevron
+      if (v_edgeFlags > 0.5) { dx_right = 999.0; }
+      if (v_edgeFlags < -0.5) { dx_left = 999.0; }
+      float dy = min(v_localPos.y, 1.0 - v_localPos.y) * v_featureSizePx.y;
+      edgeDist = min(min(dx_left, dx_right), dy);
+    }
 
-  if (edgeDist < 1.0 && v_featureSizePx.x > 4.0 && v_featureSizePx.y > 4.0) {
-    fragColor = vec4(v_color.rgb * 0.7, v_color.a);
-  } else {
-    fragColor = v_color;
+    if (edgeDist < 1.0 && v_featureSizePx.x > 4.0 && v_featureSizePx.y > 4.0) {
+      fragColor = vec4(v_color.rgb * 0.7, v_color.a);
+      return;
+    }
   }
+  fragColor = v_color;
 }
 `

@@ -1,9 +1,8 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { readCachedConfig } from '../renderConfig.ts'
-import { boxGlyph } from './box.ts'
 import { findChildGlyph } from './childGlyphs.ts'
 
-import type { DrawContext, FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const TRANSCRIPT_PADDING = 2
@@ -57,12 +56,10 @@ export const subfeaturesGlyph: Glyph = {
 
     const { containerTypes } = configContext
 
-    // Explicit container type
     if (containerTypes.includes(type)) {
       return true
     }
 
-    // Top-level feature with nested subfeatures (gene-like)
     const isTopLevel = !feature.parent?.()
     const hasNestedSubfeatures = subfeatures.some(
       (f: Feature) => f.get('subfeatures')?.length,
@@ -88,8 +85,6 @@ export const subfeaturesGlyph: Glyph = {
     const baseHeightPx = heightPx * heightMultiplier
     const widthPx = (featureBp.end - featureBp.start) / bpPerPx
 
-    // Get and sort subfeatures (coding first)
-    // Pre-compute CDS status to avoid O(N² log N) complexity during sort
     let subfeatures = [...(feature.get('subfeatures') || [])] as Feature[]
     const codingStatus = new Map(
       subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
@@ -106,7 +101,6 @@ export const subfeaturesGlyph: Glyph = {
       return 0
     })
 
-    // Apply gene glyph mode filtering
     if (geneGlyphMode === 'longest' || geneGlyphMode === 'longestCoding') {
       subfeatures = filterByGeneGlyphMode(
         subfeatures,
@@ -115,7 +109,6 @@ export const subfeaturesGlyph: Glyph = {
       )
     }
 
-    // Stack children vertically
     const children: FeatureLayout[] = []
     let currentYPx = 0
     const { subfeatureLabels } = configContext
@@ -126,14 +119,12 @@ export const subfeaturesGlyph: Glyph = {
       const isChildTranscript = transcriptTypes.includes(childType)
       const childGlyph = findChildGlyph(child, configContext)
 
-      // Layout child using its glyph's layout function
       const childLayout = childGlyph.layout({
         ...args,
         feature: child,
         parentFeature: feature,
       })
 
-      // Apply label dimensions to child (for transcript labels)
       applyLabelDimensions(childLayout, {
         feature: child,
         configContext,
@@ -141,7 +132,6 @@ export const subfeaturesGlyph: Glyph = {
         isTranscriptChild: isChildTranscript,
       })
 
-      // Position relative to parent
       const childBp = {
         start: child.get('start'),
         end: child.get('end'),
@@ -156,7 +146,6 @@ export const subfeaturesGlyph: Glyph = {
 
       children.push(childLayout)
 
-      // Use totalLayoutHeight when labels are below, otherwise just height
       const useExtraHeightForLabels =
         subfeatureLabels === 'below' && isChildTranscript
       const heightForStacking = useExtraHeightForLabels
@@ -181,21 +170,6 @@ export const subfeaturesGlyph: Glyph = {
       totalLayoutWidth: widthPx,
       leftPadding: 0,
       children,
-    }
-  },
-
-  draw(ctx: CanvasRenderingContext2D, layout: FeatureLayout, dc: DrawContext) {
-    const { children } = layout
-
-    if (children.length === 0) {
-      boxGlyph.draw(ctx, { ...layout, glyphType: 'Box' }, dc)
-      return
-    }
-
-    // All coordinates are already absolute - just draw each child
-    for (const childLayout of children) {
-      const childGlyph = findChildGlyph(childLayout.feature, dc.configContext)
-      childGlyph.draw(ctx, childLayout, dc)
     }
   },
 }

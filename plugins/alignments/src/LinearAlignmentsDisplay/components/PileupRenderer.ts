@@ -203,9 +203,11 @@ export class PileupRenderer {
       state.highlightedFeatureIndex,
     )
     const mode = state.renderingMode ?? 'pileup'
+    const isChainMode = mode === 'cloud' || mode === 'linkedRead'
+    gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
     gl.uniform1i(
-      this.parent.readUniforms.u_chainMode!,
-      mode === 'cloud' || mode === 'linkedRead' ? 1 : 0,
+      this.parent.readUniforms.u_showStroke!,
+      isChainMode ? 1 : 0,
     )
 
     // Set color uniforms for read shapes

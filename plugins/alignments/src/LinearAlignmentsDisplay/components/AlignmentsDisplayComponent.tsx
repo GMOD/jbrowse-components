@@ -1,6 +1,7 @@
 import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
+import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -29,7 +30,13 @@ const AlignmentsDisplayComponent = observer(
     const [clientRect, setClientRect] = useState<DOMRect>()
     const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
     const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
-    const { TooltipComponent, DisplayMessageComponent, height } = model
+    const {
+      TooltipComponent,
+      DisplayMessageComponent,
+      height,
+      contextMenuCoord,
+    } = model
+    const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
       <div
         ref={ref}
@@ -57,6 +64,33 @@ const AlignmentsDisplayComponent = observer(
             mouseCoord={offsetMouseCoord}
           />
         </Suspense>
+        {contextMenuCoord && items.length > 0 ? (
+          <Menu
+            open
+            onMenuItemClick={(_, callback) => {
+              callback()
+              model.setContextMenuCoord(undefined)
+            }}
+            onClose={() => {
+              model.setContextMenuCoord(undefined)
+              model.setContextMenuFeature(undefined)
+            }}
+            slotProps={{
+              transition: {
+                onExit: () => {
+                  model.setContextMenuCoord(undefined)
+                  model.setContextMenuFeature(undefined)
+                },
+              },
+            }}
+            anchorReference="anchorPosition"
+            anchorPosition={{
+              top: contextMenuCoord[1],
+              left: contextMenuCoord[0],
+            }}
+            menuItems={items}
+          />
+        ) : null}
       </div>
     )
   },

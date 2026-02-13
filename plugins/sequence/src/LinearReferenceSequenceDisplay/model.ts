@@ -1,14 +1,39 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import {
+  dedupe,
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  makeAbortableReaction,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+export interface SequenceRegionData {
+  seq: string
+  start: number
+  end: number
+}
+
+export interface LinearReferenceSequenceDisplayModel {
+  height: number
+  sequenceData: Map<number, SequenceRegionData>
+  error: unknown
+  showForwardActual: boolean
+  showReverseActual: boolean
+  showTranslationActual: boolean
+  sequenceType: string
+  rowHeight: number
+  sequenceHeight: number
+}
 
 /**
  * #stateModel LinearReferenceSequenceDisplay
@@ -47,6 +72,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * #property
        */
       rowHeight: 15,
+      sequenceData: new Map<number, SequenceRegionData>(),
+      error: undefined as unknown,
+      webGLComponent: undefined as AnyReactComponentType | undefined,
     }))
     .views(self => ({
       /**
@@ -101,38 +129,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return t + r + s
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        renderProps() {
-          const {
-            rpcDriverName,
-            showForwardActual,
-            showReverseActual,
-            showTranslationActual,
-            rowHeight,
-            sequenceHeight,
-            sequenceType,
-          } = self
-          return {
-            ...superRenderProps(),
-            ...getParentRenderProps(self),
-            config: self.configuration.renderer,
-            rpcDriverName,
-            showForward: showForwardActual,
-            showReverse: showReverseActual,
-            showTranslation: showTranslationActual,
-            sequenceType,
-            rowHeight,
-            sequenceHeight,
-          }
-        },
-      }
-    })
     .views(self => ({
+      get DisplayMessageComponent() {
+        return self.webGLComponent
+      },
+
+      renderProps() {
+        return { notReady: true }
+      },
+
       /**
        * #method
        */
@@ -148,6 +153,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .actions(self => ({
+      setSequenceData(data: Map<number, SequenceRegionData>) {
+        self.sequenceData = data
+      },
+      setError(err: unknown) {
+        self.error = err
+      },
+      setWebGLComponent(component: AnyReactComponentType) {
+        self.webGLComponent = component
+      },
       /**
        * #action
        */
@@ -167,6 +181,18 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         self.showTranslation = !self.showTranslation
       },
       afterAttach() {
+        // lazy load WebGL component
+        import('./components/WebGLSequenceComponent.tsx')
+          .then(mod => {
+            if (isAlive(self)) {
+              this.setWebGLComponent(mod.default)
+            }
+          })
+          .catch((e: unknown) => {
+            console.error('Failed to load WebGLSequenceComponent', e)
+          })
+
+        // height autorun
         addDisposer(
           self,
           autorun(
@@ -180,6 +206,69 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             },
             { name: 'SequenceHeight' },
           ),
+        )
+
+        // sequence data fetching
+        makeAbortableReaction(
+          self,
+          () => {
+            const view = getContainingView(self) as LGV
+            if (view.bpPerPx > 3) {
+              return undefined
+            }
+            return {
+              adapterConfig: self.adapterConfig,
+              regions: view.staticRegions,
+              sessionId: getRpcSessionId(self),
+            }
+          },
+          async args => {
+            if (!args) {
+              return undefined
+            }
+            const { rpcManager } = getSession(self)
+            const { adapterConfig, regions, sessionId } = args
+            const result = new Map<number, SequenceRegionData>()
+
+            for (const region of regions) {
+              const rawFeatures = (await rpcManager.call(
+                sessionId,
+                'CoreGetFeatures',
+                {
+                  regions: [region],
+                  sessionId,
+                  adapterConfig,
+                },
+              )) as Feature[]
+              const features = dedupe(rawFeatures, f => f.id())
+
+              for (const f of features) {
+                const seq = f.get('seq') as string | undefined
+                if (seq) {
+                  result.set(region.regionNumber, {
+                    seq,
+                    start: f.get('start'),
+                    end: f.get('end'),
+                  })
+                }
+              }
+            }
+            return result
+          },
+          {
+            name: `${self.type} ${self.id} sequence loading`,
+            delay: 300,
+            fireImmediately: true,
+          },
+          () => {},
+          result => {
+            if (result) {
+              this.setSequenceData(result)
+            }
+          },
+          err => {
+            this.setError(err)
+          },
         )
       },
     }))
