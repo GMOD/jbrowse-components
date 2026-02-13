@@ -49,7 +49,8 @@ export function computeVisibleLabels(
   const bpPerPx = (bpRange[1] - bpRange[0]) / width
   const pxPerBp = 1 / bpPerPx
   const charWidth = 6.5
-  const canRenderText = pxPerBp >= charWidth
+  const minFeatureHeightForText = 5
+  const canRenderText = pxPerBp >= charWidth && featureHeightSetting >= minFeatureHeightForText
   const rowHeight = featureHeightSetting + featureSpacing
   const pileupYOffset = showCoverage ? coverageHeight : 0
   const minLabelWidth = 15
@@ -57,45 +58,47 @@ export function computeVisibleLabels(
   // Process deletions (gaps)
   const { gapPositions, gapYs, gapLengths, gapTypes, numGaps, regionStart } =
     rpcData
-  for (let i = 0; i < numGaps; i++) {
-    if (gapTypes[i] !== 0) {
-      continue
+  if (canRenderText) {
+    for (let i = 0; i < numGaps; i++) {
+      if (gapTypes[i] !== 0) {
+        continue
+      }
+
+      const startOffset = gapPositions[i * 2]!
+      const endOffset = gapPositions[i * 2 + 1]!
+      const length = gapLengths[i]!
+      const y = gapYs[i]!
+
+      const gapStart = regionStart + startOffset
+      const gapEnd = regionStart + endOffset
+
+      if (gapEnd < bpRange[0] || gapStart > bpRange[1]) {
+        continue
+      }
+
+      const startPx = (gapStart - bpRange[0]) / bpPerPx
+      const endPx = (gapEnd - bpRange[0]) / bpPerPx
+      const widthPx = endPx - startPx
+
+      if (widthPx < minLabelWidth) {
+        continue
+      }
+
+      const yPx =
+        y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
+
+      if (yPx < pileupYOffset || yPx > height) {
+        continue
+      }
+
+      labels.push({
+        type: 'deletion',
+        x: (startPx + endPx) / 2,
+        y: yPx,
+        text: String(length),
+        width: widthPx,
+      })
     }
-
-    const startOffset = gapPositions[i * 2]!
-    const endOffset = gapPositions[i * 2 + 1]!
-    const length = gapLengths[i]!
-    const y = gapYs[i]!
-
-    const gapStart = regionStart + startOffset
-    const gapEnd = regionStart + endOffset
-
-    if (gapEnd < bpRange[0] || gapStart > bpRange[1]) {
-      continue
-    }
-
-    const startPx = (gapStart - bpRange[0]) / bpPerPx
-    const endPx = (gapEnd - bpRange[0]) / bpPerPx
-    const widthPx = endPx - startPx
-
-    if (widthPx < minLabelWidth) {
-      continue
-    }
-
-    const yPx =
-      y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
-
-    if (yPx < pileupYOffset || yPx > height) {
-      continue
-    }
-
-    labels.push({
-      type: 'deletion',
-      x: (startPx + endPx) / 2,
-      y: yPx,
-      text: String(length),
-      width: widthPx,
-    })
   }
 
   // Process insertions
@@ -122,7 +125,7 @@ export function computeVisibleLabels(
 
     const insertionType = getInsertionType(length, pxPerBp)
 
-    if (insertionType === 'large') {
+    if (insertionType === 'large' && canRenderText) {
       labels.push({
         type: 'insertion',
         x: xPx,
