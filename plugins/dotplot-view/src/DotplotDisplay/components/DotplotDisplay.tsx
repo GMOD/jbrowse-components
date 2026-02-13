@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  setupWebGLContextLossHandler,
+} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { DotplotWebGLRenderer } from '../drawDotplotWebGL.ts'
@@ -18,6 +21,20 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   const { viewWidth, viewHeight } = view
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        model.webglRenderer?.dispose()
+        const newRenderer = new DotplotWebGLRenderer()
+        const success = newRenderer.init(canvas)
+        model.setWebGLRenderer(newRenderer)
+        model.setWebGLInitialized(success)
+      })
+    }
+    return undefined
+  }, [model])
+
   // Initialize/dispose WebGL renderer — only on mount/unmount.
   // Dimension changes are handled by renderer.resize() in the draw autorun.
   useEffect(() => {
@@ -27,7 +44,7 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
       model.setWebGLRenderer(renderer)
       model.setWebGLInitialized(success)
       return () => {
-        renderer.dispose()
+        model.webglRenderer?.dispose()
         model.setWebGLRenderer(null)
         model.setWebGLInitialized(false)
       }

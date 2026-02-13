@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getContainingView,
+  useWebGLRenderer,
+} from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
@@ -36,32 +40,23 @@ const WebGLVariantMatrixComponent = observer(
     model: VariantMatrixDisplayModel
   }) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const rendererRef = useRef<WebGLVariantMatrixRenderer | null>(null)
     const rafRef = useRef<number | undefined>(undefined)
     const cellDataRef = useRef<MatrixCellData | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     const view = getContainingView(model) as LGV
 
-    // Initialize WebGL renderer
-    useEffect(() => {
-      const canvas = canvasRef.current
-      if (!canvas) {
-        return
-      }
-      try {
-        rendererRef.current = new WebGLVariantMatrixRenderer(canvas)
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-      }
-      return () => {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current)
-        }
-        rendererRef.current?.destroy()
-        rendererRef.current = null
-      }
-    }, [])
+    const { rendererRef, contextVersion } = useWebGLRenderer(
+      canvasRef,
+      canvas => new WebGLVariantMatrixRenderer(canvas),
+      {
+        onError: e => {
+          setError(
+            e instanceof Error ? e.message : 'WebGL initialization failed',
+          )
+        },
+      },
+    )
 
     // Upload pre-computed cell data from worker when it arrives
     useEffect(() => {
@@ -73,7 +68,7 @@ const WebGLVariantMatrixComponent = observer(
       }
       cellDataRef.current = cellData
       renderer.uploadCellData(cellData)
-    }, [model.webglCellData])
+    }, [model.webglCellData, contextVersion])
 
     // Render when scroll/size changes
     useEffect(() => {
@@ -113,6 +108,7 @@ const WebGLVariantMatrixComponent = observer(
       model.sources,
       view.initialized,
       view.dynamicBlocks.totalWidthPx,
+      contextVersion,
     ])
 
     const lastHoveredRef = useRef<string | undefined>(undefined)

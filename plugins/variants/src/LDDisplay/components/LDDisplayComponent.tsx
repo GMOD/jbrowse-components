@@ -8,7 +8,10 @@ import {
 } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  setupWebGLContextLossHandler,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -231,6 +234,17 @@ const LDCanvas = observer(function LDCanvas({
     y: number
   }>()
   const [glError, setGlError] = useState<string>()
+  const [contextVersion, setContextVersion] = useState(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
 
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
@@ -293,7 +307,7 @@ const LDCanvas = observer(function LDCanvas({
       rendererRef.current?.destroy()
       rendererRef.current = null
     }
-  }, [])
+  }, [contextVersion])
 
   // Upload data when rpcData changes
   useLayoutEffect(() => {
@@ -308,7 +322,7 @@ const LDCanvas = observer(function LDCanvas({
       ldValues: rpcData.ldValues,
       numCells: rpcData.numCells,
     })
-  }, [rpcData])
+  }, [rpcData, contextVersion])
 
   // Upload color ramp when data changes
   useLayoutEffect(() => {
@@ -320,7 +334,7 @@ const LDCanvas = observer(function LDCanvas({
     renderer.uploadColorRamp(
       generateLDColorRamp(rpcData.metric, rpcData.signedLD),
     )
-  }, [rpcData])
+  }, [rpcData, contextVersion])
 
   // Re-render on every view change (zoom/scroll) - cheap, just uniforms + draw
   useLayoutEffect(() => {
@@ -337,7 +351,7 @@ const LDCanvas = observer(function LDCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX])
+  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX, contextVersion])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

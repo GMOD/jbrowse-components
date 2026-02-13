@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  setupWebGLContextLossHandler,
+} from '@jbrowse/core/util'
 import { Alert, useTheme } from '@mui/material'
 import { autorun, computed, untracked } from 'mobx'
 import { observer } from 'mobx-react'
@@ -41,6 +44,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
   const glRef = useRef<WebGL2RenderingContext | null>(null)
   const handlesRef = useRef<GLHandles | null>(null)
   const instanceCountRef = useRef(0)
+  const [contextVersion, setContextVersion] = useState(0)
 
   const palette = useMemo(() => buildColorPalette(theme), [theme])
 
@@ -55,6 +59,16 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     () => computed(() => 1 / view.bpPerPx >= 12),
     [view],
   )
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -75,7 +89,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
       glRef.current = null
       handlesRef.current = null
     }
-  }, [])
+  }, [contextVersion])
 
   // geometry autorun: rebuilds typed arrays when data/settings change
   useEffect(() => {
@@ -165,6 +179,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     view,
     showSequenceComputed,
     showBordersComputed,
+    contextVersion,
   ])
 
   // render autorun: redraws on scroll/zoom/resize, does NOT rebuild geometry
@@ -189,7 +204,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     return () => {
       disposer()
     }
-  }, [view, height])
+  }, [view, height, contextVersion])
 
   if (error) {
     return <Alert severity="error">{`${error}`}</Alert>

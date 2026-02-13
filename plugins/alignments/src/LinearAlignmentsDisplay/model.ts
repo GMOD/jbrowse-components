@@ -8,8 +8,13 @@ import {
   getContainingView,
   getRpcSessionId,
   getSession,
+  isAbortException,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import {
+  createStopToken,
+  stopStopToken,
+} from '@jbrowse/core/util/stopToken'
 import {
   addDisposer,
   getSnapshot,
@@ -391,6 +396,7 @@ export default function stateModelFactory(
       overCigarItem: false,
       webglRenderer: null as WebGLRenderer | null,
       colorPalette: null as ColorPalette | null,
+      renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -896,6 +902,10 @@ export default function stateModelFactory(
       },
 
       clearAllRpcData() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
+        }
         self.rpcDataMap = new Map()
         self.loadedRegions = new Map()
       },
@@ -924,6 +934,10 @@ export default function stateModelFactory(
 
       setError(error: Error | null) {
         self.error = error
+      },
+
+      setRenderingStopToken(token: string | undefined) {
+        self.renderingStopToken = token
       },
 
       setWebGLRef(ref: unknown) {
@@ -1336,6 +1350,7 @@ export default function stateModelFactory(
         sequenceAdapter: unknown,
         region: Region,
         regionNumber: number,
+        stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
@@ -1349,6 +1364,7 @@ export default function stateModelFactory(
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
+            stopToken,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
                 self.setStatusMessage(msg)
@@ -1368,6 +1384,7 @@ export default function stateModelFactory(
         sequenceAdapter: unknown,
         region: Region,
         regionNumber: number,
+        stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
@@ -1383,6 +1400,7 @@ export default function stateModelFactory(
             height: self.height,
             drawInter: self.arcsState.drawInter,
             drawLongRange: self.arcsState.drawLongRange,
+            stopToken,
           },
         )) as WebGLArcsDataResult
         self.arcsState.setRpcData(regionNumber, result)
@@ -1394,6 +1412,7 @@ export default function stateModelFactory(
         sequenceAdapter: unknown,
         region: Region,
         regionNumber: number,
+        stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
@@ -1411,6 +1430,7 @@ export default function stateModelFactory(
             height: self.height,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
+            stopToken,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
                 self.setStatusMessage(msg)
@@ -1457,6 +1477,12 @@ export default function stateModelFactory(
           return
         }
 
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+        const stopToken = createStopToken()
+        self.setRenderingStopToken(stopToken)
+
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
         self.setLoading(true)
@@ -1500,6 +1526,7 @@ export default function stateModelFactory(
               sequenceAdapter,
               fetchRegion,
               regionNumber,
+              stopToken,
             )
           } else {
             await fetchPileupData(
@@ -1508,6 +1535,7 @@ export default function stateModelFactory(
               sequenceAdapter,
               fetchRegion,
               regionNumber,
+              stopToken,
             )
             if (self.renderingMode === 'arcs') {
               await fetchArcsData(
@@ -1516,6 +1544,7 @@ export default function stateModelFactory(
                 sequenceAdapter,
                 fetchRegion,
                 regionNumber,
+                stopToken,
               )
             }
           }
@@ -1533,12 +1562,19 @@ export default function stateModelFactory(
           })
           self.setLoading(false)
         } catch (e) {
+          if (isAbortException(e)) {
+            return
+          }
           if (fetchGenerations.get(regionNumber) !== gen) {
             return
           }
           console.error('Failed to fetch features:', e)
           self.setError(e instanceof Error ? e : new Error(String(e)))
           self.setLoading(false)
+        } finally {
+          if (isAlive(self) && self.renderingStopToken === stopToken) {
+            self.setRenderingStopToken(undefined)
+          }
         }
       }
 

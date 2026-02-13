@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  setupWebGLContextLossHandler,
+} from '@jbrowse/core/util'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { useTheme } from '@mui/material'
 
@@ -98,6 +101,7 @@ export interface LinearAlignmentsDisplayModel {
   setContextMenuFeature: (feature?: unknown) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
   renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
+  clearAllRpcData: () => void
 }
 
 export interface FeatureHit {
@@ -412,6 +416,26 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Effects ---
 
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        rendererRef.current?.destroy()
+        try {
+          const newRenderer = new WebGLRenderer(canvas)
+          rendererRef.current = newRenderer
+          model.setWebGLRenderer(newRenderer)
+          model.clearAllRpcData()
+        } catch (e) {
+          console.error('Failed to restore WebGL context:', e)
+        }
+      })
+    }
+    return undefined
+  }, [model])
+
+  const rendererRef = useRef<WebGLRenderer | null>(null)
+
   // Initialize WebGL renderer and wire it to the model
   useEffect(() => {
     const canvas = canvasRef.current
@@ -421,12 +445,14 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     let renderer: WebGLRenderer | null = null
     try {
       renderer = new WebGLRenderer(canvas)
+      rendererRef.current = renderer
       model.setWebGLRenderer(renderer)
     } catch (e) {
       console.error('Failed to initialize WebGL:', e)
     }
     return () => {
-      renderer?.destroy()
+      rendererRef.current?.destroy()
+      rendererRef.current = null
       model.setWebGLRenderer(null)
     }
   }, [model])

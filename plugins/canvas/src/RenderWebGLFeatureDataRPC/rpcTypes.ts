@@ -29,6 +29,7 @@ export interface RenderWebGLFeatureDataArgs {
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   maxFeatureCount?: number
+  stopToken?: string
 }
 
 export interface WebGLFeatureDataResult {

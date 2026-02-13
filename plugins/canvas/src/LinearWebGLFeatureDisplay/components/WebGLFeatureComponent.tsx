@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  measureText,
+  useWebGLRenderer,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { autorun } from 'mobx'
@@ -194,7 +198,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGLFeatureRenderer | null>(null)
   const [measureRef, measuredDims] = useMeasure()
   const [rendererReady, setRendererReady] = useState(false)
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
@@ -261,24 +264,22 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const viewRef = useRef(view)
   viewRef.current = view
 
-  // Initialize WebGL
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-    try {
-      rendererRef.current = new WebGLFeatureRenderer(canvas)
+  const { rendererRef, contextVersion } = useWebGLRenderer(
+    canvasRef,
+    canvas => {
+      const r = new WebGLFeatureRenderer(canvas)
       setRendererReady(true)
-    } catch (e) {
-      console.error('Failed to initialize WebGL:', e)
-    }
-    return () => {
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-      setRendererReady(false)
-    }
-  }, [])
+      return r
+    },
+    {
+      onRecreated: () => {
+        uploadedDataRef.current.clear()
+      },
+      onError: e => {
+        console.error('Failed to initialize WebGL:', e)
+      },
+    },
+  )
 
   // Re-render when view state changes
   useEffect(() => {
@@ -357,7 +358,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     renderer.pruneStaleRegions(activeRegions)
 
     scheduleRender()
-  }, [rpcDataMap, scheduleRender])
+  }, [rpcDataMap, scheduleRender, contextVersion])
 
   // Re-render when container dimensions change
   useEffect(() => {

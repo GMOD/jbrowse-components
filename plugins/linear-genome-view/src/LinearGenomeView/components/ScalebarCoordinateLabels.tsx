@@ -50,6 +50,13 @@ const ContentBlockLabels = memo(
     // console.log('[ContentBlockLabels] render', block.key)
     const { classes } = useStyles()
     const ticks = makeTicks(block.start, block.end, bpPerPx, true, false)
+    console.log('[ScalebarCoordinateLabels]', {
+      blockKey: block.key,
+      start: block.start,
+      end: block.end,
+      bpPerPx,
+      numTicks: ticks.length,
+    })
 
     return (
       <div className={classes.block} style={{ width: block.widthPx }}>

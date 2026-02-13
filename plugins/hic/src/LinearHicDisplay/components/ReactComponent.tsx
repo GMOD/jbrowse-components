@@ -1,7 +1,11 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, reducePrecision } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  reducePrecision,
+  setupWebGLContextLossHandler,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -110,6 +114,17 @@ const HicCanvas = observer(function HicCanvas({
     y: number
   }>()
   const [glError, setGlError] = useState<string>()
+  const [contextVersion, setContextVersion] = useState(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
 
   // Compute view transform for smooth zoom/scroll
   const viewScale =
@@ -141,7 +156,7 @@ const HicCanvas = observer(function HicCanvas({
       rendererRef.current?.destroy()
       rendererRef.current = null
     }
-  }, [])
+  }, [contextVersion])
 
   // Upload data when rpcData changes
   useLayoutEffect(() => {
@@ -155,7 +170,7 @@ const HicCanvas = observer(function HicCanvas({
       counts: rpcData.counts,
       numContacts: rpcData.numContacts,
     })
-  }, [rpcData])
+  }, [rpcData, contextVersion])
 
   // Upload color ramp when colorScheme changes
   useLayoutEffect(() => {
@@ -165,7 +180,7 @@ const HicCanvas = observer(function HicCanvas({
     }
 
     renderer.uploadColorRamp(generateColorRamp(colorScheme))
-  }, [rpcData, colorScheme])
+  }, [rpcData, colorScheme, contextVersion])
 
   // Re-render on every view change (zoom/scroll) - this is cheap,
   // just updating uniforms and issuing a draw call
@@ -185,7 +200,7 @@ const HicCanvas = observer(function HicCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [rpcData, width, height, useLogScale, viewScale, viewOffsetX])
+  }, [rpcData, width, height, useLogScale, viewScale, viewOffsetX, contextVersion])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

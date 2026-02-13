@@ -1,5 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, groupBy, max, min } from '@jbrowse/core/util'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -22,6 +26,7 @@ interface ExecuteParams {
     region: Region
     filterBy?: Record<string, unknown>
     height: number
+    stopToken?: string
   }
 }
 
@@ -67,7 +72,9 @@ export async function executeRenderWebGLCloudData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLCloudDataResult> {
-  const { sessionId, adapterConfig, sequenceAdapter, region, height } = args
+  const { sessionId, adapterConfig, sequenceAdapter, region, height, stopToken } = args
+
+  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   // Get adapter
   const dataAdapter = (
@@ -83,6 +90,8 @@ export async function executeRenderWebGLCloudData({
   const featuresArray = await firstValueFrom(
     dataAdapter.getFeaturesInMultipleRegions([region], args).pipe(toArray()),
   )
+
+  checkStopToken2(stopTokenCheck)
 
   // Dedupe features by ID
   const deduped = dedupe(featuresArray, f => f.id())
@@ -137,6 +146,8 @@ export async function executeRenderWebGLCloudData({
   }
 
   const scale = createCloudScale(maxDistance, height)
+
+  checkStopToken2(stopTokenCheck)
 
   // Allocate typed arrays
   const chainPositions = new Uint32Array(chains.length * 2)

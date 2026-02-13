@@ -6,8 +6,13 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isAbortException,
 } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import {
+  createStopToken,
+  stopStopToken,
+} from '@jbrowse/core/util/stopToken'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -84,6 +89,8 @@ export default function stateModelFactory(
       isLoading: false,
       error: null as Error | null,
       currentBpRangeX: null as [number, number] | null,
+      renderingStopToken: undefined as string | undefined,
+      fetchGeneration: 0,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -259,8 +266,13 @@ export default function stateModelFactory(
       },
 
       clearAllRpcData() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
+        }
         self.rpcDataMap = new Map()
         self.loadedRegions = new Map()
+        self.fetchGeneration++
       },
 
       setLoading(loading: boolean) {
@@ -269,6 +281,10 @@ export default function stateModelFactory(
 
       setError(error: Error | null) {
         self.error = error
+      },
+
+      setRenderingStopToken(token: string | undefined) {
+        self.renderingStopToken = token
       },
 
       setCurrentBpRange(bpRangeX: [number, number]) {
@@ -307,6 +323,7 @@ export default function stateModelFactory(
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
+        stopToken: string,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -316,25 +333,53 @@ export default function stateModelFactory(
           return
         }
 
-        try {
-          const result = (await rpcManager.call(
-            session.id ?? '',
-            'RenderWebGLWiggleData',
-            {
-              sessionId: session.id,
-              adapterConfig,
-              region,
-            },
-          )) as WebGLWiggleDataResult
+        const result = (await rpcManager.call(
+          session.id ?? '',
+          'RenderWebGLWiggleData',
+          {
+            sessionId: session.id,
+            adapterConfig,
+            region,
+            stopToken,
+          },
+        )) as WebGLWiggleDataResult
 
-          self.setRpcDataForRegion(regionNumber, result)
-          self.setLoadedRegionForRegion(regionNumber, {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-          })
+        self.setRpcDataForRegion(regionNumber, result)
+        self.setLoadedRegionForRegion(regionNumber, {
+          refName: region.refName,
+          start: region.start,
+          end: region.end,
+        })
+      }
+
+      async function fetchRegions(
+        regions: { region: Region; regionNumber: number }[],
+      ) {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+        const stopToken = createStopToken()
+        self.setRenderingStopToken(stopToken)
+        const generation = self.fetchGeneration
+        self.setLoading(true)
+        self.setError(null)
+        try {
+          const promises = regions.map(({ region, regionNumber }) =>
+            fetchFeaturesForRegion(region, regionNumber, stopToken),
+          )
+          await Promise.all(promises)
         } catch (e) {
-          self.setError(e instanceof Error ? e : new Error(String(e)))
+          if (!isAbortException(e)) {
+            console.error('Failed to fetch wiggle features:', e)
+            if (isAlive(self) && self.fetchGeneration === generation) {
+              self.setError(e instanceof Error ? e : new Error(String(e)))
+            }
+          }
+        } finally {
+          if (isAlive(self) && self.fetchGeneration === generation) {
+            self.setRenderingStopToken(undefined)
+            self.setLoading(false)
+          }
         }
       }
 
@@ -348,7 +393,7 @@ export default function stateModelFactory(
             autorun(
               () => {
                 const view = getContainingView(self) as LGV
-                const promises: Promise<void>[] = []
+                const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
@@ -358,19 +403,13 @@ export default function stateModelFactory(
                   ) {
                     continue
                   }
-                  promises.push(fetchFeaturesForRegion(vr, vr.regionNumber))
+                  needed.push({
+                    region: vr as Region,
+                    regionNumber: vr.regionNumber,
+                  })
                 }
-                if (promises.length > 0) {
-                  self.setLoading(true)
-                  self.setError(null)
-                  Promise.all(promises)
-                    .then(() => {
-                      self.setLoading(false)
-                    })
-                    .catch((e: unknown) => {
-                      console.error('Failed to fetch wiggle features:', e)
-                      self.setLoading(false)
-                    })
+                if (needed.length > 0) {
+                  fetchRegions(needed)
                 }
               },
               { name: 'FetchVisibleRegions', delay: 300 },

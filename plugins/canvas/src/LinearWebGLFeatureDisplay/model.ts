@@ -11,9 +11,14 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isAbortException,
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import {
+  createStopToken,
+  stopStopToken,
+} from '@jbrowse/core/util/stopToken'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -120,6 +125,8 @@ export default function stateModelFactory(
       regionTooLarge: false,
       featureCount: 0,
       userForceLoadLimit: undefined as number | undefined,
+      fetchGeneration: 0,
+      renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -289,11 +296,16 @@ export default function stateModelFactory(
       },
 
       clearAllRpcData() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
+        }
         self.rpcDataMap = new Map()
         self.loadedRegions = new Map()
         self.layoutBpPerPxMap = new Map()
         self.regionTooLarge = false
         self.featureCount = 0
+        self.fetchGeneration++
       },
 
       setLoading(loading: boolean) {
@@ -302,6 +314,10 @@ export default function stateModelFactory(
 
       setError(error: Error | null) {
         self.error = error
+      },
+
+      setRenderingStopToken(token: string | undefined) {
+        self.renderingStopToken = token
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
@@ -438,6 +454,8 @@ export default function stateModelFactory(
         | {
             tooLarge: true
             featureCount: number
+            regionNumber: number
+            region: Region
           }
         | {
             tooLarge: false
@@ -451,6 +469,7 @@ export default function stateModelFactory(
         region: Region,
         regionNumber: number,
         bpPerPx: number,
+        stopToken: string,
       ): Promise<FetchResult | undefined> {
         const session = getSession(self)
         const { rpcManager } = session
@@ -478,11 +497,17 @@ export default function stateModelFactory(
             sequenceAdapter: self.sequenceAdapter,
             showOnlyGenes: self.showOnlyGenes,
             maxFeatureCount: self.maxFeatureCount,
+            stopToken,
           },
         )) as RenderWebGLFeatureDataResult
 
         if ('regionTooLarge' in result) {
-          return { tooLarge: true, featureCount: result.featureCount }
+          return {
+            tooLarge: true,
+            featureCount: result.featureCount,
+            regionNumber,
+            region,
+          }
         }
         return { tooLarge: false, regionNumber, data: result, region, bpPerPx }
       }
@@ -497,7 +522,9 @@ export default function stateModelFactory(
           }
         }
         if (anyTooLarge) {
-          self.clearAllRpcData()
+          // Set the flag — the autorun is gated on regionTooLarge so it
+          // won't retry. A bpPerPx reaction clears the flag on zoom,
+          // which lets the autorun fire fresh for all regions.
           self.setRegionTooLarge(true, totalTooLargeCount)
         } else {
           self.setRegionTooLarge(false, 0)
@@ -515,23 +542,32 @@ export default function stateModelFactory(
         regions: { region: Region; regionNumber: number }[],
         bpPerPx: number,
       ) {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+        const stopToken = createStopToken()
+        self.setRenderingStopToken(stopToken)
+        const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
         try {
           const promises = regions.map(({ region, regionNumber }) =>
-            fetchFeaturesForRegion(region, regionNumber, bpPerPx),
+            fetchFeaturesForRegion(region, regionNumber, bpPerPx, stopToken),
           )
           const results = await Promise.all(promises)
-          if (isAlive(self)) {
+          if (isAlive(self) && self.fetchGeneration === generation) {
             applyFetchResults(results)
           }
         } catch (e) {
-          console.error('Failed to fetch features:', e)
-          if (isAlive(self)) {
-            self.setError(e)
+          if (!isAbortException(e)) {
+            console.error('Failed to fetch features:', e)
+            if (isAlive(self) && self.fetchGeneration === generation) {
+              self.setError(e as Error)
+            }
           }
         } finally {
-          if (isAlive(self)) {
+          if (isAlive(self) && self.fetchGeneration === generation) {
+            self.setRenderingStopToken(undefined)
             self.setLoading(false)
           }
         }
@@ -575,7 +611,7 @@ export default function stateModelFactory(
             autorun(
               () => {
                 const view = getContainingView(self) as LinearGenomeViewModel
-                if (!view.initialized) {
+                if (!view.initialized || self.regionTooLarge) {
                   return
                 }
 
@@ -623,6 +659,28 @@ export default function stateModelFactory(
             ),
           )
 
+          // Autorun: when zoom changes while regionTooLarge is set, clear
+          // the flag so the fetch autorun retries with the new (smaller) region
+          let prevBpPerPx: number | undefined
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LGV
+                const bpPerPx = view.bpPerPx
+                if (
+                  prevBpPerPx !== undefined &&
+                  bpPerPx !== prevBpPerPx &&
+                  self.regionTooLarge
+                ) {
+                  self.clearAllRpcData()
+                }
+                prevBpPerPx = bpPerPx
+              },
+              { name: 'ClearTooLargeOnZoom' },
+            ),
+          )
+
           // Autorun: re-fetch when label/description/colorByCDS settings change
           addDisposer(
             self,
@@ -641,7 +699,7 @@ export default function stateModelFactory(
                     geneGlyphMode !== prevGeneGlyphMode ||
                     showOnlyGenes !== prevShowOnlyGenes)
                 ) {
-                  if (self.loadedRegions.size > 0) {
+                  if (self.loadedRegions.size > 0 || self.regionTooLarge) {
                     refetchForCurrentView()
                   }
                 }

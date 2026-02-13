@@ -5,6 +5,7 @@ import {
   getContainingTrack,
   getContainingView,
   measureText,
+  useWebGLRenderer,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -53,33 +54,20 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   model: WiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGLWiggleRenderer | null>(null)
   const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const view = getContainingView(model) as LGV
 
-  // Initialize WebGL renderer
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-
-    try {
-      rendererRef.current = new WebGLWiggleRenderer(canvas)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-    }
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-    }
-  }, [])
+  const { rendererRef, contextVersion } = useWebGLRenderer(
+    canvasRef,
+    canvas => new WebGLWiggleRenderer(canvas),
+    {
+      onError: e => {
+        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
+      },
+    },
+  )
 
   // Upload data when rpcDataMap changes
   useEffect(() => {
@@ -105,7 +93,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       })
     }
     renderer.pruneStaleRegions(activeRegions)
-  }, [model.rpcDataMap])
+  }, [model.rpcDataMap, contextVersion])
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
@@ -229,6 +217,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     view.width,
     view.offsetPx,
     view.bpPerPx,
+    contextVersion,
   ])
 
   const width = Math.round(view.width)

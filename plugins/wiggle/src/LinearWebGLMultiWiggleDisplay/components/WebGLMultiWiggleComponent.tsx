@@ -5,6 +5,7 @@ import {
   getContainingTrack,
   getContainingView,
   measureText,
+  useWebGLRenderer,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -88,33 +89,20 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   model: MultiWiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGLMultiWiggleRenderer | null>(null)
   const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
 
   const view = getContainingView(model) as LGV
 
-  // Initialize WebGL renderer
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-
-    try {
-      rendererRef.current = new WebGLMultiWiggleRenderer(canvas)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-    }
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-    }
-  }, [])
+  const { rendererRef, contextVersion } = useWebGLRenderer(
+    canvasRef,
+    canvas => new WebGLMultiWiggleRenderer(canvas),
+    {
+      onError: e => {
+        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
+      },
+    },
+  )
 
   // Upload data when rpcDataMap changes
   useEffect(() => {
@@ -142,7 +130,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       renderer.uploadForRegion(regionNumber, data.regionStart, sourcesData)
     }
     renderer.pruneStaleRegions(activeRegions)
-  }, [model.rpcDataMap])
+  }, [model.rpcDataMap, contextVersion])
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
@@ -255,6 +243,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     view.width,
     view.offsetPx,
     view.bpPerPx,
+    contextVersion,
   ])
 
   const totalWidth = Math.round(view.width)

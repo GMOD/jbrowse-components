@@ -6,6 +6,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
@@ -128,6 +129,20 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
 
+  useEffect(() => {
+    const canvas = webglCanvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        model.webglRenderer?.dispose()
+        const newRenderer = new SyntenyWebGLRenderer()
+        const success = newRenderer.init(canvas)
+        model.setWebGLRenderer(newRenderer)
+        model.setWebGLInitialized(success)
+      })
+    }
+    return undefined
+  }, [model])
+
   // Initialize/dispose WebGL renderer
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
@@ -137,7 +152,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       model.setWebGLRenderer(renderer)
       model.setWebGLInitialized(success)
       return () => {
-        renderer.dispose()
+        model.webglRenderer?.dispose()
         model.setWebGLRenderer(null)
         model.setWebGLInitialized(false)
       }

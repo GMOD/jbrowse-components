@@ -1366,7 +1366,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
           if (
             currentlyCalculatedStaticBlocks === undefined ||
-            currentBlockKeys !== newKeys
+            currentBlockKeys !== newKeys ||
+            bpPerPx !== prevBpPerPx
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys

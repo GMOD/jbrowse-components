@@ -524,11 +524,10 @@ export async function executeRenderWebGLFeatureData({
     sequenceAdapter,
     showOnlyGenes,
     maxFeatureCount,
-    statusCallback = () => {},
     stopToken,
+    statusCallback = () => {},
   } = args as RenderWebGLFeatureDataArgs & {
     statusCallback?: (msg: string) => void
-    stopToken?: string
   }
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
@@ -777,6 +776,8 @@ export async function executeRenderWebGLFeatureData({
     )
   }
 
+  checkStopToken2(stopTokenCheck)
+
   const {
     rects,
     lines,
@@ -798,6 +799,8 @@ export async function executeRenderWebGLFeatureData({
       peptideDataMap,
     ),
   )
+
+  checkStopToken2(stopTokenCheck)
 
   // Build Flatbush spatial indexes for hit detection
   let flatbushData = new ArrayBuffer(0)

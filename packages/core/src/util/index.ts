@@ -1441,3 +1441,7 @@ export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
+export {
+  setupWebGLContextLossHandler,
+  useWebGLRenderer,
+} from './webglContextLoss.ts'

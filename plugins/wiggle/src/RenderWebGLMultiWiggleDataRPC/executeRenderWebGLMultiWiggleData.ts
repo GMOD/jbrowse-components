@@ -10,6 +10,10 @@
  */
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -33,6 +37,7 @@ interface ExecuteParams {
     adapterConfig: Record<string, unknown>
     region: Region
     sources?: SourceInfo[]
+    stopToken?: string
   }
 }
 
@@ -40,7 +45,9 @@ export async function executeRenderWebGLMultiWiggleData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLMultiWiggleDataResult> {
-  const { sessionId, adapterConfig, region, sources: sourcesArg } = args
+  const { sessionId, adapterConfig, region, sources: sourcesArg, stopToken } = args
+
+  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   // Get adapter
   const dataAdapter = (
@@ -60,6 +67,8 @@ export async function executeRenderWebGLMultiWiggleData({
   const featuresArray = await firstValueFrom(
     dataAdapter.getFeatures(region).pipe(toArray()),
   )
+
+  checkStopToken2(stopTokenCheck)
 
   // Genomic positions are integers, but region bounds from the view can be fractional.
   // Use floor to get integer reference point for storing position offsets.

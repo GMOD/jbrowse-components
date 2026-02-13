@@ -1,5 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, groupBy, max, min } from '@jbrowse/core/util'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -38,6 +42,7 @@ interface ExecuteParams {
     height: number
     drawInter: boolean
     drawLongRange: boolean
+    stopToken?: string
   }
 }
 
@@ -177,7 +182,10 @@ export async function executeRenderWebGLArcsData({
     height,
     drawInter,
     drawLongRange,
+    stopToken,
   } = args
+
+  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   // Get adapter
   const dataAdapter = (
@@ -192,6 +200,8 @@ export async function executeRenderWebGLArcsData({
   const featuresArray = await firstValueFrom(
     dataAdapter.getFeaturesInMultipleRegions([region], args).pipe(toArray()),
   )
+
+  checkStopToken2(stopTokenCheck)
 
   const deduped = dedupe(featuresArray, f => f.id())
 
@@ -359,6 +369,8 @@ export async function executeRenderWebGLArcsData({
       processMultiFeatureChain(chain)
     }
   }
+
+  checkStopToken2(stopTokenCheck)
 
   // Compute basic depth coverage from feature start/end positions
   const coverageFeatures = deduped.map(f => ({
