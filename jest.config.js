@@ -8,11 +8,11 @@ const baseConfig = {
       '<rootDir>/packages/text-indexing-core/src/index.ts',
   },
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
+    '^.+\\.(ts|tsx|js|jsx|mjs)$': '<rootDir>/config/jest/babelTransform.cjs',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
   transformIgnorePatterns: [
-    '/node_modules/.+\\.(js|jsx)$',
+    '/node_modules/(?!.*(@exodus/bytes|@csstools|parse5)).+\\.(js|jsx|mjs)$',
     '\\.module\\.(css|sass|scss)$',
   ],
   collectCoverageFrom: [
