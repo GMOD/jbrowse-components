@@ -83,6 +83,7 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLWiggleDataResult>(),
       currentBpRangeX: null as [number, number] | null,
+      visibleScoreRange: undefined as [number, number] | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -207,16 +208,13 @@ export default function stateModelFactory(
         if (self.rpcDataMap.size === 0) {
           return undefined
         }
-        let globalMin = Infinity
-        let globalMax = -Infinity
-        for (const data of self.rpcDataMap.values()) {
-          globalMin = Math.min(globalMin, data.scoreMin)
-          globalMax = Math.max(globalMax, data.scoreMax)
+        const range = self.visibleScoreRange
+        if (!range) {
+          return undefined
         }
         const scaleType = this.scaleType
-
         return getNiceDomain({
-          domain: [globalMin, globalMax],
+          domain: range,
           bounds: [this.minScoreConfig, this.maxScoreConfig],
           scaleType,
         })
@@ -253,6 +251,11 @@ export default function stateModelFactory(
 
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
+        self.visibleScoreRange = undefined
+      },
+
+      setVisibleScoreRange(range: [number, number]) {
+        self.visibleScoreRange = range
       },
 
       setCurrentBpRange(bpRangeX: [number, number]) {
@@ -356,6 +359,54 @@ export default function stateModelFactory(
       return {
         afterAttach() {
           superAfterAttach()
+
+          // Debounced autorun: compute visible score range from features
+          // in the current viewport so the Y scale adjusts on pan/zoom
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const visibleRegion = self.visibleRegion
+                let min = Infinity
+                let max = -Infinity
+                for (const data of self.rpcDataMap.values()) {
+                  if (visibleRegion) {
+                    const {
+                      featurePositions,
+                      featureScores,
+                      numFeatures,
+                      regionStart,
+                    } = data
+                    const visStart = visibleRegion.start - regionStart
+                    const visEnd = visibleRegion.end - regionStart
+                    for (let i = 0; i < numFeatures; i++) {
+                      const fStart = featurePositions[i * 2]!
+                      const fEnd = featurePositions[i * 2 + 1]!
+                      if (fEnd > visStart && fStart < visEnd) {
+                        const s = featureScores[i]!
+                        if (s < min) {
+                          min = s
+                        }
+                        if (s > max) {
+                          max = s
+                        }
+                      }
+                    }
+                  } else {
+                    min = Math.min(min, data.scoreMin)
+                    max = Math.max(max, data.scoreMax)
+                  }
+                }
+                if (Number.isFinite(min) && Number.isFinite(max)) {
+                  self.setVisibleScoreRange([min, max])
+                }
+              },
+              {
+                delay: 400,
+                name: 'LinearWiggleDisplay:visibleScoreRange',
+              },
+            ),
+          )
 
           addDisposer(
             self,

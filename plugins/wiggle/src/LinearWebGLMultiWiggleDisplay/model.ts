@@ -87,6 +87,7 @@ export default function stateModelFactory(
       error: null as Error | null,
       currentBpRangeX: null as [number, number] | null,
       sourcesVolatile: [] as SourceInfo[],
+      visibleScoreRange: undefined as [number, number] | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -197,16 +198,13 @@ export default function stateModelFactory(
         if (self.rpcDataMap.size === 0) {
           return undefined
         }
-        let globalMin = Infinity
-        let globalMax = -Infinity
-        for (const data of self.rpcDataMap.values()) {
-          globalMin = Math.min(globalMin, data.scoreMin)
-          globalMax = Math.max(globalMax, data.scoreMax)
+        const range = self.visibleScoreRange
+        if (!range) {
+          return undefined
         }
         const scaleType = this.scaleType
-
         return getNiceDomain({
-          domain: [globalMin, globalMax],
+          domain: range,
           bounds: [this.minScoreConfig, this.maxScoreConfig],
           scaleType,
         })
@@ -277,6 +275,11 @@ export default function stateModelFactory(
       clearAllRpcData() {
         self.rpcDataMap = new Map()
         self.loadedRegions = new Map()
+        self.visibleScoreRange = undefined
+      },
+
+      setVisibleScoreRange(range: [number, number]) {
+        self.visibleScoreRange = range
       },
 
       setLoading(loading: boolean) {
@@ -361,7 +364,58 @@ export default function stateModelFactory(
 
       return {
         afterAttach() {
-          // Autorun: fetch data for all visible regions
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const visibleRegion = self.visibleRegion
+                let min = Infinity
+                let max = -Infinity
+                for (const data of self.rpcDataMap.values()) {
+                  for (const source of data.sources) {
+                    if (visibleRegion) {
+                      const {
+                        featurePositions,
+                        featureScores,
+                        numFeatures,
+                      } = source
+                      const visStart =
+                        visibleRegion.start - data.regionStart
+                      const visEnd = visibleRegion.end - data.regionStart
+                      for (let i = 0; i < numFeatures; i++) {
+                        const fStart = featurePositions[i * 2]!
+                        const fEnd = featurePositions[i * 2 + 1]!
+                        if (fEnd > visStart && fStart < visEnd) {
+                          const s = featureScores[i]!
+                          if (s < min) {
+                            min = s
+                          }
+                          if (s > max) {
+                            max = s
+                          }
+                        }
+                      }
+                    } else {
+                      if (source.scoreMin < min) {
+                        min = source.scoreMin
+                      }
+                      if (source.scoreMax > max) {
+                        max = source.scoreMax
+                      }
+                    }
+                  }
+                }
+                if (Number.isFinite(min) && Number.isFinite(max)) {
+                  self.setVisibleScoreRange([min, max])
+                }
+              },
+              {
+                delay: 400,
+                name: 'MultiWiggleDisplay:visibleScoreRange',
+              },
+            ),
+          )
+
           addDisposer(
             self,
             autorun(

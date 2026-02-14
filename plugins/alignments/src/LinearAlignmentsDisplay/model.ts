@@ -1693,10 +1693,6 @@ export default function stateModelFactory(
                 if (!self.showCoverage) {
                   return
                 }
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
                 const bpRange = self.visibleBpRange
                 let maxDepth = 0
                 for (const data of self.rpcDataMap.values()) {
