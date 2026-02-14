@@ -16,8 +16,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
   const { renderingMode, error, regionTooLarge, height } = model
 
   if (error || regionTooLarge) {
-    model.setFeatureIdUnderMouse(undefined)
-    model.setMouseoverExtraInformation(undefined)
     return (
       <div style={{ position: 'relative', width: '100%', height }}>
         {error ? (

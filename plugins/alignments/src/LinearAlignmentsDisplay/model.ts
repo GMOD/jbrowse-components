@@ -90,7 +90,7 @@ export function getInsertionType(
   const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
   if (isLongInsertion) {
     const insertionWidthPx = length * pxPerBp
-    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= 6.5) {
       return 'large'
     }
     return 'long'
@@ -133,7 +133,8 @@ export function getInsertionRectWidthPx(
     return textWidthForNumber(length)
   }
   if (type === 'long') {
-    return 2 // small solid rectangle
+    const insertionWidthPx = length * pxPerBp
+    return Math.min(5, insertionWidthPx / 3)
   }
   return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
 }
@@ -252,12 +253,8 @@ export default function stateModelFactory(
         showMismatches: true,
         /**
          * #property
-         * Show upside-down histogram bars for insertion/softclip/hardclip counts
-         */
-        showInterbaseCounts: true,
-        /**
-         * #property
-         * Show triangular indicators at positions with significant interbase events
+         * Show interbase indicators (triangular markers and histogram bars for
+         * insertion/softclip/hardclip events)
          */
         showInterbaseIndicators: true,
         /**
@@ -342,7 +339,6 @@ export default function stateModelFactory(
           ...rest,
           type: 'LinearAlignmentsDisplay',
           showSashimiArcs: showArcs ?? true,
-          showInterbaseCounts: showInterbaseCounts ?? true,
           showInterbaseIndicators: showInterbaseIndicators ?? true,
           showCoverage: true,
           coverageHeight: 45,
@@ -838,9 +834,19 @@ export default function stateModelFactory(
         } as Feature
       },
     }))
-    .actions(self => ({
+    .actions(self => {
+      const superSetError = self.setError
+      return {
       setGpuUploadPending(val: boolean) {
         self.gpuUploadPending = val
+      },
+
+      setError(error?: unknown) {
+        superSetError(error)
+        if (error) {
+          self.featureIdUnderMouse = undefined
+          self.mouseoverExtraInformation = undefined
+        }
       },
 
       setRegionTooLarge(val: boolean, reason?: string) {
@@ -853,6 +859,10 @@ export default function stateModelFactory(
         }
         self.regionTooLargeState = val
         self.regionTooLargeReasonState = reason ?? ''
+        if (val) {
+          self.featureIdUnderMouse = undefined
+          self.mouseoverExtraInformation = undefined
+        }
       },
 
       setFeatureDensityStats(stats?: {
@@ -1157,10 +1167,6 @@ export default function stateModelFactory(
         self.drawProperPairs = flag
       },
 
-      setShowInterbaseCounts(show: boolean) {
-        self.showInterbaseCounts = show
-      },
-
       setShowInterbaseIndicators(show: boolean) {
         self.showInterbaseIndicators = show
       },
@@ -1289,7 +1295,7 @@ export default function stateModelFactory(
           session.notifyError(`${e}`, e)
         }
       },
-    }))
+    }})
     .actions(self => ({
       async setContextMenuFeatureById(featureId: string) {
         const session = getSession(self)
@@ -1731,7 +1737,6 @@ export default function stateModelFactory(
                   coverageHeight: self.coverageHeight,
                   coverageYOffset: YSCALEBAR_LABEL_OFFSET,
                   showMismatches: self.showMismatches,
-                  showInterbaseCounts: self.showInterbaseCounts,
                   showInterbaseIndicators: self.showInterbaseIndicators,
                   showModifications: self.showModifications,
                   showSashimiArcs: self.showSashimiArcs,
@@ -2189,16 +2194,6 @@ export default function stateModelFactory(
               checked: self.showMismatches,
               onClick: () => {
                 self.setShowMismatches(!self.showMismatches)
-              },
-            },
-            {
-              label: self.showInterbaseCounts
-                ? 'Hide interbase counts'
-                : 'Show interbase counts',
-              type: 'checkbox' as const,
-              checked: self.showInterbaseCounts,
-              onClick: () => {
-                self.setShowInterbaseCounts(!self.showInterbaseCounts)
               },
             },
             {

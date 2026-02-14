@@ -67,7 +67,15 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  v_color = a_type == 0u ? vec4(u_colorDeletion, 1.0) : vec4(u_colorSkip, 1.0);
+  // Fade low-frequency deletions when zoomed out; skips (splice junctions) stay visible
+  float alpha = 1.0;
+  if (a_type == 0u) {
+    float pxPerBp = u_canvasWidth / regionLengthBp;
+    if (pxPerBp < 1.0 && a_frequency < 0.1) {
+      alpha = pxPerBp;
+    }
+  }
+  v_color = a_type == 0u ? vec4(u_colorDeletion, alpha) : vec4(u_colorSkip, 1.0);
 }
 `
 
@@ -243,7 +251,7 @@ void main() {
 
   bool isLongInsertion = a_length >= ${LONG_INSERTION_MIN_LENGTH}u;
   float insertionWidthPx = len * pxPerBp;
-  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0;
+  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && pxPerBp >= 6.5;
   bool isLargeInsertion = isLongInsertion && canShowText;
 
   float rectWidthPx;
@@ -317,8 +325,13 @@ void main() {
   float sx = mix(sx1, sx2, localX);
   float sy = mix(y1, y2, localY);
 
+  float alpha = 1.0;
+  if (!isLongInsertion && pxPerBp < 1.0 && a_frequency < 0.1) {
+    alpha = pxPerBp;
+  }
+
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(u_colorInsertion, 1.0);
+  v_color = vec4(u_colorInsertion, alpha);
 }
 `
 

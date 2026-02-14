@@ -7,6 +7,10 @@ import {
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 
+function pct(n: number, total: number) {
+  return `${((n / (total || 1)) * 100).toFixed(1)}%`
+}
+
 import type {
   CigarHitResult,
   CoverageHitResult,
@@ -58,7 +62,7 @@ export function openIndicatorWidget(
   if (tooltipBin) {
     const interbaseEntry = tooltipBin.interbase[indicatorHit.indicatorType]
     if (interbaseEntry) {
-      featureData.count = `${interbaseEntry.count}/${tooltipBin.depth}`
+      featureData.count = `${interbaseEntry.count}/${tooltipBin.depth} (${pct(interbaseEntry.count, tooltipBin.depth)})`
       featureData.size =
         interbaseEntry.minLen === interbaseEntry.maxLen
           ? `${interbaseEntry.minLen}bp`
@@ -113,7 +117,7 @@ export function openCoverageWidget(
         | undefined
       if (snpEntry) {
         featureData[`SNP ${base.toUpperCase()}`] =
-          `${snpEntry.count}/${tooltipBin.depth} (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
+          `${snpEntry.count}/${tooltipBin.depth} (${pct(snpEntry.count, tooltipBin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
       }
     }
     for (const [type, entry] of Object.entries(tooltipBin.interbase)) {
@@ -128,7 +132,7 @@ export function openCoverageWidget(
         | undefined
       if (interbaseEntry) {
         featureData[type] =
-          `${interbaseEntry.count} (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
+          `${interbaseEntry.count}/${tooltipBin.depth} (${pct(interbaseEntry.count, tooltipBin.depth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
       }
     }
   } else {

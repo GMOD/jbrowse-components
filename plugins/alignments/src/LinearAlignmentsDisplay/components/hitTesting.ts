@@ -14,7 +14,7 @@
 
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { getInsertionRectWidthPx } from '../model.ts'
+import { getInsertionRectWidthPx, getInsertionType } from '../model.ts'
 
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
 
@@ -265,8 +265,35 @@ export function hitTestCigarItem(
     regionStart,
   } = blockData
 
-  // Check mismatches first (they're visually prominent)
-  // Mismatches are 1bp features - use floor to determine which base mouse is over
+  const pxPerBp = 1 / bpPerPx
+
+  // Check large insertions first (they render as wide boxes that overlap SNPs)
+  for (let i = 0; i < numInsertions; i++) {
+    const y = insertionYs[i]
+    if (y !== row) {
+      continue
+    }
+    const pos = insertionPositions[i]
+    if (pos !== undefined) {
+      const len = insertionLengths[i] ?? 0
+      const type = getInsertionType(len, pxPerBp)
+      if (type !== 'small') {
+        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
+        const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
+        if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
+          return {
+            type: 'insertion',
+            index: i,
+            position: regionStart + pos,
+            length: len,
+            sequence: insertionSequences[i] || undefined,
+          }
+        }
+      }
+    }
+  }
+
+  // Check mismatches (1bp features - use floor to determine which base mouse is over)
   const mouseBaseOffset = Math.floor(posOffset)
   for (let i = 0; i < numMismatches; i++) {
     const y = mismatchYs[i]
@@ -285,8 +312,7 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check insertions (rendered as markers at interbase positions)
-  // Large insertions (>=10bp) are rendered as wider rectangles when zoomed in
+  // Check small insertions (thin bars that don't overlap SNPs)
   for (let i = 0; i < numInsertions; i++) {
     const y = insertionYs[i]
     if (y !== row) {
@@ -295,17 +321,18 @@ export function hitTestCigarItem(
     const pos = insertionPositions[i]
     if (pos !== undefined) {
       const len = insertionLengths[i] ?? 0
-      const pxPerBp = 1 / bpPerPx
-      // Get visual width from helper, add 2px buffer for easier clicking
-      const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
-      const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-      if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
-        return {
-          type: 'insertion',
-          index: i,
-          position: regionStart + pos,
-          length: len,
-          sequence: insertionSequences[i] || undefined,
+      const type = getInsertionType(len, pxPerBp)
+      if (type === 'small') {
+        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
+        const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
+        if (Math.abs(posOffset - pos) < rectHalfWidthBp) {
+          return {
+            type: 'insertion',
+            index: i,
+            position: regionStart + pos,
+            length: len,
+            sequence: insertionSequences[i] || undefined,
+          }
         }
       }
     }

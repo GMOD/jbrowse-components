@@ -82,7 +82,6 @@ export interface RenderState {
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
   showMismatches: boolean
-  showInterbaseCounts: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight

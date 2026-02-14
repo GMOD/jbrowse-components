@@ -103,25 +103,10 @@ export async function executeRenderWebGLMultiWiggleData({
       ? sourcesList.map(s => s.name)
       : Array.from(featuresBySource.keys())
 
-  // Default colors for sources
-  const defaultColors = [
-    '#1f77b4',
-    '#ff7f0e',
-    '#2ca02c',
-    '#d62728',
-    '#9467bd',
-    '#8c564b',
-    '#e377c2',
-    '#7f7f7f',
-    '#bcbd22',
-    '#17becf',
-  ]
-
-  for (const [i, sourceName_] of sourceNames.entries()) {
-    const sourceName = sourceName_
+  for (const sourceName of sourceNames) {
     const features = featuresBySource.get(sourceName) || []
     const sourceInfo = sourcesList.find(s => s.name === sourceName)
-    const color = sourceInfo?.color || defaultColors[i % defaultColors.length]!
+    const color = sourceInfo?.color || '#1f77b4'
 
     const featurePositions = new Uint32Array(features.length * 2)
     const featureScores = new Float32Array(features.length)

@@ -178,7 +178,7 @@ export class CoverageRenderer {
     // Height is 1/4 of coverage height to keep it compact
     const noncovHeight = state.coverageHeight / 4
     if (
-      state.showInterbaseCounts &&
+      state.showInterbaseIndicators &&
       this.parent.buffers.noncovHistogramVAO &&
       this.parent.buffers.noncovHistogramCount > 0
     ) {

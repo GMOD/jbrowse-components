@@ -1,8 +1,6 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
 
-import { sum } from '@jbrowse/core/util'
-
 interface GenomeViewModel {
   bpPerPx: number
   scrollZoom?: boolean
@@ -21,16 +19,30 @@ const NORMALIZER_HIGH_THRESHOLD = 150
 const NORMALIZER_HIGH_VALUE = 150
 const NORMALIZER_VERY_HIGH_VALUE = 500
 
-function getNormalizer(averageDeltaY: number): number {
+function getNormalizer(averageDeltaY: number) {
   if (averageDeltaY < NORMALIZER_PINCH_THRESHOLD) {
     return NORMALIZER_PINCH_VALUE
-  } else if (averageDeltaY > NORMALIZER_MID_THRESHOLD) {
-    return averageDeltaY > NORMALIZER_HIGH_THRESHOLD
-      ? NORMALIZER_VERY_HIGH_VALUE
-      : NORMALIZER_HIGH_VALUE
-  } else {
-    return NORMALIZER_MID_VALUE
   }
+  if (averageDeltaY > NORMALIZER_MID_THRESHOLD) {
+    if (averageDeltaY > NORMALIZER_HIGH_THRESHOLD) {
+      return NORMALIZER_VERY_HIGH_VALUE
+    }
+    return NORMALIZER_HIGH_VALUE
+  }
+  return NORMALIZER_MID_VALUE
+}
+
+// convert delta values to pixels depending on deltaMode
+function normalizeWheel(delta: number, mode: number) {
+  if (mode === 1) {
+    // DOM_DELTA_LINE
+    return delta * 16
+  }
+  if (mode === 2) {
+    // DOM_DELTA_PAGE
+    return delta * 100
+  }
+  return delta
 }
 
 export function useWheelScroll(
@@ -63,14 +75,18 @@ export function useWheelScroll(
         return
       }
 
+      const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+
       if (event.ctrlKey) {
         event.preventDefault()
         // Dynamically detect pinch-to-zoom vs wheel scroll by examining deltaY magnitude.
         // This is needed because pinch-to-zoom has smaller deltaY than wheel scroll.
-        samples.push(event.deltaY)
-        const averageDeltaY = Math.abs(sum(samples)) / samples.length
+        samples.push(Math.abs(deltaY))
+        const averageDeltaY =
+          samples.reduce((a, b) => a + b, 0) / samples.length
         const normalizer = getNormalizer(averageDeltaY)
-        ctrlZoomDelta.current += event.deltaY / normalizer
+        ctrlZoomDelta.current += deltaY / normalizer
 
         // Apply zoom immediately without debouncing
         model.zoomTo(
@@ -83,10 +99,10 @@ export function useWheelScroll(
         samples = []
       } else if (
         model.scrollZoom &&
-        Math.abs(event.deltaY) > Math.abs(event.deltaX)
+        Math.abs(deltaY) > Math.abs(deltaX)
       ) {
         event.preventDefault()
-        scrollZoomDelta.current += event.deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
+        scrollZoomDelta.current += deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
         lastZoomClientX.current = event.clientX
         if (!zoomScheduled.current) {
           zoomScheduled.current = true
@@ -105,10 +121,10 @@ export function useWheelScroll(
         // this is needed to stop the event from triggering "back button
         // action" on MacOSX etc.  but is a heuristic to avoid preventing the
         // inner-track scroll behavior
-        if (Math.abs(event.deltaX) > Math.abs(2 * event.deltaY)) {
+        if (Math.abs(deltaX) > Math.abs(2 * deltaY)) {
           event.preventDefault()
         }
-        scrollDelta.current += event.deltaX
+        scrollDelta.current += deltaX
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame
           // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
