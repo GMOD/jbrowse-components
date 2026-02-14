@@ -115,6 +115,7 @@ export interface WebGLPileupDataResult {
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array // ASCII character code (e.g. 65='A', 67='C', 71='G', 84='T')
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
+  mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
 
   // Insertion data - offsets from regionStart
   insertionPositions: Uint32Array

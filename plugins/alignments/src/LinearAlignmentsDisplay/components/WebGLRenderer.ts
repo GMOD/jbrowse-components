@@ -880,6 +880,7 @@ export class WebGLRenderer {
     mismatchPositions: Uint32Array
     mismatchYs: Uint16Array
     mismatchBases: Uint8Array
+    mismatchFrequencies: Uint8Array
     numMismatches: number
     insertionPositions: Uint32Array
     insertionYs: Uint16Array
@@ -952,6 +953,12 @@ export class WebGLRenderer {
         this.mismatchProgram,
         'a_base',
         data.mismatchBases,
+        1,
+      )
+      this.uploadNormalizedUint8Buffer(
+        this.mismatchProgram,
+        'a_frequency',
+        data.mismatchFrequencies,
         1,
       )
       gl.bindVertexArray(null)

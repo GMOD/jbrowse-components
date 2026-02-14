@@ -87,6 +87,7 @@ precision highp int;
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in uint a_base;       // ASCII character code (65='A', 67='C', 71='G', 84='T', etc.)
+in float a_frequency; // normalized 0-1, fraction of reads with this base at this position
 
 uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
@@ -111,8 +112,23 @@ void main() {
 
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+  float pxPerBp = u_canvasWidth / regionLengthBp;
   float sx1 = (pos - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx2 = (pos + 1.0 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+
+  // When zoomed out, fade low-frequency SNPs to nothing.
+  // High-frequency SNPs (>10% of reads) stay visible.
+  float alpha = 1.0;
+  if (pxPerBp < 1.0 && a_frequency < 0.1) {
+    alpha = pxPerBp;
+  }
+
+  // Collapse to zero size when fully faded
+  if (alpha <= 0.0) {
+    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+    v_color = vec4(0.0);
+    return;
+  }
 
   // Ensure minimum width of 1 pixel
   float minWidth = 2.0 / u_canvasWidth;
@@ -149,9 +165,9 @@ void main() {
   } else if (a_base == 84u || a_base == 116u) { // 'T' or 't'
     color = u_colorBaseT;
   } else {
-    color = vec3(0.5, 0.5, 0.5); // grey for unknown bases (N, etc.)
+    color = vec3(0.5, 0.5, 0.5);
   }
-  v_color = vec4(color, 1.0);
+  v_color = vec4(color, alpha);
 }
 `
 
@@ -224,27 +240,18 @@ void main() {
   // Center position in clip space
   float cxClip = (pos - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
-  // Adaptive large insertion rendering:
-  // - When zoomed in enough to read text: show wide box for text label
-  // - When zoomed out: show small solid rectangle
-  // Threshold based on insertion width in pixels (length * pxPerBp)
-  // Uses constants from model.ts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX
   bool isLongInsertion = a_length >= ${LONG_INSERTION_MIN_LENGTH}u;
   float insertionWidthPx = len * pxPerBp;
   bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0;
   bool isLargeInsertion = isLongInsertion && canShowText;
 
-  // Calculate rectangle width in pixels
   float rectWidthPx;
   if (isLargeInsertion) {
-    // Wide rectangle to contain text label
     rectWidthPx = textWidthForNumber(a_length);
   } else if (isLongInsertion) {
-    // Long insertion but zoomed out - show small solid rectangle (2px)
-    rectWidthPx = 2.0;
+    // Fade from 5px down to 0 as insertionWidthPx goes from threshold to 0
+    rectWidthPx = min(5.0, insertionWidthPx / 3.0);
   } else {
-    // Small insertion - thin bar, subpixel when zoomed out
-    // Clamp to max 1px so it doesn't become wide when zoomed in
     rectWidthPx = min(pxPerBp, 1.0);
   }
 
@@ -305,16 +312,6 @@ void main() {
     }
   }
 
-  // Ensure minimum width for long insertions (>=10bp) so they stay visible
-  // Small insertions can be subpixel and vanish when zoomed out
-  if (isLongInsertion && rectIdx == 0) {
-    float minWidth = 2.0 / u_canvasWidth;
-    if (sx2 - sx1 < minWidth) {
-      float mid = (sx1 + sx2) * 0.5;
-      sx1 = mid - minWidth * 0.5;
-      sx2 = mid + minWidth * 0.5;
-    }
-  }
 
   float sx = mix(sx1, sx2, localX);
   float sy = mix(y1, y2, localY);
