@@ -4,7 +4,10 @@ import type { SortedBy } from '../shared/types'
 import type {
   FeatureData,
   GapData,
+  HardclipData,
+  InsertionData,
   MismatchData,
+  SoftclipData,
 } from '../shared/webglRpcTypes.ts'
 
 export function computeLayout(features: FeatureData[]): Map<string, number> {
@@ -31,10 +34,51 @@ export function computeLayout(features: FeatureData[]): Map<string, number> {
 // ASCII code for '*' used to represent deletions in base pair sort
 const DELETION_CHAR = 42
 
+interface InterbaseData {
+  insertions: InsertionData[]
+  softclips: SoftclipData[]
+  hardclips: HardclipData[]
+}
+
+function sortByInterbaseType(
+  overlapping: FeatureData[],
+  interbaseData: InterbaseData,
+  sortType: string,
+  pos: number,
+) {
+  const items =
+    sortType === 'insertion'
+      ? interbaseData.insertions
+      : sortType === 'softclip'
+        ? interbaseData.softclips
+        : interbaseData.hardclips
+  const lengthAtPos = new Map<string, number>()
+  for (const item of items) {
+    if (item.position === pos) {
+      const existing = lengthAtPos.get(item.featureId) ?? 0
+      if (item.length > existing) {
+        lengthAtPos.set(item.featureId, item.length)
+      }
+    }
+  }
+  overlapping.sort((a, b) => {
+    const aLen = lengthAtPos.get(a.id) ?? 0
+    const bLen = lengthAtPos.get(b.id) ?? 0
+    if (aLen !== 0 && bLen === 0) {
+      return -1
+    }
+    if (aLen === 0 && bLen !== 0) {
+      return 1
+    }
+    return bLen - aLen
+  })
+}
+
 function sortOverlapping(
   overlapping: FeatureData[],
   mismatches: MismatchData[],
   gaps: GapData[],
+  interbaseData: InterbaseData | undefined,
   tagValues: Map<string, string> | undefined,
   sortedBy: SortedBy,
 ) {
@@ -68,6 +112,11 @@ function sortOverlapping(
       }
       return aBase - bBase
     })
+  } else if (
+    (type === 'insertion' || type === 'softclip' || type === 'hardclip') &&
+    interbaseData
+  ) {
+    sortByInterbaseType(overlapping, interbaseData, type, pos)
   } else if (type === 'position') {
     overlapping.sort((a, b) => a.start - b.start)
   } else if (type === 'strand') {
@@ -96,6 +145,7 @@ export function computeSortedLayout(
   features: FeatureData[],
   mismatches: MismatchData[],
   gaps: GapData[],
+  interbaseData: InterbaseData | undefined,
   tagValues: Map<string, string> | undefined,
   sortedBy: SortedBy,
 ) {
@@ -110,7 +160,14 @@ export function computeSortedLayout(
     }
   }
 
-  sortOverlapping(overlapping, mismatches, gaps, tagValues, sortedBy)
+  sortOverlapping(
+    overlapping,
+    mismatches,
+    gaps,
+    interbaseData,
+    tagValues,
+    sortedBy,
+  )
 
   const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
   const layoutMap = new Map<string, number>()

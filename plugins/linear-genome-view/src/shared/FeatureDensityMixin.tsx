@@ -3,13 +3,13 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 import TooLargeMessage from './TooLargeMessage.tsx'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
 import {
   getDisplayStr,
   getFeatureDensityStatsPre,
 } from './featureDensityUtils.ts'
+import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 import type { FeatureDensityModel } from './autorunFeatureDensityStats.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'

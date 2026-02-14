@@ -75,6 +75,7 @@ const AlignmentsDisplayComponent = observer(
               model.setContextMenuCoord(undefined)
               model.setContextMenuFeature(undefined)
               model.setContextMenuCigarHit(undefined)
+              model.setContextMenuIndicatorHit(undefined)
             }}
             slotProps={{
               transition: {
@@ -82,6 +83,7 @@ const AlignmentsDisplayComponent = observer(
                   model.setContextMenuCoord(undefined)
                   model.setContextMenuFeature(undefined)
                   model.setContextMenuCigarHit(undefined)
+                  model.setContextMenuIndicatorHit(undefined)
                 },
               },
             }}

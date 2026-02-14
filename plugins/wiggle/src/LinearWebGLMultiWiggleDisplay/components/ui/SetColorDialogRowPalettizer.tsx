@@ -36,11 +36,11 @@ export default function SetColorDialogRowPalettizer({
           onClick={() => {
             const map = new Map<string, number>()
             for (const row of currLayout) {
-              const val = map.get(row[r as keyof Source] as string)
+              const val = map.get(row[r as keyof Source]!)
               if (!val) {
-                map.set(row[r as keyof Source] as string, 1)
+                map.set(row[r as keyof Source]!, 1)
               } else {
-                map.set(row[r as keyof Source] as string, val + 1)
+                map.set(row[r as keyof Source]!, val + 1)
               }
             }
             const ret = Object.fromEntries(
@@ -52,7 +52,7 @@ export default function SetColorDialogRowPalettizer({
             setCurrLayout(
               currLayout.map(row => ({
                 ...row,
-                color: ret[row[r as keyof Source] as string],
+                color: ret[row[r as keyof Source]!],
               })),
             )
           }}

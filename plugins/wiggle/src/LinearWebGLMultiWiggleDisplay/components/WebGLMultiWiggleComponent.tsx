@@ -144,7 +144,8 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const sourcesByName = Object.fromEntries(
         data.sources.map(s => [s.name, s]),
       )
-      const orderedSources = modelSources.length > 0 ? modelSources : data.sources
+      const orderedSources =
+        modelSources.length > 0 ? modelSources : data.sources
       const sourcesData: SourceRenderData[] = []
       for (const src of orderedSources) {
         const rpcSource = sourcesByName[src.name]
@@ -308,9 +309,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   // Calculate label width based on source names
   const firstData = model.rpcData
   const displaySources =
-    model.sources.length > 0
-      ? model.sources
-      : firstData?.sources || []
+    model.sources.length > 0 ? model.sources : firstData?.sources || []
   const labelWidth =
     displaySources.length > 0
       ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10

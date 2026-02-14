@@ -31,7 +31,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
-import { autorun, observable, trace } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
@@ -49,7 +49,10 @@ import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
-import type { CigarHitResult } from './components/hitTesting.ts'
+import type {
+  CigarHitResult,
+  IndicatorHitResult,
+} from './components/hitTesting.ts'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
@@ -90,7 +93,10 @@ export function getInsertionType(
   const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
   if (isLongInsertion) {
     const insertionWidthPx = length * pxPerBp
-    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= 6.5) {
+    if (
+      insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
+      pxPerBp >= 6.5
+    ) {
       return 'large'
     }
     return 'long'
@@ -358,6 +364,7 @@ export default function stateModelFactory(
       contextMenuFeature: undefined as Feature | undefined,
       contextMenuCoord: undefined as [number, number] | undefined,
       contextMenuCigarHit: undefined as CigarHitResult | undefined,
+      contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
       userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
@@ -382,7 +389,6 @@ export default function stateModelFactory(
       overCigarItem: false,
       webglRenderer: null as WebGLRenderer | null,
       colorPalette: null as ColorPalette | null,
-      gpuUploadPending: false,
     }))
     .views(self => ({
       /**
@@ -598,7 +604,7 @@ export default function stateModelFactory(
       },
 
       get showLoading() {
-        return self.isLoading || self.gpuUploadPending || !this.visibleRegion
+        return self.isLoading || !this.visibleRegion
       },
 
       get regionTooLarge() {
@@ -837,59 +843,313 @@ export default function stateModelFactory(
     .actions(self => {
       const superSetError = self.setError
       return {
-      setGpuUploadPending(val: boolean) {
-        self.gpuUploadPending = val
-      },
+        setError(error?: unknown) {
+          superSetError(error)
+          if (error) {
+            self.featureIdUnderMouse = undefined
+            self.mouseoverExtraInformation = undefined
+          }
+        },
 
-      setError(error?: unknown) {
-        superSetError(error)
-        if (error) {
+        setRegionTooLarge(val: boolean, reason?: string) {
+          self.regionTooLargeState = val
+          self.regionTooLargeReasonState = reason ?? ''
+          if (val) {
+            self.featureIdUnderMouse = undefined
+            self.mouseoverExtraInformation = undefined
+          }
+        },
+
+        setFeatureDensityStats(stats?: {
+          bytes?: number
+          fetchSizeLimit?: number
+        }) {
+          self.featureDensityStats = stats
+        },
+
+        setFeatureDensityStatsLimit(stats?: {
+          bytes?: number
+          fetchSizeLimit?: number
+        }) {
+          if (stats?.bytes) {
+            // round up a bit to avoid it re-displaying for similar values
+            self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+          }
+          self.regionTooLargeState = false
+          self.regionTooLargeReasonState = ''
+        },
+
+        setRpcData(regionNumber: number, data: WebGLPileupDataResult | null) {
+          const next = new Map(self.rpcDataMap)
+          if (data) {
+            next.set(regionNumber, data)
+            for (const modType of data.detectedModifications) {
+              if (!self.visibleModifications.has(modType)) {
+                self.visibleModifications.set(modType, {
+                  type: modType,
+                  base: '',
+                  strand: '',
+                  color: getColorForModification(modType),
+                })
+              }
+            }
+          } else {
+            next.delete(regionNumber)
+          }
+          self.rpcDataMap = next
+        },
+
+        clearDisplaySpecificData() {
+          self.rpcDataMap = new Map()
+          self.arcsState.clearAllRpcData()
+          self.cloudState.clearAllRpcData()
+        },
+
+        bumpFetchToken() {
+          self.fetchToken++
+        },
+
+        setLoadedRegion(regionNumber: number, region: Region | null) {
+          if (region) {
+            self.setLoadedRegionForRegion(regionNumber, region)
+          } else {
+            const next = new Map(self.loadedRegions)
+            next.delete(regionNumber)
+            self.loadedRegions = next
+          }
+        },
+
+        setStatusMessage(msg?: string) {
+          self.statusMessage = msg ?? ''
+        },
+
+        setWebGLRef(ref: unknown) {
+          self.webglRef = ref
+        },
+
+        setOverCigarItem(flag: boolean) {
+          self.overCigarItem = flag
+        },
+
+        setWebGLRenderer(renderer: WebGLRenderer | null) {
+          self.webglRenderer = renderer
+        },
+
+        setColorPalette(palette: ColorPalette | null) {
+          self.colorPalette = palette
+        },
+
+        setMaxY(y: number) {
+          self.maxY = y
+          // Auto-resize height based on content
+          const rowHeight = self.featureHeightSetting + self.featureSpacing
+          const pileupHeight = y * rowHeight
+          const totalHeight =
+            (self.showCoverage ? self.coverageHeight : 0) + pileupHeight + 10
+          // Clamp to maxHeight and ensure a minimum height
+          const clampedHeight = Math.min(
+            Math.max(totalHeight, 100),
+            self.maxHeight,
+          )
+          self.setHeight(clampedHeight)
+        },
+
+        setCurrentRangeY(rangeY: [number, number]) {
+          const cur = self.currentRangeY
+          if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
+            self.currentRangeY = rangeY
+          }
+        },
+
+        setHighlightedFeatureIndex(index: number) {
+          self.highlightedFeatureIndex = index
+        },
+
+        setSelectedFeatureIndex(index: number) {
+          self.selectedFeatureIndex = index
+        },
+
+        setHighlightedChainIndices(indices: number[]) {
+          self.highlightedChainIndices = indices
+        },
+
+        clearHighlights() {
+          if (self.highlightedFeatureIndex !== -1) {
+            self.highlightedFeatureIndex = -1
+          }
+          if (self.highlightedChainIndices.length > 0) {
+            self.highlightedChainIndices = []
+          }
+        },
+
+        clearMouseoverState() {
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
-        }
-      },
+          self.overCigarItem = false
+          if (self.highlightedFeatureIndex !== -1) {
+            self.highlightedFeatureIndex = -1
+          }
+          if (self.highlightedChainIndices.length > 0) {
+            self.highlightedChainIndices = []
+          }
+        },
 
-      setRegionTooLarge(val: boolean, reason?: string) {
-        if (self.regionTooLargeState !== val) {
-          console.log('[AlignmentsDebug] setRegionTooLarge', {
-            from: self.regionTooLargeState,
-            to: val,
-            reason,
-          })
-        }
-        self.regionTooLargeState = val
-        self.regionTooLargeReasonState = reason ?? ''
-        if (val) {
-          self.featureIdUnderMouse = undefined
-          self.mouseoverExtraInformation = undefined
-        }
-      },
+        clearSelection() {
+          if (self.selectedFeatureIndex !== -1) {
+            self.selectedFeatureIndex = -1
+          }
+          if (self.selectedChainIndices.length > 0) {
+            self.selectedChainIndices = []
+          }
+        },
 
-      setFeatureDensityStats(stats?: {
-        bytes?: number
-        fetchSizeLimit?: number
-      }) {
-        self.featureDensityStats = stats
-      },
+        setSelectedChainIndices(indices: number[]) {
+          self.selectedChainIndices = indices
+        },
 
-      setFeatureDensityStatsLimit(stats?: {
-        bytes?: number
-        fetchSizeLimit?: number
-      }) {
-        if (stats?.bytes) {
-          // round up a bit to avoid it re-displaying for similar values
-          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
-        }
-        self.regionTooLargeState = false
-        self.regionTooLargeReasonState = ''
-      },
+        setColorScheme(colorBy: ColorBy) {
+          self.colorTagMap = {}
+          self.colorBySetting = colorBy
+          if (colorBy.tag) {
+            self.tagsReady = false
+          }
+        },
 
-      setRpcData(regionNumber: number, data: WebGLPileupDataResult | null) {
-        const next = new Map(self.rpcDataMap)
-        if (data) {
-          self.gpuUploadPending = true
-          next.set(regionNumber, data)
-          for (const modType of data.detectedModifications) {
+        setTagsReady(flag: boolean) {
+          self.tagsReady = flag
+        },
+
+        updateColorTagMap(uniqueTag: string[]) {
+          const colorPalette = [
+            '#90caf9',
+            '#f48fb1',
+            '#a5d6a7',
+            '#fff59d',
+            '#ffab91',
+            '#ce93d8',
+            '#80deea',
+            '#c5e1a5',
+            '#ffe082',
+            '#bcaaa4',
+          ]
+          const map = { ...self.colorTagMap }
+          for (const value of uniqueTag) {
+            if (!map[value]) {
+              const totalKeys = Object.keys(map).length
+              map[value] = colorPalette[totalKeys % colorPalette.length]!
+            }
+          }
+          self.colorTagMap = map
+        },
+
+        setFilterBy(filterBy: FilterBy) {
+          self.filterBySetting = filterBy
+        },
+
+        toggleSoftClipping() {
+          self.showSoftClipping = !self.showSoftClipping
+        },
+
+        toggleMismatchAlpha() {
+          self.mismatchAlpha = !self.mismatchAlpha
+        },
+
+        setSortedBy(type: string, tag?: string) {
+          const view = getContainingView(self) as LGV
+          const { centerLineInfo } = view
+          if (!centerLineInfo) {
+            return
+          }
+          const { refName, assemblyName, offset } = centerLineInfo
+          const centerBp = Math.round(offset)
+          if (centerBp < 0 || !refName) {
+            return
+          }
+          self.sortedBySetting = {
+            type,
+            pos: centerBp,
+            refName,
+            assemblyName,
+            tag,
+          }
+        },
+
+        setSortedByAtPosition(type: string, pos: number, refName: string) {
+          const view = getContainingView(self) as LGV
+          const assemblyName = view.assemblyNames[0]
+          if (!assemblyName) {
+            return
+          }
+          self.sortedBySetting = {
+            type,
+            pos,
+            refName,
+            assemblyName,
+          }
+        },
+
+        clearSelected() {
+          self.sortedBySetting = undefined
+        },
+
+        setMaxHeight(n?: number) {
+          self.trackMaxHeight = n
+        },
+
+        setFeatureHeight(height?: number) {
+          self.featureHeight = height
+        },
+
+        setNoSpacing(flag?: boolean) {
+          self.noSpacing = flag
+        },
+
+        setShowSashimiArcs(show: boolean) {
+          self.showSashimiArcs = show
+        },
+
+        setShowCoverage(show: boolean) {
+          self.showCoverage = show
+        },
+
+        setCoverageHeight(height: number) {
+          self.coverageHeight = height
+        },
+
+        setShowMismatches(show: boolean) {
+          self.showMismatches = show
+        },
+
+        setShowYScalebar(show: boolean) {
+          self.showYScalebar = show
+        },
+
+        setShowLegend(show: boolean | undefined) {
+          self.showLegend = show
+        },
+
+        setDrawSingletons(flag: boolean) {
+          self.drawSingletons = flag
+        },
+
+        setDrawProperPairs(flag: boolean) {
+          self.drawProperPairs = flag
+        },
+
+        setShowInterbaseIndicators(show: boolean) {
+          self.showInterbaseIndicators = show
+        },
+
+        setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead') {
+          self.renderingMode = mode
+          self.colorBySetting =
+            mode === 'pileup'
+              ? { type: 'normal' }
+              : { type: 'insertSizeAndOrientation' }
+        },
+
+        updateVisibleModifications(uniqueModifications: string[]) {
+          for (const modType of uniqueModifications) {
             if (!self.visibleModifications.has(modType)) {
               self.visibleModifications.set(modType, {
                 type: modType,
@@ -899,403 +1159,121 @@ export default function stateModelFactory(
               })
             }
           }
-        } else {
-          next.delete(regionNumber)
-        }
-        self.rpcDataMap = next
+        },
 
-        let maxY = 0
-        for (const d of next.values()) {
-          if (d.maxY > maxY) {
-            maxY = d.maxY
-          }
-        }
-        self.maxY = maxY
-      },
-
-      clearDisplaySpecificData() {
-        console.log(
-          '[AlignmentsDebug] clearDisplaySpecificData',
-          new Error('stack').stack,
-        )
-        self.rpcDataMap = new Map()
-        self.gpuUploadPending = false
-        self.arcsState.clearAllRpcData()
-        self.cloudState.clearAllRpcData()
-      },
-
-      bumpFetchToken() {
-        console.log(
-          '[AlignmentsDebug] bumpFetchToken',
-          self.fetchToken,
-          '→',
-          self.fetchToken + 1,
-          new Error('stack').stack,
-        )
-        self.fetchToken++
-      },
-
-      setLoadedRegion(regionNumber: number, region: Region | null) {
-        console.log('[AlignmentsDebug] setLoadedRegion', {
-          regionNumber,
-          region,
-          currentLoadedSize: self.loadedRegions.size,
-        })
-        if (region) {
-          self.setLoadedRegionForRegion(regionNumber, region)
-        } else {
-          const next = new Map(self.loadedRegions)
-          next.delete(regionNumber)
-          self.loadedRegions = next
-        }
-      },
-
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg ?? ''
-      },
-
-      setWebGLRef(ref: unknown) {
-        self.webglRef = ref
-      },
-
-      setOverCigarItem(flag: boolean) {
-        self.overCigarItem = flag
-      },
-
-      setWebGLRenderer(renderer: WebGLRenderer | null) {
-        self.webglRenderer = renderer
-      },
-
-      setColorPalette(palette: ColorPalette | null) {
-        self.colorPalette = palette
-      },
-
-      setMaxY(y: number) {
-        self.maxY = y
-        // Auto-resize height based on content
-        const rowHeight = self.featureHeightSetting + self.featureSpacing
-        const pileupHeight = y * rowHeight
-        const totalHeight =
-          (self.showCoverage ? self.coverageHeight : 0) + pileupHeight + 10
-        // Clamp to maxHeight and ensure a minimum height
-        const clampedHeight = Math.min(
-          Math.max(totalHeight, 100),
-          self.maxHeight,
-        )
-        self.setHeight(clampedHeight)
-      },
-
-      setCurrentRangeY(rangeY: [number, number]) {
-        const cur = self.currentRangeY
-        if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
-          self.currentRangeY = rangeY
-        }
-      },
-
-      setHighlightedFeatureIndex(index: number) {
-        self.highlightedFeatureIndex = index
-      },
-
-      setSelectedFeatureIndex(index: number) {
-        self.selectedFeatureIndex = index
-      },
-
-      setHighlightedChainIndices(indices: number[]) {
-        self.highlightedChainIndices = indices
-      },
-
-      clearHighlights() {
-        if (self.highlightedFeatureIndex !== -1) {
-          self.highlightedFeatureIndex = -1
-        }
-        if (self.highlightedChainIndices.length > 0) {
-          self.highlightedChainIndices = []
-        }
-      },
-
-      clearMouseoverState() {
-        self.featureIdUnderMouse = undefined
-        self.mouseoverExtraInformation = undefined
-        self.overCigarItem = false
-        if (self.highlightedFeatureIndex !== -1) {
-          self.highlightedFeatureIndex = -1
-        }
-        if (self.highlightedChainIndices.length > 0) {
-          self.highlightedChainIndices = []
-        }
-      },
-
-      clearSelection() {
-        if (self.selectedFeatureIndex !== -1) {
-          self.selectedFeatureIndex = -1
-        }
-        if (self.selectedChainIndices.length > 0) {
-          self.selectedChainIndices = []
-        }
-      },
-
-      setSelectedChainIndices(indices: number[]) {
-        self.selectedChainIndices = indices
-      },
-
-      setColorScheme(colorBy: ColorBy) {
-        self.colorTagMap = {}
-        self.colorBySetting = colorBy
-        if (colorBy.tag) {
-          self.tagsReady = false
-        }
-      },
-
-      setTagsReady(flag: boolean) {
-        self.tagsReady = flag
-      },
-
-      updateColorTagMap(uniqueTag: string[]) {
-        const colorPalette = [
-          '#90caf9',
-          '#f48fb1',
-          '#a5d6a7',
-          '#fff59d',
-          '#ffab91',
-          '#ce93d8',
-          '#80deea',
-          '#c5e1a5',
-          '#ffe082',
-          '#bcaaa4',
-        ]
-        const map = { ...self.colorTagMap }
-        for (const value of uniqueTag) {
-          if (!map[value]) {
-            const totalKeys = Object.keys(map).length
-            map[value] = colorPalette[totalKeys % colorPalette.length]!
-          }
-        }
-        self.colorTagMap = map
-      },
-
-      setFilterBy(filterBy: FilterBy) {
-        self.filterBySetting = filterBy
-      },
-
-      toggleSoftClipping() {
-        self.showSoftClipping = !self.showSoftClipping
-      },
-
-      toggleMismatchAlpha() {
-        self.mismatchAlpha = !self.mismatchAlpha
-      },
-
-      setSortedBy(type: string, tag?: string) {
-        const view = getContainingView(self) as LGV
-        const { centerLineInfo } = view
-        if (!centerLineInfo) {
-          return
-        }
-        const { refName, assemblyName, offset } = centerLineInfo
-        const centerBp = Math.round(offset)
-        if (centerBp < 0 || !refName) {
-          return
-        }
-        self.sortedBySetting = {
-          type,
-          pos: centerBp,
-          refName,
-          assemblyName,
-          tag,
-        }
-      },
-
-      setSortedByAtPosition(type: string, pos: number, refName: string) {
-        const view = getContainingView(self) as LGV
-        const assemblyName = view.assemblyNames[0]
-        if (!assemblyName) {
-          return
-        }
-        self.sortedBySetting = {
-          type,
-          pos,
-          refName,
-          assemblyName,
-        }
-      },
-
-      clearSelected() {
-        self.sortedBySetting = undefined
-      },
-
-      setMaxHeight(n?: number) {
-        self.trackMaxHeight = n
-      },
-
-      setFeatureHeight(height?: number) {
-        self.featureHeight = height
-      },
-
-      setNoSpacing(flag?: boolean) {
-        self.noSpacing = flag
-      },
-
-      setShowSashimiArcs(show: boolean) {
-        self.showSashimiArcs = show
-      },
-
-      setShowCoverage(show: boolean) {
-        self.showCoverage = show
-      },
-
-      setCoverageHeight(height: number) {
-        self.coverageHeight = height
-      },
-
-      setShowMismatches(show: boolean) {
-        self.showMismatches = show
-      },
-
-      setShowYScalebar(show: boolean) {
-        self.showYScalebar = show
-      },
-
-      setShowLegend(show: boolean | undefined) {
-        self.showLegend = show
-      },
-
-      setDrawSingletons(flag: boolean) {
-        self.drawSingletons = flag
-      },
-
-      setDrawProperPairs(flag: boolean) {
-        self.drawProperPairs = flag
-      },
-
-      setShowInterbaseIndicators(show: boolean) {
-        self.showInterbaseIndicators = show
-      },
-
-      setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead') {
-        self.renderingMode = mode
-        self.colorBySetting =
-          mode === 'pileup'
-            ? { type: 'normal' }
-            : { type: 'insertSizeAndOrientation' }
-      },
-
-      updateVisibleModifications(uniqueModifications: string[]) {
-        for (const modType of uniqueModifications) {
-          if (!self.visibleModifications.has(modType)) {
-            self.visibleModifications.set(modType, {
-              type: modType,
-              base: '',
-              strand: '',
-              color: getColorForModification(modType),
-            })
-          }
-        }
-      },
-
-      setSimplexModifications(simplex: string[]) {
-        const currentSet = self.simplexModifications
-        if (
-          simplex.length === currentSet.size &&
-          simplex.every(s => currentSet.has(s))
-        ) {
-          return
-        }
-        self.simplexModifications = new Set(simplex)
-      },
-
-      setModificationsReady(flag: boolean) {
-        self.modificationsReady = flag
-      },
-
-      setFeatureIdUnderMouse(feature?: string) {
-        self.featureIdUnderMouse = feature
-      },
-
-      setMouseoverExtraInformation(extra?: string) {
-        self.mouseoverExtraInformation = extra
-      },
-
-      setContextMenuFeature(feature?: Feature) {
-        self.contextMenuFeature = feature
-      },
-
-      setContextMenuCoord(coord?: [number, number]) {
-        self.contextMenuCoord = coord
-      },
-
-      setContextMenuCigarHit(hit?: CigarHitResult) {
-        self.contextMenuCigarHit = hit
-      },
-
-      async selectFeatureById(featureId: string) {
-        const session = getSession(self)
-        const { rpcManager } = session
-        try {
-          const track = getContainingTrack(self)
-          const adapterConfig = getConf(track, 'adapter')
-
-          // Use the feature's known position from typed arrays to narrow the
-          // query region, avoiding a full re-fetch of the entire loaded region
-          const info = self.getFeatureInfoById(featureId)
-          if (!info) {
+        setSimplexModifications(simplex: string[]) {
+          const currentSet = self.simplexModifications
+          if (
+            simplex.length === currentSet.size &&
+            simplex.every(s => currentSet.has(s))
+          ) {
             return
           }
-          // Find the loaded region that contains this feature
-          let assemblyName: string | undefined
-          for (const loaded of self.loadedRegions.values()) {
-            if (loaded.refName === info.refName) {
-              assemblyName = loaded.assemblyName
-              break
+          self.simplexModifications = new Set(simplex)
+        },
+
+        setModificationsReady(flag: boolean) {
+          self.modificationsReady = flag
+        },
+
+        setFeatureIdUnderMouse(feature?: string) {
+          self.featureIdUnderMouse = feature
+        },
+
+        setMouseoverExtraInformation(extra?: string) {
+          self.mouseoverExtraInformation = extra
+        },
+
+        setContextMenuFeature(feature?: Feature) {
+          self.contextMenuFeature = feature
+        },
+
+        setContextMenuCoord(coord?: [number, number]) {
+          self.contextMenuCoord = coord
+        },
+
+        setContextMenuCigarHit(hit?: CigarHitResult) {
+          self.contextMenuCigarHit = hit
+        },
+
+        setContextMenuIndicatorHit(hit?: IndicatorHitResult) {
+          self.contextMenuIndicatorHit = hit
+        },
+
+        async selectFeatureById(featureId: string) {
+          const session = getSession(self)
+          const { rpcManager } = session
+          try {
+            const track = getContainingTrack(self)
+            const adapterConfig = getConf(track, 'adapter')
+
+            // Use the feature's known position from typed arrays to narrow the
+            // query region, avoiding a full re-fetch of the entire loaded region
+            const info = self.getFeatureInfoById(featureId)
+            if (!info) {
+              return
             }
-          }
-          const region = {
-            refName: info.refName,
-            start: info.start,
-            end: info.end,
-            assemblyName,
-          }
+            // Find the loaded region that contains this feature
+            let assemblyName: string | undefined
+            for (const loaded of self.loadedRegions.values()) {
+              if (loaded.refName === info.refName) {
+                assemblyName = loaded.assemblyName
+                break
+              }
+            }
+            const region = {
+              refName: info.refName,
+              start: info.start,
+              end: info.end,
+              assemblyName,
+            }
 
-          const sequenceAdapter = getSequenceAdapter(session, region)
+            const sequenceAdapter = getSequenceAdapter(session, region)
 
-          const sessionId = getRpcSessionId(self)
-          const { feature } = (await rpcManager.call(
-            sessionId,
-            'WebGLGetFeatureDetails',
-            {
+            const sessionId = getRpcSessionId(self)
+            const { feature } = (await rpcManager.call(
               sessionId,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-              featureId,
-            },
-          )) as {
-            feature:
-              | (Record<string, unknown> & { uniqueId: string })
-              | undefined
-          }
-
-          if (isAlive(self) && feature && isSessionModelWithWidgets(session)) {
-            const feat = new SimpleFeature(
-              feature as ConstructorParameters<typeof SimpleFeature>[0],
-            )
-            const featureWidget = session.addWidget(
-              'AlignmentsFeatureWidget',
-              'alignmentFeature',
+              'WebGLGetFeatureDetails',
               {
-                featureData: feat.toJSON(),
-                view: getContainingView(self),
-                track: getContainingTrack(self),
+                sessionId,
+                adapterConfig,
+                sequenceAdapter,
+                region,
+                featureId,
               },
-            )
-            session.showWidget(featureWidget)
-            session.setSelection(feat)
+            )) as {
+              feature:
+                | (Record<string, unknown> & { uniqueId: string })
+                | undefined
+            }
+
+            if (
+              isAlive(self) &&
+              feature &&
+              isSessionModelWithWidgets(session)
+            ) {
+              const feat = new SimpleFeature(
+                feature as ConstructorParameters<typeof SimpleFeature>[0],
+              )
+              const featureWidget = session.addWidget(
+                'AlignmentsFeatureWidget',
+                'alignmentFeature',
+                {
+                  featureData: feat.toJSON(),
+                  view: getContainingView(self),
+                  track: getContainingTrack(self),
+                },
+              )
+              session.showWidget(featureWidget)
+              session.setSelection(feat)
+            }
+          } catch (e) {
+            console.error(e)
+            session.notifyError(`${e}`, e)
           }
-        } catch (e) {
-          console.error(e)
-          session.notifyError(`${e}`, e)
-        }
-      },
-    }})
+        },
+      }
+    })
     .actions(self => ({
       async setContextMenuFeatureById(featureId: string) {
         const session = getSession(self)
@@ -1484,28 +1462,14 @@ export default function stateModelFactory(
         const adapterConfig = getConf(track, 'adapter')
 
         if (!adapterConfig) {
-          console.log(
-            '[AlignmentsDebug] fetchFeaturesForRegion: no adapterConfig',
-          )
           return
         }
 
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
-        console.log('[AlignmentsDebug] fetchFeaturesForRegion start', {
-          regionNumber,
-          gen,
-          refName: region.refName,
-          start: region.start,
-          end: region.end,
-        })
 
         const stats = await fetchByteEstimate(adapterConfig, region)
         if (fetchGenerations.get(regionNumber) !== gen) {
-          console.log(
-            '[AlignmentsDebug] fetchFeaturesForRegion stale after byteEstimate',
-            { regionNumber, gen, current: fetchGenerations.get(regionNumber) },
-          )
           return
         }
         self.setFeatureDensityStats(stats ?? undefined)
@@ -1515,43 +1479,13 @@ export default function stateModelFactory(
             stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
           const limit = self.userByteSizeLimit || fetchSizeLimit
           if (stats?.bytes && stats.bytes > limit) {
-            console.log(
-              '[AlignmentsDebug] fetchFeaturesForRegion: regionTooLarge',
-              {
-                regionNumber,
-                gen,
-                bytes: stats.bytes,
-                limit,
-                fetchSizeLimit,
-                userByteSizeLimit: self.userByteSizeLimit,
-                visibleBp: view.visibleBp,
-              },
-            )
             self.setRegionTooLarge(
               true,
               `Requested too much data (${getDisplayStr(stats.bytes)})`,
             )
             return
           }
-        } else {
-          console.log(
-            '[AlignmentsDebug] fetchFeaturesForRegion: skipping byte check',
-            {
-              regionNumber,
-              gen,
-              visibleBp: view.visibleBp,
-              threshold: AUTO_FORCE_LOAD_BP,
-            },
-          )
         }
-        console.log(
-          '[AlignmentsDebug] fetchFeaturesForRegion: proceeding to RPC',
-          {
-            regionNumber,
-            gen,
-            regionTooLargeState: self.regionTooLargeState,
-          },
-        )
 
         // If colorBy is tag mode and tag values haven't been fetched yet,
         // fetch them inline before the main data RPC so that colorTagMap
@@ -1624,17 +1558,9 @@ export default function stateModelFactory(
 
         // Discard stale responses from older requests for this regionNumber
         if (fetchGenerations.get(regionNumber) !== gen) {
-          console.log(
-            '[AlignmentsDebug] fetchFeaturesForRegion stale after RPC',
-            { regionNumber, gen, current: fetchGenerations.get(regionNumber) },
-          )
           return
         }
 
-        console.log(
-          '[AlignmentsDebug] fetchFeaturesForRegion completed successfully',
-          { regionNumber, gen },
-        )
         self.setRegionTooLarge(false)
         self.setLoadedRegion(regionNumber, {
           refName: region.refName,
@@ -1649,20 +1575,7 @@ export default function stateModelFactory(
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
       ) {
-        console.log('[AlignmentsDebug] fetchRegions called', {
-          numRegions: regions.length,
-          regions: regions.map(r => ({
-            regionNumber: r.regionNumber,
-            refName: r.region.refName,
-            start: r.region.start,
-            end: r.region.end,
-          })),
-          fetchGeneration: self.fetchGeneration,
-        })
         if (activeStopToken) {
-          console.log(
-            '[AlignmentsDebug] fetchRegions: stopping previous token',
-          )
           stopStopToken(activeStopToken)
         }
         const stopToken = createStopToken()
@@ -1683,13 +1596,7 @@ export default function stateModelFactory(
             }
           }
         } finally {
-          const isCurrentToken = activeStopToken === stopToken
-          console.log('[AlignmentsDebug] fetchRegions finally', {
-            alive: isAlive(self),
-            isCurrentToken,
-            regionTooLarge: self.regionTooLargeState,
-          })
-          if (isAlive(self) && isCurrentToken) {
+          if (isAlive(self) && activeStopToken === stopToken) {
             activeStopToken = undefined
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
@@ -1707,7 +1614,77 @@ export default function stateModelFactory(
 
         afterAttach() {
           superAfterAttach()
-          // Autorun: draw whenever rendering-relevant observables change
+          // Upload autoruns are registered BEFORE the draw autorun so
+          // that MobX runs them first when rpcDataMap changes, ensuring
+          // GPU buffers are populated before renderBlocks() reads them.
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer) {
+                  return
+                }
+                const rpcDataMap = self.rpcDataMap
+                const maxYVal = uploadRegionDataToGPU(
+                  renderer,
+                  rpcDataMap,
+                  self.showCoverage,
+                )
+                if (maxYVal > 0) {
+                  self.setMaxY(maxYVal)
+                }
+                for (const [regionNumber, data] of rpcDataMap) {
+                  if (
+                    data.connectingLinePositions &&
+                    data.connectingLineYs &&
+                    data.connectingLineColorTypes &&
+                    data.numConnectingLines
+                  ) {
+                    renderer.uploadConnectingLinesForRegion(regionNumber, {
+                      regionStart: data.regionStart,
+                      connectingLinePositions: data.connectingLinePositions,
+                      connectingLineYs: data.connectingLineYs,
+                      connectingLineColorTypes: data.connectingLineColorTypes,
+                      numConnectingLines: data.numConnectingLines,
+                    })
+                  }
+                }
+              },
+              { name: 'LinearAlignmentsDisplay:uploadPileupData' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer) {
+                  return
+                }
+                const arcsRpcDataMap = self.arcsState.rpcDataMap
+                for (const [regionNumber, data] of arcsRpcDataMap) {
+                  renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
+                    regionStart: data.regionStart,
+                    arcX1: data.arcX1,
+                    arcX2: data.arcX2,
+                    arcColorTypes: data.arcColorTypes,
+                    arcIsArc: data.arcIsArc,
+                    numArcs: data.numArcs,
+                    linePositions: data.linePositions,
+                    lineYs: data.lineYs,
+                    lineColorTypes: data.lineColorTypes,
+                    numLines: data.numLines,
+                  })
+                }
+              },
+              { name: 'LinearAlignmentsDisplay:uploadArcsData' },
+            ),
+          )
+
+          // Draw autorun: re-renders whenever visual settings change.
+          // Also tracks rpcDataMap so it re-fires after uploads above.
           addDisposer(
             self,
             autorun(
@@ -1721,6 +1698,8 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+                const _data = self.rpcDataMap
+                const _arcsData = self.arcsState.rpcDataMap
                 const regions = view.visibleRegions
                 const blocks = regions.map(r => ({
                   regionNumber: r.regionNumber,
@@ -1761,94 +1740,31 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: upload pileup data to GPU when rpcDataMap changes
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.webglRenderer
-                if (!renderer) {
-                  return
-                }
-                const maxYVal = uploadRegionDataToGPU(
-                  renderer,
-                  self.rpcDataMap,
-                  self.showCoverage,
-                )
-                if (maxYVal > 0) {
-                  self.setMaxY(maxYVal)
-                }
-                self.setGpuUploadPending(false)
-              },
-              { name: 'LinearAlignmentsDisplay:uploadPileupData' },
-            ),
-          )
-
-          // Autorun: upload arcs data to GPU
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.webglRenderer
-                if (!renderer) {
-                  return
-                }
-                const arcsRpcDataMap = self.arcsState.rpcDataMap
-                for (const [regionNumber, data] of arcsRpcDataMap) {
-                  renderer.uploadArcsFromTypedArraysForRegion(regionNumber, {
-                    regionStart: data.regionStart,
-                    arcX1: data.arcX1,
-                    arcX2: data.arcX2,
-                    arcColorTypes: data.arcColorTypes,
-                    arcIsArc: data.arcIsArc,
-                    numArcs: data.numArcs,
-                    linePositions: data.linePositions,
-                    lineYs: data.lineYs,
-                    lineColorTypes: data.lineColorTypes,
-                    numLines: data.numLines,
-                  })
-                }
-              },
-              { name: 'LinearAlignmentsDisplay:uploadArcsData' },
-            ),
-          )
-
-          // Autorun: upload connecting line data for chain modes
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const renderer = self.webglRenderer
-                if (!renderer) {
-                  return
-                }
-                for (const [regionNumber, data] of self.rpcDataMap) {
-                  if (
-                    data.connectingLinePositions &&
-                    data.connectingLineYs &&
-                    data.connectingLineColorTypes &&
-                    data.numConnectingLines
-                  ) {
-                    renderer.uploadConnectingLinesForRegion(regionNumber, {
-                      regionStart: data.regionStart,
-                      connectingLinePositions: data.connectingLinePositions,
-                      connectingLineYs: data.connectingLineYs,
-                      connectingLineColorTypes: data.connectingLineColorTypes,
-                      numConnectingLines: data.numConnectingLines,
-                    })
-                  }
-                }
-              },
-              { name: 'LinearAlignmentsDisplay:uploadChainData' },
-            ),
-          )
-
-          // Autorun: fetch data for all visible regions
+          // Autorun: fetch data for all visible regions.
+          //
+          // IMPORTANT: Observable tracking discipline. This autorun reads
+          // observables before its `await`, which MobX tracks as
+          // dependencies. Any observable that is BOTH read here AND written
+          // by the fetch it launches will cause a re-fire loop (the fetch
+          // mutates state → autorun re-fires → cancels the in-flight fetch
+          // → starts a new one → repeat forever).
+          //
+          // Tracked (read before await):
+          //   view.initialized, self.regionTooLarge, view.visibleBp,
+          //   self.fetchToken, view.staticRegions, self.loadedRegions
+          //
+          // Written by fetchRegions/fetchFeaturesForRegion:
+          //   self.renderingStopToken — uses `activeStopToken` closure
+          //     variable instead of reading the observable, so not tracked
+          //   self.isLoading, self.error — write-only, not read here
+          //   self.regionTooLargeState — only mutated on successful
+          //     completion (alongside setLoadedRegion) or when region is
+          //     too large (guard catches that case). Never mid-RPC.
+          //   self.featureDensityStats — not tracked by this autorun
           addDisposer(
             self,
             autorun(
               async () => {
-                trace()
                 const view = getContainingView(self) as LGV
                 if (
                   !view.initialized ||
@@ -1874,34 +1790,6 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
-                console.log(
-                  '[AlignmentsDebug] fetchVisibleRegions autorun fired',
-                  {
-                    fetchToken: self.fetchToken,
-                    numStaticRegions: view.staticRegions.length,
-                    numLoaded: self.loadedRegions.size,
-                    numNeeded: needed.length,
-                    regionTooLarge: self.regionTooLarge,
-                    needed: needed.map(n => ({
-                      regionNumber: n.regionNumber,
-                      refName: n.region.refName,
-                      start: n.region.start,
-                      end: n.region.end,
-                    })),
-                    loaded: [...self.loadedRegions.entries()].map(([k, v]) => ({
-                      regionNumber: k,
-                      refName: v.refName,
-                      start: v.start,
-                      end: v.end,
-                    })),
-                    staticRegions: view.staticRegions.map(vr => ({
-                      regionNumber: vr.regionNumber,
-                      refName: vr.refName,
-                      start: vr.start,
-                      end: vr.end,
-                    })),
-                  },
-                )
                 if (needed.length > 0) {
                   await fetchRegions(needed)
                 }
@@ -1934,20 +1822,11 @@ export default function stateModelFactory(
                   prevInvalidationKey !== undefined &&
                   key !== prevInvalidationKey
                 ) {
-                  console.log('[AlignmentsDebug] invalidateData: key changed', {
-                    prev: prevInvalidationKey,
-                    next: key,
-                  })
                   self.setLoading(true)
                   self.setStatusMessage('Loading')
                   self.setError(null)
                   self.clearAllRpcData()
                   self.bumpFetchToken()
-                } else {
-                  console.log(
-                    '[AlignmentsDebug] invalidateData: no change (first=%s)',
-                    prevInvalidationKey === undefined,
-                  )
                 }
                 prevInvalidationKey = key
               },
@@ -2169,7 +2048,7 @@ export default function stateModelFactory(
               },
             },
             {
-              label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
+              label: 'Show coverage',
               type: 'checkbox' as const,
               checked: self.showCoverage,
               onClick: () => {
@@ -2177,9 +2056,7 @@ export default function stateModelFactory(
               },
             },
             {
-              label: self.showSashimiArcs
-                ? 'Hide sashimi arcs'
-                : 'Show sashimi arcs',
+              label: 'Show sashimi arcs',
               type: 'checkbox' as const,
               checked: self.showSashimiArcs,
               onClick: () => {
@@ -2187,9 +2064,7 @@ export default function stateModelFactory(
               },
             },
             {
-              label: self.showMismatches
-                ? 'Hide mismatches'
-                : 'Show mismatches',
+              label: 'Show mismatches',
               type: 'checkbox' as const,
               checked: self.showMismatches,
               onClick: () => {
@@ -2197,9 +2072,7 @@ export default function stateModelFactory(
               },
             },
             {
-              label: self.showInterbaseIndicators
-                ? 'Hide interbase indicators'
-                : 'Show interbase indicators',
+              label: 'Show interbase indicators',
               type: 'checkbox' as const,
               checked: self.showInterbaseIndicators,
               onClick: () => {
@@ -2430,15 +2303,17 @@ export default function stateModelFactory(
           },
           featureHeightMenu,
           {
-            label: self.showCoverage ? 'Hide coverage' : 'Show coverage',
+            label: 'Show coverage',
+            type: 'checkbox' as const,
+            checked: self.showCoverage,
             onClick: () => {
               self.setShowCoverage(!self.showCoverage)
             },
           },
           {
-            label: self.showSashimiArcs
-              ? 'Hide sashimi arcs'
-              : 'Show sashimi arcs',
+            label: 'Show sashimi arcs',
+            type: 'checkbox' as const,
+            checked: self.showSashimiArcs,
             onClick: () => {
               self.setShowSashimiArcs(!self.showSashimiArcs)
             },
@@ -2509,22 +2384,31 @@ export default function stateModelFactory(
       contextMenuItems() {
         const feat = self.contextMenuFeature
         const cigarHit = self.contextMenuCigarHit
+        const indicatorHit = self.contextMenuIndicatorHit
         const items: MenuItem[] = []
 
         if (cigarHit) {
           const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
+          const isInterbase =
+            cigarHit.type === 'insertion' ||
+            cigarHit.type === 'softclip' ||
+            cigarHit.type === 'hardclip'
+          const sortType = isInterbase ? cigarHit.type : 'basePair'
+          const sortLabel = isInterbase
+            ? `Sort by ${typeLabel.toLowerCase()} at position`
+            : 'Sort by base at position'
           items.push({
-            label: 'Mismatch',
+            label: typeLabel,
             type: 'subMenu',
             subMenu: [
               {
-                label: `Sort by base at position`,
+                label: sortLabel,
                 icon: SwapVertIcon,
                 onClick: () => {
                   const region = self.loadedRegion
                   if (region) {
                     self.setSortedByAtPosition(
-                      'basePair',
+                      sortType,
                       cigarHit.position,
                       region.refName,
                     )
@@ -2538,6 +2422,29 @@ export default function stateModelFactory(
                   const region = self.loadedRegion
                   if (region) {
                     openCigarWidget(self, cigarHit, region.refName)
+                  }
+                },
+              },
+            ],
+          })
+        }
+
+        if (indicatorHit) {
+          items.push({
+            label: 'Interbase',
+            type: 'subMenu',
+            subMenu: [
+              {
+                label: `Sort by ${indicatorHit.indicatorType} at position`,
+                icon: SwapVertIcon,
+                onClick: () => {
+                  const region = self.loadedRegion
+                  if (region) {
+                    self.setSortedByAtPosition(
+                      indicatorHit.indicatorType,
+                      indicatorHit.position,
+                      region.refName,
+                    )
                   }
                 },
               },

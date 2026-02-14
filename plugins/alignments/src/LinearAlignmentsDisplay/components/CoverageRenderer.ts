@@ -175,8 +175,7 @@ export class CoverageRenderer {
     }
 
     // Draw noncov (interbase) histogram - bars growing DOWN from top
-    // Height is 1/4 of coverage height to keep it compact
-    const noncovHeight = state.coverageHeight / 4
+    const noncovHeight = state.coverageHeight / 2
     if (
       state.showInterbaseIndicators &&
       this.parent.buffers.noncovHistogramVAO &&

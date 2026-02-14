@@ -10,7 +10,7 @@
  */
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { dedupe, updateStatus } from '@jbrowse/core/util'
+import { dedupe, max, min, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -740,9 +740,16 @@ export async function executeRenderWebGLPileupData({
     modificationArrays,
   } = await updateStatus('Computing layout', statusCallback, async () => {
     const layout = sortedBy
-      ? computeSortedLayout(features, mismatches, gaps, sortTagValues, sortedBy)
+      ? computeSortedLayout(
+          features,
+          mismatches,
+          gaps,
+          { insertions, softclips, hardclips },
+          sortTagValues,
+          sortedBy,
+        )
       : computeLayout(features)
-    const numLevels = Math.max(0, ...layout.values()) + 1
+    const numLevels = max(layout.values(), 0) + 1
 
     // Positions stored as offsets from regionStart for Float32 precision
     const readPositions = new Uint32Array(features.length * 2)
@@ -1073,8 +1080,8 @@ export async function executeRenderWebGLPileupData({
       }
       tooltipData.set(posOffset, bin)
     }
-    const minLen = Math.min(...data.lengths)
-    const maxLen = Math.max(...data.lengths)
+    const minLen = min(data.lengths)
+    const maxLen = max(data.lengths)
     const avgLen = data.lengths.reduce((a, b) => a + b, 0) / data.lengths.length
     // Find most common sequence
     let topSeq: string | undefined
@@ -1139,8 +1146,8 @@ export async function executeRenderWebGLPileupData({
       }
       tooltipData.set(posOffset, bin)
     }
-    const minLen = Math.min(...lengths)
-    const maxLen = Math.max(...lengths)
+    const minLen = min(lengths)
+    const maxLen = max(lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.deletions = { count: lengths.length, minLen, maxLen, avgLen }
   }
@@ -1160,8 +1167,8 @@ export async function executeRenderWebGLPileupData({
       }
       tooltipData.set(posOffset, bin)
     }
-    const minLen = Math.min(...lengths)
-    const maxLen = Math.max(...lengths)
+    const minLen = min(lengths)
+    const maxLen = max(lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.skips = { count: lengths.length, minLen, maxLen, avgLen }
   }
@@ -1196,8 +1203,8 @@ export async function executeRenderWebGLPileupData({
       }
       tooltipData.set(posOffset, bin)
     }
-    const minLen = Math.min(...lengths)
-    const maxLen = Math.max(...lengths)
+    const minLen = min(lengths)
+    const maxLen = max(lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.interbase.softclip = { count: lengths.length, minLen, maxLen, avgLen }
   }
@@ -1232,8 +1239,8 @@ export async function executeRenderWebGLPileupData({
       }
       tooltipData.set(posOffset, bin)
     }
-    const minLen = Math.min(...lengths)
-    const maxLen = Math.max(...lengths)
+    const minLen = min(lengths)
+    const maxLen = max(lengths)
     const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
     bin.interbase.hardclip = { count: lengths.length, minLen, maxLen, avgLen }
   }

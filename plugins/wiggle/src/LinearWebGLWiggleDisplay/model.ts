@@ -256,36 +256,36 @@ export default function stateModelFactory(
       },
 
       setCurrentBpRange(bpRangeX: [number, number]) {
-          self.currentBpRangeX = bpRangeX
-        },
+        self.currentBpRangeX = bpRangeX
+      },
 
-        setColor(color?: string) {
-          self.colorSetting = color
-        },
+      setColor(color?: string) {
+        self.colorSetting = color
+      },
 
-        setPosColor(color?: string) {
-          self.posColorSetting = color
-        },
+      setPosColor(color?: string) {
+        self.posColorSetting = color
+      },
 
-        setNegColor(color?: string) {
-          self.negColorSetting = color
-        },
+      setNegColor(color?: string) {
+        self.negColorSetting = color
+      },
 
-        setScaleType(scaleType: string) {
-          self.scaleTypeSetting = scaleType
-        },
+      setScaleType(scaleType: string) {
+        self.scaleTypeSetting = scaleType
+      },
 
-        setMinScore(val?: number) {
-          self.minScoreSetting = val
-        },
+      setMinScore(val?: number) {
+        self.minScoreSetting = val
+      },
 
-        setMaxScore(val?: number) {
-          self.maxScoreSetting = val
-        },
+      setMaxScore(val?: number) {
+        self.maxScoreSetting = val
+      },
 
-        setRenderingType(type: string) {
-          self.renderingTypeSetting = type
-        },
+      setRenderingType(type: string) {
+        self.renderingTypeSetting = type
+      },
     }))
     .actions(self => {
       async function fetchFeaturesForRegion(
@@ -390,7 +390,6 @@ export default function stateModelFactory(
               },
             ),
           )
-
         },
       }
     })

@@ -409,13 +409,7 @@ export function computeNoncovCoverage(
     }
   }
 
-  let maxCount = 1
-  for (const entry of noncovByPosition.values()) {
-    const total = entry.insertion + entry.softclip + entry.hardclip
-    if (total > maxCount) {
-      maxCount = total
-    }
-  }
+  const scale = Math.max(maxDepth, 1)
 
   const segments: {
     position: number
@@ -435,25 +429,25 @@ export function computeNoncovCoverage(
       segments.push({
         position: entry.position,
         yOffset,
-        height: entry.insertion / maxCount,
+        height: entry.insertion / scale,
         colorType: 1,
       })
-      yOffset += entry.insertion / maxCount
+      yOffset += entry.insertion / scale
     }
     if (entry.softclip > 0) {
       segments.push({
         position: entry.position,
         yOffset,
-        height: entry.softclip / maxCount,
+        height: entry.softclip / scale,
         colorType: 2,
       })
-      yOffset += entry.softclip / maxCount
+      yOffset += entry.softclip / scale
     }
     if (entry.hardclip > 0) {
       segments.push({
         position: entry.position,
         yOffset,
-        height: entry.hardclip / maxCount,
+        height: entry.hardclip / scale,
         colorType: 3,
       })
     }
@@ -505,7 +499,7 @@ export function computeNoncovCoverage(
     colorTypes,
     indicatorPositions,
     indicatorColorTypes,
-    maxCount,
+    maxCount: scale,
     segmentCount: filteredSegments.length,
     indicatorCount: filteredIndicators.length,
   }

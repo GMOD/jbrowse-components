@@ -10,6 +10,7 @@ import {
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
+  max,
   setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -501,7 +502,7 @@ const LDCanvas = observer(function LDCanvas({
           />
           <RecombinationYScaleBar
             height={lineZoneHeight / 2}
-            maxValue={Math.max(...model.recombination.values, 0.1)}
+            maxValue={max(model.recombination.values, 0.1)}
           />
         </div>
       ) : null}

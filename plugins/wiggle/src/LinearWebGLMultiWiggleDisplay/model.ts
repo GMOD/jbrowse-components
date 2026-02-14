@@ -16,8 +16,8 @@ import { autorun } from 'mobx'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getNiceDomain, getScale } from '../util.ts'
 
-import type { Source } from '../util.ts'
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
+import type { Source } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -43,9 +43,7 @@ const WebGLMultiWiggleComponent = lazy(
   () => import('./components/WebGLMultiWiggleComponent.tsx'),
 )
 const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
-const SetColorDialog = lazy(
-  () => import('./components/SetColorDialog.tsx'),
-)
+const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -536,9 +534,7 @@ export default function stateModelFactory(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(layout !== undefined && (layout as Source[]).length > 0
-          ? { layout }
-          : {}),
+        ...(layout !== undefined && layout.length > 0 ? { layout } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),

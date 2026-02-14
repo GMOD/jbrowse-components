@@ -161,8 +161,11 @@ export default class BamSlightlyLazyFeature
         return this.template_length
       case 'clipLengthAtStartOfRead':
         return this.clipLengthAtStartOfRead
+      case 'score':
+        return this.score
 
       default:
+        console.log(field)
         return this.fields[field]
     }
   }

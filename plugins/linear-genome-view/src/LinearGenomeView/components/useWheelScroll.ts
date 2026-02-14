@@ -97,10 +97,7 @@ export function useWheelScroll(
         )
         ctrlZoomDelta.current = 0
         samples = []
-      } else if (
-        model.scrollZoom &&
-        Math.abs(deltaY) > Math.abs(deltaX)
-      ) {
+      } else if (model.scrollZoom && Math.abs(deltaY) > Math.abs(deltaX)) {
         event.preventDefault()
         scrollZoomDelta.current += deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
         lastZoomClientX.current = event.clientX

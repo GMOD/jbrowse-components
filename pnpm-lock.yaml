@@ -2376,8 +2376,8 @@ packages:
   '@asamuzakjp/css-color@4.1.2':
     resolution: {integrity: sha512-NfBUvBaYgKIuq6E/RBLY1m0IohzNHAYyaJGuTK79Z23uNwmz2jl1mPsC5ZxCCxylinKhT1Amn5oNTlx1wN8cQg==}
 
-  '@asamuzakjp/dom-selector@6.7.8':
-    resolution: {integrity: sha512-stisC1nULNc9oH5lakAj8MH88ZxeGxzyWNDfbdCxvJSJIvDsHNZqYvscGTgy/ysgXWLJPt6K/4t0/GjvtKcFJQ==}
+  '@asamuzakjp/dom-selector@6.8.0':
+    resolution: {integrity: sha512-tJHMAFJ9ooEm8iSiguVqodoEQLBvvcnImz43u0R58m03SMUQENIvXWrN1slb/aiZrC9+X/bXbNWzsrZen9lrgA==}
 
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
@@ -8732,8 +8732,8 @@ packages:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
 
-  text-decoder@1.2.5:
-    resolution: {integrity: sha512-ymKEOrjEhNE0+Gehpn2Dw59Vp2fNG0DQvCRAJpCjVqB1Pkj1AMBzDpow4H9kSa6XqO/wZrb5TLxEigx+nEaiBA==}
+  text-decoder@1.2.6:
+    resolution: {integrity: sha512-27FeW5GQFDfw0FpwMQhMagB7BztOOlmjcSRi97t2oplhKVTZtp0DZbSegSaXS5IIC6mxMvBG4AR1Sgc6BX3CQg==}
 
   thingies@2.5.0:
     resolution: {integrity: sha512-s+2Bwztg6PhWUD7XMfeYm5qliDdSiZm7M7n8KjTkIsm3l/2lgVRc2/Gx/v+ZX8lT4FMA+i8aQvhcWylldc+ZNw==}
@@ -8945,8 +8945,8 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
-  undici@7.21.0:
-    resolution: {integrity: sha512-Hn2tCQpoDt1wv23a68Ctc8Cr/BHpUSfaPYrkajTXOS9IKpxVRx/X5m1K2YkbK2ipgZgxXSgsUinl3x+2YdSSfg==}
+  undici@7.22.0:
+    resolution: {integrity: sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==}
     engines: {node: '>=20.18.1'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
@@ -9322,7 +9322,7 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.0
       lru-cache: 11.2.6
 
-  '@asamuzakjp/dom-selector@6.7.8':
+  '@asamuzakjp/dom-selector@6.8.0':
     dependencies:
       '@asamuzakjp/nwsapi': 2.3.9
       bidi-js: 1.0.3
@@ -11732,13 +11732,13 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 25.2.3
+      '@types/node': 20.19.33
       '@types/tough-cookie': 4.0.5
       parse5: 7.3.0
 
   '@types/jsdom@27.0.0':
     dependencies:
-      '@types/node': 20.19.33
+      '@types/node': 25.2.3
       '@types/tough-cookie': 4.0.5
       parse5: 7.3.0
 
@@ -15102,7 +15102,7 @@ snapshots:
   jsdom@28.0.0(canvas@3.2.1):
     dependencies:
       '@acemir/cssom': 0.9.31
-      '@asamuzakjp/dom-selector': 6.7.8
+      '@asamuzakjp/dom-selector': 6.8.0
       '@exodus/bytes': 1.14.1
       cssstyle: 5.3.7
       data-urls: 7.0.0
@@ -15115,7 +15115,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.0
-      undici: 7.21.0
+      undici: 7.22.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -16646,7 +16646,7 @@ snapshots:
     dependencies:
       events-universal: 1.0.1
       fast-fifo: 1.3.2
-      text-decoder: 1.2.5
+      text-decoder: 1.2.6
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
@@ -16864,7 +16864,7 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.2
 
-  text-decoder@1.2.5:
+  text-decoder@1.2.6:
     dependencies:
       b4a: 1.7.4
     transitivePeerDependencies:
@@ -17085,7 +17085,7 @@ snapshots:
 
   undici-types@7.16.0: {}
 
-  undici@7.21.0: {}
+  undici@7.22.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 

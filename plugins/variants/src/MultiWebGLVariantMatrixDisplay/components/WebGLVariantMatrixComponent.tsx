@@ -68,9 +68,7 @@ const WebGLVariantMatrixComponent = observer(
       try {
         rendererRef.current = new WebGLVariantMatrixRenderer(canvas)
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : 'WebGL initialization failed',
-        )
+        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
       }
       return () => {
         rendererRef.current?.destroy()

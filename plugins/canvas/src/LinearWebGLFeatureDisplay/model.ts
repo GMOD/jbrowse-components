@@ -291,21 +291,21 @@ export default function stateModelFactory(
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
-          ;(self as any).featureIdUnderMouse = featureId
-        },
+        ;(self as any).featureIdUnderMouse = featureId
+      },
 
-        setMouseoverExtraInformation(info: string | undefined) {
-          self.mouseoverExtraInformation = info
-        },
+      setMouseoverExtraInformation(info: string | undefined) {
+        self.mouseoverExtraInformation = info
+      },
 
-        setContextMenuFeature(feature?: Feature) {
-          self.contextMenuFeature = feature
-        },
+      setContextMenuFeature(feature?: Feature) {
+        self.contextMenuFeature = feature
+      },
 
-        setRegionTooLarge(tooLarge: boolean, count: number) {
-          self.regionTooLarge = tooLarge
-          self.featureCount = count
-        },
+      setRegionTooLarge(tooLarge: boolean, count: number) {
+        self.regionTooLarge = tooLarge
+        self.featureCount = count
+      },
     }))
     .actions(self => ({
       selectFeature(feature: Feature) {
@@ -633,14 +633,12 @@ export default function stateModelFactory(
                       start: n.region.start,
                       end: n.region.end,
                     })),
-                    loaded: [...self.loadedRegions.entries()].map(
-                      ([k, v]) => ({
-                        regionNumber: k,
-                        refName: v.refName,
-                        start: v.start,
-                        end: v.end,
-                      }),
-                    ),
+                    loaded: [...self.loadedRegions.entries()].map(([k, v]) => ({
+                      regionNumber: k,
+                      refName: v.refName,
+                      start: v.start,
+                      end: v.end,
+                    })),
                     staticRegions: view.staticRegions.map(vr => ({
                       regionNumber: vr.regionNumber,
                       refName: vr.refName,
@@ -744,7 +742,6 @@ export default function stateModelFactory(
               },
             ),
           )
-
         },
       }
     })

@@ -552,7 +552,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvas.removeEventListener('click', handleClick)
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
   const bpPerPx = view.bpPerPx
@@ -867,9 +867,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const isReady = view.initialized
 
   return (
-    <div
-      style={{ position: 'relative', width: '100%', height }}
-    >
+    <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasRef}
         width={width}
