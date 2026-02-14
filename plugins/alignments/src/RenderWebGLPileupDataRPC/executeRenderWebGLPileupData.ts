@@ -397,12 +397,7 @@ export async function executeRenderWebGLPileupData({
     tagColors,
     sortTagValues,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
-    const t0 = performance.now()
-    const deduped = dedupe(featuresArray, (f: Feature) => f.id())
-    console.log(
-      `[pileup dedupe] ${featuresArray.length} -> ${deduped.length} (removed ${featuresArray.length - deduped.length}) in ${(performance.now() - t0).toFixed(1)}ms`,
-    )
-
+    const deduped = featuresArray
     const featuresData: FeatureData[] = []
     const gapsData: GapData[] = []
     const mismatchesData: MismatchData[] = []

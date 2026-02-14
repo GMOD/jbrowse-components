@@ -81,7 +81,7 @@ export interface RenderState {
   showCoverage: boolean
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
-  coverageNicedMax: number // niced domain max from D3 scale (matches Y scalebar labels)
+  coverageNicedMax: number | undefined // niced domain max from D3 scale (matches Y scalebar labels)
   showMismatches: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean

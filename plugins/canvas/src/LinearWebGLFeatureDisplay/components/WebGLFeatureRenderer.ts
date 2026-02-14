@@ -79,6 +79,7 @@ void main() {
   float sx2 = snapToPixelX(hpToClipX(splitEnd, u_bpRangeX));
 
   // Ensure minimum width of 2px so thin features remain visible and solid
+  // (clip space spans -1 to +1, so 1px = 2.0/canvasWidth)
   float minWidth = 4.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
     sx2 = sx1 + minWidth;

@@ -384,6 +384,7 @@ export default function stateModelFactory(
       overCigarItem: false,
       webglRenderer: null as WebGLRenderer | null,
       colorPalette: null as ColorPalette | null,
+      visibleMaxDepth: 0,
     }))
     .views(self => ({
       /**
@@ -629,32 +630,7 @@ export default function stateModelFactory(
         if (!self.showCoverage) {
           return undefined
         }
-        // Find max depth from only the visible bins
-        const bpRange = this.visibleBpRange
-        let maxDepth = 0
-        for (const data of self.rpcDataMap.values()) {
-          const { coverageDepths, coverageStartOffset, coverageBinSize, regionStart } = data
-          if (bpRange) {
-            const startBin = Math.max(
-              0,
-              Math.floor((bpRange[0] - regionStart - coverageStartOffset) / coverageBinSize),
-            )
-            const endBin = Math.min(
-              coverageDepths.length,
-              Math.ceil((bpRange[1] - regionStart - coverageStartOffset) / coverageBinSize),
-            )
-            for (let i = startBin; i < endBin; i++) {
-              const d = coverageDepths[i]!
-              if (d > maxDepth) {
-                maxDepth = d
-              }
-            }
-          } else {
-            if (data.coverageMaxDepth > maxDepth) {
-              maxDepth = data.coverageMaxDepth
-            }
-          }
-        }
+        const maxDepth = self.visibleMaxDepth
         if (maxDepth === 0) {
           return undefined
         }
@@ -960,6 +936,9 @@ export default function stateModelFactory(
           self.colorPalette = palette
         },
 
+        setVisibleMaxDepth(d: number) {
+          self.visibleMaxDepth = d
+        },
         setMaxY(y: number) {
           self.maxY = y
           // Auto-resize height based on content
@@ -1704,6 +1683,65 @@ export default function stateModelFactory(
             ),
           )
 
+          // Debounced autorun: compute visible max depth from only visible bins.
+          // Updates 500ms after pan/zoom settles so the scale adjusts to the
+          // current viewport without thrashing during continuous interaction.
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                if (!self.showCoverage) {
+                  return
+                }
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const bpRange = self.visibleBpRange
+                let maxDepth = 0
+                for (const data of self.rpcDataMap.values()) {
+                  const {
+                    coverageDepths,
+                    coverageStartOffset,
+                    coverageBinSize,
+                    regionStart,
+                  } = data
+                  if (bpRange) {
+                    const startBin = Math.max(
+                      0,
+                      Math.floor(
+                        (bpRange[0] - regionStart - coverageStartOffset) /
+                          coverageBinSize,
+                      ),
+                    )
+                    const endBin = Math.min(
+                      coverageDepths.length,
+                      Math.ceil(
+                        (bpRange[1] - regionStart - coverageStartOffset) /
+                          coverageBinSize,
+                      ),
+                    )
+                    for (let i = startBin; i < endBin; i++) {
+                      const d = coverageDepths[i]!
+                      if (d > maxDepth) {
+                        maxDepth = d
+                      }
+                    }
+                  } else {
+                    if (data.coverageMaxDepth > maxDepth) {
+                      maxDepth = data.coverageMaxDepth
+                    }
+                  }
+                }
+                self.setVisibleMaxDepth(maxDepth)
+              },
+              {
+                delay: 400,
+                name: 'LinearAlignmentsDisplay:visibleMaxDepth',
+              },
+            ),
+          )
+
           // Draw autorun: re-renders whenever visual settings change.
           // Also tracks rpcDataMap so it re-fires after uploads above.
           addDisposer(
@@ -1736,8 +1774,7 @@ export default function stateModelFactory(
                   showCoverage: self.showCoverage,
                   coverageHeight: self.coverageHeight,
                   coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-                  coverageNicedMax:
-                    self.coverageTicks?.nicedMax ?? 1,
+                  coverageNicedMax: self.coverageTicks?.nicedMax,
                   showMismatches: self.showMismatches,
                   showInterbaseIndicators: self.showInterbaseIndicators,
                   showModifications: self.showModifications,

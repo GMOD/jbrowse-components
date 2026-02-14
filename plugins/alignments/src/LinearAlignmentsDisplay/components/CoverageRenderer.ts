@@ -38,6 +38,7 @@ export class CoverageRenderer {
 
     const willDrawCoverage =
       state.showCoverage &&
+      state.coverageNicedMax !== undefined &&
       this.parent.buffers.coverageVAO &&
       this.parent.buffers.coverageCount > 0
     if (!willDrawCoverage) {
@@ -46,10 +47,7 @@ export class CoverageRenderer {
 
     // depthScale corrects for nice() domain expansion and multi-region max differences
     // Bars are normalized per-region to perRegionMax, but the scalebar uses nicedMax
-    const depthScale =
-      state.coverageNicedMax > 0
-        ? this.parent.buffers.maxDepth / state.coverageNicedMax
-        : 1
+    const depthScale = this.parent.buffers.maxDepth / state.coverageNicedMax!
 
     // Draw grey coverage bars - coverage uses offset-based positions
     gl.useProgram(this.parent.coverageProgram)
