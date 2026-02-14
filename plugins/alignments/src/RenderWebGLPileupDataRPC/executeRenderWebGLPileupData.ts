@@ -77,6 +77,60 @@ function computeLayout(features: FeatureData[]): Map<string, number> {
   return layoutMap
 }
 
+function sortFeatures(
+  features: FeatureData[],
+  mismatches: MismatchData[],
+  sortedBy: NonNullable<RenderWebGLPileupDataArgs['sortedBy']>,
+) {
+  const { type, pos } = sortedBy
+
+  // Partition: features overlapping the sort position come first
+  const overlapping: FeatureData[] = []
+  const nonOverlapping: FeatureData[] = []
+  for (const f of features) {
+    if (f.start <= pos && f.end > pos) {
+      overlapping.push(f)
+    } else {
+      nonOverlapping.push(f)
+    }
+  }
+
+  if (type === 'basePair') {
+    // Build map: featureId → mismatch base character code at sort position
+    const baseAtPos = new Map<string, number>()
+    for (const mm of mismatches) {
+      if (mm.position === pos) {
+        baseAtPos.set(mm.featureId, mm.base)
+      }
+    }
+
+    overlapping.sort((a, b) => {
+      const aBase = baseAtPos.get(a.id) ?? 0
+      const bBase = baseAtPos.get(b.id) ?? 0
+      // Reads with mismatches (non-zero base) sort before ref bases (0)
+      if (aBase !== 0 && bBase === 0) {
+        return -1
+      }
+      if (aBase === 0 && bBase !== 0) {
+        return 1
+      }
+      return aBase - bBase
+    })
+  } else if (type === 'position') {
+    overlapping.sort((a, b) => a.start - b.start)
+  } else if (type === 'strand') {
+    overlapping.sort((a, b) => a.strand - b.strand)
+  }
+
+  features.length = 0
+  for (const f of overlapping) {
+    features.push(f)
+  }
+  for (const f of nonOverlapping) {
+    features.push(f)
+  }
+}
+
 function computeModificationCoverage(
   modifications: ModificationEntry[],
   mismatches: MismatchData[],
@@ -327,6 +381,7 @@ export async function executeRenderWebGLPileupData({
     region,
     colorBy,
     colorTagMap,
+    sortedBy,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -741,6 +796,9 @@ export async function executeRenderWebGLPileupData({
     hardclipArrays,
     modificationArrays,
   } = await updateStatus('Computing layout', statusCallback, async () => {
+    if (sortedBy) {
+      sortFeatures(features, mismatches, sortedBy)
+    }
     const layout = computeLayout(features)
     const numLevels = Math.max(0, ...layout.values()) + 1
 

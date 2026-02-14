@@ -27,6 +27,13 @@ export interface RenderWebGLPileupDataArgs {
     modifications?: { threshold?: number }
   }
   colorTagMap?: Record<string, string>
+  sortedBy?: {
+    type: string
+    pos: number
+    refName: string
+    assemblyName: string
+    tag?: string
+  }
   statusCallback?: (status: string) => void
   stopToken?: string
 }

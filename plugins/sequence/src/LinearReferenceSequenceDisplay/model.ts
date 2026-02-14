@@ -36,6 +36,7 @@ export interface LinearReferenceSequenceDisplayModel {
   sequenceType: string
   rowHeight: number
   sequenceHeight: number
+  showLoading: boolean
 }
 
 export const WebGLSequenceComponent = lazy(
@@ -131,6 +132,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get sequenceHeight() {
         return this.numRows * 15
+      },
+      get showLoading() {
+        return self.sequenceData.size === 0
       },
       /**
        * #getter

@@ -35,6 +35,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     showForwardActual,
     showReverseActual,
     showTranslationActual,
+    showLoading,
     sequenceType,
     rowHeight,
   } = model
@@ -238,15 +239,15 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         style={{
           width: '100%',
           height: '100%',
-          display: zoomedOut ? 'none' : 'block',
+          display: zoomedOut || showLoading ? 'none' : 'block',
         }}
       />
       {zoomedOut ? (
         <Alert severity="info">Zoom in to see sequence</Alert>
       ) : (
         <>
-          <LoadingOverlay isVisible={sequenceData.size === 0} />
-          {sequenceData.size > 0 ? (
+          <LoadingOverlay isVisible={showLoading} />
+          {!showLoading ? (
             <SequenceLettersOverlay
               sequenceData={sequenceData}
               offsetPx={view.offsetPx}

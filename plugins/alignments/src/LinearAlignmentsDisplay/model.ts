@@ -1334,6 +1334,7 @@ export default function stateModelFactory(
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
+            sortedBy: self.sortedBy,
             stopToken,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
@@ -1744,6 +1745,7 @@ export default function stateModelFactory(
               () => {
                 const key = JSON.stringify({
                   filterBy: self.filterBy,
+                  sortedBy: self.sortedBy,
                   mode: self.renderingMode,
                   drawInter: self.arcsState.drawInter,
                   drawLongRange: self.arcsState.drawLongRange,
