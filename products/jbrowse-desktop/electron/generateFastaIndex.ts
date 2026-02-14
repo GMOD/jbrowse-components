@@ -17,8 +17,18 @@ export async function getFileStream(
     if (!response.body) {
       throw new Error(`No response body for ${location.uri}`)
     }
-    // @ts-expect-error web vs node ReadableStream type mismatch
-    return Readable.fromWeb(response.body)
+    const body = response.body
+    const reader = body.getReader()
+    return new Readable({
+      async read() {
+        let result = await reader.read()
+        while (!result.done) {
+          this.push(result.value)
+          result = await reader.read()
+        }
+        this.push(null)
+      },
+    })
   }
   throw new Error(`Unknown file handle type ${JSON.stringify(location)}`)
 }

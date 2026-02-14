@@ -65,8 +65,17 @@ export async function getLocalOrRemoteStream({
     const nodeStream =
       body instanceof Readable
         ? body
-        : // @ts-ignore web vs node ReadableStream type mismatch
-          Readable.fromWeb(body)
+        : new Readable({
+            async read() {
+              const reader = body.getReader()
+              let result = await reader.read()
+              while (!result.done) {
+                this.push(result.value)
+                result = await reader.read()
+              }
+              this.push(null)
+            },
+          })
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
