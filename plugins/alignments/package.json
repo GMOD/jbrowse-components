@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@gmod/bam": "^7.1.17",
-    "@gmod/cram": "^8.0.3",
+    "@gmod/cram": "^8.0.4",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

@@ -7,17 +7,18 @@
 
 import { colord } from '@jbrowse/core/util/colord'
 
-import { INTERBASE_TYPES } from './hitTesting.ts'
 import { fillColor } from '../../shared/color.ts'
 
 import type { ColorPalette, RGBColor, WebGLRenderer } from './WebGLRenderer'
 import type {
   CigarHitResult,
-  CoverageHitResult,
   IndicatorHitResult,
   SashimiArcHitResult,
 } from './hitTesting'
-import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
+import type {
+  CoverageTooltipBin,
+  WebGLPileupDataResult,
+} from '../../RenderWebGLPileupDataRPC/types'
 import type { Theme } from '@mui/material'
 
 function toRgb(color: string): RGBColor {
@@ -253,93 +254,49 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
   }
 }
 
+export function getTooltipBin(
+  position: number,
+  blockRpcData: WebGLPileupDataResult | undefined,
+): CoverageTooltipBin | undefined {
+  if (!blockRpcData) {
+    return undefined
+  }
+  const posOffset = position - blockRpcData.regionStart
+  const bin = blockRpcData.tooltipData[posOffset]
+  if (bin) {
+    return bin
+  }
+  const binIdx = Math.floor(
+    (posOffset - blockRpcData.coverageStartOffset) /
+      blockRpcData.coverageBinSize,
+  )
+  const depth = blockRpcData.coverageDepths[binIdx]
+  if (depth !== undefined && depth > 0) {
+    return { position, depth, snps: {}, interbase: {} }
+  }
+  return undefined
+}
+
 export function formatIndicatorTooltip(
   indicatorHit: IndicatorHitResult,
   blockRpcData: WebGLPileupDataResult | undefined,
   refName: string | undefined,
 ) {
-  const posOffset = indicatorHit.position - (blockRpcData?.regionStart ?? 0)
-  const tooltipBin = blockRpcData?.tooltipData[posOffset]
-
-  if (tooltipBin) {
-    return JSON.stringify({
-      type: 'indicator',
-      bin: tooltipBin,
-      refName,
-    })
+  const bin = getTooltipBin(indicatorHit.position, blockRpcData)
+  if (bin) {
+    return JSON.stringify({ type: 'indicator', bin, refName })
   }
-  // Fallback: show basic counts when detailed bin data unavailable
-  const { counts } = indicatorHit
-  const total = counts.insertion + counts.softclip + counts.hardclip
-  const interbaseData: Record<
-    string,
-    { count: number; minLen: number; maxLen: number; avgLen: number }
-  > = {}
-  for (const type of INTERBASE_TYPES) {
-    if (counts[type] > 0) {
-      interbaseData[type] = {
-        count: counts[type],
-        minLen: 0,
-        maxLen: 0,
-        avgLen: 0,
-      }
-    }
-  }
-  return JSON.stringify({
-    type: 'indicator',
-    bin: {
-      position: indicatorHit.position,
-      depth: total,
-      interbase: interbaseData,
-    },
-    refName,
-  })
+  return undefined
 }
 
 export function formatCoverageTooltip(
-  coverageHit: CoverageHitResult,
+  position: number,
   blockRpcData: WebGLPileupDataResult | undefined,
   refName: string | undefined,
 ) {
-  const posOffset = coverageHit.position - (blockRpcData?.regionStart ?? 0)
-  const tooltipBin = blockRpcData?.tooltipData[posOffset]
-
-  if (tooltipBin || coverageHit.depth > 0) {
-    const bin = tooltipBin ?? {
-      position: coverageHit.position,
-      depth: coverageHit.depth,
-      snps: {},
-      interbase: {},
-    }
-    if (!tooltipBin && coverageHit.snps.length > 0) {
-      for (const snp of coverageHit.snps) {
-        if (
-          snp.base === 'A' ||
-          snp.base === 'C' ||
-          snp.base === 'G' ||
-          snp.base === 'T'
-        ) {
-          bin.snps[snp.base] = { count: snp.count, fwd: 0, rev: 0 }
-        } else if (
-          snp.base === 'insertion' ||
-          snp.base === 'softclip' ||
-          snp.base === 'hardclip'
-        ) {
-          bin.interbase[snp.base] = {
-            count: snp.count,
-            minLen: 0,
-            maxLen: 0,
-            avgLen: 0,
-          }
-        }
-      }
-    }
-
-    return JSON.stringify({
-      type: 'coverage',
-      bin,
-      refName,
-    })
+  const bin = getTooltipBin(position, blockRpcData)
+  if (bin) {
+    return JSON.stringify({ type: 'coverage', bin, refName })
   }
   return undefined
 }

@@ -339,7 +339,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       model.setFeatureIdUnderMouse(undefined)
       model.setMouseoverExtraInformation(
         formatCoverageTooltip(
-          result.hit,
+          result.hit.position,
           result.resolved.rpcData,
           result.resolved.refName,
         ),
@@ -401,7 +401,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     if (result.type === 'coverage') {
       const refName = result.resolved.refName
-      openCoverageWidget(model, result.hit, refName, result.resolved.rpcData)
+      openCoverageWidget(model, result.hit.position, refName, result.resolved.rpcData)
       return
     }
 
