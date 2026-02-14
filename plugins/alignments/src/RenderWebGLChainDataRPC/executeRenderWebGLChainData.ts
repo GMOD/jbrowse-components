@@ -45,6 +45,7 @@ import {
   pairOrientationToNum,
   parseCssColor,
 } from '../shared/webglRpcUtils.ts'
+import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
 import type {
@@ -969,33 +970,16 @@ export async function executeRenderWebGLChainData({
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
-  // Build tooltip data (same as pileup)
-  const tooltipData = new Map<number, any>()
-  for (const mm of mismatches) {
-    if (mm.position < regionStart) {
-      continue
-    }
-    const posOffset = mm.position - regionStart
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = { position: mm.position, depth, snps: {}, interbase: {} }
-      tooltipData.set(posOffset, bin)
-    }
-    const baseName = String.fromCharCode(mm.base)
-    if (!bin.snps[baseName]) {
-      bin.snps[baseName] = { count: 0, fwd: 0, rev: 0 }
-    }
-    bin.snps[baseName].count++
-    if (mm.strand === 1) {
-      bin.snps[baseName].fwd++
-    } else {
-      bin.snps[baseName].rev++
-    }
-  }
+  const tooltipData = buildTooltipData({
+    mismatches,
+    insertions,
+    gaps,
+    softclips,
+    hardclips,
+    modifications,
+    regionStart,
+    coverage,
+  })
 
   const result: WebGLPileupDataResult = {
     regionStart,

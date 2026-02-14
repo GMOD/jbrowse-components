@@ -47,6 +47,12 @@ export interface CoverageTooltipBin {
     maxLen: number
     avgLen: number
   }
+  skips?: {
+    count: number
+    minLen: number
+    maxLen: number
+    avgLen: number
+  }
   // Interbase data: type -> { count, minLen, maxLen, avgLen, topSeq }
   interbase: Record<
     string,

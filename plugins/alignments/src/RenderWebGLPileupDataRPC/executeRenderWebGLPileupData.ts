@@ -23,6 +23,7 @@ import { parseCigar2 } from '../MismatchParser/index.ts'
 import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
+import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
   computeCoverage,
@@ -34,7 +35,6 @@ import {
 } from '../shared/computeCoverage.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
-import { getModificationName } from '../shared/modificationData.ts'
 import {
   baseToAscii,
   getEffectiveStrand,
@@ -397,7 +397,11 @@ export async function executeRenderWebGLPileupData({
     tagColors,
     sortTagValues,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
+    const t0 = performance.now()
     const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+    console.log(
+      `[pileup dedupe] ${featuresArray.length} -> ${deduped.length} (removed ${featuresArray.length - deduped.length}) in ${(performance.now() - t0).toFixed(1)}ms`,
+    )
 
     const featuresData: FeatureData[] = []
     const gapsData: GapData[] = []
@@ -972,325 +976,16 @@ export async function executeRenderWebGLPileupData({
     regionSequenceStart,
   )
 
-  // Build tooltip data for positions with SNPs or interbase events
-  const tooltipData = new Map<
-    number,
-    {
-      position: number
-      depth: number
-      snps: Record<string, { count: number; fwd: number; rev: number }>
-      deletions?: {
-        count: number
-        minLen: number
-        maxLen: number
-        avgLen: number
-      }
-      skips?: { count: number; minLen: number; maxLen: number; avgLen: number }
-      interbase: Record<
-        string,
-        {
-          count: number
-          minLen: number
-          maxLen: number
-          avgLen: number
-          topSeq?: string
-        }
-      >
-      modifications?: Record<
-        string,
-        {
-          count: number
-          fwd: number
-          rev: number
-          probabilityTotal: number
-          color: string
-          name: string
-        }
-      >
-    }
-  >()
-
-  // Process mismatches for SNP tooltip data
-  for (const mm of mismatches) {
-    if (mm.position < regionStart) {
-      continue
-    }
-    const posOffset = mm.position - regionStart
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      // Find depth at this position from coverage bins
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = {
-        position: mm.position,
-        depth,
-        snps: {},
-        interbase: {},
-      }
-      tooltipData.set(posOffset, bin)
-    }
-    // mm.base is ASCII code, convert to character
-    const baseName = String.fromCharCode(mm.base)
-    if (!bin.snps[baseName]) {
-      bin.snps[baseName] = { count: 0, fwd: 0, rev: 0 }
-    }
-    bin.snps[baseName].count++
-    if (mm.strand === 1) {
-      bin.snps[baseName].fwd++
-    } else {
-      bin.snps[baseName].rev++
-    }
-  }
-
-  // Process insertions for interbase tooltip data
-  const insertionsByPos = new Map<
-    number,
-    { lengths: number[]; sequences: string[] }
-  >()
-  for (const ins of insertions) {
-    if (ins.position < regionStart) {
-      continue
-    }
-    const posOffset = ins.position - regionStart
-    let data = insertionsByPos.get(posOffset)
-    if (!data) {
-      data = { lengths: [], sequences: [] }
-      insertionsByPos.set(posOffset, data)
-    }
-    data.lengths.push(ins.length)
-    if (ins.sequence) {
-      data.sequences.push(ins.sequence)
-    }
-  }
-
-  for (const [posOffset, data] of insertionsByPos) {
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = {
-        position: regionStart + posOffset,
-        depth,
-        snps: {},
-        interbase: {},
-      }
-      tooltipData.set(posOffset, bin)
-    }
-    const minLen = min(data.lengths)
-    const maxLen = max(data.lengths)
-    const avgLen = data.lengths.reduce((a, b) => a + b, 0) / data.lengths.length
-    // Find most common sequence
-    let topSeq: string | undefined
-    if (data.sequences.length > 0) {
-      const seqCounts = new Map<string, number>()
-      for (const seq of data.sequences) {
-        seqCounts.set(seq, (seqCounts.get(seq) ?? 0) + 1)
-      }
-      let maxCount = 0
-      for (const [seq, count] of seqCounts) {
-        if (count > maxCount) {
-          maxCount = count
-          topSeq = seq
-        }
-      }
-    }
-    bin.interbase.insertion = {
-      count: data.lengths.length,
-      minLen,
-      maxLen,
-      avgLen,
-      topSeq,
-    }
-  }
-
-  // Process deletions and skips for tooltip data
-  // Deletions and skips span multiple positions, so we add counts to each position they cover
-  const deletionsByPos = new Map<number, number[]>()
-  const skipsByPos = new Map<number, number[]>()
-  for (const gap of gaps) {
-    if (gap.end < regionStart) {
-      continue
-    }
-    const startOffset = Math.max(0, gap.start - regionStart)
-    const endOffset = gap.end - regionStart
-    const length = gap.end - gap.start
-    const targetMap = gap.type === 'deletion' ? deletionsByPos : skipsByPos
-
-    // Add to each position the gap covers (covers = overlaps with the 1bp position)
-    for (let pos = startOffset; pos < endOffset; pos++) {
-      let lengths = targetMap.get(pos)
-      if (!lengths) {
-        lengths = []
-        targetMap.set(pos, lengths)
-      }
-      lengths.push(length)
-    }
-  }
-
-  for (const [posOffset, lengths] of deletionsByPos) {
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = {
-        position: regionStart + posOffset,
-        depth,
-        snps: {},
-        interbase: {},
-      }
-      tooltipData.set(posOffset, bin)
-    }
-    const minLen = min(lengths)
-    const maxLen = max(lengths)
-    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
-    bin.deletions = { count: lengths.length, minLen, maxLen, avgLen }
-  }
-
-  for (const [posOffset, lengths] of skipsByPos) {
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = {
-        position: regionStart + posOffset,
-        depth,
-        snps: {},
-        interbase: {},
-      }
-      tooltipData.set(posOffset, bin)
-    }
-    const minLen = min(lengths)
-    const maxLen = max(lengths)
-    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
-    bin.skips = { count: lengths.length, minLen, maxLen, avgLen }
-  }
-
-  // Process softclips for interbase tooltip data
-  const softclipsByPos = new Map<number, number[]>()
-  for (const sc of softclips) {
-    if (sc.position < regionStart) {
-      continue
-    }
-    const posOffset = sc.position - regionStart
-    let lengths = softclipsByPos.get(posOffset)
-    if (!lengths) {
-      lengths = []
-      softclipsByPos.set(posOffset, lengths)
-    }
-    lengths.push(sc.length)
-  }
-
-  for (const [posOffset, lengths] of softclipsByPos) {
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = {
-        position: regionStart + posOffset,
-        depth,
-        snps: {},
-        interbase: {},
-      }
-      tooltipData.set(posOffset, bin)
-    }
-    const minLen = min(lengths)
-    const maxLen = max(lengths)
-    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
-    bin.interbase.softclip = { count: lengths.length, minLen, maxLen, avgLen }
-  }
-
-  // Process hardclips for interbase tooltip data
-  const hardclipsByPos = new Map<number, number[]>()
-  for (const hc of hardclips) {
-    if (hc.position < regionStart) {
-      continue
-    }
-    const posOffset = hc.position - regionStart
-    let lengths = hardclipsByPos.get(posOffset)
-    if (!lengths) {
-      lengths = []
-      hardclipsByPos.set(posOffset, lengths)
-    }
-    lengths.push(hc.length)
-  }
-
-  for (const [posOffset, lengths] of hardclipsByPos) {
-    let bin = tooltipData.get(posOffset)
-    if (!bin) {
-      const binIdx = Math.floor(
-        (posOffset - coverage.startOffset) / coverage.binSize,
-      )
-      const depth = coverage.depths[binIdx] ?? 0
-      bin = {
-        position: regionStart + posOffset,
-        depth,
-        snps: {},
-        interbase: {},
-      }
-      tooltipData.set(posOffset, bin)
-    }
-    const minLen = min(lengths)
-    const maxLen = max(lengths)
-    const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length
-    bin.interbase.hardclip = { count: lengths.length, minLen, maxLen, avgLen }
-  }
-
-  // Process modifications for tooltip data
-  if (modifications.length > 0) {
-    for (const mod of modifications) {
-      if (mod.position < regionStart) {
-        continue
-      }
-      const posOffset = mod.position - regionStart
-      let bin = tooltipData.get(posOffset)
-      if (!bin) {
-        const binIdx = Math.floor(
-          (posOffset - coverage.startOffset) / coverage.binSize,
-        )
-        const depth = coverage.depths[binIdx] ?? 0
-        bin = {
-          position: mod.position,
-          depth,
-          snps: {},
-          interbase: {},
-          modifications: {},
-        }
-        tooltipData.set(posOffset, bin)
-      }
-      if (!bin.modifications) {
-        bin.modifications = {}
-      }
-      const modKey = mod.modType
-      if (!bin.modifications[modKey]) {
-        bin.modifications[modKey] = {
-          count: 0,
-          fwd: 0,
-          rev: 0,
-          probabilityTotal: 0,
-          color: getColorForModification(mod.modType),
-          name: getModificationName(mod.modType),
-        }
-      }
-      bin.modifications[modKey].count++
-      // Accumulate probability directly (no encoding/decoding needed)
-      bin.modifications[modKey].probabilityTotal += mod.prob
-      if (mod.strand === 1) {
-        bin.modifications[modKey].fwd++
-      } else {
-        bin.modifications[modKey].rev++
-      }
-    }
-  }
+  const tooltipData = buildTooltipData({
+    mismatches,
+    insertions,
+    gaps,
+    softclips,
+    hardclips,
+    modifications,
+    regionStart,
+    coverage,
+  })
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
