@@ -34,7 +34,6 @@ import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
-import { CloudSubModel } from './CloudSubModel.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { getModificationsSubMenu } from '../shared/menuItems.ts'
@@ -283,10 +282,6 @@ export default function stateModelFactory(
          * #property
          */
         arcsState: types.optional(ArcsSubModel, {}),
-        /**
-         * #property
-         */
-        cloudState: types.optional(CloudSubModel, {}),
         /**
          * #property
          */
@@ -902,7 +897,6 @@ export default function stateModelFactory(
         clearDisplaySpecificData() {
           self.rpcDataMap = new Map()
           self.arcsState.clearAllRpcData()
-          self.cloudState.clearAllRpcData()
         },
 
         bumpFetchToken() {

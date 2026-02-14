@@ -14,6 +14,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe, groupBy, max, min, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -115,27 +116,23 @@ function getColorType(f: ChainFeatureData, stats?: ChainStats) {
   }
 }
 
-// Pileup layout for linkedRead mode — layouts chains by their length (smallest first)
 function computeChainLayout(
   chains: { minStart: number; maxEnd: number; distance: number }[],
 ) {
   const sorted = chains
     .map((c, i) => ({ ...c, idx: i }))
     .sort((a, b) => a.distance - b.distance)
-  const levels: number[] = []
+  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
   const layoutMap = new Map<number, number>()
 
   for (const chain of sorted) {
-    let y = 0
-    for (const [i, level] of levels.entries()) {
-      if (level <= chain.minStart) {
-        y = i
-        break
-      }
-      y = i + 1
-    }
-    layoutMap.set(chain.idx, y)
-    levels[y] = chain.maxEnd + 2
+    const top = layout.addRect(
+      String(chain.idx),
+      chain.minStart,
+      chain.maxEnd + 2,
+      1,
+    )
+    layoutMap.set(chain.idx, top ?? 0)
   }
 
   return layoutMap
@@ -227,7 +224,11 @@ export async function executeRenderWebGLChainData({
   // Pre-filter: group raw features by read name and apply chain filters
   // BEFORE expensive CIGAR processing. This avoids parsing CIGAR strings
   // for reads that will be discarded.
+  const t0 = performance.now()
   const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+  console.log(
+    `[chain dedupe] ${featuresArray.length} -> ${deduped.length} (removed ${featuresArray.length - deduped.length}) in ${(performance.now() - t0).toFixed(1)}ms`,
+  )
   let keptIds: Set<string> | undefined
   if (!drawSingletons || !drawProperPairs) {
     const byName = groupBy(deduped, (f: Feature) => f.get('name') ?? '')

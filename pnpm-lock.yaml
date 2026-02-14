@@ -600,11 +600,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.1.16
-        version: 7.1.16(buffer@6.0.3)
+        specifier: ^7.1.17
+        version: 7.1.17(buffer@6.0.3)
       '@gmod/cram':
-        specifier: ^8.0.2
-        version: 8.0.2(buffer@6.0.3)
+        specifier: ^8.0.3
+        version: 8.0.3(buffer@6.0.3)
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3420,8 +3420,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.1.16':
-    resolution: {integrity: sha512-JmVi6VniH4KAbgf25EqJdXNlbKCNGKlUDLvu60UPbkQZH9K+cxO9aTyowb19mlcCG+gJAlSbCGxwAN6Ld+/oUA==}
+  '@gmod/bam@7.1.17':
+    resolution: {integrity: sha512-sMmIuxAxmZfnQx8PhVZq/IBdnZjVR3sfQfMGYjcMot6TAEly3FoTe2RpMfpKRFLVR0y2Buy/OYS4wsZ6Ac6ceg==}
     engines: {node: '>=6'}
 
   '@gmod/bbi@8.1.1':
@@ -3436,8 +3436,8 @@ packages:
     resolution: {integrity: sha512-VTFaF6gVNZmGTTDpiQnPxiBEEV6Cw6yKFFbfoV3TyIamejLBHQq5kodjIhBbL/VJ6ooSOugFno7+eRURd6mGbQ==}
     engines: {node: '>=6'}
 
-  '@gmod/cram@8.0.2':
-    resolution: {integrity: sha512-q6mjGWLY2fnZUvnn8uNmDAVOVMRpSbr+U96qfJ0wN0scyrQHdjkJ7gt5D5UdRm7zSpkE1JW//mSyukdrVeJGCQ==}
+  '@gmod/cram@8.0.3':
+    resolution: {integrity: sha512-7LzTDcVI+QDqXgfsWVcv7x2RN7Eu1xGiby+iPU9+MQKmGC2hOBWXkjkg6mWi54dx6IwL9etkN6ve75EH7gjxRg==}
     engines: {node: '>=6'}
 
   '@gmod/faidx@2.0.0':
@@ -10544,7 +10544,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.1.16(buffer@6.0.3)':
+  '@gmod/bam@7.1.17(buffer@6.0.3)':
     dependencies:
       '@gmod/bgzf-filehandle': 6.0.12
       '@jbrowse/quick-lru': 7.3.5
@@ -10568,7 +10568,7 @@ snapshots:
       generic-filehandle2: 2.0.18
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.0.2(buffer@6.0.3)':
+  '@gmod/cram@8.0.3(buffer@6.0.3)':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2(buffer@6.0.3)

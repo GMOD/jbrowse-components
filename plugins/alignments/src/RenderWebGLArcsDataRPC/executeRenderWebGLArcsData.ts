@@ -203,7 +203,11 @@ export async function executeRenderWebGLArcsData({
 
   checkStopToken2(stopTokenCheck)
 
+  const t0 = performance.now()
   const deduped = dedupe(featuresArray, f => f.id())
+  console.log(
+    `[arcs dedupe] ${featuresArray.length} -> ${deduped.length} (removed ${featuresArray.length - deduped.length}) in ${(performance.now() - t0).toFixed(1)}ms`,
+  )
 
   // Calculate insert size stats
   const tlens: number[] = []

@@ -30,8 +30,8 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bam": "^7.1.16",
-    "@gmod/cram": "^8.0.2",
+    "@gmod/bam": "^7.1.17",
+    "@gmod/cram": "^8.0.3",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

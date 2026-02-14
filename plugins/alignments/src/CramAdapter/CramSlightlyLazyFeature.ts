@@ -148,12 +148,38 @@ export default class CramSlightlyLazyFeature implements Feature {
     switch (field) {
       case 'mismatches':
         return this.mismatches
+      case 'name':
+        return this.name
+      case 'start':
+        return this.start
+      case 'refName':
+        return this.refName
+      case 'end':
+        return this.end
+      case 'strand':
+        return this.strand
       case 'qual':
         return this.qual
-      case 'CIGAR':
-        return this.CIGAR
+      case 'seq':
+        return this.seq
+      case 'tags':
+        return this.tags
       case 'NUMERIC_CIGAR':
         return this.NUMERIC_CIGAR
+      case 'CIGAR':
+        return this.CIGAR
+      case 'flags':
+        return this.flags
+      case 'pair_orientation':
+        return this.pair_orientation
+      case 'next_ref':
+        return this.next_ref
+      case 'next_pos':
+        return this.next_pos
+      case 'template_length':
+        return this.template_length
+      case 'score':
+        return this.score
       default:
         return this.fields[field]
     }
@@ -330,7 +356,4 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 }
 
-cacheGetter(CramSlightlyLazyFeature, 'fields')
-cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
-cacheGetter(CramSlightlyLazyFeature, 'mismatches')
