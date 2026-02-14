@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   getContainingView,
   measureText,
-  useWebGLRenderer,
+  setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import useMeasure from '@jbrowse/core/util/useMeasure'
@@ -264,22 +264,38 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const viewRef = useRef(view)
   viewRef.current = view
 
-  const { rendererRef, contextVersion } = useWebGLRenderer(
-    canvasRef,
-    canvas => {
-      const r = new WebGLFeatureRenderer(canvas)
+  const rendererRef = useRef<WebGLFeatureRenderer | null>(null)
+  const [contextVersion, setContextVersion] = useState(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    try {
+      rendererRef.current = new WebGLFeatureRenderer(canvas)
       setRendererReady(true)
-      return r
-    },
-    {
-      onRecreated: () => {
+      if (contextVersion > 0) {
         uploadedDataRef.current.clear()
-      },
-      onError: e => {
-        console.error('Failed to initialize WebGL:', e)
-      },
-    },
-  )
+      }
+    } catch (e) {
+      console.error('Failed to initialize WebGL:', e)
+    }
+    return () => {
+      rendererRef.current?.destroy()
+      rendererRef.current = null
+    }
+  }, [contextVersion])
 
   // Re-render when view state changes
   useEffect(() => {
@@ -539,7 +555,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvas.removeEventListener('click', handleClick)
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
   const bpPerPx = view.bpPerPx
@@ -622,7 +637,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcDataMap, view, width, bpPerPx, offsetPx, visibleRegions, scrollY])
 
   // Compute amino acid letter overlay (multi-region aware)
@@ -685,7 +699,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpcDataMap, view, width, bpPerPx, offsetPx, visibleRegions, scrollY])
 
   // Compute highlight overlays for hovered and selected features (multi-region aware)
@@ -832,7 +845,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return overlays.length > 0 ? overlays : null
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     rpcDataMap,
     view,

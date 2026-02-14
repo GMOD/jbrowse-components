@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   getBpDisplayStr,
   getContainingView,
-  useWebGLRenderer,
+  setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -96,15 +96,34 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
 
   const view = getContainingView(model) as LGV
 
-  const { rendererRef, contextVersion } = useWebGLRenderer(
-    canvasRef,
-    canvas => new WebGLVariantRenderer(canvas),
-    {
-      onError: e => {
-        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-      },
-    },
-  )
+  const rendererRef = useRef<WebGLVariantRenderer | null>(null)
+  const [contextVersion, setContextVersion] = useState(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    try {
+      rendererRef.current = new WebGLVariantRenderer(canvas)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'WebGL initialization failed')
+    }
+    return () => {
+      rendererRef.current?.destroy()
+      rendererRef.current = null
+    }
+  }, [contextVersion])
 
   // Upload pre-computed cell data from worker when it arrives
   useEffect(() => {
@@ -236,7 +255,6 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       }
       return undefined
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, view],
   )
 

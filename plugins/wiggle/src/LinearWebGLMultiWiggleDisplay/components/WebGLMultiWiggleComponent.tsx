@@ -5,7 +5,7 @@ import {
   getContainingTrack,
   getContainingView,
   measureText,
-  useWebGLRenderer,
+  setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -94,15 +94,34 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
   const view = getContainingView(model) as LGV
 
-  const { rendererRef, contextVersion } = useWebGLRenderer(
-    canvasRef,
-    canvas => new WebGLMultiWiggleRenderer(canvas),
-    {
-      onError: e => {
-        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-      },
-    },
-  )
+  const rendererRef = useRef<WebGLMultiWiggleRenderer | null>(null)
+  const [contextVersion, setContextVersion] = useState(0)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    try {
+      rendererRef.current = new WebGLMultiWiggleRenderer(canvas)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'WebGL initialization failed')
+    }
+    return () => {
+      rendererRef.current?.destroy()
+      rendererRef.current = null
+    }
+  }, [contextVersion])
 
   // Upload data when rpcDataMap changes
   useEffect(() => {

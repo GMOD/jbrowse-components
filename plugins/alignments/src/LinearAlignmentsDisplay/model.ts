@@ -19,6 +19,7 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
+  MultiRegionWebGLDisplayMixin,
   TooLargeMessage,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -59,6 +60,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -135,12 +137,7 @@ export function getInsertionRectWidthPx(
   return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
 }
 
-export interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName?: string
-}
+export type { MultiRegionWebGLRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
 function getDisplayStr(totalBytes: number) {
   if (Math.floor(totalBytes / 1000000) > 0) {
@@ -203,6 +200,7 @@ export default function stateModelFactory(
       'LinearAlignmentsDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      MultiRegionWebGLDisplayMixin(),
       types.model({
         /**
          * #property
@@ -371,10 +369,7 @@ export default function stateModelFactory(
         | { bytes?: number; fetchSizeLimit?: number },
       fetchToken: 0,
       rpcDataMap: new Map<number, WebGLPileupDataResult>(),
-      loadedRegions: new Map<number, Region>(),
-      isLoading: true,
       statusMessage: 'Loading',
-      error: null as Error | null,
       webglRef: null as unknown,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
@@ -384,14 +379,12 @@ export default function stateModelFactory(
       selectedChainIndices: [] as number[],
       colorTagMap: {} as Record<string, string>,
       tagsReady: true,
-      // From SharedModificationsMixin
       visibleModifications: observable.map<string, any>({}),
       simplexModifications: new Set<string>(),
       modificationsReady: false,
       overCigarItem: false,
       webglRenderer: null as WebGLRenderer | null,
       colorPalette: null as ColorPalette | null,
-      renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
       /**
@@ -870,7 +863,6 @@ export default function stateModelFactory(
         const next = new Map(self.rpcDataMap)
         if (data) {
           next.set(regionNumber, data)
-          // Update visible modifications from newly detected modifications
           for (const modType of data.detectedModifications) {
             if (!self.visibleModifications.has(modType)) {
               self.visibleModifications.set(modType, {
@@ -886,7 +878,6 @@ export default function stateModelFactory(
         }
         self.rpcDataMap = next
 
-        // Update maxY to be max across all regions
         let maxY = 0
         for (const d of next.values()) {
           if (d.maxY > maxY) {
@@ -896,13 +887,10 @@ export default function stateModelFactory(
         self.maxY = maxY
       },
 
-      clearAllRpcData() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-          self.renderingStopToken = undefined
-        }
+      clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
-        self.loadedRegions = new Map()
+        self.arcsState.clearAllRpcData()
+        self.cloudState.clearAllRpcData()
       },
 
       bumpFetchToken() {
@@ -910,29 +898,17 @@ export default function stateModelFactory(
       },
 
       setLoadedRegion(regionNumber: number, region: Region | null) {
-        const next = new Map(self.loadedRegions)
         if (region) {
-          next.set(regionNumber, region)
+          self.setLoadedRegionForRegion(regionNumber, region)
         } else {
+          const next = new Map(self.loadedRegions)
           next.delete(regionNumber)
+          self.loadedRegions = next
         }
-        self.loadedRegions = next
-      },
-
-      setLoading(loading: boolean) {
-        self.isLoading = loading
       },
 
       setStatusMessage(msg?: string) {
         self.statusMessage = msg ?? ''
-      },
-
-      setError(error: Error | null) {
-        self.error = error
-      },
-
-      setRenderingStopToken(token: string | undefined) {
-        self.renderingStopToken = token
       },
 
       setWebGLRef(ref: unknown) {
@@ -1459,9 +1435,9 @@ export default function stateModelFactory(
       // visibleRegion is used for byte estimation (the actual viewport),
       // fetchRegion is the expanded region used for data pre-fetching.
       async function fetchFeaturesForRegion(
-        fetchRegion: Region,
-        visibleRegion: Region,
+        region: Region,
         regionNumber: number,
+        stopToken: string,
       ) {
         const session = getSession(self)
         const track = getContainingTrack(self)
@@ -1471,124 +1447,105 @@ export default function stateModelFactory(
           return
         }
 
+        const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
+        fetchGenerations.set(regionNumber, gen)
+
+        const stats = await fetchByteEstimate(adapterConfig, region)
+        if (fetchGenerations.get(regionNumber) !== gen) {
+          return
+        }
+        self.setFeatureDensityStats(stats ?? undefined)
+        const fetchSizeLimit =
+          stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+        const limit = self.userByteSizeLimit || fetchSizeLimit
+        if (stats?.bytes && stats.bytes > limit) {
+          self.setRegionTooLarge(
+            true,
+            `Requested too much data (${getDisplayStr(stats.bytes)})`,
+          )
+          return
+        }
+        self.setRegionTooLarge(false)
+
+        const sequenceAdapter = getSequenceAdapter(session, region)
+
+        // Chain modes (cloud/linkedRead) produce all data in a single RPC
+        // (reads + coverage + connecting lines). Other modes fetch pileup
+        // for coverage and add mode-specific data on top.
+        if (
+          self.renderingMode === 'cloud' ||
+          self.renderingMode === 'linkedRead'
+        ) {
+          await fetchChainData(
+            session,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            regionNumber,
+            stopToken,
+          )
+        } else {
+          await fetchPileupData(
+            session,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            regionNumber,
+            stopToken,
+          )
+          if (self.renderingMode === 'arcs') {
+            await fetchArcsData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              regionNumber,
+              stopToken,
+            )
+          }
+        }
+
+        // Discard stale responses from older requests for this regionNumber
+        if (fetchGenerations.get(regionNumber) !== gen) {
+          return
+        }
+
+        self.setLoadedRegion(regionNumber, {
+          refName: region.refName,
+          start: region.start,
+          end: region.end,
+          assemblyName: region.assemblyName,
+        })
+      }
+
+      async function fetchRegions(
+        regions: { region: Region; regionNumber: number }[],
+      ) {
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
         }
         const stopToken = createStopToken()
         self.setRenderingStopToken(stopToken)
-
-        const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
-        fetchGenerations.set(regionNumber, gen)
+        const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
-
         try {
-          // Byte estimation on the VISIBLE region (not the expanded fetch
-          // region) so that zooming in clears the warning promptly.
-          // State is applied only after the generation check so that stale
-          // RPC responses from older zoom levels can't overwrite newer results.
-          const stats = await fetchByteEstimate(adapterConfig, visibleRegion)
-          if (fetchGenerations.get(regionNumber) !== gen) {
-            return
-          }
-          self.setFeatureDensityStats(stats ?? undefined)
-          const fetchSizeLimit =
-            stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
-          const limit = self.userByteSizeLimit || fetchSizeLimit
-          if (stats?.bytes && stats.bytes > limit) {
-            self.setRegionTooLarge(
-              true,
-              `Requested too much data (${getDisplayStr(stats.bytes)})`,
-            )
-            self.setLoading(false)
-            return
-          }
-          self.setRegionTooLarge(false)
-
-          const sequenceAdapter = getSequenceAdapter(session, fetchRegion)
-
-          // Chain modes (cloud/linkedRead) produce all data in a single RPC
-          // (reads + coverage + connecting lines). Other modes fetch pileup
-          // for coverage and add mode-specific data on top.
-          if (
-            self.renderingMode === 'cloud' ||
-            self.renderingMode === 'linkedRead'
-          ) {
-            await fetchChainData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              fetchRegion,
-              regionNumber,
-              stopToken,
-            )
-          } else {
-            await fetchPileupData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              fetchRegion,
-              regionNumber,
-              stopToken,
-            )
-            if (self.renderingMode === 'arcs') {
-              await fetchArcsData(
-                session,
-                adapterConfig,
-                sequenceAdapter,
-                fetchRegion,
-                regionNumber,
-                stopToken,
-              )
+          const promises = regions.map(({ region, regionNumber }) =>
+            fetchFeaturesForRegion(region, regionNumber, stopToken),
+          )
+          await Promise.all(promises)
+        } catch (e) {
+          if (!isAbortException(e)) {
+            console.error('Failed to fetch features:', e)
+            if (isAlive(self) && self.fetchGeneration === generation) {
+              self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
-
-          // Discard stale responses from older requests for this regionNumber
-          if (fetchGenerations.get(regionNumber) !== gen) {
-            return
-          }
-
-          self.setLoadedRegion(regionNumber, {
-            refName: fetchRegion.refName,
-            start: fetchRegion.start,
-            end: fetchRegion.end,
-            assemblyName: fetchRegion.assemblyName,
-          })
-          self.setLoading(false)
-        } catch (e) {
-          if (isAbortException(e)) {
-            return
-          }
-          if (fetchGenerations.get(regionNumber) !== gen) {
-            return
-          }
-          console.error('Failed to fetch features:', e)
-          self.setError(e instanceof Error ? e : new Error(String(e)))
-          self.setLoading(false)
         } finally {
-          if (isAlive(self) && self.renderingStopToken === stopToken) {
+          if (isAlive(self) && self.fetchGeneration === generation) {
             self.setRenderingStopToken(undefined)
+            self.setLoading(false)
           }
-        }
-      }
-
-      function fetchAllVisibleRegions() {
-        const view = getContainingView(self) as LGV
-        const regions = view.staticRegions
-        for (const region of regions) {
-          const loaded = self.loadedRegions.get(region.regionNumber)
-          if (
-            loaded?.refName === region.refName &&
-            region.start >= loaded.start &&
-            region.end <= loaded.end
-          ) {
-            continue
-          }
-          fetchFeaturesForRegion(region, region, region.regionNumber).catch(
-            (e: unknown) => {
-              console.error('Failed to fetch features:', e)
-            },
-          )
         }
       }
 
@@ -1596,17 +1553,15 @@ export default function stateModelFactory(
       let prevColorTag: string | undefined
       let prevTagsReady: boolean | undefined
       let prevInvalidationKey: string | undefined
+      const superAfterAttach = self.afterAttach
 
       return {
-        fetchFeatures(region: Region, regionNumber = 0) {
-          fetchFeaturesForRegion(region, region, regionNumber).catch(
-            (e: unknown) => {
-              console.error('Failed to fetch features:', e)
-            },
-          )
+        async fetchFeatures(region: Region, regionNumber = 0) {
+          await fetchRegions([{ region, regionNumber }])
         },
 
         afterAttach() {
+          superAfterAttach()
           // Autorun: draw whenever rendering-relevant observables change
           addDisposer(
             self,
@@ -1743,25 +1698,36 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: drives all data fetching. Tracks visibleRegions and
-          // fetchToken (fires when anything invalidates data: reload,
-          // filter change, colorBy change, etc.)
+          // Autorun: fetch data for all visible regions
           addDisposer(
             self,
             autorun(
-              () => {
+              async () => {
                 const view = getContainingView(self) as LGV
                 if (!view.initialized) {
-                  return
-                }
-                const regions = view.staticRegions
-                if (regions.length === 0) {
                   return
                 }
                 // Track fetchToken so bumps trigger re-fetch
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchToken
-                fetchAllVisibleRegions()
+                const needed: { region: Region; regionNumber: number }[] = []
+                for (const vr of view.staticRegions) {
+                  const loaded = self.loadedRegions.get(vr.regionNumber)
+                  if (
+                    loaded?.refName === vr.refName &&
+                    vr.start >= loaded.start &&
+                    vr.end <= loaded.end
+                  ) {
+                    continue
+                  }
+                  needed.push({
+                    region: vr as Region,
+                    regionNumber: vr.regionNumber,
+                  })
+                }
+                if (needed.length > 0) {
+                  await fetchRegions(needed)
+                }
               },
               {
                 name: 'LinearAlignmentsDisplay:fetchVisibleRegions',
@@ -1770,20 +1736,14 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: invalidate data when filter, displayedRegions, or
-          // rendering mode/arcs settings change
+          // Autorun: invalidate data when filter or rendering mode/arcs
+          // settings change (displayedRegions handled by mixin)
           addDisposer(
             self,
             autorun(
               () => {
-                const view = getContainingView(self) as LGV
                 const key = JSON.stringify({
                   filterBy: self.filterBy,
-                  displayedRegions: view.displayedRegions.map(r => ({
-                    refName: r.refName,
-                    start: r.start,
-                    end: r.end,
-                  })),
                   mode: self.renderingMode,
                   drawInter: self.arcsState.drawInter,
                   drawLongRange: self.arcsState.drawLongRange,
@@ -1795,8 +1755,6 @@ export default function stateModelFactory(
                   key !== prevInvalidationKey
                 ) {
                   self.clearAllRpcData()
-                  self.arcsState.clearAllRpcData()
-                  self.cloudState.clearAllRpcData()
                   self.bumpFetchToken()
                 }
                 prevInvalidationKey = key
@@ -2518,8 +2476,6 @@ export default function stateModelFactory(
         async reload() {
           self.setRegionTooLarge(false)
           self.clearAllRpcData()
-          self.arcsState.clearAllRpcData()
-          self.cloudState.clearAllRpcData()
           self.bumpFetchToken()
           superReload()
         },

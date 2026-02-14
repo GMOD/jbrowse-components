@@ -449,6 +449,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     let renderer: WebGLRenderer | null = null
     try {
       renderer = new WebGLRenderer(canvas)
+      // eslint-disable-next-line react-hooks/immutability
       rendererRef.current = renderer
       model.setWebGLRenderer(renderer)
     } catch (e) {

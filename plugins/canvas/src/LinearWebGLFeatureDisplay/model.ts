@@ -17,7 +17,10 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  MultiRegionWebGLDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
@@ -30,7 +33,10 @@ import type {
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  MultiRegionWebGLRegion as Region,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -53,12 +59,7 @@ function findSubfeatureById(
   return undefined
 }
 
-export interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName?: string
-}
+export type { MultiRegionWebGLRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
 const WebGLFeatureComponent = lazy(
   () => import('./components/WebGLFeatureComponent.tsx'),
@@ -76,6 +77,7 @@ export default function stateModelFactory(
       'LinearWebGLFeatureDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      MultiRegionWebGLDisplayMixin(),
       types.model({
         type: types.literal('LinearWebGLFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -111,10 +113,7 @@ export default function stateModelFactory(
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLFeatureDataResult>(),
-      loadedRegions: new Map<number, Region>(),
       layoutBpPerPxMap: new Map<number, number>(),
-      isLoading: false,
-      error: null as Error | null,
       maxY: 0,
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
@@ -122,8 +121,6 @@ export default function stateModelFactory(
       regionTooLarge: false,
       featureCount: 0,
       userForceLoadLimit: undefined as number | undefined,
-      fetchGeneration: 0,
-      renderingStopToken: undefined as string | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -272,18 +269,11 @@ export default function stateModelFactory(
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
         self.rpcDataMap = next
-        // Update maxY from all regions
         let globalMaxY = 0
         for (const d of next.values()) {
           globalMaxY = Math.max(globalMaxY, d.maxY)
         }
         self.maxY = globalMaxY
-      },
-
-      setLoadedRegionForRegion(regionNumber: number, region: Region) {
-        const next = new Map(self.loadedRegions)
-        next.set(regionNumber, region)
-        self.loadedRegions = next
       },
 
       setLayoutBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
@@ -292,47 +282,29 @@ export default function stateModelFactory(
         self.layoutBpPerPxMap = next
       },
 
-      clearAllRpcData() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-          self.renderingStopToken = undefined
-        }
+      clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
-        self.loadedRegions = new Map()
         self.layoutBpPerPxMap = new Map()
         self.regionTooLarge = false
         self.featureCount = 0
-        self.fetchGeneration++
-      },
-
-      setLoading(loading: boolean) {
-        self.isLoading = loading
-      },
-
-      setError(error: Error | null) {
-        self.error = error
-      },
-
-      setRenderingStopToken(token: string | undefined) {
-        self.renderingStopToken = token
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
-        ;(self as any).featureIdUnderMouse = featureId
-      },
+          ;(self as any).featureIdUnderMouse = featureId
+        },
 
-      setMouseoverExtraInformation(info: string | undefined) {
-        self.mouseoverExtraInformation = info
-      },
+        setMouseoverExtraInformation(info: string | undefined) {
+          self.mouseoverExtraInformation = info
+        },
 
-      setContextMenuFeature(feature?: Feature) {
-        self.contextMenuFeature = feature
-      },
+        setContextMenuFeature(feature?: Feature) {
+          self.contextMenuFeature = feature
+        },
 
-      setRegionTooLarge(tooLarge: boolean, count: number) {
-        self.regionTooLarge = tooLarge
-        self.featureCount = count
-      },
+        setRegionTooLarge(tooLarge: boolean, count: number) {
+          self.regionTooLarge = tooLarge
+          self.featureCount = count
+        },
     }))
     .actions(self => ({
       selectFeature(feature: Feature) {
@@ -559,7 +531,7 @@ export default function stateModelFactory(
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
             if (isAlive(self) && self.fetchGeneration === generation) {
-              self.setError(e as Error)
+              self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
         } finally {
@@ -584,13 +556,14 @@ export default function stateModelFactory(
         await fetchRegions(regions, bpPerPx)
       }
 
-      let prevDisplayedRegionsStr = ''
       let prevShowLabels: boolean | undefined
       let prevShowDescriptions: boolean | undefined
       let prevColorByCDS: boolean | undefined
       let prevGeneGlyphMode: string | undefined
       let prevShowOnlyGenes: boolean | undefined
       let prevSettingsInitialized = false
+
+      const superAfterAttach = self.afterAttach
 
       return {
         async reload() {
@@ -604,6 +577,7 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
+          superAfterAttach()
           // Autorun: fetch data for all visible regions
           addDisposer(
             self,
@@ -726,33 +700,6 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: clear data when displayedRegions identity changes
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                let regionStr = ''
-                const view = getContainingView(self) as LGV
-                regionStr = JSON.stringify(
-                  view.displayedRegions.map(r => ({
-                    refName: r.refName,
-                    start: r.start,
-                    end: r.end,
-                  })),
-                )
-                if (
-                  prevDisplayedRegionsStr !== '' &&
-                  regionStr !== prevDisplayedRegionsStr
-                ) {
-                  self.clearAllRpcData()
-                }
-                prevDisplayedRegionsStr = regionStr
-              },
-              {
-                name: 'DisplayedRegionsChange',
-              },
-            ),
-          )
         },
       }
     })

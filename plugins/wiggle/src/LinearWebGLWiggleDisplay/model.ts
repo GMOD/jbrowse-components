@@ -10,7 +10,10 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  MultiRegionWebGLDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { autorun } from 'mobx'
@@ -25,16 +28,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
-type LGV = LinearGenomeViewModel
+export type { MultiRegionWebGLRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
-export interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName?: string
-}
+type LGV = LinearGenomeViewModel
 
 const WebGLWiggleComponent = lazy(
   () => import('./components/WebGLWiggleComponent.tsx'),
@@ -51,6 +50,7 @@ export default function stateModelFactory(
       'LinearWiggleDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      MultiRegionWebGLDisplayMixin(),
       types.model({
         type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -82,12 +82,7 @@ export default function stateModelFactory(
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLWiggleDataResult>(),
-      loadedRegions: new Map<number, Region>(),
-      isLoading: false,
-      error: null as Error | null,
       currentBpRangeX: null as [number, number] | null,
-      renderingStopToken: undefined as string | undefined,
-      fetchGeneration: 0,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -256,65 +251,41 @@ export default function stateModelFactory(
         self.rpcDataMap = next
       },
 
-      setLoadedRegionForRegion(regionNumber: number, region: Region) {
-        const next = new Map(self.loadedRegions)
-        next.set(regionNumber, region)
-        self.loadedRegions = next
-      },
-
-      clearAllRpcData() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-          self.renderingStopToken = undefined
-        }
+      clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
-        self.loadedRegions = new Map()
-        self.fetchGeneration++
-      },
-
-      setLoading(loading: boolean) {
-        self.isLoading = loading
-      },
-
-      setError(error: Error | null) {
-        self.error = error
-      },
-
-      setRenderingStopToken(token: string | undefined) {
-        self.renderingStopToken = token
       },
 
       setCurrentBpRange(bpRangeX: [number, number]) {
-        self.currentBpRangeX = bpRangeX
-      },
+          self.currentBpRangeX = bpRangeX
+        },
 
-      setColor(color?: string) {
-        self.colorSetting = color
-      },
+        setColor(color?: string) {
+          self.colorSetting = color
+        },
 
-      setPosColor(color?: string) {
-        self.posColorSetting = color
-      },
+        setPosColor(color?: string) {
+          self.posColorSetting = color
+        },
 
-      setNegColor(color?: string) {
-        self.negColorSetting = color
-      },
+        setNegColor(color?: string) {
+          self.negColorSetting = color
+        },
 
-      setScaleType(scaleType: string) {
-        self.scaleTypeSetting = scaleType
-      },
+        setScaleType(scaleType: string) {
+          self.scaleTypeSetting = scaleType
+        },
 
-      setMinScore(val?: number) {
-        self.minScoreSetting = val
-      },
+        setMinScore(val?: number) {
+          self.minScoreSetting = val
+        },
 
-      setMaxScore(val?: number) {
-        self.maxScoreSetting = val
-      },
+        setMaxScore(val?: number) {
+          self.maxScoreSetting = val
+        },
 
-      setRenderingType(type: string) {
-        self.renderingTypeSetting = type
-      },
+        setRenderingType(type: string) {
+          self.renderingTypeSetting = type
+        },
     }))
     .actions(self => {
       async function fetchFeaturesForRegion(
@@ -380,11 +351,12 @@ export default function stateModelFactory(
         }
       }
 
-      let prevDisplayedRegionsStr = ''
+      const superAfterAttach = self.afterAttach
 
       return {
         afterAttach() {
-          // Autorun: fetch data for all visible regions
+          superAfterAttach()
+
           addDisposer(
             self,
             autorun(
@@ -419,35 +391,6 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: clear data when displayedRegions identity changes
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const regionStr = JSON.stringify(
-                  view.displayedRegions.map(r => ({
-                    refName: r.refName,
-                    start: r.start,
-                    end: r.end,
-                  })),
-                )
-                if (
-                  prevDisplayedRegionsStr !== '' &&
-                  regionStr !== prevDisplayedRegionsStr
-                ) {
-                  self.clearAllRpcData()
-                }
-                prevDisplayedRegionsStr = regionStr
-              },
-              {
-                name: 'DisplayedRegionsChange',
-              },
-            ),
-          )
         },
       }
     })
