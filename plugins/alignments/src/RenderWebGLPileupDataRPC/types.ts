@@ -7,6 +7,7 @@
  * This is critical for alignment between coverage, gaps, and rendered features.
  */
 
+import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface RenderWebGLPileupDataArgs {
@@ -27,13 +28,7 @@ export interface RenderWebGLPileupDataArgs {
     modifications?: { threshold?: number }
   }
   colorTagMap?: Record<string, string>
-  sortedBy?: {
-    type: string
-    pos: number
-    refName: string
-    assemblyName: string
-    tag?: string
-  }
+  sortedBy?: SortedBy
   statusCallback?: (status: string) => void
   stopToken?: string
 }

@@ -31,6 +31,7 @@ export interface VariantMatrixDisplayModel {
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   selectFeature: (feature: { id(): string }) => void
+  setContextMenuFeature: (feature?: { id(): string }) => void
 }
 
 const WebGLVariantMatrixComponent = observer(
@@ -205,22 +206,40 @@ const WebGLVariantMatrixComponent = observer(
       }
     }, [model])
 
-    const handleClick = useCallback(
+    const getFeatureAtMouse = useCallback(
       (e: React.MouseEvent) => {
         const cellData = cellDataRef.current
         const features = model.featuresVolatile
         if (!cellData || !features || cellData.numFeatures === 0) {
-          return
+          return undefined
         }
         const result = getFeatureUnderMouse(e.clientX, e.clientY)
         if (result) {
-          const feature = features.find(f => f.id() === result.featureId)
-          if (feature) {
-            model.selectFeature(feature)
-          }
+          return features.find(f => f.id() === result.featureId)
         }
+        return undefined
       },
       [getFeatureUnderMouse, model],
+    )
+
+    const handleClick = useCallback(
+      (e: React.MouseEvent) => {
+        const feature = getFeatureAtMouse(e)
+        if (feature) {
+          model.selectFeature(feature)
+        }
+      },
+      [getFeatureAtMouse, model],
+    )
+
+    const handleContextMenu = useCallback(
+      (e: React.MouseEvent) => {
+        const feature = getFeatureAtMouse(e)
+        if (feature) {
+          model.setContextMenuFeature(feature)
+        }
+      },
+      [getFeatureAtMouse, model],
     )
 
     const width = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -252,6 +271,7 @@ const WebGLVariantMatrixComponent = observer(
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}
+          onContextMenu={handleContextMenu}
         />
         <LoadingOverlay
           statusMessage={

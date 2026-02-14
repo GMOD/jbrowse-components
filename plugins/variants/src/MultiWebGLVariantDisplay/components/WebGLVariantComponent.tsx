@@ -38,6 +38,7 @@ export interface VariantDisplayModel {
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   selectFeature: (feature: { id(): string }) => void
+  setContextMenuFeature: (feature?: { id(): string }) => void
 }
 
 type LGV = LinearGenomeViewModel
@@ -284,22 +285,40 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     }
   }, [model])
 
-  const handleClick = useCallback(
+  const getFeatureAtMouse = useCallback(
     (e: React.MouseEvent) => {
       const cellData = cellDataRef.current
       const features = model.featuresVolatile
       if (!cellData || !features) {
-        return
+        return undefined
       }
       const result = getFeatureUnderMouse(e.clientX, e.clientY)
       if (result) {
-        const feature = features.find(f => f.id() === result.featureId)
-        if (feature) {
-          model.selectFeature(feature)
-        }
+        return features.find(f => f.id() === result.featureId)
       }
+      return undefined
     },
     [getFeatureUnderMouse, model],
+  )
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const feature = getFeatureAtMouse(e)
+      if (feature) {
+        model.selectFeature(feature)
+      }
+    },
+    [getFeatureAtMouse, model],
+  )
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      const feature = getFeatureAtMouse(e)
+      if (feature) {
+        model.setContextMenuFeature(feature)
+      }
+    },
+    [getFeatureAtMouse, model],
   )
 
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
@@ -331,6 +350,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
       />
       <LoadingOverlay
         statusMessage={

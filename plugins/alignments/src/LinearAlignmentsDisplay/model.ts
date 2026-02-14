@@ -1049,7 +1049,7 @@ export default function stateModelFactory(
           return
         }
         const { refName, assemblyName, offset } = centerLineInfo
-        const centerBp = Math.round(offset) + 1
+        const centerBp = Math.round(offset)
         if (centerBp < 0 || !refName) {
           return
         }
@@ -1070,7 +1070,7 @@ export default function stateModelFactory(
         }
         self.sortedBySetting = {
           type,
-          pos: pos + 1,
+          pos,
           refName,
           assemblyName,
         }
@@ -2405,32 +2405,36 @@ export default function stateModelFactory(
 
         if (cigarHit) {
           const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
-          items.push(
-            {
-              label: `Sort by base at position`,
-              icon: SwapVertIcon,
-              onClick: () => {
-                const region = self.loadedRegion
-                if (region) {
-                  self.setSortedByAtPosition(
-                    'basePair',
-                    cigarHit.position,
-                    region.refName,
-                  )
-                }
+          items.push({
+            label: 'Mismatch',
+            type: 'subMenu',
+            subMenu: [
+              {
+                label: `Sort by base at position`,
+                icon: SwapVertIcon,
+                onClick: () => {
+                  const region = self.loadedRegion
+                  if (region) {
+                    self.setSortedByAtPosition(
+                      'basePair',
+                      cigarHit.position,
+                      region.refName,
+                    )
+                  }
+                },
               },
-            },
-            {
-              label: `Open ${typeLabel.toLowerCase()} details`,
-              icon: MenuOpenIcon,
-              onClick: () => {
-                const region = self.loadedRegion
-                if (region) {
-                  openCigarWidget(self, cigarHit, region.refName)
-                }
+              {
+                label: `Open ${typeLabel.toLowerCase()} details`,
+                icon: MenuOpenIcon,
+                onClick: () => {
+                  const region = self.loadedRegion
+                  if (region) {
+                    openCigarWidget(self, cigarHit, region.refName)
+                  }
+                },
               },
-            },
-          )
+            ],
+          })
         }
 
         if (feat) {

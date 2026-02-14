@@ -142,7 +142,7 @@ export default function SequenceLettersOverlay({
   showReverse,
   showTranslation,
   sequenceType,
-  reversed,
+  displayedRegions,
   width,
   totalHeight,
 }: {
@@ -154,7 +154,7 @@ export default function SequenceLettersOverlay({
   showReverse: boolean
   showTranslation: boolean
   sequenceType: string
-  reversed: boolean
+  displayedRegions: { reversed?: boolean }[]
   width: number
   totalHeight: number
 }) {
@@ -176,14 +176,14 @@ export default function SequenceLettersOverlay({
   const reverseFrames: Frame[] =
     showTranslationActual && showReverseActual ? [-1, -2, -3] : []
 
-  const [topFrames, bottomFrames] = reversed
-    ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
-    : [forwardFrames, reverseFrames]
-
   const elements: React.ReactElement[] = []
 
   for (const [regionNum, data] of sequenceData) {
     const { seq, start: seqStart } = data
+    const reversed = displayedRegions[regionNum]?.reversed ?? false
+    const [topFrames, bottomFrames] = reversed
+      ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
+      : [forwardFrames, reverseFrames]
     let currentY = 0
 
     for (const frame of topFrames) {

@@ -110,15 +110,12 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
 
         const showSequence = showSequenceComputed.get()
         const showBorders = showBordersComputed.get()
-        const region = view.displayedRegions[0]
-        const reversed = region?.reversed ?? false
         const settings = {
           showForward: showForwardActual,
           showReverse: showReverseActual,
           showTranslation: showTranslationActual,
           sequenceType,
           rowHeight,
-          reversed,
           colorByCDS: false,
           showSequence,
           showBorders,
@@ -131,8 +128,10 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           instanceCount: number
         }[] = []
 
-        for (const [, data] of regionEntries) {
-          const geom = buildSequenceGeometry(data, settings, palette)
+        for (const [regionNumber, data] of regionEntries) {
+          const reversed =
+            view.displayedRegions[regionNumber]?.reversed ?? false
+          const geom = buildSequenceGeometry(data, settings, reversed, palette)
           allGeom.push(geom)
           totalRects += geom.instanceCount
         }
@@ -154,21 +153,18 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         // (the render autorun only tracks offsetPx/bpPerPx)
         // use untracked to avoid this autorun also tracking scroll position
         untracked(() => {
-          const canvas = canvasRef.current
-          if (canvas) {
-            const cssWidth = canvas.clientWidth
-            const cssHeight = canvas.clientHeight
-            if (cssWidth > 0 && cssHeight > 0) {
-              render(
-                gl,
-                handles,
-                totalRects,
-                view.offsetPx,
-                view.bpPerPx,
-                cssWidth,
-                cssHeight,
-              )
-            }
+          const cssWidth = Math.round(view.width)
+          const cssHeight = model.height
+          if (cssWidth > 0 && cssHeight > 0) {
+            render(
+              gl,
+              handles,
+              totalRects,
+              view.offsetPx,
+              view.bpPerPx,
+              cssWidth,
+              cssHeight,
+            )
           }
         })
       },
@@ -197,13 +193,12 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
       function sequenceRenderAutorun() {
         const gl = glRef.current
         const handles = handlesRef.current
-        const canvas = canvasRef.current
-        if (!gl || !handles || !canvas) {
+        if (!gl || !handles) {
           return
         }
         const { bpPerPx, offsetPx } = view
-        const cssWidth = canvas.clientWidth
-        const cssHeight = canvas.clientHeight
+        const cssWidth = Math.round(view.width)
+        const cssHeight = model.height
         if (cssWidth > 0 && cssHeight > 0) {
           render(
             gl,
@@ -221,7 +216,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     return () => {
       disposer()
     }
-  }, [view, height, contextVersion])
+  }, [view, model, contextVersion])
 
   if (error) {
     return <Alert severity="error">{`${error}`}</Alert>
@@ -229,8 +224,6 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
 
   const zoomedOut = view.bpPerPx > 3
   const viewWidth = view.width
-  const firstRegion = view.displayedRegions[0]
-  const reversed = firstRegion?.reversed ?? false
 
   return (
     <div style={{ position: 'relative', width: '100%', height }}>
@@ -257,7 +250,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
               showReverse={showReverseActual}
               showTranslation={showTranslationActual}
               sequenceType={sequenceType}
-              reversed={reversed}
+              displayedRegions={view.displayedRegions}
               width={viewWidth}
               totalHeight={height}
             />

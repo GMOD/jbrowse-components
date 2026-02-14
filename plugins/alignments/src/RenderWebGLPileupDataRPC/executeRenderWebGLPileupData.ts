@@ -40,6 +40,7 @@ import {
   parseCssColor,
 } from '../shared/webglRpcUtils.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
+import { computeLayout, computeSortedLayout } from './sortLayout.ts'
 
 import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
 import type { Mismatch } from '../shared/types'
@@ -55,81 +56,6 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-
-function computeLayout(features: FeatureData[]): Map<string, number> {
-  const sorted = [...features].sort((a, b) => a.start - b.start)
-  const levels: number[] = []
-  const layoutMap = new Map<string, number>()
-
-  for (const feature of sorted) {
-    let y = 0
-    for (const [i, level] of levels.entries()) {
-      if (level <= feature.start) {
-        y = i
-        break
-      }
-      y = i + 1
-    }
-    layoutMap.set(feature.id, y)
-    levels[y] = feature.end + 2
-  }
-
-  return layoutMap
-}
-
-function sortFeatures(
-  features: FeatureData[],
-  mismatches: MismatchData[],
-  sortedBy: NonNullable<RenderWebGLPileupDataArgs['sortedBy']>,
-) {
-  const { type, pos } = sortedBy
-
-  // Partition: features overlapping the sort position come first
-  const overlapping: FeatureData[] = []
-  const nonOverlapping: FeatureData[] = []
-  for (const f of features) {
-    if (f.start <= pos && f.end > pos) {
-      overlapping.push(f)
-    } else {
-      nonOverlapping.push(f)
-    }
-  }
-
-  if (type === 'basePair') {
-    // Build map: featureId → mismatch base character code at sort position
-    const baseAtPos = new Map<string, number>()
-    for (const mm of mismatches) {
-      if (mm.position === pos) {
-        baseAtPos.set(mm.featureId, mm.base)
-      }
-    }
-
-    overlapping.sort((a, b) => {
-      const aBase = baseAtPos.get(a.id) ?? 0
-      const bBase = baseAtPos.get(b.id) ?? 0
-      // Reads with mismatches (non-zero base) sort before ref bases (0)
-      if (aBase !== 0 && bBase === 0) {
-        return -1
-      }
-      if (aBase === 0 && bBase !== 0) {
-        return 1
-      }
-      return aBase - bBase
-    })
-  } else if (type === 'position') {
-    overlapping.sort((a, b) => a.start - b.start)
-  } else if (type === 'strand') {
-    overlapping.sort((a, b) => a.strand - b.strand)
-  }
-
-  features.length = 0
-  for (const f of overlapping) {
-    features.push(f)
-  }
-  for (const f of nonOverlapping) {
-    features.push(f)
-  }
-}
 
 function computeModificationCoverage(
   modifications: ModificationEntry[],
@@ -467,6 +393,7 @@ export async function executeRenderWebGLPileupData({
     hardclips,
     modifications,
     tagColors,
+    sortTagValues,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
     const deduped = dedupe(featuresArray, (f: Feature) => f.id())
 
@@ -480,6 +407,10 @@ export async function executeRenderWebGLPileupData({
     // Per-feature tag color values (only populated when colorBy.type === 'tag')
     const tagColorValues: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
+    const sortTagValues =
+      sortedBy?.type === 'tag' && sortedBy.tag
+        ? new Map<string, string>()
+        : undefined
     for (const feature of deduped) {
       const featureId = feature.id()
       const featureStart = feature.get('start')
@@ -502,6 +433,15 @@ export async function executeRenderWebGLPileupData({
         const tags = feature.get('tags')
         const val = tags ? tags[tag] : feature.get(tag)
         tagColorValues.push(val != null ? String(val) : '')
+      }
+
+      if (sortTagValues) {
+        const tag = sortedBy!.tag!
+        const tags = feature.get('tags')
+        const val = tags ? tags[tag] : feature.get(tag)
+        if (val != null) {
+          sortTagValues.set(featureId, String(val))
+        }
       }
 
       const featureMismatches = feature.get('mismatches') as
@@ -779,6 +719,7 @@ export async function executeRenderWebGLPileupData({
       hardclips: hardclipsData,
       modifications: modificationsData,
       tagColors: readTagColors,
+      sortTagValues,
     }
   })
 
@@ -796,10 +737,9 @@ export async function executeRenderWebGLPileupData({
     hardclipArrays,
     modificationArrays,
   } = await updateStatus('Computing layout', statusCallback, async () => {
-    if (sortedBy) {
-      sortFeatures(features, mismatches, sortedBy)
-    }
-    const layout = computeLayout(features)
+    const layout = sortedBy
+      ? computeSortedLayout(features, mismatches, gaps, sortTagValues, sortedBy)
+      : computeLayout(features)
     const numLevels = Math.max(0, ...layout.values()) + 1
 
     // Positions stored as offsets from regionStart for Float32 precision

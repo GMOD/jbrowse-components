@@ -22,7 +22,6 @@ interface RenderSettings {
   showTranslation: boolean
   sequenceType: string
   rowHeight: number
-  reversed: boolean
   colorByCDS: boolean
   showSequence: boolean
   showBorders: boolean
@@ -162,6 +161,7 @@ class GeometryWriter {
 export function buildSequenceGeometry(
   data: SequenceRegionData,
   settings: RenderSettings,
+  reversed: boolean,
   palette: ColorPalette,
 ) {
   const {
@@ -170,7 +170,6 @@ export function buildSequenceGeometry(
     showTranslation,
     sequenceType,
     rowHeight,
-    reversed,
     colorByCDS,
     showSequence,
     showBorders,
