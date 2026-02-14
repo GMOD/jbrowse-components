@@ -179,6 +179,38 @@ export function computeCoverage(
 }
 
 /**
+ * Compute per-mismatch frequency (base count at position / total depth).
+ * Used by the shader to fade low-frequency SNPs when zoomed out.
+ */
+export function computeMismatchFrequencies(
+  mismatchPositions: Uint32Array,
+  mismatchBases: Uint8Array,
+  coverageDepths: Float32Array,
+  coverageStartOffset: number,
+) {
+  const n = mismatchPositions.length
+  const frequencies = new Uint8Array(n)
+  const posBaseCounts = new Map<number, number>()
+  for (let i = 0; i < n; i++) {
+    const key = mismatchPositions[i]! * 256 + mismatchBases[i]!
+    posBaseCounts.set(key, (posBaseCounts.get(key) ?? 0) + 1)
+  }
+  for (let i = 0; i < n; i++) {
+    const posOffset = mismatchPositions[i]!
+    const depthIdx = posOffset - coverageStartOffset
+    const depth =
+      depthIdx >= 0 && depthIdx < coverageDepths.length
+        ? coverageDepths[depthIdx]!
+        : 1
+    const key = posOffset * 256 + mismatchBases[i]!
+    const count = posBaseCounts.get(key) ?? 1
+    const freq = depth > 0 ? count / depth : 0
+    frequencies[i] = Math.min(255, Math.round(freq * 255))
+  }
+  return frequencies
+}
+
+/**
  * Compute SNP coverage segments for rendering colored bars in coverage area
  */
 export function computeSNPCoverage(

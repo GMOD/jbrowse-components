@@ -26,6 +26,7 @@ import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
   computeCoverage,
+  computeMismatchFrequencies,
   computeNoncovCoverage,
   computeSNPCoverage,
   computeSashimiJunctions,
@@ -904,31 +905,12 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Compute per-mismatch frequency (count of this base at this position /
-  // total coverage depth). Used by shader to fade low-frequency SNPs when
-  // zoomed out.
-  const { mismatchPositions, mismatchBases } = mismatchArrays
-  const numMm = mismatchPositions.length
-  const mismatchFrequencies = new Uint8Array(numMm)
-  {
-    const posBaseCounts = new Map<number, number>()
-    for (let i = 0; i < numMm; i++) {
-      const key = mismatchPositions[i]! * 256 + mismatchBases[i]!
-      posBaseCounts.set(key, (posBaseCounts.get(key) ?? 0) + 1)
-    }
-    for (let i = 0; i < numMm; i++) {
-      const posOffset = mismatchPositions[i]!
-      const depthIdx = posOffset - coverage.startOffset
-      const depth =
-        depthIdx >= 0 && depthIdx < coverage.depths.length
-          ? coverage.depths[depthIdx]!
-          : 1
-      const key = posOffset * 256 + mismatchBases[i]!
-      const count = posBaseCounts.get(key) ?? 1
-      const freq = depth > 0 ? count / depth : 0
-      mismatchFrequencies[i] = Math.min(255, Math.round(freq * 255))
-    }
-  }
+  const mismatchFrequencies = computeMismatchFrequencies(
+    mismatchArrays.mismatchPositions,
+    mismatchArrays.mismatchBases,
+    coverage.depths,
+    coverage.startOffset,
+  )
 
   const snpCoverage = computeSNPCoverage(
     mismatches,

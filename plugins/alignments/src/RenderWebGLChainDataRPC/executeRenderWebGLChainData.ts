@@ -30,6 +30,7 @@ import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { PairType, getPairedType } from '../shared/color.ts'
 import {
   computeCoverage,
+  computeMismatchFrequencies,
   computeNoncovCoverage,
   computeSNPCoverage,
   computeSashimiJunctions,
@@ -920,6 +921,13 @@ export async function executeRenderWebGLChainData({
 
   checkStopToken2(stopTokenCheck)
 
+  const mismatchFrequencies = computeMismatchFrequencies(
+    mismatchArrays.mismatchPositions,
+    mismatchArrays.mismatchBases,
+    coverage.depths,
+    coverage.startOffset,
+  )
+
   const snpCoverage = computeSNPCoverage(
     mismatches,
     coverage.maxDepth,
@@ -969,6 +977,7 @@ export async function executeRenderWebGLChainData({
     ...readArrays,
     ...gapArrays,
     ...mismatchArrays,
+    mismatchFrequencies,
     ...insertionArrays,
     ...softclipArrays,
     ...hardclipArrays,
@@ -1052,6 +1061,7 @@ export async function executeRenderWebGLChainData({
     result.mismatchYs.buffer,
     result.mismatchBases.buffer,
     result.mismatchStrands.buffer,
+    result.mismatchFrequencies.buffer,
     result.insertionPositions.buffer,
     result.insertionYs.buffer,
     result.insertionLengths.buffer,

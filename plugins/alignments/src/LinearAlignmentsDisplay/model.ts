@@ -909,6 +909,7 @@ export default function stateModelFactory(
           new Error('stack').stack,
         )
         self.rpcDataMap = new Map()
+        self.gpuUploadPending = false
         self.arcsState.clearAllRpcData()
         self.cloudState.clearAllRpcData()
       },
