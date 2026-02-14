@@ -5,6 +5,9 @@ export interface CoverageTicks {
   ticks: { value: number; y: number }[]
   height: number
   maxDepth: number
+  nicedMax: number
+  yTop: number
+  yBottom: number
 }
 
 const CoverageYScaleBar = observer(function CoverageYScaleBar({
@@ -21,21 +24,16 @@ const CoverageYScaleBar = observer(function CoverageYScaleBar({
     return null
   }
 
-  const { ticks } = coverageTicks
+  const { ticks, yTop, yBottom } = coverageTicks
   const bg = theme.palette.background.default
   const fg = theme.palette.text.primary
   const isLeft = orientation === 'left'
   const k = isLeft ? -1 : 1
   const tickLength = 6
 
-  // Get the y range from actual tick positions (not full height)
-  const firstTick = ticks[0]
-  const lastTick = ticks[ticks.length - 1]
-  if (!firstTick || !lastTick) {
+  if (ticks.length === 0) {
     return null
   }
-  const y0 = Math.min(firstTick.y, lastTick.y)
-  const y1 = Math.max(firstTick.y, lastTick.y)
 
   return (
     <g
@@ -45,10 +43,10 @@ const CoverageYScaleBar = observer(function CoverageYScaleBar({
       textAnchor={isLeft ? 'end' : 'start'}
       strokeWidth={1}
     >
-      {/* Axis line - only spans between tick positions */}
+      {/* Axis line - spans full effective coverage area */}
       <path
         stroke={fg}
-        d={`M${k * tickLength},${y0}H0.5V${y1}H${k * tickLength}`}
+        d={`M${k * tickLength},${yTop}H0.5V${yBottom}H${k * tickLength}`}
       />
       {/* Ticks and labels */}
       {ticks.map(({ value, y }) => (

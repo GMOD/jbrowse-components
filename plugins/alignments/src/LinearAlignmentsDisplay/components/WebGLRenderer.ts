@@ -81,6 +81,7 @@ export interface RenderState {
   showCoverage: boolean
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
+  coverageNicedMax: number // niced domain max from D3 scale (matches Y scalebar labels)
   showMismatches: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
@@ -356,6 +357,7 @@ export class WebGLRenderer {
       'u_visibleRange',
       'u_coverageHeight',
       'u_coverageYOffset',
+      'u_depthScale',
       'u_binSize',
       'u_canvasHeight',
       'u_canvasWidth',
@@ -380,6 +382,7 @@ export class WebGLRenderer {
       'u_visibleRange',
       'u_coverageHeight',
       'u_coverageYOffset',
+      'u_depthScale',
       'u_canvasHeight',
       'u_canvasWidth',
       ...baseColorUniforms,
@@ -442,6 +445,7 @@ export class WebGLRenderer {
       'u_visibleRange',
       'u_coverageHeight',
       'u_coverageYOffset',
+      'u_depthScale',
       'u_canvasHeight',
       'u_canvasWidth',
     ])

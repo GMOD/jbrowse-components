@@ -654,7 +654,15 @@ export default function stateModelFactory(
           y: scale(value),
         }))
 
-        return { ticks, height, maxDepth }
+        const nicedMax = niceDomain[1] ?? maxDepth
+        return {
+          ticks,
+          height,
+          maxDepth,
+          nicedMax,
+          yTop: YSCALEBAR_LABEL_OFFSET,
+          yBottom: height - YSCALEBAR_LABEL_OFFSET,
+        }
       },
 
       get cloudTicks(): CloudTicks | undefined {
@@ -1709,6 +1717,8 @@ export default function stateModelFactory(
                   showCoverage: self.showCoverage,
                   coverageHeight: self.coverageHeight,
                   coverageYOffset: YSCALEBAR_LABEL_OFFSET,
+                  coverageNicedMax:
+                    self.coverageTicks?.nicedMax ?? 1,
                   showMismatches: self.showMismatches,
                   showInterbaseIndicators: self.showInterbaseIndicators,
                   showModifications: self.showModifications,

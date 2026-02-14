@@ -44,6 +44,13 @@ export class CoverageRenderer {
       return
     }
 
+    // depthScale corrects for nice() domain expansion and multi-region max differences
+    // Bars are normalized per-region to perRegionMax, but the scalebar uses nicedMax
+    const depthScale =
+      state.coverageNicedMax > 0
+        ? this.parent.buffers.maxDepth / state.coverageNicedMax
+        : 1
+
     // Draw grey coverage bars - coverage uses offset-based positions
     gl.useProgram(this.parent.coverageProgram)
     gl.uniform2f(
@@ -59,6 +66,7 @@ export class CoverageRenderer {
       this.parent.coverageUniforms.u_coverageYOffset!,
       state.coverageYOffset,
     )
+    gl.uniform1f(this.parent.coverageUniforms.u_depthScale!, depthScale)
     gl.uniform1f(
       this.parent.coverageUniforms.u_binSize!,
       this.parent.buffers.binSize,
@@ -98,6 +106,7 @@ export class CoverageRenderer {
         this.parent.modCoverageUniforms.u_coverageYOffset!,
         state.coverageYOffset,
       )
+      gl.uniform1f(this.parent.modCoverageUniforms.u_depthScale!, depthScale)
       gl.uniform1f(
         this.parent.modCoverageUniforms.u_canvasHeight!,
         canvasHeight,
@@ -143,6 +152,7 @@ export class CoverageRenderer {
         this.parent.snpCoverageUniforms.u_coverageYOffset!,
         state.coverageYOffset,
       )
+      gl.uniform1f(this.parent.snpCoverageUniforms.u_depthScale!, depthScale)
       gl.uniform1f(
         this.parent.snpCoverageUniforms.u_canvasHeight!,
         canvasHeight,

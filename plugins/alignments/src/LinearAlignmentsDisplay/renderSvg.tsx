@@ -56,6 +56,7 @@ export async function renderSvg(
   const bpPerPx = (viewEnd - viewStart) / width
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveHeight = coverageHeight - offset * 2
+  const nicedMax = coverageTicks?.nicedMax ?? coverageMaxDepth
 
   let content = ''
 
@@ -75,7 +76,7 @@ export async function renderSvg(
 
     const x = (binStart - viewStart) / bpPerPx
     const w = Math.max(coverageBinSize / bpPerPx, 1)
-    const normalizedDepth = depth / coverageMaxDepth
+    const normalizedDepth = depth / nicedMax
     const barHeight = normalizedDepth * effectiveHeight
     const y = coverageHeight - offset - barHeight
 
@@ -110,9 +111,12 @@ export async function renderSvg(
 
     const x = (snpStart - viewStart) / bpPerPx
     const w = Math.max(1 / bpPerPx, 1)
+    const depthScale = coverageMaxDepth / nicedMax
     const barY =
-      coverageHeight - offset - (yOffset + segHeight) * effectiveHeight
-    const barH = segHeight * effectiveHeight
+      coverageHeight -
+      offset -
+      (yOffset + segHeight) * depthScale * effectiveHeight
+    const barH = segHeight * depthScale * effectiveHeight
 
     const baseName = baseNames[colorType - 1]
     const fillColor = baseName

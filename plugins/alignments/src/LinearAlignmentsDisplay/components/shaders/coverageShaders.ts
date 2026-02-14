@@ -4,11 +4,12 @@ export const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
 in float a_position;    // position offset from regionStart
-in float a_depth;       // normalized depth (0-1)
+in float a_depth;       // normalized depth (0-1, against per-region max)
 
 uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;  // height in pixels
 uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
+uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
 uniform float u_binSize;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -41,9 +42,10 @@ void main() {
 
   // Y: coverage area at top of canvas with offset padding
   // Effective drawing area is from offset to coverageHeight-offset
+  // depthScale corrects for nice() domain expansion and multi-region max differences
   float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
   float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
-  float barTop = coverageBottom + (a_depth * effectiveHeight / u_canvasHeight) * 2.0;
+  float barTop = coverageBottom + (a_depth * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(coverageBottom, barTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -73,6 +75,7 @@ in float a_colorType;     // 1=A(green), 2=C(blue), 3=G(orange), 4=T(red)
 uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;
 uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
+uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
@@ -106,8 +109,8 @@ void main() {
   // Y: stacked from bottom of coverage area with offset padding
   float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
   float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
-  float segmentBot = coverageBottom + (a_yOffset * effectiveHeight / u_canvasHeight) * 2.0;
-  float segmentTop = segmentBot + (a_segmentHeight * effectiveHeight / u_canvasHeight) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -148,6 +151,7 @@ in vec4 a_color;          // RGBA color (normalized from Uint8)
 uniform vec2 u_visibleRange;  // [domainStart, domainEnd] as offsets
 uniform float u_coverageHeight;
 uniform float u_coverageYOffset; // padding at top/bottom for scalebar labels
+uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
@@ -175,8 +179,8 @@ void main() {
   // Y: stacked from bottom of coverage area with offset padding
   float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
   float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
-  float segmentBot = coverageBottom + (a_yOffset * effectiveHeight / u_canvasHeight) * 2.0;
-  float segmentTop = segmentBot + (a_segmentHeight * effectiveHeight / u_canvasHeight) * 2.0;
+  float segmentBot = coverageBottom + (a_yOffset * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
+  float segmentTop = segmentBot + (a_segmentHeight * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
