@@ -38,7 +38,6 @@ export function registerFileHandlers(paths: AppPaths) {
       const stream = await getFileStream(location)
       const write = fs.createWriteStream(faiPath)
 
-      // @ts-expect-error
       await generateFastaIndex(write, stream)
       return faiPath
     },

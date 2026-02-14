@@ -1,6 +1,5 @@
 import fs from 'fs'
-
-import fetch from 'node-fetch'
+import { Readable } from 'stream'
 
 export async function getFileStream(
   location: { uri: string } | { localPath: string },
@@ -15,7 +14,11 @@ export async function getFileStream(
         `Failed to fetch ${location.uri} status ${response.status} ${response.statusText}`,
       )
     }
-    return response.body
+    if (!response.body) {
+      throw new Error(`No response body for ${location.uri}`)
+    }
+    // @ts-expect-error web vs node ReadableStream type mismatch
+    return Readable.fromWeb(response.body)
   }
   throw new Error(`Unknown file handle type ${JSON.stringify(location)}`)
 }
