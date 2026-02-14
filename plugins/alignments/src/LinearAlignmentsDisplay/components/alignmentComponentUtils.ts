@@ -10,11 +10,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { fillColor } from '../../shared/color.ts'
 
 import type { ColorPalette, RGBColor, WebGLRenderer } from './WebGLRenderer'
-import type {
-  CigarHitResult,
-  IndicatorHitResult,
-  SashimiArcHitResult,
-} from './hitTesting'
+import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type {
   CoverageTooltipBin,
   WebGLPileupDataResult,
@@ -278,11 +274,11 @@ export function getTooltipBin(
 }
 
 export function formatIndicatorTooltip(
-  indicatorHit: IndicatorHitResult,
+  position: number,
   blockRpcData: WebGLPileupDataResult | undefined,
   refName: string | undefined,
 ) {
-  const bin = getTooltipBin(indicatorHit.position, blockRpcData)
+  const bin = getTooltipBin(position, blockRpcData)
   if (bin) {
     return JSON.stringify({ type: 'indicator', bin, refName })
   }

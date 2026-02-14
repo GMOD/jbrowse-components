@@ -28,6 +28,7 @@ import { parseCigar2 } from '../MismatchParser/index.ts'
 import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
+import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { PairType, getPairedType } from '../shared/color.ts'
 import {
   computeCoverage,
@@ -45,7 +46,6 @@ import {
   pairOrientationToNum,
   parseCssColor,
 } from '../shared/webglRpcUtils.ts'
-import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
 import type {
@@ -970,7 +970,7 @@ export async function executeRenderWebGLChainData({
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
-  const tooltipData = buildTooltipData({
+  const { tooltipData, significantSnpOffsets } = buildTooltipData({
     mismatches,
     insertions,
     gaps,
@@ -1029,6 +1029,7 @@ export async function executeRenderWebGLChainData({
     ...sashimi,
 
     tooltipData: Object.fromEntries(tooltipData),
+    significantSnpOffsets,
 
     // Connecting line data
     ...connectingLineArrays,

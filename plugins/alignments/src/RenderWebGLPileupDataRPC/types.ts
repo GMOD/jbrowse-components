@@ -172,6 +172,10 @@ export interface WebGLPileupDataResult {
   // Record from position offset to tooltip bin data
   tooltipData: Record<number, CoverageTooltipBin>
 
+  // Sorted offsets of positions with significant SNPs (>5% of depth)
+  // Used by hitTestCoverage to snap to SNP positions when zoomed out
+  significantSnpOffsets: number[]
+
   // Tag color data - RGB per read (3 bytes each), only populated when colorBy.type === 'tag'
   readTagColors: Uint8Array
   numTagColors: number

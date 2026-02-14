@@ -3,8 +3,8 @@ import { max, min } from '@jbrowse/core/util'
 import { getModificationName } from './modificationData.ts'
 import { getColorForModification } from '../util.ts'
 
-import type { CoverageTooltipBin } from '../RenderWebGLPileupDataRPC/types'
 import type { ModificationEntry } from './webglRpcTypes.ts'
+import type { CoverageTooltipBin } from '../RenderWebGLPileupDataRPC/types'
 
 export function buildTooltipData({
   mismatches,
@@ -217,5 +217,20 @@ export function buildTooltipData({
     }
   }
 
-  return tooltipData
+  const SNP_SIGNIFICANCE_THRESHOLD = 0.05
+  const significantSnpOffsets: number[] = []
+  for (const [posOffset, bin] of tooltipData) {
+    if (bin.depth > 0) {
+      let totalSnpCount = 0
+      for (const snp of Object.values(bin.snps)) {
+        totalSnpCount += snp.count
+      }
+      if (totalSnpCount / bin.depth > SNP_SIGNIFICANCE_THRESHOLD) {
+        significantSnpOffsets.push(posOffset)
+      }
+    }
+  }
+  significantSnpOffsets.sort((a, b) => a - b)
+
+  return { tooltipData, significantSnpOffsets }
 }

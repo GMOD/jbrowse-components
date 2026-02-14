@@ -39,17 +39,13 @@ export interface CigarHitResult {
 // Types for coverage area hit testing
 export interface CoverageHitResult {
   type: 'coverage'
-  position: number // genomic position
-  depth: number
-  snps: { base: string; count: number }[] // SNP counts at this position
+  position: number
 }
 
-// Types for indicator hit testing
 export interface IndicatorHitResult {
   type: 'indicator'
-  position: number // genomic position
+  position: number
   indicatorType: 'insertion' | 'softclip' | 'hardclip'
-  counts: { insertion: number; softclip: number; hardclip: number }
 }
 
 // Types for sashimi arc hit testing
@@ -411,6 +407,56 @@ export function hitTestCigarItem(
 }
 
 /**
+ * Binary search for the leftmost index in a sorted array where arr[index] >= value
+ */
+function lowerBound(arr: number[], value: number) {
+  let lo = 0
+  let hi = arr.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (arr[mid]! < value) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
+
+/**
+ * Find the best significant SNP offset within a bin range.
+ * Returns the offset with the highest total SNP count, or undefined if none found.
+ */
+function findBestSnpInBin(
+  significantSnpOffsets: number[],
+  tooltipData: Record<number, { snps: Record<string, { count: number }> }>,
+  binStartOffset: number,
+  binEndOffset: number,
+) {
+  const startIdx = lowerBound(significantSnpOffsets, binStartOffset)
+  let bestOffset: number | undefined
+  let bestCount = 0
+  for (let i = startIdx; i < significantSnpOffsets.length; i++) {
+    const offset = significantSnpOffsets[i]!
+    if (offset >= binEndOffset) {
+      break
+    }
+    const bin = tooltipData[offset]
+    if (bin) {
+      let totalCount = 0
+      for (const snp of Object.values(bin.snps)) {
+        totalCount += snp.count
+      }
+      if (totalCount > bestCount) {
+        bestCount = totalCount
+        bestOffset = offset
+      }
+    }
+  }
+  return bestOffset
+}
+
+/**
  * Hit test for coverage area (grey bars + SNP segments)
  */
 export function hitTestCoverage(
@@ -427,13 +473,8 @@ export function hitTestCoverage(
   const blockData = resolved.rpcData
   const { posOffset } = canvasXToPosOffset(canvasX, resolved)
 
-  const {
-    coverageDepths,
-    coverageBinSize,
-    coverageStartOffset,
-    coverageMaxDepth,
-    regionStart,
-  } = blockData
+  const { coverageDepths, coverageBinSize, coverageStartOffset, regionStart } =
+    blockData
   const binIndex = Math.floor(
     (posOffset - coverageStartOffset) / coverageBinSize,
   )
@@ -446,90 +487,26 @@ export function hitTestCoverage(
     return undefined
   }
 
-  // Collect SNPs at this position
-  const snps: { base: string; count: number }[] = []
-  const baseNames = ['A', 'C', 'G', 'T']
-  const snpCounts: Record<string, number> = { A: 0, C: 0, G: 0, T: 0 }
-
-  // Look for SNP segments at this position
-  const {
-    snpPositions,
-    snpHeights,
-    snpColorTypes,
-    numSnpSegments,
-    noncovPositions,
-    noncovHeights,
-    noncovColorTypes,
-    numNoncovSegments,
-    noncovMaxCount,
-  } = blockData
-
-  // Integer position for exact matching
-  const intPosOffset = Math.floor(posOffset)
-
-  for (let i = 0; i < numSnpSegments; i++) {
-    const snpPos = snpPositions[i]
-    if (snpPos === intPosOffset) {
-      const colorType = snpColorTypes[i]
-      const height = snpHeights[i]
-      if (
-        colorType !== undefined &&
-        height !== undefined &&
-        colorType >= 1 &&
-        colorType <= 4
-      ) {
-        const baseName = baseNames[colorType - 1]!
-        // Convert normalized height back to count
-        const count = Math.round(height * coverageMaxDepth)
-        snpCounts[baseName]! += count
+  const binStartOffset = coverageStartOffset + binIndex * coverageBinSize
+  if (coverageBinSize > 1 && blockData.significantSnpOffsets?.length) {
+    const binEndOffset = binStartOffset + coverageBinSize
+    const snpOffset = findBestSnpInBin(
+      blockData.significantSnpOffsets,
+      blockData.tooltipData,
+      binStartOffset,
+      binEndOffset,
+    )
+    if (snpOffset !== undefined) {
+      return {
+        type: 'coverage',
+        position: regionStart + snpOffset,
       }
-    }
-  }
-
-  for (const [base, count] of Object.entries(snpCounts)) {
-    if (count > 0) {
-      snps.push({ base, count })
-    }
-  }
-
-  // Also collect noncov (interbase) data at this position
-  const noncovCounts: Record<string, number> = {
-    insertion: 0,
-    softclip: 0,
-    hardclip: 0,
-  }
-
-  for (let i = 0; i < numNoncovSegments; i++) {
-    const noncovPos = noncovPositions[i]
-    if (noncovPos === intPosOffset) {
-      const colorType = noncovColorTypes[i]
-      const height = noncovHeights[i]
-      if (
-        colorType !== undefined &&
-        height !== undefined &&
-        colorType >= 1 &&
-        colorType <= 3
-      ) {
-        const typeName = getInterbaseTypeName(colorType)
-        // Convert normalized height back to count using noncovMaxCount
-        const count = Math.round(height * noncovMaxCount)
-        noncovCounts[typeName] = (noncovCounts[typeName] ?? 0) + count
-      }
-    }
-  }
-
-  // Add noncov items to snps array with different formatting
-  for (const [type, count] of Object.entries(noncovCounts)) {
-    if (count > 0) {
-      snps.push({ base: type, count })
     }
   }
 
   return {
     type: 'coverage',
-    position: regionStart + coverageStartOffset + binIndex * coverageBinSize,
-    depth,
-    snps,
+    position: regionStart + binStartOffset,
   }
 }
 
@@ -555,10 +532,6 @@ export function hitTestIndicator(
     indicatorPositions,
     indicatorColorTypes,
     numIndicators,
-    noncovPositions,
-    noncovHeights,
-    noncovColorTypes,
-    numNoncovSegments,
     regionStart,
   } = blockData
 
@@ -567,33 +540,10 @@ export function hitTestIndicator(
     if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
       const colorType = indicatorColorTypes[i]
       const indicatorType = getInterbaseTypeName(colorType ?? 1)
-
-      // Collect counts for all interbase types at this position
-      const counts = { insertion: 0, softclip: 0, hardclip: 0 }
-
-      for (let j = 0; j < numNoncovSegments; j++) {
-        const noncovPos = noncovPositions[j]
-        if (noncovPos === pos) {
-          const noncovColorType = noncovColorTypes[j]
-          const height = noncovHeights[j]
-          if (
-            noncovColorType !== undefined &&
-            height !== undefined &&
-            noncovColorType >= 1 &&
-            noncovColorType <= 3
-          ) {
-            const typeName = getInterbaseTypeName(noncovColorType)
-            const count = Math.round(height * blockData.noncovMaxCount)
-            counts[typeName] += count
-          }
-        }
-      }
-
       return {
         type: 'indicator',
         position: regionStart + pos,
         indicatorType,
-        counts,
       }
     }
   }

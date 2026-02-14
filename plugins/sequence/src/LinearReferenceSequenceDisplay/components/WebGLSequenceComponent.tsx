@@ -174,6 +174,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
       disposer()
     }
   }, [
+    model.height,
     sequenceData,
     showForwardActual,
     showReverseActual,

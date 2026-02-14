@@ -976,7 +976,7 @@ export async function executeRenderWebGLPileupData({
     regionSequenceStart,
   )
 
-  const tooltipData = buildTooltipData({
+  const { tooltipData, significantSnpOffsets } = buildTooltipData({
     mismatches,
     insertions,
     gaps,
@@ -1048,6 +1048,7 @@ export async function executeRenderWebGLPileupData({
 
     // Convert Map to plain object for RPC serialization
     tooltipData: Object.fromEntries(tooltipData),
+    significantSnpOffsets,
 
     maxY,
     numReads: features.length,

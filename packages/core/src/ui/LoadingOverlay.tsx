@@ -1,4 +1,4 @@
-import { cx, keyframes, makeStyles } from '../util/tss-react'
+import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()({
   overlay: {
