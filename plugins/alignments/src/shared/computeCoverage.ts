@@ -211,6 +211,37 @@ export function computeMismatchFrequencies(
 }
 
 /**
+ * Compute per-position frequency (count at position / total depth) for point
+ * features like insertions, softclips, hardclips. For paired position data
+ * (gaps), pass the start positions only.
+ */
+export function computePositionFrequencies(
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartOffset: number,
+) {
+  const n = positions.length
+  const frequencies = new Uint8Array(n)
+  const posCounts = new Map<number, number>()
+  for (let i = 0; i < n; i++) {
+    const pos = positions[i]!
+    posCounts.set(pos, (posCounts.get(pos) ?? 0) + 1)
+  }
+  for (let i = 0; i < n; i++) {
+    const posOffset = positions[i]!
+    const depthIdx = posOffset - coverageStartOffset
+    const depth =
+      depthIdx >= 0 && depthIdx < coverageDepths.length
+        ? coverageDepths[depthIdx]!
+        : 1
+    const count = posCounts.get(posOffset) ?? 1
+    const freq = depth > 0 ? count / depth : 0
+    frequencies[i] = Math.min(255, Math.round(freq * 255))
+  }
+  return frequencies
+}
+
+/**
  * Compute SNP coverage segments for rendering colored bars in coverage area
  */
 export function computeSNPCoverage(

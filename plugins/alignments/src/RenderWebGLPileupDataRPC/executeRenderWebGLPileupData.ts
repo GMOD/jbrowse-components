@@ -28,6 +28,7 @@ import {
   computeCoverage,
   computeMismatchFrequencies,
   computeNoncovCoverage,
+  computePositionFrequencies,
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
@@ -911,6 +912,31 @@ export async function executeRenderWebGLPileupData({
     coverage.depths,
     coverage.startOffset,
   )
+  const insertionFrequencies = computePositionFrequencies(
+    insertionArrays.insertionPositions,
+    coverage.depths,
+    coverage.startOffset,
+  )
+  const softclipFrequencies = computePositionFrequencies(
+    softclipArrays.softclipPositions,
+    coverage.depths,
+    coverage.startOffset,
+  )
+  const hardclipFrequencies = computePositionFrequencies(
+    hardclipArrays.hardclipPositions,
+    coverage.depths,
+    coverage.startOffset,
+  )
+  // Extract gap start positions (gapPositions stores [start, end] pairs)
+  const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
+  for (let i = 0; i < gapStartPositions.length; i++) {
+    gapStartPositions[i] = gapArrays.gapPositions[i * 2]!
+  }
+  const gapFrequencies = computePositionFrequencies(
+    gapStartPositions,
+    coverage.depths,
+    coverage.startOffset,
+  )
 
   const snpCoverage = computeSNPCoverage(
     mismatches,
@@ -1277,11 +1303,15 @@ export async function executeRenderWebGLPileupData({
 
     ...readArrays,
     ...gapArrays,
+    gapFrequencies,
     ...mismatchArrays,
     mismatchFrequencies,
     ...insertionArrays,
+    insertionFrequencies,
     ...softclipArrays,
+    softclipFrequencies,
     ...hardclipArrays,
+    hardclipFrequencies,
     ...modificationArrays,
 
     readTagColors: tagColors,
@@ -1353,6 +1383,7 @@ export async function executeRenderWebGLPileupData({
     result.gapYs.buffer,
     result.gapLengths.buffer,
     result.gapTypes.buffer,
+    result.gapFrequencies.buffer,
     result.mismatchPositions.buffer,
     result.mismatchYs.buffer,
     result.mismatchBases.buffer,
@@ -1361,12 +1392,15 @@ export async function executeRenderWebGLPileupData({
     result.insertionPositions.buffer,
     result.insertionYs.buffer,
     result.insertionLengths.buffer,
+    result.insertionFrequencies.buffer,
     result.softclipPositions.buffer,
     result.softclipYs.buffer,
     result.softclipLengths.buffer,
+    result.softclipFrequencies.buffer,
     result.hardclipPositions.buffer,
     result.hardclipYs.buffer,
     result.hardclipLengths.buffer,
+    result.hardclipFrequencies.buffer,
     result.coverageDepths.buffer,
     result.snpPositions.buffer,
     result.snpYOffsets.buffer,

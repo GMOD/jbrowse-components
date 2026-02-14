@@ -262,6 +262,12 @@ export default function stateModelFactory(
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
         self.rpcDataMap = next
+        if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
+          self.sourcesVolatile = data.sources.map(s => ({
+            name: s.name,
+            color: s.color,
+          }))
+        }
       },
 
       setLoadedRegionForRegion(regionNumber: number, region: Region) {

@@ -1,3 +1,5 @@
+import { measureText } from '@jbrowse/core/util'
+
 import { getInsertionType } from '../model.ts'
 
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
@@ -59,7 +61,7 @@ export function computeVisibleLabels(
   // Process deletions (gaps)
   const { gapPositions, gapYs, gapLengths, gapTypes, numGaps, regionStart } =
     rpcData
-  if (canRenderText) {
+  if (featureHeightSetting >= minFeatureHeightForText) {
     for (let i = 0; i < numGaps; i++) {
       if (gapTypes[i] !== 0) {
         continue
@@ -81,7 +83,10 @@ export function computeVisibleLabels(
       const endPx = (gapEnd - bpRange[0]) / bpPerPx
       const widthPx = endPx - startPx
 
-      if (widthPx < minLabelWidth) {
+      const lengthStr = String(length)
+      const textWidth = measureText(lengthStr, 10)
+
+      if (widthPx < textWidth) {
         continue
       }
 
@@ -96,7 +101,7 @@ export function computeVisibleLabels(
         type: 'deletion',
         x: (startPx + endPx) / 2,
         y: yPx,
-        text: String(length),
+        text: lengthStr,
         width: widthPx,
       })
     }

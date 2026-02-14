@@ -109,6 +109,7 @@ export interface WebGLPileupDataResult {
   gapYs: Uint16Array
   gapLengths: Uint16Array // length of each gap in bp
   gapTypes: Uint8Array // 0=deletion, 1=skip
+  gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
 
   // Mismatch data - offsets from regionStart
   mismatchPositions: Uint32Array
@@ -122,16 +123,19 @@ export interface WebGLPileupDataResult {
   insertionYs: Uint16Array
   insertionLengths: Uint16Array
   insertionSequences: string[] // insertion sequences (empty string if unavailable)
+  insertionFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
   // Soft clip data - offsets from regionStart
   softclipPositions: Uint32Array
   softclipYs: Uint16Array
   softclipLengths: Uint16Array
+  softclipFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
   // Hard clip data - offsets from regionStart
   hardclipPositions: Uint32Array
   hardclipYs: Uint16Array
   hardclipLengths: Uint16Array
+  hardclipFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
   // Coverage data - positions computed from regionStart + coverageStartOffset + index * binSize
   // Coverage may extend beyond the requested region to cover full feature extents

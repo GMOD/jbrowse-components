@@ -415,7 +415,7 @@ export class WebGLRenderer {
     ]
     const cigarUniformsWithWidth = [...cigarUniforms, 'u_canvasWidth']
     this.cacheUniforms(this.gapProgram, this.gapUniforms, [
-      ...cigarUniforms,
+      ...cigarUniformsWithWidth,
       'u_colorDeletion',
       'u_colorSkip',
       'u_eraseMode',
@@ -876,6 +876,7 @@ export class WebGLRenderer {
     gapPositions: Uint32Array
     gapYs: Uint16Array
     gapTypes: Uint8Array
+    gapFrequencies: Uint8Array
     numGaps: number
     mismatchPositions: Uint32Array
     mismatchYs: Uint16Array
@@ -885,14 +886,17 @@ export class WebGLRenderer {
     insertionPositions: Uint32Array
     insertionYs: Uint16Array
     insertionLengths: Uint16Array
+    insertionFrequencies: Uint8Array
     numInsertions: number
     softclipPositions: Uint32Array
     softclipYs: Uint16Array
     softclipLengths: Uint16Array
+    softclipFrequencies: Uint8Array
     numSoftclips: number
     hardclipPositions: Uint32Array
     hardclipYs: Uint16Array
     hardclipLengths: Uint16Array
+    hardclipFrequencies: Uint8Array
     numHardclips: number
   }) {
     const gl = this.gl
@@ -930,6 +934,12 @@ export class WebGLRenderer {
       this.uploadUintBuffer(this.gapProgram, 'a_position', data.gapPositions, 2)
       this.uploadUint16Buffer(this.gapProgram, 'a_y', data.gapYs, 1)
       this.uploadUint8Buffer(this.gapProgram, 'a_type', data.gapTypes, 1)
+      this.uploadNormalizedUint8Buffer(
+        this.gapProgram,
+        'a_frequency',
+        data.gapFrequencies,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.gapVAO = gapVAO
@@ -986,6 +996,12 @@ export class WebGLRenderer {
         data.insertionLengths,
         1,
       )
+      this.uploadNormalizedUint8Buffer(
+        this.insertionProgram,
+        'a_frequency',
+        data.insertionFrequencies,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.insertionVAO = insertionVAO
@@ -1011,6 +1027,12 @@ export class WebGLRenderer {
         data.softclipLengths,
         1,
       )
+      this.uploadNormalizedUint8Buffer(
+        this.softclipProgram,
+        'a_frequency',
+        data.softclipFrequencies,
+        1,
+      )
       gl.bindVertexArray(null)
 
       this.buffers.softclipVAO = softclipVAO
@@ -1034,6 +1056,12 @@ export class WebGLRenderer {
         this.hardclipProgram,
         'a_length',
         data.hardclipLengths,
+        1,
+      )
+      this.uploadNormalizedUint8Buffer(
+        this.hardclipProgram,
+        'a_frequency',
+        data.hardclipFrequencies,
         1,
       )
       gl.bindVertexArray(null)

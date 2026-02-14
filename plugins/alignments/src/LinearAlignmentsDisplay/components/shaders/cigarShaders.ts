@@ -13,6 +13,7 @@ precision highp int;
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in uint a_y;          // pileup row
 in uint a_type;       // 0=deletion, 1=skip
+in float a_frequency; // normalized 0-1, fraction of reads with this gap at this position
 
 uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
@@ -20,6 +21,7 @@ uniform float u_featureHeight;
 uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
+uniform float u_canvasWidth;
 uniform vec3 u_colorDeletion;
 uniform vec3 u_colorSkip;
 uniform int u_eraseMode;  // 0=normal draw, 1=stencil pass (skip gaps at full height)
@@ -39,6 +41,7 @@ void main() {
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
+
   float sx1 = (float(a_position.x) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx2 = (float(a_position.y) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
@@ -64,7 +67,6 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Select color based on gap type
   v_color = a_type == 0u ? vec4(u_colorDeletion, 1.0) : vec4(u_colorSkip, 1.0);
 }
 `
@@ -113,8 +115,14 @@ void main() {
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
   float pxPerBp = u_canvasWidth / regionLengthBp;
-  float sx1 = (pos - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
-  float sx2 = (pos + 1.0 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+
+  // Convert to pixel space, snap to pixel grid, convert back to clip space
+  float px1 = (pos - u_bpRangeX.x) / regionLengthBp * u_canvasWidth;
+  float px2 = (pos + 1.0 - u_bpRangeX.x) / regionLengthBp * u_canvasWidth;
+  px1 = floor(px1);
+  px2 = max(px1 + 1.0, floor(px2));
+  float sx1 = px1 / u_canvasWidth * 2.0 - 1.0;
+  float sx2 = px2 / u_canvasWidth * 2.0 - 1.0;
 
   // When zoomed out, fade low-frequency SNPs to nothing.
   // High-frequency SNPs (>10% of reads) stay visible.
@@ -128,14 +136,6 @@ void main() {
     gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
     v_color = vec4(0.0);
     return;
-  }
-
-  // Ensure minimum width of 1 pixel
-  float minWidth = 2.0 / u_canvasWidth;
-  if (sx2 - sx1 < minWidth) {
-    float mid = (sx1 + sx2) * 0.5;
-    sx1 = mid - minWidth * 0.5;
-    sx2 = mid + minWidth * 0.5;
   }
 
   float sx = mix(sx1, sx2, localX);
@@ -192,6 +192,7 @@ precision highp int;
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in uint a_length;     // insertion length
+in float a_frequency; // normalized 0-1, fraction of reads with insertion at this position
 
 uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
 uniform vec2 u_rangeY;
@@ -339,6 +340,7 @@ precision highp int;
 in uint a_position;  // Position offset from regionStart
 in uint a_y;         // pileup row
 in uint a_length;    // clip length
+in float a_frequency; // normalized 0-1
 
 uniform vec2 u_bpRangeX;
 uniform vec2 u_rangeY;
@@ -348,7 +350,6 @@ uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
-// Softclip color uniform from theme
 uniform vec3 u_colorSoftclip;
 
 out vec4 v_color;
@@ -360,9 +361,19 @@ void main() {
 
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
-  float bpPerPx = regionLengthBp / u_canvasWidth;
+  float pxPerBp = u_canvasWidth / regionLengthBp;
 
-  // Soft clip bar width
+  float alpha = 1.0;
+  if (pxPerBp < 1.0 && a_frequency < 0.1) {
+    alpha = pxPerBp;
+  }
+  if (alpha <= 0.0) {
+    gl_Position = vec4(0.0);
+    v_color = vec4(0.0);
+    return;
+  }
+
+  float bpPerPx = 1.0 / pxPerBp;
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
 
   float x1 = pos - barWidthBp * 0.5;
@@ -371,7 +382,6 @@ void main() {
   float sx1 = (x1 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx2 = (x2 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
-  // Ensure minimum width
   float minWidth = 2.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
     float mid = (sx1 + sx2) * 0.5;
@@ -381,7 +391,6 @@ void main() {
 
   float sx = mix(sx1, sx2, localX);
 
-  // Calculate Y position in pixels (constant height per row)
   float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
   float yTopPx = y * rowHeight - u_rangeY.x;
@@ -394,7 +403,7 @@ void main() {
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(u_colorSoftclip, 1.0);
+  v_color = vec4(u_colorSoftclip, alpha);
 }
 `
 
@@ -416,6 +425,7 @@ precision highp int;
 in uint a_position;  // Position offset from regionStart
 in uint a_y;         // pileup row
 in uint a_length;    // clip length
+in float a_frequency; // normalized 0-1
 
 uniform vec2 u_bpRangeX;
 uniform vec2 u_rangeY;
@@ -425,7 +435,6 @@ uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
-// Hardclip color uniform from theme
 uniform vec3 u_colorHardclip;
 
 out vec4 v_color;
@@ -437,9 +446,19 @@ void main() {
 
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
-  float bpPerPx = regionLengthBp / u_canvasWidth;
+  float pxPerBp = u_canvasWidth / regionLengthBp;
 
-  // Hard clip bar width
+  float alpha = 1.0;
+  if (pxPerBp < 1.0 && a_frequency < 0.1) {
+    alpha = pxPerBp;
+  }
+  if (alpha <= 0.0) {
+    gl_Position = vec4(0.0);
+    v_color = vec4(0.0);
+    return;
+  }
+
+  float bpPerPx = 1.0 / pxPerBp;
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
 
   float x1 = pos - barWidthBp * 0.5;
@@ -448,7 +467,6 @@ void main() {
   float sx1 = (x1 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
   float sx2 = (x2 - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
 
-  // Ensure minimum width
   float minWidth = 2.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
     float mid = (sx1 + sx2) * 0.5;
@@ -458,7 +476,6 @@ void main() {
 
   float sx = mix(sx1, sx2, localX);
 
-  // Calculate Y position in pixels (constant height per row)
   float y = float(a_y);
   float rowHeight = u_featureHeight + u_featureSpacing;
   float yTopPx = y * rowHeight - u_rangeY.x;
@@ -471,7 +488,7 @@ void main() {
   float sy = mix(syBot, syTop, localY);
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
-  v_color = vec4(u_colorHardclip, 1.0);
+  v_color = vec4(u_colorHardclip, alpha);
 }
 `
 

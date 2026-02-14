@@ -29,6 +29,7 @@ type LGV = LinearGenomeViewModel
 export interface MultiWiggleDisplayModel {
   rpcData: WebGLMultiWiggleDataResult | null
   rpcDataMap: Map<number, WebGLMultiWiggleDataResult>
+  sources: { name: string; color?: string }[]
   visibleRegion: { start: number; end: number } | null
   visibleRegions: {
     refName: string
@@ -123,7 +124,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     }
   }, [contextVersion])
 
-  // Upload data when rpcDataMap changes
+  // Upload data when rpcDataMap or sources (layout/colors) change
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer) {
@@ -136,20 +137,31 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
+    const modelSources = model.sources
     const activeRegions = new Set<number>()
     for (const [regionNumber, data] of dataMap) {
       activeRegions.add(regionNumber)
-      const sourcesData: SourceRenderData[] = data.sources.map(source => ({
-        featurePositions: source.featurePositions,
-        featureScores: source.featureScores,
-        numFeatures: source.numFeatures,
-        color: parseColor(source.color),
-      }))
+      const sourcesByName = Object.fromEntries(
+        data.sources.map(s => [s.name, s]),
+      )
+      const orderedSources = modelSources.length > 0 ? modelSources : data.sources
+      const sourcesData: SourceRenderData[] = []
+      for (const src of orderedSources) {
+        const rpcSource = sourcesByName[src.name]
+        if (rpcSource) {
+          sourcesData.push({
+            featurePositions: rpcSource.featurePositions,
+            featureScores: rpcSource.featureScores,
+            numFeatures: rpcSource.numFeatures,
+            color: parseColor(src.color || rpcSource.color),
+          })
+        }
+      }
 
       renderer.uploadForRegion(regionNumber, data.regionStart, sourcesData)
     }
     renderer.pruneStaleRegions(activeRegions)
-  }, [model.rpcDataMap, contextVersion])
+  }, [model.rpcDataMap, model.sources, contextVersion])
 
   // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
@@ -253,6 +265,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   }, [
     model,
     model.rpcDataMap,
+    model.sources,
     model.height,
     model.scaleType,
     model.renderingType,
@@ -292,11 +305,16 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       ? (height - ROW_PADDING * (numSources - 1)) / numSources
       : height
 
-  // Calculate label width based on source names from first region's data
+  // Calculate label width based on source names
   const firstData = model.rpcData
-  const labelWidth = firstData
-    ? Math.max(...firstData.sources.map(s => measureText(s.name, 10))) + 10
-    : 0
+  const displaySources =
+    model.sources.length > 0
+      ? model.sources
+      : firstData?.sources || []
+  const labelWidth =
+    displaySources.length > 0
+      ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10
+      : 0
 
   return (
     <div style={{ position: 'relative', width: totalWidth, height }}>
@@ -331,9 +349,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         }}
       >
         {/* Source labels with semi-transparent background */}
-        {firstData && firstData.sources.length > 1 ? (
+        {displaySources.length > 1 ? (
           <>
-            {firstData.sources.map((source, idx) => {
+            {displaySources.map((source, idx) => {
               const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
               const boxHeight = Math.min(20, rowHeight)
               return (
