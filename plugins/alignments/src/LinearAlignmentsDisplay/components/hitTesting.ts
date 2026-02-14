@@ -424,36 +424,20 @@ function lowerBound(arr: number[], value: number) {
 }
 
 /**
- * Find the best significant SNP offset within a bin range.
- * Returns the offset with the highest total SNP count, or undefined if none found.
+ * Find a significant SNP offset within a bin range via binary search.
+ * Returns the first match, since all positions in a bin map to the same pixel.
  */
-function findBestSnpInBin(
+function findSnpInBin(
   significantSnpOffsets: number[],
-  tooltipData: Record<number, { snps: Record<string, { count: number }> }>,
   binStartOffset: number,
   binEndOffset: number,
 ) {
-  const startIdx = lowerBound(significantSnpOffsets, binStartOffset)
-  let bestOffset: number | undefined
-  let bestCount = 0
-  for (let i = startIdx; i < significantSnpOffsets.length; i++) {
-    const offset = significantSnpOffsets[i]!
-    if (offset >= binEndOffset) {
-      break
-    }
-    const bin = tooltipData[offset]
-    if (bin) {
-      let totalCount = 0
-      for (const snp of Object.values(bin.snps)) {
-        totalCount += snp.count
-      }
-      if (totalCount > bestCount) {
-        bestCount = totalCount
-        bestOffset = offset
-      }
-    }
+  const idx = lowerBound(significantSnpOffsets, binStartOffset)
+  const offset = significantSnpOffsets[idx]
+  if (offset !== undefined && offset < binEndOffset) {
+    return offset
   }
-  return bestOffset
+  return undefined
 }
 
 /**
@@ -490,9 +474,8 @@ export function hitTestCoverage(
   const binStartOffset = coverageStartOffset + binIndex * coverageBinSize
   if (coverageBinSize > 1 && blockData.significantSnpOffsets?.length) {
     const binEndOffset = binStartOffset + coverageBinSize
-    const snpOffset = findBestSnpInBin(
+    const snpOffset = findSnpInBin(
       blockData.significantSnpOffsets,
-      blockData.tooltipData,
       binStartOffset,
       binEndOffset,
     )

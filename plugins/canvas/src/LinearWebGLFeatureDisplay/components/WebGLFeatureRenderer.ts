@@ -78,10 +78,10 @@ void main() {
   float sx1 = snapToPixelX(hpToClipX(splitStart, u_bpRangeX));
   float sx2 = snapToPixelX(hpToClipX(splitEnd, u_bpRangeX));
 
-  // Ensure minimum width of 1px
-  float onePixel = 2.0 / u_canvasWidth;
-  if (sx2 - sx1 < onePixel) {
-    sx2 = sx1 + onePixel;
+  // Ensure minimum width of 2px so thin features remain visible and solid
+  float minWidth = 4.0 / u_canvasWidth;
+  if (sx2 - sx1 < minWidth) {
+    sx2 = sx1 + minWidth;
   }
 
   float sx = mix(sx1, sx2, localX);

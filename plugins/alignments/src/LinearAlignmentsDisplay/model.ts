@@ -629,11 +629,30 @@ export default function stateModelFactory(
         if (!self.showCoverage) {
           return undefined
         }
-        // Find max depth across all loaded regions
+        // Find max depth from only the visible bins
+        const bpRange = this.visibleBpRange
         let maxDepth = 0
         for (const data of self.rpcDataMap.values()) {
-          if (data.coverageMaxDepth > maxDepth) {
-            maxDepth = data.coverageMaxDepth
+          const { coverageDepths, coverageStartOffset, coverageBinSize, regionStart } = data
+          if (bpRange) {
+            const startBin = Math.max(
+              0,
+              Math.floor((bpRange[0] - regionStart - coverageStartOffset) / coverageBinSize),
+            )
+            const endBin = Math.min(
+              coverageDepths.length,
+              Math.ceil((bpRange[1] - regionStart - coverageStartOffset) / coverageBinSize),
+            )
+            for (let i = startBin; i < endBin; i++) {
+              const d = coverageDepths[i]!
+              if (d > maxDepth) {
+                maxDepth = d
+              }
+            }
+          } else {
+            if (data.coverageMaxDepth > maxDepth) {
+              maxDepth = data.coverageMaxDepth
+            }
           }
         }
         if (maxDepth === 0) {
