@@ -18,6 +18,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  AUTO_FORCE_LOAD_BP,
   MultiRegionWebGLDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -465,7 +466,10 @@ export default function stateModelFactory(
             colorByCDS: self.colorByCDS,
             sequenceAdapter: self.sequenceAdapter,
             showOnlyGenes: self.showOnlyGenes,
-            maxFeatureCount: self.maxFeatureCount,
+            maxFeatureCount:
+              (getContainingView(self) as LGV).visibleBp < AUTO_FORCE_LOAD_BP
+                ? undefined
+                : self.maxFeatureCount,
             stopToken,
           },
         )) as RenderWebGLFeatureDataResult
@@ -511,12 +515,25 @@ export default function stateModelFactory(
         regions: { region: Region; regionNumber: number }[],
         bpPerPx: number,
       ) {
+        console.log('[FeatureDisplayDebug] fetchRegions called', {
+          numRegions: regions.length,
+          bpPerPx,
+          fetchGeneration: self.fetchGeneration,
+          regions: regions.map(r => ({
+            regionNumber: r.regionNumber,
+            refName: r.region.refName,
+            start: r.region.start,
+            end: r.region.end,
+          })),
+        })
         if (self.renderingStopToken) {
+          console.log(
+            '[FeatureDisplayDebug] fetchRegions: stopping previous token',
+          )
           stopStopToken(self.renderingStopToken)
         }
         const stopToken = createStopToken()
         self.setRenderingStopToken(stopToken)
-        const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
         try {
@@ -524,18 +541,18 @@ export default function stateModelFactory(
             fetchFeaturesForRegion(region, regionNumber, bpPerPx, stopToken),
           )
           const results = await Promise.all(promises)
-          if (isAlive(self) && self.fetchGeneration === generation) {
+          if (isAlive(self) && self.renderingStopToken === stopToken) {
             applyFetchResults(results)
           }
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
-            if (isAlive(self) && self.fetchGeneration === generation) {
+            if (isAlive(self) && self.renderingStopToken === stopToken) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
         } finally {
-          if (isAlive(self) && self.fetchGeneration === generation) {
+          if (isAlive(self) && self.renderingStopToken === stopToken) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
           }
@@ -604,6 +621,34 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
+                console.log(
+                  '[FeatureDisplayDebug] FetchVisibleRegions autorun fired',
+                  {
+                    numStaticRegions: view.staticRegions.length,
+                    numLoaded: self.loadedRegions.size,
+                    numNeeded: needed.length,
+                    needed: needed.map(n => ({
+                      regionNumber: n.regionNumber,
+                      refName: n.region.refName,
+                      start: n.region.start,
+                      end: n.region.end,
+                    })),
+                    loaded: [...self.loadedRegions.entries()].map(
+                      ([k, v]) => ({
+                        regionNumber: k,
+                        refName: v.refName,
+                        start: v.start,
+                        end: v.end,
+                      }),
+                    ),
+                    staticRegions: view.staticRegions.map(vr => ({
+                      regionNumber: vr.regionNumber,
+                      refName: vr.refName,
+                      start: vr.start,
+                      end: vr.end,
+                    })),
+                  },
+                )
                 if (needed.length > 0) {
                   await fetchRegions(needed, bpPerPx)
                 }

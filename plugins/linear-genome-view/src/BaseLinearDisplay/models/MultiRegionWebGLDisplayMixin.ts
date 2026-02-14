@@ -55,6 +55,15 @@ export default function MultiRegionWebGLDisplayMixin() {
     }))
     .actions(self => ({
       clearAllRpcData() {
+        console.log(
+          '[AlignmentsDebug] clearAllRpcData',
+          {
+            hadStopToken: !!self.renderingStopToken,
+            loadedRegionsSize: self.loadedRegions.size,
+            fetchGeneration: self.fetchGeneration,
+          },
+          new Error('stack').stack,
+        )
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
@@ -87,6 +96,9 @@ export default function MultiRegionWebGLDisplayMixin() {
                   prevDisplayedRegionsStr !== '' &&
                   regionStr !== prevDisplayedRegionsStr
                 ) {
+                  console.log(
+                    '[AlignmentsDebug] DisplayedRegionsChange: clearing data',
+                  )
                   self.clearAllRpcData()
                 }
                 prevDisplayedRegionsStr = regionStr

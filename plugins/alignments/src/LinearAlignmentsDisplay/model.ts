@@ -19,6 +19,7 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
+  AUTO_FORCE_LOAD_BP,
   MultiRegionWebGLDisplayMixin,
   TooLargeMessage,
   TrackHeightMixin,
@@ -30,7 +31,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, trace } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
@@ -385,6 +386,7 @@ export default function stateModelFactory(
       overCigarItem: false,
       webglRenderer: null as WebGLRenderer | null,
       colorPalette: null as ColorPalette | null,
+      gpuUploadPending: false,
     }))
     .views(self => ({
       /**
@@ -600,11 +602,12 @@ export default function stateModelFactory(
       },
 
       get showLoading() {
-        return self.isLoading || !this.visibleRegion
+        return self.isLoading || self.gpuUploadPending || !this.visibleRegion
       },
 
       get regionTooLarge() {
-        return self.regionTooLargeState
+        const view = getContainingView(self) as LGV
+        return self.regionTooLargeState && view.visibleBp >= AUTO_FORCE_LOAD_BP
       },
 
       get regionTooLargeReason() {
@@ -836,7 +839,18 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      setGpuUploadPending(val: boolean) {
+        self.gpuUploadPending = val
+      },
+
       setRegionTooLarge(val: boolean, reason?: string) {
+        if (self.regionTooLargeState !== val) {
+          console.log('[AlignmentsDebug] setRegionTooLarge', {
+            from: self.regionTooLargeState,
+            to: val,
+            reason,
+          })
+        }
         self.regionTooLargeState = val
         self.regionTooLargeReasonState = reason ?? ''
       },
@@ -853,7 +867,8 @@ export default function stateModelFactory(
         fetchSizeLimit?: number
       }) {
         if (stats?.bytes) {
-          self.userByteSizeLimit = stats.bytes
+          // round up a bit to avoid it re-displaying for similar values
+          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
         }
         self.regionTooLargeState = false
         self.regionTooLargeReasonState = ''
@@ -862,6 +877,7 @@ export default function stateModelFactory(
       setRpcData(regionNumber: number, data: WebGLPileupDataResult | null) {
         const next = new Map(self.rpcDataMap)
         if (data) {
+          self.gpuUploadPending = true
           next.set(regionNumber, data)
           for (const modType of data.detectedModifications) {
             if (!self.visibleModifications.has(modType)) {
@@ -888,16 +904,32 @@ export default function stateModelFactory(
       },
 
       clearDisplaySpecificData() {
+        console.log(
+          '[AlignmentsDebug] clearDisplaySpecificData',
+          new Error('stack').stack,
+        )
         self.rpcDataMap = new Map()
         self.arcsState.clearAllRpcData()
         self.cloudState.clearAllRpcData()
       },
 
       bumpFetchToken() {
+        console.log(
+          '[AlignmentsDebug] bumpFetchToken',
+          self.fetchToken,
+          '→',
+          self.fetchToken + 1,
+          new Error('stack').stack,
+        )
         self.fetchToken++
       },
 
       setLoadedRegion(regionNumber: number, region: Region | null) {
+        console.log('[AlignmentsDebug] setLoadedRegion', {
+          regionNumber,
+          region,
+          currentLoadedSize: self.loadedRegions.size,
+        })
         if (region) {
           self.setLoadedRegionForRegion(regionNumber, region)
         } else {
@@ -1445,28 +1477,105 @@ export default function stateModelFactory(
         const adapterConfig = getConf(track, 'adapter')
 
         if (!adapterConfig) {
+          console.log(
+            '[AlignmentsDebug] fetchFeaturesForRegion: no adapterConfig',
+          )
           return
         }
 
         const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
         fetchGenerations.set(regionNumber, gen)
+        console.log('[AlignmentsDebug] fetchFeaturesForRegion start', {
+          regionNumber,
+          gen,
+          refName: region.refName,
+          start: region.start,
+          end: region.end,
+        })
 
         const stats = await fetchByteEstimate(adapterConfig, region)
         if (fetchGenerations.get(regionNumber) !== gen) {
-          return
-        }
-        self.setFeatureDensityStats(stats ?? undefined)
-        const fetchSizeLimit =
-          stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
-        const limit = self.userByteSizeLimit || fetchSizeLimit
-        if (stats?.bytes && stats.bytes > limit) {
-          self.setRegionTooLarge(
-            true,
-            `Requested too much data (${getDisplayStr(stats.bytes)})`,
+          console.log(
+            '[AlignmentsDebug] fetchFeaturesForRegion stale after byteEstimate',
+            { regionNumber, gen, current: fetchGenerations.get(regionNumber) },
           )
           return
         }
-        self.setRegionTooLarge(false)
+        self.setFeatureDensityStats(stats ?? undefined)
+        const view = getContainingView(self) as LGV
+        if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
+          const fetchSizeLimit =
+            stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+          const limit = self.userByteSizeLimit || fetchSizeLimit
+          if (stats?.bytes && stats.bytes > limit) {
+            console.log(
+              '[AlignmentsDebug] fetchFeaturesForRegion: regionTooLarge',
+              {
+                regionNumber,
+                gen,
+                bytes: stats.bytes,
+                limit,
+                fetchSizeLimit,
+                userByteSizeLimit: self.userByteSizeLimit,
+                visibleBp: view.visibleBp,
+              },
+            )
+            self.setRegionTooLarge(
+              true,
+              `Requested too much data (${getDisplayStr(stats.bytes)})`,
+            )
+            return
+          }
+        } else {
+          console.log(
+            '[AlignmentsDebug] fetchFeaturesForRegion: skipping byte check',
+            {
+              regionNumber,
+              gen,
+              visibleBp: view.visibleBp,
+              threshold: AUTO_FORCE_LOAD_BP,
+            },
+          )
+        }
+        console.log(
+          '[AlignmentsDebug] fetchFeaturesForRegion: proceeding to RPC',
+          {
+            regionNumber,
+            gen,
+            regionTooLargeState: self.regionTooLargeState,
+          },
+        )
+
+        // If colorBy is tag mode and tag values haven't been fetched yet,
+        // fetch them inline before the main data RPC so that colorTagMap
+        // is populated when the worker needs it.
+        if (self.colorBy.tag && !self.tagsReady) {
+          const sessionId = getRpcSessionId(self)
+          try {
+            const vals = (await session.rpcManager.call(
+              sessionId,
+              'PileupGetGlobalValueForTag',
+              {
+                adapterConfig,
+                tag: self.colorBy.tag,
+                sessionId,
+                regions: [region],
+              },
+            )) as string[]
+            if (isAlive(self)) {
+              self.updateColorTagMap(vals)
+              self.setTagsReady(true)
+            }
+          } catch (e) {
+            console.error('Failed to fetch tag values:', e)
+            if (isAlive(self)) {
+              self.setTagsReady(true)
+            }
+          }
+          if (fetchGenerations.get(regionNumber) !== gen) {
+            return
+          }
+        }
 
         const sequenceAdapter = getSequenceAdapter(session, region)
 
@@ -1508,9 +1617,18 @@ export default function stateModelFactory(
 
         // Discard stale responses from older requests for this regionNumber
         if (fetchGenerations.get(regionNumber) !== gen) {
+          console.log(
+            '[AlignmentsDebug] fetchFeaturesForRegion stale after RPC',
+            { regionNumber, gen, current: fetchGenerations.get(regionNumber) },
+          )
           return
         }
 
+        console.log(
+          '[AlignmentsDebug] fetchFeaturesForRegion completed successfully',
+          { regionNumber, gen },
+        )
+        self.setRegionTooLarge(false)
         self.setLoadedRegion(regionNumber, {
           refName: region.refName,
           start: region.start,
@@ -1519,15 +1637,30 @@ export default function stateModelFactory(
         })
       }
 
+      let activeStopToken: string | undefined
+
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
       ) {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
+        console.log('[AlignmentsDebug] fetchRegions called', {
+          numRegions: regions.length,
+          regions: regions.map(r => ({
+            regionNumber: r.regionNumber,
+            refName: r.region.refName,
+            start: r.region.start,
+            end: r.region.end,
+          })),
+          fetchGeneration: self.fetchGeneration,
+        })
+        if (activeStopToken) {
+          console.log(
+            '[AlignmentsDebug] fetchRegions: stopping previous token',
+          )
+          stopStopToken(activeStopToken)
         }
         const stopToken = createStopToken()
+        activeStopToken = stopToken
         self.setRenderingStopToken(stopToken)
-        const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
         try {
@@ -1538,21 +1671,25 @@ export default function stateModelFactory(
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
-            if (isAlive(self) && self.fetchGeneration === generation) {
+            if (isAlive(self) && activeStopToken === stopToken) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
         } finally {
-          if (isAlive(self) && self.fetchGeneration === generation) {
+          const isCurrentToken = activeStopToken === stopToken
+          console.log('[AlignmentsDebug] fetchRegions finally', {
+            alive: isAlive(self),
+            isCurrentToken,
+            regionTooLarge: self.regionTooLargeState,
+          })
+          if (isAlive(self) && isCurrentToken) {
+            activeStopToken = undefined
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
           }
         }
       }
 
-      let prevColorType: string | undefined
-      let prevColorTag: string | undefined
-      let prevTagsReady: boolean | undefined
       let prevInvalidationKey: string | undefined
       const superAfterAttach = self.afterAttach
 
@@ -1635,6 +1772,7 @@ export default function stateModelFactory(
                 if (maxYVal > 0) {
                   self.setMaxY(maxYVal)
                 }
+                self.setGpuUploadPending(false)
               },
               { name: 'LinearAlignmentsDisplay:uploadPileupData' },
             ),
@@ -1704,8 +1842,12 @@ export default function stateModelFactory(
             self,
             autorun(
               async () => {
+                trace()
                 const view = getContainingView(self) as LGV
-                if (!view.initialized) {
+                if (
+                  !view.initialized ||
+                  (self.regionTooLarge && view.visibleBp >= AUTO_FORCE_LOAD_BP)
+                ) {
                   return
                 }
                 // Track fetchToken so bumps trigger re-fetch
@@ -1726,6 +1868,34 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
+                console.log(
+                  '[AlignmentsDebug] fetchVisibleRegions autorun fired',
+                  {
+                    fetchToken: self.fetchToken,
+                    numStaticRegions: view.staticRegions.length,
+                    numLoaded: self.loadedRegions.size,
+                    numNeeded: needed.length,
+                    regionTooLarge: self.regionTooLarge,
+                    needed: needed.map(n => ({
+                      regionNumber: n.regionNumber,
+                      refName: n.region.refName,
+                      start: n.region.start,
+                      end: n.region.end,
+                    })),
+                    loaded: [...self.loadedRegions.entries()].map(([k, v]) => ({
+                      regionNumber: k,
+                      refName: v.refName,
+                      start: v.start,
+                      end: v.end,
+                    })),
+                    staticRegions: view.staticRegions.map(vr => ({
+                      regionNumber: vr.regionNumber,
+                      refName: vr.refName,
+                      start: vr.start,
+                      end: vr.end,
+                    })),
+                  },
+                )
                 if (needed.length > 0) {
                   await fetchRegions(needed)
                 }
@@ -1737,8 +1907,8 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: invalidate data when filter or rendering mode/arcs
-          // settings change (displayedRegions handled by mixin)
+          // Autorun: invalidate data when any setting that affects the
+          // worker-side RPC result changes (displayedRegions handled by mixin)
           addDisposer(
             self,
             autorun(
@@ -1751,13 +1921,27 @@ export default function stateModelFactory(
                   drawLongRange: self.arcsState.drawLongRange,
                   drawSingletons: self.drawSingletons,
                   drawProperPairs: self.drawProperPairs,
+                  colorType: self.colorBy.type,
+                  colorTag: self.colorBy.tag,
                 })
                 if (
                   prevInvalidationKey !== undefined &&
                   key !== prevInvalidationKey
                 ) {
+                  console.log('[AlignmentsDebug] invalidateData: key changed', {
+                    prev: prevInvalidationKey,
+                    next: key,
+                  })
+                  self.setLoading(true)
+                  self.setStatusMessage('Loading')
+                  self.setError(null)
                   self.clearAllRpcData()
                   self.bumpFetchToken()
+                } else {
+                  console.log(
+                    '[AlignmentsDebug] invalidateData: no change (first=%s)',
+                    prevInvalidationKey === undefined,
+                  )
                 }
                 prevInvalidationKey = key
               },
@@ -1765,80 +1949,8 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: re-fetch when colorBy changes (modifications/methylation/tag
-          // modes require different worker-side processing).
-          // For tag mode, also re-fetch when tagsReady becomes true (colorTagMap populated).
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const colorType = self.colorBy.type
-                const tag = self.colorBy.tag
-                const tagsReady = self.tagsReady
-                if (
-                  prevColorType !== undefined &&
-                  (colorType !== prevColorType ||
-                    tag !== prevColorTag ||
-                    tagsReady !== prevTagsReady)
-                ) {
-                  if (!(colorType === 'tag' && !tagsReady)) {
-                    self.setLoading(true)
-                    self.setStatusMessage('Loading')
-                    self.setError(null)
-                    self.clearAllRpcData()
-                    self.bumpFetchToken()
-                  }
-                }
-                prevColorType = colorType
-                prevColorTag = tag
-                prevTagsReady = tagsReady
-              },
-              { name: 'LinearAlignmentsDisplay:refetchOnColorByChange' },
-            ),
-          )
-
-          // Autorun: fetch unique tag values when colorBy.type is 'tag' and tags not yet ready
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                const tag = self.colorBy.tag
-                const tagsReady = self.tagsReady
-                const region = self.visibleRegion
-                if (!tag || tagsReady || !region) {
-                  return
-                }
-                const session = getSession(self)
-                const track = getContainingTrack(self)
-                const adapterConfig = getConf(track, 'adapter')
-                const sessionId = getRpcSessionId(self)
-                try {
-                  const vals = (await session.rpcManager.call(
-                    sessionId,
-                    'PileupGetGlobalValueForTag',
-                    {
-                      adapterConfig,
-                      tag,
-                      sessionId,
-                      regions: [region],
-                    },
-                  )) as string[]
-                  if (isAlive(self)) {
-                    self.updateColorTagMap(vals)
-                    self.setTagsReady(true)
-                  }
-                } catch (e) {
-                  console.error('Failed to fetch tag values:', e)
-                  if (isAlive(self)) {
-                    self.setTagsReady(true)
-                  }
-                }
-              },
-              {
-                name: 'LinearAlignmentsDisplay:fetchTagValues',
-              },
-            ),
-          )
+          // Tag values are now fetched inline in fetchFeaturesForRegion
+          // before the main data RPC, so no separate autorun is needed.
         },
       }
     })

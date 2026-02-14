@@ -3,6 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 import TooLargeMessage from './TooLargeMessage.tsx'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
 import {
@@ -120,7 +121,7 @@ export default function FeatureDensityMixin() {
         const view = getContainingView(self) as LGV
         if (
           !self.featureDensityStatsReady ||
-          view.dynamicBlocks.totalBp < 20_000
+          view.visibleBp < AUTO_FORCE_LOAD_BP
         ) {
           return false
         }

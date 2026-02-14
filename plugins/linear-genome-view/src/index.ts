@@ -112,6 +112,7 @@ export type {
   NonBlockCanvasDisplayModel,
 } from './BaseLinearDisplay/index.ts'
 export {
+  AUTO_FORCE_LOAD_BP,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
   RefNameAutocomplete,

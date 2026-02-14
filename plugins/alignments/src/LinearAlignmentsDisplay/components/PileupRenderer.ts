@@ -383,6 +383,19 @@ export class PileupRenderer {
       )
       gl.uniform1f(this.parent.insertionUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.parent.insertionUniforms.u_canvasWidth!, canvasWidth)
+      const regionLengthBp = domainOffset[1] - domainOffset[0]
+      const bpPerPx = regionLengthBp / canvasWidth
+      const pxPerBp = 1 / bpPerPx
+      console.log('insertion uniforms:', {
+        canvasWidth,
+        canvasHeight,
+        domainOffset,
+        regionLengthBp,
+        bpPerPx,
+        pxPerBp,
+        insertionCount: buffers.insertionCount,
+        viewportWidth: gl.getParameter(gl.VIEWPORT)[2],
+      })
       // Insertion color uniform from theme
       gl.uniform3f(
         this.parent.insertionUniforms.u_colorInsertion!,

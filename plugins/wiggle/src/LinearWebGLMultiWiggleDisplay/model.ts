@@ -10,11 +10,13 @@ import {
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
+import PaletteIcon from '@mui/icons-material/Palette'
 import { autorun } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getNiceDomain, getScale } from '../util.ts'
 
+import type { Source } from '../util.ts'
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -41,6 +43,9 @@ const WebGLMultiWiggleComponent = lazy(
   () => import('./components/WebGLMultiWiggleComponent.tsx'),
 )
 const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
+const SetColorDialog = lazy(
+  () => import('./components/SetColorDialog.tsx'),
+)
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -53,6 +58,7 @@ export default function stateModelFactory(
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
+        layout: types.frozen([] as Source[]),
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
@@ -82,7 +88,7 @@ export default function stateModelFactory(
       isLoading: false,
       error: null as Error | null,
       currentBpRangeX: null as [number, number] | null,
-      sources: [] as SourceInfo[],
+      sourcesVolatile: [] as SourceInfo[],
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -91,6 +97,18 @@ export default function stateModelFactory(
 
       renderProps() {
         return { notReady: true }
+      },
+
+      get sources(): Source[] {
+        const sourceMap = Object.fromEntries(
+          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+        )
+        const iter = self.layout.length ? self.layout : self.sourcesVolatile
+        return iter?.map(s => ({
+          source: s.name,
+          ...sourceMap[s.name],
+          ...s,
+        }))
       },
 
       get scaleType() {
@@ -270,7 +288,15 @@ export default function stateModelFactory(
       },
 
       setSources(sources: SourceInfo[]) {
-        self.sources = sources
+        self.sourcesVolatile = sources
+      },
+
+      setLayout(layout: Source[]) {
+        self.layout = layout
+      },
+
+      clearLayout() {
+        self.layout = []
       },
 
       setScaleType(scaleType: string) {
@@ -405,6 +431,19 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           {
+            label: 'Edit colors/arrangement...',
+            icon: PaletteIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
+          {
             label: 'Rendering type',
             subMenu: [
               {
@@ -482,6 +521,7 @@ export default function stateModelFactory(
         return snap
       }
       const {
+        layout,
         scaleTypeSetting,
         minScoreSetting,
         maxScoreSetting,
@@ -490,6 +530,9 @@ export default function stateModelFactory(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
+        ...(layout !== undefined && (layout as Source[]).length > 0
+          ? { layout }
+          : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),

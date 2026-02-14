@@ -94,6 +94,8 @@ function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
  * extends
  * - [BaseViewModel](../baseviewmodel)
  */
+export const AUTO_FORCE_LOAD_BP = 20_000
+
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -1396,6 +1398,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
+        },
+        /**
+         * #getter
+         */
+        get visibleBp() {
+          return this.dynamicBlocks.totalBp
         },
         /**
          * #getter
