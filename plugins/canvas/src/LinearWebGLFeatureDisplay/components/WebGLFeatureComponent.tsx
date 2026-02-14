@@ -555,10 +555,10 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       canvas.removeEventListener('click', handleClick)
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
   const bpPerPx = view.bpPerPx
-  const offsetPx = view.offsetPx
   const visibleRegions = view.visibleRegions
 
   // Compute floating label positions (multi-region aware)
@@ -637,7 +637,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcDataMap, view, width, bpPerPx, offsetPx, visibleRegions, scrollY])
+  }, [rpcDataMap, view, width, bpPerPx, visibleRegions, scrollY])
 
   // Compute amino acid letter overlay (multi-region aware)
   const aminoAcidOverlayElements = useMemo(() => {
@@ -699,7 +699,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcDataMap, view, width, bpPerPx, offsetPx, visibleRegions, scrollY])
+  }, [rpcDataMap, view, width, bpPerPx, visibleRegions, scrollY])
 
   // Compute highlight overlays for hovered and selected features (multi-region aware)
   const highlightOverlays = useMemo(() => {
@@ -850,7 +850,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     view,
     width,
     bpPerPx,
-    offsetPx,
     visibleRegions,
     scrollY,
     hoveredFeature,
@@ -875,17 +874,19 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       ref={measureRef}
       style={{ position: 'relative', width: '100%', height }}
     >
-      <canvas
-        ref={canvasRef}
-        width={width ?? 800}
-        height={height}
-        style={{
-          display: 'block',
-          width: width ?? '100%',
-          height,
-          cursor: hoveredFeature ? 'pointer' : 'default',
-        }}
-      />
+      {width === undefined ? null : (
+        <canvas
+          ref={canvasRef}
+          width={width}
+          height={height}
+          style={{
+            display: 'block',
+            width,
+            height,
+            cursor: hoveredFeature ? 'pointer' : 'default',
+          }}
+        />
+      )}
 
       {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
         (elements, i) =>

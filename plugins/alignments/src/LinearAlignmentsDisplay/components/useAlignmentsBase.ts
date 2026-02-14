@@ -420,38 +420,30 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Effects ---
 
+  const rendererRef = useRef<WebGLRenderer | null>(null)
+  const [contextVersion, setContextVersion] = useState(0)
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas) {
       return setupWebGLContextLossHandler(canvas, () => {
-        rendererRef.current?.destroy()
-        try {
-          const newRenderer = new WebGLRenderer(canvas)
-          rendererRef.current = newRenderer
-          model.setWebGLRenderer(newRenderer)
-          model.clearAllRpcData()
-        } catch (e) {
-          console.error('Failed to restore WebGL context:', e)
-        }
+        setContextVersion(v => v + 1)
       })
     }
     return undefined
-  }, [model])
+  }, [])
 
-  const rendererRef = useRef<WebGLRenderer | null>(null)
-
-  // Initialize WebGL renderer and wire it to the model
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
       return
     }
-    let renderer: WebGLRenderer | null = null
     try {
-      renderer = new WebGLRenderer(canvas)
-      // eslint-disable-next-line react-hooks/immutability
-      rendererRef.current = renderer
-      model.setWebGLRenderer(renderer)
+      rendererRef.current = new WebGLRenderer(canvas)
+      model.setWebGLRenderer(rendererRef.current)
+      if (contextVersion > 0) {
+        model.clearAllRpcData()
+      }
     } catch (e) {
       console.error('Failed to initialize WebGL:', e)
     }
@@ -460,7 +452,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       rendererRef.current = null
       model.setWebGLRenderer(null)
     }
-  }, [model])
+  }, [contextVersion, model])
 
   // Sync theme-derived color palette to model
   useEffect(() => {

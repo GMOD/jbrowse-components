@@ -318,7 +318,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
     coverageHeight: number
     loadedRegion: { refName: string } | null
   }
-  height?: number
+  height: number
   offsetMouseCoord?: Coord
   clientMouseCoord: Coord
   clientRect?: DOMRect
@@ -372,7 +372,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
                 left: offsetMouseCoord[0],
                 height: showCoverage
                   ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
-                  : (height ?? 100),
+                  : height,
               }}
             />
           )}
@@ -426,7 +426,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
               left: offsetMouseCoord[0],
               height: showCoverage
                 ? coverageHeight - YSCALEBAR_LABEL_OFFSET * 2
-                : (height ?? 100),
+                : height,
             }}
           />
         )}

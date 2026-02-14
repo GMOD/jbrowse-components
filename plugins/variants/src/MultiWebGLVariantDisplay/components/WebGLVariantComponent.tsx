@@ -255,7 +255,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       }
       return undefined
     },
-    [model, view],
+    [model],
   )
 
   const handleMouseMove = useCallback(

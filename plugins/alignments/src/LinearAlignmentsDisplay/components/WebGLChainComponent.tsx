@@ -81,26 +81,28 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
       ref={measureRef}
       style={{ position: 'relative', width: '100%', height }}
     >
-      <canvas
-        ref={canvasRef}
-        width={width ?? 800}
-        height={height}
-        style={{
-          display: 'block',
-          width: width ?? '100%',
-          height,
-          cursor:
-            model.featureIdUnderMouse || model.overCigarItem
-              ? 'pointer'
-              : 'default',
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
-        onContextMenu={handleContextMenu}
-      />
+      {width === undefined ? null : (
+        <canvas
+          ref={canvasRef}
+          width={width}
+          height={height}
+          style={{
+            display: 'block',
+            width,
+            height,
+            cursor:
+              model.featureIdUnderMouse || model.overCigarItem
+                ? 'pointer'
+                : 'default',
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleClick}
+          onContextMenu={handleContextMenu}
+        />
+      )}
 
       <VisibleLabelsOverlay
         labels={model.visibleLabels}
