@@ -48,7 +48,6 @@ export function useWebGLRenderer<T extends { destroy(): void }>(
     return undefined
   }, [canvasRef])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {

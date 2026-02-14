@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
@@ -200,7 +207,15 @@ const HicCanvas = observer(function HicCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [rpcData, width, height, useLogScale, viewScale, viewOffsetX, contextVersion])
+  }, [
+    rpcData,
+    width,
+    height,
+    useLogScale,
+    viewScale,
+    viewOffsetX,
+    contextVersion,
+  ])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

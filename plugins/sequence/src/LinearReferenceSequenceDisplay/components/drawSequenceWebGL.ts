@@ -294,7 +294,11 @@ function revcomCodonUpper(seq: string, i: number) {
 }
 
 function codonUpper(seq: string, i: number) {
-  return seq[i]!.toUpperCase() + seq[i + 1]!.toUpperCase() + seq[i + 2]!.toUpperCase()
+  return (
+    seq[i]!.toUpperCase() +
+    seq[i + 1]!.toUpperCase() +
+    seq[i + 2]!.toUpperCase()
+  )
 }
 
 function writeTranslationRects(
@@ -343,9 +347,7 @@ function writeTranslationRects(
     }
 
     for (let i = frameShift; i < sliceEnd; i += 3) {
-      const upperCodon = reverse
-        ? revcomCodonUpper(seq, i)
-        : codonUpper(seq, i)
+      const upperCodon = reverse ? revcomCodonUpper(seq, i) : codonUpper(seq, i)
 
       let cr = bgR
       let cg = bgG
@@ -365,9 +367,7 @@ function writeTranslationRects(
     writer.push(seqStart, y, seq.length, height, bgR, bgG, bgB, false)
 
     for (let i = frameShift; i < sliceEnd; i += 3) {
-      const upperCodon = reverse
-        ? revcomCodonUpper(seq, i)
-        : codonUpper(seq, i)
+      const upperCodon = reverse ? revcomCodonUpper(seq, i) : codonUpper(seq, i)
 
       if (startsSet.has(upperCodon)) {
         writer.push(
@@ -396,7 +396,11 @@ function writeTranslationRects(
   }
 }
 
-function createShader(gl: WebGL2RenderingContext, type: number, source: string) {
+function createShader(
+  gl: WebGL2RenderingContext,
+  type: number,
+  source: string,
+) {
   const shader = gl.createShader(type)!
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
@@ -439,7 +443,11 @@ export interface GLHandles {
 }
 
 export function initGL(gl: WebGL2RenderingContext): GLHandles {
-  const program = createProgram(gl, SEQUENCE_VERTEX_SHADER, SEQUENCE_FRAGMENT_SHADER)
+  const program = createProgram(
+    gl,
+    SEQUENCE_VERTEX_SHADER,
+    SEQUENCE_FRAGMENT_SHADER,
+  )
 
   const vao = gl.createVertexArray()
   gl.bindVertexArray(vao)

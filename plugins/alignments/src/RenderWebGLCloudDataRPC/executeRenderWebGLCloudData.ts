@@ -72,7 +72,14 @@ export async function executeRenderWebGLCloudData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLCloudDataResult> {
-  const { sessionId, adapterConfig, sequenceAdapter, region, height, stopToken } = args
+  const {
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+    region,
+    height,
+    stopToken,
+  } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 

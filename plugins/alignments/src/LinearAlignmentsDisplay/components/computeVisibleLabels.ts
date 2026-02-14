@@ -50,7 +50,8 @@ export function computeVisibleLabels(
   const pxPerBp = 1 / bpPerPx
   const charWidth = 6.5
   const minFeatureHeightForText = 5
-  const canRenderText = pxPerBp >= charWidth && featureHeightSetting >= minFeatureHeightForText
+  const canRenderText =
+    pxPerBp >= charWidth && featureHeightSetting >= minFeatureHeightForText
   const rowHeight = featureHeightSetting + featureSpacing
   const pileupYOffset = showCoverage ? coverageHeight : 0
   const minLabelWidth = 15

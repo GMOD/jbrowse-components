@@ -11,10 +11,7 @@ import {
   isAbortException,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   addDisposer,
   getSnapshot,
@@ -36,27 +33,27 @@ import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { CloudSubModel } from './CloudSubModel.ts'
+import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import { getModificationsSubMenu } from '../shared/menuItems.ts'
+import { getColorForModification } from '../util.ts'
 import {
   CIGAR_TYPE_LABELS,
   uploadRegionDataToGPU,
 } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
-import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
-import { getModificationsSubMenu } from '../shared/menuItems.ts'
-import { getColorForModification } from '../util.ts'
 
-import type { CigarHitResult } from './components/hitTesting.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
+import type { CigarHitResult } from './components/hitTesting.ts'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
 import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -174,9 +171,7 @@ const ColorByTagDialog = lazy(
 const SetFeatureHeightDialog = lazy(
   () => import('../shared/components/SetFeatureHeightDialog.tsx'),
 )
-const SortByTagDialog = lazy(
-  () => import('./components/SortByTagDialog.tsx'),
-)
+const SortByTagDialog = lazy(() => import('./components/SortByTagDialog.tsx'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
 const FilterByTagDialog = lazy(
   () => import('../shared/components/FilterByTagDialog.tsx'),
@@ -1285,7 +1280,6 @@ export default function stateModelFactory(
           session.notifyError(`${e}`, e)
         }
       },
-
     }))
     .actions(self => ({
       async setContextMenuFeatureById(featureId: string) {
@@ -2152,7 +2146,10 @@ export default function stateModelFactory(
           onClick: () => {
             getSession(self).queueDialog(handleClose => [
               SetMaxHeightDialog,
-              { model: self, handleClose },
+              {
+                model: self,
+                handleClose,
+              },
             ])
           },
         }
@@ -2163,7 +2160,10 @@ export default function stateModelFactory(
           onClick: () => {
             getSession(self).queueDialog(handleClose => [
               FilterByTagDialog,
-              { model: self, handleClose },
+              {
+                model: self,
+                handleClose,
+              },
             ])
           },
         }
@@ -2195,7 +2195,10 @@ export default function stateModelFactory(
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SortByTagDialog,
-                  { model: self, handleClose },
+                  {
+                    model: self,
+                    handleClose,
+                  },
                 ])
               },
             },
@@ -2214,7 +2217,10 @@ export default function stateModelFactory(
           onClick: () => {
             getSession(self).queueDialog(handleClose => [
               GroupByDialog,
-              { model: self, handleClose },
+              {
+                model: self,
+                handleClose,
+              },
             ])
           },
         }
@@ -2438,66 +2444,69 @@ export default function stateModelFactory(
         const items: MenuItem[] = []
 
         if (cigarHit) {
-          const typeLabel =
-            CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
-          items.push({
-            label: `Sort by base at position`,
-            icon: SwapVertIcon,
-            onClick: () => {
-              const region = self.loadedRegion
-              if (region) {
-                self.setSortedByAtPosition(
-                  'basePair',
-                  cigarHit.position,
-                  region.refName,
-                )
-              }
+          const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
+          items.push(
+            {
+              label: `Sort by base at position`,
+              icon: SwapVertIcon,
+              onClick: () => {
+                const region = self.loadedRegion
+                if (region) {
+                  self.setSortedByAtPosition(
+                    'basePair',
+                    cigarHit.position,
+                    region.refName,
+                  )
+                }
+              },
             },
-          })
-          items.push({
-            label: `Open ${typeLabel.toLowerCase()} details`,
-            icon: MenuOpenIcon,
-            onClick: () => {
-              const region = self.loadedRegion
-              if (region) {
-                openCigarWidget(self, cigarHit, region.refName)
-              }
+            {
+              label: `Open ${typeLabel.toLowerCase()} details`,
+              icon: MenuOpenIcon,
+              onClick: () => {
+                const region = self.loadedRegion
+                if (region) {
+                  openCigarWidget(self, cigarHit, region.refName)
+                }
+              },
             },
-          })
+          )
         }
 
         if (feat) {
-          items.push({
-            label: 'Open feature details',
-            icon: MenuOpenIcon,
-            onClick: () => {
-              const session = getSession(self)
-              if (isSessionModelWithWidgets(session)) {
-                const featureWidget = session.addWidget(
-                  'AlignmentsFeatureWidget',
-                  'alignmentFeature',
-                  {
-                    featureData: feat.toJSON(),
-                    view: getContainingView(self),
-                    track: getContainingTrack(self),
-                  },
-                )
-                session.showWidget(featureWidget)
-                session.setSelection(feat)
-              }
+          items.push(
+            {
+              label: 'Open feature details',
+              icon: MenuOpenIcon,
+              onClick: () => {
+                const session = getSession(self)
+                if (isSessionModelWithWidgets(session)) {
+                  const featureWidget = session.addWidget(
+                    'AlignmentsFeatureWidget',
+                    'alignmentFeature',
+                    {
+                      featureData: feat.toJSON(),
+                      view: getContainingView(self),
+                      track: getContainingTrack(self),
+                    },
+                  )
+                  session.showWidget(featureWidget)
+                  session.setSelection(feat)
+                }
+              },
             },
-          })
-          items.push({
-            label: 'Copy info to clipboard',
-            icon: ContentCopyIcon,
-            onClick: async () => {
-              const { uniqueId, ...rest } = feat.toJSON()
-              const session = getSession(self)
-              const { default: copy } = await import('copy-to-clipboard')
-              copy(JSON.stringify(rest, null, 4))
-              session.notify('Copied to clipboard', 'success')
+            {
+              label: 'Copy info to clipboard',
+              icon: ContentCopyIcon,
+              onClick: async () => {
+                const { uniqueId, ...rest } = feat.toJSON()
+                const session = getSession(self)
+                const { default: copy } = await import('copy-to-clipboard')
+                copy(JSON.stringify(rest, null, 4))
+                session.notify('Copied to clipboard', 'success')
+              },
             },
-          })
+          )
         }
 
         return items

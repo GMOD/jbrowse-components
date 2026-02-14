@@ -8,10 +8,7 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
@@ -391,8 +388,11 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
-              () => {
+              async () => {
                 const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
@@ -409,10 +409,13 @@ export default function stateModelFactory(
                   })
                 }
                 if (needed.length > 0) {
-                  fetchRegions(needed)
+                  await fetchRegions(needed)
                 }
               },
-              { name: 'FetchVisibleRegions', delay: 300 },
+              {
+                name: 'FetchVisibleRegions',
+                delay: 500,
+              },
             ),
           )
 
@@ -421,19 +424,17 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                let regionStr = ''
-                try {
-                  const view = getContainingView(self) as LGV
-                  regionStr = JSON.stringify(
-                    view.displayedRegions.map(r => ({
-                      refName: r.refName,
-                      start: r.start,
-                      end: r.end,
-                    })),
-                  )
-                } catch {
-                  // ignore
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
                 }
+                const regionStr = JSON.stringify(
+                  view.displayedRegions.map(r => ({
+                    refName: r.refName,
+                    start: r.start,
+                    end: r.end,
+                  })),
+                )
                 if (
                   prevDisplayedRegionsStr !== '' &&
                   regionStr !== prevDisplayedRegionsStr
@@ -442,7 +443,9 @@ export default function stateModelFactory(
                 }
                 prevDisplayedRegionsStr = regionStr
               },
-              { name: 'DisplayedRegionsChange' },
+              {
+                name: 'DisplayedRegionsChange',
+              },
             ),
           )
         },

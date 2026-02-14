@@ -158,7 +158,15 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
             const cssWidth = canvas.clientWidth
             const cssHeight = canvas.clientHeight
             if (cssWidth > 0 && cssHeight > 0) {
-              render(gl, handles, totalRects, view.offsetPx, view.bpPerPx, cssWidth, cssHeight)
+              render(
+                gl,
+                handles,
+                totalRects,
+                view.offsetPx,
+                view.bpPerPx,
+                cssWidth,
+                cssHeight,
+              )
             }
           }
         })
@@ -196,7 +204,15 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         const cssWidth = canvas.clientWidth
         const cssHeight = canvas.clientHeight
         if (cssWidth > 0 && cssHeight > 0) {
-          render(gl, handles, instanceCountRef.current, offsetPx, bpPerPx, cssWidth, cssHeight)
+          render(
+            gl,
+            handles,
+            instanceCountRef.current,
+            offsetPx,
+            bpPerPx,
+            cssWidth,
+            cssHeight,
+          )
         }
       },
       { name: 'SequenceRenderAutorun' },

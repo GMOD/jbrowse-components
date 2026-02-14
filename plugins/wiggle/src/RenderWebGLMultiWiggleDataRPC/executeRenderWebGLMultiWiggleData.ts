@@ -45,7 +45,13 @@ export async function executeRenderWebGLMultiWiggleData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLMultiWiggleDataResult> {
-  const { sessionId, adapterConfig, region, sources: sourcesArg, stopToken } = args
+  const {
+    sessionId,
+    adapterConfig,
+    region,
+    sources: sourcesArg,
+    stopToken,
+  } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 

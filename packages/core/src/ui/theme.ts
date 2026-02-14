@@ -11,7 +11,6 @@ import type {
 
 // Re-export Theme as JBrowseTheme for type imports that need custom palette properties
 // (framesCDS, frames, bases, etc.). Use this instead of importing Theme directly from @mui/material
-export type { Theme as JBrowseTheme }
 
 interface PaletteAugmentColorOptions {
   color: PaletteColorOptions
@@ -556,3 +555,5 @@ function addMissingColors(theme: ThemeOptions = {}) {
     }),
   )
 }
+
+export { type Theme as JBrowseTheme } from '@mui/material/styles'

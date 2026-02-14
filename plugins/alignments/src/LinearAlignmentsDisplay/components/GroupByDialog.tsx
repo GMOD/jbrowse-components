@@ -98,14 +98,8 @@ function createStrandBasedTracks({
   session: SessionWithAddTracks
   view: LinearGenomeViewModel
 }) {
-  const negTrackId = createTrackId(
-    trackConf.trackId as string,
-    'strand:(-)',
-  )
-  const posTrackId = createTrackId(
-    trackConf.trackId as string,
-    'strand:(+)',
-  )
+  const negTrackId = createTrackId(trackConf.trackId as string, 'strand:(-)')
+  const posTrackId = createTrackId(trackConf.trackId as string, 'strand:(+)')
 
   session.addTrackConf({
     ...trackConf,

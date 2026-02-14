@@ -7,14 +7,14 @@ import {
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
+import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { shouldRenderPeptideText } from '../../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
-import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 
 import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
 import type {
@@ -451,7 +451,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
 
-      const { mouseX, mouseY, yPos } = getMouseInfo(e)
+      const { mouseX, yPos } = getMouseInfo(e)
 
       const { feature, subfeature } = performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
@@ -462,7 +462,9 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       )
 
       if (subfeature) {
-        model.setMouseoverExtraInformation(subfeature.tooltip ?? subfeature.type)
+        model.setMouseoverExtraInformation(
+          subfeature.tooltip ?? subfeature.type,
+        )
         setHoveredFeature(feature)
         setHoveredSubfeature(subfeature)
         model.setFeatureIdUnderMouse(feature?.featureId ?? null)

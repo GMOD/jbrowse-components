@@ -30,6 +30,8 @@ import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
+import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
+import type { RenderConfigContext } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureLabelData,
@@ -40,8 +42,6 @@ import type {
   SubfeatureInfo,
   WebGLFeatureDataResult,
 } from './rpcTypes.ts'
-import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
-import type { RenderConfigContext } from './renderConfig.ts'
 import type { LayoutRecord, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -142,7 +142,6 @@ function emitCodonData(opts: {
       y,
       height,
       color: colorToUint32(bgColor),
-
     })
 
     overlayItems.push({
@@ -354,7 +353,6 @@ function collectRenderData(
               y: childTopPx,
               height: childHeight,
               color: childColorUint,
-        
             })
           }
         } else {
@@ -364,7 +362,6 @@ function collectRenderData(
             y: childTopPx,
             height: childHeight,
             color: childColorUint,
-
           })
         }
       }
@@ -454,7 +451,6 @@ function collectRenderData(
             y: childTopPx,
             height: childHeight,
             color: childColorUint,
-
           })
 
           // Note: We don't add simple child features to subfeatureInfos
@@ -556,10 +552,7 @@ export async function executeRenderWebGLFeatureData({
     featuresArray = featuresArray.filter(f => f.get('type') === 'gene')
   }
 
-  if (
-    maxFeatureCount !== undefined &&
-    featuresArray.length > maxFeatureCount
-  ) {
+  if (maxFeatureCount !== undefined && featuresArray.length > maxFeatureCount) {
     return {
       regionTooLarge: true,
       featureCount: featuresArray.length,

@@ -97,7 +97,11 @@ export interface LinearAlignmentsDisplayModel {
   setContextMenuCoord: (coord?: [number, number]) => void
   setContextMenuCigarHit: (hit?: CigarHitResult) => void
   contextMenuCoord: [number, number] | undefined
-  contextMenuItems: () => { label: string; onClick: () => void; icon?: unknown }[]
+  contextMenuItems: () => {
+    label: string
+    onClick: () => void
+    icon?: unknown
+  }[]
   setContextMenuFeature: (feature?: unknown) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
   renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'

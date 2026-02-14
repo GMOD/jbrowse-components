@@ -2,9 +2,9 @@ import { getFrame, stripAlpha } from '@jbrowse/core/util'
 
 import { readCachedConfig } from './renderConfig.ts'
 
-import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { RenderConfigContext } from './renderConfig.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
 const MAX_LABEL_LENGTH = 50

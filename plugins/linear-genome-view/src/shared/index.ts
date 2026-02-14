@@ -3,4 +3,7 @@ export { default as FeatureDensityMixin } from './FeatureDensityMixin.tsx'
 export { default as TooLargeMessage } from './TooLargeMessage.tsx'
 export { default as autorunFeatureDensityStats } from './autorunFeatureDensityStats.ts'
 export type { FeatureDensityModel } from './autorunFeatureDensityStats.ts'
-export { getDisplayStr, getFeatureDensityStatsPre } from './featureDensityUtils.ts'
+export {
+  getDisplayStr,
+  getFeatureDensityStatsPre,
+} from './featureDensityUtils.ts'

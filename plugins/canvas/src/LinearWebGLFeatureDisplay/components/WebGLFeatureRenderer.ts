@@ -494,10 +494,17 @@ export class WebGLFeatureRenderer {
     // Upload rectangles
     const rectVAO = gl.createVertexArray()
     gl.bindVertexArray(rectVAO)
-    glBuffers.push(this.uploadUintAttrib(this.rectProgram, 'a_position', data.rectPositions, 2))
-    glBuffers.push(this.uploadFloatAttrib(this.rectProgram, 'a_y', data.rectYs, 1))
-    glBuffers.push(this.uploadFloatAttrib(this.rectProgram, 'a_height', data.rectHeights, 1))
-    glBuffers.push(this.uploadColorAttrib(this.rectProgram, 'a_color', data.rectColors))
+    glBuffers.push(
+      this.uploadUintAttrib(
+        this.rectProgram,
+        'a_position',
+        data.rectPositions,
+        2,
+      ),
+      this.uploadFloatAttrib(this.rectProgram, 'a_y', data.rectYs, 1),
+      this.uploadFloatAttrib(this.rectProgram, 'a_height', data.rectHeights, 1),
+      this.uploadColorAttrib(this.rectProgram, 'a_color', data.rectColors),
+    )
     gl.bindVertexArray(null)
 
     // Upload lines and chevrons (share position/y/color buffers)
@@ -517,7 +524,11 @@ export class WebGLFeatureRenderer {
       gl.bindVertexArray(lineVAO)
       this.bindUintAttrib(this.lineProgram, 'a_position', linePosBuffer, 2)
       this.bindFloatAttrib(this.lineProgram, 'a_y', lineYBuffer, 1)
-      this.bindNormalizedColorAttrib(this.lineProgram, 'a_color', lineColorBuffer)
+      this.bindNormalizedColorAttrib(
+        this.lineProgram,
+        'a_color',
+        lineColorBuffer,
+      )
       gl.bindVertexArray(null)
 
       // Chevron VAO — reuses the same position/y/color buffers
@@ -525,7 +536,11 @@ export class WebGLFeatureRenderer {
       gl.bindVertexArray(chevronVAO)
       this.bindUintAttrib(this.chevronProgram, 'a_position', linePosBuffer, 2)
       this.bindFloatAttrib(this.chevronProgram, 'a_y', lineYBuffer, 1)
-      this.bindNormalizedColorAttrib(this.chevronProgram, 'a_color', lineColorBuffer)
+      this.bindNormalizedColorAttrib(
+        this.chevronProgram,
+        'a_color',
+        lineColorBuffer,
+      )
       // Direction is chevron-only (not needed by line shader)
       const dirBuffer = this.uploadFloatAttrib(
         this.chevronProgram,
@@ -542,21 +557,23 @@ export class WebGLFeatureRenderer {
     if (data.numArrows > 0) {
       arrowVAO = gl.createVertexArray()!
       gl.bindVertexArray(arrowVAO)
-      glBuffers.push(this.uploadUintAttrib(this.arrowProgram, 'a_x', data.arrowXs, 1))
-      glBuffers.push(this.uploadFloatAttrib(this.arrowProgram, 'a_y', data.arrowYs, 1))
-      glBuffers.push(this.uploadFloatAttrib(
-        this.arrowProgram,
-        'a_direction',
-        new Float32Array(data.arrowDirections),
-        1,
-      ))
-      glBuffers.push(this.uploadFloatAttrib(
-        this.arrowProgram,
-        'a_height',
-        data.arrowHeights,
-        1,
-      ))
-      glBuffers.push(this.uploadColorAttrib(this.arrowProgram, 'a_color', data.arrowColors))
+      glBuffers.push(
+        this.uploadUintAttrib(this.arrowProgram, 'a_x', data.arrowXs, 1),
+        this.uploadFloatAttrib(this.arrowProgram, 'a_y', data.arrowYs, 1),
+        this.uploadFloatAttrib(
+          this.arrowProgram,
+          'a_direction',
+          new Float32Array(data.arrowDirections),
+          1,
+        ),
+        this.uploadFloatAttrib(
+          this.arrowProgram,
+          'a_height',
+          data.arrowHeights,
+          1,
+        ),
+        this.uploadColorAttrib(this.arrowProgram, 'a_color', data.arrowColors),
+      )
       gl.bindVertexArray(null)
     }
 
@@ -576,7 +593,7 @@ export class WebGLFeatureRenderer {
 
   private createBuffer(data: ArrayBufferView) {
     const gl = this.gl
-    const buffer = gl.createBuffer()!
+    const buffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     return buffer

@@ -359,9 +359,7 @@ export function formatSashimiTooltip(sashimiHit: SashimiArcHitResult) {
 
 export function formatFeatureTooltip(
   featureId: string,
-  getFeatureInfoById: (
-    id: string,
-  ) =>
+  getFeatureInfoById: (id: string) =>
     | {
         id: string
         name: string

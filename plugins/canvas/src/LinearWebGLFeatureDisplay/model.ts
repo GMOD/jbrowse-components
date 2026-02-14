@@ -15,10 +15,7 @@ import {
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -573,7 +570,7 @@ export default function stateModelFactory(
         }
       }
 
-      function refetchForCurrentView() {
+      async function refetchForCurrentView() {
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized) {
           return
@@ -584,7 +581,7 @@ export default function stateModelFactory(
           region: vr as Region,
           regionNumber: vr.regionNumber,
         }))
-        fetchRegions(regions, bpPerPx)
+        await fetchRegions(regions, bpPerPx)
       }
 
       let prevDisplayedRegionsStr = ''
@@ -596,7 +593,9 @@ export default function stateModelFactory(
       let prevSettingsInitialized = false
 
       return {
-        reload() {
+        async reload() {
+          // refetch contains all its async behavior, so no need to await
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           refetchForCurrentView()
         },
 
@@ -609,7 +608,7 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
-              () => {
+              async () => {
                 const view = getContainingView(self) as LinearGenomeViewModel
                 if (!view.initialized || self.regionTooLarge) {
                   return
@@ -632,7 +631,7 @@ export default function stateModelFactory(
                   })
                 }
                 if (needed.length > 0) {
-                  fetchRegions(needed, bpPerPx)
+                  await fetchRegions(needed, bpPerPx)
                 }
               },
               {
@@ -646,10 +645,18 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
-              () => {
-                const view = getContainingView(self) as LGV
-                if (view.initialized && self.needsLayoutRefresh) {
-                  refetchForCurrentView()
+              async () => {
+                const session = getSession(self)
+                try {
+                  const view = getContainingView(self) as LGV
+                  if (view.initialized && self.needsLayoutRefresh) {
+                    // refetch contains all its async behavior, so no need to await
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    refetchForCurrentView()
+                  }
+                } catch (e) {
+                  session.notifyError(`${e}`, e)
+                  console.error(e)
                 }
               },
               {
@@ -685,7 +692,7 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
-              () => {
+              async () => {
                 const showLabels = self.showLabels
                 const showDescriptions = self.showDescriptions
                 const colorByCDS = self.colorByCDS
@@ -700,6 +707,8 @@ export default function stateModelFactory(
                     showOnlyGenes !== prevShowOnlyGenes)
                 ) {
                   if (self.loadedRegions.size > 0 || self.regionTooLarge) {
+                    // refetch contains all its async behavior, so no need to await
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     refetchForCurrentView()
                   }
                 }
