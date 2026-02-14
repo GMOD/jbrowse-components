@@ -25,7 +25,6 @@ type LGV = LinearGenomeViewModel
 export interface WiggleDisplayModel {
   rpcData: WebGLWiggleDataResult | null
   rpcDataMap: Map<number, WebGLWiggleDataResult>
-  visibleRegion: { start: number; end: number } | null
   visibleRegions: {
     refName: string
     regionNumber: number

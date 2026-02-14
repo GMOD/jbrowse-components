@@ -29,17 +29,23 @@ export async function renderSvg(
     posColor,
     negColor,
     bicolorPivot,
-    visibleRegion,
   } = model
 
-  if (!rpcData || !domain || !visibleRegion) {
+  if (!rpcData || !domain) {
     return null
   }
 
   const { featurePositions, featureScores, regionStart, numFeatures } = rpcData
   const [minScore, maxScore] = domain
-  const { start: viewStart, end: viewEnd } = visibleRegion
-  const bpPerPx = (viewEnd - viewStart) / width
+  const bpPerPx = view.bpPerPx
+  const blocks = view.dynamicBlocks.contentBlocks
+  const firstBlock = blocks[0]
+  if (!firstBlock) {
+    return null
+  }
+  const viewStart =
+    firstBlock.start + (view.offsetPx - firstBlock.offsetPx) * bpPerPx
+  const viewEnd = viewStart + width * bpPerPx
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveHeight = height - offset * 2
   const useBicolor = color === '#f0f' || color === '#ff00ff'

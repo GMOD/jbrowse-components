@@ -28,16 +28,22 @@ export async function renderSvg(
     domain,
     scaleType,
     numSources,
-    visibleRegion,
   } = model
 
-  if (!rpcData || !domain || !visibleRegion || numSources === 0) {
+  if (!rpcData || !domain || numSources === 0) {
     return null
   }
 
   const [minScore, maxScore] = domain
-  const { start: viewStart, end: viewEnd } = visibleRegion
-  const bpPerPx = (viewEnd - viewStart) / width
+  const bpPerPx = view.bpPerPx
+  const blocks = view.dynamicBlocks.contentBlocks
+  const firstBlock = blocks[0]
+  if (!firstBlock) {
+    return null
+  }
+  const viewStart =
+    firstBlock.start + (view.offsetPx - firstBlock.offsetPx) * bpPerPx
+  const viewEnd = viewStart + width * bpPerPx
   const rowHeight = (height - ROW_PADDING * (numSources - 1)) / numSources
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveRowHeight = rowHeight - offset * 2

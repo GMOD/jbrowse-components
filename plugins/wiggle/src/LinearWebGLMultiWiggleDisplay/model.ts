@@ -85,7 +85,6 @@ export default function stateModelFactory(
       loadedRegions: new Map<number, Region>(),
       isLoading: false,
       error: null as Error | null,
-      currentBpRangeX: null as [number, number] | null,
       sourcesVolatile: [] as SourceInfo[],
       visibleScoreRange: undefined as [number, number] | undefined,
     }))
@@ -140,58 +139,6 @@ export default function stateModelFactory(
       get rpcData() {
         const iter = self.rpcDataMap.values().next()
         return iter.done ? null : iter.value
-      },
-
-      get visibleRegion() {
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized) {
-            return null
-          }
-          const blocks = view.dynamicBlocks.contentBlocks
-          const first = blocks[0]
-          if (!first) {
-            return null
-          }
-
-          if (self.currentBpRangeX) {
-            return {
-              refName: first.refName,
-              start: self.currentBpRangeX[0],
-              end: self.currentBpRangeX[1],
-              assemblyName: first.assemblyName,
-            }
-          }
-
-          const last = blocks[blocks.length - 1]
-          if (first.refName !== last?.refName) {
-            return {
-              refName: first.refName,
-              start: first.start,
-              end: first.end,
-              assemblyName: first.assemblyName,
-            }
-          }
-
-          const bpPerPx = view.bpPerPx
-          const blockOffsetPx = first.offsetPx
-          const deltaPx = view.offsetPx - blockOffsetPx
-          const deltaBp = deltaPx * bpPerPx
-
-          const totalWidthPx = Math.round(view.width)
-
-          const viewportStart = first.start + deltaBp
-          const viewportEnd = viewportStart + totalWidthPx * bpPerPx
-
-          return {
-            refName: first.refName,
-            start: viewportStart,
-            end: viewportEnd,
-            assemblyName: first.assemblyName,
-          }
-        } catch {
-          return null
-        }
       },
 
       get domain(): [number, number] | undefined {
@@ -290,10 +237,6 @@ export default function stateModelFactory(
         self.error = error
       },
 
-      setCurrentBpRange(bpRangeX: [number, number]) {
-        self.currentBpRangeX = bpRangeX
-      },
-
       setSources(sources: SourceInfo[]) {
         self.sourcesVolatile = sources
       },
@@ -368,25 +311,30 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const visibleRegion = self.visibleRegion
-                let min = Infinity
-                let max = -Infinity
-                for (const data of self.rpcDataMap.values()) {
-                  for (const source of data.sources) {
-                    if (visibleRegion) {
-                      const {
-                        featurePositions,
-                        featureScores,
-                        numFeatures,
-                      } = source
-                      const visStart =
-                        visibleRegion.start - data.regionStart
-                      const visEnd = visibleRegion.end - data.regionStart
-                      for (let i = 0; i < numFeatures; i++) {
-                        const fStart = featurePositions[i * 2]!
-                        const fEnd = featurePositions[i * 2 + 1]!
+                try {
+                  const view = getContainingView(self) as LGV
+                  if (!view.initialized) {
+                    return
+                  }
+                  const blocks = view.dynamicBlocks.contentBlocks
+                  let min = Infinity
+                  let max = -Infinity
+                  for (const block of blocks) {
+                    if (block.regionNumber === undefined) {
+                      continue
+                    }
+                    const data = self.rpcDataMap.get(block.regionNumber)
+                    if (!data) {
+                      continue
+                    }
+                    const visStart = block.start - data.regionStart
+                    const visEnd = block.end - data.regionStart
+                    for (const source of data.sources) {
+                      for (let i = 0; i < source.numFeatures; i++) {
+                        const fStart = source.featurePositions[i * 2]!
+                        const fEnd = source.featurePositions[i * 2 + 1]!
                         if (fEnd > visStart && fStart < visEnd) {
-                          const s = featureScores[i]!
+                          const s = source.featureScores[i]!
                           if (s < min) {
                             min = s
                           }
@@ -395,18 +343,13 @@ export default function stateModelFactory(
                           }
                         }
                       }
-                    } else {
-                      if (source.scoreMin < min) {
-                        min = source.scoreMin
-                      }
-                      if (source.scoreMax > max) {
-                        max = source.scoreMax
-                      }
                     }
                   }
-                }
-                if (Number.isFinite(min) && Number.isFinite(max)) {
-                  self.setVisibleScoreRange([min, max])
+                  if (Number.isFinite(min) && Number.isFinite(max)) {
+                    self.setVisibleScoreRange([min, max])
+                  }
+                } catch {
+                  // view not ready
                 }
               },
               {

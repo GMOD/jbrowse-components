@@ -30,7 +30,6 @@ export interface MultiWiggleDisplayModel {
   rpcData: WebGLMultiWiggleDataResult | null
   rpcDataMap: Map<number, WebGLMultiWiggleDataResult>
   sources: { name: string; color?: string }[]
-  visibleRegion: { start: number; end: number } | null
   visibleRegions: {
     refName: string
     regionNumber: number

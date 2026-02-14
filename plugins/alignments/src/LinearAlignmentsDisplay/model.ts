@@ -1693,27 +1693,38 @@ export default function stateModelFactory(
                 if (!self.showCoverage) {
                   return
                 }
-                const bpRange = self.visibleBpRange
-                let maxDepth = 0
-                for (const data of self.rpcDataMap.values()) {
-                  const {
-                    coverageDepths,
-                    coverageStartOffset,
-                    coverageBinSize,
-                    regionStart,
-                  } = data
-                  if (bpRange) {
+                try {
+                  const view = getContainingView(self) as LGV
+                  if (!view.initialized) {
+                    return
+                  }
+                  const blocks = view.dynamicBlocks.contentBlocks
+                  let maxDepth = 0
+                  for (const block of blocks) {
+                    if (block.regionNumber === undefined) {
+                      continue
+                    }
+                    const data = self.rpcDataMap.get(block.regionNumber)
+                    if (!data) {
+                      continue
+                    }
+                    const {
+                      coverageDepths,
+                      coverageStartOffset,
+                      coverageBinSize,
+                      regionStart,
+                    } = data
                     const startBin = Math.max(
                       0,
                       Math.floor(
-                        (bpRange[0] - regionStart - coverageStartOffset) /
+                        (block.start - regionStart - coverageStartOffset) /
                           coverageBinSize,
                       ),
                     )
                     const endBin = Math.min(
                       coverageDepths.length,
                       Math.ceil(
-                        (bpRange[1] - regionStart - coverageStartOffset) /
+                        (block.end - regionStart - coverageStartOffset) /
                           coverageBinSize,
                       ),
                     )
@@ -1723,13 +1734,11 @@ export default function stateModelFactory(
                         maxDepth = d
                       }
                     }
-                  } else {
-                    if (data.coverageMaxDepth > maxDepth) {
-                      maxDepth = data.coverageMaxDepth
-                    }
                   }
+                  self.setVisibleMaxDepth(maxDepth)
+                } catch {
+                  // view not ready
                 }
-                self.setVisibleMaxDepth(maxDepth)
               },
               {
                 delay: 400,
