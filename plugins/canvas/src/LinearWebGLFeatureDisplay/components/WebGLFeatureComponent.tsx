@@ -6,7 +6,6 @@ import {
   setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import useMeasure from '@jbrowse/core/util/useMeasure'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -198,7 +197,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [measureRef, measuredDims] = useMeasure()
   const [rendererReady, setRendererReady] = useState(false)
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
     null,
@@ -217,8 +215,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   const { rpcDataMap, isLoading, error } = model
 
-  const width =
-    measuredDims.width ?? (view.initialized ? view.width : undefined)
+  const width = view.initialized ? view.width : undefined
   const height = model.height
 
   const renderWithBlocks = useCallback(() => {
@@ -378,10 +375,10 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   // Re-render when container dimensions change
   useEffect(() => {
-    if (rendererReady && measuredDims.width !== undefined) {
+    if (rendererReady && width !== undefined) {
       scheduleRender()
     }
-  }, [rendererReady, measuredDims.width, measuredDims.height, scheduleRender])
+  }, [rendererReady, width, height, scheduleRender])
 
   // Cleanup
   useEffect(() => {
@@ -867,26 +864,23 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     )
   }
 
-  const isReady = width !== undefined && view.initialized
+  const isReady = view.initialized
 
   return (
     <div
-      ref={measureRef}
       style={{ position: 'relative', width: '100%', height }}
     >
-      {width === undefined ? null : (
-        <canvas
-          ref={canvasRef}
-          width={width}
-          height={height}
-          style={{
-            display: 'block',
-            width,
-            height,
-            cursor: hoveredFeature ? 'pointer' : 'default',
-          }}
-        />
-      )}
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{
+          display: 'block',
+          width,
+          height,
+          cursor: hoveredFeature ? 'pointer' : 'default',
+        }}
+      />
 
       {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
         (elements, i) =>

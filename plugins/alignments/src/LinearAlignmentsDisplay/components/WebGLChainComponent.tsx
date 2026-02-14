@@ -19,7 +19,6 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
   const base = useAlignmentsBase(model)
   const {
     canvasRef,
-    measureRef,
     resizeHandleHovered,
     setResizeHandleHovered,
     width,
@@ -77,32 +76,27 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
   }
 
   return (
-    <div
-      ref={measureRef}
-      style={{ position: 'relative', width: '100%', height }}
-    >
-      {width === undefined ? null : (
-        <canvas
-          ref={canvasRef}
-          width={width}
-          height={height}
-          style={{
-            display: 'block',
-            width,
-            height,
-            cursor:
-              model.featureIdUnderMouse || model.overCigarItem
-                ? 'pointer'
-                : 'default',
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleClick}
-          onContextMenu={handleContextMenu}
-        />
-      )}
+    <div style={{ position: 'relative', width: '100%', height }}>
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{
+          display: 'block',
+          width,
+          height,
+          cursor:
+            model.featureIdUnderMouse || model.overCigarItem
+              ? 'pointer'
+              : 'default',
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+      />
 
       <VisibleLabelsOverlay
         labels={model.visibleLabels}

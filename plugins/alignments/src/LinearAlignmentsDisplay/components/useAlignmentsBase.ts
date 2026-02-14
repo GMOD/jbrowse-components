@@ -4,7 +4,6 @@ import {
   getContainingView,
   setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
-import useMeasure from '@jbrowse/core/util/useMeasure'
 import { useTheme } from '@mui/material'
 
 import { WebGLRenderer } from './WebGLRenderer.ts'
@@ -115,7 +114,6 @@ export interface FeatureHit {
 
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [measureRef, measuredDims] = useMeasure()
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
@@ -143,15 +141,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     isChainMode,
   } = model
 
-  const width =
-    measuredDims.width ?? (view.initialized ? view.width : undefined)
+  const width = view.initialized ? view.width : undefined
 
   const viewRef = useRef(view)
-  const widthRef = useRef(width)
 
   useEffect(() => {
     viewRef.current = view
-    widthRef.current = width
   })
 
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
@@ -191,10 +186,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return
     }
     e.stopPropagation()
-
-    if (width === undefined) {
-      return
-    }
 
     const dx = e.clientX - dragRef.current.lastX
     dragRef.current.lastX = e.clientX
@@ -468,9 +459,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
     const handleWheel = (e: WheelEvent) => {
       const v = viewRef.current
-      const w = widthRef.current
 
-      if (!v.initialized || w === undefined) {
+      if (!v.initialized) {
         return
       }
 
@@ -522,7 +512,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   return {
     canvasRef,
-    measureRef,
     resizeHandleHovered,
     setResizeHandleHovered,
     width,

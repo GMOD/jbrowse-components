@@ -34,7 +34,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
         position: 'absolute',
         top: 0,
         left: 0,
-        width: width ?? '100%',
+        width,
         height,
         pointerEvents: 'none',
         overflow: 'hidden',
