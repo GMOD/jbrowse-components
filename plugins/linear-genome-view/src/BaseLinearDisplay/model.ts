@@ -10,6 +10,7 @@ import {
   isFeature,
   isSelectionContainer,
   isSessionModelWithWidgets,
+  measureText,
 } from '@jbrowse/core/util'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
@@ -115,6 +116,19 @@ function stateModelFactory() {
        */
       get DisplayMessageComponent(): undefined | React.FC<any> {
         return undefined
+      },
+      /**
+       * #getter
+       * when trackLabels are 'overlapping', the scalebar should be offset
+       * to the right of the track label
+       */
+      get scalebarOverlapLeft() {
+        const view = getContainingView(self) as LGV
+        if (view.trackLabelsSetting === 'overlapping') {
+          const track = getContainingTrack(self)
+          return measureText(getConf(track, 'name'), 12.8) + 100
+        }
+        return 0
       },
       /**
        * #getter

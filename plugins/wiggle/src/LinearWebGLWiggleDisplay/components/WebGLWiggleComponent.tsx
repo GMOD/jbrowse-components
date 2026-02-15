@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import {
-  getContainingTrack,
   getContainingView,
-  measureText,
   setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -35,6 +32,7 @@ export interface WiggleDisplayModel {
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
+  scalebarOverlapLeft: number
 }
 
 const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
@@ -230,8 +228,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
 
   const width = Math.round(view.width)
   const height = model.height
-  const { trackLabels } = view
-  const track = getContainingTrack(model)
+  const scalebarLeft = model.scalebarOverlapLeft
 
   if (error) {
     return (
@@ -273,10 +270,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
           style={{
             position: 'absolute',
             top: 0,
-            left:
-              trackLabels === 'overlapping'
-                ? measureText(getConf(track, 'name'), 12.8) + 100
-                : 50,
+            left: scalebarLeft || 50,
             pointerEvents: 'none',
             height,
             width: 50,

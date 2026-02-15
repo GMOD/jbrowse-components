@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import {
-  getContainingTrack,
   getContainingView,
   measureText,
   setupWebGLContextLossHandler,
@@ -38,6 +36,7 @@ export interface MultiWiggleDisplayModel {
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
+  scalebarOverlapLeft: number
 }
 
 const ROW_PADDING = 2
@@ -270,8 +269,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
   const totalWidth = Math.round(view.width)
   const height = model.height
-  const { trackLabels } = view
-  const track = getContainingTrack(model)
+  const scalebarLeft = model.scalebarOverlapLeft
 
   if (error) {
     return (
@@ -368,9 +366,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         {model.ticks ? (
           <g
             transform={`translate(${
-              trackLabels === 'overlapping'
-                ? measureText(getConf(track, 'name'), 12.8) + 50
-                : 50
+              scalebarLeft || 50
             } 0)`}
           >
             {model.rowHeightTooSmallForScalebar ? (

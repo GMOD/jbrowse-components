@@ -109,6 +109,7 @@ export interface LinearAlignmentsDisplayModel {
   setContextMenuFeature: (feature?: unknown) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
   renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
+  scalebarOverlapLeft: number
   clearAllRpcData: () => void
 }
 

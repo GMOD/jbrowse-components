@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
-import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -19,7 +18,6 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
     resizeHandleHovered,
     setResizeHandleHovered,
     width,
-    contrastMap,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
@@ -77,19 +75,12 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
         onContextMenu={handleContextMenu}
       />
 
-      <VisibleLabelsOverlay
-        labels={model.visibleLabels}
-        width={width}
-        height={height}
-        contrastMap={contrastMap}
-      />
-
       {model.coverageTicks ? (
         <svg
           style={{
             position: 'absolute',
             top: 0,
-            left: 0,
+            left: model.scalebarOverlapLeft,
             pointerEvents: 'none',
             height: model.coverageTicks.height,
             width: 50,

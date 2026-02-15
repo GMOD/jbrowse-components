@@ -16,7 +16,10 @@ let counter = 0
 export default class RpcClient extends EventEmitter {
   protected calls = new Map<string, (data: unknown) => void>()
   protected errors = new Map<string, (error: Error) => void>()
-  protected callTimestamps = new Map<string, { method: string; sentAt: number }>()
+  protected callTimestamps = new Map<
+    string,
+    { method: string; sentAt: number }
+  >()
 
   constructor(public worker: Worker) {
     super()
@@ -43,16 +46,16 @@ export default class RpcClient extends EventEmitter {
       const callInfo = this.callTimestamps.get(uid)
       if (callInfo) {
         const roundTrip = handlerStart - callInfo.sentAt
-        console.log(
-          `[librpc client] ${callInfo.method} uid=${uid}: ` +
-            `workerToMain=${transferTime.toFixed(1)}ms, ` +
-            `roundTrip=${roundTrip.toFixed(1)}ms`,
-        )
+        // console.log(
+        //   `[librpc client] ${callInfo.method} uid=${uid}: ` +
+        //     `workerToMain=${transferTime.toFixed(1)}ms, ` +
+        //     `roundTrip=${roundTrip.toFixed(1)}ms`,
+        // )
       } else {
-        console.log(
-          `[librpc client] uid=${uid}: ` +
-            `workerToMain=${transferTime.toFixed(1)}ms`,
-        )
+        // console.log(
+        //   `[librpc client] uid=${uid}: ` +
+        //     `workerToMain=${transferTime.toFixed(1)}ms`,
+        // )
       }
     }
 
@@ -65,9 +68,9 @@ export default class RpcClient extends EventEmitter {
     }
 
     const handlerEnd = performance.now()
-    console.log(
-      `[librpc client] handler body uid=${uid}: ${(handlerEnd - handlerStart).toFixed(1)}ms`,
-    )
+    // console.log(
+    //   `[librpc client] handler body uid=${uid}: ${(handlerEnd - handlerStart).toFixed(1)}ms`,
+    // )
   }
 
   protected catch(e: ErrorEvent) {

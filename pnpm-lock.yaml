@@ -425,9 +425,6 @@ importers:
       idb:
         specifier: ^8.0.3
         version: 8.0.3
-      librpc-web-mod:
-        specifier: ^2.1.1
-        version: 2.1.1
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -491,9 +488,6 @@ importers:
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
-      librpc-web-mod:
-        specifier: ^2.1.1
-        version: 2.1.1
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -7229,9 +7223,6 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
-
-  librpc-web-mod@2.1.1:
-    resolution: {integrity: sha512-ybKVK3wkEGj+wGd7P0A6LVCtge7seeTXPjSxhI3kaOkm5NPb/vFGGNO4Iu1G0ht69cCfVRlNjwvwpwUShi9G3g==}
 
   lie@3.3.0:
     resolution: {integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==}
@@ -15205,8 +15196,6 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
-
-  librpc-web-mod@2.1.1: {}
 
   lie@3.3.0:
     dependencies:

@@ -101,7 +101,7 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           style={{
             position: 'absolute',
             top: 0,
-            left: 0,
+            left: model.scalebarOverlapLeft,
             pointerEvents: 'none',
             height: model.coverageTicks.height,
             width: 50,
