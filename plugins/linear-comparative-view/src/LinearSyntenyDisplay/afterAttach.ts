@@ -9,27 +9,14 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { createColorFunction } from './drawSyntenyWebGL.ts'
+import { parseSyntenyRpcResult } from './parseSyntenyRpcResult.ts'
 
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { SyntenyRpcResult } from './parseSyntenyRpcResult.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
-
-function parseCigar(s = '') {
-  let currLen = ''
-  const ret = []
-  for (let i = 0, l = s.length; i < l; i++) {
-    const c = s[i]!
-    if (c >= '0' && c <= '9') {
-      currLen = currLen + c
-    } else {
-      ret.push(currLen, c)
-      currLen = ''
-    }
-  }
-  return ret
-}
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
@@ -51,7 +38,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const view = getContainingView(self) as LinearSyntenyViewModel
         if (
           !view.initialized ||
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+          !view.views.every(
+            a => a.displayedRegions.length > 0 && a.initialized,
+          )
         ) {
           return
         }
@@ -140,7 +129,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const view = getContainingView(self) as LSV
         if (
           !view.initialized ||
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+          !view.views.every(
+            a => a.displayedRegions.length > 0 && a.initialized,
+          )
         ) {
           return
         }
@@ -193,59 +184,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 sessionId,
                 stopToken: thisStopToken,
               },
-            )) as {
-              p11_offsetPx: Float64Array
-              p12_offsetPx: Float64Array
-              p21_offsetPx: Float64Array
-              p22_offsetPx: Float64Array
-              strands: Int8Array
-              starts: Float64Array
-              ends: Float64Array
-              identities: Float64Array
-              padTop: Float64Array
-              padBottom: Float64Array
-              featureIds: string[]
-              names: string[]
-              refNames: string[]
-              assemblyNames: string[]
-              cigars: string[]
-              mates: {
-                start: number
-                end: number
-                refName: string
-                name: string
-                assemblyName: string
-              }[]
-            }
+            )) as SyntenyRpcResult
 
             if (thisStopToken !== currentStopToken || !isAlive(self)) {
               return
             }
 
-            const map: FeatPos[] = []
-            for (let i = 0; i < result.featureIds.length; i++) {
-              const identity = result.identities[i]!
-              map.push({
-                p11: { offsetPx: result.p11_offsetPx[i]! },
-                p12: { offsetPx: result.p12_offsetPx[i]! },
-                p21: { offsetPx: result.p21_offsetPx[i]! },
-                p22: { offsetPx: result.p22_offsetPx[i]! },
-                padTop: result.padTop[i]!,
-                padBottom: result.padBottom[i]!,
-                id: result.featureIds[i]!,
-                strand: result.strands[i]!,
-                name: result.names[i]!,
-                refName: result.refNames[i]!,
-                start: result.starts[i]!,
-                end: result.ends[i]!,
-                assemblyName: result.assemblyNames[i]!,
-                mate: result.mates[i]!,
-                cigar: parseCigar(result.cigars[i]),
-                identity: identity === -1 ? undefined : identity,
-              })
-            }
             featPositionsBpPerPxs = viewSnaps.map(v => v.bpPerPx)
-            self.setFeatPositions(map)
+            self.setFeatPositions(parseSyntenyRpcResult(result))
           } catch (e) {
             if (!isAbortException(e)) {
               if (isAlive(self)) {

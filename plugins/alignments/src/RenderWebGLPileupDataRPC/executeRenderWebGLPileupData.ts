@@ -58,6 +58,25 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
+type SnpCountEntry = {
+  baseCounts: Record<string, number>
+  strandBaseCounts: Record<string, { fwd: number; rev: number }>
+}
+
+type ModificationColorEntry = {
+  r: number
+  g: number
+  b: number
+  probabilityTotal: number
+  probabilityCount: number
+  base: string
+  isSimplex: boolean
+}
+
+type ColorRgbTuple = [number, number, number]
+
+type SortTagValuesMap = Map<string, string>
+
 function computeModificationCoverage(
   modifications: ModificationEntry[],
   mismatches: MismatchData[],
@@ -87,13 +106,7 @@ function computeModificationCoverage(
   }
 
   // Build per-position SNP counts by base and strand from mismatches
-  const snpByPosition = new Map<
-    number,
-    {
-      baseCounts: Record<string, number>
-      strandBaseCounts: Record<string, { fwd: number; rev: number }>
-    }
-  >()
+  const snpByPosition = new Map<number, SnpCountEntry>()
   for (const mm of mismatches) {
     if (mm.position < regionStart) {
       continue
@@ -118,21 +131,7 @@ function computeModificationCoverage(
   // Group modifications by position → aggregate cumulative probability per unique color (r,g,b key)
   // Track probabilityTotal (sum of probabilities) and probabilityCount (number of mods)
   // for computing average probability for alpha, like the old SNPCoverageRenderer
-  const byPosition = new Map<
-    number,
-    Map<
-      string,
-      {
-        r: number
-        g: number
-        b: number
-        probabilityTotal: number
-        probabilityCount: number
-        base: string
-        isSimplex: boolean
-      }
-    >
-  >()
+  const byPosition = new Map<number, Map<string, ModificationColorEntry>>()
 
   for (const mod of modifications) {
     if (mod.position < regionStart) {
@@ -407,7 +406,7 @@ export async function executeRenderWebGLPileupData({
     // Per-feature tag color values (only populated when colorBy.type === 'tag')
     const tagColorValues: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
-    const sortTagValues =
+    const sortTagValues: SortTagValuesMap | undefined =
       sortedBy?.type === 'tag' && sortedBy.tag
         ? new Map<string, string>()
         : undefined
@@ -666,7 +665,7 @@ export async function executeRenderWebGLPileupData({
       const tag = colorBy.tag!
       const map = colorTagMap
       // Pre-parse the color map to avoid repeated parsing
-      const parsedColors = new Map<string, [number, number, number]>()
+      const parsedColors = new Map<string, ColorRgbTuple>()
       for (const [k, v] of Object.entries(map)) {
         parsedColors.set(k, parseCssColor(v))
       }
