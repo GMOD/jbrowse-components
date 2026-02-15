@@ -39,6 +39,17 @@ function getBlockTicks(
   return ticks
 }
 
+const TICK_BASE_STYLE = 'position:absolute;height:100%;width:1px'
+const BLOCK_BASE_STYLE = 'position:absolute;height:100%'
+const ELIDED_BG =
+  'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
+
+function createTickDiv() {
+  const el = document.createElement('div')
+  el.style.cssText = TICK_BASE_STYLE
+  return el
+}
+
 export default function Gridlines({
   model,
   offset = 0,
@@ -71,19 +82,20 @@ export default function Gridlines({
       inner.style.width = `${staticBlocks.totalWidthPx}px`
 
       const allBlockTicks: { x: number; major: boolean }[][] = []
-      let totalChildren = 0
+      let tickCount = 0
+      let blockCount = 0
       for (const block of blocks) {
         if (block.type === 'ContentBlock') {
           const ticks = getBlockTicks(block, bpPerPx, firstBlockOffset)
           allBlockTicks.push(ticks)
-          totalChildren += ticks.length
+          tickCount += ticks.length
         } else {
           allBlockTicks.push([])
-          totalChildren++
+          blockCount++
         }
       }
 
-      joinElements(container, totalChildren)
+      joinElements(container, tickCount + blockCount, createTickDiv)
 
       let childIdx = 0
       for (let i = 0; i < blocks.length; i++) {
@@ -91,13 +103,17 @@ export default function Gridlines({
         if (block.type === 'ContentBlock') {
           for (const { x, major } of allBlockTicks[i]!) {
             const el = container.children[childIdx] as HTMLElement
-            el.style.cssText = `position:absolute;height:100%;width:1px;transform:translateX(${x}px);background:${major ? majorColor : minorColor}`
+            if (el.style.width !== '1px') {
+              el.style.cssText = TICK_BASE_STYLE
+            }
+            el.style.transform = `translateX(${x}px)`
+            el.style.background = major ? majorColor : minorColor
             childIdx++
           }
         } else if (block.type === 'ElidedBlock') {
           const blockLeft = block.offsetPx - firstBlockOffset
           const el = container.children[childIdx] as HTMLElement
-          el.style.cssText = `position:absolute;height:100%;transform:translateX(${blockLeft}px);width:${block.widthPx}px;background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)`
+          el.style.cssText = `${BLOCK_BASE_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;${ELIDED_BG}`
           childIdx++
         } else if (block.type === 'InterRegionPaddingBlock') {
           const blockLeft = block.offsetPx - firstBlockOffset
@@ -106,7 +122,7 @@ export default function Gridlines({
             block.variant === 'boundary'
               ? disabledBgColor
               : textDisabledColor
-          el.style.cssText = `position:absolute;height:100%;transform:translateX(${blockLeft}px);width:${block.widthPx}px;background:${bg}`
+          el.style.cssText = `${BLOCK_BASE_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;background:${bg}`
           childIdx++
         }
       }

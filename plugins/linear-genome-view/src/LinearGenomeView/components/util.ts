@@ -24,12 +24,16 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
   )
 }
 
-export function joinElements(container: HTMLElement, count: number) {
+export function joinElements(
+  container: HTMLElement,
+  count: number,
+  create?: () => HTMLElement,
+) {
   while (container.childElementCount > count) {
     container.lastElementChild!.remove()
   }
   while (container.childElementCount < count) {
-    container.appendChild(document.createElement('div'))
+    container.appendChild(create ? create() : document.createElement('div'))
   }
 }
 

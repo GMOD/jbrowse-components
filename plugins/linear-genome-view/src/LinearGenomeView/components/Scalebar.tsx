@@ -1,8 +1,9 @@
 import type React from 'react'
+import { useEffect, useRef } from 'react'
 
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
-import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 
 import Gridlines from './Gridlines.tsx'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
@@ -30,45 +31,41 @@ interface ScalebarProps {
   className?: string
 }
 
-// Thin wrapper that re-renders on scroll to update the transform.
-// Children (ScalebarCoordinateLabels, ScalebarRefNameLabels) are separate
-// observers that only re-render when their own tracked observables change.
-const Scalebar = observer(function Scalebar({
+export default function Scalebar({
   model,
   style,
   className,
   ...other
 }: ScalebarProps) {
   const { classes } = useStyles()
-  const { staticBlocks, offsetPx } = model
-  const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
-  // console.log('[Scalebar] render', {
-  //   numBlocks: staticBlocks.blocks.length,
-  //   totalWidthPx: staticBlocks.totalWidthPx,
-  // })
+  const scalebarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    return autorun(() => {
+      const el = scalebarRef.current
+      if (!el) {
+        return
+      }
+      const { staticBlocks, offsetPx } = model
+      const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
+      el.style.transform = `translateX(${offsetLeft - 1}px)`
+      el.style.width = `${staticBlocks.totalWidthPx}px`
+    })
+  }, [model])
 
   return (
     <Paper
-      data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
+      data-resizer="true"
       className={cx(classes.container, className)}
       variant="outlined"
       style={style}
       {...other}
     >
-      {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />
-      <div
-        className={classes.scalebar}
-        style={{
-          transform: `translateX(${offsetLeft - 1}px)`,
-          width: staticBlocks.totalWidthPx,
-        }}
-      >
+      <div ref={scalebarRef} className={classes.scalebar}>
         <ScalebarCoordinateLabels model={model} />
       </div>
       <ScalebarRefNameLabels model={model} />
     </Paper>
   )
-})
-
-export default Scalebar
+}

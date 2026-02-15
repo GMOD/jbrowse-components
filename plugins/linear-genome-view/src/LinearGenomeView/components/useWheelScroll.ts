@@ -6,6 +6,7 @@ interface GenomeViewModel {
   scrollZoom?: boolean
   zoomTo: (bpPerPx: number, clientX?: number) => void
   horizontalScroll: (delta: number) => void
+  setIsScrolling?: (val: boolean) => void
 }
 
 const SCROLL_ZOOM_FACTOR_DIVISOR = 500
@@ -66,10 +67,17 @@ export function useWheelScroll(
   useEffect(() => {
     let samples = [] as number[]
     const curr = ref.current
+    let scrollingTimer: ReturnType<typeof setTimeout> | undefined
 
     // When scrollZoom is off: ctrl+wheel zooms, regular wheel scrolls
     // When scrollZoom is on: regular wheel zooms, ctrl+wheel scrolls page (inverted)
     function onWheel(event: WheelEvent) {
+      model.setIsScrolling?.(true)
+      clearTimeout(scrollingTimer)
+      scrollingTimer = setTimeout(() => {
+        model.setIsScrolling?.(false)
+      }, 150)
+
       // When scrollZoom is on and shift is held, allow default page scroll
       if (event.shiftKey && model.scrollZoom) {
         return
@@ -155,6 +163,7 @@ export function useWheelScroll(
       curr.addEventListener('wheel', onWheel, { passive: false })
       return () => {
         curr.removeEventListener('wheel', onWheel)
+        clearTimeout(scrollingTimer)
         if (rafId.current) {
           cancelAnimationFrame(rafId.current)
         }

@@ -11,7 +11,9 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 
-const ELIDED_STYLE =
+const WRAPPER_BASE_STYLE =
+  'position:relative;flex-shrink:0;overflow:hidden;height:13px'
+const ELIDED_BG =
   'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
 
 function createTickElement() {
@@ -19,7 +21,8 @@ function createTickElement() {
   tick.style.cssText =
     'position:absolute;width:0;display:flex;justify-content:center;pointer-events:none'
   const label = document.createElement('div')
-  label.style.cssText = 'font-size:11px;z-index:1;line-height:normal;pointer-events:none'
+  label.style.cssText =
+    'font-size:11px;z-index:1;line-height:normal;pointer-events:none'
   tick.appendChild(label)
   return tick
 }
@@ -31,6 +34,12 @@ function joinTickElements(wrapper: HTMLElement, count: number) {
   while (wrapper.childElementCount < count) {
     wrapper.appendChild(createTickElement())
   }
+}
+
+function createWrapperDiv() {
+  const el = document.createElement('div')
+  el.style.cssText = WRAPPER_BASE_STYLE
+  return el
 }
 
 export default function ScalebarCoordinateLabels({
@@ -52,7 +61,7 @@ export default function ScalebarCoordinateLabels({
       const { staticBlocks, bpPerPx } = model
       const blocks = staticBlocks.blocks
 
-      joinElements(container, blocks.length)
+      joinElements(container, blocks.length, createWrapperDiv)
 
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i]!
@@ -62,8 +71,7 @@ export default function ScalebarCoordinateLabels({
           const { start, end, reversed } = block
           const ticks = makeTicks(start, end, bpPerPx, true, false)
 
-          wrapper.className = ''
-          wrapper.style.cssText = `position:relative;flex-shrink:0;overflow:hidden;height:13px;width:${block.widthPx}px`
+          wrapper.style.width = `${block.widthPx}px`
 
           joinTickElements(wrapper, ticks.length)
 
@@ -76,13 +84,11 @@ export default function ScalebarCoordinateLabels({
             label.textContent = getTickDisplayStr(base + 1, bpPerPx)
           }
         } else if (block.type === 'ElidedBlock') {
-          wrapper.className = ''
-          wrapper.style.cssText = `flex-shrink:0;height:13px;width:${block.widthPx}px;${ELIDED_STYLE}`
+          wrapper.style.cssText = `flex-shrink:0;height:13px;width:${block.widthPx}px;${ELIDED_BG}`
           while (wrapper.firstChild) {
             wrapper.firstChild.remove()
           }
         } else {
-          wrapper.className = ''
           wrapper.style.cssText = `flex-shrink:0;height:13px;width:${block.widthPx}px`
           while (wrapper.firstChild) {
             wrapper.firstChild.remove()

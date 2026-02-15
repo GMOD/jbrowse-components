@@ -303,6 +303,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * temporary vertical guides that can be set by displays (e.g., LD display hover)
        */
       volatileGuides: [] as VolatileGuide[],
+      /**
+       * #volatile
+       */
+      isScrolling: false,
     }))
     .views(self => ({
       /**
@@ -844,6 +848,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setVolatileGuides(guides: VolatileGuide[]) {
         self.volatileGuides = guides
+      },
+      /**
+       * #action
+       */
+      setIsScrolling(val: boolean) {
+        self.isScrolling = val
       },
       /**
        * #action
