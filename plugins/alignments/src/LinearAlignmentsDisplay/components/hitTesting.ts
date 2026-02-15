@@ -242,36 +242,33 @@ export function hitTestCigarItem(
     mismatchYs,
     mismatchBases,
     numMismatches,
-    insertionPositions,
-    insertionYs,
-    insertionLengths,
-    insertionSequences,
-    numInsertions,
+    interbasePositions,
+    interbaseYs,
+    interbaseLengths,
+    interbaseTypes,
+    interbaseSequences,
+    numInterbases,
     gapPositions,
     gapYs,
     numGaps,
-    softclipPositions,
-    softclipYs,
-    softclipLengths,
-    numSoftclips,
-    hardclipPositions,
-    hardclipYs,
-    hardclipLengths,
-    numHardclips,
     regionStart,
   } = blockData
 
   const pxPerBp = 1 / bpPerPx
 
   // Check large insertions first (they render as wide boxes that overlap SNPs)
-  for (let i = 0; i < numInsertions; i++) {
-    const y = insertionYs[i]
+  // Type 1 = insertion
+  for (let i = 0; i < numInterbases; i++) {
+    if (interbaseTypes[i] !== 1) {
+      continue
+    }
+    const y = interbaseYs[i]
     if (y !== row) {
       continue
     }
-    const pos = insertionPositions[i]
+    const pos = interbasePositions[i]
     if (pos !== undefined) {
-      const len = insertionLengths[i] ?? 0
+      const len = interbaseLengths[i] ?? 0
       const type = getInsertionType(len, pxPerBp)
       if (type !== 'small') {
         const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
@@ -282,7 +279,7 @@ export function hitTestCigarItem(
             index: i,
             position: regionStart + pos,
             length: len,
-            sequence: insertionSequences[i] || undefined,
+            sequence: interbaseSequences[i] || undefined,
           }
         }
       }
@@ -309,14 +306,18 @@ export function hitTestCigarItem(
   }
 
   // Check small insertions (thin bars that don't overlap SNPs)
-  for (let i = 0; i < numInsertions; i++) {
-    const y = insertionYs[i]
+  // Type 1 = insertion
+  for (let i = 0; i < numInterbases; i++) {
+    if (interbaseTypes[i] !== 1) {
+      continue
+    }
+    const y = interbaseYs[i]
     if (y !== row) {
       continue
     }
-    const pos = insertionPositions[i]
+    const pos = interbasePositions[i]
     if (pos !== undefined) {
-      const len = insertionLengths[i] ?? 0
+      const len = interbaseLengths[i] ?? 0
       const type = getInsertionType(len, pxPerBp)
       if (type === 'small') {
         const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
@@ -327,7 +328,7 @@ export function hitTestCigarItem(
             index: i,
             position: regionStart + pos,
             length: len,
-            sequence: insertionSequences[i] || undefined,
+            sequence: interbaseSequences[i] || undefined,
           }
         }
       }
@@ -360,14 +361,17 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check softclips
-  for (let i = 0; i < numSoftclips; i++) {
-    const y = softclipYs[i]
+  // Check softclips - type 2
+  for (let i = 0; i < numInterbases; i++) {
+    if (interbaseTypes[i] !== 2) {
+      continue
+    }
+    const y = interbaseYs[i]
     if (y !== row) {
       continue
     }
-    const pos = softclipPositions[i]
-    const len = softclipLengths[i]
+    const pos = interbasePositions[i]
+    const len = interbaseLengths[i]
     // Softclips are rendered as blocks starting at their position
     if (
       pos !== undefined &&
@@ -384,14 +388,17 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check hardclips
-  for (let i = 0; i < numHardclips; i++) {
-    const y = hardclipYs[i]
+  // Check hardclips - type 3
+  for (let i = 0; i < numInterbases; i++) {
+    if (interbaseTypes[i] !== 3) {
+      continue
+    }
+    const y = interbaseYs[i]
     if (y !== row) {
       continue
     }
-    const pos = hardclipPositions[i]
-    const len = hardclipLengths[i]
+    const pos = interbasePositions[i]
+    const len = interbaseLengths[i]
     // Hardclips are rendered as markers at their position
     if (pos !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
       return {

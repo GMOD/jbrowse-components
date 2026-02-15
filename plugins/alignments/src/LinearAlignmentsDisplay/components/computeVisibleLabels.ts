@@ -112,13 +112,20 @@ export function computeVisibleLabels(
       }
     }
 
-    // Process insertions
-    const { insertionPositions, insertionYs, insertionLengths, numInsertions } =
-      rpcData
-    for (let i = 0; i < numInsertions; i++) {
-      const posOffset = insertionPositions[i]!
-      const length = insertionLengths[i]!
-      const y = insertionYs[i]!
+    // Process interbase features (insertions, softclips, hardclips)
+    const {
+      interbasePositions,
+      interbaseYs,
+      interbaseLengths,
+      interbaseTypes,
+      numInterbases,
+    } = rpcData
+
+    for (let i = 0; i < numInterbases; i++) {
+      const posOffset = interbasePositions[i]!
+      const length = interbaseLengths[i]!
+      const y = interbaseYs[i]!
+      const type = interbaseTypes[i]! // 1=insertion, 2=softclip, 3=hardclip
 
       const pos = regionStart + posOffset
 
@@ -134,50 +141,31 @@ export function computeVisibleLabels(
         continue
       }
 
-      const insertionType = getInsertionType(length, pxPerBp)
+      // Type 1 = insertion
+      if (type === 1) {
+        const insertionType = getInsertionType(length, pxPerBp)
 
-      if (insertionType === 'large' && canRenderText) {
-        labels.push({
-          type: 'insertion',
-          x: xPx,
-          y: yPx,
-          text: String(length),
-          width: 0,
-        })
-      } else if (insertionType === 'small' && canRenderText) {
-        labels.push({
-          type: 'insertion',
-          x: xPx + 3,
-          y: yPx,
-          text: `(${length})`,
-          width: 0,
-        })
+        if (insertionType === 'large' && canRenderText) {
+          labels.push({
+            type: 'insertion',
+            x: xPx,
+            y: yPx,
+            text: String(length),
+            width: 0,
+          })
+        } else if (insertionType === 'small' && canRenderText) {
+          labels.push({
+            type: 'insertion',
+            x: xPx + 3,
+            y: yPx,
+            text: `(${length})`,
+            width: 0,
+          })
+        }
       }
-    }
 
-    // Process soft clips
-    const { softclipPositions, softclipYs, softclipLengths, numSoftclips } =
-      rpcData
-    if (canRenderText) {
-      for (let i = 0; i < numSoftclips; i++) {
-        const posOffset = softclipPositions[i]!
-        const length = softclipLengths[i]!
-        const y = softclipYs[i]!
-
-        const pos = regionStart + posOffset
-
-        if (pos < blockStart || pos > blockEnd) {
-          continue
-        }
-
-        const xPx = (pos - blockStart) / bpPerPx + blockScreenOffsetPx
-        const yPx =
-          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
-
-        if (yPx < pileupYOffset || yPx > height) {
-          continue
-        }
-
+      // Type 2 = softclip
+      if (type === 2 && canRenderText) {
         labels.push({
           type: 'softclip',
           x: xPx,
@@ -186,31 +174,9 @@ export function computeVisibleLabels(
           width: 0,
         })
       }
-    }
 
-    // Process hard clips
-    const { hardclipPositions, hardclipYs, hardclipLengths, numHardclips } =
-      rpcData
-    if (canRenderText) {
-      for (let i = 0; i < numHardclips; i++) {
-        const posOffset = hardclipPositions[i]!
-        const length = hardclipLengths[i]!
-        const y = hardclipYs[i]!
-
-        const pos = regionStart + posOffset
-
-        if (pos < blockStart || pos > blockEnd) {
-          continue
-        }
-
-        const xPx = (pos - blockStart) / bpPerPx + blockScreenOffsetPx
-        const yPx =
-          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
-
-        if (yPx < pileupYOffset || yPx > height) {
-          continue
-        }
-
+      // Type 3 = hardclip
+      if (type === 3 && canRenderText) {
         labels.push({
           type: 'hardclip',
           x: xPx,

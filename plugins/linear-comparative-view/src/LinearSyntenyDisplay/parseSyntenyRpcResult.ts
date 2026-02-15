@@ -1,6 +1,9 @@
 import { parseCigar } from '@jbrowse/plugin-alignments'
 
 import type { FeatPos } from './model.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+
+export type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 export interface SyntenyRpcResult {
   p11_offsetPx: Float64Array
@@ -25,6 +28,7 @@ export interface SyntenyRpcResult {
     name: string
     assemblyName: string
   }[]
+  instanceData: SyntenyInstanceData
 }
 
 export function parseSyntenyRpcResult(result: SyntenyRpcResult) {

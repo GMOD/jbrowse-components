@@ -58,12 +58,12 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-type SnpCountEntry = {
+interface SnpCountEntry {
   baseCounts: Record<string, number>
   strandBaseCounts: Record<string, { fwd: number; rev: number }>
 }
 
-type ModificationColorEntry = {
+interface ModificationColorEntry {
   r: number
   g: number
   b: number
@@ -731,9 +731,7 @@ export async function executeRenderWebGLPileupData({
     readArrays,
     gapArrays,
     mismatchArrays,
-    insertionArrays,
-    softclipArrays,
-    hardclipArrays,
+    interbaseArrays,
     modificationArrays,
   } = await updateStatus('Computing layout', statusCallback, async () => {
     const layout = sortedBy
@@ -805,44 +803,55 @@ export async function executeRenderWebGLPileupData({
       mismatchStrands[i] = mm.strand
     }
 
-    // Filter insertions to only include those at or after regionStart (avoid Uint32 underflow)
+    // Combine insertions, softclips, and hardclips into unified interbase arrays
+    // These three types have identical structure, so combining reduces memory and transfer overhead
     const filteredInsertions = insertions.filter(
       ins => ins.position >= regionStart,
     )
-    const insertionPositions = new Uint32Array(filteredInsertions.length)
-    const insertionYs = new Uint16Array(filteredInsertions.length)
-    const insertionLengths = new Uint16Array(filteredInsertions.length)
-    const insertionSequences: string[] = []
-    for (const [i, ins] of filteredInsertions.entries()) {
-      const y = layout.get(ins.featureId) ?? 0
-      insertionPositions[i] = ins.position - regionStart
-      insertionYs[i] = y
-      insertionLengths[i] = Math.min(65535, ins.length)
-      insertionSequences.push(ins.sequence ?? '')
-    }
-
-    // Filter softclips to only include those at or after regionStart (avoid Uint32 underflow)
     const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
-    const softclipPositions = new Uint32Array(filteredSoftclips.length)
-    const softclipYs = new Uint16Array(filteredSoftclips.length)
-    const softclipLengths = new Uint16Array(filteredSoftclips.length)
-    for (const [i, sc] of filteredSoftclips.entries()) {
-      const y = layout.get(sc.featureId) ?? 0
-      softclipPositions[i] = sc.position - regionStart
-      softclipYs[i] = y
-      softclipLengths[i] = Math.min(65535, sc.length)
-    }
-
-    // Filter hardclips to only include those at or after regionStart (avoid Uint32 underflow)
     const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
-    const hardclipPositions = new Uint32Array(filteredHardclips.length)
-    const hardclipYs = new Uint16Array(filteredHardclips.length)
-    const hardclipLengths = new Uint16Array(filteredHardclips.length)
-    for (const [i, hc] of filteredHardclips.entries()) {
+
+    const totalInterbases =
+      filteredInsertions.length +
+      filteredSoftclips.length +
+      filteredHardclips.length
+
+    const interbasePositions = new Uint32Array(totalInterbases)
+    const interbaseYs = new Uint16Array(totalInterbases)
+    const interbaseLengths = new Uint16Array(totalInterbases)
+    const interbaseTypes = new Uint8Array(totalInterbases) // 1=insertion, 2=softclip, 3=hardclip
+    const interbaseSequences: string[] = []
+
+    let idx = 0
+    // Add insertions (type 1)
+    for (const ins of filteredInsertions) {
+      const y = layout.get(ins.featureId) ?? 0
+      interbasePositions[idx] = ins.position - regionStart
+      interbaseYs[idx] = y
+      interbaseLengths[idx] = Math.min(65535, ins.length)
+      interbaseTypes[idx] = 1
+      interbaseSequences.push(ins.sequence ?? '')
+      idx++
+    }
+    // Add softclips (type 2)
+    for (const sc of filteredSoftclips) {
+      const y = layout.get(sc.featureId) ?? 0
+      interbasePositions[idx] = sc.position - regionStart
+      interbaseYs[idx] = y
+      interbaseLengths[idx] = Math.min(65535, sc.length)
+      interbaseTypes[idx] = 2
+      interbaseSequences.push('') // clips have no sequence
+      idx++
+    }
+    // Add hardclips (type 3)
+    for (const hc of filteredHardclips) {
       const y = layout.get(hc.featureId) ?? 0
-      hardclipPositions[i] = hc.position - regionStart
-      hardclipYs[i] = y
-      hardclipLengths[i] = Math.min(65535, hc.length)
+      interbasePositions[idx] = hc.position - regionStart
+      interbaseYs[idx] = y
+      interbaseLengths[idx] = Math.min(65535, hc.length)
+      interbaseTypes[idx] = 3
+      interbaseSequences.push('') // clips have no sequence
+      idx++
     }
 
     // Filter modifications to only include those at or after regionStart
@@ -882,14 +891,13 @@ export async function executeRenderWebGLPileupData({
         mismatchBases,
         mismatchStrands,
       },
-      insertionArrays: {
-        insertionPositions,
-        insertionYs,
-        insertionLengths,
-        insertionSequences,
+      interbaseArrays: {
+        interbasePositions,
+        interbaseYs,
+        interbaseLengths,
+        interbaseTypes,
+        interbaseSequences,
       },
-      softclipArrays: { softclipPositions, softclipYs, softclipLengths },
-      hardclipArrays: { hardclipPositions, hardclipYs, hardclipLengths },
       modificationArrays: {
         modificationPositions,
         modificationYs,
@@ -916,18 +924,8 @@ export async function executeRenderWebGLPileupData({
     coverage.depths,
     coverage.startOffset,
   )
-  const insertionFrequencies = computePositionFrequencies(
-    insertionArrays.insertionPositions,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  const softclipFrequencies = computePositionFrequencies(
-    softclipArrays.softclipPositions,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  const hardclipFrequencies = computePositionFrequencies(
-    hardclipArrays.hardclipPositions,
+  const interbaseFrequencies = computePositionFrequencies(
+    interbaseArrays.interbasePositions,
     coverage.depths,
     coverage.startOffset,
   )
@@ -1001,12 +999,8 @@ export async function executeRenderWebGLPileupData({
     gapFrequencies,
     ...mismatchArrays,
     mismatchFrequencies,
-    ...insertionArrays,
-    insertionFrequencies,
-    ...softclipArrays,
-    softclipFrequencies,
-    ...hardclipArrays,
-    hardclipFrequencies,
+    ...interbaseArrays,
+    interbaseFrequencies,
     ...modificationArrays,
 
     readTagColors: tagColors,
@@ -1048,9 +1042,7 @@ export async function executeRenderWebGLPileupData({
     // Use actual array lengths (may be filtered to exclude positions before regionStart)
     numGaps: gapArrays.gapPositions.length / 2,
     numMismatches: mismatchArrays.mismatchPositions.length,
-    numInsertions: insertionArrays.insertionPositions.length,
-    numSoftclips: softclipArrays.softclipPositions.length,
-    numHardclips: hardclipArrays.hardclipPositions.length,
+    numInterbases: interbaseArrays.interbasePositions.length,
     numCoverageBins: coverage.depths.length,
     numModifications: modificationArrays.modificationPositions.length,
     numSnpSegments: snpCoverage.count,
@@ -1085,18 +1077,11 @@ export async function executeRenderWebGLPileupData({
     result.mismatchBases.buffer,
     result.mismatchStrands.buffer,
     result.mismatchFrequencies.buffer,
-    result.insertionPositions.buffer,
-    result.insertionYs.buffer,
-    result.insertionLengths.buffer,
-    result.insertionFrequencies.buffer,
-    result.softclipPositions.buffer,
-    result.softclipYs.buffer,
-    result.softclipLengths.buffer,
-    result.softclipFrequencies.buffer,
-    result.hardclipPositions.buffer,
-    result.hardclipYs.buffer,
-    result.hardclipLengths.buffer,
-    result.hardclipFrequencies.buffer,
+    result.interbasePositions.buffer,
+    result.interbaseYs.buffer,
+    result.interbaseLengths.buffer,
+    result.interbaseTypes.buffer,
+    result.interbaseFrequencies.buffer,
     result.coverageDepths.buffer,
     result.snpPositions.buffer,
     result.snpYOffsets.buffer,

@@ -629,9 +629,7 @@ export async function executeRenderWebGLChainData({
     readArrays,
     gapArrays,
     mismatchArrays,
-    insertionArrays,
-    softclipArrays,
-    hardclipArrays,
+    interbaseArrays,
     modificationArrays,
     connectingLineArrays,
     chainFlatbushData,
@@ -749,41 +747,52 @@ export async function executeRenderWebGLChainData({
       mismatchStrands[i] = mm.strand
     }
 
+    // Combine insertions, softclips, and hardclips into unified interbase arrays
     const regionInsertions = insertions.filter(
       ins => ins.position >= regionStart,
     )
-    const insertionPositions = new Uint32Array(regionInsertions.length)
-    const insertionYs = new Uint16Array(regionInsertions.length)
-    const insertionLengths = new Uint16Array(regionInsertions.length)
-    const insertionSequences: string[] = []
-    for (const [i, ins] of regionInsertions.entries()) {
-      const y = featureIdToY.get(ins.featureId) ?? 0
-      insertionPositions[i] = ins.position - regionStart
-      insertionYs[i] = y
-      insertionLengths[i] = Math.min(65535, ins.length)
-      insertionSequences.push(ins.sequence ?? '')
-    }
-
     const regionSoftclips = softclips.filter(sc => sc.position >= regionStart)
-    const softclipPositions = new Uint32Array(regionSoftclips.length)
-    const softclipYs = new Uint16Array(regionSoftclips.length)
-    const softclipLengths = new Uint16Array(regionSoftclips.length)
-    for (const [i, sc] of regionSoftclips.entries()) {
-      const y = featureIdToY.get(sc.featureId) ?? 0
-      softclipPositions[i] = sc.position - regionStart
-      softclipYs[i] = y
-      softclipLengths[i] = Math.min(65535, sc.length)
-    }
-
     const regionHardclips = hardclips.filter(hc => hc.position >= regionStart)
-    const hardclipPositions = new Uint32Array(regionHardclips.length)
-    const hardclipYs = new Uint16Array(regionHardclips.length)
-    const hardclipLengths = new Uint16Array(regionHardclips.length)
-    for (const [i, hc] of regionHardclips.entries()) {
+
+    const totalInterbases =
+      regionInsertions.length + regionSoftclips.length + regionHardclips.length
+
+    const interbasePositions = new Uint32Array(totalInterbases)
+    const interbaseYs = new Uint16Array(totalInterbases)
+    const interbaseLengths = new Uint16Array(totalInterbases)
+    const interbaseTypes = new Uint8Array(totalInterbases) // 1=insertion, 2=softclip, 3=hardclip
+    const interbaseSequences: string[] = []
+
+    let idx = 0
+    // Add insertions (type 1)
+    for (const ins of regionInsertions) {
+      const y = featureIdToY.get(ins.featureId) ?? 0
+      interbasePositions[idx] = ins.position - regionStart
+      interbaseYs[idx] = y
+      interbaseLengths[idx] = Math.min(65535, ins.length)
+      interbaseTypes[idx] = 1
+      interbaseSequences.push(ins.sequence ?? '')
+      idx++
+    }
+    // Add softclips (type 2)
+    for (const sc of regionSoftclips) {
+      const y = featureIdToY.get(sc.featureId) ?? 0
+      interbasePositions[idx] = sc.position - regionStart
+      interbaseYs[idx] = y
+      interbaseLengths[idx] = Math.min(65535, sc.length)
+      interbaseTypes[idx] = 2
+      interbaseSequences.push('')
+      idx++
+    }
+    // Add hardclips (type 3)
+    for (const hc of regionHardclips) {
       const y = featureIdToY.get(hc.featureId) ?? 0
-      hardclipPositions[i] = hc.position - regionStart
-      hardclipYs[i] = y
-      hardclipLengths[i] = Math.min(65535, hc.length)
+      interbasePositions[idx] = hc.position - regionStart
+      interbaseYs[idx] = y
+      interbaseLengths[idx] = Math.min(65535, hc.length)
+      interbaseTypes[idx] = 3
+      interbaseSequences.push('')
+      idx++
     }
 
     const regionModifications = modifications.filter(
@@ -888,14 +897,13 @@ export async function executeRenderWebGLChainData({
         mismatchBases,
         mismatchStrands,
       },
-      insertionArrays: {
-        insertionPositions,
-        insertionYs,
-        insertionLengths,
-        insertionSequences,
+      interbaseArrays: {
+        interbasePositions,
+        interbaseYs,
+        interbaseLengths,
+        interbaseTypes,
+        interbaseSequences,
       },
-      softclipArrays: { softclipPositions, softclipYs, softclipLengths },
-      hardclipArrays: { hardclipPositions, hardclipYs, hardclipLengths },
       modificationArrays: {
         modificationPositions,
         modificationYs,
@@ -930,18 +938,8 @@ export async function executeRenderWebGLChainData({
     coverage.depths,
     coverage.startOffset,
   )
-  const insertionFrequencies = computePositionFrequencies(
-    insertionArrays.insertionPositions,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  const softclipFrequencies = computePositionFrequencies(
-    softclipArrays.softclipPositions,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  const hardclipFrequencies = computePositionFrequencies(
-    hardclipArrays.hardclipPositions,
+  const interbaseFrequencies = computePositionFrequencies(
+    interbaseArrays.interbasePositions,
     coverage.depths,
     coverage.startOffset,
   )
@@ -989,12 +987,8 @@ export async function executeRenderWebGLChainData({
     gapFrequencies,
     ...mismatchArrays,
     mismatchFrequencies,
-    ...insertionArrays,
-    insertionFrequencies,
-    ...softclipArrays,
-    softclipFrequencies,
-    ...hardclipArrays,
-    hardclipFrequencies,
+    ...interbaseArrays,
+    interbaseFrequencies,
     ...modificationArrays,
 
     readTagColors: tagColors,
@@ -1043,9 +1037,7 @@ export async function executeRenderWebGLChainData({
     numReads: features.length,
     numGaps: gapArrays.gapPositions.length / 2,
     numMismatches: mismatchArrays.mismatchPositions.length,
-    numInsertions: insertionArrays.insertionPositions.length,
-    numSoftclips: softclipArrays.softclipPositions.length,
-    numHardclips: hardclipArrays.hardclipPositions.length,
+    numInterbases: interbaseArrays.interbasePositions.length,
     numCoverageBins: coverage.depths.length,
     numModifications: modificationArrays.modificationPositions.length,
     numSnpSegments: snpCoverage.count,
@@ -1078,18 +1070,11 @@ export async function executeRenderWebGLChainData({
     result.mismatchBases.buffer,
     result.mismatchStrands.buffer,
     result.mismatchFrequencies.buffer,
-    result.insertionPositions.buffer,
-    result.insertionYs.buffer,
-    result.insertionLengths.buffer,
-    result.insertionFrequencies.buffer,
-    result.softclipPositions.buffer,
-    result.softclipYs.buffer,
-    result.softclipLengths.buffer,
-    result.softclipFrequencies.buffer,
-    result.hardclipPositions.buffer,
-    result.hardclipYs.buffer,
-    result.hardclipLengths.buffer,
-    result.hardclipFrequencies.buffer,
+    result.interbasePositions.buffer,
+    result.interbaseYs.buffer,
+    result.interbaseLengths.buffer,
+    result.interbaseTypes.buffer,
+    result.interbaseFrequencies.buffer,
     result.coverageDepths.buffer,
     result.snpPositions.buffer,
     result.snpYOffsets.buffer,

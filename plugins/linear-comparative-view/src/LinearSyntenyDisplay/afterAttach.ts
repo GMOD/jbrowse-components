@@ -8,24 +8,21 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { createColorFunction } from './drawSyntenyWebGL.ts'
 import { parseSyntenyRpcResult } from './parseSyntenyRpcResult.ts'
 
-import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
+import type { LinearSyntenyDisplayModel } from './model.ts'
+import type {
+  SyntenyInstanceData,
+  SyntenyRpcResult,
+} from './parseSyntenyRpcResult.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-import type { SyntenyRpcResult } from './parseSyntenyRpcResult.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
-  let lastGeometryKey = ''
-  let lastFeatPositions: FeatPos[] = []
+  let lastInstanceData: SyntenyInstanceData | undefined
   let lastRenderer: unknown = null
-  // bpPerPx values at which featPositions were computed (by the RPC).
-  // buildGeometry uses these as the "reference" so the shader's scale
-  // compensation (geometryBpPerPx / currentBpPerPx) is correct.
-  let featPositionsBpPerPxs: number[] = []
   let currentStopToken: StopToken | undefined
 
   addDisposer(
@@ -38,15 +35,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const view = getContainingView(self) as LinearSyntenyViewModel
         if (
           !view.initialized ||
-          !view.views.every(
-            a => a.displayedRegions.length > 0 && a.initialized,
-          )
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
           return
         }
 
-        const { alpha, colorBy, featPositions, level, minAlignmentLength } =
-          self
+        const { alpha, featPositions, level, minAlignmentLength } = self
+        const webglInstanceData = self.webglInstanceData
         const height = self.height
         const width = view.width
         const isScrolling =
@@ -59,36 +54,20 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        // Reset geometry key when renderer changes (e.g. React StrictMode
-        // re-creates the renderer)
         if (self.webglRenderer !== lastRenderer) {
-          lastGeometryKey = ''
+          lastInstanceData = undefined
           lastRenderer = self.webglRenderer
         }
 
-        const geometryKey = `${featPositions.length}-${colorBy}-${view.drawCurves}-${view.drawCIGAR}-${view.drawCIGARMatchesOnly}-${view.drawLocationMarkers}`
-
-        // Always resize in case dimensions changed
         self.webglRenderer.resize(width, height)
 
-        if (
-          geometryKey !== lastGeometryKey ||
-          featPositions !== lastFeatPositions
-        ) {
-          lastGeometryKey = geometryKey
-          lastFeatPositions = featPositions
-          const colorFn = createColorFunction(colorBy)
-          self.webglRenderer.buildGeometry(
-            featPositions,
-            level,
-            colorBy,
-            colorFn,
-            view.drawCurves,
-            view.drawCIGAR,
-            view.drawCIGARMatchesOnly,
-            featPositionsBpPerPxs,
-            view.drawLocationMarkers,
-          )
+        if (webglInstanceData && webglInstanceData !== lastInstanceData) {
+          lastInstanceData = webglInstanceData
+          self.webglRenderer.uploadGeometry(webglInstanceData, view.drawCurves)
+        }
+
+        if (!featPositions.length) {
+          return
         }
 
         const o0 = view.views[level]!.offsetPx
@@ -129,9 +108,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const view = getContainingView(self) as LSV
         if (
           !view.initialized ||
-          !view.views.every(
-            a => a.displayedRegions.length > 0 && a.initialized,
-          )
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
           return
         }
@@ -140,6 +117,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         JSON.stringify(view.views.map(v => v.displayedRegions))
         view.views.map(v => v.bpPerPx)
         view.views.map(v => v.staticBlocks.contentBlocks.map(b => b.key))
+
+        // Track rendering settings so RPC re-fires when they change
+        const colorBy = self.colorBy
+        const drawCurves = view.drawCurves
+        const drawCIGAR = view.drawCIGAR
+        const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
+        const drawLocationMarkers = view.drawLocationMarkers
 
         if (debounceTimer) {
           clearTimeout(debounceTimer)
@@ -156,6 +140,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             const { level, adapterConfig } = self
             const { rpcManager } = getSession(self)
             const view = getContainingView(self) as LSV
+            if (
+              !view.initialized ||
+              !view.views.every(
+                a => a.displayedRegions.length > 0 && a.initialized,
+              )
+            ) {
+              return
+            }
             const sessionId = getRpcSessionId(self)
 
             const viewSnaps = view.views.map(v => ({
@@ -183,6 +175,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 level,
                 sessionId,
                 stopToken: thisStopToken,
+                colorBy,
+                drawCurves,
+                drawCIGAR,
+                drawCIGARMatchesOnly,
+                drawLocationMarkers,
               },
             )) as SyntenyRpcResult
 
@@ -190,8 +187,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               return
             }
 
-            featPositionsBpPerPxs = viewSnaps.map(v => v.bpPerPx)
-            self.setFeatPositions(parseSyntenyRpcResult(result))
+            const featPositions = parseSyntenyRpcResult(result)
+            self.setFeatPositions(featPositions)
+            self.setWebglInstanceData(result.instanceData)
+
+            console.log('[WebGL Synteny] RPC result processed:', {
+              featPositionsCount: featPositions.length,
+              instanceDataCount: result.instanceData?.instanceCount,
+            })
           } catch (e) {
             if (!isAbortException(e)) {
               if (isAlive(self)) {

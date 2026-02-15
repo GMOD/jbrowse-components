@@ -886,21 +886,12 @@ export class WebGLRenderer {
     mismatchBases: Uint8Array
     mismatchFrequencies: Uint8Array
     numMismatches: number
-    insertionPositions: Uint32Array
-    insertionYs: Uint16Array
-    insertionLengths: Uint16Array
-    insertionFrequencies: Uint8Array
-    numInsertions: number
-    softclipPositions: Uint32Array
-    softclipYs: Uint16Array
-    softclipLengths: Uint16Array
-    softclipFrequencies: Uint8Array
-    numSoftclips: number
-    hardclipPositions: Uint32Array
-    hardclipYs: Uint16Array
-    hardclipLengths: Uint16Array
-    hardclipFrequencies: Uint8Array
-    numHardclips: number
+    interbasePositions: Uint32Array
+    interbaseYs: Uint16Array
+    interbaseLengths: Uint16Array
+    interbaseTypes: Uint8Array
+    interbaseFrequencies: Uint8Array
+    numInterbases: number
   }) {
     const gl = this.gl
 
@@ -982,95 +973,124 @@ export class WebGLRenderer {
       this.buffers.mismatchCount = 0
     }
 
+    // Filter combined interbase arrays by type and upload to separate programs
+    // Type 1=insertion, 2=softclip, 3=hardclip
+    const insertionIndices: number[] = []
+    const softclipIndices: number[] = []
+    const hardclipIndices: number[] = []
+
+    for (let i = 0; i < data.numInterbases; i++) {
+      const type = data.interbaseTypes[i]
+      if (type === 1) {
+        insertionIndices.push(i)
+      } else if (type === 2) {
+        softclipIndices.push(i)
+      } else if (type === 3) {
+        hardclipIndices.push(i)
+      }
+    }
+
     // Upload insertions - use integer buffers directly
-    if (data.numInsertions > 0) {
+    if (insertionIndices.length > 0) {
       const insertionVAO = gl.createVertexArray()
       gl.bindVertexArray(insertionVAO)
-      this.uploadUintBuffer(
-        this.insertionProgram,
-        'a_position',
-        data.insertionPositions,
-        1,
-      )
-      this.uploadUint16Buffer(this.insertionProgram, 'a_y', data.insertionYs, 1)
-      this.uploadUint16Buffer(
-        this.insertionProgram,
-        'a_length',
-        data.insertionLengths,
-        1,
-      )
+
+      const positions = new Uint32Array(insertionIndices.length)
+      const ys = new Uint16Array(insertionIndices.length)
+      const lengths = new Uint16Array(insertionIndices.length)
+      const frequencies = new Uint8Array(insertionIndices.length)
+
+      for (const [j, insertionIndex] of insertionIndices.entries()) {
+        const i = insertionIndex
+        positions[j] = data.interbasePositions[i]!
+        ys[j] = data.interbaseYs[i]!
+        lengths[j] = data.interbaseLengths[i]!
+        frequencies[j] = data.interbaseFrequencies[i]!
+      }
+
+      this.uploadUintBuffer(this.insertionProgram, 'a_position', positions, 1)
+      this.uploadUint16Buffer(this.insertionProgram, 'a_y', ys, 1)
+      this.uploadUint16Buffer(this.insertionProgram, 'a_length', lengths, 1)
       this.uploadNormalizedUint8Buffer(
         this.insertionProgram,
         'a_frequency',
-        data.insertionFrequencies,
+        frequencies,
         1,
       )
       gl.bindVertexArray(null)
 
       this.buffers.insertionVAO = insertionVAO
-      this.buffers.insertionCount = data.numInsertions
+      this.buffers.insertionCount = insertionIndices.length
     } else {
       this.buffers.insertionCount = 0
     }
 
     // Upload soft clips - use integer buffers directly
-    if (data.numSoftclips > 0) {
+    if (softclipIndices.length > 0) {
       const softclipVAO = gl.createVertexArray()
       gl.bindVertexArray(softclipVAO)
-      this.uploadUintBuffer(
-        this.softclipProgram,
-        'a_position',
-        data.softclipPositions,
-        1,
-      )
-      this.uploadUint16Buffer(this.softclipProgram, 'a_y', data.softclipYs, 1)
-      this.uploadUint16Buffer(
-        this.softclipProgram,
-        'a_length',
-        data.softclipLengths,
-        1,
-      )
+
+      const positions = new Uint32Array(softclipIndices.length)
+      const ys = new Uint16Array(softclipIndices.length)
+      const lengths = new Uint16Array(softclipIndices.length)
+      const frequencies = new Uint8Array(softclipIndices.length)
+
+      for (const [j, softclipIndex] of softclipIndices.entries()) {
+        const i = softclipIndex
+        positions[j] = data.interbasePositions[i]!
+        ys[j] = data.interbaseYs[i]!
+        lengths[j] = data.interbaseLengths[i]!
+        frequencies[j] = data.interbaseFrequencies[i]!
+      }
+
+      this.uploadUintBuffer(this.softclipProgram, 'a_position', positions, 1)
+      this.uploadUint16Buffer(this.softclipProgram, 'a_y', ys, 1)
+      this.uploadUint16Buffer(this.softclipProgram, 'a_length', lengths, 1)
       this.uploadNormalizedUint8Buffer(
         this.softclipProgram,
         'a_frequency',
-        data.softclipFrequencies,
+        frequencies,
         1,
       )
       gl.bindVertexArray(null)
 
       this.buffers.softclipVAO = softclipVAO
-      this.buffers.softclipCount = data.numSoftclips
+      this.buffers.softclipCount = softclipIndices.length
     } else {
       this.buffers.softclipCount = 0
     }
 
     // Upload hard clips - use integer buffers directly
-    if (data.numHardclips > 0) {
+    if (hardclipIndices.length > 0) {
       const hardclipVAO = gl.createVertexArray()
       gl.bindVertexArray(hardclipVAO)
-      this.uploadUintBuffer(
-        this.hardclipProgram,
-        'a_position',
-        data.hardclipPositions,
-        1,
-      )
-      this.uploadUint16Buffer(this.hardclipProgram, 'a_y', data.hardclipYs, 1)
-      this.uploadUint16Buffer(
-        this.hardclipProgram,
-        'a_length',
-        data.hardclipLengths,
-        1,
-      )
+
+      const positions = new Uint32Array(hardclipIndices.length)
+      const ys = new Uint16Array(hardclipIndices.length)
+      const lengths = new Uint16Array(hardclipIndices.length)
+      const frequencies = new Uint8Array(hardclipIndices.length)
+
+      for (const [j, hardclipIndex] of hardclipIndices.entries()) {
+        const i = hardclipIndex
+        positions[j] = data.interbasePositions[i]!
+        ys[j] = data.interbaseYs[i]!
+        lengths[j] = data.interbaseLengths[i]!
+        frequencies[j] = data.interbaseFrequencies[i]!
+      }
+
+      this.uploadUintBuffer(this.hardclipProgram, 'a_position', positions, 1)
+      this.uploadUint16Buffer(this.hardclipProgram, 'a_y', ys, 1)
+      this.uploadUint16Buffer(this.hardclipProgram, 'a_length', lengths, 1)
       this.uploadNormalizedUint8Buffer(
         this.hardclipProgram,
         'a_frequency',
-        data.hardclipFrequencies,
+        frequencies,
         1,
       )
       gl.bindVertexArray(null)
 
       this.buffers.hardclipVAO = hardclipVAO
-      this.buffers.hardclipCount = data.numHardclips
+      this.buffers.hardclipCount = hardclipIndices.length
     } else {
       this.buffers.hardclipCount = 0
     }

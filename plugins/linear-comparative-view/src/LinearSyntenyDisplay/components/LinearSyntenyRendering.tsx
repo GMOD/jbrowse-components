@@ -152,13 +152,38 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   useEffect(() => {
     const canvas = webglCanvasRef.current
     if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        model.webglRenderer?.dispose()
+      const lostHandler = (event: Event) => {
+        console.error('[WebGL Synteny] Context lost!', {
+          canvasSize: `${canvas.width}x${canvas.height}`,
+          clientSize: `${canvas.clientWidth}x${canvas.clientHeight}`,
+          instanceCount: model.webglRenderer?.getInstanceCount(),
+          event,
+        })
+        if (model.webglRenderer) {
+          model.webglRenderer.dispose()
+        }
+      }
+
+      const restoredHandler = () => {
+        console.log('[WebGL Synteny] Context restored, reinitializing...')
         const newRenderer = new SyntenyWebGLRenderer()
         const success = newRenderer.init(canvas)
         model.setWebGLRenderer(newRenderer)
         model.setWebGLInitialized(success)
-      })
+        if (success) {
+          console.log('[WebGL Synteny] Context successfully restored')
+        } else {
+          console.error('[WebGL Synteny] Failed to restore context')
+        }
+      }
+
+      canvas.addEventListener('webglcontextlost', lostHandler)
+      canvas.addEventListener('webglcontextrestored', restoredHandler)
+
+      return () => {
+        canvas.removeEventListener('webglcontextlost', lostHandler)
+        canvas.removeEventListener('webglcontextrestored', restoredHandler)
+      }
     }
     return undefined
   }, [model])
@@ -228,13 +253,18 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       setCurrX(clientX)
       setCurrY(clientY)
 
-      const feat = handleWebGLPick(x, y)
-      if (feat) {
-        model.setMouseoverId(feat.id)
-        setTooltip(getTooltip(feat))
-      } else {
+      if (model.isScrolling) {
         model.setMouseoverId(undefined)
         setTooltip('')
+      } else {
+        const feat = handleWebGLPick(x, y)
+        if (feat) {
+          model.setMouseoverId(feat.id)
+          setTooltip(getTooltip(feat))
+        } else {
+          model.setMouseoverId(undefined)
+          setTooltip('')
+        }
       }
     },
     [view, model, mouseCurrDownX, handleWebGLPick],

@@ -4,12 +4,10 @@ import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay/index.ts'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView.ts'
-import LinearComparativeDisplayF from './LinearComparativeDisplay/index.ts'
 import LinearComparativeViewF from './LinearComparativeView/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
-import { SyntenyGetWebGLGeometry } from './LinearSyntenyRPC/SyntenyGetWebGLGeometry.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
@@ -28,14 +26,12 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LinearSyntenyViewHelperF(pluginManager)
     LinearComparativeViewF(pluginManager)
     LinearSyntenyViewF(pluginManager)
-    LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)
-    pluginManager.addRpcMethod(() => new SyntenyGetWebGLGeometry(pluginManager))
     pluginManager.addRpcMethod(
       () => new SyntenyGetFeaturesAndPositions(pluginManager),
     )

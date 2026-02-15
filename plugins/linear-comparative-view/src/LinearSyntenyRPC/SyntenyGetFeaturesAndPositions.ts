@@ -20,6 +20,11 @@ export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
       level: number
       sessionId: string
       stopToken?: string
+      colorBy?: string
+      drawCurves?: boolean
+      drawCIGAR?: boolean
+      drawCIGARMatchesOnly?: boolean
+      drawLocationMarkers?: boolean
     },
     rpcDriverClassName: string,
   ) {

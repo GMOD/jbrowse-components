@@ -1,11 +1,12 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
-import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyWebGLRenderer } from './drawSyntenyWebGL.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -41,13 +42,13 @@ export interface FeatPos {
 /**
  * #stateModel LinearSyntenyDisplay
  * extends
- * - [LinearComparativeDisplay](../linearcomparativedisplay)
+ * - [BaseDisplay](../basedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearSyntenyDisplay',
-      baseModelFactory(configSchema),
+      BaseDisplay,
       types.model({
         /**
          * #property
@@ -98,6 +99,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * currently click'd over feature
        */
       clickId: undefined as string | undefined,
+
+      /**
+       * #volatile
+       */
+      webglInstanceData: undefined as SyntenyInstanceData | undefined,
 
       /**
        * #volatile
@@ -161,6 +167,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setWebglInstanceData(data: SyntenyInstanceData | undefined) {
+        self.webglInstanceData = data
+      },
+      /**
+       * #action
+       */
       setWebGLRenderer(renderer: SyntenyWebGLRenderer | null) {
         self.webglRenderer = renderer
       },
@@ -179,6 +191,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 
     .views(self => ({
+      /**
+       * #getter
+       */
+      get level() {
+        return getParent<{ height: number; level: number }>(self, 4).level
+      },
+      /**
+       * #getter
+       */
+      get height() {
+        return getParent<{ height: number; level: number }>(self, 4).height
+      },
       /**
        * #getter
        */
@@ -305,7 +329,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
+            doAfterAttach(self as typeof self & { afterAttach(): void })
           } catch (e) {
             console.error(e)
             self.setError(e)

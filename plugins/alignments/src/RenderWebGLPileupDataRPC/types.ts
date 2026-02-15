@@ -125,24 +125,14 @@ export interface WebGLPileupDataResult {
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
 
-  // Insertion data - offsets from regionStart
-  insertionPositions: Uint32Array
-  insertionYs: Uint16Array
-  insertionLengths: Uint16Array
-  insertionSequences: string[] // insertion sequences (empty string if unavailable)
-  insertionFrequencies: Uint8Array // 0-255 representing 0-100% frequency
-
-  // Soft clip data - offsets from regionStart
-  softclipPositions: Uint32Array
-  softclipYs: Uint16Array
-  softclipLengths: Uint16Array
-  softclipFrequencies: Uint8Array // 0-255 representing 0-100% frequency
-
-  // Hard clip data - offsets from regionStart
-  hardclipPositions: Uint32Array
-  hardclipYs: Uint16Array
-  hardclipLengths: Uint16Array
-  hardclipFrequencies: Uint8Array // 0-255 representing 0-100% frequency
+  // Interbase data - insertions, soft clips, and hard clips combined (offsets from regionStart)
+  // These three feature types have identical structure, so combining reduces memory and transfer overhead
+  interbasePositions: Uint32Array
+  interbaseYs: Uint16Array
+  interbaseLengths: Uint16Array
+  interbaseTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
+  interbaseSequences: string[] // insertion sequences (empty string for clips or if unavailable)
+  interbaseFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
   // Coverage data - positions computed from regionStart + coverageStartOffset + index * binSize
   // Coverage may extend beyond the requested region to cover full feature extents
@@ -207,9 +197,7 @@ export interface WebGLPileupDataResult {
   numReads: number
   numGaps: number
   numMismatches: number
-  numInsertions: number
-  numSoftclips: number
-  numHardclips: number
+  numInterbases: number
   numCoverageBins: number
   numSnpSegments: number
   numNoncovSegments: number

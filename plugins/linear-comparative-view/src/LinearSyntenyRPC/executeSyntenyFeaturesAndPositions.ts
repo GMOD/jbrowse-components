@@ -1,5 +1,4 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { bpToPx as bpToPxOrig } from '@jbrowse/core/util/Base1DUtils'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -8,24 +7,17 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
 
-function computePaddingPx(self: ViewSnap, regionIndex: number) {
-  const { interRegionPaddingWidth, staticBlocks } = self
-  const blocks = staticBlocks.contentBlocks
-  let paddingCount = 0
-  let currBlock = 0
-  for (let i = 0; i < regionIndex; i++) {
-    if (blocks[currBlock]?.regionNumber === i) {
-      paddingCount++
-      currBlock++
-    }
-  }
-  return paddingCount * interRegionPaddingWidth
-}
-
+// Stable bpToPx that ALWAYS includes inter-region padding for every displayed
+// region, not just those with visible content blocks. The core bpToPx only
+// adds padding for regions with content blocks, which makes pixel positions
+// shift when content blocks change during scroll. Also uses float precision
+// (no Math.round) since the shader uses HP float subtraction.
 function bpToPx({
   self,
   refName,
@@ -37,14 +29,34 @@ function bpToPx({
   coord: number
   regionNumber?: number
 }) {
-  const result = bpToPxOrig({ self, refName, coord, regionNumber })
-  if (result === undefined) {
-    return undefined
+  let bpSoFar = 0
+  const { interRegionPaddingWidth, bpPerPx, displayedRegions } = self
+  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
+
+  let i = 0
+  for (let l = displayedRegions.length; i < l; i++) {
+    const r = displayedRegions[i]!
+    const len = r.end - r.start
+    if (
+      refName === r.refName &&
+      coord >= r.start &&
+      coord <= r.end &&
+      (regionNumber ? regionNumber === i : true)
+    ) {
+      bpSoFar += r.reversed ? r.end - coord : coord - r.start
+      break
+    }
+    bpSoFar += len + interRegionPaddingBp
   }
-  return {
-    ...result,
-    paddingPx: computePaddingPx(self, result.index),
+  const found = displayedRegions[i]
+  if (found) {
+    return {
+      index: i,
+      offsetPx: bpSoFar / bpPerPx,
+      paddingPx: i * interRegionPaddingWidth,
+    }
   }
+  return undefined
 }
 
 export async function executeSyntenyFeaturesAndPositions({
@@ -55,6 +67,11 @@ export async function executeSyntenyFeaturesAndPositions({
   viewSnaps,
   level,
   stopToken,
+  colorBy = 'default',
+  drawCurves = true,
+  drawCIGAR = true,
+  drawCIGARMatchesOnly = false,
+  drawLocationMarkers = false,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -63,6 +80,11 @@ export async function executeSyntenyFeaturesAndPositions({
   viewSnaps: ViewSnap[]
   level: number
   stopToken?: string
+  colorBy?: string
+  drawCurves?: boolean
+  drawCIGAR?: boolean
+  drawCIGARMatchesOnly?: boolean
+  drawLocationMarkers?: boolean
 }) {
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
@@ -161,7 +183,7 @@ export async function executeSyntenyFeaturesAndPositions({
     validCount++
   }
 
-  const result = {
+  const positionData = {
     p11_offsetPx: p11Array.slice(0, validCount),
     p12_offsetPx: p12Array.slice(0, validCount),
     p21_offsetPx: p21Array.slice(0, validCount),
@@ -180,6 +202,23 @@ export async function executeSyntenyFeaturesAndPositions({
     mates,
   }
 
+  const bpPerPxs = viewSnaps.map(v => v.bpPerPx)
+  const instanceData = executeSyntenyInstanceData({
+    ...positionData,
+    colorBy,
+    drawCurves,
+    drawCIGAR,
+    drawCIGARMatchesOnly,
+    drawLocationMarkers,
+    bpPerPxs,
+    level,
+  })
+
+  const result = {
+    ...positionData,
+    instanceData,
+  }
+
   return rpcResult(result, [
     result.p11_offsetPx.buffer,
     result.p12_offsetPx.buffer,
@@ -191,5 +230,15 @@ export async function executeSyntenyFeaturesAndPositions({
     result.identities.buffer,
     result.padTop.buffer,
     result.padBottom.buffer,
+    instanceData.x1.buffer,
+    instanceData.x2.buffer,
+    instanceData.x3.buffer,
+    instanceData.x4.buffer,
+    instanceData.colors.buffer,
+    instanceData.featureIds.buffer,
+    instanceData.isCurves.buffer,
+    instanceData.queryTotalLengths.buffer,
+    instanceData.padTops.buffer,
+    instanceData.padBottoms.buffer,
   ] as ArrayBuffer[])
 }
