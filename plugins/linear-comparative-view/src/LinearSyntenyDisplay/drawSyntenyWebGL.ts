@@ -930,16 +930,6 @@ export class SyntenyWebGLRenderer {
 
     // Upload instance buffers (shared by all 4 VAOs)
     this.instanceCount = x1s.length
-    console.log('[SyntenyWebGL] buildGeometry:', {
-      featPositions: featPositions.length,
-      instanceCount: this.instanceCount,
-      nonCigarInstanceCount: this.nonCigarInstanceCount,
-      fillSegments: this.currentFillSegments,
-      edgeSegments: this.currentEdgeSegments,
-      fillVerticesPerInstance: this.fillVerticesPerInstance,
-      edgeVerticesPerInstance: this.edgeVerticesPerInstance,
-      drawCurves,
-    })
     if (this.instanceCount > 0) {
       const x1Buf = this.createBuffer(gl, splitHiLo(x1s))
       const x2Buf = this.createBuffer(gl, splitHiLo(x2s))
@@ -1034,7 +1024,6 @@ export class SyntenyWebGLRenderer {
     const adjOff1Hi = Math.fround(adjOff1)
     const adjOff1Lo = adjOff1 - adjOff1Hi
 
-    const t0 = performance.now()
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     // Draw fills (instanced)
@@ -1089,15 +1078,6 @@ export class SyntenyWebGLRenderer {
     }
 
     gl.bindVertexArray(null)
-
-    // gl.finish() forces GPU to complete before timing — remove after profiling
-    gl.finish()
-    const renderMs = performance.now() - t0
-    if (renderMs > 5) {
-      console.log(
-        `[SyntenyWebGL] render: ${renderMs.toFixed(1)}ms, instances=${this.instanceCount}, nonCigar=${this.nonCigarInstanceCount}, fillVerts=${this.fillVerticesPerInstance}, edgeVerts=${this.edgeVerticesPerInstance}`,
-      )
-    }
 
     this.lastHeight = height
     this.lastAdjOff0Hi = adjOff0Hi

@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 import { getTickDisplayStr } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
-import { observer } from 'mobx-react'
 
 import { makeTicks } from '../util.ts'
 import { joinElements } from './util.ts'
@@ -34,7 +33,7 @@ function joinTickElements(wrapper: HTMLElement, count: number) {
   }
 }
 
-const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
+export default function ScalebarCoordinateLabels({
   model,
 }: {
   model: LGV
@@ -71,7 +70,7 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
           for (let j = 0; j < ticks.length; j++) {
             const { base } = ticks[j]!
             const tick = wrapper.children[j] as HTMLElement
-            tick.style.left = `${(reversed ? end - base : base - start) / bpPerPx}px`
+            tick.style.transform = `translateX(${(reversed ? end - base : base - start) / bpPerPx}px)`
             const label = tick.firstElementChild as HTMLElement
             label.style.background = labelBg
             label.textContent = getTickDisplayStr(base + 1, bpPerPx)
@@ -94,6 +93,4 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
   }, [model, theme])
 
   return <div ref={containerRef} style={{ display: 'flex' }} />
-})
-
-export default ScalebarCoordinateLabels
+}

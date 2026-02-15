@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 import { useTheme } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
-import { observer } from 'mobx-react'
 
 import { makeTicks } from '../util.ts'
 import { joinElements } from './util.ts'
@@ -19,11 +18,6 @@ const useStyles = makeStyles()(() => ({
     top: 0,
     height: '100%',
     width: '100%',
-    pointerEvents: 'none',
-  },
-  verticalGuidesContainer: {
-    position: 'absolute',
-    height: '100%',
     pointerEvents: 'none',
   },
 }))
@@ -45,7 +39,7 @@ function getBlockTicks(
   return ticks
 }
 
-const Gridlines = observer(function Gridlines({
+export default function Gridlines({
   model,
   offset = 0,
 }: {
@@ -54,9 +48,8 @@ const Gridlines = observer(function Gridlines({
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
-  const { staticBlocks, offsetPx } = model
-  const offsetLeft = staticBlocks.offsetPx - offsetPx
-  const containerRef = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const tickRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const majorColor = theme.palette.action.disabled
@@ -65,13 +58,17 @@ const Gridlines = observer(function Gridlines({
     const disabledBgColor = theme.palette.action.disabledBackground
 
     return autorun(() => {
-      const container = containerRef.current
-      if (!container) {
+      const inner = innerRef.current
+      const container = tickRef.current
+      if (!inner || !container) {
         return
       }
-      const { staticBlocks, bpPerPx } = model
+      const { staticBlocks, bpPerPx, offsetPx } = model
       const blocks = staticBlocks.blocks
       const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+
+      inner.style.transform = `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`
+      inner.style.width = `${staticBlocks.totalWidthPx}px`
 
       const allBlockTicks: { x: number; major: boolean }[][] = []
       let totalChildren = 0
@@ -94,13 +91,13 @@ const Gridlines = observer(function Gridlines({
         if (block.type === 'ContentBlock') {
           for (const { x, major } of allBlockTicks[i]!) {
             const el = container.children[childIdx] as HTMLElement
-            el.style.cssText = `position:absolute;height:100%;width:1px;left:${x}px;background:${major ? majorColor : minorColor}`
+            el.style.cssText = `position:absolute;height:100%;width:1px;transform:translateX(${x}px);background:${major ? majorColor : minorColor}`
             childIdx++
           }
         } else if (block.type === 'ElidedBlock') {
           const blockLeft = block.offsetPx - firstBlockOffset
           const el = container.children[childIdx] as HTMLElement
-          el.style.cssText = `position:absolute;height:100%;left:${blockLeft}px;width:${block.widthPx}px;background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)`
+          el.style.cssText = `position:absolute;height:100%;transform:translateX(${blockLeft}px);width:${block.widthPx}px;background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)`
           childIdx++
         } else if (block.type === 'InterRegionPaddingBlock') {
           const blockLeft = block.offsetPx - firstBlockOffset
@@ -109,26 +106,21 @@ const Gridlines = observer(function Gridlines({
             block.variant === 'boundary'
               ? disabledBgColor
               : textDisabledColor
-          el.style.cssText = `position:absolute;height:100%;left:${blockLeft}px;width:${block.widthPx}px;background:${bg}`
+          el.style.cssText = `position:absolute;height:100%;transform:translateX(${blockLeft}px);width:${block.widthPx}px;background:${bg}`
           childIdx++
         }
       }
     })
-  }, [model, theme])
+  }, [model, theme, offset])
 
   return (
     <div className={classes.verticalGuidesZoomContainer}>
       <div
-        className={classes.verticalGuidesContainer}
-        style={{
-          left: offsetLeft - offset,
-          width: staticBlocks.totalWidthPx,
-        }}
+        ref={innerRef}
+        style={{ position: 'absolute', height: '100%', pointerEvents: 'none' }}
       >
-        <div ref={containerRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
+        <div ref={tickRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
       </div>
     </div>
   )
-})
-
-export default Gridlines
+}

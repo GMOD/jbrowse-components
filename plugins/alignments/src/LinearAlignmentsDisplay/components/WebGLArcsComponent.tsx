@@ -62,10 +62,7 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
           display: 'block',
           width,
           height,
-          cursor:
-            model.featureIdUnderMouse || model.overCigarItem
-              ? 'pointer'
-              : 'default',
+          cursor: model.featureIdUnderMouse ? 'pointer' : 'default',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleCanvasMouseMove}
