@@ -316,7 +316,6 @@ const WebGLTooltip = observer(function WebGLTooltip({
     mouseoverExtraInformation: string | undefined
     showCoverage: boolean
     coverageHeight: number
-    loadedRegion: { refName: string } | null
   }
   height: number
   offsetMouseCoord?: Coord

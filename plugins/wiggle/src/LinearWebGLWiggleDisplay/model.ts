@@ -147,12 +147,6 @@ export default function stateModelFactory(
         return val === Number.MAX_VALUE ? undefined : val
       },
 
-      // backward-compat: returns first entry from rpcDataMap
-      get rpcData() {
-        const iter = self.rpcDataMap.values().next()
-        return iter.done ? null : iter.value
-      },
-
       get domain(): [number, number] | undefined {
         if (self.rpcDataMap.size === 0) {
           return undefined
@@ -311,43 +305,39 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                try {
-                  const view = getContainingView(self) as LGV
-                  if (!view.initialized) {
-                    return
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const blocks = view.dynamicBlocks.contentBlocks
+                let min = Infinity
+                let max = -Infinity
+                for (const block of blocks) {
+                  if (block.regionNumber === undefined) {
+                    continue
                   }
-                  const blocks = view.dynamicBlocks.contentBlocks
-                  let min = Infinity
-                  let max = -Infinity
-                  for (const block of blocks) {
-                    if (block.regionNumber === undefined) {
-                      continue
-                    }
-                    const data = self.rpcDataMap.get(block.regionNumber)
-                    if (!data) {
-                      continue
-                    }
-                    const visStart = block.start - data.regionStart
-                    const visEnd = block.end - data.regionStart
-                    for (let i = 0; i < data.numFeatures; i++) {
-                      const fStart = data.featurePositions[i * 2]!
-                      const fEnd = data.featurePositions[i * 2 + 1]!
-                      if (fEnd > visStart && fStart < visEnd) {
-                        const s = data.featureScores[i]!
-                        if (s < min) {
-                          min = s
-                        }
-                        if (s > max) {
-                          max = s
-                        }
+                  const data = self.rpcDataMap.get(block.regionNumber)
+                  if (!data) {
+                    continue
+                  }
+                  const visStart = block.start - data.regionStart
+                  const visEnd = block.end - data.regionStart
+                  for (let i = 0; i < data.numFeatures; i++) {
+                    const fStart = data.featurePositions[i * 2]!
+                    const fEnd = data.featurePositions[i * 2 + 1]!
+                    if (fEnd > visStart && fStart < visEnd) {
+                      const s = data.featureScores[i]!
+                      if (s < min) {
+                        min = s
+                      }
+                      if (s > max) {
+                        max = s
                       }
                     }
                   }
-                  if (Number.isFinite(min) && Number.isFinite(max)) {
-                    self.setVisibleScoreRange([min, max])
-                  }
-                } catch {
-                  // view not ready
+                }
+                if (Number.isFinite(min) && Number.isFinite(max)) {
+                  self.setVisibleScoreRange([min, max])
                 }
               },
               {

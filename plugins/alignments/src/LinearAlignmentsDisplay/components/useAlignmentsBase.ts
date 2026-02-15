@@ -52,7 +52,6 @@ interface FeatureInfo {
 export interface LinearAlignmentsDisplayModel {
   height: number
   rpcDataMap: Map<number, WebGLPileupDataResult>
-  loadedRegion: { refName: string; start: number; end: number } | null
   showLoading: boolean
   statusMessage?: string
   error: Error | null
@@ -100,6 +99,7 @@ export interface LinearAlignmentsDisplayModel {
   setContextMenuCoord: (coord?: [number, number]) => void
   setContextMenuCigarHit: (hit?: CigarHitResult) => void
   setContextMenuIndicatorHit: (hit?: IndicatorHitResult) => void
+  setContextMenuRefName: (refName?: string) => void
   contextMenuCoord: [number, number] | undefined
   contextMenuItems: () => {
     label: string
@@ -266,6 +266,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       model.setContextMenuCoord([e.clientX, e.clientY])
       model.setContextMenuCigarHit(result.hit)
       model.setContextMenuIndicatorHit(undefined)
+      model.setContextMenuRefName(resolved?.refName)
       if (result.featureHit) {
         model.setContextMenuFeatureById(result.featureHit.id)
       }
@@ -274,11 +275,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       model.setContextMenuCoord([e.clientX, e.clientY])
       model.setContextMenuCigarHit(undefined)
       model.setContextMenuIndicatorHit(result.hit)
+      model.setContextMenuRefName(resolved?.refName)
     } else if (result.type === 'feature') {
       e.preventDefault()
       model.setContextMenuCoord([e.clientX, e.clientY])
       model.setContextMenuCigarHit(undefined)
       model.setContextMenuIndicatorHit(undefined)
+      model.setContextMenuRefName(resolved?.refName)
       model.setContextMenuFeatureById(result.hit.id)
     }
   }

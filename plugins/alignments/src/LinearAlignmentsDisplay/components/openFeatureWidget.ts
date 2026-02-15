@@ -13,13 +13,10 @@ function pct(n: number, total: number) {
 
 import type { CigarHitResult, IndicatorHitResult } from './hitTesting.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
-
-interface ModelForWidget {
-  loadedRegion: { refName: string; start: number; end: number } | null
-}
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 function showWidget(
-  model: ModelForWidget,
+  model: IAnyStateTreeNode,
   featureData: Record<string, unknown>,
 ) {
   const session = getSession(model)
@@ -38,7 +35,7 @@ function showWidget(
 }
 
 export function openIndicatorWidget(
-  model: ModelForWidget,
+  model: IAnyStateTreeNode,
   indicatorHit: IndicatorHitResult,
   refName: string,
   blockRpcData: WebGLPileupDataResult | undefined,
@@ -74,7 +71,7 @@ export function openIndicatorWidget(
 }
 
 export function openCoverageWidget(
-  model: ModelForWidget,
+  model: IAnyStateTreeNode,
   position: number,
   refName: string,
   blockRpcData: WebGLPileupDataResult | undefined,
@@ -107,7 +104,7 @@ export function openCoverageWidget(
 }
 
 export function openCigarWidget(
-  model: ModelForWidget,
+  model: IAnyStateTreeNode,
   cigarHit: CigarHitResult,
   refName: string,
 ) {

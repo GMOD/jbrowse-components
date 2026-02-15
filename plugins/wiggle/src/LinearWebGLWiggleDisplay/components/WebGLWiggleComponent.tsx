@@ -23,17 +23,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export interface WiggleDisplayModel {
-  rpcData: WebGLWiggleDataResult | null
   rpcDataMap: Map<number, WebGLWiggleDataResult>
-  visibleRegions: {
-    refName: string
-    regionNumber: number
-    start: number
-    end: number
-    assemblyName: string
-    screenStartPx: number
-    screenEndPx: number
-  }[]
   height: number
   domain: [number, number] | undefined
   scaleType: string

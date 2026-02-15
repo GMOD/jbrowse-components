@@ -360,6 +360,7 @@ export default function stateModelFactory(
       contextMenuCoord: undefined as [number, number] | undefined,
       contextMenuCigarHit: undefined as CigarHitResult | undefined,
       contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
+      contextMenuRefName: undefined as string | undefined,
       userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
@@ -448,14 +449,6 @@ export default function stateModelFactory(
       },
 
       /**
-       * Backward-compat getter: returns first entry in rpcDataMap
-       */
-      get rpcData(): WebGLPileupDataResult | null {
-        const iter = self.rpcDataMap.values().next()
-        return iter.done ? null : iter.value
-      },
-
-      /**
        * Chain index map: readName → array of feature indices
        * Used in cloud/linkedRead modes for chain-level highlighting
        * Cached as a MST getter so it only recomputes when rpcDataMap changes
@@ -481,86 +474,6 @@ export default function stateModelFactory(
           }
         }
         return map
-      },
-
-      /**
-       * Backward-compat getter: returns first entry in loadedRegions
-       */
-      get loadedRegion(): Region | null {
-        const iter = self.loadedRegions.values().next()
-        return iter.done ? null : iter.value
-      },
-
-      get visibleBpRange(): [number, number] | null {
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized) {
-            return null
-          }
-          const blocks = view.dynamicBlocks.contentBlocks
-          const first = blocks[0]
-          if (!first) {
-            return null
-          }
-          const width = view.width
-          const bpPerPx = view.bpPerPx
-          const blockOffsetPx = first.offsetPx
-          const deltaPx = view.offsetPx - blockOffsetPx
-          const deltaBp = deltaPx * bpPerPx
-
-          const last = blocks[blocks.length - 1]
-          if (first.refName === last?.refName) {
-            const rangeStart = first.start + deltaBp
-            const rangeEnd = rangeStart + width * bpPerPx
-            return [rangeStart, rangeEnd]
-          }
-
-          const rangeStart = first.start + deltaBp
-          const blockEndPx = blockOffsetPx + first.widthPx
-          const clippedEndPx = Math.min(view.offsetPx + width, blockEndPx)
-          const rangeEnd =
-            first.start + (clippedEndPx - blockOffsetPx) * bpPerPx
-          return [rangeStart, rangeEnd]
-        } catch {
-          return null
-        }
-      },
-
-      get visibleRegion() {
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized) {
-            return null
-          }
-          const blocks = view.dynamicBlocks.contentBlocks
-          const first = blocks[0]
-          if (!first) {
-            return null
-          }
-
-          const bpRange = this.visibleBpRange
-          if (bpRange) {
-            return {
-              refName: first.refName,
-              start: bpRange[0],
-              end: bpRange[1],
-              assemblyName: first.assemblyName,
-            }
-          }
-
-          const regions = view.visibleRegions
-          if (regions.length === 0) {
-            return null
-          }
-          return {
-            refName: regions[0]!.refName,
-            start: regions[0]!.start,
-            end: regions[0]!.end,
-            assemblyName: regions[0]!.assemblyName,
-          }
-        } catch {
-          return null
-        }
       },
 
       /**
@@ -600,7 +513,12 @@ export default function stateModelFactory(
       },
 
       get showLoading() {
-        return self.isLoading || !this.visibleRegion
+        const view = getContainingView(self) as LGV
+        return (
+          self.isLoading ||
+          !view.initialized ||
+          view.dynamicBlocks.contentBlocks.length === 0
+        )
       },
 
       get regionTooLarge() {
@@ -664,10 +582,13 @@ export default function stateModelFactory(
         if (self.renderingMode !== 'cloud' || !self.showYScalebar) {
           return undefined
         }
-        const iter = self.rpcDataMap.values().next()
-        const rpcData = iter.done ? undefined : iter.value
-        const maxDistance = rpcData?.maxDistance
-        if (!maxDistance || maxDistance <= 0) {
+        let maxDistance = 0
+        for (const data of self.rpcDataMap.values()) {
+          if (data.maxDistance !== undefined && data.maxDistance > maxDistance) {
+            maxDistance = data.maxDistance
+          }
+        }
+        if (maxDistance <= 0) {
           return undefined
         }
         const pileupHeight =
@@ -697,10 +618,26 @@ export default function stateModelFactory(
         if (!view.initialized) {
           return []
         }
+        const contentBlocks = view.dynamicBlocks.contentBlocks
+        const bpPerPx = view.bpPerPx
+        const blocks = []
+        for (const block of contentBlocks) {
+          if (block.regionNumber === undefined) {
+            continue
+          }
+          const data = self.rpcDataMap.get(block.regionNumber)
+          if (data) {
+            blocks.push({
+              rpcData: data,
+              blockStart: block.start,
+              blockEnd: block.end,
+              blockScreenOffsetPx: block.offsetPx - view.offsetPx,
+              bpPerPx,
+            })
+          }
+        }
         return computeVisibleLabels({
-          rpcData: self.rpcData,
-          labelBpRange: self.visibleBpRange,
-          width: view.width,
+          blocks,
           height: self.height,
           featureHeightSetting: self.featureHeightSetting,
           featureSpacing: self.featureSpacing,
@@ -1200,6 +1137,10 @@ export default function stateModelFactory(
           self.contextMenuIndicatorHit = hit
         },
 
+        setContextMenuRefName(refName?: string) {
+          self.contextMenuRefName = refName
+        },
+
         async selectFeatureById(featureId: string) {
           const session = getSession(self)
           const { rpcManager } = session
@@ -1450,8 +1391,6 @@ export default function stateModelFactory(
       }
 
       // Central chokepoint: ALL data fetches go through here.
-      // visibleRegion is used for byte estimation (the actual viewport),
-      // fetchRegion is the expanded region used for data pre-fetching.
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
@@ -1693,52 +1632,48 @@ export default function stateModelFactory(
                 if (!self.showCoverage) {
                   return
                 }
-                try {
-                  const view = getContainingView(self) as LGV
-                  if (!view.initialized) {
-                    return
-                  }
-                  const blocks = view.dynamicBlocks.contentBlocks
-                  let maxDepth = 0
-                  for (const block of blocks) {
-                    if (block.regionNumber === undefined) {
-                      continue
-                    }
-                    const data = self.rpcDataMap.get(block.regionNumber)
-                    if (!data) {
-                      continue
-                    }
-                    const {
-                      coverageDepths,
-                      coverageStartOffset,
-                      coverageBinSize,
-                      regionStart,
-                    } = data
-                    const startBin = Math.max(
-                      0,
-                      Math.floor(
-                        (block.start - regionStart - coverageStartOffset) /
-                          coverageBinSize,
-                      ),
-                    )
-                    const endBin = Math.min(
-                      coverageDepths.length,
-                      Math.ceil(
-                        (block.end - regionStart - coverageStartOffset) /
-                          coverageBinSize,
-                      ),
-                    )
-                    for (let i = startBin; i < endBin; i++) {
-                      const d = coverageDepths[i]!
-                      if (d > maxDepth) {
-                        maxDepth = d
-                      }
-                    }
-                  }
-                  self.setVisibleMaxDepth(maxDepth)
-                } catch {
-                  // view not ready
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
                 }
+                const blocks = view.dynamicBlocks.contentBlocks
+                let maxDepth = 0
+                for (const block of blocks) {
+                  if (block.regionNumber === undefined) {
+                    continue
+                  }
+                  const data = self.rpcDataMap.get(block.regionNumber)
+                  if (!data) {
+                    continue
+                  }
+                  const {
+                    coverageDepths,
+                    coverageStartOffset,
+                    coverageBinSize,
+                    regionStart,
+                  } = data
+                  const startBin = Math.max(
+                    0,
+                    Math.floor(
+                      (block.start - regionStart - coverageStartOffset) /
+                        coverageBinSize,
+                    ),
+                  )
+                  const endBin = Math.min(
+                    coverageDepths.length,
+                    Math.ceil(
+                      (block.end - regionStart - coverageStartOffset) /
+                        coverageBinSize,
+                    ),
+                  )
+                  for (let i = startBin; i < endBin; i++) {
+                    const d = coverageDepths[i]!
+                    if (d > maxDepth) {
+                      maxDepth = d
+                    }
+                  }
+                }
+                self.setVisibleMaxDepth(maxDepth)
               },
               {
                 delay: 400,
@@ -2470,12 +2405,11 @@ export default function stateModelFactory(
                 label: sortLabel,
                 icon: SwapVertIcon,
                 onClick: () => {
-                  const region = self.loadedRegion
-                  if (region) {
+                  if (self.contextMenuRefName) {
                     self.setSortedByAtPosition(
                       sortType,
                       cigarHit.position,
-                      region.refName,
+                      self.contextMenuRefName,
                     )
                   }
                 },
@@ -2484,9 +2418,8 @@ export default function stateModelFactory(
                 label: `Open ${typeLabel.toLowerCase()} details`,
                 icon: MenuOpenIcon,
                 onClick: () => {
-                  const region = self.loadedRegion
-                  if (region) {
-                    openCigarWidget(self, cigarHit, region.refName)
+                  if (self.contextMenuRefName) {
+                    openCigarWidget(self, cigarHit, self.contextMenuRefName)
                   }
                 },
               },
@@ -2503,12 +2436,11 @@ export default function stateModelFactory(
                 label: `Sort by ${indicatorHit.indicatorType} at position`,
                 icon: SwapVertIcon,
                 onClick: () => {
-                  const region = self.loadedRegion
-                  if (region) {
+                  if (self.contextMenuRefName) {
                     self.setSortedByAtPosition(
                       indicatorHit.indicatorType,
                       indicatorHit.position,
-                      region.refName,
+                      self.contextMenuRefName,
                     )
                   }
                 },

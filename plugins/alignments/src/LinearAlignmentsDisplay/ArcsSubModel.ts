@@ -16,14 +16,6 @@ export const ArcsSubModel = types
     get lineWidth(): number {
       return self.lineWidthSetting ?? 1
     },
-
-    /**
-     * Backward-compat getter: returns first entry in rpcDataMap
-     */
-    get rpcData(): WebGLArcsDataResult | null {
-      const iter = self.rpcDataMap.values().next()
-      return iter.done ? null : iter.value
-    },
   }))
   .actions(self => ({
     setRpcData(regionNumber: number, data: WebGLArcsDataResult | null) {

@@ -6,9 +6,14 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isAbortException,
 } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionWebGLDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { autorun } from 'mobx'
@@ -23,16 +28,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName?: string
-}
 
 interface SourceInfo {
   name: string
@@ -53,6 +52,7 @@ export default function stateModelFactory(
       'MultiLinearWiggleDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      MultiRegionWebGLDisplayMixin(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -82,9 +82,6 @@ export default function stateModelFactory(
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLMultiWiggleDataResult>(),
-      loadedRegions: new Map<number, Region>(),
-      isLoading: false,
-      error: null as Error | null,
       sourcesVolatile: [] as SourceInfo[],
       visibleScoreRange: undefined as [number, number] | undefined,
     }))
@@ -133,12 +130,6 @@ export default function stateModelFactory(
       get maxScoreConfig() {
         const val = this.maxScore
         return val === Number.MAX_VALUE ? undefined : val
-      },
-
-      // backward-compat: returns first entry from rpcDataMap
-      get rpcData() {
-        const iter = self.rpcDataMap.values().next()
-        return iter.done ? null : iter.value
       },
 
       get domain(): [number, number] | undefined {
@@ -213,28 +204,13 @@ export default function stateModelFactory(
         }
       },
 
-      setLoadedRegionForRegion(regionNumber: number, region: Region) {
-        const next = new Map(self.loadedRegions)
-        next.set(regionNumber, region)
-        self.loadedRegions = next
-      },
-
-      clearAllRpcData() {
+      clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
-        self.loadedRegions = new Map()
         self.visibleScoreRange = undefined
       },
 
       setVisibleScoreRange(range: [number, number]) {
         self.visibleScoreRange = range
-      },
-
-      setLoading(loading: boolean) {
-        self.isLoading = loading
-      },
-
-      setError(error: Error | null) {
-        self.error = error
       },
 
       setSources(sources: SourceInfo[]) {
@@ -269,6 +245,7 @@ export default function stateModelFactory(
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
+        stopToken: string,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -279,77 +256,102 @@ export default function stateModelFactory(
           return
         }
 
-        try {
-          const result = (await rpcManager.call(
-            session.id ?? '',
-            'RenderWebGLMultiWiggleData',
-            {
-              sessionId: session.id,
-              adapterConfig,
-              region,
-              sources: self.sources,
-            },
-          )) as WebGLMultiWiggleDataResult
+        const result = (await rpcManager.call(
+          session.id ?? '',
+          'RenderWebGLMultiWiggleData',
+          {
+            sessionId: session.id,
+            adapterConfig,
+            region,
+            sources: self.sources,
+            stopToken,
+          },
+        )) as WebGLMultiWiggleDataResult
 
-          self.setRpcDataForRegion(regionNumber, result)
-          self.setLoadedRegionForRegion(regionNumber, {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-          })
+        self.setRpcDataForRegion(regionNumber, result)
+        self.setLoadedRegionForRegion(regionNumber, {
+          refName: region.refName,
+          start: region.start,
+          end: region.end,
+        })
+      }
+
+      async function fetchRegions(
+        regions: { region: Region; regionNumber: number }[],
+      ) {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+        }
+        const stopToken = createStopToken()
+        self.setRenderingStopToken(stopToken)
+        const generation = self.fetchGeneration
+        self.setLoading(true)
+        self.setError(null)
+        try {
+          const promises = regions.map(({ region, regionNumber }) =>
+            fetchFeaturesForRegion(region, regionNumber, stopToken),
+          )
+          await Promise.all(promises)
         } catch (e) {
-          console.error('Failed to fetch multi-wiggle features:', e)
-          self.setError(e instanceof Error ? e : new Error(String(e)))
+          if (!isAbortException(e)) {
+            console.error('Failed to fetch multi-wiggle features:', e)
+            if (isAlive(self) && self.fetchGeneration === generation) {
+              self.setError(e instanceof Error ? e : new Error(String(e)))
+            }
+          }
+        } finally {
+          if (isAlive(self) && self.fetchGeneration === generation) {
+            self.setRenderingStopToken(undefined)
+            self.setLoading(false)
+          }
         }
       }
 
-      let prevDisplayedRegionsStr = ''
+      const superAfterAttach = self.afterAttach
 
       return {
         afterAttach() {
+          superAfterAttach()
+
           addDisposer(
             self,
             autorun(
               () => {
-                try {
-                  const view = getContainingView(self) as LGV
-                  if (!view.initialized) {
-                    return
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const blocks = view.dynamicBlocks.contentBlocks
+                let min = Infinity
+                let max = -Infinity
+                for (const block of blocks) {
+                  if (block.regionNumber === undefined) {
+                    continue
                   }
-                  const blocks = view.dynamicBlocks.contentBlocks
-                  let min = Infinity
-                  let max = -Infinity
-                  for (const block of blocks) {
-                    if (block.regionNumber === undefined) {
-                      continue
-                    }
-                    const data = self.rpcDataMap.get(block.regionNumber)
-                    if (!data) {
-                      continue
-                    }
-                    const visStart = block.start - data.regionStart
-                    const visEnd = block.end - data.regionStart
-                    for (const source of data.sources) {
-                      for (let i = 0; i < source.numFeatures; i++) {
-                        const fStart = source.featurePositions[i * 2]!
-                        const fEnd = source.featurePositions[i * 2 + 1]!
-                        if (fEnd > visStart && fStart < visEnd) {
-                          const s = source.featureScores[i]!
-                          if (s < min) {
-                            min = s
-                          }
-                          if (s > max) {
-                            max = s
-                          }
+                  const data = self.rpcDataMap.get(block.regionNumber)
+                  if (!data) {
+                    continue
+                  }
+                  const visStart = block.start - data.regionStart
+                  const visEnd = block.end - data.regionStart
+                  for (const source of data.sources) {
+                    for (let i = 0; i < source.numFeatures; i++) {
+                      const fStart = source.featurePositions[i * 2]!
+                      const fEnd = source.featurePositions[i * 2 + 1]!
+                      if (fEnd > visStart && fStart < visEnd) {
+                        const s = source.featureScores[i]!
+                        if (s < min) {
+                          min = s
+                        }
+                        if (s > max) {
+                          max = s
                         }
                       }
                     }
                   }
-                  if (Number.isFinite(min) && Number.isFinite(max)) {
-                    self.setVisibleScoreRange([min, max])
-                  }
-                } catch {
-                  // view not ready
+                }
+                if (Number.isFinite(min) && Number.isFinite(max)) {
+                  self.setVisibleScoreRange([min, max])
                 }
               },
               {
@@ -362,12 +364,12 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
-              () => {
-                const view = getContainingView(self) as LinearGenomeViewModel
+              async () => {
+                const view = getContainingView(self) as LGV
                 if (!view.initialized) {
                   return
                 }
-                const promises: Promise<void>[] = []
+                const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
@@ -377,52 +379,19 @@ export default function stateModelFactory(
                   ) {
                     continue
                   }
-                  promises.push(fetchFeaturesForRegion(vr, vr.regionNumber))
+                  needed.push({
+                    region: vr as Region,
+                    regionNumber: vr.regionNumber,
+                  })
                 }
-                if (promises.length > 0) {
-                  self.setLoading(true)
-                  self.setError(null)
-                  Promise.all(promises)
-                    .then(() => {
-                      self.setLoading(false)
-                    })
-                    .catch((e: unknown) => {
-                      console.error('Failed to fetch multi-wiggle features:', e)
-                      self.setLoading(false)
-                    })
+                if (needed.length > 0) {
+                  await fetchRegions(needed)
                 }
               },
-              { name: 'FetchVisibleRegions', delay: 300 },
-            ),
-          )
-
-          // Autorun: clear data when displayedRegions identity changes
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                let regionStr = ''
-                try {
-                  const view = getContainingView(self) as LGV
-                  regionStr = JSON.stringify(
-                    view.displayedRegions.map(r => ({
-                      refName: r.refName,
-                      start: r.start,
-                      end: r.end,
-                    })),
-                  )
-                } catch {
-                  // ignore
-                }
-                if (
-                  prevDisplayedRegionsStr !== '' &&
-                  regionStr !== prevDisplayedRegionsStr
-                ) {
-                  self.clearAllRpcData()
-                }
-                prevDisplayedRegionsStr = regionStr
+              {
+                name: 'FetchVisibleRegions',
+                delay: 500,
               },
-              { name: 'DisplayedRegionsChange' },
             ),
           )
         },

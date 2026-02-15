@@ -18,32 +18,23 @@ export async function renderSvg(
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  const { offsetPx } = view
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const { offsetPx, bpPerPx } = view
   const height = model.height
   const {
     renderingType,
     ticks,
-    rpcData,
+    rpcDataMap,
     domain,
     scaleType,
     numSources,
   } = model
 
-  if (!rpcData || !domain || numSources === 0) {
+  if (rpcDataMap.size === 0 || !domain || numSources === 0) {
     return null
   }
 
   const [minScore, maxScore] = domain
-  const bpPerPx = view.bpPerPx
   const blocks = view.dynamicBlocks.contentBlocks
-  const firstBlock = blocks[0]
-  if (!firstBlock) {
-    return null
-  }
-  const viewStart =
-    firstBlock.start + (view.offsetPx - firstBlock.offsetPx) * bpPerPx
-  const viewEnd = viewStart + width * bpPerPx
   const rowHeight = (height - ROW_PADDING * (numSources - 1)) / numSources
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveRowHeight = rowHeight - offset * 2
@@ -57,68 +48,81 @@ export async function renderSvg(
 
   let content = ''
 
-  for (let sourceIdx = 0; sourceIdx < rpcData.sources.length; sourceIdx++) {
-    const source = rpcData.sources[sourceIdx]!
-    const { featurePositions, featureScores, numFeatures, color } = source
-    const rowY = sourceIdx * (rowHeight + ROW_PADDING)
+  for (const block of blocks) {
+    if (block.regionNumber === undefined) {
+      continue
+    }
+    const data = rpcDataMap.get(block.regionNumber)
+    if (!data) {
+      continue
+    }
+    const blockScreenX = block.offsetPx - offsetPx
 
-    if (renderingType === 'multirowline') {
-      let pathData = ''
-      for (let i = 0; i < numFeatures; i++) {
-        const posIdx = i * 2
-        const featureStart = rpcData.regionStart + featurePositions[posIdx]!
-        const featureEnd = rpcData.regionStart + featurePositions[posIdx + 1]!
-        const score = featureScores[i]!
+    for (let sourceIdx = 0; sourceIdx < data.sources.length; sourceIdx++) {
+      const source = data.sources[sourceIdx]!
+      const { featurePositions, featureScores, numFeatures, color } = source
+      const rowY = sourceIdx * (rowHeight + ROW_PADDING)
 
-        if (featureEnd < viewStart || featureStart > viewEnd) {
-          continue
-        }
+      if (renderingType === 'multirowline') {
+        let pathData = ''
+        for (let i = 0; i < numFeatures; i++) {
+          const posIdx = i * 2
+          const featureStart = data.regionStart + featurePositions[posIdx]!
+          const featureEnd = data.regionStart + featurePositions[posIdx + 1]!
+          const score = featureScores[i]!
 
-        const x = (featureStart - viewStart) / bpPerPx
-        const y = scale(score) + offset + rowY
-        pathData += `${pathData === '' ? 'M' : 'L'}${x},${y}`
-      }
-      if (pathData) {
-        content += `<path fill="none" stroke="${color}" stroke-width="1" d="${pathData}"/>`
-      }
-    } else {
-      for (let i = 0; i < numFeatures; i++) {
-        const posIdx = i * 2
-        const featureStart = rpcData.regionStart + featurePositions[posIdx]!
-        const featureEnd = rpcData.regionStart + featurePositions[posIdx + 1]!
-        const score = featureScores[i]!
-
-        if (featureEnd < viewStart || featureStart > viewEnd) {
-          continue
-        }
-
-        const x = (featureStart - viewStart) / bpPerPx
-        const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
-
-        if (renderingType === 'multirowxy') {
-          const y = scale(score) + offset + rowY
-          const originY = scale(0) + offset + rowY
-          const rectY = Math.min(y, originY)
-          const rectHeight = Math.abs(originY - y) || 1
-          content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${color}"/>`
-        } else if (renderingType === 'multirowdensity') {
-          let norm: number
-          if (scaleType === 'log') {
-            const logMin = Math.log2(Math.max(minScore, 1))
-            const logMax = Math.log2(Math.max(maxScore, 1))
-            const logScore = Math.log2(Math.max(score, 1))
-            norm = (logScore - logMin) / (logMax - logMin)
-          } else {
-            norm = (score - minScore) / (maxScore - minScore)
+          if (featureEnd < block.start || featureStart > block.end) {
+            continue
           }
-          norm = Math.max(0, Math.min(1, norm))
-          content += `<rect x="${x}" y="${rowY}" width="${w}" height="${rowHeight}" fill="${color}" fill-opacity="${norm}"/>`
+
+          const x =
+            (featureStart - block.start) / bpPerPx + blockScreenX
+          const y = scale(score) + offset + rowY
+          pathData += `${pathData === '' ? 'M' : 'L'}${x},${y}`
+        }
+        if (pathData) {
+          content += `<path fill="none" stroke="${color}" stroke-width="1" d="${pathData}"/>`
+        }
+      } else {
+        for (let i = 0; i < numFeatures; i++) {
+          const posIdx = i * 2
+          const featureStart = data.regionStart + featurePositions[posIdx]!
+          const featureEnd = data.regionStart + featurePositions[posIdx + 1]!
+          const score = featureScores[i]!
+
+          if (featureEnd < block.start || featureStart > block.end) {
+            continue
+          }
+
+          const x =
+            (featureStart - block.start) / bpPerPx + blockScreenX
+          const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
+
+          if (renderingType === 'multirowxy') {
+            const y = scale(score) + offset + rowY
+            const originY = scale(0) + offset + rowY
+            const rectY = Math.min(y, originY)
+            const rectHeight = Math.abs(originY - y) || 1
+            content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${color}"/>`
+          } else if (renderingType === 'multirowdensity') {
+            let norm: number
+            if (scaleType === 'log') {
+              const logMin = Math.log2(Math.max(minScore, 1))
+              const logMax = Math.log2(Math.max(maxScore, 1))
+              const logScore = Math.log2(Math.max(score, 1))
+              norm = (logScore - logMin) / (logMax - logMin)
+            } else {
+              norm = (score - minScore) / (maxScore - minScore)
+            }
+            norm = Math.max(0, Math.min(1, norm))
+            content += `<rect x="${x}" y="${rowY}" width="${w}" height="${rowHeight}" fill="${color}" fill-opacity="${norm}"/>`
+          }
         }
       }
     }
   }
 
-  const result = (
+  return (
     <>
       <g dangerouslySetInnerHTML={{ __html: content }} />
       {ticks ? (
@@ -128,6 +132,4 @@ export async function renderSvg(
       ) : null}
     </>
   )
-
-  return result
 }

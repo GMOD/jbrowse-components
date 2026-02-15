@@ -27,18 +27,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export interface MultiWiggleDisplayModel {
-  rpcData: WebGLMultiWiggleDataResult | null
   rpcDataMap: Map<number, WebGLMultiWiggleDataResult>
   sources: { name: string; color?: string }[]
-  visibleRegions: {
-    refName: string
-    regionNumber: number
-    start: number
-    end: number
-    assemblyName: string
-    screenStartPx: number
-    screenEndPx: number
-  }[]
   height: number
   domain: [number, number] | undefined
   scaleType: string
@@ -305,10 +295,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       ? (height - ROW_PADDING * (numSources - 1)) / numSources
       : height
 
-  // Calculate label width based on source names
-  const firstData = model.rpcData
-  const displaySources =
-    model.sources.length > 0 ? model.sources : firstData?.sources || []
+  const displaySources = model.sources
   const labelWidth =
     displaySources.length > 0
       ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10
