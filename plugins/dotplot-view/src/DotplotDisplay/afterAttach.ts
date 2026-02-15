@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import { parseCigar } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
@@ -177,7 +177,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
               p21: result.p21_offsetPx[i]!,
               p22: result.p22_offsetPx[i]!,
               f,
-              cigar: MismatchParser.parseCigar(result.cigars[i]),
+              cigar: parseCigar(result.cigars[i]),
             })
           }
         }

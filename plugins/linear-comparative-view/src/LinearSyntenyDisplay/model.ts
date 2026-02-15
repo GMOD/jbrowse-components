@@ -7,7 +7,6 @@ import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyWebGLRenderer } from './drawSyntenyWebGL.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface Pos {
@@ -19,8 +18,16 @@ export interface FeatPos {
   p12: Pos
   p21: Pos
   p22: Pos
-  f: Feature
+  id: string
+  strand: number
+  name: string
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+  mate: { start: number; end: number; refName: string; name: string; assemblyName: string }
   cigar: string[]
+  identity?: number
 }
 
 /**
@@ -189,7 +196,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get featMap() {
-        return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
+        return Object.fromEntries(self.featPositions.map(f => [f.id, f]))
       },
 
       /**
@@ -263,9 +270,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return undefined
         }
         const lengths = new Map<string, number>()
-        for (const { f } of self.featPositions) {
-          const queryName = f.get('name') || f.get('id') || f.id()
-          const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+        for (const feat of self.featPositions) {
+          const queryName = feat.name || feat.id
+          const alignmentLength = Math.abs(feat.end - feat.start)
           const currentTotal = lengths.get(queryName) || 0
           lengths.set(queryName, currentTotal + alignmentLength)
         }

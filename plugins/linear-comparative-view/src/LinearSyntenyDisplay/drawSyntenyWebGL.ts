@@ -126,7 +126,7 @@ in vec4 v_color;
 out vec4 outColor;
 
 void main() {
-  outColor = vec4(v_color.rgb * v_color.a, v_color.a);
+  outColor = v_color;
 }
 `
 
@@ -261,8 +261,7 @@ void main() {
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
   float edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
-  float finalAlpha = v_color.a * edgeAlpha;
-  fragColor = vec4(v_color.rgb * finalAlpha, finalAlpha);
+  fragColor = vec4(v_color.rgb, v_color.a * edgeAlpha);
 }
 `
 
@@ -372,8 +371,7 @@ export class SyntenyWebGLRenderer {
   init(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2', {
       antialias: true,
-      alpha: true,
-      premultipliedAlpha: true,
+      alpha: false,
     })
 
     if (!gl) {
@@ -437,11 +435,11 @@ export class SyntenyWebGLRenderer {
       this.pickingTexture = gl.createTexture()!
       this.resizePickingBuffer(canvas.width, canvas.height)
 
-      // Set initial GL state
+      // Set initial GL state - opaque white background (no alpha compositing)
       gl.viewport(0, 0, canvas.width, canvas.height)
-      gl.clearColor(0, 0, 0, 0)
+      gl.clearColor(1, 1, 1, 1)
       gl.enable(gl.BLEND)
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
       return true
     } catch (e) {
@@ -549,6 +547,23 @@ export class SyntenyWebGLRenderer {
     this.height = height
     this.resizePickingBuffer(this.canvas.width, this.canvas.height)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  setDPR(dpr: number) {
+    if (!this.canvas || !this.gl) {
+      return
+    }
+    const newW = Math.round(this.width * dpr)
+    const newH = Math.round(this.height * dpr)
+    if (this.canvas.width === newW && this.canvas.height === newH) {
+      return
+    }
+    this.canvas.width = newW
+    this.canvas.height = newH
+    this.devicePixelRatio = dpr
+    this.resizePickingBuffer(newW, newH)
+    this.gl.viewport(0, 0, newW, newH)
+    this.pickingDirty = true
   }
 
   private cleanupGeometry() {
@@ -701,9 +716,9 @@ export class SyntenyWebGLRenderer {
 
     // Compute query total alignment lengths for GPU-side filtering
     const queryTotalLengths = new Map<string, number>()
-    for (const { f } of featPositions) {
-      const queryName = f.get('name') || f.get('id') || f.id()
-      const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+    for (const feat of featPositions) {
+      const queryName = feat.name || feat.id
+      const alignmentLength = Math.abs(feat.end - feat.start)
       const current = queryTotalLengths.get(queryName) || 0
       queryTotalLengths.set(queryName, current + alignmentLength)
     }
@@ -732,7 +747,7 @@ export class SyntenyWebGLRenderer {
     // (these get edge rendering which keeps thin features visible)
     for (const [i, featPosition] of featPositions.entries()) {
       const feat = featPosition
-      const { p11, p12, p21, p22, f, cigar } = feat
+      const { p11, p12, p21, p22, cigar } = feat
       if (cigar.length > 0 && drawCIGAR) {
         const featureWidth = Math.max(
           Math.abs(p12.offsetPx - p11.offsetPx),
@@ -747,7 +762,7 @@ export class SyntenyWebGLRenderer {
       const x21 = p21.offsetPx
       const x22 = p22.offsetPx
       const featureId = i + 1
-      const queryName = f.get('name') || f.get('id') || f.id()
+      const queryName = feat.name || feat.id
       const qtl = queryTotalLengths.get(queryName) || 0
 
       const [cr, cg, cb, ca] = colorFn(feat, i)
@@ -788,7 +803,7 @@ export class SyntenyWebGLRenderer {
     // avoid boundary artifacts). Thin features were already drawn in Pass 1.
     for (const [i, featPosition] of featPositions.entries()) {
       const feat = featPosition
-      const { p11, p12, p21, p22, f, cigar } = feat
+      const { p11, p12, p21, p22, cigar } = feat
       if (!(cigar.length > 0 && drawCIGAR)) {
         continue
       }
@@ -804,9 +819,9 @@ export class SyntenyWebGLRenderer {
       const x12 = p12.offsetPx
       const x21 = p21.offsetPx
       const x22 = p22.offsetPx
-      const strand = f.get('strand') as number
+      const strand = feat.strand
       const featureId = i + 1
-      const queryName = f.get('name') || f.get('id') || f.id()
+      const queryName = feat.name || feat.id
       const qtl = queryTotalLengths.get(queryName) || 0
 
       const s1 = strand
@@ -1170,9 +1185,9 @@ export class SyntenyWebGLRenderer {
 
     // Restore state
     gl.viewport(0, 0, canvasWidth, canvasHeight)
-    gl.clearColor(0, 0, 0, 0)
+    gl.clearColor(1, 1, 1, 1)
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   private setUniforms(
@@ -1386,16 +1401,14 @@ export function createColorFunction(
   alpha: number,
 ): (f: FeatPos, index: number) => [number, number, number, number] {
   if (colorBy === 'strand') {
-    return (f: FeatPos) => {
-      const strand = f.f.get('strand')
-      return strand === -1 ? [0, 0, 1, alpha] : [1, 0, 0, alpha]
-    }
+    return (f: FeatPos) =>
+      f.strand === -1 ? [0, 0, 1, alpha] : [1, 0, 0, alpha]
   }
 
   if (colorBy === 'query') {
     const colorCache = new Map<string, [number, number, number, number]>()
     return (f: FeatPos) => {
-      const name = f.f.get('refName') || ''
+      const name = f.refName || ''
       if (!colorCache.has(name)) {
         const hash = hashString(name)
         const [r, g, b] =

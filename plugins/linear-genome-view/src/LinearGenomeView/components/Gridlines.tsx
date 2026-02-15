@@ -22,32 +22,59 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function getBlockTicks(
-  block: BaseBlock,
-  bpPerPx: number,
-  firstBlockOffset: number,
-) {
-  const { start, end, reversed, widthPx } = block
-  const blockLeft = block.offsetPx - firstBlockOffset
-  const ticks: { x: number; major: boolean }[] = []
-  for (const { type, base } of makeTicks(start, end, bpPerPx)) {
-    const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
-    if (x >= blockLeft && x <= blockLeft + widthPx) {
-      ticks.push({ x, major: type === 'major' || type === 'labeledMajor' })
-    }
-  }
-  return ticks
-}
-
-const TICK_BASE_STYLE = 'position:absolute;height:100%;width:1px'
-const BLOCK_BASE_STYLE = 'position:absolute;height:100%'
+const TICK_STYLE = 'position:absolute;height:100%;width:1px'
+const BLOCK_STYLE = 'position:absolute;height:100%'
 const ELIDED_BG =
   'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
 
 function createTickDiv() {
   const el = document.createElement('div')
-  el.style.cssText = TICK_BASE_STYLE
+  el.style.cssText = TICK_STYLE
   return el
+}
+
+function createBlockDiv() {
+  const el = document.createElement('div')
+  el.style.cssText = BLOCK_STYLE
+  return el
+}
+
+function collectTicks(
+  blocks: BaseBlock[],
+  bpPerPx: number,
+  firstBlockOffset: number,
+) {
+  const ticks: { x: number; major: boolean }[] = []
+  for (const block of blocks) {
+    if (block.type === 'ContentBlock') {
+      const { start, end, reversed, widthPx } = block
+      const blockLeft = block.offsetPx - firstBlockOffset
+      for (const { type, base } of makeTicks(start, end, bpPerPx)) {
+        const x = blockLeft + (reversed ? end - base : base - start) / bpPerPx
+        if (x >= blockLeft && x <= blockLeft + widthPx) {
+          ticks.push({
+            x,
+            major: type === 'major' || type === 'labeledMajor',
+          })
+        }
+      }
+    }
+  }
+  return ticks
+}
+
+function getBlockBackground(
+  block: BaseBlock,
+  disabledBgColor: string,
+  textDisabledColor: string,
+) {
+  if (block.type === 'ElidedBlock') {
+    return ELIDED_BG
+  }
+  if (block.variant === 'boundary') {
+    return `background:${disabledBgColor}`
+  }
+  return `background:${textDisabledColor}`
 }
 
 export default function Gridlines({
@@ -61,6 +88,7 @@ export default function Gridlines({
   const theme = useTheme()
   const innerRef = useRef<HTMLDivElement>(null)
   const tickRef = useRef<HTMLDivElement>(null)
+  const blockRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const majorColor = theme.palette.action.disabled
@@ -70,8 +98,9 @@ export default function Gridlines({
 
     return autorun(() => {
       const inner = innerRef.current
-      const container = tickRef.current
-      if (!inner || !container) {
+      const tickContainer = tickRef.current
+      const blockContainer = blockRef.current
+      if (!inner || !tickContainer || !blockContainer) {
         return
       }
       const { staticBlocks, bpPerPx, offsetPx } = model
@@ -81,50 +110,25 @@ export default function Gridlines({
       inner.style.transform = `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`
       inner.style.width = `${staticBlocks.totalWidthPx}px`
 
-      const allBlockTicks: { x: number; major: boolean }[][] = []
-      let tickCount = 0
-      let blockCount = 0
-      for (const block of blocks) {
-        if (block.type === 'ContentBlock') {
-          const ticks = getBlockTicks(block, bpPerPx, firstBlockOffset)
-          allBlockTicks.push(ticks)
-          tickCount += ticks.length
-        } else {
-          allBlockTicks.push([])
-          blockCount++
-        }
+      const ticks = collectTicks(blocks, bpPerPx, firstBlockOffset)
+      const nonContentBlocks = blocks.filter(b => b.type !== 'ContentBlock')
+
+      joinElements(tickContainer, ticks.length, createTickDiv)
+      joinElements(blockContainer, nonContentBlocks.length, createBlockDiv)
+
+      for (let i = 0; i < ticks.length; i++) {
+        const { x, major } = ticks[i]!
+        const el = tickContainer.children[i] as HTMLElement
+        el.style.transform = `translateX(${x}px)`
+        el.style.background = major ? majorColor : minorColor
       }
 
-      joinElements(container, tickCount + blockCount, createTickDiv)
-
-      let childIdx = 0
-      for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i]!
-        if (block.type === 'ContentBlock') {
-          for (const { x, major } of allBlockTicks[i]!) {
-            const el = container.children[childIdx] as HTMLElement
-            if (el.style.width !== '1px') {
-              el.style.cssText = TICK_BASE_STYLE
-            }
-            el.style.transform = `translateX(${x}px)`
-            el.style.background = major ? majorColor : minorColor
-            childIdx++
-          }
-        } else if (block.type === 'ElidedBlock') {
-          const blockLeft = block.offsetPx - firstBlockOffset
-          const el = container.children[childIdx] as HTMLElement
-          el.style.cssText = `${BLOCK_BASE_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;${ELIDED_BG}`
-          childIdx++
-        } else if (block.type === 'InterRegionPaddingBlock') {
-          const blockLeft = block.offsetPx - firstBlockOffset
-          const el = container.children[childIdx] as HTMLElement
-          const bg =
-            block.variant === 'boundary'
-              ? disabledBgColor
-              : textDisabledColor
-          el.style.cssText = `${BLOCK_BASE_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;background:${bg}`
-          childIdx++
-        }
+      for (let i = 0; i < nonContentBlocks.length; i++) {
+        const block = nonContentBlocks[i]!
+        const blockLeft = block.offsetPx - firstBlockOffset
+        const bg = getBlockBackground(block, disabledBgColor, textDisabledColor)
+        const el = blockContainer.children[i] as HTMLElement
+        el.style.cssText = `${BLOCK_STYLE};transform:translateX(${blockLeft}px);width:${block.widthPx}px;${bg}`
       }
     })
   }, [model, theme, offset])
@@ -136,6 +140,7 @@ export default function Gridlines({
         style={{ position: 'absolute', height: '100%', pointerEvents: 'none' }}
       >
         <div ref={tickRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
+        <div ref={blockRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
       </div>
     </div>
   )

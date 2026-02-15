@@ -13,6 +13,7 @@ type LGV = LinearGenomeViewModel
 
 const WRAPPER_BASE_STYLE =
   'position:relative;flex-shrink:0;overflow:hidden;height:13px'
+const SPACER_BASE_STYLE = 'flex-shrink:0;height:13px'
 const ELIDED_BG =
   'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
 
@@ -71,6 +72,7 @@ export default function ScalebarCoordinateLabels({
           const { start, end, reversed } = block
           const ticks = makeTicks(start, end, bpPerPx, true, false)
 
+          wrapper.style.cssText = WRAPPER_BASE_STYLE
           wrapper.style.width = `${block.widthPx}px`
 
           joinTickElements(wrapper, ticks.length)
@@ -83,13 +85,9 @@ export default function ScalebarCoordinateLabels({
             label.style.background = labelBg
             label.textContent = getTickDisplayStr(base + 1, bpPerPx)
           }
-        } else if (block.type === 'ElidedBlock') {
-          wrapper.style.cssText = `flex-shrink:0;height:13px;width:${block.widthPx}px;${ELIDED_BG}`
-          while (wrapper.firstChild) {
-            wrapper.firstChild.remove()
-          }
         } else {
-          wrapper.style.cssText = `flex-shrink:0;height:13px;width:${block.widthPx}px`
+          const elidedBg = block.type === 'ElidedBlock' ? `;${ELIDED_BG}` : ''
+          wrapper.style.cssText = `${SPACER_BASE_STYLE};width:${block.widthPx}px${elidedBg}`
           while (wrapper.firstChild) {
             wrapper.firstChild.remove()
           }

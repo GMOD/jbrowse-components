@@ -1,17 +1,29 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
 import { createColorFunction } from './drawSyntenyWebGL.ts'
 
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
-import type { SyntenyFeatureData } from '../LinearSyntenyRPC/executeSyntenyWebGLGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-import type { Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
+
+function parseCigar(s = '') {
+  let currLen = ''
+  const ret = []
+  for (let i = 0, l = s.length; i < l; i++) {
+    const c = s[i]!
+    if (c >= '0' && c <= '9') {
+      currLen = currLen + c
+    } else {
+      ret.push(currLen, c)
+      currLen = ''
+    }
+  }
+  return ret
+}
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
@@ -103,19 +115,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     ),
   )
 
-  // Cache for serialized features - only re-serialize when the features
-  // array reference changes, avoiding repeated getCanonicalRefName calls
-  // on every bpPerPx change
-  let cachedFeatureRef: readonly Feature[] | undefined
-  let cachedSerializedFeatures: SyntenyFeatureData[] = []
-  // Cache for parsed CIGARs keyed by feature id
-  let cachedCigarsByFeatureId = new Map<string, string[]>()
-
-  // Compute feat positions on the worker via RPC. Tracks
-  // displayedRegions, features, and bpPerPx. The shader's HP scale
-  // compensation keeps rendering smooth during zoom; this reaction
-  // fires after zoom stops (delay: 300) to correct inter-region
-  // padding which is fixed-pixel and doesn't scale with bpPerPx.
+  // Merged RPC: fetches features AND computes positions on the worker,
+  // returning only typed arrays + plain data (no Feature objects through
+  // postMessage). Tracks displayedRegions and bpPerPx.
   addDisposer(
     self,
     reaction(
@@ -131,7 +133,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             view.views.map(v => v.displayedRegions),
           ),
           bpPerPx: view.views.map(v => v.bpPerPx).join(','),
-          features: self.features,
           initialized:
             view.initialized &&
             view.views.every(
@@ -139,18 +140,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             ),
         }
       },
-      async ({ initialized, features }) => {
+      async ({ initialized }) => {
         if (!initialized) {
           return
         }
-        const { level } = self
-        const { assemblyManager, rpcManager } = getSession(self)
+        const { level, adapterConfig } = self
+        const { rpcManager } = getSession(self)
         const view = getContainingView(self) as LSV
         const sessionId = getRpcSessionId(self)
 
-        // Only send the fields bpToPx actually needs, instead of the
-        // entire MST view snapshot which is huge and expensive to
-        // deep-clone in filterArgs/serializeArguments
+        // Only send the fields bpToPx actually needs
         const viewSnaps = view.views.map(v => ({
           bpPerPx: v.bpPerPx,
           offsetPx: v.offsetPx,
@@ -164,46 +163,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           width: v.width,
         }))
 
-        // Cache serialized features - only rebuild when the features
-        // reference changes. This avoids repeated getCanonicalRefName
-        // and feature.get() calls on every bpPerPx change.
-        const feats = features ?? self.features
-        if (!feats) {
-          return
-        }
-        if (feats !== cachedFeatureRef) {
-          cachedFeatureRef = feats
-          cachedSerializedFeatures = []
-          cachedCigarsByFeatureId = new Map()
-          for (const f of feats) {
-            const mate = f.get('mate')
-            const a1 = assemblyManager.get(f.get('assemblyName'))
-            const a2 = assemblyManager.get(mate.assemblyName)
-            const r1 = f.get('refName')
-            const r2 = mate.refName
-            const id = f.id()
-            const cigarStr = f.get('CIGAR') as string | undefined
-            cachedSerializedFeatures.push({
-              id,
-              refName1: a1?.getCanonicalRefName(r1) || r1,
-              refName2: a2?.getCanonicalRefName(r2) || r2,
-              start: f.get('start'),
-              end: f.get('end'),
-              mateStart: mate.start,
-              mateEnd: mate.end,
-              strand: f.get('strand'),
-            })
-            // Pre-parse and cache CIGAR strings on the main thread
-            // instead of round-tripping them through RPC
-            cachedCigarsByFeatureId.set(id, MismatchParser.parseCigar(cigarStr))
-          }
-        }
+        const regions = view.views[level]!.staticBlocks.contentBlocks
 
         const result = (await rpcManager.call(
           sessionId,
-          'SyntenyGetWebGLGeometry',
+          'SyntenyGetFeaturesAndPositions',
           {
-            features: cachedSerializedFeatures,
+            adapterConfig,
+            regions,
             viewSnaps,
             level,
             sessionId,
@@ -213,24 +180,42 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           p12_offsetPx: Float64Array
           p21_offsetPx: Float64Array
           p22_offsetPx: Float64Array
+          strands: Int8Array
+          starts: Float64Array
+          ends: Float64Array
+          identities: Float64Array
           featureIds: string[]
+          names: string[]
+          refNames: string[]
+          assemblyNames: string[]
+          cigars: string[]
+          mates: {
+            start: number
+            end: number
+            refName: string
+            name: string
+            assemblyName: string
+          }[]
         }
 
-        const featureMap = new Map(feats.map(f => [f.id(), f]))
-        const map = [] as FeatPos[]
+        const map: FeatPos[] = []
         for (let i = 0; i < result.featureIds.length; i++) {
-          const fid = result.featureIds[i]!
-          const f = featureMap.get(fid)
-          if (!f) {
-            continue
-          }
+          const identity = result.identities[i]!
           map.push({
             p11: { offsetPx: result.p11_offsetPx[i]! },
             p12: { offsetPx: result.p12_offsetPx[i]! },
             p21: { offsetPx: result.p21_offsetPx[i]! },
             p22: { offsetPx: result.p22_offsetPx[i]! },
-            f,
-            cigar: cachedCigarsByFeatureId.get(fid) || [],
+            id: result.featureIds[i]!,
+            strand: result.strands[i]!,
+            name: result.names[i]!,
+            refName: result.refNames[i]!,
+            start: result.starts[i]!,
+            end: result.ends[i]!,
+            assemblyName: result.assemblyNames[i]!,
+            mate: result.mates[i]!,
+            cigar: parseCigar(result.cigars[i]),
+            identity: identity === -1 ? undefined : identity,
           })
         }
         featPositionsBpPerPxs = viewSnaps.map(v => v.bpPerPx)

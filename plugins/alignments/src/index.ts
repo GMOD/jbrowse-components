@@ -39,4 +39,12 @@ export {
   linearAlignmentsDisplayStateModelFactory,
 } from './LinearAlignmentsDisplay/index.ts'
 export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
-export * as MismatchParser from './MismatchParser/index.ts'
+export {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+  getMismatches,
+  getTag,
+  parseCigar,
+} from './MismatchParser/index.ts'

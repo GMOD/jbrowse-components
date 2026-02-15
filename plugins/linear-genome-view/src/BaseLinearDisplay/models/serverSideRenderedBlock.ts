@@ -4,6 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
   getContainingDisplay,
+  getContainingView,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
@@ -302,6 +303,15 @@ export function renderBlockData(
     const display = (optDisplay ||
       self.cachedDisplay ||
       getContainingDisplay(self)) as any
+
+    // Defer RPCs while the view is actively scrolling. Blocks still appear
+    // in the DOM (loading state) but no fetch fires until scrolling stops.
+    // MobX tracks isScrolling so the reaction re-fires when it becomes false.
+    const view = getContainingView(display) as { isScrolling?: boolean }
+    if (view.isScrolling) {
+      return undefined
+    }
+
     const { assemblyManager, rpcManager } = getSession(display)
     const { adapterConfig, rendererType, error, parentTrack } = display
     const assemblyNames = getTrackAssemblyNames(parentTrack)

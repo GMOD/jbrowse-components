@@ -49,16 +49,11 @@ export function drawRef(
   mainCanvas.strokeStyle = colorMapWithAlpha.M
 
   for (const featPosition of featPositions) {
-    const feature = featPosition
-    const { p11, p12, p21, p22, f, cigar } = feature
-
-    // Cache feature properties
-    const strand = f.get('strand')
-    const refName = f.get('refName')
+    const { p11, p12, p21, p22, cigar, strand, refName } = featPosition
 
     // Filter by minAlignmentLength if enabled
     if (queryTotalLengths) {
-      const queryName = f.get('name') || f.get('id') || f.id()
+      const queryName = featPosition.name || featPosition.id
       const totalLength = queryTotalLengths.get(queryName) || 0
       if (totalLength < minAlignmentLength) {
         continue

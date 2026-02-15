@@ -33,6 +33,8 @@ const useStyles = makeStyles()({
   webglCanvas: {
     position: 'absolute',
     imageRendering: 'auto',
+    willChange: 'transform',
+    contain: 'strict',
   },
 })
 
@@ -76,8 +78,21 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
+    let scrollingTimer: ReturnType<typeof setTimeout> | undefined
     function onWheel(event: WheelEvent) {
       event.preventDefault()
+      for (const v of view.views) {
+        ;(v as unknown as { setIsScrolling?: (val: boolean) => void }).setIsScrolling?.(true)
+      }
+      model.webglRenderer?.setDPR(1)
+      clearTimeout(scrollingTimer)
+      scrollingTimer = setTimeout(() => {
+        for (const v of view.views) {
+          ;(v as unknown as { setIsScrolling?: (val: boolean) => void }).setIsScrolling?.(false)
+        }
+        model.webglRenderer?.setDPR(2)
+      }, 150)
+
       const doZoom =
         event.ctrlKey ||
         (view.scrollZoom && Math.abs(event.deltaY) > Math.abs(event.deltaX))
@@ -125,6 +140,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     target?.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       target?.removeEventListener('wheel', onWheel)
+      clearTimeout(scrollingTimer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
@@ -210,8 +226,8 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
       const feat = handleWebGLPick(x, y)
       if (feat) {
-        model.setMouseoverId(feat.f.id())
-        setTooltip(getTooltip({ feature: feat.f }))
+        model.setMouseoverId(feat.id)
+        setTooltip(getTooltip(feat))
       } else {
         model.setMouseoverId(undefined)
         setTooltip('')
@@ -249,8 +265,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           const y = evt.clientY - rect.top
           const feat = handleWebGLPick(x, y)
           if (feat) {
-            const { f } = feat
-            model.setClickId(f.id())
+            model.setClickId(feat.id)
             const session = getSession(model)
             if (isSessionModelWithWidgets(session)) {
               const containingView = getContainingView(model)
@@ -259,7 +274,17 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
                 session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
                   view: containingView,
                   track,
-                  featureData: f.toJSON(),
+                  featureData: {
+                    uniqueId: feat.id,
+                    start: feat.start,
+                    end: feat.end,
+                    strand: feat.strand,
+                    refName: feat.refName,
+                    name: feat.name,
+                    assemblyName: feat.assemblyName,
+                    mate: feat.mate,
+                    identity: feat.identity,
+                  },
                   level: model.level,
                 }),
               )
@@ -286,7 +311,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           const y = evt.clientY - rect.top
           const feat = handleWebGLPick(x, y)
           if (feat) {
-            model.setClickId(feat.f.id())
+            model.setClickId(feat.id)
             setAnchorEl({
               clientX: evt.clientX,
               clientY: evt.clientY,

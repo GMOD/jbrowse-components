@@ -1,11 +1,11 @@
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { FeatPos } from '../model.ts'
 
 export interface ClickCoord {
   clientX: number
   clientY: number
-  feature: { f: Feature }
+  feature: FeatPos
 }
 
 export function draw(
@@ -134,47 +134,23 @@ export function drawBezierBox(
   ctx.closePath()
 }
 
-export function getTooltip({
-  feature,
-  cigarOp,
-  cigarOpLen,
-}: {
-  feature: Feature
-  cigarOpLen?: string
-  cigarOp?: string
-}) {
-  // @ts-expect-error
-  const f1 = feature.toJSON() as {
-    refName: string
-    start: number
-    end: number
-    strand?: number
-    assemblyName: string
-    identity?: number
-    name?: string
-    mate: {
-      start: number
-      end: number
-      refName: string
-      name: string
-    }
-  }
-  const f2 = f1.mate
-  const l1 = f1.end - f1.start
-  const l2 = f2.end - f2.start
-  const identity = f1.identity
-  const n1 = f1.name
-  const n2 = f2.name
+export function getTooltip(
+  feat: FeatPos,
+  cigarOp?: string,
+  cigarOpLen?: string,
+) {
+  const l1 = feat.end - feat.start
+  const l2 = feat.mate.end - feat.mate.start
   return [
-    `Loc1: ${assembleLocString(f1)}`,
-    `Loc2: ${assembleLocString(f2)}`,
-    `Inverted: ${f1.strand === -1}`,
+    `Loc1: ${assembleLocString({ refName: feat.refName, start: feat.start, end: feat.end, assemblyName: feat.assemblyName })}`,
+    `Loc2: ${assembleLocString({ refName: feat.mate.refName, start: feat.mate.start, end: feat.mate.end, assemblyName: feat.mate.assemblyName })}`,
+    `Inverted: ${feat.strand === -1}`,
     `Query len: ${toLocale(l1)}`,
     `Target len: ${toLocale(l2)}`,
-    identity ? `Identity: ${identity.toPrecision(2)}` : '',
+    feat.identity !== undefined ? `Identity: ${feat.identity.toPrecision(2)}` : '',
     cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
-    n1 ? `Name 1: ${n1}` : '',
-    n2 ? `Name 2: ${n2}` : '',
+    feat.name ? `Name 1: ${feat.name}` : '',
+    feat.mate.name ? `Name 2: ${feat.mate.name}` : '',
   ]
     .filter(f => !!f)
     .join('<br/>')

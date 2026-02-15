@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -211,8 +211,14 @@ function renderBlockData(self: LinearComparativeDisplay) {
   const { level, adapterConfig } = self
   const parent = getContainingView(self) as LinearComparativeViewModel
   const sessionId = getRpcSessionId(self)
-  getSnapshot(parent)
-  return parent.initialized
+
+  // Track only staticBlocks (depends on displayedRegions + bpPerPx) rather
+  // than getSnapshot(parent) which deep-reads the entire view tree including
+  // offsetPx, causing this data function to re-evaluate on every scroll frame
+  const view = parent.views[level]
+  const contentBlocks = view?.staticBlocks?.contentBlocks
+
+  return parent.initialized && contentBlocks?.length
     ? {
         rpcManager,
         renderProps: {
