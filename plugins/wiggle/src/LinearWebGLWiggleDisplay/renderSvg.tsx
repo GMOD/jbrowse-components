@@ -72,8 +72,7 @@ export async function renderSvg(
           continue
         }
 
-        const x =
-          (featureStart - block.start) / bpPerPx + blockScreenX
+        const x = (featureStart - block.start) / bpPerPx + blockScreenX
         const y = scale(score) + offset
         pathData += `${pathData === '' ? 'M' : 'L'}${x},${y}`
       }
@@ -92,8 +91,7 @@ export async function renderSvg(
           continue
         }
 
-        const x =
-          (featureStart - block.start) / bpPerPx + blockScreenX
+        const x = (featureStart - block.start) / bpPerPx + blockScreenX
         const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
 
         if (renderingType === 'xyplot') {

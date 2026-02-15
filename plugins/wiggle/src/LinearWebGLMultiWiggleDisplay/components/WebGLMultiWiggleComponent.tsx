@@ -364,11 +364,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
         {/* Y scalebars */}
         {model.ticks ? (
-          <g
-            transform={`translate(${
-              scalebarLeft || 50
-            } 0)`}
-          >
+          <g transform={`translate(${scalebarLeft || 50} 0)`}>
             {model.rowHeightTooSmallForScalebar ? (
               <ScoreLegend model={model} canvasWidth={totalWidth} />
             ) : (

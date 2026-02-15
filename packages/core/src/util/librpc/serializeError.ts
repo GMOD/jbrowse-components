@@ -1,6 +1,5 @@
 import NonError from './nonError.ts'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyErrorConstructor = new (...args: any[]) => Error
 
 const errorConstructors = new Map<string, AnyErrorConstructor>([

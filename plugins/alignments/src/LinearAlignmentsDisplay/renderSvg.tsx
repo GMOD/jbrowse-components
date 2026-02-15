@@ -21,12 +21,7 @@ export async function renderSvg(
   const theme = createJBrowseTheme(opts?.theme)
   const view = getContainingView(model) as LGV
   const { offsetPx, bpPerPx } = view
-  const {
-    rpcDataMap,
-    showCoverage,
-    coverageHeight,
-    coverageTicks,
-  } = model
+  const { rpcDataMap, showCoverage, coverageHeight, coverageTicks } = model
 
   if (rpcDataMap.size === 0 || !showCoverage) {
     return null

@@ -1,6 +1,3 @@
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
-
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { bpToPx as bpToPxOrig } from '@jbrowse/core/util/Base1DUtils'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -8,9 +5,11 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
 
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
 
 function computePaddingPx(self: ViewSnap, regionIndex: number) {
@@ -27,7 +26,12 @@ function computePaddingPx(self: ViewSnap, regionIndex: number) {
   return paddingCount * interRegionPaddingWidth
 }
 
-function bpToPx({ self, refName, coord, regionNumber }: {
+function bpToPx({
+  self,
+  refName,
+  coord,
+  regionNumber,
+}: {
   self: ViewSnap
   refName: string
   coord: number
@@ -60,11 +64,14 @@ export async function executeSyntenyFeaturesAndPositions({
   level: number
   stopToken?: string
 }) {
-  const dataAdapter = (await getAdapter(pluginManager, sessionId, adapterConfig))
-    .dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = (
+    await getAdapter(pluginManager, sessionId, adapterConfig)
+  ).dataAdapter as BaseFeatureDataAdapter
 
   const features = await firstValueFrom(
-    dataAdapter.getFeaturesInMultipleRegions(regions, { stopToken }).pipe(toArray()),
+    dataAdapter
+      .getFeaturesInMultipleRegions(regions, { stopToken })
+      .pipe(toArray()),
   )
 
   const v1 = viewSnaps[level]!
@@ -87,7 +94,13 @@ export async function executeSyntenyFeaturesAndPositions({
   const refNames: string[] = []
   const assemblyNames: string[] = []
   const cigars: string[] = []
-  const mates: { start: number; end: number; refName: string; name: string; assemblyName: string }[] = []
+  const mates: {
+    start: number
+    end: number
+    refName: string
+    name: string
+    assemblyName: string
+  }[] = []
 
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
@@ -101,9 +114,9 @@ export async function executeSyntenyFeaturesAndPositions({
       name: string
       assemblyName: string
     }
-    const refName = f.get('refName') as string
-    const start = f.get('start') as number
-    const end = f.get('end') as number
+    const refName = f.get('refName')
+    const start = f.get('start')
+    const end = f.get('end')
 
     let f1s = start
     let f1e = end

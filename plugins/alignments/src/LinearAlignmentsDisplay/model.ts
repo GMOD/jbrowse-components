@@ -584,7 +584,10 @@ export default function stateModelFactory(
         }
         let maxDistance = 0
         for (const data of self.rpcDataMap.values()) {
-          if (data.maxDistance !== undefined && data.maxDistance > maxDistance) {
+          if (
+            data.maxDistance !== undefined &&
+            data.maxDistance > maxDistance
+          ) {
             maxDistance = data.maxDistance
           }
         }

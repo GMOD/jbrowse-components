@@ -147,7 +147,9 @@ export function getTooltip(
     `Inverted: ${feat.strand === -1}`,
     `Query len: ${toLocale(l1)}`,
     `Target len: ${toLocale(l2)}`,
-    feat.identity !== undefined ? `Identity: ${feat.identity.toPrecision(2)}` : '',
+    feat.identity !== undefined
+      ? `Identity: ${feat.identity.toPrecision(2)}`
+      : '',
     cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
     feat.name ? `Name 1: ${feat.name}` : '',
     feat.mate.name ? `Name 2: ${feat.mate.name}` : '',

@@ -27,9 +27,8 @@ export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { executeSyntenyFeaturesAndPositions } = await import(
-      './executeSyntenyFeaturesAndPositions.ts'
-    )
+    const { executeSyntenyFeaturesAndPositions } =
+      await import('./executeSyntenyFeaturesAndPositions.ts')
     return executeSyntenyFeaturesAndPositions({
       ...deserializedArgs,
       pluginManager: this.pluginManager,

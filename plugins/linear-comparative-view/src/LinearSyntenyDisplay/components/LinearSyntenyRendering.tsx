@@ -82,13 +82,17 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     function onWheel(event: WheelEvent) {
       event.preventDefault()
       for (const v of view.views) {
-        ;(v as unknown as { setIsScrolling?: (val: boolean) => void }).setIsScrolling?.(true)
+        ;(
+          v as unknown as { setIsScrolling?: (val: boolean) => void }
+        ).setIsScrolling?.(true)
       }
       model.setIsScrolling(true)
       clearTimeout(scrollingTimer)
       scrollingTimer = setTimeout(() => {
         for (const v of view.views) {
-          ;(v as unknown as { setIsScrolling?: (val: boolean) => void }).setIsScrolling?.(false)
+          ;(
+            v as unknown as { setIsScrolling?: (val: boolean) => void }
+          ).setIsScrolling?.(false)
         }
         model.setIsScrolling(false)
       }, 150)

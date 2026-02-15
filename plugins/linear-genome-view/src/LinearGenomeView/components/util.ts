@@ -36,7 +36,7 @@ export function joinElements(
     container.lastElementChild!.remove()
   }
   while (container.childElementCount < count) {
-    container.appendChild(create ? create() : document.createElement('div'))
+    container.append(create ? create() : document.createElement('div'))
   }
 }
 

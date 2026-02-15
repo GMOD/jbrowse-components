@@ -84,8 +84,7 @@ export function computeVisibleLabels(
           continue
         }
 
-        const startPx =
-          (gapStart - blockStart) / bpPerPx + blockScreenOffsetPx
+        const startPx = (gapStart - blockStart) / bpPerPx + blockScreenOffsetPx
         const endPx = (gapEnd - blockStart) / bpPerPx + blockScreenOffsetPx
         const widthPx = endPx - startPx
 
@@ -114,12 +113,8 @@ export function computeVisibleLabels(
     }
 
     // Process insertions
-    const {
-      insertionPositions,
-      insertionYs,
-      insertionLengths,
-      numInsertions,
-    } = rpcData
+    const { insertionPositions, insertionYs, insertionLengths, numInsertions } =
+      rpcData
     for (let i = 0; i < numInsertions; i++) {
       const posOffset = insertionPositions[i]!
       const length = insertionLengths[i]!
@@ -241,10 +236,8 @@ export function computeVisibleLabels(
           continue
         }
 
-        const startPx =
-          (pos - blockStart) / bpPerPx + blockScreenOffsetPx
-        const endPx =
-          (pos + 1 - blockStart) / bpPerPx + blockScreenOffsetPx
+        const startPx = (pos - blockStart) / bpPerPx + blockScreenOffsetPx
+        const endPx = (pos + 1 - blockStart) / bpPerPx + blockScreenOffsetPx
         const xPx = (startPx + endPx) / 2
 
         const yPx =

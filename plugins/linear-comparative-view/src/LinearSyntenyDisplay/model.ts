@@ -27,7 +27,13 @@ export interface FeatPos {
   start: number
   end: number
   assemblyName: string
-  mate: { start: number; end: number; refName: string; name: string; assemblyName: string }
+  mate: {
+    start: number
+    end: number
+    refName: string
+    name: string
+    assemblyName: string
+  }
   cigar: string[]
   identity?: number
 }

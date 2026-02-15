@@ -20,14 +20,8 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const { offsetPx, bpPerPx } = view
   const height = model.height
-  const {
-    renderingType,
-    ticks,
-    rpcDataMap,
-    domain,
-    scaleType,
-    numSources,
-  } = model
+  const { renderingType, ticks, rpcDataMap, domain, scaleType, numSources } =
+    model
 
   if (rpcDataMap.size === 0 || !domain || numSources === 0) {
     return null
@@ -75,8 +69,7 @@ export async function renderSvg(
             continue
           }
 
-          const x =
-            (featureStart - block.start) / bpPerPx + blockScreenX
+          const x = (featureStart - block.start) / bpPerPx + blockScreenX
           const y = scale(score) + offset + rowY
           pathData += `${pathData === '' ? 'M' : 'L'}${x},${y}`
         }
@@ -94,8 +87,7 @@ export async function renderSvg(
             continue
           }
 
-          const x =
-            (featureStart - block.start) / bpPerPx + blockScreenX
+          const x = (featureStart - block.start) / bpPerPx + blockScreenX
           const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
 
           if (renderingType === 'multirowxy') {

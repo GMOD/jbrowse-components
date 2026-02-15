@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
-import { useTheme } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
 import { makeTicks } from '../util.ts'
@@ -113,15 +113,15 @@ export default function Gridlines({
       joinElements(tickContainer, ticks.length, createTickDiv)
       joinElements(blockContainer, nonContentBlocks.length, createBlockDiv)
 
-      for (let i = 0; i < ticks.length; i++) {
-        const { x, major } = ticks[i]!
+      for (const [i, tick] of ticks.entries()) {
+        const { x, major } = tick
         const el = tickContainer.children[i] as HTMLElement
         el.style.transform = `translateX(${x}px)`
         el.style.background = major ? majorColor : minorColor
       }
 
-      for (let i = 0; i < nonContentBlocks.length; i++) {
-        const block = nonContentBlocks[i]!
+      for (const [i, nonContentBlock] of nonContentBlocks.entries()) {
+        const block = nonContentBlock
         const blockLeft = block.offsetPx - firstBlockOffset
         const bg = getBlockBackground(block, disabledBgColor, textDisabledColor)
         const el = blockContainer.children[i] as HTMLElement
@@ -136,8 +136,14 @@ export default function Gridlines({
         ref={innerRef}
         style={{ position: 'absolute', height: '100%', pointerEvents: 'none' }}
       >
-        <div ref={tickRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
-        <div ref={blockRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
+        <div
+          ref={tickRef}
+          style={{ position: 'absolute', width: '100%', height: '100%' }}
+        />
+        <div
+          ref={blockRef}
+          style={{ position: 'absolute', width: '100%', height: '100%' }}
+        />
       </div>
     </div>
   )

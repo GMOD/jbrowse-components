@@ -3,10 +3,7 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, reaction } from 'mobx'
@@ -63,8 +60,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           self
         const height = self.height
         const width = view.width
-        const isScrolling = self.isScrolling ||
-          view.views.some(v => (v as unknown as { isScrolling?: boolean }).isScrolling)
+        const isScrolling =
+          self.isScrolling ||
+          view.views.some(
+            v => (v as unknown as { isScrolling?: boolean }).isScrolling,
+          )
 
         if (!self.webglRenderer || !self.webglInitialized) {
           return
@@ -149,9 +149,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           // track visible content blocks so we re-fetch when new regions
           // scroll into view (staticBlocks depends on offsetPx)
           contentBlockKeys: view.views
-            .map(v =>
-              v.staticBlocks.contentBlocks.map(b => b.key).join(','),
-            )
+            .map(v => v.staticBlocks.contentBlocks.map(b => b.key).join(','))
             .join('|'),
           initialized:
             view.initialized &&

@@ -21,7 +21,7 @@ function createTickElement() {
   const label = document.createElement('div')
   label.style.cssText =
     'font-size:11px;z-index:1;line-height:normal;pointer-events:none'
-  tick.appendChild(label)
+  tick.append(label)
   return tick
 }
 
@@ -31,11 +31,7 @@ function createWrapperDiv() {
   return el
 }
 
-export default function ScalebarCoordinateLabels({
-  model,
-}: {
-  model: LGV
-}) {
+export default function ScalebarCoordinateLabels({ model }: { model: LGV }) {
   const theme = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -52,8 +48,8 @@ export default function ScalebarCoordinateLabels({
 
       joinElements(container, blocks.length, createWrapperDiv)
 
-      for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i]!
+      for (const [i, block_] of blocks.entries()) {
+        const block = block_
         const wrapper = container.children[i] as HTMLElement
 
         if (block.type === 'ContentBlock') {
@@ -64,8 +60,8 @@ export default function ScalebarCoordinateLabels({
 
           joinElements(wrapper, ticks.length, createTickElement)
 
-          for (let j = 0; j < ticks.length; j++) {
-            const { base } = ticks[j]!
+          for (const [j, tick_] of ticks.entries()) {
+            const { base } = tick_
             const tick = wrapper.children[j] as HTMLElement
             tick.style.transform = `translateX(${(reversed ? end - base : base - start) / bpPerPx}px)`
             const label = tick.firstElementChild as HTMLElement

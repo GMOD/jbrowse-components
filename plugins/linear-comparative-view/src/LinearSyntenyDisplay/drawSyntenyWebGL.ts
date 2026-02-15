@@ -1179,12 +1179,8 @@ export class SyntenyWebGLRenderer {
     // (when curves are off, the normal VAOs already use 1-segment straight lines)
     const useStraightVaos =
       fastScrollMode && this.currentFillSegments > STRAIGHT_FILL_SEGMENTS
-    const activeFillVao = useStraightVaos
-      ? this.straightFillVao
-      : this.fillVao
-    const activeEdgeVao = useStraightVaos
-      ? this.straightEdgeVao
-      : this.edgeVao
+    const activeFillVao = useStraightVaos ? this.straightFillVao : this.fillVao
+    const activeEdgeVao = useStraightVaos ? this.straightEdgeVao : this.edgeVao
     const activeFillVerts = useStraightVaos
       ? this.straightFillVerticesPerInstance
       : this.fillVerticesPerInstance
@@ -1220,7 +1216,12 @@ export class SyntenyWebGLRenderer {
     }
 
     // Skip edges during scroll — straight fills are sufficient for visibility
-    if (!skipEdges && !fastScrollMode && activeEdgeVao && this.nonCigarInstanceCount > 0) {
+    if (
+      !skipEdges &&
+      !fastScrollMode &&
+      activeEdgeVao &&
+      this.nonCigarInstanceCount > 0
+    ) {
       gl.useProgram(this.edgeProgram)
       gl.bindVertexArray(activeEdgeVao)
       this.setUniforms(
@@ -1586,8 +1587,7 @@ export function createColorFunction(
   colorBy: string,
 ): (f: FeatPos, index: number) => [number, number, number, number] {
   if (colorBy === 'strand') {
-    return (f: FeatPos) =>
-      f.strand === -1 ? [0, 0, 1, 1] : [1, 0, 0, 1]
+    return (f: FeatPos) => (f.strand === -1 ? [0, 0, 1, 1] : [1, 0, 0, 1])
   }
 
   if (colorBy === 'query') {
