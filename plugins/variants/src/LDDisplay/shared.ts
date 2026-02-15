@@ -5,7 +5,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
-  NonBlockCanvasDisplayMixin,
+  FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -13,10 +13,14 @@ import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
+import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel SharedLDModel
@@ -24,7 +28,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -34,7 +38,7 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      NonBlockCanvasDisplayMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -153,7 +157,31 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      flatbush: undefined as ArrayBufferLike | undefined,
+      rpcData: null as WebGLLDDataResult | null,
+      /**
+       * #volatile
+       */
+      loading: false,
+      /**
+       * #volatile
+       */
+      statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnBpPerPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      renderingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      flatbush: undefined as ArrayBuffer | undefined,
       /**
        * #volatile
        */
@@ -177,10 +205,6 @@ export default function sharedModelFactory(
       cellWidth: 0,
       /**
        * #volatile
-       */
-      error: undefined as Error | undefined,
-      /**
-       * #volatile
        * Stats about filtered variants
        */
       filterStats: undefined as FilterStats | undefined,
@@ -196,8 +220,44 @@ export default function sharedModelFactory(
       /**
        * #action
        */
+      setRpcData(data: WebGLLDDataResult | null) {
+        self.rpcData = data
+      },
+      /**
+       * #action
+       */
+      setLoading(loading: boolean) {
+        self.loading = loading
+      },
+      /**
+       * #action
+       */
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
+      },
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(px: number) {
+        self.lastDrawnOffsetPx = px
+      },
+      /**
+       * #action
+       */
+      setLastDrawnBpPerPx(bpPerPx: number) {
+        self.lastDrawnBpPerPx = bpPerPx
+      },
+      /**
+       * #action
+       */
+      setRenderingStopToken(token?: string) {
+        self.renderingStopToken = token
+      },
+      /**
+       * #action
+       */
       setFlatbushData(
-        flatbush: ArrayBufferLike | undefined,
+        flatbush: ArrayBuffer | undefined,
         items: LDFlatbushItem[],
         snps: LDMatrixResult['snps'],
         maxScore: number,
@@ -363,11 +423,11 @@ export default function sharedModelFactory(
       get rendererTypeName() {
         return 'LDRenderer'
       },
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        return getConf(self, 'renderer')
+      get drawn() {
+        return !!self.rpcData
+      },
+      get fullyDrawn() {
+        return !!self.rpcData
       },
       /**
        * #getter
@@ -553,69 +613,60 @@ export default function sharedModelFactory(
         return Math.max(50, self.height - self.lineZoneHeight)
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        filterMenuItems() {
-          // Filter settings only available for VCF-computed LD, not pre-computed
-          if (self.isPrecomputedLD) {
-            return []
-          }
-          return [
-            {
-              label: 'LD-specific filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  LDFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+    .views(self => ({
+      /**
+       * #method
+       */
+      filterMenuItems() {
+        // Filter settings only available for VCF-computed LD, not pre-computed
+        if (self.isPrecomputedLD) {
+          return []
+        }
+        return [
+          {
+            label: 'LD-specific filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                LDFilterDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-            {
-              label: 'General JEXL filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+          },
+          {
+            label: 'General JEXL filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                AddFiltersDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-          ]
-        },
-        /**
-         * #method
-         */
-        renderProps() {
-          return {
-            ...superRenderProps(),
-            config: self.rendererConfig,
-            // Only pass displayHeight when fitToHeight is true
-            // This avoids tracking height changes when using natural triangle size
-            // ldCanvasHeight already accounts for lineZoneHeight and recombinationZoneHeight
-            ...(self.fitToHeight ? { displayHeight: self.ldCanvasHeight } : {}),
-            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-            lengthCutoffFilter: self.lengthCutoffFilter,
-            hweFilterThreshold: self.hweFilterThreshold,
-            callRateFilter: self.callRateFilter,
-            jexlFilters: self.jexlFilters,
-            ldMetric: self.ldMetric,
-            colorScheme: self.colorScheme,
-            fitToHeight: self.fitToHeight,
-            useGenomicPositions: self.useGenomicPositions,
-            signedLD: self.signedLD,
-          }
-        },
-      }
-    })
+          },
+        ]
+      },
+      renderProps() {
+        return { notReady: true }
+      },
+      /**
+       * #method
+       */
+      legendItems(): LegendItem[] {
+        const metric = self.ldMetric === 'dprime' ? "D'" : 'R²'
+        const range = self.signedLD ? '-1 to 1' : '0 to 1'
+        return [{ label: `${metric}: ${range}` }]
+      },
+      /**
+       * #method
+       */
+      svgLegendWidth(): number {
+        return self.showLegend ? 140 : 0
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {

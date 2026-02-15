@@ -45,7 +45,7 @@ importers:
         specifier: ^7.3.8
         version: 7.3.8(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
       '@mui/x-data-grid':
-        specifier: ^8.27.0
+        specifier: ^8.27.1
         version: 8.27.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@mui/material@7.3.8(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@mui/system@7.3.8(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@node-oauth/express-oauth-server':
         specifier: ^4.1.5
@@ -249,7 +249,7 @@ importers:
         specifier: ^3.8.1
         version: 3.8.1
       puppeteer:
-        specifier: ^24.37.2
+        specifier: ^24.37.3
         version: 24.37.3(typescript@5.9.3)
       react:
         specifier: ^19.2.4
@@ -359,9 +359,6 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.0.12
         version: 6.0.12
-      '@gmod/http-range-fetcher':
-        specifier: ^5.0.7
-        version: 5.0.7
       '@jbrowse/jexl':
         specifier: ^3.0.1
         version: 3.0.1
@@ -425,9 +422,6 @@ importers:
       idb:
         specifier: ^8.0.3
         version: 8.0.3
-      librpc-web-mod:
-        specifier: ^2.1.1
-        version: 2.1.1
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -491,9 +485,6 @@ importers:
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
-      librpc-web-mod:
-        specifier: ^2.1.1
-        version: 2.1.1
       mobx:
         specifier: ^6.15.0
         version: 6.15.0
@@ -596,11 +587,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.1.15
-        version: 7.1.15(buffer@6.0.3)
+        specifier: ^7.1.17
+        version: 7.1.17(buffer@6.0.3)
       '@gmod/cram':
-        specifier: ^8.0.1
-        version: 8.0.1(buffer@6.0.3)
+        specifier: ^8.0.4
+        version: 8.0.4(buffer@6.0.3)
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -787,6 +778,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
+      '@mui/icons-material':
+        specifier: ^7.3.8
+        version: 7.3.8(@mui/material@7.3.8(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
       '@mui/material':
         specifier: ^7.3.8
         version: 7.3.8(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1519,6 +1513,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^5.5.0
         version: 5.5.0(mobx@6.15.0)
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:^
+        version: link:../canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../circular-view
@@ -1842,8 +1839,8 @@ importers:
         specifier: 40.4.0
         version: 40.4.0
       electron-chromedriver:
-        specifier: ^40.4.0
-        version: 40.4.0
+        specifier: ^40.4.1
+        version: 40.4.1
       esbuild:
         specifier: ^0.27.3
         version: 0.27.3
@@ -2363,8 +2360,8 @@ packages:
   '@asamuzakjp/css-color@4.1.2':
     resolution: {integrity: sha512-NfBUvBaYgKIuq6E/RBLY1m0IohzNHAYyaJGuTK79Z23uNwmz2jl1mPsC5ZxCCxylinKhT1Amn5oNTlx1wN8cQg==}
 
-  '@asamuzakjp/dom-selector@6.7.8':
-    resolution: {integrity: sha512-stisC1nULNc9oH5lakAj8MH88ZxeGxzyWNDfbdCxvJSJIvDsHNZqYvscGTgy/ysgXWLJPt6K/4t0/GjvtKcFJQ==}
+  '@asamuzakjp/dom-selector@6.8.0':
+    resolution: {integrity: sha512-tJHMAFJ9ooEm8iSiguVqodoEQLBvvcnImz43u0R58m03SMUQENIvXWrN1slb/aiZrC9+X/bXbNWzsrZen9lrgA==}
 
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
@@ -3407,8 +3404,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.1.15':
-    resolution: {integrity: sha512-Z8kA0zpjJtKiesQ/pD/eVmDhspQG0LcwkrstIw5/rYyVJ5/iBdeOFN8mKR3giuBO5zuJ+OsUFf3Lifjdqofxcw==}
+  '@gmod/bam@7.1.17':
+    resolution: {integrity: sha512-sMmIuxAxmZfnQx8PhVZq/IBdnZjVR3sfQfMGYjcMot6TAEly3FoTe2RpMfpKRFLVR0y2Buy/OYS4wsZ6Ac6ceg==}
     engines: {node: '>=6'}
 
   '@gmod/bbi@8.1.1':
@@ -3423,8 +3420,8 @@ packages:
     resolution: {integrity: sha512-VTFaF6gVNZmGTTDpiQnPxiBEEV6Cw6yKFFbfoV3TyIamejLBHQq5kodjIhBbL/VJ6ooSOugFno7+eRURd6mGbQ==}
     engines: {node: '>=6'}
 
-  '@gmod/cram@8.0.1':
-    resolution: {integrity: sha512-89Niq74Itaub5+C7gGZUIpDTVPuipHnDZtmV7eg5BmYfYsbp80KHfpm+Qd+hQKxz6c2MLPeKx6+0cp3F8kVBhg==}
+  '@gmod/cram@8.0.4':
+    resolution: {integrity: sha512-26HX1TO+tVN+4B0A3z1UQ0fGVsIVFM6ynrt+bln717YuohVMxZT/0cVV5kflH8pI8yHFPYEvQqGhC1II5FLFyA==}
     engines: {node: '>=6'}
 
   '@gmod/faidx@2.0.0':
@@ -3433,9 +3430,6 @@ packages:
 
   '@gmod/hclust@1.0.7':
     resolution: {integrity: sha512-aG3ccCvxM00oaPi/guM6iAaQ1dBjb4OnqfEHXYN90grVi80x62nv9sqy5jKu7RlhNv4ohYbjgvtuwKkPuFlapA==}
-
-  '@gmod/http-range-fetcher@5.0.7':
-    resolution: {integrity: sha512-WEOm5SnRbdhtB5RDXDW7LSUsam/fJH1hiGsyqjdG1vvkn6Ddv4wcCAY8AP4qqxPZicg1KNz53qhifMMksg6eLQ==}
 
   '@gmod/indexedfasta@5.0.2':
     resolution: {integrity: sha512-IbnESnqxSTBa4cGmU2Lhvo/LfDvzaKfWNdWsq6ODrbJ7FH0HvJw6o/5Npeoo0lV4foCqBJKnAJjNIYs1qsVa4w==}
@@ -5743,8 +5737,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-chromedriver@40.4.0:
-    resolution: {integrity: sha512-/LKM3mDxZp/YsEoJ5IIgHvPEWOxw2JYKVNmDH5un5J27JQhV4fm+QP8YWaRFrWvzA7vYPrdm2X5opJBcJRHjWQ==}
+  electron-chromedriver@40.4.1:
+    resolution: {integrity: sha512-bcwWEzoiu0pugrqnYLf1clP1vEvHOtAiacWElhSQXf0ELf1CfcQV/Pxv/rTvPXDbVIlQ+6d+lICtSNBTX2g45g==}
     engines: {node: '>=10.12.0'}
     hasBin: true
 
@@ -7201,9 +7195,6 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
-
-  librpc-web-mod@2.1.1:
-    resolution: {integrity: sha512-ybKVK3wkEGj+wGd7P0A6LVCtge7seeTXPjSxhI3kaOkm5NPb/vFGGNO4Iu1G0ht69cCfVRlNjwvwpwUShi9G3g==}
 
   lie@3.3.0:
     resolution: {integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==}
@@ -8704,8 +8695,8 @@ packages:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
 
-  text-decoder@1.2.4:
-    resolution: {integrity: sha512-mzlffA3tBNhziEHPK5L5InZg1d/ElNIpJhnhbDRNUtem/edZcJ5zg5FgwKKKOyklxk+6Jt+TrSu83musmvrDlg==}
+  text-decoder@1.2.6:
+    resolution: {integrity: sha512-27FeW5GQFDfw0FpwMQhMagB7BztOOlmjcSRi97t2oplhKVTZtp0DZbSegSaXS5IIC6mxMvBG4AR1Sgc6BX3CQg==}
 
   thingies@2.5.0:
     resolution: {integrity: sha512-s+2Bwztg6PhWUD7XMfeYm5qliDdSiZm7M7n8KjTkIsm3l/2lgVRc2/Gx/v+ZX8lT4FMA+i8aQvhcWylldc+ZNw==}
@@ -8917,8 +8908,8 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
-  undici@7.21.0:
-    resolution: {integrity: sha512-Hn2tCQpoDt1wv23a68Ctc8Cr/BHpUSfaPYrkajTXOS9IKpxVRx/X5m1K2YkbK2ipgZgxXSgsUinl3x+2YdSSfg==}
+  undici@7.22.0:
+    resolution: {integrity: sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==}
     engines: {node: '>=20.18.1'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
@@ -9294,7 +9285,7 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.0
       lru-cache: 11.2.6
 
-  '@asamuzakjp/dom-selector@6.7.8':
+  '@asamuzakjp/dom-selector@6.8.0':
     dependencies:
       '@asamuzakjp/nwsapi': 2.3.9
       bidi-js: 1.0.3
@@ -10516,7 +10507,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.1.15(buffer@6.0.3)':
+  '@gmod/bam@7.1.17(buffer@6.0.3)':
     dependencies:
       '@gmod/bgzf-filehandle': 6.0.12
       '@jbrowse/quick-lru': 7.3.5
@@ -10540,7 +10531,7 @@ snapshots:
       generic-filehandle2: 2.0.18
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.0.1(buffer@6.0.3)':
+  '@gmod/cram@8.0.4(buffer@6.0.3)':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2(buffer@6.0.3)
@@ -10552,10 +10543,6 @@ snapshots:
   '@gmod/faidx@2.0.0': {}
 
   '@gmod/hclust@1.0.7': {}
-
-  '@gmod/http-range-fetcher@5.0.7':
-    dependencies:
-      '@jbrowse/quick-lru': 7.3.5
 
   '@gmod/indexedfasta@5.0.2':
     dependencies:
@@ -13214,7 +13201,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-chromedriver@40.4.0:
+  electron-chromedriver@40.4.1:
     dependencies:
       '@electron/get': 2.0.3
       extract-zip: 2.0.1
@@ -15057,7 +15044,7 @@ snapshots:
   jsdom@28.0.0(canvas@3.2.1):
     dependencies:
       '@acemir/cssom': 0.9.31
-      '@asamuzakjp/dom-selector': 6.7.8
+      '@asamuzakjp/dom-selector': 6.8.0
       '@exodus/bytes': 1.14.1
       cssstyle: 5.3.7
       data-urls: 7.0.0
@@ -15070,7 +15057,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.0
-      undici: 7.21.0
+      undici: 7.22.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -15160,8 +15147,6 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
-
-  librpc-web-mod@2.1.1: {}
 
   lie@3.3.0:
     dependencies:
@@ -16601,7 +16586,7 @@ snapshots:
     dependencies:
       events-universal: 1.0.1
       fast-fifo: 1.3.2
-      text-decoder: 1.2.4
+      text-decoder: 1.2.6
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
@@ -16819,7 +16804,7 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.2
 
-  text-decoder@1.2.4:
+  text-decoder@1.2.6:
     dependencies:
       b4a: 1.7.4
     transitivePeerDependencies:
@@ -17040,7 +17025,7 @@ snapshots:
 
   undici-types@7.16.0: {}
 
-  undici@7.21.0: {}
+  undici@7.22.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 

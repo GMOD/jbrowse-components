@@ -24,6 +24,19 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
   )
 }
 
+export function joinElements(
+  container: HTMLElement,
+  count: number,
+  create?: () => HTMLElement,
+) {
+  while (container.childElementCount > count) {
+    container.lastElementChild!.remove()
+  }
+  while (container.childElementCount < count) {
+    container.appendChild(create ? create() : document.createElement('div'))
+  }
+}
+
 const MIN_DRAG_DISTANCE = 30
 
 export function shouldSwapTracks(

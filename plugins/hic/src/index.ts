@@ -6,6 +6,7 @@ import HicAdapterF from './HicAdapter/index.ts'
 import HicRendererF from './HicRenderer/index.ts'
 import HicTrackF from './HicTrack/index.ts'
 import LinearHicDisplayF from './LinearHicDisplay/index.ts'
+import WebGLHicDataRPCMethodsF from './RenderWebGLHicDataRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Colord } from '@jbrowse/core/util/colord'
@@ -18,6 +19,7 @@ export default class HicPlugin extends Plugin {
     HicRendererF(pluginManager)
     HicTrackF(pluginManager)
     LinearHicDisplayF(pluginManager)
+    WebGLHicDataRPCMethodsF(pluginManager)
     GuessAdapterF(pluginManager)
   }
 

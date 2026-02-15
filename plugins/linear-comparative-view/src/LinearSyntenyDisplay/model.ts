@@ -5,6 +5,7 @@ import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 
 import type { ColorScheme } from './drawSyntenyUtils.ts'
+import type { SyntenyWebGLRenderer } from './drawSyntenyWebGL.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -61,31 +62,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       /**
        * #volatile
-       * canvas used for drawing visible screen
-       */
-      mainCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas used for drawing click map with feature ids this renders a
-       * unique color per alignment, so that it can be re-traced after a
-       * feature click with getImageData at that pixel
-       */
-      clickMapCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas used for drawing click map with cigar data this can show if you
-       * are mousing over a insertion/deletion. it is similar in purpose to the
-       * clickMapRef but was not feasible to pack this into the clickMapRef
-       */
-      cigarClickMapCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas for drawing mouseover shading this is separate from the other
-       * code for speed: don't have to redraw entire canvas to do a feature's
-       * mouseover shading
+       * canvas for drawing mouseover shading
        */
       mouseoverCanvas: null as HTMLCanvasElement | null,
 
@@ -109,9 +86,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #volatile
-       * currently mouseover'd CIGAR subfeature
        */
-      cigarMouseoverId: -1,
+      webglRenderer: null as SyntenyWebGLRenderer | null,
+
+      /**
+       * #volatile
+       */
+      webglInitialized: false,
     }))
     .actions(self => ({
       /**
@@ -119,24 +100,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setFeatPositions(arg: FeatPos[]) {
         self.featPositions = arg
-      },
-      /**
-       * #action
-       */
-      setMainCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mainCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.clickMapCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setCigarClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.cigarClickMapCanvas = ref
       },
       /**
        * #action
@@ -149,12 +112,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMouseoverId(arg?: string) {
         self.mouseoverId = arg
-      },
-      /**
-       * #action
-       */
-      setCigarMouseoverId(arg: number) {
-        self.cigarMouseoverId = arg
       },
       /**
        * #action
@@ -179,6 +136,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+      /**
+       * #action
+       */
+      setWebGLRenderer(renderer: SyntenyWebGLRenderer | null) {
+        self.webglRenderer = renderer
+      },
+      /**
+       * #action
+       */
+      setWebGLInitialized(value: boolean) {
+        self.webglInitialized = value
       },
     }))
 

@@ -1,0 +1,364 @@
+import {
+  HP_GLSL_FUNCTIONS,
+  cacheUniforms,
+  createProgram,
+  splitPositionWithFrac,
+} from '../../shared/variantWebglUtils.ts'
+
+const VERTEX_SHADER = `#version 300 es
+precision highp float;
+precision highp int;
+
+in uvec2 a_position;    // [start, end] as uint offsets from regionStart
+in uint a_rowIndex;     // row (sample) index
+in vec4 a_color;        // pre-computed RGBA color (normalized 0-1)
+in uint a_shapeType;    // 0=rect, 1=tri-right, 2=tri-left, 3=tri-down
+
+uniform vec3 u_bpRangeX;        // [startHi, startLo, lengthBp] for HP math
+uniform uint u_regionStart;
+uniform float u_canvasHeight;
+uniform float u_canvasWidth;
+uniform float u_rowHeight;
+uniform float u_scrollTop;
+
+out vec4 v_color;
+
+${HP_GLSL_FUNCTIONS}
+
+void main() {
+  int vid = gl_VertexID % 6;
+
+  uint absStart = a_position.x + u_regionStart;
+  uint absEnd = a_position.y + u_regionStart;
+  vec2 splitStart = hpSplitUint(absStart);
+  vec2 splitEnd = hpSplitUint(absEnd);
+  float clipX1 = hpToClipX(splitStart, u_bpRangeX);
+  float clipX2 = hpToClipX(splitEnd, u_bpRangeX);
+
+  // snap to pixel grid and enforce minimum 2px width
+  float pxSize = 2.0 / u_canvasWidth;
+  clipX1 = floor(clipX1 / pxSize + 0.5) * pxSize;
+  clipX2 = floor(clipX2 / pxSize + 0.5) * pxSize;
+  if (clipX2 - clipX1 < 2.0 * pxSize) {
+    clipX2 = clipX1 + 2.0 * pxSize;
+  }
+
+  float yTop = float(a_rowIndex) * u_rowHeight - u_scrollTop;
+  float yBot = yTop + u_rowHeight;
+  yTop = floor(yTop + 0.5);
+  yBot = floor(yBot + 0.5);
+  if (yBot - yTop < 1.0) {
+    yBot = yTop + 1.0;
+  }
+  float yMid = (yTop + yBot) * 0.5;
+  float pxToClipY = 2.0 / u_canvasHeight;
+  float cyTop = 1.0 - yTop * pxToClipY;
+  float cyBot = 1.0 - yBot * pxToClipY;
+  float cyMid = 1.0 - yMid * pxToClipY;
+  float xMid = (clipX1 + clipX2) * 0.5;
+
+  float sx, sy;
+
+  if (a_shapeType == 0u) {
+    // rectangle: 2 triangles
+    float lx = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+    float ly = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+    sx = mix(clipX1, clipX2, lx);
+    sy = mix(cyBot, cyTop, ly);
+  } else if (a_shapeType == 1u) {
+    // triangle pointing right (inversion strand +1)
+    if (vid == 0) { sx = clipX1; sy = cyTop; }
+    else if (vid == 1) { sx = clipX1; sy = cyBot; }
+    else if (vid == 2) { sx = clipX2; sy = cyMid; }
+    else { sx = clipX2; sy = cyMid; } // degenerate
+  } else if (a_shapeType == 2u) {
+    // triangle pointing left (inversion strand -1)
+    if (vid == 0) { sx = clipX2; sy = cyTop; }
+    else if (vid == 1) { sx = clipX2; sy = cyBot; }
+    else if (vid == 2) { sx = clipX1; sy = cyMid; }
+    else { sx = clipX1; sy = cyMid; } // degenerate
+  } else {
+    // triangle pointing down (insertion)
+    float widthExtend = 6.0 / u_canvasWidth;
+    if (vid == 0) { sx = clipX1 - widthExtend; sy = cyTop; }
+    else if (vid == 1) { sx = clipX2 + widthExtend; sy = cyTop; }
+    else if (vid == 2) { sx = xMid; sy = cyBot; }
+    else { sx = xMid; sy = cyBot; } // degenerate
+  }
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  v_color = a_color;
+}
+`
+
+const FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+in vec4 v_color;
+out vec4 fragColor;
+void main() {
+  fragColor = vec4(v_color.rgb * v_color.a, v_color.a);
+}
+`
+
+export interface VariantRenderBlock {
+  regionNumber: number
+  bpRangeX: [number, number]
+  screenStartPx: number
+  screenEndPx: number
+}
+
+export interface VariantRenderState {
+  bpRangeX: [number, number]
+  canvasWidth: number
+  canvasHeight: number
+  rowHeight: number
+  scrollTop: number
+  regionStart: number
+}
+
+interface GPUBuffers {
+  regionStart: number
+  vao: WebGLVertexArrayObject
+  cellCount: number
+}
+
+export class WebGLVariantRenderer {
+  private gl: WebGL2RenderingContext
+  private canvas: HTMLCanvasElement
+  private program: WebGLProgram
+  private buffers: GPUBuffers | null = null
+  private glBuffers: WebGLBuffer[] = []
+  private uniforms: Record<string, WebGLUniformLocation | null> = {}
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas
+    const gl = canvas.getContext('webgl2', {
+      antialias: false,
+      premultipliedAlpha: true,
+      preserveDrawingBuffer: true,
+    })
+
+    if (!gl) {
+      throw new Error('WebGL2 not supported')
+    }
+    this.gl = gl
+
+    this.program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
+    this.uniforms = cacheUniforms(gl, this.program, [
+      'u_bpRangeX',
+      'u_regionStart',
+      'u_canvasHeight',
+      'u_canvasWidth',
+      'u_rowHeight',
+      'u_scrollTop',
+    ])
+
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+  }
+
+  uploadCellData(data: {
+    regionStart: number
+    cellPositions: Uint32Array
+    cellRowIndices: Uint32Array
+    cellColors: Uint8Array
+    cellShapeTypes: Uint8Array
+    numCells: number
+  }) {
+    const gl = this.gl
+
+    this.deleteBuffers()
+
+    if (data.numCells === 0) {
+      return
+    }
+
+    const vao = gl.createVertexArray()
+    gl.bindVertexArray(vao)
+
+    // a_position (uvec2) - start/end offsets
+    this.uploadUintBuffer('a_position', data.cellPositions, 2)
+
+    // a_rowIndex (uint)
+    this.uploadUintBuffer('a_rowIndex', data.cellRowIndices, 1)
+
+    // a_color (vec4) - normalized from uint8
+    this.uploadUint8ColorBuffer('a_color', data.cellColors)
+
+    // a_shapeType (uint) - convert from Uint8Array to Uint32Array
+    const shapeTypes32 = new Uint32Array(data.numCells)
+    for (let i = 0; i < data.numCells; i++) {
+      shapeTypes32[i] = data.cellShapeTypes[i]!
+    }
+    this.uploadUintBuffer('a_shapeType', shapeTypes32, 1)
+
+    gl.bindVertexArray(null)
+
+    this.buffers = {
+      regionStart: data.regionStart,
+      vao,
+      cellCount: data.numCells,
+    }
+  }
+
+  private uploadUintBuffer(attrib: string, data: Uint32Array, size: number) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(this.program, attrib)
+    if (loc < 0) {
+      return
+    }
+    const buffer = gl.createBuffer()
+    this.glBuffers.push(buffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_INT, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
+  private uploadUint8ColorBuffer(attrib: string, data: Uint8Array) {
+    const gl = this.gl
+    const loc = gl.getAttribLocation(this.program, attrib)
+    if (loc < 0) {
+      return
+    }
+    const buffer = gl.createBuffer()
+    this.glBuffers.push(buffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 4, gl.UNSIGNED_BYTE, true, 0, 0)
+    gl.vertexAttribDivisor(loc, 1)
+  }
+
+  render(state: VariantRenderState) {
+    const gl = this.gl
+    const canvas = this.canvas
+    const { canvasWidth, canvasHeight } = state
+
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+    }
+
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+
+    if (!this.buffers || this.buffers.cellCount === 0) {
+      return
+    }
+
+    const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
+    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
+
+    gl.useProgram(this.program)
+    gl.uniform3f(
+      this.uniforms.u_bpRangeX!,
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
+    )
+    gl.uniform1ui(
+      this.uniforms.u_regionStart!,
+      Math.floor(this.buffers.regionStart),
+    )
+    gl.uniform1f(this.uniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(this.uniforms.u_canvasWidth!, canvasWidth)
+    gl.uniform1f(this.uniforms.u_rowHeight!, state.rowHeight)
+    gl.uniform1f(this.uniforms.u_scrollTop!, state.scrollTop)
+
+    gl.bindVertexArray(this.buffers.vao)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.cellCount)
+    gl.bindVertexArray(null)
+  }
+
+  renderBlocks(
+    blocks: VariantRenderBlock[],
+    state: Omit<VariantRenderState, 'bpRangeX' | 'regionStart'>,
+  ) {
+    const gl = this.gl
+    const canvas = this.canvas
+    const { canvasWidth, canvasHeight } = state
+
+    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+    }
+
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+
+    if (!this.buffers || this.buffers.cellCount === 0 || blocks.length === 0) {
+      return
+    }
+
+    gl.useProgram(this.program)
+    gl.uniform1f(this.uniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(this.uniforms.u_rowHeight!, state.rowHeight)
+    gl.uniform1f(this.uniforms.u_scrollTop!, state.scrollTop)
+    gl.uniform1ui(
+      this.uniforms.u_regionStart!,
+      Math.floor(this.buffers.regionStart),
+    )
+
+    gl.enable(gl.SCISSOR_TEST)
+
+    for (const block of blocks) {
+      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
+      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+      const scissorW = scissorEnd - scissorX
+      if (scissorW <= 0) {
+        continue
+      }
+
+      gl.scissor(scissorX, 0, scissorW, canvasHeight)
+      gl.viewport(scissorX, 0, scissorW, canvasHeight)
+
+      // Compute viewport-clipped genomic bp range for HP precision
+      const fullBlockWidth = block.screenEndPx - block.screenStartPx
+      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+      const bpPerPx = regionLengthBp / fullBlockWidth
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
+      const clippedLengthBp = clippedBpEnd - clippedBpStart
+
+      gl.uniform3f(
+        this.uniforms.u_bpRangeX!,
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
+      )
+      gl.uniform1f(this.uniforms.u_canvasWidth!, scissorW)
+
+      gl.bindVertexArray(this.buffers.vao)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.buffers.cellCount)
+      gl.bindVertexArray(null)
+    }
+
+    gl.disable(gl.SCISSOR_TEST)
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
+  }
+
+  private deleteBuffers() {
+    const gl = this.gl
+    for (const buf of this.glBuffers) {
+      gl.deleteBuffer(buf)
+    }
+    this.glBuffers = []
+    if (this.buffers) {
+      gl.deleteVertexArray(this.buffers.vao)
+      this.buffers = null
+    }
+  }
+
+  destroy() {
+    this.deleteBuffers()
+    this.gl.deleteProgram(this.program)
+  }
+}

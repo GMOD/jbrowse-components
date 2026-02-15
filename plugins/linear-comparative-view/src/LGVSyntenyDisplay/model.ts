@@ -8,7 +8,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
+import { linearAlignmentsDisplayStateModelFactory } from '@jbrowse/plugin-alignments'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
@@ -26,13 +26,14 @@ const LaunchSyntenyViewDialog = lazy(
  * to external synteny views
  *
  * extends
- * - [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
+ * - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
+  const baseModel = linearAlignmentsDisplayStateModelFactory(schema)
   return types
     .compose(
       'LGVSyntenyDisplay',
-      SharedLinearPileupDisplayMixin(schema),
+      baseModel,
       types.model({
         /**
          * #property
@@ -73,26 +74,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   },
                 ]
               : []),
-          ]
-        },
-      }
-    })
-    .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
-      } = self
-      return {
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Color scheme',
-              subMenu: [...superColorSchemeSubMenuItems()],
-            },
           ]
         },
       }

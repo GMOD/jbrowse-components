@@ -1,5 +1,5 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
-import { RpcClient, deserializeError } from '../util/librpc.ts'
+import { RpcClient, deserializeError } from '../util/librpc/index.ts'
 import { nanoid } from '../util/nanoid.ts'
 
 import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'

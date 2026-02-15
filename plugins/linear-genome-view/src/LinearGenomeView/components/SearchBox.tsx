@@ -49,9 +49,13 @@ async function onSelect({
 const SearchBox = observer(function SearchBox({
   model,
   showHelp = true,
+  minWidth = 175,
+  maxWidth,
 }: {
   showHelp?: boolean
   model: LinearGenomeViewModel
+  minWidth?: number
+  maxWidth?: number
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
@@ -88,7 +92,8 @@ const SearchBox = observer(function SearchBox({
         })
       }
       model={model}
-      minWidth={175}
+      minWidth={minWidth}
+      maxWidth={maxWidth}
       TextFieldProps={{
         variant: 'outlined',
         className: classes.headerRefName,

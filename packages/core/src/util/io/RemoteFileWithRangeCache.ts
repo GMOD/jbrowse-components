@@ -1,46 +1,57 @@
-import { HttpRangeFetcher } from '@gmod/http-range-fetcher'
 import { RemoteFile } from 'generic-filehandle2'
 
-type BinaryRangeFetch = (
-  url: string,
-  start: number,
-  end: number,
-  options?: { headers?: HeadersInit; stopToken?: string },
-) => Promise<BinaryRangeResponse>
+import pLimit from '../p-limit.ts'
 
-export interface BinaryRangeResponse {
-  headers: Record<string, string>
-  requestDate: Date
-  responseDate: Date
-  buffer: Uint8Array
+const CHUNK_SIZE = 256 * 1024
+const CACHE_NAME = 'jbrowse-range-cache'
+
+const hasCacheAPI = typeof caches !== 'undefined'
+let mapCache = new Map<string, Uint8Array>()
+let cachePromise: Promise<Cache> | undefined
+
+const limit = pLimit(20)
+
+function cacheKey(url: string, chunkNum: number) {
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}__jb_chunk=${chunkNum}`
 }
 
-const fetchers: Record<string, BinaryRangeFetch> = {}
-
-function binaryRangeFetch(
-  url: string,
-  start: number,
-  end: number,
-  options: { headers?: HeadersInit; stopToken?: string } = {},
-): Promise<BinaryRangeResponse> {
-  const fetcher = fetchers[url]
-  if (!fetcher) {
-    throw new Error(`fetch not registered for ${url}`)
+function getCache() {
+  if (!cachePromise && hasCacheAPI) {
+    cachePromise = caches.open(CACHE_NAME)
   }
-  return fetcher(url, start, end, options)
+  return cachePromise
 }
 
-const globalRangeCache = new HttpRangeFetcher({
-  // @ts-expect-error
-  fetch: binaryRangeFetch,
-  size: 500 * 1024 ** 2, // 500MiB
-  chunkSize: 128 * 1024, // 128KiB
-  maxFetchSize: 100 * 1024 ** 2, // 100MiB
-  minimumTTL: 24 * 60 * 60 * 1000, // 1 day
-})
+async function getCached(key: string) {
+  const cache = await getCache()
+  if (cache) {
+    const res = await cache.match(key)
+    if (res) {
+      return new Uint8Array(await res.arrayBuffer())
+    }
+  } else {
+    return mapCache.get(key)
+  }
+  return undefined
+}
+
+async function putCached(key: string, buffer: Uint8Array) {
+  const cache = await getCache()
+  if (cache) {
+    // @ts-expect-error
+    await cache.put(new Request(key), new Response(buffer))
+  } else {
+    mapCache.set(key, buffer)
+  }
+}
 
 export function clearCache() {
-  globalRangeCache.reset()
+  if (hasCacheAPI) {
+    cachePromise = undefined
+    caches.delete(CACHE_NAME).catch(() => {})
+  }
+  mapCache = new Map()
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
@@ -48,11 +59,6 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     url: string | RequestInfo,
     init?: RequestInit,
   ): Promise<Response> {
-    const str = String(url)
-    if (!fetchers[str]) {
-      fetchers[str] = this.fetchBinaryRange.bind(this)
-    }
-    // if it is a range request, route it through the range cache
     const range = new Headers(init?.headers).get('range')
     if (range) {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
@@ -60,58 +66,86 @@ export class RemoteFileWithRangeCache extends RemoteFile {
         const [, start, end] = rangeParse
         const s = Number.parseInt(start!, 10)
         const e = Number.parseInt(end!, 10)
-        const len = e - s
-        const { buffer, headers } = (await globalRangeCache.getRange(
-          `${url}`,
-          s,
-          len + 1,
-        )) as BinaryRangeResponse
-        return new Response(buffer as BodyInit, {
-          status: 206,
-          headers,
-        })
+        const buffer = await this.getCachedRange(String(url), s, e)
+        // @ts-expect-error
+        return new Response(buffer, { status: 206 })
       }
     }
     return super.fetch(url, init)
   }
 
-  public async fetchBinaryRange(
-    url: string,
-    start: number,
-    end: number,
-    options: { headers?: HeadersInit; stopToken?: string } = {},
-  ): Promise<BinaryRangeResponse> {
-    const requestDate = new Date()
-    const res = await super.fetch(url, {
-      ...options,
-      headers: {
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...options.headers,
-        range: `bytes=${start}-${end}`,
-      },
+  private async getCachedRange(url: string, start: number, end: number) {
+    const startChunk = Math.floor(start / CHUNK_SIZE)
+    const endChunk = Math.floor(end / CHUNK_SIZE)
+
+    // Check which chunks we already have
+    const chunks = new Array<Uint8Array | undefined>(endChunk - startChunk + 1)
+    for (let i = startChunk; i <= endChunk; i++) {
+      chunks[i - startChunk] = await getCached(cacheKey(url, i))
+    }
+
+    // Fetch contiguous runs of missing chunks in single requests
+    let i = 0
+    while (i < chunks.length) {
+      if (chunks[i]) {
+        i++
+        continue
+      }
+      // Find the end of this contiguous gap
+      let gapEnd = i
+      while (gapEnd < chunks.length && !chunks[gapEnd]) {
+        gapEnd++
+      }
+
+      const fetchStart = (startChunk + i) * CHUNK_SIZE
+      const fetchEnd = (startChunk + gapEnd) * CHUNK_SIZE - 1
+      const fetched = await this.fetchRange(url, fetchStart, fetchEnd)
+
+      // Split into chunks and cache each one
+      for (let j = i; j < gapEnd; j++) {
+        const off = (j - i) * CHUNK_SIZE
+        const chunk = fetched.subarray(off, off + CHUNK_SIZE)
+        chunks[j] = chunk
+        await putCached(cacheKey(url, startChunk + j), chunk)
+      }
+
+      i = gapEnd
+    }
+
+    // Assemble the result from cached chunks
+    if (chunks.length === 1) {
+      const sliceStart = start - startChunk * CHUNK_SIZE
+      return chunks[0]!.subarray(sliceStart, sliceStart + (end - start + 1))
+    }
+
+    const totalLen = chunks.reduce((acc, b) => acc + b!.length, 0)
+    const combined = new Uint8Array(totalLen)
+    let offset = 0
+    for (const buf of chunks) {
+      combined.set(buf!, offset)
+      offset += buf!.length
+    }
+
+    const sliceStart = start - startChunk * CHUNK_SIZE
+    return combined.subarray(sliceStart, sliceStart + (end - start + 1))
+  }
+
+  private fetchRange(url: string, start: number, end: number) {
+    return limit(async () => {
+      const res = await super.fetch(url, {
+        headers: { range: `bytes=${start}-${end}` },
+      })
+      if (!res.ok) {
+        const hint =
+          res.status === 200 ? ' (should be 206 for range requests)' : ''
+        throw Object.assign(
+          new Error(
+            `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${hint}`,
+          ),
+          { status: res.status },
+        )
+      }
+      return new Uint8Array(await res.arrayBuffer())
     })
-    const responseDate = new Date()
-    if (!res.ok) {
-      const errorMessage = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}`
-      const hint = ' (should be 206 for range requests)'
-      throw new Error(`${errorMessage}${res.status === 200 ? hint : ''}`)
-    }
-
-    // translate the Headers object into a regular key -> value object.
-    // will miss duplicate headers of course
-
-    const headers: Record<string, any> = {}
-    for (const [k, v] of res.headers.entries()) {
-      headers[k] = v
-    }
-
-    // return the response headers, and the data buffer
-    const arrayBuffer = await res.arrayBuffer()
-    return {
-      headers,
-      requestDate,
-      responseDate,
-      buffer: new Uint8Array(arrayBuffer),
-    }
   }
 }

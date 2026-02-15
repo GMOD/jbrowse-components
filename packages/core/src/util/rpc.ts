@@ -1,7 +1,7 @@
-import type { RpcResult } from './librpc.ts'
+import type { RpcResult } from './librpc/index.ts'
 
 /**
- * Type guard to check if a value is an RpcResult from librpc-web-mod.
+ * Type guard to check if a value is an RpcResult from librpc.
  * Used to detect when a renderer has returned pre-serialized data with transferables.
  *
  * Note: Transferables flow only from worker to main thread (in responses),

@@ -171,8 +171,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { bam } = this.configure()
     // this is a method to avoid calling on htsget adapters
     if (bam.index) {
-      const bytes = await bam.estimatedBytesForRegions(regions)
       const fetchSizeLimit = this.getConf('fetchSizeLimit')
+      const bytes = await bam.estimatedBytesForRegions(regions)
       return {
         bytes,
         fetchSizeLimit,

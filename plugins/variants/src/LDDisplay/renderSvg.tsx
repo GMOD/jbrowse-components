@@ -4,6 +4,7 @@ import {
   getContainingView,
   getRpcSessionId,
   getSession,
+  max,
 } from '@jbrowse/core/util'
 import {
   ReactRendering,
@@ -120,7 +121,7 @@ export async function renderSvg(
             />
             <RecombinationYScaleBar
               height={recombTrackHeight}
-              maxValue={Math.max(...rendering.recombination.values, 0.1)}
+              maxValue={max(rendering.recombination.values, 0.1)}
               exportSVG
             />
           </g>

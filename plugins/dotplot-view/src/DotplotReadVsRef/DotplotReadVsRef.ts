@@ -4,12 +4,12 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
 const { featurizeSA, getClip, getLength, getLengthSansClipping } =
   MismatchParser
 
-export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
+export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
   const session = getSession(self)
   try {
     const cigar = feature.get('CIGAR')

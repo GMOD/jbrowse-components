@@ -257,7 +257,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const syncActions = [
                 'horizontalScroll',
                 'zoomTo',
-                'setScaleFactor',
                 'showTrack',
                 'toggleTrack',
                 'hideTrack',

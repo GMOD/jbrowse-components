@@ -14,7 +14,7 @@ type LGV = LinearGenomeViewModel
 interface Display {
   height: number
   scrollTop: number
-  SNPCoverageDisplay?: { height: number }
+  coverageDisplayHeight?: number
   notReady?: () => boolean
   searchFeatureByID?: (str: string) => LayoutRecord
 }
@@ -56,7 +56,7 @@ export function yPos(
 ) {
   const display = tracks[level]!.displays[0]!
   const max = display.height
-  const offset = display.SNPCoverageDisplay?.height ?? 0
+  const offset = display.coverageDisplayHeight ?? 0
   const scrollTop = getYPosOverride ? 0 : display.scrollTop
   return (
     clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +

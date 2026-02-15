@@ -56,6 +56,8 @@ export default defineConfig(
       'products/jbrowse-web/scripts',
       'products/jbrowse-img/src/bin.js',
 
+      'packages/core/src/util/p-limit.ts',
+
       // Worker polyfills (plain JS files)
       '**/workerPolyfill.js',
 

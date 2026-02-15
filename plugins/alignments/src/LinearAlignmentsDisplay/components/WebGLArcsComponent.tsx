@@ -1,0 +1,123 @@
+import { observer } from 'mobx-react'
+
+import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
+import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import LoadingOverlay from './LoadingOverlay.tsx'
+import { useAlignmentsBase } from './useAlignmentsBase.ts'
+
+import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+
+const WebGLArcsComponent = observer(function WebGLArcsComponent({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const base = useAlignmentsBase(model)
+  const {
+    canvasRef,
+    resizeHandleHovered,
+    setResizeHandleHovered,
+    width,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseLeave,
+    handleResizeMouseDown,
+    handleContextMenu,
+    processMouseMove,
+    processClick,
+  } = base
+
+  const { height, showCoverage, coverageHeight } = model
+
+  function handleCanvasMouseMove(e: React.MouseEvent) {
+    processMouseMove(
+      e,
+      () => {},
+      () => {
+        model.clearMouseoverState()
+      },
+    )
+  }
+
+  function handleClick(e: React.MouseEvent) {
+    processClick(
+      e,
+      hit => {
+        model.setSelectedFeatureIndex(hit.index)
+        model.selectFeatureById(hit.id)
+      },
+      () => {
+        model.clearSelection()
+      },
+    )
+  }
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height }}>
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{
+          display: 'block',
+          width,
+          height,
+          cursor: model.featureIdUnderMouse ? 'pointer' : 'default',
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+      />
+
+      {model.coverageTicks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: model.scalebarOverlapLeft,
+            pointerEvents: 'none',
+            height: model.coverageTicks.height,
+            width: 50,
+          }}
+        >
+          <g transform="translate(45, 0)">
+            <CoverageYScaleBar model={model} orientation="left" />
+          </g>
+        </svg>
+      ) : null}
+
+      {showCoverage ? (
+        <div
+          onMouseDown={handleResizeMouseDown}
+          onMouseEnter={() => {
+            setResizeHandleHovered(true)
+          }}
+          onMouseLeave={() => {
+            setResizeHandleHovered(false)
+          }}
+          style={{
+            position: 'absolute',
+            top: coverageHeight - YSCALEBAR_LABEL_OFFSET,
+            left: 0,
+            right: 0,
+            height: YSCALEBAR_LABEL_OFFSET,
+            cursor: 'row-resize',
+            background: resizeHandleHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
+            zIndex: 10,
+          }}
+          title="Drag to resize coverage track"
+        />
+      ) : null}
+
+      <LoadingOverlay
+        statusMessage={model.statusMessage}
+        isVisible={model.showLoading}
+      />
+    </div>
+  )
+})
+
+export default WebGLArcsComponent
