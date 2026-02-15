@@ -77,6 +77,7 @@ export function useWheelScroll(
 
       const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
       const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+      console.log('[wheel] raw: deltaX=', deltaX, 'deltaY=', deltaY, 'ctrl=', event.ctrlKey, 'scrollZoom=', model.scrollZoom)
 
       if (event.ctrlKey) {
         event.preventDefault()
@@ -99,6 +100,12 @@ export function useWheelScroll(
         samples = []
       } else if (model.scrollZoom && Math.abs(deltaY) > Math.abs(deltaX)) {
         event.preventDefault()
+        if (
+          scrollZoomDelta.current !== 0 &&
+          Math.sign(deltaY) !== Math.sign(scrollZoomDelta.current)
+        ) {
+          scrollZoomDelta.current = 0
+        }
         scrollZoomDelta.current += deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
         lastZoomClientX.current = event.clientX
         if (!zoomScheduled.current) {
@@ -121,12 +128,22 @@ export function useWheelScroll(
         if (Math.abs(deltaX) > Math.abs(2 * deltaY)) {
           event.preventDefault()
         }
+        if (
+          scrollDelta.current !== 0 &&
+          Math.sign(deltaX) !== Math.sign(scrollDelta.current)
+        ) {
+          console.log('[wheel] direction change: deltaX=', deltaX, 'accumulated=', scrollDelta.current, 'resetting')
+          scrollDelta.current = 0
+        }
         scrollDelta.current += deltaX
+        console.log('[wheel] event: deltaX=', deltaX, 'accumulated=', scrollDelta.current, 'scheduled=', scheduled.current, 'timestamp=', event.timeStamp)
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame
           // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
           scheduled.current = true
+          const scheduledTime = performance.now()
           rafId.current = window.requestAnimationFrame(() => {
+            console.log('[wheel] rAF fire: applying=', scrollDelta.current, 'delay=', (performance.now() - scheduledTime).toFixed(1), 'ms')
             model.horizontalScroll(scrollDelta.current)
             scrollDelta.current = 0
             scheduled.current = false

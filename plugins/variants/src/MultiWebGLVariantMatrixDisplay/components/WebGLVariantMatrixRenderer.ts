@@ -9,6 +9,7 @@ in uint a_rowIndex;       // row (sample) index
 in vec4 a_color;          // pre-computed RGBA color (normalized 0-1)
 
 uniform float u_numFeatures;
+uniform float u_canvasWidth;
 uniform float u_canvasHeight;
 uniform float u_rowHeight;
 uniform float u_scrollTop;
@@ -20,14 +21,25 @@ void main() {
   float lx = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float ly = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  // X from feature index (uniform column widths)
+  // X from feature index, snapped to pixel grid
   float x1 = a_featureIndex / u_numFeatures;
   float x2 = (a_featureIndex + 1.0) / u_numFeatures;
+  float pxSizeX = 1.0 / u_canvasWidth;
+  x1 = floor(x1 / pxSizeX + 0.5) * pxSizeX;
+  x2 = floor(x2 / pxSizeX + 0.5) * pxSizeX;
+  if (x2 - x1 < pxSizeX) {
+    x2 = x1 + pxSizeX;
+  }
   float clipX = mix(x1, x2, lx) * 2.0 - 1.0;
 
-  // Y from row index
+  // Y from row index, snapped to pixel grid
   float yTop = float(a_rowIndex) * u_rowHeight - u_scrollTop;
   float yBot = yTop + u_rowHeight;
+  yTop = floor(yTop + 0.5);
+  yBot = floor(yBot + 0.5);
+  if (yBot - yTop < 1.0) {
+    yBot = yTop + 1.0;
+  }
   float pxToClipY = 2.0 / u_canvasHeight;
   float cyTop = 1.0 - yTop * pxToClipY;
   float cyBot = 1.0 - yBot * pxToClipY;
@@ -43,7 +55,7 @@ precision highp float;
 in vec4 v_color;
 out vec4 fragColor;
 void main() {
-  fragColor = v_color;
+  fragColor = vec4(v_color.rgb * v_color.a, v_color.a);
 }
 `
 
@@ -71,8 +83,8 @@ export class WebGLVariantMatrixRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const gl = canvas.getContext('webgl2', {
-      antialias: true,
-      premultipliedAlpha: false,
+      antialias: false,
+      premultipliedAlpha: true,
       preserveDrawingBuffer: true,
     })
 
@@ -84,13 +96,14 @@ export class WebGLVariantMatrixRenderer {
     this.program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
     this.uniforms = cacheUniforms(gl, this.program, [
       'u_numFeatures',
+      'u_canvasWidth',
       'u_canvasHeight',
       'u_rowHeight',
       'u_scrollTop',
     ])
 
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   uploadCellData(data: {
@@ -196,6 +209,7 @@ export class WebGLVariantMatrixRenderer {
 
     gl.useProgram(this.program)
     gl.uniform1f(this.uniforms.u_numFeatures!, state.numFeatures)
+    gl.uniform1f(this.uniforms.u_canvasWidth!, canvasWidth)
     gl.uniform1f(this.uniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(this.uniforms.u_rowHeight!, state.rowHeight)
     gl.uniform1f(this.uniforms.u_scrollTop!, state.scrollTop)

@@ -35,15 +35,21 @@ void main() {
   float clipX1 = hpToClipX(splitStart, u_bpRangeX);
   float clipX2 = hpToClipX(splitEnd, u_bpRangeX);
 
-  // ensure minimum width of 2 pixels
-  float pixelWidth = (clipX2 - clipX1) * u_canvasWidth * 0.5;
-  if (pixelWidth < 2.0) {
-    float expand = (2.0 - pixelWidth) / u_canvasWidth;
-    clipX2 = clipX1 + expand;
+  // snap to pixel grid and enforce minimum 2px width
+  float pxSize = 2.0 / u_canvasWidth;
+  clipX1 = floor(clipX1 / pxSize + 0.5) * pxSize;
+  clipX2 = floor(clipX2 / pxSize + 0.5) * pxSize;
+  if (clipX2 - clipX1 < 2.0 * pxSize) {
+    clipX2 = clipX1 + 2.0 * pxSize;
   }
 
   float yTop = float(a_rowIndex) * u_rowHeight - u_scrollTop;
   float yBot = yTop + u_rowHeight;
+  yTop = floor(yTop + 0.5);
+  yBot = floor(yBot + 0.5);
+  if (yBot - yTop < 1.0) {
+    yBot = yTop + 1.0;
+  }
   float yMid = (yTop + yBot) * 0.5;
   float pxToClipY = 2.0 / u_canvasHeight;
   float cyTop = 1.0 - yTop * pxToClipY;
@@ -90,7 +96,7 @@ precision highp float;
 in vec4 v_color;
 out vec4 fragColor;
 void main() {
-  fragColor = v_color;
+  fragColor = vec4(v_color.rgb * v_color.a, v_color.a);
 }
 `
 
@@ -127,8 +133,8 @@ export class WebGLVariantRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const gl = canvas.getContext('webgl2', {
-      antialias: true,
-      premultipliedAlpha: false,
+      antialias: false,
+      premultipliedAlpha: true,
       preserveDrawingBuffer: true,
     })
 
@@ -148,7 +154,7 @@ export class WebGLVariantRenderer {
     ])
 
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   uploadCellData(data: {

@@ -254,12 +254,14 @@ export default function stateModelFactory(
           },
         )) as WebGLWiggleDataResult
 
-        self.setRpcDataForRegion(regionNumber, result)
-        self.setLoadedRegionForRegion(regionNumber, {
-          refName: region.refName,
-          start: region.start,
-          end: region.end,
-        })
+        if (isAlive(self)) {
+          self.setRpcDataForRegion(regionNumber, result)
+          self.setLoadedRegionForRegion(regionNumber, {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+          })
+        }
       }
 
       async function fetchRegions(

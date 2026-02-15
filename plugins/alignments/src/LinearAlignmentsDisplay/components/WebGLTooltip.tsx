@@ -215,6 +215,7 @@ const CoverageTooltipContents = forwardRef<
               </td>
               <td className={classes.td}>{deletions.count}</td>
               <td>{pct(deletions.count, depth)}</td>
+              {hasModifications && <td />}
               <td />
             </tr>
           )}
@@ -253,6 +254,7 @@ const CoverageTooltipContents = forwardRef<
                 </td>
                 <td className={classes.td}>{data.count}</td>
                 <td>{pct(data.count, depth)}</td>
+                {hasModifications && <td />}
                 <td />
               </tr>
             )

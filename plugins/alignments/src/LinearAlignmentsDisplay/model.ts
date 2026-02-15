@@ -1301,10 +1301,11 @@ export default function stateModelFactory(
             },
           },
         )) as WebGLPileupDataResult
-        self.setRpcData(regionNumber, result)
-        // Mark modifications as ready since we detected what's available
-        self.setModificationsReady(true)
-        self.setSimplexModifications(result.simplexModifications)
+        if (isAlive(self)) {
+          self.setRpcData(regionNumber, result)
+          self.setModificationsReady(true)
+          self.setSimplexModifications(result.simplexModifications)
+        }
       }
 
       async function fetchArcsData(
@@ -1332,7 +1333,9 @@ export default function stateModelFactory(
             stopToken,
           },
         )) as WebGLArcsDataResult
-        self.arcsState.setRpcData(regionNumber, result)
+        if (isAlive(self)) {
+          self.arcsState.setRpcData(regionNumber, result)
+        }
       }
 
       async function fetchChainData(
@@ -1367,9 +1370,11 @@ export default function stateModelFactory(
             },
           },
         )) as WebGLPileupDataResult
-        self.setRpcData(regionNumber, result)
-        self.setModificationsReady(true)
-        self.setSimplexModifications(result.simplexModifications)
+        if (isAlive(self)) {
+          self.setRpcData(regionNumber, result)
+          self.setModificationsReady(true)
+          self.setSimplexModifications(result.simplexModifications)
+        }
       }
 
       // Estimate bytes for a region via adapter index (cheap, no feature fetch).

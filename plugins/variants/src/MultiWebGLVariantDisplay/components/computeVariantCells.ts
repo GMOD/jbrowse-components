@@ -141,7 +141,6 @@ export function computeVariantCells({
       const featureType = (feature.get('type') as string) || ''
       const featureStrand = feature.get('strand') as number | undefined
       const bpLen = end - start
-      const alpha = bpLen > 5 ? 0.75 : 1
       const shape = getShapeType(featureType, featureStrand)
 
       let samp = genotypesCache.get(featureId)
@@ -180,10 +179,7 @@ export function computeVariantCells({
               (splitCache[genotype] = genotype.split('|'))
             const c = getPhasedColor(alleles, HP!, undefined, drawRef)
             if (c) {
-              let rgba = getCachedRGBA(c)
-              if (alpha !== 1) {
-                rgba = [rgba[0], rgba[1], rgba[2], Math.round(rgba[3] * alpha)]
-              }
+              const rgba = getCachedRGBA(c)
               const idx = cellCount
               positions[idx * 2] = start - regionStart
               positions[idx * 2 + 1] = end - regionStart
@@ -231,7 +227,6 @@ export function computeVariantCells({
       const featureType = (feature.get('type') as string) || ''
       const featureStrand = feature.get('strand') as number | undefined
       const bpLen = end - start
-      const alpha = bpLen > 5 ? 0.75 : 1
       const shape = getShapeType(featureType, featureStrand)
 
       let samp = genotypesCache.get(featureId)
@@ -269,10 +264,7 @@ export function computeVariantCells({
             drawRef,
           )
           if (c) {
-            let rgba = getCachedRGBA(c)
-            if (alpha !== 1) {
-              rgba = [rgba[0], rgba[1], rgba[2], Math.round(rgba[3] * alpha)]
-            }
+            const rgba = getCachedRGBA(c)
             const idx = cellCount
             positions[idx * 2] = start - regionStart
             positions[idx * 2 + 1] = end - regionStart

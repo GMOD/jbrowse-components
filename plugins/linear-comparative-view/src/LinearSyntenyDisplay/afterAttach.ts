@@ -17,7 +17,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastGeometryKey = ''
   let lastFeatPositions: FeatPos[] = []
   let lastRenderer: unknown = null
-  let edgeTimer: ReturnType<typeof setTimeout> | null = null
   // bpPerPx values at which featPositions were computed (by the RPC).
   // buildGeometry uses these as the "reference" so the shader's scale
   // compensation (geometryBpPerPx / currentBpPerPx) is correct.
@@ -87,34 +86,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         const maxOffScreenPx = view.maxOffScreenDrawPx
 
-        // Skip edges during scroll for performance, debounce a full
-        // re-render with edges once scrolling stops
         self.webglRenderer.render(
           o0,
           o1,
           height,
           bpPerPx0,
           bpPerPx1,
-          true,
+          false,
           maxOffScreenPx,
           minAlignmentLength,
         )
-
-        if (edgeTimer) {
-          clearTimeout(edgeTimer)
-        }
-        edgeTimer = setTimeout(() => {
-          self.webglRenderer?.render(
-            o0,
-            o1,
-            height,
-            bpPerPx0,
-            bpPerPx1,
-            false,
-            maxOffScreenPx,
-            minAlignmentLength,
-          )
-        }, 150)
       },
       {
         name: 'SyntenyDraw',

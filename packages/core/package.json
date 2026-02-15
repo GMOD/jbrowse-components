@@ -111,7 +111,7 @@
     "./util/layouts": "./src/util/layouts/index.ts",
     "./util/layouts/BaseLayout": "./src/util/layouts/BaseLayout.ts",
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
-    "./util/librpc": "./src/util/librpc.ts",
+    "./util/librpc": "./src/util/librpc/index.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
     "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
@@ -176,7 +176,6 @@
     "file-saver-es": "^2.0.5",
     "generic-filehandle2": "^2.0.18",
     "idb": "^8.0.3",
-    "librpc-web-mod": "^2.1.1",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
     "react-draggable": "^4.5.0",
@@ -555,8 +554,8 @@
         "import": "./esm/util/layouts/GranularRectLayout.js"
       },
       "./util/librpc": {
-        "types": "./esm/util/librpc.d.ts",
-        "import": "./esm/util/librpc.js"
+        "types": "./esm/util/librpc/index.d.ts",
+        "import": "./esm/util/librpc/index.js"
       },
       "./util/mst-reflection": {
         "types": "./esm/util/mst-reflection.d.ts",
@@ -915,7 +914,7 @@
           "esm/util/layouts/GranularRectLayout.d.ts"
         ],
         "util/librpc": [
-          "esm/util/librpc.d.ts"
+          "esm/util/librpc/index.d.ts"
         ],
         "util/mst-reflection": [
           "esm/util/mst-reflection.d.ts"

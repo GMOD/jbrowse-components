@@ -5,8 +5,12 @@ import { colorSchemes } from './drawSyntenyUtils.ts'
 
 import type { FeatPos } from './model.ts'
 
-// Number of segments for bezier tessellation (fill and edge passes)
-const SEGMENTS = 32
+// Segment counts for straight lines (no bezier needed, just a quad)
+const STRAIGHT_FILL_SEGMENTS = 1
+const STRAIGHT_EDGE_SEGMENTS = 1
+// Segment counts for bezier curves
+const CURVE_FILL_SEGMENTS = 16
+const CURVE_EDGE_SEGMENTS = 8
 
 // Split Float64 values into interleaved (hi, lo) Float32 pairs for HP
 // precision on the GPU. hi = Math.fround(value), lo = value - hi.
@@ -142,7 +146,8 @@ void main() {
 }
 `
 
-// Edge vertex shader - evaluates bezier on GPU with ribbon extrusion for AA
+// Edge vertex shader - evaluates bezier on GPU with ribbon extrusion for AA.
+// Uses analytical derivatives instead of finite differences (1 eval vs 3).
 // a_side = -1.0 or +1.0 from edge template
 const EDGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -174,24 +179,6 @@ flat out float v_featureId;
 
 ${HP_SUBTRACT}
 
-vec2 evalEdge(float t, float screenTopX, float screenBottomX, float isCurve) {
-  if (isCurve > 0.5) {
-    float mt = 1.0 - t;
-    float mt2 = mt * mt;
-    float mt3 = mt2 * mt;
-    float t2 = t * t;
-    float t3 = t2 * t;
-    float mid = u_height * 0.5;
-    float x = mt3 * screenTopX + 3.0 * mt2 * t * screenTopX + 3.0 * mt * t2 * screenBottomX + t3 * screenBottomX;
-    float y = 3.0 * mt2 * t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
-    return vec2(x, y);
-  }
-
-  float y = t * u_height;
-  float x = mix(screenTopX, screenBottomX, t);
-  return vec2(x, y);
-}
-
 void main() {
   if (u_minAlignmentLength > 0.0 && a_queryTotalLength < u_minAlignmentLength) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -219,20 +206,33 @@ void main() {
   float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0;
   float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1;
 
-  vec2 pos = evalEdge(a_t, screenTopX, screenBottomX, a_isCurve);
+  float mt = 1.0 - a_t;
+  vec2 pos;
+  vec2 tangent;
 
-  float eps = 1.0 / float(${SEGMENTS});
-  float t0 = max(a_t - eps * 0.5, 0.0);
-  float t1 = min(a_t + eps * 0.5, 1.0);
-  vec2 p0 = evalEdge(t0, screenTopX, screenBottomX, a_isCurve);
-  vec2 p1 = evalEdge(t1, screenTopX, screenBottomX, a_isCurve);
-  vec2 tangent = p1 - p0;
+  if (a_isCurve > 0.5) {
+    float mt2 = mt * mt;
+    float mt3 = mt2 * mt;
+    float t2 = a_t * a_t;
+    float t3 = t2 * a_t;
+    float mid = u_height * 0.5;
+    // Bezier position: B(t) with P0=(topX,0) P1=(topX,mid) P2=(botX,mid) P3=(botX,h)
+    float px = mt3 * screenTopX + 3.0 * mt2 * a_t * screenTopX + 3.0 * mt * t2 * screenBottomX + t3 * screenBottomX;
+    float py = 3.0 * mt2 * a_t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
+    pos = vec2(px, py);
+    // Analytical derivative: B'(t) = 3(1-t)²(P1-P0) + 6(1-t)t(P2-P1) + 3t²(P3-P2)
+    float dx = 6.0 * mt * a_t * (screenBottomX - screenTopX);
+    float dy = 3.0 * mid * (mt2 + t2);
+    tangent = vec2(dx, dy);
+  } else {
+    pos = vec2(mix(screenTopX, screenBottomX, a_t), a_t * u_height);
+    tangent = vec2(screenBottomX - screenTopX, u_height);
+  }
+
   float tangentLen = length(tangent);
-
   vec2 normal;
   if (tangentLen > 0.001) {
-    tangent /= tangentLen;
-    normal = vec2(-tangent.y, tangent.x);
+    normal = vec2(-tangent.y, tangent.x) / tangentLen;
   } else {
     normal = vec2(0.0, 1.0);
   }
@@ -310,10 +310,6 @@ function createProgram(
   return program
 }
 
-// Number of template vertices per instance
-const FILL_VERTICES_PER_INSTANCE = SEGMENTS * 6
-const EDGE_VERTICES_PER_INSTANCE = (SEGMENTS + 1) * 2
-
 export class SyntenyWebGLRenderer {
   private gl: WebGL2RenderingContext | null = null
   private canvas: HTMLCanvasElement | null = null
@@ -362,6 +358,12 @@ export class SyntenyWebGLRenderer {
     WebGLProgram,
     Record<string, WebGLUniformLocation | null>
   >()
+
+  // Dynamic segment counts (rebuilt when drawCurves changes)
+  private currentFillSegments = 0
+  private currentEdgeSegments = 0
+  private fillVerticesPerInstance = 0
+  private edgeVerticesPerInstance = 0
 
   // All allocated buffers for cleanup
   private allocatedBuffers: WebGLBuffer[] = []
@@ -430,45 +432,6 @@ export class SyntenyWebGLRenderer {
         this.uniformCache.set(program, locs)
       }
 
-      // Fill template: TRIANGLES with a_side = 0 (left) or 1 (right)
-      const fillTemplateData = new Float32Array(FILL_VERTICES_PER_INSTANCE * 2)
-      for (let s = 0; s < SEGMENTS; s++) {
-        const t0 = s / SEGMENTS
-        const t1 = (s + 1) / SEGMENTS
-        const base = s * 12
-        // Triangle 1: left@t0, right@t0, left@t1
-        fillTemplateData[base + 0] = t0
-        fillTemplateData[base + 1] = 0
-        fillTemplateData[base + 2] = t0
-        fillTemplateData[base + 3] = 1
-        fillTemplateData[base + 4] = t1
-        fillTemplateData[base + 5] = 0
-        // Triangle 2: left@t1, right@t0, right@t1
-        fillTemplateData[base + 6] = t1
-        fillTemplateData[base + 7] = 0
-        fillTemplateData[base + 8] = t0
-        fillTemplateData[base + 9] = 1
-        fillTemplateData[base + 10] = t1
-        fillTemplateData[base + 11] = 1
-      }
-      this.fillTemplateBuffer = gl.createBuffer()!
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.fillTemplateBuffer)
-      gl.bufferData(gl.ARRAY_BUFFER, fillTemplateData, gl.STATIC_DRAW)
-
-      // Edge template: TRIANGLE_STRIP with a_side = -1 or +1
-      const edgeTemplateData = new Float32Array(EDGE_VERTICES_PER_INSTANCE * 2)
-      for (let i = 0; i <= SEGMENTS; i++) {
-        const t = i / SEGMENTS
-        const base = i * 4
-        edgeTemplateData[base + 0] = t
-        edgeTemplateData[base + 1] = 1
-        edgeTemplateData[base + 2] = t
-        edgeTemplateData[base + 3] = -1
-      }
-      this.edgeTemplateBuffer = gl.createBuffer()!
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeTemplateBuffer)
-      gl.bufferData(gl.ARRAY_BUFFER, edgeTemplateData, gl.STATIC_DRAW)
-
       // Picking framebuffer
       this.pickingFramebuffer = gl.createFramebuffer()!
       this.pickingTexture = gl.createTexture()!
@@ -514,6 +477,56 @@ export class SyntenyWebGLRenderer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
 
+  private rebuildTemplates(fillSegments: number, edgeSegments: number) {
+    const gl = this.gl!
+    if (this.fillTemplateBuffer) {
+      gl.deleteBuffer(this.fillTemplateBuffer)
+    }
+    if (this.edgeTemplateBuffer) {
+      gl.deleteBuffer(this.edgeTemplateBuffer)
+    }
+
+    this.currentFillSegments = fillSegments
+    this.currentEdgeSegments = edgeSegments
+    this.fillVerticesPerInstance = fillSegments * 6
+    this.edgeVerticesPerInstance = (edgeSegments + 1) * 2
+
+    const fillTemplateData = new Float32Array(this.fillVerticesPerInstance * 2)
+    for (let s = 0; s < fillSegments; s++) {
+      const t0 = s / fillSegments
+      const t1 = (s + 1) / fillSegments
+      const base = s * 12
+      fillTemplateData[base + 0] = t0
+      fillTemplateData[base + 1] = 0
+      fillTemplateData[base + 2] = t0
+      fillTemplateData[base + 3] = 1
+      fillTemplateData[base + 4] = t1
+      fillTemplateData[base + 5] = 0
+      fillTemplateData[base + 6] = t1
+      fillTemplateData[base + 7] = 0
+      fillTemplateData[base + 8] = t0
+      fillTemplateData[base + 9] = 1
+      fillTemplateData[base + 10] = t1
+      fillTemplateData[base + 11] = 1
+    }
+    this.fillTemplateBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fillTemplateBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, fillTemplateData, gl.STATIC_DRAW)
+
+    const edgeTemplateData = new Float32Array(this.edgeVerticesPerInstance * 2)
+    for (let i = 0; i <= edgeSegments; i++) {
+      const t = i / edgeSegments
+      const base = i * 4
+      edgeTemplateData[base + 0] = t
+      edgeTemplateData[base + 1] = 1
+      edgeTemplateData[base + 2] = t
+      edgeTemplateData[base + 3] = -1
+    }
+    this.edgeTemplateBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeTemplateBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, edgeTemplateData, gl.STATIC_DRAW)
+  }
+
   resize(width: number, height: number) {
     if (!this.canvas || !this.gl) {
       return
@@ -556,6 +569,17 @@ export class SyntenyWebGLRenderer {
     this.allocatedBuffers = []
     this.instanceCount = 0
     this.nonCigarInstanceCount = 0
+
+    if (this.fillTemplateBuffer) {
+      gl.deleteBuffer(this.fillTemplateBuffer)
+      this.fillTemplateBuffer = null
+    }
+    if (this.edgeTemplateBuffer) {
+      gl.deleteBuffer(this.edgeTemplateBuffer)
+      this.edgeTemplateBuffer = null
+    }
+    this.currentFillSegments = 0
+    this.currentEdgeSegments = 0
   }
 
   private createBuffer(gl: WebGL2RenderingContext, data: Float32Array) {
@@ -657,6 +681,14 @@ export class SyntenyWebGLRenderer {
     }
     const gl = this.gl
     this.cleanupGeometry()
+
+    const fillSegments = drawCurves
+      ? CURVE_FILL_SEGMENTS
+      : STRAIGHT_FILL_SEGMENTS
+    const edgeSegments = drawCurves
+      ? CURVE_EDGE_SEGMENTS
+      : STRAIGHT_EDGE_SEGMENTS
+    this.rebuildTemplates(fillSegments, edgeSegments)
 
     // Store bpPerPx used for this geometry so we can scale correctly if
     // the view zooms before new geometry arrives from RPC. Without this,
@@ -1014,7 +1046,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(
         gl.TRIANGLES,
         0,
-        FILL_VERTICES_PER_INSTANCE,
+        this.fillVerticesPerInstance,
         this.instanceCount,
       )
     }
@@ -1040,7 +1072,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        EDGE_VERTICES_PER_INSTANCE,
+        this.edgeVerticesPerInstance,
         this.nonCigarInstanceCount,
       )
     }
@@ -1103,7 +1135,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(
         gl.TRIANGLES,
         0,
-        FILL_VERTICES_PER_INSTANCE,
+        this.fillVerticesPerInstance,
         this.instanceCount,
       )
     }
@@ -1128,7 +1160,7 @@ export class SyntenyWebGLRenderer {
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        EDGE_VERTICES_PER_INSTANCE,
+        this.edgeVerticesPerInstance,
         this.nonCigarInstanceCount,
       )
     }
@@ -1237,12 +1269,6 @@ export class SyntenyWebGLRenderer {
     }
     if (this.edgePickingProgram) {
       gl.deleteProgram(this.edgePickingProgram)
-    }
-    if (this.fillTemplateBuffer) {
-      gl.deleteBuffer(this.fillTemplateBuffer)
-    }
-    if (this.edgeTemplateBuffer) {
-      gl.deleteBuffer(this.edgeTemplateBuffer)
     }
     if (this.pickingFramebuffer) {
       gl.deleteFramebuffer(this.pickingFramebuffer)

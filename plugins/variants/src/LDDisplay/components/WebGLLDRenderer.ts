@@ -58,7 +58,8 @@ void main() {
     t = v_ldValue;
   }
   t = clamp(t, 0.0, 1.0);
-  fragColor = texture(u_colorRamp, vec2(t, 0.5));
+  vec4 c = texture(u_colorRamp, vec2(t, 0.5));
+  fragColor = vec4(c.rgb * c.a, c.a);
 }
 `
 
@@ -177,7 +178,8 @@ export class WebGLLDRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const gl = canvas.getContext('webgl2', {
-      premultipliedAlpha: false,
+      antialias: false,
+      premultipliedAlpha: true,
       preserveDrawingBuffer: true,
     })
 
@@ -197,7 +199,7 @@ export class WebGLLDRenderer {
     ])
 
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
   private createShader(type: number, source: string) {
