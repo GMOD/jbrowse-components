@@ -10,15 +10,36 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInst
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface Pos {
-  offsetPx: number
+export interface SyntenyFeatureData {
+  p11_offsetPx: Float64Array
+  p12_offsetPx: Float64Array
+  p21_offsetPx: Float64Array
+  p22_offsetPx: Float64Array
+  strands: Int8Array
+  starts: Float64Array
+  ends: Float64Array
+  identities: Float64Array
+  padTop: Float64Array
+  padBottom: Float64Array
+  featureIds: string[]
+  names: string[]
+  refNames: string[]
+  assemblyNames: string[]
+  cigars: string[]
+  mates: {
+    start: number
+    end: number
+    refName: string
+    name: string
+    assemblyName: string
+  }[]
 }
 
 export interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
+  p11: { offsetPx: number }
+  p12: { offsetPx: number }
+  p21: { offsetPx: number }
+  p22: { offsetPx: number }
   padTop: number
   padBottom: number
   id: string
@@ -35,8 +56,31 @@ export interface FeatPos {
     name: string
     assemblyName: string
   }
-  cigar: string[]
   identity?: number
+}
+
+export function getFeatureAtIndex(
+  data: SyntenyFeatureData,
+  i: number,
+): FeatPos {
+  const identity = data.identities[i]!
+  return {
+    p11: { offsetPx: data.p11_offsetPx[i]! },
+    p12: { offsetPx: data.p12_offsetPx[i]! },
+    p21: { offsetPx: data.p21_offsetPx[i]! },
+    p22: { offsetPx: data.p22_offsetPx[i]! },
+    padTop: data.padTop[i]!,
+    padBottom: data.padBottom[i]!,
+    id: data.featureIds[i]!,
+    strand: data.strands[i]!,
+    name: data.names[i]!,
+    refName: data.refNames[i]!,
+    start: data.starts[i]!,
+    end: data.ends[i]!,
+    assemblyName: data.assemblyNames[i]!,
+    mate: data.mates[i]!,
+    identity: identity === -1 ? undefined : identity,
+  }
 }
 
 /**
@@ -84,9 +128,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #volatile
-       * assigned by reaction
+       * lightweight store of raw RPC arrays, avoids creating per-feature objects
        */
-      featPositions: [] as FeatPos[],
+      featureData: undefined as SyntenyFeatureData | undefined,
 
       /**
        * #volatile
@@ -125,8 +169,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setFeatPositions(arg: FeatPos[]) {
-        self.featPositions = arg
+      setFeatureData(arg: SyntenyFeatureData | undefined) {
+        self.featureData = arg
       },
       /**
        * #action
@@ -225,7 +269,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get numFeats() {
-        return self.featPositions.length
+        return self.featureData?.featureIds.length ?? 0
       },
 
       /**
@@ -234,13 +278,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get ready() {
         return this.numFeats > 0
-      },
-
-      /**
-       * #getter
-       */
-      get featMap() {
-        return Object.fromEntries(self.featPositions.map(f => [f.id, f]))
       },
 
       /**
@@ -310,17 +347,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * cached query total lengths for minAlignmentLength filtering
        */
       get queryTotalLengths() {
-        if (self.minAlignmentLength <= 0) {
+        const { featureData } = self
+        if (self.minAlignmentLength <= 0 || !featureData) {
           return undefined
         }
         const lengths = new Map<string, number>()
-        for (const feat of self.featPositions) {
-          const queryName = feat.name || feat.id
-          const alignmentLength = Math.abs(feat.end - feat.start)
+        for (let i = 0; i < featureData.featureIds.length; i++) {
+          const queryName = featureData.names[i] || featureData.featureIds[i]!
+          const alignmentLength = Math.abs(
+            featureData.ends[i]! - featureData.starts[i]!,
+          )
           const currentTotal = lengths.get(queryName) || 0
           lengths.set(queryName, currentTotal + alignmentLength)
         }
         return lengths
+      },
+
+      getFeature(index: number) {
+        if (!self.featureData) {
+          return undefined
+        }
+        return getFeatureAtIndex(self.featureData, index)
       },
     }))
     .actions(self => ({

@@ -8,22 +8,24 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { parseSyntenyRpcResult } from './parseSyntenyRpcResult.ts'
-
-import type { LinearSyntenyDisplayModel } from './model.ts'
-import type {
-  SyntenyInstanceData,
-  SyntenyRpcResult,
-} from './parseSyntenyRpcResult.ts'
+import type { LinearSyntenyDisplayModel, SyntenyFeatureData } from './model.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
 
+export interface SyntenyRpcResult extends SyntenyFeatureData {
+  instanceData: SyntenyInstanceData
+}
+
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastInstanceData: SyntenyInstanceData | undefined
   let lastRenderer: unknown = null
   let currentStopToken: StopToken | undefined
+
+  let drawAutorunCount = 0
+  let lastDrawLogTime = 0
 
   addDisposer(
     self,
@@ -40,7 +42,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const { alpha, featPositions, level, minAlignmentLength } = self
+        const t0 = performance.now()
+
+        const { alpha, featureData, level, minAlignmentLength } = self
         const webglInstanceData = self.webglInstanceData
         const height = self.height
         const width = view.width
@@ -59,14 +63,19 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           lastRenderer = self.webglRenderer
         }
 
+        const t1 = performance.now()
         self.webglRenderer.resize(width, height)
 
+        const t2 = performance.now()
+        let didUpload = false
         if (webglInstanceData && webglInstanceData !== lastInstanceData) {
+          didUpload = true
           lastInstanceData = webglInstanceData
           self.webglRenderer.uploadGeometry(webglInstanceData, view.drawCurves)
         }
 
-        if (!featPositions.length) {
+        const t3 = performance.now()
+        if (!featureData) {
           return
         }
 
@@ -89,6 +98,23 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           alpha,
           isScrolling,
         )
+
+        const t4 = performance.now()
+        drawAutorunCount++
+        const now = performance.now()
+        if (now - lastDrawLogTime > 2000) {
+          console.log(
+            `[SyntenyDraw] ${drawAutorunCount} calls in last 2s | ` +
+              `this frame: observables=${(t1 - t0).toFixed(2)}ms, ` +
+              `resize=${(t2 - t1).toFixed(2)}ms, ` +
+              `upload=${didUpload ? (t3 - t2).toFixed(2) + 'ms (NEW GEOMETRY)' : 'skipped'}, ` +
+              `render=${(t4 - t3).toFixed(2)}ms, ` +
+              `total=${(t4 - t0).toFixed(2)}ms | ` +
+              `isScrolling=${isScrolling}, instances=${self.webglRenderer.getInstanceCount()}`,
+          )
+          drawAutorunCount = 0
+          lastDrawLogTime = now
+        }
       },
       {
         name: 'SyntenyDraw',
@@ -187,13 +213,31 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               return
             }
 
-            const featPositions = parseSyntenyRpcResult(result)
-            self.setFeatPositions(featPositions)
+            const featureData: SyntenyFeatureData = {
+              p11_offsetPx: result.p11_offsetPx,
+              p12_offsetPx: result.p12_offsetPx,
+              p21_offsetPx: result.p21_offsetPx,
+              p22_offsetPx: result.p22_offsetPx,
+              strands: result.strands,
+              starts: result.starts,
+              ends: result.ends,
+              identities: result.identities,
+              padTop: result.padTop,
+              padBottom: result.padBottom,
+              featureIds: result.featureIds,
+              names: result.names,
+              refNames: result.refNames,
+              assemblyNames: result.assemblyNames,
+              cigars: result.cigars,
+              mates: result.mates,
+            }
+
+            self.setFeatureData(featureData)
             self.setWebglInstanceData(result.instanceData)
 
-            console.log('[WebGL Synteny] RPC result processed:', {
-              featPositionsCount: featPositions.length,
-              instanceDataCount: result.instanceData?.instanceCount,
+            console.warn('[WebGL Synteny] RPC result processed:', {
+              featureCount: featureData.featureIds.length,
+              instanceDataCount: result.instanceData.instanceCount,
             })
           } catch (e) {
             if (!isAbortException(e)) {

@@ -4,9 +4,10 @@ import { parseCigar } from '@jbrowse/plugin-alignments'
 
 import { colorSchemes } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
-function splitHiLo(values: number[]) {
-  const result = new Float32Array(values.length * 2)
-  for (const [i, value] of values.entries()) {
+function splitHiLo(values: Float32Array, count: number) {
+  const result = new Float32Array(count * 2)
+  for (let i = 0; i < count; i++) {
+    const value = values[i]!
     const hi = Math.fround(value)
     result[i * 2] = hi
     result[i * 2 + 1] = value - hi
@@ -91,59 +92,34 @@ function getCigarColor(
   return colorFn(strand, refName, index)
 }
 
-function addLocationMarkerInstances(
-  x1s: number[],
-  x2s: number[],
-  x3s: number[],
-  x4s: number[],
-  colors: number[],
-  featureIds: number[],
-  isCurves: number[],
-  queryTotalLengthArr: number[],
-  padTops: number[],
-  padBottoms: number[],
-  topLeft: number,
-  topRight: number,
-  bottomRight: number,
-  bottomLeft: number,
-  featureId: number,
-  isCurve: number,
-  queryTotalLength: number,
-  padTop: number,
-  padBottom: number,
+const MAX_INSTANCE_COUNT = 500_000
+
+function estimateInstanceCount(
+  featureCount: number,
+  cigars: string[],
+  drawCIGAR: boolean,
+  drawLocationMarkers: boolean,
 ) {
-  const width1 = Math.abs(topRight - topLeft)
-  const width2 = Math.abs(bottomRight - bottomLeft)
-  const averageWidth = (width1 + width2) / 2
-
-  if (averageWidth < 30) {
-    return
+  let estimate = featureCount
+  if (drawCIGAR) {
+    for (let i = 0; i < featureCount; i++) {
+      const cigarStr = cigars[i]!
+      if (cigarStr) {
+        let opCount = 0
+        for (let j = 0; j < cigarStr.length; j++) {
+          const c = cigarStr.charCodeAt(j)
+          if (c >= 65 && c <= 90) {
+            opCount++
+          }
+        }
+        estimate += opCount
+      }
+    }
   }
-
-  const targetPixelSpacing = 20
-  const numMarkers = Math.max(
-    2,
-    Math.floor(averageWidth / targetPixelSpacing) + 1,
-  )
-
-  const lineHalfWidth = 0.25
-
-  for (let step = 0; step < numMarkers; step++) {
-    const t = step / numMarkers
-    const markerTopX = topLeft + (topRight - topLeft) * t
-    const markerBottomX = bottomLeft + (bottomRight - bottomLeft) * t
-
-    x1s.push(markerTopX - lineHalfWidth)
-    x2s.push(markerTopX + lineHalfWidth)
-    x3s.push(markerBottomX + lineHalfWidth)
-    x4s.push(markerBottomX - lineHalfWidth)
-    colors.push(0, 0, 0, 0.25)
-    featureIds.push(featureId)
-    isCurves.push(isCurve)
-    queryTotalLengthArr.push(queryTotalLength)
-    padTops.push(padTop)
-    padBottoms.push(padBottom)
+  if (drawLocationMarkers) {
+    estimate *= 10
   }
+  return Math.min(estimate, MAX_INSTANCE_COUNT * 2)
 }
 
 export interface SyntenyInstanceData {
@@ -215,25 +191,157 @@ export function executeSyntenyInstanceData({
     queryTotalLengths.set(queryName, current + alignmentLength)
   }
 
-  const x1s: number[] = []
-  const x2s: number[] = []
-  const x3s: number[] = []
-  const x4s: number[] = []
-  const colorsArr: number[] = []
-  const featureIdsArr: number[] = []
-  const isCurvesArr: number[] = []
-  const queryTotalLengthArr: number[] = []
-  const padTopsArr: number[] = []
-  const padBottomsArr: number[] = []
+  // Parse CIGARs once, reuse in both loops
+  const parsedCigars: string[][] = new Array(featureCount)
+  for (let i = 0; i < featureCount; i++) {
+    const cigarStr = cigars[i]!
+    parsedCigars[i] = cigarStr ? parseCigar(cigarStr) : []
+  }
+
+  // Pre-allocate buffers with estimated capacity
+  let capacity = estimateInstanceCount(
+    featureCount,
+    cigars,
+    drawCIGAR,
+    drawLocationMarkers,
+  )
+
+  let x1s = new Float32Array(capacity)
+  let x2s = new Float32Array(capacity)
+  let x3s = new Float32Array(capacity)
+  let x4s = new Float32Array(capacity)
+  let colorsArr = new Float32Array(capacity * 4)
+  let featureIdsArr = new Float32Array(capacity)
+  let isCurvesArr = new Float32Array(capacity)
+  let queryTotalLengthArr = new Float32Array(capacity)
+  let padTopsArr = new Float32Array(capacity)
+  let padBottomsArr = new Float32Array(capacity)
+
+  let idx = 0
+  let locationMarkersEnabled = drawLocationMarkers
+
+  function ensureCapacity(needed: number) {
+    if (idx + needed <= capacity) {
+      return
+    }
+    const newCapacity = Math.max(capacity * 2, idx + needed)
+    const grow = (old: Float32Array, perInstance: number) => {
+      const arr = new Float32Array(newCapacity * perInstance)
+      arr.set(old.subarray(0, idx * perInstance))
+      return arr
+    }
+    x1s = grow(x1s, 1)
+    x2s = grow(x2s, 1)
+    x3s = grow(x3s, 1)
+    x4s = grow(x4s, 1)
+    colorsArr = grow(colorsArr, 4)
+    featureIdsArr = grow(featureIdsArr, 1)
+    isCurvesArr = grow(isCurvesArr, 1)
+    queryTotalLengthArr = grow(queryTotalLengthArr, 1)
+    padTopsArr = grow(padTopsArr, 1)
+    padBottomsArr = grow(padBottomsArr, 1)
+    capacity = newCapacity
+  }
+
+  function addInstance(
+    topLeft: number,
+    topRight: number,
+    bottomRight: number,
+    bottomLeft: number,
+    cr: number,
+    cg: number,
+    cb: number,
+    ca: number,
+    featureId: number,
+    isCurve: number,
+    qtl: number,
+    padTop: number,
+    padBottom: number,
+  ) {
+    ensureCapacity(1)
+    x1s[idx] = topLeft
+    x2s[idx] = topRight
+    x3s[idx] = bottomRight
+    x4s[idx] = bottomLeft
+    const ci = idx * 4
+    colorsArr[ci] = cr
+    colorsArr[ci + 1] = cg
+    colorsArr[ci + 2] = cb
+    colorsArr[ci + 3] = ca
+    featureIdsArr[idx] = featureId
+    isCurvesArr[idx] = isCurve
+    queryTotalLengthArr[idx] = qtl
+    padTopsArr[idx] = padTop
+    padBottomsArr[idx] = padBottom
+    idx++
+  }
+
+  function addLocationMarkers(
+    topLeft: number,
+    topRight: number,
+    bottomRight: number,
+    bottomLeft: number,
+    featureId: number,
+    isCurve: number,
+    qtl: number,
+    padTop: number,
+    padBottom: number,
+  ) {
+    const width1 = Math.abs(topRight - topLeft)
+    const width2 = Math.abs(bottomRight - bottomLeft)
+    const averageWidth = (width1 + width2) / 2
+
+    if (averageWidth < 30) {
+      return
+    }
+
+    const targetPixelSpacing = 20
+    const numMarkers = Math.max(
+      2,
+      Math.floor(averageWidth / targetPixelSpacing) + 1,
+    )
+
+    const lineHalfWidth = 0.25
+    ensureCapacity(numMarkers)
+
+    for (let step = 0; step < numMarkers; step++) {
+      if (idx >= MAX_INSTANCE_COUNT) {
+        locationMarkersEnabled = false
+        return
+      }
+      const t = step / numMarkers
+      const markerTopX = topLeft + (topRight - topLeft) * t
+      const markerBottomX = bottomLeft + (bottomRight - bottomLeft) * t
+
+      addInstance(
+        markerTopX - lineHalfWidth,
+        markerTopX + lineHalfWidth,
+        markerBottomX + lineHalfWidth,
+        markerBottomX - lineHalfWidth,
+        0,
+        0,
+        0,
+        0.25,
+        featureId,
+        isCurve,
+        qtl,
+        padTop,
+        padBottom,
+      )
+    }
+  }
 
   const isCurve = drawCurves ? 1 : 0
   const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
   const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
   const minCigarPxWidth = 4
 
+  // First loop: non-CIGAR instances (features too small for CIGAR or no CIGAR)
   for (let i = 0; i < featureCount; i++) {
-    const cigarStr = cigars[i]!
-    const cigar = cigarStr ? parseCigar(cigarStr) : []
+    if (idx >= MAX_INSTANCE_COUNT) {
+      break
+    }
+    const cigar = parsedCigars[i]!
     if (cigar.length > 0 && drawCIGAR) {
       const featureWidth = Math.max(
         Math.abs(p12_offsetPx[i]! - p11_offsetPx[i]!),
@@ -256,47 +364,21 @@ export function executeSyntenyInstanceData({
     const padBottom = padBottomArr[i]!
 
     const [cr, cg, cb, ca] = colorFn(strand, refName, i)
-    x1s.push(x11)
-    x2s.push(x12)
-    x3s.push(x22)
-    x4s.push(x21)
-    colorsArr.push(cr, cg, cb, ca)
-    featureIdsArr.push(featureId)
-    isCurvesArr.push(isCurve)
-    queryTotalLengthArr.push(qtl)
-    padTopsArr.push(padTop)
-    padBottomsArr.push(padBottom)
+    addInstance(x11, x12, x22, x21, cr, cg, cb, ca, featureId, isCurve, qtl, padTop, padBottom)
 
-    if (drawLocationMarkers) {
-      addLocationMarkerInstances(
-        x1s,
-        x2s,
-        x3s,
-        x4s,
-        colorsArr,
-        featureIdsArr,
-        isCurvesArr,
-        queryTotalLengthArr,
-        padTopsArr,
-        padBottomsArr,
-        x11,
-        x12,
-        x22,
-        x21,
-        featureId,
-        isCurve,
-        qtl,
-        padTop,
-        padBottom,
-      )
+    if (locationMarkersEnabled) {
+      addLocationMarkers(x11, x12, x22, x21, featureId, isCurve, qtl, padTop, padBottom)
     }
   }
 
-  const nonCigarInstanceCount = x1s.length
+  const nonCigarInstanceCount = idx
 
+  // Second loop: CIGAR instances (using cached parsed CIGARs)
   for (let i = 0; i < featureCount; i++) {
-    const cigarStr = cigars[i]!
-    const cigar = cigarStr ? parseCigar(cigarStr) : []
+    if (idx >= MAX_INSTANCE_COUNT) {
+      break
+    }
+    const cigar = parsedCigars[i]!
     if (!(cigar.length > 0 && drawCIGAR)) {
       continue
     }
@@ -354,6 +436,9 @@ export function executeSyntenyInstanceData({
     let px2 = 0
 
     for (let j = 0; j < cigar.length; j += 2) {
+      if (idx >= MAX_INSTANCE_COUNT) {
+        break
+      }
       const len = +cigar[j]!
       const op = cigar[j + 1]!
 
@@ -401,57 +486,28 @@ export function executeSyntenyInstanceData({
           refName,
           i,
         )
-        x1s.push(px1)
-        x2s.push(cx1)
-        x3s.push(cx2)
-        x4s.push(px2)
-        colorsArr.push(cr, cg, cb, ca)
-        featureIdsArr.push(featureId)
-        isCurvesArr.push(isCurve)
-        queryTotalLengthArr.push(qtl)
-        padTopsArr.push(padTop)
-        padBottomsArr.push(padBottom)
+        addInstance(px1, cx1, cx2, px2, cr, cg, cb, ca, featureId, isCurve, qtl, padTop, padBottom)
 
-        if (drawLocationMarkers) {
-          addLocationMarkerInstances(
-            x1s,
-            x2s,
-            x3s,
-            x4s,
-            colorsArr,
-            featureIdsArr,
-            isCurvesArr,
-            queryTotalLengthArr,
-            padTopsArr,
-            padBottomsArr,
-            px1,
-            cx1,
-            cx2,
-            px2,
-            featureId,
-            isCurve,
-            qtl,
-            padTop,
-            padBottom,
-          )
+        if (locationMarkersEnabled) {
+          addLocationMarkers(px1, cx1, cx2, px2, featureId, isCurve, qtl, padTop, padBottom)
         }
       }
     }
   }
 
-  const instanceCount = x1s.length
+  const instanceCount = idx
 
   const result = {
-    x1: splitHiLo(x1s),
-    x2: splitHiLo(x2s),
-    x3: splitHiLo(x3s),
-    x4: splitHiLo(x4s),
-    colors: new Float32Array(colorsArr),
-    featureIds: new Float32Array(featureIdsArr),
-    isCurves: new Float32Array(isCurvesArr),
-    queryTotalLengths: new Float32Array(queryTotalLengthArr),
-    padTops: new Float32Array(padTopsArr),
-    padBottoms: new Float32Array(padBottomsArr),
+    x1: splitHiLo(x1s, instanceCount),
+    x2: splitHiLo(x2s, instanceCount),
+    x3: splitHiLo(x3s, instanceCount),
+    x4: splitHiLo(x4s, instanceCount),
+    colors: colorsArr.subarray(0, instanceCount * 4),
+    featureIds: featureIdsArr.subarray(0, instanceCount),
+    isCurves: isCurvesArr.subarray(0, instanceCount),
+    queryTotalLengths: queryTotalLengthArr.subarray(0, instanceCount),
+    padTops: padTopsArr.subarray(0, instanceCount),
+    padBottoms: padBottomsArr.subarray(0, instanceCount),
     instanceCount,
     nonCigarInstanceCount,
     geometryBpPerPx0: bpPerPxs[level]!,
@@ -470,7 +526,7 @@ export function executeSyntenyInstanceData({
     result.padTops.byteLength +
     result.padBottoms.byteLength
 
-  console.log('[WebGL Synteny RPC] Generated instance data:', {
+  console.warn('[WebGL Synteny RPC] Generated instance data:', {
     featureCount,
     instanceCount,
     nonCigarInstanceCount,
@@ -478,6 +534,7 @@ export function executeSyntenyInstanceData({
     totalMB: (totalBytes / (1024 * 1024)).toFixed(2),
     drawCurves,
     drawCIGAR,
+    locationMarkersCapped: !locationMarkersEnabled && drawLocationMarkers,
   })
 
   return result

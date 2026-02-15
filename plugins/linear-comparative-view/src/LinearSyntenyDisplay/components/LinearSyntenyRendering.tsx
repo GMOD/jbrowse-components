@@ -6,7 +6,6 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
@@ -38,6 +37,9 @@ const useStyles = makeStyles()({
   },
 })
 
+let renderCount = 0
+let lastRenderLogTime = 0
+
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   model,
 }: {
@@ -45,6 +47,17 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }) {
   const { classes } = useStyles()
   const { mouseoverId, height } = model
+
+  renderCount++
+  const now = performance.now()
+  if (now - lastRenderLogTime > 2000) {
+    console.log(
+      `[SyntenyComponent] ${renderCount} renders in last 2s | ` +
+        `mouseoverId=${mouseoverId}, height=${height}`,
+    )
+    renderCount = 0
+    lastRenderLogTime = now
+  }
   const xOffset = useRef(0)
   const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
@@ -153,27 +166,27 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     const canvas = webglCanvasRef.current
     if (canvas) {
       const lostHandler = (event: Event) => {
+        event.preventDefault()
         console.error('[WebGL Synteny] Context lost!', {
           canvasSize: `${canvas.width}x${canvas.height}`,
           clientSize: `${canvas.clientWidth}x${canvas.clientHeight}`,
           instanceCount: model.webglRenderer?.getInstanceCount(),
-          event,
         })
-        if (model.webglRenderer) {
-          model.webglRenderer.dispose()
-        }
+        model.setWebGLInitialized(false)
       }
 
       const restoredHandler = () => {
-        console.log('[WebGL Synteny] Context restored, reinitializing...')
+        console.warn('[WebGL Synteny] Context restored, reinitializing...')
         const newRenderer = new SyntenyWebGLRenderer()
         const success = newRenderer.init(canvas)
         model.setWebGLRenderer(newRenderer)
         model.setWebGLInitialized(success)
-        if (success) {
-          console.log('[WebGL Synteny] Context successfully restored')
-        } else {
-          console.error('[WebGL Synteny] Failed to restore context')
+        if (success && model.webglInstanceData) {
+          const view = getContainingView(model) as LinearSyntenyViewModel
+          newRenderer.uploadGeometry(
+            model.webglInstanceData,
+            view.drawCurves,
+          )
         }
       }
 
@@ -192,11 +205,15 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (webglCanvasRef.current) {
+      console.log(
+        `[SyntenyComponent] Creating new WebGL renderer (width=${width}, height=${height})`,
+      )
       const renderer = new SyntenyWebGLRenderer()
       const success = renderer.init(webglCanvasRef.current)
       model.setWebGLRenderer(renderer)
       model.setWebGLInitialized(success)
       return () => {
+        console.log('[SyntenyComponent] Disposing WebGL renderer')
         model.webglRenderer?.dispose()
         model.setWebGLRenderer(null)
         model.setWebGLInitialized(false)
@@ -209,8 +226,8 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     (x: number, y: number) => {
       if (model.webglRenderer && model.webglInitialized) {
         const featureIndex = model.webglRenderer.pick(x, y)
-        if (featureIndex >= 0 && featureIndex < model.featPositions.length) {
-          return model.featPositions[featureIndex]
+        if (featureIndex >= 0 && featureIndex < model.numFeats) {
+          return model.getFeature(featureIndex)
         }
       }
       return undefined

@@ -14,7 +14,7 @@ const ServerSideRenderedBlockContent = observer(
   }) {
     if (model.error) {
       return <BlockError error={model.error} />
-    } else if (!model.featPositions.length) {
+    } else if (!model.numFeats) {
       return <LoadingMessage />
     } else {
       return <LinearSyntenyRendering model={model} />

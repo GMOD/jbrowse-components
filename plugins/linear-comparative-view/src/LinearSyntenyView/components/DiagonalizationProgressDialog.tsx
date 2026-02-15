@@ -57,26 +57,33 @@ const DiagonalizationProgressDialog = observer(
           for (const level of model.levels) {
             for (const track of level.tracks) {
               for (const display of track.displays) {
-                const { featPositions } = display as {
-                  featPositions: {
-                    refName: string
-                    start: number
-                    end: number
-                    strand: number
-                    mate: { refName: string; start: number; end: number }
-                  }[]
+                const { featureData } = display as {
+                  featureData?: {
+                    refNames: string[]
+                    starts: Float64Array
+                    ends: Float64Array
+                    strands: Int8Array
+                    mates: {
+                      refName: string
+                      start: number
+                      end: number
+                    }[]
+                  }
                 }
 
-                for (const feat of featPositions) {
-                  alignments.push({
-                    queryRefName: feat.refName,
-                    refRefName: feat.mate.refName,
-                    queryStart: feat.start,
-                    queryEnd: feat.end,
-                    refStart: feat.mate.start,
-                    refEnd: feat.mate.end,
-                    strand: feat.strand || 1,
-                  })
+                if (featureData) {
+                  for (let i = 0; i < featureData.refNames.length; i++) {
+                    const mate = featureData.mates[i]!
+                    alignments.push({
+                      queryRefName: featureData.refNames[i]!,
+                      refRefName: mate.refName,
+                      queryStart: featureData.starts[i]!,
+                      queryEnd: featureData.ends[i]!,
+                      refStart: mate.start,
+                      refEnd: mate.end,
+                      strand: featureData.strands[i]! || 1,
+                    })
+                  }
                 }
               }
             }
