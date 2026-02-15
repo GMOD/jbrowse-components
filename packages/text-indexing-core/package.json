@@ -38,9 +38,7 @@
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },
-  "dependencies": {
-    "node-fetch": "^2.7.0"
-  },
+  "dependencies": {},
   "publishConfig": {
     "access": "public",
     "main": "esm/index.js",
