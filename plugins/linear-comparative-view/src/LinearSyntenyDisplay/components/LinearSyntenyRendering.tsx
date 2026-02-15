@@ -201,7 +201,9 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     return undefined
   }, [model])
 
-  // Initialize/dispose WebGL renderer
+  // Initialize/dispose WebGL renderer - only depends on model. Dimension
+  // changes are handled by the draw autorun's resize() call, which updates the
+  // viewport and picking buffer without tearing down the GL context.
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     if (webglCanvasRef.current) {
@@ -220,7 +222,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
     }
     return undefined
-  }, [model, width, height])
+  }, [model])
 
   const handleWebGLPick = useCallback(
     (x: number, y: number) => {
@@ -392,8 +394,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         onContextMenu={handleContextMenu}
         data-testid="synteny_canvas"
         className={classes.webglCanvas}
-        width={width * 2}
-        height={height * 2}
         style={{ width, height }}
       />
       <canvas

@@ -540,9 +540,9 @@ export class SyntenyWebGLRenderer {
 
     this.canvas = canvas
     this.gl = gl
-    this.devicePixelRatio = canvas.width / (canvas.clientWidth || canvas.width)
-    this.width = canvas.clientWidth || canvas.width
-    this.height = canvas.clientHeight || canvas.height
+    this.devicePixelRatio = 2
+    this.width = 0
+    this.height = 0
 
     console.debug('[WebGL Synteny] Device pixel ratio:', this.devicePixelRatio)
 
@@ -811,7 +811,7 @@ export class SyntenyWebGLRenderer {
     )
   }
 
-  resize(width: number, height: number) {
+  resize(width: number, height: number, dpr = 2) {
     if (!this.canvas || !this.gl) {
       return
     }
@@ -824,11 +824,15 @@ export class SyntenyWebGLRenderer {
     )
 
     const gl = this.gl
-    this.devicePixelRatio = this.canvas.width / width
+    const canvasWidth = Math.round(width * dpr)
+    const canvasHeight = Math.round(height * dpr)
+    this.canvas.width = canvasWidth
+    this.canvas.height = canvasHeight
+    this.devicePixelRatio = dpr
     this.width = width
     this.height = height
-    this.resizePickingBuffer(this.canvas.width, this.canvas.height)
-    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+    this.resizePickingBuffer(canvasWidth, canvasHeight)
+    gl.viewport(0, 0, canvasWidth, canvasHeight)
   }
 
   private cleanupGeometry() {
