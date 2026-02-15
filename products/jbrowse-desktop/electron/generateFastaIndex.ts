@@ -1,6 +1,5 @@
 import fs from 'fs'
-
-import fetch from 'node-fetch'
+import { Readable } from 'stream'
 
 export async function getFileStream(
   location: { uri: string } | { localPath: string },
@@ -15,7 +14,21 @@ export async function getFileStream(
         `Failed to fetch ${location.uri} status ${response.status} ${response.statusText}`,
       )
     }
-    return response.body
+    if (!response.body) {
+      throw new Error(`No response body for ${location.uri}`)
+    }
+    const body = response.body
+    const reader = body.getReader()
+    return new Readable({
+      async read() {
+        let result = await reader.read()
+        while (!result.done) {
+          this.push(result.value)
+          result = await reader.read()
+        }
+        this.push(null)
+      },
+    })
   }
   throw new Error(`Unknown file handle type ${JSON.stringify(location)}`)
 }
