@@ -26,7 +26,7 @@ import type { IReactionOptions, IReactionPublic } from 'mobx'
  */
 export function makeAbortableReaction<T, U, V>(
   self: T,
-  dataFunction: (arg: T) => U | undefined,
+  dataFunction: (arg: T) => U,
   asyncReactionFunction: (
     arg: U | undefined,
     stopToken: StopToken,

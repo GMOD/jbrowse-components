@@ -165,7 +165,6 @@ export default class BamSlightlyLazyFeature
         return this.score
 
       default:
-        console.log(field)
         return this.fields[field]
     }
   }

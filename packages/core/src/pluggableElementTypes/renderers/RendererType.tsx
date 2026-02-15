@@ -5,7 +5,7 @@ import PluggableElementBase from '../PluggableElementBase.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
 import type { AnyReactComponentType } from '../../util/index.ts'
-import type { RpcResult } from '../../util/librpc/index.ts'
+import type { RpcResult } from '../../util/librpc.ts'
 
 export type RenderProps = Record<string, unknown>
 
