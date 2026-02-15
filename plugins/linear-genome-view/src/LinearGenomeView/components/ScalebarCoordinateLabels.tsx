@@ -1,118 +1,115 @@
-import { memo } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { getTickDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
-  block: {
-    position: 'relative',
-    flexShrink: 0,
-    overflow: 'hidden',
-    height: 13,
-  },
+const useStyles = makeStyles()(() => ({
   elidedBlock: {
     backgroundColor: '#999',
     backgroundImage:
       'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
   },
-  tick: {
-    position: 'absolute',
-    width: 0,
-    display: 'flex',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-  },
-  label: {
-    fontSize: 11,
-    zIndex: 1,
-    background: theme.palette.background.paper,
-    lineHeight: 'normal',
-    pointerEvents: 'none',
-  },
 }))
-
-const ContentBlockLabels = memo(
-  function ContentBlockLabels({
-    block,
-    bpPerPx,
-  }: {
-    block: ContentBlock
-    bpPerPx: number
-  }) {
-    // console.log('[ContentBlockLabels] render', block.key)
-    const { classes } = useStyles()
-    const ticks = makeTicks(block.start, block.end, bpPerPx, true, false)
-
-    return (
-      <div className={classes.block} style={{ width: block.widthPx }}>
-        {ticks.map(({ type, base }) => {
-          if (type !== 'major') {
-            return null
-          }
-          const x =
-            (block.reversed ? block.end - base : base - block.start) / bpPerPx
-          return (
-            <div key={base} className={classes.tick} style={{ left: x }}>
-              <div className={classes.label}>
-                {getTickDisplayStr(base + 1, bpPerPx)}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    )
-  },
-  (prev, next) =>
-    prev.block.key === next.block.key &&
-    prev.block.widthPx === next.block.widthPx &&
-    prev.bpPerPx === next.bpPerPx,
-)
 
 const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
   model,
 }: {
   model: LGV
 }) {
-  // console.log('[ScalebarCoordinateLabels] render')
-  const { classes, cx } = useStyles()
-  const { staticBlocks, bpPerPx } = model
+  const { classes } = useStyles()
+  const theme = useTheme()
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  return (
-    <div style={{ display: 'flex' }}>
-      {staticBlocks.map((block, index) => {
-        const key = `${block.key}-${index}`
+  useEffect(() => {
+    const labelBg = theme.palette.background.paper
+    const elidedClass = classes.elidedBlock
+
+    return autorun(() => {
+      const container = containerRef.current
+      if (!container) {
+        return
+      }
+      const { staticBlocks, bpPerPx } = model
+      const blocks = staticBlocks.blocks
+
+      // sync block wrapper count
+      while (container.childElementCount > blocks.length) {
+        container.lastElementChild!.remove()
+      }
+      while (container.childElementCount < blocks.length) {
+        container.appendChild(document.createElement('div'))
+      }
+
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i]!
+        const wrapper = container.children[i] as HTMLElement
+
+        wrapper.style.position = 'relative'
+        wrapper.style.flexShrink = '0'
+        wrapper.style.overflow = 'hidden'
+        wrapper.style.height = '13px'
+        wrapper.style.width = `${block.widthPx}px`
+
         if (block.type === 'ContentBlock') {
-          return (
-            <ContentBlockLabels key={key} block={block} bpPerPx={bpPerPx} />
-          )
+          wrapper.className = ''
+          const { start, end, reversed } = block
+          const ticks = makeTicks(start, end, bpPerPx, true, false)
+          const majorTicks = ticks.filter(t => t.type === 'major')
+
+          // sync tick children count
+          while (wrapper.childElementCount > majorTicks.length) {
+            wrapper.lastElementChild!.remove()
+          }
+          while (wrapper.childElementCount < majorTicks.length) {
+            const tick = document.createElement('div')
+            tick.style.position = 'absolute'
+            tick.style.width = '0'
+            tick.style.display = 'flex'
+            tick.style.justifyContent = 'center'
+            tick.style.pointerEvents = 'none'
+            const label = document.createElement('div')
+            label.style.fontSize = '11px'
+            label.style.zIndex = '1'
+            label.style.lineHeight = 'normal'
+            label.style.pointerEvents = 'none'
+            tick.appendChild(label)
+            wrapper.appendChild(tick)
+          }
+
+          for (let j = 0; j < majorTicks.length; j++) {
+            const { base } = majorTicks[j]!
+            const tick = wrapper.children[j] as HTMLElement
+            const x = (reversed ? end - base : base - start) / bpPerPx
+            tick.style.left = `${x}px`
+            const label = tick.firstElementChild as HTMLElement
+            label.style.background = labelBg
+            label.textContent = getTickDisplayStr(base + 1, bpPerPx)
+          }
         } else if (block.type === 'ElidedBlock') {
-          return (
-            <div
-              key={key}
-              className={cx(classes.block, classes.elidedBlock)}
-              style={{ width: block.widthPx }}
-            />
-          )
+          wrapper.className = elidedClass
+          while (wrapper.firstChild) {
+            wrapper.firstChild.remove()
+          }
+        } else {
+          wrapper.className = ''
+          while (wrapper.firstChild) {
+            wrapper.firstChild.remove()
+          }
         }
-        // InterRegionPaddingBlock renders as empty div
-        return (
-          <div
-            key={key}
-            className={classes.block}
-            style={{ width: block.widthPx }}
-          />
-        )
-      })}
-    </div>
-  )
+      }
+    })
+  }, [model, theme, classes.elidedBlock])
+
+  return <div ref={containerRef} style={{ display: 'flex' }} />
 })
 
 export default ScalebarCoordinateLabels

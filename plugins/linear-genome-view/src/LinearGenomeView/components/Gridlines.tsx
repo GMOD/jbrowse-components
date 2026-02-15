@@ -1,19 +1,17 @@
+import { useEffect, useRef } from 'react'
+
+import { useTheme } from '@mui/material'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import {
-  ContentBlock as ContentBlockComponent,
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block.tsx'
 import { makeTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()(() => ({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     top: 0,
@@ -27,80 +25,16 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     display: 'flex',
   },
-  tick: {
-    position: 'absolute',
-    height: '100%',
-    width: 1,
-  },
-  majorTick: {
-    background: theme.palette.action.disabled,
-  },
-  minorTick: {
-    background: theme.palette.divider,
-  },
 }))
 
-function RenderedBlockLines({
-  block,
-  bpPerPx,
-}: {
-  block: ContentBlock
-  bpPerPx: number
-}) {
-  const { classes } = useStyles()
-  const { start, end, reversed } = block
-  const ticks = makeTicks(start, end, bpPerPx)
-  const majorTickClass = `${classes.tick} ${classes.majorTick}`
-  const minorTickClass = `${classes.tick} ${classes.minorTick}`
-
-  return (
-    <ContentBlockComponent block={block}>
-      {ticks.map(({ type, base }) => {
-        const x = (reversed ? end - base : base - start) / bpPerPx
-        return (
-          <div
-            key={base}
-            className={
-              type === 'major' || type === 'labeledMajor'
-                ? majorTickClass
-                : minorTickClass
-            }
-            style={{ left: x }}
-          />
-        )
-      })}
-    </ContentBlockComponent>
-  )
+function joinElements(container: HTMLElement, count: number) {
+  while (container.childElementCount > count) {
+    container.lastElementChild!.remove()
+  }
+  while (container.childElementCount < count) {
+    container.appendChild(document.createElement('div'))
+  }
 }
-
-const RenderedVerticalGuides = observer(function RenderedVerticalGuides({
-  model,
-}: {
-  model: LGV
-}) {
-  const { staticBlocks, bpPerPx } = model
-  return (
-    <>
-      {staticBlocks.map((block, index) => {
-        const k = `${block.key}-${index}`
-        if (block.type === 'ContentBlock') {
-          return <RenderedBlockLines key={k} block={block} bpPerPx={bpPerPx} />
-        } else if (block.type === 'ElidedBlock') {
-          return <ElidedBlockComponent key={k} width={block.widthPx} />
-        } else if (block.type === 'InterRegionPaddingBlock') {
-          return (
-            <InterRegionPaddingBlockComponent
-              key={k}
-              width={block.widthPx}
-              boundary={block.variant === 'boundary'}
-            />
-          )
-        }
-        return null
-      })}
-    </>
-  )
-})
 
 const Gridlines = observer(function Gridlines({
   model,
@@ -110,8 +44,67 @@ const Gridlines = observer(function Gridlines({
   offset?: number
 }) {
   const { classes } = useStyles()
+  const theme = useTheme()
   const { staticBlocks, offsetPx } = model
   const offsetLeft = staticBlocks.offsetPx - offsetPx
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const majorColor = theme.palette.action.disabled
+    const minorColor = theme.palette.divider
+    const textDisabledColor = theme.palette.text.disabled
+    const disabledBgColor = theme.palette.action.disabledBackground
+
+    return autorun(() => {
+      const container = containerRef.current
+      if (!container) {
+        return
+      }
+      const { staticBlocks, bpPerPx } = model
+      const blocks = staticBlocks.blocks
+      const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+
+      let totalChildren = 0
+      for (const block of blocks) {
+        if (block.type === 'ContentBlock') {
+          totalChildren += makeTicks(block.start, block.end, bpPerPx).length
+        } else {
+          totalChildren++
+        }
+      }
+
+      joinElements(container, totalChildren)
+
+      let childIdx = 0
+      for (const block of blocks) {
+        const blockLeft = block.offsetPx - firstBlockOffset
+        if (block.type === 'ContentBlock') {
+          const { start, end, reversed } = block
+          const ticks = makeTicks(start, end, bpPerPx)
+          for (const { type, base } of ticks) {
+            const el = container.children[childIdx] as HTMLElement
+            const x =
+              blockLeft + (reversed ? end - base : base - start) / bpPerPx
+            el.style.cssText = `position:absolute;height:100%;width:1px;left:${x}px;background:${type === 'major' || type === 'labeledMajor' ? majorColor : minorColor}`
+            childIdx++
+          }
+        } else if (block.type === 'ElidedBlock') {
+          const el = container.children[childIdx] as HTMLElement
+          el.style.cssText = `position:absolute;height:100%;left:${blockLeft}px;width:${block.widthPx}px;background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)`
+          childIdx++
+        } else if (block.type === 'InterRegionPaddingBlock') {
+          const el = container.children[childIdx] as HTMLElement
+          const bg =
+            block.variant === 'boundary'
+              ? disabledBgColor
+              : textDisabledColor
+          el.style.cssText = `position:absolute;height:100%;left:${blockLeft}px;width:${block.widthPx}px;background:${bg}`
+          childIdx++
+        }
+      }
+    })
+  }, [model, theme])
+
   return (
     <div className={classes.verticalGuidesZoomContainer}>
       <div
@@ -121,7 +114,7 @@ const Gridlines = observer(function Gridlines({
           width: staticBlocks.totalWidthPx,
         }}
       >
-        <RenderedVerticalGuides model={model} />
+        <div ref={containerRef} style={{ position: 'absolute', width: '100%', height: '100%' }} />
       </div>
     </div>
   )
