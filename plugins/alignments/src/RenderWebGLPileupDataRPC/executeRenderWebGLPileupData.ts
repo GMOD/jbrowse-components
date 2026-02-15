@@ -10,7 +10,7 @@
  */
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { dedupe, max, min, updateStatus } from '@jbrowse/core/util'
+import { max, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -57,7 +57,6 @@ import type {
 } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
 
 function computeModificationCoverage(
   modifications: ModificationEntry[],

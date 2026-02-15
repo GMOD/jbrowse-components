@@ -6,7 +6,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun, reaction } from 'mobx'
+import { autorun } from 'mobx'
 
 import { createColorFunction } from './drawSyntenyWebGL.ts'
 
@@ -128,144 +128,139 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     ),
   )
 
-  // Merged RPC: fetches features AND computes positions on the worker,
-  // returning only typed arrays + plain data (no Feature objects through
-  // postMessage). Tracks displayedRegions and bpPerPx.
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
   addDisposer(
     self,
-    reaction(
-      () => {
+    autorun(
+      function syntenyFetchAutorun() {
         if (self.isMinimized) {
-          return { initialized: false }
+          return
         }
         const view = getContainingView(self) as LSV
-        return {
-          // stringifying 'deeply' accesses the displayed regions, see
-          // issue #3456
-          displayedRegions: JSON.stringify(
-            view.views.map(v => v.displayedRegions),
-          ),
-          bpPerPx: view.views.map(v => v.bpPerPx).join(','),
-          // track visible content blocks so we re-fetch when new regions
-          // scroll into view (staticBlocks depends on offsetPx)
-          contentBlockKeys: view.views
-            .map(v => v.staticBlocks.contentBlocks.map(b => b.key).join(','))
-            .join('|'),
-          initialized:
-            view.initialized &&
-            view.views.every(
-              a => a.displayedRegions.length > 0 && a.initialized,
-            ),
-        }
-      },
-      async ({ initialized }) => {
-        if (!initialized) {
+        if (
+          !view.initialized ||
+          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+        ) {
           return
+        }
+
+        // access observables to track them (issue #3456)
+        JSON.stringify(view.views.map(v => v.displayedRegions))
+        view.views.map(v => v.bpPerPx)
+        view.views.map(v => v.staticBlocks.contentBlocks.map(b => b.key))
+
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
         }
         if (currentStopToken) {
           stopStopToken(currentStopToken)
         }
+
         const thisStopToken = createStopToken()
         currentStopToken = thisStopToken
 
-        try {
-          const { level, adapterConfig } = self
-          const { rpcManager } = getSession(self)
-          const view = getContainingView(self) as LSV
-          const sessionId = getRpcSessionId(self)
+        debounceTimer = setTimeout(async () => {
+          try {
+            const { level, adapterConfig } = self
+            const { rpcManager } = getSession(self)
+            const view = getContainingView(self) as LSV
+            const sessionId = getRpcSessionId(self)
 
-          const viewSnaps = view.views.map(v => ({
-            bpPerPx: v.bpPerPx,
-            offsetPx: v.offsetPx,
-            displayedRegions: v.displayedRegions,
-            staticBlocks: {
-              contentBlocks: v.staticBlocks.contentBlocks,
-              blocks: v.staticBlocks.blocks,
-            },
-            interRegionPaddingWidth: v.interRegionPaddingWidth,
-            minimumBlockWidth: v.minimumBlockWidth,
-            width: v.width,
-          }))
+            const viewSnaps = view.views.map(v => ({
+              bpPerPx: v.bpPerPx,
+              offsetPx: v.offsetPx,
+              displayedRegions: v.displayedRegions,
+              staticBlocks: {
+                contentBlocks: v.staticBlocks.contentBlocks,
+                blocks: v.staticBlocks.blocks,
+              },
+              interRegionPaddingWidth: v.interRegionPaddingWidth,
+              minimumBlockWidth: v.minimumBlockWidth,
+              width: v.width,
+            }))
 
-          const regions = view.views[level]!.staticBlocks.contentBlocks
+            const regions = view.views[level]!.staticBlocks.contentBlocks
 
-          const result = (await rpcManager.call(
-            sessionId,
-            'SyntenyGetFeaturesAndPositions',
-            {
-              adapterConfig,
-              regions,
-              viewSnaps,
-              level,
+            const result = (await rpcManager.call(
               sessionId,
-              stopToken: thisStopToken,
-            },
-          )) as {
-            p11_offsetPx: Float64Array
-            p12_offsetPx: Float64Array
-            p21_offsetPx: Float64Array
-            p22_offsetPx: Float64Array
-            strands: Int8Array
-            starts: Float64Array
-            ends: Float64Array
-            identities: Float64Array
-            padTop: Float64Array
-            padBottom: Float64Array
-            featureIds: string[]
-            names: string[]
-            refNames: string[]
-            assemblyNames: string[]
-            cigars: string[]
-            mates: {
-              start: number
-              end: number
-              refName: string
-              name: string
-              assemblyName: string
-            }[]
-          }
+              'SyntenyGetFeaturesAndPositions',
+              {
+                adapterConfig,
+                regions,
+                viewSnaps,
+                level,
+                sessionId,
+                stopToken: thisStopToken,
+              },
+            )) as {
+              p11_offsetPx: Float64Array
+              p12_offsetPx: Float64Array
+              p21_offsetPx: Float64Array
+              p22_offsetPx: Float64Array
+              strands: Int8Array
+              starts: Float64Array
+              ends: Float64Array
+              identities: Float64Array
+              padTop: Float64Array
+              padBottom: Float64Array
+              featureIds: string[]
+              names: string[]
+              refNames: string[]
+              assemblyNames: string[]
+              cigars: string[]
+              mates: {
+                start: number
+                end: number
+                refName: string
+                name: string
+                assemblyName: string
+              }[]
+            }
 
-          if (thisStopToken !== currentStopToken || !isAlive(self)) {
-            return
-          }
+            if (thisStopToken !== currentStopToken || !isAlive(self)) {
+              return
+            }
 
-          const map: FeatPos[] = []
-          for (let i = 0; i < result.featureIds.length; i++) {
-            const identity = result.identities[i]!
-            map.push({
-              p11: { offsetPx: result.p11_offsetPx[i]! },
-              p12: { offsetPx: result.p12_offsetPx[i]! },
-              p21: { offsetPx: result.p21_offsetPx[i]! },
-              p22: { offsetPx: result.p22_offsetPx[i]! },
-              padTop: result.padTop[i]!,
-              padBottom: result.padBottom[i]!,
-              id: result.featureIds[i]!,
-              strand: result.strands[i]!,
-              name: result.names[i]!,
-              refName: result.refNames[i]!,
-              start: result.starts[i]!,
-              end: result.ends[i]!,
-              assemblyName: result.assemblyNames[i]!,
-              mate: result.mates[i]!,
-              cigar: parseCigar(result.cigars[i]),
-              identity: identity === -1 ? undefined : identity,
-            })
-          }
-          featPositionsBpPerPxs = viewSnaps.map(v => v.bpPerPx)
-          self.setFeatPositions(map)
-        } catch (e) {
-          if (!isAbortException(e)) {
-            if (isAlive(self)) {
-              console.error(e)
-              self.setError(e)
+            const map: FeatPos[] = []
+            for (let i = 0; i < result.featureIds.length; i++) {
+              const identity = result.identities[i]!
+              map.push({
+                p11: { offsetPx: result.p11_offsetPx[i]! },
+                p12: { offsetPx: result.p12_offsetPx[i]! },
+                p21: { offsetPx: result.p21_offsetPx[i]! },
+                p22: { offsetPx: result.p22_offsetPx[i]! },
+                padTop: result.padTop[i]!,
+                padBottom: result.padBottom[i]!,
+                id: result.featureIds[i]!,
+                strand: result.strands[i]!,
+                name: result.names[i]!,
+                refName: result.refNames[i]!,
+                start: result.starts[i]!,
+                end: result.ends[i]!,
+                assemblyName: result.assemblyNames[i]!,
+                mate: result.mates[i]!,
+                cigar: parseCigar(result.cigars[i]),
+                identity: identity === -1 ? undefined : identity,
+              })
+            }
+            featPositionsBpPerPxs = viewSnaps.map(v => v.bpPerPx)
+            self.setFeatPositions(map)
+          } catch (e) {
+            if (!isAbortException(e)) {
+              if (isAlive(self)) {
+                console.error(e)
+                self.setError(e)
+              }
             }
           }
-        }
+        }, 300)
       },
-      { fireImmediately: true, delay: 300 },
+      { name: 'SyntenyFetch' },
     ),
   )
   addDisposer(self, () => {
+    clearTimeout(debounceTimer)
     if (currentStopToken) {
       stopStopToken(currentStopToken)
     }
