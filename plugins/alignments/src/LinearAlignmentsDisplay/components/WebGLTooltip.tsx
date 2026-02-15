@@ -25,19 +25,6 @@ const useStyles = makeStyles()(theme => ({
   td: {
     whiteSpace: 'nowrap',
   },
-  interbaseContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5em',
-  },
-  interbaseTitle: {
-    fontWeight: 600,
-  },
-  interbaseStat: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: '1em',
-  },
 }))
 
 function pct(n: number, total = 1) {
@@ -70,7 +57,6 @@ const SimpleTooltipContents = forwardRef<HTMLDivElement, TooltipProps>(
   },
 )
 
-// Interbase tooltip - minimal layout showing all interbase types at position
 function InterbaseTooltip({
   interbaseData,
   total,
@@ -84,52 +70,58 @@ function InterbaseTooltip({
       maxLen: number
       avgLen: number
       topSeq?: string
+      topSeqCount?: number
     }
   >
   total: number
   location: string
-  tdClass: string
 }) {
   const { classes } = useStyles()
 
   return (
-    <div className={classes.interbaseContainer}>
-      <div className={classes.interbaseTitle}>
-        Interbase events at {location}
-      </div>
+    <table>
+      <caption>{location}</caption>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th># of Reads</th>
+          <th>% of Reads</th>
+          <th>Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Total</td>
+          <td>{total}</td>
+          <td />
+          <td />
+        </tr>
+        {Object.entries(interbaseData).map(([type, data]) => {
+          const sizeStr =
+            data.minLen === data.maxLen
+              ? `${data.minLen}bp`
+              : `${data.minLen}-${data.maxLen}bp`
 
-      {Object.entries(interbaseData).map(([type, data]) => {
-        const sizeStr =
-          data.minLen === data.maxLen
-            ? `${data.minLen}bp`
-            : `${data.minLen}-${data.maxLen}bp (avg ${data.avgLen.toFixed(1)}bp)`
-
-        return (
-          <div key={type}>
-            <div style={{ fontWeight: 500 }}>{getInterbaseTypeLabel(type)}</div>
-            <div className={classes.interbaseStat}>
-              <span>Count:</span>
-              <span>{data.count}</span>
-            </div>
-            <div className={classes.interbaseStat}>
-              <span>% of Reads:</span>
-              <span>{pct(data.count, total)}</span>
-            </div>
-            {(data.minLen > 0 || data.maxLen > 0) && (
-              <div className={classes.interbaseStat}>
-                <span>Size:</span>
-                <span>{sizeStr}</span>
-              </div>
-            )}
-            {data.topSeq && (
-              <div style={{ marginTop: '0.25em' }}>
-                Most common: {data.topSeq}
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+          return (
+            <tr key={type}>
+              <td>
+                {getInterbaseTypeLabel(type)}
+                {data.topSeq && data.minLen <= 10 ? (
+                  <div style={{ fontSize: '0.85em', marginTop: '0.25em' }}>
+                    Top seq: {data.topSeq} ({data.topSeqCount}/{data.count})
+                  </div>
+                ) : null}
+              </td>
+              <td className={classes.td}>{data.count}</td>
+              <td>{pct(data.count, total)}</td>
+              <td className={classes.td}>
+                {data.minLen > 0 || data.maxLen > 0 ? sizeStr : null}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
   )
 }
 
@@ -242,7 +234,9 @@ const CoverageTooltipContents = forwardRef<
               `Avg size: ${data.avgLen.toFixed(1)}bp`,
             ]
             if (shouldShowSeq) {
-              tooltipParts.push(`Most common sequence: ${data.topSeq}`)
+              tooltipParts.push(
+                `Top sequence: ${data.topSeq} (${data.topSeqCount}/${data.count})`,
+              )
             }
             const tooltipText = tooltipParts.join('\n')
 
@@ -253,7 +247,7 @@ const CoverageTooltipContents = forwardRef<
                   {typeLabel} ({sizeStr})
                   {shouldShowSeq && (
                     <div style={{ fontSize: '0.85em', marginTop: '0.25em' }}>
-                      Seq: {data.topSeq}
+                      Top seq: {data.topSeq} ({data.topSeqCount}/{data.count})
                     </div>
                   )}
                 </td>
@@ -320,8 +314,6 @@ const WebGLTooltip = observer(function WebGLTooltip({
   height: number
   offsetMouseCoord?: Coord
   clientMouseCoord: Coord
-  clientRect?: DOMRect
-  mouseCoord?: Coord
 }) {
   const {
     featureUnderMouse,
@@ -361,7 +353,6 @@ const WebGLTooltip = observer(function WebGLTooltip({
               interbaseData={bin.interbase}
               total={bin.depth}
               location={location}
-              tdClass={classes.td}
             />
           </BaseTooltip>
           {offsetMouseCoord && (

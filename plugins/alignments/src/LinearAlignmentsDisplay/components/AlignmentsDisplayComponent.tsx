@@ -27,7 +27,6 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const [clientRect, setClientRect] = useState<DOMRect>()
     const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
     const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
     const {
@@ -50,7 +49,6 @@ const AlignmentsDisplayComponent = observer(
           const { left, top } = rect
           setOffsetMouseCoord([event.clientX - left, event.clientY - top])
           setClientMouseCoord([event.clientX, event.clientY])
-          setClientRect(rect)
         }}
       >
         <DisplayMessageComponent model={model} />
@@ -60,8 +58,6 @@ const AlignmentsDisplayComponent = observer(
             height={height}
             offsetMouseCoord={offsetMouseCoord}
             clientMouseCoord={clientMouseCoord}
-            clientRect={clientRect}
-            mouseCoord={offsetMouseCoord}
           />
         </Suspense>
         {contextMenuCoord && items.length > 0 ? (

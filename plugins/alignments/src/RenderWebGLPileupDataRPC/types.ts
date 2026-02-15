@@ -53,7 +53,7 @@ export interface CoverageTooltipBin {
     maxLen: number
     avgLen: number
   }
-  // Interbase data: type -> { count, minLen, maxLen, avgLen, topSeq }
+  // Interbase data: type -> { count, minLen, maxLen, avgLen, topSeq, topSeqCount }
   interbase: Record<
     string,
     {
@@ -62,6 +62,7 @@ export interface CoverageTooltipBin {
       maxLen: number
       avgLen: number
       topSeq?: string
+      topSeqCount?: number
     }
   >
   // Modification data: modType -> { count, fwd, rev, probabilityTotal, color, name }

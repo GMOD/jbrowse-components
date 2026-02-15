@@ -84,15 +84,15 @@ export function buildTooltipData({
     const maxLen = max(data.lengths)
     const avgLen = data.lengths.reduce((a, b) => a + b, 0) / data.lengths.length
     let topSeq: string | undefined
+    let topSeqCount = 0
     if (data.sequences.length > 0) {
       const seqCounts = new Map<string, number>()
       for (const seq of data.sequences) {
         seqCounts.set(seq, (seqCounts.get(seq) ?? 0) + 1)
       }
-      let maxCount = 0
       for (const [seq, count] of seqCounts) {
-        if (count > maxCount) {
-          maxCount = count
+        if (count > topSeqCount) {
+          topSeqCount = count
           topSeq = seq
         }
       }
@@ -103,6 +103,7 @@ export function buildTooltipData({
       maxLen,
       avgLen,
       topSeq,
+      topSeqCount,
     }
   }
 

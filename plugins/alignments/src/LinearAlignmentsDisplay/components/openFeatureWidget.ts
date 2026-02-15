@@ -63,7 +63,7 @@ export function openIndicatorWidget(
         ? `${interbaseEntry.minLen}bp`
         : `${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
     if (interbaseEntry.topSeq) {
-      featureData.sequence = interbaseEntry.topSeq
+      featureData['top sequence'] = `${interbaseEntry.topSeq} (${interbaseEntry.topSeqCount}/${interbaseEntry.count} reads)`
     }
   }
 
