@@ -1,4 +1,9 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import {
+  getContainingTrack,
+  getContainingView,
+  measureText,
+} from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -29,6 +34,16 @@ export default function MultiRegionWebGLDisplayMixin() {
       error: null as Error | null,
       renderingStopToken: undefined as string | undefined,
       fetchGeneration: 0,
+    }))
+    .views(self => ({
+      get scalebarOverlapLeft() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (view.trackLabelsSetting === 'overlapping') {
+          const track = getContainingTrack(self)
+          return measureText(getConf(track, 'name'), 12.8) + 100
+        }
+        return 0
+      },
     }))
     .actions(self => ({
       setLoading(loading: boolean) {

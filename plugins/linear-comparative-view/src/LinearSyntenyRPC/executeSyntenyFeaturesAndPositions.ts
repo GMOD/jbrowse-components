@@ -2,45 +2,55 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { bpToPx as bpToPxOrig } from '@jbrowse/core/util/Base1DUtils'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
 
-export function executeSyntenyFeaturesAndPositions({
-  pluginManager,
-  sessionId,
-  adapterConfig,
-  regions,
-  viewSnaps,
-  level,
-}: {
-  pluginManager: PluginManager
-  sessionId: string
-  adapterConfig: Record<string, unknown>
-  regions: Region[]
-  viewSnaps: ViewSnap[]
-  level: number
-}) {
-  return _executeSyntenyFeaturesAndPositions({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-    regions,
-    viewSnaps,
-    level,
-  })
+function computePaddingPx(self: ViewSnap, regionIndex: number) {
+  const { interRegionPaddingWidth, staticBlocks } = self
+  const blocks = staticBlocks.contentBlocks
+  let paddingCount = 0
+  let currBlock = 0
+  for (let i = 0; i < regionIndex; i++) {
+    if (blocks[currBlock]?.regionNumber === i) {
+      paddingCount++
+      currBlock++
+    }
+  }
+  return paddingCount * interRegionPaddingWidth
 }
 
-async function _executeSyntenyFeaturesAndPositions({
+function bpToPx({ self, refName, coord, regionNumber }: {
+  self: ViewSnap
+  refName: string
+  coord: number
+  regionNumber?: number
+}) {
+  const result = bpToPxOrig({ self, refName, coord, regionNumber })
+  if (result === undefined) {
+    return undefined
+  }
+  return {
+    ...result,
+    paddingPx: computePaddingPx(self, result.index),
+  }
+}
+
+export async function executeSyntenyFeaturesAndPositions({
   pluginManager,
   sessionId,
   adapterConfig,
   regions,
   viewSnaps,
   level,
+  stopToken,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -48,12 +58,13 @@ async function _executeSyntenyFeaturesAndPositions({
   regions: Region[]
   viewSnaps: ViewSnap[]
   level: number
+  stopToken?: string
 }) {
   const dataAdapter = (await getAdapter(pluginManager, sessionId, adapterConfig))
     .dataAdapter as BaseFeatureDataAdapter
 
   const features = await firstValueFrom(
-    dataAdapter.getFeaturesInMultipleRegions(regions, {}).pipe(toArray()),
+    dataAdapter.getFeaturesInMultipleRegions(regions, { stopToken }).pipe(toArray()),
   )
 
   const v1 = viewSnaps[level]!
@@ -68,6 +79,8 @@ async function _executeSyntenyFeaturesAndPositions({
   const startsArray = new Float64Array(count)
   const endsArray = new Float64Array(count)
   const identitiesArray = new Float64Array(count)
+  const padTopArray = new Float64Array(count)
+  const padBottomArray = new Float64Array(count)
 
   const featureIds: string[] = []
   const names: string[] = []
@@ -76,8 +89,10 @@ async function _executeSyntenyFeaturesAndPositions({
   const cigars: string[] = []
   const mates: { start: number; end: number; refName: string; name: string; assemblyName: string }[] = []
 
+  const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
   for (const f of features) {
+    checkStopToken2(stopTokenChecker)
     const strand = f.get('strand') as number
     const mate = f.get('mate') as {
       start: number
@@ -96,13 +111,10 @@ async function _executeSyntenyFeaturesAndPositions({
       ;[f1e, f1s] = [f1s, f1e]
     }
 
-    const refName1 = refName
-    const refName2 = mate.refName
-
-    const p11 = bpToPx({ self: v1, refName: refName1, coord: f1s })
-    const p12 = bpToPx({ self: v1, refName: refName1, coord: f1e })
-    const p21 = bpToPx({ self: v2, refName: refName2, coord: mate.start })
-    const p22 = bpToPx({ self: v2, refName: refName2, coord: mate.end })
+    const p11 = bpToPx({ self: v1, refName, coord: f1s })
+    const p12 = bpToPx({ self: v1, refName, coord: f1e })
+    const p21 = bpToPx({ self: v2, refName: mate.refName, coord: mate.start })
+    const p22 = bpToPx({ self: v2, refName: mate.refName, coord: mate.end })
 
     if (
       p11 === undefined ||
@@ -117,6 +129,8 @@ async function _executeSyntenyFeaturesAndPositions({
     p12Array[validCount] = p12.offsetPx
     p21Array[validCount] = p21.offsetPx
     p22Array[validCount] = p22.offsetPx
+    padTopArray[validCount] = p11.paddingPx
+    padBottomArray[validCount] = p21.paddingPx
     strandsArray[validCount] = strand
     startsArray[validCount] = start
     endsArray[validCount] = end
@@ -143,6 +157,8 @@ async function _executeSyntenyFeaturesAndPositions({
     starts: startsArray.slice(0, validCount),
     ends: endsArray.slice(0, validCount),
     identities: identitiesArray.slice(0, validCount),
+    padTop: padTopArray.slice(0, validCount),
+    padBottom: padBottomArray.slice(0, validCount),
     featureIds,
     names,
     refNames,
@@ -160,5 +176,7 @@ async function _executeSyntenyFeaturesAndPositions({
     result.starts.buffer,
     result.ends.buffer,
     result.identities.buffer,
+    result.padTop.buffer,
+    result.padBottom.buffer,
   ] as ArrayBuffer[])
 }

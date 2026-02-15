@@ -5,7 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 
 import { makeTicks } from '../util.ts'
-import { joinElements } from './util.ts'
+import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -24,9 +24,6 @@ const useStyles = makeStyles()(() => ({
 
 const TICK_STYLE = 'position:absolute;height:100%;width:1px'
 const BLOCK_STYLE = 'position:absolute;height:100%'
-const ELIDED_BG =
-  'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
-
 function createTickDiv() {
   const el = document.createElement('div')
   el.style.cssText = TICK_STYLE

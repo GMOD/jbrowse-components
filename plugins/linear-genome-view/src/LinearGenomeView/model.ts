@@ -1340,8 +1340,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let coverageRightPx = 0
       let prevBpPerPx: number | undefined
       let prevWidth: number | undefined
-      let prevRegionsLen: number | undefined
-      let fastPathHits = 0
+      let prevDisplayedRegions: typeof self.displayedRegions | undefined
       return {
         /**
          * #getter
@@ -1361,16 +1360,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             currentlyCalculatedStaticBlocks !== undefined &&
             bpPerPx === prevBpPerPx &&
             width === prevWidth &&
-            displayedRegions.length === prevRegionsLen &&
+            displayedRegions === prevDisplayedRegions &&
             offsetPx >= coverageLeftPx &&
             offsetPx + width <= coverageRightPx
           ) {
-            fastPathHits++
-            if (fastPathHits % 100 === 0) {
-              // console.log(
-              //   `[staticBlocks] fast-path hits: ${fastPathHits}, full computations: ${fullComputations}`,
-              // )
-            }
             return currentlyCalculatedStaticBlocks
           }
 
@@ -1396,7 +1389,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
           prevBpPerPx = bpPerPx
           prevWidth = width
-          prevRegionsLen = displayedRegions.length
+          prevDisplayedRegions = displayedRegions
           return currentlyCalculatedStaticBlocks
         },
         /**

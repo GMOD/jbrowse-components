@@ -54,6 +54,8 @@ in vec4 a_color;
 in float a_featureId;
 in float a_isCurve;
 in float a_queryTotalLength;
+in float a_padTop;
+in float a_padBottom;
 
 uniform vec2 u_resolution;
 uniform float u_height;
@@ -70,7 +72,6 @@ flat out float v_featureId;
 ${HP_SUBTRACT}
 
 void main() {
-  // Min alignment length filter (uniform-only, no geometry rebuild needed)
   if (u_minAlignmentLength > 0.0 && a_queryTotalLength < u_minAlignmentLength) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     v_color = vec4(0.0);
@@ -78,11 +79,10 @@ void main() {
     return;
   }
 
-  // Approximate culling using hi parts only (error << maxOffScreenPx margin)
-  float topMinX = (min(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
-  float topMaxX = (max(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
-  float botMinX = (min(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
-  float botMaxX = (max(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
+  float topMinX = (min(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float topMaxX = (max(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float botMinX = (min(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+  float botMaxX = (max(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
   if (topMaxX < -u_maxOffScreenPx || topMinX > u_resolution.x + u_maxOffScreenPx ||
       botMaxX < -u_maxOffScreenPx || botMinX > u_resolution.x + u_maxOffScreenPx) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -93,8 +93,8 @@ void main() {
 
   vec2 topXHP = mix(a_x1, a_x2, a_side);
   vec2 bottomXHP = mix(a_x4, a_x3, a_side);
-  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0;
-  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1;
+  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
 
   float x, y;
   if (a_isCurve > 0.5) {
@@ -122,11 +122,17 @@ const FILL_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
 in vec4 v_color;
+uniform float u_forceOpaque;
+uniform float u_alpha;
 
 out vec4 outColor;
 
 void main() {
-  outColor = v_color;
+  if (u_forceOpaque > 0.5) {
+    outColor = vec4(v_color.rgb, 1.0);
+  } else {
+    outColor = vec4(v_color.rgb, v_color.a * u_alpha);
+  }
 }
 `
 
@@ -163,6 +169,8 @@ in vec4 a_color;
 in float a_featureId;
 in float a_isCurve;
 in float a_queryTotalLength;
+in float a_padTop;
+in float a_padBottom;
 
 uniform vec2 u_resolution;
 uniform float u_height;
@@ -188,10 +196,10 @@ void main() {
     return;
   }
 
-  float topMinX = (min(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
-  float topMaxX = (max(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0;
-  float botMinX = (min(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
-  float botMaxX = (max(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1;
+  float topMinX = (min(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float topMaxX = (max(a_x1.x, a_x2.x) - u_adjOff0.x) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float botMinX = (min(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+  float botMaxX = (max(a_x3.x, a_x4.x) - u_adjOff1.x) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
   if (topMaxX < -u_maxOffScreenPx || topMinX > u_resolution.x + u_maxOffScreenPx ||
       botMaxX < -u_maxOffScreenPx || botMinX > u_resolution.x + u_maxOffScreenPx) {
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -203,8 +211,8 @@ void main() {
 
   vec2 topXHP = mix(a_x1, a_x2, step(0.0, a_side));
   vec2 bottomXHP = mix(a_x4, a_x3, step(0.0, a_side));
-  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0;
-  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1;
+  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
 
   float mt = 1.0 - a_t;
   vec2 pos;
@@ -253,6 +261,7 @@ precision highp float;
 
 in vec4 v_color;
 in float v_dist;
+uniform float u_alpha;
 
 out vec4 fragColor;
 
@@ -261,7 +270,7 @@ void main() {
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
   float edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
-  fragColor = vec4(v_color.rgb, v_color.a * edgeAlpha);
+  fragColor = vec4(v_color.rgb, v_color.a * u_alpha * edgeAlpha);
 }
 `
 
@@ -364,6 +373,17 @@ export class SyntenyWebGLRenderer {
   private fillVerticesPerInstance = 0
   private edgeVerticesPerInstance = 0
 
+  // Straight-line VAOs for fast scroll rendering (6 fill + 4 edge vertices
+  // per instance vs 96+18 for curves — ~11x fewer vertices)
+  private straightFillTemplateBuffer: WebGLBuffer | null = null
+  private straightEdgeTemplateBuffer: WebGLBuffer | null = null
+  private straightFillVao: WebGLVertexArrayObject | null = null
+  private straightFillPickingVao: WebGLVertexArrayObject | null = null
+  private straightEdgeVao: WebGLVertexArrayObject | null = null
+  private straightEdgePickingVao: WebGLVertexArrayObject | null = null
+  private straightFillVerticesPerInstance = 6
+  private straightEdgeVerticesPerInstance = 4
+
   // All allocated buffers for cleanup
   private allocatedBuffers: WebGLBuffer[] = []
   private pickingPixel = new Uint8Array(4)
@@ -416,6 +436,8 @@ export class SyntenyWebGLRenderer {
         'u_scale1',
         'u_maxOffScreenPx',
         'u_minAlignmentLength',
+        'u_forceOpaque',
+        'u_alpha',
       ]
       for (const program of [
         this.fillProgram,
@@ -492,12 +514,19 @@ export class SyntenyWebGLRenderer {
     if (this.edgeTemplateBuffer) {
       gl.deleteBuffer(this.edgeTemplateBuffer)
     }
+    if (this.straightFillTemplateBuffer) {
+      gl.deleteBuffer(this.straightFillTemplateBuffer)
+    }
+    if (this.straightEdgeTemplateBuffer) {
+      gl.deleteBuffer(this.straightEdgeTemplateBuffer)
+    }
 
     this.currentFillSegments = fillSegments
     this.currentEdgeSegments = edgeSegments
     this.fillVerticesPerInstance = fillSegments * 6
     this.edgeVerticesPerInstance = (edgeSegments + 1) * 2
 
+    // Main (curve) templates
     const fillTemplateData = new Float32Array(this.fillVerticesPerInstance * 2)
     for (let s = 0; s < fillSegments; s++) {
       const t0 = s / fillSegments
@@ -532,6 +561,23 @@ export class SyntenyWebGLRenderer {
     this.edgeTemplateBuffer = gl.createBuffer()!
     gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeTemplateBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, edgeTemplateData, gl.STATIC_DRAW)
+
+    // Straight-line templates (1 segment = 6 fill vertices, 4 edge vertices)
+    // Used during scroll for ~11x fewer vertices per instance
+    this.straightFillVerticesPerInstance = 6
+    this.straightEdgeVerticesPerInstance = 4
+
+    const straightFillData = new Float32Array([
+      0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1,
+    ])
+    this.straightFillTemplateBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.straightFillTemplateBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, straightFillData, gl.STATIC_DRAW)
+
+    const straightEdgeData = new Float32Array([0, 1, 0, -1, 1, 1, 1, -1])
+    this.straightEdgeTemplateBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.straightEdgeTemplateBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, straightEdgeData, gl.STATIC_DRAW)
   }
 
   resize(width: number, height: number) {
@@ -547,23 +593,6 @@ export class SyntenyWebGLRenderer {
     this.height = height
     this.resizePickingBuffer(this.canvas.width, this.canvas.height)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-  }
-
-  setDPR(dpr: number) {
-    if (!this.canvas || !this.gl) {
-      return
-    }
-    const newW = Math.round(this.width * dpr)
-    const newH = Math.round(this.height * dpr)
-    if (this.canvas.width === newW && this.canvas.height === newH) {
-      return
-    }
-    this.canvas.width = newW
-    this.canvas.height = newH
-    this.devicePixelRatio = dpr
-    this.resizePickingBuffer(newW, newH)
-    this.gl.viewport(0, 0, newW, newH)
-    this.pickingDirty = true
   }
 
   private cleanupGeometry() {
@@ -587,13 +616,28 @@ export class SyntenyWebGLRenderer {
       gl.deleteVertexArray(this.edgePickingVao)
       this.edgePickingVao = null
     }
+    if (this.straightFillVao) {
+      gl.deleteVertexArray(this.straightFillVao)
+      this.straightFillVao = null
+    }
+    if (this.straightFillPickingVao) {
+      gl.deleteVertexArray(this.straightFillPickingVao)
+      this.straightFillPickingVao = null
+    }
+    if (this.straightEdgeVao) {
+      gl.deleteVertexArray(this.straightEdgeVao)
+      this.straightEdgeVao = null
+    }
+    if (this.straightEdgePickingVao) {
+      gl.deleteVertexArray(this.straightEdgePickingVao)
+      this.straightEdgePickingVao = null
+    }
     for (const buf of this.allocatedBuffers) {
       gl.deleteBuffer(buf)
     }
     this.allocatedBuffers = []
     this.instanceCount = 0
     this.nonCigarInstanceCount = 0
-
   }
 
   private createBuffer(gl: WebGL2RenderingContext, data: Float32Array) {
@@ -616,6 +660,8 @@ export class SyntenyWebGLRenderer {
     featureIdBuf: WebGLBuffer,
     isCurveBuf: WebGLBuffer,
     queryTotalLengthBuf: WebGLBuffer,
+    padTopBuf: WebGLBuffer,
+    padBottomBuf: WebGLBuffer,
   ) {
     const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
@@ -654,6 +700,8 @@ export class SyntenyWebGLRenderer {
       ['a_featureId', featureIdBuf],
       ['a_isCurve', isCurveBuf],
       ['a_queryTotalLength', queryTotalLengthBuf],
+      ['a_padTop', padTopBuf],
+      ['a_padBottom', padBottomBuf],
     ]
     for (const [name, buf] of scalarAttrs) {
       const loc = gl.getAttribLocation(program, name)
@@ -681,7 +729,6 @@ export class SyntenyWebGLRenderer {
   buildGeometry(
     featPositions: FeatPos[],
     level: number,
-    alpha: number,
     colorBy: string,
     colorFn: (f: FeatPos, index: number) => [number, number, number, number],
     drawCurves: boolean,
@@ -704,13 +751,10 @@ export class SyntenyWebGLRenderer {
       : STRAIGHT_EDGE_SEGMENTS
     this.rebuildTemplates(fillSegments, edgeSegments)
 
-    // Store bpPerPx used for this geometry so we can scale correctly if
-    // the view zooms before new geometry arrives from RPC. Without this,
-    // the old geometry (in old pixel coords) rendered with new offsets
-    // causes a visible glitch. The shader multiplies positions by
-    // geometryBpPerPx/currentBpPerPx to compensate. Note: inter-region
-    // padding doesn't scale with bpPerPx, so positions near region
-    // boundaries may be slightly off until the RPC returns fresh geometry
+    // Store bpPerPx used for this geometry so the shader can scale
+    // positions by geometryBpPerPx/currentBpPerPx during zoom. Per-instance
+    // padding attributes correct for inter-region padding (fixed pixels
+    // that shouldn't scale with bpPerPx)
     this.geometryBpPerPx0 = bpPerPxs[level]!
     this.geometryBpPerPx1 = bpPerPxs[level + 1]!
 
@@ -733,6 +777,8 @@ export class SyntenyWebGLRenderer {
     const featureIds: number[] = []
     const isCurves: number[] = []
     const queryTotalLengthArr: number[] = []
+    const padTops: number[] = []
+    const padBottoms: number[] = []
 
     const isCurve = drawCurves ? 1 : 0
     const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
@@ -745,8 +791,7 @@ export class SyntenyWebGLRenderer {
 
     // Pass 1: non-CIGAR features + CIGAR features too thin to decompose
     // (these get edge rendering which keeps thin features visible)
-    for (const [i, featPosition] of featPositions.entries()) {
-      const feat = featPosition
+    for (const [i, feat] of featPositions.entries()) {
       const { p11, p12, p21, p22, cigar } = feat
       if (cigar.length > 0 && drawCIGAR) {
         const featureWidth = Math.max(
@@ -774,6 +819,8 @@ export class SyntenyWebGLRenderer {
       featureIds.push(featureId)
       isCurves.push(isCurve)
       queryTotalLengthArr.push(qtl)
+      padTops.push(feat.padTop)
+      padBottoms.push(feat.padBottom)
 
       if (drawLocationMarkers) {
         addLocationMarkerInstances(
@@ -785,6 +832,8 @@ export class SyntenyWebGLRenderer {
           featureIds,
           isCurves,
           queryTotalLengthArr,
+          padTops,
+          padBottoms,
           x11,
           x12,
           x22,
@@ -792,6 +841,8 @@ export class SyntenyWebGLRenderer {
           featureId,
           isCurve,
           qtl,
+          feat.padTop,
+          feat.padBottom,
         )
       }
     }
@@ -801,8 +852,7 @@ export class SyntenyWebGLRenderer {
 
     // Pass 2: CIGAR features wide enough to decompose (no edge rendering to
     // avoid boundary artifacts). Thin features were already drawn in Pass 1.
-    for (const [i, featPosition] of featPositions.entries()) {
-      const feat = featPosition
+    for (const [i, feat] of featPositions.entries()) {
       const { p11, p12, p21, p22, cigar } = feat
       if (!(cigar.length > 0 && drawCIGAR)) {
         continue
@@ -909,7 +959,6 @@ export class SyntenyWebGLRenderer {
             colorFn,
             feat,
             i,
-            alpha,
           )
           x1s.push(px1)
           x2s.push(cx1)
@@ -919,6 +968,8 @@ export class SyntenyWebGLRenderer {
           featureIds.push(featureId)
           isCurves.push(isCurve)
           queryTotalLengthArr.push(qtl)
+          padTops.push(feat.padTop)
+          padBottoms.push(feat.padBottom)
 
           if (drawLocationMarkers) {
             addLocationMarkerInstances(
@@ -930,6 +981,8 @@ export class SyntenyWebGLRenderer {
               featureIds,
               isCurves,
               queryTotalLengthArr,
+              padTops,
+              padBottoms,
               px1,
               cx1,
               cx2,
@@ -937,6 +990,8 @@ export class SyntenyWebGLRenderer {
               featureId,
               isCurve,
               qtl,
+              feat.padTop,
+              feat.padBottom,
             )
           }
         }
@@ -957,6 +1012,8 @@ export class SyntenyWebGLRenderer {
         gl,
         new Float32Array(queryTotalLengthArr),
       )
+      const padTopBuf = this.createBuffer(gl, new Float32Array(padTops))
+      const padBottomBuf = this.createBuffer(gl, new Float32Array(padBottoms))
 
       this.fillVao = this.setupInstancedVao(
         gl,
@@ -970,6 +1027,8 @@ export class SyntenyWebGLRenderer {
         featureIdBuf,
         isCurveBuf,
         queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
       )
       this.fillPickingVao = this.setupInstancedVao(
         gl,
@@ -983,6 +1042,8 @@ export class SyntenyWebGLRenderer {
         featureIdBuf,
         isCurveBuf,
         queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
       )
       this.edgeVao = this.setupInstancedVao(
         gl,
@@ -996,6 +1057,8 @@ export class SyntenyWebGLRenderer {
         featureIdBuf,
         isCurveBuf,
         queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
       )
       this.edgePickingVao = this.setupInstancedVao(
         gl,
@@ -1009,6 +1072,71 @@ export class SyntenyWebGLRenderer {
         featureIdBuf,
         isCurveBuf,
         queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
+      )
+
+      // Straight-line VAOs for fast scroll rendering (same instance buffers,
+      // different template buffers with far fewer vertices per instance)
+      this.straightFillVao = this.setupInstancedVao(
+        gl,
+        this.fillProgram!,
+        this.straightFillTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
+      )
+      this.straightFillPickingVao = this.setupInstancedVao(
+        gl,
+        this.fillPickingProgram!,
+        this.straightFillTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
+      )
+      this.straightEdgeVao = this.setupInstancedVao(
+        gl,
+        this.edgeProgram!,
+        this.straightEdgeTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
+      )
+      this.straightEdgePickingVao = this.setupInstancedVao(
+        gl,
+        this.edgePickingProgram!,
+        this.straightEdgeTemplateBuffer!,
+        x1Buf,
+        x2Buf,
+        x3Buf,
+        x4Buf,
+        colorBuf,
+        featureIdBuf,
+        isCurveBuf,
+        queryTotalLengthBuf,
+        padTopBuf,
+        padBottomBuf,
       )
     }
   }
@@ -1022,6 +1150,8 @@ export class SyntenyWebGLRenderer {
     skipEdges = false,
     maxOffScreenPx = 300,
     minAlignmentLength = 0,
+    alpha = 1,
+    fastScrollMode = false,
   ) {
     if (!this.gl || !this.canvas) {
       return
@@ -1030,8 +1160,6 @@ export class SyntenyWebGLRenderer {
     const scale0 = this.geometryBpPerPx0 / curBpPerPx0
     const scale1 = this.geometryBpPerPx1 / curBpPerPx1
 
-    // Compute adjusted offsets at Float64, then split into hi/lo for the
-    // shader's HP subtraction: screenX = (pos - adjOff) * scale
     const adjOff0 = offset0 / scale0
     const adjOff1 = offset1 / scale1
     const adjOff0Hi = Math.fround(adjOff0)
@@ -1039,12 +1167,35 @@ export class SyntenyWebGLRenderer {
     const adjOff1Hi = Math.fround(adjOff1)
     const adjOff1Lo = adjOff1 - adjOff1Hi
 
+    // During scroll: disable blending + force opaque fills + skip edges
+    // This eliminates per-fragment read-modify-write and the edge draw call
+    if (fastScrollMode) {
+      gl.disable(gl.BLEND)
+    }
+
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    // Draw fills (instanced)
-    if (this.fillVao && this.instanceCount > 0) {
+    // Use straight VAOs when scrolling AND geometry was built with curves
+    // (when curves are off, the normal VAOs already use 1-segment straight lines)
+    const useStraightVaos =
+      fastScrollMode && this.currentFillSegments > STRAIGHT_FILL_SEGMENTS
+    const activeFillVao = useStraightVaos
+      ? this.straightFillVao
+      : this.fillVao
+    const activeEdgeVao = useStraightVaos
+      ? this.straightEdgeVao
+      : this.edgeVao
+    const activeFillVerts = useStraightVaos
+      ? this.straightFillVerticesPerInstance
+      : this.fillVerticesPerInstance
+    const activeEdgeVerts = useStraightVaos
+      ? this.straightEdgeVerticesPerInstance
+      : this.edgeVerticesPerInstance
+
+    if (activeFillVao && this.instanceCount > 0) {
       gl.useProgram(this.fillProgram)
-      gl.bindVertexArray(this.fillVao)
+      gl.bindVertexArray(activeFillVao)
+      const forceOpaque = fastScrollMode ? 1 : 0
       this.setUniforms(
         gl,
         this.fillProgram!,
@@ -1057,20 +1208,21 @@ export class SyntenyWebGLRenderer {
         scale1,
         maxOffScreenPx,
         minAlignmentLength,
+        alpha,
+        forceOpaque,
       )
       gl.drawArraysInstanced(
         gl.TRIANGLES,
         0,
-        this.fillVerticesPerInstance,
+        activeFillVerts,
         this.instanceCount,
       )
     }
 
-    // Draw AA edges on top (skipped during scroll for performance)
-    // Only draw edges for non-CIGAR instances to avoid boundary artifacts
-    if (!skipEdges && this.edgeVao && this.nonCigarInstanceCount > 0) {
+    // Skip edges during scroll — straight fills are sufficient for visibility
+    if (!skipEdges && !fastScrollMode && activeEdgeVao && this.nonCigarInstanceCount > 0) {
       gl.useProgram(this.edgeProgram)
-      gl.bindVertexArray(this.edgeVao)
+      gl.bindVertexArray(activeEdgeVao)
       this.setUniforms(
         gl,
         this.edgeProgram!,
@@ -1083,16 +1235,22 @@ export class SyntenyWebGLRenderer {
         scale1,
         maxOffScreenPx,
         minAlignmentLength,
+        alpha,
       )
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
         0,
-        this.edgeVerticesPerInstance,
+        activeEdgeVerts,
         this.nonCigarInstanceCount,
       )
     }
 
     gl.bindVertexArray(null)
+
+    if (fastScrollMode) {
+      gl.enable(gl.BLEND)
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    }
 
     this.lastHeight = height
     this.lastAdjOff0Hi = adjOff0Hi
@@ -1146,6 +1304,7 @@ export class SyntenyWebGLRenderer {
         scale1,
         maxOffScreenPx,
         minAlignmentLength,
+        1,
       )
       gl.drawArraysInstanced(
         gl.TRIANGLES,
@@ -1171,6 +1330,7 @@ export class SyntenyWebGLRenderer {
         scale1,
         maxOffScreenPx,
         minAlignmentLength,
+        1,
       )
       gl.drawArraysInstanced(
         gl.TRIANGLE_STRIP,
@@ -1202,6 +1362,8 @@ export class SyntenyWebGLRenderer {
     scale1: number,
     maxOffScreenPx: number,
     minAlignmentLength: number,
+    alpha: number,
+    forceOpaque = 0,
   ) {
     const locs = this.uniformCache.get(program)!
     gl.uniform2f(locs.u_resolution!, this.width, this.height)
@@ -1215,6 +1377,12 @@ export class SyntenyWebGLRenderer {
     }
     if (locs.u_minAlignmentLength) {
       gl.uniform1f(locs.u_minAlignmentLength, minAlignmentLength)
+    }
+    if (locs.u_alpha) {
+      gl.uniform1f(locs.u_alpha, alpha)
+    }
+    if (locs.u_forceOpaque) {
+      gl.uniform1f(locs.u_forceOpaque, forceOpaque)
     }
   }
 
@@ -1267,6 +1435,14 @@ export class SyntenyWebGLRenderer {
     return this.instanceCount > 0
   }
 
+  getInstanceCount() {
+    return this.instanceCount
+  }
+
+  getNonCigarInstanceCount() {
+    return this.nonCigarInstanceCount
+  }
+
   dispose() {
     const gl = this.gl
     if (!gl) {
@@ -1291,6 +1467,12 @@ export class SyntenyWebGLRenderer {
     if (this.edgeTemplateBuffer) {
       gl.deleteBuffer(this.edgeTemplateBuffer)
     }
+    if (this.straightFillTemplateBuffer) {
+      gl.deleteBuffer(this.straightFillTemplateBuffer)
+    }
+    if (this.straightEdgeTemplateBuffer) {
+      gl.deleteBuffer(this.straightEdgeTemplateBuffer)
+    }
     if (this.pickingFramebuffer) {
       gl.deleteFramebuffer(this.pickingFramebuffer)
     }
@@ -1309,7 +1491,6 @@ function getCigarColor(
   colorFn: (f: FeatPos, index: number) => [number, number, number, number],
   feat: FeatPos,
   index: number,
-  alpha: number,
 ): [number, number, number, number] {
   const isInsertionOrDeletion =
     letter === 'I' || letter === 'D' || letter === 'N'
@@ -1323,8 +1504,7 @@ function getCigarColor(
   const cigarColors = scheme.cigarColors
   const color = cigarColors[letter as keyof typeof cigarColors]
   if (color) {
-    const [r, g, b, a] = cssColorToNormalized(color)
-    return [r, g, b, a * alpha]
+    return cssColorToNormalized(color)
   }
   return colorFn(feat, index)
 }
@@ -1339,6 +1519,8 @@ function addLocationMarkerInstances(
   featureIds: number[],
   isCurves: number[],
   queryTotalLengthArr: number[],
+  padTops: number[],
+  padBottoms: number[],
   topLeft: number,
   topRight: number,
   bottomRight: number,
@@ -1346,6 +1528,8 @@ function addLocationMarkerInstances(
   featureId: number,
   isCurve: number,
   queryTotalLength: number,
+  padTop: number,
+  padBottom: number,
 ) {
   const width1 = Math.abs(topRight - topLeft)
   const width2 = Math.abs(bottomRight - bottomLeft)
@@ -1376,6 +1560,8 @@ function addLocationMarkerInstances(
     featureIds.push(featureId)
     isCurves.push(isCurve)
     queryTotalLengthArr.push(queryTotalLength)
+    padTops.push(padTop)
+    padBottoms.push(padBottom)
   }
 }
 
@@ -1398,11 +1584,10 @@ const category10Normalized = category10.map(hex => {
 
 export function createColorFunction(
   colorBy: string,
-  alpha: number,
 ): (f: FeatPos, index: number) => [number, number, number, number] {
   if (colorBy === 'strand') {
     return (f: FeatPos) =>
-      f.strand === -1 ? [0, 0, 1, alpha] : [1, 0, 0, alpha]
+      f.strand === -1 ? [0, 0, 1, 1] : [1, 0, 0, 1]
   }
 
   if (colorBy === 'query') {
@@ -1413,12 +1598,11 @@ export function createColorFunction(
         const hash = hashString(name)
         const [r, g, b] =
           category10Normalized[hash % category10Normalized.length]!
-        colorCache.set(name, [r, g, b, alpha])
+        colorCache.set(name, [r, g, b, 1])
       }
       return colorCache.get(name)!
     }
   }
 
-  // Default: red
-  return () => [1, 0, 0, alpha]
+  return () => [1, 0, 0, 1]
 }

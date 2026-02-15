@@ -19,6 +19,7 @@ export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
       viewSnaps: ViewSnap[]
       level: number
       sessionId: string
+      stopToken?: string
     },
     rpcDriverClassName: string,
   ) {

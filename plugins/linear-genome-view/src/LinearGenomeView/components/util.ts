@@ -24,6 +24,9 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
   )
 }
 
+export const ELIDED_BG =
+  'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
+
 export function joinElements(
   container: HTMLElement,
   count: number,

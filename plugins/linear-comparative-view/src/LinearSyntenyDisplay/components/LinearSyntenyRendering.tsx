@@ -84,13 +84,13 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       for (const v of view.views) {
         ;(v as unknown as { setIsScrolling?: (val: boolean) => void }).setIsScrolling?.(true)
       }
-      model.webglRenderer?.setDPR(1)
+      model.setIsScrolling(true)
       clearTimeout(scrollingTimer)
       scrollingTimer = setTimeout(() => {
         for (const v of view.views) {
           ;(v as unknown as { setIsScrolling?: (val: boolean) => void }).setIsScrolling?.(false)
         }
-        model.webglRenderer?.setDPR(2)
+        model.setIsScrolling(false)
       }, 150)
 
       const doZoom =
@@ -240,16 +240,22 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     model.setMouseoverId(undefined)
     setMouseInitialDownX(undefined)
     setMouseCurrDownX(undefined)
+    model.setIsScrolling(false)
   }, [model])
 
-  const handleMouseDown = useCallback((evt: React.MouseEvent) => {
-    setMouseCurrDownX(evt.clientX)
-    setMouseInitialDownX(evt.clientX)
-  }, [])
+  const handleMouseDown = useCallback(
+    (evt: React.MouseEvent) => {
+      setMouseCurrDownX(evt.clientX)
+      setMouseInitialDownX(evt.clientX)
+      model.setIsScrolling(true)
+    },
+    [model],
+  )
 
   const handleMouseUp = useCallback(
     (evt: React.MouseEvent<HTMLCanvasElement>) => {
       setMouseCurrDownX(undefined)
+      model.setIsScrolling(false)
       if (
         mouseInitialDownX !== undefined &&
         Math.abs(evt.clientX - mouseInitialDownX) < 5

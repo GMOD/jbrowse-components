@@ -18,6 +18,8 @@ export interface FeatPos {
   p12: Pos
   p21: Pos
   p22: Pos
+  padTop: number
+  padBottom: number
   id: string
   strand: number
   name: string
@@ -100,6 +102,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #volatile
        */
       webglInitialized: false,
+
+      /**
+       * #volatile
+       * set during scroll to use straight-line rendering for performance
+       */
+      isScrolling: false,
     }))
     .actions(self => ({
       /**
@@ -155,6 +163,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setWebGLInitialized(value: boolean) {
         self.webglInitialized = value
+      },
+      /**
+       * #action
+       */
+      setIsScrolling(value: boolean) {
+        self.isScrolling = value
       },
     }))
 

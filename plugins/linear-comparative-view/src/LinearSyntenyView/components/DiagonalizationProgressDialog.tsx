@@ -59,27 +59,23 @@ const DiagonalizationProgressDialog = observer(
               for (const display of track.displays) {
                 const { featPositions } = display as {
                   featPositions: {
-                    f: {
-                      get: (key: string) => unknown
-                    }
-                  }[]
-                }
-
-                for (const { f } of featPositions) {
-                  const mate = f.get('mate') as {
                     refName: string
                     start: number
                     end: number
-                  }
+                    strand: number
+                    mate: { refName: string; start: number; end: number }
+                  }[]
+                }
 
+                for (const feat of featPositions) {
                   alignments.push({
-                    queryRefName: f.get('refName') as string,
-                    refRefName: mate.refName,
-                    queryStart: f.get('start') as number,
-                    queryEnd: f.get('end') as number,
-                    refStart: mate.start,
-                    refEnd: mate.end,
-                    strand: (f.get('strand') as number) || 1,
+                    queryRefName: feat.refName,
+                    refRefName: feat.mate.refName,
+                    queryStart: feat.start,
+                    queryEnd: feat.end,
+                    refStart: feat.mate.start,
+                    refEnd: feat.mate.end,
+                    strand: feat.strand || 1,
                   })
                 }
               }

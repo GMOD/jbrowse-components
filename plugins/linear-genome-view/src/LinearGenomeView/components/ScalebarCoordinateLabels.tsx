@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 
 import { makeTicks } from '../util.ts'
-import { joinElements } from './util.ts'
+import { ELIDED_BG, joinElements } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -14,9 +14,6 @@ type LGV = LinearGenomeViewModel
 const WRAPPER_BASE_STYLE =
   'position:relative;flex-shrink:0;overflow:hidden;height:13px'
 const SPACER_BASE_STYLE = 'flex-shrink:0;height:13px'
-const ELIDED_BG =
-  'background-color:#999;background-image:repeating-linear-gradient(90deg,transparent,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 3px)'
-
 function createTickElement() {
   const tick = document.createElement('div')
   tick.style.cssText =
@@ -26,15 +23,6 @@ function createTickElement() {
     'font-size:11px;z-index:1;line-height:normal;pointer-events:none'
   tick.appendChild(label)
   return tick
-}
-
-function joinTickElements(wrapper: HTMLElement, count: number) {
-  while (wrapper.childElementCount > count) {
-    wrapper.lastElementChild!.remove()
-  }
-  while (wrapper.childElementCount < count) {
-    wrapper.appendChild(createTickElement())
-  }
 }
 
 function createWrapperDiv() {
@@ -72,10 +60,9 @@ export default function ScalebarCoordinateLabels({
           const { start, end, reversed } = block
           const ticks = makeTicks(start, end, bpPerPx, true, false)
 
-          wrapper.style.cssText = WRAPPER_BASE_STYLE
-          wrapper.style.width = `${block.widthPx}px`
+          wrapper.style.cssText = `${WRAPPER_BASE_STYLE};width:${block.widthPx}px`
 
-          joinTickElements(wrapper, ticks.length)
+          joinElements(wrapper, ticks.length, createTickElement)
 
           for (let j = 0; j < ticks.length; j++) {
             const { base } = ticks[j]!
@@ -88,9 +75,7 @@ export default function ScalebarCoordinateLabels({
         } else {
           const elidedBg = block.type === 'ElidedBlock' ? `;${ELIDED_BG}` : ''
           wrapper.style.cssText = `${SPACER_BASE_STYLE};width:${block.widthPx}px${elidedBg}`
-          while (wrapper.firstChild) {
-            wrapper.firstChild.remove()
-          }
+          joinElements(wrapper, 0)
         }
       }
     })
