@@ -13,11 +13,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
 
-// Stable bpToPx that ALWAYS includes inter-region padding for every displayed
-// region, not just those with visible content blocks. The core bpToPx only
-// adds padding for regions with content blocks, which makes pixel positions
-// shift when content blocks change during scroll. Also uses float precision
-// (no Math.round) since the shader uses HP float subtraction.
+// Returns genomic-only pixel offset (no inter-region padding baked in) plus
+// the cumulative padding pixels before the target region. Padding is counted
+// only between non-elided regions, matching calculateStaticBlocks. Uses float
+// precision (no Math.round) since the shader uses HP float subtraction.
 function bpToPx({
   self,
   refName,
@@ -30,8 +29,13 @@ function bpToPx({
   regionNumber?: number
 }) {
   let bpSoFar = 0
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions } = self
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
+  const {
+    interRegionPaddingWidth,
+    bpPerPx,
+    displayedRegions,
+    minimumBlockWidth,
+  } = self
+  let paddingPx = 0
 
   let i = 0
   for (let l = displayedRegions.length; i < l; i++) {
@@ -46,14 +50,18 @@ function bpToPx({
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
     }
-    bpSoFar += len + interRegionPaddingBp
+    bpSoFar += len
+    const regionWidthPx = len / bpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+      paddingPx += interRegionPaddingWidth
+    }
   }
   const found = displayedRegions[i]
   if (found) {
     return {
       index: i,
-      offsetPx: bpSoFar / bpPerPx,
-      paddingPx: i * interRegionPaddingWidth,
+      offsetPx: bpSoFar / bpPerPx + paddingPx,
+      paddingPx,
     }
   }
   return undefined

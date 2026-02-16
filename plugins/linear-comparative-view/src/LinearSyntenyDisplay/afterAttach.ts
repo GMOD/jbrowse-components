@@ -64,19 +64,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const o0 = view.views[level]!.offsetPx
-        const o1 = view.views[level + 1]!.offsetPx
-        const bpPerPx0 = view.views[level]!.bpPerPx
-        const bpPerPx1 = view.views[level + 1]!.bpPerPx
-
+        const v0 = view.views[level]!
+        const v1 = view.views[level + 1]!
         const maxOffScreenPx = view.maxOffScreenDrawPx
 
         self.gpuRenderer.render(
-          o0,
-          o1,
+          v0.offsetPx,
+          v1.offsetPx,
           height,
-          bpPerPx0,
-          bpPerPx1,
+          v0.bpPerPx,
+          v1.bpPerPx,
           maxOffScreenPx,
           minAlignmentLength,
           alpha,
