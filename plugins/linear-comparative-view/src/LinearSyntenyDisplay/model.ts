@@ -5,7 +5,7 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 
 import type { ColorScheme } from './drawSyntenyUtils.ts'
-import type { SyntenyWebGLRenderer } from './drawSyntenyWebGL.ts'
+import type { SyntenyWebGPUProxy } from './SyntenyWebGPUProxy.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -122,46 +122,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       /**
        * #volatile
-       * canvas for drawing mouseover shading
-       */
-      mouseoverCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * lightweight store of raw RPC arrays, avoids creating per-feature objects
        */
       featureData: undefined as SyntenyFeatureData | undefined,
 
       /**
        * #volatile
-       * currently mouse'd over feature
        */
       mouseoverId: undefined as string | undefined,
 
       /**
        * #volatile
-       * currently click'd over feature
        */
-      clickId: undefined as string | undefined,
+      gpuInstanceData: undefined as SyntenyInstanceData | undefined,
 
       /**
        * #volatile
        */
-      webglInstanceData: undefined as SyntenyInstanceData | undefined,
+      gpuRenderer: null as SyntenyWebGPUProxy | null,
 
       /**
        * #volatile
        */
-      webglRenderer: null as SyntenyWebGLRenderer | null,
+      gpuInitialized: false,
 
       /**
        * #volatile
-       */
-      webglInitialized: false,
-
-      /**
-       * #volatile
-       * set during scroll to use straight-line rendering for performance
        */
       isScrolling: false,
     }))
@@ -175,20 +160,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
-      },
-      /**
-       * #action
-       */
       setMouseoverId(arg?: string) {
         self.mouseoverId = arg
-      },
-      /**
-       * #action
-       */
-      setClickId(arg?: string) {
-        self.clickId = arg
       },
       /**
        * #action
@@ -211,20 +184,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setWebglInstanceData(data: SyntenyInstanceData | undefined) {
-        self.webglInstanceData = data
+      setGpuInstanceData(data: SyntenyInstanceData | undefined) {
+        self.gpuInstanceData = data
       },
       /**
        * #action
        */
-      setWebGLRenderer(renderer: SyntenyWebGLRenderer | null) {
-        self.webglRenderer = renderer
+      setGpuRenderer(renderer: SyntenyWebGPUProxy | null) {
+        self.gpuRenderer = renderer
       },
       /**
        * #action
        */
-      setWebGLInitialized(value: boolean) {
-        self.webglInitialized = value
+      setGpuInitialized(value: boolean) {
+        self.gpuInitialized = value
       },
       /**
        * #action

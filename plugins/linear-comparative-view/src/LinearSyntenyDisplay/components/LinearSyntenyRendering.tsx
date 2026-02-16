@@ -11,7 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { SyntenyWebGLRenderer } from '../drawSyntenyWebGL.ts'
+import { SyntenyWebGPUProxy } from '../SyntenyWebGPUProxy.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
 import { getTooltip } from './util.ts'
 
@@ -25,20 +25,13 @@ const useStyles = makeStyles()({
   rel: {
     position: 'relative',
   },
-  mouseoverCanvas: {
-    position: 'absolute',
-    pointerEvents: 'none',
-  },
-  webglCanvas: {
+  gpuCanvas: {
     position: 'absolute',
     imageRendering: 'auto',
     willChange: 'transform',
     contain: 'strict',
   },
 })
-
-let renderCount = 0
-let lastRenderLogTime = 0
 
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   model,
@@ -47,66 +40,68 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }) {
   const { classes } = useStyles()
   const { mouseoverId, height } = model
-
-  renderCount++
-  const now = performance.now()
-  if (now - lastRenderLogTime > 2000) {
-    console.log(
-      `[SyntenyComponent] ${renderCount} renders in last 2s | ` +
-        `mouseoverId=${mouseoverId}, height=${height}`,
-    )
-    renderCount = 0
-    lastRenderLogTime = now
-  }
-  const xOffset = useRef(0)
   const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
+
+  const gpuCanvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRectRef = useRef<DOMRect | null>(null)
+  const xOffset = useRef(0)
   const scheduled = useRef(false)
   const zoomDelta = useRef(0)
   const zoomScheduled = useRef(false)
   const lastZoomClientX = useRef(0)
-  const canvasRectRef = useRef<DOMRect | null>(null)
+  const mouseCurrDownX = useRef<number | undefined>()
+  const mouseInitialDownX = useRef<number | undefined>()
+
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
   const [currX, setCurrX] = useState<number>()
-  const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
-  const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const webglCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     canvasRectRef.current = null
   }, [height, width])
 
-  // these useCallbacks avoid new refs from being created on any mouseover,
-  // etc.
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const mouseoverDetectionCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setMouseoverCanvasRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
-  )
+  function getCanvasRect() {
+    if (!canvasRectRef.current) {
+      canvasRectRef.current =
+        gpuCanvasRef.current?.getBoundingClientRect() ?? null
+    }
+    return canvasRectRef.current
+  }
+
+  function getEventCanvasCoords(evt: { clientX: number; clientY: number }) {
+    const rect = getCanvasRect()
+    if (!rect) {
+      return undefined
+    }
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+  }
+
+  function scheduleHorizontalScroll() {
+    if (scheduled.current) {
+      return
+    }
+    scheduled.current = true
+    window.requestAnimationFrame(() => {
+      transaction(() => {
+        for (const v of view.views) {
+          v.horizontalScroll(xOffset.current)
+        }
+        xOffset.current = 0
+        scheduled.current = false
+      })
+    })
+  }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
     let scrollingTimer: ReturnType<typeof setTimeout> | undefined
     function onWheel(event: WheelEvent) {
       event.preventDefault()
-      for (const v of view.views) {
-        ;(
-          v as unknown as { setIsScrolling?: (val: boolean) => void }
-        ).setIsScrolling?.(true)
-      }
       model.setIsScrolling(true)
       clearTimeout(scrollingTimer)
       scrollingTimer = setTimeout(() => {
-        for (const v of view.views) {
-          ;(
-            v as unknown as { setIsScrolling?: (val: boolean) => void }
-          ).setIsScrolling?.(false)
-        }
         model.setIsScrolling(false)
       }, 150)
 
@@ -124,10 +119,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
               for (const v of view.views) {
                 v.zoomTo(
                   d > 0 ? v.bpPerPx * (1 + d) : v.bpPerPx / (1 - d),
-                  lastZoomClientX.current -
-                    (canvasRectRef.current?.left ??
-                      webglCanvasRef.current?.getBoundingClientRect().left ??
-                      0),
+                  lastZoomClientX.current - (getCanvasRect()?.left ?? 0),
                 )
               }
             })
@@ -139,21 +131,10 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
           xOffset.current += event.deltaX / 2
         }
-        if (!scheduled.current) {
-          scheduled.current = true
-          window.requestAnimationFrame(() => {
-            transaction(() => {
-              for (const v of view.views) {
-                v.horizontalScroll(xOffset.current)
-              }
-              xOffset.current = 0
-              scheduled.current = false
-            })
-          })
-        }
+        scheduleHorizontalScroll()
       }
     }
-    const target = webglCanvasRef.current
+    const target = gpuCanvasRef.current
     target?.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       target?.removeEventListener('wheel', onWheel)
@@ -162,72 +143,27 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
 
-  useEffect(() => {
-    const canvas = webglCanvasRef.current
-    if (canvas) {
-      const lostHandler = (event: Event) => {
-        event.preventDefault()
-        console.error('[WebGL Synteny] Context lost!', {
-          canvasSize: `${canvas.width}x${canvas.height}`,
-          clientSize: `${canvas.clientWidth}x${canvas.clientHeight}`,
-          instanceCount: model.webglRenderer?.getInstanceCount(),
-        })
-        model.setWebGLInitialized(false)
-      }
-
-      const restoredHandler = () => {
-        console.warn('[WebGL Synteny] Context restored, reinitializing...')
-        const newRenderer = new SyntenyWebGLRenderer()
-        const success = newRenderer.init(canvas)
-        model.setWebGLRenderer(newRenderer)
-        model.setWebGLInitialized(success)
-        if (success && model.webglInstanceData) {
-          const view = getContainingView(model) as LinearSyntenyViewModel
-          newRenderer.uploadGeometry(
-            model.webglInstanceData,
-            view.drawCurves,
-          )
-        }
-      }
-
-      canvas.addEventListener('webglcontextlost', lostHandler)
-      canvas.addEventListener('webglcontextrestored', restoredHandler)
-
-      return () => {
-        canvas.removeEventListener('webglcontextlost', lostHandler)
-        canvas.removeEventListener('webglcontextrestored', restoredHandler)
-      }
-    }
-    return undefined
-  }, [model])
-
-  // Initialize/dispose WebGL renderer - only depends on model. Dimension
-  // changes are handled by the draw autorun's resize() call, which updates the
-  // viewport and picking buffer without tearing down the GL context.
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
-    if (webglCanvasRef.current) {
-      console.log(
-        `[SyntenyComponent] Creating new WebGL renderer (width=${width}, height=${height})`,
-      )
-      const renderer = new SyntenyWebGLRenderer()
-      const success = renderer.init(webglCanvasRef.current)
-      model.setWebGLRenderer(renderer)
-      model.setWebGLInitialized(success)
-      return () => {
-        console.log('[SyntenyComponent] Disposing WebGL renderer')
-        model.webglRenderer?.dispose()
-        model.setWebGLRenderer(null)
-        model.setWebGLInitialized(false)
-      }
+    const canvas = gpuCanvasRef.current
+    if (!canvas) {
+      return undefined
     }
-    return undefined
+    const proxy = SyntenyWebGPUProxy.getOrCreate(canvas)
+    proxy.init(canvas).then(success => {
+      model.setGpuRenderer(proxy)
+      model.setGpuInitialized(success)
+    })
+    return () => {
+      model.setGpuRenderer(null)
+      model.setGpuInitialized(false)
+    }
   }, [model])
 
-  const handleWebGLPick = useCallback(
+  const pickFeature = useCallback(
     (x: number, y: number) => {
-      if (model.webglRenderer && model.webglInitialized) {
-        const featureIndex = model.webglRenderer.pick(x, y)
+      if (model.gpuRenderer && model.gpuInitialized) {
+        const featureIndex = model.gpuRenderer.pick(x, y)
         if (featureIndex >= 0 && featureIndex < model.numFeats) {
           return model.getFeature(featureIndex)
         }
@@ -239,44 +175,25 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement>) => {
-      if (mouseCurrDownX !== undefined) {
-        xOffset.current += mouseCurrDownX - event.clientX
-        setMouseCurrDownX(event.clientX)
-        if (!scheduled.current) {
-          scheduled.current = true
-          window.requestAnimationFrame(() => {
-            transaction(() => {
-              for (const v of view.views) {
-                v.horizontalScroll(xOffset.current)
-              }
-              xOffset.current = 0
-              scheduled.current = false
-            })
-          })
-        }
+      if (mouseCurrDownX.current !== undefined) {
+        xOffset.current += mouseCurrDownX.current - event.clientX
+        mouseCurrDownX.current = event.clientX
+        scheduleHorizontalScroll()
         return
       }
 
-      const { clientX, clientY } = event
-      const canvas = webglCanvasRef.current
-      if (!canvas) {
+      const coords = getEventCanvasCoords(event)
+      if (!coords) {
         return
       }
-      let rect = canvasRectRef.current
-      if (!rect) {
-        rect = canvas.getBoundingClientRect()
-        canvasRectRef.current = rect
-      }
-      const x = clientX - rect.left
-      const y = clientY - rect.top
-      setCurrX(clientX)
-      setCurrY(clientY)
+      setCurrX(event.clientX)
+      setCurrY(event.clientY)
 
       if (model.isScrolling) {
         model.setMouseoverId(undefined)
         setTooltip('')
       } else {
-        const feat = handleWebGLPick(x, y)
+        const feat = pickFeature(coords.x, coords.y)
         if (feat) {
           model.setMouseoverId(feat.id)
           setTooltip(getTooltip(feat))
@@ -286,20 +203,21 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         }
       }
     },
-    [view, model, mouseCurrDownX, handleWebGLPick],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [view, model, pickFeature],
   )
 
   const handleMouseLeave = useCallback(() => {
     model.setMouseoverId(undefined)
-    setMouseInitialDownX(undefined)
-    setMouseCurrDownX(undefined)
+    mouseInitialDownX.current = undefined
+    mouseCurrDownX.current = undefined
     model.setIsScrolling(false)
   }, [model])
 
   const handleMouseDown = useCallback(
     (evt: React.MouseEvent) => {
-      setMouseCurrDownX(evt.clientX)
-      setMouseInitialDownX(evt.clientX)
+      mouseCurrDownX.current = evt.clientX
+      mouseInitialDownX.current = evt.clientX
       model.setIsScrolling(true)
     },
     [model],
@@ -307,100 +225,81 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   const handleMouseUp = useCallback(
     (evt: React.MouseEvent<HTMLCanvasElement>) => {
-      setMouseCurrDownX(undefined)
+      mouseCurrDownX.current = undefined
       model.setIsScrolling(false)
       if (
-        mouseInitialDownX !== undefined &&
-        Math.abs(evt.clientX - mouseInitialDownX) < 5
+        mouseInitialDownX.current !== undefined &&
+        Math.abs(evt.clientX - mouseInitialDownX.current) < 5
       ) {
-        const canvas = webglCanvasRef.current
-        if (canvas && model.webglRenderer && model.webglInitialized) {
-          let rect = canvasRectRef.current
-          if (!rect) {
-            rect = canvas.getBoundingClientRect()
-            canvasRectRef.current = rect
-          }
-          const x = evt.clientX - rect.left
-          const y = evt.clientY - rect.top
-          const feat = handleWebGLPick(x, y)
-          if (feat) {
-            model.setClickId(feat.id)
-            const session = getSession(model)
-            if (isSessionModelWithWidgets(session)) {
-              const containingView = getContainingView(model)
-              const track = getContainingTrack(model)
-              session.showWidget(
-                session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-                  view: containingView,
-                  track,
-                  featureData: {
-                    uniqueId: feat.id,
-                    start: feat.start,
-                    end: feat.end,
-                    strand: feat.strand,
-                    refName: feat.refName,
-                    name: feat.name,
-                    assemblyName: feat.assemblyName,
-                    mate: feat.mate,
-                    identity: feat.identity,
-                  },
-                  level: model.level,
-                }),
-              )
-            }
+        const coords = getEventCanvasCoords(evt)
+        if (!coords || !model.gpuRenderer || !model.gpuInitialized) {
+          return
+        }
+        const feat = pickFeature(coords.x, coords.y)
+        if (feat) {
+          const session = getSession(model)
+          if (isSessionModelWithWidgets(session)) {
+            session.showWidget(
+              session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+                view: getContainingView(model),
+                track: getContainingTrack(model),
+                featureData: {
+                  uniqueId: feat.id,
+                  start: feat.start,
+                  end: feat.end,
+                  strand: feat.strand,
+                  refName: feat.refName,
+                  name: feat.name,
+                  assemblyName: feat.assemblyName,
+                  mate: feat.mate,
+                  identity: feat.identity,
+                },
+                level: model.level,
+              }),
+            )
           }
         }
       }
     },
-    [model, mouseInitialDownX, handleWebGLPick],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, pickFeature],
   )
 
   const handleContextMenu = useCallback(
     (evt: React.MouseEvent<HTMLCanvasElement>) => {
-      if (model.webglRenderer && model.webglInitialized) {
-        evt.preventDefault()
-        const canvas = webglCanvasRef.current
-        if (canvas) {
-          let rect = canvasRectRef.current
-          if (!rect) {
-            rect = canvas.getBoundingClientRect()
-            canvasRectRef.current = rect
-          }
-          const x = evt.clientX - rect.left
-          const y = evt.clientY - rect.top
-          const feat = handleWebGLPick(x, y)
-          if (feat) {
-            model.setClickId(feat.id)
-            setAnchorEl({
-              clientX: evt.clientX,
-              clientY: evt.clientY,
-              feature: feat,
-            })
-          }
-        }
+      if (!model.gpuRenderer || !model.gpuInitialized) {
+        return
+      }
+      evt.preventDefault()
+      const coords = getEventCanvasCoords(evt)
+      if (!coords) {
+        return
+      }
+      const feat = pickFeature(coords.x, coords.y)
+      if (feat) {
+        setAnchorEl({
+          clientX: evt.clientX,
+          clientY: evt.clientY,
+          feature: feat,
+        })
       }
     },
-    [model, handleWebGLPick],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, pickFeature],
   )
 
   return (
     <div className={classes.rel}>
       <canvas
-        ref={webglCanvasRef}
+        ref={gpuCanvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onContextMenu={handleContextMenu}
         data-testid="synteny_canvas"
-        className={classes.webglCanvas}
+        className={classes.gpuCanvas}
         style={{ width, height }}
-      />
-      <canvas
-        ref={mouseoverDetectionCanvasRef}
-        width={width}
-        height={height}
-        className={classes.mouseoverCanvas}
       />
       {mouseoverId && tooltip && currX && currY ? (
         <SyntenyTooltip title={tooltip} />

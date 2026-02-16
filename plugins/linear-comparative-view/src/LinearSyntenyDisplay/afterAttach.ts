@@ -24,9 +24,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastRenderer: unknown = null
   let currentStopToken: StopToken | undefined
 
-  let drawAutorunCount = 0
-  let lastDrawLogTime = 0
-
   addDisposer(
     self,
     autorun(
@@ -42,39 +39,27 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const t0 = performance.now()
-
         const { alpha, featureData, level, minAlignmentLength } = self
-        const webglInstanceData = self.webglInstanceData
+        const gpuInstanceData = self.gpuInstanceData
         const height = self.height
         const width = view.width
-        const isScrolling =
-          self.isScrolling ||
-          view.views.some(
-            v => (v as unknown as { isScrolling?: boolean }).isScrolling,
-          )
 
-        if (!self.webglRenderer || !self.webglInitialized) {
+        if (!self.gpuRenderer || !self.gpuInitialized) {
           return
         }
 
-        if (self.webglRenderer !== lastRenderer) {
+        if (self.gpuRenderer !== lastRenderer) {
           lastInstanceData = undefined
-          lastRenderer = self.webglRenderer
+          lastRenderer = self.gpuRenderer
         }
 
-        const t1 = performance.now()
-        self.webglRenderer.resize(width, height)
+        self.gpuRenderer.resize(width, height)
 
-        const t2 = performance.now()
-        let didUpload = false
-        if (webglInstanceData && webglInstanceData !== lastInstanceData) {
-          didUpload = true
-          lastInstanceData = webglInstanceData
-          self.webglRenderer.uploadGeometry(webglInstanceData, view.drawCurves)
+        if (gpuInstanceData && gpuInstanceData !== lastInstanceData) {
+          lastInstanceData = gpuInstanceData
+          self.gpuRenderer.uploadGeometry(gpuInstanceData)
         }
 
-        const t3 = performance.now()
         if (!featureData) {
           return
         }
@@ -86,35 +71,16 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         const maxOffScreenPx = view.maxOffScreenDrawPx
 
-        self.webglRenderer.render(
+        self.gpuRenderer.render(
           o0,
           o1,
           height,
           bpPerPx0,
           bpPerPx1,
-          false,
           maxOffScreenPx,
           minAlignmentLength,
           alpha,
-          isScrolling,
         )
-
-        const t4 = performance.now()
-        drawAutorunCount++
-        const now = performance.now()
-        if (now - lastDrawLogTime > 2000) {
-          console.log(
-            `[SyntenyDraw] ${drawAutorunCount} calls in last 2s | ` +
-              `this frame: observables=${(t1 - t0).toFixed(2)}ms, ` +
-              `resize=${(t2 - t1).toFixed(2)}ms, ` +
-              `upload=${didUpload ? (t3 - t2).toFixed(2) + 'ms (NEW GEOMETRY)' : 'skipped'}, ` +
-              `render=${(t4 - t3).toFixed(2)}ms, ` +
-              `total=${(t4 - t0).toFixed(2)}ms | ` +
-              `isScrolling=${isScrolling}, instances=${self.webglRenderer.getInstanceCount()}`,
-          )
-          drawAutorunCount = 0
-          lastDrawLogTime = now
-        }
       },
       {
         name: 'SyntenyDraw',
@@ -233,12 +199,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             }
 
             self.setFeatureData(featureData)
-            self.setWebglInstanceData(result.instanceData)
-
-            console.warn('[WebGL Synteny] RPC result processed:', {
-              featureCount: featureData.featureIds.length,
-              instanceDataCount: result.instanceData.instanceCount,
-            })
+            self.setGpuInstanceData(result.instanceData)
           } catch (e) {
             if (!isAbortException(e)) {
               if (isAlive(self)) {

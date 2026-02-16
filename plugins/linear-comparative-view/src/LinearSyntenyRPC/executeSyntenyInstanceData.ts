@@ -4,7 +4,7 @@ import { parseCigar } from '@jbrowse/plugin-alignments'
 
 import { colorSchemes } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
-function splitHiLo(values: Float32Array, count: number) {
+function splitHiLo(values: Float64Array, count: number) {
   const result = new Float32Array(count * 2)
   for (let i = 0; i < count; i++) {
     const value = values[i]!
@@ -206,10 +206,10 @@ export function executeSyntenyInstanceData({
     drawLocationMarkers,
   )
 
-  let x1s = new Float32Array(capacity)
-  let x2s = new Float32Array(capacity)
-  let x3s = new Float32Array(capacity)
-  let x4s = new Float32Array(capacity)
+  let x1s = new Float64Array(capacity)
+  let x2s = new Float64Array(capacity)
+  let x3s = new Float64Array(capacity)
+  let x4s = new Float64Array(capacity)
   let colorsArr = new Float32Array(capacity * 4)
   let featureIdsArr = new Float32Array(capacity)
   let isCurvesArr = new Float32Array(capacity)
@@ -225,21 +225,26 @@ export function executeSyntenyInstanceData({
       return
     }
     const newCapacity = Math.max(capacity * 2, idx + needed)
-    const grow = (old: Float32Array, perInstance: number) => {
+    const growF32 = (old: Float32Array, perInstance: number) => {
       const arr = new Float32Array(newCapacity * perInstance)
       arr.set(old.subarray(0, idx * perInstance))
       return arr
     }
-    x1s = grow(x1s, 1)
-    x2s = grow(x2s, 1)
-    x3s = grow(x3s, 1)
-    x4s = grow(x4s, 1)
-    colorsArr = grow(colorsArr, 4)
-    featureIdsArr = grow(featureIdsArr, 1)
-    isCurvesArr = grow(isCurvesArr, 1)
-    queryTotalLengthArr = grow(queryTotalLengthArr, 1)
-    padTopsArr = grow(padTopsArr, 1)
-    padBottomsArr = grow(padBottomsArr, 1)
+    const growF64 = (old: Float64Array) => {
+      const arr = new Float64Array(newCapacity)
+      arr.set(old.subarray(0, idx))
+      return arr
+    }
+    x1s = growF64(x1s)
+    x2s = growF64(x2s)
+    x3s = growF64(x3s)
+    x4s = growF64(x4s)
+    colorsArr = growF32(colorsArr, 4)
+    featureIdsArr = growF32(featureIdsArr, 1)
+    isCurvesArr = growF32(isCurvesArr, 1)
+    queryTotalLengthArr = growF32(queryTotalLengthArr, 1)
+    padTopsArr = growF32(padTopsArr, 1)
+    padBottomsArr = growF32(padBottomsArr, 1)
     capacity = newCapacity
   }
 
@@ -513,29 +518,6 @@ export function executeSyntenyInstanceData({
     geometryBpPerPx0: bpPerPxs[level]!,
     geometryBpPerPx1: bpPerPxs[level + 1]!,
   }
-
-  const totalBytes =
-    result.x1.byteLength +
-    result.x2.byteLength +
-    result.x3.byteLength +
-    result.x4.byteLength +
-    result.colors.byteLength +
-    result.featureIds.byteLength +
-    result.isCurves.byteLength +
-    result.queryTotalLengths.byteLength +
-    result.padTops.byteLength +
-    result.padBottoms.byteLength
-
-  console.warn('[WebGL Synteny RPC] Generated instance data:', {
-    featureCount,
-    instanceCount,
-    nonCigarInstanceCount,
-    totalBytes,
-    totalMB: (totalBytes / (1024 * 1024)).toFixed(2),
-    drawCurves,
-    drawCIGAR,
-    locationMarkersCapped: !locationMarkersEnabled && drawLocationMarkers,
-  })
 
   return result
 }
