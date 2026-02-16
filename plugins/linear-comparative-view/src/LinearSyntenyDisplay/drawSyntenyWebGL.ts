@@ -147,8 +147,10 @@ class WebGLMemoryTracker {
   }
 }
 
-// Segment counts for straight lines (no bezier needed, just a quad)
-const STRAIGHT_FILL_SEGMENTS = 1
+// Segment counts for straight lines — need many segments so that
+// inverted features (where edges cross) pinch cleanly to zero width.
+// Bridge width ≈ feature_width / (4 * N), so 128 gives ~1px bridge.
+const STRAIGHT_FILL_SEGMENTS = 128
 const STRAIGHT_EDGE_SEGMENTS = 1
 // Segment counts for bezier curves
 const CURVE_FILL_SEGMENTS = 16
@@ -216,10 +218,11 @@ void main() {
     return;
   }
 
-  vec2 topXHP = mix(a_x1, a_x2, a_side);
-  vec2 bottomXHP = mix(a_x4, a_x3, a_side);
-  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
-  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+  // Compute screen positions for both edges at this t value
+  float screenX1 = hpDiff(a_x1, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float screenX2 = hpDiff(a_x2, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float screenX3 = hpDiff(a_x3, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+  float screenX4 = hpDiff(a_x4, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
 
   float x, y;
   if (a_isCurve > 0.5) {
@@ -229,10 +232,29 @@ void main() {
     float t2 = a_t * a_t;
     float t3 = t2 * a_t;
     float mid = u_height * 0.5;
-    x = mt3 * screenTopX + 3.0 * mt2 * a_t * screenTopX + 3.0 * mt * t2 * screenBottomX + t3 * screenBottomX;
+
+    // Compute bezier position for edge 0 (x1 -> x4) and edge 1 (x2 -> x3)
+    float edge0_x = mt3 * screenX1 + 3.0 * mt2 * a_t * screenX1 + 3.0 * mt * t2 * screenX4 + t3 * screenX4;
+    float edge1_x = mt3 * screenX2 + 3.0 * mt2 * a_t * screenX2 + 3.0 * mt * t2 * screenX3 + t3 * screenX3;
+
+    // centerX ± halfWidth: for inverted features where edges cross,
+    // halfWidth naturally goes to zero at the crossing point.
+    // Uses abs() so side=0 is always left and side=1 is always right,
+    // preventing triangle overlap that causes double-blending artifacts.
+    float centerX = (edge0_x + edge1_x) * 0.5;
+    float halfWidth = abs(edge0_x - edge1_x) * 0.5;
+
+    x = centerX + (a_side * 2.0 - 1.0) * halfWidth;
     y = 3.0 * mt2 * a_t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
   } else {
-    x = mix(screenTopX, screenBottomX, a_t);
+    // Straight lines: interpolate both edges independently
+    float edge0_x = mix(screenX1, screenX4, a_t);
+    float edge1_x = mix(screenX2, screenX3, a_t);
+
+    float centerX = (edge0_x + edge1_x) * 0.5;
+    float halfWidth = abs(edge0_x - edge1_x) * 0.5;
+
+    x = centerX + (a_side * 2.0 - 1.0) * halfWidth;
     y = a_t * u_height;
   }
 
@@ -334,14 +356,28 @@ void main() {
     return;
   }
 
-  vec2 topXHP = mix(a_x1, a_x2, step(0.0, a_side));
-  vec2 bottomXHP = mix(a_x4, a_x3, step(0.0, a_side));
-  float screenTopX = hpDiff(topXHP, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
-  float screenBottomX = hpDiff(bottomXHP, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+  // Compute screen positions for both edges
+  float screenX1 = hpDiff(a_x1, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float screenX2 = hpDiff(a_x2, u_adjOff0) * u_scale0 - a_padTop * (u_scale0 - 1.0);
+  float screenX3 = hpDiff(a_x3, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+  float screenX4 = hpDiff(a_x4, u_adjOff1) * u_scale1 - a_padBottom * (u_scale1 - 1.0);
+
+  // Skip edge AA ribbons for inverted (hourglass) features — edges cross
+  // and the ribbon extrusion creates zigzag artifacts at the crossing
+  float topDiff = screenX1 - screenX2;
+  float botDiff = screenX4 - screenX3;
+  if (topDiff * botDiff < 0.0) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_color = vec4(0.0);
+    v_dist = 0.0;
+    v_featureId = 0.0;
+    return;
+  }
 
   float mt = 1.0 - a_t;
   vec2 pos;
   vec2 tangent;
+  float sideStep = step(0.0, a_side);
 
   if (a_isCurve > 0.5) {
     float mt2 = mt * mt;
@@ -349,17 +385,42 @@ void main() {
     float t2 = a_t * a_t;
     float t3 = t2 * a_t;
     float mid = u_height * 0.5;
-    // Bezier position: B(t) with P0=(topX,0) P1=(topX,mid) P2=(botX,mid) P3=(botX,h)
-    float px = mt3 * screenTopX + 3.0 * mt2 * a_t * screenTopX + 3.0 * mt * t2 * screenBottomX + t3 * screenBottomX;
+
+    // Compute bezier position for both edges
+    float edge0_x = mt3 * screenX1 + 3.0 * mt2 * a_t * screenX1 + 3.0 * mt * t2 * screenX4 + t3 * screenX4;
+    float edge1_x = mt3 * screenX2 + 3.0 * mt2 * a_t * screenX2 + 3.0 * mt * t2 * screenX3 + t3 * screenX3;
+
+    float centerX = (edge0_x + edge1_x) * 0.5;
+    float halfWidth = abs(edge0_x - edge1_x) * 0.5;
+
+    float px = centerX + (sideStep * 2.0 - 1.0) * halfWidth;
     float py = 3.0 * mt2 * a_t * mid + 3.0 * mt * t2 * mid + t3 * u_height;
     pos = vec2(px, py);
-    // Analytical derivative: B'(t) = 3(1-t)²(P1-P0) + 6(1-t)t(P2-P1) + 3t²(P3-P2)
-    float dx = 6.0 * mt * a_t * (screenBottomX - screenTopX);
+
+    // Compute tangent - derivative of centerX and halfWidth
+    float edge0_dx = 6.0 * mt * a_t * (screenX4 - screenX1);
+    float edge1_dx = 6.0 * mt * a_t * (screenX3 - screenX2);
+    float centerDx = (edge0_dx + edge1_dx) * 0.5;
+    float halfWidthDx = abs(edge0_dx - edge1_dx) * 0.5 * sign(edge0_x - edge1_x);
+
+    float dx = centerDx + (sideStep * 2.0 - 1.0) * halfWidthDx;
     float dy = 3.0 * mid * (mt2 + t2);
     tangent = vec2(dx, dy);
   } else {
-    pos = vec2(mix(screenTopX, screenBottomX, a_t), a_t * u_height);
-    tangent = vec2(screenBottomX - screenTopX, u_height);
+    // Straight lines
+    float edge0_x = mix(screenX1, screenX4, a_t);
+    float edge1_x = mix(screenX2, screenX3, a_t);
+
+    float centerX = (edge0_x + edge1_x) * 0.5;
+    float halfWidth = abs(edge0_x - edge1_x) * 0.5;
+
+    float px = centerX + (sideStep * 2.0 - 1.0) * halfWidth;
+    pos = vec2(px, a_t * u_height);
+
+    float edge0_dx = screenX4 - screenX1;
+    float edge1_dx = screenX3 - screenX2;
+    float dx = (edge0_dx + edge1_dx) * 0.5 + (sideStep * 2.0 - 1.0) * abs(edge0_dx - edge1_dx) * 0.5;
+    tangent = vec2(dx, u_height);
   }
 
   float tangentLen = length(tangent);
@@ -1048,6 +1109,26 @@ export class SyntenyWebGLRenderer {
     this.geometryBpPerPx1 = data.geometryBpPerPx1
     this.instanceCount = data.instanceCount
     this.nonCigarInstanceCount = data.nonCigarInstanceCount
+
+    // Debug: check for inverted features (where edges x1→x4 and x2→x3 cross)
+    let invertedCount = 0
+    const logLimit = 5
+    for (let i = 0; i < Math.min(data.instanceCount, 1000); i++) {
+      const x1 = data.x1[i * 2]!
+      const x2 = data.x2[i * 2]!
+      const x3 = data.x3[i * 2]!
+      const x4 = data.x4[i * 2]!
+      // Edges cross when (x1-x2) and (x3-x4) have the same sign
+      const topDiff = x1 - x2
+      const botDiff = x3 - x4
+      if (topDiff * botDiff > 0) {
+        invertedCount++
+        if (invertedCount <= logLimit) {
+          console.log(`[WebGL Synteny] Inverted feature #${i}: x1=${x1} x2=${x2} x3=${x3} x4=${x4}`)
+        }
+      }
+    }
+    console.log(`[WebGL Synteny] Inverted features: ${invertedCount}/${Math.min(data.instanceCount, 1000)} (drawCurves=${drawCurves}, fillSegments=${fillSegments})`)
 
     if (this.instanceCount > 0) {
       const x1Buf = this.createBuffer(gl, data.x1, 'x1')
