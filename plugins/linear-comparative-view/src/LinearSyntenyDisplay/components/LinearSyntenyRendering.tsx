@@ -50,8 +50,8 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const zoomDelta = useRef(0)
   const zoomScheduled = useRef(false)
   const lastZoomClientX = useRef(0)
-  const mouseCurrDownX = useRef<number | undefined>()
-  const mouseInitialDownX = useRef<number | undefined>()
+  const mouseCurrDownX = useRef<number | undefined>(undefined)
+  const mouseInitialDownX = useRef<number | undefined>(undefined)
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')

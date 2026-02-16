@@ -1,3 +1,4 @@
+/// <reference types="@webgpu/types" />
 import {
   cullComputeShader,
   fillVertexShader,
