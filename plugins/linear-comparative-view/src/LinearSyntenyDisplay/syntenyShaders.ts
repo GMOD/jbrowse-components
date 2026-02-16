@@ -44,6 +44,43 @@ fn hpDiff(a: vec2f, b: vec2f) -> f32 {
 }
 `
 
+const SCREEN_POSITIONS = /* wgsl */ `
+  let screenX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let screenX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let screenX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+  let screenX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+`
+
+const HERMITE_EDGES = /* wgsl */ `
+fn hermiteEdges(screenX1: f32, screenX2: f32, screenX3: f32, screenX4: f32, t: f32, isCurve: f32) -> vec3f {
+  var edge0: f32;
+  var edge1: f32;
+  var y: f32;
+  if (isCurve > 0.5) {
+    let s = t * t * (3.0 - 2.0 * t);
+    edge0 = mix(screenX1, screenX4, s);
+    edge1 = mix(screenX2, screenX3, s);
+    y = uniforms.height * (1.5 * t * (1.0 - t) + t * t * t);
+  } else {
+    edge0 = mix(screenX1, screenX4, t);
+    edge1 = mix(screenX2, screenX3, t);
+    y = t * uniforms.height;
+  }
+  return vec3f(edge0, edge1, y);
+}
+`
+
+const FS_PICKING = /* wgsl */ `
+@fragment
+fn fs_picking(in: VOut) -> @location(0) vec4f {
+  let id = u32(in.featureId);
+  let r = f32(id & 0xFFu) / 255.0;
+  let g = f32((id >> 8u) & 0xFFu) / 255.0;
+  let b = f32((id >> 16u) & 0xFFu) / 255.0;
+  return vec4f(r, g, b, 1.0);
+}
+`
+
 export const cullComputeShader = /* wgsl */ `
 ${INSTANCE_STRUCT}
 ${UNIFORMS_STRUCT}
@@ -100,13 +137,6 @@ fn main(@builtin(global_invocation_id) gid: vec3u) {
 }
 `
 
-const FILL_SCREEN_POSITIONS = /* wgsl */ `
-  let screenX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let screenX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let screenX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
-  let screenX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
-`
-
 export const fillVertexShader = /* wgsl */ `
 ${INSTANCE_STRUCT}
 ${UNIFORMS_STRUCT}
@@ -122,15 +152,13 @@ struct VOut {
 @group(0) @binding(2) var<uniform> uniforms: Uniforms;
 
 ${HP_DIFF}
+${HERMITE_EDGES}
 
 @vertex
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
   let inst = instances[visible_indices[iid]];
 
-  let screenX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let screenX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let screenX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
-  let screenX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+${SCREEN_POSITIONS}
 
   let segs = uniforms.fillSegments;
   let seg = vid / 6u;
@@ -138,12 +166,11 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let topDiff = screenX1 - screenX2;
   let botDiff = screenX4 - screenX3;
-  let inverted = topDiff * botDiff < 0.0;
 
   var t0: f32;
   var t1: f32;
 
-  if (inverted) {
+  if (topDiff * botDiff < 0.0) {
     let tCross = clamp(topDiff / (topDiff - botDiff), 0.01, 0.99);
     var nUpper = u32(round(f32(segs) * tCross));
     nUpper = clamp(nUpper, 1u, segs - 1u);
@@ -174,37 +201,12 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
     default: { t = 0.0; side = 0.0; }
   }
 
-  var x: f32;
-  var y: f32;
+  let e = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t, inst.isCurve);
+  let centerX = (e.x + e.y) * 0.5;
+  let halfWidth = abs(e.x - e.y) * 0.5;
+  let x = centerX + (side * 2.0 - 1.0) * halfWidth;
 
-  if (inst.isCurve > 0.5) {
-    let mt = 1.0 - t;
-    let mt2 = mt * mt;
-    let mt3 = mt2 * mt;
-    let t2 = t * t;
-    let t3 = t2 * t;
-    let mid = uniforms.height * 0.5;
-
-    let edge0_x = mt3 * screenX1 + 3.0 * mt2 * t * screenX1 + 3.0 * mt * t2 * screenX4 + t3 * screenX4;
-    let edge1_x = mt3 * screenX2 + 3.0 * mt2 * t * screenX2 + 3.0 * mt * t2 * screenX3 + t3 * screenX3;
-
-    let centerX = (edge0_x + edge1_x) * 0.5;
-    let halfWidth = abs(edge0_x - edge1_x) * 0.5;
-
-    x = centerX + (side * 2.0 - 1.0) * halfWidth;
-    y = 3.0 * mt2 * t * mid + 3.0 * mt * t2 * mid + t3 * uniforms.height;
-  } else {
-    let edge0_x = mix(screenX1, screenX4, t);
-    let edge1_x = mix(screenX2, screenX3, t);
-
-    let centerX = (edge0_x + edge1_x) * 0.5;
-    let halfWidth = abs(edge0_x - edge1_x) * 0.5;
-
-    x = centerX + (side * 2.0 - 1.0) * halfWidth;
-    y = t * uniforms.height;
-  }
-
-  let clipSpace = (vec2f(x, y) / uniforms.resolution) * 2.0 - 1.0;
+  let clipSpace = (vec2f(x, e.z) / uniforms.resolution) * 2.0 - 1.0;
 
   var out: VOut;
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
@@ -218,14 +220,7 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   return vec4f(in.color.rgb, in.color.a * uniforms.alpha);
 }
 
-@fragment
-fn fs_picking(in: VOut) -> @location(0) vec4f {
-  let id = u32(in.featureId);
-  let r = f32(id & 0xFFu) / 255.0;
-  let g = f32((id >> 8u) & 0xFFu) / 255.0;
-  let b = f32((id >> 16u) & 0xFFu) / 255.0;
-  return vec4f(r, g, b, 1.0);
-}
+${FS_PICKING}
 `
 
 export const edgeVertexShader = /* wgsl */ `
@@ -255,7 +250,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let t = f32(segIdx) / f32(segs);
   let side = select(1.0, -1.0, sideIdx == 1u);
 
-${FILL_SCREEN_POSITIONS}
+${SCREEN_POSITIONS}
 
   let topDiff = screenX1 - screenX2;
   let botDiff = screenX4 - screenX3;
@@ -270,35 +265,31 @@ ${FILL_SCREEN_POSITIONS}
     return out;
   }
 
-  let mt = 1.0 - t;
-  var pos: vec2f;
-  var tangent: vec2f;
   let sideStep = step(0.0, side);
 
-  if (inst.isCurve > 0.5) {
-    let mt2 = mt * mt;
-    let mt3 = mt2 * mt;
-    let t2 = t * t;
-    let t3 = t2 * t;
-    let mid = uniforms.height * 0.5;
+  var pos: vec2f;
+  var tangent: vec2f;
 
-    let edge0_x = mt3 * screenX1 + 3.0 * mt2 * t * screenX1 + 3.0 * mt * t2 * screenX4 + t3 * screenX4;
-    let edge1_x = mt3 * screenX2 + 3.0 * mt2 * t * screenX2 + 3.0 * mt * t2 * screenX3 + t3 * screenX3;
+  if (inst.isCurve > 0.5) {
+    let s = t * t * (3.0 - 2.0 * t);
+    let edge0_x = mix(screenX1, screenX4, s);
+    let edge1_x = mix(screenX2, screenX3, s);
 
     let centerX = (edge0_x + edge1_x) * 0.5;
     let halfWidth = abs(edge0_x - edge1_x) * 0.5;
 
     let px = centerX + (sideStep * 2.0 - 1.0) * halfWidth;
-    let py = 3.0 * mt2 * t * mid + 3.0 * mt * t2 * mid + t3 * uniforms.height;
+    let py = uniforms.height * (1.5 * t * (1.0 - t) + t * t * t);
     pos = vec2f(px, py);
 
-    let edge0_dx = 6.0 * mt * t * (screenX4 - screenX1);
-    let edge1_dx = 6.0 * mt * t * (screenX3 - screenX2);
+    let sPrime = 6.0 * t * (1.0 - t);
+    let edge0_dx = sPrime * (screenX4 - screenX1);
+    let edge1_dx = sPrime * (screenX3 - screenX2);
     let centerDx = (edge0_dx + edge1_dx) * 0.5;
     let halfWidthDx = abs(edge0_dx - edge1_dx) * 0.5 * sign(edge0_x - edge1_x);
 
     let dx = centerDx + (sideStep * 2.0 - 1.0) * halfWidthDx;
-    let dy = 3.0 * mid * (mt2 + t2);
+    let dy = uniforms.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
     tangent = vec2f(dx, dy);
   } else {
     let edge0_x = mix(screenX1, screenX4, t);
@@ -358,39 +349,19 @@ struct VOut {
 @group(0) @binding(2) var<uniform> uniforms: Uniforms;
 
 ${HP_DIFF}
+${HERMITE_EDGES}
 
 @vertex
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
   let inst = instances[visible_indices[iid]];
   let t = f32(vid) / f32(THIN_SEGS);
 
-${FILL_SCREEN_POSITIONS}
+${SCREEN_POSITIONS}
 
-  var x: f32;
-  var y: f32;
+  let e = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t, inst.isCurve);
+  let x = (e.x + e.y) * 0.5;
 
-  if (inst.isCurve > 0.5) {
-    let mt = 1.0 - t;
-    let mt2 = mt * mt;
-    let mt3 = mt2 * mt;
-    let t2 = t * t;
-    let t3 = t2 * t;
-    let mid = uniforms.height * 0.5;
-
-    let edge0_x = mt3 * screenX1 + 3.0 * mt2 * t * screenX1 + 3.0 * mt * t2 * screenX4 + t3 * screenX4;
-    let edge1_x = mt3 * screenX2 + 3.0 * mt2 * t * screenX2 + 3.0 * mt * t2 * screenX3 + t3 * screenX3;
-
-    x = (edge0_x + edge1_x) * 0.5;
-    y = 3.0 * mt2 * t * mid + 3.0 * mt * t2 * mid + t3 * uniforms.height;
-  } else {
-    let edge0_x = mix(screenX1, screenX4, t);
-    let edge1_x = mix(screenX2, screenX3, t);
-
-    x = (edge0_x + edge1_x) * 0.5;
-    y = t * uniforms.height;
-  }
-
-  let clipSpace = (vec2f(x, y) / uniforms.resolution) * 2.0 - 1.0;
+  let clipSpace = (vec2f(x, e.z) / uniforms.resolution) * 2.0 - 1.0;
 
   var out: VOut;
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
@@ -404,12 +375,5 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   return vec4f(in.color.rgb, in.color.a * uniforms.alpha);
 }
 
-@fragment
-fn fs_picking(in: VOut) -> @location(0) vec4f {
-  let id = u32(in.featureId);
-  let r = f32(id & 0xFFu) / 255.0;
-  let g = f32((id >> 8u) & 0xFFu) / 255.0;
-  let b = f32((id >> 16u) & 0xFFu) / 255.0;
-  return vec4f(r, g, b, 1.0);
-}
+${FS_PICKING}
 `
