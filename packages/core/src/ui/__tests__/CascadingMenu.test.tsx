@@ -2,6 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
 
+jest.spyOn(console, 'warn').mockImplementation(() => {})
+
 const menuItems = [
   { label: 'Item 1', onClick: () => {} },
   { label: 'Item 2', onClick: () => {} },

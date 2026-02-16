@@ -17,7 +17,7 @@ import type { Region, ViewSnap } from '@jbrowse/core/util'
 // the cumulative padding pixels before the target region. Padding is counted
 // only between non-elided regions, matching calculateStaticBlocks. Uses float
 // precision (no Math.round) since the shader uses HP float subtraction.
-function bpToPx({
+export function bpToPx({
   self,
   refName,
   coord,
