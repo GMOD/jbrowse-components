@@ -55,8 +55,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
-  const [currX, setCurrX] = useState<number>()
-  const [currY, setCurrY] = useState<number>()
 
   useEffect(() => {
     canvasRectRef.current = null
@@ -186,8 +184,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       if (!coords) {
         return
       }
-      setCurrX(event.clientX)
-      setCurrY(event.clientY)
 
       if (model.isScrolling) {
         model.setMouseoverId(undefined)
@@ -301,7 +297,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
-      {mouseoverId && tooltip && currX && currY ? (
+      {mouseoverId && tooltip ? (
         <SyntenyTooltip title={tooltip} />
       ) : null}
       {anchorEl ? (

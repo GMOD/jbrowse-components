@@ -160,11 +160,6 @@ function createPickingTexture() {
     format: 'rgba8unorm',
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
   })
-  pickingStagingBuffer?.destroy()
-  pickingStagingBuffer = device.createBuffer({
-    size: 256,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-  })
 }
 
 function writeUniforms(
@@ -197,43 +192,35 @@ function writeUniforms(
   device.queue.writeBuffer(uniformBuffer, 0, uniformData)
 }
 
-function interleaveInstances(msg: {
-  x1: Float32Array
-  x2: Float32Array
-  x3: Float32Array
-  x4: Float32Array
-  colors: Float32Array
-  featureIds: Float32Array
-  isCurves: Float32Array
-  queryTotalLengths: Float32Array
-  padTops: Float32Array
-  padBottoms: Float32Array
-  count: number
-}) {
-  const n = msg.count
+function interleaveInstances(
+  x1: Float32Array, x2: Float32Array, x3: Float32Array, x4: Float32Array,
+  colors: Float32Array, featureIds: Float32Array, isCurves: Float32Array,
+  queryTotalLengths: Float32Array, padTops: Float32Array, padBottoms: Float32Array,
+  n: number,
+) {
   const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
   const f = new Float32Array(buf)
   const stride = INSTANCE_BYTE_SIZE / 4
 
   for (let i = 0; i < n; i++) {
     const off = i * stride
-    f[off] = msg.x1[i * 2]!
-    f[off + 1] = msg.x1[i * 2 + 1]!
-    f[off + 2] = msg.x2[i * 2]!
-    f[off + 3] = msg.x2[i * 2 + 1]!
-    f[off + 4] = msg.x3[i * 2]!
-    f[off + 5] = msg.x3[i * 2 + 1]!
-    f[off + 6] = msg.x4[i * 2]!
-    f[off + 7] = msg.x4[i * 2 + 1]!
-    f[off + 8] = msg.colors[i * 4]!
-    f[off + 9] = msg.colors[i * 4 + 1]!
-    f[off + 10] = msg.colors[i * 4 + 2]!
-    f[off + 11] = msg.colors[i * 4 + 3]!
-    f[off + 12] = msg.featureIds[i]!
-    f[off + 13] = msg.isCurves[i]!
-    f[off + 14] = msg.queryTotalLengths[i]!
-    f[off + 15] = msg.padTops[i]!
-    f[off + 16] = msg.padBottoms[i]!
+    f[off] = x1[i * 2]!
+    f[off + 1] = x1[i * 2 + 1]!
+    f[off + 2] = x2[i * 2]!
+    f[off + 3] = x2[i * 2 + 1]!
+    f[off + 4] = x3[i * 2]!
+    f[off + 5] = x3[i * 2 + 1]!
+    f[off + 6] = x4[i * 2]!
+    f[off + 7] = x4[i * 2 + 1]!
+    f[off + 8] = colors[i * 4]!
+    f[off + 9] = colors[i * 4 + 1]!
+    f[off + 10] = colors[i * 4 + 2]!
+    f[off + 11] = colors[i * 4 + 3]!
+    f[off + 12] = featureIds[i]!
+    f[off + 13] = isCurves[i]!
+    f[off + 14] = queryTotalLengths[i]!
+    f[off + 15] = padTops[i]!
+    f[off + 16] = padBottoms[i]!
     f[off + 17] = 0
     f[off + 18] = 0
     f[off + 19] = 0
@@ -307,7 +294,7 @@ function encodeDrawPass(
     colorAttachments: [{
       view,
       loadOp,
-      storeOp: 'store' as const,
+      storeOp: 'store',
       ...(clearValue && { clearValue }),
     }],
   })
@@ -358,6 +345,10 @@ self.onmessage = async (e: MessageEvent) => {
           size: UNIFORM_SIZE,
           usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         })
+        pickingStagingBuffer = device.createBuffer({
+          size: 256,
+          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+        })
 
         createPipelines()
         self.postMessage({ type: 'init-result', success: true })
@@ -391,19 +382,12 @@ self.onmessage = async (e: MessageEvent) => {
       geometryBpPerPx0 = msg.geometryBpPerPx0
       geometryBpPerPx1 = msg.geometryBpPerPx1
 
-      const interleaved = interleaveInstances({
-        x1: msg.x1,
-        x2: msg.x2,
-        x3: msg.x3,
-        x4: msg.x4,
-        colors: msg.colors,
-        featureIds: msg.featureIds,
-        isCurves: msg.isCurves,
-        queryTotalLengths: msg.queryTotalLengths,
-        padTops: msg.padTops,
-        padBottoms: msg.padBottoms,
-        count: instanceCount,
-      })
+      const interleaved = interleaveInstances(
+        msg.x1, msg.x2, msg.x3, msg.x4,
+        msg.colors, msg.featureIds, msg.isCurves,
+        msg.queryTotalLengths, msg.padTops, msg.padBottoms,
+        instanceCount,
+      )
 
       instanceBuffer?.destroy()
       instanceBuffer = device.createBuffer({

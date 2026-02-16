@@ -36,12 +36,6 @@ export interface SyntenyFeatureData {
 }
 
 export interface FeatPos {
-  p11: { offsetPx: number }
-  p12: { offsetPx: number }
-  p21: { offsetPx: number }
-  p22: { offsetPx: number }
-  padTop: number
-  padBottom: number
   id: string
   strand: number
   name: string
@@ -65,12 +59,6 @@ export function getFeatureAtIndex(
 ): FeatPos {
   const identity = data.identities[i]!
   return {
-    p11: { offsetPx: data.p11_offsetPx[i]! },
-    p12: { offsetPx: data.p12_offsetPx[i]! },
-    p21: { offsetPx: data.p21_offsetPx[i]! },
-    p22: { offsetPx: data.p22_offsetPx[i]! },
-    padTop: data.padTop[i]!,
-    padBottom: data.padBottom[i]!,
     id: data.featureIds[i]!,
     strand: data.strands[i]!,
     name: data.names[i]!,

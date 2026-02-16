@@ -127,12 +127,40 @@ ${HP_DIFF}
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
   let inst = instances[visible_indices[iid]];
 
+  let screenX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let screenX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let screenX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+  let screenX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+
   let segs = uniforms.fillSegments;
   let seg = vid / 6u;
   let vertInSeg = vid % 6u;
 
-  let t0 = f32(seg) / f32(segs);
-  let t1 = f32(seg + 1u) / f32(segs);
+  let topDiff = screenX1 - screenX2;
+  let botDiff = screenX4 - screenX3;
+  let inverted = topDiff * botDiff < 0.0;
+
+  var t0: f32;
+  var t1: f32;
+
+  if (inverted) {
+    let tCross = clamp(topDiff / (topDiff - botDiff), 0.01, 0.99);
+    var nUpper = u32(round(f32(segs) * tCross));
+    nUpper = clamp(nUpper, 1u, segs - 1u);
+
+    if (seg < nUpper) {
+      t0 = f32(seg) / f32(nUpper) * tCross;
+      t1 = f32(seg + 1u) / f32(nUpper) * tCross;
+    } else {
+      let lSeg = seg - nUpper;
+      let nLower = segs - nUpper;
+      t0 = tCross + f32(lSeg) / f32(nLower) * (1.0 - tCross);
+      t1 = tCross + f32(lSeg + 1u) / f32(nLower) * (1.0 - tCross);
+    }
+  } else {
+    t0 = f32(seg) / f32(segs);
+    t1 = f32(seg + 1u) / f32(segs);
+  }
 
   var t: f32;
   var side: f32;
@@ -145,8 +173,6 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
     case 5u: { t = t1; side = 1.0; }
     default: { t = 0.0; side = 0.0; }
   }
-
-${FILL_SCREEN_POSITIONS}
 
   var x: f32;
   var y: f32;

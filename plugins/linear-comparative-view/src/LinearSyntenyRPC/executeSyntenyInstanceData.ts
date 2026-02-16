@@ -49,14 +49,13 @@ function createColorFunction(
   if (colorBy === 'query') {
     const colorCache = new Map<string, [number, number, number, number]>()
     return (_strand: number, refName: string) => {
-      const name = refName
-      if (!colorCache.has(name)) {
-        const hash = hashString(name)
+      if (!colorCache.has(refName)) {
+        const hash = hashString(refName)
         const [r, g, b] =
           category10Normalized[hash % category10Normalized.length]!
-        colorCache.set(name, [r, g, b, 1])
+        colorCache.set(refName, [r, g, b, 1])
       }
-      return colorCache.get(name)!
+      return colorCache.get(refName)!
     }
   }
 

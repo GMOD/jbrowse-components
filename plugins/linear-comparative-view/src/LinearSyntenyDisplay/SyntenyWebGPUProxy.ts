@@ -4,7 +4,6 @@ const proxyCache = new WeakMap<HTMLCanvasElement, SyntenyWebGPUProxy>()
 
 export class SyntenyWebGPUProxy {
   private worker: Worker | null = null
-  private initialized = false
   private initPromise: Promise<boolean> | null = null
   private cachedPickResult = -1
   private pendingPick = false
@@ -37,7 +36,6 @@ export class SyntenyWebGPUProxy {
       this.worker!.onmessage = (e: MessageEvent) => {
         const msg = e.data
         if (msg.type === 'init-result') {
-          this.initialized = msg.success
           if (!msg.success) {
             console.error('[WebGPU Proxy] Init failed:', msg.error)
           }
@@ -128,6 +126,5 @@ export class SyntenyWebGPUProxy {
     this.worker?.postMessage({ type: 'dispose' })
     this.worker?.terminate()
     this.worker = null
-    this.initialized = false
   }
 }

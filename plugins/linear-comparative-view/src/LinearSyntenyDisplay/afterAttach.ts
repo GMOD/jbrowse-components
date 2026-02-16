@@ -179,27 +179,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               return
             }
 
-            const featureData: SyntenyFeatureData = {
-              p11_offsetPx: result.p11_offsetPx,
-              p12_offsetPx: result.p12_offsetPx,
-              p21_offsetPx: result.p21_offsetPx,
-              p22_offsetPx: result.p22_offsetPx,
-              strands: result.strands,
-              starts: result.starts,
-              ends: result.ends,
-              identities: result.identities,
-              padTop: result.padTop,
-              padBottom: result.padBottom,
-              featureIds: result.featureIds,
-              names: result.names,
-              refNames: result.refNames,
-              assemblyNames: result.assemblyNames,
-              cigars: result.cigars,
-              mates: result.mates,
-            }
-
+            const { instanceData, ...featureData } = result
             self.setFeatureData(featureData)
-            self.setGpuInstanceData(result.instanceData)
+            self.setGpuInstanceData(instanceData)
           } catch (e) {
             if (!isAbortException(e)) {
               if (isAlive(self)) {
