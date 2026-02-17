@@ -370,8 +370,6 @@ interface GpuRegionData {
 interface GpuCanvasState {
   canvas: OffscreenCanvas
   context: GPUCanvasContext
-  width: number
-  height: number
   regions: Map<number, GpuRegionData>
 }
 
@@ -480,13 +478,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
   ) {
     const state = this.ensureCanvas(msg.canvasId, ctx)
     switch (msg.type) {
-      case 'resize': {
-        state.width = msg.width as number
-        state.height = msg.height as number
-        state.canvas.width = msg.width as number
-        state.canvas.height = msg.height as number
-        break
-      }
       case 'upload-region': {
         this.uploadRegion(state, msg)
         break
@@ -524,8 +515,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
       state = {
         canvas: ctx.canvas,
         context: gpuContext,
-        width: ctx.width,
-        height: ctx.height,
         regions: new Map(),
       }
       this.canvases.set(canvasId, state)
@@ -783,10 +772,9 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     if (state.canvas.width !== canvasWidth || state.canvas.height !== canvasHeight) {
       state.canvas.width = canvasWidth
       state.canvas.height = canvasHeight
-      state.width = canvasWidth
-      state.height = canvasHeight
     }
 
+    const textureView = state.context.getCurrentTexture().createView()
     let isFirst = true
 
     for (const block of blocks) {
@@ -822,7 +810,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
       )
 
       const encoder = this.device.createCommandEncoder()
-      const textureView = state.context.getCurrentTexture().createView()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
@@ -868,7 +855,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
 
     if (isFirst) {
       const encoder = this.device.createCommandEncoder()
-      const textureView = state.context.getCurrentTexture().createView()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {

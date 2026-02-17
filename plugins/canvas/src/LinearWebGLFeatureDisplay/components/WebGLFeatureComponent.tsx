@@ -270,7 +270,9 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     const dispose = autorun(() => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
+        const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _h = model.height
 
         if (selfUpdateRef.current) {
           selfUpdateRef.current = false
@@ -340,12 +342,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     renderWithBlocksRef.current()
   }, [rpcDataMap, rendererReady])
-
-  useEffect(() => {
-    if (rendererReady && width !== undefined && proxyRef.current) {
-      renderWithBlocksRef.current()
-    }
-  }, [rendererReady, width, height])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -821,8 +817,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasCallbackRef}
-        width={width}
-        height={height}
         style={{
           display: 'block',
           width,
