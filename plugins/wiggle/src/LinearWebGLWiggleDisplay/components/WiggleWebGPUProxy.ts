@@ -1,17 +1,5 @@
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { WiggleRenderBlock } from './WebGLWiggleRenderer.ts'
-
-let sharedWorker: Worker | null = null
-let nextCanvasId = 0
-
-function getSharedWorker() {
-  if (!sharedWorker) {
-    sharedWorker = new Worker(
-      new URL('./wiggleGpuWorker.ts', import.meta.url),
-      { type: 'module' },
-    )
-  }
-  return sharedWorker
-}
 
 export interface WiggleGPURenderState {
   domainY: [number, number]
@@ -29,13 +17,23 @@ export interface WiggleGPURenderState {
 const proxyCache = new WeakMap<HTMLCanvasElement, WiggleWebGPUProxy>()
 
 export class WiggleWebGPUProxy {
-  private canvasId = nextCanvasId++
+  private canvasId: number
   private initPromise: Promise<boolean> | null = null
+  private workerPromise: Promise<Worker | undefined>
+  private worker: Worker | undefined
 
-  static getOrCreate(canvas: HTMLCanvasElement) {
+  constructor(private rpcManager: RpcManager) {
+    this.canvasId = rpcManager.getNextCanvasId()
+    this.workerPromise = rpcManager.getGpuWorker().then(w => {
+      this.worker = w
+      return w
+    })
+  }
+
+  static getOrCreate(canvas: HTMLCanvasElement, rpcManager: RpcManager) {
     let proxy = proxyCache.get(canvas)
     if (!proxy) {
-      proxy = new WiggleWebGPUProxy()
+      proxy = new WiggleWebGPUProxy(rpcManager)
       proxyCache.set(canvas, proxy)
     }
     return proxy
@@ -51,7 +49,10 @@ export class WiggleWebGPUProxy {
 
   private async _doInit(canvas: HTMLCanvasElement) {
     const offscreen = canvas.transferControlToOffscreen()
-    const worker = getSharedWorker()
+    const worker = await this.workerPromise
+    if (!worker) {
+      return false
+    }
 
     return new Promise<boolean>(resolve => {
       const handler = (e: MessageEvent) => {
@@ -61,21 +62,26 @@ export class WiggleWebGPUProxy {
         ) {
           worker.removeEventListener('message', handler)
           if (!e.data.success) {
-            console.error('[WiggleWebGPU] Init failed:', e.data.error)
+            console.error('[WiggleWorker] Init failed:', e.data.error)
           }
           resolve(e.data.success)
         }
       }
       worker.addEventListener('message', handler)
       worker.postMessage(
-        { type: 'init', canvasId: this.canvasId, canvas: offscreen },
+        {
+          type: 'init',
+          canvasId: this.canvasId,
+          handlerType: 'WiggleGpuHandler',
+          canvas: offscreen,
+        },
         [offscreen],
       )
     })
   }
 
   resize(width: number, height: number) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'resize',
       canvasId: this.canvasId,
       width,
@@ -92,12 +98,12 @@ export class WiggleWebGPUProxy {
       numFeatures: number
     },
   ) {
-    if (!sharedWorker) {
+    if (!this.worker) {
       return
     }
     const positions = new Uint32Array(data.featurePositions)
     const scores = new Float32Array(data.featureScores)
-    sharedWorker.postMessage(
+    this.worker.postMessage(
       {
         type: 'upload-region',
         canvasId: this.canvasId,
@@ -112,7 +118,7 @@ export class WiggleWebGPUProxy {
   }
 
   pruneRegions(activeRegions: number[]) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'prune-regions',
       canvasId: this.canvasId,
       activeRegions,
@@ -120,7 +126,7 @@ export class WiggleWebGPUProxy {
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'render',
       canvasId: this.canvasId,
       blocks,
@@ -132,7 +138,7 @@ export class WiggleWebGPUProxy {
     bpRangeX: [number, number],
     renderState: WiggleGPURenderState,
   ) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'render-single',
       canvasId: this.canvasId,
       bpRangeX,
@@ -141,7 +147,7 @@ export class WiggleWebGPUProxy {
   }
 
   dispose() {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'dispose',
       canvasId: this.canvasId,
     })

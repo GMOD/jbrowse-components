@@ -11,6 +11,7 @@ import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts
 import QuantitativeTrackF from './QuantitativeTrack/index.ts'
 import RenderWebGLMultiWiggleDataRPCF from './RenderWebGLMultiWiggleDataRPC/index.ts'
 import RenderWebGLWiggleDataRPCF from './RenderWebGLWiggleDataRPC/index.ts'
+import WiggleGpuHandler from './WiggleGpuHandler.ts'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
@@ -43,6 +44,7 @@ export default class WigglePlugin extends Plugin {
     pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
     pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
     pm.addRpcMethod(() => new MultiWiggleClusterScoreMatrix(pm))
+    pm.addGpuHandler(() => new WiggleGpuHandler(pm))
   }
 
   exports = {

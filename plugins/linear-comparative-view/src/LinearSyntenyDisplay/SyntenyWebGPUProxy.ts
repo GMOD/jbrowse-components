@@ -1,17 +1,29 @@
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 const proxyCache = new WeakMap<HTMLCanvasElement, SyntenyWebGPUProxy>()
 
 export class SyntenyWebGPUProxy {
-  private worker: Worker | null = null
+  private canvasId: number
   private initPromise: Promise<boolean> | null = null
+  private workerPromise: Promise<Worker | undefined>
+  private worker: Worker | undefined
   private cachedPickResult = -1
   private pendingPick = false
+  private pickListener: ((e: MessageEvent) => void) | null = null
 
-  static getOrCreate(canvas: HTMLCanvasElement) {
+  constructor(private rpcManager: RpcManager) {
+    this.canvasId = rpcManager.getNextCanvasId()
+    this.workerPromise = rpcManager.getGpuWorker().then(w => {
+      this.worker = w
+      return w
+    })
+  }
+
+  static getOrCreate(canvas: HTMLCanvasElement, rpcManager: RpcManager) {
     let proxy = proxyCache.get(canvas)
     if (!proxy) {
-      proxy = new SyntenyWebGPUProxy()
+      proxy = new SyntenyWebGPUProxy(rpcManager)
       proxyCache.set(canvas, proxy)
     }
     return proxy
@@ -27,31 +39,56 @@ export class SyntenyWebGPUProxy {
 
   private async _doInit(canvas: HTMLCanvasElement) {
     const offscreen = canvas.transferControlToOffscreen()
-    this.worker = new Worker(
-      new URL('./syntenyGpuWorker.ts', import.meta.url),
-      { type: 'module' },
-    )
+    const worker = await this.workerPromise
+    if (!worker) {
+      return false
+    }
+
+    this.setupPickListener(worker)
 
     return new Promise<boolean>(resolve => {
-      this.worker!.onmessage = (e: MessageEvent) => {
+      const handler = (e: MessageEvent) => {
         const msg = e.data
-        if (msg.type === 'init-result') {
+        if (msg.type === 'init-result' && msg.canvasId === this.canvasId) {
+          worker.removeEventListener('message', handler)
           if (!msg.success) {
             console.error('[WebGPU Proxy] Init failed:', msg.error)
           }
           resolve(msg.success)
-        } else if (msg.type === 'pick-result') {
-          this.cachedPickResult = msg.featureIndex
-          this.pendingPick = false
         }
       }
-
-      this.worker!.postMessage({ type: 'init', canvas: offscreen }, [offscreen])
+      worker.addEventListener('message', handler)
+      worker.postMessage(
+        {
+          type: 'init',
+          canvasId: this.canvasId,
+          handlerType: 'SyntenyGpuHandler',
+          canvas: offscreen,
+        },
+        [offscreen],
+      )
     })
   }
 
+  private setupPickListener(worker: Worker) {
+    this.pickListener = (e: MessageEvent) => {
+      const msg = e.data
+      if (msg.type === 'pick-result' && msg.canvasId === this.canvasId) {
+        this.cachedPickResult = msg.featureIndex
+        this.pendingPick = false
+      }
+    }
+    worker.addEventListener('message', this.pickListener)
+  }
+
   resize(width: number, height: number, dpr = 2) {
-    this.worker?.postMessage({ type: 'resize', width, height, dpr })
+    this.worker?.postMessage({
+      type: 'resize',
+      canvasId: this.canvasId,
+      width,
+      height,
+      dpr,
+    })
   }
 
   uploadGeometry(data: SyntenyInstanceData) {
@@ -75,6 +112,7 @@ export class SyntenyWebGPUProxy {
     this.worker.postMessage(
       {
         type: 'upload-geometry',
+        canvasId: this.canvasId,
         x1: data.x1,
         x2: data.x2,
         x3: data.x3,
@@ -110,6 +148,7 @@ export class SyntenyWebGPUProxy {
   ) {
     this.worker?.postMessage({
       type: 'render',
+      canvasId: this.canvasId,
       offset0,
       offset1,
       height,
@@ -126,14 +165,25 @@ export class SyntenyWebGPUProxy {
   pick(x: number, y: number) {
     if (!this.pendingPick) {
       this.pendingPick = true
-      this.worker?.postMessage({ type: 'pick', x, y })
+      this.worker?.postMessage({
+        type: 'pick',
+        canvasId: this.canvasId,
+        x,
+        y,
+      })
     }
     return this.cachedPickResult
   }
 
   dispose() {
-    this.worker?.postMessage({ type: 'dispose' })
-    this.worker?.terminate()
-    this.worker = null
+    if (this.pickListener && this.worker) {
+      this.worker.removeEventListener('message', this.pickListener)
+      this.pickListener = null
+    }
+    this.worker?.postMessage({
+      type: 'dispose',
+      canvasId: this.canvasId,
+    })
+    this.initPromise = null
   }
 }

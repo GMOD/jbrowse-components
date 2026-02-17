@@ -1,5 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
+import GpuCommandDispatcher from '@jbrowse/core/gpu/GpuCommandDispatcher'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
@@ -100,6 +101,18 @@ export async function initializeWorker(
     )
 
     self.rpcServer = new RpcServer(rpcConfig)
+
+    const gpuHandlers = pluginManager.getGpuHandlerElements()
+    if (gpuHandlers.length > 0) {
+      const gpuDispatcher = new GpuCommandDispatcher(gpuHandlers)
+      self.addEventListener('message', (e: MessageEvent) => {
+        const data = e.data
+        if (data && !data.libRpc && data.type && data.canvasId !== undefined) {
+          gpuDispatcher.handleMessage(data)
+        }
+      })
+    }
+
     postMessage({ message: 'ready' })
   } catch (e) {
     postMessage({ message: 'error', error: serializeError(e) })

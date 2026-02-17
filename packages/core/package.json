@@ -44,6 +44,8 @@
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
     "./pluggableElementTypes/DisplayType": "./src/pluggableElementTypes/DisplayType.ts",
     "./pluggableElementTypes/GlyphType": "./src/pluggableElementTypes/GlyphType.ts",
+    "./pluggableElementTypes/GpuHandlerType": "./src/pluggableElementTypes/GpuHandlerType.ts",
+    "./gpu/GpuCommandDispatcher": "./src/gpu/GpuCommandDispatcher.ts",
     "./pluggableElementTypes/InternetAccountType": "./src/pluggableElementTypes/InternetAccountType.ts",
     "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
     "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",

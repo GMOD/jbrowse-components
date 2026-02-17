@@ -1,5 +1,5 @@
 import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
-import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
+import WebWorkerRpcDriver, { getNextCanvasId } from './WebWorkerRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 import { readConfObject } from '../configuration/index.ts'
 
@@ -107,6 +107,22 @@ export default class RpcManager {
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(backendName)
+  }
+
+  async getGpuWorker() {
+    const backendName = readConfObject(
+      this.mainConfiguration,
+      'defaultDriver',
+    ) as string
+    const driver = this.getDriver(backendName)
+    if (driver instanceof WebWorkerRpcDriver) {
+      return driver.getGpuWorker()
+    }
+    return undefined
+  }
+
+  getNextCanvasId() {
+    return getNextCanvasId()
   }
 
   async call(

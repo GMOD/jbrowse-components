@@ -147,12 +147,14 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     if (!canvas) {
       return undefined
     }
-    const proxy = SyntenyWebGPUProxy.getOrCreate(canvas)
+    const { rpcManager } = getSession(model)
+    const proxy = SyntenyWebGPUProxy.getOrCreate(canvas, rpcManager)
     proxy.init(canvas).then(success => {
       model.setGpuRenderer(proxy)
       model.setGpuInitialized(success)
     })
     return () => {
+      proxy.dispose()
       model.setGpuRenderer(null)
       model.setGpuInitialized(false)
     }

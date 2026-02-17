@@ -3,6 +3,7 @@ import type AddTrackWorkflowType from './AddTrackWorkflowType.ts'
 import type ConnectionType from './ConnectionType.ts'
 import type DisplayType from './DisplayType.ts'
 import type GlyphType from './GlyphType.ts'
+import type GpuHandlerType from './GpuHandlerType.ts'
 import type InternetAccountType from './InternetAccountType.ts'
 import type RpcMethodType from './RpcMethodType.ts'
 import type TextSearchAdapterType from './TextSearchAdapterType.ts'
@@ -27,6 +28,7 @@ export type PluggableElementType =
   | TextSearchAdapterType
   | AddTrackWorkflowType
   | GlyphType
+  | GpuHandlerType
 
 export { default as AdapterType } from './AdapterType.ts'
 export { default as RendererType } from './renderers/RendererType.tsx'
@@ -41,3 +43,4 @@ export { default as GlyphType } from './GlyphType.ts'
 export { default as RpcMethodType } from './RpcMethodType.ts'
 export { default as AddTrackWorkflowType } from './AddTrackWorkflowType.ts'
 export { default as TextSearchAdapterType } from './TextSearchAdapterType.ts'
+export { default as GpuHandlerType } from './GpuHandlerType.ts'

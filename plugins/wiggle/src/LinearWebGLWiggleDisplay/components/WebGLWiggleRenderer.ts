@@ -13,7 +13,7 @@ import {
 } from '../../shared/webglUtils.ts'
 
 // Vertex shader for wiggle bars (XY plot)
-const XYPLOT_VERTEX_SHADER = `#version 300 es
+export const XYPLOT_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
@@ -78,7 +78,7 @@ void main() {
 `
 
 // Vertex shader for density (heatmap) rendering
-const DENSITY_VERTEX_SHADER = `#version 300 es
+export const DENSITY_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
@@ -137,7 +137,7 @@ void main() {
 `
 
 // Vertex shader for line rendering
-const LINE_VERTEX_SHADER = `#version 300 es
+export const LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
@@ -225,7 +225,7 @@ void main() {
 }
 `
 
-const WIGGLE_FRAGMENT_SHADER = `#version 300 es
+export const WIGGLE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
 out vec4 fragColor;

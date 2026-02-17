@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { WiggleWebGPUProxy } from './WiggleWebGPUProxy.ts'
@@ -76,7 +76,8 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
     canvasRef.current = canvas
-    const proxy = WiggleWebGPUProxy.getOrCreate(canvas)
+    const { rpcManager } = getSession(model)
+    const proxy = WiggleWebGPUProxy.getOrCreate(canvas, rpcManager)
     proxyRef.current = proxy
     proxy.init(canvas).then(ok => {
       if (!ok) {

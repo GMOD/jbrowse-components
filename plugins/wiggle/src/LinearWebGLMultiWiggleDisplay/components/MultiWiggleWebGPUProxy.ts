@@ -1,20 +1,5 @@
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { MultiWiggleRenderBlock, SourceRenderData } from './WebGLMultiWiggleRenderer.ts'
-
-let sharedWorker: Worker | null = null
-let nextCanvasId = 0
-
-function getSharedWorker() {
-  if (!sharedWorker) {
-    sharedWorker = new Worker(
-      new URL(
-        '../../LinearWebGLWiggleDisplay/components/wiggleGpuWorker.ts',
-        import.meta.url,
-      ),
-      { type: 'module' },
-    )
-  }
-  return sharedWorker
-}
 
 export interface MultiWiggleGPURenderState {
   domainY: [number, number]
@@ -28,13 +13,23 @@ export interface MultiWiggleGPURenderState {
 const proxyCache = new WeakMap<HTMLCanvasElement, MultiWiggleWebGPUProxy>()
 
 export class MultiWiggleWebGPUProxy {
-  private canvasId = nextCanvasId++
+  private canvasId: number
   private initPromise: Promise<boolean> | null = null
+  private workerPromise: Promise<Worker | undefined>
+  private worker: Worker | undefined
 
-  static getOrCreate(canvas: HTMLCanvasElement) {
+  constructor(private rpcManager: RpcManager) {
+    this.canvasId = rpcManager.getNextCanvasId()
+    this.workerPromise = rpcManager.getGpuWorker().then(w => {
+      this.worker = w
+      return w
+    })
+  }
+
+  static getOrCreate(canvas: HTMLCanvasElement, rpcManager: RpcManager) {
     let proxy = proxyCache.get(canvas)
     if (!proxy) {
-      proxy = new MultiWiggleWebGPUProxy()
+      proxy = new MultiWiggleWebGPUProxy(rpcManager)
       proxyCache.set(canvas, proxy)
     }
     return proxy
@@ -50,7 +45,10 @@ export class MultiWiggleWebGPUProxy {
 
   private async _doInit(canvas: HTMLCanvasElement) {
     const offscreen = canvas.transferControlToOffscreen()
-    const worker = getSharedWorker()
+    const worker = await this.workerPromise
+    if (!worker) {
+      return false
+    }
 
     return new Promise<boolean>(resolve => {
       const handler = (e: MessageEvent) => {
@@ -60,14 +58,19 @@ export class MultiWiggleWebGPUProxy {
         ) {
           worker.removeEventListener('message', handler)
           if (!e.data.success) {
-            console.error('[MultiWiggleWebGPU] Init failed:', e.data.error)
+            console.error('[MultiWiggleWorker] Init failed:', e.data.error)
           }
           resolve(e.data.success)
         }
       }
       worker.addEventListener('message', handler)
       worker.postMessage(
-        { type: 'init', canvasId: this.canvasId, canvas: offscreen },
+        {
+          type: 'init',
+          canvasId: this.canvasId,
+          handlerType: 'WiggleGpuHandler',
+          canvas: offscreen,
+        },
         [offscreen],
       )
     })
@@ -78,7 +81,7 @@ export class MultiWiggleWebGPUProxy {
     regionStart: number,
     sources: SourceRenderData[],
   ) {
-    if (!sharedWorker) {
+    if (!this.worker) {
       return
     }
 
@@ -88,7 +91,7 @@ export class MultiWiggleWebGPUProxy {
     }
 
     if (totalFeatures === 0 || sources.length === 0) {
-      sharedWorker.postMessage({
+      this.worker.postMessage({
         type: 'upload-multi-region',
         canvasId: this.canvasId,
         regionNumber,
@@ -121,7 +124,7 @@ export class MultiWiggleWebGPUProxy {
       offset += source.numFeatures
     }
 
-    sharedWorker.postMessage(
+    this.worker.postMessage(
       {
         type: 'upload-multi-region',
         canvasId: this.canvasId,
@@ -146,7 +149,7 @@ export class MultiWiggleWebGPUProxy {
   }
 
   pruneRegions(activeRegions: number[]) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'prune-regions',
       canvasId: this.canvasId,
       activeRegions,
@@ -157,7 +160,7 @@ export class MultiWiggleWebGPUProxy {
     blocks: MultiWiggleRenderBlock[],
     renderState: MultiWiggleGPURenderState,
   ) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'render-multi',
       canvasId: this.canvasId,
       blocks,
@@ -169,7 +172,7 @@ export class MultiWiggleWebGPUProxy {
     bpRangeX: [number, number],
     renderState: MultiWiggleGPURenderState,
   ) {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'render-multi-single',
       canvasId: this.canvasId,
       bpRangeX,
@@ -178,7 +181,7 @@ export class MultiWiggleWebGPUProxy {
   }
 
   dispose() {
-    sharedWorker?.postMessage({
+    this.worker?.postMessage({
       type: 'dispose',
       canvasId: this.canvasId,
     })
