@@ -479,15 +479,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .preProcessSnapshot(snap => {
-      const s = snap as Record<string, unknown>
-      if ('drawCIGAR' in s || 'drawCIGARMatchesOnly' in s) {
-        const { drawCIGAR, drawCIGARMatchesOnly, ...rest } = s
-        const cigarMode = drawCIGAR === false ? 'off' : drawCIGARMatchesOnly ? 'matches' : 'full'
-        return { ...rest, cigarMode } as typeof snap
-      }
-      return snap
-    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
