@@ -1,11 +1,8 @@
 export const INSTANCE_BYTE_SIZE = 80
 export const FILL_SEGMENTS = 16
 export const EDGE_SEGMENTS = 8
-export const THIN_LINE_SEGMENTS = 8
 export const FILL_VERTS_PER_INSTANCE = FILL_SEGMENTS * 6
 export const EDGE_VERTS_PER_INSTANCE = (EDGE_SEGMENTS + 1) * 2
-export const THIN_LINE_VERTS_PER_INSTANCE = THIN_LINE_SEGMENTS + 1
-export const THIN_WIDTH_THRESHOLD = 4
 
 const INSTANCE_STRUCT = /* wgsl */ `
 struct Instance {
@@ -81,61 +78,26 @@ fn fs_picking(in: VOut) -> @location(0) vec4f {
 }
 `
 
-export const cullComputeShader = /* wgsl */ `
-${INSTANCE_STRUCT}
-${UNIFORMS_STRUCT}
-${HP_DIFF}
-
-const THIN_THRESHOLD: f32 = ${THIN_WIDTH_THRESHOLD};
-
-@group(0) @binding(0) var<storage, read> instances: array<Instance>;
-@group(0) @binding(1) var<storage, read_write> wide_indices: array<u32>;
-@group(0) @binding(2) var<storage, read_write> thin_indices: array<u32>;
-@group(0) @binding(3) var<storage, read_write> wide_indirect: array<atomic<u32>>;
-@group(0) @binding(4) var<storage, read_write> thin_indirect: array<atomic<u32>>;
-@group(0) @binding(5) var<uniform> uniforms: Uniforms;
-
-@compute @workgroup_size(256)
-fn main(@builtin(global_invocation_id) gid: vec3u) {
-  let i = gid.x;
-  if (i >= uniforms.instanceCount) {
-    return;
-  }
-  let inst = instances[i];
-
+const CULL_CHECK = /* wgsl */ `
+fn isCulled(inst: Instance) -> bool {
   if (uniforms.minAlignmentLength > 0.0 && inst.queryTotalLength < uniforms.minAlignmentLength) {
-    return;
+    return true;
   }
-
   let topX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
   let topX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
   let botX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
   let botX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
-
   let topMinX = min(topX1, topX2);
   let topMaxX = max(topX1, topX2);
   let botMinX = min(botX3, botX4);
   let botMaxX = max(botX3, botX4);
-
   let mOff = uniforms.maxOffScreenPx;
   let rW = uniforms.resolution.x;
-  if (topMaxX < -mOff || topMinX > rW + mOff || botMaxX < -mOff || botMinX > rW + mOff) {
-    return;
-  }
-
-  let maxWidth = max(topMaxX - topMinX, botMaxX - botMinX);
-
-  if (maxWidth < THIN_THRESHOLD) {
-    let slot = atomicAdd(&thin_indirect[1], 1u);
-    thin_indices[slot] = i;
-    atomicAdd(&thin_indirect[5], 1u);
-  } else {
-    let slot = atomicAdd(&wide_indirect[1], 1u);
-    wide_indices[slot] = i;
-    atomicAdd(&wide_indirect[5], 1u);
-  }
+  return topMaxX < -mOff || topMinX > rW + mOff || botMaxX < -mOff || botMinX > rW + mOff;
 }
 `
+
+const DEGENERATE = /* wgsl */ `vec4f(0.0, 0.0, 0.0, 0.0)`
 
 export const fillVertexShader = /* wgsl */ `
 ${INSTANCE_STRUCT}
@@ -148,15 +110,24 @@ struct VOut {
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
-@group(0) @binding(1) var<storage, read> visible_indices: array<u32>;
-@group(0) @binding(2) var<uniform> uniforms: Uniforms;
+@group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
 ${HP_DIFF}
 ${HERMITE_EDGES}
+${CULL_CHECK}
 
 @vertex
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
-  let inst = instances[visible_indices[iid]];
+  let inst = instances[iid];
+
+  var out: VOut;
+  out.color = inst.color;
+  out.featureId = inst.featureId;
+
+  if (isCulled(inst)) {
+    out.pos = ${DEGENERATE};
+    return out;
+  }
 
 ${SCREEN_POSITIONS}
 
@@ -208,10 +179,7 @@ ${SCREEN_POSITIONS}
 
   let clipSpace = (vec2f(x, e.z) / uniforms.resolution) * 2.0 - 1.0;
 
-  var out: VOut;
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-  out.color = inst.color;
-  out.featureId = inst.featureId;
   return out;
 }
 
@@ -235,14 +203,14 @@ struct VOut {
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
-@group(0) @binding(1) var<storage, read> visible_indices: array<u32>;
-@group(0) @binding(2) var<uniform> uniforms: Uniforms;
+@group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
 ${HP_DIFF}
+${CULL_CHECK}
 
 @vertex
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
-  let inst = instances[visible_indices[iid]];
+  let inst = instances[iid];
 
   let segs = uniforms.edgeSegments;
   let segIdx = vid / 2u;
@@ -250,15 +218,20 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let t = f32(segIdx) / f32(segs);
   let side = select(1.0, -1.0, sideIdx == 1u);
 
-${SCREEN_POSITIONS}
-
-  let topDiff = screenX1 - screenX2;
-  let botDiff = screenX4 - screenX3;
-
   var out: VOut;
   out.color = inst.color;
   out.featureId = inst.featureId;
   out.dist = side;
+
+  if (isCulled(inst)) {
+    out.pos = ${DEGENERATE};
+    return out;
+  }
+
+${SCREEN_POSITIONS}
+
+  let topDiff = screenX1 - screenX2;
+  let botDiff = screenX4 - screenX3;
 
   if (topDiff * botDiff < 0.0) {
     out.pos = vec4f(2.0, 2.0, 2.0, 1.0);
@@ -330,50 +303,4 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   let edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
   return vec4f(in.color.rgb, in.color.a * uniforms.alpha * edgeAlpha);
 }
-`
-
-export const thinLineShader = /* wgsl */ `
-${INSTANCE_STRUCT}
-${UNIFORMS_STRUCT}
-
-const THIN_SEGS: u32 = ${THIN_LINE_SEGMENTS}u;
-
-struct VOut {
-  @builtin(position) pos: vec4f,
-  @location(0) color: vec4f,
-  @location(1) @interpolate(flat) featureId: f32,
-}
-
-@group(0) @binding(0) var<storage, read> instances: array<Instance>;
-@group(0) @binding(1) var<storage, read> visible_indices: array<u32>;
-@group(0) @binding(2) var<uniform> uniforms: Uniforms;
-
-${HP_DIFF}
-${HERMITE_EDGES}
-
-@vertex
-fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
-  let inst = instances[visible_indices[iid]];
-  let t = f32(vid) / f32(THIN_SEGS);
-
-${SCREEN_POSITIONS}
-
-  let e = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t, inst.isCurve);
-  let x = (e.x + e.y) * 0.5;
-
-  let clipSpace = (vec2f(x, e.z) / uniforms.resolution) * 2.0 - 1.0;
-
-  var out: VOut;
-  out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-  out.color = inst.color;
-  out.featureId = inst.featureId;
-  return out;
-}
-
-@fragment
-fn fs_main(in: VOut) -> @location(0) vec4f {
-  return vec4f(in.color.rgb, in.color.a * uniforms.alpha);
-}
-
-${FS_PICKING}
 `

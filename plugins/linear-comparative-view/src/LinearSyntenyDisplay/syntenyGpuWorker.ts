@@ -3,36 +3,23 @@ import {
   EDGE_VERTS_PER_INSTANCE,
   FILL_VERTS_PER_INSTANCE,
   INSTANCE_BYTE_SIZE,
-  THIN_LINE_VERTS_PER_INSTANCE,
-  cullComputeShader,
   edgeVertexShader,
   fillVertexShader,
-  thinLineShader,
 } from './syntenyShaders.ts'
 
 let device: GPUDevice | null = null
 let context: GPUCanvasContext | null = null
 let canvas: OffscreenCanvas | null = null
 
-let cullPipeline: GPUComputePipeline | null = null
 let fillPipeline: GPURenderPipeline | null = null
 let fillPickingPipeline: GPURenderPipeline | null = null
 let edgePipeline: GPURenderPipeline | null = null
-let thinLinePipeline: GPURenderPipeline | null = null
-let thinLinePickingPipeline: GPURenderPipeline | null = null
 
-let cullBindGroupLayout: GPUBindGroupLayout | null = null
 let renderBindGroupLayout: GPUBindGroupLayout | null = null
 
 let instanceBuffer: GPUBuffer | null = null
-let wideIndicesBuffer: GPUBuffer | null = null
-let thinIndicesBuffer: GPUBuffer | null = null
-let wideIndirectBuffer: GPUBuffer | null = null
-let thinIndirectBuffer: GPUBuffer | null = null
 let uniformBuffer: GPUBuffer | null = null
-let cullBindGroup: GPUBindGroup | null = null
-let wideRenderBindGroup: GPUBindGroup | null = null
-let thinRenderBindGroup: GPUBindGroup | null = null
+let renderBindGroup: GPUBindGroup | null = null
 
 let pickingTexture: GPUTexture | null = null
 let pickingStagingBuffer: GPUBuffer | null = null
@@ -52,66 +39,10 @@ const uniformData = new ArrayBuffer(UNIFORM_SIZE)
 const uniformF32 = new Float32Array(uniformData)
 const uniformU32 = new Uint32Array(uniformData)
 
-const wideIndirectClear = new Uint32Array([
-  FILL_VERTS_PER_INSTANCE,
-  0,
-  0,
-  0,
-  EDGE_VERTS_PER_INSTANCE,
-  0,
-  0,
-  0,
-])
-const thinIndirectClear = new Uint32Array([
-  THIN_LINE_VERTS_PER_INSTANCE,
-  0,
-  0,
-  0,
-  THIN_LINE_VERTS_PER_INSTANCE,
-  0,
-  0,
-  0,
-])
-
 function createPipelines() {
   if (!device) {
     return
   }
-
-  cullBindGroupLayout = device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'read-only-storage' },
-      },
-      {
-        binding: 1,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'storage' },
-      },
-      {
-        binding: 2,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'storage' },
-      },
-      {
-        binding: 3,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'storage' },
-      },
-      {
-        binding: 4,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'storage' },
-      },
-      {
-        binding: 5,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'uniform' },
-      },
-    ],
-  })
 
   renderBindGroupLayout = device.createBindGroupLayout({
     entries: [
@@ -122,26 +53,12 @@ function createPipelines() {
       },
       {
         binding: 1,
-        visibility: GPUShaderStage.VERTEX,
-        buffer: { type: 'read-only-storage' },
-      },
-      {
-        binding: 2,
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         buffer: { type: 'uniform' },
       },
     ],
   })
 
-  const cullModule = device.createShaderModule({ code: cullComputeShader })
-  cullPipeline = device.createComputePipeline({
-    layout: device.createPipelineLayout({
-      bindGroupLayouts: [cullBindGroupLayout],
-    }),
-    compute: { module: cullModule, entryPoint: 'main' },
-  })
-
-  const fillModule = device.createShaderModule({ code: fillVertexShader })
   const renderLayout = device.createPipelineLayout({
     bindGroupLayouts: [renderBindGroupLayout],
   })
@@ -159,6 +76,7 @@ function createPipelines() {
     },
   }
 
+  const fillModule = device.createShaderModule({ code: fillVertexShader })
   fillPipeline = device.createRenderPipeline({
     layout: renderLayout,
     vertex: { module: fillModule, entryPoint: 'vs_main' },
@@ -191,29 +109,6 @@ function createPipelines() {
       targets: [{ format: 'bgra8unorm', blend: blendState }],
     },
     primitive: { topology: 'triangle-strip' },
-  })
-
-  const thinModule = device.createShaderModule({ code: thinLineShader })
-  thinLinePipeline = device.createRenderPipeline({
-    layout: renderLayout,
-    vertex: { module: thinModule, entryPoint: 'vs_main' },
-    fragment: {
-      module: thinModule,
-      entryPoint: 'fs_main',
-      targets: [{ format: 'bgra8unorm', blend: blendState }],
-    },
-    primitive: { topology: 'line-strip' },
-  })
-
-  thinLinePickingPipeline = device.createRenderPipeline({
-    layout: renderLayout,
-    vertex: { module: thinModule, entryPoint: 'vs_main' },
-    fragment: {
-      module: thinModule,
-      entryPoint: 'fs_picking',
-      targets: [{ format: 'rgba8unorm' }],
-    },
-    primitive: { topology: 'line-strip' },
   })
 }
 
@@ -307,72 +202,24 @@ function interleaveInstances(
 }
 
 function rebuildBindGroups() {
-  if (
-    !device ||
-    !instanceBuffer ||
-    !wideIndicesBuffer ||
-    !thinIndicesBuffer ||
-    !wideIndirectBuffer ||
-    !thinIndirectBuffer ||
-    !uniformBuffer
-  ) {
+  if (!device || !instanceBuffer || !uniformBuffer) {
     return
   }
 
-  cullBindGroup = device.createBindGroup({
-    layout: cullBindGroupLayout!,
-    entries: [
-      { binding: 0, resource: { buffer: instanceBuffer } },
-      { binding: 1, resource: { buffer: wideIndicesBuffer } },
-      { binding: 2, resource: { buffer: thinIndicesBuffer } },
-      { binding: 3, resource: { buffer: wideIndirectBuffer } },
-      { binding: 4, resource: { buffer: thinIndirectBuffer } },
-      { binding: 5, resource: { buffer: uniformBuffer } },
-    ],
-  })
-
-  wideRenderBindGroup = device.createBindGroup({
+  renderBindGroup = device.createBindGroup({
     layout: renderBindGroupLayout!,
     entries: [
       { binding: 0, resource: { buffer: instanceBuffer } },
-      { binding: 1, resource: { buffer: wideIndicesBuffer } },
-      { binding: 2, resource: { buffer: uniformBuffer } },
+      { binding: 1, resource: { buffer: uniformBuffer } },
     ],
   })
-
-  thinRenderBindGroup = device.createBindGroup({
-    layout: renderBindGroupLayout!,
-    entries: [
-      { binding: 0, resource: { buffer: instanceBuffer } },
-      { binding: 1, resource: { buffer: thinIndicesBuffer } },
-      { binding: 2, resource: { buffer: uniformBuffer } },
-    ],
-  })
-}
-
-function clearIndirectBuffers() {
-  if (!device || !wideIndirectBuffer || !thinIndirectBuffer) {
-    return
-  }
-  device.queue.writeBuffer(wideIndirectBuffer, 0, wideIndirectClear)
-  device.queue.writeBuffer(thinIndirectBuffer, 0, thinIndirectClear)
-}
-
-function encodeCullPass(encoder: GPUCommandEncoder) {
-  const pass = encoder.beginComputePass()
-  pass.setPipeline(cullPipeline!)
-  pass.setBindGroup(0, cullBindGroup)
-  pass.dispatchWorkgroups(Math.ceil(instanceCount / 256))
-  pass.end()
 }
 
 function encodeDrawPass(
   encoder: GPUCommandEncoder,
   view: GPUTextureView,
   pipeline: GPURenderPipeline,
-  bindGroup: GPUBindGroup,
-  indirectBuffer: GPUBuffer,
-  indirectOffset: number,
+  vertexCount: number,
   loadOp: GPULoadOp,
   clearValue?: GPUColor,
 ) {
@@ -387,8 +234,8 @@ function encodeDrawPass(
     ],
   })
   pass.setPipeline(pipeline)
-  pass.setBindGroup(0, bindGroup)
-  pass.drawIndirect(indirectBuffer, indirectOffset)
+  pass.setBindGroup(0, renderBindGroup)
+  pass.draw(vertexCount, instanceCount)
   pass.end()
 }
 
@@ -502,36 +349,6 @@ self.onmessage = async (e: MessageEvent) => {
       })
       device.queue.writeBuffer(instanceBuffer, 0, interleaved)
 
-      const indexBufSize = Math.max(instanceCount * 4, 4)
-      wideIndicesBuffer?.destroy()
-      wideIndicesBuffer = device.createBuffer({
-        size: indexBufSize,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-      })
-      thinIndicesBuffer?.destroy()
-      thinIndicesBuffer = device.createBuffer({
-        size: indexBufSize,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-      })
-
-      // Each indirect buffer holds TWO indirect draw entries (32 bytes)
-      wideIndirectBuffer?.destroy()
-      wideIndirectBuffer = device.createBuffer({
-        size: 32,
-        usage:
-          GPUBufferUsage.STORAGE |
-          GPUBufferUsage.INDIRECT |
-          GPUBufferUsage.COPY_DST,
-      })
-      thinIndirectBuffer?.destroy()
-      thinIndirectBuffer = device.createBuffer({
-        size: 32,
-        usage:
-          GPUBufferUsage.STORAGE |
-          GPUBufferUsage.INDIRECT |
-          GPUBufferUsage.COPY_DST,
-      })
-
       rebuildBindGroups()
       pickingDirty = true
       break
@@ -547,14 +364,7 @@ self.onmessage = async (e: MessageEvent) => {
       ) {
         break
       }
-      if (
-        !cullBindGroup ||
-        !wideRenderBindGroup ||
-        !thinRenderBindGroup ||
-        !cullPipeline ||
-        !fillPipeline ||
-        !thinLinePipeline
-      ) {
+      if (!renderBindGroup || !fillPipeline) {
         break
       }
 
@@ -590,10 +400,7 @@ self.onmessage = async (e: MessageEvent) => {
       }
       pickingDirty = true
 
-      clearIndirectBuffers()
       const encoder = device.createCommandEncoder()
-      encodeCullPass(encoder)
-
       const tv = context.getCurrentTexture().createView()
       const white = { r: 1, g: 1, b: 1, a: 1 }
 
@@ -601,9 +408,7 @@ self.onmessage = async (e: MessageEvent) => {
         encoder,
         tv,
         fillPipeline,
-        wideRenderBindGroup,
-        wideIndirectBuffer!,
-        0,
+        FILL_VERTS_PER_INSTANCE,
         'clear',
         white,
       )
@@ -612,21 +417,10 @@ self.onmessage = async (e: MessageEvent) => {
           encoder,
           tv,
           edgePipeline,
-          wideRenderBindGroup,
-          wideIndirectBuffer!,
-          16,
+          EDGE_VERTS_PER_INSTANCE,
           'load',
         )
       }
-      encodeDrawPass(
-        encoder,
-        tv,
-        thinLinePipeline,
-        thinRenderBindGroup,
-        thinIndirectBuffer!,
-        0,
-        'load',
-      )
 
       device.queue.submit([encoder.finish()])
       break
@@ -644,14 +438,7 @@ self.onmessage = async (e: MessageEvent) => {
         self.postMessage({ type: 'pick-result', featureIndex: -1 })
         break
       }
-      if (
-        !fillPickingPipeline ||
-        !thinLinePickingPipeline ||
-        !cullPipeline ||
-        !cullBindGroup ||
-        !wideRenderBindGroup ||
-        !thinRenderBindGroup
-      ) {
+      if (!fillPickingPipeline || !renderBindGroup) {
         self.postMessage({ type: 'pick-result', featureIndex: -1 })
         break
       }
@@ -671,10 +458,7 @@ self.onmessage = async (e: MessageEvent) => {
           1,
         )
 
-        clearIndirectBuffers()
         const encoder = device.createCommandEncoder()
-        encodeCullPass(encoder)
-
         const pv = pickingTexture.createView()
         const transparent = { r: 0, g: 0, b: 0, a: 0 }
 
@@ -682,20 +466,9 @@ self.onmessage = async (e: MessageEvent) => {
           encoder,
           pv,
           fillPickingPipeline,
-          wideRenderBindGroup,
-          wideIndirectBuffer!,
-          0,
+          FILL_VERTS_PER_INSTANCE,
           'clear',
           transparent,
-        )
-        encodeDrawPass(
-          encoder,
-          pv,
-          thinLinePickingPipeline,
-          thinRenderBindGroup,
-          thinIndirectBuffer!,
-          16,
-          'load',
         )
 
         device.queue.submit([encoder.finish()])
@@ -733,10 +506,6 @@ self.onmessage = async (e: MessageEvent) => {
 
     case 'dispose': {
       instanceBuffer?.destroy()
-      wideIndicesBuffer?.destroy()
-      thinIndicesBuffer?.destroy()
-      wideIndirectBuffer?.destroy()
-      thinIndirectBuffer?.destroy()
       uniformBuffer?.destroy()
       pickingTexture?.destroy()
       pickingStagingBuffer?.destroy()
@@ -745,10 +514,6 @@ self.onmessage = async (e: MessageEvent) => {
       context = null
       canvas = null
       instanceBuffer = null
-      wideIndicesBuffer = null
-      thinIndicesBuffer = null
-      wideIndirectBuffer = null
-      thinIndirectBuffer = null
       uniformBuffer = null
       pickingTexture = null
       pickingStagingBuffer = null
