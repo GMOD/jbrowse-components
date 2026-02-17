@@ -11,7 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { SyntenyWebGPUProxy } from '../SyntenyWebGPUProxy.ts'
+import { SyntenyRenderer } from '../SyntenyRenderer.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
 import { getTooltip } from './util.ts'
 
@@ -147,10 +147,9 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       if (!canvas) {
         return
       }
-      const { rpcManager } = getSession(model)
-      const proxy = SyntenyWebGPUProxy.getOrCreate(canvas, rpcManager)
-      proxy.init(canvas).then(success => {
-        model.setGpuRenderer(proxy)
+      const renderer = SyntenyRenderer.getOrCreate(canvas)
+      renderer.init().then(success => {
+        model.setGpuRenderer(renderer)
         model.setGpuInitialized(success)
       })
     },

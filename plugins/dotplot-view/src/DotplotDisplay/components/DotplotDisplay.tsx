@@ -1,10 +1,10 @@
 import { useCallback, useRef } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { DotplotWebGPUProxy } from '../DotplotWebGPUProxy.ts'
+import { DotplotRenderer } from '../DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../../DotplotView/model.ts'
 import type { DotplotDisplayModel } from '../stateModelFactory.tsx'
@@ -24,10 +24,9 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
       if (!canvas) {
         return
       }
-      const { rpcManager } = getSession(model)
-      const proxy = DotplotWebGPUProxy.getOrCreate(canvas, rpcManager)
-      proxy.init(canvas).then(success => {
-        model.setGpuRenderer(proxy)
+      const renderer = DotplotRenderer.getOrCreate(canvas)
+      renderer.init().then(success => {
+        model.setGpuRenderer(renderer)
         model.setGpuInitialized(success)
       })
     },

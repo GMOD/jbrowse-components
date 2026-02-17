@@ -6,7 +6,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderBlockData } from './renderDotplotBlock.ts'
 
-import type { DotplotWebGPUProxy } from './DotplotWebGPUProxy.ts'
+import type { DotplotRenderer } from './DotplotRenderer.ts'
 import type { DotplotFeatPos } from './types.ts'
 import type {
   DotplotViewModel,
@@ -54,7 +54,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #volatile
            */
-          gpuRenderer: null as DotplotWebGPUProxy | null,
+          gpuRenderer: null as DotplotRenderer | null,
           /**
            * #volatile
            */
@@ -158,7 +158,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setGpuRenderer(renderer: DotplotWebGPUProxy | null) {
+      setGpuRenderer(renderer: DotplotRenderer | null) {
         self.gpuRenderer = renderer
       },
       /**

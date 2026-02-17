@@ -8,7 +8,6 @@ import LinearComparativeViewF from './LinearComparativeView/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
-import SyntenyGpuHandler from './SyntenyGpuHandler.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
@@ -36,7 +35,6 @@ export default class LinearComparativeViewPlugin extends Plugin {
     pluginManager.addRpcMethod(
       () => new SyntenyGetFeaturesAndPositions(pluginManager),
     )
-    pluginManager.addGpuHandler(() => new SyntenyGpuHandler(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

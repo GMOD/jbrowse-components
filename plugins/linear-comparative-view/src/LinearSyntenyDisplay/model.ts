@@ -5,7 +5,7 @@ import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 
-import type { SyntenyWebGPUProxy } from './SyntenyWebGPUProxy.ts'
+import type { SyntenyRenderer } from './SyntenyRenderer.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -131,7 +131,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #volatile
        */
-      gpuRenderer: null as SyntenyWebGPUProxy | null,
+      gpuRenderer: null as SyntenyRenderer | null,
 
       /**
        * #volatile
@@ -189,7 +189,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setGpuRenderer(renderer: SyntenyWebGPUProxy | null) {
+      setGpuRenderer(renderer: SyntenyRenderer | null) {
         self.gpuRenderer = renderer
       },
       /**

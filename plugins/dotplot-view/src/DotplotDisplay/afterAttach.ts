@@ -216,10 +216,9 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           lastRenderer = self.gpuRenderer
         }
 
-        const dpr = typeof globalThis.window !== 'undefined' ? globalThis.window.devicePixelRatio : 2
-        const resizeKey = `${viewWidth}-${viewHeight}-${dpr}`
+        const resizeKey = `${viewWidth}-${viewHeight}`
         if (resizeKey !== resizeSent) {
-          self.gpuRenderer.resize(viewWidth, viewHeight, dpr)
+          self.gpuRenderer.resize(viewWidth, viewHeight)
           resizeSent = resizeKey
         }
 

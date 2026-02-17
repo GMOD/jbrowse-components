@@ -6,7 +6,6 @@ import ComparativeRenderer from './ComparativeRenderer/index.ts'
 import DiagonalizeDotplotRpc from './DiagonalizeDotplotRpc.ts'
 import { DotplotGetWebGLGeometry } from './DotplotDisplay/DotplotGetWebGLGeometry.ts'
 import DotplotDisplayF from './DotplotDisplay/index.ts'
-import DotplotGpuHandler from './DotplotGpuHandler.ts'
 import DotplotReadVsRefMenuItem from './DotplotReadVsRef/index.ts'
 import DotplotRendererF from './DotplotRenderer/index.ts'
 import DotplotViewF from './DotplotView/index.ts'
@@ -31,7 +30,6 @@ export default class DotplotPlugin extends Plugin {
     pluginManager.addRpcMethod(() => new ComparativeRenderer(pluginManager))
     pluginManager.addRpcMethod(() => new DiagonalizeDotplotRpc(pluginManager))
     pluginManager.addRpcMethod(() => new DotplotGetWebGLGeometry(pluginManager))
-    pluginManager.addGpuHandler(() => new DotplotGpuHandler(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {
