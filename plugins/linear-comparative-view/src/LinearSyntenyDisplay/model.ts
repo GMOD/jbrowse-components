@@ -1,7 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
@@ -246,9 +245,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
 
       get parsedCigars() {
-        return self.featureData?.cigars.map(s =>
-          s ? parseCigar2(s) : [],
-        )
+        return self.featureData?.cigars.map(s => (s ? parseCigar2(s) : []))
       },
 
       /**

@@ -46,6 +46,6 @@ export {
   getLengthSansClipping,
   getMismatches,
   getTag,
-  parseCigar,
   parseCigar2,
+  parseCigar,
 } from './MismatchParser/index.ts'

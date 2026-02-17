@@ -10,13 +10,14 @@ const OP_N = 3
 const OP_EQ = 7
 const OP_X = 8
 
-function splitHiLo(values: Float64Array, count: number) {
-  const result = new Float32Array(count * 2)
+function toRelativeFloat32(
+  values: Float64Array,
+  count: number,
+  refOffset: number,
+) {
+  const result = new Float32Array(count)
   for (let i = 0; i < count; i++) {
-    const value = values[i]!
-    const hi = Math.fround(value)
-    result[i * 2] = hi
-    result[i * 2 + 1] = value - hi
+    result[i] = values[i]! - refOffset
   }
   return result
 }
@@ -47,11 +48,9 @@ const STRAND_POS: RGBA = [1, 0, 0, 1]
 const STRAND_NEG: RGBA = [0, 0, 1, 1]
 const DEFAULT_COLOR: RGBA = [1, 0, 0, 1]
 
-function createColorFunction(colorBy: string): (
-  strand: number,
-  refName: string,
-  index: number,
-) => RGBA {
+function createColorFunction(
+  colorBy: string,
+): (strand: number, refName: string, index: number) => RGBA {
   if (colorBy === 'strand') {
     return (strand: number) => (strand === -1 ? STRAND_NEG : STRAND_POS)
   }
@@ -146,6 +145,8 @@ export interface SyntenyInstanceData {
   nonCigarInstanceCount: number
   geometryBpPerPx0: number
   geometryBpPerPx1: number
+  refOffset0: number
+  refOffset1: number
 }
 
 export function executeSyntenyInstanceData({
@@ -169,6 +170,8 @@ export function executeSyntenyInstanceData({
   drawLocationMarkers,
   bpPerPxs,
   level,
+  viewOffsets,
+  viewWidth,
 }: {
   p11_offsetPx: Float64Array
   p12_offsetPx: Float64Array
@@ -190,6 +193,8 @@ export function executeSyntenyInstanceData({
   drawLocationMarkers: boolean
   bpPerPxs: number[]
   level: number
+  viewOffsets: number[]
+  viewWidth: number
 }): SyntenyInstanceData {
   const colorFn = createColorFunction(colorBy)
   const indelColors = buildIndelColors(colorBy)
@@ -310,7 +315,6 @@ export function executeSyntenyInstanceData({
       Math.floor(averageWidth / targetPixelSpacing) + 1,
     )
 
-    const lineHalfWidth = 0.25
     ensureCapacity(numMarkers)
 
     for (let step = 0; step < numMarkers; step++) {
@@ -318,15 +322,26 @@ export function executeSyntenyInstanceData({
       const markerTopX = topLeft + (topRight - topLeft) * t
       const markerBottomX = bottomLeft + (bottomRight - bottomLeft) * t
 
+      const screenTopX = markerTopX - viewOff0
+      const screenBottomX = markerBottomX - viewOff1
+      if (
+        screenTopX < -offScreenMargin ||
+        screenTopX > offScreenMargin ||
+        screenBottomX < -offScreenMargin ||
+        screenBottomX > offScreenMargin
+      ) {
+        continue
+      }
+
       addInstance(
-        markerTopX - lineHalfWidth,
-        markerTopX + lineHalfWidth,
-        markerBottomX + lineHalfWidth,
-        markerBottomX - lineHalfWidth,
+        markerTopX,
+        markerTopX,
+        markerBottomX,
+        markerBottomX,
         0,
         0,
         0,
-        0.5,
+        1,
         featureId,
         isCurve,
         qtl,
@@ -336,6 +351,9 @@ export function executeSyntenyInstanceData({
     }
   }
 
+  const viewOff0 = viewOffsets[level]!
+  const viewOff1 = viewOffsets[level + 1]!
+  const offScreenMargin = viewWidth + 1000
   const isCurve = drawCurves ? 1 : 0
   const fallbackBpPerPxInv0 = 1 / bpPerPxs[level]!
   const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
@@ -360,10 +378,7 @@ export function executeSyntenyInstanceData({
     const cigar = parsedCigars[i]!
     let willDrawCigar = false
     if (cigar.length > 0 && drawCIGAR) {
-      const featureWidth = Math.max(
-        Math.abs(x12 - x11),
-        Math.abs(x22 - x21),
-      )
+      const featureWidth = Math.max(Math.abs(x12 - x11), Math.abs(x22 - x21))
       if (featureWidth >= minCigarPxWidth) {
         willDrawCigar = true
       }
@@ -438,8 +453,8 @@ export function executeSyntenyInstanceData({
     let totalBpView0 = 0
     let totalBpView1 = 0
     let maxIndelLen = 0
-    for (let j = 0; j < cigar.length; j++) {
-      const packed = cigar[j]!
+    for (const element of cigar) {
+      const packed = element
       const len = packed >>> 4
       const op = packed & 0xf
       if (op === OP_M || op === OP_EQ || op === OP_X) {
@@ -457,12 +472,8 @@ export function executeSyntenyInstanceData({
         }
       }
     }
-    const pxPerBp0 =
-      totalBpView0 > 0 ? Math.abs(k2 - k1) / totalBpView0 : fallbackBpPerPxInv0
-    const pxPerBp1 =
-      totalBpView1 > 0
-        ? Math.abs(x22 - x21) / totalBpView1
-        : fallbackBpPerPxInv1
+    const pxPerBp0 = fallbackBpPerPxInv0
+    const pxPerBp1 = fallbackBpPerPxInv1
 
     if (maxIndelLen * Math.max(pxPerBp0, pxPerBp1) < 1) {
       const [cr, cg, cb, ca] = colorFn(strand, refName, i)
@@ -542,16 +553,17 @@ export function executeSyntenyInstanceData({
 
         const isIndel =
           resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
-        const [cr, cg, cb, ca] = drawCIGARMatchesOnly && isIndel
-          ? [0, 0, 0, 0]
-          : getCigarColorByOp(
-              resolvedOp,
-              indelColors,
-              colorFn,
-              strand,
-              refName,
-              i,
-            )
+        const [cr, cg, cb, ca] =
+          drawCIGARMatchesOnly && isIndel
+            ? [0, 0, 0, 0]
+            : getCigarColorByOp(
+                resolvedOp,
+                indelColors,
+                colorFn,
+                strand,
+                refName,
+                i,
+              )
         addInstance(
           px1,
           cx1,
@@ -568,7 +580,7 @@ export function executeSyntenyInstanceData({
           padBottom,
         )
 
-        if (drawLocationMarkers) {
+        if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
           addLocationMarkers(
             px1,
             cx1,
@@ -586,12 +598,14 @@ export function executeSyntenyInstanceData({
   }
 
   const instanceCount = idx
+  const refOffset0 = viewOffsets[level]!
+  const refOffset1 = viewOffsets[level + 1]!
 
   const result = {
-    x1: splitHiLo(x1s, instanceCount),
-    x2: splitHiLo(x2s, instanceCount),
-    x3: splitHiLo(x3s, instanceCount),
-    x4: splitHiLo(x4s, instanceCount),
+    x1: toRelativeFloat32(x1s, instanceCount, refOffset0),
+    x2: toRelativeFloat32(x2s, instanceCount, refOffset0),
+    x3: toRelativeFloat32(x3s, instanceCount, refOffset1),
+    x4: toRelativeFloat32(x4s, instanceCount, refOffset1),
     colors: colorsArr.subarray(0, instanceCount * 4),
     featureIds: featureIdsArr.subarray(0, instanceCount),
     isCurves: isCurvesArr.subarray(0, instanceCount),
@@ -602,6 +616,8 @@ export function executeSyntenyInstanceData({
     nonCigarInstanceCount,
     geometryBpPerPx0: bpPerPxs[level]!,
     geometryBpPerPx1: bpPerPxs[level + 1]!,
+    refOffset0,
+    refOffset1,
   }
 
   return result

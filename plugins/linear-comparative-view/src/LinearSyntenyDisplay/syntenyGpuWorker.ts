@@ -30,13 +30,15 @@ let instanceCount = 0
 let nonCigarInstanceCount = 0
 let geometryBpPerPx0 = 1
 let geometryBpPerPx1 = 1
+let refOffset0 = 0
+let refOffset1 = 0
 let canvasWidth = 0
 let canvasHeight = 0
 let logicalWidth = 0
 let logicalHeight = 0
 let dpr = 2
 
-const UNIFORM_SIZE = 80
+const UNIFORM_SIZE = 64
 const uniformData = new ArrayBuffer(UNIFORM_SIZE)
 const uniformF32 = new Float32Array(uniformData)
 const uniformU32 = new Uint32Array(uniformData)
@@ -128,10 +130,8 @@ function createPickingTexture() {
 
 function writeUniforms(
   height: number,
-  adjOff0Hi: number,
-  adjOff0Lo: number,
-  adjOff1Hi: number,
-  adjOff1Lo: number,
+  adjOff0: number,
+  adjOff1: number,
   scale0: number,
   scale1: number,
   maxOffScreenPx: number,
@@ -146,23 +146,19 @@ function writeUniforms(
   uniformF32[0] = logicalWidth
   uniformF32[1] = logicalHeight
   uniformF32[2] = height
-  uniformF32[3] = 0
-  uniformF32[4] = adjOff0Hi
-  uniformF32[5] = adjOff0Lo
-  uniformF32[6] = adjOff1Hi
-  uniformF32[7] = adjOff1Lo
-  uniformF32[8] = scale0
-  uniformF32[9] = scale1
-  uniformF32[10] = maxOffScreenPx
-  uniformF32[11] = minAlignmentLength
-  uniformF32[12] = alpha
-  uniformU32[13] = instanceCount
-  uniformU32[14] = FILL_SEGMENTS
-  uniformU32[15] = EDGE_SEGMENTS
-  uniformF32[16] = hoveredFeatureId
-  uniformF32[17] = clickedFeatureId
-  uniformF32[18] = 0
-  uniformF32[19] = 0
+  uniformF32[3] = adjOff0
+  uniformF32[4] = adjOff1
+  uniformF32[5] = scale0
+  uniformF32[6] = scale1
+  uniformF32[7] = maxOffScreenPx
+  uniformF32[8] = minAlignmentLength
+  uniformF32[9] = alpha
+  uniformU32[10] = instanceCount
+  uniformU32[11] = FILL_SEGMENTS
+  uniformU32[12] = EDGE_SEGMENTS
+  uniformF32[13] = hoveredFeatureId
+  uniformF32[14] = clickedFeatureId
+  uniformF32[15] = 0
   device.queue.writeBuffer(uniformBuffer, 0, uniformData)
 }
 
@@ -185,26 +181,22 @@ function interleaveInstances(
 
   for (let i = 0; i < n; i++) {
     const off = i * stride
-    f[off] = x1[i * 2]!
-    f[off + 1] = x1[i * 2 + 1]!
-    f[off + 2] = x2[i * 2]!
-    f[off + 3] = x2[i * 2 + 1]!
-    f[off + 4] = x3[i * 2]!
-    f[off + 5] = x3[i * 2 + 1]!
-    f[off + 6] = x4[i * 2]!
-    f[off + 7] = x4[i * 2 + 1]!
-    f[off + 8] = colors[i * 4]!
-    f[off + 9] = colors[i * 4 + 1]!
-    f[off + 10] = colors[i * 4 + 2]!
-    f[off + 11] = colors[i * 4 + 3]!
-    f[off + 12] = featureIds[i]!
-    f[off + 13] = isCurves[i]!
-    f[off + 14] = queryTotalLengths[i]!
-    f[off + 15] = padTops[i]!
-    f[off + 16] = padBottoms[i]!
-    f[off + 17] = 0
-    f[off + 18] = 0
-    f[off + 19] = 0
+    f[off] = x1[i]!
+    f[off + 1] = x2[i]!
+    f[off + 2] = x3[i]!
+    f[off + 3] = x4[i]!
+    f[off + 4] = colors[i * 4]!
+    f[off + 5] = colors[i * 4 + 1]!
+    f[off + 6] = colors[i * 4 + 2]!
+    f[off + 7] = colors[i * 4 + 3]!
+    f[off + 8] = featureIds[i]!
+    f[off + 9] = isCurves[i]!
+    f[off + 10] = queryTotalLengths[i]!
+    f[off + 11] = padTops[i]!
+    f[off + 12] = padBottoms[i]!
+    f[off + 13] = 0
+    f[off + 14] = 0
+    f[off + 15] = 0
   }
   return buf
 }
@@ -248,18 +240,10 @@ function encodeDrawPass(
   pass.end()
 }
 
-function computeHpOffsets(offset: number, scale: number) {
-  const adj = offset / scale
-  const hi = Math.fround(adj)
-  return { hi, lo: adj - hi }
-}
-
 let lastRenderParams = {
   height: 0,
-  adjOff0Hi: 0,
-  adjOff0Lo: 0,
-  adjOff1Hi: 0,
-  adjOff1Lo: 0,
+  adjOff0: 0,
+  adjOff1: 0,
   scale0: 1,
   scale1: 1,
   maxOffScreenPx: 300,
@@ -285,7 +269,14 @@ self.onmessage = async (e: MessageEvent) => {
           })
           return
         }
-        device = await adapter.requestDevice()
+        const adapterLimit =
+          adapter.limits.maxStorageBufferBindingSize ?? 134217728
+        device = await adapter.requestDevice({
+          requiredLimits: {
+            maxStorageBufferBindingSize: adapterLimit,
+            maxBufferSize: adapter.limits.maxBufferSize ?? 268435456,
+          },
+        })
         device.lost.then(info => {
           console.error('[WebGPU Worker] Device lost:', info.message)
           device = null
@@ -338,6 +329,8 @@ self.onmessage = async (e: MessageEvent) => {
       nonCigarInstanceCount = msg.nonCigarInstanceCount ?? msg.instanceCount
       geometryBpPerPx0 = msg.geometryBpPerPx0
       geometryBpPerPx1 = msg.geometryBpPerPx1
+      refOffset0 = msg.refOffset0 ?? 0
+      refOffset1 = msg.refOffset1 ?? 0
 
       const interleaved = interleaveInstances(
         msg.x1,
@@ -381,18 +374,16 @@ self.onmessage = async (e: MessageEvent) => {
 
       const scale0 = geometryBpPerPx0 / msg.curBpPerPx0
       const scale1 = geometryBpPerPx1 / msg.curBpPerPx1
-      const off0 = computeHpOffsets(msg.offset0, scale0)
-      const off1 = computeHpOffsets(msg.offset1, scale1)
+      const adjOff0 = msg.offset0 / scale0 - refOffset0
+      const adjOff1 = msg.offset1 / scale1 - refOffset1
 
       const hoveredFeatureId = msg.hoveredFeatureId ?? 0
       const clickedFeatureId = msg.clickedFeatureId ?? 0
 
       writeUniforms(
         msg.height,
-        off0.hi,
-        off0.lo,
-        off1.hi,
-        off1.lo,
+        adjOff0,
+        adjOff1,
         scale0,
         scale1,
         msg.maxOffScreenPx,
@@ -404,10 +395,8 @@ self.onmessage = async (e: MessageEvent) => {
 
       lastRenderParams = {
         height: msg.height,
-        adjOff0Hi: off0.hi,
-        adjOff0Lo: off0.lo,
-        adjOff1Hi: off1.hi,
-        adjOff1Lo: off1.lo,
+        adjOff0,
+        adjOff1,
         scale0,
         scale1,
         maxOffScreenPx: msg.maxOffScreenPx,
@@ -467,10 +456,8 @@ self.onmessage = async (e: MessageEvent) => {
         const p = lastRenderParams
         writeUniforms(
           p.height,
-          p.adjOff0Hi,
-          p.adjOff0Lo,
-          p.adjOff1Hi,
-          p.adjOff1Lo,
+          p.adjOff0,
+          p.adjOff1,
           p.scale0,
           p.scale1,
           p.maxOffScreenPx,

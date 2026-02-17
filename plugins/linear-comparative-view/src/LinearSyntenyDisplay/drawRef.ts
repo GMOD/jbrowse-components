@@ -180,7 +180,9 @@ export function drawRef(
               const letter = OP_TO_CIGAR_KEY[resolvedOp] || 'M'
 
               const isInsertionOrDeletion =
-                resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
+                resolvedOp === OP_I ||
+                resolvedOp === OP_D ||
+                resolvedOp === OP_N
               if (useStrandColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha

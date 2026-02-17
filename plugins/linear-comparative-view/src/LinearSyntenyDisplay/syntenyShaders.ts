@@ -1,4 +1,4 @@
-export const INSTANCE_BYTE_SIZE = 80
+export const INSTANCE_BYTE_SIZE = 64
 export const FILL_SEGMENTS = 16
 export const EDGE_SEGMENTS = 4
 export const FILL_VERTS_PER_INSTANCE = FILL_SEGMENTS * 6
@@ -6,7 +6,7 @@ export const EDGE_VERTS_PER_INSTANCE = 2 * EDGE_SEGMENTS * 6
 
 const INSTANCE_STRUCT = /* wgsl */ `
 struct Instance {
-  x1: vec2f, x2: vec2f, x3: vec2f, x4: vec2f,
+  x1: f32, x2: f32, x3: f32, x4: f32,
   color: vec4f,
   featureId: f32,
   isCurve: f32,
@@ -21,9 +21,8 @@ const UNIFORMS_STRUCT = /* wgsl */ `
 struct Uniforms {
   resolution: vec2f,
   height: f32,
-  _pad0: f32,
-  adjOff0: vec2f,
-  adjOff1: vec2f,
+  adjOff0: f32,
+  adjOff1: f32,
   scale0: f32,
   scale1: f32,
   maxOffScreenPx: f32,
@@ -35,21 +34,14 @@ struct Uniforms {
   hoveredFeatureId: f32,
   clickedFeatureId: f32,
   _pad1u: f32,
-  _pad2u: f32,
-}
-`
-
-const HP_DIFF = /* wgsl */ `
-fn hpDiff(a: vec2f, b: vec2f) -> f32 {
-  return (a.x - b.x) + (a.y - b.y);
 }
 `
 
 const SCREEN_POSITIONS = /* wgsl */ `
-  let screenX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let screenX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let screenX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
-  let screenX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+  let screenX1 = (inst.x1 - uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let screenX2 = (inst.x2 - uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let screenX3 = (inst.x3 - uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+  let screenX4 = (inst.x4 - uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
 `
 
 const HERMITE_EDGES = /* wgsl */ `
@@ -76,10 +68,10 @@ fn isCulled(inst: Instance) -> bool {
   if (uniforms.minAlignmentLength > 0.0 && inst.queryTotalLength < uniforms.minAlignmentLength) {
     return true;
   }
-  let topX1 = hpDiff(inst.x1, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let topX2 = hpDiff(inst.x2, uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
-  let botX3 = hpDiff(inst.x3, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
-  let botX4 = hpDiff(inst.x4, uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+  let topX1 = (inst.x1 - uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let topX2 = (inst.x2 - uniforms.adjOff0) * uniforms.scale0 - inst.padTop * (uniforms.scale0 - 1.0);
+  let botX3 = (inst.x3 - uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
+  let botX4 = (inst.x4 - uniforms.adjOff1) * uniforms.scale1 - inst.padBottom * (uniforms.scale1 - 1.0);
   let topMinX = min(topX1, topX2);
   let topMaxX = max(topX1, topX2);
   let botMinX = min(botX3, botX4);
@@ -107,7 +99,6 @@ struct VOut {
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
 @group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
-${HP_DIFF}
 ${HERMITE_EDGES}
 ${CULL_CHECK}
 
@@ -217,7 +208,6 @@ struct VOut {
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
 @group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
-${HP_DIFF}
 ${CULL_CHECK}
 
 const STROKE_WIDTH = 1.0;

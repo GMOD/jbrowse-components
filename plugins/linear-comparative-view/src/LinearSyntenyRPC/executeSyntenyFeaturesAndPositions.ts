@@ -4,10 +4,9 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
-
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
 
@@ -233,6 +232,8 @@ export async function executeSyntenyFeaturesAndPositions({
     drawLocationMarkers,
     bpPerPxs,
     level,
+    viewOffsets: viewSnaps.map(v => v.offsetPx),
+    viewWidth: viewSnaps[0]!.width,
   })
 
   const result = {

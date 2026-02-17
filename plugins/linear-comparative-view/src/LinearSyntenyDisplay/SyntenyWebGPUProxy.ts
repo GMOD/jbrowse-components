@@ -89,6 +89,8 @@ export class SyntenyWebGPUProxy {
         nonCigarInstanceCount: data.nonCigarInstanceCount,
         geometryBpPerPx0: data.geometryBpPerPx0,
         geometryBpPerPx1: data.geometryBpPerPx1,
+        refOffset0: data.refOffset0,
+        refOffset1: data.refOffset1,
       },
       transferables,
     )
