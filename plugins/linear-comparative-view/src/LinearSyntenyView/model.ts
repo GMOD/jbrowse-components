@@ -42,13 +42,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         type: types.literal('LinearSyntenyView'),
         /**
-         * #property/
+         * #property
          */
-        drawCIGAR: true,
-        /**
-         * #property/
-         */
-        drawCIGARMatchesOnly: false,
+        cigarMode: types.optional(
+          types.enumeration(['off', 'matches', 'full']),
+          'full',
+        ),
         /**
          * #property
          */
@@ -92,6 +91,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get hasSomethingToShow() {
         return self.views.length > 0 || !!self.init
+      },
+      /**
+       * #getter
+       */
+      get drawCIGAR() {
+        return self.cigarMode !== 'off'
+      },
+      /**
+       * #getter
+       */
+      get drawCIGARMatchesOnly() {
+        return self.cigarMode === 'matches'
       },
     }))
     .views(self => ({
@@ -138,14 +149,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDrawCIGAR(arg: boolean) {
-        self.drawCIGAR = arg
-      },
-      /**
-       * #action
-       */
-      setDrawCIGARMatchesOnly(arg: boolean) {
-        self.drawCIGARMatchesOnly = arg
+      setCigarMode(arg: 'off' | 'matches' | 'full') {
+        self.cigarMode = arg
       },
       /**
        * #action
@@ -254,28 +259,33 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
             },
             {
-              label: 'Show CIGAR insertions/deletions',
-              checked: self.drawCIGAR,
-              type: 'checkbox',
-              description:
-                'If disabled, only shows the broad scale CIGAR match',
-              onClick: () => {
-                self.setDrawCIGAR(!self.drawCIGAR)
-              },
-              helpText:
-                'CIGAR strings encode detailed alignment information including matches, insertions, and deletions. When enabled, this option visualizes the fine-scale variations in syntenic alignments. Disable this for a cleaner view that shows only broad syntenic blocks.',
-            },
-            {
-              label: 'Show CIGAR matches only',
-              checked: self.drawCIGARMatchesOnly,
-              type: 'checkbox',
-              description:
-                'If enabled, hides the insertions and deletions in the CIGAR strings',
-              onClick: () => {
-                self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
-              },
-              helpText:
-                'When comparing divergent genomes, showing all insertions and deletions can clutter the view. This option filters the CIGAR visualization to show only the matching regions, providing a cleaner view of conserved syntenic blocks while hiding small-scale indels.',
+              label: 'CIGAR display mode',
+              subMenu: [
+                {
+                  label: 'Colorize indels',
+                  type: 'radio',
+                  checked: self.cigarMode === 'full',
+                  onClick: () => {
+                    self.setCigarMode('full')
+                  },
+                },
+                {
+                  label: "Don't colorize indels",
+                  type: 'radio',
+                  checked: self.cigarMode === 'matches',
+                  onClick: () => {
+                    self.setCigarMode('matches')
+                  },
+                },
+                {
+                  label: "Don't draw CIGAR",
+                  type: 'radio',
+                  checked: self.cigarMode === 'off',
+                  onClick: () => {
+                    self.setCigarMode('off')
+                  },
+                },
+              ],
             },
             {
               label: 'Show curved lines',
@@ -469,6 +479,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      const s = snap as Record<string, unknown>
+      if ('drawCIGAR' in s || 'drawCIGARMatchesOnly' in s) {
+        const { drawCIGAR, drawCIGARMatchesOnly, ...rest } = s
+        const cigarMode = drawCIGAR === false ? 'off' : drawCIGARMatchesOnly ? 'matches' : 'full'
+        return { ...rest, cigarMode } as typeof snap
+      }
+      return snap
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
@@ -476,8 +495,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }
       const {
         init,
-        drawCIGAR,
-        drawCIGARMatchesOnly,
+        cigarMode,
         drawCurves,
         drawLocationMarkers,
         maxOffScreenDrawPx,
@@ -485,8 +503,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(!drawCIGAR ? { drawCIGAR } : {}),
-        ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
+        ...(cigarMode !== 'full' ? { cigarMode } : {}),
         ...(drawCurves ? { drawCurves } : {}),
         ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
         ...(maxOffScreenDrawPx !== 300 ? { maxOffScreenDrawPx } : {}),

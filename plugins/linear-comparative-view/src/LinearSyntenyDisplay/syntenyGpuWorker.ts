@@ -27,6 +27,7 @@ let pickingTexture: GPUTexture | null = null
 let pickingStagingBuffer: GPUBuffer | null = null
 
 let instanceCount = 0
+let nonCigarInstanceCount = 0
 let geometryBpPerPx0 = 1
 let geometryBpPerPx1 = 1
 let canvasWidth = 0
@@ -229,6 +230,7 @@ function encodeDrawPass(
   vertexCount: number,
   loadOp: GPULoadOp,
   clearValue?: GPUColor,
+  drawInstanceCount?: number,
 ) {
   const pass = encoder.beginRenderPass({
     colorAttachments: [
@@ -242,7 +244,7 @@ function encodeDrawPass(
   })
   pass.setPipeline(pipeline)
   pass.setBindGroup(0, renderBindGroup)
-  pass.draw(vertexCount, instanceCount)
+  pass.draw(vertexCount, drawInstanceCount ?? instanceCount)
   pass.end()
 }
 
@@ -333,6 +335,7 @@ self.onmessage = async (e: MessageEvent) => {
         break
       }
       instanceCount = msg.instanceCount
+      nonCigarInstanceCount = msg.nonCigarInstanceCount ?? msg.instanceCount
       geometryBpPerPx0 = msg.geometryBpPerPx0
       geometryBpPerPx1 = msg.geometryBpPerPx1
 
@@ -434,6 +437,8 @@ self.onmessage = async (e: MessageEvent) => {
           edgePipeline,
           EDGE_VERTS_PER_INSTANCE,
           'load',
+          undefined,
+          nonCigarInstanceCount,
         )
       }
 

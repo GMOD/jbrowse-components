@@ -106,8 +106,6 @@ function getCigarColorByOp(
   return colorFn(strand, refName, index)
 }
 
-const MAX_INSTANCE_COUNT = 500_000
-
 function estimateInstanceCount(
   featureCount: number,
   cigars: string[],
@@ -133,7 +131,7 @@ function estimateInstanceCount(
   if (drawLocationMarkers) {
     estimate *= 10
   }
-  return Math.min(estimate, MAX_INSTANCE_COUNT * 2)
+  return estimate
 }
 
 export interface SyntenyInstanceData {
@@ -232,7 +230,6 @@ export function executeSyntenyInstanceData({
   let padBottomsArr = new Float32Array(capacity)
 
   let idx = 0
-  let locationMarkersEnabled = drawLocationMarkers
 
   function ensureCapacity(needed: number) {
     if (idx + needed <= capacity) {
@@ -324,10 +321,6 @@ export function executeSyntenyInstanceData({
     ensureCapacity(numMarkers)
 
     for (let step = 0; step < numMarkers; step++) {
-      if (idx >= MAX_INSTANCE_COUNT) {
-        locationMarkersEnabled = false
-        return
-      }
       const t = step / numMarkers
       const markerTopX = topLeft + (topRight - topLeft) * t
       const markerBottomX = bottomLeft + (bottomRight - bottomLeft) * t
@@ -355,21 +348,10 @@ export function executeSyntenyInstanceData({
   const fallbackBpPerPxInv1 = 1 / bpPerPxs[level + 1]!
   const minCigarPxWidth = 4
 
-  // First loop: non-CIGAR instances (features too small for CIGAR or no CIGAR)
+  // First loop: emit a whole-polygon instance for every feature.
+  // Features that will get CIGAR detail are emitted with alpha=0 (invisible
+  // in the fill pass but still usable by the edge/outline pass).
   for (let i = 0; i < featureCount; i++) {
-    if (idx >= MAX_INSTANCE_COUNT) {
-      break
-    }
-    const cigar = parsedCigars[i]!
-    if (cigar.length > 0 && drawCIGAR) {
-      const featureWidth = Math.max(
-        Math.abs(p12_offsetPx[i]! - p11_offsetPx[i]!),
-        Math.abs(p22_offsetPx[i]! - p21_offsetPx[i]!),
-      )
-      if (featureWidth >= minCigarPxWidth) {
-        continue
-      }
-    }
     const x11 = p11_offsetPx[i]!
     const x12 = p12_offsetPx[i]!
     const x21 = p21_offsetPx[i]!
@@ -382,6 +364,18 @@ export function executeSyntenyInstanceData({
     const padTop = padTopArr[i]!
     const padBottom = padBottomArr[i]!
 
+    const cigar = parsedCigars[i]!
+    let willDrawCigar = false
+    if (cigar.length > 0 && drawCIGAR) {
+      const featureWidth = Math.max(
+        Math.abs(x12 - x11),
+        Math.abs(x22 - x21),
+      )
+      if (featureWidth >= minCigarPxWidth) {
+        willDrawCigar = true
+      }
+    }
+
     const [cr, cg, cb, ca] = colorFn(strand, refName, i)
     addInstance(
       x11,
@@ -391,7 +385,7 @@ export function executeSyntenyInstanceData({
       cr,
       cg,
       cb,
-      ca,
+      willDrawCigar ? 0 : ca,
       featureId,
       isCurve,
       qtl,
@@ -399,7 +393,7 @@ export function executeSyntenyInstanceData({
       padBottom,
     )
 
-    if (locationMarkersEnabled) {
+    if (!willDrawCigar && drawLocationMarkers) {
       addLocationMarkers(
         x11,
         x12,
@@ -418,9 +412,6 @@ export function executeSyntenyInstanceData({
 
   // Second loop: CIGAR instances (using cached parsed CIGARs)
   for (let i = 0; i < featureCount; i++) {
-    if (idx >= MAX_INSTANCE_COUNT) {
-      break
-    }
     const cigar = parsedCigars[i]!
     if (!(cigar.length > 0 && drawCIGAR)) {
       continue
@@ -497,7 +488,7 @@ export function executeSyntenyInstanceData({
         padTop,
         padBottom,
       )
-      if (locationMarkersEnabled) {
+      if (drawLocationMarkers) {
         addLocationMarkers(
           x11,
           x12,
@@ -520,9 +511,6 @@ export function executeSyntenyInstanceData({
     let px2 = 0
 
     for (let j = 0; j < cigar.length; j++) {
-      if (idx >= MAX_INSTANCE_COUNT) {
-        break
-      }
       const packed = cigar[j]!
       const len = packed >>> 4
       const op = packed & 0xf
@@ -559,18 +547,18 @@ export function executeSyntenyInstanceData({
         const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
         continuingFlag = false
 
-        if (drawCIGARMatchesOnly && resolvedOp !== OP_M) {
-          continue
-        }
-
-        const [cr, cg, cb, ca] = getCigarColorByOp(
-          resolvedOp,
-          colorBy,
-          colorFn,
-          strand,
-          refName,
-          i,
-        )
+        const isIndel =
+          resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
+        const [cr, cg, cb, ca] = drawCIGARMatchesOnly && isIndel
+          ? [0, 0, 0, 0]
+          : getCigarColorByOp(
+              resolvedOp,
+              colorBy,
+              colorFn,
+              strand,
+              refName,
+              i,
+            )
         addInstance(
           px1,
           cx1,
@@ -587,7 +575,7 @@ export function executeSyntenyInstanceData({
           padBottom,
         )
 
-        if (locationMarkersEnabled) {
+        if (drawLocationMarkers) {
           addLocationMarkers(
             px1,
             cx1,
