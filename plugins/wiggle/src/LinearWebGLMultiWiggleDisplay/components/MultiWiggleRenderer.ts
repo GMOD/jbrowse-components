@@ -4,9 +4,18 @@ import {
   MULTI_INSTANCE_STRIDE,
   multiWiggleShader,
 } from './multiWiggleShaders.ts'
+import { WebGLMultiWiggleRenderer } from './WebGLMultiWiggleRenderer.ts'
+
+import type { MultiRenderingType } from './WebGLMultiWiggleRenderer.ts'
 
 const MULTI_UNIFORM_SIZE = 48
 const MULTI_INSTANCE_BYTES = MULTI_INSTANCE_STRIDE * 4
+
+const RENDERING_TYPE_MAP: Record<number, MultiRenderingType> = {
+  0: 'multirowxy',
+  1: 'multirowdensity',
+  2: 'multirowline',
+}
 
 interface GpuRegionData {
   regionStart: number
@@ -56,6 +65,7 @@ export class MultiWiggleRenderer {
   private uniformI32 = new Int32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, GpuRegionData>()
+  private glFallback: WebGLMultiWiggleRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -157,7 +167,12 @@ export class MultiWiggleRenderer {
   async init() {
     const device = await MultiWiggleRenderer.ensureDevice()
     if (!device) {
-      return false
+      try {
+        this.glFallback = new WebGLMultiWiggleRenderer(this.canvas)
+        return true
+      } catch {
+        return false
+      }
     }
 
     this.context = this.canvas.getContext('webgpu')!
@@ -180,6 +195,11 @@ export class MultiWiggleRenderer {
     regionStart: number,
     sources: SourceRenderData[],
   ) {
+    if (this.glFallback) {
+      this.glFallback.uploadForRegion(regionNumber, regionStart, sources)
+      return
+    }
+
     const device = MultiWiggleRenderer.device
     if (!device || !MultiWiggleRenderer.bindGroupLayout || !this.uniformBuffer) {
       return
@@ -223,6 +243,11 @@ export class MultiWiggleRenderer {
   }
 
   pruneRegions(activeRegions: number[]) {
+    if (this.glFallback) {
+      this.glFallback.pruneStaleRegions(new Set(activeRegions))
+      return
+    }
+
     const active = new Set<number>(activeRegions)
     for (const [num, region] of this.regions) {
       if (!active.has(num)) {
@@ -236,6 +261,18 @@ export class MultiWiggleRenderer {
     blocks: MultiWiggleRenderBlock[],
     renderState: MultiWiggleGPURenderState,
   ) {
+    if (this.glFallback) {
+      this.glFallback.renderBlocks(blocks, {
+        domainY: renderState.domainY,
+        scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
+        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'multirowxy',
+        rowPadding: renderState.rowPadding,
+        canvasWidth: renderState.canvasWidth,
+        canvasHeight: renderState.canvasHeight,
+      })
+      return
+    }
+
     const device = MultiWiggleRenderer.device
     if (!device || !MultiWiggleRenderer.fillPipeline || !this.context) {
       return
@@ -318,6 +355,19 @@ export class MultiWiggleRenderer {
     bpRangeX: [number, number],
     renderState: MultiWiggleGPURenderState,
   ) {
+    if (this.glFallback) {
+      this.glFallback.render({
+        bpRangeX,
+        domainY: renderState.domainY,
+        scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
+        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'multirowxy',
+        rowPadding: renderState.rowPadding,
+        canvasWidth: renderState.canvasWidth,
+        canvasHeight: renderState.canvasHeight,
+      })
+      return
+    }
+
     const device = MultiWiggleRenderer.device
     if (!device || !MultiWiggleRenderer.fillPipeline || !this.context) {
       return
@@ -378,6 +428,11 @@ export class MultiWiggleRenderer {
   }
 
   dispose() {
+    if (this.glFallback) {
+      this.glFallback.destroy()
+      this.glFallback = null
+      return
+    }
     for (const region of this.regions.values()) {
       region.instanceBuffer.destroy()
     }

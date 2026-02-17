@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
+
 const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
 const HP_WGSL = `
@@ -386,6 +388,7 @@ export class CanvasFeatureRenderer {
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, GpuRegionData>()
+  private glFallback: WebGLFeatureRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -513,7 +516,12 @@ export class CanvasFeatureRenderer {
   async init() {
     const device = await CanvasFeatureRenderer.ensureDevice()
     if (!device) {
-      return false
+      try {
+        this.glFallback = new WebGLFeatureRenderer(this.canvas)
+        return true
+      } catch {
+        return false
+      }
     }
 
     this.context = this.canvas.getContext('webgpu')!
@@ -553,6 +561,10 @@ export class CanvasFeatureRenderer {
       numArrows: number
     },
   ) {
+    if (this.glFallback) {
+      this.glFallback.uploadForRegion(regionNumber, data)
+      return
+    }
     const device = CanvasFeatureRenderer.device
     if (!device || !CanvasFeatureRenderer.bindGroupLayout || !this.uniformBuffer) {
       return
@@ -630,6 +642,10 @@ export class CanvasFeatureRenderer {
     blocks: FeatureRenderBlock[],
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },
   ) {
+    if (this.glFallback) {
+      this.glFallback.renderBlocks(blocks, state)
+      return
+    }
     const device = CanvasFeatureRenderer.device
     if (!device || !CanvasFeatureRenderer.rectPipeline || !this.context) {
       return
@@ -742,6 +758,10 @@ export class CanvasFeatureRenderer {
   }
 
   pruneStaleRegions(activeRegions: number[]) {
+    if (this.glFallback) {
+      this.glFallback.pruneStaleRegions(new Set(activeRegions))
+      return
+    }
     const active = new Set<number>(activeRegions)
     for (const [num, region] of this.regions) {
       if (!active.has(num)) {
@@ -752,6 +772,11 @@ export class CanvasFeatureRenderer {
   }
 
   dispose() {
+    if (this.glFallback) {
+      this.glFallback.destroy()
+      this.glFallback = null
+      return
+    }
     for (const region of this.regions.values()) {
       this.destroyRegion(region)
     }

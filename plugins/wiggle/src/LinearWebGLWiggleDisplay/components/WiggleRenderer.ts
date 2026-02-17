@@ -4,9 +4,18 @@ import {
   INSTANCE_STRIDE,
   wiggleShader,
 } from './wiggleShaders.ts'
+import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
+
+import type { RenderingType } from './WebGLWiggleRenderer.ts'
 
 const UNIFORM_SIZE = 96
 const INSTANCE_BYTES = INSTANCE_STRIDE * 4
+
+const RENDERING_TYPE_MAP: Record<number, RenderingType> = {
+  0: 'xyplot',
+  1: 'density',
+  2: 'line',
+}
 
 interface GpuRegionData {
   regionStart: number
@@ -52,6 +61,7 @@ export class WiggleRenderer {
   private uniformI32 = new Int32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, GpuRegionData>()
+  private glFallback: WebGLWiggleRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -153,7 +163,12 @@ export class WiggleRenderer {
   async init() {
     const device = await WiggleRenderer.ensureDevice()
     if (!device) {
-      return false
+      try {
+        this.glFallback = new WebGLWiggleRenderer(this.canvas)
+        return true
+      } catch {
+        return false
+      }
     }
 
     this.context = this.canvas.getContext('webgpu')!
@@ -180,6 +195,11 @@ export class WiggleRenderer {
       numFeatures: number
     },
   ) {
+    if (this.glFallback) {
+      this.glFallback.uploadForRegion(regionNumber, data)
+      return
+    }
+
     const device = WiggleRenderer.device
     if (!device || !WiggleRenderer.bindGroupLayout || !this.uniformBuffer) {
       return
@@ -221,6 +241,11 @@ export class WiggleRenderer {
   }
 
   pruneRegions(activeRegions: number[]) {
+    if (this.glFallback) {
+      this.glFallback.pruneStaleRegions(new Set(activeRegions))
+      return
+    }
+
     const active = new Set<number>(activeRegions)
     for (const [num, region] of this.regions) {
       if (!active.has(num)) {
@@ -231,6 +256,22 @@ export class WiggleRenderer {
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
+    if (this.glFallback) {
+      this.glFallback.renderBlocks(blocks, {
+        domainY: renderState.domainY,
+        scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
+        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
+        useBicolor: renderState.useBicolor === 1,
+        bicolorPivot: renderState.bicolorPivot,
+        color: renderState.color,
+        posColor: renderState.posColor,
+        negColor: renderState.negColor,
+        canvasWidth: renderState.canvasWidth,
+        canvasHeight: renderState.canvasHeight,
+      })
+      return
+    }
+
     const device = WiggleRenderer.device
     if (!device || !WiggleRenderer.fillPipeline || !this.context) {
       return
@@ -309,6 +350,23 @@ export class WiggleRenderer {
   }
 
   renderSingle(bpRangeX: [number, number], renderState: WiggleGPURenderState) {
+    if (this.glFallback) {
+      this.glFallback.render({
+        bpRangeX,
+        domainY: renderState.domainY,
+        scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
+        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
+        useBicolor: renderState.useBicolor === 1,
+        bicolorPivot: renderState.bicolorPivot,
+        color: renderState.color,
+        posColor: renderState.posColor,
+        negColor: renderState.negColor,
+        canvasWidth: renderState.canvasWidth,
+        canvasHeight: renderState.canvasHeight,
+      })
+      return
+    }
+
     const device = WiggleRenderer.device
     if (!device || !WiggleRenderer.fillPipeline || !this.context) {
       return
@@ -368,6 +426,11 @@ export class WiggleRenderer {
   }
 
   dispose() {
+    if (this.glFallback) {
+      this.glFallback.destroy()
+      this.glFallback = null
+      return
+    }
     for (const region of this.regions.values()) {
       region.instanceBuffer.destroy()
     }
