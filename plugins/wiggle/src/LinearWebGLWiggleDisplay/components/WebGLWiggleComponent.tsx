@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  getContainingView,
-  setupWebGLContextLossHandler,
-} from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
+import { WiggleWebGPUProxy } from './WiggleWebGPUProxy.ts'
 import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
-import type { RenderingType, WiggleRenderBlock } from './WebGLWiggleRenderer.ts'
+import type { WiggleGPURenderState } from './WiggleWebGPUProxy.ts'
+import type { WiggleRenderBlock } from './WebGLWiggleRenderer.ts'
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -35,105 +33,97 @@ export interface WiggleDisplayModel {
   scalebarOverlapLeft: number
 }
 
+function renderingTypeToInt(type: string) {
+  if (type === 'density') {
+    return 1
+  }
+  if (type === 'line') {
+    return 2
+  }
+  return 0
+}
+
+function makeRenderState(model: WiggleDisplayModel, width: number): WiggleGPURenderState {
+  const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
+  return {
+    domainY: model.domain!,
+    scaleType: model.scaleType === 'log' ? 1 : 0,
+    renderingType: renderingTypeToInt(model.renderingType),
+    useBicolor: useBicolor ? 1 : 0,
+    bicolorPivot: model.bicolorPivot,
+    color: parseColor(model.color),
+    posColor: parseColor(model.posColor),
+    negColor: parseColor(model.negColor),
+    canvasWidth: width,
+    canvasHeight: model.height,
+  }
+}
+
 const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   model,
 }: {
   model: WiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rafRef = useRef<number | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const proxyRef = useRef<WiggleWebGPUProxy | null>(null)
+  const [ready, setReady] = useState(false)
 
   const view = getContainingView(model) as LGV
 
-  const rendererRef = useRef<WebGLWiggleRenderer | null>(null)
-  const [contextVersion, setContextVersion] = useState(0)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
-    }
-    return undefined
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
+  const canvasRefCallback = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!canvas) {
       return
     }
-    try {
-      rendererRef.current = new WebGLWiggleRenderer(canvas)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-    }
-    return () => {
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-    }
-  }, [contextVersion])
+    canvasRef.current = canvas
+    const proxy = WiggleWebGPUProxy.getOrCreate(canvas)
+    proxyRef.current = proxy
+    proxy.init(canvas).then(ok => {
+      if (!ok) {
+        setError('WebGPU initialization failed')
+      } else {
+        setReady(true)
+      }
+    })
+  }, [])
 
-  // Upload data when rpcDataMap changes
   useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer) {
+    const proxy = proxyRef.current
+    if (!proxy || !ready) {
       return
     }
 
     const dataMap = model.rpcDataMap
     if (dataMap.size === 0) {
-      renderer.clearAllBuffers()
+      proxy.pruneRegions([])
       return
     }
 
-    const activeRegions = new Set<number>()
+    const activeRegions: number[] = []
     for (const [regionNumber, data] of dataMap) {
-      activeRegions.add(regionNumber)
-      renderer.uploadForRegion(regionNumber, {
+      activeRegions.push(regionNumber)
+      proxy.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
         featurePositions: data.featurePositions,
         featureScores: data.featureScores,
         numFeatures: data.numFeatures,
       })
     }
-    renderer.pruneStaleRegions(activeRegions)
-  }, [model.rpcDataMap, contextVersion])
+    proxy.pruneRegions(activeRegions)
+  }, [model.rpcDataMap, ready])
 
-  // Render with explicit domain (for immediate rendering during interaction)
   const renderWithDomain = useCallback(
     (bpRangeX: [number, number]) => {
-      const renderer = rendererRef.current
-      if (!renderer) {
-        return
-      }
-      const domain = model.domain
-      if (!domain) {
+      const proxy = proxyRef.current
+      if (!proxy || !ready || !model.domain) {
         return
       }
       const width = Math.round(view.width)
-      const height = model.height
-      const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
-
-      renderer.render({
-        bpRangeX,
-        domainY: domain,
-        scaleType: model.scaleType as 'linear' | 'log',
-        color: parseColor(model.color),
-        posColor: parseColor(model.posColor),
-        negColor: parseColor(model.negColor),
-        bicolorPivot: model.bicolorPivot,
-        useBicolor,
-        canvasWidth: width,
-        canvasHeight: height,
-        renderingType: model.renderingType as RenderingType,
-      })
+      proxy.renderSingle(bpRangeX, makeRenderState(model, width))
     },
-    [model, view],
+    [model, view, ready],
   )
 
-  // Use the shared interaction hook for pan/zoom
   const {
     handleMouseDown,
     handleMouseMove,
@@ -146,10 +136,9 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     onRender: renderWithDomain,
   })
 
-  // Render when state changes (on-demand rendering instead of continuous loop)
   useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
+    const proxy = proxyRef.current
+    if (!proxy || !ready || !view.initialized || !model.domain) {
       return
     }
 
@@ -158,58 +147,18 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
 
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-
-    const domain = model.domain
-    if (!domain) {
-      return
-    }
-
     const width = Math.round(view.width)
-    const height = model.height
 
-    const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
+    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
+      regionNumber: vr.regionNumber,
+      bpRangeX: [vr.start, vr.end] as [number, number],
+      screenStartPx: vr.screenStartPx,
+      screenEndPx: vr.screenEndPx,
+    }))
 
-    // Build blocks from visibleRegions
-    const blocks: WiggleRenderBlock[] = []
-    for (const vr of visibleRegions) {
-      blocks.push({
-        regionNumber: vr.regionNumber,
-        bpRangeX: [vr.start, vr.end],
-        screenStartPx: vr.screenStartPx,
-        screenEndPx: vr.screenEndPx,
-      })
-    }
-
-    // Set canvas size
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width
-      canvas.height = height
-    }
-
-    rafRef.current = requestAnimationFrame(() => {
-      renderer.renderBlocks(blocks, {
-        domainY: domain,
-        scaleType: model.scaleType as 'linear' | 'log',
-        color: parseColor(model.color),
-        posColor: parseColor(model.posColor),
-        negColor: parseColor(model.negColor),
-        bicolorPivot: model.bicolorPivot,
-        useBicolor,
-        canvasWidth: width,
-        canvasHeight: height,
-        renderingType: model.renderingType as RenderingType,
-      })
+    requestAnimationFrame(() => {
+      proxy.renderBlocks(blocks, makeRenderState(model, width))
     })
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-    }
   }, [
     model,
     model.rpcDataMap,
@@ -223,7 +172,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     view.width,
     view.offsetPx,
     view.bpPerPx,
-    contextVersion,
+    ready,
   ])
 
   const width = Math.round(view.width)
@@ -233,7 +182,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   if (error) {
     return (
       <div style={{ width, height, color: 'red', padding: 10 }}>
-        WebGL Error: {error}
+        WebGPU Error: {error}
       </div>
     )
   }
@@ -249,7 +198,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvasRef}
+        ref={canvasRefCallback}
         style={{
           width,
           height,
