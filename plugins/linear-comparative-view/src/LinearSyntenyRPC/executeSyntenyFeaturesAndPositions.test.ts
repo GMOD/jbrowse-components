@@ -1,5 +1,6 @@
-import { bpToPx } from './executeSyntenyFeaturesAndPositions.ts'
 import calculateBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+
+import { bpToPx } from './executeSyntenyFeaturesAndPositions.ts'
 
 function makeViewSnap(
   regions: { refName: string; start: number; end: number }[],

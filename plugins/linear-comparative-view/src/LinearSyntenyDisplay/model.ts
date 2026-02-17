@@ -4,8 +4,8 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 
-import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyWebGPUProxy } from './SyntenyWebGPUProxy.ts'
+import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'

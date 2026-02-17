@@ -1,13 +1,13 @@
 /// <reference types="@webgpu/types" />
 import {
-  cullComputeShader,
-  fillVertexShader,
-  edgeVertexShader,
-  thinLineShader,
-  INSTANCE_BYTE_SIZE,
-  FILL_VERTS_PER_INSTANCE,
   EDGE_VERTS_PER_INSTANCE,
+  FILL_VERTS_PER_INSTANCE,
+  INSTANCE_BYTE_SIZE,
   THIN_LINE_VERTS_PER_INSTANCE,
+  cullComputeShader,
+  edgeVertexShader,
+  fillVertexShader,
+  thinLineShader,
 } from './syntenyShaders.ts'
 
 let device: GPUDevice | null = null
@@ -276,7 +276,7 @@ function clearIndirectBuffers() {
 function encodeCullPass(encoder: GPUCommandEncoder) {
   const pass = encoder.beginComputePass()
   pass.setPipeline(cullPipeline!)
-  pass.setBindGroup(0, cullBindGroup!)
+  pass.setBindGroup(0, cullBindGroup)
   pass.dispatchWorkgroups(Math.ceil(instanceCount / 256))
   pass.end()
 }
@@ -339,7 +339,7 @@ self.onmessage = async (e: MessageEvent) => {
           device = null
         })
 
-        context = canvas.getContext('webgpu') as GPUCanvasContext
+        context = canvas.getContext('webgpu')!
         context.configure({ device, format: 'bgra8unorm', alphaMode: 'opaque' })
 
         uniformBuffer = device.createBuffer({

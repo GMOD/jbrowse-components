@@ -5,7 +5,7 @@ export const THIN_LINE_SEGMENTS = 8
 export const FILL_VERTS_PER_INSTANCE = FILL_SEGMENTS * 6
 export const EDGE_VERTS_PER_INSTANCE = (EDGE_SEGMENTS + 1) * 2
 export const THIN_LINE_VERTS_PER_INSTANCE = THIN_LINE_SEGMENTS + 1
-export const THIN_WIDTH_THRESHOLD = 4.0
+export const THIN_WIDTH_THRESHOLD = 4
 
 const INSTANCE_STRUCT = /* wgsl */ `
 struct Instance {
