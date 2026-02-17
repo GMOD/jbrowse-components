@@ -952,12 +952,15 @@ export class AlignmentsRenderer {
     const device = AlignmentsRenderer.device!
     const bpLen = block.bpRangeX[1] - block.bpRangeX[0]
     const blockW = block.screenEndPx - block.screenStartPx
+    this.uF32[U_CANVAS_W] = state.canvasWidth
     this.uF32[U_BLOCK_START_PX] = block.screenStartPx
     this.uF32[U_BLOCK_WIDTH] = blockW
     this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
     this.uF32[U_GRADIENT_HUE] = 0
     const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
     this.uF32[U_BP_HI] = hi; this.uF32[U_BP_LO] = lo; this.uF32[U_BP_LEN] = bpLen
+    this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
+    this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
     device.queue.writeBuffer(this.uBuf!, 0, this.uData)
 
     if (r.arcBG && r.arcCount > 0) {
@@ -977,15 +980,20 @@ export class AlignmentsRenderer {
     const device = AlignmentsRenderer.device!
     const bpLen = block.bpRangeX[1] - block.bpRangeX[0]
     const blockW = block.screenEndPx - block.screenStartPx
+    this.uF32[U_CANVAS_W] = state.canvasWidth
     this.uF32[U_BLOCK_START_PX] = block.screenStartPx
     this.uF32[U_BLOCK_WIDTH] = blockW
     const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
     this.uF32[U_BP_HI] = hi; this.uF32[U_BP_LO] = lo; this.uF32[U_BP_LEN] = bpLen
+    this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
+    this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
+    this.uF32[U_COV_OFFSET] = state.showCoverage ? state.coverageYOffset : 0
     device.queue.writeBuffer(this.uBuf!, 0, this.uData)
 
     pass.setPipeline(AlignmentsRenderer.sashimiPL!)
     pass.setBindGroup(0, r.sashimiBG)
     pass.draw((ARC_CURVE_SEGMENTS + 1) * 2, r.sashimiCount)
+    this.uF32[U_COV_OFFSET] = state.showCoverage ? state.coverageHeight : 0
   }
 
   private drawConnectingLines(pass: GPURenderPassEncoder, r: GpuRegion) {

@@ -51,7 +51,7 @@ fn eval_arc(t: f32, inst: ArcInst) -> vec2f {
     x_bp = mt3*inst.x1 + 3.0*mt2*t*inst.x1 + 3.0*mt*t2*inst.x2 + t3*inst.x2;
     y_px = 3.0*mt2*t*dest_y + 3.0*mt*t2*dest_y;
   }
-  let screen_x = uf(24u) + (x_bp - uf(0u)) * px_per_bp;
+  let screen_x = uf(24u) + (x_bp - uf(30u)) * px_per_bp;
   return vec2f(screen_x, y_px);
 }
 
@@ -151,7 +151,7 @@ fn eval_sashimi(t: f32, inst: SashimiInst) -> vec2f {
   let dest_y = ch * (0.8 / 0.75);
   let y_px = 3.0*mt2*t*dest_y + 3.0*mt*t2*dest_y;
   let px_per_bp = uf(25u) / uf(2u);
-  let screen_x = uf(24u) + (x_bp - uf(0u)) * px_per_bp;
+  let screen_x = uf(24u) + (x_bp - uf(30u)) * px_per_bp;
   return vec2f(screen_x, 0.9 * ch - y_px);
 }
 
