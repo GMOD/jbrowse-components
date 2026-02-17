@@ -1,6 +1,5 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { colorSchemes } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
@@ -42,68 +41,66 @@ const category10Normalized = category10.map(hex => {
   return [r / 255, g / 255, b / 255] as [number, number, number]
 })
 
-function createColorFunction(
-  colorBy: string,
-): (
+type RGBA = [number, number, number, number]
+
+const STRAND_POS: RGBA = [1, 0, 0, 1]
+const STRAND_NEG: RGBA = [0, 0, 1, 1]
+const DEFAULT_COLOR: RGBA = [1, 0, 0, 1]
+
+function createColorFunction(colorBy: string): (
   strand: number,
   refName: string,
   index: number,
-) => [number, number, number, number] {
+) => RGBA {
   if (colorBy === 'strand') {
-    return (strand: number) => (strand === -1 ? [0, 0, 1, 1] : [1, 0, 0, 1])
+    return (strand: number) => (strand === -1 ? STRAND_NEG : STRAND_POS)
   }
 
   if (colorBy === 'query') {
-    const colorCache = new Map<string, [number, number, number, number]>()
+    const colorCache = new Map<string, RGBA>()
     return (_strand: number, refName: string) => {
-      if (!colorCache.has(refName)) {
+      let c = colorCache.get(refName)
+      if (!c) {
         const hash = hashString(refName)
         const [r, g, b] =
           category10Normalized[hash % category10Normalized.length]!
-        colorCache.set(refName, [r, g, b, 1])
+        c = [r, g, b, 1]
+        colorCache.set(refName, c)
       }
-      return colorCache.get(refName)!
+      return c
     }
   }
 
-  return () => [1, 0, 0, 1]
+  return () => DEFAULT_COLOR
 }
 
-const OP_TO_CIGAR_KEY: Record<number, string> = {
-  [OP_I]: 'I',
-  [OP_D]: 'D',
-  [OP_N]: 'N',
+function buildIndelColors(colorBy: string) {
+  const scheme =
+    colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
+  const cigarColors = scheme.cigarColors
+  const indelColors: Partial<Record<number, RGBA>> = {}
+  for (const [op, key] of [
+    [OP_I, 'I'],
+    [OP_D, 'D'],
+    [OP_N, 'N'],
+  ] as const) {
+    const color = cigarColors[key as keyof typeof cigarColors]
+    if (color) {
+      indelColors[op] = cssColorToNormalized(color)
+    }
+  }
+  return indelColors
 }
 
 function getCigarColorByOp(
   op: number,
-  colorBy: string,
-  colorFn: (
-    strand: number,
-    refName: string,
-    index: number,
-  ) => [number, number, number, number],
+  indelColors: Partial<Record<number, RGBA>>,
+  colorFn: (strand: number, refName: string, index: number) => RGBA,
   strand: number,
   refName: string,
   index: number,
-): [number, number, number, number] {
-  const isInsertionOrDeletion = op === OP_I || op === OP_D || op === OP_N
-
-  if (!isInsertionOrDeletion) {
-    return colorFn(strand, refName, index)
-  }
-
-  const scheme =
-    colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
-  const cigarColors = scheme.cigarColors
-  const key = OP_TO_CIGAR_KEY[op]
-  const color = key
-    ? cigarColors[key as keyof typeof cigarColors]
-    : undefined
-  if (color) {
-    return cssColorToNormalized(color)
-  }
-  return colorFn(strand, refName, index)
+) {
+  return indelColors[op] ?? colorFn(strand, refName, index)
 }
 
 function estimateInstanceCount(
@@ -162,6 +159,7 @@ export function executeSyntenyInstanceData({
   names,
   refNames,
   cigars,
+  parsedCigars,
   starts,
   ends,
   colorBy,
@@ -182,6 +180,7 @@ export function executeSyntenyInstanceData({
   names: string[]
   refNames: string[]
   cigars: string[]
+  parsedCigars: number[][]
   starts: Float64Array
   ends: Float64Array
   colorBy: string
@@ -193,6 +192,7 @@ export function executeSyntenyInstanceData({
   level: number
 }): SyntenyInstanceData {
   const colorFn = createColorFunction(colorBy)
+  const indelColors = buildIndelColors(colorBy)
   const featureCount = p11_offsetPx.length
 
   const queryTotalLengths = new Map<string, number>()
@@ -201,13 +201,6 @@ export function executeSyntenyInstanceData({
     const alignmentLength = Math.abs(ends[i]! - starts[i]!)
     const current = queryTotalLengths.get(queryName) || 0
     queryTotalLengths.set(queryName, current + alignmentLength)
-  }
-
-  const emptyOps: number[] = []
-  const parsedCigars: number[][] = new Array(featureCount)
-  for (let i = 0; i < featureCount; i++) {
-    const cigarStr = cigars[i]!
-    parsedCigars[i] = cigarStr ? parseCigar2(cigarStr) : emptyOps
   }
 
   // Pre-allocate buffers with estimated capacity
@@ -333,7 +326,7 @@ export function executeSyntenyInstanceData({
         0,
         0,
         0,
-        0.25,
+        0.5,
         featureId,
         isCurve,
         qtl,
@@ -553,7 +546,7 @@ export function executeSyntenyInstanceData({
           ? [0, 0, 0, 0]
           : getCigarColorByOp(
               resolvedOp,
-              colorBy,
+              indelColors,
               colorFn,
               strand,
               refName,

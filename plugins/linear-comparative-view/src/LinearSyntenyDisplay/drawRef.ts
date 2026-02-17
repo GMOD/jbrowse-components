@@ -1,5 +1,4 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { draw, drawLocationMarkers } from './components/util.ts'
 import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
@@ -38,6 +37,11 @@ export function drawRef(
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
   if (!featureData) {
+    return
+  }
+
+  const parsedCigars = model.parsedCigars
+  if (!parsedCigars) {
     return
   }
 
@@ -121,9 +125,8 @@ export function drawRef(
 
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
-      const cigarStr = featureData.cigars[fi]!
-      const cigar = cigarStr ? parseCigar2(cigarStr) : undefined
-      if (cigar && cigar.length > 0 && drawCIGAR) {
+      const cigar = parsedCigars[fi]!
+      if (cigar.length > 0 && drawCIGAR) {
         let continuingFlag = false
         let px1 = 0
         let px2 = 0

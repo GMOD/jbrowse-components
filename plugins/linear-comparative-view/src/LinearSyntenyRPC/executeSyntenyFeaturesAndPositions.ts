@@ -7,6 +7,8 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
+
 import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -98,11 +100,20 @@ export async function executeSyntenyFeaturesAndPositions({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const features = await firstValueFrom(
+  const allFeatures = await firstValueFrom(
     dataAdapter
       .getFeaturesInMultipleRegions(regions, { stopToken })
       .pipe(toArray()),
   )
+  const seen = new Set<string>()
+  const features = allFeatures.filter(f => {
+    const id = f.id()
+    if (seen.has(id)) {
+      return false
+    }
+    seen.add(id)
+    return true
+  })
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!
@@ -210,9 +221,11 @@ export async function executeSyntenyFeaturesAndPositions({
     mates,
   }
 
+  const parsedCigars = cigars.map(s => (s ? parseCigar2(s) : []))
   const bpPerPxs = viewSnaps.map(v => v.bpPerPx)
   const instanceData = executeSyntenyInstanceData({
     ...positionData,
+    parsedCigars,
     colorBy,
     drawCurves,
     drawCIGAR,
