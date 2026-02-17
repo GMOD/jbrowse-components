@@ -237,7 +237,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       })
     }
 
-    console.log('[WebGLFeatureComponent] renderBlocks', { numBlocks: blocks.length, width: Math.round(view.width), height })
     proxy.renderBlocks(blocks, {
       scrollY: scrollYRef.current,
       canvasWidth: Math.round(view.width),
@@ -260,10 +259,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const proxy = CanvasFeatureProxy.getOrCreate(canvas, rpcManager)
       proxyRef.current = proxy
       proxy.init(canvas).then(ok => {
-        console.log('[WebGLFeatureComponent] init result:', ok)
-        if (!ok) {
-          console.error('Failed to init GPU canvas feature renderer')
-        }
         setRendererReady(ok)
         uploadedDataRef.current.clear()
       })
@@ -299,7 +294,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   useEffect(() => {
     const proxy = proxyRef.current
-    console.log('[WebGLFeatureComponent] upload effect', { hasProxy: !!proxy, rendererReady, rpcDataMapSize: rpcDataMap.size })
     if (!proxy || !rendererReady) {
       return
     }
@@ -310,14 +304,13 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       return
     }
 
-    const activeRegions: number[] = []
+    const activeRegions = new Set<number>()
     for (const [regionNumber, data] of rpcDataMap) {
-      activeRegions.push(regionNumber)
+      activeRegions.add(regionNumber)
       if (uploadedDataRef.current.get(regionNumber) === data) {
         continue
       }
       uploadedDataRef.current.set(regionNumber, data)
-      console.log('[WebGLFeatureComponent] uploading region', regionNumber, { numRects: data.numRects, numLines: data.numLines, numArrows: data.numArrows })
       proxy.uploadForRegion(regionNumber, {
         regionStart: data.regionStart,
         rectPositions: data.rectPositions,
@@ -339,11 +332,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       })
     }
     for (const key of uploadedDataRef.current.keys()) {
-      if (!activeRegions.includes(key)) {
+      if (!activeRegions.has(key)) {
         uploadedDataRef.current.delete(key)
       }
     }
-    proxy.pruneStaleRegions(activeRegions)
+    proxy.pruneStaleRegions([...activeRegions])
 
     renderWithBlocksRef.current()
   }, [rpcDataMap, rendererReady])

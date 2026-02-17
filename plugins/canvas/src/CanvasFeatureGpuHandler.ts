@@ -397,7 +397,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
   }
 
   init(device: GPUDevice) {
-    console.log('[CanvasFeatureGpuHandler] init called with device', !!device)
     this.device = device
     const blendState: GPUBlendState = {
       color: {
@@ -479,7 +478,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     msg: { type: string; canvasId: number; [key: string]: unknown },
     ctx: GpuCanvasContext,
   ) {
-    console.log('[CanvasFeatureGpuHandler] handleMessage', msg.type, 'canvasId', msg.canvasId, 'device?', !!this.device)
     const state = this.ensureCanvas(msg.canvasId, ctx)
     switch (msg.type) {
       case 'resize': {
@@ -563,7 +561,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
 
   private uploadRegion(state: GpuCanvasState, msg: Record<string, unknown>) {
     if (!this.device || !this.bindGroupLayout || !this.uniformBuffer) {
-      console.warn('[CanvasFeatureGpuHandler] uploadRegion: no device/layout/uniform')
       return
     }
     const regionNumber = msg.regionNumber as number
@@ -576,8 +573,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     const numRects = msg.numRects as number
     const numLines = msg.numLines as number
     const numArrows = msg.numArrows as number
-
-    console.log('[CanvasFeatureGpuHandler] uploadRegion', regionNumber, { regionStart, numRects, numLines, numArrows })
 
     const region: GpuRegionData = {
       regionStart,
@@ -773,7 +768,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
 
   private renderBlocks(state: GpuCanvasState, msg: Record<string, unknown>) {
     if (!this.device || !this.rectPipeline) {
-      console.warn('[CanvasFeatureGpuHandler] renderBlocks: no device/pipeline')
       return
     }
     const blocks = msg.blocks as {
@@ -785,15 +779,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     const scrollY = msg.scrollY as number
     const canvasWidth = msg.canvasWidth as number
     const canvasHeight = msg.canvasHeight as number
-
-    console.log('[CanvasFeatureGpuHandler] renderBlocks:', {
-      numBlocks: blocks.length,
-      canvasWidth,
-      canvasHeight,
-      scrollY,
-      numRegions: state.regions.size,
-      regionKeys: [...state.regions.keys()],
-    })
 
     if (state.canvas.width !== canvasWidth || state.canvas.height !== canvasHeight) {
       state.canvas.width = canvasWidth
@@ -807,15 +792,8 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     for (const block of blocks) {
       const region = state.regions.get(block.regionNumber)
       if (!region) {
-        console.warn('[CanvasFeatureGpuHandler] region not found:', block.regionNumber)
         continue
       }
-      console.log('[CanvasFeatureGpuHandler] block', block.regionNumber, {
-        rects: region.rectCount,
-        lines: region.lineCount,
-        arrows: region.arrowCount,
-        hasRectBindGroup: !!region.rectBindGroup,
-      })
 
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
