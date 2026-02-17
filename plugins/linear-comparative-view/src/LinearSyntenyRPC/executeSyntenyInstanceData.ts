@@ -325,10 +325,8 @@ export function executeSyntenyInstanceData({
       const screenTopX = markerTopX - viewOff0
       const screenBottomX = markerBottomX - viewOff1
       if (
-        screenTopX < -offScreenMargin ||
-        screenTopX > offScreenMargin ||
-        screenBottomX < -offScreenMargin ||
-        screenBottomX > offScreenMargin
+        (screenTopX < -offScreenMargin || screenTopX > offScreenMargin) &&
+        (screenBottomX < -offScreenMargin || screenBottomX > offScreenMargin)
       ) {
         continue
       }
@@ -450,23 +448,11 @@ export function executeSyntenyInstanceData({
     const rev1 = k1 < k2 ? 1 : -1
     const rev2 = (x21 < x22 ? 1 : -1) * s1
 
-    let totalBpView0 = 0
-    let totalBpView1 = 0
     let maxIndelLen = 0
-    for (const element of cigar) {
-      const packed = element
+    for (const packed of cigar) {
       const len = packed >>> 4
       const op = packed & 0xf
-      if (op === OP_M || op === OP_EQ || op === OP_X) {
-        totalBpView0 += len
-        totalBpView1 += len
-      } else if (op === OP_D || op === OP_N) {
-        totalBpView0 += len
-        if (len > maxIndelLen) {
-          maxIndelLen = len
-        }
-      } else if (op === OP_I) {
-        totalBpView1 += len
+      if (op === OP_D || op === OP_N || op === OP_I) {
         if (len > maxIndelLen) {
           maxIndelLen = len
         }
@@ -551,47 +537,57 @@ export function executeSyntenyInstanceData({
         const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
         continuingFlag = false
 
-        const isIndel =
-          resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
-        const [cr, cg, cb, ca] =
-          drawCIGARMatchesOnly && isIndel
-            ? [0, 0, 0, 0]
-            : getCigarColorByOp(
-                resolvedOp,
-                indelColors,
-                colorFn,
-                strand,
-                refName,
-                i,
-              )
-        addInstance(
-          px1,
-          cx1,
-          cx2,
-          px2,
-          cr,
-          cg,
-          cb,
-          ca,
-          featureId,
-          isCurve,
-          qtl,
-          padTop,
-          padBottom,
-        )
+        const topMin = Math.min(px1, cx1) - viewOff0
+        const topMax = Math.max(px1, cx1) - viewOff0
+        const botMin = Math.min(px2, cx2) - viewOff1
+        const botMax = Math.max(px2, cx2) - viewOff1
+        const offScreen =
+          (topMax < -offScreenMargin || topMin > offScreenMargin) &&
+          (botMax < -offScreenMargin || botMin > offScreenMargin)
 
-        if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
-          addLocationMarkers(
+        if (!offScreen) {
+          const isIndel =
+            resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
+          const [cr, cg, cb, ca] =
+            drawCIGARMatchesOnly && isIndel
+              ? [0, 0, 0, 0]
+              : getCigarColorByOp(
+                  resolvedOp,
+                  indelColors,
+                  colorFn,
+                  strand,
+                  refName,
+                  i,
+                )
+          addInstance(
             px1,
             cx1,
             cx2,
             px2,
+            cr,
+            cg,
+            cb,
+            ca,
             featureId,
             isCurve,
             qtl,
             padTop,
             padBottom,
           )
+
+          if (drawLocationMarkers && !(drawCIGARMatchesOnly && isIndel)) {
+            addLocationMarkers(
+              px1,
+              cx1,
+              cx2,
+              px2,
+              featureId,
+              isCurve,
+              qtl,
+              padTop,
+              padBottom,
+            )
+          }
         }
       }
     }
