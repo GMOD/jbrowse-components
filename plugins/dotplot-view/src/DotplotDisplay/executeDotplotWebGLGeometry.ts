@@ -16,11 +16,13 @@ function bpToPxFloat({
   self: ViewSnap
 }) {
   let bpSoFar = 0
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
-    self
-  const blocks = staticBlocks.contentBlocks
+  const {
+    interRegionPaddingWidth,
+    bpPerPx,
+    displayedRegions,
+    minimumBlockWidth,
+  } = self
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let currBlock = 0
 
   let i = 0
   for (let l = displayedRegions.length; i < l; i++) {
@@ -30,11 +32,10 @@ function bpToPxFloat({
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
     }
-    if ((blocks[currBlock] as any)?.regionNumber === i) {
-      bpSoFar += len + interRegionPaddingBp
-      currBlock++
-    } else {
-      bpSoFar += len
+    bpSoFar += len
+    const regionWidthPx = len / bpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+      bpSoFar += interRegionPaddingBp
     }
   }
   const found = displayedRegions[i]

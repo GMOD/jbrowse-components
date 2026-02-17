@@ -45,7 +45,7 @@ export function bpToPx({
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber ? regionNumber === i : true)
+      (regionNumber !== undefined ? regionNumber === i : true)
     ) {
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
