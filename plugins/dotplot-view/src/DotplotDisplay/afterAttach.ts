@@ -10,6 +10,7 @@ import { parseCigar } from '@jbrowse/plugin-alignments'
 import { autorun, reaction } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
+import { buildLineSegments } from './drawDotplotWebGL.ts'
 
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { DotplotFeatPos, DotplotFeatureData } from './types.ts'
@@ -43,7 +44,6 @@ function serializeFeatures(
 }
 
 export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
-  // Reaction 1: Fetch features via CoreGetFeatures RPC
   makeAbortableReaction(
     self,
     () => {
@@ -81,8 +81,6 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
     self.setError,
   )
 
-  // Reaction 2: Compute feat positions on the worker via RPC.
-  // Cached serialized features avoid re-serialization on zoom-only changes.
   let cachedFeatures: Feature[] | undefined
   let cachedSerialized: DotplotFeatureData[] = []
 
@@ -114,9 +112,6 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const sessionId = getRpcSessionId(self)
         const { hview, vview } = view
 
-        // Capture bpPerPx at this moment — the RPC will compute positions
-        // at this zoom level. We store it alongside the positions so the
-        // draw autorun can compute the correct scale factor.
         const snapshotBpPerPxH = hview.bpPerPx
         const snapshotBpPerPxV = vview.bpPerPx
 
@@ -136,7 +131,6 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           minimumBlockWidth: vview.minimumBlockWidth,
         }
 
-        // Only re-serialize when features actually change
         if (self.features !== cachedFeatures) {
           cachedFeatures = self.features
           cachedSerialized = serializeFeatures(self.features, assemblyManager)
@@ -181,10 +175,10 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
     ),
   )
 
-  // Reaction 3: Draw autorun with RAF scheduler
   let lastGeometryKey = ''
   let lastFeatPositions: DotplotFeatPos[] = []
   let lastRenderer: unknown = null
+  let resizeSent = ''
 
   addDisposer(
     self,
@@ -210,21 +204,25 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         } = self
         const { viewWidth, viewHeight, hview, vview, drawCigar } = view
 
-        // Always read bpPerPx so MobX tracks it and reruns on zoom
         const hBpPerPx = hview.bpPerPx
         const vBpPerPx = vview.bpPerPx
 
-        if (!self.webglRenderer || !self.webglInitialized) {
+        if (!self.gpuRenderer || !self.gpuInitialized) {
           return
         }
 
-        // Reset geometry key when renderer changes (e.g. React StrictMode)
-        if (self.webglRenderer !== lastRenderer) {
+        if (self.gpuRenderer !== lastRenderer) {
           lastGeometryKey = ''
-          lastRenderer = self.webglRenderer
+          lastRenderer = self.gpuRenderer
         }
 
-        // Filter by minAlignmentLength
+        const dpr = typeof globalThis.window !== 'undefined' ? globalThis.window.devicePixelRatio : 2
+        const resizeKey = `${viewWidth}-${viewHeight}-${dpr}`
+        if (resizeKey !== resizeSent) {
+          self.gpuRenderer.resize(viewWidth, viewHeight, dpr)
+          resizeSent = resizeKey
+        }
+
         let filteredPositions = featPositions
         if (minAlignmentLength > 0) {
           filteredPositions = featPositions.filter(fp => {
@@ -237,34 +235,36 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
 
         const geometryKey = `${filteredPositions.length}-${colorBy}-${alpha}-${drawCigar}-${minAlignmentLength}`
 
-        self.webglRenderer.resize(viewWidth, viewHeight)
-
         if (
           geometryKey !== lastGeometryKey ||
           filteredPositions !== lastFeatPositions
         ) {
           const colorFn = createDotplotColorFunction(colorBy, alpha)
-          self.webglRenderer.buildGeometry(
+          const segments = buildLineSegments(
             filteredPositions,
             colorFn,
             drawCigar,
             hBpPerPx,
             vBpPerPx,
           )
+          self.gpuRenderer.uploadGeometry({
+            x1s: new Float32Array(segments.x1s),
+            y1s: new Float32Array(segments.y1s),
+            x2s: new Float32Array(segments.x2s),
+            y2s: new Float32Array(segments.y2s),
+            colors: new Float32Array(segments.colors),
+            instanceCount: segments.x1s.length,
+          })
           lastGeometryKey = geometryKey
           lastFeatPositions = filteredPositions
         }
 
-        // Scale factors: ratio of the bpPerPx at which Reaction 2 computed
-        // the positions to the current bpPerPx. During zoom (before new
-        // geometry arrives from the RPC), this stretches/shrinks the existing
-        // geometry to match the new zoom level.
         const scaleX =
           featPositionsBpPerPxH > 0 ? featPositionsBpPerPxH / hBpPerPx : 1
         const scaleY =
           featPositionsBpPerPxV > 0 ? featPositionsBpPerPxV / vBpPerPx : 1
 
-        self.webglRenderer.render(
+        self.gpuRenderer.render(
           hview.offsetPx,
           vview.offsetPx,
           2,

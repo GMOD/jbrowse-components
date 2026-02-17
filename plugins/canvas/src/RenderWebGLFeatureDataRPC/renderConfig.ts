@@ -87,14 +87,14 @@ export interface RenderConfigContext {
 
   /**
    * Multiplier for feature height based on displayMode.
-   * normal=1, compact=0.5
+   * normal=1, compact=0.6
    */
   heightMultiplier: number
 }
 
 function getHeightMultiplier(displayMode: string) {
   if (displayMode === 'compact') {
-    return 0.5
+    return 0.6
   }
   return 1
 }

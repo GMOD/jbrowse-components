@@ -190,8 +190,8 @@ void main() {
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  float chevronWidth = 5.0 / u_canvasWidth * 2.0;
-  float chevronHeight = 4.0 / u_canvasHeight * 2.0;
+  float chevronWidth = 4.5 / u_canvasWidth * 2.0;
+  float chevronHeight = 3.5 / u_canvasHeight * 2.0;
 
   float dir = a_direction;
   float sx, sy;

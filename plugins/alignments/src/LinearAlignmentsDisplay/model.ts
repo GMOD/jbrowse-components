@@ -46,7 +46,8 @@ import { openCigarWidget } from './components/openFeatureWidget.ts'
 
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
-import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
+import type { AlignmentsRenderer } from './components/AlignmentsRenderer.ts'
+import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -383,7 +384,7 @@ export default function stateModelFactory(
       simplexModifications: new Set<string>(),
       modificationsReady: false,
       overCigarItem: false,
-      webglRenderer: null as WebGLRenderer | null,
+      webglRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
     }))
@@ -868,7 +869,7 @@ export default function stateModelFactory(
           self.overCigarItem = flag
         },
 
-        setWebGLRenderer(renderer: WebGLRenderer | null) {
+        setWebGLRenderer(renderer: AlignmentsRenderer | null) {
           self.webglRenderer = renderer
         },
 

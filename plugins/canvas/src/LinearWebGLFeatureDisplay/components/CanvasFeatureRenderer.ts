@@ -224,9 +224,9 @@ fn vs_main(
   let y_px = floor(inst.y - u.scroll_y + 0.5) + 0.5;
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
 
-  let half_w = 5.0 / u.canvas_width;
-  let half_h = 4.0 / u.canvas_height;
-  let thickness = 1.5 / u.canvas_height;
+  let half_w = 4.5 / u.canvas_width;
+  let half_h = 3.5 / u.canvas_height;
+  let thickness = 1.0 / u.canvas_height;
   let dir = inst.direction;
 
   let is_top_arm = v < 6u;
@@ -384,6 +384,9 @@ export class CanvasFeatureRenderer {
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext | null = null
   private uniformBuffer: GPUBuffer | null = null
+  private msaaTexture: GPUTexture | null = null
+  private msaaWidth = 0
+  private msaaHeight = 0
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
@@ -464,6 +467,8 @@ export class CanvasFeatureRenderer {
       bindGroupLayouts: [CanvasFeatureRenderer.bindGroupLayout],
     })
 
+    const multisample: GPUMultisampleState = { count: 4 }
+
     const rectModule = device.createShaderModule({ code: RECT_SHADER })
     CanvasFeatureRenderer.rectPipeline = device.createRenderPipeline({
       layout,
@@ -474,6 +479,7 @@ export class CanvasFeatureRenderer {
         targets: [target],
       },
       primitive: { topology: 'triangle-list' },
+      multisample,
     })
 
     const lineModule = device.createShaderModule({ code: LINE_SHADER })
@@ -486,6 +492,7 @@ export class CanvasFeatureRenderer {
         targets: [target],
       },
       primitive: { topology: 'triangle-list' },
+      multisample,
     })
 
     const chevronModule = device.createShaderModule({ code: CHEVRON_SHADER })
@@ -498,6 +505,7 @@ export class CanvasFeatureRenderer {
         targets: [target],
       },
       primitive: { topology: 'triangle-list' },
+      multisample,
     })
 
     const arrowModule = device.createShaderModule({ code: ARROW_SHADER })
@@ -510,6 +518,7 @@ export class CanvasFeatureRenderer {
         targets: [target],
       },
       primitive: { topology: 'triangle-list' },
+      multisample,
     })
   }
 
@@ -658,7 +667,24 @@ export class CanvasFeatureRenderer {
       this.canvas.height = canvasHeight
     }
 
-    const textureView = this.context.getCurrentTexture().createView()
+    if (
+      !this.msaaTexture ||
+      this.msaaWidth !== canvasWidth ||
+      this.msaaHeight !== canvasHeight
+    ) {
+      this.msaaTexture?.destroy()
+      this.msaaTexture = device.createTexture({
+        size: [canvasWidth, canvasHeight],
+        format: 'bgra8unorm',
+        sampleCount: 4,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      })
+      this.msaaWidth = canvasWidth
+      this.msaaHeight = canvasHeight
+    }
+
+    const msaaView = this.msaaTexture.createView()
+    const resolveTarget = this.context.getCurrentTexture().createView()
     let isFirst = true
 
     for (const block of blocks) {
@@ -700,7 +726,8 @@ export class CanvasFeatureRenderer {
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
-            view: textureView,
+            view: msaaView,
+            resolveTarget,
             loadOp: (isFirst ? 'clear' : 'load') as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
             ...(isFirst && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
@@ -783,6 +810,8 @@ export class CanvasFeatureRenderer {
     this.regions.clear()
     this.uniformBuffer?.destroy()
     this.uniformBuffer = null
+    this.msaaTexture?.destroy()
+    this.msaaTexture = null
     this.context = null
   }
 

@@ -236,9 +236,9 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     renderer.renderBlocks(blocks, {
       scrollY: scrollYRef.current,
       canvasWidth: Math.round(view.width),
-      canvasHeight: height,
+      canvasHeight: model.height,
     })
-  }, [view, width, height])
+  }, [view, width, model])
 
   const renderWithBlocksRef = useRef(renderWithBlocks)
   renderWithBlocksRef.current = renderWithBlocks
@@ -812,8 +812,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasCallbackRef}
-        width={width ? Math.round(width) : undefined}
-        height={height}
         style={{
           display: 'block',
           width,

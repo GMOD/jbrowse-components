@@ -6,7 +6,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderBlockData } from './renderDotplotBlock.ts'
 
-import type { DotplotWebGLRenderer } from './drawDotplotWebGL.ts'
+import type { DotplotWebGPUProxy } from './DotplotWebGPUProxy.ts'
 import type { DotplotFeatPos } from './types.ts'
 import type {
   DotplotViewModel,
@@ -54,11 +54,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #volatile
            */
-          webglRenderer: null as DotplotWebGLRenderer | null,
+          gpuRenderer: null as DotplotWebGPUProxy | null,
           /**
            * #volatile
            */
-          webglInitialized: false,
+          gpuInitialized: false,
           /**
            * #volatile
            * alpha transparency value for synteny drawing (0-1)
@@ -158,14 +158,14 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setWebGLRenderer(renderer: DotplotWebGLRenderer | null) {
-        self.webglRenderer = renderer
+      setGpuRenderer(renderer: DotplotWebGPUProxy | null) {
+        self.gpuRenderer = renderer
       },
       /**
        * #action
        */
-      setWebGLInitialized(value: boolean) {
-        self.webglInitialized = value
+      setGpuInitialized(value: boolean) {
+        self.gpuInitialized = value
       },
       /**
        * #action
