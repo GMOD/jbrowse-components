@@ -103,6 +103,8 @@ export class SyntenyWebGPUProxy {
     maxOffScreenPx: number,
     minAlignmentLength: number,
     alpha: number,
+    hoveredFeatureId: number,
+    clickedFeatureId: number,
   ) {
     this.worker?.postMessage({
       type: 'render',
@@ -114,6 +116,8 @@ export class SyntenyWebGPUProxy {
       maxOffScreenPx,
       minAlignmentLength,
       alpha,
+      hoveredFeatureId,
+      clickedFeatureId,
     })
   }
 

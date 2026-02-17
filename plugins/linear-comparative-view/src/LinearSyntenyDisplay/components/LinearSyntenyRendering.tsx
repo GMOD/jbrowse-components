@@ -187,12 +187,17 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
       if (model.isScrolling) {
         model.setMouseoverId(undefined)
+        model.setHoveredFeatureIdx(-1)
         setTooltip('')
       } else {
-        const feat = pickFeature(coords.x, coords.y)
-        if (feat) {
-          model.setMouseoverId(feat.id)
-          setTooltip(getTooltip(feat))
+        const featureIndex = model.gpuRenderer?.pick(coords.x, coords.y) ?? -1
+        model.setHoveredFeatureIdx(featureIndex)
+        if (featureIndex >= 0 && featureIndex < model.numFeats) {
+          const feat = model.getFeature(featureIndex)
+          if (feat) {
+            model.setMouseoverId(feat.id)
+            setTooltip(getTooltip(feat))
+          }
         } else {
           model.setMouseoverId(undefined)
           setTooltip('')
@@ -200,11 +205,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [view, model, pickFeature],
+    [view, model],
   )
 
   const handleMouseLeave = useCallback(() => {
     model.setMouseoverId(undefined)
+    model.setHoveredFeatureIdx(-1)
     mouseInitialDownX.current = undefined
     mouseCurrDownX.current = undefined
     model.setIsScrolling(false)
@@ -233,6 +239,9 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         }
         const feat = pickFeature(coords.x, coords.y)
         if (feat) {
+          const featureIndex =
+            model.gpuRenderer?.pick(coords.x, coords.y) ?? -1
+          model.setClickedFeatureIdx(featureIndex)
           const session = getSession(model)
           if (isSessionModelWithWidgets(session)) {
             session.showWidget(
@@ -254,6 +263,8 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
               }),
             )
           }
+        } else {
+          model.setClickedFeatureIdx(-1)
         }
       }
     },

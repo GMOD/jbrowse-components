@@ -1,8 +1,8 @@
 export const INSTANCE_BYTE_SIZE = 80
 export const FILL_SEGMENTS = 16
-export const EDGE_SEGMENTS = 8
+export const EDGE_SEGMENTS = 4
 export const FILL_VERTS_PER_INSTANCE = FILL_SEGMENTS * 6
-export const EDGE_VERTS_PER_INSTANCE = (EDGE_SEGMENTS + 1) * 2
+export const EDGE_VERTS_PER_INSTANCE = 2 * EDGE_SEGMENTS * 6
 
 const INSTANCE_STRUCT = /* wgsl */ `
 struct Instance {
@@ -32,6 +32,10 @@ struct Uniforms {
   instanceCount: u32,
   fillSegments: u32,
   edgeSegments: u32,
+  hoveredFeatureId: f32,
+  clickedFeatureId: f32,
+  _pad1u: f32,
+  _pad2u: f32,
 }
 `
 
@@ -185,7 +189,11 @@ ${SCREEN_POSITIONS}
 
 @fragment
 fn fs_main(in: VOut) -> @location(0) vec4f {
-  return vec4f(in.color.rgb, in.color.a * uniforms.alpha);
+  var rgb = in.color.rgb;
+  if (uniforms.hoveredFeatureId > 0.0 && abs(in.featureId - uniforms.hoveredFeatureId) < 0.5) {
+    rgb = rgb * 0.7;
+  }
+  return vec4f(rgb, in.color.a * uniforms.alpha);
 }
 
 ${FS_PICKING}
@@ -197,9 +205,7 @@ ${UNIFORMS_STRUCT}
 
 struct VOut {
   @builtin(position) pos: vec4f,
-  @location(0) color: vec4f,
-  @location(1) dist: f32,
-  @location(2) @interpolate(flat) featureId: f32,
+  @location(0) dist: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
@@ -208,88 +214,84 @@ struct VOut {
 ${HP_DIFF}
 ${CULL_CHECK}
 
+const STROKE_WIDTH = 1.5;
+
 @vertex
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
   let inst = instances[iid];
-
-  let segs = uniforms.edgeSegments;
-  let segIdx = vid / 2u;
-  let sideIdx = vid % 2u;
-  let t = f32(segIdx) / f32(segs);
-  let side = select(1.0, -1.0, sideIdx == 1u);
-
   var out: VOut;
-  out.color = inst.color;
-  out.featureId = inst.featureId;
-  out.dist = side;
+  out.dist = 0.0;
 
-  if (isCulled(inst)) {
+  let isClicked = uniforms.clickedFeatureId > 0.0 && abs(inst.featureId - uniforms.clickedFeatureId) < 0.5;
+  if (!isClicked || isCulled(inst)) {
     out.pos = ${DEGENERATE};
     return out;
   }
 
 ${SCREEN_POSITIONS}
 
-  let topDiff = screenX1 - screenX2;
-  let botDiff = screenX4 - screenX3;
-
-  if (topDiff * botDiff < 0.0) {
-    out.pos = vec4f(2.0, 2.0, 2.0, 1.0);
+  if ((screenX1 - screenX2) * (screenX4 - screenX3) < 0.0) {
+    out.pos = ${DEGENERATE};
     return out;
   }
 
-  let sideStep = step(0.0, side);
+  let segs = uniforms.edgeSegments;
+  let vertsPerEdge = segs * 6u;
+  let edgeIdx = vid / vertsPerEdge;
+  let vidInEdge = vid % vertsPerEdge;
+  let seg = vidInEdge / 6u;
+  let vertInSeg = vidInEdge % 6u;
 
-  var pos: vec2f;
+  let t0 = f32(seg) / f32(segs);
+  let t1 = f32(seg + 1u) / f32(segs);
+
+  var t: f32;
+  var side: f32;
+  switch (vertInSeg) {
+    case 0u: { t = t0; side = -1.0; }
+    case 1u: { t = t0; side = 1.0; }
+    case 2u: { t = t1; side = -1.0; }
+    case 3u: { t = t1; side = -1.0; }
+    case 4u: { t = t0; side = 1.0; }
+    case 5u: { t = t1; side = 1.0; }
+    default: { t = 0.0; side = 0.0; }
+  }
+
+  var edge0_x: f32;
+  var edge1_x: f32;
+  var y: f32;
   var tangent: vec2f;
 
   if (inst.isCurve > 0.5) {
     let s = t * t * (3.0 - 2.0 * t);
-    let edge0_x = mix(screenX1, screenX4, s);
-    let edge1_x = mix(screenX2, screenX3, s);
-
-    let centerX = (edge0_x + edge1_x) * 0.5;
-    let halfWidth = abs(edge0_x - edge1_x) * 0.5;
-
-    let px = centerX + (sideStep * 2.0 - 1.0) * halfWidth;
-    let py = uniforms.height * (1.5 * t * (1.0 - t) + t * t * t);
-    pos = vec2f(px, py);
-
+    edge0_x = mix(screenX1, screenX4, s);
+    edge1_x = mix(screenX2, screenX3, s);
+    y = uniforms.height * (1.5 * t * (1.0 - t) + t * t * t);
     let sPrime = 6.0 * t * (1.0 - t);
-    let edge0_dx = sPrime * (screenX4 - screenX1);
-    let edge1_dx = sPrime * (screenX3 - screenX2);
-    let centerDx = (edge0_dx + edge1_dx) * 0.5;
-    let halfWidthDx = abs(edge0_dx - edge1_dx) * 0.5 * sign(edge0_x - edge1_x);
-
-    let dx = centerDx + (sideStep * 2.0 - 1.0) * halfWidthDx;
     let dy = uniforms.height * 1.5 * (1.0 - 2.0 * t * (1.0 - t));
+    let dx = select(sPrime * (screenX4 - screenX1), sPrime * (screenX3 - screenX2), edgeIdx == 1u);
     tangent = vec2f(dx, dy);
   } else {
-    let edge0_x = mix(screenX1, screenX4, t);
-    let edge1_x = mix(screenX2, screenX3, t);
-
-    let centerX = (edge0_x + edge1_x) * 0.5;
-    let halfWidth = abs(edge0_x - edge1_x) * 0.5;
-
-    let px = centerX + (sideStep * 2.0 - 1.0) * halfWidth;
-    pos = vec2f(px, t * uniforms.height);
-
-    let edge0_dx = screenX4 - screenX1;
-    let edge1_dx = screenX3 - screenX2;
-    let dx = (edge0_dx + edge1_dx) * 0.5 + (sideStep * 2.0 - 1.0) * abs(edge0_dx - edge1_dx) * 0.5;
+    edge0_x = mix(screenX1, screenX4, t);
+    edge1_x = mix(screenX2, screenX3, t);
+    y = t * uniforms.height;
+    let dx = select(screenX4 - screenX1, screenX3 - screenX2, edgeIdx == 1u);
     tangent = vec2f(dx, uniforms.height);
   }
 
+  let edgeX = select(edge0_x, edge1_x, edgeIdx == 1u);
   let tangentLen = length(tangent);
   var normal: vec2f;
   if (tangentLen > 0.001) {
-    normal = vec2f(-tangent.y, tangent.x) / tangentLen;
+    let rawNormal = vec2f(-tangent.y, tangent.x) / tangentLen;
+    let outwardSign = select(1.0, -1.0, edgeIdx == 0u) * sign(edge0_x - edge1_x);
+    normal = rawNormal * outwardSign;
   } else {
     normal = vec2f(0.0, 1.0);
   }
 
-  pos += normal * side;
-
+  var pos = vec2f(edgeX, y) + normal * side * STROKE_WIDTH;
+  out.dist = side * STROKE_WIDTH;
   let clipSpace = (pos / uniforms.resolution) * 2.0 - 1.0;
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
   return out;
@@ -297,10 +299,10 @@ ${SCREEN_POSITIONS}
 
 @fragment
 fn fs_main(in: VOut) -> @location(0) vec4f {
-  let halfWidth = 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
-  let edgeAlpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
-  return vec4f(in.color.rgb, in.color.a * uniforms.alpha * edgeAlpha);
+  let halfW = STROKE_WIDTH * 0.5;
+  let edgeAlpha = 1.0 - smoothstep(halfW - aa * 0.5, halfW + aa, d);
+  return vec4f(0.0, 0.0, 0.0, edgeAlpha);
 }
 `

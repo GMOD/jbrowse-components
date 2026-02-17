@@ -118,6 +118,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       mouseoverId: undefined as string | undefined,
 
+      hoveredFeatureIdx: -1,
+
+      clickedFeatureIdx: -1,
+
       /**
        * #volatile
        */
@@ -150,6 +154,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMouseoverId(arg?: string) {
         self.mouseoverId = arg
+      },
+      setHoveredFeatureIdx(idx: number) {
+        self.hoveredFeatureIdx = idx
+      },
+      setClickedFeatureIdx(idx: number) {
+        self.clickedFeatureIdx = idx
       },
       /**
        * #action

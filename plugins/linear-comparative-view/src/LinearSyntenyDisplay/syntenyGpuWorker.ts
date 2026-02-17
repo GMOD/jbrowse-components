@@ -21,6 +21,7 @@ let instanceBuffer: GPUBuffer | null = null
 let uniformBuffer: GPUBuffer | null = null
 let renderBindGroup: GPUBindGroup | null = null
 
+let msaaTexture: GPUTexture | null = null
 let pickingTexture: GPUTexture | null = null
 let pickingStagingBuffer: GPUBuffer | null = null
 
@@ -34,7 +35,7 @@ let logicalWidth = 0
 let logicalHeight = 0
 let dpr = 2
 
-const UNIFORM_SIZE = 64
+const UNIFORM_SIZE = 80
 const uniformData = new ArrayBuffer(UNIFORM_SIZE)
 const uniformF32 = new Float32Array(uniformData)
 const uniformU32 = new Uint32Array(uniformData)
@@ -76,6 +77,8 @@ function createPipelines() {
     },
   }
 
+  const msaa = { count: 4 as const }
+
   const fillModule = device.createShaderModule({ code: fillVertexShader })
   fillPipeline = device.createRenderPipeline({
     layout: renderLayout,
@@ -86,6 +89,7 @@ function createPipelines() {
       targets: [{ format: 'bgra8unorm', blend: blendState }],
     },
     primitive: { topology: 'triangle-list' },
+    multisample: msaa,
   })
 
   fillPickingPipeline = device.createRenderPipeline({
@@ -108,14 +112,22 @@ function createPipelines() {
       entryPoint: 'fs_main',
       targets: [{ format: 'bgra8unorm', blend: blendState }],
     },
-    primitive: { topology: 'triangle-strip' },
+    primitive: { topology: 'triangle-list' },
+    multisample: msaa,
   })
 }
 
-function createPickingTexture() {
+function createSizedTextures() {
   if (!device || canvasWidth === 0 || canvasHeight === 0) {
     return
   }
+  msaaTexture?.destroy()
+  msaaTexture = device.createTexture({
+    size: [canvasWidth, canvasHeight],
+    format: 'bgra8unorm',
+    sampleCount: 4,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+  })
   pickingTexture?.destroy()
   pickingTexture = device.createTexture({
     size: [canvasWidth, canvasHeight],
@@ -135,6 +147,8 @@ function writeUniforms(
   maxOffScreenPx: number,
   minAlignmentLength: number,
   alpha: number,
+  hoveredFeatureId: number,
+  clickedFeatureId: number,
 ) {
   if (!device || !uniformBuffer) {
     return
@@ -155,6 +169,10 @@ function writeUniforms(
   uniformU32[13] = instanceCount
   uniformU32[14] = 16
   uniformU32[15] = 8
+  uniformF32[16] = hoveredFeatureId
+  uniformF32[17] = clickedFeatureId
+  uniformF32[18] = 0
+  uniformF32[19] = 0
   device.queue.writeBuffer(uniformBuffer, 0, uniformData)
 }
 
@@ -215,6 +233,32 @@ function rebuildBindGroups() {
   })
 }
 
+function encodeMsaaDrawPass(
+  encoder: GPUCommandEncoder,
+  msaaView: GPUTextureView,
+  resolveTarget: GPUTextureView,
+  pipeline: GPURenderPipeline,
+  vertexCount: number,
+  loadOp: GPULoadOp,
+  clearValue?: GPUColor,
+) {
+  const pass = encoder.beginRenderPass({
+    colorAttachments: [
+      {
+        view: msaaView,
+        resolveTarget,
+        loadOp,
+        storeOp: 'store',
+        ...(clearValue && { clearValue }),
+      },
+    ],
+  })
+  pass.setPipeline(pipeline)
+  pass.setBindGroup(0, renderBindGroup)
+  pass.draw(vertexCount, instanceCount)
+  pass.end()
+}
+
 function encodeDrawPass(
   encoder: GPUCommandEncoder,
   view: GPUTextureView,
@@ -256,6 +300,8 @@ let lastRenderParams = {
   maxOffScreenPx: 300,
   minAlignmentLength: 0,
   alpha: 1,
+  hoveredFeatureId: 0,
+  clickedFeatureId: 0,
 }
 let pickingDirty = true
 
@@ -315,7 +361,7 @@ self.onmessage = async (e: MessageEvent) => {
       canvasHeight = Math.round(logicalHeight * dpr)
       canvas.width = canvasWidth
       canvas.height = canvasHeight
-      createPickingTexture()
+      createSizedTextures()
       break
     }
 
@@ -373,6 +419,9 @@ self.onmessage = async (e: MessageEvent) => {
       const off0 = computeHpOffsets(msg.offset0, scale0)
       const off1 = computeHpOffsets(msg.offset1, scale1)
 
+      const hoveredFeatureId = msg.hoveredFeatureId ?? 0
+      const clickedFeatureId = msg.clickedFeatureId ?? 0
+
       writeUniforms(
         msg.height,
         off0.hi,
@@ -384,6 +433,8 @@ self.onmessage = async (e: MessageEvent) => {
         msg.maxOffScreenPx,
         msg.minAlignmentLength,
         msg.alpha,
+        hoveredFeatureId,
+        clickedFeatureId,
       )
 
       lastRenderParams = {
@@ -397,29 +448,36 @@ self.onmessage = async (e: MessageEvent) => {
         maxOffScreenPx: msg.maxOffScreenPx,
         minAlignmentLength: msg.minAlignmentLength,
         alpha: msg.alpha,
+        hoveredFeatureId,
+        clickedFeatureId,
       }
       pickingDirty = true
 
       const encoder = device.createCommandEncoder()
       const tv = context.getCurrentTexture().createView()
+      const mv = msaaTexture?.createView()
       const white = { r: 1, g: 1, b: 1, a: 1 }
 
-      encodeDrawPass(
-        encoder,
-        tv,
-        fillPipeline,
-        FILL_VERTS_PER_INSTANCE,
-        'clear',
-        white,
-      )
-      if (edgePipeline && nonCigarInstanceCount > 0) {
-        encodeDrawPass(
+      if (mv) {
+        encodeMsaaDrawPass(
           encoder,
+          mv,
           tv,
-          edgePipeline,
-          EDGE_VERTS_PER_INSTANCE,
-          'load',
+          fillPipeline,
+          FILL_VERTS_PER_INSTANCE,
+          'clear',
+          white,
         )
+        if (edgePipeline && clickedFeatureId > 0) {
+          encodeMsaaDrawPass(
+            encoder,
+            mv,
+            tv,
+            edgePipeline,
+            EDGE_VERTS_PER_INSTANCE,
+            'load',
+          )
+        }
       }
 
       device.queue.submit([encoder.finish()])
@@ -456,6 +514,8 @@ self.onmessage = async (e: MessageEvent) => {
           p.maxOffScreenPx,
           p.minAlignmentLength,
           1,
+          0,
+          0,
         )
 
         const encoder = device.createCommandEncoder()
@@ -507,6 +567,7 @@ self.onmessage = async (e: MessageEvent) => {
     case 'dispose': {
       instanceBuffer?.destroy()
       uniformBuffer?.destroy()
+      msaaTexture?.destroy()
       pickingTexture?.destroy()
       pickingStagingBuffer?.destroy()
       device?.destroy()
@@ -515,6 +576,7 @@ self.onmessage = async (e: MessageEvent) => {
       canvas = null
       instanceBuffer = null
       uniformBuffer = null
+      msaaTexture = null
       pickingTexture = null
       pickingStagingBuffer = null
       break

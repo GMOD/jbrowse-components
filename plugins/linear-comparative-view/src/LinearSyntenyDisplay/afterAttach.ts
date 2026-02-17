@@ -39,7 +39,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const { alpha, featureData, level, minAlignmentLength } = self
+        const {
+          alpha,
+          featureData,
+          level,
+          minAlignmentLength,
+          hoveredFeatureIdx,
+          clickedFeatureIdx,
+        } = self
         const gpuInstanceData = self.gpuInstanceData
         const height = self.height
         const width = view.width
@@ -68,6 +75,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const v1 = view.views[level + 1]!
         const maxOffScreenPx = view.maxOffScreenDrawPx
 
+        const hoveredFeatureId =
+          hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0
+        const clickedFeatureId =
+          clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0
+
         self.gpuRenderer.render(
           v0.offsetPx,
           v1.offsetPx,
@@ -77,6 +89,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           maxOffScreenPx,
           minAlignmentLength,
           alpha,
+          hoveredFeatureId,
+          clickedFeatureId,
         )
       },
       {
