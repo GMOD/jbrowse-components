@@ -203,8 +203,8 @@ export function executeSyntenyInstanceData({
     queryTotalLengths.set(queryName, current + alignmentLength)
   }
 
-  const emptyOps = new Uint32Array(0)
-  const parsedCigars: Uint32Array[] = new Array(featureCount)
+  const emptyOps: number[] = []
+  const parsedCigars: number[][] = new Array(featureCount)
   for (let i = 0; i < featureCount; i++) {
     const cigarStr = cigars[i]!
     parsedCigars[i] = cigarStr ? parseCigar2(cigarStr) : emptyOps

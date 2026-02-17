@@ -39,13 +39,12 @@ const CIGAR_CODE_TO_INDEX: Record<number, number> = {
 
 // Parses CIGAR string to packed Uint32Array format
 // Returns Uint32Array where each value is (length << 4) | opIndex
-export function parseCigar2(s = ''): Uint32Array {
+export function parseCigar2(s = '') {
   let currLen = 0
   const ret: number[] = []
   for (let i = 0, l = s.length; i < l; i++) {
     const code = s.charCodeAt(i)
     if (code >= 48 && code <= 57) {
-      // '0' to '9'
       currLen = currLen * 10 + (code - 48)
     } else {
       const opIndex = CIGAR_CODE_TO_INDEX[code]!
@@ -53,7 +52,7 @@ export function parseCigar2(s = ''): Uint32Array {
       currLen = 0
     }
   }
-  return new Uint32Array(ret)
+  return ret
 }
 
 export function getMismatches(
@@ -82,7 +81,7 @@ export function getMismatches(
 
 // Optimized version using packed NUMERIC_CIGAR from @gmod/bam
 export function getMismatches2(
-  cigar?: Uint32Array,
+  cigar?: ArrayLike<number>,
   md?: string,
   seq?: string,
   ref?: string,

@@ -40,7 +40,7 @@ export const CHAR_FROM_CODE: string[] = Array.from({ length: 128 }, (_, i) =>
 
 // Helper to ensure we have Uint32Array (packed format)
 export function getCigarOps(
-  cigar: Uint32Array | string | undefined,
+  cigar: number[] | string | undefined,
 ): ArrayLike<number> {
   return typeof cigar === 'string' ? parseCigar2(cigar) : cigar || []
 }
