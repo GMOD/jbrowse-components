@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { WiggleWebGPUProxy } from './WiggleWebGPUProxy.ts'
+import { WiggleRenderer } from './WiggleRenderer.ts'
 import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
-import type { WiggleGPURenderState } from './WiggleWebGPUProxy.ts'
-import type { WiggleRenderBlock } from './WebGLWiggleRenderer.ts'
+import type { WiggleGPURenderState, WiggleRenderBlock } from './WiggleRenderer.ts'
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -66,7 +65,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [error, setError] = useState<string | null>(null)
-  const proxyRef = useRef<WiggleWebGPUProxy | null>(null)
+  const rendererRef = useRef<WiggleRenderer | null>(null)
   const [ready, setReady] = useState(false)
 
   const view = getContainingView(model) as LGV
@@ -76,10 +75,9 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
     canvasRef.current = canvas
-    const { rpcManager } = getSession(model)
-    const proxy = WiggleWebGPUProxy.getOrCreate(canvas, rpcManager)
-    proxyRef.current = proxy
-    proxy.init(canvas).then(ok => {
+    const renderer = WiggleRenderer.getOrCreate(canvas)
+    rendererRef.current = renderer
+    renderer.init().then(ok => {
       if (!ok) {
         setError('WebGPU initialization failed')
       } else {
@@ -89,38 +87,38 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   }, [])
 
   useEffect(() => {
-    const proxy = proxyRef.current
-    if (!proxy || !ready) {
+    const renderer = rendererRef.current
+    if (!renderer || !ready) {
       return
     }
 
     const dataMap = model.rpcDataMap
     if (dataMap.size === 0) {
-      proxy.pruneRegions([])
+      renderer.pruneRegions([])
       return
     }
 
     const activeRegions: number[] = []
     for (const [regionNumber, data] of dataMap) {
       activeRegions.push(regionNumber)
-      proxy.uploadRegion(regionNumber, {
+      renderer.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
         featurePositions: data.featurePositions,
         featureScores: data.featureScores,
         numFeatures: data.numFeatures,
       })
     }
-    proxy.pruneRegions(activeRegions)
+    renderer.pruneRegions(activeRegions)
   }, [model.rpcDataMap, ready])
 
   const renderWithDomain = useCallback(
     (bpRangeX: [number, number]) => {
-      const proxy = proxyRef.current
-      if (!proxy || !ready || !model.domain) {
+      const renderer = rendererRef.current
+      if (!renderer || !ready || !model.domain) {
         return
       }
       const width = Math.round(view.width)
-      proxy.renderSingle(bpRangeX, makeRenderState(model, width))
+      renderer.renderSingle(bpRangeX, makeRenderState(model, width))
     },
     [model, view, ready],
   )
@@ -138,8 +136,8 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   })
 
   useEffect(() => {
-    const proxy = proxyRef.current
-    if (!proxy || !ready || !view.initialized || !model.domain) {
+    const renderer = rendererRef.current
+    if (!renderer || !ready || !view.initialized || !model.domain) {
       return
     }
 
@@ -158,7 +156,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     }))
 
     requestAnimationFrame(() => {
-      proxy.renderBlocks(blocks, makeRenderState(model, width))
+      renderer.renderBlocks(blocks, makeRenderState(model, width))
     })
   }, [
     model,

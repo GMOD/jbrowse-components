@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { getContainingView, getSession, measureText } from '@jbrowse/core/util'
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { MultiWiggleWebGPUProxy } from './MultiWiggleWebGPUProxy.ts'
+import { MultiWiggleRenderer } from './MultiWiggleRenderer.ts'
 import { useWebGLViewInteraction } from '../../LinearWebGLWiggleDisplay/components/useWebGLViewInteraction.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
-import type { MultiWiggleGPURenderState } from './MultiWiggleWebGPUProxy.ts'
 import type {
+  MultiWiggleGPURenderState,
   MultiWiggleRenderBlock,
   SourceRenderData,
-} from './WebGLMultiWiggleRenderer.ts'
+} from './MultiWiggleRenderer.ts'
 import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -99,7 +99,7 @@ const WebGLMultiWiggleComponent = observer(
   }) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [error, setError] = useState<string | null>(null)
-    const proxyRef = useRef<MultiWiggleWebGPUProxy | null>(null)
+    const rendererRef = useRef<MultiWiggleRenderer | null>(null)
     const [ready, setReady] = useState(false)
 
     const view = getContainingView(model) as LGV
@@ -110,10 +110,9 @@ const WebGLMultiWiggleComponent = observer(
           return
         }
         canvasRef.current = canvas
-        const { rpcManager } = getSession(model)
-        const proxy = MultiWiggleWebGPUProxy.getOrCreate(canvas, rpcManager)
-        proxyRef.current = proxy
-        proxy.init(canvas).then(ok => {
+        const renderer = MultiWiggleRenderer.getOrCreate(canvas)
+        rendererRef.current = renderer
+        renderer.init().then(ok => {
           if (!ok) {
             setError('WebGPU initialization failed')
           } else {
@@ -125,14 +124,14 @@ const WebGLMultiWiggleComponent = observer(
     )
 
     useEffect(() => {
-      const proxy = proxyRef.current
-      if (!proxy || !ready) {
+      const renderer = rendererRef.current
+      if (!renderer || !ready) {
         return
       }
 
       const dataMap = model.rpcDataMap
       if (dataMap.size === 0) {
-        proxy.pruneRegions([])
+        renderer.pruneRegions([])
         return
       }
 
@@ -158,19 +157,19 @@ const WebGLMultiWiggleComponent = observer(
           }
         }
 
-        proxy.uploadRegion(regionNumber, data.regionStart, sourcesData)
+        renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
       }
-      proxy.pruneRegions(activeRegions)
+      renderer.pruneRegions(activeRegions)
     }, [model.rpcDataMap, model.sources, ready])
 
     const renderWithDomain = useCallback(
       (bpRangeX: [number, number]) => {
-        const proxy = proxyRef.current
-        if (!proxy || !ready || !model.domain) {
+        const renderer = rendererRef.current
+        if (!renderer || !ready || !model.domain) {
           return
         }
         const totalWidth = Math.round(view.width)
-        proxy.renderSingle(bpRangeX, makeRenderState(model, totalWidth))
+        renderer.renderSingle(bpRangeX, makeRenderState(model, totalWidth))
       },
       [model, view, ready],
     )
@@ -188,8 +187,8 @@ const WebGLMultiWiggleComponent = observer(
     })
 
     useEffect(() => {
-      const proxy = proxyRef.current
-      if (!proxy || !ready || !view.initialized || !model.domain) {
+      const renderer = rendererRef.current
+      if (!renderer || !ready || !view.initialized || !model.domain) {
         return
       }
 
@@ -208,7 +207,7 @@ const WebGLMultiWiggleComponent = observer(
       }))
 
       requestAnimationFrame(() => {
-        proxy.renderBlocks(blocks, makeRenderState(model, totalWidth))
+        renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
       })
     }, [
       model,

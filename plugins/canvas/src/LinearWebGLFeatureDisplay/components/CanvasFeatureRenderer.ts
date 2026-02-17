@@ -1,8 +1,4 @@
 /// <reference types="@webgpu/types" />
-import GpuHandlerType from '@jbrowse/core/pluggableElementTypes/GpuHandlerType'
-
-import type { GpuCanvasContext } from '@jbrowse/core/pluggableElementTypes/GpuHandlerType'
-import type PluginManager from '@jbrowse/core/PluginManager'
 
 const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
@@ -185,7 +181,6 @@ fn vs_main(
   @builtin(instance_index) iid: u32,
 ) -> VertexOutput {
   let inst = instances[iid];
-  // 12 vertices per chevron: 2 thin quads (top arm + bottom arm), 4 triangles
   let local_chevron_index = i32(vid / 12u);
   let v = vid % 12u;
 
@@ -232,7 +227,6 @@ fn vs_main(
   let thickness = 1.5 / u.canvas_height;
   let dir = inst.direction;
 
-  // top arm quad: vertices 0-5, bottom arm quad: vertices 6-11
   let is_top_arm = v < 6u;
   let qv = v % 6u;
   var sx: f32;
@@ -367,35 +361,70 @@ interface GpuRegionData {
   arrowBindGroup: GPUBindGroup | null
 }
 
-interface GpuCanvasState {
-  canvas: OffscreenCanvas
-  context: GPUCanvasContext
-  regions: Map<number, GpuRegionData>
+export interface FeatureRenderBlock {
+  regionNumber: number
+  bpRangeX: [number, number]
+  screenStartPx: number
+  screenEndPx: number
 }
 
-export default class CanvasFeatureGpuHandler extends GpuHandlerType {
-  name = 'CanvasFeatureGpuHandler'
+const rendererCache = new WeakMap<HTMLCanvasElement, CanvasFeatureRenderer>()
 
-  private device: GPUDevice | null = null
-  private rectPipeline: GPURenderPipeline | null = null
-  private linePipeline: GPURenderPipeline | null = null
-  private chevronPipeline: GPURenderPipeline | null = null
-  private arrowPipeline: GPURenderPipeline | null = null
-  private bindGroupLayout: GPUBindGroupLayout | null = null
+export class CanvasFeatureRenderer {
+  private static device: GPUDevice | null = null
+  private static devicePromise: Promise<GPUDevice | null> | null = null
+  private static rectPipeline: GPURenderPipeline | null = null
+  private static linePipeline: GPURenderPipeline | null = null
+  private static chevronPipeline: GPURenderPipeline | null = null
+  private static arrowPipeline: GPURenderPipeline | null = null
+  private static bindGroupLayout: GPUBindGroupLayout | null = null
+
+  private canvas: HTMLCanvasElement
+  private context: GPUCanvasContext | null = null
   private uniformBuffer: GPUBuffer | null = null
-
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
+  private regions = new Map<number, GpuRegionData>()
 
-  private canvases = new Map<number, GpuCanvasState>()
-
-  constructor(pm: PluginManager) {
-    super(pm)
+  private constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas
   }
 
-  init(device: GPUDevice) {
-    this.device = device
+  static getOrCreate(canvas: HTMLCanvasElement) {
+    let renderer = rendererCache.get(canvas)
+    if (!renderer) {
+      renderer = new CanvasFeatureRenderer(canvas)
+      rendererCache.set(canvas, renderer)
+    }
+    return renderer
+  }
+
+  private static async ensureDevice() {
+    if (CanvasFeatureRenderer.device) {
+      return CanvasFeatureRenderer.device
+    }
+    if (CanvasFeatureRenderer.devicePromise) {
+      return CanvasFeatureRenderer.devicePromise
+    }
+    CanvasFeatureRenderer.devicePromise = (async () => {
+      try {
+        const adapter = await navigator.gpu?.requestAdapter()
+        if (!adapter) {
+          return null
+        }
+        const device = await adapter.requestDevice()
+        CanvasFeatureRenderer.device = device
+        CanvasFeatureRenderer.initPipelines(device)
+        return device
+      } catch {
+        return null
+      }
+    })()
+    return CanvasFeatureRenderer.devicePromise
+  }
+
+  private static initPipelines(device: GPUDevice) {
     const blendState: GPUBlendState = {
       color: {
         srcFactor: 'src-alpha',
@@ -413,12 +442,7 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
       blend: blendState,
     }
 
-    this.uniformBuffer = device.createBuffer({
-      size: UNIFORM_SIZE,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    })
-
-    this.bindGroupLayout = device.createBindGroupLayout({
+    CanvasFeatureRenderer.bindGroupLayout = device.createBindGroupLayout({
       entries: [
         {
           binding: 0,
@@ -434,92 +458,307 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     })
 
     const layout = device.createPipelineLayout({
-      bindGroupLayouts: [this.bindGroupLayout],
+      bindGroupLayouts: [CanvasFeatureRenderer.bindGroupLayout],
     })
 
     const rectModule = device.createShaderModule({ code: RECT_SHADER })
-    this.rectPipeline = device.createRenderPipeline({
+    CanvasFeatureRenderer.rectPipeline = device.createRenderPipeline({
       layout,
       vertex: { module: rectModule, entryPoint: 'vs_main' },
-      fragment: { module: rectModule, entryPoint: 'fs_main', targets: [target] },
+      fragment: {
+        module: rectModule,
+        entryPoint: 'fs_main',
+        targets: [target],
+      },
       primitive: { topology: 'triangle-list' },
     })
 
     const lineModule = device.createShaderModule({ code: LINE_SHADER })
-    this.linePipeline = device.createRenderPipeline({
+    CanvasFeatureRenderer.linePipeline = device.createRenderPipeline({
       layout,
       vertex: { module: lineModule, entryPoint: 'vs_main' },
-      fragment: { module: lineModule, entryPoint: 'fs_main', targets: [target] },
+      fragment: {
+        module: lineModule,
+        entryPoint: 'fs_main',
+        targets: [target],
+      },
       primitive: { topology: 'triangle-list' },
     })
 
     const chevronModule = device.createShaderModule({ code: CHEVRON_SHADER })
-    this.chevronPipeline = device.createRenderPipeline({
+    CanvasFeatureRenderer.chevronPipeline = device.createRenderPipeline({
       layout,
       vertex: { module: chevronModule, entryPoint: 'vs_main' },
-      fragment: { module: chevronModule, entryPoint: 'fs_main', targets: [target] },
+      fragment: {
+        module: chevronModule,
+        entryPoint: 'fs_main',
+        targets: [target],
+      },
       primitive: { topology: 'triangle-list' },
     })
 
     const arrowModule = device.createShaderModule({ code: ARROW_SHADER })
-    this.arrowPipeline = device.createRenderPipeline({
+    CanvasFeatureRenderer.arrowPipeline = device.createRenderPipeline({
       layout,
       vertex: { module: arrowModule, entryPoint: 'vs_main' },
-      fragment: { module: arrowModule, entryPoint: 'fs_main', targets: [target] },
+      fragment: {
+        module: arrowModule,
+        entryPoint: 'fs_main',
+        targets: [target],
+      },
       primitive: { topology: 'triangle-list' },
     })
   }
 
-  initWebGL() {}
+  async init() {
+    const device = await CanvasFeatureRenderer.ensureDevice()
+    if (!device) {
+      return false
+    }
 
-  handleMessage(
-    msg: { type: string; canvasId: number; [key: string]: unknown },
-    ctx: GpuCanvasContext,
+    this.context = this.canvas.getContext('webgpu')!
+    this.context.configure({
+      device,
+      format: 'bgra8unorm',
+      alphaMode: 'premultiplied',
+    })
+
+    this.uniformBuffer = device.createBuffer({
+      size: UNIFORM_SIZE,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    })
+
+    return true
+  }
+
+  uploadRegion(
+    regionNumber: number,
+    data: {
+      regionStart: number
+      rectPositions: Uint32Array
+      rectYs: Float32Array
+      rectHeights: Float32Array
+      rectColors: Uint8Array
+      numRects: number
+      linePositions: Uint32Array
+      lineYs: Float32Array
+      lineColors: Uint8Array
+      lineDirections: Int8Array
+      numLines: number
+      arrowXs: Uint32Array
+      arrowYs: Float32Array
+      arrowDirections: Int8Array
+      arrowHeights: Float32Array
+      arrowColors: Uint8Array
+      numArrows: number
+    },
   ) {
-    const state = this.ensureCanvas(msg.canvasId, ctx)
-    switch (msg.type) {
-      case 'upload-region': {
-        this.uploadRegion(state, msg)
-        break
-      }
-      case 'prune-regions': {
-        this.pruneRegions(state, msg)
-        break
-      }
-      case 'render-blocks': {
-        this.renderBlocks(state, msg)
-        break
-      }
+    const device = CanvasFeatureRenderer.device
+    if (!device || !CanvasFeatureRenderer.bindGroupLayout || !this.uniformBuffer) {
+      return
     }
+
+    const old = this.regions.get(regionNumber)
+    if (old) {
+      this.destroyRegion(old)
+    }
+
+    const region: GpuRegionData = {
+      regionStart: data.regionStart,
+      rectBuffer: null,
+      rectCount: data.numRects,
+      rectBindGroup: null,
+      lineBuffer: null,
+      lineCount: data.numLines,
+      lineBindGroup: null,
+      chevronBuffer: null,
+      chevronBindGroup: null,
+      arrowBuffer: null,
+      arrowCount: data.numArrows,
+      arrowBindGroup: null,
+    }
+
+    if (data.numRects > 0) {
+      const interleaved = this.interleaveRects(
+        data.rectPositions,
+        data.rectYs,
+        data.rectHeights,
+        data.rectColors,
+        data.numRects,
+      )
+      region.rectBuffer = this.createStorageBuffer(device, interleaved)
+      region.rectBindGroup = this.createBindGroup(device, region.rectBuffer)
+    }
+
+    if (data.numLines > 0) {
+      const lineInterleaved = this.interleaveLines(
+        data.linePositions,
+        data.lineYs,
+        data.lineColors,
+        data.numLines,
+      )
+      region.lineBuffer = this.createStorageBuffer(device, lineInterleaved)
+      region.lineBindGroup = this.createBindGroup(device, region.lineBuffer)
+      const chevronInterleaved = this.interleaveChevrons(
+        data.linePositions,
+        data.lineYs,
+        data.lineDirections,
+        data.lineColors,
+        data.numLines,
+      )
+      region.chevronBuffer = this.createStorageBuffer(device, chevronInterleaved)
+      region.chevronBindGroup = this.createBindGroup(device, region.chevronBuffer)
+    }
+
+    if (data.numArrows > 0) {
+      const arrowInterleaved = this.interleaveArrows(
+        data.arrowXs,
+        data.arrowYs,
+        data.arrowDirections,
+        data.arrowHeights,
+        data.arrowColors,
+        data.numArrows,
+      )
+      region.arrowBuffer = this.createStorageBuffer(device, arrowInterleaved)
+      region.arrowBindGroup = this.createBindGroup(device, region.arrowBuffer)
+    }
+
+    this.regions.set(regionNumber, region)
   }
 
-  dispose(canvasId: number) {
-    const state = this.canvases.get(canvasId)
-    if (state) {
-      for (const region of state.regions.values()) {
-        this.destroyRegion(region)
-      }
-      this.canvases.delete(canvasId)
+  renderBlocks(
+    blocks: FeatureRenderBlock[],
+    state: { scrollY: number; canvasWidth: number; canvasHeight: number },
+  ) {
+    const device = CanvasFeatureRenderer.device
+    if (!device || !CanvasFeatureRenderer.rectPipeline || !this.context) {
+      return
     }
-  }
 
-  private ensureCanvas(canvasId: number, ctx: GpuCanvasContext) {
-    let state = this.canvases.get(canvasId)
-    if (!state) {
-      const gpuContext = ctx.canvas.getContext('webgpu')!
-      gpuContext.configure({
-        device: this.device!,
-        format: 'bgra8unorm',
-        alphaMode: 'premultiplied',
+    const { canvasWidth, canvasHeight, scrollY } = state
+
+    if (this.canvas.width !== canvasWidth || this.canvas.height !== canvasHeight) {
+      this.canvas.width = canvasWidth
+      this.canvas.height = canvasHeight
+    }
+
+    const textureView = this.context.getCurrentTexture().createView()
+    let isFirst = true
+
+    for (const block of blocks) {
+      const region = this.regions.get(block.regionNumber)
+      if (!region) {
+        continue
+      }
+
+      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
+      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+      const scissorW = scissorEnd - scissorX
+      if (scissorW <= 0) {
+        continue
+      }
+
+      const fullBlockWidth = block.screenEndPx - block.screenStartPx
+      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
+      const bpPerPx = regionLengthBp / fullBlockWidth
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(clippedBpStart)
+      const clippedLengthBp = clippedBpEnd - clippedBpStart
+
+      this.writeUniforms(
+        device,
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
+        Math.floor(region.regionStart),
+        canvasHeight,
+        scissorW,
+        scrollY,
+        bpPerPx,
+      )
+
+      const encoder = device.createCommandEncoder()
+      const pass = encoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: textureView,
+            loadOp: (isFirst ? 'clear' : 'load') as GPULoadOp,
+            storeOp: 'store' as GPUStoreOp,
+            ...(isFirst && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
+          },
+        ],
       })
-      state = {
-        canvas: ctx.canvas,
-        context: gpuContext,
-        regions: new Map(),
+
+      pass.setViewport(scissorX, 0, scissorW, canvasHeight, 0, 1)
+      pass.setScissorRect(scissorX, 0, scissorW, canvasHeight)
+
+      if (region.lineBindGroup && region.lineCount > 0) {
+        pass.setPipeline(CanvasFeatureRenderer.linePipeline!)
+        pass.setBindGroup(0, region.lineBindGroup)
+        pass.draw(6, region.lineCount)
       }
-      this.canvases.set(canvasId, state)
+
+      if (region.chevronBindGroup && region.lineCount > 0) {
+        pass.setPipeline(CanvasFeatureRenderer.chevronPipeline!)
+        pass.setBindGroup(0, region.chevronBindGroup)
+        pass.draw(MAX_VISIBLE_CHEVRONS_PER_LINE * 12, region.lineCount)
+      }
+
+      if (region.rectBindGroup && region.rectCount > 0) {
+        pass.setPipeline(CanvasFeatureRenderer.rectPipeline!)
+        pass.setBindGroup(0, region.rectBindGroup)
+        pass.draw(6, region.rectCount)
+      }
+
+      if (region.arrowBindGroup && region.arrowCount > 0) {
+        pass.setPipeline(CanvasFeatureRenderer.arrowPipeline!)
+        pass.setBindGroup(0, region.arrowBindGroup)
+        pass.draw(9, region.arrowCount)
+      }
+
+      pass.end()
+      device.queue.submit([encoder.finish()])
+      isFirst = false
     }
-    return state
+
+    if (isFirst) {
+      const encoder = device.createCommandEncoder()
+      const pass = encoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: textureView,
+            loadOp: 'clear' as GPULoadOp,
+            storeOp: 'store' as GPUStoreOp,
+            clearValue: { r: 0, g: 0, b: 0, a: 0 },
+          },
+        ],
+      })
+      pass.end()
+      device.queue.submit([encoder.finish()])
+    }
+  }
+
+  pruneStaleRegions(activeRegions: number[]) {
+    const active = new Set<number>(activeRegions)
+    for (const [num, region] of this.regions) {
+      if (!active.has(num)) {
+        this.destroyRegion(region)
+        this.regions.delete(num)
+      }
+    }
+  }
+
+  dispose() {
+    for (const region of this.regions.values()) {
+      this.destroyRegion(region)
+    }
+    this.regions.clear()
+    this.uniformBuffer?.destroy()
+    this.uniformBuffer = null
+    this.context = null
   }
 
   private destroyRegion(region: GpuRegionData) {
@@ -529,18 +768,18 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     region.arrowBuffer?.destroy()
   }
 
-  private createStorageBuffer(data: ArrayBuffer) {
-    const buf = this.device!.createBuffer({
+  private createStorageBuffer(device: GPUDevice, data: ArrayBuffer) {
+    const buf = device.createBuffer({
       size: Math.max(data.byteLength, 4),
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     })
-    this.device!.queue.writeBuffer(buf, 0, data)
+    device.queue.writeBuffer(buf, 0, data)
     return buf
   }
 
-  private createBindGroup(storageBuffer: GPUBuffer) {
-    return this.device!.createBindGroup({
-      layout: this.bindGroupLayout!,
+  private createBindGroup(device: GPUDevice, storageBuffer: GPUBuffer) {
+    return device.createBindGroup({
+      layout: CanvasFeatureRenderer.bindGroupLayout!,
       entries: [
         { binding: 0, resource: { buffer: storageBuffer } },
         { binding: 1, resource: { buffer: this.uniformBuffer! } },
@@ -548,71 +787,35 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     })
   }
 
-  private uploadRegion(state: GpuCanvasState, msg: Record<string, unknown>) {
-    if (!this.device || !this.bindGroupLayout || !this.uniformBuffer) {
-      return
-    }
-    const regionNumber = msg.regionNumber as number
-    const old = state.regions.get(regionNumber)
-    if (old) {
-      this.destroyRegion(old)
-    }
+  private writeUniforms(
+    device: GPUDevice,
+    bpRangeHi: number,
+    bpRangeLo: number,
+    bpRangeLength: number,
+    regionStart: number,
+    canvasHeight: number,
+    canvasWidth: number,
+    scrollY: number,
+    bpPerPx: number,
+  ) {
+    this.uniformF32[0] = bpRangeHi
+    this.uniformF32[1] = bpRangeLo
+    this.uniformF32[2] = bpRangeLength
+    this.uniformU32[3] = regionStart
+    this.uniformF32[4] = canvasHeight
+    this.uniformF32[5] = canvasWidth
+    this.uniformF32[6] = scrollY
+    this.uniformF32[7] = bpPerPx
+    device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
+  }
 
-    const regionStart = msg.regionStart as number
-    const numRects = msg.numRects as number
-    const numLines = msg.numLines as number
-    const numArrows = msg.numArrows as number
-
-    const region: GpuRegionData = {
-      regionStart,
-      rectBuffer: null,
-      rectCount: numRects,
-      rectBindGroup: null,
-      lineBuffer: null,
-      lineCount: numLines,
-      lineBindGroup: null,
-      chevronBuffer: null,
-      chevronBindGroup: null,
-      arrowBuffer: null,
-      arrowCount: numArrows,
-      arrowBindGroup: null,
-    }
-
-    if (numRects > 0) {
-      const rectPositions = msg.rectPositions as Uint32Array
-      const rectYs = msg.rectYs as Float32Array
-      const rectHeights = msg.rectHeights as Float32Array
-      const rectColors = msg.rectColors as Uint8Array
-      const interleaved = this.interleaveRects(rectPositions, rectYs, rectHeights, rectColors, numRects)
-      region.rectBuffer = this.createStorageBuffer(interleaved)
-      region.rectBindGroup = this.createBindGroup(region.rectBuffer)
-    }
-
-    if (numLines > 0) {
-      const linePositions = msg.linePositions as Uint32Array
-      const lineYs = msg.lineYs as Float32Array
-      const lineColors = msg.lineColors as Uint8Array
-      const lineDirections = msg.lineDirections as Int8Array
-      const lineInterleaved = this.interleaveLines(linePositions, lineYs, lineColors, numLines)
-      region.lineBuffer = this.createStorageBuffer(lineInterleaved)
-      region.lineBindGroup = this.createBindGroup(region.lineBuffer)
-      const chevronInterleaved = this.interleaveChevrons(linePositions, lineYs, lineDirections, lineColors, numLines)
-      region.chevronBuffer = this.createStorageBuffer(chevronInterleaved)
-      region.chevronBindGroup = this.createBindGroup(region.chevronBuffer)
-    }
-
-    if (numArrows > 0) {
-      const arrowXs = msg.arrowXs as Uint32Array
-      const arrowYs = msg.arrowYs as Float32Array
-      const arrowDirections = msg.arrowDirections as Int8Array
-      const arrowHeights = msg.arrowHeights as Float32Array
-      const arrowColors = msg.arrowColors as Uint8Array
-      const arrowInterleaved = this.interleaveArrows(arrowXs, arrowYs, arrowDirections, arrowHeights, arrowColors, numArrows)
-      region.arrowBuffer = this.createStorageBuffer(arrowInterleaved)
-      region.arrowBindGroup = this.createBindGroup(region.arrowBuffer)
-    }
-
-    state.regions.set(regionNumber, region)
+  private splitPositionWithFrac(value: number): [number, number] {
+    const intValue = Math.floor(value)
+    const frac = value - intValue
+    const loInt = intValue & 0xfff
+    const hi = intValue - loInt
+    const lo = loInt + frac
+    return [hi, lo]
   }
 
   private interleaveRects(
@@ -622,7 +825,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     colors: Uint8Array,
     count: number,
   ) {
-    // RectInstance: vec2u start_end, f32 y, f32 height, vec4f color = 8 floats
     const buf = new ArrayBuffer(count * RECT_STRIDE * 4)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
@@ -646,7 +848,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     colors: Uint8Array,
     count: number,
   ) {
-    // LineInstance: vec2u start_end, f32 y, f32 _pad, vec4f color = 8 floats
     const buf = new ArrayBuffer(count * LINE_STRIDE * 4)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
@@ -671,7 +872,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     colors: Uint8Array,
     count: number,
   ) {
-    // ChevronInstance: vec2u start_end, f32 y, f32 direction, vec4f color = 8 floats
     const buf = new ArrayBuffer(count * CHEVRON_STRIDE * 4)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
@@ -697,7 +897,6 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
     colors: Uint8Array,
     count: number,
   ) {
-    // ArrowInstance: u32 x, u32 _pad, f32 y, f32 direction, f32 height, f32 r, f32 g, f32 a(b)
     const buf = new ArrayBuffer(count * ARROW_STRIDE * 4)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
@@ -713,160 +912,5 @@ export default class CanvasFeatureGpuHandler extends GpuHandlerType {
       f32[off + 7] = colors[i * 4 + 2]! / 255
     }
     return buf
-  }
-
-  private pruneRegions(state: GpuCanvasState, msg: Record<string, unknown>) {
-    const active = new Set<number>(msg.activeRegions as number[])
-    for (const [num, region] of state.regions) {
-      if (!active.has(num)) {
-        this.destroyRegion(region)
-        state.regions.delete(num)
-      }
-    }
-  }
-
-  private writeUniforms(
-    bpRangeHi: number,
-    bpRangeLo: number,
-    bpRangeLength: number,
-    regionStart: number,
-    canvasHeight: number,
-    canvasWidth: number,
-    scrollY: number,
-    bpPerPx: number,
-  ) {
-    this.uniformF32[0] = bpRangeHi
-    this.uniformF32[1] = bpRangeLo
-    this.uniformF32[2] = bpRangeLength
-    this.uniformU32[3] = regionStart
-    this.uniformF32[4] = canvasHeight
-    this.uniformF32[5] = canvasWidth
-    this.uniformF32[6] = scrollY
-    this.uniformF32[7] = bpPerPx
-    this.device!.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
-  }
-
-  private splitPositionWithFrac(value: number): [number, number] {
-    const intValue = Math.floor(value)
-    const frac = value - intValue
-    const loInt = intValue & 0xfff
-    const hi = intValue - loInt
-    const lo = loInt + frac
-    return [hi, lo]
-  }
-
-  private renderBlocks(state: GpuCanvasState, msg: Record<string, unknown>) {
-    if (!this.device || !this.rectPipeline) {
-      return
-    }
-    const blocks = msg.blocks as {
-      regionNumber: number
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    }[]
-    const scrollY = msg.scrollY as number
-    const canvasWidth = msg.canvasWidth as number
-    const canvasHeight = msg.canvasHeight as number
-
-    if (state.canvas.width !== canvasWidth || state.canvas.height !== canvasHeight) {
-      state.canvas.width = canvasWidth
-      state.canvas.height = canvasHeight
-    }
-
-    const textureView = state.context.getCurrentTexture().createView()
-    let isFirst = true
-
-    for (const block of blocks) {
-      const region = state.regions.get(block.regionNumber)
-      if (!region) {
-        continue
-      }
-
-      const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-      const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-      const scissorW = scissorEnd - scissorX
-      if (scissorW <= 0) {
-        continue
-      }
-
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
-      const bpPerPx = regionLengthBp / fullBlockWidth
-      const clippedBpStart = block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd = block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-      const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(clippedBpStart)
-      const clippedLengthBp = clippedBpEnd - clippedBpStart
-
-      this.writeUniforms(
-        bpStartHi,
-        bpStartLo,
-        clippedLengthBp,
-        Math.floor(region.regionStart),
-        canvasHeight,
-        scissorW,
-        scrollY,
-        bpPerPx,
-      )
-
-      const encoder = this.device.createCommandEncoder()
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: textureView,
-            loadOp: (isFirst ? 'clear' : 'load') as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            ...(isFirst && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
-          },
-        ],
-      })
-
-      pass.setViewport(scissorX, 0, scissorW, canvasHeight, 0, 1)
-      pass.setScissorRect(scissorX, 0, scissorW, canvasHeight)
-
-      if (region.lineBindGroup && region.lineCount > 0) {
-        pass.setPipeline(this.linePipeline!)
-        pass.setBindGroup(0, region.lineBindGroup)
-        pass.draw(6, region.lineCount)
-      }
-
-      if (region.chevronBindGroup && region.lineCount > 0) {
-        pass.setPipeline(this.chevronPipeline!)
-        pass.setBindGroup(0, region.chevronBindGroup)
-        pass.draw(MAX_VISIBLE_CHEVRONS_PER_LINE * 12, region.lineCount)
-      }
-
-      if (region.rectBindGroup && region.rectCount > 0) {
-        pass.setPipeline(this.rectPipeline!)
-        pass.setBindGroup(0, region.rectBindGroup)
-        pass.draw(6, region.rectCount)
-      }
-
-      if (region.arrowBindGroup && region.arrowCount > 0) {
-        pass.setPipeline(this.arrowPipeline!)
-        pass.setBindGroup(0, region.arrowBindGroup)
-        pass.draw(9, region.arrowCount)
-      }
-
-      pass.end()
-      this.device.queue.submit([encoder.finish()])
-      isFirst = false
-    }
-
-    if (isFirst) {
-      const encoder = this.device.createCommandEncoder()
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: textureView,
-            loadOp: 'clear' as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            clearValue: { r: 0, g: 0, b: 0, a: 0 },
-          },
-        ],
-      })
-      pass.end()
-      this.device.queue.submit([encoder.finish()])
-    }
   }
 }

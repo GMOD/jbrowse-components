@@ -1,21 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  getContainingView,
-  getSession,
-  measureText,
-} from '@jbrowse/core/util'
+import { getContainingView, measureText } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { CanvasFeatureProxy } from './CanvasFeatureProxy.ts'
+import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { shouldRenderPeptideText } from '../../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
-import type { FeatureRenderBlock } from './CanvasFeatureProxy.ts'
+import type { FeatureRenderBlock } from './CanvasFeatureRenderer.ts'
 import type {
   FlatbushItem,
   SubfeatureInfo,
@@ -214,11 +210,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const width = view.initialized ? view.width : undefined
   const height = model.height
 
-  const proxyRef = useRef<CanvasFeatureProxy | null>(null)
+  const rendererRef = useRef<CanvasFeatureRenderer | null>(null)
 
   const renderWithBlocks = useCallback(() => {
-    const proxy = proxyRef.current
-    if (!proxy || !view.initialized || width === undefined) {
+    const renderer = rendererRef.current
+    if (!renderer || !view.initialized || width === undefined) {
       return
     }
 
@@ -237,7 +233,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       })
     }
 
-    proxy.renderBlocks(blocks, {
+    renderer.renderBlocks(blocks, {
       scrollY: scrollYRef.current,
       canvasWidth: Math.round(view.width),
       canvasHeight: height,
@@ -255,15 +251,14 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
       canvasRef.current = canvas
-      const { rpcManager } = getSession(model)
-      const proxy = CanvasFeatureProxy.getOrCreate(canvas, rpcManager)
-      proxyRef.current = proxy
-      proxy.init(canvas).then(ok => {
+      const renderer = CanvasFeatureRenderer.getOrCreate(canvas)
+      rendererRef.current = renderer
+      renderer.init().then(ok => {
         setRendererReady(ok)
         uploadedDataRef.current.clear()
       })
     },
-    [model],
+    [],
   )
 
   useEffect(() => {
@@ -295,13 +290,13 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   }, [view, model])
 
   useEffect(() => {
-    const proxy = proxyRef.current
-    if (!proxy || !rendererReady) {
+    const renderer = rendererRef.current
+    if (!renderer || !rendererReady) {
       return
     }
 
     if (rpcDataMap.size === 0) {
-      proxy.pruneStaleRegions([])
+      renderer.pruneStaleRegions([])
       uploadedDataRef.current.clear()
       return
     }
@@ -313,7 +308,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         continue
       }
       uploadedDataRef.current.set(regionNumber, data)
-      proxy.uploadForRegion(regionNumber, {
+      renderer.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
         rectPositions: data.rectPositions,
         rectYs: data.rectYs,
@@ -338,7 +333,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         uploadedDataRef.current.delete(key)
       }
     }
-    proxy.pruneStaleRegions([...activeRegions])
+    renderer.pruneStaleRegions([...activeRegions])
 
     renderWithBlocksRef.current()
   }, [rpcDataMap, rendererReady])
@@ -817,6 +812,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasCallbackRef}
+        width={width ? Math.round(width) : undefined}
+        height={height}
         style={{
           display: 'block',
           width,

@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import CanvasFeatureGpuHandler from './CanvasFeatureGpuHandler.ts'
 import LinearWebGLFeatureDisplayF from './LinearWebGLFeatureDisplay/index.ts'
 import WebGLFeatureDataRPCMethodsF from './RenderWebGLFeatureDataRPC/index.ts'
 
@@ -12,7 +11,6 @@ export default class CanvasPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     LinearWebGLFeatureDisplayF(pluginManager)
     WebGLFeatureDataRPCMethodsF(pluginManager)
-    pluginManager.addGpuHandler(() => new CanvasFeatureGpuHandler(pluginManager))
   }
 }
 
