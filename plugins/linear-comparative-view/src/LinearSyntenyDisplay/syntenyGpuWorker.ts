@@ -1,6 +1,8 @@
 /// <reference types="@webgpu/types" />
 import {
+  EDGE_SEGMENTS,
   EDGE_VERTS_PER_INSTANCE,
+  FILL_SEGMENTS,
   FILL_VERTS_PER_INSTANCE,
   INSTANCE_BYTE_SIZE,
   edgeVertexShader,
@@ -21,12 +23,10 @@ let instanceBuffer: GPUBuffer | null = null
 let uniformBuffer: GPUBuffer | null = null
 let renderBindGroup: GPUBindGroup | null = null
 
-let msaaTexture: GPUTexture | null = null
 let pickingTexture: GPUTexture | null = null
 let pickingStagingBuffer: GPUBuffer | null = null
 
 let instanceCount = 0
-let nonCigarInstanceCount = 0
 let geometryBpPerPx0 = 1
 let geometryBpPerPx1 = 1
 let canvasWidth = 0
@@ -77,8 +77,6 @@ function createPipelines() {
     },
   }
 
-  const msaa = { count: 4 as const }
-
   const fillModule = device.createShaderModule({ code: fillVertexShader })
   fillPipeline = device.createRenderPipeline({
     layout: renderLayout,
@@ -89,7 +87,6 @@ function createPipelines() {
       targets: [{ format: 'bgra8unorm', blend: blendState }],
     },
     primitive: { topology: 'triangle-list' },
-    multisample: msaa,
   })
 
   fillPickingPipeline = device.createRenderPipeline({
@@ -113,21 +110,13 @@ function createPipelines() {
       targets: [{ format: 'bgra8unorm', blend: blendState }],
     },
     primitive: { topology: 'triangle-list' },
-    multisample: msaa,
   })
 }
 
-function createSizedTextures() {
+function createPickingTexture() {
   if (!device || canvasWidth === 0 || canvasHeight === 0) {
     return
   }
-  msaaTexture?.destroy()
-  msaaTexture = device.createTexture({
-    size: [canvasWidth, canvasHeight],
-    format: 'bgra8unorm',
-    sampleCount: 4,
-    usage: GPUTextureUsage.RENDER_ATTACHMENT,
-  })
   pickingTexture?.destroy()
   pickingTexture = device.createTexture({
     size: [canvasWidth, canvasHeight],
@@ -167,8 +156,8 @@ function writeUniforms(
   uniformF32[11] = minAlignmentLength
   uniformF32[12] = alpha
   uniformU32[13] = instanceCount
-  uniformU32[14] = 16
-  uniformU32[15] = 8
+  uniformU32[14] = FILL_SEGMENTS
+  uniformU32[15] = EDGE_SEGMENTS
   uniformF32[16] = hoveredFeatureId
   uniformF32[17] = clickedFeatureId
   uniformF32[18] = 0
@@ -231,32 +220,6 @@ function rebuildBindGroups() {
       { binding: 1, resource: { buffer: uniformBuffer } },
     ],
   })
-}
-
-function encodeMsaaDrawPass(
-  encoder: GPUCommandEncoder,
-  msaaView: GPUTextureView,
-  resolveTarget: GPUTextureView,
-  pipeline: GPURenderPipeline,
-  vertexCount: number,
-  loadOp: GPULoadOp,
-  clearValue?: GPUColor,
-) {
-  const pass = encoder.beginRenderPass({
-    colorAttachments: [
-      {
-        view: msaaView,
-        resolveTarget,
-        loadOp,
-        storeOp: 'store',
-        ...(clearValue && { clearValue }),
-      },
-    ],
-  })
-  pass.setPipeline(pipeline)
-  pass.setBindGroup(0, renderBindGroup)
-  pass.draw(vertexCount, instanceCount)
-  pass.end()
 }
 
 function encodeDrawPass(
@@ -361,7 +324,7 @@ self.onmessage = async (e: MessageEvent) => {
       canvasHeight = Math.round(logicalHeight * dpr)
       canvas.width = canvasWidth
       canvas.height = canvasHeight
-      createSizedTextures()
+      createPickingTexture()
       break
     }
 
@@ -370,7 +333,6 @@ self.onmessage = async (e: MessageEvent) => {
         break
       }
       instanceCount = msg.instanceCount
-      nonCigarInstanceCount = msg.nonCigarInstanceCount
       geometryBpPerPx0 = msg.geometryBpPerPx0
       geometryBpPerPx1 = msg.geometryBpPerPx1
 
@@ -455,29 +417,24 @@ self.onmessage = async (e: MessageEvent) => {
 
       const encoder = device.createCommandEncoder()
       const tv = context.getCurrentTexture().createView()
-      const mv = msaaTexture?.createView()
       const white = { r: 1, g: 1, b: 1, a: 1 }
 
-      if (mv) {
-        encodeMsaaDrawPass(
+      encodeDrawPass(
+        encoder,
+        tv,
+        fillPipeline,
+        FILL_VERTS_PER_INSTANCE,
+        'clear',
+        white,
+      )
+      if (edgePipeline && clickedFeatureId > 0) {
+        encodeDrawPass(
           encoder,
-          mv,
           tv,
-          fillPipeline,
-          FILL_VERTS_PER_INSTANCE,
-          'clear',
-          white,
+          edgePipeline,
+          EDGE_VERTS_PER_INSTANCE,
+          'load',
         )
-        if (edgePipeline && clickedFeatureId > 0) {
-          encodeMsaaDrawPass(
-            encoder,
-            mv,
-            tv,
-            edgePipeline,
-            EDGE_VERTS_PER_INSTANCE,
-            'load',
-          )
-        }
       }
 
       device.queue.submit([encoder.finish()])
@@ -567,7 +524,6 @@ self.onmessage = async (e: MessageEvent) => {
     case 'dispose': {
       instanceBuffer?.destroy()
       uniformBuffer?.destroy()
-      msaaTexture?.destroy()
       pickingTexture?.destroy()
       pickingStagingBuffer?.destroy()
       device?.destroy()
@@ -576,7 +532,6 @@ self.onmessage = async (e: MessageEvent) => {
       canvas = null
       instanceBuffer = null
       uniformBuffer = null
-      msaaTexture = null
       pickingTexture = null
       pickingStagingBuffer = null
       break

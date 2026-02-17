@@ -239,8 +239,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         }
         const feat = pickFeature(coords.x, coords.y)
         if (feat) {
-          const featureIndex =
-            model.gpuRenderer?.pick(coords.x, coords.y) ?? -1
+          const featureIndex = model.gpuRenderer?.pick(coords.x, coords.y) ?? -1
           model.setClickedFeatureIdx(featureIndex)
           const session = getSession(model)
           if (isSessionModelWithWidgets(session)) {

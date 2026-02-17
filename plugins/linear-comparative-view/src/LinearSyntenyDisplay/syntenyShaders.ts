@@ -71,17 +71,6 @@ fn hermiteEdges(screenX1: f32, screenX2: f32, screenX3: f32, screenX4: f32, t: f
 }
 `
 
-const FS_PICKING = /* wgsl */ `
-@fragment
-fn fs_picking(in: VOut) -> @location(0) vec4f {
-  let id = u32(in.featureId);
-  let r = f32(id & 0xFFu) / 255.0;
-  let g = f32((id >> 8u) & 0xFFu) / 255.0;
-  let b = f32((id >> 16u) & 0xFFu) / 255.0;
-  return vec4f(r, g, b, 1.0);
-}
-`
-
 const CULL_CHECK = /* wgsl */ `
 fn isCulled(inst: Instance) -> bool {
   if (uniforms.minAlignmentLength > 0.0 && inst.queryTotalLength < uniforms.minAlignmentLength) {
@@ -111,6 +100,8 @@ struct VOut {
   @builtin(position) pos: vec4f,
   @location(0) color: vec4f,
   @location(1) @interpolate(flat) featureId: f32,
+  @location(2) dist: f32,
+  @location(3) halfWidth: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
@@ -127,6 +118,8 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   var out: VOut;
   out.color = inst.color;
   out.featureId = inst.featureId;
+  out.dist = 0.0;
+  out.halfWidth = 0.0;
 
   if (isCulled(inst)) {
     out.pos = ${DEGENERATE};
@@ -179,11 +172,15 @@ ${SCREEN_POSITIONS}
   let e = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t, inst.isCurve);
   let centerX = (e.x + e.y) * 0.5;
   let halfWidth = abs(e.x - e.y) * 0.5;
-  let x = centerX + (side * 2.0 - 1.0) * halfWidth;
+  let dir = side * 2.0 - 1.0;
+  let expandedHalfWidth = halfWidth + 0.5;
+  let x = centerX + dir * expandedHalfWidth;
 
   let clipSpace = (vec2f(x, e.z) / uniforms.resolution) * 2.0 - 1.0;
 
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  out.dist = dir * expandedHalfWidth;
+  out.halfWidth = halfWidth;
   return out;
 }
 
@@ -193,10 +190,19 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   if (uniforms.hoveredFeatureId > 0.0 && abs(in.featureId - uniforms.hoveredFeatureId) < 0.5) {
     rgb = rgb * 0.7;
   }
-  return vec4f(rgb, in.color.a * uniforms.alpha);
+  let coverage = saturate(in.halfWidth + 0.5 - abs(in.dist));
+  return vec4f(rgb, in.color.a * uniforms.alpha * coverage);
 }
 
-${FS_PICKING}
+@fragment
+fn fs_picking(in: VOut) -> @location(0) vec4f {
+  if (abs(in.dist) > in.halfWidth) { discard; }
+  let id = u32(in.featureId);
+  let r = f32(id & 0xFFu) / 255.0;
+  let g = f32((id >> 8u) & 0xFFu) / 255.0;
+  let b = f32((id >> 16u) & 0xFFu) / 255.0;
+  return vec4f(r, g, b, 1.0);
+}
 `
 
 export const edgeVertexShader = /* wgsl */ `
@@ -214,7 +220,7 @@ struct VOut {
 ${HP_DIFF}
 ${CULL_CHECK}
 
-const STROKE_WIDTH = 1.5;
+const STROKE_WIDTH = 1.0;
 
 @vertex
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VOut {
@@ -229,11 +235,6 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   }
 
 ${SCREEN_POSITIONS}
-
-  if ((screenX1 - screenX2) * (screenX4 - screenX3) < 0.0) {
-    out.pos = ${DEGENERATE};
-    return out;
-  }
 
   let segs = uniforms.edgeSegments;
   let vertsPerEdge = segs * 6u;
@@ -284,7 +285,7 @@ ${SCREEN_POSITIONS}
   var normal: vec2f;
   if (tangentLen > 0.001) {
     let rawNormal = vec2f(-tangent.y, tangent.x) / tangentLen;
-    let outwardSign = select(1.0, -1.0, edgeIdx == 0u) * sign(edge0_x - edge1_x);
+    let outwardSign = select(1.0, -1.0, edgeIdx == 0u) * sign(screenX1 - screenX2);
     normal = rawNormal * outwardSign;
   } else {
     normal = vec2f(0.0, 1.0);
@@ -303,6 +304,6 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   let aa = fwidth(in.dist);
   let halfW = STROKE_WIDTH * 0.5;
   let edgeAlpha = 1.0 - smoothstep(halfW - aa * 0.5, halfW + aa, d);
-  return vec4f(0.0, 0.0, 0.0, edgeAlpha);
+  return vec4f(0.0, 0.0, 0.0, edgeAlpha * 0.4);
 }
 `
