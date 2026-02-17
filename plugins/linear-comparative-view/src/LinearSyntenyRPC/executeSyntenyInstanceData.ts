@@ -438,6 +438,7 @@ export function executeSyntenyInstanceData({
 
     let totalBpView0 = 0
     let totalBpView1 = 0
+    let maxIndelLen = 0
     for (let j = 0; j < cigar.length; j += 2) {
       const len = +cigar[j]!
       const op = cigar[j + 1]!
@@ -446,8 +447,14 @@ export function executeSyntenyInstanceData({
         totalBpView1 += len
       } else if (op === 'D' || op === 'N') {
         totalBpView0 += len
+        if (len > maxIndelLen) {
+          maxIndelLen = len
+        }
       } else if (op === 'I') {
         totalBpView1 += len
+        if (len > maxIndelLen) {
+          maxIndelLen = len
+        }
       }
     }
     const pxPerBp0 =
@@ -456,6 +463,39 @@ export function executeSyntenyInstanceData({
       totalBpView1 > 0
         ? Math.abs(x22 - x21) / totalBpView1
         : fallbackBpPerPxInv1
+
+    if (maxIndelLen * Math.max(pxPerBp0, pxPerBp1) < 1) {
+      const [cr, cg, cb, ca] = colorFn(strand, refName, i)
+      addInstance(
+        x11,
+        x12,
+        x22,
+        x21,
+        cr,
+        cg,
+        cb,
+        ca,
+        featureId,
+        isCurve,
+        qtl,
+        padTop,
+        padBottom,
+      )
+      if (locationMarkersEnabled) {
+        addLocationMarkers(
+          x11,
+          x12,
+          x22,
+          x21,
+          featureId,
+          isCurve,
+          qtl,
+          padTop,
+          padBottom,
+        )
+      }
+      continue
+    }
 
     let cx1 = k1
     let cx2 = s1 === -1 ? x22 : x21
