@@ -90,7 +90,7 @@ const ScrollingLabels = observer(function ScrollingLabels({
       regionNumber !== undefined ? regionEndPx.get(regionNumber) : undefined
     const maxWidth =
       regEndPx !== undefined ? regEndPx - blockOffsetPx - 2 : undefined
-    if (maxWidth !== undefined && maxWidth < 20) {
+    if (maxWidth !== undefined && maxWidth <= 0) {
       return
     }
     labels.push(
@@ -180,7 +180,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
       pinnedRegionEndPx !== undefined
         ? pinnedRegionEndPx - offsetPx - 2
         : undefined
-    if (maxWidth === undefined || maxWidth >= 20) {
+    if (maxWidth === undefined || maxWidth > 0) {
       pinnedLabel = (
         <span
           style={{

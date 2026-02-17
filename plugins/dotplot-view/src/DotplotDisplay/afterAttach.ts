@@ -123,10 +123,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const hViewSnap = {
           ...getSnapshot(hview),
           width: hview.width,
-          staticBlocks: {
-            contentBlocks: hview.staticBlocks.contentBlocks,
-            blocks: hview.staticBlocks.blocks,
-          },
+          staticBlocks: { contentBlocks: [], blocks: [] },
           interRegionPaddingWidth: hview.interRegionPaddingWidth,
           minimumBlockWidth: hview.minimumBlockWidth,
         }
@@ -134,10 +131,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
         const vViewSnap = {
           ...getSnapshot(vview),
           width: vview.width,
-          staticBlocks: {
-            contentBlocks: vview.staticBlocks.contentBlocks,
-            blocks: vview.staticBlocks.blocks,
-          },
+          staticBlocks: { contentBlocks: [], blocks: [] },
           interRegionPaddingWidth: vview.interRegionPaddingWidth,
           minimumBlockWidth: vview.minimumBlockWidth,
         }

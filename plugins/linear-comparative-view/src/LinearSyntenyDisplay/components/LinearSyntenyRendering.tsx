@@ -297,9 +297,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
-      {mouseoverId && tooltip ? (
-        <SyntenyTooltip title={tooltip} />
-      ) : null}
+      {mouseoverId && tooltip ? <SyntenyTooltip title={tooltip} /> : null}
       {anchorEl ? (
         <SyntenyContextMenu
           model={model}

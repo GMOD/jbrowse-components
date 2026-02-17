@@ -57,18 +57,14 @@ describe('synteny bpToPx', () => {
   })
 
   it('does not add padding after the last region', () => {
-    const self = makeViewSnap([
-      { refName: 'chr1', start: 0, end: 1000 },
-    ])
+    const self = makeViewSnap([{ refName: 'chr1', start: 0, end: 1000 }])
     const result = bpToPx({ self, refName: 'chr1', coord: 500 })
     expect(result).toBeDefined()
     expect(result!.paddingPx).toBe(0)
   })
 
   it('returns undefined for unmatched refName', () => {
-    const self = makeViewSnap([
-      { refName: 'chr1', start: 0, end: 1000 },
-    ])
+    const self = makeViewSnap([{ refName: 'chr1', start: 0, end: 1000 }])
     const result = bpToPx({ self, refName: 'chrX', coord: 500 })
     expect(result).toBeUndefined()
   })
@@ -94,9 +90,7 @@ describe('synteny bpToPx', () => {
       minimumBlockWidth: 3,
       interRegionPaddingWidth: 2,
     })
-    const chr5Blocks = blockSet.contentBlocks.filter(
-      b => b.refName === 'chr5',
-    )
+    const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)
     expect(chr5Blocks[0]!.offsetPx).toBe(result!.offsetPx)
   })

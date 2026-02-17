@@ -265,9 +265,7 @@ describe('off-screen region padding in regionBpOffset', () => {
       minimumBlockWidth: 3,
       interRegionPaddingWidth: 2,
     })
-    const chr5Blocks = blockSet.contentBlocks.filter(
-      b => b.refName === 'chr5',
-    )
+    const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)
     expect(chr5Blocks[0]!.offsetPx).toBe(4008)
   })
@@ -328,9 +326,7 @@ describe('off-screen region padding in regionBpOffset', () => {
       interRegionPaddingWidth: 2,
     })
 
-    const chr3AtStart = atStart.contentBlocks.filter(
-      b => b.refName === 'chr3',
-    )
+    const chr3AtStart = atStart.contentBlocks.filter(b => b.refName === 'chr3')
     const chr3Scrolled = scrolledRight.contentBlocks.filter(
       b => b.refName === 'chr3',
     )
@@ -359,9 +355,7 @@ describe('off-screen region padding in regionBpOffset', () => {
       minimumBlockWidth: 3,
       interRegionPaddingWidth: 2,
     })
-    const chr3Blocks = blockSet.contentBlocks.filter(
-      b => b.refName === 'chr3',
-    )
+    const chr3Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr3')
     expect(chr3Blocks.length).toBeGreaterThan(0)
     expect(chr3Blocks[0]!.offsetPx).toBe(1003)
   })

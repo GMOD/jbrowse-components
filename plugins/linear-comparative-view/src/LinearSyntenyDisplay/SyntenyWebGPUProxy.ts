@@ -72,23 +72,26 @@ export class SyntenyWebGPUProxy {
       data.padBottoms.buffer,
     ].filter((b, i, arr) => arr.indexOf(b) === i) as Transferable[]
 
-    this.worker.postMessage({
-      type: 'upload-geometry',
-      x1: data.x1,
-      x2: data.x2,
-      x3: data.x3,
-      x4: data.x4,
-      colors: data.colors,
-      featureIds: data.featureIds,
-      isCurves: data.isCurves,
-      queryTotalLengths: data.queryTotalLengths,
-      padTops: data.padTops,
-      padBottoms: data.padBottoms,
-      instanceCount: data.instanceCount,
-      nonCigarInstanceCount: data.nonCigarInstanceCount,
-      geometryBpPerPx0: data.geometryBpPerPx0,
-      geometryBpPerPx1: data.geometryBpPerPx1,
-    }, transferables)
+    this.worker.postMessage(
+      {
+        type: 'upload-geometry',
+        x1: data.x1,
+        x2: data.x2,
+        x3: data.x3,
+        x4: data.x4,
+        colors: data.colors,
+        featureIds: data.featureIds,
+        isCurves: data.isCurves,
+        queryTotalLengths: data.queryTotalLengths,
+        padTops: data.padTops,
+        padBottoms: data.padBottoms,
+        instanceCount: data.instanceCount,
+        nonCigarInstanceCount: data.nonCigarInstanceCount,
+        geometryBpPerPx0: data.geometryBpPerPx0,
+        geometryBpPerPx1: data.geometryBpPerPx1,
+      },
+      transferables,
+    )
   }
 
   render(

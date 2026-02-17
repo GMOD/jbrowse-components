@@ -136,10 +136,10 @@ describe('pxToBp', () => {
       { refName: 'chr2', start: 0, end: 1 },
       { refName: 'chr3', start: 0, end: 1000 },
     ])
-    const result = pxToBp(self, 1003)
-    expect(result.oob).toBe(false)
-    expect(result.refName).toBe('chr3')
-    expect(result.offset).toBe(2)
+    const atChr3Start = pxToBp(self, 1003)
+    expect(atChr3Start.oob).toBe(false)
+    expect(atChr3Start.refName).toBe('chr3')
+    expect(atChr3Start.offset).toBe(0)
   })
 
   it('is inverse of bpToPx', () => {
@@ -170,5 +170,97 @@ describe('pxToBp', () => {
     const result = pxToBp(self, 1500)
     expect(result.oob).toBe(true)
     expect(result.refName).toBe('chr1')
+  })
+})
+
+describe('elided region handling', () => {
+  it('bpToPx skips padding after elided region', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 1000 },
+      { refName: 'chr2', start: 0, end: 1 },
+      { refName: 'chr3', start: 0, end: 1000 },
+    ])
+    const r1 = bpToPx({ self, refName: 'chr1', coord: 1000 })
+    const r2 = bpToPx({ self, refName: 'chr2', coord: 0 })
+    const r3 = bpToPx({ self, refName: 'chr3', coord: 0 })
+
+    expect(r1!.offsetPx).toBe(1000)
+    expect(r2!.offsetPx).toBe(1002)
+    expect(r3!.offsetPx).toBe(1003)
+  })
+
+  it('pxToBp skips padding after elided region', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 1000 },
+      { refName: 'chr2', start: 0, end: 1 },
+      { refName: 'chr3', start: 0, end: 1000 },
+    ])
+    const atChr2 = pxToBp(self, 1002)
+    expect(atChr2.refName).toBe('chr2')
+    expect(atChr2.offset).toBeCloseTo(0, 5)
+
+    const atChr3 = pxToBp(self, 1003)
+    expect(atChr3.refName).toBe('chr3')
+    expect(atChr3.offset).toBeCloseTo(0, 5)
+  })
+
+  it('bpToPx and pxToBp round-trip through elided regions', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 1000 },
+      { refName: 'chr2', start: 0, end: 1 },
+      { refName: 'chr3', start: 0, end: 2 },
+      { refName: 'chr4', start: 0, end: 1 },
+      { refName: 'chr5', start: 0, end: 1000 },
+    ])
+
+    const bp2px = bpToPx({ self, refName: 'chr5', coord: 500 })
+    expect(bp2px).toBeDefined()
+
+    const px2bp = pxToBp(self, bp2px!.offsetPx)
+    expect(px2bp.refName).toBe('chr5')
+    expect(px2bp.offset).toBe(500)
+  })
+
+  it('consecutive elided regions accumulate width without padding', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 1000 },
+      { refName: 'chr2', start: 0, end: 1 },
+      { refName: 'chr3', start: 0, end: 2 },
+      { refName: 'chr4', start: 0, end: 1 },
+      { refName: 'chr5', start: 0, end: 1000 },
+    ])
+
+    const r5 = bpToPx({ self, refName: 'chr5', coord: 0 })
+    expect(r5!.offsetPx).toBe(1006)
+  })
+
+  it('elided region at start does not get padding', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 1 },
+      { refName: 'chr2', start: 0, end: 1000 },
+    ])
+
+    const r2 = bpToPx({ self, refName: 'chr2', coord: 0 })
+    expect(r2!.offsetPx).toBe(1)
+
+    const px2bp = pxToBp(self, 1)
+    expect(px2bp.refName).toBe('chr2')
+    expect(px2bp.offset).toBeCloseTo(0, 5)
+  })
+
+  it('all regions elided returns correct bpToPx', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 1 },
+      { refName: 'chr2', start: 0, end: 2 },
+      { refName: 'chr3', start: 0, end: 1 },
+    ])
+
+    const r1 = bpToPx({ self, refName: 'chr1', coord: 0 })
+    const r2 = bpToPx({ self, refName: 'chr2', coord: 0 })
+    const r3 = bpToPx({ self, refName: 'chr3', coord: 0 })
+
+    expect(r1!.offsetPx).toBe(0)
+    expect(r2!.offsetPx).toBe(1)
+    expect(r3!.offsetPx).toBe(3)
   })
 })

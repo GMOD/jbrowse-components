@@ -368,10 +368,34 @@ export function executeSyntenyInstanceData({
     const padBottom = padBottomArr[i]!
 
     const [cr, cg, cb, ca] = colorFn(strand, refName, i)
-    addInstance(x11, x12, x22, x21, cr, cg, cb, ca, featureId, isCurve, qtl, padTop, padBottom)
+    addInstance(
+      x11,
+      x12,
+      x22,
+      x21,
+      cr,
+      cg,
+      cb,
+      ca,
+      featureId,
+      isCurve,
+      qtl,
+      padTop,
+      padBottom,
+    )
 
     if (locationMarkersEnabled) {
-      addLocationMarkers(x11, x12, x22, x21, featureId, isCurve, qtl, padTop, padBottom)
+      addLocationMarkers(
+        x11,
+        x12,
+        x22,
+        x21,
+        featureId,
+        isCurve,
+        qtl,
+        padTop,
+        padBottom,
+      )
     }
   }
 
@@ -490,10 +514,34 @@ export function executeSyntenyInstanceData({
           refName,
           i,
         )
-        addInstance(px1, cx1, cx2, px2, cr, cg, cb, ca, featureId, isCurve, qtl, padTop, padBottom)
+        addInstance(
+          px1,
+          cx1,
+          cx2,
+          px2,
+          cr,
+          cg,
+          cb,
+          ca,
+          featureId,
+          isCurve,
+          qtl,
+          padTop,
+          padBottom,
+        )
 
         if (locationMarkersEnabled) {
-          addLocationMarkers(px1, cx1, cx2, px2, featureId, isCurve, qtl, padTop, padBottom)
+          addLocationMarkers(
+            px1,
+            cx1,
+            cx2,
+            px2,
+            featureId,
+            isCurve,
+            qtl,
+            padTop,
+            padBottom,
+          )
         }
       }
     }

@@ -54,6 +54,11 @@ export default function ScalebarCoordinateLabels({ model }: { model: LGV }) {
 
         if (block.type === 'ContentBlock') {
           const { start, end, reversed } = block
+          if (block.widthPx < 20) {
+            wrapper.style.cssText = `${WRAPPER_BASE_STYLE};width:${block.widthPx}px`
+            joinElements(wrapper, 0)
+            continue
+          }
           const ticks = makeTicks(start, end, bpPerPx, true, false)
 
           wrapper.style.cssText = `${WRAPPER_BASE_STYLE};width:${block.widthPx}px`
