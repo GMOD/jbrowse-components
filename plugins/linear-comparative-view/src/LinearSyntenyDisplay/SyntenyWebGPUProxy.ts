@@ -31,6 +31,11 @@ export class SyntenyWebGPUProxy {
 
   async init(canvas: HTMLCanvasElement) {
     if (this.initPromise) {
+      this.workerPromise.then(w => {
+        if (w && !this.pickListener) {
+          this.setupPickListener(w)
+        }
+      })
       return this.initPromise
     }
     this.initPromise = this._doInit(canvas)
@@ -180,10 +185,5 @@ export class SyntenyWebGPUProxy {
       this.worker.removeEventListener('message', this.pickListener)
       this.pickListener = null
     }
-    this.worker?.postMessage({
-      type: 'dispose',
-      canvasId: this.canvasId,
-    })
-    this.initPromise = null
   }
 }

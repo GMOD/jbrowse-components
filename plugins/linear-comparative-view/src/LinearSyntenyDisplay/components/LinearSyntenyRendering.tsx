@@ -141,24 +141,21 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  useEffect(() => {
-    const canvas = gpuCanvasRef.current
-    if (!canvas) {
-      return undefined
-    }
-    const { rpcManager } = getSession(model)
-    const proxy = SyntenyWebGPUProxy.getOrCreate(canvas, rpcManager)
-    proxy.init(canvas).then(success => {
-      model.setGpuRenderer(proxy)
-      model.setGpuInitialized(success)
-    })
-    return () => {
-      proxy.dispose()
-      model.setGpuRenderer(null)
-      model.setGpuInitialized(false)
-    }
-  }, [model])
+  const gpuCanvasCallbackRef = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      gpuCanvasRef.current = canvas
+      if (!canvas) {
+        return
+      }
+      const { rpcManager } = getSession(model)
+      const proxy = SyntenyWebGPUProxy.getOrCreate(canvas, rpcManager)
+      proxy.init(canvas).then(success => {
+        model.setGpuRenderer(proxy)
+        model.setGpuInitialized(success)
+      })
+    },
+    [model],
+  )
 
   const pickFeature = useCallback(
     (x: number, y: number) => {
@@ -299,7 +296,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   return (
     <div className={classes.rel}>
       <canvas
-        ref={gpuCanvasRef}
+        ref={gpuCanvasCallbackRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}

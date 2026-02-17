@@ -2,20 +2,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   getContainingView,
+  getSession,
   measureText,
-  setupWebGLContextLossHandler,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
+import { CanvasFeatureProxy } from './CanvasFeatureProxy.ts'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { shouldRenderPeptideText } from '../../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
-import type { FeatureRenderBlock } from './WebGLFeatureRenderer.ts'
+import type { FeatureRenderBlock } from './CanvasFeatureProxy.ts'
 import type {
   FlatbushItem,
   SubfeatureInfo,
@@ -62,7 +62,6 @@ export interface Props {
   model: LinearWebGLFeatureDisplayModel
 }
 
-// Cache for reconstructed Flatbush indexes per region
 interface FlatbushRegionCache {
   featureIndex: Flatbush | null
   subfeatureIndex: Flatbush | null
@@ -74,7 +73,7 @@ function getOrCreateFlatbushIndexes(
   cache: FlatbushRegionCache,
   flatbushData: ArrayBuffer,
   subfeatureFlatbushData: ArrayBuffer,
-): { featureIndex: Flatbush | null; subfeatureIndex: Flatbush | null } {
+) {
   if (cache.flatbushData !== flatbushData) {
     cache.flatbushData = flatbushData
     cache.featureIndex = null
@@ -113,7 +112,7 @@ function performHitDetection(
   subfeatureInfos: SubfeatureInfo[],
   bpPos: number,
   yPos: number,
-): { feature: FlatbushItem | null; subfeature: SubfeatureInfo | null } {
+) {
   let feature: FlatbushItem | null = null
   let subfeature: SubfeatureInfo | null = null
 
@@ -123,7 +122,6 @@ function performHitDetection(
     subfeatureFlatbushData,
   )
 
-  // Check subfeatures first (more specific)
   if (subfeatureIndex && subfeatureInfos.length > 0) {
     const subHits = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)
     for (const idx of subHits) {
@@ -135,7 +133,6 @@ function performHitDetection(
     }
   }
 
-  // Check features
   if (featureIndex && flatbushItems.length > 0) {
     const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
     for (const idx of hits) {
@@ -208,7 +205,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const uploadedDataRef = useRef(new Map<number, WebGLFeatureDataResult>())
 
   const scrollYRef = useRef(0)
-  const renderRAFRef = useRef<number | null>(null)
   const selfUpdateRef = useRef(false)
 
   const view = getContainingView(model) as LGV
@@ -218,9 +214,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const width = view.initialized ? view.width : undefined
   const height = model.height
 
+  const proxyRef = useRef<CanvasFeatureProxy | null>(null)
+
   const renderWithBlocks = useCallback(() => {
-    const renderer = rendererRef.current
-    if (!renderer || !view.initialized || width === undefined) {
+    const proxy = proxyRef.current
+    if (!proxy || !view.initialized || width === undefined) {
       return
     }
 
@@ -239,66 +237,43 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       })
     }
 
-    renderer.renderBlocks(blocks, {
+    console.log('[WebGLFeatureComponent] renderBlocks', { numBlocks: blocks.length, width: Math.round(view.width), height })
+    proxy.renderBlocks(blocks, {
       scrollY: scrollYRef.current,
       canvasWidth: Math.round(view.width),
       canvasHeight: height,
     })
   }, [view, width, height])
 
-  const scheduleRender = useCallback(() => {
-    if (renderRAFRef.current !== null) {
-      cancelAnimationFrame(renderRAFRef.current)
-    }
-    renderRAFRef.current = requestAnimationFrame(() => {
-      renderRAFRef.current = null
-      renderWithBlocks()
-    })
-  }, [renderWithBlocks])
-
   const renderWithBlocksRef = useRef(renderWithBlocks)
   renderWithBlocksRef.current = renderWithBlocks
   const viewRef = useRef(view)
   viewRef.current = view
 
-  const rendererRef = useRef<WebGLFeatureRenderer | null>(null)
-  const [contextVersion, setContextVersion] = useState(0)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
-    }
-    return undefined
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-    try {
-      rendererRef.current = new WebGLFeatureRenderer(canvas)
-      setRendererReady(true)
-      if (contextVersion > 0) {
-        uploadedDataRef.current.clear()
+  const canvasCallbackRef = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      if (!canvas) {
+        return
       }
-    } catch (e) {
-      console.error('Failed to initialize WebGL:', e)
-    }
-    return () => {
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-    }
-  }, [contextVersion])
+      canvasRef.current = canvas
+      const { rpcManager } = getSession(model)
+      const proxy = CanvasFeatureProxy.getOrCreate(canvas, rpcManager)
+      proxyRef.current = proxy
+      proxy.init(canvas).then(ok => {
+        console.log('[WebGLFeatureComponent] init result:', ok)
+        if (!ok) {
+          console.error('Failed to init GPU canvas feature renderer')
+        }
+        setRendererReady(ok)
+        uploadedDataRef.current.clear()
+      })
+    },
+    [model],
+  )
 
-  // Re-render when view state changes
   useEffect(() => {
     const dispose = autorun(() => {
       try {
-        // Access observables to subscribe
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { offsetPx: _op, bpPerPx: _bpp, initialized } = view
 
@@ -322,27 +297,28 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
   }, [view, model])
 
-  // Upload features to GPU from RPC typed arrays (per region)
   useEffect(() => {
-    const renderer = rendererRef.current
-    if (!renderer) {
+    const proxy = proxyRef.current
+    console.log('[WebGLFeatureComponent] upload effect', { hasProxy: !!proxy, rendererReady, rpcDataMapSize: rpcDataMap.size })
+    if (!proxy || !rendererReady) {
       return
     }
 
     if (rpcDataMap.size === 0) {
-      renderer.clearAllBuffers()
+      proxy.pruneStaleRegions([])
       uploadedDataRef.current.clear()
       return
     }
 
-    const activeRegions = new Set<number>()
+    const activeRegions: number[] = []
     for (const [regionNumber, data] of rpcDataMap) {
-      activeRegions.add(regionNumber)
+      activeRegions.push(regionNumber)
       if (uploadedDataRef.current.get(regionNumber) === data) {
         continue
       }
       uploadedDataRef.current.set(regionNumber, data)
-      renderer.uploadForRegion(regionNumber, {
+      console.log('[WebGLFeatureComponent] uploading region', regionNumber, { numRects: data.numRects, numLines: data.numLines, numArrows: data.numArrows })
+      proxy.uploadForRegion(regionNumber, {
         regionStart: data.regionStart,
         rectPositions: data.rectPositions,
         rectYs: data.rectYs,
@@ -362,34 +338,22 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         numArrows: data.numArrows,
       })
     }
-    // Clean up stale entries from our tracking ref
     for (const key of uploadedDataRef.current.keys()) {
-      if (!activeRegions.has(key)) {
+      if (!activeRegions.includes(key)) {
         uploadedDataRef.current.delete(key)
       }
     }
-    renderer.pruneStaleRegions(activeRegions)
+    proxy.pruneStaleRegions(activeRegions)
 
-    scheduleRender()
-  }, [rpcDataMap, scheduleRender, contextVersion])
+    renderWithBlocksRef.current()
+  }, [rpcDataMap, rendererReady])
 
-  // Re-render when container dimensions change
   useEffect(() => {
-    if (rendererReady && width !== undefined) {
-      scheduleRender()
+    if (rendererReady && width !== undefined && proxyRef.current) {
+      renderWithBlocksRef.current()
     }
-  }, [rendererReady, width, height, scheduleRender])
+  }, [rendererReady, width, height])
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (renderRAFRef.current) {
-        cancelAnimationFrame(renderRAFRef.current)
-      }
-    }
-  }, [])
-
-  // Wheel handler for pan/zoom
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
@@ -405,7 +369,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       const absX = Math.abs(e.deltaX)
       const absY = Math.abs(e.deltaY)
 
-      // Horizontal pan
       if (absX > 5 && absX > absY * 2) {
         e.preventDefault()
         e.stopPropagation()
@@ -422,7 +385,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
 
-      // Vertical scroll (Y-axis panning)
       if (e.shiftKey) {
         e.preventDefault()
         e.stopPropagation()
@@ -440,7 +402,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
   }, [])
 
-  // Mouse event handler for hit detection and tooltips
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
@@ -558,7 +519,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
 
-  // Compute floating label positions (multi-region aware)
   const floatingLabelElements = useMemo(() => {
     if (
       !view.initialized ||
@@ -636,7 +596,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     return elements.length > 0 ? elements : null
   }, [rpcDataMap, view, width, bpPerPx, visibleRegions, scrollY])
 
-  // Compute amino acid letter overlay (multi-region aware)
   const aminoAcidOverlayElements = useMemo(() => {
     if (
       !view.initialized ||
@@ -698,7 +657,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     return elements.length > 0 ? elements : null
   }, [rpcDataMap, view, width, bpPerPx, visibleRegions, scrollY])
 
-  // Compute highlight overlays for hovered and selected features (multi-region aware)
   const highlightOverlays = useMemo(() => {
     if (
       !view.initialized ||
@@ -869,7 +827,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   return (
     <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
-        ref={canvasRef}
+        ref={canvasCallbackRef}
         width={width}
         height={height}
         style={{
