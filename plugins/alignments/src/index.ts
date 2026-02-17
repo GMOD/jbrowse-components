@@ -47,4 +47,5 @@ export {
   getMismatches,
   getTag,
   parseCigar,
+  parseCigar2,
 } from './MismatchParser/index.ts'

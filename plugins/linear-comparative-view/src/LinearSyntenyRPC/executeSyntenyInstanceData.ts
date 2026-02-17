@@ -1,8 +1,15 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
-import { parseCigar } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { colorSchemes } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+
+const OP_M = 0
+const OP_I = 1
+const OP_D = 2
+const OP_N = 3
+const OP_EQ = 7
+const OP_X = 8
 
 function splitHiLo(values: Float64Array, count: number) {
   const result = new Float32Array(count * 2)
@@ -62,8 +69,14 @@ function createColorFunction(
   return () => [1, 0, 0, 1]
 }
 
-function getCigarColor(
-  letter: string,
+const OP_TO_CIGAR_KEY: Record<number, string> = {
+  [OP_I]: 'I',
+  [OP_D]: 'D',
+  [OP_N]: 'N',
+}
+
+function getCigarColorByOp(
+  op: number,
   colorBy: string,
   colorFn: (
     strand: number,
@@ -74,8 +87,7 @@ function getCigarColor(
   refName: string,
   index: number,
 ): [number, number, number, number] {
-  const isInsertionOrDeletion =
-    letter === 'I' || letter === 'D' || letter === 'N'
+  const isInsertionOrDeletion = op === OP_I || op === OP_D || op === OP_N
 
   if (!isInsertionOrDeletion) {
     return colorFn(strand, refName, index)
@@ -84,7 +96,10 @@ function getCigarColor(
   const scheme =
     colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
   const cigarColors = scheme.cigarColors
-  const color = cigarColors[letter as keyof typeof cigarColors]
+  const key = OP_TO_CIGAR_KEY[op]
+  const color = key
+    ? cigarColors[key as keyof typeof cigarColors]
+    : undefined
   if (color) {
     return cssColorToNormalized(color)
   }
@@ -190,11 +205,11 @@ export function executeSyntenyInstanceData({
     queryTotalLengths.set(queryName, current + alignmentLength)
   }
 
-  // Parse CIGARs once, reuse in both loops
-  const parsedCigars: string[][] = new Array(featureCount)
+  const emptyOps = new Uint32Array(0)
+  const parsedCigars: Uint32Array[] = new Array(featureCount)
   for (let i = 0; i < featureCount; i++) {
     const cigarStr = cigars[i]!
-    parsedCigars[i] = cigarStr ? parseCigar(cigarStr) : []
+    parsedCigars[i] = cigarStr ? parseCigar2(cigarStr) : emptyOps
   }
 
   // Pre-allocate buffers with estimated capacity
@@ -439,18 +454,19 @@ export function executeSyntenyInstanceData({
     let totalBpView0 = 0
     let totalBpView1 = 0
     let maxIndelLen = 0
-    for (let j = 0; j < cigar.length; j += 2) {
-      const len = +cigar[j]!
-      const op = cigar[j + 1]!
-      if (op === 'M' || op === '=' || op === 'X') {
+    for (let j = 0; j < cigar.length; j++) {
+      const packed = cigar[j]!
+      const len = packed >>> 4
+      const op = packed & 0xf
+      if (op === OP_M || op === OP_EQ || op === OP_X) {
         totalBpView0 += len
         totalBpView1 += len
-      } else if (op === 'D' || op === 'N') {
+      } else if (op === OP_D || op === OP_N) {
         totalBpView0 += len
         if (len > maxIndelLen) {
           maxIndelLen = len
         }
-      } else if (op === 'I') {
+      } else if (op === OP_I) {
         totalBpView1 += len
         if (len > maxIndelLen) {
           maxIndelLen = len
@@ -503,12 +519,13 @@ export function executeSyntenyInstanceData({
     let px1 = 0
     let px2 = 0
 
-    for (let j = 0; j < cigar.length; j += 2) {
+    for (let j = 0; j < cigar.length; j++) {
       if (idx >= MAX_INSTANCE_COUNT) {
         break
       }
-      const len = +cigar[j]!
-      const op = cigar[j + 1]!
+      const packed = cigar[j]!
+      const len = packed >>> 4
+      const op = packed & 0xf
 
       if (!continuingFlag) {
         px1 = cx1
@@ -518,36 +535,36 @@ export function executeSyntenyInstanceData({
       const d1 = len * pxPerBp0
       const d2 = len * pxPerBp1
 
-      if (op === 'M' || op === '=' || op === 'X') {
+      if (op === OP_M || op === OP_EQ || op === OP_X) {
         cx1 += d1 * rev1
         cx2 += d2 * rev2
-      } else if (op === 'D' || op === 'N') {
+      } else if (op === OP_D || op === OP_N) {
         cx1 += d1 * rev1
-      } else if (op === 'I') {
+      } else if (op === OP_I) {
         cx2 += d2 * rev2
       }
 
-      if (op === 'D' || op === 'N' || op === 'I') {
-        const relevantPx = op === 'I' ? d2 : d1
+      if (op === OP_D || op === OP_N || op === OP_I) {
+        const relevantPx = op === OP_I ? d2 : d1
         if (relevantPx < 1) {
           continuingFlag = true
           continue
         }
       }
 
-      const isNotLast = j < cigar.length - 2
+      const isNotLast = j < cigar.length - 1
       if (Math.abs(cx1 - px1) <= 1 && Math.abs(cx2 - px2) <= 1 && isNotLast) {
         continuingFlag = true
       } else {
-        const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
+        const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
         continuingFlag = false
 
-        if (drawCIGARMatchesOnly && letter !== 'M') {
+        if (drawCIGARMatchesOnly && resolvedOp !== OP_M) {
           continue
         }
 
-        const [cr, cg, cb, ca] = getCigarColor(
-          letter,
+        const [cr, cg, cb, ca] = getCigarColorByOp(
+          resolvedOp,
           colorBy,
           colorFn,
           strand,

@@ -1,5 +1,5 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
-import { parseCigar } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { draw, drawLocationMarkers } from './components/util.ts'
 import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
@@ -7,6 +7,22 @@ import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+
+const OP_M = 0
+const OP_I = 1
+const OP_D = 2
+const OP_N = 3
+const OP_EQ = 7
+const OP_X = 8
+
+const OP_TO_CIGAR_KEY: Record<number, string> = {
+  [OP_M]: 'M',
+  [OP_I]: 'I',
+  [OP_D]: 'D',
+  [OP_N]: 'N',
+  [OP_EQ]: '=',
+  [OP_X]: 'X',
+}
 
 export function drawRef(
   model: LinearSyntenyDisplayModel,
@@ -106,15 +122,16 @@ export function drawRef(
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
       const cigarStr = featureData.cigars[fi]!
-      const cigar = cigarStr ? parseCigar(cigarStr) : []
-      if (cigar.length && drawCIGAR) {
+      const cigar = cigarStr ? parseCigar2(cigarStr) : undefined
+      if (cigar && cigar.length > 0 && drawCIGAR) {
         let continuingFlag = false
         let px1 = 0
         let px2 = 0
 
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof defaultCigarColors
+        for (let j = 0; j < cigar.length; j++) {
+          const packed = cigar[j]!
+          const len = packed >>> 4
+          const op = packed & 0xf
 
           if (!continuingFlag) {
             px1 = cx1
@@ -124,19 +141,17 @@ export function drawRef(
           const d1 = len * bpPerPxInv0
           const d2 = len * bpPerPxInv1
 
-          if (op === 'M' || op === '=' || op === 'X') {
+          if (op === OP_M || op === OP_EQ || op === OP_X) {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
-          } else if (op === 'D' || op === 'N') {
+          } else if (op === OP_D || op === OP_N) {
             cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
+          } else if (op === OP_I) {
             cx2 += d2 * rev2
           }
 
-          if (op === 'D' || op === 'N' || op === 'I') {
-            const relevantPx = op === 'I' ? d2 : d1
+          if (op === OP_D || op === OP_N || op === OP_I) {
+            const relevantPx = op === OP_I ? d2 : d1
             if (relevantPx < 1) {
               continuingFlag = true
               continue
@@ -149,7 +164,7 @@ export function drawRef(
               Math.min(px1, px2, cx1, cx2) > width
             )
           ) {
-            const isNotLast = j < cigar.length - 2
+            const isNotLast = j < cigar.length - 1
             if (
               Math.abs(cx1 - px1) <= 1 &&
               Math.abs(cx2 - px2) <= 1 &&
@@ -157,17 +172,20 @@ export function drawRef(
             ) {
               continuingFlag = true
             } else {
-              const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
+              const resolvedOp =
+                (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
+              const letter = OP_TO_CIGAR_KEY[resolvedOp] || 'M'
 
               const isInsertionOrDeletion =
-                letter === 'I' || letter === 'D' || letter === 'N'
+                resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
               if (useStrandColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
               } else if (useQueryColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
               } else {
-                mainCanvas.fillStyle = colorMapWithAlpha[letter]
+                mainCanvas.fillStyle =
+                  colorMapWithAlpha[letter as keyof typeof defaultCigarColors]
               }
 
               continuingFlag = false

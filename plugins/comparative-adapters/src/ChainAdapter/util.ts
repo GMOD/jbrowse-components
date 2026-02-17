@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 
-import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+import { getProgressDisplayStr } from '@jbrowse/core/util'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -57,102 +57,124 @@ function generate_record(
 
 export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const { statusCallback = () => {} } = opts || {}
+  const decoder = new TextDecoder('utf8')
+  const records = [] as ReturnType<typeof generate_record>[]
+
   let t_name = ''
   let t_start = 0
   let t_end = 0
   let q_name = ''
-  let q_size = ''
+  let q_size = 0
   let q_strand = ''
   let q_start = 0
   let q_end = 0
   let num_matches = 0
   let cigar = ''
-  const records = [] as ReturnType<typeof generate_record>[]
 
-  parseLineByLine(
-    buffer,
-    line => {
-      if (!line || line.startsWith('#')) {
-        return true
-      }
-      const l_vec = line.split(/[ \t]+/) // Split on one or more spaces or tabs
+  let blockStart = 0
+  let lineIndex = 0
 
-      if (l_vec[0] === 'chain') {
-        if (cigar) {
-          records.push(
-            generate_record(
-              q_name,
-              q_start,
-              q_end,
-              q_strand,
-              t_name,
-              t_start,
-              t_end,
-              cigar,
-              num_matches,
-            ),
-          )
+  while (blockStart < buffer.length) {
+    const n = buffer.indexOf(10, blockStart)
+    const lineEnd = n === -1 ? buffer.length : n
+
+    let realEnd = lineEnd
+    while (
+      realEnd > blockStart &&
+      (buffer[realEnd - 1] === 13 || buffer[realEnd - 1] === 32)
+    ) {
+      realEnd--
+    }
+    let realStart = blockStart
+    while (
+      realStart < realEnd &&
+      (buffer[realStart] === 32 || buffer[realStart] === 9)
+    ) {
+      realStart++
+    }
+
+    if (realStart < realEnd && buffer[realStart] !== 35) {
+      if (buffer[realStart] === 99) {
+        const line = decoder.decode(buffer.subarray(realStart, realEnd))
+        const l_vec = line.split(/[ \t]+/)
+        if (l_vec[0] === 'chain') {
+          if (cigar) {
+            records.push(
+              generate_record(
+                q_name,
+                q_start,
+                q_end,
+                q_strand,
+                t_name,
+                t_start,
+                t_end,
+                cigar,
+                num_matches,
+              ),
+            )
+          }
+
+          t_name = l_vec[2]!
+          t_start = +l_vec[5]!
+          t_end = +l_vec[6]!
+          q_name = l_vec[7]!
+          q_size = +l_vec[8]!
+          q_strand = l_vec[9]!
+          q_start = +l_vec[10]!
+          q_end = +l_vec[11]!
+          if (q_strand === '-') {
+            const tmp = q_start
+            q_start = q_size - q_end
+            q_end = q_size - tmp
+          }
+
+          num_matches = 0
+          cigar = ''
         }
-
-        // Save query/target information
-        // score -- chain score
-        // tName -- chromosome (reference sequence)
-        // tSize -- chromosome size (reference sequence)
-        // tStrand -- strand (reference sequence)
-        // tStart -- alignment start position (reference sequence)
-        // tEnd -- alignment end position (reference sequence)
-        // qName -- chromosome (query sequence)
-        // qSize -- chromosome size (query sequence)
-        // qStrand -- strand (query sequence)
-        // qStart -- alignment start position (query sequence)
-        // qEnd -- alignment end position (query sequence)
-        // id -- chain ID
-        t_name = l_vec[2]!
-        t_start = +l_vec[5]!
-        t_end = +l_vec[6]!
-        q_name = l_vec[7]!
-        q_size = l_vec[8]!
-        q_strand = l_vec[9]!
-        q_start = +l_vec[10]!
-        q_end = +l_vec[11]!
-        if (q_strand === '-') {
-          const tmp = q_start
-          q_start = +q_size - q_end
-          q_end = +q_size - tmp
-        }
-
-        // Initialize PAF fields
-        num_matches = 0
-        cigar = ''
       } else {
-        // size -- the size of the ungapped alignment
-        //
-        // dt -- the difference between the end of this block and the beginning
-        //    of the next block (reference sequence)
-        //
-        // dq -- the difference between the end of this block and the beginning
-        //    of the next block (query sequence)
-        const size_ungapped_alignment = +l_vec[0]! || 0
-        const diff_in_target = l_vec.length > 1 ? +l_vec[1]! : 0
-        const diff_in_query = l_vec.length > 2 ? +l_vec[2]! : 0
-
-        if (size_ungapped_alignment !== 0) {
-          num_matches += size_ungapped_alignment
-          cigar += `${size_ungapped_alignment}M`
+        let pos = realStart
+        let size = 0
+        while (pos < realEnd && buffer[pos]! >= 48 && buffer[pos]! <= 57) {
+          size = size * 10 + buffer[pos]! - 48
+          pos++
         }
-        if (diff_in_query !== 0) {
-          cigar += `${diff_in_query}I`
+        if (size !== 0) {
+          num_matches += size
+          cigar += `${size}M`
         }
-        if (diff_in_target !== 0) {
-          cigar += `${diff_in_target}D`
+        while (pos < realEnd && (buffer[pos] === 32 || buffer[pos] === 9)) {
+          pos++
+        }
+        let dt = 0
+        while (pos < realEnd && buffer[pos]! >= 48 && buffer[pos]! <= 57) {
+          dt = dt * 10 + buffer[pos]! - 48
+          pos++
+        }
+        while (pos < realEnd && (buffer[pos] === 32 || buffer[pos] === 9)) {
+          pos++
+        }
+        let dq = 0
+        while (pos < realEnd && buffer[pos]! >= 48 && buffer[pos]! <= 57) {
+          dq = dq * 10 + buffer[pos]! - 48
+          pos++
+        }
+        if (dq !== 0) {
+          cigar += `${dq}I`
+        }
+        if (dt !== 0) {
+          cigar += `${dt}D`
         }
       }
-      return true
-    },
-    opts?.statusCallback,
-  )
+    }
 
-  // Emit last PAF row, if available
+    if (lineIndex++ % 10_000 === 0) {
+      statusCallback(
+        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
+      )
+    }
+    blockStart = lineEnd + 1
+  }
+
   if (cigar) {
     records.push(
       generate_record(
