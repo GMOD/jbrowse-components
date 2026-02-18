@@ -182,8 +182,28 @@ const r64VsYjm1447Alignments: AlignmentData[] = [
   { queryRefName: 'NC_001148.4', refRefName: 'XVI', queryStart: 5384, queryEnd: 5634, refStart: 0, refEnd: 250, strand: 1 },
 ]
 
+// r64 chromosomes in FAI/biological order — used as referenceRegions for the sort
+const r64RegionsOrder: Region[] = [
+  { refName: 'NC_001133.9', start: 0, end: 230218, assemblyName: 'r64' },
+  { refName: 'NC_001134.8', start: 0, end: 813184, assemblyName: 'r64' },
+  { refName: 'NC_001135.5', start: 0, end: 316620, assemblyName: 'r64' },
+  { refName: 'NC_001136.10', start: 0, end: 1531933, assemblyName: 'r64' },
+  { refName: 'NC_001137.3', start: 0, end: 576874, assemblyName: 'r64' },
+  { refName: 'NC_001138.5', start: 0, end: 270161, assemblyName: 'r64' },
+  { refName: 'NC_001139.9', start: 0, end: 1090940, assemblyName: 'r64' },
+  { refName: 'NC_001140.6', start: 0, end: 562643, assemblyName: 'r64' },
+  { refName: 'NC_001141.2', start: 0, end: 439888, assemblyName: 'r64' },
+  { refName: 'NC_001142.9', start: 0, end: 745751, assemblyName: 'r64' },
+  { refName: 'NC_001143.9', start: 0, end: 666816, assemblyName: 'r64' },
+  { refName: 'NC_001144.5', start: 0, end: 1078177, assemblyName: 'r64' },
+  { refName: 'NC_001145.3', start: 0, end: 924431, assemblyName: 'r64' },
+  { refName: 'NC_001146.8', start: 0, end: 784333, assemblyName: 'r64' },
+  { refName: 'NC_001147.6', start: 0, end: 1091291, assemblyName: 'r64' },
+  { refName: 'NC_001148.4', start: 0, end: 948066, assemblyName: 'r64' },
+  { refName: 'NC_001224.1', start: 0, end: 85779, assemblyName: 'r64' },
+]
+
 // yjm1447 regions in FAI order (I, II, III, IV, IX, MT, V, VI, VII, VIII, X, XI, XII, XIII, XIV, XV, XVI)
-// Note: IX comes before V in the FAI, which needs to be swapped by diagonalization
 const yjm1447RegionsFaiOrder: Region[] = [
   { refName: 'I', start: 0, end: 198540, assemblyName: 'yjm1447' },
   { refName: 'II', start: 0, end: 781048, assemblyName: 'yjm1447' },
@@ -204,10 +224,12 @@ const yjm1447RegionsFaiOrder: Region[] = [
   { refName: 'XVI', start: 0, end: 909714, assemblyName: 'yjm1447' },
 ]
 
+
 describe('diagonalizeRegions', () => {
   test('r64 vs yjm1447: swaps V and IX to match r64 chromosome order', async () => {
     const result = await diagonalizeRegions(
       r64VsYjm1447Alignments,
+      r64RegionsOrder,
       yjm1447RegionsFaiOrder,
     )
 
@@ -230,4 +252,5 @@ describe('diagonalizeRegions', () => {
       expect(region.reversed).toBe(false)
     }
   })
+
 })

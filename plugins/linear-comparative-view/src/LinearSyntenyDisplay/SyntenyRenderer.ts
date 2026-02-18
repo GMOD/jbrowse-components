@@ -24,6 +24,7 @@ export class SyntenyRenderer {
   private static fillPickingPipeline: GPURenderPipeline | null = null
   private static edgePipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
+  private static pipelinesReady: Promise<void> | null = null
 
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext | null = null
@@ -85,12 +86,13 @@ export class SyntenyRenderer {
     }
     if (SyntenyRenderer.device !== device) {
       SyntenyRenderer.device = device
-      SyntenyRenderer.initPipelines(device)
+      SyntenyRenderer.pipelinesReady = SyntenyRenderer.initPipelines(device)
     }
+    await SyntenyRenderer.pipelinesReady
     return device
   }
 
-  private static initPipelines(device: GPUDevice) {
+  private static async initPipelines(device: GPUDevice) {
     SyntenyRenderer.bindGroupLayout = device.createBindGroupLayout({
       entries: [
         {
@@ -124,39 +126,44 @@ export class SyntenyRenderer {
     }
 
     const fillModule = device.createShaderModule({ code: fillVertexShader })
-    SyntenyRenderer.fillPipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: fillModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: fillModule,
-        entryPoint: 'fs_main',
-        targets: [{ format: 'bgra8unorm', blend: blendState }],
-      },
-      primitive: { topology: 'triangle-list' },
-    })
-
-    SyntenyRenderer.fillPickingPipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: fillModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: fillModule,
-        entryPoint: 'fs_picking',
-        targets: [{ format: 'rgba8unorm' }],
-      },
-      primitive: { topology: 'triangle-list' },
-    })
-
     const edgeModule = device.createShaderModule({ code: edgeVertexShader })
-    SyntenyRenderer.edgePipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: edgeModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: edgeModule,
-        entryPoint: 'fs_main',
-        targets: [{ format: 'bgra8unorm', blend: blendState }],
-      },
-      primitive: { topology: 'triangle-list' },
-    })
+
+    ;[
+      SyntenyRenderer.fillPipeline,
+      SyntenyRenderer.fillPickingPipeline,
+      SyntenyRenderer.edgePipeline,
+    ] = await Promise.all([
+      device.createRenderPipelineAsync({
+        layout,
+        vertex: { module: fillModule, entryPoint: 'vs_main' },
+        fragment: {
+          module: fillModule,
+          entryPoint: 'fs_main',
+          targets: [{ format: 'bgra8unorm', blend: blendState }],
+        },
+        primitive: { topology: 'triangle-list' },
+      }),
+      device.createRenderPipelineAsync({
+        layout,
+        vertex: { module: fillModule, entryPoint: 'vs_main' },
+        fragment: {
+          module: fillModule,
+          entryPoint: 'fs_picking',
+          targets: [{ format: 'rgba8unorm' }],
+        },
+        primitive: { topology: 'triangle-list' },
+      }),
+      device.createRenderPipelineAsync({
+        layout,
+        vertex: { module: edgeModule, entryPoint: 'vs_main' },
+        fragment: {
+          module: edgeModule,
+          entryPoint: 'fs_main',
+          targets: [{ format: 'bgra8unorm', blend: blendState }],
+        },
+        primitive: { topology: 'triangle-list' },
+      }),
+    ])
   }
 
   async init() {
@@ -294,10 +301,10 @@ export class SyntenyRenderer {
     device.queue.submit([encoder.finish()])
   }
 
-  pick(x: number, y: number, onResult?: (result: number) => void): number {
+  pick(x: number, y: number, onResult?: (result: number) => void): number | undefined {
     this.pickCallback = onResult
     if (this.pendingPick) {
-      return this.cachedPickResult
+      return undefined
     }
     this.pendingPick = true
     this.doPick(x, y).then(
@@ -347,34 +354,39 @@ export class SyntenyRenderer {
       return -1
     }
 
+    const stagingBuffer = this.pickingStagingBuffer
+
     const encoder = device.createCommandEncoder()
     encoder.copyTextureToBuffer(
       { texture: this.pickingTexture, origin: [px, py, 0] },
-      { buffer: this.pickingStagingBuffer, bytesPerRow: 256 },
+      { buffer: stagingBuffer, bytesPerRow: 256 },
       [1, 1, 1],
     )
     device.queue.submit([encoder.finish()])
 
     try {
-      await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
-    } catch (e) {
-      console.warn('[doPick] mapAsync failed, recreating staging buffer:', e)
+      await stagingBuffer.mapAsync(GPUMapMode.READ)
+    } catch {
       this.resetStagingBuffer()
+      return -1
+    }
+
+    if (stagingBuffer !== this.pickingStagingBuffer) {
+      try { stagingBuffer.unmap() } catch {}
       return -1
     }
 
     let result = -1
     try {
-      const data = new Uint8Array(this.pickingStagingBuffer.getMappedRange())
+      const data = new Uint8Array(stagingBuffer.getMappedRange())
       const r = data[0]!
       const g = data[1]!
       const b = data[2]!
       result = r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
-    } catch (e) {
-      console.warn('[doPick] getMappedRange failed, recreating staging buffer:', e)
+    } catch {
       this.resetStagingBuffer()
     } finally {
-      try { this.pickingStagingBuffer?.unmap() } catch {}
+      try { stagingBuffer.unmap() } catch {}
     }
     return result
   }

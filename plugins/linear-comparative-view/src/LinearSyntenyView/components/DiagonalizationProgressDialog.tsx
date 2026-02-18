@@ -46,6 +46,7 @@ const DiagonalizationProgressDialog = observer(
             return
           }
 
+          const referenceView = model.views[0]!
           const queryView = model.views[1]!
 
           setProgress(5)
@@ -99,6 +100,7 @@ const DiagonalizationProgressDialog = observer(
           // Call the utility function with progress callback
           const result = await diagonalizeRegions(
             alignments,
+            referenceView.displayedRegions,
             queryView.displayedRegions,
             async (prog, msg) => {
               setProgress(prog)

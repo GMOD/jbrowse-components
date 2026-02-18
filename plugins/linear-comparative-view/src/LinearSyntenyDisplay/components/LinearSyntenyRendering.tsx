@@ -7,6 +7,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
@@ -21,16 +22,31 @@ import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 
-const useStyles = makeStyles()({
-  rel: {
-    position: 'relative',
-  },
-  gpuCanvas: {
-    position: 'absolute',
-    imageRendering: 'auto',
-    willChange: 'transform',
-    contain: 'strict',
-  },
+const useStyles = makeStyles()(theme => {
+  const bg = theme.palette.action.disabledBackground
+  return {
+    rel: {
+      position: 'relative',
+    },
+    gpuCanvas: {
+      position: 'absolute',
+      imageRendering: 'auto',
+      willChange: 'transform',
+      contain: 'strict',
+    },
+    gpuLoadingOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+    },
+  }
 })
 
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
@@ -44,6 +60,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const width = view.width
 
   const gpuCanvasRef = useRef<HTMLCanvasElement>(null)
+  const initStarted = useRef(false)
   const canvasRectRef = useRef<DOMRect | null>(null)
   const xOffset = useRef(0)
   const scheduled = useRef(false)
@@ -55,6 +72,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
+  const [gpuReady, setGpuReady] = useState(false)
 
   useEffect(() => {
     canvasRectRef.current = null
@@ -144,13 +162,15 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   const gpuCanvasCallbackRef = useCallback(
     (canvas: HTMLCanvasElement | null) => {
       gpuCanvasRef.current = canvas
-      if (!canvas) {
+      if (!canvas || initStarted.current) {
         return
       }
+      initStarted.current = true
       const renderer = SyntenyRenderer.getOrCreate(canvas)
       renderer.init().then(success => {
         model.setGpuRenderer(renderer)
         model.setGpuInitialized(success)
+        setGpuReady(success)
       })
     },
     [model],
@@ -160,7 +180,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     (x: number, y: number) => {
       if (model.gpuRenderer && model.gpuInitialized) {
         const featureIndex = model.gpuRenderer.pick(x, y)
-        if (featureIndex >= 0 && featureIndex < model.numFeats) {
+        if (
+          featureIndex !== undefined &&
+          featureIndex >= 0 &&
+          featureIndex < model.numFeats
+        ) {
           return model.getFeature(featureIndex)
         }
       }
@@ -201,9 +225,14 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
             setTooltip('')
           }
         }
-        const featureIndex =
-          model.gpuRenderer?.pick(coords.x, coords.y, applyHover) ?? -1
-        applyHover(featureIndex)
+        const featureIndex = model.gpuRenderer?.pick(
+          coords.x,
+          coords.y,
+          applyHover,
+        )
+        if (featureIndex !== undefined) {
+          applyHover(featureIndex)
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -309,6 +338,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
+      {!gpuReady ? (
+        <div className={classes.gpuLoadingOverlay}>
+          <LoadingEllipses message="Initializing GPU renderer" />
+        </div>
+      ) : null}
       {mouseoverId && tooltip ? <SyntenyTooltip title={tooltip} /> : null}
       {anchorEl ? (
         <SyntenyContextMenu
