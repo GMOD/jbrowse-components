@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import {
   disposeGL,
   initGL,
@@ -93,7 +95,6 @@ const rendererCache = new WeakMap<HTMLCanvasElement, WebGPUSequenceRenderer>()
 
 export class WebGPUSequenceRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static rectPipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
 
@@ -126,24 +127,12 @@ export class WebGPUSequenceRenderer {
     if (WebGPUSequenceRenderer.device) {
       return WebGPUSequenceRenderer.device
     }
-    if (WebGPUSequenceRenderer.devicePromise) {
-      return WebGPUSequenceRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !WebGPUSequenceRenderer.device) {
+      WebGPUSequenceRenderer.device = device
+      WebGPUSequenceRenderer.initPipelines(device)
     }
-    WebGPUSequenceRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice()
-        WebGPUSequenceRenderer.device = device
-        WebGPUSequenceRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return WebGPUSequenceRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {

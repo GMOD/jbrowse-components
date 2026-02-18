@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import {
   ARC_CURVE_SEGMENTS,
@@ -155,7 +157,6 @@ const cache = new WeakMap<HTMLCanvasElement, AlignmentsRenderer>()
 
 export class AlignmentsRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static layout: GPUBindGroupLayout | null = null
   private static readPL: GPURenderPipeline | null = null
   private static gapPL: GPURenderPipeline | null = null
@@ -202,24 +203,12 @@ export class AlignmentsRenderer {
     if (AlignmentsRenderer.device) {
       return AlignmentsRenderer.device
     }
-    if (AlignmentsRenderer.devicePromise) {
-      return AlignmentsRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !AlignmentsRenderer.device) {
+      AlignmentsRenderer.device = device
+      AlignmentsRenderer.initPipelines(device)
     }
-    AlignmentsRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice()
-        AlignmentsRenderer.device = device
-        AlignmentsRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return AlignmentsRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {
@@ -836,9 +825,13 @@ export class AlignmentsRenderer {
       }
 
       const mode = state.renderingMode ?? 'pileup'
+      const blockW = block.screenEndPx - block.screenStartPx
+      const vpX = Math.max(0, Math.floor(block.screenStartPx))
+      const vpEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
+      const vpW = vpEnd - vpX
       if (mode === 'arcs') {
-        pass.setViewport(0, 0, canvasWidth, canvasHeight, 0, 1)
-        this.drawArcs(pass, region, state, block)
+        pass.setViewport(vpX, 0, vpW, canvasHeight, 0, 1)
+        this.drawArcs(pass, region, state, block, vpX, vpW)
       } else if (mode === 'cloud' || mode === 'linkedRead') {
         this.drawConnectingLines(pass, region)
         this.drawPileup(pass, region, state)
@@ -847,8 +840,8 @@ export class AlignmentsRenderer {
       }
 
       if (state.showSashimiArcs && state.showCoverage) {
-        pass.setViewport(0, 0, canvasWidth, canvasHeight, 0, 1)
-        this.drawSashimi(pass, region, state, block)
+        pass.setViewport(vpX, 0, vpW, canvasHeight, 0, 1)
+        this.drawSashimi(pass, region, state, block, vpX, vpW)
       }
 
       pass.end()
@@ -948,19 +941,24 @@ export class AlignmentsRenderer {
     }
   }
 
-  private drawArcs(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }) {
-    const device = AlignmentsRenderer.device!
-    const bpLen = block.bpRangeX[1] - block.bpRangeX[0]
+  private writeBlockUniforms(r: GpuRegion, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }, vpX: number, vpW: number) {
     const blockW = block.screenEndPx - block.screenStartPx
-    this.uF32[U_CANVAS_W] = state.canvasWidth
-    this.uF32[U_BLOCK_START_PX] = block.screenStartPx
-    this.uF32[U_BLOCK_WIDTH] = blockW
-    this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
-    this.uF32[U_GRADIENT_HUE] = 0
     const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
-    this.uF32[U_BP_HI] = hi; this.uF32[U_BP_LO] = lo; this.uF32[U_BP_LEN] = bpLen
+    this.uF32[U_CANVAS_W] = vpW
+    this.uF32[U_BLOCK_START_PX] = block.screenStartPx - vpX
+    this.uF32[U_BLOCK_WIDTH] = blockW
+    this.uF32[U_BP_HI] = hi; this.uF32[U_BP_LO] = lo
+    this.uF32[U_BP_LEN] = block.bpRangeX[1] - block.bpRangeX[0]
     this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
     this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
+    this.uU32[U_REGION_START] = r.regionStart
+  }
+
+  private drawArcs(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }, vpX: number, vpW: number) {
+    const device = AlignmentsRenderer.device!
+    this.writeBlockUniforms(r, block, vpX, vpW)
+    this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
+    this.uF32[U_GRADIENT_HUE] = 0
     device.queue.writeBuffer(this.uBuf!, 0, this.uData)
 
     if (r.arcBG && r.arcCount > 0) {
@@ -975,18 +973,10 @@ export class AlignmentsRenderer {
     }
   }
 
-  private drawSashimi(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }) {
+  private drawSashimi(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }, vpX: number, vpW: number) {
     if (!r.sashimiBG || r.sashimiCount === 0) { return }
     const device = AlignmentsRenderer.device!
-    const bpLen = block.bpRangeX[1] - block.bpRangeX[0]
-    const blockW = block.screenEndPx - block.screenStartPx
-    this.uF32[U_CANVAS_W] = state.canvasWidth
-    this.uF32[U_BLOCK_START_PX] = block.screenStartPx
-    this.uF32[U_BLOCK_WIDTH] = blockW
-    const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
-    this.uF32[U_BP_HI] = hi; this.uF32[U_BP_LO] = lo; this.uF32[U_BP_LEN] = bpLen
-    this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
-    this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
+    this.writeBlockUniforms(r, block, vpX, vpW)
     this.uF32[U_COV_OFFSET] = state.showCoverage ? state.coverageYOffset : 0
     device.queue.writeBuffer(this.uBuf!, 0, this.uData)
 

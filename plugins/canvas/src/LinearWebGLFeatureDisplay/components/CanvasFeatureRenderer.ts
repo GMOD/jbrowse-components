@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 
 const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
@@ -374,7 +376,6 @@ const rendererCache = new WeakMap<HTMLCanvasElement, CanvasFeatureRenderer>()
 
 export class CanvasFeatureRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static rectPipeline: GPURenderPipeline | null = null
   private static linePipeline: GPURenderPipeline | null = null
   private static chevronPipeline: GPURenderPipeline | null = null
@@ -410,24 +411,12 @@ export class CanvasFeatureRenderer {
     if (CanvasFeatureRenderer.device) {
       return CanvasFeatureRenderer.device
     }
-    if (CanvasFeatureRenderer.devicePromise) {
-      return CanvasFeatureRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !CanvasFeatureRenderer.device) {
+      CanvasFeatureRenderer.device = device
+      CanvasFeatureRenderer.initPipelines(device)
     }
-    CanvasFeatureRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice()
-        CanvasFeatureRenderer.device = device
-        CanvasFeatureRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return CanvasFeatureRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {

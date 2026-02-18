@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import {
   INSTANCE_STRIDE,
   wiggleShader,
@@ -48,7 +50,6 @@ const rendererCache = new WeakMap<HTMLCanvasElement, WiggleRenderer>()
 
 export class WiggleRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static fillPipeline: GPURenderPipeline | null = null
   private static linePipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
@@ -80,24 +81,12 @@ export class WiggleRenderer {
     if (WiggleRenderer.device) {
       return WiggleRenderer.device
     }
-    if (WiggleRenderer.devicePromise) {
-      return WiggleRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !WiggleRenderer.device) {
+      WiggleRenderer.device = device
+      WiggleRenderer.initPipelines(device)
     }
-    WiggleRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice()
-        WiggleRenderer.device = device
-        WiggleRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return WiggleRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {

@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import {
   MULTI_INSTANCE_STRIDE,
   multiWiggleShader,
@@ -52,7 +54,6 @@ const rendererCache = new WeakMap<HTMLCanvasElement, MultiWiggleRenderer>()
 
 export class MultiWiggleRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static fillPipeline: GPURenderPipeline | null = null
   private static linePipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
@@ -84,24 +85,12 @@ export class MultiWiggleRenderer {
     if (MultiWiggleRenderer.device) {
       return MultiWiggleRenderer.device
     }
-    if (MultiWiggleRenderer.devicePromise) {
-      return MultiWiggleRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !MultiWiggleRenderer.device) {
+      MultiWiggleRenderer.device = device
+      MultiWiggleRenderer.initPipelines(device)
     }
-    MultiWiggleRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice()
-        MultiWiggleRenderer.device = device
-        MultiWiggleRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return MultiWiggleRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {

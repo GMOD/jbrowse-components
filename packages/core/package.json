@@ -46,6 +46,7 @@
     "./pluggableElementTypes/GlyphType": "./src/pluggableElementTypes/GlyphType.ts",
     "./pluggableElementTypes/GpuHandlerType": "./src/pluggableElementTypes/GpuHandlerType.ts",
     "./gpu/GpuCommandDispatcher": "./src/gpu/GpuCommandDispatcher.ts",
+    "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./pluggableElementTypes/InternetAccountType": "./src/pluggableElementTypes/InternetAccountType.ts",
     "./pluggableElementTypes/RpcMethodType": "./src/pluggableElementTypes/RpcMethodType.ts",
     "./pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": "./src/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions.ts",
@@ -639,6 +640,10 @@
       "./configuration/configurationSchema": {
         "types": "./esm/configuration/configurationSchema.d.ts",
         "import": "./esm/configuration/configurationSchema.js"
+      },
+      "./gpu/getGpuDevice": {
+        "types": "./esm/gpu/getGpuDevice.d.ts",
+        "import": "./esm/gpu/getGpuDevice.js"
       }
     },
     "typesVersions": {
@@ -978,6 +983,9 @@
         ],
         "configuration/configurationSchema": [
           "esm/configuration/configurationSchema.d.ts"
+        ],
+        "gpu/getGpuDevice": [
+          "esm/gpu/getGpuDevice.d.ts"
         ]
       }
     }

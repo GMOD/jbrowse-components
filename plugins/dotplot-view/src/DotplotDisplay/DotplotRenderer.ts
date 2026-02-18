@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import {
   INSTANCE_BYTE_SIZE,
   VERTS_PER_INSTANCE,
@@ -121,7 +123,6 @@ const rendererCache = new WeakMap<HTMLCanvasElement, DotplotRenderer>()
 
 export class DotplotRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static pipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
 
@@ -153,24 +154,12 @@ export class DotplotRenderer {
     if (DotplotRenderer.device) {
       return DotplotRenderer.device
     }
-    if (DotplotRenderer.devicePromise) {
-      return DotplotRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !DotplotRenderer.device) {
+      DotplotRenderer.device = device
+      DotplotRenderer.initPipelines(device)
     }
-    DotplotRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice()
-        DotplotRenderer.device = device
-        DotplotRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return DotplotRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {

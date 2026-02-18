@@ -1,5 +1,7 @@
 /// <reference types="@webgpu/types" />
 
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+
 import {
   EDGE_SEGMENTS,
   EDGE_VERTS_PER_INSTANCE,
@@ -18,7 +20,6 @@ const rendererCache = new WeakMap<HTMLCanvasElement, SyntenyRenderer>()
 
 export class SyntenyRenderer {
   private static device: GPUDevice | null = null
-  private static devicePromise: Promise<GPUDevice | null> | null = null
   private static fillPipeline: GPURenderPipeline | null = null
   private static fillPickingPipeline: GPURenderPipeline | null = null
   private static edgePipeline: GPURenderPipeline | null = null
@@ -76,30 +77,12 @@ export class SyntenyRenderer {
     if (SyntenyRenderer.device) {
       return SyntenyRenderer.device
     }
-    if (SyntenyRenderer.devicePromise) {
-      return SyntenyRenderer.devicePromise
+    const device = await getGpuDevice()
+    if (device && !SyntenyRenderer.device) {
+      SyntenyRenderer.device = device
+      SyntenyRenderer.initPipelines(device)
     }
-    SyntenyRenderer.devicePromise = (async () => {
-      try {
-        const adapter = await navigator.gpu?.requestAdapter()
-        if (!adapter) {
-          return null
-        }
-        const device = await adapter.requestDevice({
-          requiredLimits: {
-            maxStorageBufferBindingSize:
-              adapter.limits.maxStorageBufferBindingSize ?? 134217728,
-            maxBufferSize: adapter.limits.maxBufferSize ?? 268435456,
-          },
-        })
-        SyntenyRenderer.device = device
-        SyntenyRenderer.initPipelines(device)
-        return device
-      } catch {
-        return null
-      }
-    })()
-    return SyntenyRenderer.devicePromise
+    return device
   }
 
   private static initPipelines(device: GPUDevice) {
