@@ -630,7 +630,7 @@ export async function executeRenderWebGLFeatureData({
       isCallback: false,
     },
     labelAllowed: mockConfig.displayMode !== 'collapse',
-    heightMultiplier: mockConfig.displayMode === 'compact' ? 0.5 : 1,
+    heightMultiplier: mockConfig.displayMode === 'compact' ? 0.6 : 1,
   }
 
   const { layoutRecords, maxY } = await updateStatus(

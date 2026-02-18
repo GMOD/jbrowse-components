@@ -1,238 +1,9 @@
-/**
- * WebGL Renderer for wiggle display
- *
- * Supports multiple rendering modes: xyplot (bars), density (heatmap), line
- */
-
 import {
-  HP_GLSL_FUNCTIONS,
-  SCORE_GLSL_FUNCTIONS,
-  cacheUniforms,
-  createProgram,
-  splitPositionWithFrac,
-} from '../../shared/webglUtils.ts'
-
-// Vertex shader for wiggle bars (XY plot)
-const XYPLOT_VERTEX_SHADER = `#version 300 es
-precision highp float;
-precision highp int;
-
-in uvec2 a_position;  // [start, end] as uint offsets from regionStart
-in float a_score;     // score value
-
-uniform vec3 u_bpRangeX;
-uniform uint u_regionStart;
-uniform float u_canvasHeight;
-uniform vec2 u_domainY;     // [min, max] score domain
-uniform int u_scaleType;    // 0 = linear, 1 = log
-uniform vec3 u_color;       // RGB color
-uniform vec3 u_posColor;    // Positive score color
-uniform vec3 u_negColor;    // Negative score color
-uniform float u_bicolorPivot;
-uniform int u_useBicolor;   // 0 = single color, 1 = bicolor
-
-out vec4 v_color;
-
-${HP_GLSL_FUNCTIONS}
-${SCORE_GLSL_FUNCTIONS}
-
-void main() {
-  int vid = gl_VertexID % 6;
-  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
-  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
-
-  uint absStart = a_position.x + u_regionStart;
-  uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
-  float sx = mix(sx1, sx2, localX);
-
-  // Y position based on score
-  float scoreYPos = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
-  float originY = scoreToY(0.0, u_domainY, u_canvasHeight, u_scaleType);
-
-  // For filled bars, draw from origin (0) to score
-  float yTop = min(scoreYPos, originY);
-  float yBot = max(scoreYPos, originY);
-
-  // Convert to clip space
-  float pxToClip = 2.0 / u_canvasHeight;
-  float syTop = 1.0 - yTop * pxToClip;
-  float syBot = 1.0 - yBot * pxToClip;
-  float sy = mix(syBot, syTop, localY);
-
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
-
-  // Color based on score (bicolor if enabled)
-  vec3 color;
-  if (u_useBicolor == 1) {
-    color = a_score < u_bicolorPivot ? u_negColor : u_posColor;
-  } else {
-    color = u_color;
-  }
-
-  v_color = vec4(color, 1.0);
-}
-`
-
-// Vertex shader for density (heatmap) rendering
-const DENSITY_VERTEX_SHADER = `#version 300 es
-precision highp float;
-precision highp int;
-
-in uvec2 a_position;  // [start, end] as uint offsets from regionStart
-in float a_score;     // score value
-
-uniform vec3 u_bpRangeX;
-uniform uint u_regionStart;
-uniform float u_canvasHeight;
-uniform vec2 u_domainY;     // [min, max] score domain
-uniform int u_scaleType;    // 0 = linear, 1 = log
-uniform vec3 u_posColor;    // High score color
-uniform vec3 u_negColor;    // Low score color
-uniform float u_bicolorPivot;
-uniform int u_useBicolor;   // 0 = gradient, 1 = bicolor
-
-out vec4 v_color;
-
-${HP_GLSL_FUNCTIONS}
-${SCORE_GLSL_FUNCTIONS}
-
-void main() {
-  int vid = gl_VertexID % 6;
-  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
-  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
-
-  uint absStart = a_position.x + u_regionStart;
-  uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
-  float sx = mix(sx1, sx2, localX);
-
-  // Density fills the full height
-  float sy = mix(-1.0, 1.0, localY);
-
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
-
-  // Color based on normalized score
-  float normScore = normalizeScore(a_score, u_domainY, u_scaleType);
-
-  vec3 color;
-  if (u_useBicolor == 1) {
-    // Bicolor mode: two distinct colors based on pivot
-    float normalizedPivot = normalizeScore(u_bicolorPivot, u_domainY, u_scaleType);
-    color = normScore < normalizedPivot ? u_negColor : u_posColor;
-  } else {
-    // Gradient mode: interpolate from low (gray/white) to high (posColor)
-    vec3 lowColor = vec3(0.93, 0.93, 0.93); // #eee
-    color = mix(lowColor, u_posColor, normScore);
-  }
-
-  v_color = vec4(color, 1.0);
-}
-`
-
-// Vertex shader for line rendering
-const LINE_VERTEX_SHADER = `#version 300 es
-precision highp float;
-precision highp int;
-
-in uvec2 a_position;  // [start, end] as uint offsets from regionStart
-in float a_score;     // score value
-in float a_prevScore; // previous score for connecting lines
-
-uniform vec3 u_bpRangeX;
-uniform uint u_regionStart;
-uniform float u_canvasHeight;
-uniform vec2 u_domainY;     // [min, max] score domain
-uniform int u_scaleType;    // 0 = linear, 1 = log
-uniform vec3 u_color;       // RGB color
-uniform vec3 u_posColor;    // Positive score color
-uniform vec3 u_negColor;    // Negative score color
-uniform float u_bicolorPivot;
-uniform int u_useBicolor;   // 0 = single color, 1 = bicolor
-
-out vec4 v_color;
-
-${HP_GLSL_FUNCTIONS}
-${SCORE_GLSL_FUNCTIONS}
-
-void main() {
-  // Line rendering uses 6 vertices per feature to draw a step pattern:
-  // - vertices 0,1: vertical line from previous score to current score at start
-  // - vertices 2,3,4,5: horizontal line at current score from start to end
-  int vid = gl_VertexID % 6;
-
-  uint absStart = a_position.x + u_regionStart;
-  uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
-
-  float scoreYPos = scoreToY(a_score, u_domainY, u_canvasHeight, u_scaleType);
-  float prevScoreY = scoreToY(a_prevScore, u_domainY, u_canvasHeight, u_scaleType);
-
-  float pxToClip = 2.0 / u_canvasHeight;
-  float clipScoreY = 1.0 - scoreYPos * pxToClip;
-  float clipPrevScoreY = 1.0 - prevScoreY * pxToClip;
-
-  float sx;
-  float sy;
-
-  // Create step pattern: vertical then horizontal
-  if (vid == 0) {
-    // Start of vertical line (at previous score)
-    sx = sx1;
-    sy = clipPrevScoreY;
-  } else if (vid == 1) {
-    // End of vertical line (at current score)
-    sx = sx1;
-    sy = clipScoreY;
-  } else if (vid == 2) {
-    // Start of horizontal line
-    sx = sx1;
-    sy = clipScoreY;
-  } else if (vid == 3) {
-    // Middle of horizontal (for triangle strip)
-    sx = sx2;
-    sy = clipScoreY;
-  } else if (vid == 4) {
-    // Degenerate (same as 3)
-    sx = sx2;
-    sy = clipScoreY;
-  } else {
-    // End point
-    sx = sx2;
-    sy = clipScoreY;
-  }
-
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
-
-  // Color based on score (bicolor if enabled)
-  vec3 color;
-  if (u_useBicolor == 1) {
-    color = a_score < u_bicolorPivot ? u_negColor : u_posColor;
-  } else {
-    color = u_color;
-  }
-
-  v_color = vec4(color, 1.0);
-}
-`
-
-const WIGGLE_FRAGMENT_SHADER = `#version 300 es
-precision highp float;
-in vec4 v_color;
-out vec4 fragColor;
-void main() {
-  fragColor = v_color;
-}
-`
+  WIGGLE_VERTEX_SHADER,
+  WIGGLE_FRAGMENT_SHADER,
+} from '../../shared/generated/index.ts'
+import { createProgram, splitPositionWithFrac } from '../../shared/webglUtils.ts'
+import { INSTANCE_STRIDE } from './wiggleShaders.ts'
 
 export type RenderingType = 'xyplot' | 'density' | 'line'
 
@@ -257,25 +28,32 @@ export interface WiggleRenderBlock {
   screenEndPx: number
 }
 
-interface GPUBuffers {
+const UNIFORM_SIZE = 96
+const INSTANCE_BYTES = INSTANCE_STRIDE * 4
+
+const RENDERING_TYPE_MAP: Record<RenderingType, number> = {
+  xyplot: 0,
+  density: 1,
+  line: 2,
+}
+
+interface RegionData {
   regionStart: number
-  featureVAO: WebGLVertexArrayObject
   featureCount: number
-  lineVAO?: WebGLVertexArrayObject
+  instanceTexture: WebGLTexture
 }
 
 export class WebGLWiggleRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-  private xyplotProgram: WebGLProgram
-  private densityProgram: WebGLProgram
-  private lineProgram: WebGLProgram
-  private buffersMap = new Map<number, GPUBuffers>()
-  private glBuffersMap = new Map<number, WebGLBuffer[]>()
-  private xyplotUniforms: Record<string, WebGLUniformLocation | null> = {}
-  private densityUniforms: Record<string, WebGLUniformLocation | null> = {}
-  private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
-  private featureScoresMap = new Map<number, Float32Array>()
+  private program: WebGLProgram
+  private emptyVAO: WebGLVertexArrayObject
+  private ubo: WebGLBuffer
+  private uniformData = new ArrayBuffer(UNIFORM_SIZE)
+  private uniformF32 = new Float32Array(this.uniformData)
+  private uniformI32 = new Int32Array(this.uniformData)
+  private uniformU32 = new Uint32Array(this.uniformData)
+  private regions = new Map<number, RegionData>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -284,45 +62,25 @@ export class WebGLWiggleRenderer {
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
     })
-
     if (!gl) {
       throw new Error('WebGL2 not supported')
     }
     this.gl = gl
 
-    // Create all shader programs
-    this.xyplotProgram = createProgram(
-      gl,
-      XYPLOT_VERTEX_SHADER,
-      WIGGLE_FRAGMENT_SHADER,
-    )
-    this.densityProgram = createProgram(
-      gl,
-      DENSITY_VERTEX_SHADER,
-      WIGGLE_FRAGMENT_SHADER,
-    )
-    this.lineProgram = createProgram(
-      gl,
-      LINE_VERTEX_SHADER,
-      WIGGLE_FRAGMENT_SHADER,
-    )
+    this.program = createProgram(gl, WIGGLE_VERTEX_SHADER, WIGGLE_FRAGMENT_SHADER)
 
-    const uniformNames = [
-      'u_bpRangeX',
-      'u_regionStart',
-      'u_canvasHeight',
-      'u_domainY',
-      'u_scaleType',
-      'u_color',
-      'u_posColor',
-      'u_negColor',
-      'u_bicolorPivot',
-      'u_useBicolor',
-    ]
+    const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms_block_1Vertex')
+    gl.uniformBlockBinding(this.program, uboIndex, 0)
 
-    this.xyplotUniforms = cacheUniforms(gl, this.xyplotProgram, uniformNames)
-    this.densityUniforms = cacheUniforms(gl, this.densityProgram, uniformNames)
-    this.lineUniforms = cacheUniforms(gl, this.lineProgram, uniformNames)
+    this.ubo = gl.createBuffer()!
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
+    gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_SIZE, gl.DYNAMIC_DRAW)
+
+    gl.useProgram(this.program)
+    const texLoc = gl.getUniformLocation(this.program, 'u_instanceData')
+    gl.uniform1i(texLoc, 0)
+
+    this.emptyVAO = gl.createVertexArray()!
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -339,130 +97,88 @@ export class WebGLWiggleRenderer {
   ) {
     const gl = this.gl
 
-    this.deleteBuffersForRegion(regionNumber)
+    const old = this.regions.get(regionNumber)
+    if (old) {
+      gl.deleteTexture(old.instanceTexture)
+      this.regions.delete(regionNumber)
+    }
 
     if (data.numFeatures === 0) {
-      this.featureScoresMap.delete(regionNumber)
       return
     }
 
-    this.featureScoresMap.set(regionNumber, data.featureScores)
-
-    const glBuffers: WebGLBuffer[] = []
-
-    const featureVAO = gl.createVertexArray()
-    gl.bindVertexArray(featureVAO)
-
-    glBuffers.push(
-      ...this.uploadUintBuffer(
-        this.xyplotProgram,
-        'a_position',
-        data.featurePositions,
-        2,
-      ),
-      ...this.uploadBufferReturnHandles(
-        this.xyplotProgram,
-        'a_score',
-        data.featureScores,
-        1,
-      ),
-    )
-
-    gl.bindVertexArray(null)
-
-    const lineVAO = gl.createVertexArray()
-    gl.bindVertexArray(lineVAO)
-
-    glBuffers.push(
-      ...this.uploadUintBuffer(
-        this.lineProgram,
-        'a_position',
-        data.featurePositions,
-        2,
-      ),
-      ...this.uploadBufferReturnHandles(
-        this.lineProgram,
-        'a_score',
-        data.featureScores,
-        1,
-      ),
-    )
-
-    const prevScores = new Float32Array(data.numFeatures)
-    prevScores[0] = data.featureScores[0]!
-    for (let i = 1; i < data.numFeatures; i++) {
-      prevScores[i] = data.featureScores[i - 1]!
+    const buf = new ArrayBuffer(data.numFeatures * INSTANCE_BYTES)
+    const u32 = new Uint32Array(buf)
+    const f32 = new Float32Array(buf)
+    for (let i = 0; i < data.numFeatures; i++) {
+      const off = i * INSTANCE_STRIDE
+      u32[off] = data.featurePositions[i * 2]!
+      u32[off + 1] = data.featurePositions[i * 2 + 1]!
+      f32[off + 2] = data.featureScores[i]!
+      f32[off + 3] = 0
     }
-    glBuffers.push(
-      ...this.uploadBufferReturnHandles(
-        this.lineProgram,
-        'a_prevScore',
-        prevScores,
-        1,
-      ),
+
+    const tex = gl.createTexture()!
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, tex)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA32UI,
+      data.numFeatures,
+      1,
+      0,
+      gl.RGBA_INTEGER,
+      gl.UNSIGNED_INT,
+      new Uint32Array(buf),
     )
 
-    gl.bindVertexArray(null)
-
-    this.glBuffersMap.set(regionNumber, glBuffers)
-    this.buffersMap.set(regionNumber, {
+    this.regions.set(regionNumber, {
       regionStart: data.regionStart,
-      featureVAO,
       featureCount: data.numFeatures,
-      lineVAO,
+      instanceTexture: tex,
     })
   }
 
-  // Legacy single-region upload (stores as region 0)
-  uploadFromTypedArrays(data: {
-    regionStart: number
-    featurePositions: Uint32Array
-    featureScores: Float32Array
-    numFeatures: number
-  }) {
-    this.uploadForRegion(0, data)
-  }
-
-  private uploadBufferReturnHandles(
-    program: WebGLProgram,
-    attrib: string,
-    data: Float32Array,
-    size: number,
+  private writeUniforms(
+    bpRangeHi: number,
+    bpRangeLo: number,
+    bpRangeLength: number,
+    regionStart: number,
+    state: Omit<WiggleRenderState, 'bpRangeX'>,
   ) {
+    this.uniformF32[0] = bpRangeHi
+    this.uniformF32[1] = bpRangeLo
+    this.uniformF32[2] = bpRangeLength
+    this.uniformU32[3] = regionStart
+    this.uniformF32[4] = state.canvasHeight
+    this.uniformI32[5] = state.scaleType === 'log' ? 1 : 0
+    this.uniformI32[6] = RENDERING_TYPE_MAP[state.renderingType]
+    this.uniformI32[7] = state.useBicolor ? 1 : 0
+    this.uniformF32[8] = state.domainY[0]
+    this.uniformF32[9] = state.domainY[1]
+    this.uniformF32[10] = state.bicolorPivot
+    this.uniformF32[11] = 0
+    this.uniformF32[12] = state.color[0]
+    this.uniformF32[13] = state.color[1]
+    this.uniformF32[14] = state.color[2]
+    this.uniformF32[15] = 0
+    this.uniformF32[16] = state.posColor[0]
+    this.uniformF32[17] = state.posColor[1]
+    this.uniformF32[18] = state.posColor[2]
+    this.uniformF32[19] = 0
+    this.uniformF32[20] = state.negColor[0]
+    this.uniformF32[21] = state.negColor[1]
+    this.uniformF32[22] = state.negColor[2]
+    this.uniformF32[23] = 0
+
     const gl = this.gl
-    const loc = gl.getAttribLocation(program, attrib)
-    if (loc < 0) {
-      return []
-    }
-
-    const buffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0)
-    gl.vertexAttribDivisor(loc, 1)
-    return [buffer]
-  }
-
-  private uploadUintBuffer(
-    program: WebGLProgram,
-    attrib: string,
-    data: Uint32Array,
-    size: number,
-  ) {
-    const gl = this.gl
-    const loc = gl.getAttribLocation(program, attrib)
-    if (loc < 0) {
-      return []
-    }
-
-    const buffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
-    gl.enableVertexAttribArray(loc)
-    gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_INT, 0, 0)
-    gl.vertexAttribDivisor(loc, 1)
-    return [buffer]
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
+    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
   }
 
   renderBlocks(
@@ -486,52 +202,17 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    let program: WebGLProgram
-    let uniforms: Record<string, WebGLUniformLocation | null>
+    const isLine = renderingType === 'line'
+    const drawMode = isLine ? gl.LINES : gl.TRIANGLES
 
-    if (renderingType === 'density') {
-      program = this.densityProgram
-      uniforms = this.densityUniforms
-    } else if (renderingType === 'line') {
-      program = this.lineProgram
-      uniforms = this.lineUniforms
-    } else {
-      program = this.xyplotProgram
-      uniforms = this.xyplotUniforms
-    }
-
-    gl.useProgram(program)
-
-    // Set uniforms that don't change per-block
-    gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
-    gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
-    gl.uniform1i(uniforms.u_scaleType!, state.scaleType === 'log' ? 1 : 0)
-    gl.uniform3f(
-      uniforms.u_color!,
-      state.color[0],
-      state.color[1],
-      state.color[2],
-    )
-    gl.uniform3f(
-      uniforms.u_posColor!,
-      state.posColor[0],
-      state.posColor[1],
-      state.posColor[2],
-    )
-    gl.uniform3f(
-      uniforms.u_negColor!,
-      state.negColor[0],
-      state.negColor[1],
-      state.negColor[2],
-    )
-    gl.uniform1f(uniforms.u_bicolorPivot!, state.bicolorPivot)
-    gl.uniform1i(uniforms.u_useBicolor!, state.useBicolor ? 1 : 0)
-
+    gl.useProgram(this.program)
+    gl.bindVertexArray(this.emptyVAO)
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
     gl.enable(gl.SCISSOR_TEST)
 
     for (const block of blocks) {
-      const buffers = this.buffersMap.get(block.regionNumber)
-      if (!buffers || buffers.featureCount === 0) {
+      const region = this.regions.get(block.regionNumber)
+      if (!region || region.featureCount === 0) {
         continue
       }
 
@@ -545,7 +226,6 @@ export class WebGLWiggleRenderer {
       gl.scissor(scissorX, 0, scissorW, canvasHeight)
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
 
-      // Compute viewport-clipped domain
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
       const bpPerPx = regionLengthBp / fullBlockWidth
@@ -553,32 +233,27 @@ export class WebGLWiggleRenderer {
         block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
       const clippedBpEnd =
         block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-
       const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
-      gl.uniform3f(uniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
-      gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
+      this.writeUniforms(
+        bpStartHi,
+        bpStartLo,
+        clippedLengthBp,
+        Math.floor(region.regionStart),
+        state,
+      )
 
-      const vao =
-        renderingType === 'line' ? buffers.lineVAO! : buffers.featureVAO
-
-      gl.bindVertexArray(vao)
-
-      if (renderingType === 'line') {
-        gl.drawArraysInstanced(gl.LINES, 0, 6, buffers.featureCount)
-      } else {
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.featureCount)
-      }
-
-      gl.bindVertexArray(null)
+      gl.activeTexture(gl.TEXTURE0)
+      gl.bindTexture(gl.TEXTURE_2D, region.instanceTexture)
+      gl.drawArraysInstanced(drawMode, 0, 6, region.featureCount)
     }
 
     gl.disable(gl.SCISSOR_TEST)
     gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.bindVertexArray(null)
   }
 
-  // Legacy single-region render (used for interaction fast path)
   render(state: WiggleRenderState) {
     const gl = this.gl
     const canvas = this.canvas
@@ -593,111 +268,59 @@ export class WebGLWiggleRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    // Find first available buffers for legacy render
-    const buffers =
-      this.buffersMap.get(0) ?? this.buffersMap.values().next().value
-    if (!buffers || buffers.featureCount === 0) {
+    const region =
+      this.regions.get(0) ?? this.regions.values().next().value
+    if (!region || region.featureCount === 0) {
       return
     }
 
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
-    let program: WebGLProgram
-    let uniforms: Record<string, WebGLUniformLocation | null>
-    let vao: WebGLVertexArrayObject
-
-    if (renderingType === 'density') {
-      program = this.densityProgram
-      uniforms = this.densityUniforms
-      vao = buffers.featureVAO
-    } else if (renderingType === 'line') {
-      program = this.lineProgram
-      uniforms = this.lineUniforms
-      vao = buffers.lineVAO!
-    } else {
-      program = this.xyplotProgram
-      uniforms = this.xyplotUniforms
-      vao = buffers.featureVAO
-    }
-
-    gl.useProgram(program)
-    gl.uniform3f(uniforms.u_bpRangeX!, bpStartHi, bpStartLo, regionLengthBp)
-    gl.uniform1ui(uniforms.u_regionStart!, Math.floor(buffers.regionStart))
-    gl.uniform1f(uniforms.u_canvasHeight!, canvasHeight)
-    gl.uniform2f(uniforms.u_domainY!, state.domainY[0], state.domainY[1])
-    gl.uniform1i(uniforms.u_scaleType!, state.scaleType === 'log' ? 1 : 0)
-    gl.uniform3f(
-      uniforms.u_color!,
-      state.color[0],
-      state.color[1],
-      state.color[2],
+    this.writeUniforms(
+      bpStartHi,
+      bpStartLo,
+      regionLengthBp,
+      Math.floor(region.regionStart),
+      state,
     )
-    gl.uniform3f(
-      uniforms.u_posColor!,
-      state.posColor[0],
-      state.posColor[1],
-      state.posColor[2],
-    )
-    gl.uniform3f(
-      uniforms.u_negColor!,
-      state.negColor[0],
-      state.negColor[1],
-      state.negColor[2],
-    )
-    gl.uniform1f(uniforms.u_bicolorPivot!, state.bicolorPivot)
-    gl.uniform1i(uniforms.u_useBicolor!, state.useBicolor ? 1 : 0)
 
-    gl.bindVertexArray(vao)
+    const isLine = renderingType === 'line'
+    const drawMode = isLine ? gl.LINES : gl.TRIANGLES
 
-    if (renderingType === 'line') {
-      gl.drawArraysInstanced(gl.LINES, 0, 6, buffers.featureCount)
-    } else {
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.featureCount)
-    }
-
+    gl.useProgram(this.program)
+    gl.bindVertexArray(this.emptyVAO)
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, region.instanceTexture)
+    gl.drawArraysInstanced(drawMode, 0, 6, region.featureCount)
     gl.bindVertexArray(null)
   }
 
   pruneStaleRegions(activeRegionNumbers: Set<number>) {
-    for (const regionNumber of this.buffersMap.keys()) {
+    for (const regionNumber of this.regions.keys()) {
       if (!activeRegionNumbers.has(regionNumber)) {
-        this.deleteBuffersForRegion(regionNumber)
+        const region = this.regions.get(regionNumber)
+        if (region) {
+          this.gl.deleteTexture(region.instanceTexture)
+        }
+        this.regions.delete(regionNumber)
       }
     }
   }
 
   clearAllBuffers() {
-    for (const regionNumber of this.buffersMap.keys()) {
-      this.deleteBuffersForRegion(regionNumber)
+    for (const region of this.regions.values()) {
+      this.gl.deleteTexture(region.instanceTexture)
     }
-  }
-
-  private deleteBuffersForRegion(regionNumber: number) {
-    const gl = this.gl
-    const glBuffers = this.glBuffersMap.get(regionNumber)
-    if (glBuffers) {
-      for (const buf of glBuffers) {
-        gl.deleteBuffer(buf)
-      }
-      this.glBuffersMap.delete(regionNumber)
-    }
-    const buffers = this.buffersMap.get(regionNumber)
-    if (buffers) {
-      gl.deleteVertexArray(buffers.featureVAO)
-      if (buffers.lineVAO) {
-        gl.deleteVertexArray(buffers.lineVAO)
-      }
-      this.buffersMap.delete(regionNumber)
-    }
-    this.featureScoresMap.delete(regionNumber)
+    this.regions.clear()
   }
 
   destroy() {
     this.clearAllBuffers()
     const gl = this.gl
-    gl.deleteProgram(this.xyplotProgram)
-    gl.deleteProgram(this.densityProgram)
-    gl.deleteProgram(this.lineProgram)
+    gl.deleteVertexArray(this.emptyVAO)
+    gl.deleteBuffer(this.ubo)
+    gl.deleteProgram(this.program)
   }
 }

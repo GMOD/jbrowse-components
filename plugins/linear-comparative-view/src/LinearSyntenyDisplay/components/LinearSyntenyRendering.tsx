@@ -11,7 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { SyntenyWebGPUProxy } from '../SyntenyWebGPUProxy.ts'
+import { SyntenyRenderer } from '../SyntenyRenderer.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
 import { getTooltip } from './util.ts'
 
@@ -141,22 +141,20 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  useEffect(() => {
-    const canvas = gpuCanvasRef.current
-    if (!canvas) {
-      return undefined
-    }
-    const proxy = SyntenyWebGPUProxy.getOrCreate(canvas)
-    proxy.init(canvas).then(success => {
-      model.setGpuRenderer(proxy)
-      model.setGpuInitialized(success)
-    })
-    return () => {
-      model.setGpuRenderer(null)
-      model.setGpuInitialized(false)
-    }
-  }, [model])
+  const gpuCanvasCallbackRef = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      gpuCanvasRef.current = canvas
+      if (!canvas) {
+        return
+      }
+      const renderer = SyntenyRenderer.getOrCreate(canvas)
+      renderer.init().then(success => {
+        model.setGpuRenderer(renderer)
+        model.setGpuInitialized(success)
+      })
+    },
+    [model],
+  )
 
   const pickFeature = useCallback(
     (x: number, y: number) => {
@@ -297,7 +295,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
   return (
     <div className={classes.rel}>
       <canvas
-        ref={gpuCanvasRef}
+        ref={gpuCanvasCallbackRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}

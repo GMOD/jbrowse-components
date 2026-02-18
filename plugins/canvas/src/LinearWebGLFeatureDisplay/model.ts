@@ -85,6 +85,7 @@ export default function stateModelFactory(
         trackShowLabels: types.maybe(types.boolean),
         trackShowDescriptions: types.maybe(types.boolean),
         trackGeneGlyphMode: types.maybe(types.string),
+        trackDisplayMode: types.maybe(types.string),
         showOnlyGenes: false,
       }),
     )
@@ -154,6 +155,10 @@ export default function stateModelFactory(
 
       get showDescriptions(): boolean {
         return self.trackShowDescriptions ?? true
+      },
+
+      get displayMode(): string {
+        return self.trackDisplayMode ?? 'normal'
       },
 
       get geneGlyphMode(): string {
@@ -341,6 +346,10 @@ export default function stateModelFactory(
         self.trackGeneGlyphMode = value
       },
 
+      setDisplayMode(value: string) {
+        self.trackDisplayMode = value
+      },
+
       setShowOnlyGenes(value: boolean) {
         self.showOnlyGenes = value
       },
@@ -460,6 +469,7 @@ export default function stateModelFactory(
               showLabels: self.showLabels,
               showDescriptions: self.showDescriptions,
               geneGlyphMode: self.effectiveGeneGlyphMode,
+              displayMode: self.displayMode,
             },
             region,
             bpPerPx,
@@ -578,6 +588,7 @@ export default function stateModelFactory(
       let prevColorByCDS: boolean | undefined
       let prevGeneGlyphMode: string | undefined
       let prevShowOnlyGenes: boolean | undefined
+      let prevDisplayMode: string | undefined
       let prevSettingsInitialized = false
 
       const superAfterAttach = self.afterAttach
@@ -715,13 +726,15 @@ export default function stateModelFactory(
                 const colorByCDS = self.colorByCDS
                 const geneGlyphMode = self.effectiveGeneGlyphMode
                 const showOnlyGenes = self.showOnlyGenes
+                const displayMode = self.displayMode
                 if (
                   prevSettingsInitialized &&
                   (showLabels !== prevShowLabels ||
                     showDescriptions !== prevShowDescriptions ||
                     colorByCDS !== prevColorByCDS ||
                     geneGlyphMode !== prevGeneGlyphMode ||
-                    showOnlyGenes !== prevShowOnlyGenes)
+                    showOnlyGenes !== prevShowOnlyGenes ||
+                    displayMode !== prevDisplayMode)
                 ) {
                   if (self.loadedRegions.size > 0 || self.regionTooLarge) {
                     // refetch contains all its async behavior, so no need to await
@@ -735,6 +748,7 @@ export default function stateModelFactory(
                 prevColorByCDS = colorByCDS
                 prevGeneGlyphMode = geneGlyphMode
                 prevShowOnlyGenes = showOnlyGenes
+                prevDisplayMode = displayMode
               },
               {
                 name: 'SettingsRefetch',
@@ -811,6 +825,22 @@ export default function stateModelFactory(
               },
             })),
           },
+          {
+            label: 'Display mode',
+            subMenu: (
+              [
+                { value: 'normal', label: 'Normal' },
+                { value: 'compact', label: 'Compact' },
+              ] as const
+            ).map(({ value, label }) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.displayMode === value,
+              onClick: () => {
+                self.setDisplayMode(value)
+              },
+            })),
+          },
         ]
       },
     }))
@@ -819,6 +849,7 @@ export default function stateModelFactory(
         trackShowLabels,
         trackShowDescriptions,
         trackGeneGlyphMode,
+        trackDisplayMode,
         showOnlyGenes,
         ...rest
       } = snap as Omit<typeof snap, symbol>
@@ -827,6 +858,7 @@ export default function stateModelFactory(
         ...(trackShowLabels !== undefined && { trackShowLabels }),
         ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
         ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),
+        ...(trackDisplayMode !== undefined && { trackDisplayMode }),
         ...(showOnlyGenes && { showOnlyGenes }),
       } as typeof snap
     })

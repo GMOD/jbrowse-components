@@ -1,13 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  setupWebGLContextLossHandler,
-} from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { DotplotWebGLRenderer } from '../drawDotplotWebGL.ts'
+import { DotplotRenderer } from '../DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../../DotplotView/model.ts'
 import type { DotplotDisplayModel } from '../stateModelFactory.tsx'
@@ -19,40 +16,22 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   const { model, children } = props
   const view = getContainingView(model) as DotplotViewModel
   const { viewWidth, viewHeight } = view
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const gpuCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        model.webglRenderer?.dispose()
-        const newRenderer = new DotplotWebGLRenderer()
-        const success = newRenderer.init(canvas)
-        model.setWebGLRenderer(newRenderer)
-        model.setWebGLInitialized(success)
-      })
-    }
-    return undefined
-  }, [model])
-
-  // Initialize/dispose WebGL renderer — only on mount/unmount.
-  // Dimension changes are handled by renderer.resize() in the draw autorun.
-  useEffect(() => {
-    if (canvasRef.current) {
-      const renderer = new DotplotWebGLRenderer()
-      const success = renderer.init(canvasRef.current)
-      model.setWebGLRenderer(renderer)
-      model.setWebGLInitialized(success)
-      return () => {
-        model.webglRenderer?.dispose()
-        model.setWebGLRenderer(null)
-        model.setWebGLInitialized(false)
+  const gpuCanvasCallbackRef = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      gpuCanvasRef.current = canvas
+      if (!canvas) {
+        return
       }
-    }
-    return undefined
-  }, [model])
-
-  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
+      const renderer = DotplotRenderer.getOrCreate(canvas)
+      renderer.init().then(success => {
+        model.setGpuRenderer(renderer)
+        model.setGpuInitialized(success)
+      })
+    },
+    [model],
+  )
 
   if (model.error) {
     return <ErrorMessage error={model.error} />
@@ -61,10 +40,8 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
   return (
     <div style={{ position: 'relative', width: viewWidth, height: viewHeight }}>
       <canvas
-        ref={canvasRef}
+        ref={gpuCanvasCallbackRef}
         data-testid="dotplot_webgl_canvas"
-        width={viewWidth * dpr}
-        height={viewHeight * dpr}
         style={{
           width: viewWidth,
           height: viewHeight,

@@ -13,7 +13,7 @@ import {
 } from '../../shared/webglUtils.ts'
 
 // Common row calculation GLSL - used by all multi-wiggle shaders
-const ROW_GLSL_FUNCTIONS = `
+export const ROW_GLSL_FUNCTIONS = `
 float getRowHeight(float canvasHeight, float numRows, float rowPadding) {
   float totalPadding = rowPadding * (numRows - 1.0);
   return (canvasHeight - totalPadding) / numRows;
@@ -25,7 +25,7 @@ float getRowTop(float rowIndex, float rowHeight, float rowPadding) {
 `
 
 // Vertex shader for multi-wiggle XY plot (bars)
-const MULTI_XYPLOT_VERTEX_SHADER = `#version 300 es
+export const MULTI_XYPLOT_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
@@ -89,7 +89,7 @@ void main() {
 `
 
 // Vertex shader for multi-wiggle density (heatmap)
-const MULTI_DENSITY_VERTEX_SHADER = `#version 300 es
+export const MULTI_DENSITY_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
@@ -148,7 +148,7 @@ void main() {
 `
 
 // Vertex shader for multi-wiggle line rendering
-const MULTI_LINE_VERTEX_SHADER = `#version 300 es
+export const MULTI_LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
@@ -222,7 +222,7 @@ void main() {
 }
 `
 
-const MULTI_WIGGLE_FRAGMENT_SHADER = `#version 300 es
+export const MULTI_WIGGLE_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
 out vec4 fragColor;

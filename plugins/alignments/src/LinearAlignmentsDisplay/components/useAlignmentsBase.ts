@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { WebGLRenderer } from './WebGLRenderer.ts'
+import { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import {
   buildColorPaletteFromTheme,
   formatCigarTooltip,
@@ -25,7 +25,7 @@ import { getContrastBaseMap } from '../../shared/util.ts'
 
 import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
-import type { ColorPalette } from './WebGLRenderer.ts'
+import type { ColorPalette } from './AlignmentsRenderer.ts'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -81,7 +81,7 @@ export interface LinearAlignmentsDisplayModel {
   visibleLabels: VisibleLabel[]
   isChainMode: boolean
   setOverCigarItem: (flag: boolean) => void
-  setWebGLRenderer: (renderer: WebGLRenderer | null) => void
+  setWebGLRenderer: (renderer: AlignmentsRenderer | null) => void
   setColorPalette: (palette: ColorPalette | null) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
@@ -432,7 +432,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Effects ---
 
-  const rendererRef = useRef<WebGLRenderer | null>(null)
+  const rendererRef = useRef<AlignmentsRenderer | null>(null)
   const [contextVersion, setContextVersion] = useState(0)
 
   useEffect(() => {
@@ -450,16 +450,22 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (!canvas) {
       return
     }
-    try {
-      rendererRef.current = new WebGLRenderer(canvas)
-      model.setWebGLRenderer(rendererRef.current)
+    let cancelled = false
+    const renderer = AlignmentsRenderer.getOrCreate(canvas)
+    renderer.init().then(() => {
+      if (cancelled) {
+        return
+      }
+      rendererRef.current = renderer
+      model.setWebGLRenderer(renderer)
       if (contextVersion > 0) {
         model.clearAllRpcData()
       }
-    } catch (e) {
-      console.error('Failed to initialize WebGL:', e)
-    }
+    }).catch(e => {
+      console.error('Failed to initialize renderer:', e)
+    })
     return () => {
+      cancelled = true
       rendererRef.current?.destroy()
       rendererRef.current = null
       model.setWebGLRenderer(null)

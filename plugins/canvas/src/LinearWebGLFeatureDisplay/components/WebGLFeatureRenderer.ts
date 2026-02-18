@@ -1,15 +1,3 @@
-/**
- * WebGL Renderer for feature display
- *
- * Renders gene/transcript features with:
- * - Rectangles for exons, CDS, UTRs
- * - Lines for introns (connecting lines)
- * - Chevrons for strand direction on introns
- * - Arrows for strand direction at feature ends
- *
- * Uses high-precision 12-bit split coordinates (same approach as pileup renderer).
- */
-
 function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue
@@ -40,17 +28,16 @@ float hpToClipX(vec2 splitPos, vec3 domain) {
 }
 `
 
-// Rectangle vertex shader - for exons, CDS, UTRs
 const RECT_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-in uvec2 a_position;   // [startOffset, endOffset] from regionStart
-in float a_y;          // top Y in pixels
-in float a_height;     // height in pixels
-in vec4 a_color;       // RGBA normalized by GL
+in uvec2 a_position;
+in float a_y;
+in float a_height;
+in vec4 a_color;
 
-uniform vec3 u_bpRangeX;     // [bpStartHi, bpStartLo, regionLengthBp]
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -60,7 +47,6 @@ out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
 
-// Snap clip-space X to nearest pixel boundary
 float snapToPixelX(float clipX) {
   float px = (clipX + 1.0) * 0.5 * u_canvasWidth;
   return floor(px + 0.5) / u_canvasWidth * 2.0 - 1.0;
@@ -78,8 +64,6 @@ void main() {
   float sx1 = snapToPixelX(hpToClipX(splitStart, u_bpRangeX));
   float sx2 = snapToPixelX(hpToClipX(splitEnd, u_bpRangeX));
 
-  // Ensure minimum width of 2px so thin features remain visible and solid
-  // (clip space spans -1 to +1, so 1px = 2.0/canvasWidth)
   float minWidth = 4.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
     sx2 = sx1 + minWidth;
@@ -87,7 +71,6 @@ void main() {
 
   float sx = mix(sx1, sx2, localX);
 
-  // Y position snapped to pixel grid
   float yTopPx = floor(a_y - u_scrollY + 0.5);
   float yBotPx = floor(yTopPx + a_height + 0.5);
   float syTop = 1.0 - (yTopPx / u_canvasHeight) * 2.0;
@@ -108,14 +91,13 @@ void main() {
 }
 `
 
-// Line vertex shader - for intron connecting lines
 const LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-in uvec2 a_position;   // [startOffset, endOffset] from regionStart
-in float a_y;          // centerY in pixels
-in vec4 a_color;       // RGBA normalized by GL
+in uvec2 a_position;
+in float a_y;
+in vec4 a_color;
 
 uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
@@ -127,7 +109,6 @@ out vec4 v_color;
 ${HP_GLSL_FUNCTIONS}
 
 void main() {
-  // Line: 2 vertices per line (start and end points)
   int vid = gl_VertexID % 2;
 
   uint absStart = a_position.x + u_regionStart;
@@ -139,7 +120,6 @@ void main() {
 
   float sx = (vid == 0) ? sx1 : sx2;
 
-  // Snap Y to pixel grid for crisp lines
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float sy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
@@ -148,24 +128,18 @@ void main() {
 }
 `
 
-// Max visible chevrons per intron line per frame - only need enough to cover
-// the viewport width (~screen_width / 25px spacing ≈ 80)
 const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
-// Chevron vertex shader - V-shaped strand indicators on introns
-// Uses line start/end as instance data and computes chevron positions in shader.
-// Only renders chevrons visible in the current viewport by computing which
-// chevron indices fall within the viewport bp range.
 const CHEVRON_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-in uvec2 a_position;   // [startOffset, endOffset] from regionStart (same as line)
-in float a_y;          // centerY in pixels
-in float a_direction;  // -1 for <, 1 for >
-in vec4 a_color;       // RGBA normalized by GL
+in uvec2 a_position;
+in float a_y;
+in float a_direction;
+in vec4 a_color;
 
-uniform vec3 u_bpRangeX;      // [bpStartHi, bpStartLo, viewportLengthBp]
+uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
@@ -177,8 +151,6 @@ out vec4 v_color;
 ${HP_GLSL_FUNCTIONS}
 
 void main() {
-  // Each instance is a line segment; vertices encode multiple chevrons
-  // 4 vertices per chevron (2 lines forming < or >)
   int localChevronIndex = gl_VertexID / 4;
   int vid = gl_VertexID % 4;
 
@@ -186,37 +158,29 @@ void main() {
   float lineWidthPx = lineLengthBp / u_bpPerPx;
   float chevronSpacingPx = 25.0;
 
-  // Skip if line too small for any chevrons or no direction
   if (a_direction == 0.0 || lineWidthPx < chevronSpacingPx * 0.5) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     v_color = vec4(0.0);
     return;
   }
 
-  // Compute total chevrons for the full line (uncapped)
   int totalChevrons = max(1, int(floor(lineWidthPx / chevronSpacingPx)));
   float bpSpacing = lineLengthBp / float(totalChevrons + 1);
 
-  // Find the viewport bp range relative to line start to window into visible chevrons
   float viewportStartBp = u_bpRangeX.x + u_bpRangeX.y - float(u_regionStart) - float(a_position.x);
   float viewportEndBp = viewportStartBp + u_bpRangeX.z;
 
-  // Compute which chevron indices are visible in the viewport
   int firstVisible = max(0, int(floor(viewportStartBp / bpSpacing)) - 1);
   int lastVisible = min(totalChevrons - 1, int(ceil(viewportEndBp / bpSpacing)));
 
   int globalChevronIndex = firstVisible + localChevronIndex;
 
-  // Discard if outside visible range or beyond total
   if (globalChevronIndex < 0 || globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     v_color = vec4(0.0);
     return;
   }
 
-  // Compute chevron position using HP arithmetic to avoid float precision loss.
-  // Split lineStart as uint (exact), then add fractional offset to the lo component.
-  // hpScaleLinear handles the (hi-hi) + (lo-lo) subtraction correctly.
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
   uint lineStartAbs = a_position.x + u_regionStart;
   vec2 splitStart = hpSplitUint(lineStartAbs);
@@ -226,13 +190,9 @@ void main() {
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  // Chevron size in clip space
-  float chevronWidth = 5.0 / u_canvasWidth * 2.0;
-  float chevronHeight = 4.0 / u_canvasHeight * 2.0;
+  float chevronWidth = 4.5 / u_canvasWidth * 2.0;
+  float chevronHeight = 3.5 / u_canvasHeight * 2.0;
 
-  // Chevron shape: 4 vertices forming two lines (< or >)
-  // vid 0,3 are the outer tips, vid 1,2 are the center point
-  // a_direction flips the X to mirror between < and >
   float dir = a_direction;
   float sx, sy;
   if (vid == 1 || vid == 2) {
@@ -248,18 +208,15 @@ void main() {
 }
 `
 
-// Arrow vertex shader - strand direction arrows at feature ends
-// Matches canvas style: horizontal line stem + filled triangle arrowhead
-// 9 vertices per instance: 6 for stem rect (2 triangles) + 3 for arrowhead
 const ARROW_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
 in uint a_x;
 in float a_y;
-in float a_direction;  // -1 for left-pointing, 1 for right-pointing
+in float a_direction;
 in float a_height;
-in vec4 a_color;       // RGBA normalized by GL
+in vec4 a_color;
 
 uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
@@ -278,11 +235,9 @@ void main() {
   vec2 splitX = hpSplitUint(absX);
   float cx = hpToClipX(splitX, u_bpRangeX);
 
-  // Snap Y to pixel grid
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  // Match canvas: arrowOffset=7px total, arrowSize=5px tall
   float stemLength = 7.0 / u_canvasWidth * 2.0;
   float stemHalf = 0.5 / u_canvasHeight * 2.0;
   float headWidth = 3.5 / u_canvasWidth * 2.0;
@@ -290,19 +245,13 @@ void main() {
 
   float dir = a_direction;
 
-  // Stem rect: vertices 0-5 (two triangles)
-  // From cx to cx + stemLength/2 (the first half of the 7px line)
-  // Head triangle: vertices 6-8
-  // From cx + stemLength/2 to cx + stemLength
   float sx, sy;
   if (vid < 6) {
-    // Stem rectangle (thin 1px quad from feature edge to arrowhead base)
     float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     float localY = (vid == 0 || vid == 1 || vid == 4) ? -1.0 : 1.0;
     sx = cx + localX * stemLength * 0.5 * dir;
     sy = cy + localY * stemHalf;
   } else {
-    // Arrowhead triangle (from midpoint to tip)
     int hvid = vid - 6;
     if (hvid == 0) {
       sx = cx + stemLength * 0.5 * dir;
@@ -337,16 +286,12 @@ export interface FeatureRenderBlock {
 interface RegionGPUData {
   regionStart: number
   glBuffers: WebGLBuffer[]
-
   rectVAO: WebGLVertexArrayObject
   rectCount: number
-
   lineVAO: WebGLVertexArrayObject | null
   lineCount: number
-
   chevronVAO: WebGLVertexArrayObject | null
   chevronExtraBuffers: WebGLBuffer[]
-
   arrowVAO: WebGLVertexArrayObject | null
   arrowCount: number
 }
@@ -354,14 +299,11 @@ interface RegionGPUData {
 export class WebGLFeatureRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-
   private rectProgram: WebGLProgram
   private lineProgram: WebGLProgram
   private chevronProgram: WebGLProgram
   private arrowProgram: WebGLProgram
-
   private regionDataMap = new Map<number, RegionGPUData>()
-
   private rectUniforms: Record<string, WebGLUniformLocation | null> = {}
   private lineUniforms: Record<string, WebGLUniformLocation | null> = {}
   private chevronUniforms: Record<string, WebGLUniformLocation | null> = {}
@@ -381,48 +323,22 @@ export class WebGLFeatureRenderer {
     }
     this.gl = gl
 
-    this.rectProgram = this.createProgram(
-      RECT_VERTEX_SHADER,
-      SIMPLE_FRAGMENT_SHADER,
-    )
-    this.lineProgram = this.createProgram(
-      LINE_VERTEX_SHADER,
-      SIMPLE_FRAGMENT_SHADER,
-    )
-    this.chevronProgram = this.createProgram(
-      CHEVRON_VERTEX_SHADER,
-      SIMPLE_FRAGMENT_SHADER,
-    )
-    this.arrowProgram = this.createProgram(
-      ARROW_VERTEX_SHADER,
-      SIMPLE_FRAGMENT_SHADER,
-    )
+    this.rectProgram = this.createProgram(RECT_VERTEX_SHADER, SIMPLE_FRAGMENT_SHADER)
+    this.lineProgram = this.createProgram(LINE_VERTEX_SHADER, SIMPLE_FRAGMENT_SHADER)
+    this.chevronProgram = this.createProgram(CHEVRON_VERTEX_SHADER, SIMPLE_FRAGMENT_SHADER)
+    this.arrowProgram = this.createProgram(ARROW_VERTEX_SHADER, SIMPLE_FRAGMENT_SHADER)
 
-    const commonUniforms = [
-      'u_bpRangeX',
-      'u_regionStart',
-      'u_canvasHeight',
-      'u_canvasWidth',
-      'u_scrollY',
-    ]
+    const commonUniforms = ['u_bpRangeX', 'u_regionStart', 'u_canvasHeight', 'u_canvasWidth', 'u_scrollY']
     this.cacheUniforms(this.rectProgram, this.rectUniforms, commonUniforms)
-    this.cacheUniforms(this.lineProgram, this.lineUniforms, [
-      'u_bpRangeX',
-      'u_regionStart',
-      'u_canvasHeight',
-      'u_scrollY',
-    ])
-    this.cacheUniforms(this.chevronProgram, this.chevronUniforms, [
-      ...commonUniforms,
-      'u_bpPerPx',
-    ])
+    this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_bpRangeX', 'u_regionStart', 'u_canvasHeight', 'u_scrollY'])
+    this.cacheUniforms(this.chevronProgram, this.chevronUniforms, [...commonUniforms, 'u_bpPerPx'])
     this.cacheUniforms(this.arrowProgram, this.arrowUniforms, commonUniforms)
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   }
 
-  private createShader(type: number, source: string): WebGLShader {
+  private createShader(type: number, source: string) {
     const gl = this.gl
     const shader = gl.createShader(type)!
     gl.shaderSource(shader, source)
@@ -435,11 +351,11 @@ export class WebGLFeatureRenderer {
     return shader
   }
 
-  private createProgram(vsSource: string, fsSource: string): WebGLProgram {
+  private createProgram(vsSource: string, fsSource: string) {
     const gl = this.gl
     const vs = this.createShader(gl.VERTEX_SHADER, vsSource)
     const fs = this.createShader(gl.FRAGMENT_SHADER, fsSource)
-    const program = gl.createProgram()
+    const program = gl.createProgram()!
     gl.attachShader(program, vs)
     gl.attachShader(program, fs)
     gl.linkProgram(program)
@@ -488,61 +404,41 @@ export class WebGLFeatureRenderer {
     },
   ) {
     const gl = this.gl
-
     this.deleteRegion(regionNumber)
     const glBuffers: WebGLBuffer[] = []
 
-    // Upload rectangles
-    const rectVAO = gl.createVertexArray()
+    const rectVAO = gl.createVertexArray()!
     gl.bindVertexArray(rectVAO)
     glBuffers.push(
-      this.uploadUintAttrib(
-        this.rectProgram,
-        'a_position',
-        data.rectPositions,
-        2,
-      ),
+      this.uploadUintAttrib(this.rectProgram, 'a_position', data.rectPositions, 2),
       this.uploadFloatAttrib(this.rectProgram, 'a_y', data.rectYs, 1),
       this.uploadFloatAttrib(this.rectProgram, 'a_height', data.rectHeights, 1),
       this.uploadColorAttrib(this.rectProgram, 'a_color', data.rectColors),
     )
     gl.bindVertexArray(null)
 
-    // Upload lines and chevrons (share position/y/color buffers)
     let lineVAO: WebGLVertexArrayObject | null = null
     let chevronVAO: WebGLVertexArrayObject | null = null
     const chevronExtraBuffers: WebGLBuffer[] = []
 
     if (data.numLines > 0) {
-      // Create shared GL buffers for line data
       const linePosBuffer = this.createBuffer(data.linePositions)
       const lineYBuffer = this.createBuffer(data.lineYs)
       const lineColorBuffer = this.createBuffer(data.lineColors)
       glBuffers.push(linePosBuffer, lineYBuffer, lineColorBuffer)
 
-      // Line VAO
       lineVAO = gl.createVertexArray()!
       gl.bindVertexArray(lineVAO)
       this.bindUintAttrib(this.lineProgram, 'a_position', linePosBuffer, 2)
       this.bindFloatAttrib(this.lineProgram, 'a_y', lineYBuffer, 1)
-      this.bindNormalizedColorAttrib(
-        this.lineProgram,
-        'a_color',
-        lineColorBuffer,
-      )
+      this.bindNormalizedColorAttrib(this.lineProgram, 'a_color', lineColorBuffer)
       gl.bindVertexArray(null)
 
-      // Chevron VAO — reuses the same position/y/color buffers
-      chevronVAO = gl.createVertexArray()
+      chevronVAO = gl.createVertexArray()!
       gl.bindVertexArray(chevronVAO)
       this.bindUintAttrib(this.chevronProgram, 'a_position', linePosBuffer, 2)
       this.bindFloatAttrib(this.chevronProgram, 'a_y', lineYBuffer, 1)
-      this.bindNormalizedColorAttrib(
-        this.chevronProgram,
-        'a_color',
-        lineColorBuffer,
-      )
-      // Direction is chevron-only (not needed by line shader)
+      this.bindNormalizedColorAttrib(this.chevronProgram, 'a_color', lineColorBuffer)
       const dirBuffer = this.uploadFloatAttrib(
         this.chevronProgram,
         'a_direction',
@@ -553,7 +449,6 @@ export class WebGLFeatureRenderer {
       gl.bindVertexArray(null)
     }
 
-    // Upload arrows
     let arrowVAO: WebGLVertexArrayObject | null = null
     if (data.numArrows > 0) {
       arrowVAO = gl.createVertexArray()!
@@ -561,18 +456,8 @@ export class WebGLFeatureRenderer {
       glBuffers.push(
         this.uploadUintAttrib(this.arrowProgram, 'a_x', data.arrowXs, 1),
         this.uploadFloatAttrib(this.arrowProgram, 'a_y', data.arrowYs, 1),
-        this.uploadFloatAttrib(
-          this.arrowProgram,
-          'a_direction',
-          new Float32Array(data.arrowDirections),
-          1,
-        ),
-        this.uploadFloatAttrib(
-          this.arrowProgram,
-          'a_height',
-          data.arrowHeights,
-          1,
-        ),
+        this.uploadFloatAttrib(this.arrowProgram, 'a_direction', new Float32Array(data.arrowDirections), 1),
+        this.uploadFloatAttrib(this.arrowProgram, 'a_height', data.arrowHeights, 1),
         this.uploadColorAttrib(this.arrowProgram, 'a_color', data.arrowColors),
       )
       gl.bindVertexArray(null)
@@ -594,18 +479,13 @@ export class WebGLFeatureRenderer {
 
   private createBuffer(data: ArrayBufferView) {
     const gl = this.gl
-    const buffer = gl.createBuffer()
+    const buffer = gl.createBuffer()!
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
     return buffer
   }
 
-  private bindFloatAttrib(
-    program: WebGLProgram,
-    attrib: string,
-    buffer: WebGLBuffer,
-    size: number,
-  ) {
+  private bindFloatAttrib(program: WebGLProgram, attrib: string, buffer: WebGLBuffer, size: number) {
     const gl = this.gl
     const loc = gl.getAttribLocation(program, attrib)
     if (loc >= 0) {
@@ -616,12 +496,7 @@ export class WebGLFeatureRenderer {
     }
   }
 
-  private bindUintAttrib(
-    program: WebGLProgram,
-    attrib: string,
-    buffer: WebGLBuffer,
-    size: number,
-  ) {
+  private bindUintAttrib(program: WebGLProgram, attrib: string, buffer: WebGLBuffer, size: number) {
     const gl = this.gl
     const loc = gl.getAttribLocation(program, attrib)
     if (loc >= 0) {
@@ -632,11 +507,7 @@ export class WebGLFeatureRenderer {
     }
   }
 
-  private bindNormalizedColorAttrib(
-    program: WebGLProgram,
-    attrib: string,
-    buffer: WebGLBuffer,
-  ) {
+  private bindNormalizedColorAttrib(program: WebGLProgram, attrib: string, buffer: WebGLBuffer) {
     const gl = this.gl
     const loc = gl.getAttribLocation(program, attrib)
     if (loc >= 0) {
@@ -647,33 +518,19 @@ export class WebGLFeatureRenderer {
     }
   }
 
-  private uploadFloatAttrib(
-    program: WebGLProgram,
-    attrib: string,
-    data: Float32Array,
-    size: number,
-  ) {
+  private uploadFloatAttrib(program: WebGLProgram, attrib: string, data: Float32Array, size: number) {
     const buffer = this.createBuffer(data)
     this.bindFloatAttrib(program, attrib, buffer, size)
     return buffer
   }
 
-  private uploadUintAttrib(
-    program: WebGLProgram,
-    attrib: string,
-    data: Uint32Array,
-    size: number,
-  ) {
+  private uploadUintAttrib(program: WebGLProgram, attrib: string, data: Uint32Array, size: number) {
     const buffer = this.createBuffer(data)
     this.bindUintAttrib(program, attrib, buffer, size)
     return buffer
   }
 
-  private uploadColorAttrib(
-    program: WebGLProgram,
-    attrib: string,
-    data: Uint8Array,
-  ) {
+  private uploadColorAttrib(program: WebGLProgram, attrib: string, data: Uint8Array) {
     const buffer = this.createBuffer(data)
     this.bindNormalizedColorAttrib(program, attrib, buffer)
     return buffer
@@ -715,97 +572,54 @@ export class WebGLFeatureRenderer {
       gl.scissor(scissorX, 0, scissorW, canvasHeight)
       gl.viewport(scissorX, 0, scissorW, canvasHeight)
 
-      // Compute viewport-clipped genomic bp range for high-precision float split
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
       const bpPerPx = regionLengthBp / fullBlockWidth
-      const clippedBpStart =
-        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd =
-        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const clippedBpStart = block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd = block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
 
       const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
-
       const regionStart = region.regionStart
 
-      // Draw lines first (introns)
       if (region.lineVAO && region.lineCount > 0) {
         gl.useProgram(this.lineProgram)
-        gl.uniform3f(
-          this.lineUniforms.u_bpRangeX!,
-          bpStartHi,
-          bpStartLo,
-          clippedLengthBp,
-        )
+        gl.uniform3f(this.lineUniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
         gl.uniform1ui(this.lineUniforms.u_regionStart!, Math.floor(regionStart))
         gl.uniform1f(this.lineUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.lineUniforms.u_scrollY!, scrollY)
-
         gl.bindVertexArray(region.lineVAO)
         gl.drawArraysInstanced(gl.LINES, 0, 2, region.lineCount)
       }
 
-      // Draw chevrons (computed in shader from line data)
       if (region.chevronVAO && region.lineCount > 0) {
         gl.useProgram(this.chevronProgram)
-        gl.uniform3f(
-          this.chevronUniforms.u_bpRangeX!,
-          bpStartHi,
-          bpStartLo,
-          clippedLengthBp,
-        )
-        gl.uniform1ui(
-          this.chevronUniforms.u_regionStart!,
-          Math.floor(regionStart),
-        )
+        gl.uniform3f(this.chevronUniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
+        gl.uniform1ui(this.chevronUniforms.u_regionStart!, Math.floor(regionStart))
         gl.uniform1f(this.chevronUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.chevronUniforms.u_canvasWidth!, scissorW)
         gl.uniform1f(this.chevronUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.chevronUniforms.u_bpPerPx!, bpPerPx)
-
         gl.bindVertexArray(region.chevronVAO)
-        gl.drawArraysInstanced(
-          gl.LINES,
-          0,
-          MAX_VISIBLE_CHEVRONS_PER_LINE * 4,
-          region.lineCount,
-        )
+        gl.drawArraysInstanced(gl.LINES, 0, MAX_VISIBLE_CHEVRONS_PER_LINE * 4, region.lineCount)
       }
 
-      // Draw rectangles (exons, CDS, UTRs)
       gl.useProgram(this.rectProgram)
-      gl.uniform3f(
-        this.rectUniforms.u_bpRangeX!,
-        bpStartHi,
-        bpStartLo,
-        clippedLengthBp,
-      )
+      gl.uniform3f(this.rectUniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
       gl.uniform1ui(this.rectUniforms.u_regionStart!, Math.floor(regionStart))
       gl.uniform1f(this.rectUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.rectUniforms.u_canvasWidth!, scissorW)
       gl.uniform1f(this.rectUniforms.u_scrollY!, scrollY)
-
       gl.bindVertexArray(region.rectVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.rectCount)
 
-      // Draw arrows
       if (region.arrowVAO && region.arrowCount > 0) {
         gl.useProgram(this.arrowProgram)
-        gl.uniform3f(
-          this.arrowUniforms.u_bpRangeX!,
-          bpStartHi,
-          bpStartLo,
-          clippedLengthBp,
-        )
-        gl.uniform1ui(
-          this.arrowUniforms.u_regionStart!,
-          Math.floor(regionStart),
-        )
+        gl.uniform3f(this.arrowUniforms.u_bpRangeX!, bpStartHi, bpStartLo, clippedLengthBp)
+        gl.uniform1ui(this.arrowUniforms.u_regionStart!, Math.floor(regionStart))
         gl.uniform1f(this.arrowUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.arrowUniforms.u_canvasWidth!, scissorW)
         gl.uniform1f(this.arrowUniforms.u_scrollY!, scrollY)
-
         gl.bindVertexArray(region.arrowVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, region.arrowCount)
       }
@@ -821,12 +635,6 @@ export class WebGLFeatureRenderer {
       if (!activeRegionNumbers.has(regionNumber)) {
         this.deleteRegion(regionNumber)
       }
-    }
-  }
-
-  clearAllBuffers() {
-    for (const regionNumber of this.regionDataMap.keys()) {
-      this.deleteRegion(regionNumber)
     }
   }
 
@@ -856,7 +664,9 @@ export class WebGLFeatureRenderer {
   }
 
   destroy() {
-    this.clearAllBuffers()
+    for (const regionNumber of this.regionDataMap.keys()) {
+      this.deleteRegion(regionNumber)
+    }
     const gl = this.gl
     gl.deleteProgram(this.rectProgram)
     gl.deleteProgram(this.lineProgram)

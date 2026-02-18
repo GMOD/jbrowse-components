@@ -6,6 +6,7 @@ import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AppFab from './AppFab.tsx'
+import { useGpuDeviceLost } from './useGpuDeviceLost.ts'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
@@ -64,6 +65,7 @@ const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
+  useGpuDeviceLost(session)
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
   const drawerVisible = visibleWidget && !minimized
   const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined

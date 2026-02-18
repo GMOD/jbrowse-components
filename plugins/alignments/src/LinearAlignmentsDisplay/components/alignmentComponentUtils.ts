@@ -9,7 +9,8 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { fillColor } from '../../shared/color.ts'
 
-import type { ColorPalette, RGBColor, WebGLRenderer } from './WebGLRenderer'
+import type { ColorPalette, RGBColor } from './AlignmentsRenderer.ts'
+import type { AlignmentsRenderer } from './AlignmentsRenderer.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type {
   CoverageTooltipBin,
@@ -335,7 +336,7 @@ export function formatFeatureTooltip(
  * Coordinates uploading reads, CIGAR features, coverage, and sashimi arcs.
  */
 export function uploadRegionDataToGPU(
-  renderer: WebGLRenderer,
+  renderer: AlignmentsRenderer,
   rpcDataMap: Map<number, WebGLPileupDataResult>,
   showCoverage: boolean,
 ) {

@@ -46,7 +46,8 @@ import { openCigarWidget } from './components/openFeatureWidget.ts'
 
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
-import type { ColorPalette, WebGLRenderer } from './components/WebGLRenderer.ts'
+import type { AlignmentsRenderer } from './components/AlignmentsRenderer.ts'
+import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -65,16 +66,15 @@ import type {
   LinearGenomeViewModel,
   MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+} from './constants.ts'
 
 type LGV = LinearGenomeViewModel
 
 // Offset for Y scalebar labels (same as wiggle plugin)
 export const YSCALEBAR_LABEL_OFFSET = 5
-
-// Insertion rendering thresholds (shared between WebGL shader and component)
-// Long insertions (>=10bp) show text box when zoomed in, small rectangle when zoomed out
-export const LONG_INSERTION_MIN_LENGTH = 10
-export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15 // min pixels to show text box
 
 // Insertion type classification - must match shader logic in WebGLRenderer.ts
 export type InsertionType = 'large' | 'long' | 'small'
@@ -383,7 +383,7 @@ export default function stateModelFactory(
       simplexModifications: new Set<string>(),
       modificationsReady: false,
       overCigarItem: false,
-      webglRenderer: null as WebGLRenderer | null,
+      webglRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
     }))
@@ -868,7 +868,7 @@ export default function stateModelFactory(
           self.overCigarItem = flag
         },
 
-        setWebGLRenderer(renderer: WebGLRenderer | null) {
+        setWebGLRenderer(renderer: AlignmentsRenderer | null) {
           self.webglRenderer = renderer
         },
 
