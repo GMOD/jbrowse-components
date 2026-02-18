@@ -66,13 +66,15 @@ import type {
   LinearGenomeViewModel,
   MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+} from './constants.ts'
 
 type LGV = LinearGenomeViewModel
 
 // Offset for Y scalebar labels (same as wiggle plugin)
 export const YSCALEBAR_LABEL_OFFSET = 5
-
-export { LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX } from './constants.ts'
 
 // Insertion type classification - must match shader logic in WebGLRenderer.ts
 export type InsertionType = 'large' | 'long' | 'small'
