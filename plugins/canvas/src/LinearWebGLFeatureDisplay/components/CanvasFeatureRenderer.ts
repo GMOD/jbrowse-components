@@ -76,11 +76,11 @@ export class CanvasFeatureRenderer {
   }
 
   private static async ensureDevice() {
-    if (CanvasFeatureRenderer.device) {
-      return CanvasFeatureRenderer.device
-    }
     const device = await getGpuDevice()
-    if (device && !CanvasFeatureRenderer.device) {
+    if (!device) {
+      return null
+    }
+    if (CanvasFeatureRenderer.device !== device) {
       CanvasFeatureRenderer.device = device
       CanvasFeatureRenderer.initPipelines(device)
     }

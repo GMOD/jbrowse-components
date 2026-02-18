@@ -142,12 +142,22 @@ function replaceSSBO(glsl: string) {
     `uniform highp usampler2D u_instanceData;\n\n${fetchFn}`,
   )
 
-  const accessRe = new RegExp(
-    `(\\w+)\\s+(\\w+)\\s*=\\s*${arrayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\[([^\\]]+)\\]\\s*;`,
+  const escaped = arrayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  const wholeStructRe = new RegExp(
+    `(\\w+)\\s+(\\w+)\\s*=\\s*${escaped}\\[([^\\]]+)\\]\\s*;`,
     'g',
   )
-  glsl = glsl.replace(accessRe, (_match, type, varName, indexExpr) => {
+  glsl = glsl.replace(wholeStructRe, (_match, type, varName, indexExpr) => {
     return `${type} ${varName} = _fetch_${type}(int(${indexExpr}));`
+  })
+
+  const memberAccessRe = new RegExp(
+    `${escaped}\\[([^\\]]+)\\]\\.(\\w+)`,
+    'g',
+  )
+  glsl = glsl.replace(memberAccessRe, (_match, indexExpr, member) => {
+    return `_fetch_${structType}(int(${indexExpr})).${member}`
   })
 
   return glsl
@@ -161,6 +171,11 @@ function postProcess(glsl: string) {
     'uint(gl_InstanceID)',
   )
   glsl = replaceSSBO(glsl)
+  if (glsl.includes('naga_vs_first_instance')) {
+    throw new Error(
+      'naga_vs_first_instance still present after postProcess — naga may have changed its output format',
+    )
+  }
   return glsl
 }
 

@@ -78,11 +78,11 @@ export class WiggleRenderer {
   }
 
   private static async ensureDevice() {
-    if (WiggleRenderer.device) {
-      return WiggleRenderer.device
-    }
     const device = await getGpuDevice()
-    if (device && !WiggleRenderer.device) {
+    if (!device) {
+      return null
+    }
+    if (WiggleRenderer.device !== device) {
       WiggleRenderer.device = device
       WiggleRenderer.initPipelines(device)
     }

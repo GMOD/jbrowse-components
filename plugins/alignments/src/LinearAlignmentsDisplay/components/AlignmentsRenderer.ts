@@ -200,11 +200,11 @@ export class AlignmentsRenderer {
   }
 
   private static async ensureDevice() {
-    if (AlignmentsRenderer.device) {
-      return AlignmentsRenderer.device
-    }
     const device = await getGpuDevice()
-    if (device && !AlignmentsRenderer.device) {
+    if (!device) {
+      return null
+    }
+    if (AlignmentsRenderer.device !== device) {
       AlignmentsRenderer.device = device
       AlignmentsRenderer.initPipelines(device)
     }

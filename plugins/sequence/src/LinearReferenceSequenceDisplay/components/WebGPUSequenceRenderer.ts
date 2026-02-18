@@ -124,11 +124,11 @@ export class WebGPUSequenceRenderer {
   }
 
   private static async ensureDevice() {
-    if (WebGPUSequenceRenderer.device) {
-      return WebGPUSequenceRenderer.device
-    }
     const device = await getGpuDevice()
-    if (device && !WebGPUSequenceRenderer.device) {
+    if (!device) {
+      return null
+    }
+    if (WebGPUSequenceRenderer.device !== device) {
       WebGPUSequenceRenderer.device = device
       WebGPUSequenceRenderer.initPipelines(device)
     }

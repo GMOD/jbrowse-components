@@ -74,11 +74,11 @@ export class SyntenyRenderer {
   }
 
   private static async ensureDevice() {
-    if (SyntenyRenderer.device) {
-      return SyntenyRenderer.device
-    }
     const device = await getGpuDevice()
-    if (device && !SyntenyRenderer.device) {
+    if (!device) {
+      return null
+    }
+    if (SyntenyRenderer.device !== device) {
       SyntenyRenderer.device = device
       SyntenyRenderer.initPipelines(device)
     }

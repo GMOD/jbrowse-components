@@ -151,11 +151,11 @@ export class DotplotRenderer {
   }
 
   private static async ensureDevice() {
-    if (DotplotRenderer.device) {
-      return DotplotRenderer.device
-    }
     const device = await getGpuDevice()
-    if (device && !DotplotRenderer.device) {
+    if (!device) {
+      return null
+    }
+    if (DotplotRenderer.device !== device) {
       DotplotRenderer.device = device
       DotplotRenderer.initPipelines(device)
     }

@@ -13,7 +13,6 @@ import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.t
 import ConnectionType from './pluggableElementTypes/ConnectionType.ts'
 import DisplayType from './pluggableElementTypes/DisplayType.ts'
 import GlyphType from './pluggableElementTypes/GlyphType.ts'
-import GpuHandlerType from './pluggableElementTypes/GpuHandlerType.ts'
 import InternetAccountType from './pluggableElementTypes/InternetAccountType.ts'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType.ts'
 import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType.ts'
@@ -43,7 +42,6 @@ type PluggableElementTypeGroup =
   | 'text search adapter'
   | 'add track workflow'
   | 'glyph'
-  | 'gpu handler'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -122,7 +120,6 @@ export default class PluginManager {
     'rpc method',
     'internet account',
     'add track workflow',
-    'gpu handler',
   ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
 
   glyphTypes = new TypeRecord('GlyphType', GlyphType)
@@ -149,8 +146,6 @@ export default class PluginManager {
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
   addTrackWidgets = new TypeRecord('AddTrackWorkflow', AddTrackWorkflowType)
-
-  gpuHandlerTypes = new TypeRecord('GpuHandlerType', GpuHandlerType)
 
   internetAccountTypes = new TypeRecord(
     'InternetAccountType',
@@ -304,8 +299,6 @@ export default class PluginManager {
         return this.addTrackWidgets
       case 'glyph':
         return this.glyphTypes
-      case 'gpu handler':
-        return this.gpuHandlerTypes
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -595,14 +588,6 @@ export default class PluginManager {
 
   addGlyphType(cb: (pm: PluginManager) => GlyphType) {
     return this.addElementType('glyph', cb)
-  }
-
-  addGpuHandler(cb: (pm: PluginManager) => GpuHandlerType) {
-    return this.addElementType('gpu handler', cb)
-  }
-
-  getGpuHandlerElements() {
-    return this.getElementTypesInGroup('gpu handler') as GpuHandlerType[]
   }
 
   getGlyphType(typeName: string) {

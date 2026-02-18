@@ -113,7 +113,7 @@ void main() {
         int _e50 = _group_0_binding_1_vs.scale_type;
         float _e51 = score_to_y(inst.score, _e44, _e47, _e50);
         uint safe_prev_idx = (max(instance_index, 1u) - 1u);
-        float _e59 = _group_0_binding_0_vs[safe_prev_idx].score;
+        float _e59 = _fetch_Instance(int(safe_prev_idx)).score;
         float prev_score = ((instance_index == 0u) ? inst.score : _e59);
         vec2 _e66 = _group_0_binding_1_vs.domain_y;
         float _e69 = _group_0_binding_1_vs.canvas_height;
