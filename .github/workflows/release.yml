@@ -103,6 +103,8 @@ jobs:
           chmod +x CodeSignTool.sh
           cd ../../../
 
+      - name: Mark repo as safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Build app
         env:
           WINEPREFIX: /tmp/wine
@@ -142,7 +144,6 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-        if: env.CSC_LINK != ''
         run: |
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
