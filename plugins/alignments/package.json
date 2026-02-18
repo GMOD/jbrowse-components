@@ -28,7 +28,7 @@
     "prebuild": "pnpm clean && pnpm compile-shaders",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo",
-    "compile-shaders": "tsx scripts/compile-shaders.ts"
+    "compile-shaders": "node scripts/compile-shaders.ts"
   },
   "dependencies": {
     "@gmod/bam": "^7.1.17",

@@ -1,7 +1,7 @@
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
-} from '../../model.ts'
+} from '../../constants.ts'
 
 // Gap (deletion/skip) vertex shader - colored rectangles over reads
 // Deletions are dark grey (#404040), skips are teal/blue (#97b8c9)

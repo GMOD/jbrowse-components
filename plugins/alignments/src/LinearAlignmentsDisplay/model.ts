@@ -72,10 +72,7 @@ type LGV = LinearGenomeViewModel
 // Offset for Y scalebar labels (same as wiggle plugin)
 export const YSCALEBAR_LABEL_OFFSET = 5
 
-// Insertion rendering thresholds (shared between WebGL shader and component)
-// Long insertions (>=10bp) show text box when zoomed in, small rectangle when zoomed out
-export const LONG_INSERTION_MIN_LENGTH = 10
-export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15 // min pixels to show text box
+export { LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX } from './constants.ts'
 
 // Insertion type classification - must match shader logic in WebGLRenderer.ts
 export type InsertionType = 'large' | 'long' | 'small'
