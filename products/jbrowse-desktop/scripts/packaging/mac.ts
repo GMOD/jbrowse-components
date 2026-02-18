@@ -3,7 +3,7 @@ import path from 'path'
 
 import { APP_NAME, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
-import { notarizeMacApp, signMacApp } from './signing.ts'
+import { notarizeMacApp } from './signing.ts'
 import { fileSizeMB, generateLatestYml, log, run } from './utils.ts'
 
 export async function buildMac({ noInstaller = false } = {}) {
@@ -23,7 +23,6 @@ export async function buildMac({ noInstaller = false } = {}) {
     return electronAppDir
   }
 
-  await signMacApp(appPath)
   await notarizeMacApp(appPath)
 
   const dmgName = `${APP_NAME}-v${VERSION}-mac.dmg`

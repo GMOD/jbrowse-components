@@ -113,6 +113,7 @@ async function main() {
     (opts: { noInstaller: boolean }) => Promise<unknown>
   > = { linux: buildLinux, mac: buildMac, win: buildWindows }
 
+  const failures: string[] = []
   for (const platform of platforms) {
     try {
       await builders[platform]!({ noInstaller })
@@ -122,7 +123,13 @@ async function main() {
       if (process.env.DEBUG) {
         console.error(err.stack)
       }
+      failures.push(platform)
     }
+  }
+
+  if (failures.length > 0) {
+    printResults()
+    process.exit(1)
   }
 
   printResults()

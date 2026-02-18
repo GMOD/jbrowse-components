@@ -1,21 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import { APP_ID, APPLE_TEAM_ID, DIST } from './config.ts'
+import { APPLE_TEAM_ID, DIST } from './config.ts'
 import { ensureDir, log, run } from './utils.ts'
-
-export async function signMacApp(appPath: string) {
-  if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
-    log('Skipping macOS code signing (APPLE_ID not set)')
-    return
-  }
-
-  log('Signing macOS app...')
-  run(
-    `codesign --deep --force --options runtime --sign "Developer ID Application" "${appPath}"`,
-  )
-  log('macOS app signed')
-}
 
 export async function notarizeMacApp(appPath: string) {
   if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
