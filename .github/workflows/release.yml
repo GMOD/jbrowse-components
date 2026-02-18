@@ -72,6 +72,8 @@ jobs:
           apt update
           apt install --yes wine wine32 wine64 libwine libwine:i386 fonts-wine
       - name: Install NSIS under Wine
+        env:
+          WINEPREFIX: /tmp/wine
         run: |
           # Initialize Wine prefix first (suppress GUI prompts)
           WINEDLLOVERRIDES="mscoree,mshtml=" wineboot --init
@@ -97,13 +99,13 @@ jobs:
 
       - name: Build app
         env:
+          WINEPREFIX: /tmp/wine
           WINDOWS_SIGN_USER_NAME: ${{ secrets.WINDOWS_SIGN_USER_NAME }}
           WINDOWS_SIGN_USER_PASSWORD: ${{ secrets.WINDOWS_SIGN_USER_PASSWORD }}
           WINDOWS_SIGN_CREDENTIAL_ID: ${{ secrets.WINDOWS_SIGN_CREDENTIAL_ID }}
           WINDOWS_SIGN_USER_TOTP: ${{ secrets.WINDOWS_SIGN_USER_TOTP }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          chown --recursive root:root /github/home
           pnpm build-electron:win --publish always
         working-directory: products/jbrowse-desktop
 
