@@ -1,7 +1,12 @@
 name: Windows Electron Tests
 
 on:
-  push:
+  workflow_run:
+    workflows: ['Push']
+    types:
+      - completed
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -9,6 +14,7 @@ permissions:
 jobs:
   windows-electron-e2e:
     name: Windows Electron E2E Tests
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
