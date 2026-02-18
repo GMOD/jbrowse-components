@@ -2,6 +2,7 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
+import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import {
   ARC_CURVE_SEGMENTS,
@@ -1015,21 +1016,20 @@ export class AlignmentsRenderer {
     tempBuffers: GPUBuffer[],
   ) {
     const quads: number[] = []
+    const covOff = state.showCoverage ? state.coverageHeight : 0
 
     if (state.highlightedChainIndices.length > 0) {
-      const clip = this.computeChainClipRect(
-        state.highlightedChainIndices, region, state, bpHi, bpLo, bpLen,
-      )
-      if (clip) {
+      const bounds = getChainBounds(state.highlightedChainIndices, region.readPositions, region.readYs)
+      if (bounds) {
+        const clip = toClipRect(bounds.minStart + region.regionStart, bounds.maxEnd + region.regionStart, bounds.y, state, bpHi, bpLo, bpLen, covOff, state.canvasHeight)
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
     }
 
     if (state.selectedChainIndices.length > 0) {
-      const clip = this.computeChainClipRect(
-        state.selectedChainIndices, region, state, bpHi, bpLo, bpLen,
-      )
-      if (clip) {
+      const bounds = getChainBounds(state.selectedChainIndices, region.readPositions, region.readYs)
+      if (bounds) {
+        const clip = toClipRect(bounds.minStart + region.regionStart, bounds.maxEnd + region.regionStart, bounds.y, state, bpHi, bpLo, bpLen, covOff, state.canvasHeight)
         const tx = 4 / viewportW
         const ty = 4 / state.canvasHeight
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1)
@@ -1050,9 +1050,6 @@ export class AlignmentsRenderer {
     count: number,
     tempBuffers: GPUBuffer[],
   ) {
-    if (count === 0) {
-      return
-    }
     const device = AlignmentsRenderer.device!
     const buf = this.mkBuf(device, quads.buffer)
     tempBuffers.push(buf)
@@ -1060,56 +1057,6 @@ export class AlignmentsRenderer {
     pass.setPipeline(AlignmentsRenderer.flatQuadPL!)
     pass.setBindGroup(0, bg)
     pass.draw(6, count)
-  }
-
-  private computeChainClipRect(
-    indices: number[],
-    region: GpuRegion,
-    state: RenderState,
-    bpHi: number,
-    bpLo: number,
-    bpLen: number,
-  ) {
-    let minStart = Infinity
-    let maxEnd = -Infinity
-    let y = 0
-    for (const idx of indices) {
-      const s = region.readPositions[idx * 2]
-      const e = region.readPositions[idx * 2 + 1]
-      const row = region.readYs[idx]
-      if (s !== undefined && s < minStart) {
-        minStart = s
-      }
-      if (e !== undefined && e > maxEnd) {
-        maxEnd = e
-      }
-      if (row !== undefined) {
-        y = row
-      }
-    }
-    if (minStart >= Infinity) {
-      return undefined
-    }
-
-    const absStart = minStart + region.regionStart
-    const absEnd = maxEnd + region.regionStart
-    const splitStart0 = Math.floor(absStart) - (Math.floor(absStart) & 0xfff)
-    const splitStart1 = Math.floor(absStart) & 0xfff
-    const splitEnd0 = Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff)
-    const splitEnd1 = Math.floor(absEnd) & 0xfff
-    const sx1 = ((splitStart0 - bpHi + splitStart1 - bpLo) / bpLen) * 2 - 1
-    const sx2 = ((splitEnd0 - bpHi + splitEnd1 - bpLo) / bpLen) * 2 - 1
-
-    const coverageOffset = state.showCoverage ? state.coverageHeight : 0
-    const rowHeight = state.featureHeight + state.featureSpacing
-    const yTopPx = y * rowHeight - state.rangeY[0]
-    const yBotPx = yTopPx + state.featureHeight
-    const pxToClip = 2 / state.canvasHeight
-    const pileupTop = 1 - (coverageOffset / state.canvasHeight) * 2
-    const syTop = pileupTop - yTopPx * pxToClip
-    const syBot = pileupTop - yBotPx * pxToClip
-
-    return { sx1, syTop, sx2, syBot }
   }
 
   destroy() {

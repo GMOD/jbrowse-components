@@ -35,6 +35,7 @@ type ProgressCallback = (progress: number, message: string) => void
  */
 async function diagonalizeRegions(
   alignments: AlignmentData[],
+  referenceRegions: Region[],
   currentRegions: Region[],
   progressCallback?: ProgressCallback,
 ): Promise<DiagonalizationResult> {
@@ -50,7 +51,7 @@ async function diagonalizeRegions(
   const queryGroups = new Map<
     string,
     {
-      refAlignments: Map<string, { bases: number; positions: number[] }>
+      refAlignments: Map<string, { bases: number; weightedPosSum: number }>
       strandWeightedSum: number
     }
   >()
@@ -71,13 +72,13 @@ async function diagonalizeRegions(
     if (!group.refAlignments.has(aln.queryRefName)) {
       group.refAlignments.set(aln.queryRefName, {
         bases: 0,
-        positions: [],
+        weightedPosSum: 0,
       })
     }
 
     const refData = group.refAlignments.get(aln.queryRefName)!
     refData.bases += alnLength
-    refData.positions.push((aln.queryStart + aln.queryEnd) / 2)
+    refData.weightedPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
 
     const direction = aln.strand >= 0 ? 1 : -1
     group.strandWeightedSum += direction * alnLength
@@ -96,18 +97,17 @@ async function diagonalizeRegions(
   for (const [targetRefName, group] of queryGroups) {
     let bestRefName = ''
     let maxBases = 0
-    let bestPositions: number[] = []
+    let bestWeightedPosSum = 0
 
     for (const [firstViewRefName, data] of group.refAlignments) {
       if (data.bases > maxBases) {
         maxBases = data.bases
         bestRefName = firstViewRefName
-        bestPositions = data.positions
+        bestWeightedPosSum = data.weightedPosSum
       }
     }
 
-    const bestRefPos =
-      bestPositions.reduce((a, b) => a + b, 0) / bestPositions.length
+    const bestRefPos = maxBases > 0 ? bestWeightedPosSum / maxBases : 0
     const shouldReverse = group.strandWeightedSum < 0
 
     queryOrdering.push({
@@ -120,9 +120,13 @@ async function diagonalizeRegions(
 
   updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
 
+  const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
+
   queryOrdering.sort((a, b) => {
-    if (a.bestRefName !== b.bestRefName) {
-      return a.bestRefName.localeCompare(b.bestRefName)
+    const aIdx = refOrder.get(a.bestRefName) ?? Infinity
+    const bIdx = refOrder.get(b.bestRefName) ?? Infinity
+    if (aIdx !== bIdx) {
+      return aIdx - bIdx
     }
     return a.bestRefPos - b.bestRefPos
   })
@@ -271,6 +275,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     // Run diagonalization algorithm with progress callback
     const result = await diagonalizeRegions(
       alignments,
+      view.hview.displayedRegions,
       view.vview.displayedRegions,
       (progress, message) => {
         checkStopToken(stopToken)

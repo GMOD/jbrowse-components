@@ -59,6 +59,7 @@ export class SyntenyRenderer {
 
   private cachedPickResult = -1
   private pendingPick = false
+  private pickCallback?: (result: number) => void
 
   private get dpr() {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 2
@@ -293,7 +294,8 @@ export class SyntenyRenderer {
     device.queue.submit([encoder.finish()])
   }
 
-  pick(x: number, y: number) {
+  pick(x: number, y: number, onResult?: (result: number) => void): number {
+    this.pickCallback = onResult
     if (this.pendingPick) {
       return this.cachedPickResult
     }
@@ -302,6 +304,7 @@ export class SyntenyRenderer {
       result => {
         this.cachedPickResult = result
         this.pendingPick = false
+        this.pickCallback?.(result)
       },
       () => {
         this.pendingPick = false
@@ -352,17 +355,42 @@ export class SyntenyRenderer {
     )
     device.queue.submit([encoder.finish()])
 
-    await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
-    if (!this.pickingStagingBuffer) {
+    try {
+      await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
+    } catch (e) {
+      console.warn('[doPick] mapAsync failed, recreating staging buffer:', e)
+      this.resetStagingBuffer()
       return -1
     }
-    const data = new Uint8Array(this.pickingStagingBuffer.getMappedRange())
-    const r = data[0]!
-    const g = data[1]!
-    const b = data[2]!
-    this.pickingStagingBuffer.unmap()
 
-    return r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
+    let result = -1
+    try {
+      const data = new Uint8Array(this.pickingStagingBuffer.getMappedRange())
+      const r = data[0]!
+      const g = data[1]!
+      const b = data[2]!
+      result = r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
+    } catch (e) {
+      console.warn('[doPick] getMappedRange failed, recreating staging buffer:', e)
+      this.resetStagingBuffer()
+    } finally {
+      try { this.pickingStagingBuffer?.unmap() } catch {}
+    }
+    return result
+  }
+
+  private resetStagingBuffer() {
+    const device = SyntenyRenderer.device
+    if (!device) {
+      return
+    }
+    try {
+      this.pickingStagingBuffer?.destroy()
+    } catch {}
+    this.pickingStagingBuffer = device.createBuffer({
+      size: 256,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    })
   }
 
   dispose() {

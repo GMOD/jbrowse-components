@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  getBpDisplayStr,
-  getContainingView,
-  setupWebGLContextLossHandler,
-} from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
+import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 
@@ -43,54 +39,47 @@ const WebGLVariantMatrixComponent = observer(
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const cellDataRef = useRef<MatrixCellData | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [ready, setReady] = useState(false)
 
     const view = getContainingView(model) as LGV
 
-    const rendererRef = useRef<WebGLVariantMatrixRenderer | null>(null)
-    const [contextVersion, setContextVersion] = useState(0)
+    const rendererRef = useRef<VariantMatrixRenderer | null>(null)
 
-    useEffect(() => {
-      const canvas = canvasRef.current
-      if (canvas) {
-        return setupWebGLContextLossHandler(canvas, () => {
-          setContextVersion(v => v + 1)
+    const canvasRefCallback = useCallback(
+      (canvas: HTMLCanvasElement | null) => {
+        if (!canvas) {
+          return
+        }
+        canvasRef.current = canvas
+        const renderer = VariantMatrixRenderer.getOrCreate(canvas)
+        rendererRef.current = renderer
+        renderer.init().then(ok => {
+          if (!ok) {
+            setError('GPU initialization failed')
+          } else {
+            setReady(true)
+          }
         })
-      }
-      return undefined
-    }, [])
-
-    useEffect(() => {
-      const canvas = canvasRef.current
-      if (!canvas) {
-        return
-      }
-      try {
-        rendererRef.current = new WebGLVariantMatrixRenderer(canvas)
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-      }
-      return () => {
-        rendererRef.current?.destroy()
-        rendererRef.current = null
-      }
-    }, [contextVersion])
+      },
+      [],
+    )
 
     // Upload pre-computed cell data from worker when it arrives
     useEffect(() => {
       const renderer = rendererRef.current
       const cellData = model.webglCellData
-      if (!renderer || !cellData) {
+      if (!renderer || !ready || !cellData) {
         cellDataRef.current = null
         return
       }
       cellDataRef.current = cellData
       renderer.uploadCellData(cellData)
-    }, [model.webglCellData, contextVersion])
+    }, [model.webglCellData, ready])
 
     // Render when scroll/size changes
     useEffect(() => {
       const renderer = rendererRef.current
-      if (!renderer || !view.initialized) {
+      if (!renderer || !ready || !view.initialized) {
         return
       }
       const cellData = cellDataRef.current
@@ -117,7 +106,7 @@ const WebGLVariantMatrixComponent = observer(
       model.sources,
       view.initialized,
       view.dynamicBlocks.totalWidthPx,
-      contextVersion,
+      ready,
     ])
 
     const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -237,7 +226,7 @@ const WebGLVariantMatrixComponent = observer(
     if (error) {
       return (
         <div style={{ width, height, color: 'red', padding: 10 }}>
-          WebGL Error: {error}
+          GPU Error: {error}
         </div>
       )
     }
@@ -245,7 +234,7 @@ const WebGLVariantMatrixComponent = observer(
     return (
       <div style={{ position: 'relative', width, height }}>
         <canvas
-          ref={canvasRef}
+          ref={canvasRefCallback}
           style={{
             width,
             height,

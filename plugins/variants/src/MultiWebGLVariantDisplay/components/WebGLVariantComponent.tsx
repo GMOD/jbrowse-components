@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  getBpDisplayStr,
-  getContainingView,
-  setupWebGLContextLossHandler,
-} from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { WebGLVariantRenderer } from './WebGLVariantRenderer.ts'
+import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 
@@ -93,54 +89,44 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cellDataRef = useRef<VariantCellData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [ready, setReady] = useState(false)
 
   const view = getContainingView(model) as LGV
 
-  const rendererRef = useRef<WebGLVariantRenderer | null>(null)
-  const [contextVersion, setContextVersion] = useState(0)
+  const rendererRef = useRef<VariantRenderer | null>(null)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
-    }
-    return undefined
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
+  const canvasRefCallback = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!canvas) {
       return
     }
-    try {
-      rendererRef.current = new WebGLVariantRenderer(canvas)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'WebGL initialization failed')
-    }
-    return () => {
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-    }
-  }, [contextVersion])
+    canvasRef.current = canvas
+    const renderer = VariantRenderer.getOrCreate(canvas)
+    rendererRef.current = renderer
+    renderer.init().then(ok => {
+      if (!ok) {
+        setError('GPU initialization failed')
+      } else {
+        setReady(true)
+      }
+    })
+  }, [])
 
   // Upload pre-computed cell data from worker when it arrives
   useEffect(() => {
     const renderer = rendererRef.current
     const cellData = model.webglCellData
-    if (!renderer || !cellData) {
+    if (!renderer || !ready || !cellData) {
       cellDataRef.current = null
       return
     }
     cellDataRef.current = cellData
     renderer.uploadCellData(cellData)
-  }, [model.webglCellData, contextVersion])
+  }, [model.webglCellData, ready])
 
   // Render when view state changes
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !view.initialized) {
+    if (!renderer || !ready || !view.initialized) {
       return
     }
 
@@ -178,7 +164,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     view.bpPerPx,
     view.offsetPx,
     view.dynamicBlocks.totalWidthPx,
-    contextVersion,
+    ready,
   ])
 
   const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -318,7 +304,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   if (error) {
     return (
       <div style={{ width, height, color: 'red', padding: 10 }}>
-        WebGL Error: {error}
+        GPU Error: {error}
       </div>
     )
   }
@@ -326,7 +312,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvasRef}
+        ref={canvasRefCallback}
         style={{
           width,
           height,

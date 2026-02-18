@@ -1,27 +1,5 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-// High-precision GLSL functions for genomic coordinates
-// Splits large integers into high/low parts to maintain precision in shaders
-export const HP_GLSL_FUNCTIONS = `
-const uint HP_LOW_MASK = 0xFFFu;
-
-vec2 hpSplitUint(uint value) {
-  uint lo = value & HP_LOW_MASK;
-  uint hi = value - lo;
-  return vec2(float(hi), float(lo));
-}
-
-float hpScaleLinear(vec2 splitPos, vec3 bpRange) {
-  float hi = splitPos.x - bpRange.x;
-  float lo = splitPos.y - bpRange.y;
-  return (hi + lo) / bpRange.z;
-}
-
-float hpToClipX(vec2 splitPos, vec3 bpRange) {
-  return hpScaleLinear(splitPos, bpRange) * 2.0 - 1.0;
-}
-`
-
 export function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue

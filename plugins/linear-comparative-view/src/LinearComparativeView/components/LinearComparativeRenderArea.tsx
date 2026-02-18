@@ -59,9 +59,10 @@ const LinearComparativeRenderArea = observer(
                   <Overlays model={model} level={i - 1} />
                 </div>
                 <ResizeHandle
-                  onDrag={n =>
-                    levels[i - 1]?.setHeight((levels[i - 1]?.height || 0) + n)
-                  }
+                  onDrag={n => {
+                    const level = levels[i - 1]
+                    level?.setHeight(level.height + n)
+                  }}
                   className={classes.resizeHandle}
                 />
               </>

@@ -49,6 +49,7 @@ export type ProgressCallback = (
  */
 export async function diagonalizeRegions(
   alignments: AlignmentData[],
+  referenceRegions: Region[],
   currentRegions: Region[],
   progressCallback?: ProgressCallback,
 ): Promise<DiagonalizationResult> {
@@ -65,7 +66,7 @@ export async function diagonalizeRegions(
   const queryGroups = new Map<
     string,
     {
-      refAlignments: Map<string, { bases: number; positions: number[] }>
+      refAlignments: Map<string, { bases: number; weightedPosSum: number }>
       strandWeightedSum: number
     }
   >()
@@ -88,14 +89,13 @@ export async function diagonalizeRegions(
     if (!group.refAlignments.has(aln.queryRefName)) {
       group.refAlignments.set(aln.queryRefName, {
         bases: 0,
-        positions: [],
+        weightedPosSum: 0,
       })
     }
 
     const refData = group.refAlignments.get(aln.queryRefName)!
     refData.bases += alnLength
-    // Use the first view's positions as reference
-    refData.positions.push((aln.queryStart + aln.queryEnd) / 2)
+    refData.weightedPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
 
     // Calculate weighted strand sum
     const direction = aln.strand >= 0 ? 1 : -1
@@ -117,19 +117,18 @@ export async function diagonalizeRegions(
     // Find which first view region it aligns to most
     let bestRefName = ''
     let maxBases = 0
-    let bestPositions: number[] = []
+    let bestWeightedPosSum = 0
 
     for (const [firstViewRefName, data] of group.refAlignments) {
       if (data.bases > maxBases) {
         maxBases = data.bases
         bestRefName = firstViewRefName
-        bestPositions = data.positions
+        bestWeightedPosSum = data.weightedPosSum
       }
     }
 
-    // Calculate weighted mean position in the first view
-    const bestRefPos =
-      bestPositions.reduce((a, b) => a + b, 0) / bestPositions.length
+    // Calculate length-weighted mean position in the first view
+    const bestRefPos = maxBases > 0 ? bestWeightedPosSum / maxBases : 0
 
     // Determine if we should reverse based on major strand
     const shouldReverse = group.strandWeightedSum < 0
@@ -144,13 +143,14 @@ export async function diagonalizeRegions(
 
   await updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
 
-  // Sort query regions by reference region and position
+  const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
+
   queryOrdering.sort((a, b) => {
-    // First by reference region name
-    if (a.bestRefName !== b.bestRefName) {
-      return a.bestRefName.localeCompare(b.bestRefName)
+    const aIdx = refOrder.get(a.bestRefName) ?? Infinity
+    const bIdx = refOrder.get(b.bestRefName) ?? Infinity
+    if (aIdx !== bIdx) {
+      return aIdx - bIdx
     }
-    // Then by position within reference
     return a.bestRefPos - b.bestRefPos
   })
 

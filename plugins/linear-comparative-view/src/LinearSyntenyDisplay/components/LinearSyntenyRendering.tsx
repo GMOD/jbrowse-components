@@ -188,18 +188,22 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         model.setHoveredFeatureIdx(-1)
         setTooltip('')
       } else {
-        const featureIndex = model.gpuRenderer?.pick(coords.x, coords.y) ?? -1
-        model.setHoveredFeatureIdx(featureIndex)
-        if (featureIndex >= 0 && featureIndex < model.numFeats) {
-          const feat = model.getFeature(featureIndex)
-          if (feat) {
-            model.setMouseoverId(feat.id)
-            setTooltip(getTooltip(feat))
+        const applyHover = (featureIndex: number) => {
+          model.setHoveredFeatureIdx(featureIndex)
+          if (featureIndex >= 0 && featureIndex < model.numFeats) {
+            const feat = model.getFeature(featureIndex)
+            if (feat) {
+              model.setMouseoverId(feat.id)
+              setTooltip(getTooltip(feat))
+            }
+          } else {
+            model.setMouseoverId(undefined)
+            setTooltip('')
           }
-        } else {
-          model.setMouseoverId(undefined)
-          setTooltip('')
         }
+        const featureIndex =
+          model.gpuRenderer?.pick(coords.x, coords.y, applyHover) ?? -1
+        applyHover(featureIndex)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -178,11 +178,14 @@ ${SCREEN_POSITIONS}
 @fragment
 fn fs_main(in: VOut) -> @location(0) vec4f {
   var rgb = in.color.rgb;
-  if (uniforms.hoveredFeatureId > 0.0 && abs(in.featureId - uniforms.hoveredFeatureId) < 0.5) {
+  let isHovered = uniforms.hoveredFeatureId > 0.0 && abs(in.featureId - uniforms.hoveredFeatureId) < 0.5;
+  let baseAlpha = in.color.a * uniforms.alpha;
+  let finalAlpha = select(baseAlpha, min(baseAlpha * 5.0, 0.35), isHovered);
+  if (isHovered) {
     rgb = rgb * 0.7;
   }
   let coverage = saturate(in.halfWidth + 0.5 - abs(in.dist));
-  return vec4f(rgb, in.color.a * uniforms.alpha * coverage);
+  return vec4f(rgb, finalAlpha * coverage);
 }
 
 @fragment

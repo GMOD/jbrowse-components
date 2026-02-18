@@ -142,7 +142,7 @@ export async function renderToSvg(
     const level = levels[i - 1]!
     const rendering = renderings[i - 1]
     const height = heights[i]!
-    const levelHeight = level.height || 0
+    const levelHeight = level.height
     RenderList.push(
       <g key={view.id} transform={`translate(0 ${currOffset})`}>
         {levelHeight ? (
