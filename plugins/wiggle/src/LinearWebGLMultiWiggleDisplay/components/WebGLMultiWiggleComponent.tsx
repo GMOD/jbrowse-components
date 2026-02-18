@@ -206,9 +206,7 @@ const WebGLMultiWiggleComponent = observer(
         screenEndPx: vr.screenEndPx,
       }))
 
-      requestAnimationFrame(() => {
-        renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
-      })
+      renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
     }, [
       model,
       model.rpcDataMap,

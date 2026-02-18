@@ -91,7 +91,6 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   model: VariantDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rafRef = useRef<number | undefined>(undefined)
   const cellDataRef = useRef<VariantCellData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -160,20 +159,12 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       screenEndPx: r.screenEndPx,
     }))
 
-    rafRef.current = requestAnimationFrame(() => {
-      renderer.renderBlocks(blocks, {
-        canvasWidth: width,
-        canvasHeight: height,
-        rowHeight: model.rowHeight,
-        scrollTop: model.scrollTop,
-      })
+    renderer.renderBlocks(blocks, {
+      canvasWidth: width,
+      canvasHeight: height,
+      rowHeight: model.rowHeight,
+      scrollTop: model.scrollTop,
     })
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-    }
   }, [
     model,
     model.webglCellData,

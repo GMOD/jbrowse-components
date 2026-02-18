@@ -287,19 +287,52 @@ function collectRenderData(
       })
       const transcriptStrokeUint = colorToUint32(transcriptStrokeColor)
 
-      // Draw connecting line for the transcript span
+      // Draw connecting line for intron gaps only (not inside boxes)
       const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
-      lines.push({
-        startOffset: transcriptStart - regionStart,
-        endOffset: transcriptEnd - regionStart,
-        y: transcriptTopPx + transcriptLayout.height / 2,
-        color: transcriptStrokeUint,
-        direction: effectiveStrand,
-      })
+      const lineY = transcriptTopPx + transcriptLayout.height / 2
+      const sortedChildren = [...transcriptLayout.children].sort(
+        (a, b) => a.feature.get('start') - b.feature.get('start'),
+      )
+      if (sortedChildren.length === 0) {
+        lines.push({
+          startOffset: transcriptStart - regionStart,
+          endOffset: transcriptEnd - regionStart,
+          y: lineY,
+          color: transcriptStrokeUint,
+          direction: effectiveStrand,
+        })
+      } else {
+        let prevEnd = transcriptStart
+        for (const child of sortedChildren) {
+          const childStart = child.feature.get('start')
+          const childEnd = child.feature.get('end')
+          if (childStart > prevEnd) {
+            lines.push({
+              startOffset: prevEnd - regionStart,
+              endOffset: childStart - regionStart,
+              y: lineY,
+              color: transcriptStrokeUint,
+              direction: effectiveStrand,
+            })
+          }
+          if (childEnd > prevEnd) {
+            prevEnd = childEnd
+          }
+        }
+        if (prevEnd < transcriptEnd) {
+          lines.push({
+            startOffset: prevEnd - regionStart,
+            endOffset: transcriptEnd - regionStart,
+            y: lineY,
+            color: transcriptStrokeUint,
+            direction: effectiveStrand,
+          })
+        }
+      }
 
       // Draw children (exons, CDS, UTRs)
       const transcriptPeptide = peptideDataMap?.get(transcriptFeature.id())
-      for (const childLayout of transcriptLayout.children) {
+      for (const childLayout of sortedChildren) {
         const childFeature = childLayout.feature
         const childStart = childFeature.get('start')
         const childEnd = childFeature.get('end')
@@ -393,7 +426,6 @@ function collectRenderData(
 
       // Add strand arrow for transcript
       if (transcriptStrand !== 0) {
-        const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
         const arrowX = effectiveStrand === 1 ? transcriptEnd : transcriptStart
         arrows.push({
           x: arrowX - regionStart,

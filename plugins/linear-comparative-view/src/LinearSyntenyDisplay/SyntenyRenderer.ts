@@ -60,6 +60,10 @@ export class SyntenyRenderer {
   private cachedPickResult = -1
   private pendingPick = false
 
+  private get dpr() {
+    return typeof window !== 'undefined' ? window.devicePixelRatio : 2
+  }
+
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
   }
@@ -180,7 +184,8 @@ export class SyntenyRenderer {
     return true
   }
 
-  resize(width: number, height: number, dpr = 2) {
+  resize(width: number, height: number) {
+    const dpr = this.dpr
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
     if (this.canvas.width !== pw || this.canvas.height !== ph) {
@@ -210,18 +215,13 @@ export class SyntenyRenderer {
     }
 
     this.instanceCount = data.instanceCount
-    this.nonCigarInstanceCount = data.nonCigarInstanceCount ?? data.instanceCount
+    this.nonCigarInstanceCount = data.nonCigarInstanceCount
     this.geometryBpPerPx0 = data.geometryBpPerPx0
     this.geometryBpPerPx1 = data.geometryBpPerPx1
-    this.refOffset0 = data.refOffset0 ?? 0
-    this.refOffset1 = data.refOffset1 ?? 0
+    this.refOffset0 = data.refOffset0
+    this.refOffset1 = data.refOffset1
 
-    const interleaved = this.interleaveInstances(
-      data.x1, data.x2, data.x3, data.x4,
-      data.colors, data.featureIds, data.isCurves,
-      data.queryTotalLengths, data.padTops, data.padBottoms,
-      data.instanceCount,
-    )
+    const interleaved = this.interleaveInstances(data)
 
     this.instanceBuffer?.destroy()
     this.instanceBuffer = device.createBuffer({
@@ -253,10 +253,14 @@ export class SyntenyRenderer {
     clickedFeatureId: number,
   ) {
     const device = SyntenyRenderer.device
-    if (!device || !this.instanceBuffer || this.instanceCount === 0) {
-      return
-    }
-    if (!this.bindGroup || !SyntenyRenderer.fillPipeline || !this.context) {
+    if (
+      !device ||
+      !this.instanceBuffer ||
+      this.instanceCount === 0 ||
+      !this.bindGroup ||
+      !SyntenyRenderer.fillPipeline ||
+      !this.context
+    ) {
       return
     }
 
@@ -265,11 +269,9 @@ export class SyntenyRenderer {
     const adjOff0 = offset0 / scale0 - this.refOffset0
     const adjOff1 = offset1 / scale1 - this.refOffset1
 
-    const w = this.canvas.width
-    const h = this.canvas.height
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 2
-    const logicalW = w / dpr
-    const logicalH = h / dpr
+    const { dpr } = this
+    const logicalW = this.canvas.width / dpr
+    const logicalH = this.canvas.height / dpr
 
     this.writeUniforms(logicalW, logicalH, height, adjOff0, adjOff1, scale0, scale1, maxOffScreenPx, minAlignmentLength, alpha, hoveredFeatureId, clickedFeatureId)
 
@@ -296,10 +298,15 @@ export class SyntenyRenderer {
       return this.cachedPickResult
     }
     this.pendingPick = true
-    this.doPick(x, y).then(result => {
-      this.cachedPickResult = result
-      this.pendingPick = false
-    })
+    this.doPick(x, y).then(
+      result => {
+        this.cachedPickResult = result
+        this.pendingPick = false
+      },
+      () => {
+        this.pendingPick = false
+      },
+    )
     return this.cachedPickResult
   }
 
@@ -317,12 +324,11 @@ export class SyntenyRenderer {
       return -1
     }
 
+    const { dpr } = this
+
     if (this.pickingDirty) {
       const p = this.lastRenderParams
-      const w = this.canvas.width
-      const h = this.canvas.height
-      const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 2
-      this.writeUniforms(w / dpr, h / dpr, p.height, p.adjOff0, p.adjOff1, p.scale0, p.scale1, p.maxOffScreenPx, p.minAlignmentLength, 1, 0, 0)
+      this.writeUniforms(this.canvas.width / dpr, this.canvas.height / dpr, p.height, p.adjOff0, p.adjOff1, p.scale0, p.scale1, p.maxOffScreenPx, p.minAlignmentLength, 1, 0, 0)
 
       const encoder = device.createCommandEncoder()
       const pv = this.pickingTexture.createView()
@@ -331,8 +337,6 @@ export class SyntenyRenderer {
       device.queue.submit([encoder.finish()])
       this.pickingDirty = false
     }
-
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 2
     const px = Math.floor(x * dpr)
     const py = Math.floor(y * dpr)
 
@@ -349,6 +353,9 @@ export class SyntenyRenderer {
     device.queue.submit([encoder.finish()])
 
     await this.pickingStagingBuffer.mapAsync(GPUMapMode.READ)
+    if (!this.pickingStagingBuffer) {
+      return -1
+    }
     const data = new Uint8Array(this.pickingStagingBuffer.getMappedRange())
     const r = data[0]!
     const g = data[1]!
@@ -426,12 +433,8 @@ export class SyntenyRenderer {
     pass.end()
   }
 
-  private interleaveInstances(
-    x1: Float32Array, x2: Float32Array, x3: Float32Array, x4: Float32Array,
-    colors: Float32Array, featureIds: Float32Array, isCurves: Float32Array,
-    queryTotalLengths: Float32Array, padTops: Float32Array, padBottoms: Float32Array,
-    n: number,
-  ) {
+  private interleaveInstances(data: SyntenyInstanceData) {
+    const { x1, x2, x3, x4, colors, featureIds, isCurves, queryTotalLengths, padTops, padBottoms, instanceCount: n } = data
     const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
     const f = new Float32Array(buf)
     const stride = INSTANCE_BYTE_SIZE / 4

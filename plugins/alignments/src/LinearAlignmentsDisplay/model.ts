@@ -164,6 +164,44 @@ function getSequenceAdapter(session: any, region: Region) {
   return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
 }
 
+async function fetchFeatureDetails(self: any, featureId: string) {
+  const session = getSession(self)
+  const track = getContainingTrack(self)
+  const adapterConfig = getConf(track, 'adapter')
+  const info = self.getFeatureInfoById(featureId)
+  if (!info) {
+    return undefined
+  }
+  let assemblyName: string | undefined
+  for (const loaded of self.loadedRegions.values()) {
+    if (loaded.refName === info.refName) {
+      assemblyName = loaded.assemblyName
+      break
+    }
+  }
+  const region = {
+    refName: info.refName,
+    start: info.start,
+    end: info.end,
+    assemblyName,
+  }
+  const sequenceAdapter = getSequenceAdapter(session, region)
+  const sessionId = getRpcSessionId(self)
+  const { feature } = (await session.rpcManager.call(
+    sessionId,
+    'WebGLGetFeatureDetails',
+    { sessionId, adapterConfig, sequenceAdapter, region, featureId },
+  )) as {
+    feature: (Record<string, unknown> & { uniqueId: string }) | undefined
+  }
+  if (!feature) {
+    return undefined
+  }
+  return new SimpleFeature(
+    feature as ConstructorParameters<typeof SimpleFeature>[0],
+  )
+}
+
 const WebGLAlignmentsComponent = lazy(
   () => import('./components/WebGLAlignmentsComponent.tsx'),
 )
@@ -894,6 +932,10 @@ export default function stateModelFactory(
           self.setHeight(clampedHeight)
         },
 
+        setScrollTop(scrollTop: number) {
+          this.setCurrentRangeY([scrollTop, self.currentRangeY[1]])
+        },
+
         setCurrentRangeY(rangeY: [number, number]) {
           const cur = self.currentRangeY
           if (cur[0] !== rangeY[0] || cur[1] !== rangeY[1]) {
@@ -1146,59 +1188,9 @@ export default function stateModelFactory(
 
         async selectFeatureById(featureId: string) {
           const session = getSession(self)
-          const { rpcManager } = session
           try {
-            const track = getContainingTrack(self)
-            const adapterConfig = getConf(track, 'adapter')
-
-            // Use the feature's known position from typed arrays to narrow the
-            // query region, avoiding a full re-fetch of the entire loaded region
-            const info = self.getFeatureInfoById(featureId)
-            if (!info) {
-              return
-            }
-            // Find the loaded region that contains this feature
-            let assemblyName: string | undefined
-            for (const loaded of self.loadedRegions.values()) {
-              if (loaded.refName === info.refName) {
-                assemblyName = loaded.assemblyName
-                break
-              }
-            }
-            const region = {
-              refName: info.refName,
-              start: info.start,
-              end: info.end,
-              assemblyName,
-            }
-
-            const sequenceAdapter = getSequenceAdapter(session, region)
-
-            const sessionId = getRpcSessionId(self)
-            const { feature } = (await rpcManager.call(
-              sessionId,
-              'WebGLGetFeatureDetails',
-              {
-                sessionId,
-                adapterConfig,
-                sequenceAdapter,
-                region,
-                featureId,
-              },
-            )) as {
-              feature:
-                | (Record<string, unknown> & { uniqueId: string })
-                | undefined
-            }
-
-            if (
-              isAlive(self) &&
-              feature &&
-              isSessionModelWithWidgets(session)
-            ) {
-              const feat = new SimpleFeature(
-                feature as ConstructorParameters<typeof SimpleFeature>[0],
-              )
+            const feat = await fetchFeatureDetails(self, featureId)
+            if (isAlive(self) && feat && isSessionModelWithWidgets(session)) {
               const featureWidget = session.addWidget(
                 'AlignmentsFeatureWidget',
                 'alignmentFeature',
@@ -1221,49 +1213,9 @@ export default function stateModelFactory(
     .actions(self => ({
       async setContextMenuFeatureById(featureId: string) {
         const session = getSession(self)
-        const { rpcManager } = session
         try {
-          const track = getContainingTrack(self)
-          const adapterConfig = getConf(track, 'adapter')
-          const info = self.getFeatureInfoById(featureId)
-          if (!info) {
-            return
-          }
-          let assemblyName: string | undefined
-          for (const loaded of self.loadedRegions.values()) {
-            if (loaded.refName === info.refName) {
-              assemblyName = loaded.assemblyName
-              break
-            }
-          }
-          const region = {
-            refName: info.refName,
-            start: info.start,
-            end: info.end,
-            assemblyName,
-          }
-          const sequenceAdapter = getSequenceAdapter(session, region)
-          const sessionId = getRpcSessionId(self)
-          const { feature } = (await rpcManager.call(
-            sessionId,
-            'WebGLGetFeatureDetails',
-            {
-              sessionId,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-              featureId,
-            },
-          )) as {
-            feature:
-              | (Record<string, unknown> & { uniqueId: string })
-              | undefined
-          }
-
-          if (isAlive(self) && feature) {
-            const feat = new SimpleFeature(
-              feature as ConstructorParameters<typeof SimpleFeature>[0],
-            )
+          const feat = await fetchFeatureDetails(self, featureId)
+          if (isAlive(self) && feat) {
             self.setContextMenuFeature(feat)
           }
         } catch (e) {

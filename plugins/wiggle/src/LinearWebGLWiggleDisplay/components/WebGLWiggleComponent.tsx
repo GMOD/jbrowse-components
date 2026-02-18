@@ -155,9 +155,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       screenEndPx: vr.screenEndPx,
     }))
 
-    requestAnimationFrame(() => {
-      renderer.renderBlocks(blocks, makeRenderState(model, width))
-    })
+    renderer.renderBlocks(blocks, makeRenderState(model, width))
   }, [
     model,
     model.rpcDataMap,

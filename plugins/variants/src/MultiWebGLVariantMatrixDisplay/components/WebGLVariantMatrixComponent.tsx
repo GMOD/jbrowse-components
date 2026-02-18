@@ -41,7 +41,6 @@ const WebGLVariantMatrixComponent = observer(
     model: VariantMatrixDisplayModel
   }) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const rafRef = useRef<number | undefined>(undefined)
     const cellDataRef = useRef<MatrixCellData | null>(null)
     const [error, setError] = useState<string | null>(null)
 
@@ -102,21 +101,13 @@ const WebGLVariantMatrixComponent = observer(
       const width = Math.round(view.dynamicBlocks.totalWidthPx)
       const height = model.availableHeight
 
-      rafRef.current = requestAnimationFrame(() => {
-        renderer.render({
-          canvasWidth: width,
-          canvasHeight: height,
-          rowHeight: model.rowHeight,
-          scrollTop: model.scrollTop,
-          numFeatures: cellData.numFeatures,
-        })
+      renderer.render({
+        canvasWidth: width,
+        canvasHeight: height,
+        rowHeight: model.rowHeight,
+        scrollTop: model.scrollTop,
+        numFeatures: cellData.numFeatures,
       })
-
-      return () => {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current)
-        }
-      }
     }, [
       model,
       model.webglCellData,

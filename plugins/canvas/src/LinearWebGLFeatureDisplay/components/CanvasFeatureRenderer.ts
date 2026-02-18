@@ -318,26 +318,29 @@ export class CanvasFeatureRenderer {
     }
 
     const { canvasWidth, canvasHeight, scrollY } = state
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
 
-    if (this.canvas.width !== canvasWidth || this.canvas.height !== canvasHeight) {
-      this.canvas.width = canvasWidth
-      this.canvas.height = canvasHeight
+    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
+      this.canvas.width = bufW
+      this.canvas.height = bufH
     }
 
     if (
       !this.msaaTexture ||
-      this.msaaWidth !== canvasWidth ||
-      this.msaaHeight !== canvasHeight
+      this.msaaWidth !== bufW ||
+      this.msaaHeight !== bufH
     ) {
       this.msaaTexture?.destroy()
       this.msaaTexture = device.createTexture({
-        size: [canvasWidth, canvasHeight],
+        size: [bufW, bufH],
         format: 'bgra8unorm',
         sampleCount: 4,
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
       })
-      this.msaaWidth = canvasWidth
-      this.msaaHeight = canvasHeight
+      this.msaaWidth = bufW
+      this.msaaHeight = bufH
     }
 
     const msaaView = this.msaaTexture.createView()
@@ -392,8 +395,8 @@ export class CanvasFeatureRenderer {
         ],
       })
 
-      pass.setViewport(scissorX, 0, scissorW, canvasHeight, 0, 1)
-      pass.setScissorRect(scissorX, 0, scissorW, canvasHeight)
+      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
+      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
 
       if (region.lineBindGroup && region.lineCount > 0) {
         pass.setPipeline(CanvasFeatureRenderer.linePipeline!)

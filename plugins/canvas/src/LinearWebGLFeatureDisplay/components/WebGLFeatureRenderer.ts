@@ -540,13 +540,16 @@ export class WebGLFeatureRenderer {
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight, scrollY } = state
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
 
-    if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
-      canvas.width = canvasWidth
-      canvas.height = canvasHeight
+    if (canvas.width !== bufW || canvas.height !== bufH) {
+      canvas.width = bufW
+      canvas.height = bufH
     }
 
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, bufW, bufH)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
@@ -569,8 +572,8 @@ export class WebGLFeatureRenderer {
         continue
       }
 
-      gl.scissor(scissorX, 0, scissorW, canvasHeight)
-      gl.viewport(scissorX, 0, scissorW, canvasHeight)
+      gl.scissor(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      gl.viewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
 
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
@@ -627,7 +630,7 @@ export class WebGLFeatureRenderer {
 
     gl.bindVertexArray(null)
     gl.disable(gl.SCISSOR_TEST)
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, bufW, bufH)
   }
 
   pruneStaleRegions(activeRegionNumbers: Set<number>) {

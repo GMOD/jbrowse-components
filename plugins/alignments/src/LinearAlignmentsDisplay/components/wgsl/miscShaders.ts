@@ -1,4 +1,4 @@
-import { ARC_CURVE_SEGMENTS, NUM_ARC_COLORS, NUM_LINE_COLORS, NUM_SASHIMI_COLORS, PREAMBLE, SIMPLE_FS, SIMPLE_VERTEX_OUTPUT } from './common.ts'
+import { ARC_CURVE_SEGMENTS, NUM_ARC_COLORS, NUM_LINE_COLORS, NUM_SASHIMI_COLORS, PREAMBLE, SIMPLE_FS, SIMPLE_VERTEX_OUTPUT, UNIFORM_WGSL } from './common.ts'
 
 const ARC_PREAMBLE = PREAMBLE
 
@@ -279,6 +279,29 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   out.position = vec4f(mix(sx1, sx2, lx), mix(sy_bot, sy_top, ly), 0.0, 1.0);
   out.color = vec4f(0.0, 0.0, 0.0, 0.45);
+  return out;
+}
+
+${SIMPLE_FS}
+`
+
+export const FLAT_QUAD_WGSL = `
+${UNIFORM_WGSL}
+
+struct QuadInst { sx1: f32, sy_top: f32, sx2: f32, sy_bot: f32, r: f32, g: f32, b: f32, a: f32 }
+@group(0) @binding(0) var<storage, read> instances: array<QuadInst>;
+
+${SIMPLE_VERTEX_OUTPUT}
+
+@vertex
+fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VertexOutput {
+  var out: VertexOutput;
+  let inst = instances[iid];
+  let v = vid % 6u;
+  let lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
+  let ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
+  out.position = vec4f(mix(inst.sx1, inst.sx2, lx), mix(inst.sy_bot, inst.sy_top, ly), 0.0, 1.0);
+  out.color = vec4f(inst.r, inst.g, inst.b, inst.a);
   return out;
 }
 

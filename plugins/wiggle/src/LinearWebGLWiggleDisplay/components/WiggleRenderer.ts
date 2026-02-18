@@ -267,14 +267,17 @@ export class WiggleRenderer {
     }
 
     const { canvasWidth, canvasHeight } = renderState
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
     const isLine = renderState.renderingType === 2
     const pipeline = isLine
       ? WiggleRenderer.linePipeline!
       : WiggleRenderer.fillPipeline
 
-    if (this.canvas.width !== canvasWidth || this.canvas.height !== canvasHeight) {
-      this.canvas.width = canvasWidth
-      this.canvas.height = canvasHeight
+    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
+      this.canvas.width = bufW
+      this.canvas.height = bufH
     }
 
     const textureView = this.context.getCurrentTexture().createView()
@@ -325,8 +328,8 @@ export class WiggleRenderer {
       })
       pass.setPipeline(pipeline)
       pass.setBindGroup(0, region.bindGroup)
-      pass.setViewport(scissorX, 0, scissorW, canvasHeight, 0, 1)
-      pass.setScissorRect(scissorX, 0, scissorW, canvasHeight)
+      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
+      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
       pass.draw(6, region.featureCount)
       pass.end()
       device.queue.submit([encoder.finish()])
@@ -362,14 +365,17 @@ export class WiggleRenderer {
     }
 
     const { canvasWidth, canvasHeight } = renderState
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
     const isLine = renderState.renderingType === 2
     const pipeline = isLine
       ? WiggleRenderer.linePipeline!
       : WiggleRenderer.fillPipeline
 
-    if (this.canvas.width !== canvasWidth || this.canvas.height !== canvasHeight) {
-      this.canvas.width = canvasWidth
-      this.canvas.height = canvasHeight
+    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
+      this.canvas.width = bufW
+      this.canvas.height = bufH
     }
 
     const region =
@@ -408,7 +414,7 @@ export class WiggleRenderer {
     })
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, region.bindGroup)
-    pass.setViewport(0, 0, canvasWidth, canvasHeight, 0, 1)
+    pass.setViewport(0, 0, bufW, bufH, 0, 1)
     pass.draw(6, region.featureCount)
     pass.end()
     device.queue.submit([encoder.finish()])

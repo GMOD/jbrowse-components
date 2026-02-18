@@ -83,7 +83,7 @@ import {
 import { READ_WGSL } from './wgsl/readShader.ts'
 import { GAP_WGSL, HARDCLIP_WGSL, INSERTION_WGSL, MISMATCH_WGSL, MODIFICATION_WGSL, SOFTCLIP_WGSL } from './wgsl/cigarShaders.ts'
 import { COVERAGE_WGSL, INDICATOR_WGSL, MOD_COVERAGE_WGSL, NONCOV_HISTOGRAM_WGSL, SNP_COVERAGE_WGSL } from './wgsl/coverageShaders.ts'
-import { ARC_LINE_WGSL, ARC_WGSL, CLOUD_WGSL, CONNECTING_LINE_WGSL, SASHIMI_WGSL } from './wgsl/miscShaders.ts'
+import { ARC_LINE_WGSL, ARC_WGSL, CLOUD_WGSL, CONNECTING_LINE_WGSL, FLAT_QUAD_WGSL, SASHIMI_WGSL } from './wgsl/miscShaders.ts'
 import { splitPositionWithFrac } from './shaders/utils.ts'
 import { arcColorPalette, arcLineColorPalette, sashimiColorPalette } from './shaders/arcShaders.ts'
 
@@ -175,6 +175,7 @@ export class AlignmentsRenderer {
   private static sashimiPL: GPURenderPipeline | null = null
   private static cloudPL: GPURenderPipeline | null = null
   private static connLinePL: GPURenderPipeline | null = null
+  private static flatQuadPL: GPURenderPipeline | null = null
 
   private canvas: HTMLCanvasElement
   private ctx: GPUCanvasContext | null = null
@@ -252,6 +253,7 @@ export class AlignmentsRenderer {
     AlignmentsRenderer.sashimiPL = mkPL(SASHIMI_WGSL, 'triangle-strip')
     AlignmentsRenderer.cloudPL = mkPL(CLOUD_WGSL)
     AlignmentsRenderer.connLinePL = mkPL(CONNECTING_LINE_WGSL)
+    AlignmentsRenderer.flatQuadPL = mkPL(FLAT_QUAD_WGSL)
   }
 
   async init() {
@@ -781,13 +783,17 @@ export class AlignmentsRenderer {
     const device = AlignmentsRenderer.device
     if (!device || !this.ctx) { return }
     const { canvasWidth, canvasHeight } = state
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
 
-    if (this.canvas.width !== canvasWidth || this.canvas.height !== canvasHeight) {
-      this.canvas.width = canvasWidth; this.canvas.height = canvasHeight
+    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
+      this.canvas.width = bufW; this.canvas.height = bufH
     }
 
     const textureView = this.ctx.getCurrentTexture().createView()
     let isFirst = true
+    const tempBuffers: GPUBuffer[] = []
 
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
@@ -817,36 +823,40 @@ export class AlignmentsRenderer {
         }],
       })
 
-      pass.setViewport(scissorX, 0, scissorW, canvasHeight, 0, 1)
-      pass.setScissorRect(scissorX, 0, scissorW, canvasHeight)
+      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
+      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
 
       if (state.showCoverage) {
         this.drawCoverage(pass, region)
       }
 
       const mode = state.renderingMode ?? 'pileup'
-      const blockW = block.screenEndPx - block.screenStartPx
       const vpX = Math.max(0, Math.floor(block.screenStartPx))
       const vpEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const vpW = vpEnd - vpX
       if (mode === 'arcs') {
-        pass.setViewport(vpX, 0, vpW, canvasHeight, 0, 1)
+        pass.setViewport(Math.round(vpX * dpr), 0, Math.round(vpW * dpr), bufH, 0, 1)
         this.drawArcs(pass, region, state, block, vpX, vpW)
       } else if (mode === 'cloud' || mode === 'linkedRead') {
         this.drawConnectingLines(pass, region)
         this.drawPileup(pass, region, state)
+        this.drawChainOverlays(pass, region, state, bpHi, bpLo, bpLen, scissorW, tempBuffers)
       } else {
         this.drawPileup(pass, region, state)
       }
 
       if (state.showSashimiArcs && state.showCoverage) {
-        pass.setViewport(vpX, 0, vpW, canvasHeight, 0, 1)
+        pass.setViewport(Math.round(vpX * dpr), 0, Math.round(vpW * dpr), bufH, 0, 1)
         this.drawSashimi(pass, region, state, block, vpX, vpW)
       }
 
       pass.end()
       device.queue.submit([encoder.finish()])
       isFirst = false
+    }
+
+    for (const buf of tempBuffers) {
+      buf.destroy()
     }
 
     if (isFirst) {
@@ -992,6 +1002,114 @@ export class AlignmentsRenderer {
       pass.setBindGroup(0, r.connLineBG)
       pass.draw(6, r.connLineCount)
     }
+  }
+
+  private drawChainOverlays(
+    pass: GPURenderPassEncoder,
+    region: GpuRegion,
+    state: RenderState,
+    bpHi: number,
+    bpLo: number,
+    bpLen: number,
+    viewportW: number,
+    tempBuffers: GPUBuffer[],
+  ) {
+    const quads: number[] = []
+
+    if (state.highlightedChainIndices.length > 0) {
+      const clip = this.computeChainClipRect(
+        state.highlightedChainIndices, region, state, bpHi, bpLo, bpLen,
+      )
+      if (clip) {
+        quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
+      }
+    }
+
+    if (state.selectedChainIndices.length > 0) {
+      const clip = this.computeChainClipRect(
+        state.selectedChainIndices, region, state, bpHi, bpLo, bpLen,
+      )
+      if (clip) {
+        const tx = 4 / viewportW
+        const ty = 4 / state.canvasHeight
+        quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1)
+        quads.push(clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0, 0, 1)
+        quads.push(clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0, 0, 1)
+        quads.push(clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 1)
+      }
+    }
+
+    if (quads.length > 0) {
+      this.drawOverlayQuads(pass, new Float32Array(quads), quads.length / 8, tempBuffers)
+    }
+  }
+
+  private drawOverlayQuads(
+    pass: GPURenderPassEncoder,
+    quads: Float32Array,
+    count: number,
+    tempBuffers: GPUBuffer[],
+  ) {
+    if (count === 0) {
+      return
+    }
+    const device = AlignmentsRenderer.device!
+    const buf = this.mkBuf(device, quads.buffer)
+    tempBuffers.push(buf)
+    const bg = this.mkBG(device, buf)
+    pass.setPipeline(AlignmentsRenderer.flatQuadPL!)
+    pass.setBindGroup(0, bg)
+    pass.draw(6, count)
+  }
+
+  private computeChainClipRect(
+    indices: number[],
+    region: GpuRegion,
+    state: RenderState,
+    bpHi: number,
+    bpLo: number,
+    bpLen: number,
+  ) {
+    let minStart = Infinity
+    let maxEnd = -Infinity
+    let y = 0
+    for (const idx of indices) {
+      const s = region.readPositions[idx * 2]
+      const e = region.readPositions[idx * 2 + 1]
+      const row = region.readYs[idx]
+      if (s !== undefined && s < minStart) {
+        minStart = s
+      }
+      if (e !== undefined && e > maxEnd) {
+        maxEnd = e
+      }
+      if (row !== undefined) {
+        y = row
+      }
+    }
+    if (minStart >= Infinity) {
+      return undefined
+    }
+
+    const absStart = minStart + region.regionStart
+    const absEnd = maxEnd + region.regionStart
+    const splitStart0 = Math.floor(absStart) - (Math.floor(absStart) & 0xfff)
+    const splitStart1 = Math.floor(absStart) & 0xfff
+    const splitEnd0 = Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff)
+    const splitEnd1 = Math.floor(absEnd) & 0xfff
+    const sx1 = ((splitStart0 - bpHi + splitStart1 - bpLo) / bpLen) * 2 - 1
+    const sx2 = ((splitEnd0 - bpHi + splitEnd1 - bpLo) / bpLen) * 2 - 1
+
+    const coverageOffset = state.showCoverage ? state.coverageHeight : 0
+    const rowHeight = state.featureHeight + state.featureSpacing
+    const yTopPx = y * rowHeight - state.rangeY[0]
+    const yBotPx = yTopPx + state.featureHeight
+    const pxToClip = 2 / state.canvasHeight
+    const pileupTop = 1 - (coverageOffset / state.canvasHeight) * 2
+    const syTop = pileupTop - yTopPx * pxToClip
+    const syBot = pileupTop - yBotPx * pxToClip
+
+    return { sx1, syTop, sx2, syBot }
   }
 
   destroy() {
