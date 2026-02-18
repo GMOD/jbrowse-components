@@ -1,4 +1,4 @@
-import { join } from 'path'
+import path from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
 import {
@@ -47,7 +47,7 @@ compileShaders({
     { name: 'CLOUD', wgsl: CLOUD_WGSL },
     { name: 'CONNECTING_LINE', wgsl: CONNECTING_LINE_WGSL },
   ],
-  outDir: join(
+  outDir: path.join(
     import.meta.dirname,
     '..',
     'src',

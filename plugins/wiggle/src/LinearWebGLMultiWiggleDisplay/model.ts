@@ -96,10 +96,10 @@ export default function stateModelFactory(
 
       get sources(): Source[] {
         const sourceMap = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+          self.sourcesVolatile.map(s => [s.name, s]),
         )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        return iter?.map(s => ({
+        return iter.map(s => ({
           source: s.name,
           ...sourceMap[s.name],
           ...s,
@@ -502,7 +502,7 @@ export default function stateModelFactory(
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(layout !== undefined && layout.length > 0 ? { layout } : {}),
+        ...(layout.length > 0 ? { layout } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),

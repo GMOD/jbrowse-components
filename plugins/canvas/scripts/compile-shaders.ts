@@ -1,4 +1,4 @@
-import { join } from 'path'
+import path from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
 import {
@@ -15,7 +15,7 @@ compileShaders({
     { name: 'CHEVRON', wgsl: CHEVRON_SHADER },
     { name: 'ARROW', wgsl: ARROW_SHADER },
   ],
-  outDir: join(
+  outDir: path.join(
     import.meta.dirname,
     '..',
     'src',

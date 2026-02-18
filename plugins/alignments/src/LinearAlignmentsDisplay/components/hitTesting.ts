@@ -479,7 +479,7 @@ export function hitTestCoverage(
   }
 
   const binStartOffset = coverageStartOffset + binIndex * coverageBinSize
-  if (coverageBinSize > 1 && blockData.significantSnpOffsets?.length) {
+  if (coverageBinSize > 1 && blockData.significantSnpOffsets.length) {
     const binEndOffset = binStartOffset + coverageBinSize
     const snpOffset = findSnpInBin(
       blockData.significantSnpOffsets,

@@ -252,16 +252,19 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     canvasRef.current = canvas
     const renderer = CanvasFeatureRenderer.getOrCreate(canvas)
     rendererRef.current = renderer
-    renderer.init().then(ok => {
-      if (!ok) {
-        console.error('[WebGLFeatureComponent] GPU initialization failed')
-      }
-      setRendererReady(ok)
-      uploadedDataRef.current.clear()
-    }).catch((e: unknown) => {
-      console.error('[WebGLFeatureComponent] GPU initialization error:', e)
-      setRendererReady(false)
-    })
+    renderer
+      .init()
+      .then(ok => {
+        if (!ok) {
+          console.error('[WebGLFeatureComponent] GPU initialization failed')
+        }
+        setRendererReady(ok)
+        uploadedDataRef.current.clear()
+      })
+      .catch((e: unknown) => {
+        console.error('[WebGLFeatureComponent] GPU initialization error:', e)
+        setRendererReady(false)
+      })
   }, [])
 
   useEffect(() => {

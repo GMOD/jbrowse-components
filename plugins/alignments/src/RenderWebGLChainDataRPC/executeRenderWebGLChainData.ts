@@ -225,11 +225,7 @@ export async function executeRenderWebGLChainData({
   // Pre-filter: group raw features by read name and apply chain filters
   // BEFORE expensive CIGAR processing. This avoids parsing CIGAR strings
   // for reads that will be discarded.
-  const t0 = performance.now()
   const deduped = dedupe(featuresArray, (f: Feature) => f.id())
-  console.log(
-    `[chain dedupe] ${featuresArray.length} -> ${deduped.length} (removed ${featuresArray.length - deduped.length}) in ${(performance.now() - t0).toFixed(1)}ms`,
-  )
   let keptIds: Set<string> | undefined
   if (!drawSingletons || !drawProperPairs) {
     const byName = groupBy(deduped, (f: Feature) => f.get('name') ?? '')

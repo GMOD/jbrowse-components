@@ -464,7 +464,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           model.clearAllRpcData()
         }
       })
-      .catch(e => {
+      .catch((e: unknown) => {
         console.error('Failed to initialize renderer:', e)
       })
     return () => {

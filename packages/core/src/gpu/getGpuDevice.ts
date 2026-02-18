@@ -10,18 +10,17 @@ export function setDeviceLostHandler(handler: (recover: () => void) => void) {
 
 async function createDevice(): Promise<GPUDevice | null> {
   try {
-    const adapter = await navigator.gpu?.requestAdapter()
+    const adapter = await navigator.gpu.requestAdapter()
     if (!adapter) {
       return null
     }
     const d = await adapter.requestDevice({
       requiredLimits: {
-        maxStorageBufferBindingSize:
-          adapter.limits.maxStorageBufferBindingSize ?? 134217728,
-        maxBufferSize: adapter.limits.maxBufferSize ?? 268435456,
+        maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
+        maxBufferSize: adapter.limits.maxBufferSize,
       },
     })
-    d.lost.then(info => {
+    void d.lost.then(info => {
       console.error('[getGpuDevice] Device lost:', info.message)
       device = null
       devicePromise = null

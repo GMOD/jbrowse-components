@@ -76,9 +76,6 @@ const LinearComparativeRenderArea = observer(
   },
 )
 
-let overlayRenderCount = 0
-let lastOverlayLogTime = 0
-
 const Overlays = observer(function Overlays({
   model,
   level,
@@ -89,15 +86,6 @@ const Overlays = observer(function Overlays({
   const { classes } = useStyles()
   const levelImpl = model.levels[level]!
 
-  overlayRenderCount++
-  const now = performance.now()
-  if (now - lastOverlayLogTime > 2000) {
-    console.log(
-      `[Overlays] ${overlayRenderCount} renders in last 2s | level=${level}, height=${levelImpl.height}`,
-    )
-    overlayRenderCount = 0
-    lastOverlayLogTime = now
-  }
   const tracks = levelImpl.tracks as TrackEntry[]
   return (
     <>

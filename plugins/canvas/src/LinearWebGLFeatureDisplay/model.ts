@@ -525,21 +525,7 @@ export default function stateModelFactory(
         regions: { region: Region; regionNumber: number }[],
         bpPerPx: number,
       ) {
-        console.log('[FeatureDisplayDebug] fetchRegions called', {
-          numRegions: regions.length,
-          bpPerPx,
-          fetchGeneration: self.fetchGeneration,
-          regions: regions.map(r => ({
-            regionNumber: r.regionNumber,
-            refName: r.region.refName,
-            start: r.region.start,
-            end: r.region.end,
-          })),
-        })
         if (self.renderingStopToken) {
-          console.log(
-            '[FeatureDisplayDebug] fetchRegions: stopping previous token',
-          )
           stopStopToken(self.renderingStopToken)
         }
         const stopToken = createStopToken()
@@ -632,32 +618,6 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
-                console.log(
-                  '[FeatureDisplayDebug] FetchVisibleRegions autorun fired',
-                  {
-                    numStaticRegions: view.staticRegions.length,
-                    numLoaded: self.loadedRegions.size,
-                    numNeeded: needed.length,
-                    needed: needed.map(n => ({
-                      regionNumber: n.regionNumber,
-                      refName: n.region.refName,
-                      start: n.region.start,
-                      end: n.region.end,
-                    })),
-                    loaded: [...self.loadedRegions.entries()].map(([k, v]) => ({
-                      regionNumber: k,
-                      refName: v.refName,
-                      start: v.start,
-                      end: v.end,
-                    })),
-                    staticRegions: view.staticRegions.map(vr => ({
-                      regionNumber: vr.regionNumber,
-                      refName: vr.refName,
-                      start: vr.start,
-                      end: vr.end,
-                    })),
-                  },
-                )
                 if (needed.length > 0) {
                   await fetchRegions(needed, bpPerPx)
                 }

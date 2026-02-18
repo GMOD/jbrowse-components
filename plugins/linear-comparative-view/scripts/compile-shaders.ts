@@ -1,4 +1,4 @@
-import { join } from 'path'
+import path from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
 import {
@@ -19,7 +19,7 @@ compileShaders({
       entryPoints: ['vs_main', 'fs_main'],
     },
   ],
-  outDir: join(
+  outDir: path.join(
     import.meta.dirname,
     '..',
     'src',

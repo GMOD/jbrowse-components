@@ -56,7 +56,6 @@ const ScrollingLabels = observer(function ScrollingLabels({
   model: LGV
   setMenuState: React.Dispatch<React.SetStateAction<MenuState | undefined>>
 }) {
-  // console.log('[ScrollingLabels] render')
   const { classes } = useStyles()
   const { staticBlocks } = model
   const containerOffset = staticBlocks.offsetPx
@@ -120,7 +119,6 @@ const ScrollingLabels = observer(function ScrollingLabels({
       </span>,
     )
   })
-  // console.log('[ScrollingLabels]', labels.length, 'labels')
   return <>{labels}</>
 })
 
@@ -129,7 +127,6 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 }: {
   model: LGV
 }) {
-  // console.log('[ScalebarRefNameLabels] render')
   const { classes, cx } = useStyles()
   const { staticBlocks, offsetPx, scalebarDisplayPrefix } = model
   const [menuState, setMenuState] = useState<MenuState>()

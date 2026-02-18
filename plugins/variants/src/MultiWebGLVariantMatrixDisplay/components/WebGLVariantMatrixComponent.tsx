@@ -53,17 +53,25 @@ const WebGLVariantMatrixComponent = observer(
         canvasRef.current = canvas
         const renderer = VariantMatrixRenderer.getOrCreate(canvas)
         rendererRef.current = renderer
-        renderer.init().then(ok => {
-          if (!ok) {
-            console.error('[WebGLVariantMatrixComponent] GPU initialization failed')
-            setError('GPU initialization failed')
-          } else {
-            setReady(true)
-          }
-        }).catch((e: unknown) => {
-          console.error('[WebGLVariantMatrixComponent] GPU initialization error:', e)
-          setError(`GPU initialization error: ${e}`)
-        })
+        renderer
+          .init()
+          .then(ok => {
+            if (!ok) {
+              console.error(
+                '[WebGLVariantMatrixComponent] GPU initialization failed',
+              )
+              setError('GPU initialization failed')
+            } else {
+              setReady(true)
+            }
+          })
+          .catch((e: unknown) => {
+            console.error(
+              '[WebGLVariantMatrixComponent] GPU initialization error:',
+              e,
+            )
+            setError(`GPU initialization error: ${e}`)
+          })
       },
       [],
     )

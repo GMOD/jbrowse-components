@@ -1,4 +1,4 @@
-import { join } from 'path'
+import path from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
 import { multiWiggleShader } from '../src/LinearWebGLMultiWiggleDisplay/components/multiWiggleShaders.ts'
@@ -9,5 +9,5 @@ compileShaders({
     { name: 'WIGGLE', wgsl: wiggleShader },
     { name: 'MULTI_WIGGLE', wgsl: multiWiggleShader },
   ],
-  outDir: join(import.meta.dirname, '..', 'src', 'shared', 'generated'),
+  outDir: path.join(import.meta.dirname, '..', 'src', 'shared', 'generated'),
 })

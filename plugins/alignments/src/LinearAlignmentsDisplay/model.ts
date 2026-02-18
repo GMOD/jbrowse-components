@@ -1659,8 +1659,6 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const _data = self.rpcDataMap
-                const _arcsData = self.arcsState.rpcDataMap
                 const regions = view.visibleRegions
                 const blocks = regions.map(r => ({
                   regionNumber: r.regionNumber,

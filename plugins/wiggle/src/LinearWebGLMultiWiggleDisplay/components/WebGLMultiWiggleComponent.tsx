@@ -110,17 +110,23 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     canvasRef.current = canvas
     const renderer = MultiWiggleRenderer.getOrCreate(canvas)
     rendererRef.current = renderer
-    renderer.init().then(ok => {
-      if (!ok) {
-        console.error('[WebGLMultiWiggleComponent] GPU initialization failed')
-        setError('GPU initialization failed')
-      } else {
-        setReady(true)
-      }
-    }).catch((e: unknown) => {
-      console.error('[WebGLMultiWiggleComponent] GPU initialization error:', e)
-      setError(`GPU initialization error: ${e}`)
-    })
+    renderer
+      .init()
+      .then(ok => {
+        if (!ok) {
+          console.error('[WebGLMultiWiggleComponent] GPU initialization failed')
+          setError('GPU initialization failed')
+        } else {
+          setReady(true)
+        }
+      })
+      .catch((e: unknown) => {
+        console.error(
+          '[WebGLMultiWiggleComponent] GPU initialization error:',
+          e,
+        )
+        setError(`GPU initialization error: ${e}`)
+      })
   }, [])
 
   useEffect(() => {

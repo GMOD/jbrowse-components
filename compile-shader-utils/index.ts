@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import { createHash } from 'crypto'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
-import { join } from 'path'
+import path from 'path'
 
 interface StructField {
   type: string
@@ -195,8 +195,8 @@ function compileEntry(
   name: string,
 ) {
   const stage = entryPoint.startsWith('vs_') ? 'vert' : 'frag'
-  const wgslPath = join(tmpDir, `${name}.wgsl`)
-  const outPath = join(tmpDir, `${name}_${entryPoint}.${stage}`)
+  const wgslPath = path.join(tmpDir, `${name}.wgsl`)
+  const outPath = path.join(tmpDir, `${name}_${entryPoint}.${stage}`)
   writeFileSync(wgslPath, wgsl)
   try {
     execSync(
@@ -232,8 +232,8 @@ function escape(s: string) {
 
 export function compileShaders(opts: CompileOptions) {
   const { shaders, outDir } = opts
-  const outFile = join(outDir, 'index.ts')
-  const hashFile = join(outDir, '.wgsl-hash')
+  const outFile = path.join(outDir, 'index.ts')
+  const hashFile = path.join(outDir, '.wgsl-hash')
 
   const allWgsl = shaders.map(s => s.wgsl).join('\n')
   const hash = createHash('sha256').update(allWgsl).digest('hex')
@@ -241,7 +241,7 @@ export function compileShaders(opts: CompileOptions) {
   if (existsSync(outFile) && existsSync(hashFile)) {
     try {
       if (readFileSync(hashFile, 'utf-8').trim() === hash) {
-        console.log('compile-shaders: GLSL is up to date, skipping')
+        process.stdout.write('compile-shaders: GLSL is up to date, skipping\n')
         return
       }
     } catch {}
@@ -261,7 +261,7 @@ export function compileShaders(opts: CompileOptions) {
     process.exit(1)
   }
 
-  const tmpDir = join(tmpdir(), `jbrowse-shader-compile-${Date.now()}`)
+  const tmpDir = path.join(tmpdir(), `jbrowse-shader-compile-${Date.now()}`)
   mkdirSync(tmpDir, { recursive: true })
 
   const results: { exportName: string; glsl: string }[] = []
@@ -290,7 +290,7 @@ export function compileShaders(opts: CompileOptions) {
   writeFileSync(outFile, output)
   writeFileSync(hashFile, hash)
   rmSync(tmpDir, { recursive: true })
-  console.log(
-    `compile-shaders: generated ${results.length} shaders → ${outFile}`,
+  process.stdout.write(
+    `compile-shaders: generated ${results.length} shaders → ${outFile}\n`,
   )
 }
