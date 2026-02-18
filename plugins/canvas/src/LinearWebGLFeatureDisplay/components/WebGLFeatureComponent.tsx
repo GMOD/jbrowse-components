@@ -245,21 +245,18 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const viewRef = useRef(view)
   viewRef.current = view
 
-  const canvasCallbackRef = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      if (!canvas) {
-        return
-      }
-      canvasRef.current = canvas
-      const renderer = CanvasFeatureRenderer.getOrCreate(canvas)
-      rendererRef.current = renderer
-      renderer.init().then(ok => {
-        setRendererReady(ok)
-        uploadedDataRef.current.clear()
-      })
-    },
-    [],
-  )
+  const canvasCallbackRef = useCallback((canvas: HTMLCanvasElement | null) => {
+    if (!canvas) {
+      return
+    }
+    canvasRef.current = canvas
+    const renderer = CanvasFeatureRenderer.getOrCreate(canvas)
+    rendererRef.current = renderer
+    renderer.init().then(ok => {
+      setRendererReady(ok)
+      uploadedDataRef.current.clear()
+    })
+  }, [])
 
   useEffect(() => {
     const dispose = autorun(() => {

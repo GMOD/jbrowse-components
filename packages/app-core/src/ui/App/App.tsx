@@ -6,10 +6,10 @@ import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AppFab from './AppFab.tsx'
-import { useGpuDeviceLost } from './useGpuDeviceLost.ts'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
+import { useGpuDeviceLost } from './useGpuDeviceLost.ts'
 
 import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'

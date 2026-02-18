@@ -66,7 +66,9 @@ const TrackLabel = observer(function TrackLabel({ track, className }: Props) {
         <CloseIcon fontSize="small" />
       </IconButton>
       <IconButton
-        onClick={() => track.setMinimized(!minimized)}
+        onClick={() => {
+          track.setMinimized(!minimized)
+        }}
         className={classes.iconButton}
         title={minimized ? 'restore track' : 'minimize track'}
       >

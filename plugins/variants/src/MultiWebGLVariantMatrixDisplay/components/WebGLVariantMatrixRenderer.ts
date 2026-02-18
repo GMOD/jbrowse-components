@@ -1,9 +1,9 @@
+import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
 import {
-  VARIANT_MATRIX_VERTEX_SHADER,
   VARIANT_MATRIX_FRAGMENT_SHADER,
+  VARIANT_MATRIX_VERTEX_SHADER,
 } from '../../shared/generated/index.ts'
 import { createProgram } from '../../shared/variantWebglUtils.ts'
-import { interleaveMatrixInstances } from './variantMatrixShaders.ts'
 
 const UNIFORM_SIZE = 32
 
@@ -44,7 +44,10 @@ export class WebGLVariantMatrixRenderer {
       VARIANT_MATRIX_FRAGMENT_SHADER,
     )
 
-    const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms_block_1Vertex')
+    const uboIndex = gl.getUniformBlockIndex(
+      this.program,
+      'Uniforms_block_1Vertex',
+    )
     gl.uniformBlockBinding(this.program, uboIndex, 0)
 
     this.ubo = gl.createBuffer()!
@@ -86,7 +89,7 @@ export class WebGLVariantMatrixRenderer {
 
     // RGBA32UI texture: 2 texels × 4 u32s per texel = MATRIX_INSTANCE_STRIDE u32s per instance
     // WebGL2 lacks storage buffers, so we use a texture to pass per-instance data
-    const tex = gl.createTexture()!
+    const tex = gl.createTexture()
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, tex)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -124,7 +127,11 @@ export class WebGLVariantMatrixRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.instanceTexture || this.cellCount === 0 || state.numFeatures === 0) {
+    if (
+      !this.instanceTexture ||
+      this.cellCount === 0 ||
+      state.numFeatures === 0
+    ) {
       return
     }
 

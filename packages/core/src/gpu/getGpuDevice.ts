@@ -4,9 +4,7 @@ let device: GPUDevice | null = null
 let devicePromise: Promise<GPUDevice | null> | null = null
 let deviceLostHandler: ((recover: () => void) => void) | null = null
 
-export function setDeviceLostHandler(
-  handler: (recover: () => void) => void,
-) {
+export function setDeviceLostHandler(handler: (recover: () => void) => void) {
   deviceLostHandler = handler
 }
 

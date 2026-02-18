@@ -1,7 +1,6 @@
 import { join } from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
-import { READ_WGSL } from '../src/LinearAlignmentsDisplay/components/wgsl/readShader.ts'
 import {
   GAP_WGSL,
   HARDCLIP_WGSL,
@@ -25,6 +24,7 @@ import {
   CONNECTING_LINE_WGSL,
   SASHIMI_WGSL,
 } from '../src/LinearAlignmentsDisplay/components/wgsl/miscShaders.ts'
+import { READ_WGSL } from '../src/LinearAlignmentsDisplay/components/wgsl/readShader.ts'
 
 compileShaders({
   shaders: [

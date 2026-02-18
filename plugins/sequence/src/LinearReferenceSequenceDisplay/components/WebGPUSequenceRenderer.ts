@@ -209,7 +209,11 @@ export class WebGPUSequenceRenderer {
     }
 
     const device = WebGPUSequenceRenderer.device
-    if (!device || !WebGPUSequenceRenderer.bindGroupLayout || !this.uniformBuffer) {
+    if (
+      !device ||
+      !WebGPUSequenceRenderer.bindGroupLayout ||
+      !this.uniformBuffer
+    ) {
       return
     }
 
@@ -232,7 +236,7 @@ export class WebGPUSequenceRenderer {
       interleaved[off + 4] = colorBuf[ri]! / 255
       interleaved[off + 5] = colorBuf[ri + 1]! / 255
       interleaved[off + 6] = colorBuf[ri + 2]! / 255
-      interleaved[off + 7] = colorBuf[ri + 3]! > 254 ? 1.0 : 0.0
+      interleaved[off + 7] = colorBuf[ri + 3]! > 254 ? 1 : 0
     }
 
     this.instanceBuffer = device.createBuffer({

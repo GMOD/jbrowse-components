@@ -1,13 +1,13 @@
 import type React from 'react'
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'

@@ -48,8 +48,7 @@ export function toClipRect(
   const splitEnd0 = Math.floor(absEnd) - (Math.floor(absEnd) & 0xfff)
   const splitEnd1 = Math.floor(absEnd) & 0xfff
   const sx1 =
-    ((splitStart0 - bpStartHi + splitStart1 - bpStartLo) / regionLengthBp) *
-      2 -
+    ((splitStart0 - bpStartHi + splitStart1 - bpStartLo) / regionLengthBp) * 2 -
     1
   const sx2 =
     ((splitEnd0 - bpStartHi + splitEnd1 - bpStartLo) / regionLengthBp) * 2 - 1

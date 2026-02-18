@@ -2,8 +2,22 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
-import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
+import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
+import {
+  arcColorPalette,
+  arcLineColorPalette,
+  sashimiColorPalette,
+} from './shaders/arcShaders.ts'
+import { splitPositionWithFrac } from './shaders/utils.ts'
+import {
+  GAP_WGSL,
+  HARDCLIP_WGSL,
+  INSERTION_WGSL,
+  MISMATCH_WGSL,
+  MODIFICATION_WGSL,
+  SOFTCLIP_WGSL,
+} from './wgsl/cigarShaders.ts'
 import {
   ARC_CURVE_SEGMENTS,
   ARC_LINE_STRIDE,
@@ -16,8 +30,8 @@ import {
   INDICATOR_STRIDE,
   INSERTION_STRIDE,
   MISMATCH_STRIDE,
-  MOD_COV_STRIDE,
   MODIFICATION_STRIDE,
+  MOD_COV_STRIDE,
   NONCOV_STRIDE,
   READ_STRIDE,
   SASHIMI_STRIDE,
@@ -54,6 +68,7 @@ import {
   U_COLOR_PAIR_RL,
   U_COLOR_PAIR_RR,
   U_COLOR_REV,
+  U_COLOR_SCHEME,
   U_COLOR_SHORT_INSERT,
   U_COLOR_SKIP,
   U_COLOR_SOFTCLIP,
@@ -61,7 +76,6 @@ import {
   U_COV_HEIGHT,
   U_COV_OFFSET,
   U_COV_Y_OFFSET,
-  U_COLOR_SCHEME,
   U_DEPTH_SCALE,
   U_DOMAIN_END,
   U_DOMAIN_START,
@@ -81,12 +95,22 @@ import {
   U_SCROLL_TOP,
   U_SHOW_STROKE,
 } from './wgsl/common.ts'
+import {
+  COVERAGE_WGSL,
+  INDICATOR_WGSL,
+  MOD_COVERAGE_WGSL,
+  NONCOV_HISTOGRAM_WGSL,
+  SNP_COVERAGE_WGSL,
+} from './wgsl/coverageShaders.ts'
+import {
+  ARC_LINE_WGSL,
+  ARC_WGSL,
+  CLOUD_WGSL,
+  CONNECTING_LINE_WGSL,
+  FLAT_QUAD_WGSL,
+  SASHIMI_WGSL,
+} from './wgsl/miscShaders.ts'
 import { READ_WGSL } from './wgsl/readShader.ts'
-import { GAP_WGSL, HARDCLIP_WGSL, INSERTION_WGSL, MISMATCH_WGSL, MODIFICATION_WGSL, SOFTCLIP_WGSL } from './wgsl/cigarShaders.ts'
-import { COVERAGE_WGSL, INDICATOR_WGSL, MOD_COVERAGE_WGSL, NONCOV_HISTOGRAM_WGSL, SNP_COVERAGE_WGSL } from './wgsl/coverageShaders.ts'
-import { ARC_LINE_WGSL, ARC_WGSL, CLOUD_WGSL, CONNECTING_LINE_WGSL, FLAT_QUAD_WGSL, SASHIMI_WGSL } from './wgsl/miscShaders.ts'
-import { splitPositionWithFrac } from './shaders/utils.ts'
-import { arcColorPalette, arcLineColorPalette, sashimiColorPalette } from './shaders/arcShaders.ts'
 
 import type { RenderState } from './WebGLRenderer.ts'
 export type { ColorPalette, RGBColor } from './WebGLRenderer.ts'
@@ -215,25 +239,51 @@ export class AlignmentsRenderer {
 
   private static initPipelines(device: GPUDevice) {
     const blend: GPUBlendState = {
-      color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-      alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+      color: {
+        srcFactor: 'src-alpha',
+        dstFactor: 'one-minus-src-alpha',
+        operation: 'add',
+      },
+      alpha: {
+        srcFactor: 'one',
+        dstFactor: 'one-minus-src-alpha',
+        operation: 'add',
+      },
     }
     const target: GPUColorTargetState = { format: 'bgra8unorm', blend }
     AlignmentsRenderer.layout = device.createBindGroupLayout({
       entries: [
-        { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'read-only-storage' } },
-        { binding: 1, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } },
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'read-only-storage' },
+        },
+        {
+          binding: 1,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
       ],
     })
-    const pLayout = device.createPipelineLayout({ bindGroupLayouts: [AlignmentsRenderer.layout] })
+    const pLayout = device.createPipelineLayout({
+      bindGroupLayouts: [AlignmentsRenderer.layout],
+    })
 
-    const mkPL = (code: string, topo: GPUPrimitiveTopology = 'triangle-list') => {
+    const mkPL = (
+      code: string,
+      topo: GPUPrimitiveTopology = 'triangle-list',
+    ) => {
       const mod = device.createShaderModule({ code })
       return device.createRenderPipeline({
         layout: pLayout,
         vertex: { module: mod, entryPoint: 'vs_main' },
         fragment: { module: mod, entryPoint: 'fs_main', targets: [target] },
-        primitive: { topology: topo, ...(topo === 'triangle-strip' ? { stripIndexFormat: 'uint32' as GPUIndexFormat } : {}) },
+        primitive: {
+          topology: topo,
+          ...(topo === 'triangle-strip'
+            ? { stripIndexFormat: 'uint32' as GPUIndexFormat }
+            : {}),
+        },
       })
     }
 
@@ -268,13 +318,23 @@ export class AlignmentsRenderer {
       }
     }
     this.ctx = this.canvas.getContext('webgpu')!
-    this.ctx.configure({ device, format: 'bgra8unorm', alphaMode: 'premultiplied' })
-    this.uBuf = device.createBuffer({ size: UNIFORM_SIZE, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST })
+    this.ctx.configure({
+      device,
+      format: 'bgra8unorm',
+      alphaMode: 'premultiplied',
+    })
+    this.uBuf = device.createBuffer({
+      size: UNIFORM_SIZE,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    })
     return true
   }
 
   private mkBuf(device: GPUDevice, data: ArrayBuffer) {
-    const buf = device.createBuffer({ size: Math.max(data.byteLength, 4), usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST })
+    const buf = device.createBuffer({
+      size: Math.max(data.byteLength, 4),
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    })
     device.queue.writeBuffer(buf, 0, data)
     return buf
   }
@@ -290,34 +350,85 @@ export class AlignmentsRenderer {
   }
 
   private destroyRegion(r: GpuRegion) {
-    r.readBuffer?.destroy(); r.coverageBuffer?.destroy(); r.snpCovBuffer?.destroy()
-    r.noncovBuffer?.destroy(); r.indicatorBuffer?.destroy(); r.gapBuffer?.destroy()
-    r.mismatchBuffer?.destroy(); r.insertionBuffer?.destroy(); r.softclipBuffer?.destroy()
-    r.hardclipBuffer?.destroy(); r.modBuffer?.destroy(); r.modCovBuffer?.destroy()
-    r.arcBuffer?.destroy(); r.arcLineBuffer?.destroy(); r.sashimiBuffer?.destroy()
-    r.cloudBuffer?.destroy(); r.connLineBuffer?.destroy()
+    r.readBuffer?.destroy()
+    r.coverageBuffer?.destroy()
+    r.snpCovBuffer?.destroy()
+    r.noncovBuffer?.destroy()
+    r.indicatorBuffer?.destroy()
+    r.gapBuffer?.destroy()
+    r.mismatchBuffer?.destroy()
+    r.insertionBuffer?.destroy()
+    r.softclipBuffer?.destroy()
+    r.hardclipBuffer?.destroy()
+    r.modBuffer?.destroy()
+    r.modCovBuffer?.destroy()
+    r.arcBuffer?.destroy()
+    r.arcLineBuffer?.destroy()
+    r.sashimiBuffer?.destroy()
+    r.cloudBuffer?.destroy()
+    r.connLineBuffer?.destroy()
   }
 
   private emptyRegion(regionStart: number): GpuRegion {
     return {
-      regionStart, readBuffer: null, readCount: 0, readBG: null,
-      readPositions: new Uint32Array(0), readYs: new Uint16Array(0), readStrands: new Int8Array(0),
-      coverageBuffer: null, coverageCount: 0, coverageBG: null, maxDepth: 0, binSize: 1,
-      snpCovBuffer: null, snpCovCount: 0, snpCovBG: null,
-      noncovBuffer: null, noncovCount: 0, noncovBG: null, noncovMaxCount: 0,
-      indicatorBuffer: null, indicatorCount: 0, indicatorBG: null,
-      gapBuffer: null, gapCount: 0, gapBG: null,
-      mismatchBuffer: null, mismatchCount: 0, mismatchBG: null,
-      insertionBuffer: null, insertionCount: 0, insertionBG: null,
-      softclipBuffer: null, softclipCount: 0, softclipBG: null,
-      hardclipBuffer: null, hardclipCount: 0, hardclipBG: null,
-      modBuffer: null, modCount: 0, modBG: null,
-      modCovBuffer: null, modCovCount: 0, modCovBG: null,
-      arcBuffer: null, arcCount: 0, arcBG: null,
-      arcLineBuffer: null, arcLineCount: 0, arcLineBG: null,
-      sashimiBuffer: null, sashimiCount: 0, sashimiBG: null,
-      cloudBuffer: null, cloudCount: 0, cloudBG: null,
-      connLineBuffer: null, connLineCount: 0, connLineBG: null,
+      regionStart,
+      readBuffer: null,
+      readCount: 0,
+      readBG: null,
+      readPositions: new Uint32Array(0),
+      readYs: new Uint16Array(0),
+      readStrands: new Int8Array(0),
+      coverageBuffer: null,
+      coverageCount: 0,
+      coverageBG: null,
+      maxDepth: 0,
+      binSize: 1,
+      snpCovBuffer: null,
+      snpCovCount: 0,
+      snpCovBG: null,
+      noncovBuffer: null,
+      noncovCount: 0,
+      noncovBG: null,
+      noncovMaxCount: 0,
+      indicatorBuffer: null,
+      indicatorCount: 0,
+      indicatorBG: null,
+      gapBuffer: null,
+      gapCount: 0,
+      gapBG: null,
+      mismatchBuffer: null,
+      mismatchCount: 0,
+      mismatchBG: null,
+      insertionBuffer: null,
+      insertionCount: 0,
+      insertionBG: null,
+      softclipBuffer: null,
+      softclipCount: 0,
+      softclipBG: null,
+      hardclipBuffer: null,
+      hardclipCount: 0,
+      hardclipBG: null,
+      modBuffer: null,
+      modCount: 0,
+      modBG: null,
+      modCovBuffer: null,
+      modCovCount: 0,
+      modCovBG: null,
+      arcBuffer: null,
+      arcCount: 0,
+      arcBG: null,
+      arcLineBuffer: null,
+      arcLineCount: 0,
+      arcLineBG: null,
+      sashimiBuffer: null,
+      sashimiCount: 0,
+      sashimiBG: null,
+      cloudBuffer: null,
+      cloudCount: 0,
+      cloudBG: null,
+      connLineBuffer: null,
+      connLineCount: 0,
+      connLineBG: null,
     }
   }
 
@@ -331,21 +442,39 @@ export class AlignmentsRenderer {
   }
 
   clearLegacyBuffers() {
-    if (this.glFallback) { this.glFallback.clearLegacyBuffers(); return }
-    for (const r of this.regions.values()) { this.destroyRegion(r) }
+    if (this.glFallback) {
+      this.glFallback.clearLegacyBuffers()
+      return
+    }
+    for (const r of this.regions.values()) {
+      this.destroyRegion(r)
+    }
     this.regions.clear()
   }
 
   ensureBuffers(regionStart: number) {
-    if (this.glFallback) { this.glFallback.ensureBuffers(regionStart); return }
+    if (this.glFallback) {
+      this.glFallback.ensureBuffers(regionStart)
+      return
+    }
   }
 
-  uploadFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadFromTypedArraysForRegion(regionNumber, data); return }
+  uploadFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     const old = this.regions.get(regionNumber)
-    if (old) { this.destroyRegion(old) }
+    if (old) {
+      this.destroyRegion(old)
+    }
     const r = this.emptyRegion(data.regionStart)
     r.insertSizeStats = data.insertSizeStats
     r.readPositions = data.readPositions
@@ -367,9 +496,16 @@ export class AlignmentsRenderer {
         f32[o + 5] = data.readInsertSizes[i]!
         u32[o + 6] = data.readPairOrientations[i]!
         i32[o + 7] = data.readStrands[i]!
-        f32[o + 8] = data.readTagColors.length > 0 ? (data.readTagColors[i * 3]! / 255) : 0
-        f32[o + 9] = data.readTagColors.length > 0 ? (data.readTagColors[i * 3 + 1]! / 255) : 0
-        f32[o + 10] = data.readTagColors.length > 0 ? (data.readTagColors[i * 3 + 2]! / 255) : 0
+        f32[o + 8] =
+          data.readTagColors.length > 0 ? data.readTagColors[i * 3]! / 255 : 0
+        f32[o + 9] =
+          data.readTagColors.length > 0
+            ? data.readTagColors[i * 3 + 1]! / 255
+            : 0
+        f32[o + 10] =
+          data.readTagColors.length > 0
+            ? data.readTagColors[i * 3 + 2]! / 255
+            : 0
         u32[o + 11] = data.readChainHasSupp?.[i] ?? 0
       }
       r.readBuffer = this.mkBuf(device, buf)
@@ -379,18 +515,38 @@ export class AlignmentsRenderer {
     this.regions.set(regionNumber, r)
   }
 
-  uploadCigarFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadCigarFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadCigarFromTypedArraysForRegion(regionNumber, data); return }
+  uploadCigarFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadCigarFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadCigarFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     const r = this.regions.get(regionNumber)
-    if (!r) { return }
+    if (!r) {
+      return
+    }
 
-    r.gapBuffer?.destroy(); r.gapBG = null; r.gapCount = 0
-    r.mismatchBuffer?.destroy(); r.mismatchBG = null; r.mismatchCount = 0
-    r.insertionBuffer?.destroy(); r.insertionBG = null; r.insertionCount = 0
-    r.softclipBuffer?.destroy(); r.softclipBG = null; r.softclipCount = 0
-    r.hardclipBuffer?.destroy(); r.hardclipBG = null; r.hardclipCount = 0
+    r.gapBuffer?.destroy()
+    r.gapBG = null
+    r.gapCount = 0
+    r.mismatchBuffer?.destroy()
+    r.mismatchBG = null
+    r.mismatchCount = 0
+    r.insertionBuffer?.destroy()
+    r.insertionBG = null
+    r.insertionCount = 0
+    r.softclipBuffer?.destroy()
+    r.softclipBG = null
+    r.softclipCount = 0
+    r.hardclipBuffer?.destroy()
+    r.hardclipBG = null
+    r.hardclipCount = 0
 
     if (data.numGaps > 0) {
       const buf = new ArrayBuffer(data.numGaps * GAP_STRIDE * 4)
@@ -402,7 +558,7 @@ export class AlignmentsRenderer {
         u32[o + 1] = data.gapPositions[i * 2 + 1]!
         u32[o + 2] = data.gapYs[i]!
         u32[o + 3] = data.gapTypes[i]!
-        f32[o + 4] = (data.gapFrequencies[i]! / 255)
+        f32[o + 4] = data.gapFrequencies[i]! / 255
       }
       r.gapBuffer = this.mkBuf(device, buf)
       r.gapBG = this.mkBG(device, r.gapBuffer)
@@ -418,7 +574,7 @@ export class AlignmentsRenderer {
         u32[o] = data.mismatchPositions[i]!
         u32[o + 1] = data.mismatchYs[i]!
         u32[o + 2] = data.mismatchBases[i]!
-        f32[o + 3] = (data.mismatchFrequencies[i]! / 255)
+        f32[o + 3] = data.mismatchFrequencies[i]! / 255
       }
       r.mismatchBuffer = this.mkBuf(device, buf)
       r.mismatchBG = this.mkBG(device, r.mismatchBuffer)
@@ -430,43 +586,74 @@ export class AlignmentsRenderer {
     const hcIdx: number[] = []
     for (let i = 0; i < data.numInterbases; i++) {
       const t = data.interbaseTypes[i]
-      if (t === 1) { insIdx.push(i) }
-      else if (t === 2) { scIdx.push(i) }
-      else if (t === 3) { hcIdx.push(i) }
+      if (t === 1) {
+        insIdx.push(i)
+      } else if (t === 2) {
+        scIdx.push(i)
+      } else if (t === 3) {
+        hcIdx.push(i)
+      }
     }
 
     const uploadClip = (indices: number[], stride: number) => {
-      if (indices.length === 0) { return { buffer: null, bg: null, count: 0 } }
+      if (indices.length === 0) {
+        return { buffer: null, bg: null, count: 0 }
+      }
       const buf = new ArrayBuffer(indices.length * stride * 4)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
-      for (let j = 0; j < indices.length; j++) {
-        const i = indices[j]!
+      for (const [j, index] of indices.entries()) {
+        const i = index
         const o = j * stride
         u32[o] = data.interbasePositions[i]!
         u32[o + 1] = data.interbaseYs[i]!
         u32[o + 2] = data.interbaseLengths[i]!
-        f32[o + 3] = (data.interbaseFrequencies[i]! / 255)
+        f32[o + 3] = data.interbaseFrequencies[i]! / 255
       }
       const gpuBuf = this.mkBuf(device, buf)
-      return { buffer: gpuBuf, bg: this.mkBG(device, gpuBuf), count: indices.length }
+      return {
+        buffer: gpuBuf,
+        bg: this.mkBG(device, gpuBuf),
+        count: indices.length,
+      }
     }
 
     const ins = uploadClip(insIdx, INSERTION_STRIDE)
-    r.insertionBuffer = ins.buffer; r.insertionBG = ins.bg; r.insertionCount = ins.count
+    r.insertionBuffer = ins.buffer
+    r.insertionBG = ins.bg
+    r.insertionCount = ins.count
     const sc = uploadClip(scIdx, SOFTCLIP_STRIDE)
-    r.softclipBuffer = sc.buffer; r.softclipBG = sc.bg; r.softclipCount = sc.count
+    r.softclipBuffer = sc.buffer
+    r.softclipBG = sc.bg
+    r.softclipCount = sc.count
     const hc = uploadClip(hcIdx, HARDCLIP_STRIDE)
-    r.hardclipBuffer = hc.buffer; r.hardclipBG = hc.bg; r.hardclipCount = hc.count
+    r.hardclipBuffer = hc.buffer
+    r.hardclipBG = hc.bg
+    r.hardclipCount = hc.count
   }
 
-  uploadModificationsFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadModificationsFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadModificationsFromTypedArraysForRegion(regionNumber, data); return }
+  uploadModificationsFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadModificationsFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadModificationsFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     const r = this.regions.get(regionNumber)
-    if (!r) { return }
-    r.modBuffer?.destroy(); r.modBG = null; r.modCount = 0
+    if (!r) {
+      return
+    }
+    r.modBuffer?.destroy()
+    r.modBG = null
+    r.modCount = 0
     if (data.numModifications > 0) {
       const n = data.numModifications
       const buf = new ArrayBuffer(n * MODIFICATION_STRIDE * 4)
@@ -476,10 +663,11 @@ export class AlignmentsRenderer {
         u32[o] = data.modificationPositions[i]!
         u32[o + 1] = data.modificationYs[i]!
         const ci = i * 4
-        u32[o + 2] = (data.modificationColors[ci]!) |
-          ((data.modificationColors[ci + 1]!) << 8) |
-          ((data.modificationColors[ci + 2]!) << 16) |
-          ((data.modificationColors[ci + 3]!) << 24)
+        u32[o + 2] =
+          data.modificationColors[ci]! |
+          (data.modificationColors[ci + 1]! << 8) |
+          (data.modificationColors[ci + 2]! << 16) |
+          (data.modificationColors[ci + 3]! << 24)
         u32[o + 3] = 0
       }
       r.modBuffer = this.mkBuf(device, buf)
@@ -488,17 +676,35 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadCoverageFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadCoverageFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadCoverageFromTypedArraysForRegion(regionNumber, data); return }
+  uploadCoverageFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadCoverageFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     const r = this.regions.get(regionNumber)
-    if (!r) { return }
+    if (!r) {
+      return
+    }
 
-    r.coverageBuffer?.destroy(); r.coverageBG = null; r.coverageCount = 0
-    r.snpCovBuffer?.destroy(); r.snpCovBG = null; r.snpCovCount = 0
-    r.noncovBuffer?.destroy(); r.noncovBG = null; r.noncovCount = 0
-    r.indicatorBuffer?.destroy(); r.indicatorBG = null; r.indicatorCount = 0
+    r.coverageBuffer?.destroy()
+    r.coverageBG = null
+    r.coverageCount = 0
+    r.snpCovBuffer?.destroy()
+    r.snpCovBG = null
+    r.snpCovCount = 0
+    r.noncovBuffer?.destroy()
+    r.noncovBG = null
+    r.noncovCount = 0
+    r.indicatorBuffer?.destroy()
+    r.indicatorBG = null
+    r.indicatorCount = 0
 
     if (data.numCoverageBins > 0) {
       const n = data.numCoverageBins
@@ -562,13 +768,28 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadModCoverageFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadModCoverageFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadModCoverageFromTypedArraysForRegion(regionNumber, data); return }
+  uploadModCoverageFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadModCoverageFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadModCoverageFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     const r = this.regions.get(regionNumber)
-    if (!r) { return }
-    r.modCovBuffer?.destroy(); r.modCovBG = null; r.modCovCount = 0
+    if (!r) {
+      return
+    }
+    r.modCovBuffer?.destroy()
+    r.modCovBG = null
+    r.modCovCount = 0
     if (data.numModCovSegments > 0) {
       const n = data.numModCovSegments
       const buf = new ArrayBuffer(n * MOD_COV_STRIDE * 4)
@@ -580,10 +801,11 @@ export class AlignmentsRenderer {
         f32[o + 1] = data.modCovYOffsets[i]!
         f32[o + 2] = data.modCovHeights[i]!
         const ci = i * 4
-        u32[o + 3] = (data.modCovColors[ci]!) |
-          ((data.modCovColors[ci + 1]!) << 8) |
-          ((data.modCovColors[ci + 2]!) << 16) |
-          ((data.modCovColors[ci + 3]!) << 24)
+        u32[o + 3] =
+          data.modCovColors[ci]! |
+          (data.modCovColors[ci + 1]! << 8) |
+          (data.modCovColors[ci + 2]! << 16) |
+          (data.modCovColors[ci + 3]! << 24)
       }
       r.modCovBuffer = this.mkBuf(device, buf)
       r.modCovBG = this.mkBG(device, r.modCovBuffer)
@@ -591,13 +813,25 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadSashimiFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadSashimiFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadSashimiFromTypedArraysForRegion(regionNumber, data); return }
+  uploadSashimiFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadSashimiFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     const r = this.regions.get(regionNumber)
-    if (!r) { return }
-    r.sashimiBuffer?.destroy(); r.sashimiBG = null; r.sashimiCount = 0
+    if (!r) {
+      return
+    }
+    r.sashimiBuffer?.destroy()
+    r.sashimiBG = null
+    r.sashimiCount = 0
     if (data.numSashimiArcs > 0) {
       const n = data.numSashimiArcs
       const buf = new ArrayBuffer(n * SASHIMI_STRIDE * 4)
@@ -615,14 +849,28 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadArcsFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadArcsFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadArcsFromTypedArraysForRegion(regionNumber, data); return }
+  uploadArcsFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadArcsFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadArcsFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     let r = this.regions.get(regionNumber)
-    if (!r) { r = this.getOrCreateRegion(regionNumber, data.regionStart) }
-    r.arcBuffer?.destroy(); r.arcBG = null; r.arcCount = 0
-    r.arcLineBuffer?.destroy(); r.arcLineBG = null; r.arcLineCount = 0
+    if (!r) {
+      r = this.getOrCreateRegion(regionNumber, data.regionStart)
+    }
+    r.arcBuffer?.destroy()
+    r.arcBG = null
+    r.arcCount = 0
+    r.arcLineBuffer?.destroy()
+    r.arcLineBG = null
+    r.arcLineCount = 0
 
     if (data.numArcs > 0) {
       const n = data.numArcs
@@ -658,13 +906,25 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadCloudFromTypedArraysForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadCloudFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadCloudFromTypedArraysForRegion(regionNumber, data); return }
+  uploadCloudFromTypedArraysForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadCloudFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadCloudFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     let r = this.regions.get(regionNumber)
-    if (!r) { r = this.getOrCreateRegion(regionNumber, data.regionStart) }
-    r.cloudBuffer?.destroy(); r.cloudBG = null; r.cloudCount = 0
+    if (!r) {
+      r = this.getOrCreateRegion(regionNumber, data.regionStart)
+    }
+    r.cloudBuffer?.destroy()
+    r.cloudBG = null
+    r.cloudCount = 0
     if (data.numChains > 0) {
       const n = data.numChains
       const buf = new ArrayBuffer(n * CLOUD_STRIDE * 4)
@@ -684,13 +944,25 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadConnectingLinesForRegion(regionNumber: number, data: Parameters<WebGLRenderer['uploadConnectingLinesFromTypedArrays']>[0]) {
-    if (this.glFallback) { this.glFallback.uploadConnectingLinesForRegion(regionNumber, data); return }
+  uploadConnectingLinesForRegion(
+    regionNumber: number,
+    data: Parameters<WebGLRenderer['uploadConnectingLinesFromTypedArrays']>[0],
+  ) {
+    if (this.glFallback) {
+      this.glFallback.uploadConnectingLinesForRegion(regionNumber, data)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device) { return }
+    if (!device) {
+      return
+    }
     let r = this.regions.get(regionNumber)
-    if (!r) { r = this.getOrCreateRegion(regionNumber, data.regionStart) }
-    r.connLineBuffer?.destroy(); r.connLineBG = null; r.connLineCount = 0
+    if (!r) {
+      r = this.getOrCreateRegion(regionNumber, data.regionStart)
+    }
+    r.connLineBuffer?.destroy()
+    r.connLineBG = null
+    r.connLineCount = 0
     if (data.numConnectingLines > 0) {
       const n = data.numConnectingLines
       const buf = new ArrayBuffer(n * CONN_LINE_STRIDE * 4)
@@ -709,30 +981,55 @@ export class AlignmentsRenderer {
   }
 
   private writeColor(slot: number, c: [number, number, number]) {
-    this.uF32[slot] = c[0]; this.uF32[slot + 1] = c[1]; this.uF32[slot + 2] = c[2]
+    this.uF32[slot] = c[0]
+    this.uF32[slot + 1] = c[1]
+    this.uF32[slot + 2] = c[2]
   }
 
-  private writeUniforms(device: GPUDevice, state: RenderState, bpHi: number, bpLo: number, bpLen: number, regionStart: number, canvasW: number, region: GpuRegion, clippedBpStart: number, clippedBpEnd: number) {
-    const f = this.uF32, u = this.uU32, ii = this.uI32
-    f[U_BP_HI] = bpHi; f[U_BP_LO] = bpLo; f[U_BP_LEN] = bpLen
+  private writeUniforms(
+    device: GPUDevice,
+    state: RenderState,
+    bpHi: number,
+    bpLo: number,
+    bpLen: number,
+    regionStart: number,
+    canvasW: number,
+    region: GpuRegion,
+    clippedBpStart: number,
+    clippedBpEnd: number,
+  ) {
+    const f = this.uF32
+    const u = this.uU32
+    const ii = this.uI32
+    f[U_BP_HI] = bpHi
+    f[U_BP_LO] = bpLo
+    f[U_BP_LEN] = bpLen
     u[U_REGION_START] = regionStart
     f[U_DOMAIN_START] = clippedBpStart - regionStart
     f[U_DOMAIN_END] = clippedBpEnd - regionStart
     f[U_RANGE_Y0] = state.rangeY[0]
-    f[U_CANVAS_H] = state.canvasHeight; f[U_CANVAS_W] = canvasW
+    f[U_CANVAS_H] = state.canvasHeight
+    f[U_CANVAS_W] = canvasW
     f[U_COV_OFFSET] = state.showCoverage ? state.coverageHeight : 0
-    f[U_FEAT_H] = state.featureHeight; f[U_FEAT_SPACING] = state.featureSpacing
+    f[U_FEAT_H] = state.featureHeight
+    f[U_FEAT_SPACING] = state.featureSpacing
     ii[U_COLOR_SCHEME] = state.colorScheme
     ii[U_HIGHLIGHT_IDX] = state.highlightedFeatureIndex
     ii[U_HIGHLIGHT_ONLY] = 0
-    ii[U_CHAIN_MODE] = (state.renderingMode === 'cloud' || state.renderingMode === 'linkedRead') ? 1 : 0
+    ii[U_CHAIN_MODE] =
+      state.renderingMode === 'cloud' || state.renderingMode === 'linkedRead'
+        ? 1
+        : 0
     ii[U_SHOW_STROKE] = state.featureHeight >= 4 ? 1 : 0
     f[U_COV_HEIGHT] = state.coverageHeight
     f[U_COV_Y_OFFSET] = state.coverageYOffset
-    f[U_DEPTH_SCALE] = state.coverageNicedMax !== undefined && region.maxDepth > 0
-      ? region.maxDepth / state.coverageNicedMax : 1
+    f[U_DEPTH_SCALE] =
+      state.coverageNicedMax !== undefined && region.maxDepth > 0
+        ? region.maxDepth / state.coverageNicedMax
+        : 1
     f[U_BIN_SIZE] = region.binSize
-    f[U_NONCOV_HEIGHT] = region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
+    f[U_NONCOV_HEIGHT] =
+      region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
     f[U_INSERT_UPPER] = region.insertSizeStats?.upper ?? 999999
     f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
     ii[U_ERASE_MODE] = 0
@@ -763,33 +1060,44 @@ export class AlignmentsRenderer {
     this.writeColor(U_COLOR_SHORT_INSERT, c.colorShortInsert)
     this.writeColor(U_COLOR_SUPPLEMENTARY, c.colorSupplementary)
 
-    for (let i = 0; i < arcColorPalette.length; i++) {
-      this.writeColor(U_ARC_COLORS + i * 3, arcColorPalette[i]!)
+    for (const [i, element] of arcColorPalette.entries()) {
+      this.writeColor(U_ARC_COLORS + i * 3, element)
     }
-    for (let i = 0; i < arcLineColorPalette.length; i++) {
-      this.writeColor(U_ARC_LINE_COLORS + i * 3, arcLineColorPalette[i]!)
+    for (const [i, element] of arcLineColorPalette.entries()) {
+      this.writeColor(U_ARC_LINE_COLORS + i * 3, element)
     }
-    for (let i = 0; i < sashimiColorPalette.length; i++) {
-      this.writeColor(U_SASHIMI_COLORS + i * 3, sashimiColorPalette[i]!)
+    for (const [i, element] of sashimiColorPalette.entries()) {
+      this.writeColor(U_SASHIMI_COLORS + i * 3, element)
     }
 
     device.queue.writeBuffer(this.uBuf!, 0, this.uData)
   }
 
   renderBlocks(
-    blocks: { regionNumber: number; bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }[],
+    blocks: {
+      regionNumber: number
+      bpRangeX: [number, number]
+      screenStartPx: number
+      screenEndPx: number
+    }[],
     state: RenderState,
   ) {
-    if (this.glFallback) { this.glFallback.renderBlocks(blocks, state); return }
+    if (this.glFallback) {
+      this.glFallback.renderBlocks(blocks, state)
+      return
+    }
     const device = AlignmentsRenderer.device
-    if (!device || !this.ctx) { return }
+    if (!device || !this.ctx) {
+      return
+    }
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
     const bufW = Math.round(canvasWidth * dpr)
     const bufH = Math.round(canvasHeight * dpr)
 
     if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW; this.canvas.height = bufH
+      this.canvas.width = bufW
+      this.canvas.height = bufH
     }
 
     const textureView = this.ctx.getCurrentTexture().createView()
@@ -798,34 +1106,68 @@ export class AlignmentsRenderer {
 
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
-      if (!region) { continue }
+      if (!region) {
+        continue
+      }
 
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
-      if (scissorW <= 0) { continue }
+      if (scissorW <= 0) {
+        continue
+      }
 
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const bpPerPx = fullBlockWidth > 0 ? (block.bpRangeX[1] - block.bpRangeX[0]) / fullBlockWidth : 1
-      const clippedBpStart = block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd = block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const bpPerPx =
+        fullBlockWidth > 0
+          ? (block.bpRangeX[1] - block.bpRangeX[0]) / fullBlockWidth
+          : 1
+      const clippedBpStart =
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
+      const clippedBpEnd =
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
       const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
       const bpLen = clippedBpEnd - clippedBpStart
 
-      this.writeUniforms(device, state, bpHi, bpLo, bpLen, region.regionStart, scissorW, region, clippedBpStart, clippedBpEnd)
+      this.writeUniforms(
+        device,
+        state,
+        bpHi,
+        bpLo,
+        bpLen,
+        region.regionStart,
+        scissorW,
+        region,
+        clippedBpStart,
+        clippedBpEnd,
+      )
 
       const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
-        colorAttachments: [{
-          view: textureView,
-          loadOp: (isFirst ? 'clear' : 'load') as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
-          ...(isFirst && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
-        }],
+        colorAttachments: [
+          {
+            view: textureView,
+            loadOp: (isFirst ? 'clear' : 'load') as GPULoadOp,
+            storeOp: 'store' as GPUStoreOp,
+            ...(isFirst && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
+          },
+        ],
       })
 
-      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
-      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      pass.setViewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+        0,
+        1,
+      )
+      pass.setScissorRect(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
 
       if (state.showCoverage) {
         this.drawCoverage(pass, region)
@@ -836,18 +1178,41 @@ export class AlignmentsRenderer {
       const vpEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const vpW = vpEnd - vpX
       if (mode === 'arcs') {
-        pass.setViewport(Math.round(vpX * dpr), 0, Math.round(vpW * dpr), bufH, 0, 1)
+        pass.setViewport(
+          Math.round(vpX * dpr),
+          0,
+          Math.round(vpW * dpr),
+          bufH,
+          0,
+          1,
+        )
         this.drawArcs(pass, region, state, block, vpX, vpW)
       } else if (mode === 'cloud' || mode === 'linkedRead') {
         this.drawConnectingLines(pass, region)
         this.drawPileup(pass, region, state)
-        this.drawChainOverlays(pass, region, state, bpHi, bpLo, bpLen, scissorW, tempBuffers)
+        this.drawChainOverlays(
+          pass,
+          region,
+          state,
+          bpHi,
+          bpLo,
+          bpLen,
+          scissorW,
+          tempBuffers,
+        )
       } else {
         this.drawPileup(pass, region, state)
       }
 
       if (state.showSashimiArcs && state.showCoverage) {
-        pass.setViewport(Math.round(vpX * dpr), 0, Math.round(vpW * dpr), bufH, 0, 1)
+        pass.setViewport(
+          Math.round(vpX * dpr),
+          0,
+          Math.round(vpW * dpr),
+          bufH,
+          0,
+          1,
+        )
         this.drawSashimi(pass, region, state, block, vpX, vpW)
       }
 
@@ -863,12 +1228,14 @@ export class AlignmentsRenderer {
     if (isFirst) {
       const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
-        colorAttachments: [{
-          view: textureView,
-          loadOp: 'clear' as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
-          clearValue: { r: 0, g: 0, b: 0, a: 0 },
-        }],
+        colorAttachments: [
+          {
+            view: textureView,
+            loadOp: 'clear' as GPULoadOp,
+            storeOp: 'store' as GPUStoreOp,
+            clearValue: { r: 0, g: 0, b: 0, a: 0 },
+          },
+        ],
       })
       pass.end()
       device.queue.submit([encoder.finish()])
@@ -876,7 +1243,10 @@ export class AlignmentsRenderer {
   }
 
   render(state: RenderState) {
-    if (this.glFallback) { this.glFallback.render(state); return }
+    if (this.glFallback) {
+      this.glFallback.render(state)
+      return
+    }
   }
 
   private drawCoverage(pass: GPURenderPassEncoder, r: GpuRegion) {
@@ -907,7 +1277,11 @@ export class AlignmentsRenderer {
     }
   }
 
-  private drawPileup(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState) {
+  private drawPileup(
+    pass: GPURenderPassEncoder,
+    r: GpuRegion,
+    state: RenderState,
+  ) {
     if (state.showMismatches) {
       if (r.gapBG && r.gapCount > 0) {
         pass.setPipeline(AlignmentsRenderer.gapPL!)
@@ -952,20 +1326,41 @@ export class AlignmentsRenderer {
     }
   }
 
-  private writeBlockUniforms(r: GpuRegion, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }, vpX: number, vpW: number) {
+  private writeBlockUniforms(
+    r: GpuRegion,
+    block: {
+      bpRangeX: [number, number]
+      screenStartPx: number
+      screenEndPx: number
+    },
+    vpX: number,
+    vpW: number,
+  ) {
     const blockW = block.screenEndPx - block.screenStartPx
     const [hi, lo] = splitPositionWithFrac(block.bpRangeX[0])
     this.uF32[U_CANVAS_W] = vpW
     this.uF32[U_BLOCK_START_PX] = block.screenStartPx - vpX
     this.uF32[U_BLOCK_WIDTH] = blockW
-    this.uF32[U_BP_HI] = hi; this.uF32[U_BP_LO] = lo
+    this.uF32[U_BP_HI] = hi
+    this.uF32[U_BP_LO] = lo
     this.uF32[U_BP_LEN] = block.bpRangeX[1] - block.bpRangeX[0]
     this.uF32[U_DOMAIN_START] = block.bpRangeX[0] - r.regionStart
     this.uF32[U_DOMAIN_END] = block.bpRangeX[1] - r.regionStart
     this.uU32[U_REGION_START] = r.regionStart
   }
 
-  private drawArcs(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }, vpX: number, vpW: number) {
+  private drawArcs(
+    pass: GPURenderPassEncoder,
+    r: GpuRegion,
+    state: RenderState,
+    block: {
+      bpRangeX: [number, number]
+      screenStartPx: number
+      screenEndPx: number
+    },
+    vpX: number,
+    vpW: number,
+  ) {
     const device = AlignmentsRenderer.device!
     this.writeBlockUniforms(r, block, vpX, vpW)
     this.uF32[U_LINE_WIDTH_PX] = state.arcLineWidth ?? 1
@@ -984,8 +1379,21 @@ export class AlignmentsRenderer {
     }
   }
 
-  private drawSashimi(pass: GPURenderPassEncoder, r: GpuRegion, state: RenderState, block: { bpRangeX: [number, number]; screenStartPx: number; screenEndPx: number }, vpX: number, vpW: number) {
-    if (!r.sashimiBG || r.sashimiCount === 0) { return }
+  private drawSashimi(
+    pass: GPURenderPassEncoder,
+    r: GpuRegion,
+    state: RenderState,
+    block: {
+      bpRangeX: [number, number]
+      screenStartPx: number
+      screenEndPx: number
+    },
+    vpX: number,
+    vpW: number,
+  ) {
+    if (!r.sashimiBG || r.sashimiCount === 0) {
+      return
+    }
     const device = AlignmentsRenderer.device!
     this.writeBlockUniforms(r, block, vpX, vpW)
     this.uF32[U_COV_OFFSET] = state.showCoverage ? state.coverageYOffset : 0
@@ -1019,28 +1427,91 @@ export class AlignmentsRenderer {
     const covOff = state.showCoverage ? state.coverageHeight : 0
 
     if (state.highlightedChainIndices.length > 0) {
-      const bounds = getChainBounds(state.highlightedChainIndices, region.readPositions, region.readYs)
+      const bounds = getChainBounds(
+        state.highlightedChainIndices,
+        region.readPositions,
+        region.readYs,
+      )
       if (bounds) {
-        const clip = toClipRect(bounds.minStart + region.regionStart, bounds.maxEnd + region.regionStart, bounds.y, state, bpHi, bpLo, bpLen, covOff, state.canvasHeight)
+        const clip = toClipRect(
+          bounds.minStart + region.regionStart,
+          bounds.maxEnd + region.regionStart,
+          bounds.y,
+          state,
+          bpHi,
+          bpLo,
+          bpLen,
+          covOff,
+          state.canvasHeight,
+        )
         quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 0.4)
       }
     }
 
     if (state.selectedChainIndices.length > 0) {
-      const bounds = getChainBounds(state.selectedChainIndices, region.readPositions, region.readYs)
+      const bounds = getChainBounds(
+        state.selectedChainIndices,
+        region.readPositions,
+        region.readYs,
+      )
       if (bounds) {
-        const clip = toClipRect(bounds.minStart + region.regionStart, bounds.maxEnd + region.regionStart, bounds.y, state, bpHi, bpLo, bpLen, covOff, state.canvasHeight)
+        const clip = toClipRect(
+          bounds.minStart + region.regionStart,
+          bounds.maxEnd + region.regionStart,
+          bounds.y,
+          state,
+          bpHi,
+          bpLo,
+          bpLen,
+          covOff,
+          state.canvasHeight,
+        )
         const tx = 4 / viewportW
         const ty = 4 / state.canvasHeight
-        quads.push(clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1)
-        quads.push(clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0, 0, 1)
-        quads.push(clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0, 0, 1)
-        quads.push(clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 1)
+        quads.push(
+          clip.sx1,
+          clip.syTop,
+          clip.sx2,
+          clip.syTop - ty,
+          0,
+          0,
+          0,
+          1,
+          clip.sx1,
+          clip.syBot + ty,
+          clip.sx2,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+          clip.sx1,
+          clip.syTop,
+          clip.sx1 + tx,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+          clip.sx2 - tx,
+          clip.syTop,
+          clip.sx2,
+          clip.syBot,
+          0,
+          0,
+          0,
+          1,
+        )
       }
     }
 
     if (quads.length > 0) {
-      this.drawOverlayQuads(pass, new Float32Array(quads), quads.length / 8, tempBuffers)
+      this.drawOverlayQuads(
+        pass,
+        new Float32Array(quads),
+        quads.length / 8,
+        tempBuffers,
+      )
     }
   }
 
@@ -1051,7 +1522,7 @@ export class AlignmentsRenderer {
     tempBuffers: GPUBuffer[],
   ) {
     const device = AlignmentsRenderer.device!
-    const buf = this.mkBuf(device, quads.buffer)
+    const buf = this.mkBuf(device, quads.buffer as ArrayBuffer)
     tempBuffers.push(buf)
     const bg = this.mkBG(device, buf)
     pass.setPipeline(AlignmentsRenderer.flatQuadPL!)
@@ -1060,8 +1531,14 @@ export class AlignmentsRenderer {
   }
 
   destroy() {
-    if (this.glFallback) { this.glFallback.destroy(); this.glFallback = null; return }
-    for (const r of this.regions.values()) { this.destroyRegion(r) }
+    if (this.glFallback) {
+      this.glFallback.destroy()
+      this.glFallback = null
+      return
+    }
+    for (const r of this.regions.values()) {
+      this.destroyRegion(r)
+    }
     this.regions.clear()
     this.uBuf?.destroy()
     this.uBuf = null

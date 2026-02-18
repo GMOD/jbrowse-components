@@ -1,9 +1,12 @@
-import {
-  WIGGLE_VERTEX_SHADER,
-  WIGGLE_FRAGMENT_SHADER,
-} from '../../shared/generated/index.ts'
-import { createProgram, splitPositionWithFrac } from '../../shared/webglUtils.ts'
 import { INSTANCE_STRIDE } from './wiggleShaders.ts'
+import {
+  WIGGLE_FRAGMENT_SHADER,
+  WIGGLE_VERTEX_SHADER,
+} from '../../shared/generated/index.ts'
+import {
+  createProgram,
+  splitPositionWithFrac,
+} from '../../shared/webglUtils.ts'
 
 export type RenderingType = 'xyplot' | 'density' | 'line'
 
@@ -67,9 +70,16 @@ export class WebGLWiggleRenderer {
     }
     this.gl = gl
 
-    this.program = createProgram(gl, WIGGLE_VERTEX_SHADER, WIGGLE_FRAGMENT_SHADER)
+    this.program = createProgram(
+      gl,
+      WIGGLE_VERTEX_SHADER,
+      WIGGLE_FRAGMENT_SHADER,
+    )
 
-    const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms_block_1Vertex')
+    const uboIndex = gl.getUniformBlockIndex(
+      this.program,
+      'Uniforms_block_1Vertex',
+    )
     gl.uniformBlockBinding(this.program, uboIndex, 0)
 
     this.ubo = gl.createBuffer()!
@@ -118,7 +128,7 @@ export class WebGLWiggleRenderer {
       f32[off + 3] = 0
     }
 
-    const tex = gl.createTexture()!
+    const tex = gl.createTexture()
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, tex)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -268,8 +278,7 @@ export class WebGLWiggleRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    const region =
-      this.regions.get(0) ?? this.regions.values().next().value
+    const region = this.regions.get(0) ?? this.regions.values().next().value
     if (!region || region.featureCount === 0) {
       return
     }

@@ -2,11 +2,11 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
+import { WebGLMultiWiggleRenderer } from './WebGLMultiWiggleRenderer.ts'
 import {
   MULTI_INSTANCE_STRIDE,
   multiWiggleShader,
 } from './multiWiggleShaders.ts'
-import { WebGLMultiWiggleRenderer } from './WebGLMultiWiggleRenderer.ts'
 
 import type { MultiRenderingType } from './WebGLMultiWiggleRenderer.ts'
 
@@ -190,7 +190,11 @@ export class MultiWiggleRenderer {
     }
 
     const device = MultiWiggleRenderer.device
-    if (!device || !MultiWiggleRenderer.bindGroupLayout || !this.uniformBuffer) {
+    if (
+      !device ||
+      !MultiWiggleRenderer.bindGroupLayout ||
+      !this.uniformBuffer
+    ) {
       return
     }
 
@@ -254,7 +258,8 @@ export class MultiWiggleRenderer {
       this.glFallback.renderBlocks(blocks, {
         domainY: renderState.domainY,
         scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
-        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'multirowxy',
+        renderingType:
+          RENDERING_TYPE_MAP[renderState.renderingType] ?? 'multirowxy',
         rowPadding: renderState.rowPadding,
         canvasWidth: renderState.canvasWidth,
         canvasHeight: renderState.canvasHeight,
@@ -330,8 +335,20 @@ export class MultiWiggleRenderer {
       })
       pass.setPipeline(pipeline)
       pass.setBindGroup(0, region.bindGroup)
-      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
-      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      pass.setViewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+        0,
+        1,
+      )
+      pass.setScissorRect(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
       pass.draw(6, region.featureCount)
       pass.end()
       device.queue.submit([encoder.finish()])
@@ -352,7 +369,8 @@ export class MultiWiggleRenderer {
         bpRangeX,
         domainY: renderState.domainY,
         scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
-        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'multirowxy',
+        renderingType:
+          RENDERING_TYPE_MAP[renderState.renderingType] ?? 'multirowxy',
         rowPadding: renderState.rowPadding,
         canvasWidth: renderState.canvasWidth,
         canvasHeight: renderState.canvasHeight,
@@ -379,13 +397,9 @@ export class MultiWiggleRenderer {
       this.canvas.height = bufH
     }
 
-    const region =
-      this.regions.get(0) ?? this.regions.values().next().value
+    const region = this.regions.get(0) ?? this.regions.values().next().value
     if (!region || region.featureCount === 0) {
-      this.clearCanvas(
-        device,
-        this.context.getCurrentTexture().createView(),
-      )
+      this.clearCanvas(device, this.context.getCurrentTexture().createView())
       return
     }
 

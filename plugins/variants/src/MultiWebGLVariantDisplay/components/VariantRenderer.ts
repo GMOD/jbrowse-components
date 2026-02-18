@@ -2,9 +2,9 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
-import { splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
-import { interleaveVariantInstances, variantShader } from './variantShaders.ts'
 import { WebGLVariantRenderer } from './WebGLVariantRenderer.ts'
+import { interleaveVariantInstances, variantShader } from './variantShaders.ts'
+import { splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
 
 import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
 
@@ -60,8 +60,16 @@ export class VariantRenderer {
 
   private static initPipelines(device: GPUDevice) {
     const blendState: GPUBlendState = {
-      color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-      alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+      color: {
+        srcFactor: 'one',
+        dstFactor: 'one-minus-src-alpha',
+        operation: 'add',
+      },
+      alpha: {
+        srcFactor: 'one',
+        dstFactor: 'one-minus-src-alpha',
+        operation: 'add',
+      },
     }
 
     VariantRenderer.bindGroupLayout = device.createBindGroupLayout({
@@ -172,7 +180,12 @@ export class VariantRenderer {
 
   renderBlocks(
     blocks: VariantRenderBlock[],
-    state: { canvasWidth: number; canvasHeight: number; rowHeight: number; scrollTop: number },
+    state: {
+      canvasWidth: number
+      canvasHeight: number
+      rowHeight: number
+      scrollTop: number
+    },
   ) {
     if (this.glFallback) {
       this.glFallback.renderBlocks(blocks, state)
@@ -241,7 +254,7 @@ export class VariantRenderer {
           },
         ],
       })
-      pass.setPipeline(VariantRenderer.pipeline!)
+      pass.setPipeline(VariantRenderer.pipeline)
       pass.setBindGroup(0, this.gpuData.bindGroup)
       pass.setViewport(
         Math.round(scissorX * dpr),

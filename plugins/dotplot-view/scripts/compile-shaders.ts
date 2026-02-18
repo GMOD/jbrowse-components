@@ -5,11 +5,5 @@ import { dotplotShader } from '../src/DotplotDisplay/dotplotShaders.ts'
 
 compileShaders({
   shaders: [{ name: 'DOTPLOT', wgsl: dotplotShader }],
-  outDir: join(
-    import.meta.dirname,
-    '..',
-    'src',
-    'DotplotDisplay',
-    'generated',
-  ),
+  outDir: join(import.meta.dirname, '..', 'src', 'DotplotDisplay', 'generated'),
 })

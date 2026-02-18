@@ -1,9 +1,8 @@
-import { getInsertionRectWidthPx, textWidthForNumber } from './model.ts'
-
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from './constants.ts'
+import { getInsertionRectWidthPx, textWidthForNumber } from './model.ts'
 
 // Replicates the shader's rectWidthPx calculation exactly.
 // If the shader logic changes, this must be updated in lockstep,

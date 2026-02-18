@@ -2,8 +2,8 @@ import { join } from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
 import {
-  fillVertexShader,
   edgeVertexShader,
+  fillVertexShader,
 } from '../src/LinearSyntenyDisplay/syntenyShaders.ts'
 
 compileShaders({

@@ -91,250 +91,245 @@ const ScoreLegend = observer(function ScoreLegend({
   )
 })
 
-const WebGLMultiWiggleComponent = observer(
-  function WebGLMultiWiggleComponent({
-    model,
-  }: {
-    model: MultiWiggleDisplayModel
-  }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
-    const [error, setError] = useState<string | null>(null)
-    const rendererRef = useRef<MultiWiggleRenderer | null>(null)
-    const [ready, setReady] = useState(false)
+const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
+  model,
+}: {
+  model: MultiWiggleDisplayModel
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [error, setError] = useState<string | null>(null)
+  const rendererRef = useRef<MultiWiggleRenderer | null>(null)
+  const [ready, setReady] = useState(false)
 
-    const view = getContainingView(model) as LGV
+  const view = getContainingView(model) as LGV
 
-    const canvasRefCallback = useCallback(
-      (canvas: HTMLCanvasElement | null) => {
-        if (!canvas) {
-          return
-        }
-        canvasRef.current = canvas
-        const renderer = MultiWiggleRenderer.getOrCreate(canvas)
-        rendererRef.current = renderer
-        renderer.init().then(ok => {
-          if (!ok) {
-            setError('WebGPU initialization failed')
-          } else {
-            setReady(true)
-          }
-        })
-      },
-      [],
-    )
-
-    useEffect(() => {
-      const renderer = rendererRef.current
-      if (!renderer || !ready) {
-        return
+  const canvasRefCallback = useCallback((canvas: HTMLCanvasElement | null) => {
+    if (!canvas) {
+      return
+    }
+    canvasRef.current = canvas
+    const renderer = MultiWiggleRenderer.getOrCreate(canvas)
+    rendererRef.current = renderer
+    renderer.init().then(ok => {
+      if (!ok) {
+        setError('WebGPU initialization failed')
+      } else {
+        setReady(true)
       }
-
-      const dataMap = model.rpcDataMap
-      if (dataMap.size === 0) {
-        renderer.pruneRegions([])
-        return
-      }
-
-      const modelSources = model.sources
-      const activeRegions: number[] = []
-      for (const [regionNumber, data] of dataMap) {
-        activeRegions.push(regionNumber)
-        const sourcesByName = Object.fromEntries(
-          data.sources.map(s => [s.name, s]),
-        )
-        const orderedSources =
-          modelSources.length > 0 ? modelSources : data.sources
-        const sourcesData: SourceRenderData[] = []
-        for (const src of orderedSources) {
-          const rpcSource = sourcesByName[src.name]
-          if (rpcSource) {
-            sourcesData.push({
-              featurePositions: rpcSource.featurePositions,
-              featureScores: rpcSource.featureScores,
-              numFeatures: rpcSource.numFeatures,
-              color: parseColor(src.color || rpcSource.color),
-            })
-          }
-        }
-
-        renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
-      }
-      renderer.pruneRegions(activeRegions)
-    }, [model.rpcDataMap, model.sources, ready])
-
-    const renderWithDomain = useCallback(
-      (bpRangeX: [number, number]) => {
-        const renderer = rendererRef.current
-        if (!renderer || !ready || !model.domain) {
-          return
-        }
-        const totalWidth = Math.round(view.width)
-        renderer.renderSingle(bpRangeX, makeRenderState(model, totalWidth))
-      },
-      [model, view, ready],
-    )
-
-    const {
-      handleMouseDown,
-      handleMouseMove,
-      handleMouseUp,
-      handleMouseLeave,
-      isDragging,
-    } = useWebGLViewInteraction({
-      canvasRef,
-      view,
-      onRender: renderWithDomain,
     })
+  }, [])
 
-    useEffect(() => {
+  useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !ready) {
+      return
+    }
+
+    const dataMap = model.rpcDataMap
+    if (dataMap.size === 0) {
+      renderer.pruneRegions([])
+      return
+    }
+
+    const modelSources = model.sources
+    const activeRegions: number[] = []
+    for (const [regionNumber, data] of dataMap) {
+      activeRegions.push(regionNumber)
+      const sourcesByName = Object.fromEntries(
+        data.sources.map(s => [s.name, s]),
+      )
+      const orderedSources =
+        modelSources.length > 0 ? modelSources : data.sources
+      const sourcesData: SourceRenderData[] = []
+      for (const src of orderedSources) {
+        const rpcSource = sourcesByName[src.name]
+        if (rpcSource) {
+          sourcesData.push({
+            featurePositions: rpcSource.featurePositions,
+            featureScores: rpcSource.featureScores,
+            numFeatures: rpcSource.numFeatures,
+            color: parseColor(src.color || rpcSource.color),
+          })
+        }
+      }
+
+      renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
+    }
+    renderer.pruneRegions(activeRegions)
+  }, [model.rpcDataMap, model.sources, ready])
+
+  const renderWithDomain = useCallback(
+    (bpRangeX: [number, number]) => {
       const renderer = rendererRef.current
-      if (!renderer || !ready || !view.initialized || !model.domain) {
+      if (!renderer || !ready || !model.domain) {
         return
       }
-
-      const visibleRegions = view.visibleRegions
-      if (visibleRegions.length === 0) {
-        return
-      }
-
       const totalWidth = Math.round(view.width)
+      renderer.renderSingle(bpRangeX, makeRenderState(model, totalWidth))
+    },
+    [model, view, ready],
+  )
 
-      const blocks: MultiWiggleRenderBlock[] = visibleRegions.map(vr => ({
-        regionNumber: vr.regionNumber,
-        bpRangeX: [vr.start, vr.end] as [number, number],
-        screenStartPx: vr.screenStartPx,
-        screenEndPx: vr.screenEndPx,
-      }))
+  const {
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleMouseLeave,
+    isDragging,
+  } = useWebGLViewInteraction({
+    canvasRef,
+    view,
+    onRender: renderWithDomain,
+  })
 
-      renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
-    }, [
-      model,
-      model.rpcDataMap,
-      model.sources,
-      model.height,
-      model.scaleType,
-      model.renderingType,
-      view.visibleRegions,
-      model.domain,
-      view.initialized,
-      view.width,
-      view.offsetPx,
-      view.bpPerPx,
-      ready,
-    ])
+  useEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !ready || !view.initialized || !model.domain) {
+      return
+    }
+
+    const visibleRegions = view.visibleRegions
+    if (visibleRegions.length === 0) {
+      return
+    }
 
     const totalWidth = Math.round(view.width)
-    const height = model.height
-    const scalebarLeft = model.scalebarOverlapLeft
 
-    if (error) {
-      return (
-        <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
-          WebGPU Error: {error}
-        </div>
-      )
-    }
+    const blocks: MultiWiggleRenderBlock[] = visibleRegions.map(vr => ({
+      regionNumber: vr.regionNumber,
+      bpRangeX: [vr.start, vr.end] as [number, number],
+      screenStartPx: vr.screenStartPx,
+      screenEndPx: vr.screenEndPx,
+    }))
 
-    if (model.error) {
-      return (
-        <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
-          Error: {model.error.message}
-        </div>
-      )
-    }
+    renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
+  }, [
+    model,
+    model.rpcDataMap,
+    model.sources,
+    model.height,
+    model.scaleType,
+    model.renderingType,
+    view.visibleRegions,
+    model.domain,
+    view.initialized,
+    view.width,
+    view.offsetPx,
+    view.bpPerPx,
+    ready,
+  ])
 
-    const numSources = model.numSources
-    const rowHeight =
-      numSources > 0
-        ? (height - ROW_PADDING * (numSources - 1)) / numSources
-        : height
+  const totalWidth = Math.round(view.width)
+  const height = model.height
+  const scalebarLeft = model.scalebarOverlapLeft
 
-    const displaySources = model.sources
-    const labelWidth =
-      displaySources.length > 0
-        ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10
-        : 0
-
+  if (error) {
     return (
-      <div style={{ position: 'relative', width: totalWidth, height }}>
-        <canvas
-          ref={canvasRefCallback}
-          style={{
-            width: totalWidth,
-            height,
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            cursor: isDragging ? 'grabbing' : 'grab',
-          }}
-          width={totalWidth}
-          height={height}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-        />
-
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            height,
-            width: totalWidth,
-          }}
-        >
-          {displaySources.length > 1 ? (
-            <>
-              {displaySources.map((source, idx) => {
-                const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
-                const boxHeight = Math.min(20, rowHeight)
-                return (
-                  <g key={source.name}>
-                    <rect
-                      x={0}
-                      y={y}
-                      width={labelWidth}
-                      height={boxHeight}
-                      fill="rgba(255,255,255,0.8)"
-                    />
-                    <text
-                      x={4}
-                      y={y + boxHeight / 2 + 3}
-                      fontSize={10}
-                      fill="black"
-                    >
-                      {source.name}
-                    </text>
-                  </g>
-                )
-              })}
-            </>
-          ) : null}
-
-          {model.ticks ? (
-            <g transform={`translate(${scalebarLeft || 50} 0)`}>
-              {model.rowHeightTooSmallForScalebar ? (
-                <ScoreLegend model={model} canvasWidth={totalWidth} />
-              ) : (
-                Array.from({ length: numSources }).map((_, idx) => (
-                  <g
-                    transform={`translate(0 ${rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)})`}
-                    key={`scalebar-${idx}`}
-                  >
-                    <YScaleBar model={model} />
-                  </g>
-                ))
-              )}
-            </g>
-          ) : null}
-        </svg>
-
-        <LoadingOverlay statusMessage="Loading" isVisible={model.isLoading} />
+      <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
+        WebGPU Error: {error}
       </div>
     )
-  },
-)
+  }
+
+  if (model.error) {
+    return (
+      <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
+        Error: {model.error.message}
+      </div>
+    )
+  }
+
+  const numSources = model.numSources
+  const rowHeight =
+    numSources > 0
+      ? (height - ROW_PADDING * (numSources - 1)) / numSources
+      : height
+
+  const displaySources = model.sources
+  const labelWidth =
+    displaySources.length > 0
+      ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10
+      : 0
+
+  return (
+    <div style={{ position: 'relative', width: totalWidth, height }}>
+      <canvas
+        ref={canvasRefCallback}
+        style={{
+          width: totalWidth,
+          height,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          cursor: isDragging ? 'grabbing' : 'grab',
+        }}
+        width={totalWidth}
+        height={height}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+      />
+
+      <svg
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          pointerEvents: 'none',
+          height,
+          width: totalWidth,
+        }}
+      >
+        {displaySources.length > 1 ? (
+          <>
+            {displaySources.map((source, idx) => {
+              const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
+              const boxHeight = Math.min(20, rowHeight)
+              return (
+                <g key={source.name}>
+                  <rect
+                    x={0}
+                    y={y}
+                    width={labelWidth}
+                    height={boxHeight}
+                    fill="rgba(255,255,255,0.8)"
+                  />
+                  <text
+                    x={4}
+                    y={y + boxHeight / 2 + 3}
+                    fontSize={10}
+                    fill="black"
+                  >
+                    {source.name}
+                  </text>
+                </g>
+              )
+            })}
+          </>
+        ) : null}
+
+        {model.ticks ? (
+          <g transform={`translate(${scalebarLeft || 50} 0)`}>
+            {model.rowHeightTooSmallForScalebar ? (
+              <ScoreLegend model={model} canvasWidth={totalWidth} />
+            ) : (
+              Array.from({ length: numSources }).map((_, idx) => (
+                <g
+                  transform={`translate(0 ${rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)})`}
+                  key={`scalebar-${idx}`}
+                >
+                  <YScaleBar model={model} />
+                </g>
+              ))
+            )}
+          </g>
+        ) : null}
+      </svg>
+
+      <LoadingOverlay statusMessage="Loading" isVisible={model.isLoading} />
+    </div>
+  )
+})
 
 export default WebGLMultiWiggleComponent

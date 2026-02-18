@@ -281,12 +281,32 @@ export class SyntenyRenderer {
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
 
-    this.writeUniforms(logicalW, logicalH, height, adjOff0, adjOff1, scale0, scale1, maxOffScreenPx, minAlignmentLength, alpha, hoveredFeatureId, clickedFeatureId)
+    this.writeUniforms(
+      logicalW,
+      logicalH,
+      height,
+      adjOff0,
+      adjOff1,
+      scale0,
+      scale1,
+      maxOffScreenPx,
+      minAlignmentLength,
+      alpha,
+      hoveredFeatureId,
+      clickedFeatureId,
+    )
 
     this.lastRenderParams = {
-      height, adjOff0, adjOff1, scale0, scale1,
-      maxOffScreenPx, minAlignmentLength, alpha,
-      hoveredFeatureId, clickedFeatureId,
+      height,
+      adjOff0,
+      adjOff1,
+      scale0,
+      scale1,
+      maxOffScreenPx,
+      minAlignmentLength,
+      alpha,
+      hoveredFeatureId,
+      clickedFeatureId,
     }
     this.pickingDirty = true
 
@@ -294,14 +314,33 @@ export class SyntenyRenderer {
     const tv = this.context.getCurrentTexture().createView()
     const white = { r: 1, g: 1, b: 1, a: 1 }
 
-    this.encodeDrawPass(encoder, tv, SyntenyRenderer.fillPipeline, FILL_VERTS_PER_INSTANCE, 'clear', white)
+    this.encodeDrawPass(
+      encoder,
+      tv,
+      SyntenyRenderer.fillPipeline,
+      FILL_VERTS_PER_INSTANCE,
+      'clear',
+      white,
+    )
     if (SyntenyRenderer.edgePipeline && clickedFeatureId > 0) {
-      this.encodeDrawPass(encoder, tv, SyntenyRenderer.edgePipeline, EDGE_VERTS_PER_INSTANCE, 'load', undefined, this.nonCigarInstanceCount)
+      this.encodeDrawPass(
+        encoder,
+        tv,
+        SyntenyRenderer.edgePipeline,
+        EDGE_VERTS_PER_INSTANCE,
+        'load',
+        undefined,
+        this.nonCigarInstanceCount,
+      )
     }
     device.queue.submit([encoder.finish()])
   }
 
-  pick(x: number, y: number, onResult?: (result: number) => void): number | undefined {
+  pick(
+    x: number,
+    y: number,
+    onResult?: (result: number) => void,
+  ): number | undefined {
     this.pickCallback = onResult
     if (this.pendingPick) {
       return undefined
@@ -338,19 +377,44 @@ export class SyntenyRenderer {
 
     if (this.pickingDirty) {
       const p = this.lastRenderParams
-      this.writeUniforms(this.canvas.width / dpr, this.canvas.height / dpr, p.height, p.adjOff0, p.adjOff1, p.scale0, p.scale1, p.maxOffScreenPx, p.minAlignmentLength, 1, 0, 0)
+      this.writeUniforms(
+        this.canvas.width / dpr,
+        this.canvas.height / dpr,
+        p.height,
+        p.adjOff0,
+        p.adjOff1,
+        p.scale0,
+        p.scale1,
+        p.maxOffScreenPx,
+        p.minAlignmentLength,
+        1,
+        0,
+        0,
+      )
 
       const encoder = device.createCommandEncoder()
       const pv = this.pickingTexture.createView()
       const transparent = { r: 0, g: 0, b: 0, a: 0 }
-      this.encodeDrawPass(encoder, pv, SyntenyRenderer.fillPickingPipeline, FILL_VERTS_PER_INSTANCE, 'clear', transparent)
+      this.encodeDrawPass(
+        encoder,
+        pv,
+        SyntenyRenderer.fillPickingPipeline,
+        FILL_VERTS_PER_INSTANCE,
+        'clear',
+        transparent,
+      )
       device.queue.submit([encoder.finish()])
       this.pickingDirty = false
     }
     const px = Math.floor(x * dpr)
     const py = Math.floor(y * dpr)
 
-    if (px < 0 || px >= this.canvas.width || py < 0 || py >= this.canvas.height) {
+    if (
+      px < 0 ||
+      px >= this.canvas.width ||
+      py < 0 ||
+      py >= this.canvas.height
+    ) {
       return -1
     }
 
@@ -372,7 +436,9 @@ export class SyntenyRenderer {
     }
 
     if (stagingBuffer !== this.pickingStagingBuffer) {
-      try { stagingBuffer.unmap() } catch {}
+      try {
+        stagingBuffer.unmap()
+      } catch {}
       return -1
     }
 
@@ -386,7 +452,9 @@ export class SyntenyRenderer {
     } catch {
       this.resetStagingBuffer()
     } finally {
-      try { stagingBuffer.unmap() } catch {}
+      try {
+        stagingBuffer.unmap()
+      } catch {}
     }
     return result
   }
@@ -419,11 +487,18 @@ export class SyntenyRenderer {
   }
 
   private writeUniforms(
-    logicalW: number, logicalH: number,
-    height: number, adjOff0: number, adjOff1: number,
-    scale0: number, scale1: number,
-    maxOffScreenPx: number, minAlignmentLength: number,
-    alpha: number, hoveredFeatureId: number, clickedFeatureId: number,
+    logicalW: number,
+    logicalH: number,
+    height: number,
+    adjOff0: number,
+    adjOff1: number,
+    scale0: number,
+    scale1: number,
+    maxOffScreenPx: number,
+    minAlignmentLength: number,
+    alpha: number,
+    hoveredFeatureId: number,
+    clickedFeatureId: number,
   ) {
     const device = SyntenyRenderer.device
     if (!device || !this.uniformBuffer) {
@@ -474,7 +549,19 @@ export class SyntenyRenderer {
   }
 
   private interleaveInstances(data: SyntenyInstanceData) {
-    const { x1, x2, x3, x4, colors, featureIds, isCurves, queryTotalLengths, padTops, padBottoms, instanceCount: n } = data
+    const {
+      x1,
+      x2,
+      x3,
+      x4,
+      colors,
+      featureIds,
+      isCurves,
+      queryTotalLengths,
+      padTops,
+      padBottoms,
+      instanceCount: n,
+    } = data
     const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
     const f = new Float32Array(buf)
     const stride = INSTANCE_BYTE_SIZE / 4

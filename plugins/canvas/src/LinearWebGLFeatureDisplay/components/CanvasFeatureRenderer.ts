@@ -2,13 +2,13 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
+import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 import {
   ARROW_SHADER,
   CHEVRON_SHADER,
   LINE_SHADER,
   RECT_SHADER,
 } from './canvasShaders.ts'
-import { WebGLFeatureRenderer } from './WebGLFeatureRenderer.ts'
 
 const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
@@ -232,7 +232,11 @@ export class CanvasFeatureRenderer {
       return
     }
     const device = CanvasFeatureRenderer.device
-    if (!device || !CanvasFeatureRenderer.bindGroupLayout || !this.uniformBuffer) {
+    if (
+      !device ||
+      !CanvasFeatureRenderer.bindGroupLayout ||
+      !this.uniformBuffer
+    ) {
       return
     }
 
@@ -284,8 +288,14 @@ export class CanvasFeatureRenderer {
         data.lineColors,
         data.numLines,
       )
-      region.chevronBuffer = this.createStorageBuffer(device, chevronInterleaved)
-      region.chevronBindGroup = this.createBindGroup(device, region.chevronBuffer)
+      region.chevronBuffer = this.createStorageBuffer(
+        device,
+        chevronInterleaved,
+      )
+      region.chevronBindGroup = this.createBindGroup(
+        device,
+        region.chevronBuffer,
+      )
     }
 
     if (data.numArrows > 0) {
@@ -395,8 +405,20 @@ export class CanvasFeatureRenderer {
         ],
       })
 
-      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
-      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      pass.setViewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+        0,
+        1,
+      )
+      pass.setScissorRect(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
 
       if (region.lineBindGroup && region.lineCount > 0) {
         pass.setPipeline(CanvasFeatureRenderer.linePipeline!)
@@ -411,7 +433,7 @@ export class CanvasFeatureRenderer {
       }
 
       if (region.rectBindGroup && region.rectCount > 0) {
-        pass.setPipeline(CanvasFeatureRenderer.rectPipeline!)
+        pass.setPipeline(CanvasFeatureRenderer.rectPipeline)
         pass.setBindGroup(0, region.rectBindGroup)
         pass.draw(6, region.rectCount)
       }

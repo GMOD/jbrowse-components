@@ -1,4 +1,4 @@
-import { PREAMBLE, PILEUP_Y } from './common.ts'
+import { PILEUP_Y, PREAMBLE } from './common.ts'
 
 export const READ_WGSL = `
 ${PREAMBLE}

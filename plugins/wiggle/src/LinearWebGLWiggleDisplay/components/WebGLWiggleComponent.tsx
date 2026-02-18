@@ -9,7 +9,10 @@ import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
-import type { WiggleGPURenderState, WiggleRenderBlock } from './WiggleRenderer.ts'
+import type {
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from './WiggleRenderer.ts'
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -42,7 +45,10 @@ function renderingTypeToInt(type: string) {
   return 0
 }
 
-function makeRenderState(model: WiggleDisplayModel, width: number): WiggleGPURenderState {
+function makeRenderState(
+  model: WiggleDisplayModel,
+  width: number,
+): WiggleGPURenderState {
   const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
   return {
     domainY: model.domain!,

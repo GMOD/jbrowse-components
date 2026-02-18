@@ -1,8 +1,8 @@
-import { createHash } from 'crypto'
 import { execSync } from 'child_process'
+import { createHash } from 'crypto'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { join } from 'path'
 import { tmpdir } from 'os'
+import { join } from 'path'
 
 interface StructField {
   type: string
@@ -31,7 +31,7 @@ function hasNaga() {
 }
 
 function parseStruct(glsl: string, structName: string): StructField[] {
-  const re = new RegExp(`struct\\s+${structName}\\s*\\{([^}]+)\\}`)
+  const re = new RegExp(String.raw`struct\s+${structName}\s*\{([^}]+)\}`)
   const m = re.exec(glsl)
   if (!m) {
     return []
@@ -130,8 +130,8 @@ function replaceSSBO(glsl: string) {
   let fetchFn = `${structType} _fetch_${structType}(int idx) {\n`
   fetchFn += `    int base = idx * ${stride};\n`
   fetchFn += `    ${structType} s;\n`
-  for (let i = 0; i < fields.length; i++) {
-    const f = fields[i]!
+  for (const [i, field] of fields.entries()) {
+    const f = field
     fetchFn += `    s.${f.name} = ${fetchExpr(f.type, `base + ${offsets[i]}`)};\n`
   }
   fetchFn += `    return s;\n`
@@ -142,10 +142,10 @@ function replaceSSBO(glsl: string) {
     `uniform highp usampler2D u_instanceData;\n\n${fetchFn}`,
   )
 
-  const escaped = arrayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const escaped = arrayName.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
 
   const wholeStructRe = new RegExp(
-    `(\\w+)\\s+(\\w+)\\s*=\\s*${escaped}\\[([^\\]]+)\\]\\s*;`,
+    String.raw`(\w+)\s+(\w+)\s*=\s*${escaped}\[([^\]]+)\]\s*;`,
     'g',
   )
   glsl = glsl.replace(wholeStructRe, (_match, type, varName, indexExpr) => {
@@ -153,7 +153,7 @@ function replaceSSBO(glsl: string) {
   })
 
   const memberAccessRe = new RegExp(
-    `${escaped}\\[([^\\]]+)\\]\\.(\\w+)`,
+    String.raw`${escaped}\[([^\]]+)\]\.(\w+)`,
     'g',
   )
   glsl = glsl.replace(memberAccessRe, (_match, indexExpr, member) => {
@@ -218,7 +218,7 @@ function exportName(shaderName: string, entryPoint: string) {
 }
 
 function escape(s: string) {
-  return s.replace(/`/g, '\\`').replace(/\$/g, '\\$')
+  return s.replace(/`/g, '\\`').replace(/\$/g, String.raw`\$`)
 }
 
 export function compileShaders(opts: CompileOptions) {

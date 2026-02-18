@@ -7,8 +7,11 @@ import { observer } from 'mobx-react'
 
 import LoadingOverlay from './LoadingOverlay.tsx'
 import SequenceLettersOverlay from './SequenceLettersOverlay.tsx'
-import { buildColorPalette, buildSequenceGeometry } from './drawSequenceWebGL.ts'
 import { WebGPUSequenceRenderer } from './WebGPUSequenceRenderer.ts'
+import {
+  buildColorPalette,
+  buildSequenceGeometry,
+} from './drawSequenceWebGL.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

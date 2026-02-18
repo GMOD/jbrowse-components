@@ -1,9 +1,13 @@
 import {
+  PILEUP_Y,
+  PREAMBLE,
+  SIMPLE_FS,
+  SIMPLE_VERTEX_OUTPUT,
+} from './common.ts'
+import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
-
-import { PREAMBLE, PILEUP_Y, SIMPLE_FS, SIMPLE_VERTEX_OUTPUT } from './common.ts'
 
 const CIGAR_PREAMBLE = PREAMBLE + PILEUP_Y + SIMPLE_VERTEX_OUTPUT
 

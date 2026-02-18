@@ -23,9 +23,9 @@ import {
 } from './openFeatureWidget.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
+import type { ColorPalette } from './AlignmentsRenderer.ts'
 import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
-import type { ColorPalette } from './AlignmentsRenderer.ts'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -452,18 +452,21 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
     let cancelled = false
     const renderer = AlignmentsRenderer.getOrCreate(canvas)
-    renderer.init().then(() => {
-      if (cancelled) {
-        return
-      }
-      rendererRef.current = renderer
-      model.setWebGLRenderer(renderer)
-      if (contextVersion > 0) {
-        model.clearAllRpcData()
-      }
-    }).catch(e => {
-      console.error('Failed to initialize renderer:', e)
-    })
+    renderer
+      .init()
+      .then(() => {
+        if (cancelled) {
+          return
+        }
+        rendererRef.current = renderer
+        model.setWebGLRenderer(renderer)
+        if (contextVersion > 0) {
+          model.clearAllRpcData()
+        }
+      })
+      .catch(e => {
+        console.error('Failed to initialize renderer:', e)
+      })
     return () => {
       cancelled = true
       rendererRef.current?.destroy()

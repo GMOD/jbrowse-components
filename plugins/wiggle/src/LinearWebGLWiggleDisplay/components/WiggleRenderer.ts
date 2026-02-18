@@ -2,11 +2,8 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
-import {
-  INSTANCE_STRIDE,
-  wiggleShader,
-} from './wiggleShaders.ts'
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
+import { INSTANCE_STRIDE, wiggleShader } from './wiggleShaders.ts'
 
 import type { RenderingType } from './WebGLWiggleRenderer.ts'
 
@@ -249,7 +246,8 @@ export class WiggleRenderer {
       this.glFallback.renderBlocks(blocks, {
         domainY: renderState.domainY,
         scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
-        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
+        renderingType:
+          RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
         useBicolor: renderState.useBicolor === 1,
         bicolorPivot: renderState.bicolorPivot,
         color: renderState.color,
@@ -328,8 +326,20 @@ export class WiggleRenderer {
       })
       pass.setPipeline(pipeline)
       pass.setBindGroup(0, region.bindGroup)
-      pass.setViewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH, 0, 1)
-      pass.setScissorRect(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      pass.setViewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+        0,
+        1,
+      )
+      pass.setScissorRect(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
       pass.draw(6, region.featureCount)
       pass.end()
       device.queue.submit([encoder.finish()])
@@ -347,7 +357,8 @@ export class WiggleRenderer {
         bpRangeX,
         domainY: renderState.domainY,
         scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
-        renderingType: RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
+        renderingType:
+          RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
         useBicolor: renderState.useBicolor === 1,
         bicolorPivot: renderState.bicolorPivot,
         color: renderState.color,
@@ -378,13 +389,9 @@ export class WiggleRenderer {
       this.canvas.height = bufH
     }
 
-    const region =
-      this.regions.get(0) ?? this.regions.values().next().value
+    const region = this.regions.get(0) ?? this.regions.values().next().value
     if (!region || region.featureCount === 0) {
-      this.clearCanvas(
-        device,
-        this.context.getCurrentTexture().createView(),
-      )
+      this.clearCanvas(device, this.context.getCurrentTexture().createView())
       return
     }
 

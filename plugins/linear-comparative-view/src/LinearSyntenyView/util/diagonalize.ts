@@ -1,8 +1,3 @@
-/**
- * Diagonalization utilities for synteny views.
- * Reorders and reorients displayed regions to minimize crossing lines.
- */
-
 export interface AlignmentData {
   queryRefName: string
   refRefName: string
@@ -36,17 +31,7 @@ export type ProgressCallback = (
   message: string,
 ) => void | Promise<void>
 
-/**
- * Diagonalize a set of regions based on alignment data.
- *
- * This reorders the second view's regions to minimize crossing alignment lines
- * by sorting them based on their primary alignment positions in the first view.
- *
- * @param alignments - Array of alignment data between two views
- * @param currentRegions - Current displayed regions to reorder
- * @param progressCallback - Optional callback for progress updates
- * @returns Promise resolving to new regions and statistics
- */
+// copied to plugins/dotplot-view/src/DiagonalizeDotplotRpc.ts
 export async function diagonalizeRegions(
   alignments: AlignmentData[],
   referenceRegions: Region[],
@@ -61,18 +46,18 @@ export async function diagonalizeRegions(
 
   await updateProgress(20, `Grouping ${alignments.length} alignments...`)
 
-  // Group alignments by the second view's refName (mate.refName)
-  // We want to reorder the query view (second view), so we group by its refNames
   const queryGroups = new Map<
     string,
     {
-      refAlignments: Map<string, { bases: number; weightedPosSum: number }>
+      refAlignments: Map<
+        string,
+        { bases: number; weightedPosSum: number; maxAlnLength: number }
+      >
       strandWeightedSum: number
     }
   >()
 
   for (const aln of alignments) {
-    // Group by the mate's refName (second view), not the feature's refName (first view)
     const targetRefName = aln.refRefName
 
     if (!queryGroups.has(targetRefName)) {
@@ -83,28 +68,27 @@ export async function diagonalizeRegions(
     }
 
     const group = queryGroups.get(targetRefName)!
-    const alnLength = Math.abs(aln.queryEnd - aln.queryStart)
+    const alnLength = Math.abs(aln.refEnd - aln.refStart)
 
-    // Track aligned bases per reference region (first view)
     if (!group.refAlignments.has(aln.queryRefName)) {
       group.refAlignments.set(aln.queryRefName, {
         bases: 0,
         weightedPosSum: 0,
+        maxAlnLength: 0,
       })
     }
 
     const refData = group.refAlignments.get(aln.queryRefName)!
     refData.bases += alnLength
     refData.weightedPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
+    refData.maxAlnLength = Math.max(refData.maxAlnLength, alnLength)
 
-    // Calculate weighted strand sum
     const direction = aln.strand >= 0 ? 1 : -1
     group.strandWeightedSum += direction * alnLength
   }
 
   await updateProgress(50, 'Determining optimal ordering and orientation...')
 
-  // Determine ordering and orientation for query regions (second view)
   const queryOrdering: {
     refName: string
     bestRefName: string
@@ -113,30 +97,27 @@ export async function diagonalizeRegions(
   }[] = []
 
   for (const [targetRefName, group] of queryGroups) {
-    // targetRefName is from the second view (e.g., "chr1", "chr18")
-    // Find which first view region it aligns to most
     let bestRefName = ''
-    let maxBases = 0
+    let maxAlnLength = 0
+    let bestBases = 0
     let bestWeightedPosSum = 0
 
     for (const [firstViewRefName, data] of group.refAlignments) {
-      if (data.bases > maxBases) {
-        maxBases = data.bases
+      if (data.maxAlnLength > maxAlnLength) {
+        maxAlnLength = data.maxAlnLength
         bestRefName = firstViewRefName
+        bestBases = data.bases
         bestWeightedPosSum = data.weightedPosSum
       }
     }
 
-    // Calculate length-weighted mean position in the first view
-    const bestRefPos = maxBases > 0 ? bestWeightedPosSum / maxBases : 0
-
-    // Determine if we should reverse based on major strand
+    const bestRefPos = bestBases > 0 ? bestWeightedPosSum / bestBases : 0
     const shouldReverse = group.strandWeightedSum < 0
 
     queryOrdering.push({
-      refName: targetRefName, // This is the second view's refName
-      bestRefName, // This is the first view's refName it aligns to
-      bestRefPos, // Position in the first view
+      refName: targetRefName,
+      bestRefName,
+      bestRefPos,
       shouldReverse,
     })
   }
@@ -156,7 +137,6 @@ export async function diagonalizeRegions(
 
   await updateProgress(85, 'Building new region layout...')
 
-  // Build new displayedRegions for query view
   const newQueryRegions: Region[] = []
   let regionsReversed = 0
 
@@ -170,8 +150,6 @@ export async function diagonalizeRegions(
       if (shouldReverse !== region.reversed) {
         regionsReversed++
       }
-    } else {
-      console.warn(`Could not find region for refName: ${refName}`)
     }
   }
 

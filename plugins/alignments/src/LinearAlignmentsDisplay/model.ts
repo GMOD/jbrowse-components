@@ -43,11 +43,17 @@ import {
   uploadRegionDataToGPU,
 } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+} from './constants.ts'
 
+import type {
+  AlignmentsRenderer,
+  ColorPalette,
+} from './components/AlignmentsRenderer.ts'
 import type { CloudTicks } from './components/CloudYScaleBar.tsx'
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
-import type { AlignmentsRenderer } from './components/AlignmentsRenderer.ts'
-import type { ColorPalette } from './components/AlignmentsRenderer.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -66,10 +72,6 @@ import type {
   LinearGenomeViewModel,
   MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
-} from './constants.ts'
 
 type LGV = LinearGenomeViewModel
 

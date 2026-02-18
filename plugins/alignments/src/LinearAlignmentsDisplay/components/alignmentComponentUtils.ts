@@ -9,8 +9,11 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { fillColor } from '../../shared/color.ts'
 
-import type { ColorPalette, RGBColor } from './AlignmentsRenderer.ts'
-import type { AlignmentsRenderer } from './AlignmentsRenderer.ts'
+import type {
+  AlignmentsRenderer,
+  ColorPalette,
+  RGBColor,
+} from './AlignmentsRenderer.ts'
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type {
   CoverageTooltipBin,

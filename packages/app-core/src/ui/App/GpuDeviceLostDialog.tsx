@@ -1,8 +1,8 @@
+import Dialog from '@jbrowse/core/ui/Dialog'
 import Button from '@mui/material/Button'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
-import Dialog from '@jbrowse/core/ui/Dialog'
 
 export default function GpuDeviceLostDialog({
   onRecover,

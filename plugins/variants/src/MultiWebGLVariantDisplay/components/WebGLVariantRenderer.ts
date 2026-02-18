@@ -1,9 +1,12 @@
-import {
-  VARIANT_VERTEX_SHADER,
-  VARIANT_FRAGMENT_SHADER,
-} from '../../shared/generated/index.ts'
-import { createProgram, splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
 import { interleaveVariantInstances } from './variantShaders.ts'
+import {
+  VARIANT_FRAGMENT_SHADER,
+  VARIANT_VERTEX_SHADER,
+} from '../../shared/generated/index.ts'
+import {
+  createProgram,
+  splitPositionWithFrac,
+} from '../../shared/variantWebglUtils.ts'
 
 export interface VariantRenderBlock {
   regionNumber: number
@@ -39,9 +42,16 @@ export class WebGLVariantRenderer {
     }
     this.gl = gl
 
-    this.program = createProgram(gl, VARIANT_VERTEX_SHADER, VARIANT_FRAGMENT_SHADER)
+    this.program = createProgram(
+      gl,
+      VARIANT_VERTEX_SHADER,
+      VARIANT_FRAGMENT_SHADER,
+    )
 
-    const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms_block_1Vertex')
+    const uboIndex = gl.getUniformBlockIndex(
+      this.program,
+      'Uniforms_block_1Vertex',
+    )
     gl.uniformBlockBinding(this.program, uboIndex, 0)
 
     this.ubo = gl.createBuffer()!
@@ -86,7 +96,7 @@ export class WebGLVariantRenderer {
 
     // RGBA32UI texture: 2 texels × 4 u32s per texel = INSTANCE_STRIDE u32s per instance
     // WebGL2 lacks storage buffers, so we use a texture to pass per-instance data
-    const tex = gl.createTexture()!
+    const tex = gl.createTexture()
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, tex)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -109,7 +119,12 @@ export class WebGLVariantRenderer {
 
   renderBlocks(
     blocks: VariantRenderBlock[],
-    state: { canvasWidth: number; canvasHeight: number; rowHeight: number; scrollTop: number },
+    state: {
+      canvasWidth: number
+      canvasHeight: number
+      rowHeight: number
+      scrollTop: number
+    },
   ) {
     const gl = this.gl
     const canvas = this.canvas
@@ -146,8 +161,18 @@ export class WebGLVariantRenderer {
         continue
       }
 
-      gl.scissor(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
-      gl.viewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      gl.scissor(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
+      gl.viewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
 
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]

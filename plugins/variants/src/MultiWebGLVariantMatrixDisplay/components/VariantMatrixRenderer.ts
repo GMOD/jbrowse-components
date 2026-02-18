@@ -2,8 +2,11 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 
-import { interleaveMatrixInstances, variantMatrixShader } from './variantMatrixShaders.ts'
 import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
+import {
+  interleaveMatrixInstances,
+  variantMatrixShader,
+} from './variantMatrixShaders.ts'
 
 import type { MatrixRenderState } from './WebGLVariantMatrixRenderer.ts'
 
@@ -57,8 +60,16 @@ export class VariantMatrixRenderer {
 
   private static initPipelines(device: GPUDevice) {
     const blendState: GPUBlendState = {
-      color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' },
-      alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+      color: {
+        srcFactor: 'one',
+        dstFactor: 'one-minus-src-alpha',
+        operation: 'add',
+      },
+      alpha: {
+        srcFactor: 'one',
+        dstFactor: 'one-minus-src-alpha',
+        operation: 'add',
+      },
     }
 
     VariantMatrixRenderer.bindGroupLayout = device.createBindGroupLayout({
@@ -79,7 +90,9 @@ export class VariantMatrixRenderer {
     const layout = device.createPipelineLayout({
       bindGroupLayouts: [VariantMatrixRenderer.bindGroupLayout],
     })
-    const shaderModule = device.createShaderModule({ code: variantMatrixShader })
+    const shaderModule = device.createShaderModule({
+      code: variantMatrixShader,
+    })
 
     VariantMatrixRenderer.pipeline = device.createRenderPipeline({
       layout,
@@ -131,7 +144,11 @@ export class VariantMatrixRenderer {
     }
 
     const device = VariantMatrixRenderer.device
-    if (!device || !VariantMatrixRenderer.bindGroupLayout || !this.uniformBuffer) {
+    if (
+      !device ||
+      !VariantMatrixRenderer.bindGroupLayout ||
+      !this.uniformBuffer
+    ) {
       return
     }
 
@@ -196,7 +213,7 @@ export class VariantMatrixRenderer {
 
     if (this.gpuData && this.gpuData.cellCount > 0 && state.numFeatures > 0) {
       this.writeUniforms(device, state)
-      pass.setPipeline(VariantMatrixRenderer.pipeline!)
+      pass.setPipeline(VariantMatrixRenderer.pipeline)
       pass.setBindGroup(0, this.gpuData.bindGroup)
       pass.setViewport(0, 0, bufW, bufH, 0, 1)
       pass.draw(6, this.gpuData.cellCount)

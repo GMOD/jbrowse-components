@@ -118,11 +118,7 @@ export function buildLineSegments(
     const { p11, p12, p21, p22, cigar } = feat
     const featureWidth = Math.max(Math.abs(p12 - p11), Math.abs(p22 - p21))
 
-    if (
-      cigar.length >= 2 &&
-      drawCigar &&
-      featureWidth >= MIN_CIGAR_PX_WIDTH
-    ) {
+    if (cigar.length >= 2 && drawCigar && featureWidth >= MIN_CIGAR_PX_WIDTH) {
       decomposeCigar(feat, i, colorFn, hBpPerPx, vBpPerPx, out)
     } else {
       const [cr, cg, cb, ca] = colorFn(feat, i)

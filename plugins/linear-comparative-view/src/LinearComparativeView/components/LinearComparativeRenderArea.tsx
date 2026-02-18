@@ -62,6 +62,7 @@ const LinearComparativeRenderArea = observer(
                   onDrag={n => {
                     const level = levels[i - 1]
                     level?.setHeight(level.height + n)
+                    return undefined
                   }}
                   className={classes.resizeHandle}
                 />
