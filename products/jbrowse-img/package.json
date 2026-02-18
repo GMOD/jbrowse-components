@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "main": "esm/index.js",
   "types": "esm/index.d.ts",
   "type": "module",

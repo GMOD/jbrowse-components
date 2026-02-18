@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sequence",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "type": "module",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
   "keywords": [
