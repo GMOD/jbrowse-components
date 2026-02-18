@@ -1,6 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import {
   disposeGL,
@@ -170,29 +171,25 @@ export class WebGPUSequenceRenderer {
 
   async init() {
     const device = await WebGPUSequenceRenderer.ensureDevice()
-    if (!device) {
-      const gl = this.canvas.getContext('webgl2')
-      if (!gl) {
-        return false
+    if (device) {
+      const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
+      if (result) {
+        this.gpuContext = result.context
+        this.uniformBuffer = device.createBuffer({
+          size: UNIFORM_SIZE,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        })
+        return true
       }
-      this.glContext = gl
-      this.glHandles = initGL(gl)
-      this.useWebGL = true
-      return true
     }
-
-    this.gpuContext = this.canvas.getContext('webgpu')!
-    this.gpuContext.configure({
-      device,
-      format: 'bgra8unorm',
-      alphaMode: 'opaque',
-    })
-
-    this.uniformBuffer = device.createBuffer({
-      size: UNIFORM_SIZE,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    })
-
+    const gl = this.canvas.getContext('webgl2')
+    if (!gl) {
+      console.error('[WebGPUSequenceRenderer] WebGL2 fallback also failed')
+      return false
+    }
+    this.glContext = gl
+    this.glHandles = initGL(gl)
+    this.useWebGL = true
     return true
   }
 

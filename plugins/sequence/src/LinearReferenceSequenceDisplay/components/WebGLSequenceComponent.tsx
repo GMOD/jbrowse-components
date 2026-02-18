@@ -58,10 +58,15 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     const renderer = WebGPUSequenceRenderer.getOrCreate(canvas)
     rendererRef.current = renderer
     let cancelled = false
-    renderer.init().then(() => {
+    renderer.init().then(ok => {
+      if (!ok) {
+        console.error('[WebGLSequenceComponent] GPU initialization failed')
+      }
       if (!cancelled) {
         setInitReady(v => v + 1)
       }
+    }).catch((e: unknown) => {
+      console.error('[WebGLSequenceComponent] GPU initialization error:', e)
     })
     return () => {
       cancelled = true

@@ -53,10 +53,10 @@ ReadInst _fetch_ReadInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
-layout(location = 1) smooth out vec2 _vs2fs_location1;
-layout(location = 2) smooth out vec2 _vs2fs_location2;
-layout(location = 3) smooth out float _vs2fs_location3;
+smooth out vec4 _vs2fs_location0;
+smooth out vec2 _vs2fs_location1;
+smooth out vec2 _vs2fs_location2;
+smooth out float _vs2fs_location3;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -604,11 +604,11 @@ const uint HP_LOW_MASK = 4095u;
 
 layout(std140) uniform type_4_block_0Fragment { uvec4 _group_0_binding_1_fs[40]; };
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 1) smooth in vec2 _vs2fs_location1;
-layout(location = 2) smooth in vec2 _vs2fs_location2;
-layout(location = 3) smooth in float _vs2fs_location3;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+smooth in vec2 _vs2fs_location1;
+smooth in vec2 _vs2fs_location2;
+smooth in float _vs2fs_location3;
+out vec4 _fs2p_location0;
 
 int ui(uint i) {
     uint _e8 = _group_0_binding_1_fs[(i / 4u)][(i % 4u)];
@@ -699,7 +699,7 @@ GapInst _fetch_GapInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -893,8 +893,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -936,7 +936,7 @@ MismatchInst _fetch_MismatchInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -1159,8 +1159,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -1202,7 +1202,7 @@ InsertionInst _fetch_InsertionInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -1467,8 +1467,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -1510,7 +1510,7 @@ ClipInst _fetch_ClipInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -1682,8 +1682,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -1725,7 +1725,7 @@ ClipInst _fetch_ClipInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -1897,8 +1897,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -1940,7 +1940,7 @@ ModInst _fetch_ModInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -2080,8 +2080,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -2119,7 +2119,7 @@ CovInst _fetch_CovInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -2263,8 +2263,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -2306,7 +2306,7 @@ SnpCovInst _fetch_SnpCovInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -2471,8 +2471,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -2514,7 +2514,7 @@ ModCovInst _fetch_ModCovInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -2653,8 +2653,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -2696,7 +2696,7 @@ NoncovInst _fetch_NoncovInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -2812,8 +2812,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -2851,7 +2851,7 @@ IndicatorInst _fetch_IndicatorInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -2948,8 +2948,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -2986,7 +2986,7 @@ LineVert _fetch_LineVert(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -3018,8 +3018,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -3064,8 +3064,8 @@ ArcInst _fetch_ArcInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
-layout(location = 1) smooth out float _vs2fs_location1;
+smooth out vec4 _vs2fs_location0;
+smooth out float _vs2fs_location1;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -3223,9 +3223,9 @@ const float PI = 3.1415927;
 
 layout(std140) uniform type_3_block_0Fragment { uvec4 _group_0_binding_1_fs[40]; };
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 1) smooth in float _vs2fs_location1;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+smooth in float _vs2fs_location1;
+out vec4 _fs2p_location0;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_fs[(i / 4u)][(i % 4u)];
@@ -3277,7 +3277,7 @@ ArcLineInst _fetch_ArcLineInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -3382,8 +3382,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -3428,9 +3428,9 @@ SashimiInst _fetch_SashimiInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
-layout(location = 1) smooth out float _vs2fs_location1;
-layout(location = 2) smooth out float _vs2fs_location2;
+smooth out vec4 _vs2fs_location0;
+smooth out float _vs2fs_location1;
+smooth out float _vs2fs_location2;
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -3536,10 +3536,10 @@ struct SashimiOut {
 const uint HP_LOW_MASK = 4095u;
 const uint SEGMENTS = 64u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 1) smooth in float _vs2fs_location1;
-layout(location = 2) smooth in float _vs2fs_location2;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+smooth in float _vs2fs_location1;
+smooth in float _vs2fs_location2;
+out vec4 _fs2p_location0;
 
 void main() {
     SashimiOut in_ = SashimiOut(gl_FragCoord, _vs2fs_location0, _vs2fs_location1, _vs2fs_location2);
@@ -3587,7 +3587,7 @@ CloudInst _fetch_CloudInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -3753,8 +3753,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -3794,7 +3794,7 @@ ConnLineInst _fetch_ConnLineInst(int idx) {
     return s;
 }
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -3926,8 +3926,8 @@ precision highp int;
 
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     vec4 color = _vs2fs_location0;
@@ -3936,3 +3936,4 @@ void main() {
 }
 
 `
+

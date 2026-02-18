@@ -1,6 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import {
   EDGE_SEGMENTS,
@@ -169,26 +170,22 @@ export class SyntenyRenderer {
   async init() {
     const device = await SyntenyRenderer.ensureDevice()
     if (!device) {
+      console.error('[SyntenyRenderer] WebGPU device not available')
       return false
     }
-
-    this.context = this.canvas.getContext('webgpu')!
-    this.context.configure({
-      device,
-      format: 'bgra8unorm',
-      alphaMode: 'opaque',
-    })
-
+    const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
+    if (!result) {
+      return false
+    }
+    this.context = result.context
     this.uniformBuffer = device.createBuffer({
       size: UNIFORM_SIZE,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
-
     this.pickingStagingBuffer = device.createBuffer({
       size: 256,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     })
-
     return true
   }
 

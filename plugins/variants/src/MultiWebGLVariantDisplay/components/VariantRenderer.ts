@@ -1,6 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import { WebGLVariantRenderer } from './WebGLVariantRenderer.ts'
 import { interleaveVariantInstances, variantShader } from './variantShaders.ts'
@@ -106,28 +107,24 @@ export class VariantRenderer {
 
   async init() {
     const device = await VariantRenderer.ensureDevice()
-    if (!device) {
-      try {
-        this.glFallback = new WebGLVariantRenderer(this.canvas)
+    if (device) {
+      const result = await initGpuContext(this.canvas)
+      if (result) {
+        this.context = result.context
+        this.uniformBuffer = device.createBuffer({
+          size: UNIFORM_SIZE,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        })
         return true
-      } catch {
-        return false
       }
     }
-
-    this.context = this.canvas.getContext('webgpu')!
-    this.context.configure({
-      device,
-      format: 'bgra8unorm',
-      alphaMode: 'premultiplied',
-    })
-
-    this.uniformBuffer = device.createBuffer({
-      size: UNIFORM_SIZE,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    })
-
-    return true
+    try {
+      this.glFallback = new WebGLVariantRenderer(this.canvas)
+      return true
+    } catch (e) {
+      console.error('[VariantRenderer] WebGL2 fallback also failed:', e)
+      return false
+    }
   }
 
   uploadCellData(data: {

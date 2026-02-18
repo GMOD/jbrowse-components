@@ -51,8 +51,8 @@ Instance _fetch_Instance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
-layout(location = 1) smooth out float _vs2fs_location1;
+smooth out vec4 _vs2fs_location0;
+smooth out float _vs2fs_location1;
 
 void main() {
     uint vid = uint(gl_VertexID);
@@ -118,9 +118,9 @@ struct VOut {
     vec4 color;
     float dist;
 };
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 1) smooth in float _vs2fs_location1;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+smooth in float _vs2fs_location1;
+out vec4 _fs2p_location0;
 
 void main() {
     VOut in_ = VOut(gl_FragCoord, _vs2fs_location0, _vs2fs_location1);
@@ -133,3 +133,4 @@ void main() {
 }
 
 `
+

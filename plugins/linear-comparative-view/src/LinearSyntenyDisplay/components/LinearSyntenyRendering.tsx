@@ -168,9 +168,16 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       initStarted.current = true
       const renderer = SyntenyRenderer.getOrCreate(canvas)
       renderer.init().then(success => {
+        if (!success) {
+          console.error('[LinearSyntenyRendering] GPU initialization failed')
+        }
         model.setGpuRenderer(renderer)
         model.setGpuInitialized(success)
         setGpuReady(success)
+      }).catch((e: unknown) => {
+        console.error('[LinearSyntenyRendering] GPU initialization error:', e)
+        model.setGpuInitialized(false)
+        setGpuReady(false)
       })
     },
     [model],

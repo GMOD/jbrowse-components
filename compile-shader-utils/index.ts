@@ -171,6 +171,15 @@ function postProcess(glsl: string) {
     'uint(gl_InstanceID)',
   )
   glsl = replaceSSBO(glsl)
+  // naga emits layout(location=N) on varyings (vertex out / fragment in) which
+  // is invalid in GLSL ES 3.00. Strip all location qualifiers — safe because:
+  // - no vertex attribute arrays are used (data comes from gl_VertexID/gl_InstanceID + textures)
+  // - varyings match by name in GLSL ES 3.00, not by location index
+  // - all shaders have a single fragment output, which defaults to location 0
+  // NOTE: if MRT (multiple render targets) or explicit attribute location
+  // binding via gl.bindAttribLocation() are ever added, this stripping would
+  // need to be made more surgical (preserve fragment 'out' and vertex 'in').
+  glsl = glsl.replaceAll(/layout\(location\s*=\s*\d+\)\s*/g, '')
   if (glsl.includes('naga_vs_first_instance')) {
     throw new Error(
       'naga_vs_first_instance still present after postProcess — naga may have changed its output format',

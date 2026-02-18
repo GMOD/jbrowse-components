@@ -69,10 +69,10 @@ Instance _fetch_Instance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
-layout(location = 1) flat out float _vs2fs_location1;
-layout(location = 2) smooth out float _vs2fs_location2;
-layout(location = 3) smooth out float _vs2fs_location3;
+smooth out vec4 _vs2fs_location0;
+flat out float _vs2fs_location1;
+smooth out float _vs2fs_location2;
+smooth out float _vs2fs_location3;
 
 vec3 hermiteEdges(float screenX1_, float screenX2_, float screenX3_, float screenX4_, float t_1, float isCurve) {
     float edge0_ = 0.0;
@@ -322,11 +322,11 @@ struct VOut {
 };
 layout(std140) uniform Uniforms_block_0Fragment { Uniforms _group_0_binding_1_fs; };
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 1) flat in float _vs2fs_location1;
-layout(location = 2) smooth in float _vs2fs_location2;
-layout(location = 3) smooth in float _vs2fs_location3;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+flat in float _vs2fs_location1;
+smooth in float _vs2fs_location2;
+smooth in float _vs2fs_location3;
+out vec4 _fs2p_location0;
 
 void main() {
     VOut in_ = VOut(gl_FragCoord, _vs2fs_location0, _vs2fs_location1, _vs2fs_location2, _vs2fs_location3);
@@ -340,15 +340,17 @@ void main() {
     } else {
         local = false;
     }
-    bool _e20 = local;
-    if (_e20) {
-        vec3 _e21 = rgb;
-        rgb = (_e21 * 0.7);
+    bool isHovered = local;
+    float _e25 = _group_0_binding_1_fs.alpha;
+    float baseAlpha = (in_.color.w * _e25);
+    float finalAlpha = (isHovered ? min((baseAlpha * 5.0), 0.35) : baseAlpha);
+    if (isHovered) {
+        vec3 _e32 = rgb;
+        rgb = (_e32 * 0.7);
     }
     float coverage = clamp(((in_.halfWidth + 0.5) - abs(in_.dist)), 0.0, 1.0);
-    vec3 _e31 = rgb;
-    float _e36 = _group_0_binding_1_fs.alpha;
-    _fs2p_location0 = vec4(_e31, ((in_.color.w * _e36) * coverage));
+    vec3 _e42 = rgb;
+    _fs2p_location0 = vec4(_e42, (finalAlpha * coverage));
     return;
 }
 
@@ -366,11 +368,11 @@ struct VOut {
     float dist;
     float halfWidth;
 };
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 1) flat in float _vs2fs_location1;
-layout(location = 2) smooth in float _vs2fs_location2;
-layout(location = 3) smooth in float _vs2fs_location3;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+flat in float _vs2fs_location1;
+smooth in float _vs2fs_location2;
+smooth in float _vs2fs_location3;
+out vec4 _fs2p_location0;
 
 void main() {
     VOut in_ = VOut(gl_FragCoord, _vs2fs_location0, _vs2fs_location1, _vs2fs_location2, _vs2fs_location3);
@@ -452,7 +454,7 @@ Instance _fetch_Instance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out float _vs2fs_location0;
+smooth out float _vs2fs_location0;
 
 bool isCulled(Instance inst) {
     bool local_2 = false;
@@ -688,8 +690,8 @@ struct VOut {
     vec4 pos;
     float dist;
 };
-layout(location = 0) smooth in float _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in float _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     VOut in_ = VOut(gl_FragCoord, _vs2fs_location0);
@@ -701,3 +703,4 @@ void main() {
 }
 
 `
+

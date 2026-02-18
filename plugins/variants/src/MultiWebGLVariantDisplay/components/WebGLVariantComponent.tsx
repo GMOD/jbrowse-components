@@ -104,10 +104,14 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     rendererRef.current = renderer
     renderer.init().then(ok => {
       if (!ok) {
+        console.error('[WebGLVariantComponent] GPU initialization failed')
         setError('GPU initialization failed')
       } else {
         setReady(true)
       }
+    }).catch((e: unknown) => {
+      console.error('[WebGLVariantComponent] GPU initialization error:', e)
+      setError(`GPU initialization error: ${e}`)
     })
   }, [])
 

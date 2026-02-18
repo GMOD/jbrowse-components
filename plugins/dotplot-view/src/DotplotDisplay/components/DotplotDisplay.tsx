@@ -26,8 +26,14 @@ const DotplotDisplay = observer(function DotplotDisplay(props: {
       }
       const renderer = DotplotRenderer.getOrCreate(canvas)
       renderer.init().then(success => {
+        if (!success) {
+          console.error('[DotplotDisplay] GPU initialization failed')
+        }
         model.setGpuRenderer(renderer)
         model.setGpuInitialized(success)
+      }).catch((e: unknown) => {
+        console.error('[DotplotDisplay] GPU initialization error:', e)
+        model.setGpuInitialized(false)
       })
     },
     [model],

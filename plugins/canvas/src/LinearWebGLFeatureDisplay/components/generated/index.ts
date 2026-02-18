@@ -41,7 +41,7 @@ RectInstance _fetch_RectInstance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -143,8 +143,8 @@ struct VertexOutput {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     VertexOutput in_ = VertexOutput(gl_FragCoord, _vs2fs_location0);
@@ -194,7 +194,7 @@ LineInstance _fetch_LineInstance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -283,8 +283,8 @@ struct VertexOutput {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     VertexOutput in_ = VertexOutput(gl_FragCoord, _vs2fs_location0);
@@ -334,7 +334,7 @@ ChevronInstance _fetch_ChevronInstance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -486,8 +486,8 @@ struct VertexOutput {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     VertexOutput in_ = VertexOutput(gl_FragCoord, _vs2fs_location0);
@@ -545,7 +545,7 @@ ArrowInstance _fetch_ArrowInstance(int idx) {
 
 layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
 
-layout(location = 0) smooth out vec4 _vs2fs_location0;
+smooth out vec4 _vs2fs_location0;
 
 vec2 hp_split_uint(uint value) {
     uint lo = (value & HP_LOW_MASK);
@@ -654,8 +654,8 @@ struct VertexOutput {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(location = 0) smooth in vec4 _vs2fs_location0;
-layout(location = 0) out vec4 _fs2p_location0;
+smooth in vec4 _vs2fs_location0;
+out vec4 _fs2p_location0;
 
 void main() {
     VertexOutput in_ = VertexOutput(gl_FragCoord, _vs2fs_location0);
@@ -664,3 +664,4 @@ void main() {
 }
 
 `
+

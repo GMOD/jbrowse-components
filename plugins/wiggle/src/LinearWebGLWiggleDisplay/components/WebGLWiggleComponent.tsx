@@ -85,10 +85,14 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     rendererRef.current = renderer
     renderer.init().then(ok => {
       if (!ok) {
-        setError('WebGPU initialization failed')
+        console.error('[WebGLWiggleComponent] GPU initialization failed')
+        setError('GPU initialization failed')
       } else {
         setReady(true)
       }
+    }).catch((e: unknown) => {
+      console.error('[WebGLWiggleComponent] GPU initialization error:', e)
+      setError(`GPU initialization error: ${e}`)
     })
   }, [])
 
@@ -185,7 +189,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   if (error) {
     return (
       <div style={{ width, height, color: 'red', padding: 10 }}>
-        WebGPU Error: {error}
+        Error: {error}
       </div>
     )
   }

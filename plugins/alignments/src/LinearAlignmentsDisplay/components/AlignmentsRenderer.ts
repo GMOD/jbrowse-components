@@ -1,6 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
@@ -309,25 +310,24 @@ export class AlignmentsRenderer {
 
   async init() {
     const device = await AlignmentsRenderer.ensureDevice()
-    if (!device) {
-      try {
-        this.glFallback = new WebGLRenderer(this.canvas)
+    if (device) {
+      const result = await initGpuContext(this.canvas)
+      if (result) {
+        this.ctx = result.context
+        this.uBuf = device.createBuffer({
+          size: UNIFORM_SIZE,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        })
         return true
-      } catch {
-        return false
       }
     }
-    this.ctx = this.canvas.getContext('webgpu')!
-    this.ctx.configure({
-      device,
-      format: 'bgra8unorm',
-      alphaMode: 'premultiplied',
-    })
-    this.uBuf = device.createBuffer({
-      size: UNIFORM_SIZE,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    })
-    return true
+    try {
+      this.glFallback = new WebGLRenderer(this.canvas)
+      return true
+    } catch (e) {
+      console.error('[AlignmentsRenderer] WebGL2 fallback also failed:', e)
+      return false
+    }
   }
 
   private mkBuf(device: GPUDevice, data: ArrayBuffer) {
