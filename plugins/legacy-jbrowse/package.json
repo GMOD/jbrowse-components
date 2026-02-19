@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "4.1.12",
+  "version": "4.1.13",
   "type": "module",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [

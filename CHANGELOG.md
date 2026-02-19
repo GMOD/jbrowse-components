@@ -1,3 +1,5 @@
+## Changes since v4.1.12 (2026-02-19)
+
 ## Changes since v4.1.11 (2026-02-19)
 
 ## Changes since v4.1.3 (2026-01-27)

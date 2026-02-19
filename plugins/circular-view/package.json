@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-circular-view",
-  "version": "4.1.12",
+  "version": "4.1.13",
   "type": "module",
   "description": "JBrowse 2 circular view",
   "keywords": [
