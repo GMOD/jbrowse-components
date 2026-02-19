@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing",
-  "version": "4.1.8",
+  "version": "4.1.9",
   "type": "module",
   "description": "JBrowse 2 text indexing for desktop",
   "keywords": [
