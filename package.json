@@ -119,7 +119,7 @@
     "mobx-react": "^9.2.1",
     "open": "^11.0.0",
     "prettier": "^3.8.1",
-    "puppeteer": "^24.37.4",
+    "puppeteer": "^24.37.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-refresh": "^0.18.0",
