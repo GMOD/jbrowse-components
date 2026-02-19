@@ -262,7 +262,7 @@ export default class CramSlightlyLazyFeature implements Feature {
           MISMATCH_TYPE,
           refPos,
           1,
-          rf.sub!,
+          rf.sub,
           hasQual ? qual[rf.pos - 1]! : -1,
           refCharCode,
           0,
