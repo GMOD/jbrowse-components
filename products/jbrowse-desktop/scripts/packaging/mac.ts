@@ -30,11 +30,14 @@ export async function buildMac({ noInstaller = false } = {}) {
   const dmgPath = path.join(DIST, dmgName)
   const zipPath = path.join(DIST, zipName)
 
-  // Create DMG
+  // Create DMG with Applications symlink for drag-to-install
   log('Creating DMG...')
+  const applicationsLink = path.join(electronAppDir, 'Applications')
+  fs.symlinkSync('/Applications', applicationsLink)
   run(
-    `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${appPath}" -ov -format UDZO "${dmgPath}"`,
+    `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${electronAppDir}" -ov -format UDZO "${dmgPath}"`,
   )
+  fs.unlinkSync(applicationsLink)
 
   // Sign the DMG too
   if (process.env.APPLE_ID) {

@@ -48,7 +48,7 @@ export async function packageApp(platform: string, arch: string) {
     dir: BUILD,
     out: outDir,
     name: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
-    executableName: APP_NAME,
+    executableName: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
     platform,
     arch,
     appVersion: VERSION,
