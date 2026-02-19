@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing-core",
-  "version": "4.1.11",
+  "version": "4.1.12",
   "type": "module",
   "description": "JBrowse 2 core text indexing routines for parsing GFF3 and VCF files",
   "keywords": [
