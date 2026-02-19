@@ -77,12 +77,7 @@ export async function packageApp(platform: string, arch: string) {
   // (must be alongside app.asar, not inside it)
   const resourcesDir =
     platform === 'darwin'
-      ? path.join(
-          appPaths[0]!,
-          `${PRODUCT_NAME}.app`,
-          'Contents',
-          'Resources',
-        )
+      ? path.join(appPaths[0]!, `${PRODUCT_NAME}.app`, 'Contents', 'Resources')
       : path.join(appPaths[0]!, 'resources')
   fs.writeFileSync(
     path.join(resourcesDir, 'app-update.yml'),
