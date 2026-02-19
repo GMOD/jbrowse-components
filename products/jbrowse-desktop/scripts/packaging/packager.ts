@@ -40,6 +40,9 @@ export async function packageApp(platform: string, arch: string) {
         ? path.join(ASSETS, 'icon.icns')
         : undefined
 
+  const appUpdateYmlPath = path.join(BUILD, 'app-update.yml')
+  fs.writeFileSync(appUpdateYmlPath, generateAppUpdateYml())
+
   const opts: Record<string, unknown> = {
     dir: BUILD,
     out: outDir,
@@ -54,6 +57,7 @@ export async function packageApp(platform: string, arch: string) {
     asar: true,
     prune: false,
     appCategoryType: 'public.app-category.science',
+    extraResource: [appUpdateYmlPath],
   }
 
   // macOS signing during packaging
@@ -72,17 +76,7 @@ export async function packageApp(platform: string, arch: string) {
 
   // Cleanup temp files
   fs.unlinkSync(path.join(BUILD, 'package.json'))
-
-  // Write app-update.yml to resources/ dir where electron-updater expects it
-  // (must be alongside app.asar, not inside it)
-  const resourcesDir =
-    platform === 'darwin'
-      ? path.join(appPaths[0]!, `${PRODUCT_NAME}.app`, 'Contents', 'Resources')
-      : path.join(appPaths[0]!, 'resources')
-  fs.writeFileSync(
-    path.join(resourcesDir, 'app-update.yml'),
-    generateAppUpdateYml(),
-  )
+  fs.unlinkSync(appUpdateYmlPath)
 
   return appPaths[0]!
 }
