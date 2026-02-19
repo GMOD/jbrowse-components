@@ -46,7 +46,7 @@ export async function packageApp(platform: string, arch: string) {
   const opts: Record<string, unknown> = {
     dir: BUILD,
     out: outDir,
-    name: APP_NAME,
+    name: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
     executableName: APP_NAME,
     platform,
     arch,
