@@ -21,6 +21,7 @@ export async function packageApp(platform: string, arch: string) {
   // Create minimal package.json for packaged app
   const appPkg = {
     name: APP_NAME,
+    productName: PRODUCT_NAME,
     version: VERSION,
     main: 'electron.js',
     type: 'module',
