@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
-import { DIST, ROOT, VERSION } from './config.ts'
+import { APP_NAME, DIST, ROOT, VERSION } from './config.ts'
 
 export function log(msg: string) {
   console.log(`\n→ ${msg}`)
@@ -43,6 +43,7 @@ export function generateAppUpdateYml() {
   return `provider: github
 owner: GMOD
 repo: jbrowse-components
+updaterCacheDirName: ${APP_NAME}-updater
 `
 }
 

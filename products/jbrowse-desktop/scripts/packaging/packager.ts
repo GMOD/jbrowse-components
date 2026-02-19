@@ -30,9 +30,6 @@ export async function packageApp(platform: string, arch: string) {
     JSON.stringify(appPkg, null, 2),
   )
 
-  // Write app-update.yml for electron-updater
-  fs.writeFileSync(path.join(BUILD, 'app-update.yml'), generateAppUpdateYml())
-
   const outDir = path.join(DIST, 'unpacked')
   ensureDir(outDir)
 
@@ -75,7 +72,22 @@ export async function packageApp(platform: string, arch: string) {
 
   // Cleanup temp files
   fs.unlinkSync(path.join(BUILD, 'package.json'))
-  fs.unlinkSync(path.join(BUILD, 'app-update.yml'))
+
+  // Write app-update.yml to resources/ dir where electron-updater expects it
+  // (must be alongside app.asar, not inside it)
+  const resourcesDir =
+    platform === 'darwin'
+      ? path.join(
+          appPaths[0]!,
+          `${PRODUCT_NAME}.app`,
+          'Contents',
+          'Resources',
+        )
+      : path.join(appPaths[0]!, 'resources')
+  fs.writeFileSync(
+    path.join(resourcesDir, 'app-update.yml'),
+    generateAppUpdateYml(),
+  )
 
   return appPaths[0]!
 }
