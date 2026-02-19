@@ -1,12 +1,3 @@
-import {
-  CODE_D,
-  CODE_H,
-  CODE_I,
-  CODE_N,
-  CODE_S,
-  CODE_X,
-  CODE_i,
-} from './const.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
@@ -254,31 +245,31 @@ export default class CramSlightlyLazyFeature implements Feature {
       }
       refPos = rf.refPos - 1 - featStart
 
-      const codeChar = rf.code.charCodeAt(0)
+      const { code } = rf
 
-      if (codeChar === CODE_X) {
+      if (code === 'X') {
         const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
         callback(
           MISMATCH_TYPE,
           refPos,
           1,
-          rf.sub,
+          rf.sub ?? '',
           hasQual ? qual[rf.pos - 1]! : -1,
           refCharCode,
           0,
         )
-      } else if (codeChar === CODE_I) {
+      } else if (code === 'I') {
         callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
-      } else if (codeChar === CODE_N) {
+      } else if (code === 'N') {
         callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
-      } else if (codeChar === CODE_S) {
+      } else if (code === 'S') {
         const dataLen = rf.data.length
         callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
-      } else if (codeChar === CODE_H) {
+      } else if (code === 'H') {
         callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
-      } else if (codeChar === CODE_D) {
+      } else if (code === 'D') {
         callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
-      } else if (codeChar === CODE_i) {
+      } else if (code === 'i') {
         insertedBases += rf.data
         insertedBasesLen++
       }

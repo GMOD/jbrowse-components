@@ -1,32 +1,15 @@
-import {
-  CODE_B,
-  CODE_D,
-  CODE_H,
-  CODE_I,
-  CODE_N,
-  CODE_P,
-  CODE_S,
-  CODE_X,
-  CODE_b,
-  CODE_i,
-} from './const.ts'
-
 import type { CramRecord } from '@gmod/cram'
 
 type ReadFeatures = CramRecord['readFeatures']
 
 // CIGAR operation char codes to indices (from BAM spec)
-const CIGAR_CODE_TO_INDEX: Record<number, number> = {
-  77: 0, // M
-  73: 1, // I
-  68: 2, // D
-  78: 3, // N
-  83: 4, // S
-  72: 5, // H
-  80: 6, // P
-  61: 7, // =
-  88: 8, // X
-}
+const CIGAR_OP_M = 0
+const CIGAR_OP_I = 1
+const CIGAR_OP_D = 2
+const CIGAR_OP_N = 3
+const CIGAR_OP_S = 4
+const CIGAR_OP_H = 5
+const CIGAR_OP_P = 6
 
 // Generates packed NUMERIC_CIGAR format: Uint32Array where each value is (length << 4) | opIndex
 export function readFeaturesToNumericCIGAR(
@@ -35,7 +18,7 @@ export function readFeaturesToNumericCIGAR(
   readLen: number,
 ): ArrayLike<number> {
   const cigarParts: number[] = []
-  let op = 77 // 'M'
+  let op = CIGAR_OP_M
   let oplen = 0
   let lastPos = alignmentStart
   let insLen = 0
@@ -43,106 +26,90 @@ export function readFeaturesToNumericCIGAR(
 
   if (readFeatures !== undefined) {
     for (let i = 0, l = readFeatures.length; i < l; i++) {
-      const { code, refPos, data } = readFeatures[i]!
+      const rf = readFeatures[i]!
+      const { code, refPos } = rf
       const sublen = refPos - lastPos
       seqLen += sublen
       lastPos = refPos
 
       // Flush pending insertions if we have a match region
       if (insLen && sublen) {
-        const opIndex = CIGAR_CODE_TO_INDEX[73]! // I
-        cigarParts.push((insLen << 4) | opIndex)
+        cigarParts.push((insLen << 4) | CIGAR_OP_I)
         insLen = 0
       }
       // Flush previous non-match operation
-      if (oplen && op !== 77) {
-        const opIndex = CIGAR_CODE_TO_INDEX[op]!
-        cigarParts.push((oplen << 4) | opIndex)
+      if (oplen && op !== CIGAR_OP_M) {
+        cigarParts.push((oplen << 4) | op)
         oplen = 0
       }
       // Accumulate match length
       if (sublen) {
-        op = 77 // 'M'
+        op = CIGAR_OP_M
         oplen += sublen
       }
 
-      const codeChar = code.charCodeAt(0)
-
-      if (codeChar === CODE_b) {
-        // An array of bases stored verbatim
-        const addedLen = data.split(',').length
+      if (code === 'b') {
+        const addedLen = rf.data.split(',').length
         seqLen += addedLen
         lastPos += addedLen
         oplen += addedLen
-      } else if (codeChar === CODE_B || codeChar === CODE_X) {
-        // Single base (+ qual score) or Substitution - both increment by 1
+      } else if (code === 'B' || code === 'X') {
         seqLen++
         lastPos++
         oplen++
-      } else if (codeChar === CODE_D || codeChar === CODE_N) {
-        // Deletion or Ref Skip
-        lastPos += data
+      } else if (code === 'D' || code === 'N') {
+        lastPos += rf.data
         if (oplen) {
-          const opIndex = CIGAR_CODE_TO_INDEX[op]!
-          cigarParts.push((oplen << 4) | opIndex)
+          cigarParts.push((oplen << 4) | op)
           oplen = 0
         }
-        const opIndex = CIGAR_CODE_TO_INDEX[codeChar]!
-        cigarParts.push((data << 4) | opIndex)
-      } else if (codeChar === CODE_I || codeChar === CODE_S) {
-        // Insertion or soft-clip
-        const dataLen = data.length
+        const opIndex = code === 'D' ? CIGAR_OP_D : CIGAR_OP_N
+        cigarParts.push((rf.data << 4) | opIndex)
+      } else if (code === 'I' || code === 'S') {
+        const dataLen = rf.data.length
         seqLen += dataLen
         if (oplen) {
-          const opIndex = CIGAR_CODE_TO_INDEX[op]!
-          cigarParts.push((oplen << 4) | opIndex)
+          cigarParts.push((oplen << 4) | op)
           oplen = 0
         }
-        const opIndex = CIGAR_CODE_TO_INDEX[codeChar]!
+        const opIndex = code === 'I' ? CIGAR_OP_I : CIGAR_OP_S
         cigarParts.push((dataLen << 4) | opIndex)
-      } else if (codeChar === CODE_i) {
-        // Single base insertion
+      } else if (code === 'i') {
         if (oplen) {
-          const opIndex = CIGAR_CODE_TO_INDEX[op]!
-          cigarParts.push((oplen << 4) | opIndex)
+          cigarParts.push((oplen << 4) | op)
           oplen = 0
         }
         insLen++
         seqLen++
-      } else if (codeChar === CODE_P || codeChar === CODE_H) {
-        // Padding or Hard clip
+      } else if (code === 'P' || code === 'H') {
         if (oplen) {
-          const opIndex = CIGAR_CODE_TO_INDEX[op]!
-          cigarParts.push((oplen << 4) | opIndex)
+          cigarParts.push((oplen << 4) | op)
           oplen = 0
         }
-        const opIndex = CIGAR_CODE_TO_INDEX[codeChar]!
-        cigarParts.push((data << 4) | opIndex)
-      } // else q or Q (no-op)
+        const opIndex = code === 'P' ? CIGAR_OP_P : CIGAR_OP_H
+        cigarParts.push((rf.data << 4) | opIndex)
+      }
     }
   }
 
   // Handle remaining sequence length
   const remaining = readLen - seqLen
   if (remaining) {
-    if (oplen && op !== 77) {
-      const opIndex = CIGAR_CODE_TO_INDEX[op]!
-      cigarParts.push((oplen << 4) | opIndex)
+    if (oplen && op !== CIGAR_OP_M) {
+      cigarParts.push((oplen << 4) | op)
       oplen = 0
     }
-    op = 77 // 'M'
+    op = CIGAR_OP_M
     oplen += remaining
   }
 
   // Flush pending insertions
   if (remaining && insLen) {
-    const opIndex = CIGAR_CODE_TO_INDEX[73]! // I
-    cigarParts.push((insLen << 4) | opIndex)
+    cigarParts.push((insLen << 4) | CIGAR_OP_I)
   }
   // Flush final operation
   if (oplen) {
-    const opIndex = CIGAR_CODE_TO_INDEX[op]!
-    cigarParts.push((oplen << 4) | opIndex)
+    cigarParts.push((oplen << 4) | op)
   }
 
   return cigarParts

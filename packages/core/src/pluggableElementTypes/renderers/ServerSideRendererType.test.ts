@@ -11,7 +11,7 @@ function createRenderer() {
     ReactComponent: () => null,
     configSchema: { create: () => ({}) },
     pluginManager: {},
-  } as Parameters<(typeof ServerSideRenderer)['prototype']['constructor']>[0])
+  } as unknown as ConstructorParameters<typeof ServerSideRenderer>[0])
 }
 
 test('deserializeResultsInClient returns undefined reactElement when html is already present during SVG export', () => {
