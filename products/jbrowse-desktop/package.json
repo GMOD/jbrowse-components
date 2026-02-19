@@ -80,7 +80,7 @@
     "dockview": "^4.13.1",
     "electron-context-menu": "^4.1.1",
     "electron-debug": "^4.1.0",
-    "electron-updater": "^6.7.3",
+    "electron-updater": "^6.8.3",
     "json-parse-even-better-errors": "^5.0.0",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",
@@ -95,7 +95,7 @@
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
     "electron": "40.4.0",
-    "electron-chromedriver": "^40.4.0",
+    "electron-chromedriver": "^40.5.0",
     "esbuild": "^0.27.3",
     "selenium-webdriver": "^4.40.0"
   },
