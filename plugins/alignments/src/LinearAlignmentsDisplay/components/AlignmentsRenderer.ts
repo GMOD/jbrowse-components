@@ -1288,13 +1288,6 @@ export class AlignmentsRenderer {
     }
   }
 
-  render(state: RenderState) {
-    if (this.glFallback) {
-      this.glFallback.render(state)
-      return
-    }
-  }
-
   private drawCoverage(pass: GPURenderPassEncoder, r: GpuRegion) {
     if (r.coverageBG && r.coverageCount > 0) {
       pass.setPipeline(AlignmentsRenderer.coveragePL!)
