@@ -326,20 +326,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       isChainMode,
     })
 
-    const rowHeight = featureHeightSetting + featureSpacing
-    const adjY = coords.canvasY + model.currentRangeY[0] - topOffset
-    console.log('hitTest', JSON.stringify({
-      type: result.type,
-      hasResolved: !!resolved,
-      canvasX: coords.canvasX,
-      canvasY: coords.canvasY,
-      adjY,
-      row: Math.floor(adjY / rowHeight),
-      featureHeightSetting,
-      featureSpacing,
-      numReads: resolved?.rpcData.numReads,
-    }))
-
     if (result.type === 'indicator') {
       model.setOverCigarItem(true)
       model.setFeatureIdUnderMouse(undefined)

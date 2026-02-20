@@ -1216,6 +1216,49 @@ export class AlignmentsRenderer {
         submitPass(enc, p)
       }
 
+      const needsFeatureHighlight =
+        state.highlightedChainIndices.length === 0 &&
+        state.highlightedFeatureIndex >= 0
+      const needsFeatureSelection =
+        state.selectedChainIndices.length === 0 &&
+        state.selectedFeatureIndex >= 0 &&
+        state.selectedFeatureIndex < (region.readCount ?? 0)
+
+      if (
+        (needsFeatureHighlight || needsFeatureSelection) &&
+        region.readBG &&
+        region.readCount > 0
+      ) {
+        if (needsFeatureHighlight) {
+          this.uI32[U_HIGHLIGHT_ONLY] = 1
+          this.uI32[U_HIGHLIGHT_IDX] = state.highlightedFeatureIndex
+          device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+
+          const { enc, p } = mkPass('load' as GPULoadOp)
+          p.setViewport(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+            0,
+            1,
+          )
+          p.setScissorRect(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+          p.setPipeline(AlignmentsRenderer.readPL!)
+          p.setBindGroup(0, region.readBG)
+          p.draw(9, region.readCount)
+          submitPass(enc, p)
+        }
+
+        this.uI32[U_HIGHLIGHT_ONLY] = 0
+        device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+      }
+
       if (arcsHeight > 0) {
         this.uF32[U_COV_OFFSET] = 0
         this.uF32[U_CANVAS_H] = arcsHeight
@@ -1452,7 +1495,8 @@ export class AlignmentsRenderer {
     tempBuffers: GPUBuffer[],
   ) {
     const quads: number[] = []
-    const covOff = state.showCoverage ? state.coverageHeight : 0
+    const arcsOff = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const covOff = (state.showCoverage ? state.coverageHeight : 0) + arcsOff
 
     if (state.highlightedChainIndices.length > 0) {
       const bounds = getChainBounds(

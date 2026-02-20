@@ -193,16 +193,13 @@ export function hitTestFeature(
   const { readPositions, readYs, readIds, numReads } = resolved.rpcData
 
   if (yWithinRow > featureHeightSetting) {
-    console.log('hitTestFeature: yWithinRow exceeds featureHeight', { yWithinRow, featureHeightSetting, row, adjustedY })
     return undefined
   }
 
-  let readsAtRow = 0
   for (let i = 0; i < numReads; i++) {
     if (readYs[i] !== row) {
       continue
     }
-    readsAtRow++
     const startOffset = readPositions[i * 2]
     const endOffset = readPositions[i * 2 + 1]
     if (
@@ -213,13 +210,6 @@ export function hitTestFeature(
     ) {
       return { id: readIds[i]!, index: i }
     }
-  }
-  if (readsAtRow === 0 && numReads > 0) {
-    const rowSet = new Set<number>()
-    for (let i = 0; i < Math.min(numReads, 100); i++) {
-      rowSet.add(readYs[i]!)
-    }
-    console.log('hitTestFeature: no reads at row', { row, posOffset, numReads, sampleRows: [...rowSet].sort((a, b) => a - b).slice(0, 20) })
   }
   return undefined
 }

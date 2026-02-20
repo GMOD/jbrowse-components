@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -34,7 +34,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
 
   const { height, showCoverage, coverageHeight, showArcs, arcsHeight } = model
 
-  const [debugInfo, setDebugInfo] = useState({ x: 0, y: 0, adjY: 0, row: 0, topOff: 0 })
   const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
   const arcsResizeDragRef = useRef({
     isDragging: false,
@@ -74,15 +73,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   }
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
-    const rect = canvasRef.current?.getBoundingClientRect()
-    if (rect) {
-      const cx = e.clientX - rect.left
-      const cy = e.clientY - rect.top
-      const topOff = (showCoverage ? coverageHeight : 0) + (showArcs ? arcsHeight : 0)
-      const fh = model.featureHeightSetting + model.featureSpacing
-      const adjY = cy + model.currentRangeY[0] - topOff
-      setDebugInfo({ x: Math.round(cx), y: Math.round(cy), adjY: Math.round(adjY), row: Math.floor(adjY / fh), topOff })
-    }
     processMouseMove(
       e,
       hit => {
@@ -215,35 +205,6 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
         statusMessage={model.statusMessage}
         isVisible={model.showLoading}
       />
-
-      {/* Debug overlay - remove after fixing mouseover */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        background: 'rgba(0,0,0,0.7)',
-        color: '#0f0',
-        fontSize: 10,
-        fontFamily: 'monospace',
-        padding: 4,
-        pointerEvents: 'none',
-        zIndex: 100,
-      }}>
-        cx={debugInfo.x} cy={debugInfo.y} adjY={debugInfo.adjY} row={debugInfo.row} topOff={debugInfo.topOff}
-        <br />
-        hlIdx={model.highlightedFeatureIndex} feat={model.featureIdUnderMouse ?? 'none'}
-      </div>
-      <div style={{
-        position: 'absolute',
-        left: 0,
-        top: debugInfo.row * (model.featureHeightSetting + model.featureSpacing) - model.currentRangeY[0] + debugInfo.topOff,
-        width: '100%',
-        height: model.featureHeightSetting,
-        background: 'rgba(255,0,0,0.15)',
-        borderTop: '1px solid red',
-        pointerEvents: 'none',
-        zIndex: 100,
-      }} />
     </div>
   )
 })

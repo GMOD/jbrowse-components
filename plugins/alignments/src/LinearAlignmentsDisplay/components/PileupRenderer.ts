@@ -434,7 +434,6 @@ export class PileupRenderer {
         this.drawFilledRect(gl, clip)
       }
     } else if (state.highlightedFeatureIndex >= 0) {
-      console.log('HIGHLIGHT PASS', { idx: state.highlightedFeatureIndex, readCount: buffers.readCount, hasVAO: !!buffers.readVAO })
       gl.useProgram(this.parent.readProgram)
       gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
       gl.uniform1i(

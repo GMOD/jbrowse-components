@@ -1724,7 +1724,6 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                console.log('DRAW AUTORUN', { hlIdx: self.highlightedFeatureIndex })
                 const regions = view.visibleRegions
                 const blocks = regions.map(r => ({
                   regionNumber: r.regionNumber,
