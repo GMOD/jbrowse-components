@@ -48,7 +48,6 @@ const useStyles = makeStyles()(theme => ({
 
   scalebarRefName: {
     position: 'absolute',
-    left: 3,
     top: 0,
     fontWeight: 'bold',
     pointerEvents: 'none',
@@ -116,6 +115,7 @@ const OverviewBox = observer(function OverviewBox({
         transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
         width: block.widthPx,
         borderColor: refNameColor,
+        overflow: canDisplayCytobands ? 'visible' : undefined,
       }}
     >
       <Typography
@@ -123,6 +123,7 @@ const OverviewBox = observer(function OverviewBox({
           color: canDisplayCytobands
             ? theme.palette.text.primary
             : refNameColor,
+          left: canDisplayCytobands ? -cytobandOffset + 3 : 3,
         }}
         className={classes.scalebarRefName}
       >
