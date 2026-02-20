@@ -5,6 +5,8 @@ import {
   SIMPLE_VERTEX_OUTPUT,
 } from './common.ts'
 import {
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  INSERTION_TEXT_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
@@ -61,6 +63,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
     let width_px = f32(inst.end_off - inst.start_off) * canvas_width() / domain_len;
     if width_px < 1.0 && inst.frequency == 0.0 { alpha = width_px * width_px; }
   }
+  if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
   let c = select(color3(71u), color3(68u), inst.gap_type == 0u);
   out.color = vec4f(c, alpha);
   return out;
@@ -154,7 +157,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let is_long = inst.length >= ${LONG_INSERTION_MIN_LENGTH}u;
   let ins_w_px = f32(inst.length) * px_per_bp;
-  let can_text = ins_w_px >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && px_per_bp >= 6.5;
+  let can_text = ins_w_px >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && px_per_bp >= ${INSERTION_TEXT_MIN_PX_PER_BP};
   let is_large = is_long && can_text;
 
   var rect_w: f32;
@@ -175,14 +178,14 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
     x1 = cx - rect_w_clip * 0.5; x2 = cx + rect_w_clip * 0.5;
     y1 = sy_bot; y2 = sy_top;
   } else if rect_idx == 1u {
-    if is_long || px_per_bp < 3.0 { x1 = cx; x2 = cx; y1 = sy_top; y2 = sy_top; }
+    if is_long || px_per_bp < ${INSERTION_SERIF_MIN_PX_PER_BP}.0 { x1 = cx; x2 = cx; y1 = sy_top; y2 = sy_top; }
     else {
       x1 = cx - tick_w_clip * 0.5; x2 = cx + tick_w_clip * 0.5;
       let th = 1.0 / canvas_height() * 2.0;
       y1 = sy_top; y2 = sy_top + th;
     }
   } else {
-    if is_long || px_per_bp < 3.0 { x1 = cx; x2 = cx; y1 = sy_bot; y2 = sy_bot; }
+    if is_long || px_per_bp < ${INSERTION_SERIF_MIN_PX_PER_BP}.0 { x1 = cx; x2 = cx; y1 = sy_bot; y2 = sy_bot; }
     else {
       x1 = cx - tick_w_clip * 0.5; x2 = cx + tick_w_clip * 0.5;
       let th = 1.0 / canvas_height() * 2.0;

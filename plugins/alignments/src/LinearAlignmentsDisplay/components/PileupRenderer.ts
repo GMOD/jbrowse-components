@@ -92,6 +92,7 @@ export class PileupRenderer {
       gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
       gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.parent.gapUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform1f(this.parent.gapUniforms.u_dpr!, this.parent.dpr)
       gl.uniform1i(this.parent.gapUniforms.u_eraseMode!, 1)
 
       gl.bindVertexArray(buffers.gapVAO)
@@ -214,6 +215,7 @@ export class PileupRenderer {
       gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
       gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.parent.gapUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform1f(this.parent.gapUniforms.u_dpr!, this.parent.dpr)
       gl.uniform3f(
         this.parent.gapUniforms.u_colorDeletion!,
         colors.colorDeletion[0],
@@ -356,6 +358,7 @@ export class PileupRenderer {
         )
         gl.uniform1f(this.parent.softclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.parent.softclipUniforms.u_canvasWidth!, canvasWidth)
+        gl.uniform1f(this.parent.softclipUniforms.u_dpr!, this.parent.dpr)
         // Softclip color uniform from theme
         gl.uniform3f(
           this.parent.softclipUniforms.u_colorSoftclip!,
@@ -393,6 +396,7 @@ export class PileupRenderer {
         )
         gl.uniform1f(this.parent.hardclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.parent.hardclipUniforms.u_canvasWidth!, canvasWidth)
+        gl.uniform1f(this.parent.hardclipUniforms.u_dpr!, this.parent.dpr)
         // Hardclip color uniform from theme
         gl.uniform3f(
           this.parent.hardclipUniforms.u_colorHardclip!,

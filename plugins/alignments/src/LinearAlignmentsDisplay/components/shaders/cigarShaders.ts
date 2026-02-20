@@ -1,4 +1,6 @@
 import {
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  INSERTION_TEXT_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
@@ -22,6 +24,7 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+uniform float u_dpr;
 uniform vec3 u_colorDeletion;
 uniform vec3 u_colorSkip;
 uniform int u_eraseMode;  // 0=normal draw, 1=stencil pass (skip gaps at full height)
@@ -69,10 +72,15 @@ void main() {
 
   float alpha = 1.0;
   if (a_type == 0u) {
-    float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / regionLengthBp;
-    if (widthPx < 1.0 && a_frequency == 0.0) {
-      alpha = widthPx * widthPx;
+    float physicalWidthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth * u_dpr / regionLengthBp;
+    if (physicalWidthPx < 1.0 && a_frequency == 0.0) {
+      alpha = physicalWidthPx * physicalWidthPx;
     }
+  }
+  if (alpha <= 0.0) {
+    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+    v_color = vec4(0.0);
+    return;
   }
   v_color = a_type == 0u ? vec4(u_colorDeletion, alpha) : vec4(u_colorSkip, 1.0);
 }
@@ -250,7 +258,7 @@ void main() {
 
   bool isLongInsertion = a_length >= ${LONG_INSERTION_MIN_LENGTH}u;
   float insertionWidthPx = len * pxPerBp;
-  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && pxPerBp >= 6.5;
+  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && pxPerBp >= ${INSERTION_TEXT_MIN_PX_PER_BP};
   bool isLargeInsertion = isLongInsertion && canShowText;
 
   float rectWidthPx;
@@ -289,7 +297,7 @@ void main() {
     y2 = syTop;
   } else if (rectIdx == 1) {
     // Top tick (only for small insertions when zoomed in)
-    if (isLongInsertion || pxPerBp < 3.0) {
+    if (isLongInsertion || pxPerBp < ${INSERTION_SERIF_MIN_PX_PER_BP}.0) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -304,7 +312,7 @@ void main() {
     }
   } else {
     // Bottom tick (only for small insertions when zoomed in)
-    if (isLongInsertion || pxPerBp < 3.0) {
+    if (isLongInsertion || pxPerBp < ${INSERTION_SERIF_MIN_PX_PER_BP}.0) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -367,6 +375,7 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+uniform float u_dpr;
 
 uniform vec3 u_colorSoftclip;
 
@@ -380,10 +389,11 @@ void main() {
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
   float pxPerBp = u_canvasWidth / regionLengthBp;
+  float physicalPxPerBp = pxPerBp * u_dpr;
 
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = pxPerBp;
+  if (physicalPxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = physicalPxPerBp;
   }
   if (alpha <= 0.0) {
     gl_Position = vec4(0.0);
@@ -452,6 +462,7 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+uniform float u_dpr;
 
 uniform vec3 u_colorHardclip;
 
@@ -465,10 +476,11 @@ void main() {
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
   float pxPerBp = u_canvasWidth / regionLengthBp;
+  float physicalPxPerBp = pxPerBp * u_dpr;
 
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = pxPerBp;
+  if (physicalPxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = physicalPxPerBp;
   }
   if (alpha <= 0.0) {
     gl_Position = vec4(0.0);

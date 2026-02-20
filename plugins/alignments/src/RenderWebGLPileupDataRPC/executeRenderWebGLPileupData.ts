@@ -34,7 +34,7 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
-import { insertionFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
+import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
@@ -931,7 +931,7 @@ export async function executeRenderWebGLPileupData({
     mismatchArrays.mismatchPositions,
     coverage.depths,
     coverage.startOffset,
-    insertionFrequencyThreshold,
+    featureFrequencyThreshold,
   )
   const interbaseFrequencies = computePositionFrequencies(
     interbaseArrays.interbasePositions,
@@ -943,7 +943,7 @@ export async function executeRenderWebGLPileupData({
     interbaseArrays.interbasePositions,
     coverage.depths,
     coverage.startOffset,
-    insertionFrequencyThreshold,
+    featureFrequencyThreshold,
   )
   // Extract gap start positions (gapPositions stores [start, end] pairs)
   const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
@@ -960,7 +960,7 @@ export async function executeRenderWebGLPileupData({
     gapStartPositions,
     coverage.depths,
     coverage.startOffset,
-    insertionFrequencyThreshold,
+    featureFrequencyThreshold,
   )
 
   const snpCoverage = computeSNPCoverage(

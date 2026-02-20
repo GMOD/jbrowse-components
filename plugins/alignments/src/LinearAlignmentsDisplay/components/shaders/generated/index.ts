@@ -873,14 +873,23 @@ void main() {
             alpha = (width_px * width_px);
         }
     }
-    vec3 _e140 = color3_(71u);
-    vec3 _e142 = color3_(68u);
-    vec3 c = ((inst.gap_type == 0u) ? _e142 : _e140);
-    float _e148 = alpha;
-    out_.color = vec4(c, _e148);
-    VertexOutput _e150 = out_;
-    gl_Position = _e150.position;
-    _vs2fs_location0 = _e150.color;
+    float _e139 = alpha;
+    if ((_e139 <= 0.0)) {
+        out_.position = vec4(0.0);
+        out_.color = vec4(0.0);
+        VertexOutput _e148 = out_;
+        gl_Position = _e148.position;
+        _vs2fs_location0 = _e148.color;
+        return;
+    }
+    vec3 _e150 = color3_(71u);
+    vec3 _e152 = color3_(68u);
+    vec3 c = ((inst.gap_type == 0u) ? _e152 : _e150);
+    float _e158 = alpha;
+    out_.color = vec4(c, _e158);
+    VertexOutput _e160 = out_;
+    gl_Position = _e160.position;
+    _vs2fs_location0 = _e160.color;
     return;
 }
 
