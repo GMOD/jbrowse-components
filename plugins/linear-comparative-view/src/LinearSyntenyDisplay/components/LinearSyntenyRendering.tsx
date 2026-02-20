@@ -43,6 +43,10 @@ const useStyles = makeStyles()(theme => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      padding: theme.spacing(0, 2),
       backgroundColor: theme.palette.background.default,
       backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
     },
@@ -72,7 +76,10 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
-  const [gpuReady, setGpuReady] = useState(false)
+  const [gpuStatus, setGpuStatus] = useState<
+    'loading' | 'ready' | 'failed'
+  >('loading')
+  const [gpuError, setGpuError] = useState('')
 
   useEffect(() => {
     canvasRectRef.current = null
@@ -172,15 +179,17 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         .then(success => {
           if (!success) {
             console.error('[LinearSyntenyRendering] GPU initialization failed')
+            setGpuError('WebGPU device not available')
           }
           model.setGpuRenderer(renderer)
           model.setGpuInitialized(success)
-          setGpuReady(success)
+          setGpuStatus(success ? 'ready' : 'failed')
         })
         .catch((e: unknown) => {
           console.error('[LinearSyntenyRendering] GPU initialization error:', e)
+          setGpuError(e instanceof Error ? e.message : `${e}`)
           model.setGpuInitialized(false)
-          setGpuReady(false)
+          setGpuStatus('failed')
         })
     },
     [model],
@@ -350,9 +359,14 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         className={classes.gpuCanvas}
         style={{ width, height }}
       />
-      {!gpuReady ? (
+      {gpuStatus === 'loading' ? (
         <div className={classes.gpuLoadingOverlay}>
           <LoadingEllipses message="Initializing GPU renderer" />
+        </div>
+      ) : null}
+      {gpuStatus === 'failed' ? (
+        <div className={classes.gpuLoadingOverlay}>
+          GPU initialization failed: {gpuError}
         </div>
       ) : null}
       {mouseoverId && tooltip ? <SyntenyTooltip title={tooltip} /> : null}

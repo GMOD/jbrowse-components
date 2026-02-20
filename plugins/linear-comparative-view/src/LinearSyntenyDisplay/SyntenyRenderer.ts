@@ -3,6 +3,7 @@
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { WebGLSyntenyRenderer } from './WebGLSyntenyRenderer.ts'
 import {
   EDGE_SEGMENTS,
   EDGE_VERTS_PER_INSTANCE,
@@ -28,6 +29,7 @@ export class SyntenyRenderer {
   private static pipelinesReady: Promise<void> | null = null
 
   private canvas: HTMLCanvasElement
+  private glFallback: WebGLSyntenyRenderer | null = null
   private context: GPUCanvasContext | null = null
   private uniformBuffer: GPUBuffer | null = null
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
@@ -169,27 +171,35 @@ export class SyntenyRenderer {
 
   async init() {
     const device = await SyntenyRenderer.ensureDevice()
-    if (!device) {
-      console.error('[SyntenyRenderer] WebGPU device not available')
+    if (device) {
+      const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
+      if (result) {
+        this.context = result.context
+        this.uniformBuffer = device.createBuffer({
+          size: UNIFORM_SIZE,
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        })
+        this.pickingStagingBuffer = device.createBuffer({
+          size: 256,
+          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+        })
+        return true
+      }
+    }
+    try {
+      this.glFallback = new WebGLSyntenyRenderer(this.canvas)
+      return true
+    } catch (e) {
+      console.error('[SyntenyRenderer] WebGL2 fallback also failed:', e)
       return false
     }
-    const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
-    if (!result) {
-      return false
-    }
-    this.context = result.context
-    this.uniformBuffer = device.createBuffer({
-      size: UNIFORM_SIZE,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    })
-    this.pickingStagingBuffer = device.createBuffer({
-      size: 256,
-      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-    })
-    return true
   }
 
   resize(width: number, height: number) {
+    if (this.glFallback) {
+      this.glFallback.resize(width, height)
+      return
+    }
     const dpr = this.dpr
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
@@ -214,6 +224,10 @@ export class SyntenyRenderer {
   }
 
   uploadGeometry(data: SyntenyInstanceData) {
+    if (this.glFallback) {
+      this.glFallback.uploadGeometry(data)
+      return
+    }
     const device = SyntenyRenderer.device
     if (!device || !SyntenyRenderer.bindGroupLayout || !this.uniformBuffer) {
       return
@@ -257,6 +271,10 @@ export class SyntenyRenderer {
     hoveredFeatureId: number,
     clickedFeatureId: number,
   ) {
+    if (this.glFallback) {
+      this.glFallback.render(offset0, offset1, height, curBpPerPx0, curBpPerPx1, maxOffScreenPx, minAlignmentLength, alpha, hoveredFeatureId, clickedFeatureId)
+      return
+    }
     const device = SyntenyRenderer.device
     if (
       !device ||
@@ -338,6 +356,9 @@ export class SyntenyRenderer {
     y: number,
     onResult?: (result: number) => void,
   ): number | undefined {
+    if (this.glFallback) {
+      return this.glFallback.pick(x, y, onResult)
+    }
     this.pickCallback = onResult
     if (this.pendingPick) {
       return undefined
@@ -471,6 +492,11 @@ export class SyntenyRenderer {
   }
 
   dispose() {
+    if (this.glFallback) {
+      this.glFallback.dispose()
+      this.glFallback = null
+      return
+    }
     this.instanceBuffer?.destroy()
     this.instanceBuffer = null
     this.bindGroup = null
