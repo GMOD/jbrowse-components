@@ -231,6 +231,15 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setTrackLabels('hidden')
           },
         },
+        {
+          label: 'Separate',
+          icon: VisibilityIcon,
+          type: 'radio',
+          checked: self.trackLabelsSetting === 'separate',
+          onClick: () => {
+            self.setTrackLabels('separate')
+          },
+        },
       ],
     },
   ]

@@ -31,14 +31,20 @@ const TrackLabelContainer = observer(function TrackLabelContainer({
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
+  const setting = view.trackLabelsSetting
+
+  if (setting === 'hidden' || setting === 'separate') {
+    return null
+  }
+
   const labelStyle =
-    view.trackLabelsSetting !== 'overlapping' || display.prefersOffset
+    setting !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
       : classes.trackLabelOverlap
 
-  return view.trackLabelsSetting !== 'hidden' ? (
+  return (
     <TrackLabel track={track} className={cx(classes.trackLabel, labelStyle)} />
-  ) : null
+  )
 })
 
 export default TrackLabelContainer

@@ -8,6 +8,7 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
+import SeparateTrackLabel from './SeparateTrackLabel.tsx'
 import TrackLabelContainer from './TrackLabelContainer.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 import { shouldSwapTracks } from './util.ts'
@@ -34,6 +35,9 @@ const useStyles = makeStyles()(theme => ({
       background: theme.palette.divider,
     },
   },
+  separateContent: {
+    overflow: 'hidden',
+  },
 }))
 
 type LGV = LinearGenomeViewModel
@@ -49,6 +53,7 @@ const TrackContainer = observer(function TrackContainer({
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
   const ref = useRef<HTMLDivElement>(null)
+  const isSeparate = model.trackLabelsSetting === 'separate'
 
   return (
     <Paper
@@ -82,12 +87,31 @@ const TrackContainer = observer(function TrackContainer({
         }
       }}
     >
-      {/* offset 1px since for left track border */}
       {track.pinned ? <Gridlines model={model} offset={1} /> : null}
-      <TrackLabelContainer track={track} view={model} />
-      <ErrorBoundary FallbackComponent={e => <ErrorMessage error={e.error} />}>
-        <TrackRenderingContainer model={model} track={track} />
-      </ErrorBoundary>
+      {isSeparate ? (
+        <>
+          <SeparateTrackLabel track={track} />
+          <div
+            className={classes.separateContent}
+            style={{ marginLeft: model.separateTrackLabelWidth }}
+          >
+            <ErrorBoundary
+              FallbackComponent={e => <ErrorMessage error={e.error} />}
+            >
+              <TrackRenderingContainer model={model} track={track} />
+            </ErrorBoundary>
+          </div>
+        </>
+      ) : (
+        <>
+          <TrackLabelContainer track={track} view={model} />
+          <ErrorBoundary
+            FallbackComponent={e => <ErrorMessage error={e.error} />}
+          >
+            <TrackRenderingContainer model={model} track={track} />
+          </ErrorBoundary>
+        </>
+      )}
       <ResizeHandle
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}

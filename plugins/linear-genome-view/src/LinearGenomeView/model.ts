@@ -195,6 +195,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         */
+        separateTrackLabelWidth: 100,
+
+        /**
+         * #property
          * show the "gridlines" in the track area
          */
         showGridlines: true,
@@ -1012,8 +1017,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+      setTrackLabels(
+        setting: 'overlapping' | 'offset' | 'hidden' | 'separate',
+      ) {
         self.trackLabels = setting
+      },
+
+      /**
+       * #action
+       */
+      setSeparateTrackLabelWidth(width: number) {
+        self.separateTrackLabelWidth = Math.max(50, Math.round(width))
       },
 
       /**

@@ -49,6 +49,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         'offset',
         'overlapping',
         'hidden',
+        'separate',
       ]),
     },
   })
