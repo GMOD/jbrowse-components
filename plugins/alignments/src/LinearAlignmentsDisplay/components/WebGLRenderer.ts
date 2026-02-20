@@ -98,8 +98,8 @@ export interface RenderState {
   selectedChainIndices: number[]
   // Color palette from theme
   colors: ColorPalette
-  // Rendering mode - 'pileup' (default), 'arcs', 'cloud', or 'linkedRead'
-  renderingMode?: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
+  // Rendering mode - 'pileup' (default), 'cloud', or 'linkedRead'
+  renderingMode?: 'pileup' | 'cloud' | 'linkedRead'
   // Arcs-specific
   arcLineWidth?: number
   // Cloud-specific
@@ -109,6 +109,7 @@ export interface RenderState {
   // Show arcs alongside pileup (between coverage and reads)
   showArcs?: boolean
   arcsHeight?: number
+  showOutline?: boolean
 }
 
 export interface GPUBuffers {
@@ -2293,71 +2294,58 @@ export class WebGLRenderer {
         )
       }
 
-      if (mode === 'arcs') {
-        gl.viewport(0, 0, bufW, bufH)
+      const arcsHeight =
+        state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+
+      if (arcsHeight > 0) {
+        const covH = state.showCoverage ? state.coverageHeight : 0
+        gl.viewport(
+          0,
+          bufH - Math.round((covH + arcsHeight) * dpr),
+          bufW,
+          Math.round(arcsHeight * dpr),
+        )
+        gl.scissor(
+          Math.round(scissorX * dpr),
+          bufH - Math.round((covH + arcsHeight) * dpr),
+          Math.round(scissorW * dpr),
+          Math.round(arcsHeight * dpr),
+        )
         this.arcsRenderer.renderArcs(
-          { ...state, bpRangeX: block.bpRangeX },
+          {
+            ...state,
+            bpRangeX: block.bpRangeX,
+            showCoverage: false,
+            coverageHeight: 0,
+            canvasHeight: arcsHeight,
+          },
           block.screenStartPx,
           fullBlockWidth,
         )
-      } else if (mode === 'cloud' || mode === 'linkedRead') {
-        this.connectingLineRenderer.render(blockState)
-        this.pileupRenderer.render(
-          blockState,
-          clippedBpOffset,
-          colors,
-          scissorX,
+        gl.viewport(
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          bufH,
         )
-      } else {
-        const arcsHeight =
-          state.showArcs && state.arcsHeight ? state.arcsHeight : 0
-
-        if (arcsHeight > 0) {
-          const covH = state.showCoverage ? state.coverageHeight : 0
-          gl.viewport(
-            0,
-            bufH - Math.round((covH + arcsHeight) * dpr),
-            bufW,
-            Math.round(arcsHeight * dpr),
-          )
-          gl.scissor(
-            Math.round(scissorX * dpr),
-            bufH - Math.round((covH + arcsHeight) * dpr),
-            Math.round(scissorW * dpr),
-            Math.round(arcsHeight * dpr),
-          )
-          this.arcsRenderer.renderArcs(
-            {
-              ...state,
-              bpRangeX: block.bpRangeX,
-              showCoverage: false,
-              coverageHeight: 0,
-              canvasHeight: arcsHeight,
-            },
-            block.screenStartPx,
-            fullBlockWidth,
-          )
-          gl.viewport(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-          )
-          gl.scissor(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-          )
-        }
-
-        this.pileupRenderer.render(
-          blockState,
-          clippedBpOffset,
-          colors,
-          scissorX,
+        gl.scissor(
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          bufH,
         )
       }
+
+      if (mode === 'cloud' || mode === 'linkedRead') {
+        this.connectingLineRenderer.render(blockState)
+      }
+
+      this.pileupRenderer.render(
+        blockState,
+        clippedBpOffset,
+        colors,
+        scissorX,
+      )
     }
 
     // Restore full viewport and disable scissor

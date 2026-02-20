@@ -21,7 +21,10 @@ export class ConnectingLineRenderer {
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
-    const coverageOffset = state.showCoverage ? state.coverageHeight : 0
+    const arcsOffset =
+      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const coverageOffset =
+      (state.showCoverage ? state.coverageHeight : 0) + arcsOffset
 
     gl.useProgram(this.parent.connectingLineProgram)
     // WARNING: u_zero must be 0.0 — HP shader precision guard. See utils.ts.

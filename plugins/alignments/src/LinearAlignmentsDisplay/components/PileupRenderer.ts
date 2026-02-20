@@ -116,7 +116,9 @@ export class PileupRenderer {
     const mode = state.renderingMode ?? 'pileup'
     const isChainMode = mode === 'cloud' || mode === 'linkedRead'
     gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
-    gl.uniform1i(this.parent.readUniforms.u_showStroke!, isChainMode ? 1 : 0)
+    const showStroke =
+      state.showOutline && state.featureHeight >= 4 ? 1 : 0
+    gl.uniform1i(this.parent.readUniforms.u_showStroke!, showStroke)
 
     gl.uniform3f(
       this.parent.readUniforms.u_colorFwdStrand!,
@@ -432,6 +434,7 @@ export class PileupRenderer {
         this.drawFilledRect(gl, clip)
       }
     } else if (state.highlightedFeatureIndex >= 0) {
+      console.log('HIGHLIGHT PASS', { idx: state.highlightedFeatureIndex, readCount: buffers.readCount, hasVAO: !!buffers.readVAO })
       gl.useProgram(this.parent.readProgram)
       gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
       gl.uniform1i(

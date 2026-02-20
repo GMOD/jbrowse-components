@@ -260,10 +260,11 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        renderingMode: types.optional(
-          types.enumeration(['pileup', 'arcs', 'cloud', 'linkedRead']),
-          'pileup',
-        ),
+        showLinkedReads: false,
+        /**
+         * #property
+         */
+        showReadCloud: false,
         /**
          * #property
          */
@@ -337,6 +338,10 @@ export default function stateModelFactory(
         /**
          * #property
          */
+        showOutline: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         mismatchAlpha: types.maybe(types.boolean),
         /**
          * #property
@@ -370,6 +375,16 @@ export default function stateModelFactory(
         snap = { ...rest, heightPreConfig: height }
       }
 
+      // Migrate old renderingMode to new boolean toggles
+      if (snap.renderingMode) {
+        const { renderingMode, ...rest } = snap
+        snap = {
+          ...rest,
+          showLinkedReads: renderingMode === 'linkedRead',
+          showReadCloud: renderingMode === 'cloud',
+        }
+      }
+
       // Migrate LinearSNPCoverageDisplay snapshots to LinearAlignmentsDisplay
       if (snap.type === 'LinearSNPCoverageDisplay') {
         const {
@@ -392,7 +407,6 @@ export default function stateModelFactory(
           showCoverage: true,
           coverageHeight: 45,
           showMismatches: true,
-          renderingMode: 'pileup',
           colorBySetting,
           filterBySetting,
           jexlFilters: jexlFilters ?? [],
@@ -436,6 +450,16 @@ export default function stateModelFactory(
       visibleMaxDepth: 0,
     }))
     .views(self => ({
+      get renderingMode(): 'pileup' | 'cloud' | 'linkedRead' {
+        if (self.showReadCloud) {
+          return 'cloud'
+        }
+        if (self.showLinkedReads) {
+          return 'linkedRead'
+        }
+        return 'pileup'
+      },
+
       /**
        * Use custom component instead of block-based rendering
        */
@@ -643,7 +667,9 @@ export default function stateModelFactory(
           return undefined
         }
         const pileupHeight =
-          self.height - (self.showCoverage ? self.coverageHeight : 0)
+          self.height -
+          (self.showCoverage ? self.coverageHeight : 0) -
+          (self.showArcs ? self.arcsHeight : 0)
         if (pileupHeight <= 0) {
           return undefined
         }
@@ -702,6 +728,10 @@ export default function stateModelFactory(
         return (
           self.renderingMode === 'cloud' || self.renderingMode === 'linkedRead'
         )
+      },
+
+      get showOutlineSetting() {
+        return self.showOutline ?? this.isChainMode
       },
     }))
     .views(self => ({
@@ -933,8 +963,7 @@ export default function stateModelFactory(
           self.maxY = y
           const rowHeight = self.featureHeightSetting + self.featureSpacing
           const pileupHeight = y * rowHeight
-          const totalHeight =
-            self.coverageDisplayHeight + pileupHeight + 10
+          const totalHeight = self.coverageDisplayHeight + pileupHeight + 10
           // Clamp to maxHeight and ensure a minimum height
           const clampedHeight = Math.min(
             Math.max(totalHeight, 100),
@@ -1039,6 +1068,10 @@ export default function stateModelFactory(
           self.filterBySetting = filterBy
         },
 
+        setShowOutline(show: boolean | undefined) {
+          self.showOutline = show
+        },
+
         toggleSoftClipping() {
           self.showSoftClipping = !self.showSoftClipping
         },
@@ -1141,12 +1174,26 @@ export default function stateModelFactory(
           self.showInterbaseIndicators = show
         },
 
-        setRenderingMode(mode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead') {
-          self.renderingMode = mode
-          self.colorBySetting =
-            mode === 'pileup'
-              ? { type: 'normal' }
-              : { type: 'insertSizeAndOrientation' }
+        setShowLinkedReads(flag: boolean) {
+          self.showLinkedReads = flag
+          if (flag) {
+            self.showReadCloud = false
+            self.showOutline = undefined
+            self.colorBySetting = { type: 'insertSizeAndOrientation' }
+          } else if (!self.showReadCloud) {
+            self.colorBySetting = { type: 'normal' }
+          }
+        },
+
+        setShowReadCloud(flag: boolean) {
+          self.showReadCloud = flag
+          if (flag) {
+            self.showLinkedReads = false
+            self.showOutline = undefined
+            self.colorBySetting = { type: 'insertSizeAndOrientation' }
+          } else if (!self.showLinkedReads) {
+            self.colorBySetting = { type: 'normal' }
+          }
         },
 
         updateVisibleModifications(uniqueModifications: string[]) {
@@ -1332,8 +1379,8 @@ export default function stateModelFactory(
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
-            layoutMode: self.renderingMode as 'cloud' | 'linkedRead',
-            height: self.height,
+            layoutMode: self.renderingMode,
+            height: self.height - self.coverageDisplayHeight,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             stopToken,
@@ -1404,6 +1451,7 @@ export default function stateModelFactory(
             return
           }
         }
+        self.setRegionTooLarge(false, '')
 
         // If colorBy is tag mode and tag values haven't been fetched yet,
         // fetch them inline before the main data RPC so that colorTagMap
@@ -1462,16 +1510,16 @@ export default function stateModelFactory(
             regionNumber,
             stopToken,
           )
-          if (self.renderingMode === 'arcs' || self.showArcs) {
-            await fetchArcsData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-              regionNumber,
-              stopToken,
-            )
-          }
+        }
+        if (self.showArcs) {
+          await fetchArcsData(
+            session,
+            adapterConfig,
+            sequenceAdapter,
+            region,
+            regionNumber,
+            stopToken,
+          )
         }
 
         // Discard stale responses from older requests for this regionNumber
@@ -1676,6 +1724,7 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+                console.log('DRAW AUTORUN', { hlIdx: self.highlightedFeatureIndex })
                 const regions = view.visibleRegions
                 const blocks = regions.map(r => ({
                   regionNumber: r.regionNumber,
@@ -1696,6 +1745,7 @@ export default function stateModelFactory(
                   showInterbaseIndicators: self.showInterbaseIndicators,
                   showModifications: self.showModifications,
                   showSashimiArcs: self.showSashimiArcs,
+                  showOutline: self.showOutlineSetting,
                   showArcs: self.showArcs,
                   arcsHeight: self.arcsHeight,
                   canvasWidth: view.width,
@@ -1705,11 +1755,7 @@ export default function stateModelFactory(
                   highlightedChainIndices: self.highlightedChainIndices,
                   selectedChainIndices: self.selectedChainIndices,
                   colors: palette,
-                  renderingMode: self.renderingMode as
-                    | 'pileup'
-                    | 'arcs'
-                    | 'cloud'
-                    | 'linkedRead',
+                  renderingMode: self.renderingMode,
                   arcLineWidth: self.arcsState.lineWidth,
                   cloudColorScheme: self.colorSchemeIndex,
                   bpRangeX: [0, 0],
@@ -1786,7 +1832,8 @@ export default function stateModelFactory(
                 const key = JSON.stringify({
                   filterBy: self.filterBy,
                   sortedBy: self.sortedBy,
-                  mode: self.renderingMode,
+                  showLinkedReads: self.showLinkedReads,
+                  showReadCloud: self.showReadCloud,
                   showArcs: self.showArcs,
                   drawInter: self.arcsState.drawInter,
                   drawLongRange: self.arcsState.drawLongRange,
@@ -1821,44 +1868,6 @@ export default function stateModelFactory(
        * Track menu items
        */
       trackMenuItems() {
-        const modeMenu = {
-          label: 'Display mode',
-          subMenu: [
-            {
-              label: 'Pileup',
-              type: 'radio' as const,
-              checked: self.renderingMode === 'pileup',
-              onClick: () => {
-                self.setRenderingMode('pileup')
-              },
-            },
-            {
-              label: 'Arc',
-              type: 'radio' as const,
-              checked: self.renderingMode === 'arcs',
-              onClick: () => {
-                self.setRenderingMode('arcs')
-              },
-            },
-            {
-              label: 'Read cloud',
-              type: 'radio' as const,
-              checked: self.renderingMode === 'cloud',
-              onClick: () => {
-                self.setRenderingMode('cloud')
-              },
-            },
-            {
-              label: 'Linked read',
-              type: 'radio' as const,
-              checked: self.renderingMode === 'linkedRead',
-              onClick: () => {
-                self.setRenderingMode('linkedRead')
-              },
-            },
-          ],
-        }
-
         const colorByMenu = {
           label: 'Color by...',
           subMenu: [
@@ -2064,6 +2073,30 @@ export default function stateModelFactory(
                 self.setShowInterbaseIndicators(!self.showInterbaseIndicators)
               },
             },
+            {
+              label: 'Show outline on reads',
+              type: 'checkbox' as const,
+              checked: self.showOutlineSetting,
+              onClick: () => {
+                self.setShowOutline(!self.showOutlineSetting)
+              },
+            },
+            {
+              label: 'Link paired/supplementary reads',
+              type: 'checkbox' as const,
+              checked: self.showLinkedReads,
+              onClick: () => {
+                self.setShowLinkedReads(!self.showLinkedReads)
+              },
+            },
+            {
+              label: 'Read cloud',
+              type: 'checkbox' as const,
+              checked: self.showReadCloud,
+              onClick: () => {
+                self.setShowReadCloud(!self.showReadCloud)
+              },
+            },
           ],
         }
 
@@ -2151,8 +2184,7 @@ export default function stateModelFactory(
           },
         }
 
-        // Pileup-specific menu items
-        const pileupItems = [
+        const items: MenuItem[] = [
           featureHeightMenu,
           showSubMenu,
           setMaxHeightItem,
@@ -2162,208 +2194,42 @@ export default function stateModelFactory(
           groupByItem,
         ]
 
-        // Arcs-specific menu items
-        const arcsItems = [
-          {
-            label: 'Color by...',
-            subMenu: [
-              {
-                label: 'Insert size and orientation',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'insertSizeAndOrientation',
-                onClick: () => {
-                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
+        if (self.isChainMode) {
+          items.push(
+            {
+              label: 'Edit filters',
+              type: 'subMenu' as const,
+              subMenu: [
+                {
+                  label: 'Show singletons',
+                  type: 'checkbox' as const,
+                  checked: self.drawSingletons,
+                  onClick: () => {
+                    self.setDrawSingletons(!self.drawSingletons)
+                  },
                 },
-              },
-              {
-                label: 'Orientation only',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'orientation',
-                onClick: () => {
-                  self.setColorScheme({ type: 'orientation' })
+                {
+                  label: 'Show proper pairs',
+                  type: 'checkbox' as const,
+                  checked: self.drawProperPairs,
+                  onClick: () => {
+                    self.setDrawProperPairs(!self.drawProperPairs)
+                  },
                 },
-              },
-              {
-                label: 'Insert size only',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'insertSize',
-                onClick: () => {
-                  self.setColorScheme({ type: 'insertSize' })
-                },
-              },
-              {
-                label: 'Gradient',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'gradient',
-                onClick: () => {
-                  self.setColorScheme({ type: 'gradient' })
-                },
-              },
-            ],
-          },
-          {
-            label: 'Line width',
-            subMenu: [
-              {
-                label: 'Thin',
-                onClick: () => {
-                  self.arcsState.setLineWidth(1)
-                },
-              },
-              {
-                label: 'Bold',
-                onClick: () => {
-                  self.arcsState.setLineWidth(2)
-                },
-              },
-              {
-                label: 'Extra bold',
-                onClick: () => {
-                  self.arcsState.setLineWidth(5)
-                },
-              },
-            ],
-          },
-          {
-            label: 'Show...',
-            subMenu: [
-              {
-                label: 'Inter-chromosomal connections',
-                type: 'checkbox',
-                checked: self.arcsState.drawInter,
-                onClick: () => {
-                  self.arcsState.setDrawInter(!self.arcsState.drawInter)
-                },
-              },
-              {
-                label: 'Long range connections',
-                type: 'checkbox',
-                checked: self.arcsState.drawLongRange,
-                onClick: () => {
-                  self.arcsState.setDrawLongRange(!self.arcsState.drawLongRange)
-                },
-              },
-            ],
-          },
-        ]
-
-        // Cloud and linked read modes share the same menu items
-        const chainItems = [
-          {
-            label: 'Color by...',
-            subMenu: [
-              {
-                label: 'Insert size and orientation',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'insertSizeAndOrientation',
-                onClick: () => {
-                  self.setColorScheme({ type: 'insertSizeAndOrientation' })
-                },
-              },
-              {
-                label: 'Strand',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'strand',
-                onClick: () => {
-                  self.setColorScheme({ type: 'strand' })
-                },
-              },
-              {
-                label: 'Normal',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'normal',
-                onClick: () => {
-                  self.setColorScheme({ type: 'normal' })
-                },
-              },
-              {
-                label: 'Mapping quality',
-                type: 'radio' as const,
-                checked: self.colorBy.type === 'mappingQuality',
-                onClick: () => {
-                  self.setColorScheme({ type: 'mappingQuality' })
-                },
-              },
-            ],
-          },
-          featureHeightMenu,
-          {
-            label: 'Show coverage',
-            type: 'checkbox' as const,
-            checked: self.showCoverage,
-            onClick: () => {
-              self.setShowCoverage(!self.showCoverage)
+              ],
             },
-          },
-          {
-            label: 'Show sashimi arcs',
-            type: 'checkbox' as const,
-            checked: self.showSashimiArcs,
-            onClick: () => {
-              self.setShowSashimiArcs(!self.showSashimiArcs)
+            {
+              label: 'Show Y-axis scalebar',
+              type: 'checkbox' as const,
+              checked: self.showYScalebar,
+              onClick: () => {
+                self.setShowYScalebar(!self.showYScalebar)
+              },
             },
-          },
-          {
-            label: 'Show...',
-            subMenu: [
-              {
-                label: 'Legend',
-                type: 'checkbox',
-                checked: !!self.showLegend,
-                onClick: () => {
-                  self.setShowLegend(!self.showLegend)
-                },
-              },
-              {
-                label: 'Y-axis scalebar',
-                type: 'checkbox',
-                checked: self.showYScalebar,
-                onClick: () => {
-                  self.setShowYScalebar(!self.showYScalebar)
-                },
-              },
-              {
-                label: 'Mismatches',
-                type: 'checkbox',
-                checked: self.showMismatches,
-                onClick: () => {
-                  self.setShowMismatches(!self.showMismatches)
-                },
-              },
-            ],
-          },
-          {
-            label: 'Edit filters',
-            subMenu: [
-              {
-                label: 'Show singletons',
-                type: 'checkbox',
-                checked: self.drawSingletons,
-                onClick: () => {
-                  self.setDrawSingletons(!self.drawSingletons)
-                },
-              },
-              {
-                label: 'Show proper pairs',
-                type: 'checkbox',
-                checked: self.drawProperPairs,
-                onClick: () => {
-                  self.setDrawProperPairs(!self.drawProperPairs)
-                },
-              },
-            ],
-          },
-        ]
+          )
+        }
 
-        const modeItems =
-          self.renderingMode === 'arcs'
-            ? arcsItems
-            : self.renderingMode === 'cloud' ||
-                self.renderingMode === 'linkedRead'
-              ? chainItems
-              : pileupItems
-
-        return [modeMenu, ...modeItems]
+        return items
       },
 
       contextMenuItems() {

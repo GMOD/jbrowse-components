@@ -32,7 +32,9 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
     processClick,
   } = base
 
-  const { height, showCoverage, coverageHeight } = model
+  const { height, showCoverage, coverageHeight, showArcs, arcsHeight } = model
+  const topOffset =
+    (showCoverage ? coverageHeight : 0) + (showArcs ? arcsHeight : 0)
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
@@ -126,7 +128,7 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
         <svg
           style={{
             position: 'absolute',
-            top: showCoverage ? coverageHeight : 0,
+            top: topOffset,
             left: model.scalebarOverlapLeft,
             pointerEvents: 'none',
             height: model.cloudTicks.height,

@@ -2,7 +2,6 @@ import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
-import WebGLArcsComponent from './WebGLArcsComponent.tsx'
 import WebGLChainComponent from './WebGLChainComponent.tsx'
 import WebGLPileupComponent from './WebGLPileupComponent.tsx'
 
@@ -27,9 +26,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     )
   }
 
-  if (renderingMode === 'arcs') {
-    return <WebGLArcsComponent model={model} />
-  }
   if (renderingMode === 'cloud' || renderingMode === 'linkedRead') {
     return <WebGLChainComponent model={model} />
   }

@@ -111,7 +111,7 @@ export interface LinearAlignmentsDisplayModel {
   }[]
   setContextMenuFeature: (feature?: unknown) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
-  renderingMode: 'pileup' | 'arcs' | 'cloud' | 'linkedRead'
+  renderingMode: 'pileup' | 'cloud' | 'linkedRead'
   scalebarOverlapLeft: number
   clearAllRpcData: () => void
 }
@@ -325,6 +325,20 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       rangeY: model.currentRangeY,
       isChainMode,
     })
+
+    const rowHeight = featureHeightSetting + featureSpacing
+    const adjY = coords.canvasY + model.currentRangeY[0] - topOffset
+    console.log('hitTest', JSON.stringify({
+      type: result.type,
+      hasResolved: !!resolved,
+      canvasX: coords.canvasX,
+      canvasY: coords.canvasY,
+      adjY,
+      row: Math.floor(adjY / rowHeight),
+      featureHeightSetting,
+      featureSpacing,
+      numReads: resolved?.rpcData.numReads,
+    }))
 
     if (result.type === 'indicator') {
       model.setOverCigarItem(true)

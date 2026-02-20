@@ -1024,7 +1024,7 @@ export class AlignmentsRenderer {
       state.renderingMode === 'cloud' || state.renderingMode === 'linkedRead'
         ? 1
         : 0
-    ii[U_SHOW_STROKE] = state.featureHeight >= 4 ? 1 : 0
+    ii[U_SHOW_STROKE] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     f[U_COV_HEIGHT] = state.coverageHeight
     f[U_COV_Y_OFFSET] = state.coverageYOffset
     f[U_DEPTH_SCALE] =
@@ -1170,9 +1170,7 @@ export class AlignmentsRenderer {
 
       const mode = state.renderingMode ?? 'pileup'
       const arcsHeight =
-        mode === 'pileup' && state.showArcs && state.arcsHeight
-          ? state.arcsHeight
-          : 0
+        state.showArcs && state.arcsHeight ? state.arcsHeight : 0
       const covH = state.showCoverage ? state.coverageHeight : 0
 
       {
@@ -1198,9 +1196,7 @@ export class AlignmentsRenderer {
           this.drawCoverage(p, region)
         }
 
-        if (mode === 'arcs') {
-          this.drawArcs(p, region, state, block, scissorX, scissorW)
-        } else if (mode === 'cloud' || mode === 'linkedRead') {
+        if (mode === 'cloud' || mode === 'linkedRead') {
           this.drawConnectingLines(p, region)
           this.drawPileup(p, region, state)
           this.drawChainOverlays(
