@@ -666,10 +666,7 @@ export default function stateModelFactory(
         if (maxDistance <= 0) {
           return undefined
         }
-        const pileupHeight =
-          self.height -
-          (self.showCoverage ? self.coverageHeight : 0) -
-          (self.showArcs ? self.arcsHeight : 0)
+        const pileupHeight = self.height - self.coverageDisplayHeight
         if (pileupHeight <= 0) {
           return undefined
         }
@@ -1178,20 +1175,23 @@ export default function stateModelFactory(
           self.showLinkedReads = flag
           if (flag) {
             self.showReadCloud = false
-            self.showOutline = undefined
-            self.colorBySetting = { type: 'insertSizeAndOrientation' }
-          } else if (!self.showReadCloud) {
-            self.colorBySetting = { type: 'normal' }
           }
+          self._syncChainModeColors()
         },
 
         setShowReadCloud(flag: boolean) {
           self.showReadCloud = flag
           if (flag) {
             self.showLinkedReads = false
+          }
+          self._syncChainModeColors()
+        },
+
+        _syncChainModeColors() {
+          if (self.showLinkedReads || self.showReadCloud) {
             self.showOutline = undefined
             self.colorBySetting = { type: 'insertSizeAndOrientation' }
-          } else if (!self.showLinkedReads) {
+          } else {
             self.colorBySetting = { type: 'normal' }
           }
         },

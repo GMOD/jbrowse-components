@@ -634,19 +634,16 @@ export async function executeRenderWebGLChainData({
     chainFirstReadIndices,
   } = await updateStatus('Computing chain layout', statusCallback, async () => {
     if (layoutMode === 'cloud') {
-      // Cloud mode: log₂(distance) → discretize to virtual rows
-      const featureHeightPx = 7 // default feature height for discretization
       const scale = createCloudScale(maxDistance, height)
 
       for (const cb of chainBounds) {
-        const yPx = cb.distance > 0 ? scale(cb.distance) : 0
-        const virtualRow = Math.round(yPx / featureHeightPx)
+        const yPx = cb.distance > 0 ? Math.round(scale(cb.distance)) : 0
         const chain = chains[cb.chainIdx]!
         for (const f of chain) {
-          featureIdToY.set(f.id, virtualRow)
+          featureIdToY.set(f.id, yPx)
         }
-        if (virtualRow > maxY) {
-          maxY = virtualRow
+        if (yPx > maxY) {
+          maxY = yPx
         }
       }
     } else {

@@ -1222,7 +1222,7 @@ export class AlignmentsRenderer {
       const needsFeatureSelection =
         state.selectedChainIndices.length === 0 &&
         state.selectedFeatureIndex >= 0 &&
-        state.selectedFeatureIndex < (region.readCount ?? 0)
+        state.selectedFeatureIndex < region.readCount
 
       if (
         (needsFeatureHighlight || needsFeatureSelection) &&
@@ -1252,6 +1252,53 @@ export class AlignmentsRenderer {
           p.setPipeline(AlignmentsRenderer.readPL!)
           p.setBindGroup(0, region.readBG)
           p.draw(9, region.readCount)
+          submitPass(enc, p)
+        }
+
+        if (needsFeatureSelection) {
+          const idx = state.selectedFeatureIndex
+          const absStart = region.readPositions[idx * 2] + region.regionStart
+          const absEnd = region.readPositions[idx * 2 + 1] + region.regionStart
+          const y = region.readYs[idx]
+          const arcsOff =
+            state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+          const covOff =
+            (state.showCoverage ? state.coverageHeight : 0) + arcsOff
+          const clip = toClipRect(
+            absStart,
+            absEnd,
+            y,
+            state,
+            bpHi,
+            bpLo,
+            bpLen,
+            covOff,
+            state.canvasHeight,
+          )
+          const tx = 4 / scissorW
+          const ty = 4 / state.canvasHeight
+          const quads = new Float32Array([
+            clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1,
+            clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0, 0, 1,
+            clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0, 0, 1,
+            clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 1,
+          ])
+          const { enc, p } = mkPass('load' as GPULoadOp)
+          p.setViewport(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+            0,
+            1,
+          )
+          p.setScissorRect(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+          this.drawOverlayQuads(p, quads, 4, tempBuffers)
           submitPass(enc, p)
         }
 

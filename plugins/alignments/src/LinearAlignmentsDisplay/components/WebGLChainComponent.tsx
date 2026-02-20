@@ -21,20 +21,28 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
     canvasRef,
     resizeHandleHovered,
     setResizeHandleHovered,
+    arcsResizeHovered,
+    setArcsResizeHovered,
     width,
     contrastMap,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
     handleResizeMouseDown,
+    handleArcsResizeMouseDown,
     handleContextMenu,
     processMouseMove,
     processClick,
   } = base
 
-  const { height, showCoverage, coverageHeight, showArcs, arcsHeight } = model
-  const topOffset =
-    (showCoverage ? coverageHeight : 0) + (showArcs ? arcsHeight : 0)
+  const {
+    height,
+    showCoverage,
+    coverageHeight,
+    showArcs,
+    arcsHeight,
+    coverageDisplayHeight: topOffset,
+  } = model
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
@@ -163,6 +171,29 @@ const WebGLChainComponent = observer(function WebGLChainComponent({
             zIndex: 10,
           }}
           title="Drag to resize coverage track"
+        />
+      ) : null}
+
+      {showArcs ? (
+        <div
+          onMouseDown={handleArcsResizeMouseDown}
+          onMouseEnter={() => {
+            setArcsResizeHovered(true)
+          }}
+          onMouseLeave={() => {
+            setArcsResizeHovered(false)
+          }}
+          style={{
+            position: 'absolute',
+            top: topOffset - YSCALEBAR_LABEL_OFFSET,
+            left: 0,
+            right: 0,
+            height: YSCALEBAR_LABEL_OFFSET,
+            cursor: 'row-resize',
+            background: arcsResizeHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
+            zIndex: 10,
+          }}
+          title="Drag to resize arcs area"
         />
       ) : null}
 

@@ -61,6 +61,7 @@ export interface LinearAlignmentsDisplayModel {
   coverageHeight: number
   showArcs: boolean
   arcsHeight: number
+  coverageDisplayHeight: number
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
   maxY: number
@@ -124,16 +125,12 @@ export interface FeatureHit {
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [resizeHandleHovered, setResizeHandleHovered] = useState(false)
+  const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
 
   const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
     null,
   )
   const dragRef = useRef({ isDragging: false, lastX: 0 })
-  const resizeDragRef = useRef({
-    isDragging: false,
-    startY: 0,
-    startHeight: 0,
-  })
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const theme = useTheme()
@@ -145,15 +142,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     featureSpacing,
     showCoverage,
     coverageHeight,
-    showArcs,
     arcsHeight,
+    coverageDisplayHeight: topOffset,
     showInterbaseIndicators,
     showSashimiArcs,
     isChainMode,
   } = model
-
-  const topOffset =
-    (showCoverage ? coverageHeight : 0) + (showArcs ? arcsHeight : 0)
 
   const width = view.initialized ? view.width : undefined
 
@@ -227,23 +221,33 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   function handleResizeMouseDown(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    resizeDragRef.current = {
-      isDragging: true,
-      startY: e.clientY,
-      startHeight: coverageHeight,
-    }
+    const startY = e.clientY
+    const startHeight = coverageHeight
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      if (!resizeDragRef.current.isDragging) {
-        return
-      }
-      const deltaY = moveEvent.clientY - resizeDragRef.current.startY
-      const newHeight = Math.max(20, resizeDragRef.current.startHeight + deltaY)
-      model.setCoverageHeight(newHeight)
+      model.setCoverageHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
     }
 
     const onMouseUp = () => {
-      resizeDragRef.current.isDragging = false
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
+  function handleArcsResizeMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const startY = e.clientY
+    const startHeight = arcsHeight
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      model.setArcsHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
+    }
+
+    const onMouseUp = () => {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
@@ -561,6 +565,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     handleMouseUp,
     handleMouseLeave,
     handleResizeMouseDown,
+    handleArcsResizeMouseDown,
+    arcsResizeHovered,
+    setArcsResizeHovered,
     handleContextMenu,
     processMouseMove,
     processClick,
