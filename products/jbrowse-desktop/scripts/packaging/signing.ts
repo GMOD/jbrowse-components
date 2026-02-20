@@ -1,21 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
-import { APP_ID, APPLE_TEAM_ID, DIST } from './config.ts'
+import { APPLE_TEAM_ID, DIST } from './config.ts'
 import { ensureDir, log, run } from './utils.ts'
-
-export async function signMacApp(appPath: string) {
-  if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
-    log('Skipping macOS code signing (APPLE_ID not set)')
-    return
-  }
-
-  log('Signing macOS app...')
-  run(
-    `codesign --deep --force --options runtime --sign "Developer ID Application" "${appPath}"`,
-  )
-  log('macOS app signed')
-}
 
 export async function notarizeMacApp(appPath: string) {
   if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
@@ -50,16 +37,18 @@ export function signWindowsFile(filePath: string) {
 
   log(`Signing ${path.basename(filePath)}...`)
 
-  const tempDir = path.join(DIST, '.sign-temp')
-  ensureDir(tempDir)
+  const inputDir = path.join(DIST, '.sign-input')
+  const outputDir = path.join(DIST, '.sign-output')
+  ensureDir(inputDir)
+  ensureDir(outputDir)
 
-  const tmpExe = path.join(tempDir, `tmp-${Date.now()}.exe`)
+  const tmpExe = path.join(inputDir, `tmp-${Date.now()}.exe`)
   fs.copyFileSync(filePath, tmpExe)
 
   const signCmd = [
     'CODE_SIGN_TOOL_PATH=code_signer bash code_signer/CodeSignTool.sh sign',
     `-input_file_path='${tmpExe}'`,
-    `-output_dir_path='${tempDir}'`,
+    `-output_dir_path='${outputDir}'`,
     `-credential_id='${process.env.WINDOWS_SIGN_CREDENTIAL_ID}'`,
     `-username='${process.env.WINDOWS_SIGN_USER_NAME}'`,
     `-password='${process.env.WINDOWS_SIGN_USER_PASSWORD}'`,
@@ -68,8 +57,9 @@ export function signWindowsFile(filePath: string) {
 
   run(signCmd)
 
-  fs.copyFileSync(path.join(tempDir, path.basename(tmpExe)), filePath)
-  fs.rmSync(tempDir, { recursive: true, force: true })
+  fs.copyFileSync(path.join(outputDir, path.basename(tmpExe)), filePath)
+  fs.rmSync(inputDir, { recursive: true, force: true })
+  fs.rmSync(outputDir, { recursive: true, force: true })
 
   log(`Signed: ${path.basename(filePath)}`)
 }

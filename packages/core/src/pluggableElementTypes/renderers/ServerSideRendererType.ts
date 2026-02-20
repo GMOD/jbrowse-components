@@ -2,9 +2,7 @@ import { createElement } from 'react'
 
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import RenderResult from './RenderResult.tsx'
 import RendererType from './RendererType.tsx'
-import SvgRenderResult from './SvgRenderResult.tsx'
 import SerializableFilterChain from './util/serializableFilterChain.ts'
 import { getSerializedSvg, updateStatus } from '../../util/index.ts'
 import { isRpcResult } from '../../util/rpc.ts'
@@ -13,25 +11,54 @@ import {
   createStopTokenChecker,
 } from '../../util/stopToken.ts'
 
-import type { RenderResults } from './RendererType.tsx'
-import type {
-  RenderArgs,
-  RenderArgsDeserialized,
-  RenderArgsSerialized,
-  ResultsDeserialized,
-  ResultsSerialized,
-  ResultsSerializedSvgExport,
-} from './ServerSideRendererTypes.ts'
+import type { RenderProps, RenderResults } from './RendererType.tsx'
+import type { SerializedFilterChain } from './util/serializableFilterChain.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
+import type { LastStopTokenCheck } from '../../util/stopToken.ts'
+import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
-export type {
-  RenderArgs,
-  RenderArgsDeserialized,
-  RenderArgsSerialized,
-  ResultsDeserialized,
-  ResultsSerialized,
-  ResultsSerializedSvgExport,
-} from './ServerSideRendererTypes.ts'
+interface BaseRenderArgs extends RenderProps {
+  sessionId: string
+  trackInstanceId: string
+  stopToken?: string
+  theme: ThemeOptions
+  exportSVG?: {
+    rasterizeLayers?: boolean
+  }
+}
+
+export interface RenderArgs extends BaseRenderArgs {
+  config: SnapshotOrInstance<AnyConfigurationModel>
+  filters?: SerializableFilterChain
+  renderingProps?: Record<string, unknown>
+}
+
+export interface RenderArgsSerialized extends BaseRenderArgs {
+  statusCallback?: (arg: string) => void
+  config: SnapshotIn<AnyConfigurationModel>
+  filters?: SerializedFilterChain
+}
+
+export interface RenderArgsDeserialized extends BaseRenderArgs {
+  config: AnyConfigurationModel
+  filters?: SerializableFilterChain
+  stopTokenCheck?: LastStopTokenCheck
+}
+
+export type ResultsSerialized = Omit<RenderResults, 'reactElement'> & {
+  imageData?: ImageBitmap
+}
+
+export interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+  reactElement: unknown
+}
+
+export type ResultsDeserialized = RenderResults
 
 function isCanvasRecordedSvgExport(
   e: ResultsSerialized,
@@ -41,19 +68,24 @@ function isCanvasRecordedSvgExport(
 
 export default class ServerSideRenderer extends RendererType {
   private createReactElement(res: ResultsSerialized, args: RenderArgs) {
-    return args.exportSVG
-      ? createElement(SvgRenderResult, {
-          res,
-          args,
-          ReactComponent: this.ReactComponent,
-          supportsSVG: this.supportsSVG,
-        })
-      : createElement(RenderResult, {
-          res,
-          args,
-          ReactComponent: this.ReactComponent,
-          renderingProps: args.renderingProps,
-        })
+    if (args.exportSVG) {
+      if (res.html) {
+        return undefined
+      }
+      if (this.supportsSVG) {
+        return createElement(this.ReactComponent, { ...args, ...res })
+      }
+      return createElement(
+        'text',
+        { y: '12', fill: 'black' },
+        'SVG export not supported for this track',
+      )
+    }
+    return createElement(this.ReactComponent, {
+      ...args,
+      ...res,
+      ...args.renderingProps,
+    })
   }
 
   async renderDirect(args: RenderArgs) {

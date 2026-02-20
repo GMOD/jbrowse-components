@@ -3,7 +3,7 @@ import path from 'path'
 
 import { APP_NAME, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
-import { notarizeMacApp, signMacApp } from './signing.ts'
+import { notarizeMacApp } from './signing.ts'
 import { fileSizeMB, generateLatestYml, log, run } from './utils.ts'
 
 export async function buildMac({ noInstaller = false } = {}) {
@@ -23,7 +23,6 @@ export async function buildMac({ noInstaller = false } = {}) {
     return electronAppDir
   }
 
-  await signMacApp(appPath)
   await notarizeMacApp(appPath)
 
   const dmgName = `${APP_NAME}-v${VERSION}-mac.dmg`
@@ -31,11 +30,14 @@ export async function buildMac({ noInstaller = false } = {}) {
   const dmgPath = path.join(DIST, dmgName)
   const zipPath = path.join(DIST, zipName)
 
-  // Create DMG
+  // Create DMG with Applications symlink for drag-to-install
   log('Creating DMG...')
+  const applicationsLink = path.join(electronAppDir, 'Applications')
+  fs.symlinkSync('/Applications', applicationsLink)
   run(
-    `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${appPath}" -ov -format UDZO "${dmgPath}"`,
+    `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${electronAppDir}" -ov -format UDZO "${dmgPath}"`,
   )
+  fs.unlinkSync(applicationsLink)
 
   // Sign the DMG too
   if (process.env.APPLE_ID) {

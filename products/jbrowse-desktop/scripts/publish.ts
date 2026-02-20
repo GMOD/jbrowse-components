@@ -16,23 +16,20 @@ import { DIST, VERSION } from './packaging/config.ts'
 function parseArgs() {
   const args = process.argv.slice(2)
   let publish = false
-  const platforms = []
+  const platforms: string[] = []
 
-  for (const arg of args) {
-    if (arg === '--publish' || arg === 'always') {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!
+    if (arg === '--publish' && args[i + 1] === 'always') {
       publish = true
-    } else if (arg === '--linux' || arg === 'linux') {
+      i++
+    } else if (arg === '--linux') {
       platforms.push('linux')
-    } else if (arg === '--mac' || arg === 'mac') {
+    } else if (arg === '--mac') {
       platforms.push('mac')
-    } else if (arg === '--win' || arg === 'win') {
+    } else if (arg === '--win') {
       platforms.push('win')
     }
-  }
-
-  // Default to publish if --publish always was passed
-  if (args.includes('always')) {
-    publish = true
   }
 
   return { publish, platforms }
@@ -82,6 +79,7 @@ function getArtifacts(platforms: string[]) {
 
 function uploadToGitHub(artifacts: string[]) {
   const tag = `v${VERSION}`
+  const failures: string[] = []
 
   console.log(`\nUploading ${artifacts.length} artifacts to release ${tag}...`)
 
@@ -97,7 +95,13 @@ function uploadToGitHub(artifacts: string[]) {
       console.error(
         `  Failed to upload ${filename}: ${e instanceof Error ? e.message : e}`,
       )
+      failures.push(filename)
     }
+  }
+
+  if (failures.length > 0) {
+    console.error(`\nFailed to upload: ${failures.join(', ')}`)
+    process.exit(1)
   }
 
   console.log('\nUpload complete!')

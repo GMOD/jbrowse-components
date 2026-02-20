@@ -60,23 +60,23 @@ export function setupAutoUpdater(
     sendStatusToWindow(getMainWindow(), 'Checking for update...')
   })
 
-  autoUpdater.on('update-downloaded', () => {
+  autoUpdater.on('update-downloaded', async () => {
     // Skip dialogs in CI environments
     if (process.env.CI) {
       // eslint-disable-next-line no-console
       console.log('Update downloaded (CI mode, skipping dialog)')
       return
     }
-    dialog
-      .showMessageBox({
-        type: 'info',
-        title: 'Update completed',
-        message:
-          'Update downloaded, the update will take place when you restart the app. Once you close the app, wait a minute or so before re-launching because it will be doing a reinstall in the background',
-        buttons: ['OK'],
-      })
-      .catch((e: unknown) => {
-        console.error(e)
-      })
+    const result = await dialog.showMessageBox({
+      type: 'info',
+      title: 'Update ready',
+      message:
+        'A new version has been downloaded. Restart now to apply the update?',
+      buttons: ['Restart now', 'Later'],
+    })
+
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall(true, true)
+    }
   })
 }

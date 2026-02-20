@@ -1,5 +1,5 @@
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
-import { CHAR_FROM_CODE } from '../shared/cigarUtil.ts'
+import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -139,38 +139,12 @@ export default class CramSlightlyLazyFeature implements Feature {
     switch (field) {
       case 'mismatches':
         return this.mismatches
-      case 'name':
-        return this.name
-      case 'start':
-        return this.start
-      case 'refName':
-        return this.refName
-      case 'end':
-        return this.end
-      case 'strand':
-        return this.strand
       case 'qual':
         return this.qual
-      case 'seq':
-        return this.seq
-      case 'tags':
-        return this.tags
-      case 'NUMERIC_CIGAR':
-        return this.NUMERIC_CIGAR
       case 'CIGAR':
         return this.CIGAR
-      case 'flags':
-        return this.flags
-      case 'pair_orientation':
-        return this.pair_orientation
-      case 'next_ref':
-        return this.next_ref
-      case 'next_pos':
-        return this.next_pos
-      case 'template_length':
-        return this.template_length
-      case 'score':
-        return this.score
+      case 'NUMERIC_CIGAR':
+        return this.NUMERIC_CIGAR
       default:
         return this.fields[field]
     }
@@ -271,29 +245,31 @@ export default class CramSlightlyLazyFeature implements Feature {
       }
       refPos = rf.refPos - 1 - featStart
 
-      if (rf.code === 'X') {
+      const { code } = rf
+
+      if (code === 'X') {
         const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
         callback(
           MISMATCH_TYPE,
           refPos,
           1,
-          rf.sub!,
+          rf.sub ?? '',
           hasQual ? qual[rf.pos - 1]! : -1,
           refCharCode,
           0,
         )
-      } else if (rf.code === 'I') {
+      } else if (code === 'I') {
         callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
-      } else if (rf.code === 'N') {
+      } else if (code === 'N') {
         callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
-      } else if (rf.code === 'S') {
+      } else if (code === 'S') {
         const dataLen = rf.data.length
         callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
-      } else if (rf.code === 'H') {
+      } else if (code === 'H') {
         callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
-      } else if (rf.code === 'D') {
+      } else if (code === 'D') {
         callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
-      } else if (rf.code === 'i') {
+      } else if (code === 'i') {
         insertedBases += rf.data
         insertedBasesLen++
       }
@@ -345,4 +321,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 }
 
+cacheGetter(CramSlightlyLazyFeature, 'fields')
+cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
+cacheGetter(CramSlightlyLazyFeature, 'mismatches')

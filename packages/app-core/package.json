@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/app-core",
-  "version": "4.1.3",
+  "version": "4.1.13",
   "type": "module",
   "description": "JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop",
   "keywords": [

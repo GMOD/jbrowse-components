@@ -21,6 +21,7 @@ export async function packageApp(platform: string, arch: string) {
   // Create minimal package.json for packaged app
   const appPkg = {
     name: APP_NAME,
+    productName: PRODUCT_NAME,
     version: VERSION,
     main: 'electron.js',
     type: 'module',
@@ -29,9 +30,6 @@ export async function packageApp(platform: string, arch: string) {
     path.join(BUILD, 'package.json'),
     JSON.stringify(appPkg, null, 2),
   )
-
-  // Write app-update.yml for electron-updater
-  fs.writeFileSync(path.join(BUILD, 'app-update.yml'), generateAppUpdateYml())
 
   const outDir = path.join(DIST, 'unpacked')
   ensureDir(outDir)
@@ -43,11 +41,14 @@ export async function packageApp(platform: string, arch: string) {
         ? path.join(ASSETS, 'icon.icns')
         : undefined
 
+  const appUpdateYmlPath = path.join(BUILD, 'app-update.yml')
+  fs.writeFileSync(appUpdateYmlPath, generateAppUpdateYml())
+
   const opts: Record<string, unknown> = {
     dir: BUILD,
     out: outDir,
-    name: APP_NAME,
-    executableName: APP_NAME,
+    name: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
+    executableName: platform === 'darwin' ? PRODUCT_NAME : APP_NAME,
     platform,
     arch,
     appVersion: VERSION,
@@ -57,6 +58,7 @@ export async function packageApp(platform: string, arch: string) {
     asar: true,
     prune: false,
     appCategoryType: 'public.app-category.science',
+    extraResource: [appUpdateYmlPath],
   }
 
   // macOS signing during packaging
@@ -75,7 +77,7 @@ export async function packageApp(platform: string, arch: string) {
 
   // Cleanup temp files
   fs.unlinkSync(path.join(BUILD, 'package.json'))
-  fs.unlinkSync(path.join(BUILD, 'app-update.yml'))
+  fs.unlinkSync(appUpdateYmlPath)
 
   return appPaths[0]!
 }

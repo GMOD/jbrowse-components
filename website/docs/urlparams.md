@@ -510,6 +510,12 @@ where each node is either:
 
 #### Horizontal split example
 
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"views":[2]}]}}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"views":[2]}]}})
+
 ```json
 {
   "views": [
@@ -538,6 +544,12 @@ This creates a left-right split:
 You can specify the `size` property to control the proportional width/height of
 panels:
 
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0],"size":70},{"views":[1],"size":30}]}}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0],"size":70},{"views":[1],"size":30}]}})
+
 ```json
 {
   "views": [
@@ -560,16 +572,30 @@ This creates a 70/30 split with the left panel taking 70% of the width.
 
 You can create more complex layouts by nesting containers:
 
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:5000-10000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"direction":"vertical","children":[{"views":[2]},{"views":[3]}]}]}}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:5000-10000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"direction":"vertical","children":[{"views":[2]},{"views":[3]}]}]}})
+
 ```json
 {
   "views": [
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000"
+    },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
       "loc": "ctgA:5000-10000"
     },
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:1-5000"
+    },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
@@ -579,10 +605,19 @@ You can create more complex layouts by nesting containers:
   "layout": {
     "direction": "horizontal",
     "children": [
-      { "views": [0, 1] },
+      {
+        "views": [0, 1]
+      },
       {
         "direction": "vertical",
-        "children": [{ "views": [2] }, { "views": [3] }]
+        "children": [
+          {
+            "views": [2]
+          },
+          {
+            "views": [3]
+          }
+        ]
       }
     ]
   }
