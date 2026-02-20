@@ -244,7 +244,7 @@ export class WebGLRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const gl = canvas.getContext('webgl2', {
-      antialias: true,
+      antialias: false,
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
       stencil: true,
@@ -424,6 +424,7 @@ export class WebGLRenderer {
     ])
     this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
       ...cigarUniformsWithWidth,
+      'u_dpr',
       ...baseColorUniforms,
     ])
     this.cacheUniforms(this.insertionProgram, this.insertionUniforms, [
@@ -569,7 +570,12 @@ export class WebGLRenderer {
     this.connectingLineRenderer = new ConnectingLineRenderer(this)
 
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFuncSeparate(
+      gl.SRC_ALPHA,
+      gl.ONE_MINUS_SRC_ALPHA,
+      gl.ONE,
+      gl.ONE_MINUS_SRC_ALPHA,
+    )
   }
 
   private createShader(type: number, source: string): WebGLShader {

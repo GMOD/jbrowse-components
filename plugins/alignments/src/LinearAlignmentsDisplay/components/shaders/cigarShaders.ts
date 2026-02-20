@@ -135,8 +135,6 @@ void main() {
 
   // When zoomed out, fade low-frequency SNPs to nothing.
   // High-frequency SNPs (>10% of reads) stay visible.
-  // Use physical pixels (pxPerBp * u_dpr) so the threshold is correct on
-  // high-DPR displays (e.g. Retina), where 0.5 CSS px/bp = 1.0 physical px/bp.
   float physicalPxPerBp = pxPerBp * u_dpr;
   float alpha = 1.0;
   if (physicalPxPerBp < 1.0 && a_frequency < 0.1) {

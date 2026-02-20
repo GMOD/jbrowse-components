@@ -261,6 +261,7 @@ export class PileupRenderer {
         )
         gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
+        gl.uniform1f(this.parent.mismatchUniforms.u_dpr!, this.parent.dpr)
         // Base color uniforms from theme
         gl.uniform3f(
           this.parent.mismatchUniforms.u_colorBaseA!,
@@ -540,7 +541,12 @@ export class PileupRenderer {
   private drawFilledRect(gl: WebGL2RenderingContext, clip: ClipRect) {
     const { sx1, sx2, syTop, syBot } = clip
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFuncSeparate(
+      gl.SRC_ALPHA,
+      gl.ONE_MINUS_SRC_ALPHA,
+      gl.ONE,
+      gl.ONE_MINUS_SRC_ALPHA,
+    )
     gl.useProgram(this.parent.lineProgram)
     gl.uniform4f(this.parent.lineUniforms.u_color!, 0, 0, 0, 0.4)
     const quadData = new Float32Array([

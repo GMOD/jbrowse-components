@@ -361,7 +361,12 @@ export class WebGLFeatureRenderer {
     this.cacheUniforms(this.arrowProgram, this.arrowUniforms, commonUniforms)
 
     gl.enable(gl.BLEND)
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFuncSeparate(
+      gl.SRC_ALPHA,
+      gl.ONE_MINUS_SRC_ALPHA,
+      gl.ONE,
+      gl.ONE_MINUS_SRC_ALPHA,
+    )
   }
 
   private createShader(type: number, source: string) {
