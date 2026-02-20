@@ -2,9 +2,8 @@
  * WebGL Chain Data RPC Executor
  *
  * Produces WebGLPileupDataResult-compatible output with chain-aware Y layout
- * and connecting line data. Supports two layout modes:
- * - 'cloud': log₂(chain distance) → discretized to virtual rows
- * - 'linkedRead': PileupLayout on chain bounds (min start → max end)
+ * and connecting line data. Uses PileupLayout on chain bounds (min start →
+ * max end) for the linkedRead mode.
  *
  * Reuses the pileup rendering pipeline — individual reads get full CIGAR
  * features (mismatches, gaps, insertions, clips, modifications) while being
@@ -20,7 +19,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { scaleLog } from '@mui/x-charts-vendor/d3-scale'
+
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -75,21 +74,10 @@ interface ExecuteParams {
 }
 
 export interface RenderWebGLChainDataArgs extends RenderWebGLPileupDataArgs {
-  layoutMode: 'cloud' | 'linkedRead'
+  layoutMode: 'linkedRead'
   height: number
   drawSingletons?: boolean
   drawProperPairs?: boolean
-}
-
-const CLOUD_HEIGHT_PADDING = 20
-const DEFAULT_MAX_DISTANCE = 10000
-
-function createCloudScale(maxDistance: number, height: number) {
-  return scaleLog()
-    .base(2)
-    .domain([1, Math.max(2, maxDistance)])
-    .range([0, height - CLOUD_HEIGHT_PADDING])
-    .clamp(true)
 }
 
 function getColorType(f: ChainFeatureData, stats?: ChainStats) {
@@ -152,8 +140,6 @@ export async function executeRenderWebGLChainData({
     region,
     colorBy,
     colorTagMap,
-    layoutMode,
-    height,
     drawSingletons = true,
     drawProperPairs = true,
     statusCallback = () => {},
@@ -633,31 +619,15 @@ export async function executeRenderWebGLChainData({
     chainFlatbushData,
     chainFirstReadIndices,
   } = await updateStatus('Computing chain layout', statusCallback, async () => {
-    if (layoutMode === 'cloud') {
-      const scale = createCloudScale(maxDistance, height)
-
-      for (const cb of chainBounds) {
-        const yPx = cb.distance > 0 ? Math.round(scale(cb.distance)) : 0
-        const chain = chains[cb.chainIdx]!
-        for (const f of chain) {
-          featureIdToY.set(f.id, yPx)
-        }
-        if (yPx > maxY) {
-          maxY = yPx
-        }
+    const chainLayout = computeChainLayout(chainBounds)
+    for (const cb of chainBounds) {
+      const row = chainLayout.get(cb.chainIdx) ?? 0
+      const chain = chains[cb.chainIdx]!
+      for (const f of chain) {
+        featureIdToY.set(f.id, row)
       }
-    } else {
-      // linkedRead mode: pack chains using PileupLayout on chain bounds
-      const chainLayout = computeChainLayout(chainBounds)
-      for (const cb of chainBounds) {
-        const row = chainLayout.get(cb.chainIdx) ?? 0
-        const chain = chains[cb.chainIdx]!
-        for (const f of chain) {
-          featureIdToY.set(f.id, row)
-        }
-        if (row > maxY) {
-          maxY = row
-        }
+      if (row > maxY) {
+        maxY = row
       }
     }
     maxY += 1

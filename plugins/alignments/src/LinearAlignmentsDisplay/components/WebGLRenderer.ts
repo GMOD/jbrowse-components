@@ -1,7 +1,7 @@
 /**
  * WebGL Renderer for alignments display
  *
- * Handles pileup, arcs, and cloud rendering modes with shared coverage.
+ * Handles pileup and arcs rendering modes with shared coverage.
  * Manages shader compilation, buffer management, and rendering.
  * Data is uploaded once, then rendering only updates uniforms.
  *
@@ -21,7 +21,7 @@
  */
 
 import { ArcsRenderer } from './ArcsRenderer.ts'
-import { CloudRenderer } from './CloudRenderer.ts'
+
 import { ConnectingLineRenderer } from './ConnectingLineRenderer.ts'
 import { CoverageRenderer } from './CoverageRenderer.ts'
 import { PileupRenderer } from './PileupRenderer.ts'
@@ -31,8 +31,6 @@ import {
   ARC_LINE_FRAGMENT_SHADER,
   ARC_LINE_VERTEX_SHADER,
   ARC_VERTEX_SHADER,
-  CLOUD_FRAGMENT_SHADER,
-  CLOUD_VERTEX_SHADER,
   CONNECTING_LINE_FRAGMENT_SHADER,
   CONNECTING_LINE_VERTEX_SHADER,
   COVERAGE_FRAGMENT_SHADER,
@@ -98,12 +96,8 @@ export interface RenderState {
   selectedChainIndices: number[]
   // Color palette from theme
   colors: ColorPalette
-  // Rendering mode - 'pileup' (default), 'cloud', or 'linkedRead'
-  renderingMode?: 'pileup' | 'cloud' | 'linkedRead'
-  // Arcs-specific
+  renderingMode?: 'pileup' | 'linkedRead'
   arcLineWidth?: number
-  // Cloud-specific
-  cloudColorScheme?: number
   // Sashimi arcs (splice junctions overlaid on coverage)
   showSashimiArcs?: boolean
   // Show arcs alongside pileup (between coverage and reads)
@@ -155,10 +149,6 @@ export interface GPUBuffers {
   arcCount: number
   arcLineVAO: WebGLVertexArrayObject | null
   arcLineCount: number
-  // Cloud mode
-  cloudVAO: WebGLVertexArrayObject | null
-  cloudCount: number
-  // Connecting lines (chain modes: cloud/linkedRead)
   connectingLineVAO: WebGLVertexArrayObject | null
   connectingLineCount: number
   // Sashimi arcs (splice junctions)
@@ -195,7 +185,6 @@ export class WebGLRenderer {
   private buffersMap = new Map<number, GPUBuffers>()
   private glBuffersMap = new Map<number, WebGLBuffer[]>()
   private arcInstanceBuffersMap = new Map<number, WebGLBuffer[]>()
-  private cloudGLBuffersMap = new Map<number, WebGLBuffer[]>()
   lineVAO: WebGLVertexArrayObject | null = null
   lineBuffer: WebGLBuffer | null = null
 
@@ -227,12 +216,6 @@ export class WebGLRenderer {
   private sashimiInstanceBuffersMap = new Map<number, WebGLBuffer[]>()
   sashimiUniforms: Record<string, WebGLUniformLocation | null> = {}
 
-  // Cloud mode
-  cloudProgram: WebGLProgram | null = null
-  private cloudGLBuffers: WebGLBuffer[] = []
-  cloudUniforms: Record<string, WebGLUniformLocation | null> = {}
-
-  // Connecting lines (chain modes)
   connectingLineProgram: WebGLProgram | null = null
   private connectingLineGLBuffers: WebGLBuffer[] = []
   private connectingLineGLBuffersMap = new Map<number, WebGLBuffer[]>()
@@ -242,7 +225,6 @@ export class WebGLRenderer {
   private pileupRenderer!: PileupRenderer
   private coverageRenderer!: CoverageRenderer
   private arcsRenderer!: ArcsRenderer
-  private cloudRenderer!: CloudRenderer
   private connectingLineRenderer!: ConnectingLineRenderer
 
   constructor(canvas: HTMLCanvasElement) {
@@ -534,21 +516,6 @@ export class WebGLRenderer {
       )
     }
 
-    // Cloud program
-    this.cloudProgram = this.createProgram(
-      CLOUD_VERTEX_SHADER,
-      CLOUD_FRAGMENT_SHADER,
-    )
-    this.cacheUniforms(this.cloudProgram, this.cloudUniforms, [
-      'u_bpRangeX',
-      'u_regionStart',
-      'u_featureHeight',
-      'u_canvasHeight',
-      'u_coverageOffset',
-      'u_colorScheme',
-      'u_zero',
-    ])
-
     // Connecting line program
     this.connectingLineProgram = this.createProgram(
       CONNECTING_LINE_VERTEX_SHADER,
@@ -573,7 +540,6 @@ export class WebGLRenderer {
     this.pileupRenderer = new PileupRenderer(this)
     this.coverageRenderer = new CoverageRenderer(this)
     this.arcsRenderer = new ArcsRenderer(this)
-    this.cloudRenderer = new CloudRenderer(this)
     this.connectingLineRenderer = new ConnectingLineRenderer(this)
 
     gl.enable(gl.BLEND)
@@ -699,9 +665,6 @@ export class WebGLRenderer {
       if (oldBuffers.arcLineVAO) {
         gl.deleteVertexArray(oldBuffers.arcLineVAO)
       }
-      if (oldBuffers.cloudVAO) {
-        gl.deleteVertexArray(oldBuffers.cloudVAO)
-      }
       if (oldBuffers.connectingLineVAO) {
         gl.deleteVertexArray(oldBuffers.connectingLineVAO)
       }
@@ -711,11 +674,6 @@ export class WebGLRenderer {
       gl.deleteBuffer(buf)
     }
     this.arcInstanceBuffers = []
-    // Clean up cloud buffers
-    for (const buf of this.cloudGLBuffers) {
-      gl.deleteBuffer(buf)
-    }
-    this.cloudGLBuffers = []
     // Clean up connecting line buffers
     for (const buf of this.connectingLineGLBuffers) {
       gl.deleteBuffer(buf)
@@ -723,7 +681,7 @@ export class WebGLRenderer {
     this.connectingLineGLBuffers = []
 
     if (data.numReads === 0) {
-      // Create a minimal buffers object so arcs/cloud modes can attach their data
+      // Create a minimal buffers object so arcs/linkedRead modes can attach their data
       const emptyVAO = gl.createVertexArray()
       gl.bindVertexArray(emptyVAO)
       gl.bindVertexArray(null)
@@ -763,8 +721,6 @@ export class WebGLRenderer {
         arcCount: 0,
         arcLineVAO: null,
         arcLineCount: 0,
-        cloudVAO: null,
-        cloudCount: 0,
         connectingLineVAO: null,
         connectingLineCount: 0,
         sashimiVAO: null,
@@ -874,8 +830,6 @@ export class WebGLRenderer {
       arcCount: 0,
       arcLineVAO: null,
       arcLineCount: 0,
-      cloudVAO: null,
-      cloudCount: 0,
       connectingLineVAO: null,
       connectingLineCount: 0,
       sashimiVAO: null,
@@ -1541,7 +1495,7 @@ export class WebGLRenderer {
   }
 
   /**
-   * Ensure a buffers object exists (needed for arcs/cloud modes that don't have pileup data)
+   * Ensure a buffers object exists (needed for arcs/linkedRead modes that don't have pileup data)
    */
   ensureBuffers(regionStart: number) {
     if (this.buffers) {
@@ -1587,8 +1541,6 @@ export class WebGLRenderer {
       arcCount: 0,
       arcLineVAO: null,
       arcLineCount: 0,
-      cloudVAO: null,
-      cloudCount: 0,
       connectingLineVAO: null,
       connectingLineCount: 0,
       sashimiVAO: null,
@@ -1848,95 +1800,6 @@ export class WebGLRenderer {
   }
 
   /**
-   * Upload cloud data from pre-computed typed arrays (from RPC worker)
-   */
-  uploadCloudFromTypedArrays(data: {
-    regionStart: number
-    chainPositions: Uint32Array
-    chainYs: Float32Array
-    chainFlags: Uint16Array
-    chainColorTypes: Uint8Array
-    numChains: number
-  }) {
-    const gl = this.gl
-    this.ensureBuffers(data.regionStart)
-
-    if (!this.buffers || !this.cloudProgram) {
-      return
-    }
-
-    // Clean up old cloud VAO
-    if (this.buffers.cloudVAO) {
-      gl.deleteVertexArray(this.buffers.cloudVAO)
-      this.buffers.cloudVAO = null
-    }
-    for (const buf of this.cloudGLBuffers) {
-      gl.deleteBuffer(buf)
-    }
-    this.cloudGLBuffers = []
-
-    if (data.numChains === 0) {
-      this.buffers.cloudCount = 0
-      return
-    }
-
-    const cloudVAO = gl.createVertexArray()
-    gl.bindVertexArray(cloudVAO)
-
-    this.uploadCloudBuffer(
-      this.cloudProgram,
-      'a_position',
-      data.chainPositions,
-      2,
-      true,
-    )
-    this.uploadCloudBuffer(this.cloudProgram, 'a_y', data.chainYs, 1, false)
-    this.uploadCloudBuffer(
-      this.cloudProgram,
-      'a_flags',
-      new Float32Array(data.chainFlags),
-      1,
-      false,
-    )
-    this.uploadCloudBuffer(
-      this.cloudProgram,
-      'a_colorType',
-      new Float32Array(data.chainColorTypes),
-      1,
-      false,
-    )
-
-    gl.bindVertexArray(null)
-    this.buffers.cloudVAO = cloudVAO
-    this.buffers.cloudCount = data.numChains
-  }
-
-  private uploadCloudBuffer(
-    program: WebGLProgram,
-    attrib: string,
-    data: Uint32Array | Float32Array,
-    size: number,
-    isUint: boolean,
-  ) {
-    const gl = this.gl
-    const loc = gl.getAttribLocation(program, attrib)
-    if (loc < 0) {
-      return
-    }
-    const buffer = gl.createBuffer()
-    this.cloudGLBuffers.push(buffer)
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
-    gl.enableVertexAttribArray(loc)
-    if (isUint) {
-      gl.vertexAttribIPointer(loc, size, gl.UNSIGNED_INT, 0, 0)
-    } else {
-      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0)
-    }
-    gl.vertexAttribDivisor(loc, 1)
-  }
-
-  /**
    * Clear legacy single-entry state (this.buffers, this.glBuffers, etc.)
    * that may have been populated by direct (non-per-refName) uploads.
    * Call once before starting per-refName uploads to prevent GPU resource leaks.
@@ -1959,10 +1822,6 @@ export class WebGLRenderer {
       gl.deleteBuffer(buf)
     }
     this.sashimiInstanceBuffers = []
-    for (const buf of this.cloudGLBuffers) {
-      gl.deleteBuffer(buf)
-    }
-    this.cloudGLBuffers = []
     for (const buf of this.connectingLineGLBuffers) {
       gl.deleteBuffer(buf)
     }
@@ -1979,7 +1838,6 @@ export class WebGLRenderer {
     this.arcInstanceBuffers = this.arcInstanceBuffersMap.get(regionNumber) ?? []
     this.sashimiInstanceBuffers =
       this.sashimiInstanceBuffersMap.get(regionNumber) ?? []
-    this.cloudGLBuffers = this.cloudGLBuffersMap.get(regionNumber) ?? []
     this.connectingLineGLBuffers =
       this.connectingLineGLBuffersMap.get(regionNumber) ?? []
   }
@@ -1998,7 +1856,6 @@ export class WebGLRenderer {
       regionNumber,
       this.sashimiInstanceBuffers,
     )
-    this.cloudGLBuffersMap.set(regionNumber, this.cloudGLBuffers)
     this.connectingLineGLBuffersMap.set(
       regionNumber,
       this.connectingLineGLBuffers,
@@ -2008,7 +1865,6 @@ export class WebGLRenderer {
     this.glBuffers = []
     this.arcInstanceBuffers = []
     this.sashimiInstanceBuffers = []
-    this.cloudGLBuffers = []
     this.connectingLineGLBuffers = []
   }
 
@@ -2081,18 +1937,6 @@ export class WebGLRenderer {
   ) {
     this.activateRegion(regionNumber)
     this.uploadArcsFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
-  }
-
-  /**
-   * Upload cloud data for a specific region
-   */
-  uploadCloudFromTypedArraysForRegion(
-    regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadCloudFromTypedArrays']>[0],
-  ) {
-    this.activateRegion(regionNumber)
-    this.uploadCloudFromTypedArrays(data)
     this.deactivateRegion(regionNumber)
   }
 
@@ -2244,7 +2088,7 @@ export class WebGLRenderer {
 
       // Compute viewport-clipped domain: the genomic range corresponding to
       // the visible portion of this block. Needed for shaders that map domain
-      // to [-1,1] clip space (pileup, coverage, cloud) since the per-block
+      // to [-1,1] clip space (pileup, coverage) since the per-block
       // gl.viewport maps [-1,1] to the visible screen region.
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const bpPerPx =
@@ -2336,7 +2180,7 @@ export class WebGLRenderer {
         )
       }
 
-      if (mode === 'cloud' || mode === 'linkedRead') {
+      if (mode === 'linkedRead') {
         this.connectingLineRenderer.render(blockState)
       }
 
@@ -2396,9 +2240,6 @@ export class WebGLRenderer {
     if (buffers.arcLineVAO) {
       gl.deleteVertexArray(buffers.arcLineVAO)
     }
-    if (buffers.cloudVAO) {
-      gl.deleteVertexArray(buffers.cloudVAO)
-    }
     if (buffers.connectingLineVAO) {
       gl.deleteVertexArray(buffers.connectingLineVAO)
     }
@@ -2433,12 +2274,6 @@ export class WebGLRenderer {
       }
     }
     this.sashimiInstanceBuffersMap.clear()
-    for (const bufs of this.cloudGLBuffersMap.values()) {
-      for (const buf of bufs) {
-        gl.deleteBuffer(buf)
-      }
-    }
-    this.cloudGLBuffersMap.clear()
     for (const bufs of this.connectingLineGLBuffersMap.values()) {
       for (const buf of bufs) {
         gl.deleteBuffer(buf)
@@ -2493,14 +2328,6 @@ export class WebGLRenderer {
     if (this.sashimiProgram) {
       gl.deleteProgram(this.sashimiProgram)
     }
-    // Cloud cleanup
-    for (const buf of this.cloudGLBuffers) {
-      gl.deleteBuffer(buf)
-    }
-    if (this.cloudProgram) {
-      gl.deleteProgram(this.cloudProgram)
-    }
-
     // Connecting line cleanup
     for (const buf of this.connectingLineGLBuffers) {
       gl.deleteBuffer(buf)

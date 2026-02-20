@@ -114,7 +114,7 @@ export class PileupRenderer {
       state.highlightedFeatureIndex,
     )
     const mode = state.renderingMode ?? 'pileup'
-    const isChainMode = mode === 'cloud' || mode === 'linkedRead'
+    const isChainMode = mode === 'linkedRead'
     gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
     const showStroke =
       state.showOutline && state.featureHeight >= 4 ? 1 : 0

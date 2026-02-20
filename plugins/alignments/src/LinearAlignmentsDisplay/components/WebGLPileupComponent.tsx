@@ -1,10 +1,14 @@
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { formatFeatureTooltip } from './alignmentComponentUtils.ts'
+import {
+  formatChainTooltip,
+  formatFeatureTooltip,
+} from './alignmentComponentUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -38,23 +42,35 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     showCoverage,
     coverageHeight,
     showArcs,
+    isChainMode,
     coverageDisplayHeight: topOffset,
   } = model
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
       e,
-      hit => {
+      (hit, resolved) => {
         model.setFeatureIdUnderMouse(hit.id)
         if (model.highlightedFeatureIndex !== hit.index) {
           model.setHighlightedFeatureIndex(hit.index)
         }
-        if (model.highlightedChainIndices.length > 0) {
-          model.setHighlightedChainIndices([])
+        if (isChainMode) {
+          const readName = resolved.rpcData.readNames[hit.index]
+          const chainIndices = readName
+            ? (model.chainIndexMap.get(readName) ?? [])
+            : []
+          model.setHighlightedChainIndices(chainIndices)
+          model.setMouseoverExtraInformation(
+            formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
+          )
+        } else {
+          if (model.highlightedChainIndices.length > 0) {
+            model.setHighlightedChainIndices([])
+          }
+          model.setMouseoverExtraInformation(
+            formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
+          )
         }
-        model.setMouseoverExtraInformation(
-          formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
-        )
       },
       () => {
         model.clearMouseoverState()
@@ -65,9 +81,16 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
   function handleClick(e: React.MouseEvent) {
     processClick(
       e,
-      hit => {
+      (hit, resolved) => {
         model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
+        if (isChainMode) {
+          const readName = resolved.rpcData.readNames[hit.index]
+          const chainIndices = readName
+            ? (model.chainIndexMap.get(readName) ?? [])
+            : []
+          model.setSelectedChainIndices(chainIndices)
+        }
       },
       () => {
         model.clearSelection()
@@ -121,6 +144,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
           </g>
         </svg>
       ) : null}
+
+      {model.showLegend ? <FloatingLegend items={model.legendItems} /> : null}
 
       {showCoverage ? (
         <div

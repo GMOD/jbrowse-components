@@ -23,7 +23,6 @@ import {
   ARC_CURVE_SEGMENTS,
   ARC_LINE_STRIDE,
   ARC_STRIDE,
-  CLOUD_STRIDE,
   CONN_LINE_STRIDE,
   COVERAGE_STRIDE,
   GAP_STRIDE,
@@ -50,7 +49,6 @@ import {
   U_CANVAS_H,
   U_CANVAS_W,
   U_CHAIN_MODE,
-  U_CLOUD_COLOR_SCHEME,
   U_COLOR_BASE_A,
   U_COLOR_BASE_C,
   U_COLOR_BASE_G,
@@ -107,7 +105,6 @@ import {
 import {
   ARC_LINE_WGSL,
   ARC_WGSL,
-  CLOUD_WGSL,
   CONNECTING_LINE_WGSL,
   FLAT_QUAD_WGSL,
   SASHIMI_WGSL,
@@ -171,9 +168,6 @@ interface GpuRegion {
   sashimiBuffer: GPUBuffer | null
   sashimiCount: number
   sashimiBG: GPUBindGroup | null
-  cloudBuffer: GPUBuffer | null
-  cloudCount: number
-  cloudBG: GPUBindGroup | null
   connLineBuffer: GPUBuffer | null
   connLineCount: number
   connLineBG: GPUBindGroup | null
@@ -200,7 +194,6 @@ export class AlignmentsRenderer {
   private static arcPL: GPURenderPipeline | null = null
   private static arcLinePL: GPURenderPipeline | null = null
   private static sashimiPL: GPURenderPipeline | null = null
-  private static cloudPL: GPURenderPipeline | null = null
   private static connLinePL: GPURenderPipeline | null = null
   private static flatQuadPL: GPURenderPipeline | null = null
 
@@ -304,7 +297,6 @@ export class AlignmentsRenderer {
     AlignmentsRenderer.arcPL = mkPL(ARC_WGSL, 'triangle-strip')
     AlignmentsRenderer.arcLinePL = mkPL(ARC_LINE_WGSL, 'line-list')
     AlignmentsRenderer.sashimiPL = mkPL(SASHIMI_WGSL, 'triangle-strip')
-    AlignmentsRenderer.cloudPL = mkPL(CLOUD_WGSL)
     AlignmentsRenderer.connLinePL = mkPL(CONNECTING_LINE_WGSL)
     AlignmentsRenderer.flatQuadPL = mkPL(FLAT_QUAD_WGSL)
   }
@@ -366,7 +358,6 @@ export class AlignmentsRenderer {
     r.arcBuffer?.destroy()
     r.arcLineBuffer?.destroy()
     r.sashimiBuffer?.destroy()
-    r.cloudBuffer?.destroy()
     r.connLineBuffer?.destroy()
   }
 
@@ -424,9 +415,6 @@ export class AlignmentsRenderer {
       sashimiBuffer: null,
       sashimiCount: 0,
       sashimiBG: null,
-      cloudBuffer: null,
-      cloudCount: 0,
-      cloudBG: null,
       connLineBuffer: null,
       connLineCount: 0,
       connLineBG: null,
@@ -907,44 +895,6 @@ export class AlignmentsRenderer {
     }
   }
 
-  uploadCloudFromTypedArraysForRegion(
-    regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadCloudFromTypedArrays']>[0],
-  ) {
-    if (this.glFallback) {
-      this.glFallback.uploadCloudFromTypedArraysForRegion(regionNumber, data)
-      return
-    }
-    const device = AlignmentsRenderer.device
-    if (!device) {
-      return
-    }
-    let r = this.regions.get(regionNumber)
-    if (!r) {
-      r = this.getOrCreateRegion(regionNumber, data.regionStart)
-    }
-    r.cloudBuffer?.destroy()
-    r.cloudBG = null
-    r.cloudCount = 0
-    if (data.numChains > 0) {
-      const n = data.numChains
-      const buf = new ArrayBuffer(n * CLOUD_STRIDE * 4)
-      const u32 = new Uint32Array(buf)
-      const f32 = new Float32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * CLOUD_STRIDE
-        u32[o] = data.chainPositions[i * 2]!
-        u32[o + 1] = data.chainPositions[i * 2 + 1]!
-        f32[o + 2] = data.chainYs[i]!
-        f32[o + 3] = data.chainFlags[i]!
-        f32[o + 4] = data.chainColorTypes[i]!
-      }
-      r.cloudBuffer = this.mkBuf(device, buf)
-      r.cloudBG = this.mkBG(device, r.cloudBuffer)
-      r.cloudCount = n
-    }
-  }
-
   uploadConnectingLinesForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadConnectingLinesFromTypedArrays']>[0],
@@ -1020,10 +970,7 @@ export class AlignmentsRenderer {
     ii[U_COLOR_SCHEME] = state.colorScheme
     ii[U_HIGHLIGHT_IDX] = state.highlightedFeatureIndex
     ii[U_HIGHLIGHT_ONLY] = 0
-    ii[U_CHAIN_MODE] =
-      state.renderingMode === 'cloud' || state.renderingMode === 'linkedRead'
-        ? 1
-        : 0
+    ii[U_CHAIN_MODE] = state.renderingMode === 'linkedRead' ? 1 : 0
     ii[U_SHOW_STROKE] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     f[U_COV_HEIGHT] = state.coverageHeight
     f[U_COV_Y_OFFSET] = state.coverageYOffset
@@ -1038,8 +985,6 @@ export class AlignmentsRenderer {
     f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
     ii[U_ERASE_MODE] = 0
     f[U_SCROLL_TOP] = state.rangeY[0]
-    ii[U_CLOUD_COLOR_SCHEME] = state.cloudColorScheme ?? 0
-
     const c = state.colors
     this.writeColor(U_COLOR_FWD, c.colorFwdStrand)
     this.writeColor(U_COLOR_REV, c.colorRevStrand)
@@ -1196,7 +1141,7 @@ export class AlignmentsRenderer {
           this.drawCoverage(p, region)
         }
 
-        if (mode === 'cloud' || mode === 'linkedRead') {
+        if (mode === 'linkedRead') {
           this.drawConnectingLines(p, region)
           this.drawPileup(p, region, state)
           this.drawChainOverlays(
@@ -1255,6 +1200,11 @@ export class AlignmentsRenderer {
           submitPass(enc, p)
         }
 
+        if (needsFeatureHighlight) {
+          this.uI32[U_HIGHLIGHT_ONLY] = 0
+          device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+        }
+
         if (needsFeatureSelection) {
           const idx = state.selectedFeatureIndex
           const absStart = region.readPositions[idx * 2] + region.regionStart
@@ -1301,9 +1251,6 @@ export class AlignmentsRenderer {
           this.drawOverlayQuads(p, quads, 4, tempBuffers)
           submitPass(enc, p)
         }
-
-        this.uI32[U_HIGHLIGHT_ONLY] = 0
-        device.queue.writeBuffer(this.uBuf!, 0, this.uData)
       }
 
       if (arcsHeight > 0) {

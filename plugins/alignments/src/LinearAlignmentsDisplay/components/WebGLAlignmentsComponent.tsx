@@ -2,7 +2,6 @@ import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
-import WebGLChainComponent from './WebGLChainComponent.tsx'
 import WebGLPileupComponent from './WebGLPileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -12,7 +11,7 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { renderingMode, error, regionTooLarge, height } = model
+  const { error, regionTooLarge, height } = model
 
   if (error || regionTooLarge) {
     return (
@@ -26,9 +25,6 @@ const WebGLAlignmentsComponent = observer(function WebGLAlignmentsComponent({
     )
   }
 
-  if (renderingMode === 'cloud' || renderingMode === 'linkedRead') {
-    return <WebGLChainComponent model={model} />
-  }
   return <WebGLPileupComponent model={model} />
 })
 

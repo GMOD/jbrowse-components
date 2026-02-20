@@ -117,7 +117,6 @@ export const U_BLOCK_WIDTH = 25
 export const U_LINE_WIDTH_PX = 26
 export const U_GRADIENT_HUE = 27
 export const U_SCROLL_TOP = 28
-export const U_CLOUD_COLOR_SCHEME = 29
 export const U_DOMAIN_START = 30
 export const U_DOMAIN_END = 31
 
@@ -162,7 +161,6 @@ export const INDICATOR_STRIDE = 2
 export const ARC_STRIDE = 4
 export const SASHIMI_STRIDE = 4
 export const ARC_LINE_STRIDE = 4
-export const CLOUD_STRIDE = 5
 export const CONN_LINE_STRIDE = 3
 
 export const ARC_CURVE_SEGMENTS = 64

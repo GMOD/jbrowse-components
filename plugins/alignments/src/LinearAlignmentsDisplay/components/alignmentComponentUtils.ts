@@ -340,7 +340,6 @@ export function formatFeatureTooltip(
 export function uploadRegionDataToGPU(
   renderer: AlignmentsRenderer,
   rpcDataMap: Map<number, WebGLPileupDataResult>,
-  showCoverage: boolean,
 ) {
   renderer.clearLegacyBuffers()
   let maxYVal = 0
@@ -354,12 +353,10 @@ export function uploadRegionDataToGPU(
     if (data.maxY > maxYVal) {
       maxYVal = data.maxY
     }
-    if (showCoverage) {
-      renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
-      renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
-      if (data.numSashimiArcs > 0) {
-        renderer.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
-      }
+    renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
+    renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
+    if (data.numSashimiArcs > 0) {
+      renderer.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
     }
   }
   return maxYVal

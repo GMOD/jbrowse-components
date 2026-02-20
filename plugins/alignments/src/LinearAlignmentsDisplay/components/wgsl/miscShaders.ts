@@ -204,60 +204,6 @@ fn fs_main(in: SashimiOut) -> @location(0) vec4f {
 }
 `
 
-export const CLOUD_WGSL = `
-${ARC_PREAMBLE}
-${SIMPLE_VERTEX_OUTPUT}
-
-struct CloudInst { start_off: u32, end_off: u32, y: f32, flags: f32, color_type: f32 }
-@group(0) @binding(0) var<storage, read> instances: array<CloudInst>;
-
-fn iso_color(ct: f32, flags: f32) -> vec3f {
-  if ct < 0.5 { return vec3f(0.55); }
-  if ct < 1.5 { return vec3f(0.85, 0.25, 0.25); }
-  if ct < 2.5 { return vec3f(0.25, 0.35, 0.85); }
-  if ct < 3.5 { return vec3f(0.5, 0.0, 0.5); }
-  return vec3f(0.0, 0.5, 0.0);
-}
-
-fn cloud_strand(flags: f32) -> vec3f {
-  let is_rev = fract(floor(flags / 16.0) / 2.0) > 0.25;
-  return select(vec3f(0.85, 0.55, 0.55), vec3f(0.55, 0.55, 0.85), is_rev);
-}
-
-@vertex
-fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VertexOutput {
-  var out: VertexOutput;
-  let inst = instances[iid];
-  let v = vid % 6u;
-  let lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
-  let ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
-
-  let abs_start = inst.start_off + region_start();
-  let abs_end = inst.end_off + region_start();
-  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range());
-  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range());
-
-  let avail = canvas_height() - coverage_offset();
-  let y_top_px = coverage_offset() + (1.0 - inst.y) * avail - feature_height() * 0.5;
-  let y_bot_px = y_top_px + feature_height();
-  let px2clip = 2.0 / canvas_height();
-  let sy_top = 1.0 - y_top_px * px2clip;
-  let sy_bot = 1.0 - y_bot_px * px2clip;
-
-  out.position = vec4f(mix(sx1, sx2, lx), mix(sy_bot, sy_top, ly), 0.0, 1.0);
-
-  let cs = ui(29u);
-  var c: vec3f;
-  if cs == 0 { c = iso_color(inst.color_type, inst.flags); }
-  else if cs == 1 { c = cloud_strand(inst.flags); }
-  else { c = vec3f(0.55); }
-  out.color = vec4f(c, 1.0);
-  return out;
-}
-
-${SIMPLE_FS}
-`
-
 export const CONNECTING_LINE_WGSL = `
 ${ARC_PREAMBLE}
 ${SIMPLE_VERTEX_OUTPUT}

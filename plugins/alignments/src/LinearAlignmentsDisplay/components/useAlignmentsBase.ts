@@ -24,7 +24,6 @@ import {
 import { getContrastBaseMap } from '../../shared/util.ts'
 
 import type { ColorPalette } from './AlignmentsRenderer.ts'
-import type { CloudTicks } from './CloudYScaleBar.tsx'
 import type { CoverageTicks } from './CoverageYScaleBar.tsx'
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type {
@@ -71,7 +70,6 @@ export interface LinearAlignmentsDisplayModel {
   reload: () => void
   featureIdUnderMouse: string | undefined
   coverageTicks?: CoverageTicks
-  cloudTicks?: CloudTicks
   showLegend: boolean | undefined
   legendItems: LegendItem[]
   currentRangeY: [number, number]
@@ -112,7 +110,7 @@ export interface LinearAlignmentsDisplayModel {
   }[]
   setContextMenuFeature: (feature?: unknown) => void
   getFeatureInfoById: (featureId: string) => FeatureInfo | undefined
-  renderingMode: 'pileup' | 'cloud' | 'linkedRead'
+  renderingMode: 'pileup' | 'linkedRead'
   scalebarOverlapLeft: number
   clearAllRpcData: () => void
 }

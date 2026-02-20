@@ -30,7 +30,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
-import { scaleLinear, scaleLog } from '@mui/x-charts-vendor/d3-scale'
+import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
@@ -52,7 +52,7 @@ import type {
   AlignmentsRenderer,
   ColorPalette,
 } from './components/AlignmentsRenderer.ts'
-import type { CloudTicks } from './components/CloudYScaleBar.tsx'
+
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
@@ -264,10 +264,6 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        showReadCloud: false,
-        /**
-         * #property
-         */
         colorBySetting: types.frozen<ColorBy | undefined>(),
         /**
          * #property
@@ -380,8 +376,17 @@ export default function stateModelFactory(
         const { renderingMode, ...rest } = snap
         snap = {
           ...rest,
-          showLinkedReads: renderingMode === 'linkedRead',
-          showReadCloud: renderingMode === 'cloud',
+          showLinkedReads:
+            renderingMode === 'linkedRead' || renderingMode === 'cloud',
+        }
+      }
+
+      // Strip removed showReadCloud property from old snapshots
+      if (snap.showReadCloud !== undefined) {
+        const { showReadCloud, ...rest } = snap
+        snap = {
+          ...rest,
+          showLinkedReads: snap.showLinkedReads || showReadCloud,
         }
       }
 
@@ -450,10 +455,7 @@ export default function stateModelFactory(
       visibleMaxDepth: 0,
     }))
     .views(self => ({
-      get renderingMode(): 'pileup' | 'cloud' | 'linkedRead' {
-        if (self.showReadCloud) {
-          return 'cloud'
-        }
+      get renderingMode(): 'pileup' | 'linkedRead' {
         if (self.showLinkedReads) {
           return 'linkedRead'
         }
@@ -522,15 +524,12 @@ export default function stateModelFactory(
 
       /**
        * Chain index map: readName → array of feature indices
-       * Used in cloud/linkedRead modes for chain-level highlighting
+       * Used in linkedRead mode for chain-level highlighting
        * Cached as a MST getter so it only recomputes when rpcDataMap changes
        */
       get chainIndexMap() {
         const map = new Map<string, number[]>()
-        if (
-          self.renderingMode === 'cloud' ||
-          self.renderingMode === 'linkedRead'
-        ) {
+        if (self.renderingMode === 'linkedRead') {
           for (const data of self.rpcDataMap.values()) {
             for (let i = 0; i < data.numReads; i++) {
               const name = data.readNames[i]
@@ -650,38 +649,6 @@ export default function stateModelFactory(
         }
       },
 
-      get cloudTicks(): CloudTicks | undefined {
-        if (self.renderingMode !== 'cloud' || !self.showYScalebar) {
-          return undefined
-        }
-        let maxDistance = 0
-        for (const data of self.rpcDataMap.values()) {
-          if (
-            data.maxDistance !== undefined &&
-            data.maxDistance > maxDistance
-          ) {
-            maxDistance = data.maxDistance
-          }
-        }
-        if (maxDistance <= 0) {
-          return undefined
-        }
-        const pileupHeight = self.height - self.coverageDisplayHeight
-        if (pileupHeight <= 0) {
-          return undefined
-        }
-        const scale = scaleLog()
-          .base(2)
-          .domain([1, Math.max(2, maxDistance)])
-          .range([0, pileupHeight - 20])
-          .clamp(true)
-        const ticks = scale.ticks(6).map(value => ({
-          value,
-          y: scale(value),
-        }))
-        return { ticks, height: pileupHeight, maxDistance }
-      },
-
       get legendItems(): LegendItem[] {
         return getReadDisplayLegendItems(self.colorBySetting)
       },
@@ -722,9 +689,7 @@ export default function stateModelFactory(
       },
 
       get isChainMode() {
-        return (
-          self.renderingMode === 'cloud' || self.renderingMode === 'linkedRead'
-        )
+        return self.renderingMode === 'linkedRead'
       },
 
       get showOutlineSetting() {
@@ -1174,21 +1139,6 @@ export default function stateModelFactory(
         setShowLinkedReads(flag: boolean) {
           self.showLinkedReads = flag
           if (flag) {
-            self.showReadCloud = false
-          }
-          self._syncChainModeColors()
-        },
-
-        setShowReadCloud(flag: boolean) {
-          self.showReadCloud = flag
-          if (flag) {
-            self.showLinkedReads = false
-          }
-          self._syncChainModeColors()
-        },
-
-        _syncChainModeColors() {
-          if (self.showLinkedReads || self.showReadCloud) {
             self.showOutline = undefined
             self.colorBySetting = { type: 'insertSizeAndOrientation' }
           } else {
@@ -1486,13 +1436,7 @@ export default function stateModelFactory(
 
         const sequenceAdapter = getSequenceAdapter(session, region)
 
-        // Chain modes (cloud/linkedRead) produce all data in a single RPC
-        // (reads + coverage + connecting lines). Other modes fetch pileup
-        // for coverage and add mode-specific data on top.
-        if (
-          self.renderingMode === 'cloud' ||
-          self.renderingMode === 'linkedRead'
-        ) {
+        if (self.renderingMode === 'linkedRead') {
           await fetchChainData(
             session,
             adapterConfig,
@@ -1592,11 +1536,7 @@ export default function stateModelFactory(
                   return
                 }
                 const rpcDataMap = self.rpcDataMap
-                const maxYVal = uploadRegionDataToGPU(
-                  renderer,
-                  rpcDataMap,
-                  self.showCoverage,
-                )
+                const maxYVal = uploadRegionDataToGPU(renderer, rpcDataMap)
                 if (maxYVal > 0) {
                   self.setMaxY(maxYVal)
                 }
@@ -1756,7 +1696,6 @@ export default function stateModelFactory(
                   colors: palette,
                   renderingMode: self.renderingMode,
                   arcLineWidth: self.arcsState.lineWidth,
-                  cloudColorScheme: self.colorSchemeIndex,
                   bpRangeX: [0, 0],
                 })
               },
@@ -1832,7 +1771,6 @@ export default function stateModelFactory(
                   filterBy: self.filterBy,
                   sortedBy: self.sortedBy,
                   showLinkedReads: self.showLinkedReads,
-                  showReadCloud: self.showReadCloud,
                   showArcs: self.showArcs,
                   drawInter: self.arcsState.drawInter,
                   drawLongRange: self.arcsState.drawLongRange,
@@ -2086,14 +2024,6 @@ export default function stateModelFactory(
               checked: self.showLinkedReads,
               onClick: () => {
                 self.setShowLinkedReads(!self.showLinkedReads)
-              },
-            },
-            {
-              label: 'Read cloud',
-              type: 'checkbox' as const,
-              checked: self.showReadCloud,
-              onClick: () => {
-                self.setShowReadCloud(!self.showReadCloud)
               },
             },
           ],
