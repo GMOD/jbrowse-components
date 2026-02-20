@@ -47,6 +47,7 @@ export class PileupRenderer {
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
+
     // Draw reads
     const arcsOffset =
       state.showArcs && state.arcsHeight ? state.arcsHeight : 0
