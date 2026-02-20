@@ -24,7 +24,6 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
-uniform float u_dpr;
 uniform vec3 u_colorDeletion;
 uniform vec3 u_colorSkip;
 uniform int u_eraseMode;  // 0=normal draw, 1=stencil pass (skip gaps at full height)
@@ -72,9 +71,9 @@ void main() {
 
   float alpha = 1.0;
   if (a_type == 0u) {
-    float physicalWidthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth * u_dpr / regionLengthBp;
-    if (physicalWidthPx < 1.0 && a_frequency == 0.0) {
-      alpha = physicalWidthPx * physicalWidthPx;
+    float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / regionLengthBp;
+    if (widthPx < 1.0 && a_frequency == 0.0) {
+      alpha = widthPx * widthPx;
     }
   }
   if (alpha <= 0.0) {
@@ -113,7 +112,6 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
-uniform float u_dpr;
 
 // Base color uniforms from theme
 uniform vec3 u_colorBaseA;
@@ -140,10 +138,9 @@ void main() {
   float sx1 = px1 / u_canvasWidth * 2.0 - 1.0;
   float sx2 = px2 / u_canvasWidth * 2.0 - 1.0;
 
-  float physicalPxPerBp = pxPerBp * u_dpr;
   float alpha = 1.0;
-  if (physicalPxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = physicalPxPerBp;
+  if (pxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = pxPerBp;
   }
 
   // Collapse to zero size when fully faded
@@ -216,7 +213,6 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
-uniform float u_dpr;
 
 uniform vec3 u_colorInsertion;
 
@@ -331,10 +327,9 @@ void main() {
   float sx = mix(sx1, sx2, localX);
   float sy = mix(y1, y2, localY);
 
-  float physicalPxPerBp = pxPerBp * u_dpr;
   float alpha = 1.0;
-  if (!isLongInsertion && physicalPxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = physicalPxPerBp * physicalPxPerBp;
+  if (!isLongInsertion && pxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = pxPerBp * pxPerBp;
   }
 
   if (alpha <= 0.0) {
@@ -375,7 +370,6 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
-uniform float u_dpr;
 
 uniform vec3 u_colorSoftclip;
 
@@ -389,11 +383,10 @@ void main() {
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
   float pxPerBp = u_canvasWidth / regionLengthBp;
-  float physicalPxPerBp = pxPerBp * u_dpr;
 
   float alpha = 1.0;
-  if (physicalPxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = physicalPxPerBp;
+  if (pxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = pxPerBp;
   }
   if (alpha <= 0.0) {
     gl_Position = vec4(0.0);
@@ -462,7 +455,6 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
-uniform float u_dpr;
 
 uniform vec3 u_colorHardclip;
 
@@ -476,11 +468,10 @@ void main() {
   float pos = float(a_position);
   float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
   float pxPerBp = u_canvasWidth / regionLengthBp;
-  float physicalPxPerBp = pxPerBp * u_dpr;
 
   float alpha = 1.0;
-  if (physicalPxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = physicalPxPerBp;
+  if (pxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = pxPerBp;
   }
   if (alpha <= 0.0) {
     gl_Position = vec4(0.0);

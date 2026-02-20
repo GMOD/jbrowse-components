@@ -418,29 +418,24 @@ export class WebGLRenderer {
     const cigarUniformsWithWidth = [...cigarUniforms, 'u_canvasWidth']
     this.cacheUniforms(this.gapProgram, this.gapUniforms, [
       ...cigarUniformsWithWidth,
-      'u_dpr',
       'u_colorDeletion',
       'u_colorSkip',
       'u_eraseMode',
     ])
     this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
       ...cigarUniformsWithWidth,
-      'u_dpr',
       ...baseColorUniforms,
     ])
     this.cacheUniforms(this.insertionProgram, this.insertionUniforms, [
       ...cigarUniformsWithWidth,
-      'u_dpr',
       'u_colorInsertion',
     ])
     this.cacheUniforms(this.softclipProgram, this.softclipUniforms, [
       ...cigarUniformsWithWidth,
-      'u_dpr',
       'u_colorSoftclip',
     ])
     this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, [
       ...cigarUniformsWithWidth,
-      'u_dpr',
       'u_colorHardclip',
     ])
     this.cacheUniforms(this.modificationProgram, this.modificationUniforms, [
