@@ -59,6 +59,8 @@ export interface LinearAlignmentsDisplayModel {
   featureSpacing: number
   showCoverage: boolean
   coverageHeight: number
+  showArcs: boolean
+  arcsHeight: number
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
   maxY: number
@@ -85,6 +87,7 @@ export interface LinearAlignmentsDisplayModel {
   setColorPalette: (palette: ColorPalette | null) => void
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
+  setArcsHeight: (height: number) => void
   setHighlightedFeatureIndex: (index: number) => void
   setSelectedFeatureIndex: (index: number) => void
   setHighlightedChainIndices: (indices: number[]) => void
@@ -142,10 +145,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     featureSpacing,
     showCoverage,
     coverageHeight,
+    showArcs,
+    arcsHeight,
     showInterbaseIndicators,
     showSashimiArcs,
     isChainMode,
   } = model
+
+  const topOffset =
+    (showCoverage ? coverageHeight : 0) + (showArcs ? arcsHeight : 0)
 
   const width = view.initialized ? view.width : undefined
 
@@ -256,6 +264,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       showInterbaseIndicators,
       showSashimiArcs,
       coverageHeight,
+      topOffset,
       featureHeightSetting,
       featureSpacing,
       rangeY: model.currentRangeY,
@@ -310,6 +319,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       showInterbaseIndicators,
       showSashimiArcs,
       coverageHeight,
+      topOffset,
       featureHeightSetting,
       featureSpacing,
       rangeY: model.currentRangeY,
@@ -391,6 +401,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       showInterbaseIndicators,
       showSashimiArcs,
       coverageHeight,
+      topOffset,
       featureHeightSetting,
       featureSpacing,
       rangeY: model.currentRangeY,

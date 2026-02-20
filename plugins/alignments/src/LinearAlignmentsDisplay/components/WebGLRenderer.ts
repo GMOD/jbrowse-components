@@ -106,6 +106,9 @@ export interface RenderState {
   cloudColorScheme?: number
   // Sashimi arcs (splice junctions overlaid on coverage)
   showSashimiArcs?: boolean
+  // Show arcs alongside pileup (between coverage and reads)
+  showArcs?: boolean
+  arcsHeight?: number
 }
 
 export interface GPUBuffers {
@@ -2287,8 +2290,6 @@ export class WebGLRenderer {
       }
 
       if (mode === 'arcs') {
-        // Arcs use full-canvas viewport with global positioning uniforms.
-        // Restore full viewport so arc positions are globally stable.
         gl.viewport(0, 0, bufW, bufH)
         this.arcsRenderer.renderArcs(
           { ...state, bpRangeX: block.bpRangeX },
@@ -2296,7 +2297,6 @@ export class WebGLRenderer {
           fullBlockWidth,
         )
       } else if (mode === 'cloud' || mode === 'linkedRead') {
-        // Chain modes: render pileup reads (reuses same shader) + connecting lines
         this.connectingLineRenderer.render(blockState)
         this.pileupRenderer.render(
           blockState,
@@ -2305,6 +2305,48 @@ export class WebGLRenderer {
           scissorX,
         )
       } else {
+        const arcsHeight =
+          state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+
+        if (arcsHeight > 0) {
+          const covH = state.showCoverage ? state.coverageHeight : 0
+          gl.viewport(
+            0,
+            bufH - Math.round((covH + arcsHeight) * dpr),
+            bufW,
+            Math.round(arcsHeight * dpr),
+          )
+          gl.scissor(
+            Math.round(scissorX * dpr),
+            bufH - Math.round((covH + arcsHeight) * dpr),
+            Math.round(scissorW * dpr),
+            Math.round(arcsHeight * dpr),
+          )
+          this.arcsRenderer.renderArcs(
+            {
+              ...state,
+              bpRangeX: block.bpRangeX,
+              showCoverage: false,
+              coverageHeight: 0,
+              canvasHeight: arcsHeight,
+            },
+            block.screenStartPx,
+            fullBlockWidth,
+          )
+          gl.viewport(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+          gl.scissor(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+        }
+
         this.pileupRenderer.render(
           blockState,
           clippedBpOffset,
@@ -2364,13 +2406,35 @@ export class WebGLRenderer {
 
     const mode = state.renderingMode ?? 'pileup'
 
-    // Dispatch to mode-specific rendering
     if (mode === 'arcs') {
       this.arcsRenderer.renderArcs(state)
     } else if (mode === 'cloud' || mode === 'linkedRead') {
       this.connectingLineRenderer.render(state)
       this.pileupRenderer.render(state, domainOffset, colors)
     } else {
+      const arcsHeight =
+        state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+
+      if (arcsHeight > 0) {
+        const gl = this.gl
+        const covH = state.showCoverage ? state.coverageHeight : 0
+        const bufW = Math.round(state.canvasWidth * this.dpr)
+        const bufH = Math.round(state.canvasHeight * this.dpr)
+        gl.viewport(
+          0,
+          bufH - Math.round((covH + arcsHeight) * this.dpr),
+          bufW,
+          Math.round(arcsHeight * this.dpr),
+        )
+        this.arcsRenderer.renderArcs({
+          ...state,
+          showCoverage: false,
+          coverageHeight: 0,
+          canvasHeight: arcsHeight,
+        })
+        gl.viewport(0, 0, bufW, bufH)
+      }
+
       this.pileupRenderer.render(state, domainOffset, colors)
     }
   }

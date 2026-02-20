@@ -26,8 +26,7 @@ interface ComputeVisibleLabelsParams {
   featureHeightSetting: number
   featureSpacing: number
   showMismatches: boolean
-  showCoverage: boolean
-  coverageHeight: number
+  topOffset: number
   rangeY: [number, number]
 }
 
@@ -40,8 +39,7 @@ export function computeVisibleLabels(
     featureHeightSetting,
     featureSpacing,
     showMismatches,
-    showCoverage,
-    coverageHeight,
+    topOffset,
     rangeY,
   } = params
 
@@ -52,7 +50,6 @@ export function computeVisibleLabels(
   }
 
   const rowHeight = featureHeightSetting + featureSpacing
-  const pileupYOffset = showCoverage ? coverageHeight : 0
   const minFeatureHeightForText = 5
 
   for (const block of blocks) {
@@ -96,9 +93,9 @@ export function computeVisibleLabels(
         }
 
         const yPx =
-          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
+          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
 
-        if (yPx < pileupYOffset || yPx > height) {
+        if (yPx < topOffset || yPx > height) {
           continue
         }
 
@@ -135,9 +132,9 @@ export function computeVisibleLabels(
 
       const xPx = (pos - blockStart) / bpPerPx + blockScreenOffsetPx
       const yPx =
-        y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
+        y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
 
-      if (yPx < pileupYOffset || yPx > height) {
+      if (yPx < topOffset || yPx > height) {
         continue
       }
 
@@ -207,9 +204,9 @@ export function computeVisibleLabels(
         const xPx = (startPx + endPx) / 2
 
         const yPx =
-          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + pileupYOffset
+          y * rowHeight + featureHeightSetting / 2 - rangeY[0] + topOffset
 
-        if (yPx < pileupYOffset || yPx > height) {
+        if (yPx < topOffset || yPx > height) {
           continue
         }
 

@@ -1010,7 +1010,9 @@ export class AlignmentsRenderer {
     f[U_RANGE_Y0] = state.rangeY[0]
     f[U_CANVAS_H] = state.canvasHeight
     f[U_CANVAS_W] = canvasW
-    f[U_COV_OFFSET] = state.showCoverage ? state.coverageHeight : 0
+    const arcsOffset = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    f[U_COV_OFFSET] =
+      (state.showCoverage ? state.coverageHeight : 0) + arcsOffset
     f[U_FEAT_H] = state.featureHeight
     f[U_FEAT_SPACING] = state.featureSpacing
     ii[U_COLOR_SCHEME] = state.colorScheme
@@ -1201,6 +1203,50 @@ export class AlignmentsRenderer {
           tempBuffers,
         )
       } else {
+        const arcsHeight =
+          state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+
+        if (arcsHeight > 0) {
+          const covH = state.showCoverage ? state.coverageHeight : 0
+          this.uF32[U_COV_OFFSET] = 0
+          this.uF32[U_CANVAS_H] = arcsHeight
+
+          pass.setViewport(
+            Math.round(vpX * dpr),
+            Math.round(covH * dpr),
+            Math.round(vpW * dpr),
+            Math.round(arcsHeight * dpr),
+            0,
+            1,
+          )
+          pass.setScissorRect(
+            Math.round(scissorX * dpr),
+            Math.round(covH * dpr),
+            Math.round(scissorW * dpr),
+            Math.round(arcsHeight * dpr),
+          )
+          this.drawArcs(pass, region, state, block, vpX, vpW)
+
+          this.uF32[U_COV_OFFSET] = covH + arcsHeight
+          this.uF32[U_CANVAS_H] = state.canvasHeight
+          device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+
+          pass.setViewport(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+            0,
+            1,
+          )
+          pass.setScissorRect(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+        }
+
         this.drawPileup(pass, region, state)
       }
 

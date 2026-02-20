@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react'
+
 import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
@@ -30,7 +32,45 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     processClick,
   } = base
 
-  const { height, showCoverage, coverageHeight } = model
+  const { height, showCoverage, coverageHeight, showArcs, arcsHeight } = model
+
+  const [arcsResizeHovered, setArcsResizeHovered] = useState(false)
+  const arcsResizeDragRef = useRef({
+    isDragging: false,
+    startY: 0,
+    startHeight: 0,
+  })
+
+  function handleArcsResizeMouseDown(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    arcsResizeDragRef.current = {
+      isDragging: true,
+      startY: e.clientY,
+      startHeight: arcsHeight,
+    }
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!arcsResizeDragRef.current.isDragging) {
+        return
+      }
+      const deltaY = moveEvent.clientY - arcsResizeDragRef.current.startY
+      const newHeight = Math.max(
+        20,
+        arcsResizeDragRef.current.startHeight + deltaY,
+      )
+      model.setArcsHeight(newHeight)
+    }
+
+    const onMouseUp = () => {
+      arcsResizeDragRef.current.isDragging = false
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
@@ -65,6 +105,8 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
       },
     )
   }
+
+  const arcsTop = showCoverage ? coverageHeight : 0
 
   return (
     <div style={{ position: 'relative', width: '100%', height }}>
@@ -133,6 +175,29 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
             zIndex: 10,
           }}
           title="Drag to resize coverage track"
+        />
+      ) : null}
+
+      {showArcs ? (
+        <div
+          onMouseDown={handleArcsResizeMouseDown}
+          onMouseEnter={() => {
+            setArcsResizeHovered(true)
+          }}
+          onMouseLeave={() => {
+            setArcsResizeHovered(false)
+          }}
+          style={{
+            position: 'absolute',
+            top: arcsTop + arcsHeight - YSCALEBAR_LABEL_OFFSET,
+            left: 0,
+            right: 0,
+            height: YSCALEBAR_LABEL_OFFSET,
+            cursor: 'row-resize',
+            background: arcsResizeHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
+            zIndex: 10,
+          }}
+          title="Drag to resize arcs area"
         />
       ) : null}
 

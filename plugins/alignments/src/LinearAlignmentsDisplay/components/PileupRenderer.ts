@@ -48,7 +48,10 @@ export class PileupRenderer {
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     // Draw reads
-    const coverageOffset = state.showCoverage ? state.coverageHeight : 0
+    const arcsOffset =
+      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const coverageOffset =
+      (state.showCoverage ? state.coverageHeight : 0) + arcsOffset
 
     // Scissor clips pileup to area below coverage, within the block's X range.
     // gl.scissor uses device pixel coordinates (DPR-scaled).

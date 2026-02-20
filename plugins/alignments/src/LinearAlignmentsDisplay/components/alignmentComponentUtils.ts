@@ -80,8 +80,7 @@ export function canvasToGenomicCoords(
   },
   featureHeight: number,
   featureSpacing: number,
-  showCoverage: boolean,
-  coverageHeight: number,
+  topOffset: number,
   rangeY: [number, number],
 ) {
   const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
@@ -90,7 +89,7 @@ export function canvasToGenomicCoords(
   const posOffset = genomicPos - rpcData.regionStart
   const rowHeight = featureHeight + featureSpacing
   const scrolledY = canvasY + rangeY[0]
-  const adjustedY = showCoverage ? scrolledY - coverageHeight : scrolledY
+  const adjustedY = scrolledY - topOffset
   const row = Math.floor(adjustedY / rowHeight)
   const yWithinRow = adjustedY - row * rowHeight
   return { bpPerPx, genomicPos, posOffset, row, adjustedY, yWithinRow }

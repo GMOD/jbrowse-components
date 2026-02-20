@@ -325,6 +325,14 @@ export default function stateModelFactory(
         /**
          * #property
          */
+        showArcs: false,
+        /**
+         * #property
+         */
+        arcsHeight: 100,
+        /**
+         * #property
+         */
         showSoftClipping: false,
         /**
          * #property
@@ -685,8 +693,7 @@ export default function stateModelFactory(
           featureHeightSetting: self.featureHeightSetting,
           featureSpacing: self.featureSpacing,
           showMismatches: self.showMismatches,
-          showCoverage: self.showCoverage,
-          coverageHeight: self.coverageHeight,
+          topOffset: self.coverageDisplayHeight,
           rangeY: self.currentRangeY,
         })
       },
@@ -712,7 +719,10 @@ export default function stateModelFactory(
        * Y offset. Returns 0 when coverage is hidden.
        */
       get coverageDisplayHeight() {
-        return self.showCoverage ? self.coverageHeight : 0
+        return (
+          (self.showCoverage ? self.coverageHeight : 0) +
+          (self.showArcs ? self.arcsHeight : 0)
+        )
       },
 
       /**
@@ -921,11 +931,10 @@ export default function stateModelFactory(
         },
         setMaxY(y: number) {
           self.maxY = y
-          // Auto-resize height based on content
           const rowHeight = self.featureHeightSetting + self.featureSpacing
           const pileupHeight = y * rowHeight
           const totalHeight =
-            (self.showCoverage ? self.coverageHeight : 0) + pileupHeight + 10
+            self.coverageDisplayHeight + pileupHeight + 10
           // Clamp to maxHeight and ensure a minimum height
           const clampedHeight = Math.min(
             Math.max(totalHeight, 100),
@@ -1098,6 +1107,14 @@ export default function stateModelFactory(
 
         setCoverageHeight(height: number) {
           self.coverageHeight = height
+        },
+
+        setShowArcs(show: boolean) {
+          self.showArcs = show
+        },
+
+        setArcsHeight(height: number) {
+          self.arcsHeight = height
         },
 
         setShowMismatches(show: boolean) {
@@ -1445,7 +1462,7 @@ export default function stateModelFactory(
             regionNumber,
             stopToken,
           )
-          if (self.renderingMode === 'arcs') {
+          if (self.renderingMode === 'arcs' || self.showArcs) {
             await fetchArcsData(
               session,
               adapterConfig,
@@ -1679,6 +1696,8 @@ export default function stateModelFactory(
                   showInterbaseIndicators: self.showInterbaseIndicators,
                   showModifications: self.showModifications,
                   showSashimiArcs: self.showSashimiArcs,
+                  showArcs: self.showArcs,
+                  arcsHeight: self.arcsHeight,
                   canvasWidth: view.width,
                   canvasHeight: self.height,
                   highlightedFeatureIndex: self.highlightedFeatureIndex,
@@ -1771,6 +1790,7 @@ export default function stateModelFactory(
                   filterBy: self.filterBy,
                   sortedBy: self.sortedBy,
                   mode: self.renderingMode,
+                  showArcs: self.showArcs,
                   drawInter: self.arcsState.drawInter,
                   drawLongRange: self.arcsState.drawLongRange,
                   drawSingletons: self.drawSingletons,
@@ -2013,6 +2033,14 @@ export default function stateModelFactory(
               checked: self.showCoverage,
               onClick: () => {
                 self.setShowCoverage(!self.showCoverage)
+              },
+            },
+            {
+              label: 'Show arcs',
+              type: 'checkbox' as const,
+              checked: self.showArcs,
+              onClick: () => {
+                self.setShowArcs(!self.showArcs)
               },
             },
             {

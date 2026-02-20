@@ -38,6 +38,7 @@ export interface HitTestOptions {
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
   coverageHeight: number
+  topOffset: number
   featureHeightSetting: number
   featureSpacing: number
   rangeY: [number, number]
@@ -55,6 +56,7 @@ export function performHitTest(
     showInterbaseIndicators,
     showSashimiArcs,
     coverageHeight,
+    topOffset,
     featureHeightSetting,
     featureSpacing,
     rangeY,
@@ -106,8 +108,7 @@ export function performHitTest(
         resolved,
         featureHeightSetting,
         featureSpacing,
-        showCoverage,
-        coverageHeight,
+        topOffset,
         rangeY,
       )
     : undefined
