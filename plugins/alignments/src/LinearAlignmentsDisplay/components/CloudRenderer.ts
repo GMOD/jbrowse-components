@@ -1,25 +1,7 @@
-/**
- * CloudRenderer - Handles rendering of cloud/arc constellation mode
- *
- * This renderer draws a cloud visualization mode showing read connectivity
- * as a constellation of arcs, useful for viewing complex structural variations
- * and complex paired-end arrangements.
- *
- * Extracted from WebGLRenderer to improve code organization.
- */
-
 import { splitPositionWithFrac } from './shaders/index.ts'
 
 import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
-/**
- * CloudRenderer orchestrates rendering of cloud mode visualization.
- *
- * The renderer receives a parent WebGLRenderer instance to access:
- * - WebGL context (gl)
- * - Shader programs and their uniform locations
- * - Buffers and VAOs for geometry
- */
 export class CloudRenderer {
   constructor(private parent: WebGLRenderer) {}
 
@@ -39,8 +21,7 @@ export class CloudRenderer {
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     gl.useProgram(this.parent.cloudProgram)
-    // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
-    // runtime infinity that prevents compiler from defeating precision guards.
+    // WARNING: u_zero must be 0.0 — HP shader precision guard. See utils.ts.
     gl.uniform1f(this.parent.cloudUniforms.u_zero!, 0.0)
     gl.uniform3f(
       this.parent.cloudUniforms.u_bpRangeX!,

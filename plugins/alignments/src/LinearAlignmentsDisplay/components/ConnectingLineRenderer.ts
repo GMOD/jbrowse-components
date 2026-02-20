@@ -1,10 +1,3 @@
-/**
- * ConnectingLineRenderer - Draws thin connecting lines between reads in a chain
- *
- * Used by cloud and linkedRead modes to visually connect reads that belong
- * to the same chain (read name group).
- */
-
 import { splitPositionWithFrac } from './shaders/index.ts'
 
 import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
@@ -31,8 +24,7 @@ export class ConnectingLineRenderer {
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
 
     gl.useProgram(this.parent.connectingLineProgram)
-    // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
-    // runtime infinity that prevents compiler from defeating precision guards.
+    // WARNING: u_zero must be 0.0 — HP shader precision guard. See utils.ts.
     gl.uniform1f(this.parent.connectingLineUniforms.u_zero!, 0.0)
     gl.uniform3f(
       this.parent.connectingLineUniforms.u_bpRangeX!,

@@ -1,12 +1,3 @@
-/**
- * PileupRenderer - Handles rendering of pileup mode
- *
- * This renderer draws individual reads as rectangles with CIGAR features
- * (gaps, mismatches, insertions, clips, modifications).
- *
- * Extracted from WebGLRenderer to improve code organization.
- */
-
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import { splitPositionWithFrac } from './shaders/index.ts'
 
@@ -14,14 +5,6 @@ import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 import type { ClipRect } from './chainOverlayUtils.ts'
 import type { ColorPalette } from './shaders/index.ts'
 
-/**
- * PileupRenderer orchestrates rendering of reads and CIGAR features in pileup mode.
- *
- * The renderer receives a parent WebGLRenderer instance to access:
- * - WebGL context (gl)
- * - Shader programs and their uniform locations
- * - Buffers and VAOs for geometry
- */
 export class PileupRenderer {
   constructor(private parent: WebGLRenderer) {}
 
@@ -41,21 +24,14 @@ export class PileupRenderer {
     const { canvasWidth, canvasHeight } = state
     const regionStart = buffers.regionStart
 
-    // Compute high-precision split domain for reads (12-bit split approach).
-    // Uses splitPositionWithFrac to preserve fractional scroll position - without this,
-    // reads would "stick" at integer bp positions and snap when crossing boundaries.
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
-
-    // Draw reads
     const arcsOffset =
       state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const coverageOffset =
       (state.showCoverage ? state.coverageHeight : 0) + arcsOffset
 
-    // Scissor clips pileup to area below coverage, within the block's X range.
-    // gl.scissor uses device pixel coordinates (DPR-scaled).
     const dpr = this.parent.dpr
     gl.enable(gl.SCISSOR_TEST)
     gl.scissor(
@@ -107,9 +83,7 @@ export class PileupRenderer {
     }
 
     gl.useProgram(this.parent.readProgram)
-    // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
-    // runtime infinity that prevents compiler from defeating precision guards.
-    // See shaders/utils.ts HP_GLSL_FUNCTIONS for full explanation.
+    // WARNING: u_zero must be 0.0 — HP shader precision guard. See utils.ts.
     gl.uniform1f(this.parent.readUniforms.u_zero!, 0.0)
     gl.uniform3f(
       this.parent.readUniforms.u_bpRangeX!,
@@ -144,7 +118,6 @@ export class PileupRenderer {
     gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
     gl.uniform1i(this.parent.readUniforms.u_showStroke!, isChainMode ? 1 : 0)
 
-    // Set color uniforms for read shapes
     gl.uniform3f(
       this.parent.readUniforms.u_colorFwdStrand!,
       ...colors.colorFwdStrand,
@@ -182,12 +155,15 @@ export class PileupRenderer {
       ...colors.colorSupplementary,
     )
 
-    // Set insert size thresholds (defaults for when stats are unavailable)
     const stats = buffers.insertSizeStats
-    const upperThreshold = stats?.upper ?? 1e9
-    const lowerThreshold = stats?.lower ?? 0
-    gl.uniform1f(this.parent.readUniforms.u_insertSizeUpper!, upperThreshold)
-    gl.uniform1f(this.parent.readUniforms.u_insertSizeLower!, lowerThreshold)
+    gl.uniform1f(
+      this.parent.readUniforms.u_insertSizeUpper!,
+      stats?.upper ?? 1e9,
+    )
+    gl.uniform1f(
+      this.parent.readUniforms.u_insertSizeLower!,
+      stats?.lower ?? 0,
+    )
 
     gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
 
@@ -196,7 +172,6 @@ export class PileupRenderer {
 
     gl.disable(gl.STENCIL_TEST)
 
-    // Draw gaps (deletions and skips) - always draw regardless of modifications
     if (state.showMismatches && buffers.gapVAO && buffers.gapCount > 0) {
       gl.useProgram(this.parent.gapProgram)
       gl.uniform2f(
@@ -238,9 +213,7 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.gapCount)
     }
 
-    // Draw mismatches only when not showing modifications
     if (state.showMismatches && !state.showModifications) {
-      // Draw mismatches
       if (buffers.mismatchVAO && buffers.mismatchCount > 0) {
         gl.useProgram(this.parent.mismatchProgram)
         gl.uniform2f(
@@ -267,7 +240,6 @@ export class PileupRenderer {
         )
         gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
-        // Base color uniforms from theme
         gl.uniform3f(
           this.parent.mismatchUniforms.u_colorBaseA!,
           ...colors.colorBaseA,
@@ -290,7 +262,6 @@ export class PileupRenderer {
       }
     }
 
-    // Draw insertions - always draw regardless of modifications
     if (
       state.showMismatches &&
       buffers.insertionVAO &&
@@ -321,7 +292,6 @@ export class PileupRenderer {
       )
       gl.uniform1f(this.parent.insertionUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.parent.insertionUniforms.u_canvasWidth!, canvasWidth)
-      // Insertion color uniform from theme
       gl.uniform3f(
         this.parent.insertionUniforms.u_colorInsertion!,
         ...colors.colorInsertion,
@@ -331,9 +301,7 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, buffers.insertionCount)
     }
 
-    // Draw clips and mismatches only when not showing modifications
     if (state.showMismatches && !state.showModifications) {
-      // Draw soft clips
       if (buffers.softclipVAO && buffers.softclipCount > 0) {
         gl.useProgram(this.parent.softclipProgram)
         gl.uniform2f(
@@ -360,7 +328,6 @@ export class PileupRenderer {
         )
         gl.uniform1f(this.parent.softclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.parent.softclipUniforms.u_canvasWidth!, canvasWidth)
-        // Softclip color uniform from theme
         gl.uniform3f(
           this.parent.softclipUniforms.u_colorSoftclip!,
           ...colors.colorSoftclip,
@@ -370,7 +337,6 @@ export class PileupRenderer {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipCount)
       }
 
-      // Draw hard clips
       if (buffers.hardclipVAO && buffers.hardclipCount > 0) {
         gl.useProgram(this.parent.hardclipProgram)
         gl.uniform2f(
@@ -397,7 +363,6 @@ export class PileupRenderer {
         )
         gl.uniform1f(this.parent.hardclipUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.parent.hardclipUniforms.u_canvasWidth!, canvasWidth)
-        // Hardclip color uniform from theme
         gl.uniform3f(
           this.parent.hardclipUniforms.u_colorHardclip!,
           ...colors.colorHardclip,
@@ -408,7 +373,6 @@ export class PileupRenderer {
       }
     }
 
-    // Draw modifications (on top of reads and mismatches)
     if (
       state.showModifications &&
       buffers.modificationVAO &&
@@ -447,9 +411,7 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.modificationCount)
     }
 
-    // Highlight overlay pass
     if (state.highlightedChainIndices.length > 0) {
-      // Chain highlight: single spanning rectangle covering the full chain extent
       const bounds = getChainBounds(
         state.highlightedChainIndices,
         buffers.readPositions,
@@ -470,7 +432,6 @@ export class PileupRenderer {
         this.drawFilledRect(gl, clip)
       }
     } else if (state.highlightedFeatureIndex >= 0) {
-      // Single-feature highlight (pileup mode)
       gl.useProgram(this.parent.readProgram)
       gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
       gl.uniform1i(
@@ -484,7 +445,6 @@ export class PileupRenderer {
 
     gl.disable(gl.SCISSOR_TEST)
 
-    // Draw selection outline
     if (state.selectedChainIndices.length > 0) {
       const bounds = getChainBounds(
         state.selectedChainIndices,
@@ -594,46 +554,17 @@ export class PileupRenderer {
     let outlineData: Float32Array
     if (showChevron && strand === 1) {
       outlineData = new Float32Array([
-        sx1,
-        syTop,
-        sx2,
-        syTop,
-        sx2 + chevronClip,
-        syMid,
-        sx2,
-        syBot,
-        sx1,
-        syBot,
-        sx1,
-        syTop,
+        sx1, syTop, sx2, syTop, sx2 + chevronClip, syMid,
+        sx2, syBot, sx1, syBot, sx1, syTop,
       ])
     } else if (showChevron && strand === -1) {
       outlineData = new Float32Array([
-        sx1,
-        syTop,
-        sx2,
-        syTop,
-        sx2,
-        syBot,
-        sx1,
-        syBot,
-        sx1 - chevronClip,
-        syMid,
-        sx1,
-        syTop,
+        sx1, syTop, sx2, syTop, sx2, syBot,
+        sx1, syBot, sx1 - chevronClip, syMid, sx1, syTop,
       ])
     } else {
       outlineData = new Float32Array([
-        sx1,
-        syTop,
-        sx2,
-        syTop,
-        sx2,
-        syBot,
-        sx1,
-        syBot,
-        sx1,
-        syTop,
+        sx1, syTop, sx2, syTop, sx2, syBot, sx1, syBot, sx1, syTop,
       ])
     }
 

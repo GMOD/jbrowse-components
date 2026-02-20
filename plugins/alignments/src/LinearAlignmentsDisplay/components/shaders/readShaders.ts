@@ -1,6 +1,5 @@
 import { HP_GLSL_FUNCTIONS } from './utils.ts'
 
-// Vertex shader for reads
 export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
@@ -12,39 +11,37 @@ in float a_mapq;
 in float a_insertSize;
 in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
-in vec3 a_tagColor;          // per-read tag color (normalized 0-1 from Uint8)
-in float a_chainHasSupp;     // 1 if chain contains supplementary reads
+in vec3 a_tagColor;
+in float a_chainHasSupp;
 
-uniform vec3 u_bpRangeX;  // [bpStartHi, bpStartLo, regionLengthBp]
-uniform uint u_regionStart;  // Base position for converting offsets to absolute
+uniform vec3 u_bpRangeX;
+uniform uint u_regionStart;
 uniform vec2 u_rangeY;
 uniform int u_colorScheme;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
-uniform int u_highlightedIndex;  // Feature index to highlight (-1 = none)
-uniform int u_highlightOnlyMode;  // 1 = only draw highlighted instance as overlay
+uniform int u_highlightedIndex;
+uniform int u_highlightOnlyMode;
 uniform float u_canvasWidth;
-uniform int u_chainMode;  // 1 = cloud/linkedRead (always show chevrons)
+uniform int u_chainMode;
 
-// Color uniforms - these match shared/color.ts and theme colors
-uniform vec3 u_colorFwdStrand;    // #EC8B8B
-uniform vec3 u_colorRevStrand;    // #8F8FD8
-uniform vec3 u_colorNostrand;     // #c8c8c8 (lightgrey)
-uniform vec3 u_colorPairLR;       // lightgrey
-uniform vec3 u_colorPairRL;       // teal
-uniform vec3 u_colorPairRR;       // #3a3a9d (dark blue)
-uniform vec3 u_colorPairLL;       // green
-uniform vec3 u_colorModificationFwd;  // #c8c8c8
-uniform vec3 u_colorModificationRev;  // #c8dcc8
-uniform vec3 u_colorLongInsert;   // red
-uniform vec3 u_colorShortInsert;  // pink
-uniform vec3 u_colorSupplementary; // #f0b878 (light orange)
+uniform vec3 u_colorFwdStrand;
+uniform vec3 u_colorRevStrand;
+uniform vec3 u_colorNostrand;
+uniform vec3 u_colorPairLR;
+uniform vec3 u_colorPairRL;
+uniform vec3 u_colorPairRR;
+uniform vec3 u_colorPairLL;
+uniform vec3 u_colorModificationFwd;
+uniform vec3 u_colorModificationRev;
+uniform vec3 u_colorLongInsert;
+uniform vec3 u_colorShortInsert;
+uniform vec3 u_colorSupplementary;
 
-// Insert size thresholds (mean ± 3 SD)
-uniform float u_insertSizeUpper;  // Too long threshold
-uniform float u_insertSizeLower;  // Too short threshold
+uniform float u_insertSizeUpper;
+uniform float u_insertSizeLower;
 
 out vec4 v_color;
 out vec2 v_localPos;       // 0-1 UV within the feature rectangle
@@ -53,32 +50,24 @@ out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=ch
 
 ${HP_GLSL_FUNCTIONS}
 
-// Color scheme 0: normal - grey base color (matches PileupRenderer default)
-// Uses colorPairLR (lightgrey) which matches old PileupRenderer's default 'lightgrey' color
+// Color scheme 0: normal
 vec3 normalColor() {
   return u_colorPairLR;
 }
 
-// Color scheme 1: strand - red for forward, blue for reverse
-// Matches colorByStrand in colorBy.ts
+// Color scheme 1: strand
 vec3 strandColor(float strand) {
-  if (strand > 0.5) {
-    return u_colorFwdStrand;  // forward
-  } else if (strand < -0.5) {
-    return u_colorRevStrand;  // reverse
-  }
-  return u_colorNostrand;  // unknown
+  if (strand > 0.5) return u_colorFwdStrand;
+  if (strand < -0.5) return u_colorRevStrand;
+  return u_colorNostrand;
 }
 
-// Color scheme 2: mapping quality - HSL based on MAPQ score
-// Matches colorByMappingQuality: hsl(score, 50%, 50%)
+// Color scheme 2: mapping quality - hsl(mapq, 50%, 50%)
 vec3 mapqColor(float mapq) {
-  // Convert HSL to RGB where H = mapq (0-255 mapped to 0-360), S=0.5, L=0.5
-  float h = mapq / 360.0;  // MAPQ typically 0-60, but can be higher
+  float h = mapq / 360.0;
   float s = 0.5;
   float l = 0.5;
 
-  // HSL to RGB conversion
   float c = (1.0 - abs(2.0 * l - 1.0)) * s;
   float hp = h * 6.0;
   float x = c * (1.0 - abs(mod(hp, 2.0) - 1.0));
@@ -95,20 +84,14 @@ vec3 mapqColor(float mapq) {
   return rgb + m;
 }
 
-// Color scheme 3: insert size - threshold-based (mean ± 3 SD)
-// Red for too long (> upper), pink for too short (< lower), default for normal
+// Color scheme 3: insert size
 vec3 insertSizeColor(float insertSize) {
-  if (insertSize > u_insertSizeUpper) {
-    return u_colorLongInsert;  // red - too long
-  }
-  if (insertSize < u_insertSizeLower) {
-    return u_colorShortInsert;  // pink - too short
-  }
-  return u_colorPairLR;  // default (lightgrey) - normal
+  if (insertSize > u_insertSizeUpper) return u_colorLongInsert;
+  if (insertSize < u_insertSizeLower) return u_colorShortInsert;
+  return u_colorPairLR;
 }
 
-// Color scheme 4: first-of-pair strand (stranded RNA-seq simplified)
-// Uses strand colors based on first-of-pair flag
+// Color scheme 4: first-of-pair strand
 vec3 firstOfPairColor(float flags, float strand) {
   bool isFirst = mod(floor(flags / 64.0), 2.0) > 0.5;  // flag 64 = first of pair
   float effectiveStrand = isFirst ? strand : -strand;
@@ -120,31 +103,22 @@ vec3 firstOfPairColor(float flags, float strand) {
   return u_colorNostrand;
 }
 
-// Color scheme 5: pair orientation - LR/RL/RR/LL
-// Matches colorByOrientation using fillColor values
+// Color scheme 5: pair orientation
 vec3 pairOrientationColor(float pairOrientation) {
   int po = int(pairOrientation);
-  if (po == 1) {
-    return u_colorPairLR;   // LR - normal (lightgrey)
-  } else if (po == 2) {
-    return u_colorPairRL;   // RL - teal
-  } else if (po == 3) {
-    return u_colorPairRR;   // RR (FF) - #3a3a9d (dark blue)
-  } else if (po == 4) {
-    return u_colorPairLL;   // LL (RR) - green
-  }
-  return u_colorNostrand;   // unknown - grey
+  if (po == 1) return u_colorPairLR;   // LR
+  if (po == 2) return u_colorPairRL;   // RL
+  if (po == 3) return u_colorPairRR;   // RR
+  if (po == 4) return u_colorPairLL;   // LL
+  return u_colorNostrand;
 }
 
-// Color scheme 6: insert size AND orientation combined
-// Priority: abnormal orientation first, then insert size coloring
+// Color scheme 6: insert size + orientation
 vec3 insertSizeAndOrientationColor(float insertSize, float pairOrientation) {
   int po = int(pairOrientation);
-  // First check orientation - if not LR (normal), use orientation color
-  if (po == 2) return u_colorPairRL;   // RL - teal
-  if (po == 3) return u_colorPairRR;   // RR - dark blue
-  if (po == 4) return u_colorPairLL;   // LL - green
-  // For LR orientation or unknown, fall back to insert size coloring
+  if (po == 2) return u_colorPairRL;
+  if (po == 3) return u_colorPairRR;
+  if (po == 4) return u_colorPairLL;
   return insertSizeColor(insertSize);
 }
 

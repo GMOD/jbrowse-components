@@ -7,12 +7,9 @@ fn hp_split_uint(value: u32) -> vec2f {
   return vec2f(f32(hi), f32(lo));
 }
 
-// WARNING: hp_to_clip_x uses max(-inf) and dot() to prevent the shader compiler
-// from algebraically combining the hi/lo subtractions, which would defeat the
-// float32 precision workaround. Without these guards the compiler can legally
-// transform (splitHi - domHi) + (splitLo - domLo) into (split - dom) on the
-// recombined large values, causing visible pixel snapping at large genomic
-// positions. Technique from genome-spy. Do not simplify this arithmetic.
+// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
+// terms. Do not simplify.
+// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
 fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
   let inf = 1.0 / uf(5u);
   let step = 2.0 / bp_range.z;
@@ -21,8 +18,7 @@ fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
   return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
 }
 
-// WARNING: hp_scale_linear uses max(-inf) and dot() to prevent the shader
-// compiler from defeating the float32 precision workaround. See hp_to_clip_x.
+// WARNING: same compiler guards as hp_to_clip_x. Do not simplify.
 fn hp_scale_linear(split_pos: vec2f, bp_range: vec3f) -> f32 {
   let inf = 1.0 / uf(5u);
   let step = 1.0 / bp_range.z;
@@ -95,12 +91,8 @@ export const U_BP_LO = 1
 export const U_BP_LEN = 2
 export const U_REGION_START = 3
 export const U_RANGE_Y0 = 4
-// WARNING: U_HP_ZERO must always be 0.0. It is read by the HP shader functions
-// (hp_to_clip_x, hp_scale_linear) via uf(5u) to produce a runtime infinity
-// (1.0/0.0) that prevents the shader compiler from algebraically combining
-// the hi/lo split subtractions. Without this guard, the compiler can legally
-// optimize away the precision workaround, causing visible pixel snapping at
-// large genomic positions. Technique from genome-spy.
+// WARNING: U_HP_ZERO must always be 0.0. Used by HP shader functions via uf(5u)
+// to produce runtime infinity that prevents compiler from combining hi/lo splits.
 export const U_HP_ZERO = 5
 export const U_CANVAS_H = 6
 export const U_CANVAS_W = 7
