@@ -1387,7 +1387,7 @@ void main() {
     } else {
         if ((rect_idx == 1u)) {
             if (!(is_long)) {
-                local_6 = (px_per_bp < 0.5);
+                local_6 = (px_per_bp < 3.0);
             } else {
                 local_6 = true;
             }
@@ -1407,7 +1407,7 @@ void main() {
             }
         } else {
             if (!(is_long)) {
-                local_7 = (px_per_bp < 0.5);
+                local_7 = (px_per_bp < 3.0);
             } else {
                 local_7 = true;
             }

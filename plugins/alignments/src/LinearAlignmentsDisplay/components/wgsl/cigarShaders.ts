@@ -175,14 +175,14 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
     x1 = cx - rect_w_clip * 0.5; x2 = cx + rect_w_clip * 0.5;
     y1 = sy_bot; y2 = sy_top;
   } else if rect_idx == 1u {
-    if is_long || px_per_bp < 0.5 { x1 = cx; x2 = cx; y1 = sy_top; y2 = sy_top; }
+    if is_long || px_per_bp < 3.0 { x1 = cx; x2 = cx; y1 = sy_top; y2 = sy_top; }
     else {
       x1 = cx - tick_w_clip * 0.5; x2 = cx + tick_w_clip * 0.5;
       let th = 1.0 / canvas_height() * 2.0;
       y1 = sy_top; y2 = sy_top + th;
     }
   } else {
-    if is_long || px_per_bp < 0.5 { x1 = cx; x2 = cx; y1 = sy_bot; y2 = sy_bot; }
+    if is_long || px_per_bp < 3.0 { x1 = cx; x2 = cx; y1 = sy_bot; y2 = sy_bot; }
     else {
       x1 = cx - tick_w_clip * 0.5; x2 = cx + tick_w_clip * 0.5;
       let th = 1.0 / canvas_height() * 2.0;

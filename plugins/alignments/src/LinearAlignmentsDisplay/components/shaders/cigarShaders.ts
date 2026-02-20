@@ -289,7 +289,7 @@ void main() {
     y2 = syTop;
   } else if (rectIdx == 1) {
     // Top tick (only for small insertions when zoomed in)
-    if (isLongInsertion || pxPerBp < 0.5) {
+    if (isLongInsertion || pxPerBp < 3.0) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
@@ -304,7 +304,7 @@ void main() {
     }
   } else {
     // Bottom tick (only for small insertions when zoomed in)
-    if (isLongInsertion || pxPerBp < 0.5) {
+    if (isLongInsertion || pxPerBp < 3.0) {
       // Hide tick by making it zero-size
       sx1 = cxClip;
       sx2 = cxClip;
