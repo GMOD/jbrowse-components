@@ -184,7 +184,8 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   if (isHovered) {
     rgb = rgb * 0.7;
   }
-  let coverage = saturate(in.halfWidth + 0.5 - abs(in.dist));
+  let aa = fwidth(in.dist);
+  let coverage = saturate((in.halfWidth - abs(in.dist) + 0.5 * aa) / aa);
   return vec4f(rgb, finalAlpha * coverage);
 }
 

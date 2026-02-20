@@ -347,15 +347,16 @@ export class WebGLLDRenderer {
       viewOffsetX,
     } = state
 
-    if (
-      this.canvas.width !== canvasWidth ||
-      this.canvas.height !== canvasHeight
-    ) {
-      this.canvas.width = canvasWidth
-      this.canvas.height = canvasHeight
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(canvasWidth * dpr)
+    const bufH = Math.round(canvasHeight * dpr)
+
+    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
+      this.canvas.width = bufW
+      this.canvas.height = bufH
     }
 
-    gl.viewport(0, 0, canvasWidth, canvasHeight)
+    gl.viewport(0, 0, bufW, bufH)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
