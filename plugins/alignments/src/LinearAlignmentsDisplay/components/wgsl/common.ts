@@ -7,16 +7,28 @@ fn hp_split_uint(value: u32) -> vec2f {
   return vec2f(f32(hi), f32(lo));
 }
 
+// WARNING: hp_to_clip_x uses max(-inf) and dot() to prevent the shader compiler
+// from algebraically combining the hi/lo subtractions, which would defeat the
+// float32 precision workaround. Without these guards the compiler can legally
+// transform (splitHi - domHi) + (splitLo - domLo) into (split - dom) on the
+// recombined large values, causing visible pixel snapping at large genomic
+// positions. Technique from genome-spy. Do not simplify this arithmetic.
 fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let hi = split_pos.x - bp_range.x;
-  let lo = split_pos.y - bp_range.y;
-  return (hi + lo) / bp_range.z * 2.0 - 1.0;
+  let inf = 1.0 / uf(5u);
+  let step = 2.0 / bp_range.z;
+  let hi = max(split_pos.x - bp_range.x, -inf);
+  let lo = max(split_pos.y - bp_range.y, -inf);
+  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
 }
 
+// WARNING: hp_scale_linear uses max(-inf) and dot() to prevent the shader
+// compiler from defeating the float32 precision workaround. See hp_to_clip_x.
 fn hp_scale_linear(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let hi = split_pos.x - bp_range.x;
-  let lo = split_pos.y - bp_range.y;
-  return (hi + lo) / bp_range.z;
+  let inf = 1.0 / uf(5u);
+  let step = 1.0 / bp_range.z;
+  let hi = max(split_pos.x - bp_range.x, -inf);
+  let lo = max(split_pos.y - bp_range.y, -inf);
+  return dot(vec2f(hi, lo), vec2f(step, step));
 }
 
 fn snap_to_pixel_x(clip_x: f32, canvas_width: f32) -> f32 {
@@ -43,7 +55,7 @@ fn feature_height() -> f32 { return uf(9u); }
 fn feature_spacing() -> f32 { return uf(10u); }
 `
 
-export const PREAMBLE = HP_WGSL + UNIFORM_WGSL
+export const PREAMBLE = UNIFORM_WGSL + HP_WGSL
 
 export const SIMPLE_FS = `
 @fragment
@@ -83,7 +95,13 @@ export const U_BP_LO = 1
 export const U_BP_LEN = 2
 export const U_REGION_START = 3
 export const U_RANGE_Y0 = 4
-export const U_RANGE_Y1 = 5
+// WARNING: U_HP_ZERO must always be 0.0. It is read by the HP shader functions
+// (hp_to_clip_x, hp_scale_linear) via uf(5u) to produce a runtime infinity
+// (1.0/0.0) that prevents the shader compiler from algebraically combining
+// the hi/lo split subtractions. Without this guard, the compiler can legally
+// optimize away the precision workaround, causing visible pixel snapping at
+// large genomic positions. Technique from genome-spy.
+export const U_HP_ZERO = 5
 export const U_CANVAS_H = 6
 export const U_CANVAS_W = 7
 export const U_COV_OFFSET = 8

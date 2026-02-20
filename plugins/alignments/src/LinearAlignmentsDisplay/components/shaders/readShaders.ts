@@ -172,7 +172,6 @@ void main() {
 
   int vid = gl_VertexID % 9;
 
-  // Convert offsets to absolute positions, then apply high-precision 12-bit split
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
   vec2 splitStart = hpSplitUint(absStart);

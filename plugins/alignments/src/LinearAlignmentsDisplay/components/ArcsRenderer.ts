@@ -94,6 +94,9 @@ export class ArcsRenderer {
       this.parent.buffers.arcLineCount > 0
     ) {
       gl.useProgram(this.parent.arcLineProgram)
+      // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
+      // runtime infinity that prevents compiler from defeating precision guards.
+      gl.uniform1f(this.parent.arcLineUniforms.u_zero!, 0.0)
 
       const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
       const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]

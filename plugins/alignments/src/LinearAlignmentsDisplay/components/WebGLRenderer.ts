@@ -354,6 +354,7 @@ export class WebGLRenderer {
       'u_insertSizeLower',
       'u_chainMode',
       'u_showStroke',
+      'u_zero',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
@@ -486,6 +487,7 @@ export class WebGLRenderer {
       'u_blockStartPx',
       'u_blockWidth',
       'u_canvasWidth',
+      'u_zero',
     ])
     for (let i = 0; i < NUM_LINE_COLORS; i++) {
       this.arcLineUniforms[`u_arcLineColors[${i}]`] = gl.getUniformLocation(
@@ -543,6 +545,7 @@ export class WebGLRenderer {
       'u_canvasHeight',
       'u_coverageOffset',
       'u_colorScheme',
+      'u_zero',
     ])
 
     // Connecting line program
@@ -561,6 +564,7 @@ export class WebGLRenderer {
         'u_canvasHeight',
         'u_scrollTop',
         'u_coverageOffset',
+        'u_zero',
       ],
     )
 

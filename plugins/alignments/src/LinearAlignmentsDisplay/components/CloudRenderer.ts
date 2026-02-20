@@ -39,6 +39,9 @@ export class CloudRenderer {
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
     gl.useProgram(this.parent.cloudProgram)
+    // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
+    // runtime infinity that prevents compiler from defeating precision guards.
+    gl.uniform1f(this.parent.cloudUniforms.u_zero!, 0.0)
     gl.uniform3f(
       this.parent.cloudUniforms.u_bpRangeX!,
       bpStartHi,

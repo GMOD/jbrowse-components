@@ -31,7 +31,7 @@ struct VertexOutput {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -58,18 +58,6 @@ smooth out vec2 _vs2fs_location1;
 smooth out vec2 _vs2fs_location2;
 smooth out float _vs2fs_location3;
 
-vec2 hp_split_uint(uint value) {
-    uint lo = (value & HP_LOW_MASK);
-    uint hi = (value - lo);
-    return vec2(float(hi), float(lo));
-}
-
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
-}
-
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
     return uintBitsToFloat(_e8);
@@ -92,7 +80,7 @@ vec3 color3_(uint base) {
     return vec3(_e1, _e4, _e7);
 }
 
-vec3 bp_range_1() {
+vec3 bp_range() {
     float _e1 = uf(0u);
     float _e3 = uf(1u);
     float _e5 = uf(2u);
@@ -132,6 +120,21 @@ float feature_height() {
 float feature_spacing() {
     float _e1 = uf(10u);
     return _e1;
+}
+
+vec2 hp_split_uint(uint value) {
+    uint lo = (value & HP_LOW_MASK);
+    uint hi = (value - lo);
+    return vec2(float(hi), float(lo));
+}
+
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range_1) {
+    float _e3 = uf(5u);
+    float inf = (1.0 / _e3);
+    float step_ = (2.0 / bp_range_1.z);
+    float hi_1 = max((split_pos.x - bp_range_1.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range_1.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 vec2 pileup_y(float row) {
@@ -382,10 +385,10 @@ void main() {
     uint _e38 = region_start();
     uint abs_end = (inst_1.end_off + _e38);
     vec2 _e40 = hp_split_uint(abs_start);
-    vec3 _e41 = bp_range_1();
+    vec3 _e41 = bp_range();
     float _e42 = hp_to_clip_x(_e40, _e41);
     vec2 _e43 = hp_split_uint(abs_end);
-    vec3 _e44 = bp_range_1();
+    vec3 _e44 = bp_range();
     float _e45 = hp_to_clip_x(_e43, _e44);
     vec2 _e48 = pileup_y(float(inst_1.y));
     float sy_top = _e48.x;
@@ -602,7 +605,7 @@ struct VertexOutput {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_4_block_0Fragment { uvec4 _group_0_binding_1_fs[40]; };
+layout(std140) uniform type_2_block_0Fragment { uvec4 _group_0_binding_1_fs[40]; };
 
 smooth in vec4 _vs2fs_location0;
 smooth in vec2 _vs2fs_location1;
@@ -684,7 +687,7 @@ struct GapInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -931,7 +934,7 @@ struct MismatchInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -1197,7 +1200,7 @@ struct InsertionInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -1514,7 +1517,7 @@ struct ClipInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -1729,7 +1732,7 @@ struct ClipInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -1944,7 +1947,7 @@ struct ModInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_4_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -2125,7 +2128,7 @@ struct CovInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -2310,7 +2313,7 @@ struct SnpCovInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -2518,7 +2521,7 @@ struct ModCovInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_4_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -2700,7 +2703,7 @@ struct NoncovInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -2857,7 +2860,7 @@ struct IndicatorInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -2992,7 +2995,7 @@ struct LineVert {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_3_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -3068,7 +3071,7 @@ const uint HP_LOW_MASK = 4095u;
 const uint SEGMENTS = 64u;
 const float PI = 3.1415927;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -3239,7 +3242,7 @@ const uint HP_LOW_MASK = 4095u;
 const uint SEGMENTS = 64u;
 const float PI = 3.1415927;
 
-layout(std140) uniform type_3_block_0Fragment { uvec4 _group_0_binding_1_fs[40]; };
+layout(std140) uniform type_2_block_0Fragment { uvec4 _group_0_binding_1_fs[40]; };
 
 smooth in vec4 _vs2fs_location0;
 smooth in float _vs2fs_location1;
@@ -3281,7 +3284,7 @@ struct ArcLineInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -3296,18 +3299,6 @@ ArcLineInst _fetch_ArcLineInst(int idx) {
 }
 
 smooth out vec4 _vs2fs_location0;
-
-vec2 hp_split_uint(uint value) {
-    uint lo = (value & HP_LOW_MASK);
-    uint hi = (value - lo);
-    return vec2(float(hi), float(lo));
-}
-
-float hp_scale_linear(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((hi_1 + lo_1) / bp_range.z);
-}
 
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
@@ -3326,7 +3317,7 @@ vec3 color3_(uint base) {
     return vec3(_e1, _e4, _e7);
 }
 
-vec3 bp_range_1() {
+vec3 bp_range() {
     float _e1 = uf(0u);
     float _e3 = uf(1u);
     float _e5 = uf(2u);
@@ -3353,6 +3344,21 @@ float coverage_offset() {
     return _e1;
 }
 
+vec2 hp_split_uint(uint value) {
+    uint lo = (value & HP_LOW_MASK);
+    uint hi = (value - lo);
+    return vec2(float(hi), float(lo));
+}
+
+float hp_scale_linear(vec2 split_pos, vec3 bp_range_1) {
+    float _e3 = uf(5u);
+    float inf = (1.0 / _e3);
+    float step_ = (1.0 / bp_range_1.z);
+    float hi_1 = max((split_pos.x - bp_range_1.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range_1.y), -(inf));
+    return dot(vec2(hi_1, lo_1), vec2(step_, step_));
+}
+
 void main() {
     uint vid = uint(gl_VertexID);
     uint iid = uint(gl_InstanceID);
@@ -3363,7 +3369,7 @@ void main() {
     uint _e9 = region_start();
     uint abs_pos = (inst.position + _e9);
     vec2 _e11 = hp_split_uint(abs_pos);
-    vec3 _e12 = bp_range_1();
+    vec3 _e12 = bp_range();
     float _e13 = hp_scale_linear(_e11, _e12);
     float _e15 = uf(24u);
     float _e17 = uf(25u);
@@ -3432,7 +3438,7 @@ struct SashimiOut {
 const uint HP_LOW_MASK = 4095u;
 const uint SEGMENTS = 64u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -3590,7 +3596,7 @@ struct CloudInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -3607,18 +3613,6 @@ CloudInst _fetch_CloudInst(int idx) {
 
 smooth out vec4 _vs2fs_location0;
 
-vec2 hp_split_uint(uint value) {
-    uint lo = (value & HP_LOW_MASK);
-    uint hi = (value - lo);
-    return vec2(float(hi), float(lo));
-}
-
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
-}
-
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
     return uintBitsToFloat(_e8);
@@ -3634,7 +3628,7 @@ int ui(uint i_2) {
     return int(_e8);
 }
 
-vec3 bp_range_1() {
+vec3 bp_range() {
     float _e1 = uf(0u);
     float _e3 = uf(1u);
     float _e5 = uf(2u);
@@ -3659,6 +3653,21 @@ float coverage_offset() {
 float feature_height() {
     float _e1 = uf(9u);
     return _e1;
+}
+
+vec2 hp_split_uint(uint value) {
+    uint lo = (value & HP_LOW_MASK);
+    uint hi = (value - lo);
+    return vec2(float(hi), float(lo));
+}
+
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range_1) {
+    float _e3 = uf(5u);
+    float inf = (1.0 / _e3);
+    float step_ = (2.0 / bp_range_1.z);
+    float hi_1 = max((split_pos.x - bp_range_1.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range_1.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 vec3 iso_color(float ct, float flags) {
@@ -3724,10 +3733,10 @@ void main() {
     uint _e50 = region_start();
     uint abs_end = (inst.end_off + _e50);
     vec2 _e52 = hp_split_uint(abs_start);
-    vec3 _e53 = bp_range_1();
+    vec3 _e53 = bp_range();
     float _e54 = hp_to_clip_x(_e52, _e53);
     vec2 _e55 = hp_split_uint(abs_end);
-    vec3 _e56 = bp_range_1();
+    vec3 _e56 = bp_range();
     float _e57 = hp_to_clip_x(_e55, _e56);
     float _e58 = canvas_height();
     float _e59 = coverage_offset();
@@ -3799,7 +3808,7 @@ struct ConnLineInst {
 };
 const uint HP_LOW_MASK = 4095u;
 
-layout(std140) uniform type_5_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
+layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
 
 uniform highp usampler2D u_instanceData;
 
@@ -3814,18 +3823,6 @@ ConnLineInst _fetch_ConnLineInst(int idx) {
 
 smooth out vec4 _vs2fs_location0;
 
-vec2 hp_split_uint(uint value) {
-    uint lo = (value & HP_LOW_MASK);
-    uint hi = (value - lo);
-    return vec2(float(hi), float(lo));
-}
-
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
-}
-
 float uf(uint i) {
     uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
     return uintBitsToFloat(_e8);
@@ -3836,7 +3833,7 @@ uint uu(uint i_1) {
     return _e8;
 }
 
-vec3 bp_range_1() {
+vec3 bp_range() {
     float _e1 = uf(0u);
     float _e3 = uf(1u);
     float _e5 = uf(2u);
@@ -3866,6 +3863,21 @@ float feature_height() {
 float feature_spacing() {
     float _e1 = uf(10u);
     return _e1;
+}
+
+vec2 hp_split_uint(uint value) {
+    uint lo = (value & HP_LOW_MASK);
+    uint hi = (value - lo);
+    return vec2(float(hi), float(lo));
+}
+
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range_1) {
+    float _e3 = uf(5u);
+    float inf = (1.0 / _e3);
+    float step_ = (2.0 / bp_range_1.z);
+    float hi_1 = max((split_pos.x - bp_range_1.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range_1.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 void main() {
@@ -3909,10 +3921,10 @@ void main() {
     uint _e50 = region_start();
     uint abs_end = (inst.end_off + _e50);
     vec2 _e52 = hp_split_uint(abs_start);
-    vec3 _e53 = bp_range_1();
+    vec3 _e53 = bp_range();
     float _e54 = hp_to_clip_x(_e52, _e53);
     vec2 _e55 = hp_split_uint(abs_end);
-    vec3 _e56 = bp_range_1();
+    vec3 _e56 = bp_range();
     float _e57 = hp_to_clip_x(_e55, _e56);
     float _e58 = feature_height();
     float _e59 = feature_spacing();

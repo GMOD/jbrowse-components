@@ -86,6 +86,7 @@ import {
   U_GRADIENT_HUE,
   U_HIGHLIGHT_IDX,
   U_HIGHLIGHT_ONLY,
+  U_HP_ZERO,
   U_INSERT_LOWER,
   U_INSERT_UPPER,
   U_LINE_WIDTH_PX,
@@ -1005,6 +1006,7 @@ export class AlignmentsRenderer {
     f[U_BP_LO] = bpLo
     f[U_BP_LEN] = bpLen
     u[U_REGION_START] = regionStart
+    f[U_HP_ZERO] = 0.0
     f[U_DOMAIN_START] = clippedBpStart - regionStart
     f[U_DOMAIN_END] = clippedBpEnd - regionStart
     f[U_RANGE_Y0] = state.rangeY[0]

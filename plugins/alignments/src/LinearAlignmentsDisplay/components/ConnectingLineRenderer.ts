@@ -31,6 +31,9 @@ export class ConnectingLineRenderer {
     const coverageOffset = state.showCoverage ? state.coverageHeight : 0
 
     gl.useProgram(this.parent.connectingLineProgram)
+    // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
+    // runtime infinity that prevents compiler from defeating precision guards.
+    gl.uniform1f(this.parent.connectingLineUniforms.u_zero!, 0.0)
     gl.uniform3f(
       this.parent.connectingLineUniforms.u_bpRangeX!,
       bpStartHi,

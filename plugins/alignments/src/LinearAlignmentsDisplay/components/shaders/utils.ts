@@ -31,28 +31,41 @@ export function splitPositionWithFrac(value: number): [number, number] {
  * Read positions are integers, but the domain start can have sub-bp precision.
  */
 export const HP_GLSL_FUNCTIONS = `
-// High-precision constants (12-bit split)
-const uint HP_LOW_MASK = 0xFFFu;  // 4095 - mask for low 12 bits
-const float HP_LOW_DIVISOR = 4096.0;
+const uint HP_LOW_MASK = 0xFFFu;
 
-// Split a uint into high and low parts for precision
-// High part is multiple of 4096, low part is 0-4095
+// WARNING: u_zero MUST be set to 0.0 at runtime. It is used to produce a
+// runtime infinity (1.0/u_zero) that prevents the shader compiler from
+// algebraically combining the hi/lo subtractions, which would defeat the
+// float32 precision workaround. Technique from genome-spy. A compile-time
+// constant would be optimized away; only a runtime uniform works.
+uniform float u_zero;
+
 vec2 hpSplitUint(uint value) {
   uint lo = value & HP_LOW_MASK;
   uint hi = value - lo;
   return vec2(float(hi), float(lo));
 }
 
-// Calculate normalized position (0-1) from split position and bpRange
-// bpRange.xy = [bpStartHi, bpStartLo], bpRange.z = regionLengthBp
-float hpScaleLinear(vec2 splitPos, vec3 bpRange) {
-  float hi = splitPos.x - bpRange.x;  // High parts subtracted (similar magnitude)
-  float lo = splitPos.y - bpRange.y;  // Low parts subtracted (both 0-4095)
-  return (hi + lo) / bpRange.z;       // Combine and normalize
+// WARNING: hpToClipX uses max(-inf) and dot() to prevent the shader compiler
+// from defeating the float32 precision workaround. Without these guards the
+// compiler can legally transform (splitHi - domHi) + (splitLo - domLo) into
+// (split - dom) on the recombined large values, causing visible pixel snapping
+// at large genomic positions. Do not simplify this arithmetic.
+float hpToClipX(vec2 splitPos, vec3 bpRange) {
+  float inf = 1.0 / u_zero;
+  float step = 2.0 / bpRange.z;
+  float hi = max(splitPos.x - bpRange.x, -inf);
+  float lo = max(splitPos.y - bpRange.y, -inf);
+  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
 }
 
-// Calculate clip-space X from split position and bpRange
-float hpToClipX(vec2 splitPos, vec3 bpRange) {
-  return hpScaleLinear(splitPos, bpRange) * 2.0 - 1.0;
+// WARNING: hpScaleLinear uses the same compiler guards as hpToClipX.
+// See hpToClipX comment above. Do not simplify this arithmetic.
+float hpScaleLinear(vec2 splitPos, vec3 bpRange) {
+  float inf = 1.0 / u_zero;
+  float step = 1.0 / bpRange.z;
+  float hi = max(splitPos.x - bpRange.x, -inf);
+  float lo = max(splitPos.y - bpRange.y, -inf);
+  return dot(vec2(hi, lo), vec2(step, step));
 }
 `

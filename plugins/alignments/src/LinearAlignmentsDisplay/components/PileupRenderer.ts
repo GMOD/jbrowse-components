@@ -107,14 +107,16 @@ export class PileupRenderer {
     }
 
     gl.useProgram(this.parent.readProgram)
-    // Use high-precision split domain for reads (vec3: hi, lo, extent)
+    // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
+    // runtime infinity that prevents compiler from defeating precision guards.
+    // See shaders/utils.ts HP_GLSL_FUNCTIONS for full explanation.
+    gl.uniform1f(this.parent.readUniforms.u_zero!, 0.0)
     gl.uniform3f(
       this.parent.readUniforms.u_bpRangeX!,
       bpStartHi,
       bpStartLo,
       regionLengthBp,
     )
-    // Pass regionStart so shader can convert offsets to absolute positions (must be integer)
     gl.uniform1ui(
       this.parent.readUniforms.u_regionStart!,
       Math.floor(regionStart),
