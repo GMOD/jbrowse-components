@@ -1106,6 +1106,28 @@ export class AlignmentsRenderer {
     let isFirst = true
     const tempBuffers: GPUBuffer[] = []
 
+    const mkPass = (loadOp: GPULoadOp) => {
+      const enc = device.createCommandEncoder()
+      const p = enc.beginRenderPass({
+        colorAttachments: [
+          {
+            view: textureView,
+            loadOp,
+            storeOp: 'store' as GPUStoreOp,
+            ...(loadOp === 'clear' && {
+              clearValue: { r: 0, g: 0, b: 0, a: 0 },
+            }),
+          },
+        ],
+      })
+      return { enc, p }
+    }
+
+    const submitPass = (enc: GPUCommandEncoder, p: GPURenderPassEncoder) => {
+      p.end()
+      device.queue.submit([enc.finish()])
+    }
+
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
       if (!region) {
@@ -1144,141 +1166,17 @@ export class AlignmentsRenderer {
         clippedBpEnd,
       )
 
-      const mkPass = (loadOp: GPULoadOp) => {
-        const enc = device.createCommandEncoder()
-        const p = enc.beginRenderPass({
-          colorAttachments: [
-            {
-              view: textureView,
-              loadOp,
-              storeOp: 'store' as GPUStoreOp,
-              ...(loadOp === 'clear' && {
-                clearValue: { r: 0, g: 0, b: 0, a: 0 },
-              }),
-            },
-          ],
-        })
-        return { enc, p }
-      }
-
-      const submitPass = (
-        enc: GPUCommandEncoder,
-        p: GPURenderPassEncoder,
-      ) => {
-        p.end()
-        device.queue.submit([enc.finish()])
-      }
-
       const mode = state.renderingMode ?? 'pileup'
-      const vpX = Math.max(0, Math.floor(block.screenStartPx))
-      const vpEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-      const vpW = vpEnd - vpX
-
       const arcsHeight =
         mode === 'pileup' && state.showArcs && state.arcsHeight
           ? state.arcsHeight
           : 0
-      const needsSeparatePasses = arcsHeight > 0
+      const covH = state.showCoverage ? state.coverageHeight : 0
 
-      if (needsSeparatePasses) {
-        const covH = state.showCoverage ? state.coverageHeight : 0
-
-        {
-          const { enc, p } = mkPass(
-            isFirst ? ('clear' as GPULoadOp) : ('load' as GPULoadOp),
-          )
-          p.setViewport(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-            0,
-            1,
-          )
-          p.setScissorRect(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-          )
-          if (state.showCoverage) {
-            this.drawCoverage(p, region)
-          }
-          submitPass(enc, p)
-        }
-
-        {
-          this.uF32[U_COV_OFFSET] = 0
-          this.uF32[U_CANVAS_H] = arcsHeight
-          device.queue.writeBuffer(this.uBuf!, 0, this.uData)
-
-          const { enc, p } = mkPass('load' as GPULoadOp)
-          p.setViewport(
-            Math.round(vpX * dpr),
-            Math.round(covH * dpr),
-            Math.round(vpW * dpr),
-            Math.round(arcsHeight * dpr),
-            0,
-            1,
-          )
-          p.setScissorRect(
-            Math.round(scissorX * dpr),
-            Math.round(covH * dpr),
-            Math.round(scissorW * dpr),
-            Math.round(arcsHeight * dpr),
-          )
-          this.drawArcs(p, region, state, block, vpX, vpW)
-          submitPass(enc, p)
-        }
-
-        {
-          this.uF32[U_COV_OFFSET] = covH + arcsHeight
-          this.uF32[U_CANVAS_H] = state.canvasHeight
-          device.queue.writeBuffer(this.uBuf!, 0, this.uData)
-
-          const { enc, p } = mkPass('load' as GPULoadOp)
-          p.setViewport(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-            0,
-            1,
-          )
-          p.setScissorRect(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-          )
-          this.drawPileup(p, region, state)
-          submitPass(enc, p)
-        }
-
-        if (state.showSashimiArcs && state.showCoverage) {
-          const { enc, p } = mkPass('load' as GPULoadOp)
-          p.setViewport(
-            Math.round(vpX * dpr),
-            0,
-            Math.round(vpW * dpr),
-            bufH,
-            0,
-            1,
-          )
-          p.setScissorRect(
-            Math.round(scissorX * dpr),
-            0,
-            Math.round(scissorW * dpr),
-            bufH,
-          )
-          this.drawSashimi(p, region, state, block, vpX, vpW)
-          submitPass(enc, p)
-        }
-      } else {
+      {
         const { enc, p } = mkPass(
           isFirst ? ('clear' as GPULoadOp) : ('load' as GPULoadOp),
         )
-
         p.setViewport(
           Math.round(scissorX * dpr),
           0,
@@ -1299,15 +1197,7 @@ export class AlignmentsRenderer {
         }
 
         if (mode === 'arcs') {
-          p.setViewport(
-            Math.round(vpX * dpr),
-            0,
-            Math.round(vpW * dpr),
-            bufH,
-            0,
-            1,
-          )
-          this.drawArcs(p, region, state, block, vpX, vpW)
+          this.drawArcs(p, region, state, block, scissorX, scissorW)
         } else if (mode === 'cloud' || mode === 'linkedRead') {
           this.drawConnectingLines(p, region)
           this.drawPileup(p, region, state)
@@ -1325,18 +1215,54 @@ export class AlignmentsRenderer {
           this.drawPileup(p, region, state)
         }
 
-        if (state.showSashimiArcs && state.showCoverage) {
-          p.setViewport(
-            Math.round(vpX * dpr),
-            0,
-            Math.round(vpW * dpr),
-            bufH,
-            0,
-            1,
-          )
-          this.drawSashimi(p, region, state, block, vpX, vpW)
-        }
+        submitPass(enc, p)
+      }
 
+      if (arcsHeight > 0) {
+        this.uF32[U_COV_OFFSET] = 0
+        this.uF32[U_CANVAS_H] = arcsHeight
+        device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+
+        const { enc, p } = mkPass('load' as GPULoadOp)
+        p.setViewport(
+          Math.round(scissorX * dpr),
+          Math.round(covH * dpr),
+          Math.round(scissorW * dpr),
+          Math.round(arcsHeight * dpr),
+          0,
+          1,
+        )
+        p.setScissorRect(
+          Math.round(scissorX * dpr),
+          Math.round(covH * dpr),
+          Math.round(scissorW * dpr),
+          Math.round(arcsHeight * dpr),
+        )
+        this.drawArcs(p, region, state, block, scissorX, scissorW)
+        submitPass(enc, p)
+
+        this.uF32[U_COV_OFFSET] = covH + arcsHeight
+        this.uF32[U_CANVAS_H] = state.canvasHeight
+        device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+      }
+
+      if (state.showSashimiArcs && state.showCoverage) {
+        const { enc, p } = mkPass('load' as GPULoadOp)
+        p.setViewport(
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          bufH,
+          0,
+          1,
+        )
+        p.setScissorRect(
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          bufH,
+        )
+        this.drawSashimi(p, region, state, block, scissorX, scissorW)
         submitPass(enc, p)
       }
 
@@ -1348,19 +1274,8 @@ export class AlignmentsRenderer {
     }
 
     if (isFirst) {
-      const encoder = device.createCommandEncoder()
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: textureView,
-            loadOp: 'clear' as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            clearValue: { r: 0, g: 0, b: 0, a: 0 },
-          },
-        ],
-      })
-      pass.end()
-      device.queue.submit([encoder.finish()])
+      const { enc, p } = mkPass('clear' as GPULoadOp)
+      submitPass(enc, p)
     }
   }
 

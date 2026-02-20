@@ -111,10 +111,10 @@ fn vs_main(
   }
 
   let v = vid % 9u;
-  let abs_start = inst.start_off + region_start();
-  let abs_end = inst.end_off + region_start();
-  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range());
-  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range());
+  let domain_start = uf(30u);
+  let domain_len = uf(31u) - domain_start;
+  let sx1 = (f32(inst.start_off) - domain_start) / domain_len * 2.0 - 1.0;
+  let sx2 = (f32(inst.end_off) - domain_start) / domain_len * 2.0 - 1.0;
 
   let yy = pileup_y(f32(inst.y));
   let sy_top = yy.x;
