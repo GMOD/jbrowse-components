@@ -1745,10 +1745,7 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                if (
-                  !view.initialized ||
-                  (self.regionTooLarge && view.visibleBp >= AUTO_FORCE_LOAD_BP)
-                ) {
+                if (!view.initialized) {
                   return
                 }
                 // Track fetchToken so bumps trigger re-fetch
