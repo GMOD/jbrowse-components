@@ -74,8 +74,6 @@ interface ExecuteParams {
 }
 
 export interface RenderWebGLChainDataArgs extends RenderWebGLPileupDataArgs {
-  layoutMode: 'linkedRead'
-  height: number
   drawSingletons?: boolean
   drawProperPairs?: boolean
 }

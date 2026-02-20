@@ -1329,8 +1329,6 @@ export default function stateModelFactory(
             filterBy: self.filterBy,
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
-            layoutMode: self.renderingMode,
-            height: self.height - self.coverageDisplayHeight,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             stopToken,
