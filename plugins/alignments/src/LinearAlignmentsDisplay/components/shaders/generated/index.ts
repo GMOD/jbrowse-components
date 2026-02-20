@@ -861,26 +861,26 @@ void main() {
     float sy = mix(_e110, _e111, ly);
     out_.position = vec4(sx, sy, 0.0, 1.0);
     if ((inst.gap_type == 0u)) {
-        float _e122 = canvas_width();
-        float px_per_bp = (_e122 / _e64);
-        if ((px_per_bp < 1.0)) {
-            local_6 = (inst.frequency < 0.1);
+        float _e126 = canvas_width();
+        float width_px = ((float((inst.end_off - inst.start_off)) * _e126) / _e64);
+        if ((width_px < 1.0)) {
+            local_6 = (inst.frequency == 0.0);
         } else {
             local_6 = false;
         }
-        bool _e132 = local_6;
-        if (_e132) {
-            alpha = px_per_bp;
+        bool _e137 = local_6;
+        if (_e137) {
+            alpha = (width_px * width_px);
         }
     }
-    vec3 _e134 = color3_(71u);
-    vec3 _e136 = color3_(68u);
-    vec3 c = ((inst.gap_type == 0u) ? _e136 : _e134);
-    float _e142 = alpha;
-    out_.color = vec4(c, _e142);
-    VertexOutput _e144 = out_;
-    gl_Position = _e144.position;
-    _vs2fs_location0 = _e144.color;
+    vec3 _e140 = color3_(71u);
+    vec3 _e142 = color3_(68u);
+    vec3 c = ((inst.gap_type == 0u) ? _e142 : _e140);
+    float _e148 = alpha;
+    out_.color = vec4(c, _e148);
+    VertexOutput _e150 = out_;
+    gl_Position = _e150.position;
+    _vs2fs_location0 = _e150.color;
     return;
 }
 
@@ -1059,7 +1059,7 @@ void main() {
     float _e50 = canvas_width();
     float px_per_bp = (_e50 / _e46);
     if ((px_per_bp < 1.0)) {
-        local_4 = (inst.frequency < 0.1);
+        local_4 = (inst.frequency == 0.0);
     } else {
         local_4 = false;
     }
@@ -1367,18 +1367,18 @@ void main() {
         if (is_long) {
             rect_w = min(5.0, (ins_w_px / 3.0));
         } else {
-            rect_w = min(px_per_bp, 1.0);
+            rect_w = 1.0;
         }
     }
-    float _e90 = canvas_width();
-    float one_px = (2.0 / _e90);
-    float _e93 = rect_w;
-    float _e96 = canvas_width();
-    float rect_w_clip = ((_e93 * 2.0) / _e96);
+    float _e89 = canvas_width();
+    float one_px = (2.0 / _e89);
+    float _e92 = rect_w;
+    float _e95 = canvas_width();
+    float rect_w_clip = ((_e92 * 2.0) / _e95);
     float tick_w_clip = (one_px * 3.0);
-    vec2 _e102 = pileup_y(float(inst.y));
-    float sy_top = _e102.x;
-    float sy_bot = _e102.y;
+    vec2 _e101 = pileup_y(float(inst.y));
+    float sy_top = _e101.x;
+    float sy_bot = _e101.y;
     if ((rect_idx == 0u)) {
         x1_ = (cx - (rect_w_clip * 0.5));
         x2_ = (cx + (rect_w_clip * 0.5));
@@ -1391,8 +1391,8 @@ void main() {
             } else {
                 local_6 = true;
             }
-            bool _e125 = local_6;
-            if (_e125) {
+            bool _e124 = local_6;
+            if (_e124) {
                 x1_ = cx;
                 x2_ = cx;
                 y1_ = sy_top;
@@ -1400,8 +1400,8 @@ void main() {
             } else {
                 x1_ = (cx - (tick_w_clip * 0.5));
                 x2_ = (cx + (tick_w_clip * 0.5));
-                float _e132 = canvas_height();
-                float th = ((1.0 / _e132) * 2.0);
+                float _e131 = canvas_height();
+                float th = ((1.0 / _e131) * 2.0);
                 y1_ = sy_top;
                 y2_ = (sy_top + th);
             }
@@ -1411,8 +1411,8 @@ void main() {
             } else {
                 local_7 = true;
             }
-            bool _e144 = local_7;
-            if (_e144) {
+            bool _e143 = local_7;
+            if (_e143) {
                 x1_ = cx;
                 x2_ = cx;
                 y1_ = sy_bot;
@@ -1420,41 +1420,50 @@ void main() {
             } else {
                 x1_ = (cx - (tick_w_clip * 0.5));
                 x2_ = (cx + (tick_w_clip * 0.5));
-                float _e151 = canvas_height();
-                float th_1 = ((1.0 / _e151) * 2.0);
+                float _e150 = canvas_height();
+                float th_1 = ((1.0 / _e150) * 2.0);
                 y1_ = (sy_bot - th_1);
                 y2_ = sy_bot;
             }
         }
     }
-    float _e157 = x1_;
-    float _e158 = x2_;
-    float sx = mix(_e157, _e158, lx);
-    float _e160 = y1_;
-    float _e161 = y2_;
-    float sy = mix(_e160, _e161, ly);
+    float _e156 = x1_;
+    float _e157 = x2_;
+    float sx = mix(_e156, _e157, lx);
+    float _e159 = y1_;
+    float _e160 = y2_;
+    float sy = mix(_e159, _e160, ly);
     if (!(is_long)) {
         local_8 = (px_per_bp < 1.0);
     } else {
         local_8 = false;
     }
-    bool _e171 = local_8;
-    if (_e171) {
-        local_9 = (inst.frequency < 0.1);
+    bool _e170 = local_8;
+    if (_e170) {
+        local_9 = (inst.frequency == 0.0);
     } else {
         local_9 = false;
     }
-    bool _e178 = local_9;
-    if (_e178) {
-        alpha = px_per_bp;
+    bool _e177 = local_9;
+    if (_e177) {
+        alpha = (px_per_bp * px_per_bp);
+    }
+    float _e179 = alpha;
+    if ((_e179 <= 0.0)) {
+        out_.position = vec4(0.0);
+        out_.color = vec4(0.0);
+        VertexOutput _e188 = out_;
+        gl_Position = _e188.position;
+        _vs2fs_location0 = _e188.color;
+        return;
     }
     out_.position = vec4(sx, sy, 0.0, 1.0);
-    vec3 _e185 = color3_(65u);
-    float _e186 = alpha;
-    out_.color = vec4(_e185, _e186);
-    VertexOutput _e188 = out_;
-    gl_Position = _e188.position;
-    _vs2fs_location0 = _e188.color;
+    vec3 _e195 = color3_(65u);
+    float _e196 = alpha;
+    out_.color = vec4(_e195, _e196);
+    VertexOutput _e198 = out_;
+    gl_Position = _e198.position;
+    _vs2fs_location0 = _e198.color;
     return;
 }
 
@@ -1628,7 +1637,7 @@ void main() {
     float _e50 = canvas_width();
     float px_per_bp = (_e50 / _e46);
     if ((px_per_bp < 1.0)) {
-        local_4 = (inst.frequency < 0.1);
+        local_4 = (inst.frequency == 0.0);
     } else {
         local_4 = false;
     }
@@ -1843,7 +1852,7 @@ void main() {
     float _e50 = canvas_width();
     float px_per_bp = (_e50 / _e46);
     if ((px_per_bp < 1.0)) {
-        local_4 = (inst.frequency < 0.1);
+        local_4 = (inst.frequency == 0.0);
     } else {
         local_4 = false;
     }
@@ -3936,3 +3945,4 @@ void main() {
 }
 
 `
+

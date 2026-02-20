@@ -316,6 +316,7 @@ export class PileupRenderer {
       )
       gl.uniform1f(this.parent.insertionUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.parent.insertionUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform1f(this.parent.insertionUniforms.u_dpr!, this.parent.dpr)
       // Insertion color uniform from theme
       gl.uniform3f(
         this.parent.insertionUniforms.u_colorInsertion!,

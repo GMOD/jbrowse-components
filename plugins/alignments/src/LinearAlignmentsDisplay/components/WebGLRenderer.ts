@@ -429,6 +429,7 @@ export class WebGLRenderer {
     ])
     this.cacheUniforms(this.insertionProgram, this.insertionUniforms, [
       ...cigarUniformsWithWidth,
+      'u_dpr',
       'u_colorInsertion',
     ])
     this.cacheUniforms(this.softclipProgram, this.softclipUniforms, [

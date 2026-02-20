@@ -241,6 +241,27 @@ export function computePositionFrequencies(
   return frequencies
 }
 
+export function applyDepthDependentThreshold(
+  frequencies: Uint8Array,
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartOffset: number,
+  thresholdFn: (depth: number) => number,
+) {
+  for (let i = 0; i < frequencies.length; i++) {
+    const posOffset = positions[i]!
+    const depthIdx = posOffset - coverageStartOffset
+    const depth =
+      depthIdx >= 0 && depthIdx < coverageDepths.length
+        ? coverageDepths[depthIdx]!
+        : 0
+    const freq = frequencies[i]! / 255
+    if (freq < thresholdFn(depth)) {
+      frequencies[i] = 0
+    }
+  }
+}
+
 /**
  * Compute SNP coverage segments for rendering colored bars in coverage area
  */

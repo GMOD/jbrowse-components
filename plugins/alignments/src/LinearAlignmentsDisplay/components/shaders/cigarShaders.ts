@@ -67,12 +67,11 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // Fade low-frequency deletions when zoomed out; skips (splice junctions) stay visible
   float alpha = 1.0;
   if (a_type == 0u) {
-    float pxPerBp = u_canvasWidth / regionLengthBp;
-    if (pxPerBp < 1.0 && a_frequency < 0.1) {
-      alpha = pxPerBp;
+    float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / regionLengthBp;
+    if (widthPx < 1.0 && a_frequency == 0.0) {
+      alpha = widthPx * widthPx;
     }
   }
   v_color = a_type == 0u ? vec4(u_colorDeletion, alpha) : vec4(u_colorSkip, 1.0);
@@ -133,11 +132,9 @@ void main() {
   float sx1 = px1 / u_canvasWidth * 2.0 - 1.0;
   float sx2 = px2 / u_canvasWidth * 2.0 - 1.0;
 
-  // When zoomed out, fade low-frequency SNPs to nothing.
-  // High-frequency SNPs (>10% of reads) stay visible.
   float physicalPxPerBp = pxPerBp * u_dpr;
   float alpha = 1.0;
-  if (physicalPxPerBp < 1.0 && a_frequency < 0.1) {
+  if (physicalPxPerBp < 1.0 && a_frequency == 0.0) {
     alpha = physicalPxPerBp;
   }
 
@@ -211,8 +208,8 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+uniform float u_dpr;
 
-// Insertion color uniform from theme
 uniform vec3 u_colorInsertion;
 
 out vec4 v_color;
@@ -260,10 +257,9 @@ void main() {
   if (isLargeInsertion) {
     rectWidthPx = textWidthForNumber(a_length);
   } else if (isLongInsertion) {
-    // Fade from 5px down to 0 as insertionWidthPx goes from threshold to 0
     rectWidthPx = min(5.0, insertionWidthPx / 3.0);
   } else {
-    rectWidthPx = min(pxPerBp, 1.0);
+    rectWidthPx = 1.0;
   }
 
   // Convert pixel width to clip space
@@ -327,9 +323,16 @@ void main() {
   float sx = mix(sx1, sx2, localX);
   float sy = mix(y1, y2, localY);
 
+  float physicalPxPerBp = pxPerBp * u_dpr;
   float alpha = 1.0;
-  if (!isLongInsertion && pxPerBp < 1.0 && a_frequency < 0.1) {
-    alpha = pxPerBp;
+  if (!isLongInsertion && physicalPxPerBp < 1.0 && a_frequency == 0.0) {
+    alpha = physicalPxPerBp * physicalPxPerBp;
+  }
+
+  if (alpha <= 0.0) {
+    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+    v_color = vec4(0.0);
+    return;
   }
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -379,7 +382,7 @@ void main() {
   float pxPerBp = u_canvasWidth / regionLengthBp;
 
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency < 0.1) {
+  if (pxPerBp < 1.0 && a_frequency == 0.0) {
     alpha = pxPerBp;
   }
   if (alpha <= 0.0) {
@@ -464,7 +467,7 @@ void main() {
   float pxPerBp = u_canvasWidth / regionLengthBp;
 
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency < 0.1) {
+  if (pxPerBp < 1.0 && a_frequency == 0.0) {
     alpha = pxPerBp;
   }
   if (alpha <= 0.0) {

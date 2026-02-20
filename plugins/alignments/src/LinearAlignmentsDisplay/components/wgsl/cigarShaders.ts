@@ -58,8 +58,8 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   var alpha = 1.0;
   if inst.gap_type == 0u {
-    let px_per_bp = canvas_width() / domain_len;
-    if px_per_bp < 1.0 && inst.frequency < 0.1 { alpha = px_per_bp; }
+    let width_px = f32(inst.end_off - inst.start_off) * canvas_width() / domain_len;
+    if width_px < 1.0 && inst.frequency == 0.0 { alpha = width_px * width_px; }
   }
   let c = select(color3(71u), color3(68u), inst.gap_type == 0u);
   out.color = vec4f(c, alpha);
@@ -90,7 +90,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let px_per_bp = canvas_width() / domain_len;
 
   var alpha = 1.0;
-  if px_per_bp < 1.0 && inst.frequency < 0.1 { alpha = px_per_bp; }
+  if px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp; }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   var px1 = (pos - domain.x) / domain_len * canvas_width();
@@ -160,7 +160,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   var rect_w: f32;
   if is_large { rect_w = text_width(inst.length); }
   else if is_long { rect_w = min(5.0, ins_w_px / 3.0); }
-  else { rect_w = min(px_per_bp, 1.0); }
+  else { rect_w = 1.0; }
 
   let one_px = 2.0 / canvas_width();
   let rect_w_clip = rect_w * 2.0 / canvas_width();
@@ -194,7 +194,8 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy = mix(y1, y2, ly);
 
   var alpha = 1.0;
-  if !is_long && px_per_bp < 1.0 && inst.frequency < 0.1 { alpha = px_per_bp; }
+  if !is_long && px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp * px_per_bp; }
+  if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   out.position = vec4f(sx, sy, 0.0, 1.0);
   out.color = vec4f(color3(65u), alpha);
@@ -225,7 +226,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let px_per_bp = canvas_width() / domain_len;
 
   var alpha = 1.0;
-  if px_per_bp < 1.0 && inst.frequency < 0.1 { alpha = px_per_bp; }
+  if px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp; }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   let bp_per_px = 1.0 / px_per_bp;

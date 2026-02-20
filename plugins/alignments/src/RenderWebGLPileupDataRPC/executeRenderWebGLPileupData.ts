@@ -26,6 +26,7 @@ import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
+  applyDepthDependentThreshold,
   computeCoverage,
   computeMismatchFrequencies,
   computeNoncovCoverage,
@@ -33,6 +34,7 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
+import { insertionFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
@@ -924,10 +926,24 @@ export async function executeRenderWebGLPileupData({
     coverage.depths,
     coverage.startOffset,
   )
+  applyDepthDependentThreshold(
+    mismatchFrequencies,
+    mismatchArrays.mismatchPositions,
+    coverage.depths,
+    coverage.startOffset,
+    insertionFrequencyThreshold,
+  )
   const interbaseFrequencies = computePositionFrequencies(
     interbaseArrays.interbasePositions,
     coverage.depths,
     coverage.startOffset,
+  )
+  applyDepthDependentThreshold(
+    interbaseFrequencies,
+    interbaseArrays.interbasePositions,
+    coverage.depths,
+    coverage.startOffset,
+    insertionFrequencyThreshold,
   )
   // Extract gap start positions (gapPositions stores [start, end] pairs)
   const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
@@ -938,6 +954,13 @@ export async function executeRenderWebGLPileupData({
     gapStartPositions,
     coverage.depths,
     coverage.startOffset,
+  )
+  applyDepthDependentThreshold(
+    gapFrequencies,
+    gapStartPositions,
+    coverage.depths,
+    coverage.startOffset,
+    insertionFrequencyThreshold,
   )
 
   const snpCoverage = computeSNPCoverage(

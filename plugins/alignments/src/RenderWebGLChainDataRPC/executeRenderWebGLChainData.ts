@@ -31,6 +31,7 @@ import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { PairType, getPairedType } from '../shared/color.ts'
 import {
+  applyDepthDependentThreshold,
   computeCoverage,
   computeMismatchFrequencies,
   computeNoncovCoverage,
@@ -38,6 +39,7 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
+import { insertionFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
@@ -934,10 +936,24 @@ export async function executeRenderWebGLChainData({
     coverage.depths,
     coverage.startOffset,
   )
+  applyDepthDependentThreshold(
+    mismatchFrequencies,
+    mismatchArrays.mismatchPositions,
+    coverage.depths,
+    coverage.startOffset,
+    insertionFrequencyThreshold,
+  )
   const interbaseFrequencies = computePositionFrequencies(
     interbaseArrays.interbasePositions,
     coverage.depths,
     coverage.startOffset,
+  )
+  applyDepthDependentThreshold(
+    interbaseFrequencies,
+    interbaseArrays.interbasePositions,
+    coverage.depths,
+    coverage.startOffset,
+    insertionFrequencyThreshold,
   )
   const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
   for (let i = 0; i < gapStartPositions.length; i++) {
@@ -947,6 +963,13 @@ export async function executeRenderWebGLChainData({
     gapStartPositions,
     coverage.depths,
     coverage.startOffset,
+  )
+  applyDepthDependentThreshold(
+    gapFrequencies,
+    gapStartPositions,
+    coverage.depths,
+    coverage.startOffset,
+    insertionFrequencyThreshold,
   )
 
   const snpCoverage = computeSNPCoverage(
