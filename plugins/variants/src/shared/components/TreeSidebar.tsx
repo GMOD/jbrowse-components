@@ -22,8 +22,6 @@ interface MenuAnchor {
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     position: 'absolute',
-    top: 0,
-    height: '100%',
     width: 4,
     zIndex: 101,
     background: 'transparent',
@@ -33,7 +31,6 @@ const useStyles = makeStyles()(theme => ({
   },
   treeBackground: {
     position: 'absolute',
-    top: 0,
     left: 0,
     background: alpha(
       theme.palette.background.paper,
@@ -87,7 +84,7 @@ const TreeSidebar = observer(function TreeSidebar({
       model.setTreeCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, treeAreaWidth, height],
+    [model, treeAreaWidth, height, lineZoneHeight],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -96,7 +93,7 @@ const TreeSidebar = observer(function TreeSidebar({
       model.setMouseoverCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, viewWidth, height],
+    [model, viewWidth, height, lineZoneHeight],
   )
 
   // Build spatial index for tree branch nodes to enable hover detection

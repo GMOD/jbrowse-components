@@ -24,14 +24,15 @@ const MultiVariantBaseDisplayComponent = observer(
     return (
       <div
         ref={ref}
+        style={{ position: 'relative' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
+        <TreeSidebar model={model} />
+        <LegendBar model={model} />
         <Suspense fallback={null}>
           <DisplayMessageComponent model={model} />
         </Suspense>
-        <TreeSidebar model={model} />
-        <LegendBar model={model} />
 
         {mouseState ? (
           <Crosshair
