@@ -161,15 +161,6 @@ export default function sharedLDConfigFactory() {
         type: 'stringArray',
         defaultValue: [],
       },
-      /**
-       * #slot
-       * Maximum number of SNPs to compute LD for. If exceeded, a "force load"
-       * prompt is shown instead of computing the O(n²) LD matrix automatically.
-       */
-      snpCountLimit: {
-        type: 'number',
-        defaultValue: 1000,
-      },
     },
     {
       /**

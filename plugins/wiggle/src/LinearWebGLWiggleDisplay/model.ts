@@ -5,6 +5,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingTrack,
   getContainingView,
+  getEnv,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
@@ -59,6 +60,7 @@ export default function stateModelFactory(
       types.model({
         type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
+        resolution: types.optional(types.number, 1),
         colorSetting: types.maybe(types.string),
         posColorSetting: types.maybe(types.string),
         negColorSetting: types.maybe(types.string),
@@ -129,6 +131,17 @@ export default function stateModelFactory(
        * Returns adapter configuration. Can be overridden by subclasses to
        * provide custom adapter configs (e.g., GC content display)
        */
+      get hasResolution() {
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter') as { type: string }
+        const { pluginManager } = getEnv(self)
+        return (
+          pluginManager
+            .getAdapterType(adapterConfig.type)
+            ?.adapterCapabilities?.includes('hasResolution') ?? false
+        )
+      },
+
       adapterProps() {
         const track = getContainingTrack(self)
         return {
@@ -201,19 +214,10 @@ export default function stateModelFactory(
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
         self.rpcDataMap = next
-        let min = Infinity
-        let max = -Infinity
-        for (const d of next.values()) {
-          if (d.scoreMin < min) {
-            min = d.scoreMin
-          }
-          if (d.scoreMax > max) {
-            max = d.scoreMax
-          }
-        }
-        if (Number.isFinite(min) && Number.isFinite(max)) {
-          self.visibleScoreRange = [min, max]
-        }
+      },
+
+      setVisibleScoreRange(range: [number, number]) {
+        self.visibleScoreRange = range
       },
 
       clearDisplaySpecificData() {
@@ -248,6 +252,10 @@ export default function stateModelFactory(
       setRenderingType(type: string) {
         self.renderingTypeSetting = type
       },
+
+      setResolution(res: number) {
+        self.resolution = res
+      },
     }))
     .actions(self => {
       async function fetchFeaturesForRegion(
@@ -255,6 +263,7 @@ export default function stateModelFactory(
         regionNumber: number,
         stopToken: string,
         bpPerPx: number,
+        resolution: number,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -274,6 +283,7 @@ export default function stateModelFactory(
             bicolorPivot: self.effectiveBicolorPivot,
             stopToken,
             bpPerPx,
+            resolution,
           },
         )) as WebGLWiggleDataResult
 
@@ -290,6 +300,7 @@ export default function stateModelFactory(
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
         bpPerPx: number,
+        resolution: number,
       ) {
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
@@ -301,7 +312,13 @@ export default function stateModelFactory(
         self.setError(null)
         try {
           const promises = regions.map(({ region, regionNumber }) =>
-            fetchFeaturesForRegion(region, regionNumber, stopToken, bpPerPx),
+            fetchFeaturesForRegion(
+              region,
+              regionNumber,
+              stopToken,
+              bpPerPx,
+              resolution,
+            ),
           )
           await Promise.all(promises)
         } catch (e) {
@@ -322,6 +339,7 @@ export default function stateModelFactory(
       const superAfterAttach = self.afterAttach
 
       let prevPivot: number | undefined
+      let prevResolution: number | undefined
 
       return {
         afterAttach() {
@@ -344,12 +362,70 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
+              () => {
+                const { resolution } = self
+                if (prevResolution !== undefined && resolution !== prevResolution) {
+                  self.clearAllRpcData()
+                }
+                prevResolution = resolution
+              },
+              { name: 'ResolutionChange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const blocks = view.dynamicBlocks.contentBlocks
+                let min = Infinity
+                let max = -Infinity
+                for (const block of blocks) {
+                  if (block.regionNumber === undefined) {
+                    continue
+                  }
+                  const data = self.rpcDataMap.get(block.regionNumber)
+                  if (!data) {
+                    continue
+                  }
+                  const visStart = block.start - data.regionStart
+                  const visEnd = block.end - data.regionStart
+                  for (let i = 0; i < data.numFeatures; i++) {
+                    const fStart = data.featurePositions[i * 2]!
+                    const fEnd = data.featurePositions[i * 2 + 1]!
+                    if (fEnd > visStart && fStart < visEnd) {
+                      const s = data.featureScores[i]!
+                      if (s < min) {
+                        min = s
+                      }
+                      if (s > max) {
+                        max = s
+                      }
+                    }
+                  }
+                }
+                if (Number.isFinite(min) && Number.isFinite(max)) {
+                  self.setVisibleScoreRange([min, max])
+                }
+              },
+              { delay: 100, name: 'VisibleScoreRange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
               async () => {
                 const view = getContainingView(self) as LGV
                 if (!view.initialized) {
                   return
                 }
                 const { bpPerPx } = view
+                const { resolution } = self
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
@@ -366,7 +442,7 @@ export default function stateModelFactory(
                   })
                 }
                 if (needed.length > 0) {
-                  await fetchRegions(needed, bpPerPx)
+                  await fetchRegions(needed, bpPerPx, resolution)
                 }
               },
               {
@@ -410,6 +486,27 @@ export default function stateModelFactory(
               },
             ],
           },
+          ...(self.hasResolution
+            ? [
+                {
+                  label: 'Resolution',
+                  subMenu: [
+                    {
+                      label: 'Finer resolution',
+                      onClick: () => {
+                        self.setResolution(self.resolution * 5)
+                      },
+                    },
+                    {
+                      label: 'Coarser resolution',
+                      onClick: () => {
+                        self.setResolution(self.resolution / 5)
+                      },
+                    },
+                  ],
+                },
+              ]
+            : []),
           {
             label: 'Score',
             icon: EqualizerIcon,

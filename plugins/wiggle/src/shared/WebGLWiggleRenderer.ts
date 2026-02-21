@@ -151,7 +151,7 @@ export class WebGLWiggleRenderer {
     this.uniformF32[8] = state.domainY[0]
     this.uniformF32[9] = state.domainY[1]
     this.uniformF32[10] = state.rowPadding
-    this.uniformF32[11] = 0
+    this.uniformF32[11] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
 
     const gl = this.gl
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)

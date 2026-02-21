@@ -23,5 +23,4 @@ export interface WebGLLDDataResult {
     values: number[]
     positions: number[]
   }
-  regionTooLarge?: boolean
 }

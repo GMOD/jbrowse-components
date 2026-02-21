@@ -20,6 +20,7 @@ struct Uniforms {
     float canvas_width;
     float scroll_y;
     float bp_per_px;
+    float zero;
 };
 struct VertexOutput {
     vec4 position;
@@ -49,10 +50,12 @@ vec2 hp_split_uint(uint value) {
     return vec2(float(hi), float(lo));
 }
 
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range, float zero) {
+    float inf = (1.0 / zero);
+    float step_ = (2.0 / bp_range.z);
+    float hi_1 = max((split_pos.x - bp_range.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 float snap_to_pixel_x(float clip_x, float canvas_width) {
@@ -102,31 +105,33 @@ void main() {
     uint abs_end = (inst.start_end.y + _e55);
     vec2 _e57 = hp_split_uint(abs_start);
     vec3 _e60 = _group_0_binding_1_vs.bp_range_x;
-    float _e61 = hp_to_clip_x(_e57, _e60);
-    float _e64 = _group_0_binding_1_vs.canvas_width;
-    float _e65 = snap_to_pixel_x(_e61, _e64);
-    vec2 _e66 = hp_split_uint(abs_end);
-    vec3 _e69 = _group_0_binding_1_vs.bp_range_x;
-    float _e70 = hp_to_clip_x(_e66, _e69);
-    float _e73 = _group_0_binding_1_vs.canvas_width;
-    float _e74 = snap_to_pixel_x(_e70, _e73);
-    float _e77 = _group_0_binding_1_vs.canvas_width;
-    float min_width = (4.0 / _e77);
-    float final_sx2_ = (((_e74 - _e65) < min_width) ? (_e65 + min_width) : _e74);
-    float sx = mix(_e65, final_sx2_, local_x);
-    float _e88 = _group_0_binding_1_vs.scroll_y;
-    float y_top_px = floor(((inst.y - _e88) + 0.5));
+    float _e63 = _group_0_binding_1_vs.zero;
+    float _e64 = hp_to_clip_x(_e57, _e60, _e63);
+    float _e67 = _group_0_binding_1_vs.canvas_width;
+    float _e68 = snap_to_pixel_x(_e64, _e67);
+    vec2 _e69 = hp_split_uint(abs_end);
+    vec3 _e72 = _group_0_binding_1_vs.bp_range_x;
+    float _e75 = _group_0_binding_1_vs.zero;
+    float _e76 = hp_to_clip_x(_e69, _e72, _e75);
+    float _e79 = _group_0_binding_1_vs.canvas_width;
+    float _e80 = snap_to_pixel_x(_e76, _e79);
+    float _e83 = _group_0_binding_1_vs.canvas_width;
+    float min_width = (4.0 / _e83);
+    float final_sx2_ = (((_e80 - _e68) < min_width) ? (_e68 + min_width) : _e80);
+    float sx = mix(_e68, final_sx2_, local_x);
+    float _e94 = _group_0_binding_1_vs.scroll_y;
+    float y_top_px = floor(((inst.y - _e94) + 0.5));
     float y_bot_px = floor(((y_top_px + inst.height) + 0.5));
-    float _e100 = _group_0_binding_1_vs.canvas_height;
-    float sy_top = (1.0 - ((y_top_px / _e100) * 2.0));
-    float _e108 = _group_0_binding_1_vs.canvas_height;
-    float sy_bot = (1.0 - ((y_bot_px / _e108) * 2.0));
+    float _e106 = _group_0_binding_1_vs.canvas_height;
+    float sy_top = (1.0 - ((y_top_px / _e106) * 2.0));
+    float _e114 = _group_0_binding_1_vs.canvas_height;
+    float sy_bot = (1.0 - ((y_bot_px / _e114) * 2.0));
     float sy = mix(sy_bot, sy_top, local_y);
     out_.position = vec4(sx, sy, 0.0, 1.0);
     out_.color = inst.color;
-    VertexOutput _e122 = out_;
-    gl_Position = _e122.position;
-    _vs2fs_location0 = _e122.color;
+    VertexOutput _e128 = out_;
+    gl_Position = _e128.position;
+    _vs2fs_location0 = _e128.color;
     return;
 }
 
@@ -163,7 +168,7 @@ precision highp int;
 struct LineInstance {
     uvec2 start_end;
     float y;
-    float _pad;
+    float direction;
     vec4 color;
 };
 struct Uniforms {
@@ -173,6 +178,7 @@ struct Uniforms {
     float canvas_width;
     float scroll_y;
     float bp_per_px;
+    float zero;
 };
 struct VertexOutput {
     vec4 position;
@@ -187,7 +193,7 @@ LineInstance _fetch_LineInstance(int idx) {
     LineInstance s;
     s.start_end = uvec2(texelFetch(u_instanceData, ivec2((base + 0) / 4, 0), 0)[(base + 0) % 4], texelFetch(u_instanceData, ivec2((base + 0 + 1) / 4, 0), 0)[(base + 0 + 1) % 4]);
     s.y = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 2) / 4, 0), 0)[(base + 2) % 4]);
-    s._pad = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 3) / 4, 0), 0)[(base + 3) % 4]);
+    s.direction = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 3) / 4, 0), 0)[(base + 3) % 4]);
     s.color = vec4(uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 4) / 4, 0), 0)[(base + 4) % 4]), uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 4 + 1) / 4, 0), 0)[(base + 4 + 1) % 4]), uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 4 + 2) / 4, 0), 0)[(base + 4 + 2) % 4]), uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 4 + 3) / 4, 0), 0)[(base + 4 + 3) % 4]));
     return s;
 }
@@ -202,10 +208,12 @@ vec2 hp_split_uint(uint value) {
     return vec2(float(hi), float(lo));
 }
 
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range, float zero) {
+    float inf = (1.0 / zero);
+    float step_ = (2.0 / bp_range.z);
+    float hi_1 = max((split_pos.x - bp_range.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 void main() {
@@ -224,49 +232,51 @@ void main() {
     uint abs_end = (inst.start_end.y + _e17);
     vec2 _e19 = hp_split_uint(abs_start);
     vec3 _e22 = _group_0_binding_1_vs.bp_range_x;
-    float _e23 = hp_to_clip_x(_e19, _e22);
-    vec2 _e24 = hp_split_uint(abs_end);
-    vec3 _e27 = _group_0_binding_1_vs.bp_range_x;
-    float _e28 = hp_to_clip_x(_e24, _e27);
-    float _e32 = _group_0_binding_1_vs.scroll_y;
-    float y_px = (floor(((inst.y - _e32) + 0.5)) + 0.5);
-    float _e41 = _group_0_binding_1_vs.canvas_height;
-    float cy = (1.0 - ((y_px / _e41) * 2.0));
-    float _e49 = _group_0_binding_1_vs.canvas_height;
-    float half_px = (1.0 / _e49);
+    float _e25 = _group_0_binding_1_vs.zero;
+    float _e26 = hp_to_clip_x(_e19, _e22, _e25);
+    vec2 _e27 = hp_split_uint(abs_end);
+    vec3 _e30 = _group_0_binding_1_vs.bp_range_x;
+    float _e33 = _group_0_binding_1_vs.zero;
+    float _e34 = hp_to_clip_x(_e27, _e30, _e33);
+    float _e38 = _group_0_binding_1_vs.scroll_y;
+    float y_px = (floor(((inst.y - _e38) + 0.5)) + 0.5);
+    float _e47 = _group_0_binding_1_vs.canvas_height;
+    float cy = (1.0 - ((y_px / _e47) * 2.0));
+    float _e55 = _group_0_binding_1_vs.canvas_height;
+    float half_px = (1.0 / _e55);
     if (!((v == 0u))) {
         local = (v == 2u);
     } else {
         local = true;
     }
-    bool _e60 = local;
-    if (!(_e60)) {
+    bool _e66 = local;
+    if (!(_e66)) {
         local_1 = (v == 3u);
     } else {
         local_1 = true;
     }
-    bool _e67 = local_1;
-    float local_x = (_e67 ? 0.0 : 1.0);
+    bool _e73 = local_1;
+    float local_x = (_e73 ? 0.0 : 1.0);
     if (!((v == 0u))) {
         local_2 = (v == 1u);
     } else {
         local_2 = true;
     }
-    bool _e79 = local_2;
-    if (!(_e79)) {
+    bool _e85 = local_2;
+    if (!(_e85)) {
         local_3 = (v == 4u);
     } else {
         local_3 = true;
     }
-    bool _e86 = local_3;
-    float local_y = (_e86 ? 0.0 : 1.0);
-    float sx = mix(_e23, _e28, local_x);
+    bool _e92 = local_3;
+    float local_y = (_e92 ? 0.0 : 1.0);
+    float sx = mix(_e26, _e34, local_x);
     float sy = mix((cy - half_px), (cy + half_px), local_y);
     out_.position = vec4(sx, sy, 0.0, 1.0);
     out_.color = inst.color;
-    VertexOutput _e101 = out_;
-    gl_Position = _e101.position;
-    _vs2fs_location0 = _e101.color;
+    VertexOutput _e107 = out_;
+    gl_Position = _e107.position;
+    _vs2fs_location0 = _e107.color;
     return;
 }
 
@@ -313,6 +323,7 @@ struct Uniforms {
     float canvas_width;
     float scroll_y;
     float bp_per_px;
+    float zero;
 };
 struct VertexOutput {
     vec4 position;
@@ -342,10 +353,12 @@ vec2 hp_split_uint(uint value) {
     return vec2(float(hi), float(lo));
 }
 
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range, float zero) {
+    float inf = (1.0 / zero);
+    float step_ = (2.0 / bp_range.z);
+    float hi_1 = max((split_pos.x - bp_range.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 void main() {
@@ -414,22 +427,23 @@ void main() {
     vec2 _e123 = hp_split_uint(line_start_abs);
     vec2 split_chevron = vec2(_e123.x, (_e123.y + chevron_offset_bp));
     vec3 _e130 = _group_0_binding_1_vs.bp_range_x;
-    float _e131 = hp_to_clip_x(split_chevron, _e130);
-    float _e135 = _group_0_binding_1_vs.scroll_y;
-    float y_px = (floor(((inst.y - _e135) + 0.5)) + 0.5);
-    float _e144 = _group_0_binding_1_vs.canvas_height;
-    float cy = (1.0 - ((y_px / _e144) * 2.0));
-    float _e152 = _group_0_binding_1_vs.canvas_width;
-    float half_w = (4.5 / _e152);
-    float _e157 = _group_0_binding_1_vs.canvas_height;
-    float half_h = (3.5 / _e157);
-    float _e162 = _group_0_binding_1_vs.canvas_height;
-    float thickness = (1.0 / _e162);
+    float _e133 = _group_0_binding_1_vs.zero;
+    float _e134 = hp_to_clip_x(split_chevron, _e130, _e133);
+    float _e138 = _group_0_binding_1_vs.scroll_y;
+    float y_px = (floor(((inst.y - _e138) + 0.5)) + 0.5);
+    float _e147 = _group_0_binding_1_vs.canvas_height;
+    float cy = (1.0 - ((y_px / _e147) * 2.0));
+    float _e155 = _group_0_binding_1_vs.canvas_width;
+    float half_w = (4.5 / _e155);
+    float _e160 = _group_0_binding_1_vs.canvas_height;
+    float half_h = (3.5 / _e160);
+    float _e165 = _group_0_binding_1_vs.canvas_height;
+    float thickness = (1.0 / _e165);
     float dir = inst.direction;
     bool is_top_arm = (v < 6u);
     uint qv = (v % 6u);
-    float tip_x = (_e131 + (half_w * dir));
-    float outer_x = (_e131 - (half_w * dir));
+    float tip_x = (_e134 + (half_w * dir));
+    float outer_x = (_e134 - (half_w * dir));
     float arm_y = (is_top_arm ? half_h : -(half_h));
     switch(qv) {
         case 0u: {
@@ -463,13 +477,13 @@ void main() {
             break;
         }
     }
-    float _e194 = sx;
-    float _e195 = sy;
-    out_.position = vec4(_e194, _e195, 0.0, 1.0);
+    float _e197 = sx;
+    float _e198 = sy;
+    out_.position = vec4(_e197, _e198, 0.0, 1.0);
     out_.color = inst.color;
-    VertexOutput _e201 = out_;
-    gl_Position = _e201.position;
-    _vs2fs_location0 = _e201.color;
+    VertexOutput _e204 = out_;
+    gl_Position = _e204.position;
+    _vs2fs_location0 = _e204.color;
     return;
 }
 
@@ -520,6 +534,7 @@ struct Uniforms {
     float canvas_width;
     float scroll_y;
     float bp_per_px;
+    float zero;
 };
 struct VertexOutput {
     vec4 position;
@@ -553,10 +568,12 @@ vec2 hp_split_uint(uint value) {
     return vec2(float(hi), float(lo));
 }
 
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range, float zero) {
+    float inf = (1.0 / zero);
+    float step_ = (2.0 / bp_range.z);
+    float hi_1 = max((split_pos.x - bp_range.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 void main() {
@@ -575,17 +592,18 @@ void main() {
     uint abs_x = (inst.x + _e10);
     vec2 _e12 = hp_split_uint(abs_x);
     vec3 _e15 = _group_0_binding_1_vs.bp_range_x;
-    float _e16 = hp_to_clip_x(_e12, _e15);
-    float _e20 = _group_0_binding_1_vs.scroll_y;
-    float y_px = (floor(((inst.y - _e20) + 0.5)) + 0.5);
-    float _e29 = _group_0_binding_1_vs.canvas_height;
-    float cy = (1.0 - ((y_px / _e29) * 2.0));
-    float _e37 = _group_0_binding_1_vs.canvas_width;
-    float stem_length = ((7.0 / _e37) * 2.0);
-    float _e44 = _group_0_binding_1_vs.canvas_height;
-    float stem_half = ((0.5 / _e44) * 2.0);
-    float _e51 = _group_0_binding_1_vs.canvas_height;
-    float head_half = ((2.5 / _e51) * 2.0);
+    float _e18 = _group_0_binding_1_vs.zero;
+    float _e19 = hp_to_clip_x(_e12, _e15, _e18);
+    float _e23 = _group_0_binding_1_vs.scroll_y;
+    float y_px = (floor(((inst.y - _e23) + 0.5)) + 0.5);
+    float _e32 = _group_0_binding_1_vs.canvas_height;
+    float cy = (1.0 - ((y_px / _e32) * 2.0));
+    float _e40 = _group_0_binding_1_vs.canvas_width;
+    float stem_length = ((7.0 / _e40) * 2.0);
+    float _e47 = _group_0_binding_1_vs.canvas_height;
+    float stem_half = ((0.5 / _e47) * 2.0);
+    float _e54 = _group_0_binding_1_vs.canvas_height;
+    float head_half = ((2.5 / _e54) * 2.0);
     float dir = inst.direction;
     if ((v < 6u)) {
         if (!((v == 0u))) {
@@ -593,51 +611,51 @@ void main() {
         } else {
             local = true;
         }
-        bool _e69 = local;
-        if (!(_e69)) {
+        bool _e72 = local;
+        if (!(_e72)) {
             local_1 = (v == 3u);
         } else {
             local_1 = true;
         }
-        bool _e76 = local_1;
-        float local_x = (_e76 ? 0.0 : 1.0);
+        bool _e79 = local_1;
+        float local_x = (_e79 ? 0.0 : 1.0);
         if (!((v == 0u))) {
             local_2 = (v == 1u);
         } else {
             local_2 = true;
         }
-        bool _e88 = local_2;
-        if (!(_e88)) {
+        bool _e91 = local_2;
+        if (!(_e91)) {
             local_3 = (v == 4u);
         } else {
             local_3 = true;
         }
-        bool _e95 = local_3;
-        float local_y = (_e95 ? -1.0 : 1.0);
-        sx = (_e16 + (((local_x * stem_length) * 0.5) * dir));
+        bool _e98 = local_3;
+        float local_y = (_e98 ? -1.0 : 1.0);
+        sx = (_e19 + (((local_x * stem_length) * 0.5) * dir));
         sy = (cy + (local_y * stem_half));
     } else {
         uint hvid = (v - 6u);
         if ((hvid == 0u)) {
-            sx = (_e16 + ((stem_length * 0.5) * dir));
+            sx = (_e19 + ((stem_length * 0.5) * dir));
             sy = (cy + head_half);
         } else {
             if ((hvid == 1u)) {
-                sx = (_e16 + ((stem_length * 0.5) * dir));
+                sx = (_e19 + ((stem_length * 0.5) * dir));
                 sy = (cy - head_half);
             } else {
-                sx = (_e16 + (stem_length * dir));
+                sx = (_e19 + (stem_length * dir));
                 sy = cy;
             }
         }
     }
-    float _e126 = sx;
-    float _e127 = sy;
-    out_.position = vec4(_e126, _e127, 0.0, 1.0);
+    float _e129 = sx;
+    float _e130 = sy;
+    out_.position = vec4(_e129, _e130, 0.0, 1.0);
     out_.color = vec4(inst.color_r, inst.color_g, inst.color_b, 1.0);
-    VertexOutput _e137 = out_;
-    gl_Position = _e137.position;
-    _vs2fs_location0 = _e137.color;
+    VertexOutput _e140 = out_;
+    gl_Position = _e140.position;
+    _vs2fs_location0 = _e140.color;
     return;
 }
 
@@ -664,3 +682,4 @@ void main() {
 }
 
 `
+

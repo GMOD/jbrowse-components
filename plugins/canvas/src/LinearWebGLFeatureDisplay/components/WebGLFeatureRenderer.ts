@@ -9,7 +9,12 @@ function splitPositionWithFrac(value: number): [number, number] {
 
 const HP_GLSL_FUNCTIONS = `
 const uint HP_LOW_MASK = 0xFFFu;
-const float HP_LOW_DIVISOR = 4096.0;
+
+// WARNING: u_zero MUST be 0.0 at runtime. Produces runtime infinity (1.0/0.0)
+// that prevents the compiler from combining hi/lo subtractions.
+// A compile-time constant would be optimized away.
+// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
+uniform float u_zero;
 
 vec2 hpSplitUint(uint value) {
   uint lo = value & HP_LOW_MASK;
@@ -17,14 +22,22 @@ vec2 hpSplitUint(uint value) {
   return vec2(float(hi), float(lo));
 }
 
+// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
+// terms. Do not simplify.
 float hpScaleLinear(vec2 splitPos, vec3 domain) {
-  float hi = splitPos.x - domain.x;
-  float lo = splitPos.y - domain.y;
-  return (hi + lo) / domain.z;
+  float inf = 1.0 / u_zero;
+  float step = 1.0 / domain.z;
+  float hi = max(splitPos.x - domain.x, -inf);
+  float lo = max(splitPos.y - domain.y, -inf);
+  return dot(vec2(hi, lo), vec2(step, step));
 }
 
 float hpToClipX(vec2 splitPos, vec3 domain) {
-  return hpScaleLinear(splitPos, domain) * 2.0 - 1.0;
+  float inf = 1.0 / u_zero;
+  float step = 2.0 / domain.z;
+  float hi = max(splitPos.x - domain.x, -inf);
+  float lo = max(splitPos.y - domain.y, -inf);
+  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
 }
 `
 
@@ -346,6 +359,7 @@ export class WebGLFeatureRenderer {
       'u_canvasHeight',
       'u_canvasWidth',
       'u_scrollY',
+      'u_zero',
     ]
     this.cacheUniforms(this.rectProgram, this.rectUniforms, commonUniforms)
     this.cacheUniforms(this.lineProgram, this.lineUniforms, [
@@ -353,6 +367,7 @@ export class WebGLFeatureRenderer {
       'u_regionStart',
       'u_canvasHeight',
       'u_scrollY',
+      'u_zero',
     ])
     this.cacheUniforms(this.chevronProgram, this.chevronUniforms, [
       ...commonUniforms,
@@ -690,6 +705,7 @@ export class WebGLFeatureRenderer {
         gl.uniform1ui(this.lineUniforms.u_regionStart!, Math.floor(regionStart))
         gl.uniform1f(this.lineUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.lineUniforms.u_scrollY!, scrollY)
+        gl.uniform1f(this.lineUniforms.u_zero!, 0)
         gl.bindVertexArray(region.lineVAO)
         gl.drawArraysInstanced(gl.LINES, 0, 2, region.lineCount)
       }
@@ -710,6 +726,7 @@ export class WebGLFeatureRenderer {
         gl.uniform1f(this.chevronUniforms.u_canvasWidth!, scissorW)
         gl.uniform1f(this.chevronUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.chevronUniforms.u_bpPerPx!, bpPerPx)
+        gl.uniform1f(this.chevronUniforms.u_zero!, 0)
         gl.bindVertexArray(region.chevronVAO)
         gl.drawArraysInstanced(
           gl.LINES,
@@ -730,6 +747,7 @@ export class WebGLFeatureRenderer {
       gl.uniform1f(this.rectUniforms.u_canvasHeight!, canvasHeight)
       gl.uniform1f(this.rectUniforms.u_canvasWidth!, scissorW)
       gl.uniform1f(this.rectUniforms.u_scrollY!, scrollY)
+      gl.uniform1f(this.rectUniforms.u_zero!, 0)
       gl.bindVertexArray(region.rectVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.rectCount)
 
@@ -748,6 +766,7 @@ export class WebGLFeatureRenderer {
         gl.uniform1f(this.arrowUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.arrowUniforms.u_canvasWidth!, scissorW)
         gl.uniform1f(this.arrowUniforms.u_scrollY!, scrollY)
+        gl.uniform1f(this.arrowUniforms.u_zero!, 0)
         gl.bindVertexArray(region.arrowVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, region.arrowCount)
       }

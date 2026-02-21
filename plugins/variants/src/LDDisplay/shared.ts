@@ -1,8 +1,3 @@
-import { createElement } from 'react'
-import type React from 'react'
-
-import LDTooLargeMessage from './components/LDTooLargeMessage.tsx'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
@@ -18,6 +13,7 @@ import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type React from 'react'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -168,19 +164,6 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      regionTooLargeState: false,
-      /**
-       * #volatile
-       */
-      regionTooLargeReason: '',
-      /**
-       * #volatile
-       * When true, skip the SNP count limit on next render
-       */
-      forceLoad: false,
-      /**
-       * #volatile
-       */
       statusMessage: undefined as string | undefined,
       /**
        * #volatile
@@ -244,13 +227,6 @@ export default function sharedModelFactory(
        */
       setLoading(loading: boolean) {
         self.loading = loading
-      },
-      setRegionTooLarge(state: boolean, reason = '') {
-        self.regionTooLargeState = state
-        self.regionTooLargeReason = reason
-      },
-      setForceLoad(f: boolean) {
-        self.forceLoad = f
       },
       /**
        * #action
@@ -445,18 +421,6 @@ export default function sharedModelFactory(
       },
       get fullyDrawn() {
         return !!self.rpcData
-      },
-      /**
-       * #getter
-       */
-      get regionTooLarge() {
-        return self.regionTooLargeState
-      },
-      get snpCountLimit(): number {
-        return getConf(self, 'snpCountLimit')
-      },
-      regionCannotBeRendered() {
-        return createElement(LDTooLargeMessage, { model: self })
       },
       /**
        * #getter
@@ -819,20 +783,24 @@ export default function sharedModelFactory(
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as SharedLDModel)
-          } catch (e) {
-            console.error(e)
-            getSession(self).notifyError(`${e}`, e)
-          }
-        })()
-      },
-    }))
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+      return {
+        afterAttach() {
+          superAfterAttach()
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const { doAfterAttach } = await import('./afterAttach.ts')
+              doAfterAttach(self as SharedLDModel)
+            } catch (e) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          })()
+        },
+      }
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

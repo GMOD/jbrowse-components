@@ -12,7 +12,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import VcfFeature from '../VcfFeature/index.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
@@ -65,6 +65,37 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       this.configurePre2(),
     )
   }
+  async getMultiRegionFeatureDensityStats(regions: Region[], opts?: BaseOptions) {
+    const { vcf } = await this.configure(opts)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const index = (vcf as any).index as
+      | {
+          blocksForRange: (
+            refName: string,
+            start: number,
+            end: number,
+            opts?: { signal?: AbortSignal },
+          ) => Promise<{ fetchedSize: () => number }[]>
+        }
+      | undefined
+    if (!index) {
+      return super.getMultiRegionFeatureDensityStats(regions, opts)
+    }
+    let bytes = 0
+    for (const region of regions) {
+      const chunks = await index.blocksForRange(
+        region.refName,
+        region.start,
+        region.end,
+        opts,
+      )
+      for (const chunk of chunks) {
+        bytes += chunk.fetchedSize()
+      }
+    }
+    return { bytes, fetchSizeLimit: 50_000_000 }
+  }
+
   public async getRefNames(opts: BaseOptions = {}) {
     const { vcf } = await this.configure(opts)
     return vcf.getReferenceSequenceNames(opts)

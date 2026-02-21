@@ -26,7 +26,6 @@ interface RenderWebGLLDDataArgs {
   fitToHeight: boolean
   displayHeight?: number
   stopToken?: string
-  snpCountLimit?: number
 }
 
 function emptyResult(signedLD: boolean, metric: LDMetric): WebGLLDDataResult {
@@ -101,17 +100,8 @@ export async function executeRenderWebGLLDData({
           jexlFilters,
           signedLD,
           stopToken: args.stopToken,
-          snpCountLimit: args.snpCountLimit,
         },
       }))
-
-  if (ldData.regionTooLarge) {
-    return {
-      ...emptyResult(signedLD, ldMetric),
-      filterStats: ldData.filterStats,
-      regionTooLarge: true,
-    }
-  }
 
   if (ldData.snps.length === 0) {
     return {

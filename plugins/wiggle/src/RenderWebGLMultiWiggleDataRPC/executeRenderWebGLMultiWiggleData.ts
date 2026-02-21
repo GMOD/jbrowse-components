@@ -41,6 +41,8 @@ interface ExecuteParams {
     sources?: SourceInfo[]
     bicolorPivot?: number
     stopToken?: string
+    bpPerPx?: number
+    resolution?: number
   }
 }
 
@@ -55,6 +57,8 @@ export async function executeRenderWebGLMultiWiggleData({
     sources: sourcesArg,
     bicolorPivot = 0,
     stopToken,
+    bpPerPx = 0,
+    resolution = 1,
   } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
@@ -75,7 +79,7 @@ export async function executeRenderWebGLMultiWiggleData({
 
   // Fetch all features
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region).pipe(toArray()),
+    dataAdapter.getFeatures(region, { bpPerPx, resolution }).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)

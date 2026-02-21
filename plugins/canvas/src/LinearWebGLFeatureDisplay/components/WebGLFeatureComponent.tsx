@@ -190,7 +190,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [rendererReady, setRendererReady] = useState(false)
+  const [rendererGeneration, setRendererGeneration] = useState(0)
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
     null,
   )
@@ -264,17 +264,20 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           if (!ok) {
             console.error('[WebGLFeatureComponent] GPU initialization failed')
           }
-          setRendererReady(ok)
-          uploadedDataRef.current.clear()
+          if (ok) {
+            if (uploadedDataRef.current.size > 0) {
+              console.warn('[WebGLFeatureComponent] Renderer re-initialized, re-uploading GPU data')
+            }
+            uploadedDataRef.current.clear()
+            setRendererGeneration(g => g + 1)
+          }
         })
         .catch((e: unknown) => {
           console.error('[WebGLFeatureComponent] GPU initialization error:', e)
-          setRendererReady(false)
         })
     }
 
     renderer.onDeviceLost = () => {
-      setRendererReady(false)
       uploadedDataRef.current.clear()
       doInit()
     }
@@ -312,7 +315,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rendererReady) {
+    if (!renderer || rendererGeneration === 0) {
       return
     }
 
@@ -362,7 +365,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     renderer.pruneStaleRegions([...activeRegions])
 
     renderWithBlocksRef.current()
-  }, [rpcDataMap, rendererReady])
+  }, [rpcDataMap, rendererGeneration])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -388,7 +391,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
 
-      if (absY < 1) {
+      if (absY < 1 || view.scrollZoom) {
         return
       }
 

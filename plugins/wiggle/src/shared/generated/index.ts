@@ -25,7 +25,7 @@ struct Uniforms {
     float num_rows;
     vec2 domain_y;
     float row_padding;
-    float _pad;
+    float zero;
 };
 struct VertexOutput {
     vec4 position;
@@ -63,10 +63,12 @@ vec2 hp_split_uint(uint value) {
     return vec2(float(hi), float(lo));
 }
 
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range, float zero) {
+    float inf = (1.0 / zero);
+    float step_ = (2.0 / bp_range.z);
+    float hi_1 = max((split_pos.x - bp_range.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 float normalize_score(float score, vec2 domain_y, int scale_type) {
@@ -117,94 +119,96 @@ void main() {
     vec2 _e19 = hp_split_uint(abs_start);
     vec2 _e20 = hp_split_uint(abs_end);
     vec3 _e23 = _group_0_binding_1_vs.bp_range_x;
-    float _e24 = hp_to_clip_x(_e19, _e23);
-    vec3 _e27 = _group_0_binding_1_vs.bp_range_x;
-    float _e28 = hp_to_clip_x(_e20, _e27);
-    float _e31 = _group_0_binding_1_vs.canvas_height;
-    float _e34 = _group_0_binding_1_vs.num_rows;
-    float _e37 = _group_0_binding_1_vs.row_padding;
-    float _e38 = get_row_height(_e31, _e34, _e37);
-    float _e42 = _group_0_binding_1_vs.row_padding;
-    float _e43 = get_row_top(inst.row_index, _e38, _e42);
-    float _e46 = _group_0_binding_1_vs.canvas_height;
-    float px_to_clip = (2.0 / _e46);
+    float _e26 = _group_0_binding_1_vs.zero;
+    float _e27 = hp_to_clip_x(_e19, _e23, _e26);
+    vec3 _e30 = _group_0_binding_1_vs.bp_range_x;
+    float _e33 = _group_0_binding_1_vs.zero;
+    float _e34 = hp_to_clip_x(_e20, _e30, _e33);
+    float _e37 = _group_0_binding_1_vs.canvas_height;
+    float _e40 = _group_0_binding_1_vs.num_rows;
+    float _e43 = _group_0_binding_1_vs.row_padding;
+    float _e44 = get_row_height(_e37, _e40, _e43);
+    float _e48 = _group_0_binding_1_vs.row_padding;
+    float _e49 = get_row_top(inst.row_index, _e44, _e48);
+    float _e52 = _group_0_binding_1_vs.canvas_height;
+    float px_to_clip = (2.0 / _e52);
     vec3 inst_color = vec3(inst.color_r, inst.color_g, inst.color_b);
-    int _e57 = _group_0_binding_1_vs.rendering_type;
-    if ((_e57 == RENDERING_TYPE_LINE)) {
-        vec2 _e63 = _group_0_binding_1_vs.domain_y;
-        int _e66 = _group_0_binding_1_vs.scale_type;
-        float _e67 = score_to_y(inst.score, _e63, _e38, _e66);
-        float score_y = (_e67 + _e43);
-        vec2 _e72 = _group_0_binding_1_vs.domain_y;
-        int _e75 = _group_0_binding_1_vs.scale_type;
-        float _e76 = score_to_y(inst.prev_score, _e72, _e38, _e75);
-        float prev_y = (_e76 + _e43);
+    int _e63 = _group_0_binding_1_vs.rendering_type;
+    if ((_e63 == RENDERING_TYPE_LINE)) {
+        vec2 _e69 = _group_0_binding_1_vs.domain_y;
+        int _e72 = _group_0_binding_1_vs.scale_type;
+        float _e73 = score_to_y(inst.score, _e69, _e44, _e72);
+        float score_y = (_e73 + _e49);
+        vec2 _e78 = _group_0_binding_1_vs.domain_y;
+        int _e81 = _group_0_binding_1_vs.scale_type;
+        float _e82 = score_to_y(inst.prev_score, _e78, _e44, _e81);
+        float prev_y = (_e82 + _e49);
         float clip_score_y = (1.0 - (score_y * px_to_clip));
         float clip_prev_y = (1.0 - (prev_y * px_to_clip));
         switch(vid) {
             case 0u: {
-                sx = _e24;
+                sx = _e27;
                 sy = clip_prev_y;
                 break;
             }
             case 1u: {
-                sx = _e24;
+                sx = _e27;
                 sy = clip_score_y;
                 break;
             }
             case 2u: {
-                sx = _e24;
+                sx = _e27;
                 sy = clip_score_y;
                 break;
             }
             case 3u: {
-                sx = _e28;
+                sx = _e34;
                 sy = clip_score_y;
                 break;
             }
             case 4u: {
-                sx = _e28;
+                sx = _e34;
                 sy = clip_score_y;
                 break;
             }
             default: {
-                sx = _e28;
+                sx = _e34;
                 sy = clip_score_y;
                 break;
             }
         }
     } else {
-        int _e86 = _group_0_binding_1_vs.rendering_type;
-        if ((_e86 == RENDERING_TYPE_DENSITY)) {
+        int _e92 = _group_0_binding_1_vs.rendering_type;
+        if ((_e92 == RENDERING_TYPE_DENSITY)) {
             if (!((vid == 0u))) {
                 local = (vid == 2u);
             } else {
                 local = true;
             }
-            bool _e97 = local;
-            if (!(_e97)) {
+            bool _e103 = local;
+            if (!(_e103)) {
                 local_1 = (vid == 3u);
             } else {
                 local_1 = true;
             }
-            bool _e104 = local_1;
-            float local_x = (_e104 ? 0.0 : 1.0);
+            bool _e110 = local_1;
+            float local_x = (_e110 ? 0.0 : 1.0);
             if (!((vid == 0u))) {
                 local_2 = (vid == 1u);
             } else {
                 local_2 = true;
             }
-            bool _e116 = local_2;
-            if (!(_e116)) {
+            bool _e122 = local_2;
+            if (!(_e122)) {
                 local_3 = (vid == 4u);
             } else {
                 local_3 = true;
             }
-            bool _e123 = local_3;
-            float local_y = (_e123 ? 0.0 : 1.0);
-            sx = mix(_e24, _e28, local_x);
-            float row_bot = (_e43 + _e38);
-            float sy_top = (1.0 - (_e43 * px_to_clip));
+            bool _e129 = local_3;
+            float local_y = (_e129 ? 0.0 : 1.0);
+            sx = mix(_e27, _e34, local_x);
+            float row_bot = (_e49 + _e44);
+            float sy_top = (1.0 - (_e49 * px_to_clip));
             float sy_bot = (1.0 - (row_bot * px_to_clip));
             sy = mix(sy_bot, sy_top, local_y);
         } else {
@@ -213,63 +217,63 @@ void main() {
             } else {
                 local_4 = true;
             }
-            bool _e144 = local_4;
-            if (!(_e144)) {
+            bool _e150 = local_4;
+            if (!(_e150)) {
                 local_5 = (vid == 3u);
             } else {
                 local_5 = true;
             }
-            bool _e151 = local_5;
-            float local_x_1 = (_e151 ? 0.0 : 1.0);
+            bool _e157 = local_5;
+            float local_x_1 = (_e157 ? 0.0 : 1.0);
             if (!((vid == 0u))) {
                 local_6 = (vid == 1u);
             } else {
                 local_6 = true;
             }
-            bool _e163 = local_6;
-            if (!(_e163)) {
+            bool _e169 = local_6;
+            if (!(_e169)) {
                 local_7 = (vid == 4u);
             } else {
                 local_7 = true;
             }
-            bool _e170 = local_7;
-            float local_y_1 = (_e170 ? 0.0 : 1.0);
-            sx = mix(_e24, _e28, local_x_1);
-            vec2 _e178 = _group_0_binding_1_vs.domain_y;
-            int _e181 = _group_0_binding_1_vs.scale_type;
-            float _e182 = score_to_y(inst.score, _e178, _e38, _e181);
-            vec2 _e186 = _group_0_binding_1_vs.domain_y;
-            int _e189 = _group_0_binding_1_vs.scale_type;
-            float _e190 = score_to_y(0.0, _e186, _e38, _e189);
-            float y_top = (min(_e182, _e190) + _e43);
-            float y_bot = (max(_e182, _e190) + _e43);
+            bool _e176 = local_7;
+            float local_y_1 = (_e176 ? 0.0 : 1.0);
+            sx = mix(_e27, _e34, local_x_1);
+            vec2 _e184 = _group_0_binding_1_vs.domain_y;
+            int _e187 = _group_0_binding_1_vs.scale_type;
+            float _e188 = score_to_y(inst.score, _e184, _e44, _e187);
+            vec2 _e192 = _group_0_binding_1_vs.domain_y;
+            int _e195 = _group_0_binding_1_vs.scale_type;
+            float _e196 = score_to_y(0.0, _e192, _e44, _e195);
+            float y_top = (min(_e188, _e196) + _e49);
+            float y_bot = (max(_e188, _e196) + _e49);
             float sy_top_1 = (1.0 - (y_top * px_to_clip));
             float sy_bot_1 = (1.0 - (y_bot * px_to_clip));
             sy = mix(sy_bot_1, sy_top_1, local_y_1);
         }
     }
-    int _e205 = _group_0_binding_1_vs.rendering_type;
-    if ((_e205 == RENDERING_TYPE_DENSITY)) {
-        vec2 _e211 = _group_0_binding_1_vs.domain_y;
-        int _e214 = _group_0_binding_1_vs.scale_type;
-        float _e215 = normalize_score(inst.score, _e211, _e214);
-        vec2 _e219 = _group_0_binding_1_vs.domain_y;
-        int _e222 = _group_0_binding_1_vs.scale_type;
-        float _e223 = normalize_score(0.0, _e219, _e222);
-        float max_dist = max(_e223, (1.0 - _e223));
-        float t = (abs((_e215 - _e223)) / max(max_dist, 0.0001));
+    int _e211 = _group_0_binding_1_vs.rendering_type;
+    if ((_e211 == RENDERING_TYPE_DENSITY)) {
+        vec2 _e217 = _group_0_binding_1_vs.domain_y;
+        int _e220 = _group_0_binding_1_vs.scale_type;
+        float _e221 = normalize_score(inst.score, _e217, _e220);
+        vec2 _e225 = _group_0_binding_1_vs.domain_y;
+        int _e228 = _group_0_binding_1_vs.scale_type;
+        float _e229 = normalize_score(0.0, _e225, _e228);
+        float max_dist = max(_e229, (1.0 - _e229));
+        float t = (abs((_e221 - _e229)) / max(max_dist, 0.0001));
         color = mix(vec3(1.0), inst_color, t);
     } else {
         color = inst_color;
     }
-    float _e237 = sx;
-    float _e238 = sy;
-    out_.position = vec4(_e237, _e238, 0.0, 1.0);
-    vec3 _e243 = color;
-    out_.color = vec4(_e243, 1.0);
-    VertexOutput _e246 = out_;
-    gl_Position = _e246.position;
-    _vs2fs_location0 = _e246.color;
+    float _e243 = sx;
+    float _e244 = sy;
+    out_.position = vec4(_e243, _e244, 0.0, 1.0);
+    vec3 _e249 = color;
+    out_.color = vec4(_e249, 1.0);
+    VertexOutput _e252 = out_;
+    gl_Position = _e252.position;
+    _vs2fs_location0 = _e252.color;
     return;
 }
 

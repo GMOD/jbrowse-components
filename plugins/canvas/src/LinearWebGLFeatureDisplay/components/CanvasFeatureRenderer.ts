@@ -13,7 +13,7 @@ import {
 
 const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
-const UNIFORM_SIZE = 32
+const UNIFORM_SIZE = 48
 const RECT_STRIDE = 8
 const LINE_STRIDE = 8
 const CHEVRON_STRIDE = 8
@@ -499,6 +499,7 @@ export class CanvasFeatureRenderer {
     this.uniformF32[5] = canvasWidth
     this.uniformF32[6] = scrollY
     this.uniformF32[7] = bpPerPx
+    this.uniformF32[8] = 0
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 

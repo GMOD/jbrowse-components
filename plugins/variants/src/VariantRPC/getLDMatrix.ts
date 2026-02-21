@@ -348,7 +348,6 @@ export interface LDMatrixResult {
   metric: LDMetric
   filterStats: FilterStats
   recombination: RecombinationData
-  regionTooLarge?: boolean
 }
 
 export async function getLDMatrix({
@@ -370,7 +369,6 @@ export async function getLDMatrix({
     jexlFilters?: string[]
     ldMetric?: LDMetric
     signedLD?: boolean
-    snpCountLimit?: number
   }
 }): Promise<LDMatrixResult> {
   const {
@@ -384,7 +382,6 @@ export async function getLDMatrix({
     jexlFilters = [],
     stopToken,
     ldMetric = 'r2',
-    snpCountLimit,
     signedLD = false,
   } = args
   const stopTokenCheck = createStopTokenChecker(stopToken)
@@ -552,25 +549,6 @@ export async function getLDMatrix({
   }
 
   const n = snps.length
-
-  if (snpCountLimit !== undefined && n > snpCountLimit) {
-    return {
-      snps: [],
-      ldValues: new Float32Array(0),
-      metric: ldMetric,
-      filterStats: {
-        totalVariants,
-        passedVariants: n,
-        filteredByMaf,
-        filteredByLength,
-        filteredByMultiallelic,
-        filteredByHwe,
-        filteredByCallRate,
-      },
-      recombination: { values: new Float32Array(0), positions: [] },
-      regionTooLarge: true,
-    }
-  }
 
   const ldSize = (n * (n - 1)) / 2
 

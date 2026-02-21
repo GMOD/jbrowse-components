@@ -21,10 +21,18 @@ fn hp_split_uint(value: u32) -> vec2f {
   return vec2f(f32(hi), f32(lo));
 }
 
-fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let hi = split_pos.x - bp_range.x;
-  let lo = split_pos.y - bp_range.y;
-  return (hi + lo) / bp_range.z * 2.0 - 1.0;
+// WARNING: 'zero' MUST be 0.0 at runtime. Produces runtime infinity (1.0/0.0)
+// that prevents the compiler from combining hi/lo subtractions.
+// A compile-time constant would be optimized away.
+// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
+// terms. Do not simplify.
+// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
+fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32) -> f32 {
+  let inf = 1.0 / zero;
+  let step = 2.0 / bp_range.z;
+  let hi = max(split_pos.x - bp_range.x, -inf);
+  let lo = max(split_pos.y - bp_range.y, -inf);
+  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
 }
 
 fn normalize_score(score: f32, domain_y: vec2f, scale_type: i32) -> f32 {
@@ -69,7 +77,7 @@ struct Uniforms {
   num_rows: f32,
   domain_y: vec2f,
   row_padding: f32,
-  _pad: f32,
+  zero: f32, // MUST be 0.0 at runtime — used by hp_to_clip_x to create runtime infinity
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
@@ -92,8 +100,8 @@ fn vs_main(
   let abs_end = inst.start_end.y + u.region_start;
   let split_start = hp_split_uint(abs_start);
   let split_end = hp_split_uint(abs_end);
-  let sx1 = hp_to_clip_x(split_start, u.bp_range_x);
-  let sx2 = hp_to_clip_x(split_end, u.bp_range_x);
+  let sx1 = hp_to_clip_x(split_start, u.bp_range_x, u.zero);
+  let sx2 = hp_to_clip_x(split_end, u.bp_range_x, u.zero);
 
   let row_height = get_row_height(u.canvas_height, u.num_rows, u.row_padding);
   let row_top = get_row_top(inst.row_index, row_height, u.row_padding);

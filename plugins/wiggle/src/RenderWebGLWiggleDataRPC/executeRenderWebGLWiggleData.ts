@@ -31,6 +31,7 @@ interface ExecuteParams {
     bicolorPivot?: number
     stopToken?: string
     bpPerPx?: number
+    resolution?: number
   }
 }
 
@@ -38,7 +39,7 @@ export async function executeRenderWebGLWiggleData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLWiggleDataResult> {
-  const { sessionId, adapterConfig, region, bicolorPivot = 0, stopToken, bpPerPx = 0 } = args
+  const { sessionId, adapterConfig, region, bicolorPivot = 0, stopToken, bpPerPx = 0, resolution = 1 } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -49,7 +50,7 @@ export async function executeRenderWebGLWiggleData({
 
   // Fetch features
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, { bpPerPx }).pipe(toArray()),
+    dataAdapter.getFeatures(region, { bpPerPx, resolution }).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)

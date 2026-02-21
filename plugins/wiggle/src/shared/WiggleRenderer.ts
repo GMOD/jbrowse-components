@@ -272,8 +272,6 @@ export class WiggleRenderer {
     const textureView = this.context.getCurrentTexture().createView()
     let isFirst = true
 
-    const encoder = device.createCommandEncoder()
-
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
       if (!region || region.featureCount === 0) {
@@ -307,6 +305,7 @@ export class WiggleRenderer {
         renderState,
       )
 
+      const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
@@ -335,24 +334,13 @@ export class WiggleRenderer {
       )
       pass.draw(VERTICES_PER_INSTANCE, region.featureCount)
       pass.end()
+      device.queue.submit([encoder.finish()])
       isFirst = false
     }
 
     if (isFirst) {
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: textureView,
-            loadOp: 'clear' as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            clearValue: { r: 0, g: 0, b: 0, a: 0 },
-          },
-        ],
-      })
-      pass.end()
+      this.clearCanvas(device, textureView)
     }
-
-    device.queue.submit([encoder.finish()])
   }
 
   dispose() {
@@ -368,6 +356,22 @@ export class WiggleRenderer {
     this.uniformBuffer?.destroy()
     this.uniformBuffer = null
     this.context = null
+  }
+
+  private clearCanvas(device: GPUDevice, textureView: GPUTextureView) {
+    const encoder = device.createCommandEncoder()
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: textureView,
+          loadOp: 'clear' as GPULoadOp,
+          storeOp: 'store' as GPUStoreOp,
+          clearValue: { r: 0, g: 0, b: 0, a: 0 },
+        },
+      ],
+    })
+    pass.end()
+    device.queue.submit([encoder.finish()])
   }
 
   private writeUniforms(
@@ -390,7 +394,7 @@ export class WiggleRenderer {
     this.uniformF32[8] = state.domainY[0]
     this.uniformF32[9] = state.domainY[1]
     this.uniformF32[10] = state.rowPadding
-    this.uniformF32[11] = 0
+    this.uniformF32[11] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 

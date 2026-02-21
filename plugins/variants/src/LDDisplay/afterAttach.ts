@@ -69,7 +69,6 @@ export function doAfterAttach(self: SharedLDModel) {
           fitToHeight: self.fitToHeight,
           displayHeight: self.fitToHeight ? self.ldCanvasHeight : undefined,
           stopToken,
-          snpCountLimit: self.forceLoad ? undefined : self.snpCountLimit,
         },
         {
           statusCallback: (msg: string) => {
@@ -132,12 +131,13 @@ export function doAfterAttach(self: SharedLDModel) {
         self.fitToHeight
         self.useGenomicPositions
         self.signedLD
+        self.jexlFilters
         if (self.fitToHeight) {
           self.ldCanvasHeight
         }
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
-        if (untracked(() => self.error) || !regions.length) {
+        if (self.regionTooLarge || untracked(() => self.error) || !regions.length) {
           return
         }
 
