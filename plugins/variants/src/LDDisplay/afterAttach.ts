@@ -69,6 +69,7 @@ export function doAfterAttach(self: SharedLDModel) {
           fitToHeight: self.fitToHeight,
           displayHeight: self.fitToHeight ? self.ldCanvasHeight : undefined,
           stopToken,
+          snpCountLimit: self.forceLoad ? undefined : self.snpCountLimit,
         },
         {
           statusCallback: (msg: string) => {

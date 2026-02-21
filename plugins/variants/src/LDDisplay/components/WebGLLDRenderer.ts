@@ -200,6 +200,8 @@ export class WebGLLDRenderer {
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+
+    gl.useProgram(this.program)
   }
 
   private createShader(type: number, source: string) {
@@ -363,8 +365,6 @@ export class WebGLLDRenderer {
     if (!this.vao || this.instanceCount === 0 || !this.colorRampTexture) {
       return
     }
-
-    gl.useProgram(this.program)
 
     gl.uniform1f(this.uniforms.u_yScalar!, yScalar)
     gl.uniform2f(this.uniforms.u_canvasSize!, canvasWidth, canvasHeight)

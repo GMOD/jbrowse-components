@@ -201,6 +201,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const uploadedDataRef = useRef(new Map<number, WebGLFeatureDataResult>())
 
   const scrollYRef = useRef(0)
+  const scrollbarHostRef = useRef<HTMLDivElement>(null)
   const selfUpdateRef = useRef(false)
 
   const view = getContainingView(model) as LGV
@@ -247,24 +248,38 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   const canvasCallbackRef = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!canvas) {
+      if (rendererRef.current) {
+        rendererRef.current.onDeviceLost = null
+      }
       return
     }
     canvasRef.current = canvas
     const renderer = CanvasFeatureRenderer.getOrCreate(canvas)
     rendererRef.current = renderer
-    renderer
-      .init()
-      .then(ok => {
-        if (!ok) {
-          console.error('[WebGLFeatureComponent] GPU initialization failed')
-        }
-        setRendererReady(ok)
-        uploadedDataRef.current.clear()
-      })
-      .catch((e: unknown) => {
-        console.error('[WebGLFeatureComponent] GPU initialization error:', e)
-        setRendererReady(false)
-      })
+
+    const doInit = () => {
+      renderer
+        .init()
+        .then(ok => {
+          if (!ok) {
+            console.error('[WebGLFeatureComponent] GPU initialization failed')
+          }
+          setRendererReady(ok)
+          uploadedDataRef.current.clear()
+        })
+        .catch((e: unknown) => {
+          console.error('[WebGLFeatureComponent] GPU initialization error:', e)
+          setRendererReady(false)
+        })
+    }
+
+    renderer.onDeviceLost = () => {
+      setRendererReady(false)
+      uploadedDataRef.current.clear()
+      doInit()
+    }
+
+    doInit()
   }, [])
 
   useEffect(() => {
@@ -304,6 +319,11 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     if (rpcDataMap.size === 0) {
       renderer.pruneStaleRegions([])
       uploadedDataRef.current.clear()
+      scrollYRef.current = 0
+      setScrollY(0)
+      if (scrollbarHostRef.current) {
+        scrollbarHostRef.current.scrollTop = 0
+      }
       return
     }
 
@@ -362,11 +382,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       if (absX > 5 && absX > absY * 2) {
         e.preventDefault()
         e.stopPropagation()
-        const newOffsetPx = view.offsetPx + e.deltaX
-
         selfUpdateRef.current = true
-        view.setNewView(view.bpPerPx, newOffsetPx)
-
+        view.setNewView(view.bpPerPx, view.offsetPx + e.deltaX)
         renderWithBlocksRef.current()
         return
       }
@@ -375,15 +392,19 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         return
       }
 
-      if (e.shiftKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        const panAmount = e.deltaY * 0.5
-        const newScrollY = Math.max(0, scrollYRef.current + panAmount)
-        scrollYRef.current = newScrollY
-        setScrollY(newScrollY)
-        renderWithBlocksRef.current()
+      e.preventDefault()
+      e.stopPropagation()
+      const maxScrollY = Math.max(0, model.maxY - model.height)
+      const newScrollY = Math.max(
+        0,
+        Math.min(scrollYRef.current + e.deltaY * 0.5, maxScrollY),
+      )
+      scrollYRef.current = newScrollY
+      setScrollY(newScrollY)
+      if (scrollbarHostRef.current) {
+        scrollbarHostRef.current.scrollTop = newScrollY
       }
+      renderWithBlocksRef.current()
     }
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })
@@ -509,6 +530,31 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
 
+  const featureItemMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        item: FlatbushItem | SubfeatureInfo
+        vr: VisibleRegion
+        data: WebGLFeatureDataResult | undefined
+      }
+    >()
+    for (const vr of visibleRegions) {
+      const data = rpcDataMap.get(vr.regionNumber)
+      if (data) {
+        for (const f of data.flatbushItems) {
+          map.set(f.featureId, { item: f, vr, data })
+        }
+        for (const s of data.subfeatureInfos) {
+          if (!map.has(s.featureId)) {
+            map.set(s.featureId, { item: s, vr, data: undefined })
+          }
+        }
+      }
+    }
+    return map
+  }, [rpcDataMap, visibleRegions])
+
   const floatingLabelElements = useMemo(() => {
     if (
       !view.initialized ||
@@ -552,7 +598,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         for (const [i, label] of labelData.floatingLabels.entries()) {
           const { text, relativeY, color, textWidth: labelWidth } = label
           const labelPadding = 2
-          const labelY = featureBottomPx - scrollY + relativeY + labelPadding
+          const labelY = featureBottomPx + relativeY + labelPadding
 
           let labelX: number
           if (labelWidth > featureWidth) {
@@ -583,7 +629,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcDataMap, view, width, bpPerPx, visibleRegions, scrollY])
+  }, [rpcDataMap, view, width, bpPerPx, visibleRegions])
 
   const aminoAcidOverlayElements = useMemo(() => {
     if (
@@ -617,7 +663,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         const rightPx =
           vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx
         const centerPx = (leftPx + rightPx) / 2
-        const topPx = item.topPx - scrollY
+        const topPx = item.topPx
         const fontSize = Math.min(item.heightPx - 2, 12)
 
         elements.push(
@@ -644,7 +690,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     }
 
     return elements.length > 0 ? elements : null
-  }, [rpcDataMap, view, width, bpPerPx, visibleRegions, scrollY])
+  }, [rpcDataMap, view, width, bpPerPx, visibleRegions])
 
   const highlightOverlays = useMemo(() => {
     if (
@@ -672,29 +718,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       return {
         leftPx,
         width: rightPx - leftPx,
-        topPx: item.topPx - scrollY,
+        topPx: item.topPx,
         heightPx: item.bottomPx - item.topPx,
       }
     }
 
-    const findItemForId = (featureId: string) => {
-      for (const vr of visibleRegions) {
-        const data = rpcDataMap.get(vr.regionNumber)
-        if (data) {
-          const feature = data.flatbushItems.find(
-            f => f.featureId === featureId,
-          )
-          if (feature) {
-            return { item: feature, vr, data }
-          }
-          const sub = data.subfeatureInfos.find(s => s.featureId === featureId)
-          if (sub) {
-            return { item: sub, vr, data: undefined }
-          }
-        }
-      }
-      return undefined
-    }
+    const findItemForId = (featureId: string) => featureItemMap.get(featureId)
 
     const addOverlay = (
       item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
@@ -790,12 +819,12 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
     return overlays.length > 0 ? overlays : null
   }, [
+    featureItemMap,
     rpcDataMap,
     view,
     width,
     bpPerPx,
     visibleRegions,
-    scrollY,
     hoveredFeature,
     hoveredSubfeature,
     model.selectedFeatureId,
@@ -814,7 +843,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const isReady = view.initialized
 
   return (
-    <div style={{ position: 'relative', width: '100%', height }}>
+    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden' }}>
       <canvas
         ref={canvasCallbackRef}
         style={{
@@ -837,13 +866,35 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
                 width: '100%',
                 height: '100%',
                 pointerEvents: 'none',
-                overflow: 'hidden',
+                transform: `translateY(-${scrollY}px)`,
               }}
             >
               {elements}
             </div>
           ) : null,
       )}
+
+      {model.maxY > height ? (
+        <div
+          ref={scrollbarHostRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: 14,
+            height: '100%',
+            overflowY: 'scroll',
+          }}
+          onScroll={e => {
+            const st = e.currentTarget.scrollTop
+            scrollYRef.current = st
+            setScrollY(st)
+            renderWithBlocksRef.current()
+          }}
+        >
+          <div style={{ height: model.maxY }} />
+        </div>
+      ) : null}
 
       <LoadingOverlay
         statusMessage={isLoading ? 'Loading features' : 'Initializing'}

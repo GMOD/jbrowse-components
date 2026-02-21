@@ -35,7 +35,6 @@ export interface WiggleDisplayModel {
   color: string
   posColor: string
   negColor: string
-  bicolorPivot: number
   renderingType: string
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
@@ -76,54 +75,34 @@ function buildSourceRenderData(
   const baseColor = parseColor(model.color)
   const posColor = parseColor(model.posColor)
   const negColor = parseColor(model.negColor)
-  const { bicolorPivot } = model
 
   if (!useBicolor) {
-    const color =
-      model.renderingType === 'density' ? posColor : baseColor
+    const color = model.renderingType === 'density' ? posColor : baseColor
     return [
       {
-        featurePositions: data.featurePositions,
-        featureScores: data.featureScores,
-        numFeatures: data.numFeatures,
+        featurePositions: data.posFeaturePositions,
+        featureScores: data.posFeatureScores,
+        numFeatures: data.posNumFeatures,
         color,
       },
     ]
   }
 
-  const posFeaturePositions: number[] = []
-  const posFeatureScores: number[] = []
-  const negFeaturePositions: number[] = []
-  const negFeatureScores: number[] = []
-
-  for (let i = 0; i < data.numFeatures; i++) {
-    const score = data.featureScores[i]!
-    const start = data.featurePositions[i * 2]!
-    const end = data.featurePositions[i * 2 + 1]!
-    if (score >= bicolorPivot) {
-      posFeaturePositions.push(start, end)
-      posFeatureScores.push(score)
-    } else {
-      negFeaturePositions.push(start, end)
-      negFeatureScores.push(score)
-    }
-  }
-
   const sources: SourceRenderData[] = []
-  if (posFeatureScores.length > 0) {
+  if (data.posNumFeatures > 0) {
     sources.push({
-      featurePositions: new Uint32Array(posFeaturePositions),
-      featureScores: new Float32Array(posFeatureScores),
-      numFeatures: posFeatureScores.length,
+      featurePositions: data.posFeaturePositions,
+      featureScores: data.posFeatureScores,
+      numFeatures: data.posNumFeatures,
       color: posColor,
       rowIndex: 0,
     })
   }
-  if (negFeatureScores.length > 0) {
+  if (data.negNumFeatures > 0) {
     sources.push({
-      featurePositions: new Uint32Array(negFeaturePositions),
-      featureScores: new Float32Array(negFeatureScores),
-      numFeatures: negFeatureScores.length,
+      featurePositions: data.negFeaturePositions,
+      featureScores: data.negFeatureScores,
+      numFeatures: data.negNumFeatures,
       color: negColor,
       rowIndex: 0,
     })
@@ -132,9 +111,9 @@ function buildSourceRenderData(
     ? sources
     : [
         {
-          featurePositions: data.featurePositions,
-          featureScores: data.featureScores,
-          numFeatures: data.numFeatures,
+          featurePositions: data.posFeaturePositions,
+          featureScores: data.posFeatureScores,
+          numFeatures: data.posNumFeatures,
           color: baseColor,
         },
       ]
@@ -192,7 +171,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       renderer.uploadRegion(regionNumber, data.regionStart, sources)
     }
     renderer.pruneRegions(activeRegions)
-  }, [model.rpcDataMap, model.color, model.posColor, model.negColor, model.bicolorPivot, ready])
+  }, [model.rpcDataMap, model.color, model.posColor, model.negColor, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current

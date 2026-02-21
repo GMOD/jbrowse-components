@@ -27,8 +27,6 @@ interface GpuRegionData {
   lineBuffer: GPUBuffer | null
   lineCount: number
   lineBindGroup: GPUBindGroup | null
-  chevronBuffer: GPUBuffer | null
-  chevronBindGroup: GPUBindGroup | null
   arrowBuffer: GPUBuffer | null
   arrowCount: number
   arrowBindGroup: GPUBindGroup | null
@@ -50,6 +48,8 @@ export class CanvasFeatureRenderer {
   private static chevronPipeline: GPURenderPipeline | null = null
   private static arrowPipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
+
+  onDeviceLost: (() => void) | null = null
 
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext | null = null
@@ -147,6 +147,24 @@ export class CanvasFeatureRenderer {
   async init() {
     const device = await CanvasFeatureRenderer.ensureDevice()
     if (device) {
+      void device.lost.then(info => {
+        console.log('[CanvasFeatureRenderer] Device lost:', info.message)
+        if (CanvasFeatureRenderer.device === device) {
+          CanvasFeatureRenderer.device = null
+          CanvasFeatureRenderer.rectPipeline = null
+          CanvasFeatureRenderer.linePipeline = null
+          CanvasFeatureRenderer.chevronPipeline = null
+          CanvasFeatureRenderer.arrowPipeline = null
+          CanvasFeatureRenderer.bindGroupLayout = null
+        }
+        this.regions.clear()
+        this.uniformBuffer = null
+        this.context = null
+        this.msaaTexture = null
+        this.msaaWidth = 0
+        this.msaaHeight = 0
+        this.onDeviceLost?.()
+      })
       const result = await initGpuContext(this.canvas)
       if (result) {
         this.context = result.context
@@ -214,8 +232,6 @@ export class CanvasFeatureRenderer {
       lineBuffer: null,
       lineCount: data.numLines,
       lineBindGroup: null,
-      chevronBuffer: null,
-      chevronBindGroup: null,
       arrowBuffer: null,
       arrowCount: data.numArrows,
       arrowBindGroup: null,
@@ -237,26 +253,12 @@ export class CanvasFeatureRenderer {
       const lineInterleaved = this.interleaveLines(
         data.linePositions,
         data.lineYs,
+        data.lineDirections,
         data.lineColors,
         data.numLines,
       )
       region.lineBuffer = this.createStorageBuffer(device, lineInterleaved)
       region.lineBindGroup = this.createBindGroup(device, region.lineBuffer)
-      const chevronInterleaved = this.interleaveChevrons(
-        data.linePositions,
-        data.lineYs,
-        data.lineDirections,
-        data.lineColors,
-        data.numLines,
-      )
-      region.chevronBuffer = this.createStorageBuffer(
-        device,
-        chevronInterleaved,
-      )
-      region.chevronBindGroup = this.createBindGroup(
-        device,
-        region.chevronBuffer,
-      )
     }
 
     if (data.numArrows > 0) {
@@ -385,11 +387,7 @@ export class CanvasFeatureRenderer {
         pass.setPipeline(CanvasFeatureRenderer.linePipeline!)
         pass.setBindGroup(0, region.lineBindGroup)
         pass.draw(6, region.lineCount)
-      }
-
-      if (region.chevronBindGroup && region.lineCount > 0) {
         pass.setPipeline(CanvasFeatureRenderer.chevronPipeline!)
-        pass.setBindGroup(0, region.chevronBindGroup)
         pass.draw(MAX_VISIBLE_CHEVRONS_PER_LINE * 12, region.lineCount)
       }
 
@@ -460,7 +458,6 @@ export class CanvasFeatureRenderer {
   private destroyRegion(region: GpuRegionData) {
     region.rectBuffer?.destroy()
     region.lineBuffer?.destroy()
-    region.chevronBuffer?.destroy()
     region.arrowBuffer?.destroy()
   }
 
@@ -541,6 +538,7 @@ export class CanvasFeatureRenderer {
   private interleaveLines(
     positions: Uint32Array,
     ys: Float32Array,
+    directions: Int8Array,
     colors: Uint8Array,
     count: number,
   ) {
@@ -549,30 +547,6 @@ export class CanvasFeatureRenderer {
     const f32 = new Float32Array(buf)
     for (let i = 0; i < count; i++) {
       const off = i * LINE_STRIDE
-      u32[off] = positions[i * 2]!
-      u32[off + 1] = positions[i * 2 + 1]!
-      f32[off + 2] = ys[i]!
-      f32[off + 3] = 0
-      f32[off + 4] = colors[i * 4]! / 255
-      f32[off + 5] = colors[i * 4 + 1]! / 255
-      f32[off + 6] = colors[i * 4 + 2]! / 255
-      f32[off + 7] = colors[i * 4 + 3]! / 255
-    }
-    return buf
-  }
-
-  private interleaveChevrons(
-    positions: Uint32Array,
-    ys: Float32Array,
-    directions: Int8Array,
-    colors: Uint8Array,
-    count: number,
-  ) {
-    const buf = new ArrayBuffer(count * CHEVRON_STRIDE * 4)
-    const u32 = new Uint32Array(buf)
-    const f32 = new Float32Array(buf)
-    for (let i = 0; i < count; i++) {
-      const off = i * CHEVRON_STRIDE
       u32[off] = positions[i * 2]!
       u32[off + 1] = positions[i * 2 + 1]!
       f32[off + 2] = ys[i]!

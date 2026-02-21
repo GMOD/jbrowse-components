@@ -149,6 +149,10 @@ export default function stateModelFactory(
         return getConf(self, 'maxHeight') ?? 1200
       },
 
+      get autoHeight(): boolean {
+        return getConf(self, 'autoHeight') ?? false
+      },
+
       get showLabels(): boolean {
         return self.trackShowLabels ?? true
       },
@@ -280,7 +284,10 @@ export default function stateModelFactory(
           globalMaxY = Math.max(globalMaxY, d.maxY)
         }
         self.maxY = globalMaxY
-      },
+      if (self.autoHeight) {
+        self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
+      }
+    },
 
       setLayoutBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
         const next = new Map(self.layoutBpPerPxMap)

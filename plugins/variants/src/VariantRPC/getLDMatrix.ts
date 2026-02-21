@@ -1,14 +1,21 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
+import {
+  computeLDMatrixGPU,
+  computeLDMatrixGPUPhased,
+} from './getLDMatrixGPU.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const SPLITTER = /[/|]/
 
@@ -119,149 +126,120 @@ function encodeGenotypes(
   return encoded
 }
 
-/**
- * Encode phased genotypes as haplotype pairs for all samples
- * Returns two Int8Arrays: one for each chromosome
- * Values: 0=ref, 1=alt, -1=missing
- */
-function encodePhasedHaplotypes(
-  genotypes: Record<string, string>,
-  samples: string[],
-): { hap1: Int8Array; hap2: Int8Array } {
-  const hap1 = new Int8Array(samples.length)
-  const hap2 = new Int8Array(samples.length)
-
-  for (const [i, sample] of samples.entries()) {
-    const val = genotypes[sample]!
-    const alleles = val.split('|')
-
-    if (alleles.length !== 2) {
-      // Not properly phased diploid, mark as missing
-      hap1[i] = -1
-      hap2[i] = -1
-      continue
-    }
-
-    // Chromosome 1
-    if (alleles[0] === '.') {
-      hap1[i] = -1
-    } else {
-      hap1[i] = alleles[0] === '0' ? 0 : 1
-    }
-
-    // Chromosome 2
-    if (alleles[1] === '.') {
-      hap2[i] = -1
-    } else {
-      hap2[i] = alleles[1] === '0' ? 0 : 1
-    }
-  }
-
-  return { hap1, hap2 }
+function popcount32(v: number) {
+  v = v | 0
+  v -= (v >>> 1) & 0x55555555
+  v = (v & 0x33333333) + ((v >>> 2) & 0x33333333)
+  v = (v + (v >>> 4)) & 0x0f0f0f0f
+  return Math.imul(v, 0x01010101) >>> 24
 }
 
-/**
- * Calculate LD statistics from phased haplotype data
- * This gives exact values since we know the phase
- *
- * @param signedLD - If true, return signed values (R and signed D') ranging from -1 to 1.
- *                   If false (default), return unsigned values (R² and |D'|) ranging from 0 to 1.
- */
-function calculateLDStatsPhased(
-  haps1: { hap1: Int8Array; hap2: Int8Array },
-  haps2: { hap1: Int8Array; hap2: Int8Array },
+interface PackedHaplotypes {
+  altH1: Uint32Array
+  validH1: Uint32Array
+  altH2: Uint32Array
+  validH2: Uint32Array
+  words: number
+}
+
+function packHaplotypesWithCounts(
+  genotypes: Record<string, string>,
+  samples: string[],
+): PackedHaplotypes & { nHomRef: number; nHet: number; nHomAlt: number; nValid: number } {
+  const numSamples = samples.length
+  const words = Math.ceil(numSamples / 32)
+  const altH1 = new Uint32Array(words)
+  const validH1 = new Uint32Array(words)
+  const altH2 = new Uint32Array(words)
+  const validH2 = new Uint32Array(words)
+  let nHomRef = 0
+  let nHet = 0
+  let nHomAlt = 0
+  let nValid = 0
+  for (let s = 0; s < numSamples; s++) {
+    const val = genotypes[samples[s]!]!
+    const pipe = val.indexOf('|')
+    if (pipe < 0) { continue }
+    const a0 = val.slice(0, pipe)
+    const a1 = val.slice(pipe + 1)
+    const w = s >>> 5
+    const bit = 1 << (s & 31)
+    const v0 = a0 !== '.'
+    const v1 = a1 !== '.'
+    if (v0) {
+      validH1[w] = validH1[w]! | bit
+      if (a0 !== '0') { altH1[w] = altH1[w]! | bit }
+    }
+    if (v1) {
+      validH2[w] = validH2[w]! | bit
+      if (a1 !== '0') { altH2[w] = altH2[w]! | bit }
+    }
+    if (v0 && v1) {
+      const isAlt0 = a0 !== '0'
+      const isAlt1 = a1 !== '0'
+      nValid++
+      if (!isAlt0 && !isAlt1) { nHomRef++ }
+      else if (isAlt0 && isAlt1) { nHomAlt++ }
+      else { nHet++ }
+    }
+  }
+  return { altH1, validH1, altH2, validH2, words, nHomRef, nHet, nHomAlt, nValid }
+}
+
+// Phased haplotypes encode alleles as strictly {-1, 0, 1} (encodePhasedHaplotypes
+// maps ref→0, missing→-1, any alt→1), so bit-packing is valid.
+// Each 32-bit word covers 32 samples; popcount replaces the per-sample loop.
+function calculateLDStatsPhasedBits(
+  a: PackedHaplotypes,
+  b: PackedHaplotypes,
   signedLD = false,
-): {
-  r2: number
-  dprime: number
-} {
-  // Count haplotype frequencies directly
-  // Haplotypes: 00 (ref-ref), 01 (ref-alt), 10 (alt-ref), 11 (alt-alt)
-  let n01 = 0 // ref at locus 1, alt at locus 2
-  let n10 = 0 // alt at locus 1, ref at locus 2
-  let n11 = 0 // alt at locus 1, alt at locus 2
+): { r2: number; dprime: number } {
+  let n01 = 0
+  let n10 = 0
+  let n11 = 0
   let total = 0
-
-  const numSamples = haps1.hap1.length
-
-  // Count haplotypes from chromosome 1 of each sample
-  for (let i = 0; i < numSamples; i++) {
-    const a1 = haps1.hap1[i]! // allele at locus 1, chrom 1
-    const b1 = haps2.hap1[i]! // allele at locus 2, chrom 1
-
-    if (a1 >= 0 && b1 >= 0) {
-      if (a1 === 0 && b1 === 1) {
-        n01++
-      } else if (a1 === 1 && b1 === 0) {
-        n10++
-      } else if (a1 === 1 && b1 === 1) {
-        n11++
-      }
-      total++
-    }
+  const words = a.words
+  for (let w = 0; w < words; w++) {
+    const ai1 = a.altH1[w]!
+    const vi1 = a.validH1[w]!
+    const aj1 = b.altH1[w]!
+    const vj1 = b.validH1[w]!
+    n11 += popcount32(ai1 & aj1)
+    n10 += popcount32(ai1 & ~aj1 & vj1)
+    n01 += popcount32(vi1 & ~ai1 & aj1)
+    total += popcount32(vi1 & vj1)
+    const ai2 = a.altH2[w]!
+    const vi2 = a.validH2[w]!
+    const aj2 = b.altH2[w]!
+    const vj2 = b.validH2[w]!
+    n11 += popcount32(ai2 & aj2)
+    n10 += popcount32(ai2 & ~aj2 & vj2)
+    n01 += popcount32(vi2 & ~ai2 & aj2)
+    total += popcount32(vi2 & vj2)
   }
-
-  // Count haplotypes from chromosome 2 of each sample
-  for (let i = 0; i < numSamples; i++) {
-    const a2 = haps1.hap2[i]! // allele at locus 1, chrom 2
-    const b2 = haps2.hap2[i]! // allele at locus 2, chrom 2
-
-    if (a2 >= 0 && b2 >= 0) {
-      if (a2 === 0 && b2 === 1) {
-        n01++
-      } else if (a2 === 1 && b2 === 0) {
-        n10++
-      } else if (a2 === 1 && b2 === 1) {
-        n11++
-      }
-      total++
-    }
-  }
-
   if (total < 4) {
-    // Need at least 4 haplotypes (2 diploid individuals)
     return { r2: 0, dprime: 0 }
   }
-
-  // Haplotype frequencies
-  const p01 = n01 / total // freq of ref-alt haplotype
-  const p10 = n10 / total // freq of alt-ref haplotype
-  const p11 = n11 / total // freq of alt-alt haplotype
-
-  // Allele frequencies
-  const pA = p10 + p11 // freq of alt at locus 1
-  const pB = p01 + p11 // freq of alt at locus 2
+  const p01 = n01 / total
+  const p10 = n10 / total
+  const p11 = n11 / total
+  const pA = p10 + p11
+  const pB = p01 + p11
   const qA = 1 - pA
   const qB = 1 - pB
-
-  // Check for monomorphic loci
   if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
     return { r2: 0, dprime: 0 }
   }
-
-  // D = P(AB) - P(A)*P(B) where AB means alt-alt haplotype
   const D = p11 - pA * pB
-
-  // Calculate R (correlation) and R²
   const denom = pA * qA * pB * qB
   const r = denom > 0 ? D / Math.sqrt(denom) : 0
   const r2 = Math.min(1, Math.max(0, r * r))
-
   const dprime = calculateDprime(D, pA, pB, signedLD)
-
-  // For signed mode, return R instead of R²
   return { r2: signedLD ? r : r2, dprime }
 }
 
 export type LDMetric = 'r2' | 'dprime'
 
-/**
- * Calculate LD statistics from genotype counts
- * Returns both R² and D' so caller can choose which to use
- *
- * @param signedLD - If true, return signed values (R and signed D') ranging from -1 to 1.
- *                   If false (default), return unsigned values (R² and |D'|) ranging from 0 to 1.
- */
 function calculateLDStats(
   geno1: Int8Array,
   geno2: Int8Array,
@@ -366,15 +344,11 @@ export interface LDMatrixResult {
     start: number
     end: number
   }[]
-  // Lower triangular matrix stored as flat array
-  // For n SNPs: [ld(1,0), ld(2,0), ld(2,1), ld(3,0), ...]
   ldValues: Float32Array
-  // Which metric was computed
   metric: LDMetric
-  // Statistics about filtered variants
   filterStats: FilterStats
-  // Recombination rate estimates between adjacent SNPs
   recombination: RecombinationData
+  regionTooLarge?: boolean
 }
 
 export async function getLDMatrix({
@@ -384,7 +358,7 @@ export async function getLDMatrix({
   pluginManager: PluginManager
   args: {
     adapterConfig: AnyConfigurationModel
-    stopTokenCheck?: LastStopTokenCheck
+    stopToken?: StopToken
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
@@ -396,6 +370,7 @@ export async function getLDMatrix({
     jexlFilters?: string[]
     ldMetric?: LDMetric
     signedLD?: boolean
+    snpCountLimit?: number
   }
 }): Promise<LDMatrixResult> {
   const {
@@ -404,13 +379,15 @@ export async function getLDMatrix({
     adapterConfig,
     sessionId,
     lengthCutoffFilter,
-    hweFilterThreshold = 0.001,
+    hweFilterThreshold = 0,
     callRateFilter = 0,
     jexlFilters = [],
-    stopTokenCheck,
+    stopToken,
     ldMetric = 'r2',
+    snpCountLimit,
     signedLD = false,
   } = args
+  const stopTokenCheck = createStopTokenChecker(stopToken)
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
@@ -447,66 +424,43 @@ export async function getLDMatrix({
   )
   const totalVariants = rawFeatures.length
 
-  // Get features that pass MAF and length filters
-  const filteredFeatures = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-    stopTokenCheck,
-    splitCache,
-    features: rawFeatures,
-  })
-
-  // Count how many were filtered by length vs MAF
-  // We need to count separately
-  let filteredByLength = 0
-  let filteredByMaf = 0
-  for (const feature of rawFeatures) {
-    if (feature.get('end') - feature.get('start') > lengthCutoffFilter) {
-      filteredByLength++
-    } else {
-      // Check if it was filtered by MAF
-      const featureId = feature.id()
-      const wasPassed = filteredFeatures.some(f => f.feature.id() === featureId)
-      if (!wasPassed) {
-        filteredByMaf++
-      }
-    }
-  }
-
-  // Apply jexl filters if provided
-  let featuresAfterJexl = filteredFeatures
-  if (jexlFilters.length > 0) {
-    const filterChain = new SerializableFilterChain({ filters: jexlFilters })
-    featuresAfterJexl = filteredFeatures.filter(({ feature }) =>
-      filterChain.passes(feature, undefined, undefined),
-    )
-  }
-
-  // Extract SNP info and encode genotypes
-  // Like Haploview, we only include biallelic sites
   const snps: LDMatrixResult['snps'] = []
   const encodedGenotypes: Int8Array[] = []
-  const phasedHaplotypes: { hap1: Int8Array; hap2: Int8Array }[] = []
+  const packedHaplotypes: PackedHaplotypes[] = []
+  let filteredByLength = 0
+  let filteredByMaf = 0
   let filteredByMultiallelic = 0
   let filteredByHwe = 0
   let filteredByCallRate = 0
 
   const callRateFilterEnabled = callRateFilter > 0
+  const chiSqCritical = getChiSquareCritical(hweFilterThreshold)
+  const hweFilterEnabled = hweFilterThreshold > 0
+  const filterChain =
+    jexlFilters.length > 0
+      ? new SerializableFilterChain({ filters: jexlFilters })
+      : null
 
-  // Detect if data is phased by checking first feature
+  // Detect phasing from first raw feature (phasing is a dataset-wide property)
   let dataIsPhased = false
-  if (featuresAfterJexl.length > 0) {
-    const firstGenotypes = featuresAfterJexl[0]!.feature.get(
-      'genotypes',
-    ) as Record<string, string>
+  if (rawFeatures.length > 0) {
+    const firstGenotypes = rawFeatures[0]!.get('genotypes') as Record<
+      string,
+      string
+    >
     dataIsPhased = isPhased(firstGenotypes)
   }
 
-  const chiSqCritical = getChiSquareCritical(hweFilterThreshold)
-  const hweFilterEnabled = hweFilterThreshold > 0
+  for (const feature of rawFeatures) {
+    if (feature.get('end') - feature.get('start') > lengthCutoffFilter) {
+      filteredByLength++
+      continue
+    }
 
-  for (const { feature } of featuresAfterJexl) {
-    // Skip multiallelic sites (Haploview only works with biallelic SNPs)
+    if (filterChain && !filterChain.passes(feature, undefined, undefined)) {
+      continue
+    }
+
     const alt = feature.get('ALT') as string[] | undefined
     if (alt && alt.length > 1) {
       filteredByMultiallelic++
@@ -514,44 +468,60 @@ export async function getLDMatrix({
     }
 
     const genotypes = feature.get('genotypes') as Record<string, string>
-    const encoded = encodeGenotypes(genotypes, samples, splitCache)
 
-    // Count genotypes for QC filters: 0=hom ref, 1=het, 2=hom alt, -1=missing
     let nHomRef = 0
     let nHet = 0
     let nHomAlt = 0
     let nValid = 0
-    for (const g of encoded) {
-      if (g === 0) {
-        nHomRef++
-        nValid++
-      } else if (g === 1) {
-        nHet++
-        nValid++
-      } else if (g === 2) {
-        nHomAlt++
-        nValid++
+    let packed:
+      | (PackedHaplotypes & {
+          nHomRef: number
+          nHet: number
+          nHomAlt: number
+          nValid: number
+        })
+      | undefined
+    let encoded: Int8Array | undefined
+
+    if (dataIsPhased) {
+      packed = packHaplotypesWithCounts(genotypes, samples)
+      nHomRef = packed.nHomRef
+      nHet = packed.nHet
+      nHomAlt = packed.nHomAlt
+      nValid = packed.nValid
+    } else {
+      encoded = encodeGenotypes(genotypes, samples, splitCache)
+      for (const g of encoded) {
+        if (g === 0) {
+          nHomRef++
+          nValid++
+        } else if (g === 1) {
+          nHet++
+          nValid++
+        } else if (g === 2) {
+          nHomAlt++
+          nValid++
+        }
       }
     }
 
-    // Call rate filter: proportion of non-missing genotypes
-    if (callRateFilterEnabled) {
-      const callRate = nValid / samples.length
-      if (callRate < callRateFilter) {
-        filteredByCallRate++
-        continue
-      }
+    const altFreq = nValid > 0 ? (nHet + 2 * nHomAlt) / (2 * nValid) : 0
+    if (Math.min(altFreq, 1 - altFreq) < minorAlleleFrequencyFilter) {
+      filteredByMaf++
+      continue
     }
 
-    // Check for Hardy-Weinberg equilibrium (like Haploview's HWE filter)
+    if (callRateFilterEnabled && nValid / samples.length < callRateFilter) {
+      filteredByCallRate++
+      continue
+    }
+
     if (hweFilterEnabled && nValid > 0) {
-      const p = (2 * nHomRef + nHet) / (2 * nValid) // ref allele freq
-      const q = 1 - p // alt allele freq
+      const p = (2 * nHomRef + nHet) / (2 * nValid)
+      const q = 1 - p
       const expectedHomRef = p * p * nValid
       const expectedHet = 2 * p * q * nValid
       const expectedHomAlt = q * q * nValid
-
-      // Chi-square statistic
       let chiSq = 0
       if (expectedHomRef > 0) {
         chiSq += (nHomRef - expectedHomRef) ** 2 / expectedHomRef
@@ -562,7 +532,6 @@ export async function getLDMatrix({
       if (expectedHomAlt > 0) {
         chiSq += (nHomAlt - expectedHomAlt) ** 2 / expectedHomAlt
       }
-
       if (chiSq > chiSqCritical) {
         filteredByHwe++
         continue
@@ -576,36 +545,64 @@ export async function getLDMatrix({
       end: feature.get('end'),
     })
 
-    // Store both unphased genotypes (for HWE check) and phased haplotypes (if available)
-    encodedGenotypes.push(encoded)
-    if (dataIsPhased) {
-      phasedHaplotypes.push(encodePhasedHaplotypes(genotypes, samples))
-    }
+    if (packed) { packedHaplotypes.push(packed) }
+    if (encoded) { encodedGenotypes.push(encoded) }
 
     checkStopToken2(stopTokenCheck)
   }
 
-  // Calculate LD matrix (lower triangular, excluding diagonal)
   const n = snps.length
-  const ldSize = (n * (n - 1)) / 2
-  const ldValues = new Float32Array(ldSize)
 
-  let idx = 0
-  for (let i = 1; i < n; i++) {
-    for (let j = 0; j < i; j++) {
-      // Use exact haplotype-based calculation for phased data or
-      // use composite LD estimator for unphased data
-      const stats = dataIsPhased
-        ? calculateLDStatsPhased(
-            phasedHaplotypes[i]!,
-            phasedHaplotypes[j]!,
-            signedLD,
-          )
-        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, signedLD)
-
-      ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
+  if (snpCountLimit !== undefined && n > snpCountLimit) {
+    return {
+      snps: [],
+      ldValues: new Float32Array(0),
+      metric: ldMetric,
+      filterStats: {
+        totalVariants,
+        passedVariants: n,
+        filteredByMaf,
+        filteredByLength,
+        filteredByMultiallelic,
+        filteredByHwe,
+        filteredByCallRate,
+      },
+      recombination: { values: new Float32Array(0), positions: [] },
+      regionTooLarge: true,
     }
-    checkStopToken2(stopTokenCheck)
+  }
+
+  const ldSize = (n * (n - 1)) / 2
+
+  let ldValues: Float32Array | null = null
+  try {
+    ldValues = dataIsPhased
+      ? await computeLDMatrixGPUPhased(packedHaplotypes, ldMetric, signedLD)
+      : await computeLDMatrixGPU(encodedGenotypes, ldMetric, signedLD)
+  } catch (e) {
+    console.warn('GPU LD computation failed, falling back to CPU', e)
+  }
+
+  if (!ldValues) {
+    ldValues = new Float32Array(ldSize)
+    let idx = 0
+    for (let i = 1; i < n; i++) {
+      for (let j = 0; j < i; j++) {
+        const stats = dataIsPhased
+          ? calculateLDStatsPhasedBits(
+              packedHaplotypes[i]!,
+              packedHaplotypes[j]!,
+              signedLD,
+            )
+          : calculateLDStats(
+              encodedGenotypes[i]!,
+              encodedGenotypes[j]!,
+              signedLD,
+            )
+        ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
+        checkStopToken2(stopTokenCheck)
+      }
+    }
   }
 
   const filterStats: FilterStats = {
@@ -627,9 +624,9 @@ export async function getLDMatrix({
     let r2: number
 
     if (dataIsPhased) {
-      const stats = calculateLDStatsPhased(
-        phasedHaplotypes[i]!,
-        phasedHaplotypes[i + 1]!,
+      const stats = calculateLDStatsPhasedBits(
+        packedHaplotypes[i]!,
+        packedHaplotypes[i + 1]!,
       )
       r2 = stats.r2
     } else {

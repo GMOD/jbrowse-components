@@ -214,15 +214,24 @@ export default function stateModelFactory(
             color: s.color,
           }))
         }
+        let min = Infinity
+        let max = -Infinity
+        for (const d of next.values()) {
+          if (d.scoreMin < min) {
+            min = d.scoreMin
+          }
+          if (d.scoreMax > max) {
+            max = d.scoreMax
+          }
+        }
+        if (Number.isFinite(min) && Number.isFinite(max)) {
+          self.visibleScoreRange = [min, max]
+        }
       },
 
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
         self.visibleScoreRange = undefined
-      },
-
-      setVisibleScoreRange(range: [number, number]) {
-        self.visibleScoreRange = range
       },
 
       setSources(sources: SourceInfo[]) {
@@ -276,6 +285,7 @@ export default function stateModelFactory(
             adapterConfig,
             region,
             sources: self.sources,
+            bicolorPivot: self.bicolorPivot,
             stopToken,
           },
         )) as WebGLMultiWiggleDataResult
@@ -323,6 +333,8 @@ export default function stateModelFactory(
 
       const superAfterAttach = self.afterAttach
 
+      let prevPivot: number | undefined
+
       return {
         afterAttach() {
           superAfterAttach()
@@ -331,47 +343,13 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
+                const pivot = self.bicolorPivot
+                if (prevPivot !== undefined && pivot !== prevPivot) {
+                  self.clearAllRpcData()
                 }
-                const blocks = view.dynamicBlocks.contentBlocks
-                let min = Infinity
-                let max = -Infinity
-                for (const block of blocks) {
-                  if (block.regionNumber === undefined) {
-                    continue
-                  }
-                  const data = self.rpcDataMap.get(block.regionNumber)
-                  if (!data) {
-                    continue
-                  }
-                  const visStart = block.start - data.regionStart
-                  const visEnd = block.end - data.regionStart
-                  for (const source of data.sources) {
-                    for (let i = 0; i < source.numFeatures; i++) {
-                      const fStart = source.featurePositions[i * 2]!
-                      const fEnd = source.featurePositions[i * 2 + 1]!
-                      if (fEnd > visStart && fStart < visEnd) {
-                        const s = source.featureScores[i]!
-                        if (s < min) {
-                          min = s
-                        }
-                        if (s > max) {
-                          max = s
-                        }
-                      }
-                    }
-                  }
-                }
-                if (Number.isFinite(min) && Number.isFinite(max)) {
-                  self.setVisibleScoreRange([min, max])
-                }
+                prevPivot = pivot
               },
-              {
-                delay: 400,
-                name: 'MultiWiggleDisplay:visibleScoreRange',
-              },
+              { name: 'BicolorPivotChange' },
             ),
           )
 

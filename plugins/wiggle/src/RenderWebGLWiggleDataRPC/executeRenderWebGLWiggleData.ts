@@ -28,7 +28,9 @@ interface ExecuteParams {
     sessionId: string
     adapterConfig: Record<string, unknown>
     region: Region
+    bicolorPivot?: number
     stopToken?: string
+    bpPerPx?: number
   }
 }
 
@@ -36,7 +38,7 @@ export async function executeRenderWebGLWiggleData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLWiggleDataResult> {
-  const { sessionId, adapterConfig, region, stopToken } = args
+  const { sessionId, adapterConfig, region, bicolorPivot = 0, stopToken, bpPerPx = 0 } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -47,7 +49,7 @@ export async function executeRenderWebGLWiggleData({
 
   // Fetch features
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region).pipe(toArray()),
+    dataAdapter.getFeatures(region, { bpPerPx }).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -56,9 +58,12 @@ export async function executeRenderWebGLWiggleData({
   // Use floor to get integer reference point for storing position offsets.
   const regionStart = Math.floor(region.start)
 
-  // Allocate typed arrays
   const featurePositions = new Uint32Array(featuresArray.length * 2)
   const featureScores = new Float32Array(featuresArray.length)
+  const posPositions: number[] = []
+  const posScores: number[] = []
+  const negPositions: number[] = []
+  const negScores: number[] = []
 
   let scoreMin = Number.POSITIVE_INFINITY
   let scoreMax = Number.NEGATIVE_INFINITY
@@ -69,11 +74,19 @@ export async function executeRenderWebGLWiggleData({
     const end = feature.get('end')
     const score = feature.get('score') ?? 0
 
-    // Store position as offset from regionStart
-    featurePositions[featureIndex * 2] = Math.floor(start - regionStart)
-    featurePositions[featureIndex * 2 + 1] = Math.floor(end - regionStart)
-
+    const startOffset = Math.floor(start - regionStart)
+    const endOffset = Math.floor(end - regionStart)
+    featurePositions[featureIndex * 2] = startOffset
+    featurePositions[featureIndex * 2 + 1] = endOffset
     featureScores[featureIndex] = score
+
+    if (score >= bicolorPivot) {
+      posPositions.push(startOffset, endOffset)
+      posScores.push(score)
+    } else {
+      negPositions.push(startOffset, endOffset)
+      negScores.push(score)
+    }
 
     if (score < scoreMin) {
       scoreMin = score
@@ -85,7 +98,6 @@ export async function executeRenderWebGLWiggleData({
     featureIndex++
   }
 
-  // Handle empty data case
   if (featureIndex === 0) {
     scoreMin = 0
     scoreMax = 0
@@ -96,6 +108,12 @@ export async function executeRenderWebGLWiggleData({
     featurePositions: featurePositions.slice(0, featureIndex * 2),
     featureScores: featureScores.slice(0, featureIndex),
     numFeatures: featureIndex,
+    posFeaturePositions: new Uint32Array(posPositions),
+    posFeatureScores: new Float32Array(posScores),
+    posNumFeatures: posScores.length,
+    negFeaturePositions: new Uint32Array(negPositions),
+    negFeatureScores: new Float32Array(negScores),
+    negNumFeatures: negScores.length,
     scoreMin,
     scoreMax,
   }

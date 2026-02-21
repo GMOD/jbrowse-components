@@ -108,7 +108,7 @@ export async function executeRenderWebGLHicData({
   const positions = new Float32Array(features.length * 2)
   const countValues = new Float32Array(features.length)
   const items: HicFlatbushItem[] = []
-  const flatbushCoords: number[] = []
+  const flatbush = new Flatbush(Math.max(features.length, 1))
 
   for (const [i, feature] of features.entries()) {
     const { bin1, bin2, counts, region1Idx, region2Idx } = feature
@@ -120,19 +120,10 @@ export async function executeRenderWebGLHicData({
     positions[i * 2 + 1] = y
     countValues[i] = counts
 
-    flatbushCoords.push(x, y, x + w, y + w)
+    flatbush.add(x, y, x + w, y + w)
     items.push({ bin1, bin2, counts, region1Idx, region2Idx })
   }
 
-  const flatbush = new Flatbush(Math.max(items.length, 1))
-  for (let i = 0; i < flatbushCoords.length; i += 4) {
-    flatbush.add(
-      flatbushCoords[i]!,
-      flatbushCoords[i + 1]!,
-      flatbushCoords[i + 2],
-      flatbushCoords[i + 3],
-    )
-  }
   flatbush.finish()
 
   return {

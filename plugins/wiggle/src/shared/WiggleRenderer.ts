@@ -272,6 +272,8 @@ export class WiggleRenderer {
     const textureView = this.context.getCurrentTexture().createView()
     let isFirst = true
 
+    const encoder = device.createCommandEncoder()
+
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
       if (!region || region.featureCount === 0) {
@@ -305,7 +307,6 @@ export class WiggleRenderer {
         renderState,
       )
 
-      const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
@@ -334,13 +335,24 @@ export class WiggleRenderer {
       )
       pass.draw(VERTICES_PER_INSTANCE, region.featureCount)
       pass.end()
-      device.queue.submit([encoder.finish()])
       isFirst = false
     }
 
     if (isFirst) {
-      this.clearCanvas(device, textureView)
+      const pass = encoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: textureView,
+            loadOp: 'clear' as GPULoadOp,
+            storeOp: 'store' as GPUStoreOp,
+            clearValue: { r: 0, g: 0, b: 0, a: 0 },
+          },
+        ],
+      })
+      pass.end()
     }
+
+    device.queue.submit([encoder.finish()])
   }
 
   dispose() {
@@ -356,22 +368,6 @@ export class WiggleRenderer {
     this.uniformBuffer?.destroy()
     this.uniformBuffer = null
     this.context = null
-  }
-
-  private clearCanvas(device: GPUDevice, textureView: GPUTextureView) {
-    const encoder = device.createCommandEncoder()
-    const pass = encoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: textureView,
-          loadOp: 'clear' as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
-          clearValue: { r: 0, g: 0, b: 0, a: 0 },
-        },
-      ],
-    })
-    pass.end()
-    device.queue.submit([encoder.finish()])
   }
 
   private writeUniforms(

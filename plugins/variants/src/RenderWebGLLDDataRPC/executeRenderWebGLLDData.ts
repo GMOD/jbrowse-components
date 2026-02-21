@@ -26,6 +26,7 @@ interface RenderWebGLLDDataArgs {
   fitToHeight: boolean
   displayHeight?: number
   stopToken?: string
+  snpCountLimit?: number
 }
 
 function emptyResult(signedLD: boolean, metric: LDMetric): WebGLLDDataResult {
@@ -99,8 +100,18 @@ export async function executeRenderWebGLLDData({
           callRateFilter,
           jexlFilters,
           signedLD,
+          stopToken: args.stopToken,
+          snpCountLimit: args.snpCountLimit,
         },
       }))
+
+  if (ldData.regionTooLarge) {
+    return {
+      ...emptyResult(signedLD, ldMetric),
+      filterStats: ldData.filterStats,
+      regionTooLarge: true,
+    }
+  }
 
   if (ldData.snps.length === 0) {
     return {
@@ -149,7 +160,7 @@ export async function executeRenderWebGLLDData({
   const cellSizes = new Float32Array(numCells * 2)
   const ldVals = new Float32Array(numCells)
   const items: LDFlatbushItem[] = []
-  const flatbushCoords: number[] = []
+  const flatbush = new Flatbush(Math.max(numCells, 1))
 
   let ldIdx = 0
   let cellIdx = 0
@@ -181,7 +192,7 @@ export async function executeRenderWebGLLDData({
       cellSizes[cellIdx * 2 + 1] = cellH
       ldVals[cellIdx] = ldVal
 
-      flatbushCoords.push(x, y, x + cellW, y + cellH)
+      flatbush.add(x, y, x + cellW, y + cellH)
       items.push({
         i,
         j,
@@ -195,17 +206,7 @@ export async function executeRenderWebGLLDData({
     }
   }
 
-  const flatbush = new Flatbush(Math.max(items.length, 1))
-  if (flatbushCoords.length) {
-    for (let k = 0; k < flatbushCoords.length; k += 4) {
-      flatbush.add(
-        flatbushCoords[k]!,
-        flatbushCoords[k + 1]!,
-        flatbushCoords[k + 2],
-        flatbushCoords[k + 3],
-      )
-    }
-  } else {
+  if (numCells === 0) {
     flatbush.add(0, 0, 0, 0)
   }
   flatbush.finish()

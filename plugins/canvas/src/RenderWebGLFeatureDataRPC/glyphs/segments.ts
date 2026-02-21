@@ -50,11 +50,13 @@ export const segmentsGlyph: Glyph = {
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
     const subfeatures = feature.get('subfeatures') || []
-    const children = subfeatures.map(child => {
-      const childType = child.get('type')
-      const glyphType = childType === 'CDS' ? 'CDS' : 'Box'
-      return layoutChild(child, feature, args, glyphType)
-    })
+    const children = subfeatures
+      .map(child => {
+        const childType = child.get('type')
+        const glyphType = childType === 'CDS' ? 'CDS' : 'Box'
+        return layoutChild(child, feature, args, glyphType)
+      })
+      .sort((a, b) => a.feature.get('start') - b.feature.get('start'))
 
     return {
       feature,

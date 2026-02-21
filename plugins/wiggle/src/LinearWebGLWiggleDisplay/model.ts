@@ -19,7 +19,12 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { autorun } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { YSCALEBAR_LABEL_OFFSET, getNiceDomain, getScale } from '../util.ts'
+import {
+  WIGGLE_COLOR_DEFAULT,
+  YSCALEBAR_LABEL_OFFSET,
+  getNiceDomain,
+  getScale,
+} from '../util.ts'
 
 import type { WebGLWiggleDataResult } from '../RenderWebGLWiggleDataRPC/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -109,6 +114,12 @@ export default function stateModelFactory(
         return getConf(self, 'bicolorPivot')
       },
 
+      get effectiveBicolorPivot() {
+        const c = this.color
+        const useBicolor = c === WIGGLE_COLOR_DEFAULT || c === '#ff00ff'
+        return useBicolor ? this.bicolorPivot : -Infinity
+      },
+
       get scaleType() {
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
       },
@@ -190,15 +201,24 @@ export default function stateModelFactory(
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
         self.rpcDataMap = next
+        let min = Infinity
+        let max = -Infinity
+        for (const d of next.values()) {
+          if (d.scoreMin < min) {
+            min = d.scoreMin
+          }
+          if (d.scoreMax > max) {
+            max = d.scoreMax
+          }
+        }
+        if (Number.isFinite(min) && Number.isFinite(max)) {
+          self.visibleScoreRange = [min, max]
+        }
       },
 
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
         self.visibleScoreRange = undefined
-      },
-
-      setVisibleScoreRange(range: [number, number]) {
-        self.visibleScoreRange = range
       },
 
       setColor(color?: string) {
@@ -234,6 +254,7 @@ export default function stateModelFactory(
         region: Region,
         regionNumber: number,
         stopToken: string,
+        bpPerPx: number,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -250,7 +271,9 @@ export default function stateModelFactory(
             sessionId: session.id,
             adapterConfig,
             region,
+            bicolorPivot: self.effectiveBicolorPivot,
             stopToken,
+            bpPerPx,
           },
         )) as WebGLWiggleDataResult
 
@@ -266,6 +289,7 @@ export default function stateModelFactory(
 
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
+        bpPerPx: number,
       ) {
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
@@ -277,7 +301,7 @@ export default function stateModelFactory(
         self.setError(null)
         try {
           const promises = regions.map(({ region, regionNumber }) =>
-            fetchFeaturesForRegion(region, regionNumber, stopToken),
+            fetchFeaturesForRegion(region, regionNumber, stopToken, bpPerPx),
           )
           await Promise.all(promises)
         } catch (e) {
@@ -297,55 +321,23 @@ export default function stateModelFactory(
 
       const superAfterAttach = self.afterAttach
 
+      let prevPivot: number | undefined
+
       return {
         afterAttach() {
           superAfterAttach()
 
-          // Debounced autorun: compute visible score range from features
-          // in the current viewport so the Y scale adjusts on pan/zoom
           addDisposer(
             self,
             autorun(
               () => {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
+                const pivot = self.effectiveBicolorPivot
+                if (prevPivot !== undefined && pivot !== prevPivot) {
+                  self.clearAllRpcData()
                 }
-                const blocks = view.dynamicBlocks.contentBlocks
-                let min = Infinity
-                let max = -Infinity
-                for (const block of blocks) {
-                  if (block.regionNumber === undefined) {
-                    continue
-                  }
-                  const data = self.rpcDataMap.get(block.regionNumber)
-                  if (!data) {
-                    continue
-                  }
-                  const visStart = block.start - data.regionStart
-                  const visEnd = block.end - data.regionStart
-                  for (let i = 0; i < data.numFeatures; i++) {
-                    const fStart = data.featurePositions[i * 2]!
-                    const fEnd = data.featurePositions[i * 2 + 1]!
-                    if (fEnd > visStart && fStart < visEnd) {
-                      const s = data.featureScores[i]!
-                      if (s < min) {
-                        min = s
-                      }
-                      if (s > max) {
-                        max = s
-                      }
-                    }
-                  }
-                }
-                if (Number.isFinite(min) && Number.isFinite(max)) {
-                  self.setVisibleScoreRange([min, max])
-                }
+                prevPivot = pivot
               },
-              {
-                delay: 400,
-                name: 'LinearWiggleDisplay:visibleScoreRange',
-              },
+              { name: 'BicolorPivotChange' },
             ),
           )
 
@@ -357,6 +349,7 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+                const { bpPerPx } = view
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
@@ -373,7 +366,7 @@ export default function stateModelFactory(
                   })
                 }
                 if (needed.length > 0) {
-                  await fetchRegions(needed)
+                  await fetchRegions(needed, bpPerPx)
                 }
               },
               {

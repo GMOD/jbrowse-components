@@ -185,6 +185,8 @@ export class WebGLHicRenderer {
       gl.ONE,
       gl.ONE_MINUS_SRC_ALPHA,
     )
+
+    gl.useProgram(this.program)
   }
 
   private createShader(type: number, source: string) {
@@ -334,8 +336,6 @@ export class WebGLHicRenderer {
     if (!this.vao || this.instanceCount === 0 || !this.colorRampTexture) {
       return
     }
-
-    gl.useProgram(this.program)
 
     gl.uniform1f(this.uniforms.u_binWidth!, binWidth)
     gl.uniform1f(this.uniforms.u_yScalar!, yScalar)

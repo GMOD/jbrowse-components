@@ -9,9 +9,15 @@
 export interface WebGLMultiWiggleSourceData {
   name: string
   color: string
-  featurePositions: Uint32Array // [start, end] pairs as offsets from regionStart
+  featurePositions: Uint32Array
   featureScores: Float32Array
   numFeatures: number
+  posFeaturePositions: Uint32Array
+  posFeatureScores: Float32Array
+  posNumFeatures: number
+  negFeaturePositions: Uint32Array
+  negFeatureScores: Float32Array
+  negNumFeatures: number
   scoreMin: number
   scoreMax: number
 }

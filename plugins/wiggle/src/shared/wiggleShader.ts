@@ -14,7 +14,6 @@ const RENDERING_TYPE_DENSITY: i32 = 1;
 const RENDERING_TYPE_LINE: i32 = 2;
 const SCALE_TYPE_LOG: i32 = 1;
 const VERTICES_PER_INSTANCE: u32 = 6u;
-const DENSITY_LOW_COLOR: vec3f = vec3f(0.93, 0.93, 0.93);
 
 fn hp_split_uint(value: u32) -> vec2f {
   let lo = value & HP_LOW_MASK;
@@ -144,7 +143,10 @@ fn vs_main(
   var color: vec3f;
   if (u.rendering_type == RENDERING_TYPE_DENSITY) {
     let norm = normalize_score(inst.score, u.domain_y, u.scale_type);
-    color = mix(DENSITY_LOW_COLOR, inst_color, norm);
+    let zero_norm = normalize_score(0.0, u.domain_y, u.scale_type);
+    let max_dist = max(zero_norm, 1.0 - zero_norm);
+    let t = abs(norm - zero_norm) / max(max_dist, 0.0001);
+    color = mix(vec3f(1.0), inst_color, t);
   } else {
     color = inst_color;
   }

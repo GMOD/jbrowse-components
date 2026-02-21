@@ -7,6 +7,7 @@ interface RenderWebGLWiggleDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
+  bicolorPivot?: number
 }
 
 export default class RenderWebGLWiggleData extends RpcMethodType {

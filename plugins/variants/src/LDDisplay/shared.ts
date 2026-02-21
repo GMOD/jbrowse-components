@@ -1,4 +1,7 @@
+import { createElement } from 'react'
 import type React from 'react'
+
+import LDTooLargeMessage from './components/LDTooLargeMessage.tsx'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -165,6 +168,19 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
+      regionTooLargeState: false,
+      /**
+       * #volatile
+       */
+      regionTooLargeReason: '',
+      /**
+       * #volatile
+       * When true, skip the SNP count limit on next render
+       */
+      forceLoad: false,
+      /**
+       * #volatile
+       */
       statusMessage: undefined as string | undefined,
       /**
        * #volatile
@@ -228,6 +244,13 @@ export default function sharedModelFactory(
        */
       setLoading(loading: boolean) {
         self.loading = loading
+      },
+      setRegionTooLarge(state: boolean, reason = '') {
+        self.regionTooLargeState = state
+        self.regionTooLargeReason = reason
+      },
+      setForceLoad(f: boolean) {
+        self.forceLoad = f
       },
       /**
        * #action
@@ -427,7 +450,13 @@ export default function sharedModelFactory(
        * #getter
        */
       get regionTooLarge() {
-        return false
+        return self.regionTooLargeState
+      },
+      get snpCountLimit(): number {
+        return getConf(self, 'snpCountLimit')
+      },
+      regionCannotBeRendered() {
+        return createElement(LDTooLargeMessage, { model: self })
       },
       /**
        * #getter

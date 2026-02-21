@@ -7,12 +7,16 @@
  */
 
 export interface WebGLWiggleDataResult {
-  // Integer reference point for all positions (floor of view region start).
-  // All position data in this result is stored as integer offsets from regionStart.
   regionStart: number
-  featurePositions: Uint32Array // [start, end] pairs as offsets from regionStart
-  featureScores: Float32Array // score values
+  featurePositions: Uint32Array
+  featureScores: Float32Array
   numFeatures: number
+  posFeaturePositions: Uint32Array
+  posFeatureScores: Float32Array
+  posNumFeatures: number
+  negFeaturePositions: Uint32Array
+  negFeatureScores: Float32Array
+  negNumFeatures: number
   scoreMin: number
   scoreMax: number
 }

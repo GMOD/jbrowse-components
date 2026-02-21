@@ -34,7 +34,6 @@ export interface MultiWiggleDisplayModel {
   scaleType: string
   posColor: string
   negColor: string
-  bicolorPivot: number
   renderingType: string
   numSources: number
   rowHeightTooSmallForScalebar: boolean
@@ -148,7 +147,6 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     const modelSources = model.sources
     const posColor = parseColor(model.posColor)
     const negColor = parseColor(model.negColor)
-    const { bicolorPivot } = model
     const activeRegions: number[] = []
     for (const [regionNumber, data] of dataMap) {
       activeRegions.push(regionNumber)
@@ -164,36 +162,20 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         if (!rpcSource) {
           continue
         }
-        const posPositions: number[] = []
-        const posScores: number[] = []
-        const negPositions: number[] = []
-        const negScores: number[] = []
-        for (let i = 0; i < rpcSource.numFeatures; i++) {
-          const score = rpcSource.featureScores[i]!
-          const start = rpcSource.featurePositions[i * 2]!
-          const end = rpcSource.featurePositions[i * 2 + 1]!
-          if (score >= bicolorPivot) {
-            posPositions.push(start, end)
-            posScores.push(score)
-          } else {
-            negPositions.push(start, end)
-            negScores.push(score)
-          }
-        }
-        if (posScores.length > 0) {
+        if (rpcSource.posNumFeatures > 0) {
           sourcesData.push({
-            featurePositions: new Uint32Array(posPositions),
-            featureScores: new Float32Array(posScores),
-            numFeatures: posScores.length,
+            featurePositions: rpcSource.posFeaturePositions,
+            featureScores: rpcSource.posFeatureScores,
+            numFeatures: rpcSource.posNumFeatures,
             color: posColor,
             rowIndex: idx,
           })
         }
-        if (negScores.length > 0) {
+        if (rpcSource.negNumFeatures > 0) {
           sourcesData.push({
-            featurePositions: new Uint32Array(negPositions),
-            featureScores: new Float32Array(negScores),
-            numFeatures: negScores.length,
+            featurePositions: rpcSource.negFeaturePositions,
+            featureScores: rpcSource.negFeatureScores,
+            numFeatures: rpcSource.negNumFeatures,
             color: negColor,
             rowIndex: idx,
           })
@@ -203,7 +185,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
     }
     renderer.pruneRegions(activeRegions)
-  }, [model.rpcDataMap, model.sources, model.posColor, model.negColor, model.bicolorPivot, ready])
+  }, [model.rpcDataMap, model.sources, model.posColor, model.negColor, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -233,7 +215,6 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     model.height,
     model.posColor,
     model.negColor,
-    model.bicolorPivot,
     model.scaleType,
     model.renderingType,
     view.visibleRegions,

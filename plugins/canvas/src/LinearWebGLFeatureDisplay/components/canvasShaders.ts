@@ -89,7 +89,7 @@ ${HP_WGSL}
 struct LineInstance {
   start_end: vec2u,
   y: f32,
-  _pad: f32,
+  direction: f32,
   color: vec4f,
 }
 

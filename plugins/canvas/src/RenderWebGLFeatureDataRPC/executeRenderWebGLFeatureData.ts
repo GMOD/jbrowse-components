@@ -10,7 +10,7 @@
  */
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { dedupe, measureText, updateStatus } from '@jbrowse/core/util'
+import { measureText, updateStatus } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
@@ -296,9 +296,7 @@ function collectRenderData(
       // Draw connecting line for intron gaps only (not inside boxes)
       const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
       const lineY = transcriptTopPx + transcriptLayout.height / 2
-      const sortedChildren = [...transcriptLayout.children].sort(
-        (a, b) => a.feature.get('start') - b.feature.get('start'),
-      )
+      const sortedChildren = transcriptLayout.children
       if (sortedChildren.length === 0) {
         lines.push({
           startOffset: transcriptStart - regionStart,
@@ -665,8 +663,13 @@ export async function executeRenderWebGLFeatureData({
     heightMultiplier: mockConfig.displayMode === 'compact' ? 0.6 : 1,
   }
 
-  const deduped = dedupe(featuresArray, (f: Feature) => f.id())
-  const features = new Map(deduped.map(f => [f.id(), f]))
+  const features = new Map<string, Feature>()
+  for (const f of featuresArray) {
+    const id = f.id()
+    if (!features.has(id)) {
+      features.set(id, f)
+    }
+  }
 
   const { layoutRecords, maxY } = await updateStatus(
     'Computing layout',
@@ -875,7 +878,8 @@ export async function executeRenderWebGLFeatureData({
   const rectHeights = new Float32Array(rects.length)
   const rectColors = new Uint8Array(rects.length * 4)
 
-  for (const [i, rect] of rects.entries()) {
+  for (let i = 0; i < rects.length; i++) {
+    const rect = rects[i]!
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
     rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
     rectYs[i] = rect.y
@@ -888,7 +892,8 @@ export async function executeRenderWebGLFeatureData({
   const lineColors = new Uint8Array(lines.length * 4)
   const lineDirections = new Int8Array(lines.length)
 
-  for (const [i, line] of lines.entries()) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
     linePositions[i * 2] = Math.max(0, line.startOffset)
     linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
     lineYs[i] = line.y
@@ -902,7 +907,8 @@ export async function executeRenderWebGLFeatureData({
   const arrowHeights = new Float32Array(arrows.length)
   const arrowColors = new Uint8Array(arrows.length * 4)
 
-  for (const [i, arrow] of arrows.entries()) {
+  for (let i = 0; i < arrows.length; i++) {
+    const arrow = arrows[i]!
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction

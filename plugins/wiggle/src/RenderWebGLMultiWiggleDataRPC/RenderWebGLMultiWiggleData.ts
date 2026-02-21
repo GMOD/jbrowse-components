@@ -13,6 +13,7 @@ interface RenderWebGLMultiWiggleDataArgs {
   adapterConfig: Record<string, unknown>
   region: Region
   sources?: SourceInfo[]
+  bicolorPivot?: number
 }
 
 export default class RenderWebGLMultiWiggleData extends RpcMethodType {

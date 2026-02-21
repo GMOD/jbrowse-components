@@ -220,6 +220,7 @@ const LDCanvas = observer(function LDCanvas({
     snps,
     lastDrawnOffsetPx,
     signedLD,
+    loading,
   } = model
 
   const triangleHeight = width / 2
@@ -357,7 +358,7 @@ const LDCanvas = observer(function LDCanvas({
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container || !flatbushIndex || !flatbushItems.length) {
+      if (!container || !flatbushIndex || !flatbushItems.length || loading) {
         setHoveredItem(undefined)
         setMousePosition(undefined)
         return
@@ -401,6 +402,7 @@ const LDCanvas = observer(function LDCanvas({
       lineZoneHeight,
       viewScale,
       viewOffsetX,
+      loading,
     ],
   )
 

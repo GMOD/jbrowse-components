@@ -39,6 +39,7 @@ interface ExecuteParams {
     adapterConfig: Record<string, unknown>
     region: Region
     sources?: SourceInfo[]
+    bicolorPivot?: number
     stopToken?: string
   }
 }
@@ -52,6 +53,7 @@ export async function executeRenderWebGLMultiWiggleData({
     adapterConfig,
     region,
     sources: sourcesArg,
+    bicolorPivot = 0,
     stopToken,
   } = args
 
@@ -112,6 +114,10 @@ export async function executeRenderWebGLMultiWiggleData({
 
     const featurePositions = new Uint32Array(features.length * 2)
     const featureScores = new Float32Array(features.length)
+    const posPositions: number[] = []
+    const posScores: number[] = []
+    const negPositions: number[] = []
+    const negScores: number[] = []
 
     let scoreMin = Number.POSITIVE_INFINITY
     let scoreMax = Number.NEGATIVE_INFINITY
@@ -122,9 +128,19 @@ export async function executeRenderWebGLMultiWiggleData({
       const end = feature.get('end')
       const score = feature.get('score') ?? 0
 
-      featurePositions[j * 2] = Math.floor(start - regionStart)
-      featurePositions[j * 2 + 1] = Math.floor(end - regionStart)
+      const startOffset = Math.floor(start - regionStart)
+      const endOffset = Math.floor(end - regionStart)
+      featurePositions[j * 2] = startOffset
+      featurePositions[j * 2 + 1] = endOffset
       featureScores[j] = score
+
+      if (score >= bicolorPivot) {
+        posPositions.push(startOffset, endOffset)
+        posScores.push(score)
+      } else {
+        negPositions.push(startOffset, endOffset)
+        negScores.push(score)
+      }
 
       if (score < scoreMin) {
         scoreMin = score
@@ -134,7 +150,6 @@ export async function executeRenderWebGLMultiWiggleData({
       }
     }
 
-    // Handle empty source
     if (features.length === 0) {
       scoreMin = 0
       scoreMax = 0
@@ -153,6 +168,12 @@ export async function executeRenderWebGLMultiWiggleData({
       featurePositions,
       featureScores,
       numFeatures: features.length,
+      posFeaturePositions: new Uint32Array(posPositions),
+      posFeatureScores: new Float32Array(posScores),
+      posNumFeatures: posScores.length,
+      negFeaturePositions: new Uint32Array(negPositions),
+      negFeatureScores: new Float32Array(negScores),
+      negNumFeatures: negScores.length,
       scoreMin,
       scoreMax,
     })

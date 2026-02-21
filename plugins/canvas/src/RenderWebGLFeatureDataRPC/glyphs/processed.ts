@@ -35,11 +35,13 @@ export const processedTranscriptGlyph: Glyph = {
     const arrowPadding = getStrandArrowPadding(strand, reversed)
 
     const subparts = getSubparts(feature, config)
-    const children = subparts.map(child => {
-      const childType = child.get('type')
-      const glyphType = childType === 'CDS' ? 'CDS' : 'Box'
-      return layoutChild(child, feature, args, glyphType)
-    })
+    const children = subparts
+      .map(child => {
+        const childType = child.get('type')
+        const glyphType = childType === 'CDS' ? 'CDS' : 'Box'
+        return layoutChild(child, feature, args, glyphType)
+      })
+      .sort((a, b) => a.feature.get('start') - b.feature.get('start'))
 
     return {
       feature,

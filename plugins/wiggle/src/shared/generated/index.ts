@@ -37,7 +37,6 @@ const int RENDERING_TYPE_DENSITY = 1;
 const int RENDERING_TYPE_LINE = 2;
 const int SCALE_TYPE_LOG = 1;
 const uint VERTICES_PER_INSTANCE = 6u;
-const vec3 DENSITY_LOW_COLOR = vec3(0.93, 0.93, 0.93);
 
 uniform highp usampler2D u_instanceData;
 
@@ -254,18 +253,23 @@ void main() {
         vec2 _e211 = _group_0_binding_1_vs.domain_y;
         int _e214 = _group_0_binding_1_vs.scale_type;
         float _e215 = normalize_score(inst.score, _e211, _e214);
-        color = mix(DENSITY_LOW_COLOR, inst_color, _e215);
+        vec2 _e219 = _group_0_binding_1_vs.domain_y;
+        int _e222 = _group_0_binding_1_vs.scale_type;
+        float _e223 = normalize_score(0.0, _e219, _e222);
+        float max_dist = max(_e223, (1.0 - _e223));
+        float t = (abs((_e215 - _e223)) / max(max_dist, 0.0001));
+        color = mix(vec3(1.0), inst_color, t);
     } else {
         color = inst_color;
     }
-    float _e220 = sx;
-    float _e221 = sy;
-    out_.position = vec4(_e220, _e221, 0.0, 1.0);
-    vec3 _e226 = color;
-    out_.color = vec4(_e226, 1.0);
-    VertexOutput _e229 = out_;
-    gl_Position = _e229.position;
-    _vs2fs_location0 = _e229.color;
+    float _e237 = sx;
+    float _e238 = sy;
+    out_.position = vec4(_e237, _e238, 0.0, 1.0);
+    vec3 _e243 = color;
+    out_.color = vec4(_e243, 1.0);
+    VertexOutput _e246 = out_;
+    gl_Position = _e246.position;
+    _vs2fs_location0 = _e246.color;
     return;
 }
 
@@ -286,7 +290,6 @@ const int RENDERING_TYPE_DENSITY = 1;
 const int RENDERING_TYPE_LINE = 2;
 const int SCALE_TYPE_LOG = 1;
 const uint VERTICES_PER_INSTANCE = 6u;
-const vec3 DENSITY_LOW_COLOR = vec3(0.93, 0.93, 0.93);
 
 smooth in vec4 _vs2fs_location0;
 out vec4 _fs2p_location0;
