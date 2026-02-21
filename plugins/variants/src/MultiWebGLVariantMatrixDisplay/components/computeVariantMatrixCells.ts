@@ -3,6 +3,30 @@ import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
+function writeCell(
+  dst: {
+    featureIndices: Float32Array
+    rowIndices: Uint32Array
+    colors: Uint8Array
+  },
+  w: number,
+  src: {
+    featureIndices: Float32Array
+    rowIndices: Uint32Array
+    colors: Uint8Array
+  },
+  i: number,
+) {
+  dst.featureIndices[w] = src.featureIndices[i]!
+  dst.rowIndices[w] = src.rowIndices[i]!
+  const so = i * 4
+  const do_ = w * 4
+  dst.colors[do_] = src.colors[so]!
+  dst.colors[do_ + 1] = src.colors[so + 1]!
+  dst.colors[do_ + 2] = src.colors[so + 2]!
+  dst.colors[do_ + 3] = src.colors[so + 3]!
+}
+
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
 
@@ -55,6 +79,7 @@ export function computeVariantMatrixCells({
   const featureIndices = new Float32Array(maxCells)
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint8Array(maxCells * 4)
+  const isRef = new Uint8Array(maxCells)
 
   let cellCount = 0
 
@@ -113,6 +138,7 @@ export function computeVariantMatrixCells({
                   colors[ci * 4 + 1] = rgba[1]
                   colors[ci * 4 + 2] = rgba[2]
                   colors[ci * 4 + 3] = rgba[3]
+                  isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
                   cellCount++
                 }
               } else {
@@ -123,6 +149,7 @@ export function computeVariantMatrixCells({
                 colors[ci * 4 + 1] = 0
                 colors[ci * 4 + 2] = 0
                 colors[ci * 4 + 3] = 255
+                isRef[ci] = 0
                 cellCount++
               }
             }
@@ -163,6 +190,7 @@ export function computeVariantMatrixCells({
                 colors[ci * 4 + 1] = rgba[1]
                 colors[ci * 4 + 2] = rgba[2]
                 colors[ci * 4 + 3] = rgba[3]
+                isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
                 cellCount++
               }
             } else {
@@ -173,6 +201,7 @@ export function computeVariantMatrixCells({
               colors[ci * 4 + 1] = 0
               colors[ci * 4 + 2] = 0
               colors[ci * 4 + 3] = 255
+              isRef[ci] = 0
               cellCount++
             }
           }
@@ -231,6 +260,7 @@ export function computeVariantMatrixCells({
                 colors[ci * 4 + 1] = rgba[1]
                 colors[ci * 4 + 2] = rgba[2]
                 colors[ci * 4 + 3] = rgba[3]
+                isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
                 cellCount++
               }
             }
@@ -271,6 +301,7 @@ export function computeVariantMatrixCells({
               colors[ci * 4 + 1] = rgba[1]
               colors[ci * 4 + 2] = rgba[2]
               colors[ci * 4 + 3] = rgba[3]
+              isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
               cellCount++
             }
           }
@@ -279,41 +310,24 @@ export function computeVariantMatrixCells({
     }
   }
 
-  const refRGBA = colorToRGBA(REFERENCE_COLOR)
+  const src = { featureIndices, rowIndices, colors }
   const outFeatureIndices = new Float32Array(cellCount)
   const outRowIndices = new Uint32Array(cellCount)
   const outColors = new Uint8Array(cellCount * 4)
+  const dst = {
+    featureIndices: outFeatureIndices,
+    rowIndices: outRowIndices,
+    colors: outColors,
+  }
   let w = 0
   for (let i = 0; i < cellCount; i++) {
-    const off = i * 4
-    if (
-      colors[off] === refRGBA[0] &&
-      colors[off + 1] === refRGBA[1] &&
-      colors[off + 2] === refRGBA[2]
-    ) {
-      outFeatureIndices[w] = featureIndices[i]
-      outRowIndices[w] = rowIndices[i]
-      outColors[w * 4] = colors[off]
-      outColors[w * 4 + 1] = colors[off + 1]
-      outColors[w * 4 + 2] = colors[off + 2]
-      outColors[w * 4 + 3] = colors[off + 3]
-      w++
+    if (isRef[i]) {
+      writeCell(dst, w++, src, i)
     }
   }
   for (let i = 0; i < cellCount; i++) {
-    const off = i * 4
-    if (
-      colors[off] !== refRGBA[0] ||
-      colors[off + 1] !== refRGBA[1] ||
-      colors[off + 2] !== refRGBA[2]
-    ) {
-      outFeatureIndices[w] = featureIndices[i]
-      outRowIndices[w] = rowIndices[i]
-      outColors[w * 4] = colors[off]
-      outColors[w * 4 + 1] = colors[off + 1]
-      outColors[w * 4 + 2] = colors[off + 2]
-      outColors[w * 4 + 3] = colors[off + 3]
-      w++
+    if (!isRef[i]) {
+      writeCell(dst, w++, src, i)
     }
   }
 

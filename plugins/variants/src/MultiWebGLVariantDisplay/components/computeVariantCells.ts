@@ -52,7 +52,6 @@ export interface FlatbushItem {
 }
 
 interface TempCell {
-  position: [number, number]
   genomicStart: number
   genomicEnd: number
   rowIndex: number
@@ -154,7 +153,6 @@ export function computeVariantCells({
             if (c) {
               const rgba = getCachedRGBA(c)
               allCells.push({
-                position: [start - regionStart, end - regionStart],
                 genomicStart: start,
                 genomicEnd: end,
                 rowIndex: j,
@@ -168,7 +166,6 @@ export function computeVariantCells({
             }
           } else {
             allCells.push({
-              position: [start - regionStart, end - regionStart],
               genomicStart: start,
               genomicEnd: end,
               rowIndex: j,
@@ -229,7 +226,6 @@ export function computeVariantCells({
           if (c) {
             const rgba = getCachedRGBA(c)
             allCells.push({
-              position: [start - regionStart, end - regionStart],
               genomicStart: start,
               genomicEnd: end,
               rowIndex: j,
@@ -258,8 +254,8 @@ export function computeVariantCells({
   let cellCount = 0
   const flatbushItems: FlatbushItem[] = []
   function writeCell(cell: TempCell) {
-    positions[cellCount * 2] = cell.position[0]
-    positions[cellCount * 2 + 1] = cell.position[1]
+    positions[cellCount * 2] = cell.genomicStart - regionStart
+    positions[cellCount * 2 + 1] = cell.genomicEnd - regionStart
     rowIndices[cellCount] = cell.rowIndex
     colors[cellCount * 4] = cell.color[0]
     colors[cellCount * 4 + 1] = cell.color[1]
@@ -291,7 +287,12 @@ export function computeVariantCells({
   if (cellCount > 0) {
     for (let i = 0; i < cellCount; i++) {
       const item = flatbushItems[i]!
-      flatbush.add(item.genomicStart, rowIndices[i]!, item.genomicEnd, rowIndices[i]! + 1)
+      flatbush.add(
+        item.genomicStart,
+        rowIndices[i]!,
+        item.genomicEnd,
+        rowIndices[i]! + 1,
+      )
     }
   } else {
     flatbush.add(0, 0, 0, 0)

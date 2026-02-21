@@ -306,7 +306,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      isScrolling: false,
     }))
     .views(self => ({
       /**
@@ -852,9 +851,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setIsScrolling(val: boolean) {
-        self.isScrolling = val
-      },
       /**
        * #action
        */

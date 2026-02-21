@@ -206,9 +206,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
           alleles,
           featureName: info.name,
           description:
-            info.alt.length >= 3
-              ? 'multiple ALT alleles'
-              : info.description,
+            info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
           length: getBpDisplayStr(info.length),
           name: item.sourceName,
           featureId: item.featureId,
