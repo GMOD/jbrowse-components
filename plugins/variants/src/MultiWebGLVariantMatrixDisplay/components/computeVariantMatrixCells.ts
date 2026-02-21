@@ -2,11 +2,10 @@ import { set1 } from '@jbrowse/core/ui/colors'
 
 import { REFERENCE_COLOR, UNPHASED_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../../shared/minorAlleleFrequencyUtils.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
+import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
-import type { Feature } from '@jbrowse/core/util'
 
 interface FeatureData {
   alt: string[]
@@ -54,29 +53,18 @@ function getPhasedColor(
 }
 
 export function computeVariantMatrixCells({
-  features,
+  mafs,
   sources,
   renderingMode,
-  minorAlleleFrequencyFilter,
-  lengthCutoffFilter,
+  genotypesCache,
 }: {
-  features: Feature[]
+  mafs: MAFFilteredFeature[]
   sources: Source[]
   renderingMode: string
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
+  genotypesCache: Map<string, Record<string, string>>
 }): MatrixCellData {
-  const genotypesCache = new Map<string, Record<string, string>>()
   const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
-
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    features,
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-    genotypesCache,
-    splitCache,
-  })
 
   const numFeatures = mafs.length
   const maxCells = numFeatures * sources.length
@@ -101,10 +89,9 @@ export function computeVariantMatrixCells({
           string,
           Record<string, string[]>
         >
-        // build genotypes record from samples GT field
         const genotypes = {} as Record<string, string>
-        for (const [sampleName, sampleData] of Object.entries(samp)) {
-          const gt = sampleData.GT?.[0]
+        for (const sampleName in samp) {
+          const gt = samp[sampleName]!.GT?.[0]
           if (gt) {
             genotypes[sampleName] = gt
           }
@@ -119,8 +106,8 @@ export function computeVariantMatrixCells({
           genotypes,
         })
 
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
+        for (let j = 0; j < sources.length; j++) {
+          const source = sources[j]!
           const { name, HP, baseName } = source
           const sampleName = baseName ?? name
           const s = samp[sampleName]
@@ -146,7 +133,6 @@ export function computeVariantMatrixCells({
                   cellCount++
                 }
               } else {
-                // unphased - black
                 const ci = cellCount
                 featureIndices[ci] = idx
                 rowIndices[ci] = j
@@ -174,8 +160,8 @@ export function computeVariantMatrixCells({
           featureId,
           genotypes: samp,
         })
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
+        for (let j = 0; j < sources.length; j++) {
+          const source = sources[j]!
           const { name, HP, baseName } = source
           const sampleName = baseName ?? name
           const genotype = samp[sampleName]
@@ -198,7 +184,6 @@ export function computeVariantMatrixCells({
                 cellCount++
               }
             } else {
-              // unphased - black
               const ci = cellCount
               featureIndices[ci] = idx
               rowIndices[ci] = j
@@ -213,7 +198,6 @@ export function computeVariantMatrixCells({
       }
     }
   } else {
-    // alleleCount mode
     for (let idx = 0; idx < numFeatures; idx++) {
       const { feature, mostFrequentAlt } = mafs[idx]!
       const featureId = feature.id()
@@ -227,8 +211,8 @@ export function computeVariantMatrixCells({
           Record<string, string[]>
         >
         const genotypes = {} as Record<string, string>
-        for (const [sampleName, sampleData] of Object.entries(samp)) {
-          const gt = sampleData.GT?.[0]
+        for (const sampleName in samp) {
+          const gt = samp[sampleName]!.GT?.[0]
           if (gt) {
             genotypes[sampleName] = gt
           }
@@ -243,8 +227,8 @@ export function computeVariantMatrixCells({
           genotypes,
         })
 
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
+        for (let j = 0; j < sources.length; j++) {
+          const source = sources[j]!
           const sampleName = source.baseName ?? source.name
           const s = samp[sampleName]
           if (s) {
@@ -286,8 +270,8 @@ export function computeVariantMatrixCells({
           featureId,
           genotypes: samp,
         })
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
+        for (let j = 0; j < sources.length; j++) {
+          const source = sources[j]!
           const sampleName = source.baseName ?? source.name
           const genotype = samp[sampleName]
           if (genotype) {

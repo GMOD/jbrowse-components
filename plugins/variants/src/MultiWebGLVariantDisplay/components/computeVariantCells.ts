@@ -2,13 +2,11 @@ import { set1 } from '@jbrowse/core/ui/colors'
 
 import { REFERENCE_COLOR, UNPHASED_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../../shared/minorAlleleFrequencyUtils.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
+import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
-import type { Feature } from '@jbrowse/core/util'
 
-// shape type constants
 const SHAPE_RECT = 0
 const SHAPE_TRI_RIGHT = 1
 const SHAPE_TRI_LEFT = 2
@@ -82,34 +80,22 @@ function getPhasedColor(
 }
 
 export function computeVariantCells({
-  features,
+  mafs,
   sources,
   renderingMode,
-  minorAlleleFrequencyFilter,
-  lengthCutoffFilter,
   referenceDrawingMode,
+  genotypesCache,
 }: {
-  features: Feature[]
+  mafs: MAFFilteredFeature[]
   sources: Source[]
   renderingMode: string
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
   referenceDrawingMode: string
+  genotypesCache: Map<string, Record<string, string>>
 }): VariantCellData {
-  const genotypesCache = new Map<string, Record<string, string>>()
   const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
   const drawRef = referenceDrawingMode === 'draw'
 
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    features,
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-    genotypesCache,
-    splitCache,
-  })
-
-  // estimate max cells (features * sources)
   const maxCells = mafs.length * sources.length
   const positions = new Uint32Array(maxCells * 2)
   const rowIndices = new Uint32Array(maxCells)
@@ -118,7 +104,6 @@ export function computeVariantCells({
 
   let cellCount = 0
 
-  // find region start from features
   let regionStart = Number.MAX_SAFE_INTEGER
   for (const { feature } of mafs) {
     const s = feature.get('start')
@@ -166,8 +151,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (const [j, source_] of sources.entries()) {
-        const source = source_
+      for (let j = 0; j < sources.length; j++) {
+        const source = sources[j]!
         const { name, HP, baseName } = source
         const sampleName = baseName ?? name
         const genotype = samp[sampleName]
@@ -193,7 +178,6 @@ export function computeVariantCells({
               renderedGenotypes[name] = genotype
             }
           } else {
-            // unphased - draw black
             const idx = cellCount
             positions[idx * 2] = start - regionStart
             positions[idx * 2 + 1] = end - regionStart
@@ -219,7 +203,6 @@ export function computeVariantCells({
       }
     }
   } else {
-    // alleleCount mode
     for (const { mostFrequentAlt, feature } of mafs) {
       const featureId = feature.id()
       const start = feature.get('start')
@@ -252,7 +235,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (const [j, source] of sources.entries()) {
+      for (let j = 0; j < sources.length; j++) {
+        const source = sources[j]!
         const { name } = source
         const genotype = samp[name]
         if (genotype) {

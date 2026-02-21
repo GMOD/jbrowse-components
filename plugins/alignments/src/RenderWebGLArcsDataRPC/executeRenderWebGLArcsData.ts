@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { dedupe, groupBy, max, min } from '@jbrowse/core/util'
+import { dedupe, groupBy, max, min, updateStatus } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -43,6 +43,7 @@ interface ExecuteParams {
     drawInter: boolean
     drawLongRange: boolean
     stopToken?: string
+    statusCallback?: (msg: string) => void
   }
 }
 
@@ -183,11 +184,11 @@ export async function executeRenderWebGLArcsData({
     drawInter,
     drawLongRange,
     stopToken,
+    statusCallback,
   } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  // Get adapter
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
@@ -196,9 +197,13 @@ export async function executeRenderWebGLArcsData({
     dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
   }
 
-  // Fetch features
-  const featuresArray = await firstValueFrom(
-    dataAdapter.getFeaturesInMultipleRegions([region], args).pipe(toArray()),
+  const featuresArray = await updateStatus(
+    'Processing alignments',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeaturesInMultipleRegions([region], args).pipe(toArray()),
+      ),
   )
 
   checkStopToken2(stopTokenCheck)

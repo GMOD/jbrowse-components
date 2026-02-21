@@ -274,6 +274,12 @@ function getMostFrequentAlt(alleleCounts: Record<string, number>) {
   return mostFrequentAlt
 }
 
+export interface MAFFilteredFeature {
+  feature: Feature
+  mostFrequentAlt: string
+  alleleCounts: Record<string, number>
+}
+
 export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   features,
   minorAlleleFrequencyFilter,
@@ -289,11 +295,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   genotypesCache?: Map<string, Record<string, string>>
   splitCache?: Record<string, string[]>
 }) {
-  const results = [] as {
-    feature: Feature
-    mostFrequentAlt: string
-    alleleCounts: Record<string, number>
-  }[]
+  const results: MAFFilteredFeature[] = []
 
   for (const feature of features) {
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {

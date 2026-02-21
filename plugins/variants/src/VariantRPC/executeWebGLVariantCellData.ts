@@ -8,28 +8,19 @@ import { computeVariantMatrixCells } from '../MultiWebGLVariantMatrixDisplay/com
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { SampleInfo } from '../shared/types.ts'
+import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { GetWebGLCellDataArgs } from './types.ts'
-import type { Feature } from '@jbrowse/core/util'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function computeSampleInfo(
-  rawFeatures: Feature[],
-  minorAlleleFrequencyFilter: number,
-  lengthCutoffFilter: number,
+  mafs: MAFFilteredFeature[],
+  genotypesCache: Map<string, Record<string, string>>,
 ) {
-  const genotypesCache = new Map<string, Record<string, string>>()
   const sampleInfo = {} as Record<string, SampleInfo>
   let hasPhased = false
 
-  const features = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-    features: rawFeatures,
-    genotypesCache,
-  })
-
-  for (const { feature } of features) {
+  for (const { feature } of mafs) {
     const featureId = feature.id()
     let samp = genotypesCache.get(featureId)
     if (!samp) {
@@ -37,7 +28,8 @@ function computeSampleInfo(
       genotypesCache.set(featureId, samp)
     }
 
-    for (const [key, val] of Object.entries(samp)) {
+    for (const key in samp) {
+      const val = samp[key]!
       const isPhased = val.includes('|')
       hasPhased ||= isPhased
       let ploidy = 1
@@ -49,14 +41,18 @@ function computeSampleInfo(
         }
       }
       const existing = sampleInfo[key]
-      sampleInfo[key] = {
-        maxPloidy: Math.max(existing?.maxPloidy ?? 0, ploidy),
-        isPhased: existing?.isPhased || isPhased,
+      if (existing) {
+        if (ploidy > existing.maxPloidy) {
+          existing.maxPloidy = ploidy
+        }
+        existing.isPhased ||= isPhased
+      } else {
+        sampleInfo[key] = { maxPloidy: ploidy, isPhased }
       }
     }
   }
 
-  const simplifiedFeatures = features.map(({ feature }) => ({
+  const simplifiedFeatures = mafs.map(({ feature }) => ({
     id: feature.id(),
     data: {
       start: feature.get('start'),
@@ -103,11 +99,21 @@ export async function executeWebGLVariantCellData({
     ),
   )
 
+  const genotypesCache = new Map<string, Record<string, string>>()
+
+  const mafs = await updateStatus('Filtering variants', statusCallback, () =>
+    getFeaturesThatPassMinorAlleleFrequencyFilter({
+      features: rawFeatures,
+      minorAlleleFrequencyFilter,
+      lengthCutoffFilter,
+      genotypesCache,
+    }),
+  )
+
   const { sampleInfo, hasPhased, simplifiedFeatures } = await updateStatus(
     'Computing sample info',
     statusCallback,
-    () =>
-      computeSampleInfo(rawFeatures, minorAlleleFrequencyFilter, lengthCutoffFilter),
+    () => computeSampleInfo(mafs, genotypesCache),
   )
 
   if (mode === 'regular') {
@@ -116,12 +122,11 @@ export async function executeWebGLVariantCellData({
       statusCallback,
       () =>
         computeVariantCells({
-          features: rawFeatures,
+          mafs,
           sources,
           renderingMode,
-          minorAlleleFrequencyFilter,
-          lengthCutoffFilter,
           referenceDrawingMode: referenceDrawingMode ?? 'skip',
+          genotypesCache,
         }),
     )
 
@@ -146,11 +151,10 @@ export async function executeWebGLVariantCellData({
       statusCallback,
       () =>
         computeVariantMatrixCells({
-          features: rawFeatures,
+          mafs,
           sources,
           renderingMode,
-          minorAlleleFrequencyFilter,
-          lengthCutoffFilter,
+          genotypesCache,
         }),
     )
 
