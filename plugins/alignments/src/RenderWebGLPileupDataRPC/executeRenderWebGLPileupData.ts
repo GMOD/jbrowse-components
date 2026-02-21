@@ -19,6 +19,7 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { parseCigar2 } from '../MismatchParser/index.ts'
 import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
@@ -34,7 +35,6 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
-import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {

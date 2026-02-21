@@ -27,8 +27,7 @@ export class PileupRenderer {
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
 
-    const arcsOffset =
-      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const arcsOffset = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const coverageOffset =
       (state.showCoverage ? state.coverageHeight : 0) + arcsOffset
 
@@ -84,7 +83,7 @@ export class PileupRenderer {
 
     gl.useProgram(this.parent.readProgram)
     // WARNING: u_zero must be 0.0 — HP shader precision guard. See utils.ts.
-    gl.uniform1f(this.parent.readUniforms.u_zero!, 0.0)
+    gl.uniform1f(this.parent.readUniforms.u_zero!, 0)
     gl.uniform3f(
       this.parent.readUniforms.u_bpRangeX!,
       bpStartHi,
@@ -116,8 +115,7 @@ export class PileupRenderer {
     const mode = state.renderingMode ?? 'pileup'
     const isChainMode = mode === 'linkedRead'
     gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
-    const showStroke =
-      state.showOutline && state.featureHeight >= 4 ? 1 : 0
+    const showStroke = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     gl.uniform1i(this.parent.readUniforms.u_showStroke!, showStroke)
 
     gl.uniform3f(
@@ -162,10 +160,7 @@ export class PileupRenderer {
       this.parent.readUniforms.u_insertSizeUpper!,
       stats?.upper ?? 1e9,
     )
-    gl.uniform1f(
-      this.parent.readUniforms.u_insertSizeLower!,
-      stats?.lower ?? 0,
-    )
+    gl.uniform1f(this.parent.readUniforms.u_insertSizeLower!, stats?.lower ?? 0)
 
     gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
 
@@ -556,17 +551,46 @@ export class PileupRenderer {
     let outlineData: Float32Array
     if (showChevron && strand === 1) {
       outlineData = new Float32Array([
-        sx1, syTop, sx2, syTop, sx2 + chevronClip, syMid,
-        sx2, syBot, sx1, syBot, sx1, syTop,
+        sx1,
+        syTop,
+        sx2,
+        syTop,
+        sx2 + chevronClip,
+        syMid,
+        sx2,
+        syBot,
+        sx1,
+        syBot,
+        sx1,
+        syTop,
       ])
     } else if (showChevron && strand === -1) {
       outlineData = new Float32Array([
-        sx1, syTop, sx2, syTop, sx2, syBot,
-        sx1, syBot, sx1 - chevronClip, syMid, sx1, syTop,
+        sx1,
+        syTop,
+        sx2,
+        syTop,
+        sx2,
+        syBot,
+        sx1,
+        syBot,
+        sx1 - chevronClip,
+        syMid,
+        sx1,
+        syTop,
       ])
     } else {
       outlineData = new Float32Array([
-        sx1, syTop, sx2, syTop, sx2, syBot, sx1, syBot, sx1, syTop,
+        sx1,
+        syTop,
+        sx2,
+        syTop,
+        sx2,
+        syBot,
+        sx1,
+        syBot,
+        sx1,
+        syTop,
       ])
     }
 

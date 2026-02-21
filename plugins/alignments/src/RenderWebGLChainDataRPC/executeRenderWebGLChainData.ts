@@ -19,10 +19,10 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { parseCigar2 } from '../MismatchParser/index.ts'
 import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
 import { getMethBins } from '../ModificationParser/getMethBins.ts'
@@ -38,7 +38,6 @@ import {
   computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
-import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
@@ -570,7 +569,6 @@ export async function executeRenderWebGLChainData({
     distance: number
     chainIdx: number
   }[] = []
-  let maxDistance = Number.MIN_VALUE
 
   for (const [chainIdx, chain_] of chains.entries()) {
     const chain = chain_
@@ -594,13 +592,6 @@ export async function executeRenderWebGLChainData({
     }
 
     chainBounds.push({ minStart, maxEnd, distance, chainIdx })
-    if (distance > 0) {
-      maxDistance = Math.max(maxDistance, distance)
-    }
-  }
-
-  if (maxDistance === Number.MIN_VALUE) {
-    maxDistance = DEFAULT_MAX_DISTANCE
   }
 
   // Compute Y layout based on mode
@@ -1011,7 +1002,6 @@ export async function executeRenderWebGLChainData({
 
     // Connecting line data
     ...connectingLineArrays,
-    maxDistance,
 
     // Chain spatial index for hit testing
     chainFlatbushData,

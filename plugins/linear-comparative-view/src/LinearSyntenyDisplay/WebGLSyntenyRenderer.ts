@@ -1,20 +1,25 @@
 import {
-  EDGE_SEGMENTS,
-  EDGE_VERTS_PER_INSTANCE,
-  FILL_SEGMENTS,
-  FILL_VERTS_PER_INSTANCE,
-  INSTANCE_BYTE_SIZE,
-} from './syntenyShaders.ts'
-import {
   EDGE_FRAGMENT_SHADER,
   EDGE_VERTEX_SHADER,
   FILL_FRAGMENT_SHADER,
   FILL_FRAGMENT_SHADER_PICKING,
   FILL_VERTEX_SHADER,
 } from './generated/index.ts'
+import {
+  EDGE_SEGMENTS,
+  EDGE_VERTS_PER_INSTANCE,
+  FILL_SEGMENTS,
+  FILL_VERTS_PER_INSTANCE,
+  INSTANCE_BYTE_SIZE,
+} from './syntenyShaders.ts'
+
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
-function createShader(gl: WebGL2RenderingContext, type: number, source: string) {
+function createShader(
+  gl: WebGL2RenderingContext,
+  type: number,
+  source: string,
+) {
   const shader = gl.createShader(type)!
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
@@ -26,10 +31,14 @@ function createShader(gl: WebGL2RenderingContext, type: number, source: string) 
   return shader
 }
 
-function createProgram(gl: WebGL2RenderingContext, vsSource: string, fsSource: string) {
+function createProgram(
+  gl: WebGL2RenderingContext,
+  vsSource: string,
+  fsSource: string,
+) {
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -105,15 +114,39 @@ export class WebGLSyntenyRenderer {
     }
     this.gl = gl
 
-    this.fillProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
-    this.pickingProgram = createProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER_PICKING)
-    this.edgeProgram = createProgram(gl, EDGE_VERTEX_SHADER, EDGE_FRAGMENT_SHADER)
+    this.fillProgram = createProgram(
+      gl,
+      FILL_VERTEX_SHADER,
+      FILL_FRAGMENT_SHADER,
+    )
+    this.pickingProgram = createProgram(
+      gl,
+      FILL_VERTEX_SHADER,
+      FILL_FRAGMENT_SHADER_PICKING,
+    )
+    this.edgeProgram = createProgram(
+      gl,
+      EDGE_VERTEX_SHADER,
+      EDGE_FRAGMENT_SHADER,
+    )
 
     this.fillUbo = this.setupUbo(this.fillProgram, 'Uniforms_block_1Vertex', 0)
-    this.fillFragUbo = this.setupUbo(this.fillProgram, 'Uniforms_block_0Fragment', 1)
+    this.fillFragUbo = this.setupUbo(
+      this.fillProgram,
+      'Uniforms_block_0Fragment',
+      1,
+    )
     this.edgeUbo = this.setupUbo(this.edgeProgram, 'Uniforms_block_1Vertex', 0)
-    this.edgeFragUbo = this.setupUbo(this.edgeProgram, 'Uniforms_block_0Fragment', 1)
-    this.pickingUbo = this.setupUbo(this.pickingProgram, 'Uniforms_block_1Vertex', 0)
+    this.edgeFragUbo = this.setupUbo(
+      this.edgeProgram,
+      'Uniforms_block_0Fragment',
+      1,
+    )
+    this.pickingUbo = this.setupUbo(
+      this.pickingProgram,
+      'Uniforms_block_1Vertex',
+      0,
+    )
 
     this.setupTextureSampler(this.fillProgram)
     this.setupTextureSampler(this.pickingProgram)
@@ -122,16 +155,25 @@ export class WebGLSyntenyRenderer {
     this.emptyVAO = gl.createVertexArray()!
 
     gl.enable(gl.BLEND)
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFuncSeparate(
+      gl.SRC_ALPHA,
+      gl.ONE_MINUS_SRC_ALPHA,
+      gl.ONE,
+      gl.ONE_MINUS_SRC_ALPHA,
+    )
   }
 
-  private setupUbo(program: WebGLProgram, blockName: string, bindingPoint: number) {
+  private setupUbo(
+    program: WebGLProgram,
+    blockName: string,
+    bindingPoint: number,
+  ) {
     const gl = this.gl
     const idx = gl.getUniformBlockIndex(program, blockName)
     if (idx !== gl.INVALID_INDEX) {
       gl.uniformBlockBinding(program, idx, bindingPoint)
     }
-    const buf = gl.createBuffer()!
+    const buf = gl.createBuffer()
     gl.bindBuffer(gl.UNIFORM_BUFFER, buf)
     gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_SIZE, gl.DYNAMIC_DRAW)
     return buf
@@ -168,13 +210,29 @@ export class WebGLSyntenyRenderer {
 
     this.pickingColorTex = gl.createTexture()!
     gl.bindTexture(gl.TEXTURE_2D, this.pickingColorTex)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA8,
+      w,
+      h,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null,
+    )
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
     this.pickingFbo = gl.createFramebuffer()!
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickingColorTex, 0)
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      this.pickingColorTex,
+      0,
+    )
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     this.pickingW = w
@@ -269,7 +327,20 @@ export class WebGLSyntenyRenderer {
     }
     this.pickingDirty = true
 
-    this.writeUniforms(logicalW, logicalH, height, adjOff0, adjOff1, scale0, scale1, maxOffScreenPx, minAlignmentLength, alpha, hoveredFeatureId, clickedFeatureId)
+    this.writeUniforms(
+      logicalW,
+      logicalH,
+      height,
+      adjOff0,
+      adjOff1,
+      scale0,
+      scale1,
+      maxOffScreenPx,
+      minAlignmentLength,
+      alpha,
+      hoveredFeatureId,
+      clickedFeatureId,
+    )
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
@@ -283,7 +354,12 @@ export class WebGLSyntenyRenderer {
     gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.fillFragUbo)
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTS_PER_INSTANCE, this.instanceCount)
+    gl.drawArraysInstanced(
+      gl.TRIANGLES,
+      0,
+      FILL_VERTS_PER_INSTANCE,
+      this.instanceCount,
+    )
 
     if (clickedFeatureId > 0) {
       gl.useProgram(this.edgeProgram)
@@ -291,7 +367,12 @@ export class WebGLSyntenyRenderer {
       gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.edgeFragUbo)
       gl.activeTexture(gl.TEXTURE0)
       gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, EDGE_VERTS_PER_INSTANCE, this.nonCigarInstanceCount)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        EDGE_VERTS_PER_INSTANCE,
+        this.nonCigarInstanceCount,
+      )
     }
 
     gl.bindVertexArray(null)
@@ -309,8 +390,20 @@ export class WebGLSyntenyRenderer {
       const p = this.lastRenderParams
       const logicalW = this.canvas.width / dpr
       const logicalH = this.canvas.height / dpr
-      this.writeUniforms(logicalW, logicalH, p.height, p.adjOff0, p.adjOff1, p.scale0, p.scale1, p.maxOffScreenPx, p.minAlignmentLength, 1, 0, 0)
-
+      this.writeUniforms(
+        logicalW,
+        logicalH,
+        p.height,
+        p.adjOff0,
+        p.adjOff1,
+        p.scale0,
+        p.scale1,
+        p.maxOffScreenPx,
+        p.minAlignmentLength,
+        1,
+        0,
+        0,
+      )
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
       gl.viewport(0, 0, this.pickingW, this.pickingH)
@@ -323,7 +416,12 @@ export class WebGLSyntenyRenderer {
       gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.pickingUbo)
       gl.activeTexture(gl.TEXTURE0)
       gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, FILL_VERTS_PER_INSTANCE, this.instanceCount)
+      gl.drawArraysInstanced(
+        gl.TRIANGLES,
+        0,
+        FILL_VERTS_PER_INSTANCE,
+        this.instanceCount,
+      )
       gl.bindVertexArray(null)
 
       gl.enable(gl.BLEND)
@@ -340,13 +438,22 @@ export class WebGLSyntenyRenderer {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
     const pixel = new Uint8Array(4)
-    gl.readPixels(px, this.pickingH - py - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+    gl.readPixels(
+      px,
+      this.pickingH - py - 1,
+      1,
+      1,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      pixel,
+    )
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
     const r = pixel[0]!
     const g = pixel[1]!
     const b = pixel[2]!
-    const result = r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
+    const result =
+      r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
 
     onResult?.(result)
     return result

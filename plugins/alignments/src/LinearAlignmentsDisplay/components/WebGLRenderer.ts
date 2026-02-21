@@ -21,7 +21,6 @@
  */
 
 import { ArcsRenderer } from './ArcsRenderer.ts'
-
 import { ConnectingLineRenderer } from './ConnectingLineRenderer.ts'
 import { CoverageRenderer } from './CoverageRenderer.ts'
 import { PileupRenderer } from './PileupRenderer.ts'
@@ -2184,12 +2183,7 @@ export class WebGLRenderer {
         this.connectingLineRenderer.render(blockState)
       }
 
-      this.pileupRenderer.render(
-        blockState,
-        clippedBpOffset,
-        colors,
-        scissorX,
-      )
+      this.pileupRenderer.render(blockState, clippedBpOffset, colors, scissorX)
     }
 
     // Restore full viewport and disable scissor

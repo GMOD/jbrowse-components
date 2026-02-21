@@ -956,7 +956,7 @@ export class AlignmentsRenderer {
     f[U_BP_LO] = bpLo
     f[U_BP_LEN] = bpLen
     u[U_REGION_START] = regionStart
-    f[U_HP_ZERO] = 0.0
+    f[U_HP_ZERO] = 0
     f[U_DOMAIN_START] = clippedBpStart - regionStart
     f[U_DOMAIN_END] = clippedBpEnd - regionStart
     f[U_RANGE_Y0] = state.rangeY[0]
@@ -1207,9 +1207,9 @@ export class AlignmentsRenderer {
 
         if (needsFeatureSelection) {
           const idx = state.selectedFeatureIndex
-          const absStart = region.readPositions[idx * 2] + region.regionStart
-          const absEnd = region.readPositions[idx * 2 + 1] + region.regionStart
-          const y = region.readYs[idx]
+          const absStart = region.readPositions[idx * 2]! + region.regionStart
+          const absEnd = region.readPositions[idx * 2 + 1]! + region.regionStart
+          const y = region.readYs[idx]!
           const arcsOff =
             state.showArcs && state.arcsHeight ? state.arcsHeight : 0
           const covOff =
@@ -1228,10 +1228,38 @@ export class AlignmentsRenderer {
           const tx = 4 / scissorW
           const ty = 4 / state.canvasHeight
           const quads = new Float32Array([
-            clip.sx1, clip.syTop, clip.sx2, clip.syTop - ty, 0, 0, 0, 1,
-            clip.sx1, clip.syBot + ty, clip.sx2, clip.syBot, 0, 0, 0, 1,
-            clip.sx1, clip.syTop, clip.sx1 + tx, clip.syBot, 0, 0, 0, 1,
-            clip.sx2 - tx, clip.syTop, clip.sx2, clip.syBot, 0, 0, 0, 1,
+            clip.sx1,
+            clip.syTop,
+            clip.sx2,
+            clip.syTop - ty,
+            0,
+            0,
+            0,
+            1,
+            clip.sx1,
+            clip.syBot + ty,
+            clip.sx2,
+            clip.syBot,
+            0,
+            0,
+            0,
+            1,
+            clip.sx1,
+            clip.syTop,
+            clip.sx1 + tx,
+            clip.syBot,
+            0,
+            0,
+            0,
+            1,
+            clip.sx2 - tx,
+            clip.syTop,
+            clip.sx2,
+            clip.syBot,
+            0,
+            0,
+            0,
+            1,
           ])
           const { enc, p } = mkPass('load' as GPULoadOp)
           p.setViewport(

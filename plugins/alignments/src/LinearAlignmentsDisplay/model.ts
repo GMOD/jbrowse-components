@@ -52,7 +52,6 @@ import type {
   AlignmentsRenderer,
   ColorPalette,
 } from './components/AlignmentsRenderer.ts'
-
 import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
@@ -529,7 +528,7 @@ export default function stateModelFactory(
        */
       get chainIndexMap() {
         const map = new Map<string, number[]>()
-        if (self.renderingMode === 'linkedRead') {
+        if (self.showLinkedReads) {
           for (const data of self.rpcDataMap.values()) {
             for (let i = 0; i < data.numReads; i++) {
               const name = data.readNames[i]
@@ -683,7 +682,9 @@ export default function stateModelFactory(
           featureHeightSetting: self.featureHeightSetting,
           featureSpacing: self.featureSpacing,
           showMismatches: self.showMismatches,
-          topOffset: self.coverageDisplayHeight,
+          topOffset:
+            (self.showCoverage ? self.coverageHeight : 0) +
+            (self.showArcs ? self.arcsHeight : 0),
           rangeY: self.currentRangeY,
         })
       },
@@ -1434,25 +1435,23 @@ export default function stateModelFactory(
 
         const sequenceAdapter = getSequenceAdapter(session, region)
 
-        if (self.renderingMode === 'linkedRead') {
-          await fetchChainData(
-            session,
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            regionNumber,
-            stopToken,
-          )
-        } else {
-          await fetchPileupData(
-            session,
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            regionNumber,
-            stopToken,
-          )
-        }
+        await (self.renderingMode === 'linkedRead'
+          ? fetchChainData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              regionNumber,
+              stopToken,
+            )
+          : fetchPileupData(
+              session,
+              adapterConfig,
+              sequenceAdapter,
+              region,
+              regionNumber,
+              stopToken,
+            ))
         if (self.showArcs) {
           await fetchArcsData(
             session,
@@ -1880,7 +1879,7 @@ export default function stateModelFactory(
             },
             {
               label: 'Modifications',
-              type: 'subMenu',
+              type: 'subMenu' as const,
               subMenu: getModificationsSubMenu(self, {
                 includeMethylation: true,
               }),

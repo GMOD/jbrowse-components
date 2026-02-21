@@ -557,8 +557,18 @@ export class WebGLMultiWiggleRenderer {
         continue
       }
 
-      gl.scissor(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
-      gl.viewport(Math.round(scissorX * dpr), 0, Math.round(scissorW * dpr), bufH)
+      gl.scissor(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
+      gl.viewport(
+        Math.round(scissorX * dpr),
+        0,
+        Math.round(scissorW * dpr),
+        bufH,
+      )
 
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]

@@ -76,9 +76,9 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
-  const [gpuStatus, setGpuStatus] = useState<
-    'loading' | 'ready' | 'failed'
-  >('loading')
+  const [gpuStatus, setGpuStatus] = useState<'loading' | 'ready' | 'failed'>(
+    'loading',
+  )
   const [gpuError, setGpuError] = useState('')
 
   useEffect(() => {

@@ -220,9 +220,6 @@ export interface WebGLPileupDataResult {
   chainFlatbushData?: ArrayBuffer
   chainFirstReadIndices?: Uint32Array // maps Flatbush item index → first read index
 
-  // Chain layout metadata
-  maxDistance?: number // max chain distance (for cloud mode log scale)
-
   // Insert size statistics (mean ± 3 SD thresholds for coloring)
   insertSizeStats?: {
     upper: number // mean + 3*SD (too long → red)

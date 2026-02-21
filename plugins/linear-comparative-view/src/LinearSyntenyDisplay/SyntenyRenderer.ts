@@ -272,7 +272,18 @@ export class SyntenyRenderer {
     clickedFeatureId: number,
   ) {
     if (this.glFallback) {
-      this.glFallback.render(offset0, offset1, height, curBpPerPx0, curBpPerPx1, maxOffScreenPx, minAlignmentLength, alpha, hoveredFeatureId, clickedFeatureId)
+      this.glFallback.render(
+        offset0,
+        offset1,
+        height,
+        curBpPerPx0,
+        curBpPerPx1,
+        maxOffScreenPx,
+        minAlignmentLength,
+        alpha,
+        hoveredFeatureId,
+        clickedFeatureId,
+      )
       return
     }
     const device = SyntenyRenderer.device

@@ -20,7 +20,6 @@ import {
 import {
   ARC_LINE_WGSL,
   ARC_WGSL,
-  CLOUD_WGSL,
   CONNECTING_LINE_WGSL,
   SASHIMI_WGSL,
 } from '../src/LinearAlignmentsDisplay/components/wgsl/miscShaders.ts'
@@ -44,7 +43,6 @@ compileShaders({
     { name: 'ARC', wgsl: ARC_WGSL },
     { name: 'ARC_LINE', wgsl: ARC_LINE_WGSL },
     { name: 'SASHIMI', wgsl: SASHIMI_WGSL },
-    { name: 'CLOUD', wgsl: CLOUD_WGSL },
     { name: 'CONNECTING_LINE', wgsl: CONNECTING_LINE_WGSL },
   ],
   outDir: path.join(

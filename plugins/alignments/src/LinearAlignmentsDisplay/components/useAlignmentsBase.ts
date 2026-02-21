@@ -223,7 +223,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const startHeight = coverageHeight
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setCoverageHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
+      model.setCoverageHeight(
+        Math.max(20, startHeight + moveEvent.clientY - startY),
+      )
     }
 
     const onMouseUp = () => {
@@ -242,7 +244,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const startHeight = arcsHeight
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      model.setArcsHeight(Math.max(20, startHeight + moveEvent.clientY - startY))
+      model.setArcsHeight(
+        Math.max(20, startHeight + moveEvent.clientY - startY),
+      )
     }
 
     const onMouseUp = () => {

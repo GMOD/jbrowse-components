@@ -158,7 +158,13 @@ export function getModificationsSubMenu(
             },
           },
         ]
-      : [{ label: 'No modifications currently visible' }]
+      : [
+          {
+            label: 'No modifications currently visible',
+            disabled: true,
+            onClick: () => {},
+          },
+        ]
   }
 }
 
