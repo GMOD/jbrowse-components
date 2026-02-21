@@ -7,11 +7,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import VariantLabels from './VariantLabels.tsx'
-import Wrapper from './Wrapper.tsx'
 import { pointToSegmentDist } from '../../util.ts'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -25,83 +23,96 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface MinimalModel {
+  setLineZoneHeight: (arg: number) => number
+  height: number
+  lineZoneHeight: number
+  featuresVolatile: Feature[] | undefined
+}
+
 function getGenomicX(
   view: LinearGenomeViewModel,
   assembly: { getCanonicalRefName2: (refName: string) => string },
-  snp: { refName: string; start: number },
+  feature: Feature,
   offsetAdj: number,
 ) {
   return (
     (view.bpToPx({
-      refName: assembly.getCanonicalRefName2(snp.refName),
-      coord: snp.start,
+      refName: assembly.getCanonicalRefName2(feature.get('refName')),
+      coord: feature.get('start'),
     })?.offsetPx || 0) - offsetAdj
   )
 }
 
-function getViewTransform(model: SharedLDModel, view: LinearGenomeViewModel) {
-  const viewScale =
-    model.lastDrawnBpPerPx !== undefined
-      ? model.lastDrawnBpPerPx / view.bpPerPx
-      : 1
-  const viewOffsetX =
-    model.lastDrawnOffsetPx !== undefined
-      ? model.lastDrawnOffsetPx * viewScale - view.offsetPx
-      : 0
-  return { viewScale, viewOffsetX }
-}
-
-function getMatrixX(
-  idx: number,
-  blockWidth: number,
-  n: number,
-  viewScale: number,
-  viewOffsetX: number,
-) {
-  return (((idx + 0.5) * blockWidth) / n) * viewScale + viewOffsetX
-}
-
 interface HoveredLine {
-  snp: { id: string; refName: string; start: number; end: number }
+  feature: Feature
   idx: number
   genomicX: number
 }
+
+const Wrapper = observer(function Wrapper({
+  children,
+  model,
+  exportSVG,
+}: {
+  model: MinimalModel
+  children: React.ReactNode
+  exportSVG?: boolean
+}) {
+  const { height } = model
+  const { width, offsetPx } = getContainingView(model) as LinearGenomeViewModel
+  const left = Math.max(0, -offsetPx)
+  return exportSVG ? (
+    <g transform={`translate(${left})`}>{children}</g>
+  ) : (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        left,
+        height,
+        width,
+      }}
+    >
+      {children}
+    </svg>
+  )
+})
 
 const AllLines = observer(function AllLines({
   model,
   onHover,
 }: {
-  model: SharedLDModel
+  model: MinimalModel
   onHover: (arg: HoveredLine | undefined) => void
 }) {
   const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps, tickHeight } = model
+  const { lineZoneHeight, featuresVolatile } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const blockWidth = dynamicBlocks.contentBlocks[0]?.widthPx || 0
-  const n = snps.length
+  const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
+  const n = featuresVolatile?.length || 0
+  const w = b0 / (n || 1)
   const offsetAdj = Math.max(offsetPx, 0)
-  const { viewScale, viewOffsetX } = getViewTransform(model, view)
 
   const pathD = useMemo(() => {
-    if (!assembly || n === 0) {
+    if (!assembly || n === 0 || !featuresVolatile) {
       return ''
     }
     const parts = [] as string[]
     for (let i = 0; i < n; i++) {
-      const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
-      const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
-      parts.push(`M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`)
-      parts.push(`M${gx} 0L${gx} ${tickHeight}`)
+      const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
+      const mx = i * w + w / 2
+      parts.push(`M${mx} ${lineZoneHeight}L${gx} 0`)
     }
     return parts.join('')
-  }, [assembly, n, snps, view, offsetAdj, blockWidth, lineZoneHeight, tickHeight, viewScale, viewOffsetX])
+  }, [assembly, n, featuresVolatile, view, offsetAdj, w, lineZoneHeight])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
-      if (!assembly || n === 0) {
+      if (!assembly || n === 0 || !featuresVolatile) {
         onHover(undefined)
         return
       }
@@ -119,11 +130,9 @@ const AllLines = observer(function AllLines({
       let found = -1
       let foundGx = 0
       for (let i = 0; i < n; i++) {
-        const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
-        const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
-        const d1 = pointToSegmentDist(px, py, mx, lineZoneHeight, gx, tickHeight)
-        const d2 = pointToSegmentDist(px, py, gx, 0, gx, tickHeight)
-        const dist = Math.min(d1, d2)
+        const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
+        const mx = i * w + w / 2
+        const dist = pointToSegmentDist(px, py, mx, lineZoneHeight, gx, 0)
         if (dist < minDist) {
           minDist = dist
           found = i
@@ -132,11 +141,11 @@ const AllLines = observer(function AllLines({
       }
       onHover(
         found >= 0
-          ? { snp: snps[found]!, idx: found, genomicX: foundGx }
+          ? { feature: featuresVolatile[found]!, idx: found, genomicX: foundGx }
           : undefined,
       )
     },
-    [assembly, n, snps, view, offsetAdj, blockWidth, viewScale, viewOffsetX, lineZoneHeight, tickHeight, onHover],
+    [assembly, n, featuresVolatile, view, offsetAdj, w, lineZoneHeight, onHover],
   )
 
   if (!assembly || n === 0) {
@@ -161,7 +170,6 @@ const AllLines = observer(function AllLines({
         fill="none"
         style={{ pointerEvents: 'none' }}
       />
-      <VariantLabels model={model} />
     </>
   )
 })
@@ -170,31 +178,28 @@ const LinesConnectingMatrixToGenomicPosition = observer(
   function LinesConnectingMatrixToGenomicPosition({
     model,
     exportSVG,
-    yOffset = 0,
   }: {
-    model: SharedLDModel
+    model: MinimalModel
     exportSVG?: boolean
-    yOffset?: number
   }) {
     const { classes } = useStyles()
-    const view = getContainingView(model) as LinearGenomeViewModel
+    const { lineZoneHeight, featuresVolatile } = model
     const [hovered, setHovered] = useState<HoveredLine>()
-    const { lineZoneHeight, snps, tickHeight } = model
-    const blockWidth = view.dynamicBlocks.contentBlocks[0]?.widthPx || 0
-    const n = snps.length
+    const b0 =
+      (getContainingView(model) as LinearGenomeViewModel).dynamicBlocks
+        .contentBlocks[0]?.widthPx || 0
+    const n = featuresVolatile?.length || 0
+    const w = b0 / (n || 1)
 
-    if (n === 0) {
+    if (!featuresVolatile || n === 0) {
       return null
     }
 
-    const { viewScale, viewOffsetX } = getViewTransform(model, view)
-    const hMx = hovered
-      ? getMatrixX(hovered.idx, blockWidth, n, viewScale, viewOffsetX)
-      : 0
+    const hMx = hovered ? hovered.idx * w + w / 2 : 0
 
     return (
       <>
-        <Wrapper exportSVG={exportSVG} model={model} yOffset={yOffset}>
+        <Wrapper exportSVG={exportSVG} model={model}>
           <AllLines model={model} onHover={setHovered} />
           {hovered ? (
             <>
@@ -205,18 +210,9 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 x1={hMx}
                 x2={hovered.genomicX}
                 y1={lineZoneHeight}
-                y2={tickHeight}
+                y2={0}
               />
-              <line
-                stroke="#f00c"
-                strokeWidth={2}
-                style={{ pointerEvents: 'none' }}
-                x1={hovered.genomicX}
-                x2={hovered.genomicX}
-                y1={0}
-                y2={tickHeight}
-              />
-              <BaseTooltip>{hovered.snp.id}</BaseTooltip>
+              <BaseTooltip>{hovered.feature.get('name')}</BaseTooltip>
             </>
           ) : null}
         </Wrapper>
