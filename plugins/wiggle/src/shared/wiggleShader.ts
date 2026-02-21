@@ -1,4 +1,4 @@
-export const INSTANCE_STRIDE = 4
+export const INSTANCE_STRIDE = 8
 
 export const wiggleShader = /* wgsl */ `
 const HP_LOW_MASK: u32 = 0xFFFu;
@@ -29,10 +29,23 @@ fn score_to_y(score: f32, domain_y: vec2f, height: f32, scale_type: i32) -> f32 
   return (1.0 - normalize_score(score, domain_y, scale_type)) * height;
 }
 
+fn get_row_height(canvas_height: f32, num_rows: f32, row_padding: f32) -> f32 {
+  let total_padding = row_padding * (num_rows - 1.0);
+  return (canvas_height - total_padding) / num_rows;
+}
+
+fn get_row_top(row_index: f32, row_height: f32, row_padding: f32) -> f32 {
+  return row_index * (row_height + row_padding);
+}
+
 struct Instance {
   start_end: vec2u,
   score: f32,
-  _pad: f32,
+  prev_score: f32,
+  row_index: f32,
+  color_r: f32,
+  color_g: f32,
+  color_b: f32,
 }
 
 struct Uniforms {
@@ -41,16 +54,10 @@ struct Uniforms {
   canvas_height: f32,
   scale_type: i32,
   rendering_type: i32,
-  use_bicolor: i32,
+  num_rows: f32,
   domain_y: vec2f,
-  bicolor_pivot: f32,
-  _pad0: f32,
-  color: vec3f,
-  _pad1: f32,
-  pos_color: vec3f,
-  _pad2: f32,
-  neg_color: vec3f,
-  _pad3: f32,
+  row_padding: f32,
+  _pad: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
@@ -76,17 +83,17 @@ fn vs_main(
   let sx1 = hp_to_clip_x(split_start, u.bp_range_x);
   let sx2 = hp_to_clip_x(split_end, u.bp_range_x);
 
-  var sx: f32;
-  var sy: f32;
-
+  let row_height = get_row_height(u.canvas_height, u.num_rows, u.row_padding);
+  let row_top = get_row_top(inst.row_index, row_height, u.row_padding);
   let px_to_clip = 2.0 / u.canvas_height;
 
-  if (u.rendering_type == 2) {
-    let score_y = score_to_y(inst.score, u.domain_y, u.canvas_height, u.scale_type);
-    let safe_prev_idx = max(instance_index, 1u) - 1u;
-    let prev_score = select(instances[safe_prev_idx].score, inst.score, instance_index == 0u);
-    let prev_y = score_to_y(prev_score, u.domain_y, u.canvas_height, u.scale_type);
+  var sx: f32;
+  var sy: f32;
+  let inst_color = vec3f(inst.color_r, inst.color_g, inst.color_b);
 
+  if (u.rendering_type == 2) {
+    let score_y = score_to_y(inst.score, u.domain_y, row_height, u.scale_type) + row_top;
+    let prev_y = score_to_y(inst.prev_score, u.domain_y, row_height, u.scale_type) + row_top;
     let clip_score_y = 1.0 - score_y * px_to_clip;
     let clip_prev_y = 1.0 - prev_y * px_to_clip;
 
@@ -102,38 +109,32 @@ fn vs_main(
     let local_x = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
     let local_y = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
     sx = mix(sx1, sx2, local_x);
-    sy = mix(-1.0, 1.0, local_y);
+
+    let row_bot = row_top + row_height;
+    let sy_top = 1.0 - row_top * px_to_clip;
+    let sy_bot = 1.0 - row_bot * px_to_clip;
+    sy = mix(sy_bot, sy_top, local_y);
   } else {
     let local_x = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
     let local_y = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
     sx = mix(sx1, sx2, local_x);
 
-    let score_y = score_to_y(inst.score, u.domain_y, u.canvas_height, u.scale_type);
-    let origin_y = score_to_y(0.0, u.domain_y, u.canvas_height, u.scale_type);
-    let y_top = min(score_y, origin_y);
-    let y_bot = max(score_y, origin_y);
+    let score_y = score_to_y(inst.score, u.domain_y, row_height, u.scale_type);
+    let origin_y = score_to_y(0.0, u.domain_y, row_height, u.scale_type);
+    let y_top = min(score_y, origin_y) + row_top;
+    let y_bot = max(score_y, origin_y) + row_top;
     let sy_top = 1.0 - y_top * px_to_clip;
     let sy_bot = 1.0 - y_bot * px_to_clip;
     sy = mix(sy_bot, sy_top, local_y);
   }
 
   var color: vec3f;
-  if (u.use_bicolor == 1) {
-    if (u.rendering_type == 1) {
-      let norm = normalize_score(inst.score, u.domain_y, u.scale_type);
-      let norm_pivot = normalize_score(u.bicolor_pivot, u.domain_y, u.scale_type);
-      color = select(u.pos_color, u.neg_color, norm < norm_pivot);
-    } else {
-      color = select(u.pos_color, u.neg_color, inst.score < u.bicolor_pivot);
-    }
+  if (u.rendering_type == 1) {
+    let norm = normalize_score(inst.score, u.domain_y, u.scale_type);
+    let low_color = vec3f(0.93, 0.93, 0.93);
+    color = mix(low_color, inst_color, norm);
   } else {
-    if (u.rendering_type == 1) {
-      let norm = normalize_score(inst.score, u.domain_y, u.scale_type);
-      let low_color = vec3f(0.93, 0.93, 0.93);
-      color = mix(low_color, u.pos_color, norm);
-    } else {
-      color = u.color;
-    }
+    color = inst_color;
   }
 
   var out: VertexOutput;

@@ -3,16 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { WiggleRenderer } from './WiggleRenderer.ts'
-import { useWebGLViewInteraction } from './useWebGLViewInteraction.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
+import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
 import type {
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './WiggleRenderer.ts'
+  SourceRenderData,
+} from '../../shared/WiggleRenderer.ts'
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -49,19 +49,84 @@ function makeRenderState(
   model: WiggleDisplayModel,
   width: number,
 ): WiggleGPURenderState {
-  const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
   return {
     domainY: model.domain!,
     scaleType: model.scaleType === 'log' ? 1 : 0,
     renderingType: renderingTypeToInt(model.renderingType),
-    useBicolor: useBicolor ? 1 : 0,
-    bicolorPivot: model.bicolorPivot,
-    color: parseColor(model.color),
-    posColor: parseColor(model.posColor),
-    negColor: parseColor(model.negColor),
+    rowPadding: 0,
     canvasWidth: width,
     canvasHeight: model.height,
   }
+}
+
+function buildSourceRenderData(
+  data: WebGLWiggleDataResult,
+  model: WiggleDisplayModel,
+): SourceRenderData[] {
+  const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
+  const baseColor = parseColor(model.color)
+  const posColor = parseColor(model.posColor)
+  const negColor = parseColor(model.negColor)
+  const { bicolorPivot } = model
+
+  if (!useBicolor) {
+    const color =
+      model.renderingType === 'density' ? posColor : baseColor
+    return [
+      {
+        featurePositions: data.featurePositions,
+        featureScores: data.featureScores,
+        numFeatures: data.numFeatures,
+        color,
+      },
+    ]
+  }
+
+  const posFeaturePositions: number[] = []
+  const posFeatureScores: number[] = []
+  const negFeaturePositions: number[] = []
+  const negFeatureScores: number[] = []
+
+  for (let i = 0; i < data.numFeatures; i++) {
+    const score = data.featureScores[i]!
+    const start = data.featurePositions[i * 2]!
+    const end = data.featurePositions[i * 2 + 1]!
+    if (score >= bicolorPivot) {
+      posFeaturePositions.push(start, end)
+      posFeatureScores.push(score)
+    } else {
+      negFeaturePositions.push(start, end)
+      negFeatureScores.push(score)
+    }
+  }
+
+  const sources: SourceRenderData[] = []
+  if (posFeatureScores.length > 0) {
+    sources.push({
+      featurePositions: new Uint32Array(posFeaturePositions),
+      featureScores: new Float32Array(posFeatureScores),
+      numFeatures: posFeatureScores.length,
+      color: posColor,
+    })
+  }
+  if (negFeatureScores.length > 0) {
+    sources.push({
+      featurePositions: new Uint32Array(negFeaturePositions),
+      featureScores: new Float32Array(negFeatureScores),
+      numFeatures: negFeatureScores.length,
+      color: negColor,
+    })
+  }
+  return sources.length > 0
+    ? sources
+    : [
+        {
+          featurePositions: data.featurePositions,
+          featureScores: data.featureScores,
+          numFeatures: data.numFeatures,
+          color: baseColor,
+        },
+      ]
 }
 
 const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
@@ -87,14 +152,12 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       .init()
       .then(ok => {
         if (!ok) {
-          console.error('[WebGLWiggleComponent] GPU initialization failed')
           setError('GPU initialization failed')
         } else {
           setReady(true)
         }
       })
       .catch((e: unknown) => {
-        console.error('[WebGLWiggleComponent] GPU initialization error:', e)
         setError(`GPU initialization error: ${e}`)
       })
   }, [])
@@ -114,39 +177,11 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     const activeRegions: number[] = []
     for (const [regionNumber, data] of dataMap) {
       activeRegions.push(regionNumber)
-      renderer.uploadRegion(regionNumber, {
-        regionStart: data.regionStart,
-        featurePositions: data.featurePositions,
-        featureScores: data.featureScores,
-        numFeatures: data.numFeatures,
-      })
+      const sources = buildSourceRenderData(data, model)
+      renderer.uploadRegion(regionNumber, data.regionStart, sources)
     }
     renderer.pruneRegions(activeRegions)
-  }, [model.rpcDataMap, ready])
-
-  const renderWithDomain = useCallback(
-    (bpRangeX: [number, number]) => {
-      const renderer = rendererRef.current
-      if (!renderer || !ready || !model.domain) {
-        return
-      }
-      const width = Math.round(view.width)
-      renderer.renderSingle(bpRangeX, makeRenderState(model, width))
-    },
-    [model, view, ready],
-  )
-
-  const {
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleMouseLeave,
-    isDragging,
-  } = useWebGLViewInteraction({
-    canvasRef,
-    view,
-    onRender: renderWithDomain,
-  })
+  }, [model.rpcDataMap, model.color, model.posColor, model.negColor, model.bicolorPivot, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -215,14 +250,9 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
           position: 'absolute',
           left: 0,
           top: 0,
-          cursor: isDragging ? 'grabbing' : 'grab',
         }}
         width={width}
         height={height}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
       />
       {model.ticks ? (
         <svg

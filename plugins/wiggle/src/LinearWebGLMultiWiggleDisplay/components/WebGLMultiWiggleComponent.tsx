@@ -3,17 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getContainingView, measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { MultiWiggleRenderer } from './MultiWiggleRenderer.ts'
-import { useWebGLViewInteraction } from '../../LinearWebGLWiggleDisplay/components/useWebGLViewInteraction.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
+import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 
 import type {
-  MultiWiggleGPURenderState,
-  MultiWiggleRenderBlock,
+  WiggleGPURenderState,
+  WiggleRenderBlock,
   SourceRenderData,
-} from './MultiWiggleRenderer.ts'
+} from '../../shared/WiggleRenderer.ts'
 import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -50,7 +49,7 @@ function renderingTypeToInt(type: string) {
 function makeRenderState(
   model: MultiWiggleDisplayModel,
   width: number,
-): MultiWiggleGPURenderState {
+): WiggleGPURenderState {
   return {
     domainY: model.domain!,
     scaleType: model.scaleType === 'log' ? 1 : 0,
@@ -98,7 +97,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [error, setError] = useState<string | null>(null)
-  const rendererRef = useRef<MultiWiggleRenderer | null>(null)
+  const rendererRef = useRef<WiggleRenderer | null>(null)
   const [ready, setReady] = useState(false)
 
   const view = getContainingView(model) as LGV
@@ -108,23 +107,18 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
     canvasRef.current = canvas
-    const renderer = MultiWiggleRenderer.getOrCreate(canvas)
+    const renderer = WiggleRenderer.getOrCreate(canvas)
     rendererRef.current = renderer
     renderer
       .init()
       .then(ok => {
         if (!ok) {
-          console.error('[WebGLMultiWiggleComponent] GPU initialization failed')
           setError('GPU initialization failed')
         } else {
           setReady(true)
         }
       })
       .catch((e: unknown) => {
-        console.error(
-          '[WebGLMultiWiggleComponent] GPU initialization error:',
-          e,
-        )
         setError(`GPU initialization error: ${e}`)
       })
   }, [])
@@ -168,30 +162,6 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     renderer.pruneRegions(activeRegions)
   }, [model.rpcDataMap, model.sources, ready])
 
-  const renderWithDomain = useCallback(
-    (bpRangeX: [number, number]) => {
-      const renderer = rendererRef.current
-      if (!renderer || !ready || !model.domain) {
-        return
-      }
-      const totalWidth = Math.round(view.width)
-      renderer.renderSingle(bpRangeX, makeRenderState(model, totalWidth))
-    },
-    [model, view, ready],
-  )
-
-  const {
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleMouseLeave,
-    isDragging,
-  } = useWebGLViewInteraction({
-    canvasRef,
-    view,
-    onRender: renderWithDomain,
-  })
-
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready || !view.initialized || !model.domain) {
@@ -205,7 +175,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
     const totalWidth = Math.round(view.width)
 
-    const blocks: MultiWiggleRenderBlock[] = visibleRegions.map(vr => ({
+    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
       regionNumber: vr.regionNumber,
       bpRangeX: [vr.start, vr.end] as [number, number],
       screenStartPx: vr.screenStartPx,
@@ -271,14 +241,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
           position: 'absolute',
           left: 0,
           top: 0,
-          cursor: isDragging ? 'grabbing' : 'grab',
         }}
         width={totalWidth}
         height={height}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
       />
 
       <svg

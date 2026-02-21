@@ -4,22 +4,15 @@ import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
-import { INSTANCE_STRIDE, wiggleShader } from './wiggleShaders.ts'
+import { INSTANCE_STRIDE, wiggleShader } from './wiggleShader.ts'
 
-import type { RenderingType } from './WebGLWiggleRenderer.ts'
-
-const UNIFORM_SIZE = 96
+const UNIFORM_SIZE = 48
 const INSTANCE_BYTES = INSTANCE_STRIDE * 4
-
-const RENDERING_TYPE_MAP: Record<number, RenderingType> = {
-  0: 'xyplot',
-  1: 'density',
-  2: 'line',
-}
 
 interface GpuRegionData {
   regionStart: number
   featureCount: number
+  numRows: number
   instanceBuffer: GPUBuffer
   bindGroup: GPUBindGroup
 }
@@ -28,11 +21,7 @@ export interface WiggleGPURenderState {
   domainY: [number, number]
   scaleType: number
   renderingType: number
-  useBicolor: number
-  bicolorPivot: number
-  color: [number, number, number]
-  posColor: [number, number, number]
-  negColor: [number, number, number]
+  rowPadding: number
   canvasWidth: number
   canvasHeight: number
 }
@@ -42,6 +31,13 @@ export interface WiggleRenderBlock {
   bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
+}
+
+export interface SourceRenderData {
+  featurePositions: Uint32Array
+  featureScores: Float32Array
+  numFeatures: number
+  color: [number, number, number]
 }
 
 const rendererCache = new WeakMap<HTMLCanvasElement, WiggleRenderer>()
@@ -171,20 +167,20 @@ export class WiggleRenderer {
 
   uploadRegion(
     regionNumber: number,
-    data: {
-      regionStart: number
-      featurePositions: Uint32Array
-      featureScores: Float32Array
-      numFeatures: number
-    },
+    regionStart: number,
+    sources: SourceRenderData[],
   ) {
     if (this.glFallback) {
-      this.glFallback.uploadForRegion(regionNumber, data)
+      this.glFallback.uploadRegion(regionNumber, regionStart, sources)
       return
     }
 
     const device = WiggleRenderer.device
-    if (!device || !WiggleRenderer.bindGroupLayout || !this.uniformBuffer) {
+    if (
+      !device ||
+      !WiggleRenderer.bindGroupLayout ||
+      !this.uniformBuffer
+    ) {
       return
     }
 
@@ -193,16 +189,17 @@ export class WiggleRenderer {
       old.instanceBuffer.destroy()
     }
 
-    if (data.numFeatures === 0) {
+    let totalFeatures = 0
+    for (const source of sources) {
+      totalFeatures += source.numFeatures
+    }
+
+    if (totalFeatures === 0 || sources.length === 0) {
       this.regions.delete(regionNumber)
       return
     }
 
-    const interleaved = this.interleaveInstances(
-      data.featurePositions,
-      data.featureScores,
-      data.numFeatures,
-    )
+    const interleaved = this.interleaveInstances(sources, totalFeatures)
     const instanceBuffer = device.createBuffer({
       size: interleaved.byteLength || 4,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
@@ -216,8 +213,9 @@ export class WiggleRenderer {
       ],
     })
     this.regions.set(regionNumber, {
-      regionStart: data.regionStart,
-      featureCount: data.numFeatures,
+      regionStart,
+      featureCount: totalFeatures,
+      numRows: sources.length,
       instanceBuffer,
       bindGroup,
     })
@@ -238,21 +236,12 @@ export class WiggleRenderer {
     }
   }
 
-  renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
+  renderBlocks(
+    blocks: WiggleRenderBlock[],
+    renderState: WiggleGPURenderState,
+  ) {
     if (this.glFallback) {
-      this.glFallback.renderBlocks(blocks, {
-        domainY: renderState.domainY,
-        scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
-        renderingType:
-          RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
-        useBicolor: renderState.useBicolor === 1,
-        bicolorPivot: renderState.bicolorPivot,
-        color: renderState.color,
-        posColor: renderState.posColor,
-        negColor: renderState.negColor,
-        canvasWidth: renderState.canvasWidth,
-        canvasHeight: renderState.canvasHeight,
-      })
+      this.glFallback.renderBlocks(blocks, renderState)
       return
     }
 
@@ -307,6 +296,7 @@ export class WiggleRenderer {
         bpStartLo,
         clippedLengthBp,
         Math.floor(region.regionStart),
+        region.numRows,
         renderState,
       )
 
@@ -348,82 +338,6 @@ export class WiggleRenderer {
     }
   }
 
-  renderSingle(bpRangeX: [number, number], renderState: WiggleGPURenderState) {
-    if (this.glFallback) {
-      this.glFallback.render({
-        bpRangeX,
-        domainY: renderState.domainY,
-        scaleType: renderState.scaleType === 1 ? 'log' : 'linear',
-        renderingType:
-          RENDERING_TYPE_MAP[renderState.renderingType] ?? 'xyplot',
-        useBicolor: renderState.useBicolor === 1,
-        bicolorPivot: renderState.bicolorPivot,
-        color: renderState.color,
-        posColor: renderState.posColor,
-        negColor: renderState.negColor,
-        canvasWidth: renderState.canvasWidth,
-        canvasHeight: renderState.canvasHeight,
-      })
-      return
-    }
-
-    const device = WiggleRenderer.device
-    if (!device || !WiggleRenderer.fillPipeline || !this.context) {
-      return
-    }
-
-    const { canvasWidth, canvasHeight } = renderState
-    const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
-    const isLine = renderState.renderingType === 2
-    const pipeline = isLine
-      ? WiggleRenderer.linePipeline!
-      : WiggleRenderer.fillPipeline
-
-    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
-      this.canvas.width = bufW
-      this.canvas.height = bufH
-    }
-
-    const region = this.regions.get(0) ?? this.regions.values().next().value
-    if (!region || region.featureCount === 0) {
-      this.clearCanvas(device, this.context.getCurrentTexture().createView())
-      return
-    }
-
-    const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(bpRangeX[0])
-    const regionLengthBp = bpRangeX[1] - bpRangeX[0]
-
-    this.writeUniforms(
-      device,
-      bpStartHi,
-      bpStartLo,
-      regionLengthBp,
-      Math.floor(region.regionStart),
-      renderState,
-    )
-
-    const textureView = this.context.getCurrentTexture().createView()
-    const encoder = device.createCommandEncoder()
-    const pass = encoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: textureView,
-          loadOp: 'clear' as GPULoadOp,
-          storeOp: 'store' as GPUStoreOp,
-          clearValue: { r: 0, g: 0, b: 0, a: 0 },
-        },
-      ],
-    })
-    pass.setPipeline(pipeline)
-    pass.setBindGroup(0, region.bindGroup)
-    pass.setViewport(0, 0, bufW, bufH, 0, 1)
-    pass.draw(6, region.featureCount)
-    pass.end()
-    device.queue.submit([encoder.finish()])
-  }
-
   dispose() {
     if (this.glFallback) {
       this.glFallback.destroy()
@@ -461,6 +375,7 @@ export class WiggleRenderer {
     bpRangeLo: number,
     bpRangeLength: number,
     regionStart: number,
+    numRows: number,
     state: WiggleGPURenderState,
   ) {
     this.uniformF32[0] = bpRangeHi
@@ -470,23 +385,11 @@ export class WiggleRenderer {
     this.uniformF32[4] = state.canvasHeight
     this.uniformI32[5] = state.scaleType
     this.uniformI32[6] = state.renderingType
-    this.uniformI32[7] = state.useBicolor
+    this.uniformF32[7] = numRows
     this.uniformF32[8] = state.domainY[0]
     this.uniformF32[9] = state.domainY[1]
-    this.uniformF32[10] = state.bicolorPivot
+    this.uniformF32[10] = state.rowPadding
     this.uniformF32[11] = 0
-    this.uniformF32[12] = state.color[0]
-    this.uniformF32[13] = state.color[1]
-    this.uniformF32[14] = state.color[2]
-    this.uniformF32[15] = 0
-    this.uniformF32[16] = state.posColor[0]
-    this.uniformF32[17] = state.posColor[1]
-    this.uniformF32[18] = state.posColor[2]
-    this.uniformF32[19] = 0
-    this.uniformF32[20] = state.negColor[0]
-    this.uniformF32[21] = state.negColor[1]
-    this.uniformF32[22] = state.negColor[2]
-    this.uniformF32[23] = 0
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 
@@ -500,19 +403,27 @@ export class WiggleRenderer {
   }
 
   private interleaveInstances(
-    positions: Uint32Array,
-    scores: Float32Array,
-    count: number,
+    sources: SourceRenderData[],
+    totalFeatures: number,
   ) {
-    const buf = new ArrayBuffer(count * INSTANCE_BYTES)
+    const buf = new ArrayBuffer(totalFeatures * INSTANCE_BYTES)
     const u32 = new Uint32Array(buf)
     const f32 = new Float32Array(buf)
-    for (let i = 0; i < count; i++) {
-      const off = i * INSTANCE_STRIDE
-      u32[off] = positions[i * 2]!
-      u32[off + 1] = positions[i * 2 + 1]!
-      f32[off + 2] = scores[i]!
-      f32[off + 3] = 0
+    let offset = 0
+    for (const [rowIndex, source] of sources.entries()) {
+      for (let i = 0; i < source.numFeatures; i++) {
+        const off = (offset + i) * INSTANCE_STRIDE
+        u32[off] = source.featurePositions[i * 2]!
+        u32[off + 1] = source.featurePositions[i * 2 + 1]!
+        f32[off + 2] = source.featureScores[i]!
+        f32[off + 3] =
+          i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
+        f32[off + 4] = rowIndex
+        f32[off + 5] = source.color[0]
+        f32[off + 6] = source.color[1]
+        f32[off + 7] = source.color[2]
+      }
+      offset += source.numFeatures
     }
     return buf
   }
