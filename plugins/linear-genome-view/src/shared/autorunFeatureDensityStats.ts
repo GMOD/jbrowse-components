@@ -30,9 +30,9 @@ export default async function autorunFeatureDensityStats(
       return
     }
 
-    // don't re-estimate featureDensity even if zoom level changes,
+    // don't re-estimate even if zoom level changes,
     // jbrowse 1-style assume it's sort of representative
-    if (self.featureDensityStats?.featureDensity !== undefined) {
+    if (self.featureDensityStats) {
       self.setCurrStatsBpPerPx(view.bpPerPx)
       return
     }

@@ -79,7 +79,6 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         }
       | undefined
     if (!index) {
-      console.log('[VcfTabixAdapter] no index found, falling back to super')
       return super.getMultiRegionFeatureDensityStats(regions, opts)
     }
     let bytes = 0
@@ -90,12 +89,10 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
         region.end,
         opts,
       )
-      console.log(`[VcfTabixAdapter] region ${region.refName}:${region.start}-${region.end} → ${chunks.length} chunks`)
       for (const chunk of chunks) {
         bytes += chunk.fetchedSize()
       }
     }
-    console.log(`[VcfTabixAdapter] total estimated bytes: ${bytes}, fetchSizeLimit: 1_000_000`)
     return { bytes, fetchSizeLimit: 1_000_000 }
   }
 

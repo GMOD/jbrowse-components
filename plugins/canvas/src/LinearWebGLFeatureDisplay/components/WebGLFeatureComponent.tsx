@@ -190,7 +190,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   model,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [rendererGeneration, setRendererGeneration] = useState(0)
+  const [rendererReady, setRendererReady] = useState(false)
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
     null,
   )
@@ -264,20 +264,17 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
           if (!ok) {
             console.error('[WebGLFeatureComponent] GPU initialization failed')
           }
-          if (ok) {
-            if (uploadedDataRef.current.size > 0) {
-              console.warn('[WebGLFeatureComponent] Renderer re-initialized, re-uploading GPU data')
-            }
-            uploadedDataRef.current.clear()
-            setRendererGeneration(g => g + 1)
-          }
+          setRendererReady(ok)
+          uploadedDataRef.current.clear()
         })
         .catch((e: unknown) => {
           console.error('[WebGLFeatureComponent] GPU initialization error:', e)
+          setRendererReady(false)
         })
     }
 
     renderer.onDeviceLost = () => {
+      setRendererReady(false)
       uploadedDataRef.current.clear()
       doInit()
     }
@@ -315,7 +312,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || rendererGeneration === 0) {
+    if (!renderer || !rendererReady) {
       return
     }
 
@@ -365,7 +362,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     renderer.pruneStaleRegions([...activeRegions])
 
     renderWithBlocksRef.current()
-  }, [rpcDataMap, rendererGeneration])
+  }, [rpcDataMap, rendererReady])
 
   useEffect(() => {
     const canvas = canvasRef.current
