@@ -85,6 +85,18 @@ export function useWheelScroll(
 
       const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
       const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+
+      console.log('[useWheelScroll]', performance.now().toFixed(2), JSON.stringify({
+        deltaY,
+        deltaX,
+        deltaMode: event.deltaMode,
+        ctrlKey: event.ctrlKey,
+        scrollZoom: model.scrollZoom,
+        absDeltaYgtX: Math.abs(deltaY) > Math.abs(deltaX),
+        scrollZoomDelta: scrollZoomDelta.current,
+        zoomScheduled: zoomScheduled.current,
+      }))
+
       if (event.ctrlKey) {
         event.preventDefault()
         // Dynamically detect pinch-to-zoom vs wheel scroll by examining deltaY magnitude.
@@ -106,27 +118,12 @@ export function useWheelScroll(
         samples = []
       } else if (model.scrollZoom && Math.abs(deltaY) > Math.abs(deltaX)) {
         event.preventDefault()
-        if (
-          scrollZoomDelta.current !== 0 &&
-          Math.sign(deltaY) !== Math.sign(scrollZoomDelta.current)
-        ) {
-          scrollZoomDelta.current = 0
-        }
-        scrollZoomDelta.current += deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
-        lastZoomClientX.current = event.clientX
-        if (!zoomScheduled.current) {
-          zoomScheduled.current = true
-          zoomRafId.current = window.requestAnimationFrame(() => {
-            const d = scrollZoomDelta.current
-            model.zoomTo(
-              d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
-              lastZoomClientX.current -
-                (curr?.getBoundingClientRect().left || 0),
-            )
-            scrollZoomDelta.current = 0
-            zoomScheduled.current = false
-          })
-        }
+        const d = deltaY / SCROLL_ZOOM_FACTOR_DIVISOR
+        console.log('[scrollZoom] immediate apply', performance.now().toFixed(2), JSON.stringify({ d, deltaY, bpPerPx: model.bpPerPx }))
+        model.zoomTo(
+          d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
+          event.clientX - (curr?.getBoundingClientRect().left || 0),
+        )
       } else {
         // this is needed to stop the event from triggering "back button
         // action" on MacOSX etc.  but is a heuristic to avoid preventing the

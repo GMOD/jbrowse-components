@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
@@ -40,48 +41,6 @@ export interface VariantDisplayModel {
 
 type LGV = LinearGenomeViewModel
 
-// minimum visual hit target in pixels — accounts for shapes like insertion
-// triangles that are drawn wider than their genomic coordinates
-const MIN_HIT_TARGET_PX = 4
-
-function findSmallestOverlappingFeature(
-  featureList: VariantCellData['featureList'],
-  genomicPos: number,
-  bpPadding: number,
-) {
-  const searchStart = genomicPos - bpPadding
-  const searchEnd = genomicPos + bpPadding
-
-  let lo = 0
-  let hi = featureList.length - 1
-
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1
-    if (featureList[mid]!.end <= searchStart) {
-      lo = mid + 1
-    } else {
-      hi = mid - 1
-    }
-  }
-
-  let best: VariantCellData['featureList'][number] | undefined
-  let bestLen = Infinity
-  for (let i = lo; i < featureList.length; i++) {
-    const f = featureList[i]!
-    if (f.start > searchEnd) {
-      break
-    }
-    if (f.start <= searchEnd && f.end > searchStart) {
-      const len = f.end - f.start
-      if (len < bestLen) {
-        bestLen = len
-        best = f
-      }
-    }
-  }
-  return best
-}
-
 const WebGLVariantComponent = observer(function WebGLVariantComponent({
   model,
 }: {
@@ -89,7 +48,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cellDataRef = useRef<VariantCellData | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const [ready, setReady] = useState(false)
 
   const view = getContainingView(model) as LGV
@@ -108,14 +67,14 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       .then(ok => {
         if (!ok) {
           console.error('[WebGLVariantComponent] GPU initialization failed')
-          setError('GPU initialization failed')
+          setError(new Error('GPU initialization failed'))
         } else {
           setReady(true)
         }
       })
       .catch((e: unknown) => {
         console.error('[WebGLVariantComponent] GPU initialization error:', e)
-        setError(`GPU initialization error: ${e}`)
+        setError(e)
       })
   }, [])
 
@@ -177,12 +136,19 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
 
   const lastHoveredRef = useRef<string | undefined>(undefined)
 
+  const flatbushIndex = useMemo(
+    () =>
+      model.webglCellData?.flatbushData
+        ? Flatbush.from(model.webglCellData.flatbushData)
+        : null,
+    [model.webglCellData],
+  )
+
   const getFeatureUnderMouse = useCallback(
     (eventClientX: number, eventClientY: number) => {
       const canvas = canvasRef.current
       const cellData = cellDataRef.current
-      const sources = model.sources
-      if (!canvas || !cellData || !sources?.length) {
+      if (!canvas || !cellData || !flatbushIndex) {
         return undefined
       }
       const rect = canvas.getBoundingClientRect()
@@ -190,7 +156,6 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       const mouseY = eventClientY - rect.top
 
       const regions = model.visibleRegions
-      // Find which region block the mouse is in
       const region = regions.find(
         r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
       )
@@ -201,47 +166,57 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       const blockWidth = region.screenEndPx - region.screenStartPx
       const regionLengthBp = region.end - region.start
       const bpPerPx = regionLengthBp / blockWidth
-      const bpPadding = MIN_HIT_TARGET_PX * bpPerPx
 
       const genomicPos =
         region.start +
         ((mouseX - region.screenStartPx) / blockWidth) * regionLengthBp
-      const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
-      const source = sources[rowIdx]
-      if (!source) {
-        return undefined
+      const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
+
+      const bpPadding = 10 * bpPerPx
+      const hits = flatbushIndex.search(
+        genomicPos - bpPadding,
+        rowFrac - 0.5,
+        genomicPos + bpPadding,
+        rowFrac + 0.5,
+      )
+
+      let bestIdx = -1
+      let bestDist = Infinity
+      for (const idx of hits) {
+        const item = cellData.flatbushItems[idx]!
+        const dx =
+          genomicPos < item.genomicStart
+            ? item.genomicStart - genomicPos
+            : genomicPos > item.genomicEnd
+              ? genomicPos - item.genomicEnd
+              : 0
+        if (dx < bestDist) {
+          bestDist = dx
+          bestIdx = idx
+        }
       }
 
-      const hit = findSmallestOverlappingFeature(
-        cellData.featureList,
-        genomicPos,
-        bpPadding,
-      )
-      if (hit) {
-        const info = cellData.featureGenotypeMap[hit.featureId]
-        if (info) {
-          const sampleName = source.baseName ?? source.name
-          const genotype = info.genotypes[sampleName]
-          if (genotype) {
-            const alleles = makeSimpleAltString(genotype, info.ref, info.alt)
-            return {
-              genotype,
-              alleles,
-              featureName: info.name,
-              description:
-                info.alt.length >= 3
-                  ? 'multiple ALT alleles'
-                  : info.description,
-              length: getBpDisplayStr(info.length),
-              name: source.name,
-              featureId: hit.featureId,
-            }
-          }
+      if (bestIdx >= 0) {
+        const item = cellData.flatbushItems[bestIdx]!
+        const info = cellData.featureGenotypeMap[item.featureId]!
+        const genotype = info.genotypes[item.sourceName]!
+        const alleles = makeSimpleAltString(genotype, info.ref, info.alt)
+        return {
+          genotype,
+          alleles,
+          featureName: info.name,
+          description:
+            info.alt.length >= 3
+              ? 'multiple ALT alleles'
+              : info.description,
+          length: getBpDisplayStr(info.length),
+          name: item.sourceName,
+          featureId: item.featureId,
         }
       }
       return undefined
     },
-    [model],
+    [model, flatbushIndex],
   )
 
   const handleMouseMove = useCallback(
@@ -312,7 +287,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   if (error) {
     return (
       <div style={{ width, height, color: 'red', padding: 10 }}>
-        GPU Error: {error}
+        GPU Error: {`${error}`}
       </div>
     )
   }

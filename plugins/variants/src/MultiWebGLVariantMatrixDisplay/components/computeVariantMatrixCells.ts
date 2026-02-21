@@ -25,17 +25,6 @@ export interface MatrixCellData {
   featureData: FeatureData[]
 }
 
-const colorCache = new Map<string, [number, number, number, number]>()
-
-function getCachedRGBA(color: string) {
-  let rgba = colorCache.get(color)
-  if (!rgba) {
-    rgba = colorToRGBA(color)
-    colorCache.set(color, rgba)
-  }
-  return rgba
-}
-
 export function computeVariantMatrixCells({
   mafs,
   sources,
@@ -47,6 +36,16 @@ export function computeVariantMatrixCells({
   renderingMode: string
   genotypesCache: Map<string, Record<string, string>>
 }): MatrixCellData {
+  const colorCache = new Map<string, [number, number, number, number]>()
+  function getCachedRGBA(color: string) {
+    let rgba = colorCache.get(color)
+    if (!rgba) {
+      rgba = colorToRGBA(color)
+      colorCache.set(color, rgba)
+    }
+    return rgba
+  }
+
   const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
 
