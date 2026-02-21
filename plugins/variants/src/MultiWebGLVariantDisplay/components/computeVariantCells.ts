@@ -1,7 +1,5 @@
-import { set1 } from '@jbrowse/core/ui/colors'
-
-import { REFERENCE_COLOR, UNPHASED_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
+import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
@@ -64,21 +62,6 @@ function getCachedRGBA(color: string) {
   return rgba
 }
 
-function getPhasedColor(
-  alleles: string[],
-  HP: number,
-  PS?: string,
-  drawReference = true,
-) {
-  const allele = +alleles[HP]!
-  if (allele) {
-    const c =
-      PS !== undefined ? `hsl(${+PS % 255}, 50%, 50%)` : set1[allele - 1]
-    return c || UNPHASED_COLOR
-  }
-  return drawReference ? REFERENCE_COLOR : undefined
-}
-
 export function computeVariantCells({
   mafs,
   sources,
@@ -119,7 +102,7 @@ export function computeVariantCells({
   const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
 
   if (renderingMode === 'phased') {
-    for (const { feature } of mafs) {
+    for (const { feature, mostFrequentAlt } of mafs) {
       const featureId = feature.id()
       const start = feature.get('start')
       const end = feature.get('end')
@@ -162,7 +145,13 @@ export function computeVariantCells({
             const alleles =
               splitCache[genotype] ??
               (splitCache[genotype] = genotype.split('|'))
-            const c = getPhasedColor(alleles, HP!, undefined, drawRef)
+            const c = getPhasedColor(
+              alleles,
+              HP!,
+              mostFrequentAlt,
+              undefined,
+              drawRef,
+            )
             if (c) {
               const rgba = getCachedRGBA(c)
               const idx = cellCount

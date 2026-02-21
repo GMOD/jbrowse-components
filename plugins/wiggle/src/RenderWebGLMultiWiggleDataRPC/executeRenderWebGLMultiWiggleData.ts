@@ -18,7 +18,7 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { WIGGLE_POS_COLOR_DEFAULT } from '../util'
+import { WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 
 import type {
   WebGLMultiWiggleDataResult,

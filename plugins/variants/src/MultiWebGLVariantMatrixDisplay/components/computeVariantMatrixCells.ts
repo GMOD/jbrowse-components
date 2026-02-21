@@ -1,7 +1,5 @@
-import { set1 } from '@jbrowse/core/ui/colors'
-
-import { REFERENCE_COLOR, UNPHASED_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
+import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
@@ -37,21 +35,6 @@ function getCachedRGBA(color: string) {
   return rgba
 }
 
-function getPhasedColor(
-  alleles: string[],
-  HP: number,
-  PS?: string,
-  drawReference = true,
-) {
-  const allele = +alleles[HP]!
-  if (allele) {
-    const c =
-      PS !== undefined ? `hsl(${+PS % 255}, 50%, 50%)` : set1[allele - 1]
-    return c || UNPHASED_COLOR
-  }
-  return drawReference ? REFERENCE_COLOR : undefined
-}
-
 export function computeVariantMatrixCells({
   mafs,
   sources,
@@ -78,7 +61,7 @@ export function computeVariantMatrixCells({
 
   if (renderingMode === 'phased') {
     for (let idx = 0; idx < numFeatures; idx++) {
-      const { feature } = mafs[idx]!
+      const { feature, mostFrequentAlt } = mafs[idx]!
       const featureId = feature.id()
       const hasPhaseSet = (
         feature.get('FORMAT') as string | undefined
@@ -120,7 +103,7 @@ export function computeVariantMatrixCells({
                 const alleles =
                   splitCache[genotype] ??
                   (splitCache[genotype] = genotype.split('|'))
-                const c = getPhasedColor(alleles, HP!, PS)
+                const c = getPhasedColor(alleles, HP!, mostFrequentAlt, PS)
                 if (c) {
                   const rgba = getCachedRGBA(c)
                   const ci = cellCount
@@ -171,7 +154,7 @@ export function computeVariantMatrixCells({
               const alleles =
                 splitCache[genotype] ??
                 (splitCache[genotype] = genotype.split('|'))
-              const c = getPhasedColor(alleles, HP!)
+              const c = getPhasedColor(alleles, HP!, mostFrequentAlt)
               if (c) {
                 const rgba = getCachedRGBA(c)
                 const ci = cellCount

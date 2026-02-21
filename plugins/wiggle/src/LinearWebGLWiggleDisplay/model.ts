@@ -139,7 +139,7 @@ export default function stateModelFactory(
         return (
           pluginManager
             .getAdapterType(adapterConfig.type)
-            ?.adapterCapabilities?.includes('hasResolution') ?? false
+            ?.adapterCapabilities.includes('hasResolution') ?? false
         )
       },
 

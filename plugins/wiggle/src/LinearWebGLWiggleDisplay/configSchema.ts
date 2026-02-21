@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { WIGGLE_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util'
+import { WIGGLE_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 
 export default ConfigurationSchema(
   'LinearWiggleDisplay',

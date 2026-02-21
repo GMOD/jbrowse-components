@@ -172,7 +172,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       renderer.uploadRegion(regionNumber, data.regionStart, sources)
     }
     renderer.pruneRegions(activeRegions)
-  }, [model.rpcDataMap, model.color, model.posColor, model.negColor, ready])
+  }, [model, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current

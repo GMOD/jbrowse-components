@@ -16,7 +16,6 @@ const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 const UNIFORM_SIZE = 48
 const RECT_STRIDE = 8
 const LINE_STRIDE = 8
-const CHEVRON_STRIDE = 8
 const ARROW_STRIDE = 8
 
 interface GpuRegionData {
@@ -149,7 +148,7 @@ export class CanvasFeatureRenderer {
     if (device) {
       device.lost
         .then(info => {
-          console.log('[CanvasFeatureRenderer] Device lost:', info.message)
+          console.warn('[CanvasFeatureRenderer] Device lost:', info.message)
           if (CanvasFeatureRenderer.device === device) {
             CanvasFeatureRenderer.device = null
             CanvasFeatureRenderer.rectPipeline = null

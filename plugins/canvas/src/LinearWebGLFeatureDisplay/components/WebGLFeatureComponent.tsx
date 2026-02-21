@@ -411,7 +411,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [])
+  }, [model.height, model.maxY])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -820,7 +820,6 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
     return overlays.length > 0 ? overlays : null
   }, [
     featureItemMap,
-    rpcDataMap,
     view,
     width,
     bpPerPx,

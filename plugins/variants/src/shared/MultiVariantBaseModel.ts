@@ -971,36 +971,59 @@ export default function MultiVariantBaseModelF(
        */
       legendItems(): LegendItem[] {
         if (self.renderingMode === 'phased') {
-          let maxAltAlleles = 1
+          let hasSecondaryAlt = false
+          let hasUnphased = false
           const features = self.featuresVolatile
           if (features) {
             for (const feature of features) {
               const alt = feature.get('ALT') as string[] | undefined
-              if (alt && alt.length > maxAltAlleles) {
-                maxAltAlleles = alt.length
+              if (alt && alt.length > 1) {
+                hasSecondaryAlt = true
+              }
+              if (!hasUnphased) {
+                const genotypes = feature.get('genotypes') as
+                  | Record<string, string>
+                  | undefined
+                if (genotypes) {
+                  for (const key in genotypes) {
+                    if (genotypes[key]?.includes('/')) {
+                      hasUnphased = true
+                      break
+                    }
+                  }
+                }
+              }
+              if (hasSecondaryAlt && hasUnphased) {
+                break
               }
             }
           }
           const items: LegendItem[] = [
             { color: REFERENCE_COLOR, label: 'Reference' },
-            { color: set1[0], label: 'Alt allele 1' },
+            { color: set1[0], label: 'Alt allele' },
           ]
-          if (maxAltAlleles >= 2) {
-            items.push({ color: set1[1], label: 'Alt allele 2' })
+          if (hasSecondaryAlt) {
+            items.push({ color: set1[1], label: 'Other alt allele' })
           }
-          if (maxAltAlleles >= 3) {
-            items.push({ color: set1[2], label: 'Alt allele 3' })
+          if (hasUnphased) {
+            items.push({ color: UNPHASED_COLOR, label: 'Unphased' })
           }
-          items.push({ color: UNPHASED_COLOR, label: 'Unphased' })
           return items
         }
-        return [
+        const hasSecondaryAlt = self.featuresVolatile?.some(f => {
+          const alt = f.get('ALT') as string[] | undefined
+          return alt && alt.length > 1
+        })
+        const items: LegendItem[] = [
           { color: REFERENCE_COLOR, label: 'Homozygous reference' },
           { color: getAltColorForDosage(0.5), label: 'Heterozygous alt' },
           { color: getAltColorForDosage(1), label: 'Homozygous alt' },
-          { color: OTHER_ALT_COLOR, label: 'Other alt allele' },
-          { color: NO_CALL_COLOR, label: 'No call' },
         ]
+        if (hasSecondaryAlt) {
+          items.push({ color: OTHER_ALT_COLOR, label: 'Other alt allele' })
+        }
+        items.push({ color: NO_CALL_COLOR, label: 'No call' })
+        return items
       },
     }))
     .actions(self => ({
