@@ -2,8 +2,9 @@ import { Suspense, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+
 import Crosshair from './MultiVariantCrosshairs.tsx'
-import LegendBar from './MultiVariantLegendBar.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import { useMouseTracking } from '../hooks/useMouseTracking.ts'
 
@@ -29,7 +30,7 @@ const MultiVariantBaseDisplayComponent = observer(
         onMouseLeave={handleMouseLeave}
       >
         <TreeSidebar model={model} />
-        <LegendBar model={model} />
+        <FloatingLegend items={model.legendItems()} />
         <Suspense fallback={null}>
           <DisplayMessageComponent model={model} />
         </Suspense>

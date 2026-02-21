@@ -4,7 +4,6 @@ import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiVariantColorLegend.tsx'
-import MultiVariantLegendBarWrapper from './MultiVariantLegendBarWrapper.tsx'
 
 import type { LegendBarModel } from './types.ts'
 
@@ -14,8 +13,9 @@ const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
   exportSVG?: boolean
 }) {
   const { model } = props
-  const { canDisplayLabels, rowHeight, sources } = model
+  const { id, scrollTop, height, canDisplayLabels, rowHeight, sources } = model
   const svgFontSize = Math.min(rowHeight, 12)
+  const clipid = `legend-${typeof jest === 'undefined' ? id : 'test'}`
 
   const labelWidth = useMemo(() => {
     if (!sources) {
@@ -34,9 +34,18 @@ const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
   }, [sources, svgFontSize, canDisplayLabels])
 
   return sources ? (
-    <MultiVariantLegendBarWrapper {...props}>
-      <ColorLegend model={model} labelWidth={labelWidth} />
-    </MultiVariantLegendBarWrapper>
+    <>
+      <defs>
+        <clipPath id={clipid}>
+          <rect x={0} y={0} width={1000} height={height} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clipid})`}>
+        <g transform={`translate(0,${-scrollTop})`}>
+          <ColorLegend model={model} labelWidth={labelWidth} />
+        </g>
+      </g>
+    </>
   ) : null
 })
 

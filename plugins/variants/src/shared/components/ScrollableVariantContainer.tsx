@@ -2,7 +2,8 @@ import { Suspense } from 'react'
 
 import { observer } from 'mobx-react'
 
-import LegendBar from './MultiVariantLegendBar.tsx'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+
 import TreeSidebar from './TreeSidebar.tsx'
 
 import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
@@ -41,7 +42,7 @@ const ScrollableVariantContainer = observer(
         }}
       >
         <TreeSidebar model={model} />
-        <LegendBar model={model} />
+        <FloatingLegend items={model.legendItems()} />
         <div
           style={{
             position: 'absolute',

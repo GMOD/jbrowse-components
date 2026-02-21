@@ -244,6 +244,16 @@ export default function MultiVariantBaseModelF(
        * #volatile
        */
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
+      webglCellData: undefined as unknown,
+      webglCellDataLoading: false,
+    }))
+    .actions(self => ({
+      setWebGLCellData(data: unknown) {
+        self.webglCellData = data
+      },
+      setWebGLCellDataLoading(val: boolean) {
+        self.webglCellDataLoading = val
+      },
     }))
     .views(self => ({
       /**

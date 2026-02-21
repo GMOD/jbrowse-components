@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+
+import { sharedVariantConfigSlots } from '../shared/SharedVariantConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,46 +25,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      showReferenceAlleles: {
-        type: 'boolean',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       */
-      showSidebarLabels: {
-        type: 'boolean',
-        defaultValue: true,
-      },
-      /**
-       * #slot
-       */
-      showTree: {
-        type: 'boolean',
-        defaultValue: true,
-      },
-      /**
-       * #slot
-       */
-      renderingMode: {
-        type: 'stringEnum',
-        model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
-        defaultValue: 'alleleCount',
-      },
-      /**
-       * #slot
-       */
-      minorAlleleFrequencyFilter: {
-        type: 'number',
-        defaultValue: 0,
-      },
-      /**
-       * #slot
-       */
-      colorBy: {
-        type: 'string',
-        defaultValue: '',
-      },
+      ...sharedVariantConfigSlots,
     },
     {
       /**
