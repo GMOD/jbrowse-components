@@ -40,6 +40,7 @@ export interface MultiWiggleDisplayModel {
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
+  statusMessage?: string
   scalebarOverlapLeft: number
 }
 
@@ -329,7 +330,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         ) : null}
       </svg>
 
-      <LoadingOverlay statusMessage="Loading" isVisible={model.isLoading} />
+      <LoadingOverlay statusMessage={model.statusMessage || 'Loading'} isVisible={model.isLoading} />
     </div>
   )
 })

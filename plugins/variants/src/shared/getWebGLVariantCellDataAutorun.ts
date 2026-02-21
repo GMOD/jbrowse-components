@@ -65,43 +65,53 @@ export function getWebGLVariantCellDataAutorun(self: {
           if (sources) {
             self.setWebGLCellDataLoading(true)
             const sessionId = getRpcSessionId(self)
-            const result = (await rpcManager.call(
-              sessionId,
-              'MultiVariantGetWebGLCellData',
-              {
-                regions: view.dynamicBlocks.contentBlocks,
-                sources,
-                minorAlleleFrequencyFilter,
-                lengthCutoffFilter,
-                renderingMode,
-                referenceDrawingMode,
-                mode: webglCellDataMode,
+            try {
+              const result = (await rpcManager.call(
                 sessionId,
-                adapterConfig,
-                stopToken,
-                statusCallback: (arg: string) => {
-                  if (isAlive(self)) {
-                    self.setStatusMessage(arg)
-                  }
+                'MultiVariantGetWebGLCellData',
+                {
+                  regions: view.dynamicBlocks.contentBlocks,
+                  sources,
+                  minorAlleleFrequencyFilter,
+                  lengthCutoffFilter,
+                  renderingMode,
+                  referenceDrawingMode,
+                  mode: webglCellDataMode,
+                  sessionId,
+                  adapterConfig,
+                  stopToken,
+                  statusCallback: (arg: string) => {
+                    if (isAlive(self)) {
+                      self.setStatusMessage(arg)
+                    }
+                  },
                 },
-              },
-            )) as {
-              sampleInfo: Record<string, SampleInfo>
-              hasPhased: boolean
-              simplifiedFeatures: SimpleFeatureSerialized[]
-            }
-            if (isAlive(self)) {
-              self.setHasPhased(result.hasPhased)
-              self.setSampleInfo(result.sampleInfo)
-              self.setFeatures(
-                result.simplifiedFeatures.map(f => new SimpleFeature(f)),
-              )
-              self.setWebGLCellData(result)
+              )) as {
+                sampleInfo: Record<string, SampleInfo>
+                hasPhased: boolean
+                simplifiedFeatures: SimpleFeatureSerialized[]
+              }
+              if (isAlive(self)) {
+                self.setHasPhased(result.hasPhased)
+                self.setSampleInfo(result.sampleInfo)
+                self.setFeatures(
+                  result.simplifiedFeatures.map(f => new SimpleFeature(f)),
+                )
+                self.setWebGLCellData(result)
+              }
+            } finally {
+              if (isAlive(self)) {
+                self.setWebGLCellDataLoading(false)
+                self.setStatusMessage(undefined)
+              }
             }
           }
         } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
-            getSession(self).notifyError(`${e}`, e)
+          if (isAlive(self)) {
+            self.setWebGLCellDataLoading(false)
+            if (!isAbortException(e)) {
+              getSession(self).notifyError(`${e}`, e)
+            }
           }
         }
       },

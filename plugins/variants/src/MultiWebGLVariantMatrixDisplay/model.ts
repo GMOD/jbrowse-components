@@ -55,7 +55,6 @@ export default function stateModelFactory(
     .actions(self => ({
       setWebGLCellData(data: unknown) {
         self.webglCellData = data as MatrixCellData | undefined
-        self.webglCellDataLoading = false
       },
       setWebGLCellDataLoading(val: boolean) {
         self.webglCellDataLoading = val

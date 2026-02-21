@@ -51,7 +51,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => ({
       setWebGLCellData(data: unknown) {
         self.webglCellData = data as VariantCellData | undefined
-        self.webglCellDataLoading = false
       },
       setWebGLCellDataLoading(val: boolean) {
         self.webglCellDataLoading = val

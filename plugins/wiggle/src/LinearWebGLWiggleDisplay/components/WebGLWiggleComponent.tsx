@@ -39,6 +39,7 @@ export interface WiggleDisplayModel {
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
+  statusMessage?: string
   scalebarOverlapLeft: number
 }
 
@@ -258,7 +259,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
           <YScaleBar model={model} />
         </svg>
       ) : null}
-      <LoadingOverlay statusMessage="Loading" isVisible={model.isLoading} />
+      <LoadingOverlay statusMessage={model.statusMessage || 'Loading'} isVisible={model.isLoading} />
     </div>
   )
 })

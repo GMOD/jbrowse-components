@@ -292,6 +292,11 @@ export default function stateModelFactory(
             stopToken,
             bpPerPx,
             resolution,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
+            },
           },
         )) as WebGLWiggleDataResult
 
@@ -341,6 +346,7 @@ export default function stateModelFactory(
           if (isAlive(self) && self.fetchGeneration === generation) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
+            self.setStatusMessage(undefined)
           }
         }
       }

@@ -100,6 +100,7 @@ export function doAfterAttach(self: SharedLDModel) {
       if (isAlive(self)) {
         self.setRenderingStopToken(undefined)
         self.setLoading(false)
+        self.setStatusMessage(undefined)
       }
     }
   }

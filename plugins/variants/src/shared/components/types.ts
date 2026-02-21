@@ -19,6 +19,7 @@ export interface TreeSidebarModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
+  lineZoneHeight?: number
   scrollTop: number
   showTree: boolean
   sources?: Source[]

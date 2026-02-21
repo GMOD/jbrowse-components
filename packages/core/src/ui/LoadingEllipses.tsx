@@ -1,30 +1,38 @@
 import { Typography } from '@mui/material'
 
-import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
+import { keyframes, makeStyles } from '../util/tss-react/index.ts'
 
 import type { TypographyProps } from '@mui/material'
 
+const dot1 = keyframes`
+  0%, 25% { visibility: hidden; }
+  25.1%, 100% { visibility: visible; }
+`
+const dot2 = keyframes`
+  0%, 50% { visibility: hidden; }
+  50.1%, 100% { visibility: visible; }
+`
+const dot3 = keyframes`
+  0%, 75% { visibility: hidden; }
+  75.1%, 100% { visibility: visible; }
+`
+
 const useStyles = makeStyles()({
   dots: {
-    '&::after': {
-      display: 'inline-block',
-      content: '""',
-      width: '1em',
-      textAlign: 'left',
-      animation: `${keyframes`
-      0% {
-        content: '';
-      }
-      25% {
-          content: '.';
-      }
-      50% {
-        content: '..';
-      }
-      75% {
-        content: '...';
-      }
-      `} 1.2s infinite ease-in-out`,
+    display: 'inline-block',
+    width: '1em',
+    textAlign: 'left',
+    '& span': {
+      visibility: 'hidden',
+      '&:nth-of-type(1)': {
+        animation: `${dot1} 1.2s infinite`,
+      },
+      '&:nth-of-type(2)': {
+        animation: `${dot2} 1.2s infinite`,
+      },
+      '&:nth-of-type(3)': {
+        animation: `${dot3} 1.2s infinite`,
+      },
     },
   },
 })
@@ -42,12 +50,13 @@ export default function LoadingEllipses({
 }: Props) {
   const { classes } = useStyles()
   return (
-    <Typography
-      className={cx(classes.dots, rest.className)}
-      {...rest}
-      variant={variant}
-    >
+    <Typography {...rest} variant={variant}>
       {message || 'Loading'}
+      <span className={classes.dots}>
+        <span>.</span>
+        <span>.</span>
+        <span>.</span>
+      </span>
     </Typography>
   )
 }

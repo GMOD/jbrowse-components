@@ -71,8 +71,15 @@ const TreeSidebar = observer(function TreeSidebar({
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
-  const { hierarchy, treeAreaWidth, height, scrollTop, showTree, sources } =
-    model
+  const {
+    hierarchy,
+    treeAreaWidth,
+    height,
+    lineZoneHeight = 0,
+    scrollTop,
+    showTree,
+    sources,
+  } = model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -202,20 +209,21 @@ const TreeSidebar = observer(function TreeSidebar({
         <div
           className={classes.treeBackground}
           style={{
+            top: lineZoneHeight,
             width: treeAreaWidth,
-            height,
+            height: height - lineZoneHeight,
           }}
         />
         {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
         <canvas
           ref={treeCanvasRef}
           width={treeAreaWidth * 2}
-          height={height * 2}
+          height={(height - lineZoneHeight) * 2}
           style={{
             width: treeAreaWidth,
-            height,
+            height: height - lineZoneHeight,
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             pointerEvents: 'none',
           }}
@@ -224,12 +232,12 @@ const TreeSidebar = observer(function TreeSidebar({
         <canvas
           ref={mouseoverCanvasRef}
           width={viewWidth}
-          height={height}
+          height={height - lineZoneHeight}
           style={{
             width: viewWidth,
-            height,
+            height: height - lineZoneHeight,
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             zIndex: 1,
             pointerEvents: 'none',
@@ -242,10 +250,10 @@ const TreeSidebar = observer(function TreeSidebar({
           onClick={handleClick}
           style={{
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             width: treeAreaWidth,
-            height,
+            height: height - lineZoneHeight,
             zIndex: 2,
             cursor: 'pointer',
           }}
@@ -258,7 +266,9 @@ const TreeSidebar = observer(function TreeSidebar({
         }}
         className={classes.resizeHandle}
         style={{
+          top: lineZoneHeight,
           left: treeAreaWidth,
+          height: `calc(100% - ${lineZoneHeight}px)`,
         }}
         vertical
       />

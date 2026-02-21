@@ -1303,6 +1303,11 @@ export default function stateModelFactory(
             drawInter: self.arcsState.drawInter,
             drawLongRange: self.arcsState.drawLongRange,
             stopToken,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
+            },
           },
         )) as WebGLArcsDataResult
         if (isAlive(self)) {

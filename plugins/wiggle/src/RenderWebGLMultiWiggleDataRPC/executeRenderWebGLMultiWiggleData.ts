@@ -10,6 +10,7 @@
  */
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -43,6 +44,7 @@ interface ExecuteParams {
     stopToken?: string
     bpPerPx?: number
     resolution?: number
+    statusCallback?: (msg: string) => void
   }
 }
 
@@ -59,16 +61,15 @@ export async function executeRenderWebGLMultiWiggleData({
     stopToken,
     bpPerPx = 0,
     resolution = 1,
+    statusCallback,
   } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  // Get adapter
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  // Get sources if adapter supports it
   let sourcesList: SourceInfo[] = sourcesArg || []
   if (sourcesList.length === 0 && 'getSources' in dataAdapter) {
     const adapterSources = await (
@@ -78,8 +79,8 @@ export async function executeRenderWebGLMultiWiggleData({
   }
 
   const fetchOpts = { bpPerPx, resolution }
-  const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
+  const featuresArray = await updateStatus('Loading wiggle data', statusCallback, () =>
+    firstValueFrom(dataAdapter.getFeatures(region, fetchOpts).pipe(toArray())),
   )
 
   checkStopToken2(stopTokenCheck)

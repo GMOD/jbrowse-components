@@ -377,19 +377,15 @@ export async function executeRenderWebGLArcsData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Compute basic depth coverage from feature start/end positions
-  const coverageFeatures = deduped.map(f => ({
-    start: f.get('start'),
-    end: f.get('end'),
-  }))
   const intRegionStart = Math.floor(region.start)
   const regionEnd = Math.ceil(region.end)
-  const coverage = computeCoverage(
-    coverageFeatures,
-    [],
-    intRegionStart,
-    regionEnd,
-  )
+  const coverage = await updateStatus('Computing coverage', statusCallback, () => {
+    const coverageFeatures = deduped.map(f => ({
+      start: f.get('start'),
+      end: f.get('end'),
+    }))
+    return computeCoverage(coverageFeatures, [], intRegionStart, regionEnd)
+  })
 
   return {
     regionStart,

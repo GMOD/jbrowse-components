@@ -56,7 +56,7 @@ export default class VariantsPlugin extends Plugin {
     pluginManager.addRpcMethod(
       () => new MultiVariantClusterGenotypeMatrix(pluginManager),
     )
-pluginManager.addRpcMethod(
+    pluginManager.addRpcMethod(
       () => new MultiVariantGetWebGLCellData(pluginManager),
     )
   }
