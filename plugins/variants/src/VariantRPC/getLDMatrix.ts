@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { updateStatus } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -369,6 +370,7 @@ export async function getLDMatrix({
     jexlFilters?: string[]
     ldMetric?: LDMetric
     signedLD?: boolean
+    statusCallback?: (msg: string) => void
   }
 }): Promise<LDMatrixResult> {
   const {
@@ -383,6 +385,7 @@ export async function getLDMatrix({
     stopToken,
     ldMetric = 'r2',
     signedLD = false,
+    statusCallback,
   } = args
   const stopTokenCheck = createStopTokenChecker(stopToken)
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
@@ -415,9 +418,10 @@ export async function getLDMatrix({
 
   const splitCache = {} as Record<string, string[]>
 
-  // Get all raw features first to count total
-  const rawFeatures = await firstValueFrom(
-    dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+  const rawFeatures = await updateStatus('Loading features', statusCallback, () =>
+    firstValueFrom(
+      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+    ),
   )
   const totalVariants = rawFeatures.length
 
@@ -554,33 +558,38 @@ export async function getLDMatrix({
 
   let ldValues: Float32Array | null = null
   try {
-    ldValues = dataIsPhased
-      ? await computeLDMatrixGPUPhased(packedHaplotypes, ldMetric, signedLD)
-      : await computeLDMatrixGPU(encodedGenotypes, ldMetric, signedLD)
+    ldValues = await updateStatus('Computing LD values', statusCallback, () =>
+      dataIsPhased
+        ? computeLDMatrixGPUPhased(packedHaplotypes, ldMetric, signedLD)
+        : computeLDMatrixGPU(encodedGenotypes, ldMetric, signedLD),
+    )
   } catch (e) {
     console.warn('GPU LD computation failed, falling back to CPU', e)
   }
 
   if (!ldValues) {
-    ldValues = new Float32Array(ldSize)
-    let idx = 0
-    for (let i = 1; i < n; i++) {
-      for (let j = 0; j < i; j++) {
-        const stats = dataIsPhased
-          ? calculateLDStatsPhasedBits(
-              packedHaplotypes[i]!,
-              packedHaplotypes[j]!,
-              signedLD,
-            )
-          : calculateLDStats(
-              encodedGenotypes[i]!,
-              encodedGenotypes[j]!,
-              signedLD,
-            )
-        ldValues[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
-        checkStopToken2(stopTokenCheck)
+    ldValues = await updateStatus('Computing LD values', statusCallback, () => {
+      const vals = new Float32Array(ldSize)
+      let idx = 0
+      for (let i = 1; i < n; i++) {
+        for (let j = 0; j < i; j++) {
+          const stats = dataIsPhased
+            ? calculateLDStatsPhasedBits(
+                packedHaplotypes[i]!,
+                packedHaplotypes[j]!,
+                signedLD,
+              )
+            : calculateLDStats(
+                encodedGenotypes[i]!,
+                encodedGenotypes[j]!,
+                signedLD,
+              )
+          vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
+          checkStopToken2(stopTokenCheck)
+        }
       }
-    }
+      return vals
+    })
   }
 
   const filterStats: FilterStats = {

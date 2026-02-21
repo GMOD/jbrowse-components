@@ -26,7 +26,6 @@ export function getWebGLVariantCellDataAutorun(self: {
   renderingMode: string
   referenceDrawingMode: string
   webglCellDataMode: 'regular' | 'matrix'
-  setError: (error: unknown) => void
   setWebGLCellData: (data: unknown) => void
   setWebGLCellDataLoading: (val: boolean) => void
   setStatusMessage: (str?: string) => void
@@ -98,7 +97,6 @@ export function getWebGLVariantCellDataAutorun(self: {
                 result.simplifiedFeatures.map(f => new SimpleFeature(f)),
               )
               self.setWebGLCellData(result)
-              self.setStatusMessage(undefined)
             }
           }
         } catch (e) {

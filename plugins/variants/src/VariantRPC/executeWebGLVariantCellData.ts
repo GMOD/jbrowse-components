@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { firstValueFrom, toArray } from 'rxjs'
 
@@ -85,6 +86,7 @@ export async function executeWebGLVariantCellData({
     regions,
     adapterConfig,
     sessionId,
+    statusCallback,
   } = args
 
   const { dataAdapter } = await getAdapter(
@@ -93,27 +95,35 @@ export async function executeWebGLVariantCellData({
     adapterConfig,
   )
 
-  const rawFeatures = await firstValueFrom(
-    (dataAdapter as BaseFeatureDataAdapter)
-      .getFeaturesInMultipleRegions(regions, args)
-      .pipe(toArray()),
+  const rawFeatures = await updateStatus('Loading features', statusCallback, () =>
+    firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeaturesInMultipleRegions(regions, args)
+        .pipe(toArray()),
+    ),
   )
 
-  const { sampleInfo, hasPhased, simplifiedFeatures } = computeSampleInfo(
-    rawFeatures,
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
+  const { sampleInfo, hasPhased, simplifiedFeatures } = await updateStatus(
+    'Computing sample info',
+    statusCallback,
+    () =>
+      computeSampleInfo(rawFeatures, minorAlleleFrequencyFilter, lengthCutoffFilter),
   )
 
   if (mode === 'regular') {
-    const cellData = computeVariantCells({
-      features: rawFeatures,
-      sources,
-      renderingMode,
-      minorAlleleFrequencyFilter,
-      lengthCutoffFilter,
-      referenceDrawingMode: referenceDrawingMode ?? 'skip',
-    })
+    const cellData = await updateStatus(
+      'Computing variant cells',
+      statusCallback,
+      () =>
+        computeVariantCells({
+          features: rawFeatures,
+          sources,
+          renderingMode,
+          minorAlleleFrequencyFilter,
+          lengthCutoffFilter,
+          referenceDrawingMode: referenceDrawingMode ?? 'skip',
+        }),
+    )
 
     return rpcResult(
       {
@@ -131,13 +141,18 @@ export async function executeWebGLVariantCellData({
       ] as ArrayBuffer[],
     )
   } else {
-    const cellData = computeVariantMatrixCells({
-      features: rawFeatures,
-      sources,
-      renderingMode,
-      minorAlleleFrequencyFilter,
-      lengthCutoffFilter,
-    })
+    const cellData = await updateStatus(
+      'Computing variant matrix cells',
+      statusCallback,
+      () =>
+        computeVariantMatrixCells({
+          features: rawFeatures,
+          sources,
+          renderingMode,
+          minorAlleleFrequencyFilter,
+          lengthCutoffFilter,
+        }),
+    )
 
     return rpcResult(
       {

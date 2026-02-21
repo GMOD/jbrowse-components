@@ -31,4 +31,5 @@ export interface GetWebGLCellDataArgs extends BaseVariantRpcArgs {
   renderingMode: string
   referenceDrawingMode?: string
   mode: 'regular' | 'matrix'
+  statusCallback: (arg: string) => void
 }

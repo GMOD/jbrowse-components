@@ -1,4 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { updateStatus } from '@jbrowse/core/util'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
@@ -26,6 +27,7 @@ interface RenderWebGLLDDataArgs {
   fitToHeight: boolean
   displayHeight?: number
   stopToken?: string
+  statusCallback?: (msg: string) => void
 }
 
 function emptyResult(signedLD: boolean, metric: LDMetric): WebGLLDDataResult {
@@ -70,21 +72,24 @@ export async function executeRenderWebGLLDData({
     useGenomicPositions,
     fitToHeight,
     displayHeight,
+    statusCallback,
   } = args
 
   const adapterType = adapterConfig.type as string | undefined
   const ldData = await (adapterType === 'PlinkLDAdapter' ||
   adapterType === 'PlinkLDTabixAdapter' ||
   adapterType === 'LdmatAdapter'
-    ? getLDMatrixFromPlink({
-        pluginManager,
-        args: {
-          regions,
-          sessionId,
-          adapterConfig,
-          ldMetric,
-        },
-      })
+    ? updateStatus('Loading LD data', statusCallback, () =>
+        getLDMatrixFromPlink({
+          pluginManager,
+          args: {
+            regions,
+            sessionId,
+            adapterConfig,
+            ldMetric,
+          },
+        }),
+      )
     : getLDMatrix({
         pluginManager,
         args: {
@@ -100,6 +105,7 @@ export async function executeRenderWebGLLDData({
           jexlFilters,
           signedLD,
           stopToken: args.stopToken,
+          statusCallback,
         },
       }))
 
@@ -146,60 +152,68 @@ export async function executeRenderWebGLLDData({
 
   // Count the number of lower-triangular cells: n*(n-1)/2
   const numCells = (n * (n - 1)) / 2
-  const positions = new Float32Array(numCells * 2)
-  const cellSizes = new Float32Array(numCells * 2)
-  const ldVals = new Float32Array(numCells)
-  const items: LDFlatbushItem[] = []
-  const flatbush = new Flatbush(Math.max(numCells, 1))
 
-  let ldIdx = 0
-  let cellIdx = 0
+  const { positions, cellSizes, ldVals, items, flatbush } = await updateStatus(
+    'Building cell layout',
+    statusCallback,
+    () => {
+      const positions = new Float32Array(numCells * 2)
+      const cellSizes = new Float32Array(numCells * 2)
+      const ldVals = new Float32Array(numCells)
+      const items: LDFlatbushItem[] = []
+      const flatbush = new Flatbush(Math.max(numCells, 1))
 
-  for (let i = 1; i < n; i++) {
-    for (let j = 0; j < i; j++) {
-      const ldVal = ldValues[ldIdx] ?? 0
+      let ldIdx = 0
+      let cellIdx = 0
 
-      let x: number
-      let y: number
-      let cellW: number
-      let cellH: number
+      for (let i = 1; i < n; i++) {
+        for (let j = 0; j < i; j++) {
+          const ldVal = ldValues[ldIdx] ?? 0
 
-      if (useGenomicPositions) {
-        x = boundaries[j]!
-        y = boundaries[i]!
-        cellW = boundaries[j + 1]! - x
-        cellH = boundaries[i + 1]! - y
-      } else {
-        x = j * uniformW
-        y = i * uniformW
-        cellW = uniformW
-        cellH = uniformW
+          let x: number
+          let y: number
+          let cellW: number
+          let cellH: number
+
+          if (useGenomicPositions) {
+            x = boundaries[j]!
+            y = boundaries[i]!
+            cellW = boundaries[j + 1]! - x
+            cellH = boundaries[i + 1]! - y
+          } else {
+            x = j * uniformW
+            y = i * uniformW
+            cellW = uniformW
+            cellH = uniformW
+          }
+
+          positions[cellIdx * 2] = x
+          positions[cellIdx * 2 + 1] = y
+          cellSizes[cellIdx * 2] = cellW
+          cellSizes[cellIdx * 2 + 1] = cellH
+          ldVals[cellIdx] = ldVal
+
+          flatbush.add(x, y, x + cellW, y + cellH)
+          items.push({
+            i,
+            j,
+            ldValue: ldVal,
+            snp1: snps[i]!,
+            snp2: snps[j]!,
+          })
+
+          ldIdx++
+          cellIdx++
+        }
       }
 
-      positions[cellIdx * 2] = x
-      positions[cellIdx * 2 + 1] = y
-      cellSizes[cellIdx * 2] = cellW
-      cellSizes[cellIdx * 2 + 1] = cellH
-      ldVals[cellIdx] = ldVal
-
-      flatbush.add(x, y, x + cellW, y + cellH)
-      items.push({
-        i,
-        j,
-        ldValue: ldVal,
-        snp1: snps[i]!,
-        snp2: snps[j]!,
-      })
-
-      ldIdx++
-      cellIdx++
-    }
-  }
-
-  if (numCells === 0) {
-    flatbush.add(0, 0, 0, 0)
-  }
-  flatbush.finish()
+      if (numCells === 0) {
+        flatbush.add(0, 0, 0, 0)
+      }
+      flatbush.finish()
+      return { positions, cellSizes, ldVals, items, flatbush }
+    },
+  )
 
   return {
     positions,
