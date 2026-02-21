@@ -14,6 +14,8 @@ import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { PairType, getPairedType } from '../shared/color.ts'
 import {
   computeCoverage,
+  computeNoncovCoverage,
+  computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
@@ -24,7 +26,6 @@ import {
   buildMismatchArrays,
   buildModificationArrays,
   buildTagColors,
-  computeCoverageSegments,
   computeFrequenciesAndThresholds,
   extractFeatureTagValue,
   extractMethylation,
@@ -506,9 +507,9 @@ export async function executeRenderWebGLChainData({
       coverage.depths, coverage.startOffset,
     )
 
-  const { snpCoverage, noncovCoverage } = computeCoverageSegments(
-    mismatches, insertions, softclips, hardclips,
-    coverage.maxDepth, regionStart,
+  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const noncovCoverage = computeNoncovCoverage(
+    insertions, softclips, hardclips, coverage.maxDepth, regionStart,
   )
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)

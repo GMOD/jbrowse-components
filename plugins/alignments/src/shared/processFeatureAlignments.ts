@@ -10,9 +10,7 @@ import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import {
   applyDepthDependentThreshold,
   computeMismatchFrequencies,
-  computeNoncovCoverage,
   computePositionFrequencies,
-  computeSNPCoverage,
 } from './computeCoverage.ts'
 import { getMaxProbModAtEachPosition } from './getMaximumModificationAtEachPosition.ts'
 import {
@@ -519,23 +517,4 @@ export function computeFrequenciesAndThresholds(
   )
 
   return { mismatchFrequencies, interbaseFrequencies, gapFrequencies }
-}
-
-export function computeCoverageSegments(
-  mismatches: MismatchData[],
-  insertions: InsertionData[],
-  softclips: SoftclipData[],
-  hardclips: HardclipData[],
-  maxDepth: number,
-  regionStart: number,
-) {
-  const snpCoverage = computeSNPCoverage(mismatches, maxDepth, regionStart)
-  const noncovCoverage = computeNoncovCoverage(
-    insertions,
-    softclips,
-    hardclips,
-    maxDepth,
-    regionStart,
-  )
-  return { snpCoverage, noncovCoverage }
 }

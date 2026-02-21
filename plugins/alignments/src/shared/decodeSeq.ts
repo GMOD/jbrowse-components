@@ -22,18 +22,3 @@ export function decodeSeq(numericSeq: Uint8Array, seqLength: number): string {
   return buf.join('')
 }
 
-// Gets a single base at position idx from NUMERIC_SEQ
-export function seqAt(
-  numericSeq: Uint8Array,
-  idx: number,
-  seqLength: number,
-): string | undefined {
-  if (idx < seqLength) {
-    const byteIndex = idx >> 1
-    const sb = numericSeq[byteIndex]!
-    return idx % 2 === 0
-      ? SEQRET_DECODER[(sb & 0xf0) >> 4]
-      : SEQRET_DECODER[sb & 0x0f]
-  }
-  return undefined
-}

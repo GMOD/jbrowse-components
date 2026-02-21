@@ -12,6 +12,8 @@ import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
   computeCoverage,
+  computeNoncovCoverage,
+  computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
@@ -22,7 +24,6 @@ import {
   buildMismatchArrays,
   buildModificationArrays,
   buildTagColors,
-  computeCoverageSegments,
   computeFrequenciesAndThresholds,
   extractFeatureTagValue,
   extractMethylation,
@@ -483,9 +484,9 @@ export async function executeRenderWebGLPileupData({
       coverage.depths, coverage.startOffset,
     )
 
-  const { snpCoverage, noncovCoverage } = computeCoverageSegments(
-    mismatches, insertions, softclips, hardclips,
-    coverage.maxDepth, regionStart,
+  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const noncovCoverage = computeNoncovCoverage(
+    insertions, softclips, hardclips, coverage.maxDepth, regionStart,
   )
 
   const modCoverage = computeModificationCoverage(

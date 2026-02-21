@@ -100,16 +100,41 @@ const OverviewBox = observer(function OverviewBox({
   const canDisplayCytobands =
     showCytobands && getCytobands(assembly, block.refName).length
 
+  if (canDisplayCytobands) {
+    return (
+      <>
+        <Typography
+          style={{
+            color: theme.palette.text.primary,
+            transform: `translateX(${block.offsetPx + 3}px)`,
+          }}
+          className={classes.scalebarRefName}
+        >
+          {refName}
+        </Typography>
+        <div
+          className={classes.scalebarContig}
+          style={{
+            transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
+            width: block.widthPx,
+          }}
+        >
+          <svg style={{ width: '100%' }}>
+            <Cytobands overview={overview} assembly={assembly} block={block} />
+          </svg>
+        </div>
+      </>
+    )
+  }
+
   return (
     <div
       className={cx(
         classes.scalebarContig,
-        canDisplayCytobands
-          ? undefined
-          : reversed
-            ? classes.scalebarContigReverse
-            : classes.scalebarContigForward,
-        !canDisplayCytobands ? classes.scalebarBorder : undefined,
+        reversed
+          ? classes.scalebarContigReverse
+          : classes.scalebarContigForward,
+        classes.scalebarBorder,
       )}
       style={{
         transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
@@ -118,28 +143,17 @@ const OverviewBox = observer(function OverviewBox({
       }}
     >
       <Typography
-        style={{
-          color: canDisplayCytobands
-            ? theme.palette.text.primary
-            : refNameColor,
-          left: canDisplayCytobands ? -cytobandOffset + 3 : 3,
-        }}
+        style={{ color: refNameColor, left: 3 }}
         className={classes.scalebarRefName}
       >
         {refName}
       </Typography>
-      {canDisplayCytobands ? (
-        <svg style={{ width: '100%' }}>
-          <Cytobands overview={overview} assembly={assembly} block={block} />
-        </svg>
-      ) : (
-        <OverviewScalebarTickLabels
-          model={model}
-          overview={overview}
-          scale={scale}
-          block={block}
-        />
-      )}
+      <OverviewScalebarTickLabels
+        model={model}
+        overview={overview}
+        scale={scale}
+        block={block}
+      />
     </div>
   )
 })

@@ -40,7 +40,7 @@ export interface ClipEntry {
  * Compute extent of features beyond the requested region, limited to
  * 1x extension on each side to avoid pathological cases
  */
-export function getFeatureExtent(
+function getFeatureExtent(
   features: { start: number; end: number }[],
   regionStart: number,
   regionEnd: number,
