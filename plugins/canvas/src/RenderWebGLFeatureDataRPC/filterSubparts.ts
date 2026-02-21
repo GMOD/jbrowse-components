@@ -16,10 +16,6 @@ function makeSubpartsFilter(
   return (feature: Feature) => lowerRet.has(feature.get('type').toLowerCase())
 }
 
-export function filterSubpart(feature: Feature, config: AnyConfigurationModel) {
-  return makeSubpartsFilter('subParts', config)(feature)
-}
-
 export function makeUTRs(parent: Feature, subs: Feature[]) {
   const subparts = [...subs]
 

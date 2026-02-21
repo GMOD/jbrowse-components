@@ -40,6 +40,14 @@ export function layoutFeature(args: {
     isTranscriptChild = false,
   } = args
 
+  const layoutArgs: LayoutArgs = {
+    feature,
+    bpPerPx,
+    reversed,
+    configContext,
+    pluginManager,
+  }
+
   // Check for pluggable glyph first (higher priority)
   const pluggableGlyph = findPluggableGlyph(feature, pluginManager)
 
@@ -50,34 +58,11 @@ export function layoutFeature(args: {
     // TODO: Migrate pluggable glyphs to new Glyph interface
     const heightMultiplier =
       pluggableGlyph.getHeightMultiplier?.(feature, configContext.config) ?? 1
-    const baseGlyph = findGlyph(feature, configContext, builtinGlyphs)
-
-    const layoutArgs: LayoutArgs = {
-      feature,
-      bpPerPx,
-      reversed,
-      configContext,
-      pluginManager,
-    }
-
-    layout = baseGlyph.layout(layoutArgs)
-
-    // Apply height multiplier from pluggable glyph
+    layout = findGlyph(feature, configContext, builtinGlyphs).layout(layoutArgs)
     layout.height *= heightMultiplier
     layout.totalLayoutHeight *= heightMultiplier
   } else {
-    // Use builtin polymorphic glyph
-    const glyph = findGlyph(feature, configContext, builtinGlyphs)
-
-    const layoutArgs: LayoutArgs = {
-      feature,
-      bpPerPx,
-      reversed,
-      configContext,
-      pluginManager,
-    }
-
-    layout = glyph.layout(layoutArgs)
+    layout = findGlyph(feature, configContext, builtinGlyphs).layout(layoutArgs)
   }
 
   // Apply label dimensions

@@ -121,63 +121,27 @@ export class CanvasFeatureRenderer {
       ],
     })
 
-    const layout = device.createPipelineLayout({
+    const pipelineLayout = device.createPipelineLayout({
       bindGroupLayouts: [CanvasFeatureRenderer.bindGroupLayout],
     })
 
     const multisample: GPUMultisampleState = { count: 4 }
 
-    const rectModule = device.createShaderModule({ code: RECT_SHADER })
-    CanvasFeatureRenderer.rectPipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: rectModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: rectModule,
-        entryPoint: 'fs_main',
-        targets: [target],
-      },
-      primitive: { topology: 'triangle-list' },
-      multisample,
-    })
+    const makePipeline = (code: string) => {
+      const module = device.createShaderModule({ code })
+      return device.createRenderPipeline({
+        layout: pipelineLayout,
+        vertex: { module, entryPoint: 'vs_main' },
+        fragment: { module, entryPoint: 'fs_main', targets: [target] },
+        primitive: { topology: 'triangle-list' },
+        multisample,
+      })
+    }
 
-    const lineModule = device.createShaderModule({ code: LINE_SHADER })
-    CanvasFeatureRenderer.linePipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: lineModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: lineModule,
-        entryPoint: 'fs_main',
-        targets: [target],
-      },
-      primitive: { topology: 'triangle-list' },
-      multisample,
-    })
-
-    const chevronModule = device.createShaderModule({ code: CHEVRON_SHADER })
-    CanvasFeatureRenderer.chevronPipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: chevronModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: chevronModule,
-        entryPoint: 'fs_main',
-        targets: [target],
-      },
-      primitive: { topology: 'triangle-list' },
-      multisample,
-    })
-
-    const arrowModule = device.createShaderModule({ code: ARROW_SHADER })
-    CanvasFeatureRenderer.arrowPipeline = device.createRenderPipeline({
-      layout,
-      vertex: { module: arrowModule, entryPoint: 'vs_main' },
-      fragment: {
-        module: arrowModule,
-        entryPoint: 'fs_main',
-        targets: [target],
-      },
-      primitive: { topology: 'triangle-list' },
-      multisample,
-    })
+    CanvasFeatureRenderer.rectPipeline = makePipeline(RECT_SHADER)
+    CanvasFeatureRenderer.linePipeline = makePipeline(LINE_SHADER)
+    CanvasFeatureRenderer.chevronPipeline = makePipeline(CHEVRON_SHADER)
+    CanvasFeatureRenderer.arrowPipeline = makePipeline(ARROW_SHADER)
   }
 
   async init() {
@@ -352,7 +316,8 @@ export class CanvasFeatureRenderer {
 
     const msaaView = this.msaaTexture.createView()
     const resolveTarget = this.context.getCurrentTexture().createView()
-    let isFirst = true
+    const encoder = device.createCommandEncoder()
+    let hasRenderedBlock = false
 
     for (const block of blocks) {
       const region = this.regions.get(block.regionNumber)
@@ -389,15 +354,14 @@ export class CanvasFeatureRenderer {
         bpPerPx,
       )
 
-      const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
             view: msaaView,
             resolveTarget,
-            loadOp: (isFirst ? 'clear' : 'load') as GPULoadOp,
+            loadOp: (hasRenderedBlock ? 'load' : 'clear') as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
-            ...(isFirst && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
+            ...(!hasRenderedBlock && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
           },
         ],
       })
@@ -442,12 +406,10 @@ export class CanvasFeatureRenderer {
       }
 
       pass.end()
-      device.queue.submit([encoder.finish()])
-      isFirst = false
+      hasRenderedBlock = true
     }
 
-    if (isFirst) {
-      const encoder = device.createCommandEncoder()
+    if (!hasRenderedBlock) {
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
@@ -459,8 +421,9 @@ export class CanvasFeatureRenderer {
         ],
       })
       pass.end()
-      device.queue.submit([encoder.finish()])
     }
+
+    device.queue.submit([encoder.finish()])
   }
 
   pruneStaleRegions(activeRegions: number[]) {

@@ -1,63 +1,16 @@
 import { colord } from '@jbrowse/core/util/colord'
 
-// High-precision GLSL functions for genomic coordinates
-// Splits large integers into high/low parts to maintain precision in shaders
-export const HP_GLSL_FUNCTIONS = `
-const uint HP_LOW_MASK = 0xFFFu;
+import { INSTANCE_STRIDE } from './wiggleShader.ts'
 
-vec2 hpSplitUint(uint value) {
-  uint lo = value & HP_LOW_MASK;
-  uint hi = value - lo;
-  return vec2(float(hi), float(lo));
-}
+import type { SourceRenderData } from './WiggleRenderer.ts'
 
-float hpScaleLinear(vec2 splitPos, vec3 domain) {
-  float hi = splitPos.x - domain.x;
-  float lo = splitPos.y - domain.y;
-  return (hi + lo) / domain.z;
-}
+const INSTANCE_BYTES = INSTANCE_STRIDE * 4
+const HP_LOW_MASK = 0xfff
 
-float hpToClipX(vec2 splitPos, vec3 domain) {
-  return hpScaleLinear(splitPos, domain) * 2.0 - 1.0;
-}
-`
-
-// Common score normalization functions for wiggle shaders
-export const SCORE_GLSL_FUNCTIONS = `
-float normalizeScore(float score, vec2 domainY, int scaleType) {
-  float minScore = domainY.x;
-  float maxScore = domainY.y;
-
-  float normalizedScore;
-  if (scaleType == 1) {
-    // Log scale
-    float logMin = log2(max(minScore, 1.0));
-    float logMax = log2(max(maxScore, 1.0));
-    float logScore = log2(max(score, 1.0));
-    normalizedScore = (logScore - logMin) / (logMax - logMin);
-  } else {
-    // Linear scale
-    normalizedScore = (score - minScore) / (maxScore - minScore);
-  }
-
-  return clamp(normalizedScore, 0.0, 1.0);
-}
-
-float scoreToY(float score, vec2 domainY, float height, int scaleType) {
-  float normalizedScore = normalizeScore(score, domainY, scaleType);
-  // Convert to pixel position (0 at top, height at bottom)
-  return (1.0 - normalizedScore) * height;
-}
-`
-
-/**
- * Split a position value into high and low parts for high-precision shader math.
- * This prevents floating-point precision loss when dealing with large genomic coordinates.
- */
 export function splitPositionWithFrac(value: number): [number, number] {
   const intValue = Math.floor(value)
   const frac = value - intValue
-  const loInt = intValue & 0xfff
+  const loInt = intValue & HP_LOW_MASK
   const hi = intValue - loInt
   const lo = loInt + frac
   return [hi, lo]
@@ -75,14 +28,49 @@ export function parseColor(color: string): [number, number, number] {
   return result
 }
 
-/**
- * Create and compile a WebGL shader
- */
+export function interleaveInstances(
+  sources: SourceRenderData[],
+  totalFeatures: number,
+) {
+  const buf = new ArrayBuffer(totalFeatures * INSTANCE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  let offset = 0
+  for (const [idx, source] of sources.entries()) {
+    const row = source.rowIndex ?? idx
+    for (let i = 0; i < source.numFeatures; i++) {
+      const off = (offset + i) * INSTANCE_STRIDE
+      u32[off] = source.featurePositions[i * 2]!
+      u32[off + 1] = source.featurePositions[i * 2 + 1]!
+      f32[off + 2] = source.featureScores[i]!
+      f32[off + 3] =
+        i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
+      f32[off + 4] = row
+      f32[off + 5] = source.color[0]
+      f32[off + 6] = source.color[1]
+      f32[off + 7] = source.color[2]
+    }
+    offset += source.numFeatures
+  }
+  return buf
+}
+
+export function computeNumRows(sources: SourceRenderData[]) {
+  let numRows = 0
+  for (let i = 0; i < sources.length; i++) {
+    const r = (sources[i]!.rowIndex ?? i) + 1
+    if (r > numRows) {
+      numRows = r
+    }
+  }
+  return numRows
+}
+
 export function createShader(
   gl: WebGL2RenderingContext,
   type: number,
   source: string,
-): WebGLShader {
+) {
   const shader = gl.createShader(type)!
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
@@ -94,14 +82,11 @@ export function createShader(
   return shader
 }
 
-/**
- * Create and link a WebGL program from vertex and fragment shader sources
- */
 export function createProgram(
   gl: WebGL2RenderingContext,
   vsSource: string,
   fsSource: string,
-): WebGLProgram {
+) {
   const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
   const program = gl.createProgram()
@@ -118,19 +103,4 @@ export function createProgram(
     throw new Error(`Program link error: ${info}`)
   }
   return program
-}
-
-/**
- * Cache uniform locations for a program
- */
-export function cacheUniforms(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  names: string[],
-): Record<string, WebGLUniformLocation | null> {
-  const cache: Record<string, WebGLUniformLocation | null> = {}
-  for (const name of names) {
-    cache[name] = gl.getUniformLocation(program, name)
-  }
-  return cache
 }

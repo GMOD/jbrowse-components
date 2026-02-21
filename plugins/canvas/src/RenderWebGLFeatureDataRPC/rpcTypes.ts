@@ -73,7 +73,6 @@ export interface WebGLFeatureDataResult {
 
   // Layout info
   maxY: number
-  totalHeight: number
 }
 
 export interface RegionTooLargeResult {

@@ -1,7 +1,20 @@
 export const INSTANCE_STRIDE = 8
+export const UNIFORM_SIZE = 48
+export const VERTICES_PER_INSTANCE = 6
+export const RENDERING_TYPE_XYPLOT = 0
+export const RENDERING_TYPE_DENSITY = 1
+export const RENDERING_TYPE_LINE = 2
+export const SCALE_TYPE_LINEAR = 0
+export const SCALE_TYPE_LOG = 1
 
 export const wiggleShader = /* wgsl */ `
 const HP_LOW_MASK: u32 = 0xFFFu;
+const RENDERING_TYPE_XYPLOT: i32 = 0;
+const RENDERING_TYPE_DENSITY: i32 = 1;
+const RENDERING_TYPE_LINE: i32 = 2;
+const SCALE_TYPE_LOG: i32 = 1;
+const VERTICES_PER_INSTANCE: u32 = 6u;
+const DENSITY_LOW_COLOR: vec3f = vec3f(0.93, 0.93, 0.93);
 
 fn hp_split_uint(value: u32) -> vec2f {
   let lo = value & HP_LOW_MASK;
@@ -16,7 +29,7 @@ fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
 }
 
 fn normalize_score(score: f32, domain_y: vec2f, scale_type: i32) -> f32 {
-  if (scale_type == 1) {
+  if (scale_type == SCALE_TYPE_LOG) {
     let log_min = log2(max(domain_y.x, 1.0));
     let log_max = log2(max(domain_y.y, 1.0));
     let log_score = log2(max(score, 1.0));
@@ -74,7 +87,7 @@ fn vs_main(
   @builtin(instance_index) instance_index: u32,
 ) -> VertexOutput {
   let inst = instances[instance_index];
-  let vid = vertex_index % 6u;
+  let vid = vertex_index % VERTICES_PER_INSTANCE;
 
   let abs_start = inst.start_end.x + u.region_start;
   let abs_end = inst.start_end.y + u.region_start;
@@ -91,7 +104,7 @@ fn vs_main(
   var sy: f32;
   let inst_color = vec3f(inst.color_r, inst.color_g, inst.color_b);
 
-  if (u.rendering_type == 2) {
+  if (u.rendering_type == RENDERING_TYPE_LINE) {
     let score_y = score_to_y(inst.score, u.domain_y, row_height, u.scale_type) + row_top;
     let prev_y = score_to_y(inst.prev_score, u.domain_y, row_height, u.scale_type) + row_top;
     let clip_score_y = 1.0 - score_y * px_to_clip;
@@ -105,7 +118,7 @@ fn vs_main(
       case 4u: { sx = sx2; sy = clip_score_y; }
       default: { sx = sx2; sy = clip_score_y; }
     }
-  } else if (u.rendering_type == 1) {
+  } else if (u.rendering_type == RENDERING_TYPE_DENSITY) {
     let local_x = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
     let local_y = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
     sx = mix(sx1, sx2, local_x);
@@ -129,10 +142,9 @@ fn vs_main(
   }
 
   var color: vec3f;
-  if (u.rendering_type == 1) {
+  if (u.rendering_type == RENDERING_TYPE_DENSITY) {
     let norm = normalize_score(inst.score, u.domain_y, u.scale_type);
-    let low_color = vec3f(0.93, 0.93, 0.93);
-    color = mix(low_color, inst_color, norm);
+    color = mix(DENSITY_LOW_COLOR, inst_color, norm);
   } else {
     color = inst_color;
   }

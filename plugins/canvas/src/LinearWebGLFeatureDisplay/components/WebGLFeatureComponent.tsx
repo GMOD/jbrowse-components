@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
@@ -550,10 +550,9 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         const featureBottomPx = labelData.topY + labelData.featureHeight
 
         for (const [i, label] of labelData.floatingLabels.entries()) {
-          const { text, relativeY, color } = label
+          const { text, relativeY, color, textWidth: labelWidth } = label
           const labelPadding = 2
           const labelY = featureBottomPx - scrollY + relativeY + labelPadding
-          const labelWidth = measureText(text, 11)
 
           let labelX: number
           if (labelWidth > featureWidth) {

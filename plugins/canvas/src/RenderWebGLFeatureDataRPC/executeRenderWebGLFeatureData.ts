@@ -73,6 +73,20 @@ interface ArrowData {
 
 const UTR_HEIGHT_FRACTION = 0.65
 
+function applyUTRSizing(
+  topPx: number,
+  height: number,
+  isUTR: boolean,
+): [topPx: number, height: number] {
+  if (!isUTR) {
+    return [topPx, height]
+  }
+  return [
+    topPx + ((1 - UTR_HEIGHT_FRACTION) / 2) * height,
+    height * UTR_HEIGHT_FRACTION,
+  ]
+}
+
 function colorToUint32(colorStr: string) {
   const { r, g, b, a } = colord(colorStr).toRgb()
   return (Math.round(a * 255) << 24) | (b << 16) | (g << 8) | r
@@ -159,7 +173,6 @@ function emitCodonData(opts: {
 function collectRenderData(
   layoutRecords: LayoutRecordWithLabels[],
   regionStart: number,
-  bpPerPx: number,
   config: unknown,
   configContext: RenderConfigContext,
   theme: unknown,
@@ -174,7 +187,6 @@ function collectRenderData(
   flatbushItems: FlatbushItem[]
   subfeatureInfos: SubfeatureInfo[]
   aminoAcidOverlay: AminoAcidOverlayItem[]
-  maxY: number
 } {
   const rects: RectData[] = []
   const lines: LineData[] = []
@@ -183,18 +195,12 @@ function collectRenderData(
   const flatbushItems: FlatbushItem[] = []
   const subfeatureInfos: SubfeatureInfo[] = []
   const aminoAcidOverlay: AminoAcidOverlayItem[] = []
-  let maxY = 0
 
   for (const record of layoutRecords) {
     const { feature, layout, topPx, totalHeightWithLabels } = record
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
     const strand = (feature.get('strand') as number) || 0
-
-    const featureY = topPx + layout.height / 2
-    if (featureY > maxY) {
-      maxY = featureY
-    }
 
     const fillColor = getBoxColor({
       feature,
@@ -348,13 +354,11 @@ function collectRenderData(
         })
         const childColorUint = colorToUint32(childColor)
 
-        let childTopPx = transcriptTopPx
-        let childHeight = childLayout.height
-        if (childIsUTR) {
-          childTopPx +=
-            ((1 - UTR_HEIGHT_FRACTION) / 2) * transcriptLayout.height
-          childHeight = transcriptLayout.height * UTR_HEIGHT_FRACTION
-        }
+        const [childTopPx, childHeight] = applyUTRSizing(
+          transcriptTopPx,
+          transcriptLayout.height,
+          childIsUTR,
+        )
 
         // For CDS features with peptide data, emit per-codon rects
         if (childType === 'CDS' && transcriptPeptide?.protein && !childIsUTR) {
@@ -470,12 +474,11 @@ function collectRenderData(
           })
           const childColorUint = colorToUint32(childColor)
 
-          let childTopPx = topPx + childLayout.y
-          let childHeight = childLayout.height
-          if (childIsUTR) {
-            childTopPx += ((1 - UTR_HEIGHT_FRACTION) / 2) * childLayout.height
-            childHeight = childLayout.height * UTR_HEIGHT_FRACTION
-          }
+          const [childTopPx, childHeight] = applyUTRSizing(
+            topPx + childLayout.y,
+            childLayout.height,
+            childIsUTR,
+          )
 
           rects.push({
             startOffset: childStart - regionStart,
@@ -491,13 +494,11 @@ function collectRenderData(
       }
     } else {
       // Simple box feature
-      const rectIsUTR = isUTR(feature)
-      let rectTopPx = topPx
-      let rectHeight = layout.height
-      if (rectIsUTR) {
-        rectTopPx += ((1 - UTR_HEIGHT_FRACTION) / 2) * layout.height
-        rectHeight = layout.height * UTR_HEIGHT_FRACTION
-      }
+      const [rectTopPx, rectHeight] = applyUTRSizing(
+        topPx,
+        layout.height,
+        isUTR(feature),
+      )
 
       rects.push({
         startOffset: featureStart - regionStart,
@@ -531,7 +532,6 @@ function collectRenderData(
     flatbushItems,
     subfeatureInfos,
     aminoAcidOverlay,
-    maxY,
   }
 }
 
@@ -665,12 +665,13 @@ export async function executeRenderWebGLFeatureData({
     heightMultiplier: mockConfig.displayMode === 'compact' ? 0.6 : 1,
   }
 
+  const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+  const features = new Map(deduped.map(f => [f.id(), f]))
+
   const { layoutRecords, maxY } = await updateStatus(
     'Computing layout',
     statusCallback,
     async () => {
-      const deduped = dedupe(featuresArray, (f: Feature) => f.id())
-      const features = new Map(deduped.map(f => [f.id(), f]))
 
       // Layout in pixel space so labels and padding don't blow up at
       // zoomed-out levels (where bpPerPx is large)
@@ -779,8 +780,6 @@ export async function executeRenderWebGLFeatureData({
   // Fetch peptide data when colorByCDS is enabled and zoomed in enough
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
-    const deduped = dedupe(featuresArray, (f: Feature) => f.id())
-    const features = new Map(deduped.map(f => [f.id(), f]))
     const mockRenderProps = {
       sessionId,
       sequenceAdapter,
@@ -811,11 +810,10 @@ export async function executeRenderWebGLFeatureData({
     flatbushItems,
     subfeatureInfos,
     aminoAcidOverlay,
-  } = await updateStatus('Collecting render data', statusCallback, async () =>
+  } = await updateStatus('Collecting render data', statusCallback, () =>
     collectRenderData(
       layoutRecords,
       regionStart,
-      bpPerPx,
       mockConfig,
       configContext,
       mockTheme,
@@ -945,7 +943,6 @@ export async function executeRenderWebGLFeatureData({
       aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
 
     maxY,
-    totalHeight: maxY,
   }
 
   const transferables = [

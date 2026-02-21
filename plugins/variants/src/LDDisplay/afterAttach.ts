@@ -127,7 +127,6 @@ export function doAfterAttach(self: SharedLDModel) {
         self.lengthCutoffFilter
         self.hweFilterThreshold
         self.callRateFilter
-        self.colorScheme
         self.showLDTriangle
         self.fitToHeight
         self.useGenomicPositions

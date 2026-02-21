@@ -5,6 +5,8 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import LoadingOverlay from './LoadingOverlay.tsx'
+
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
 type Coord = [number, number]
@@ -34,6 +36,8 @@ const AlignmentsDisplayComponent = observer(
       DisplayMessageComponent,
       height,
       contextMenuCoord,
+      showLoading,
+      statusMessage,
     } = model
     const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
@@ -52,6 +56,7 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
+        <LoadingOverlay statusMessage={statusMessage} isVisible={showLoading} />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}

@@ -280,12 +280,6 @@ export default function sharedModelFactory(
       /**
        * #action
        */
-      setError(error: unknown) {
-        self.error = error as Error | undefined
-      },
-      /**
-       * #action
-       */
       reload() {
         self.error = undefined
       },
@@ -473,12 +467,7 @@ export default function sharedModelFactory(
        * Returns the effective color scheme, falling back to config
        */
       get colorScheme() {
-        const setting = self.colorSchemeSetting
-        if (setting !== undefined) {
-          return setting || undefined
-        }
-        const conf = getConf(self, 'colorScheme')
-        return conf || undefined
+        return self.colorSchemeSetting || getConf(self, 'colorScheme') || undefined
       },
       /**
        * #getter
@@ -841,66 +830,53 @@ export default function sharedModelFactory(
         jexlFiltersSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
+
+      const defaults: Record<string, unknown> = {
+        minorAlleleFrequencyFilterSetting: 0.1,
+        lengthCutoffFilterSetting: Number.MAX_SAFE_INTEGER,
+        lineZoneHeightSetting: 100,
+        ldMetricSetting: 'r2',
+        colorSchemeSetting: '',
+        showLegendSetting: false,
+        showLDTriangleSetting: true,
+        showRecombinationSetting: false,
+        recombinationZoneHeightSetting: 50,
+        fitToHeightSetting: false,
+        hweFilterThresholdSetting: 0,
+        callRateFilterSetting: 0,
+        showVerticalGuidesSetting: true,
+        showLabelsSetting: false,
+        tickHeightSetting: 6,
+        useGenomicPositionsSetting: false,
+        signedLDSetting: false,
+      }
+      const settings = {
+        minorAlleleFrequencyFilterSetting,
+        lengthCutoffFilterSetting,
+        lineZoneHeightSetting,
+        ldMetricSetting,
+        colorSchemeSetting,
+        showLegendSetting,
+        showLDTriangleSetting,
+        showRecombinationSetting,
+        recombinationZoneHeightSetting,
+        fitToHeightSetting,
+        hweFilterThresholdSetting,
+        callRateFilterSetting,
+        showVerticalGuidesSetting,
+        showLabelsSetting,
+        tickHeightSetting,
+        useGenomicPositionsSetting,
+        signedLDSetting,
+      }
+      const nonDefault = Object.fromEntries(
+        Object.entries(settings).filter(
+          ([k, v]) => v !== undefined && v !== defaults[k],
+        ),
+      )
       return {
         ...rest,
-        // Only save settings that differ from config defaults
-        ...(minorAlleleFrequencyFilterSetting !== undefined &&
-        minorAlleleFrequencyFilterSetting !== 0.1
-          ? { minorAlleleFrequencyFilterSetting }
-          : {}),
-        ...(lengthCutoffFilterSetting !== undefined &&
-        lengthCutoffFilterSetting !== Number.MAX_SAFE_INTEGER
-          ? { lengthCutoffFilterSetting }
-          : {}),
-        ...(lineZoneHeightSetting !== undefined && lineZoneHeightSetting !== 100
-          ? { lineZoneHeightSetting }
-          : {}),
-        ...(ldMetricSetting !== undefined && ldMetricSetting !== 'r2'
-          ? { ldMetricSetting }
-          : {}),
-        ...(colorSchemeSetting !== undefined && colorSchemeSetting !== ''
-          ? { colorSchemeSetting }
-          : {}),
-        ...(showLegendSetting !== undefined && showLegendSetting
-          ? { showLegendSetting }
-          : {}),
-        ...(showLDTriangleSetting !== undefined && !showLDTriangleSetting
-          ? { showLDTriangleSetting }
-          : {}),
-        ...(showRecombinationSetting !== undefined && showRecombinationSetting
-          ? { showRecombinationSetting }
-          : {}),
-        ...(recombinationZoneHeightSetting !== undefined &&
-        recombinationZoneHeightSetting !== 50
-          ? { recombinationZoneHeightSetting }
-          : {}),
-        ...(fitToHeightSetting !== undefined && fitToHeightSetting
-          ? { fitToHeightSetting }
-          : {}),
-        ...(hweFilterThresholdSetting !== undefined &&
-        hweFilterThresholdSetting !== 0.001
-          ? { hweFilterThresholdSetting }
-          : {}),
-        ...(callRateFilterSetting !== undefined && callRateFilterSetting !== 0
-          ? { callRateFilterSetting }
-          : {}),
-        ...(showVerticalGuidesSetting !== undefined &&
-        !showVerticalGuidesSetting
-          ? { showVerticalGuidesSetting }
-          : {}),
-        ...(showLabelsSetting !== undefined && showLabelsSetting
-          ? { showLabelsSetting }
-          : {}),
-        ...(tickHeightSetting !== undefined && tickHeightSetting !== 6
-          ? { tickHeightSetting }
-          : {}),
-        ...(useGenomicPositionsSetting !== undefined &&
-        useGenomicPositionsSetting
-          ? { useGenomicPositionsSetting }
-          : {}),
-        ...(signedLDSetting !== undefined && signedLDSetting
-          ? { signedLDSetting }
-          : {}),
+        ...nonDefault,
         ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
       } as typeof snap
     })

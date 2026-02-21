@@ -33,8 +33,7 @@ export function getBoxColor({
 }) {
   const { color1, color3 } = configContext
 
-  let fill: string
-  fill = isUTR(feature)
+  let fill = isUTR(feature)
     ? readCachedConfig(color3, config, 'color3', feature)
     : readCachedConfig(color1, config, 'color1', feature)
 

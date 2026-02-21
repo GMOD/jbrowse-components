@@ -113,8 +113,7 @@ export const subfeaturesGlyph: Glyph = {
     let currentYPx = 0
     const { subfeatureLabels } = configContext
 
-    for (let i = 0; i < subfeatures.length; i++) {
-      const child = subfeatures[i]!
+    for (const [i, child] of subfeatures.entries()) {
       const childType = child.get('type')
       const isChildTranscript = transcriptTypes.includes(childType)
       const childGlyph = findChildGlyph(child, configContext)

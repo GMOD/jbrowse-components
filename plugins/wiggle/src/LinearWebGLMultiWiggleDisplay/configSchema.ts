@@ -1,9 +1,26 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { WIGGLE_POS_COLOR_DEFAULT } from '../util'
+
 export default ConfigurationSchema(
   'MultiLinearWiggleDisplay',
   {
+    posColor: {
+      type: 'color',
+      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+      description: 'Color for positive scores (when using bicolor)',
+    },
+    negColor: {
+      type: 'color',
+      defaultValue: '#f0636b',
+      description: 'Color for negative scores (when using bicolor)',
+    },
+    bicolorPivot: {
+      type: 'number',
+      defaultValue: 0,
+      description: 'Pivot value for bicolor mode',
+    },
     height: {
       type: 'number',
       defaultValue: 200,

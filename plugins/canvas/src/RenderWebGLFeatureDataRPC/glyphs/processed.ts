@@ -18,8 +18,7 @@ export const processedTranscriptGlyph: Glyph = {
     if (!transcriptTypes.includes(type)) {
       return false
     }
-    const hasCDS = subfeatures.some((f: Feature) => f.get('type') === 'CDS')
-    return hasCDS
+    return subfeatures.some((f: Feature) => f.get('type') === 'CDS')
   },
 
   layout(args: LayoutArgs): FeatureLayout {

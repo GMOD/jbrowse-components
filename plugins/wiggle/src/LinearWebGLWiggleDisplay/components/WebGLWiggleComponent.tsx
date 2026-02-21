@@ -7,6 +7,14 @@ import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
+import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_XYPLOT,
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+} from '../../shared/wiggleShader.ts'
+import { WIGGLE_COLOR_DEFAULT } from '../../util.ts'
 
 import type {
   WiggleGPURenderState,
@@ -37,12 +45,12 @@ export interface WiggleDisplayModel {
 
 function renderingTypeToInt(type: string) {
   if (type === 'density') {
-    return 1
+    return RENDERING_TYPE_DENSITY
   }
   if (type === 'line') {
-    return 2
+    return RENDERING_TYPE_LINE
   }
-  return 0
+  return RENDERING_TYPE_XYPLOT
 }
 
 function makeRenderState(
@@ -51,7 +59,7 @@ function makeRenderState(
 ): WiggleGPURenderState {
   return {
     domainY: model.domain!,
-    scaleType: model.scaleType === 'log' ? 1 : 0,
+    scaleType: model.scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
     renderingType: renderingTypeToInt(model.renderingType),
     rowPadding: 0,
     canvasWidth: width,
@@ -63,7 +71,8 @@ function buildSourceRenderData(
   data: WebGLWiggleDataResult,
   model: WiggleDisplayModel,
 ): SourceRenderData[] {
-  const useBicolor = model.color === '#f0f' || model.color === '#ff00ff'
+  const useBicolor =
+    model.color === WIGGLE_COLOR_DEFAULT || model.color === '#ff00ff'
   const baseColor = parseColor(model.color)
   const posColor = parseColor(model.posColor)
   const negColor = parseColor(model.negColor)
@@ -107,6 +116,7 @@ function buildSourceRenderData(
       featureScores: new Float32Array(posFeatureScores),
       numFeatures: posFeatureScores.length,
       color: posColor,
+      rowIndex: 0,
     })
   }
   if (negFeatureScores.length > 0) {
@@ -115,6 +125,7 @@ function buildSourceRenderData(
       featureScores: new Float32Array(negFeatureScores),
       numFeatures: negFeatureScores.length,
       color: negColor,
+      rowIndex: 0,
     })
   }
   return sources.length > 0

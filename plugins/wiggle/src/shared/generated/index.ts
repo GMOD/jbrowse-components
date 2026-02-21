@@ -32,6 +32,12 @@ struct VertexOutput {
     vec4 color;
 };
 const uint HP_LOW_MASK = 4095u;
+const int RENDERING_TYPE_XYPLOT = 0;
+const int RENDERING_TYPE_DENSITY = 1;
+const int RENDERING_TYPE_LINE = 2;
+const int SCALE_TYPE_LOG = 1;
+const uint VERTICES_PER_INSTANCE = 6u;
+const vec3 DENSITY_LOW_COLOR = vec3(0.93, 0.93, 0.93);
 
 uniform highp usampler2D u_instanceData;
 
@@ -65,7 +71,7 @@ float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
 }
 
 float normalize_score(float score, vec2 domain_y, int scale_type) {
-    if ((scale_type == 1)) {
+    if ((scale_type == SCALE_TYPE_LOG)) {
         float log_min = log2(max(domain_y.x, 1.0));
         float log_max = log2(max(domain_y.y, 1.0));
         float log_score = log2(max(score, 1.0));
@@ -104,7 +110,7 @@ void main() {
     vec3 color = vec3(0.0);
     VertexOutput out_ = VertexOutput(vec4(0.0), vec4(0.0));
     Instance inst = _fetch_Instance(int(instance_index));
-    uint vid = (vertex_index % 6u);
+    uint vid = (vertex_index % VERTICES_PER_INSTANCE);
     uint _e11 = _group_0_binding_1_vs.region_start;
     uint abs_start = (inst.start_end.x + _e11);
     uint _e17 = _group_0_binding_1_vs.region_start;
@@ -125,7 +131,7 @@ void main() {
     float px_to_clip = (2.0 / _e46);
     vec3 inst_color = vec3(inst.color_r, inst.color_g, inst.color_b);
     int _e57 = _group_0_binding_1_vs.rendering_type;
-    if ((_e57 == 2)) {
+    if ((_e57 == RENDERING_TYPE_LINE)) {
         vec2 _e63 = _group_0_binding_1_vs.domain_y;
         int _e66 = _group_0_binding_1_vs.scale_type;
         float _e67 = score_to_y(inst.score, _e63, _e38, _e66);
@@ -170,7 +176,7 @@ void main() {
         }
     } else {
         int _e86 = _group_0_binding_1_vs.rendering_type;
-        if ((_e86 == 1)) {
+        if ((_e86 == RENDERING_TYPE_DENSITY)) {
             if (!((vid == 0u))) {
                 local = (vid == 2u);
             } else {
@@ -244,23 +250,22 @@ void main() {
         }
     }
     int _e205 = _group_0_binding_1_vs.rendering_type;
-    if ((_e205 == 1)) {
+    if ((_e205 == RENDERING_TYPE_DENSITY)) {
         vec2 _e211 = _group_0_binding_1_vs.domain_y;
         int _e214 = _group_0_binding_1_vs.scale_type;
         float _e215 = normalize_score(inst.score, _e211, _e214);
-        vec3 low_color = vec3(0.93, 0.93, 0.93);
-        color = mix(low_color, inst_color, _e215);
+        color = mix(DENSITY_LOW_COLOR, inst_color, _e215);
     } else {
         color = inst_color;
     }
-    float _e223 = sx;
-    float _e224 = sy;
-    out_.position = vec4(_e223, _e224, 0.0, 1.0);
-    vec3 _e229 = color;
-    out_.color = vec4(_e229, 1.0);
-    VertexOutput _e232 = out_;
-    gl_Position = _e232.position;
-    _vs2fs_location0 = _e232.color;
+    float _e220 = sx;
+    float _e221 = sy;
+    out_.position = vec4(_e220, _e221, 0.0, 1.0);
+    vec3 _e226 = color;
+    out_.color = vec4(_e226, 1.0);
+    VertexOutput _e229 = out_;
+    gl_Position = _e229.position;
+    _vs2fs_location0 = _e229.color;
     return;
 }
 
@@ -276,6 +281,12 @@ struct VertexOutput {
     vec4 color;
 };
 const uint HP_LOW_MASK = 4095u;
+const int RENDERING_TYPE_XYPLOT = 0;
+const int RENDERING_TYPE_DENSITY = 1;
+const int RENDERING_TYPE_LINE = 2;
+const int SCALE_TYPE_LOG = 1;
+const uint VERTICES_PER_INSTANCE = 6u;
+const vec3 DENSITY_LOW_COLOR = vec3(0.93, 0.93, 0.93);
 
 smooth in vec4 _vs2fs_location0;
 out vec4 _fs2p_location0;

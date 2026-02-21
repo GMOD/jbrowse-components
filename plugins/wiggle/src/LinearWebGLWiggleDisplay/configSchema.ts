@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { WIGGLE_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util'
+
 export default ConfigurationSchema(
   'LinearWiggleDisplay',
   {
@@ -17,12 +19,12 @@ export default ConfigurationSchema(
     },
     color: {
       type: 'color',
-      defaultValue: '#f0f',
+      defaultValue: WIGGLE_COLOR_DEFAULT,
       description: 'Color for the wiggle bars',
     },
     posColor: {
       type: 'color',
-      defaultValue: '#0068d1',
+      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
       description: 'Color for positive scores (when using bicolor)',
     },
     negColor: {

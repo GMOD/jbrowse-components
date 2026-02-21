@@ -23,6 +23,8 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { WIGGLE_POS_COLOR_DEFAULT } from '../util'
+
 import type { Region } from '@jbrowse/core/util'
 
 interface SourceInfo {
@@ -106,7 +108,7 @@ export async function executeRenderWebGLMultiWiggleData({
   for (const sourceName of sourceNames) {
     const features = featuresBySource.get(sourceName) || []
     const sourceInfo = sourcesList.find(s => s.name === sourceName)
-    const color = sourceInfo?.color || '#1f77b4'
+    const color = sourceInfo?.color || WIGGLE_POS_COLOR_DEFAULT
 
     const featurePositions = new Uint32Array(features.length * 2)
     const featureScores = new Float32Array(features.length)

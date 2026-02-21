@@ -5,8 +5,15 @@ import { observer } from 'mobx-react'
 
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
+import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_XYPLOT,
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+} from '../../shared/wiggleShader.ts'
+import YScaleBar from '../../shared/YScaleBar.tsx'
 
 import type {
   WiggleGPURenderState,
@@ -25,6 +32,9 @@ export interface MultiWiggleDisplayModel {
   height: number
   domain: [number, number] | undefined
   scaleType: string
+  posColor: string
+  negColor: string
+  bicolorPivot: number
   renderingType: string
   numSources: number
   rowHeightTooSmallForScalebar: boolean
@@ -38,12 +48,12 @@ const ROW_PADDING = 2
 
 function renderingTypeToInt(type: string) {
   if (type === 'multirowdensity') {
-    return 1
+    return RENDERING_TYPE_DENSITY
   }
   if (type === 'multirowline') {
-    return 2
+    return RENDERING_TYPE_LINE
   }
-  return 0
+  return RENDERING_TYPE_XYPLOT
 }
 
 function makeRenderState(
@@ -52,7 +62,7 @@ function makeRenderState(
 ): WiggleGPURenderState {
   return {
     domainY: model.domain!,
-    scaleType: model.scaleType === 'log' ? 1 : 0,
+    scaleType: model.scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
     renderingType: renderingTypeToInt(model.renderingType),
     rowPadding: ROW_PADDING,
     canvasWidth: width,
@@ -136,6 +146,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     }
 
     const modelSources = model.sources
+    const posColor = parseColor(model.posColor)
+    const negColor = parseColor(model.negColor)
+    const { bicolorPivot } = model
     const activeRegions: number[] = []
     for (const [regionNumber, data] of dataMap) {
       activeRegions.push(regionNumber)
@@ -145,14 +158,44 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const orderedSources =
         modelSources.length > 0 ? modelSources : data.sources
       const sourcesData: SourceRenderData[] = []
-      for (const src of orderedSources) {
+      for (let idx = 0; idx < orderedSources.length; idx++) {
+        const src = orderedSources[idx]!
         const rpcSource = sourcesByName[src.name]
-        if (rpcSource) {
+        if (!rpcSource) {
+          continue
+        }
+        const posPositions: number[] = []
+        const posScores: number[] = []
+        const negPositions: number[] = []
+        const negScores: number[] = []
+        for (let i = 0; i < rpcSource.numFeatures; i++) {
+          const score = rpcSource.featureScores[i]!
+          const start = rpcSource.featurePositions[i * 2]!
+          const end = rpcSource.featurePositions[i * 2 + 1]!
+          if (score >= bicolorPivot) {
+            posPositions.push(start, end)
+            posScores.push(score)
+          } else {
+            negPositions.push(start, end)
+            negScores.push(score)
+          }
+        }
+        if (posScores.length > 0) {
           sourcesData.push({
-            featurePositions: rpcSource.featurePositions,
-            featureScores: rpcSource.featureScores,
-            numFeatures: rpcSource.numFeatures,
-            color: parseColor(src.color || rpcSource.color),
+            featurePositions: new Uint32Array(posPositions),
+            featureScores: new Float32Array(posScores),
+            numFeatures: posScores.length,
+            color: posColor,
+            rowIndex: idx,
+          })
+        }
+        if (negScores.length > 0) {
+          sourcesData.push({
+            featurePositions: new Uint32Array(negPositions),
+            featureScores: new Float32Array(negScores),
+            numFeatures: negScores.length,
+            color: negColor,
+            rowIndex: idx,
           })
         }
       }
@@ -160,7 +203,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
     }
     renderer.pruneRegions(activeRegions)
-  }, [model.rpcDataMap, model.sources, ready])
+  }, [model.rpcDataMap, model.sources, model.posColor, model.negColor, model.bicolorPivot, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -188,6 +231,9 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     model.rpcDataMap,
     model.sources,
     model.height,
+    model.posColor,
+    model.negColor,
+    model.bicolorPivot,
     model.scaleType,
     model.renderingType,
     view.visibleRegions,

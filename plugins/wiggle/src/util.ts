@@ -12,6 +12,7 @@ export const YSCALEBAR_LABEL_OFFSET = 5
 
 // Default color used by wiggle config schema
 export const WIGGLE_COLOR_DEFAULT = '#f0f'
+export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
 
 /**
  * Determines the appropriate color callback for wiggle plots.

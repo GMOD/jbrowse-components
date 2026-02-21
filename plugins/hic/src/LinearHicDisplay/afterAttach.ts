@@ -126,8 +126,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
 
         /* eslint-disable @typescript-eslint/no-unused-expressions */
         self.resolution
-        self.useLogScale
-        self.colorScheme
         self.activeNormalization
         self.mode
         self.height

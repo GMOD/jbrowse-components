@@ -1,14 +1,21 @@
-import { INSTANCE_STRIDE } from './wiggleShader.ts'
 import {
   WIGGLE_FRAGMENT_SHADER,
   WIGGLE_VERTEX_SHADER,
 } from './generated/index.ts'
-import { createProgram, splitPositionWithFrac } from './webglUtils.ts'
+import {
+  computeNumRows,
+  createProgram,
+  interleaveInstances,
+  splitPositionWithFrac,
+} from './webglUtils.ts'
+import {
+  INSTANCE_STRIDE,
+  RENDERING_TYPE_LINE,
+  UNIFORM_SIZE,
+  VERTICES_PER_INSTANCE,
+} from './wiggleShader.ts'
 
 import type { WiggleGPURenderState, WiggleRenderBlock, SourceRenderData } from './WiggleRenderer.ts'
-
-const UNIFORM_SIZE = 48
-const INSTANCE_BYTES = INSTANCE_STRIDE * 4
 
 interface RegionData {
   regionStart: number
@@ -94,25 +101,7 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    const buf = new ArrayBuffer(totalFeatures * INSTANCE_BYTES)
-    const u32 = new Uint32Array(buf)
-    const f32 = new Float32Array(buf)
-    let offset = 0
-    for (const [rowIndex, source] of sources.entries()) {
-      for (let i = 0; i < source.numFeatures; i++) {
-        const off = (offset + i) * INSTANCE_STRIDE
-        u32[off] = source.featurePositions[i * 2]!
-        u32[off + 1] = source.featurePositions[i * 2 + 1]!
-        f32[off + 2] = source.featureScores[i]!
-        f32[off + 3] =
-          i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
-        f32[off + 4] = rowIndex
-        f32[off + 5] = source.color[0]
-        f32[off + 6] = source.color[1]
-        f32[off + 7] = source.color[2]
-      }
-      offset += source.numFeatures
-    }
+    const buf = interleaveInstances(sources, totalFeatures)
 
     const texWidth = totalFeatures * (INSTANCE_STRIDE / 4)
     const tex = gl.createTexture()
@@ -134,10 +123,11 @@ export class WebGLWiggleRenderer {
       new Uint32Array(buf),
     )
 
+    const numRows = computeNumRows(sources)
     this.regions.set(regionNumber, {
       regionStart,
       featureCount: totalFeatures,
-      numRows: sources.length,
+      numRows,
       instanceTexture: tex,
     })
   }
@@ -192,7 +182,7 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    const isLine = state.renderingType === 2
+    const isLine = state.renderingType === RENDERING_TYPE_LINE
     const drawMode = isLine ? gl.LINES : gl.TRIANGLES
 
     gl.useProgram(this.program)
@@ -247,7 +237,7 @@ export class WebGLWiggleRenderer {
 
       gl.activeTexture(gl.TEXTURE0)
       gl.bindTexture(gl.TEXTURE_2D, region.instanceTexture)
-      gl.drawArraysInstanced(drawMode, 0, 6, region.featureCount)
+      gl.drawArraysInstanced(drawMode, 0, VERTICES_PER_INSTANCE, region.featureCount)
     }
 
     gl.disable(gl.SCISSOR_TEST)

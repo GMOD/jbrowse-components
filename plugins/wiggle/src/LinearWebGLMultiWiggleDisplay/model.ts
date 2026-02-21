@@ -106,6 +106,18 @@ export default function stateModelFactory(
         }))
       },
 
+      get posColor() {
+        return getConf(self, 'posColor') as string
+      },
+
+      get negColor() {
+        return getConf(self, 'negColor') as string
+      },
+
+      get bicolorPivot() {
+        return getConf(self, 'bicolorPivot') as number
+      },
+
       get scaleType() {
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
       },

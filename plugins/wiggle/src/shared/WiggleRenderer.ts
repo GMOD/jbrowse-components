@@ -4,10 +4,13 @@ import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
-import { INSTANCE_STRIDE, wiggleShader } from './wiggleShader.ts'
-
-const UNIFORM_SIZE = 48
-const INSTANCE_BYTES = INSTANCE_STRIDE * 4
+import { computeNumRows, interleaveInstances, splitPositionWithFrac } from './webglUtils.ts'
+import {
+  RENDERING_TYPE_LINE,
+  UNIFORM_SIZE,
+  VERTICES_PER_INSTANCE,
+  wiggleShader,
+} from './wiggleShader.ts'
 
 interface GpuRegionData {
   regionStart: number
@@ -38,6 +41,7 @@ export interface SourceRenderData {
   featureScores: Float32Array
   numFeatures: number
   color: [number, number, number]
+  rowIndex?: number
 }
 
 const rendererCache = new WeakMap<HTMLCanvasElement, WiggleRenderer>()
@@ -199,7 +203,8 @@ export class WiggleRenderer {
       return
     }
 
-    const interleaved = this.interleaveInstances(sources, totalFeatures)
+    const interleaved = interleaveInstances(sources, totalFeatures)
+    const numRows = computeNumRows(sources)
     const instanceBuffer = device.createBuffer({
       size: interleaved.byteLength || 4,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
@@ -215,7 +220,7 @@ export class WiggleRenderer {
     this.regions.set(regionNumber, {
       regionStart,
       featureCount: totalFeatures,
-      numRows: sources.length,
+      numRows,
       instanceBuffer,
       bindGroup,
     })
@@ -254,7 +259,7 @@ export class WiggleRenderer {
     const dpr = window.devicePixelRatio || 1
     const bufW = Math.round(canvasWidth * dpr)
     const bufH = Math.round(canvasHeight * dpr)
-    const isLine = renderState.renderingType === 2
+    const isLine = renderState.renderingType === RENDERING_TYPE_LINE
     const pipeline = isLine
       ? WiggleRenderer.linePipeline!
       : WiggleRenderer.fillPipeline
@@ -287,7 +292,7 @@ export class WiggleRenderer {
         block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
       const clippedBpEnd =
         block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-      const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(clippedBpStart)
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       this.writeUniforms(
@@ -327,7 +332,7 @@ export class WiggleRenderer {
         Math.round(scissorW * dpr),
         bufH,
       )
-      pass.draw(6, region.featureCount)
+      pass.draw(VERTICES_PER_INSTANCE, region.featureCount)
       pass.end()
       device.queue.submit([encoder.finish()])
       isFirst = false
@@ -393,38 +398,4 @@ export class WiggleRenderer {
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 
-  private splitPositionWithFrac(value: number): [number, number] {
-    const intValue = Math.floor(value)
-    const frac = value - intValue
-    const loInt = intValue & 0xfff
-    const hi = intValue - loInt
-    const lo = loInt + frac
-    return [hi, lo]
-  }
-
-  private interleaveInstances(
-    sources: SourceRenderData[],
-    totalFeatures: number,
-  ) {
-    const buf = new ArrayBuffer(totalFeatures * INSTANCE_BYTES)
-    const u32 = new Uint32Array(buf)
-    const f32 = new Float32Array(buf)
-    let offset = 0
-    for (const [rowIndex, source] of sources.entries()) {
-      for (let i = 0; i < source.numFeatures; i++) {
-        const off = (offset + i) * INSTANCE_STRIDE
-        u32[off] = source.featurePositions[i * 2]!
-        u32[off + 1] = source.featurePositions[i * 2 + 1]!
-        f32[off + 2] = source.featureScores[i]!
-        f32[off + 3] =
-          i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
-        f32[off + 4] = rowIndex
-        f32[off + 5] = source.color[0]
-        f32[off + 6] = source.color[1]
-        f32[off + 7] = source.color[2]
-      }
-      offset += source.numFeatures
-    }
-    return buf
-  }
 }

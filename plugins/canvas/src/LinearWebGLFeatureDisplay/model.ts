@@ -23,7 +23,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun } from 'mobx'
+import { autorun, reaction } from 'mobx'
 
 import type {
   FlatbushItem,
@@ -569,14 +569,6 @@ export default function stateModelFactory(
         await fetchRegions(regions, bpPerPx)
       }
 
-      let prevShowLabels: boolean | undefined
-      let prevShowDescriptions: boolean | undefined
-      let prevColorByCDS: boolean | undefined
-      let prevGeneGlyphMode: string | undefined
-      let prevShowOnlyGenes: boolean | undefined
-      let prevDisplayMode: string | undefined
-      let prevSettingsInitialized = false
-
       const superAfterAttach = self.afterAttach
 
       return {
@@ -676,43 +668,36 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: re-fetch when label/description/colorByCDS settings change
+          // Reaction: re-fetch when label/description/colorByCDS settings change
           addDisposer(
             self,
-            autorun(
-              async () => {
-                const showLabels = self.showLabels
-                const showDescriptions = self.showDescriptions
-                const colorByCDS = self.colorByCDS
-                const geneGlyphMode = self.effectiveGeneGlyphMode
-                const showOnlyGenes = self.showOnlyGenes
-                const displayMode = self.displayMode
-                if (
-                  prevSettingsInitialized &&
-                  (showLabels !== prevShowLabels ||
-                    showDescriptions !== prevShowDescriptions ||
-                    colorByCDS !== prevColorByCDS ||
-                    geneGlyphMode !== prevGeneGlyphMode ||
-                    showOnlyGenes !== prevShowOnlyGenes ||
-                    displayMode !== prevDisplayMode)
-                ) {
-                  if (self.loadedRegions.size > 0 || self.regionTooLarge) {
-                    // refetch contains all its async behavior, so no need to await
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    refetchForCurrentView()
-                  }
+            reaction(
+              () => ({
+                showLabels: self.showLabels,
+                showDescriptions: self.showDescriptions,
+                colorByCDS: self.colorByCDS,
+                geneGlyphMode: self.effectiveGeneGlyphMode,
+                showOnlyGenes: self.showOnlyGenes,
+                displayMode: self.displayMode,
+              }),
+              () => {
+                if (self.loadedRegions.size > 0 || self.regionTooLarge) {
+                  // refetch contains all its async behavior, so no need to await
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  refetchForCurrentView()
                 }
-                prevSettingsInitialized = true
-                prevShowLabels = showLabels
-                prevShowDescriptions = showDescriptions
-                prevColorByCDS = colorByCDS
-                prevGeneGlyphMode = geneGlyphMode
-                prevShowOnlyGenes = showOnlyGenes
-                prevDisplayMode = displayMode
               },
               {
                 name: 'SettingsRefetch',
                 delay: 100,
+                fireImmediately: false,
+                equals: (a, b) =>
+                  a.showLabels === b.showLabels &&
+                  a.showDescriptions === b.showDescriptions &&
+                  a.colorByCDS === b.colorByCDS &&
+                  a.geneGlyphMode === b.geneGlyphMode &&
+                  a.showOnlyGenes === b.showOnlyGenes &&
+                  a.displayMode === b.displayMode,
               },
             ),
           )
