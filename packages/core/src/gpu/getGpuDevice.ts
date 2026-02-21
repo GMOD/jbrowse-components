@@ -2,10 +2,22 @@
 
 let device: GPUDevice | null = null
 let devicePromise: Promise<GPUDevice | null> | null = null
-let deviceLostHandler: ((recover: () => void) => void) | null = null
+const deviceLostListeners = new WeakMap<GPUDevice, Set<() => void>>()
 
-export function setDeviceLostHandler(handler: (recover: () => void) => void) {
-  deviceLostHandler = handler
+export function onDeviceLost(listener: () => void) {
+  if (device) {
+    let listeners = deviceLostListeners.get(device)
+    if (!listeners) {
+      listeners = new Set()
+      deviceLostListeners.set(device, listeners)
+    }
+    listeners.add(listener)
+  }
+  return () => {
+    if (device) {
+      deviceLostListeners.get(device)?.delete(listener)
+    }
+  }
 }
 
 async function createDevice(): Promise<GPUDevice | null> {
@@ -24,9 +36,12 @@ async function createDevice(): Promise<GPUDevice | null> {
       console.error('[getGpuDevice] Device lost:', info.message)
       device = null
       devicePromise = null
-      deviceLostHandler?.(() => {
-        void getGpuDevice()
-      })
+      const listeners = deviceLostListeners.get(d)
+      if (listeners) {
+        for (const listener of listeners) {
+          listener()
+        }
+      }
     })
     device = d
     return d

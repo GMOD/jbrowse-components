@@ -198,6 +198,50 @@ function screenToUnrotated(
   return { x, y }
 }
 
+function RecombinationOverlay({
+  model,
+  width,
+  recombHeight,
+  top,
+  useGenomicPositions,
+  regionStart,
+  bpPerPx,
+}: {
+  model: SharedLDModel
+  width: number
+  recombHeight: number
+  top: number
+  useGenomicPositions: boolean
+  regionStart?: number
+  bpPerPx: number
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 0,
+        top,
+        width,
+        height: recombHeight,
+        pointerEvents: 'none',
+      }}
+    >
+      <RecombinationTrack
+        model={model}
+        width={width}
+        height={recombHeight}
+        useGenomicPositions={useGenomicPositions}
+        regionStart={regionStart}
+        bpPerPx={bpPerPx}
+      />
+      <RecombinationYScaleBar
+        height={recombHeight}
+        maxValue={max(model.recombination!.values, 0.1)}
+      />
+    </div>
+  )
+}
+
 const LDCanvas = observer(function LDCanvas({
   model,
 }: {
@@ -217,6 +261,8 @@ const LDCanvas = observer(function LDCanvas({
     fitToHeight,
     ldCanvasHeight,
     useGenomicPositions,
+    showRecombination,
+    recombinationZoneHeight,
     snps,
     lastDrawnOffsetPx,
     signedLD,
@@ -225,7 +271,12 @@ const LDCanvas = observer(function LDCanvas({
 
   const triangleHeight = width / 2
   const canvasOnlyHeight = fitToHeight ? ldCanvasHeight : triangleHeight
-  const containerHeight = canvasOnlyHeight + lineZoneHeight
+  const effectiveLineZoneHeight = useGenomicPositions
+    ? showRecombination
+      ? recombinationZoneHeight
+      : 0
+    : lineZoneHeight
+  const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGLLDRenderer | null>(null)
@@ -370,20 +421,21 @@ const LDCanvas = observer(function LDCanvas({
 
       setMousePosition({ x: event.clientX, y: event.clientY })
 
-      if (mouseY < lineZoneHeight) {
+      if (mouseY < effectiveLineZoneHeight) {
         setHoveredItem(undefined)
         return
       }
 
       // Reverse the shader transform to get data-space screen coordinates
       const dataScreenX = (mouseX - viewOffsetX) / viewScale
-      const dataScreenY = (mouseY - lineZoneHeight) / viewScale + lineZoneHeight
+      const dataScreenY =
+        (mouseY - effectiveLineZoneHeight) / viewScale + effectiveLineZoneHeight
 
       const { x, y } = screenToUnrotated(
         dataScreenX,
         dataScreenY,
         yScalar,
-        lineZoneHeight,
+        effectiveLineZoneHeight,
       )
 
       const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
@@ -399,7 +451,7 @@ const LDCanvas = observer(function LDCanvas({
       flatbushIndex,
       flatbushItems,
       yScalar,
-      lineZoneHeight,
+      effectiveLineZoneHeight,
       viewScale,
       viewOffsetX,
       loading,
@@ -438,7 +490,7 @@ const LDCanvas = observer(function LDCanvas({
           height: canvasOnlyHeight,
           position: 'absolute',
           left: 0,
-          top: lineZoneHeight,
+          top: effectiveLineZoneHeight,
         }}
         width={width}
         height={canvasOnlyHeight}
@@ -451,7 +503,7 @@ const LDCanvas = observer(function LDCanvas({
           genomicX1={genomicX1}
           genomicX2={genomicX2}
           yScalar={yScalar}
-          lineZoneHeight={lineZoneHeight}
+          lineZoneHeight={effectiveLineZoneHeight}
           tickHeight={model.tickHeight}
           width={width}
           height={containerHeight}
@@ -484,29 +536,17 @@ const LDCanvas = observer(function LDCanvas({
         <LinesConnectingMatrixToGenomicPosition model={model} />
       )}
       {model.showRecombination && model.recombination ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: lineZoneHeight / 2,
-            width,
-            height: lineZoneHeight / 2,
-            pointerEvents: 'none',
-          }}
-        >
-          <RecombinationTrack
-            model={model}
-            width={width}
-            height={lineZoneHeight / 2}
-            useGenomicPositions={useGenomicPositions}
-            regionStart={region?.start}
-            bpPerPx={bpPerPx}
-          />
-          <RecombinationYScaleBar
-            height={lineZoneHeight / 2}
-            maxValue={max(model.recombination.values, 0.1)}
-          />
-        </div>
+        <RecombinationOverlay
+          model={model}
+          width={width}
+          recombHeight={
+            useGenomicPositions ? effectiveLineZoneHeight : lineZoneHeight / 2
+          }
+          top={useGenomicPositions ? 0 : lineZoneHeight / 2}
+          useGenomicPositions={useGenomicPositions}
+          regionStart={region?.start}
+          bpPerPx={bpPerPx}
+        />
       ) : null}
     </div>
   )

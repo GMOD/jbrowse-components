@@ -147,7 +147,7 @@ export class CanvasFeatureRenderer {
   async init() {
     const device = await CanvasFeatureRenderer.ensureDevice()
     if (device) {
-      void device.lost.then(info => {
+      device.lost.then(info => {
         console.log('[CanvasFeatureRenderer] Device lost:', info.message)
         if (CanvasFeatureRenderer.device === device) {
           CanvasFeatureRenderer.device = null
@@ -164,7 +164,7 @@ export class CanvasFeatureRenderer {
         this.msaaWidth = 0
         this.msaaHeight = 0
         this.onDeviceLost?.()
-      })
+      }).catch(console.error)
       const result = await initGpuContext(this.canvas)
       if (result) {
         this.context = result.context
