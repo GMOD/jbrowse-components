@@ -48,9 +48,9 @@ export async function executeRenderWebGLWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  // Fetch features
+  const fetchOpts = { bpPerPx, resolution }
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, { bpPerPx, resolution }).pipe(toArray()),
+    dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)

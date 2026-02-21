@@ -391,6 +391,51 @@ export default function stateModelFactory(
           addDisposer(
             self,
             autorun(
+              () => {
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const blocks = view.dynamicBlocks.contentBlocks
+                let min = Infinity
+                let max = -Infinity
+                for (const block of blocks) {
+                  if (block.regionNumber === undefined) {
+                    continue
+                  }
+                  const data = self.rpcDataMap.get(block.regionNumber)
+                  if (!data) {
+                    continue
+                  }
+                  const visStart = block.start - data.regionStart
+                  const visEnd = block.end - data.regionStart
+                  for (const source of data.sources) {
+                    for (let i = 0; i < source.numFeatures; i++) {
+                      const fStart = source.featurePositions[i * 2]!
+                      const fEnd = source.featurePositions[i * 2 + 1]!
+                      if (fEnd > visStart && fStart < visEnd) {
+                        const s = source.featureScores[i]!
+                        if (s < min) {
+                          min = s
+                        }
+                        if (s > max) {
+                          max = s
+                        }
+                      }
+                    }
+                  }
+                }
+                if (Number.isFinite(min) && Number.isFinite(max)) {
+                  self.setVisibleScoreRange([min, max])
+                }
+              },
+              { delay: 400, name: 'VisibleScoreRange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
               async () => {
                 const view = getContainingView(self) as LGV
                 if (!view.initialized) {

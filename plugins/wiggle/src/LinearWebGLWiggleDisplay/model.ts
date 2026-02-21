@@ -412,7 +412,7 @@ export default function stateModelFactory(
                   self.setVisibleScoreRange([min, max])
                 }
               },
-              { delay: 100, name: 'VisibleScoreRange' },
+              { delay: 400, name: 'VisibleScoreRange' },
             ),
           )
 

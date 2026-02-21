@@ -24,14 +24,6 @@ vec2 hpSplitUint(uint value) {
 
 // WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
 // terms. Do not simplify.
-float hpScaleLinear(vec2 splitPos, vec3 domain) {
-  float inf = 1.0 / u_zero;
-  float step = 1.0 / domain.z;
-  float hi = max(splitPos.x - domain.x, -inf);
-  float lo = max(splitPos.y - domain.y, -inf);
-  return dot(vec2(hi, lo), vec2(step, step));
-}
-
 float hpToClipX(vec2 splitPos, vec3 domain) {
   float inf = 1.0 / u_zero;
   float step = 2.0 / domain.z;

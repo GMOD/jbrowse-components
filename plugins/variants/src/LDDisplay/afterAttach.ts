@@ -137,6 +137,10 @@ export function doAfterAttach(self: SharedLDModel) {
         }
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const s = self as any
+        console.log('[LDDisplay autorun] regionTooLarge:', self.regionTooLarge, 'featureDensityStats:', s.featureDensityStats, 'featureDensityStatsReady:', s.featureDensityStatsReady, 'currentBytesRequested:', s.currentBytesRequested, 'maxAllowableBytes:', s.maxAllowableBytes)
+
         if (self.regionTooLarge || untracked(() => self.error) || !regions.length) {
           return
         }

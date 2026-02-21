@@ -77,9 +77,9 @@ export async function executeRenderWebGLMultiWiggleData({
     sourcesList = adapterSources
   }
 
-  // Fetch all features
+  const fetchOpts = { bpPerPx, resolution }
   const featuresArray = await firstValueFrom(
-    dataAdapter.getFeatures(region, { bpPerPx, resolution }).pipe(toArray()),
+    dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
   )
 
   checkStopToken2(stopTokenCheck)
