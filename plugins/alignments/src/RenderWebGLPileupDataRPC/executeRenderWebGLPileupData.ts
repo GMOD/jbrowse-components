@@ -1,14 +1,3 @@
-/**
- * WebGL Pileup Data RPC Executor
- *
- * COORDINATE SYSTEM REQUIREMENT:
- * All position data in this module uses integer coordinates. View region bounds
- * (region.start, region.end) can be fractional from scrolling/zooming, so we
- * convert to integers: regionStart = floor(region.start), regionEnd = ceil(region.end).
- * All positions are then stored as integer offsets from regionStart. This ensures
- * consistent alignment between coverage bins, gap positions, and rendered features.
- */
-
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { max, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -19,31 +8,28 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
-import { parseCigar2 } from '../MismatchParser/index.ts'
-import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
-import { getMethBins } from '../ModificationParser/getMethBins.ts'
-import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { buildTooltipData } from '../shared/buildTooltipData.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
-  applyDepthDependentThreshold,
   computeCoverage,
-  computeMismatchFrequencies,
-  computeNoncovCoverage,
-  computePositionFrequencies,
-  computeSNPCoverage,
   computeSashimiJunctions,
 } from '../shared/computeCoverage.ts'
-import { getMaxProbModAtEachPosition } from '../shared/getMaximumModificationAtEachPosition.ts'
 import { getInsertSizeStats } from '../shared/insertSizeStats.ts'
 import {
-  baseToAscii,
-  getEffectiveStrand,
-  pairOrientationToNum,
-  parseCssColor,
-} from '../shared/webglRpcUtils.ts'
-import { getColorForModification, getTagAlt } from '../util.ts'
+  buildBaseFeatureData,
+  buildGapArrays,
+  buildInterbaseArrays,
+  buildMismatchArrays,
+  buildModificationArrays,
+  buildTagColors,
+  computeCoverageSegments,
+  computeFrequenciesAndThresholds,
+  extractFeatureTagValue,
+  extractMethylation,
+  extractMismatchData,
+  extractModifications,
+  fetchReferenceSequence,
+} from '../shared/processFeatureAlignments.ts'
 import { computeLayout, computeSortedLayout } from './sortLayout.ts'
 
 import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
@@ -75,8 +61,6 @@ interface ModificationColorEntry {
   isSimplex: boolean
 }
 
-type ColorRgbTuple = [number, number, number]
-
 type SortTagValuesMap = Map<string, string>
 
 function computeModificationCoverage(
@@ -90,13 +74,7 @@ function computeModificationCoverage(
   regionStart: number,
   regionSequence: string | undefined,
   regionSequenceStart: number,
-): {
-  positions: Uint32Array
-  yOffsets: Float32Array
-  heights: Float32Array
-  colors: Uint8Array
-  count: number
-} {
+) {
   if (modifications.length === 0) {
     return {
       positions: new Uint32Array(0),
@@ -107,7 +85,6 @@ function computeModificationCoverage(
     }
   }
 
-  // Build per-position SNP counts by base and strand from mismatches
   const snpByPosition = new Map<number, SnpCountEntry>()
   for (const mm of mismatches) {
     if (mm.position < regionStart) {
@@ -130,9 +107,6 @@ function computeModificationCoverage(
     }
   }
 
-  // Group modifications by position → aggregate cumulative probability per unique color (r,g,b key)
-  // Track probabilityTotal (sum of probabilities) and probabilityCount (number of mods)
-  // for computing average probability for alpha, like the old SNPCoverageRenderer
   const byPosition = new Map<number, Map<string, ModificationColorEntry>>()
 
   for (const mod of modifications) {
@@ -158,12 +132,10 @@ function computeModificationCoverage(
       }
       colorMap.set(key, entry)
     }
-    // Accumulate the original probability value directly (no encoding/decoding)
     entry.probabilityTotal += mod.prob
     entry.probabilityCount++
   }
 
-  // Build stacked segments using modifiable/detectable formula
   const segments: {
     position: number
     yOffset: number
@@ -181,33 +153,27 @@ function computeModificationCoverage(
       continue
     }
 
-    // Get refbase from regionSequence (+1 offset for the 1bp padding)
     const refbase = regionSequence
       ? (
           regionSequence[position - regionSequenceStart + 1] ?? 'N'
         ).toUpperCase()
       : 'N'
 
-    // Build per-base counts including ref bases
     const snpEntry = snpByPosition.get(position)
     const snpBaseCounts = snpEntry?.baseCounts ?? {}
     const snpStrandBaseCounts = snpEntry?.strandBaseCounts ?? {}
 
-    // Total mismatched bases at this position
     const totalSnp = Object.values(snpBaseCounts).reduce((a, b) => a + b, 0)
     const refCount = Math.max(0, depthAtPosition - totalSnp)
 
-    // Build full base counts including refbase
     const baseCounts: Record<string, number> = { ...snpBaseCounts }
     baseCounts[refbase] = (baseCounts[refbase] ?? 0) + refCount
 
-    // Build strand-separated base counts
     const strandBaseCounts: Record<string, { fwd: number; rev: number }> = {}
     for (const [base, sc] of Object.entries(snpStrandBaseCounts)) {
       strandBaseCounts[base] = { ...sc }
     }
 
-    // Add ref base strand counts from fwd/rev depths
     if (fwdDepths && revDepths) {
       const fwdDepthAtPosition = fwdDepths[binIdx] ?? 0
       const revDepthAtPosition = revDepths[binIdx] ?? 0
@@ -231,8 +197,6 @@ function computeModificationCoverage(
       strandBaseCounts[refbase].fwd += refCount
     }
 
-    // Iterate through colorMap in insertion order - since modifications array
-    // is pre-sorted by modType, the colorMap entries are already in sorted order
     let yOffset = 0
     for (const entry of colorMap.values()) {
       const { modifiable, detectable } = calculateModificationCounts({
@@ -243,14 +207,10 @@ function computeModificationCoverage(
         strandBaseCounts,
       })
 
-      // Same formula as reference: (modifiable / score0) * (probabilityTotal / detectable)
-      // This uses cumulative probability instead of count for proper stacking
-      // scaled to normalized space by * (score0 / regionMaxDepth)
       const modFraction =
         (modifiable / depthAtPosition) * (entry.probabilityTotal / detectable)
       const height = modFraction * (depthAtPosition / regionMaxDepth)
 
-      // Compute average probability for alpha transparency
       const avgProbability =
         entry.probabilityCount > 0
           ? entry.probabilityTotal / entry.probabilityCount
@@ -286,13 +246,7 @@ function computeModificationCoverage(
     colors[i * 4 + 3] = seg.alpha
   }
 
-  return {
-    positions,
-    yOffsets,
-    heights,
-    colors,
-    count: segments.length,
-  }
+  return { positions, yOffsets, heights, colors, count: segments.length }
 }
 
 export async function executeRenderWebGLPileupData({
@@ -335,54 +289,27 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Genomic positions are integers, but region bounds from the view can be fractional.
-  // Define integer bounds: floor for start (include first partially visible position),
-  // ceil for end (include last partially visible position).
-  // All position offsets throughout this function use regionStart as the reference point.
   const regionStart = Math.floor(region.start)
 
-  // Fetch reference sequence for methylation/modification coloring.
-  // Covers the full feature extent (not just visible region) so modification
-  // bars render correctly for reads extending beyond the view.
-  // 1bp padding on each side for CpG dinucleotide detection at boundaries.
   let regionSequence: string | undefined
   let regionSequenceStart = regionStart
   if (
     (colorBy?.type === 'methylation' || colorBy?.type === 'modifications') &&
     sequenceAdapter
   ) {
-    const regionEnd0 = Math.ceil(region.end)
-    let seqFetchStart = regionStart
-    let seqFetchEnd = regionEnd0
-    const maxExtension = regionEnd0 - regionStart
-    for (const f of featuresArray) {
-      const s = f.get('start')
-      const e = f.get('end')
-      if (s < seqFetchStart && s >= regionStart - maxExtension) {
-        seqFetchStart = s
-      }
-      if (e > seqFetchEnd && e <= regionEnd0 + maxExtension) {
-        seqFetchEnd = e
-      }
-    }
-    regionSequenceStart = seqFetchStart
-    const seqAdapter = (
-      await getAdapter(pluginManager, sessionId, sequenceAdapter)
-    ).dataAdapter as BaseFeatureDataAdapter
-    const seqFeats = await firstValueFrom(
-      seqAdapter
-        .getFeatures({
-          ...regionWithAssembly,
-          refName: region.originalRefName || region.refName,
-          start: Math.max(0, seqFetchStart - 1),
-          end: seqFetchEnd + 1,
-        })
-        .pipe(toArray()),
-    )
-    regionSequence = seqFeats[0]?.get('seq')
+    const result = await fetchReferenceSequence({
+      pluginManager,
+      sessionId,
+      sequenceAdapter,
+      regionWithAssembly,
+      region,
+      featuresArray,
+      regionStart,
+    })
+    regionSequence = result.regionSequence
+    regionSequenceStart = result.regionSequenceStart
   }
 
-  // Track detected modification types (MM tags) found in this region
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()
 
@@ -397,7 +324,6 @@ export async function executeRenderWebGLPileupData({
     tagColors,
     sortTagValues,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
-    const deduped = featuresArray
     const featuresData: FeatureData[] = []
     const gapsData: GapData[] = []
     const mismatchesData: MismatchData[] = []
@@ -405,43 +331,28 @@ export async function executeRenderWebGLPileupData({
     const softclipsData: SoftclipData[] = []
     const hardclipsData: HardclipData[] = []
     const modificationsData: ModificationEntry[] = []
-    // Per-feature tag color values (only populated when colorBy.type === 'tag')
     const tagColorValues: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
     const sortTagValues: SortTagValuesMap | undefined =
       sortedBy?.type === 'tag' && sortedBy.tag
         ? new Map<string, string>()
         : undefined
-    for (const feature of deduped) {
+
+    for (const feature of featuresArray) {
       const featureId = feature.id()
       const featureStart = feature.get('start')
-
       const strand = feature.get('strand')
-      featuresData.push({
-        id: featureId,
-        name: feature.get('name') ?? '',
-        start: featureStart,
-        end: feature.get('end'),
-        flags: feature.get('flags') ?? 0,
-        mapq: feature.get('score') ?? feature.get('qual') ?? 60,
-        insertSize: Math.abs(feature.get('template_length') ?? 400),
-        pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
-        strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,
-      })
+
+      featuresData.push(buildBaseFeatureData(feature))
 
       if (isTagColorMode) {
-        const tag = colorBy.tag!
-        const tags = feature.get('tags')
-        const val = tags ? tags[tag] : feature.get(tag)
-        tagColorValues.push(val != null ? String(val) : '')
+        tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
       }
 
       if (sortTagValues) {
-        const tag = sortedBy!.tag!
-        const tags = feature.get('tags')
-        const val = tags ? tags[tag] : feature.get(tag)
-        if (val != null) {
-          sortTagValues.set(featureId, String(val))
+        const val = extractFeatureTagValue(feature, sortedBy!.tag!)
+        if (val !== '') {
+          sortTagValues.set(featureId, val)
         }
       }
 
@@ -449,266 +360,31 @@ export async function executeRenderWebGLPileupData({
         | Mismatch[]
         | undefined
       if (featureMismatches) {
-        for (const mm of featureMismatches) {
-          if (mm.type === 'deletion') {
-            gapsData.push({
-              featureId,
-              start: featureStart + mm.start,
-              end: featureStart + mm.start + mm.length,
-              type: mm.type,
-              strand,
-              featureStrand: strand,
-            })
-          } else if (mm.type === 'skip') {
-            // Use effectiveStrand for skip features (sashimi arcs) to respect XS/TS/ts tags
-            gapsData.push({
-              featureId,
-              start: featureStart + mm.start,
-              end: featureStart + mm.start + mm.length,
-              type: mm.type,
-              strand: getEffectiveStrand(feature),
-              featureStrand: strand,
-            })
-          } else if (mm.type === 'mismatch') {
-            mismatchesData.push({
-              featureId,
-              position: featureStart + mm.start,
-              base: baseToAscii(mm.base),
-              strand: strand === -1 ? -1 : 1,
-            })
-          } else if (mm.type === 'insertion') {
-            insertionsData.push({
-              featureId,
-              position: featureStart + mm.start,
-              length: mm.insertlen,
-              sequence: mm.insertedBases,
-            })
-          } else if (mm.type === 'softclip') {
-            softclipsData.push({
-              featureId,
-              position: featureStart + mm.start,
-              length: mm.cliplen,
-            })
-          } else {
-            // hardclip
-            hardclipsData.push({
-              featureId,
-              position: featureStart + mm.start,
-              length: mm.cliplen,
-            })
-          }
-        }
+        extractMismatchData(
+          featureMismatches, featureId, featureStart, strand, feature,
+          gapsData, mismatchesData, insertionsData, softclipsData, hardclipsData,
+        )
       }
 
-      // Always scan for modifications to detect what's available (for menu)
-      // but only add to rendering data if colorBy is set to modifications
-      const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
-      if (mmTag) {
-        const cigarString = feature.get('CIGAR') as string | undefined
-        if (cigarString) {
-          const cigarOps = parseCigar2(cigarString)
+      extractModifications(
+        feature, featureId, featureStart, strand, colorBy,
+        detectedModifications, detectedSimplexModifications, modificationsData,
+      )
 
-          // Parse mod positions to detect simplex modifications
-          const fstrand = feature.get('strand') as -1 | 0 | 1
-          const seq = feature.get('seq') as string | undefined
-          const simplexSet = seq
-            ? detectSimplexModifications(getModPositions(mmTag, seq, fstrand))
-            : new Set<string>()
-
-          const mods = getMaxProbModAtEachPosition(feature, cigarOps)
-          if (mods) {
-            const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
-
-            // sparse array - use forEach
-            // eslint-disable-next-line unicorn/no-array-for-each
-            mods.forEach(({ prob, type, base }, refPos) => {
-              // Always track detected modification type (for menu)
-              detectedModifications.add(type)
-
-              // Track simplex modifications
-              if (simplexSet.has(type)) {
-                detectedSimplexModifications.add(type)
-              }
-
-              // Only add to rendering data if color by modifications and above threshold
-              if (colorBy?.type === 'modifications' && prob >= modThreshold) {
-                const color = getColorForModification(type)
-                const [r, g, b] = parseCssColor(color)
-                modificationsData.push({
-                  featureId,
-                  position: featureStart + refPos,
-                  base: base.toUpperCase(),
-                  modType: type,
-                  isSimplex: simplexSet.has(type),
-                  strand: strand === -1 ? -1 : 1,
-                  r,
-                  g,
-                  b,
-                  prob,
-                })
-              }
-            })
-          }
-        }
-      }
-
-      // Extract methylation data (only when color by methylation)
       if (colorBy?.type === 'methylation' && regionSequence) {
-        const cigarString = feature.get('CIGAR') as string | undefined
-        if (cigarString) {
-          const cigarOps = parseCigar2(cigarString)
-          const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
-            getMethBins(feature, cigarOps)
-
-          const featureEnd = feature.get('end')
-          const regionEnd = Math.ceil(region.end)
-          const rSeq = regionSequence.toLowerCase()
-
-          for (
-            let i = Math.max(0, regionStart - featureStart);
-            i < Math.min(featureEnd - featureStart, regionEnd - featureStart);
-            i++
-          ) {
-            const j = i + featureStart
-            const l1 = rSeq[j - regionSequenceStart + 1]
-            const l2 = rSeq[j - regionSequenceStart + 2]
-
-            if (l1 === 'c' && l2 === 'g') {
-              const methStrand = strand === -1 ? -1 : 1
-              // CpG site found - check for methylation at C position
-              if (methBins[i]) {
-                const p = methProbs[i] || 0
-                // Red/blue gradient: red = methylated, blue = unmethylated
-                if (p > 0.5) {
-                  modificationsData.push({
-                    featureId,
-                    position: j,
-                    base: 'C',
-                    modType: 'm',
-                    isSimplex: false,
-                    strand: methStrand,
-                    r: 255,
-                    g: 0,
-                    b: 0,
-                    prob: p,
-                  })
-                } else {
-                  modificationsData.push({
-                    featureId,
-                    position: j,
-                    base: 'C',
-                    modType: 'm',
-                    isSimplex: false,
-                    strand: methStrand,
-                    r: 0,
-                    g: 0,
-                    b: 255,
-                    prob: p,
-                  })
-                }
-              } else {
-                // CpG site without modification data = unmethylated (blue)
-                modificationsData.push({
-                  featureId,
-                  position: j,
-                  base: 'C',
-                  modType: 'm',
-                  isSimplex: false,
-                  strand: strand === -1 ? -1 : 1,
-                  r: 0,
-                  g: 0,
-                  b: 255,
-                  prob: 0,
-                })
-              }
-
-              // Check G position for hydroxymethylation
-              if (hydroxyMethBins[i + 1]) {
-                const p = hydroxyMethProbs[i + 1] || 0
-                if (p > 0.5) {
-                  // Pink
-                  modificationsData.push({
-                    featureId,
-                    position: j + 1,
-                    base: 'C',
-                    modType: 'h',
-                    isSimplex: false,
-                    strand: methStrand,
-                    r: 255,
-                    g: 192,
-                    b: 203,
-                    prob: p,
-                  })
-                } else {
-                  // Purple
-                  modificationsData.push({
-                    featureId,
-                    position: j + 1,
-                    base: 'C',
-                    modType: 'h',
-                    isSimplex: false,
-                    strand: methStrand,
-                    r: 128,
-                    g: 0,
-                    b: 128,
-                    prob: p,
-                  })
-                }
-              }
-            }
-          }
-        }
+        extractMethylation(
+          feature, featureId, featureStart, strand,
+          regionSequence, regionSequenceStart,
+          regionStart, Math.ceil(region.end), modificationsData,
+        )
       }
     }
 
-    // Build per-read tag colors (RGB Uint8Array)
-    let readTagColors = new Uint8Array(0)
-    if (isTagColorMode) {
-      const tag = colorBy.tag!
-      const map = colorTagMap
-      // Pre-parse the color map to avoid repeated parsing
-      const parsedColors = new Map<string, ColorRgbTuple>()
-      for (const [k, v] of Object.entries(map)) {
-        parsedColors.set(k, parseCssColor(v))
-      }
-      // Strand colors for XS/TS/ts special handling
-      const fwdStrandRgb: [number, number, number] = [236, 139, 139] // #EC8B8B
-      const revStrandRgb: [number, number, number] = [143, 143, 216] // #8F8FD8
-      const nostrandRgb: [number, number, number] = [200, 200, 200] // #c8c8c8
+    const readTagColors =
+      isTagColorMode
+        ? buildTagColors(featuresData, tagColorValues, colorBy, colorTagMap)
+        : new Uint8Array(0)
 
-      readTagColors = new Uint8Array(featuresData.length * 3)
-      for (const [i, featuresDatum] of featuresData.entries()) {
-        const val = tagColorValues[i] ?? ''
-        let rgb: [number, number, number]
-
-        if (tag === 'XS' || tag === 'TS') {
-          if (val === '-') {
-            rgb = revStrandRgb
-          } else if (val === '+') {
-            rgb = fwdStrandRgb
-          } else {
-            rgb = nostrandRgb
-          }
-        } else if (tag === 'ts') {
-          const featureStrand = featuresDatum.strand
-          if (val === '-') {
-            rgb = featureStrand === -1 ? fwdStrandRgb : revStrandRgb
-          } else if (val === '+') {
-            rgb = featureStrand === -1 ? revStrandRgb : fwdStrandRgb
-          } else {
-            rgb = nostrandRgb
-          }
-        } else {
-          rgb = parsedColors.get(val) ?? nostrandRgb
-        }
-        readTagColors[i * 3] = rgb[0]
-        readTagColors[i * 3 + 1] = rgb[1]
-        readTagColors[i * 3 + 2] = rgb[2]
-      }
-    }
-
-    // Sort modifications by modType for consistent ordering in both
-    // rendering (stacking) and tooltips - only needs to be done once here
     modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
 
     return {
@@ -747,8 +423,8 @@ export async function executeRenderWebGLPileupData({
         )
       : computeLayout(features)
     const numLevels = max(layout.values(), 0) + 1
+    const getY = (id: string) => layout.get(id) ?? 0
 
-    // Positions stored as offsets from regionStart for Float32 precision
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
     const readFlags = new Uint16Array(features.length)
@@ -760,8 +436,7 @@ export async function executeRenderWebGLPileupData({
     const readNames: string[] = []
 
     for (const [i, f] of features.entries()) {
-      const y = layout.get(f.id) ?? 0
-      // Clamp start to 0 to avoid Uint32 underflow for reads that start before regionStart
+      const y = getY(f.id)
       readPositions[i * 2] = Math.max(0, f.start - regionStart)
       readPositions[i * 2 + 1] = f.end - regionStart
       readYs[i] = y
@@ -774,137 +449,19 @@ export async function executeRenderWebGLPileupData({
       readNames.push(f.name)
     }
 
-    // Filter gaps to only include those at or after regionStart (avoid Uint32 underflow)
-    const filteredGaps = gaps.filter(g => g.start >= regionStart)
-    const gapPositions = new Uint32Array(filteredGaps.length * 2)
-    const gapYs = new Uint16Array(filteredGaps.length)
-    const gapLengths = new Uint16Array(filteredGaps.length)
-    const gapTypes = new Uint8Array(filteredGaps.length)
-    for (const [i, g] of filteredGaps.entries()) {
-      const y = layout.get(g.featureId) ?? 0
-      gapPositions[i * 2] = g.start - regionStart
-      gapPositions[i * 2 + 1] = g.end - regionStart
-      gapYs[i] = y
-      gapLengths[i] = Math.min(65535, g.end - g.start)
-      gapTypes[i] = g.type === 'deletion' ? 0 : 1
-    }
-
-    // Filter mismatches to only include those at or after regionStart (avoid Uint32 underflow)
-    const filteredMismatches = mismatches.filter(
-      mm => mm.position >= regionStart,
-    )
-    const mismatchPositions = new Uint32Array(filteredMismatches.length)
-    const mismatchYs = new Uint16Array(filteredMismatches.length)
-    const mismatchBases = new Uint8Array(filteredMismatches.length)
-    const mismatchStrands = new Int8Array(filteredMismatches.length)
-    for (const [i, mm] of filteredMismatches.entries()) {
-      const y = layout.get(mm.featureId) ?? 0
-      mismatchPositions[i] = mm.position - regionStart
-      mismatchYs[i] = y
-      mismatchBases[i] = mm.base
-      mismatchStrands[i] = mm.strand
-    }
-
-    // Combine insertions, softclips, and hardclips into unified interbase arrays
-    // These three types have identical structure, so combining reduces memory and transfer overhead
-    const filteredInsertions = insertions.filter(
-      ins => ins.position >= regionStart,
-    )
-    const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
-    const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
-
-    const totalInterbases =
-      filteredInsertions.length +
-      filteredSoftclips.length +
-      filteredHardclips.length
-
-    const interbasePositions = new Uint32Array(totalInterbases)
-    const interbaseYs = new Uint16Array(totalInterbases)
-    const interbaseLengths = new Uint16Array(totalInterbases)
-    const interbaseTypes = new Uint8Array(totalInterbases) // 1=insertion, 2=softclip, 3=hardclip
-    const interbaseSequences: string[] = []
-
-    let idx = 0
-    // Add insertions (type 1)
-    for (const ins of filteredInsertions) {
-      const y = layout.get(ins.featureId) ?? 0
-      interbasePositions[idx] = ins.position - regionStart
-      interbaseYs[idx] = y
-      interbaseLengths[idx] = Math.min(65535, ins.length)
-      interbaseTypes[idx] = 1
-      interbaseSequences.push(ins.sequence ?? '')
-      idx++
-    }
-    // Add softclips (type 2)
-    for (const sc of filteredSoftclips) {
-      const y = layout.get(sc.featureId) ?? 0
-      interbasePositions[idx] = sc.position - regionStart
-      interbaseYs[idx] = y
-      interbaseLengths[idx] = Math.min(65535, sc.length)
-      interbaseTypes[idx] = 2
-      interbaseSequences.push('') // clips have no sequence
-      idx++
-    }
-    // Add hardclips (type 3)
-    for (const hc of filteredHardclips) {
-      const y = layout.get(hc.featureId) ?? 0
-      interbasePositions[idx] = hc.position - regionStart
-      interbaseYs[idx] = y
-      interbaseLengths[idx] = Math.min(65535, hc.length)
-      interbaseTypes[idx] = 3
-      interbaseSequences.push('') // clips have no sequence
-      idx++
-    }
-
-    // Filter modifications to only include those at or after regionStart
-    const filteredModifications = modifications.filter(
-      m => m.position >= regionStart,
-    )
-    const modificationPositions = new Uint32Array(filteredModifications.length)
-    const modificationYs = new Uint16Array(filteredModifications.length)
-    const modificationColors = new Uint8Array(filteredModifications.length * 4)
-    for (const [i, m] of filteredModifications.entries()) {
-      const y = layout.get(m.featureId) ?? 0
-      modificationPositions[i] = m.position - regionStart
-      modificationYs[i] = y
-      modificationColors[i * 4] = m.r
-      modificationColors[i * 4 + 1] = m.g
-      modificationColors[i * 4 + 2] = m.b
-      modificationColors[i * 4 + 3] = Math.round(m.prob * 255)
-    }
-
     return {
       maxY: numLevels,
       readArrays: {
-        readPositions,
-        readYs,
-        readFlags,
-        readMapqs,
-        readInsertSizes,
-        readPairOrientations,
-        readStrands,
-        readIds,
-        readNames,
+        readPositions, readYs, readFlags, readMapqs,
+        readInsertSizes, readPairOrientations, readStrands,
+        readIds, readNames,
       },
-      gapArrays: { gapPositions, gapYs, gapLengths, gapTypes },
-      mismatchArrays: {
-        mismatchPositions,
-        mismatchYs,
-        mismatchBases,
-        mismatchStrands,
-      },
-      interbaseArrays: {
-        interbasePositions,
-        interbaseYs,
-        interbaseLengths,
-        interbaseTypes,
-        interbaseSequences,
-      },
-      modificationArrays: {
-        modificationPositions,
-        modificationYs,
-        modificationColors,
-      },
+      gapArrays: buildGapArrays(gaps, regionStart, getY),
+      mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
+      interbaseArrays: buildInterbaseArrays(
+        insertions, softclips, hardclips, regionStart, getY,
+      ),
+      modificationArrays: buildModificationArrays(modifications, regionStart, getY),
     }
   })
 
@@ -920,91 +477,32 @@ export async function executeRenderWebGLPileupData({
 
   checkStopToken2(stopTokenCheck)
 
-  const mismatchFrequencies = computeMismatchFrequencies(
-    mismatchArrays.mismatchPositions,
-    mismatchArrays.mismatchBases,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  applyDepthDependentThreshold(
-    mismatchFrequencies,
-    mismatchArrays.mismatchPositions,
-    coverage.depths,
-    coverage.startOffset,
-    featureFrequencyThreshold,
-  )
-  const interbaseFrequencies = computePositionFrequencies(
-    interbaseArrays.interbasePositions,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  applyDepthDependentThreshold(
-    interbaseFrequencies,
-    interbaseArrays.interbasePositions,
-    coverage.depths,
-    coverage.startOffset,
-    featureFrequencyThreshold,
-  )
-  // Extract gap start positions (gapPositions stores [start, end] pairs)
-  const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
-  for (let i = 0; i < gapStartPositions.length; i++) {
-    gapStartPositions[i] = gapArrays.gapPositions[i * 2]!
-  }
-  const gapFrequencies = computePositionFrequencies(
-    gapStartPositions,
-    coverage.depths,
-    coverage.startOffset,
-  )
-  applyDepthDependentThreshold(
-    gapFrequencies,
-    gapStartPositions,
-    coverage.depths,
-    coverage.startOffset,
-    featureFrequencyThreshold,
-  )
+  const { mismatchFrequencies, interbaseFrequencies, gapFrequencies } =
+    computeFrequenciesAndThresholds(
+      mismatchArrays, interbaseArrays, gapArrays,
+      coverage.depths, coverage.startOffset,
+    )
 
-  const snpCoverage = computeSNPCoverage(
-    mismatches,
-    coverage.maxDepth,
-    regionStart,
-  )
-
-  const noncovCoverage = computeNoncovCoverage(
-    insertions,
-    softclips,
-    hardclips,
-    coverage.maxDepth,
-    regionStart,
+  const { snpCoverage, noncovCoverage } = computeCoverageSegments(
+    mismatches, insertions, softclips, hardclips,
+    coverage.maxDepth, regionStart,
   )
 
   const modCoverage = computeModificationCoverage(
-    modifications,
-    mismatches,
-    coverage.depths,
-    coverage.maxDepth,
-    coverage.fwdDepths,
-    coverage.revDepths,
-    coverage.startOffset,
-    regionStart,
-    regionSequence,
-    regionSequenceStart,
+    modifications, mismatches,
+    coverage.depths, coverage.maxDepth,
+    coverage.fwdDepths, coverage.revDepths,
+    coverage.startOffset, regionStart,
+    regionSequence, regionSequenceStart,
   )
 
   const { tooltipData, significantSnpOffsets } = buildTooltipData({
-    mismatches,
-    insertions,
-    gaps,
-    softclips,
-    hardclips,
-    modifications,
-    regionStart,
-    coverage,
+    mismatches, insertions, gaps, softclips, hardclips,
+    modifications, regionStart, coverage,
   })
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
-  // Calculate insert size statistics for coloring
-  // Filter for properly paired reads (flags & 2) excluding secondary (256) and supplementary (2048)
   const pairedInsertSizes = features
     .filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048))
     .map(f => f.insertSize)
@@ -1056,13 +554,11 @@ export async function executeRenderWebGLPileupData({
 
     ...sashimi,
 
-    // Convert Map to plain object for RPC serialization
     tooltipData: Object.fromEntries(tooltipData),
     significantSnpOffsets,
 
     maxY,
     numReads: features.length,
-    // Use actual array lengths (may be filtered to exclude positions before regionStart)
     numGaps: gapArrays.gapPositions.length / 2,
     numMismatches: mismatchArrays.mismatchPositions.length,
     numInterbases: interbaseArrays.interbasePositions.length,
@@ -1071,14 +567,10 @@ export async function executeRenderWebGLPileupData({
     numSnpSegments: snpCoverage.count,
     numNoncovSegments: noncovCoverage.segmentCount,
 
-    // All detected modification types in this region
     detectedModifications: Array.from(detectedModifications),
-
-    // Simplex modification types detected in this region
     simplexModifications: Array.from(detectedSimplexModifications),
     numIndicators: noncovCoverage.indicatorCount,
 
-    // Insert size statistics (mean ± 3 SD thresholds)
     insertSizeStats,
   }
 

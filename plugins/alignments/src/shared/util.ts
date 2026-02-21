@@ -22,14 +22,6 @@ export function hasPairedReads(features: ChainData) {
   return false
 }
 
-export function alphaColor(baseColor: string, p: number) {
-  return p !== 1
-    ? colord(baseColor)
-        .alpha(Math.min(1, p * p + 0.1))
-        .toHslString()
-    : baseColor
-}
-
 export const defaultFilterFlags = {
   flagInclude: 0,
   flagExclude: 1540,
@@ -95,21 +87,6 @@ export function filterTagValue(readVal: unknown, filterVal?: string) {
     ? readVal === undefined
     : `${readVal}` !== `${filterVal}`
 }
-
-/**
- * Determine if chevrons should be rendered based on zoom level and feature height
- * @param bpPerPx - base pairs per pixel (zoom level)
- * @param featureHeight - height of the feature in pixels
- * @returns true if chevrons should be rendered
- */
-export function shouldRenderChevrons(bpPerPx: number, featureHeight: number) {
-  return bpPerPx < 50 && featureHeight >= 3
-}
-
-/**
- * Width of chevron pointer in pixels
- */
-export const CHEVRON_WIDTH = 5
 
 interface SamHeaderLine {
   tag: string
@@ -190,49 +167,10 @@ export function shouldDrawSNPsMuted(type?: string) {
   return ['methylation', 'modifications'].includes(type || '')
 }
 
-export function shouldDrawIndels() {
-  return true
-}
-
 export interface LayoutFeature {
   heightPx: number
   topPx: number
   feature: Feature
-}
-
-/**
- * Sets the standard monospace font used for rendering base letters in alignments
- * @param ctx - Canvas rendering context
- */
-export function setAlignmentFont(ctx: CanvasRenderingContext2D) {
-  ctx.font = 'bold 10px Courier New,monospace'
-}
-
-// get width and height of chars the height is an approximation: width letter M
-// is approximately the height
-export function getCharWidthHeight() {
-  const charWidth = measureText('A')
-  const charHeight = measureText('M') - 2
-  return { charWidth, charHeight }
-}
-
-// Cache measureText results for small numbers (0-99)
-// Most deletions are small, so this avoids calling measureText in hot loops
-const smallNumberWidthCache10 = new Map<number, number>()
-const smallNumberWidthCache = new Map<number, number>()
-
-export function measureTextSmallNumber(n: number, fontSize?: number) {
-  const cache =
-    fontSize === 10 ? smallNumberWidthCache10 : smallNumberWidthCache
-  if (n >= 0 && n < 100) {
-    let width = cache.get(n)
-    if (width === undefined) {
-      width = measureText(String(n), fontSize)
-      cache.set(n, width)
-    }
-    return width
-  }
-  return measureText(String(n), fontSize)
 }
 
 function isTypedArray(
@@ -263,19 +201,3 @@ export function convertTagsToPlainArrays(
   return result
 }
 
-/**
- * Build a map of reference positions to mismatch bases for a feature.
- * Used to detect when a modification occurs at a mismatch position.
- */
-export function buildMismatchMap(feature: Feature, featureStart: number) {
-  const mismatchMap = new Map<number, string>()
-  if ('forEachMismatch' in feature) {
-    const feat = feature as FeatureWithMismatchIterator
-    feat.forEachMismatch((type, mismatchStart, _len, base) => {
-      if (type === MISMATCH_TYPE) {
-        mismatchMap.set(featureStart + mismatchStart, base)
-      }
-    })
-  }
-  return mismatchMap
-}

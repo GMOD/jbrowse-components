@@ -133,6 +133,69 @@ export default function NoConfigMessage() {
           </a>
         </li>
       </ul>
+      <div>Gallery demos:</div>
+      <ul>
+        <li>
+          <a href="?config=test_data%2Fconfig_dotplot.json&session=share-r4sMB3bHh5&password=C9jCa">
+            {'Dotplot showing alignment between grape vs peach genome'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt">
+            {'Linear synteny view of grape vs peach genome'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5">
+            {'Hi-C contact matrix'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-n9_vE%2FEl2R&password=wu9J6">
+            {'SV inspector displaying inter-chromosomal translocations in SKBR3'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C">
+            {'Horizontally flip feature demonstration'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64">
+            {'COLO829 melanoma coverage (multi-quantitative track)'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l">
+            {'Translocation in SKBR3 using breakpoint split view'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE">
+            {'Heterozygous small deletion in GIAB dataset'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt">
+            {'~1.5kb insertion in GIAB dataset'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe">
+            {'~500bp insertion from SKBR3 PacBio reads'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl">
+            {'Methylated and unmethylated CpG island with nanopore reads'}
+          </a>
+        </li>
+        <li>
+          <a href="?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw">
+            {'1000 genomes structural variant call with large inversion on chromosome 19'}
+          </a>
+        </li>
+      </ul>
     </div>
   )
 }
