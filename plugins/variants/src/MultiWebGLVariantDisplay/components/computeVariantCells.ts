@@ -1,6 +1,7 @@
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
+import { REFERENCE_COLOR } from '../../shared/constants.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
@@ -62,6 +63,14 @@ function getCachedRGBA(color: string) {
   return rgba
 }
 
+interface TempCell {
+  position: [number, number]
+  rowIndex: number
+  color: [number, number, number, number]
+  shapeType: number
+  isReference: boolean
+}
+
 export function computeVariantCells({
   mafs,
   sources,
@@ -85,8 +94,6 @@ export function computeVariantCells({
   const colors = new Uint8Array(maxCells * 4)
   const shapeTypes = new Uint8Array(maxCells)
 
-  let cellCount = 0
-
   let regionStart = Number.MAX_SAFE_INTEGER
   for (const { feature } of mafs) {
     const s = feature.get('start')
@@ -100,6 +107,7 @@ export function computeVariantCells({
 
   const featureList: FeatureInfo[] = []
   const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
+  const allCells: TempCell[] = []
 
   if (renderingMode === 'phased') {
     for (const { feature, mostFrequentAlt } of mafs) {
@@ -154,29 +162,23 @@ export function computeVariantCells({
             )
             if (c) {
               const rgba = getCachedRGBA(c)
-              const idx = cellCount
-              positions[idx * 2] = start - regionStart
-              positions[idx * 2 + 1] = end - regionStart
-              rowIndices[idx] = j
-              colors[idx * 4] = rgba[0]
-              colors[idx * 4 + 1] = rgba[1]
-              colors[idx * 4 + 2] = rgba[2]
-              colors[idx * 4 + 3] = rgba[3]
-              shapeTypes[idx] = shape
-              cellCount++
+              allCells.push({
+                position: [start - regionStart, end - regionStart],
+                rowIndex: j,
+                color: [rgba[0], rgba[1], rgba[2], rgba[3]],
+                shapeType: shape,
+                isReference: false,
+              })
               renderedGenotypes[name] = genotype
             }
           } else {
-            const idx = cellCount
-            positions[idx * 2] = start - regionStart
-            positions[idx * 2 + 1] = end - regionStart
-            rowIndices[idx] = j
-            colors[idx * 4] = 0
-            colors[idx * 4 + 1] = 0
-            colors[idx * 4 + 2] = 0
-            colors[idx * 4 + 3] = 255
-            shapeTypes[idx] = shape
-            cellCount++
+            allCells.push({
+              position: [start - regionStart, end - regionStart],
+              rowIndex: j,
+              color: [0, 0, 0, 255],
+              shapeType: shape,
+              isReference: false,
+            })
             renderedGenotypes[name] = genotype
           }
         }
@@ -238,16 +240,13 @@ export function computeVariantCells({
           )
           if (c) {
             const rgba = getCachedRGBA(c)
-            const idx = cellCount
-            positions[idx * 2] = start - regionStart
-            positions[idx * 2 + 1] = end - regionStart
-            rowIndices[idx] = j
-            colors[idx * 4] = rgba[0]
-            colors[idx * 4 + 1] = rgba[1]
-            colors[idx * 4 + 2] = rgba[2]
-            colors[idx * 4 + 3] = rgba[3]
-            shapeTypes[idx] = shape
-            cellCount++
+            allCells.push({
+              position: [start - regionStart, end - regionStart],
+              rowIndex: j,
+              color: [rgba[0], rgba[1], rgba[2], rgba[3]],
+              shapeType: shape,
+              isReference: c === REFERENCE_COLOR,
+            })
             renderedGenotypes[name] = genotype
           }
         }
@@ -262,6 +261,28 @@ export function computeVariantCells({
         genotypes: renderedGenotypes,
       }
     }
+  }
+
+  const refColor = colorToRGBA(REFERENCE_COLOR)
+  const refColorKey = `${refColor[0]},${refColor[1]},${refColor[2]},${refColor[3]}`
+
+  allCells.sort((a, b) => {
+    const aRefColor = `${a.color[0]},${a.color[1]},${a.color[2]},${a.color[3]}` === refColorKey
+    const bRefColor = `${b.color[0]},${b.color[1]},${b.color[2]},${b.color[3]}` === refColorKey
+    return bRefColor ? 1 : aRefColor ? -1 : 0
+  })
+
+  let cellCount = 0
+  for (const cell of allCells) {
+    positions[cellCount * 2] = cell.position[0]
+    positions[cellCount * 2 + 1] = cell.position[1]
+    rowIndices[cellCount] = cell.rowIndex
+    colors[cellCount * 4] = cell.color[0]
+    colors[cellCount * 4 + 1] = cell.color[1]
+    colors[cellCount * 4 + 2] = cell.color[2]
+    colors[cellCount * 4 + 3] = cell.color[3]
+    shapeTypes[cellCount] = cell.shapeType
+    cellCount++
   }
 
   return {
