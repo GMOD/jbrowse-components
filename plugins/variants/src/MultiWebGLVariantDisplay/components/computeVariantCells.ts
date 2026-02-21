@@ -1,7 +1,7 @@
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
-import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
+import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
@@ -88,7 +88,8 @@ export function computeVariantCells({
   const alleleColorCache = {} as Record<string, string | undefined>
   const drawRef = referenceDrawingMode === 'draw'
 
-  const maxCells = mafs.length * sources.length
+  const numSources = sources.length
+  const maxCells = mafs.length * numSources
   const positions = new Uint32Array(maxCells * 2)
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint8Array(maxCells * 4)
@@ -142,9 +143,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (const [j, source_] of sources.entries()) {
-        const source = source_
-        const { name, HP, baseName } = source
+      for (let j = 0; j < numSources; j++) {
+        const { name, HP, baseName } = sources[j]!
         const sampleName = baseName ?? name
         const genotype = samp[sampleName]
         if (genotype) {
@@ -167,7 +167,7 @@ export function computeVariantCells({
                 rowIndex: j,
                 color: [rgba[0], rgba[1], rgba[2], rgba[3]],
                 shapeType: shape,
-                isReference: false,
+                isReference: c === REFERENCE_COLOR,
               })
               renderedGenotypes[name] = genotype
             }
@@ -226,9 +226,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (const [j, source_] of sources.entries()) {
-        const source = source_
-        const { name } = source
+      for (let j = 0; j < numSources; j++) {
+        const { name } = sources[j]!
         const genotype = samp[name]
         if (genotype) {
           const c = getAlleleColor(
@@ -263,17 +262,8 @@ export function computeVariantCells({
     }
   }
 
-  const refColor = colorToRGBA(REFERENCE_COLOR)
-  const refColorKey = `${refColor[0]},${refColor[1]},${refColor[2]},${refColor[3]}`
-
-  allCells.sort((a, b) => {
-    const aRefColor = `${a.color[0]},${a.color[1]},${a.color[2]},${a.color[3]}` === refColorKey
-    const bRefColor = `${b.color[0]},${b.color[1]},${b.color[2]},${b.color[3]}` === refColorKey
-    return bRefColor ? 1 : aRefColor ? -1 : 0
-  })
-
   let cellCount = 0
-  for (const cell of allCells) {
+  function writeCell(cell: TempCell) {
     positions[cellCount * 2] = cell.position[0]
     positions[cellCount * 2 + 1] = cell.position[1]
     rowIndices[cellCount] = cell.rowIndex
@@ -283,6 +273,18 @@ export function computeVariantCells({
     colors[cellCount * 4 + 3] = cell.color[3]
     shapeTypes[cellCount] = cell.shapeType
     cellCount++
+  }
+  if (drawRef) {
+    for (const cell of allCells) {
+      if (cell.isReference) {
+        writeCell(cell)
+      }
+    }
+  }
+  for (const cell of allCells) {
+    if (!cell.isReference) {
+      writeCell(cell)
+    }
   }
 
   return {

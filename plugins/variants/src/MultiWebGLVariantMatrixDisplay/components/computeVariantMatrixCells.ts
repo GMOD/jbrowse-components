@@ -1,3 +1,4 @@
+import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
@@ -50,7 +51,8 @@ export function computeVariantMatrixCells({
   const alleleColorCache = {} as Record<string, string | undefined>
 
   const numFeatures = mafs.length
-  const maxCells = numFeatures * sources.length
+  const numSources = sources.length
+  const maxCells = numFeatures * numSources
   const featureIndices = new Float32Array(maxCells)
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint8Array(maxCells * 4)
@@ -89,9 +91,8 @@ export function computeVariantMatrixCells({
           genotypes,
         })
 
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
-          const { name, HP, baseName } = source
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, baseName } = sources[j]!
           const sampleName = baseName ?? name
           const s = samp[sampleName]
           if (s) {
@@ -143,9 +144,8 @@ export function computeVariantMatrixCells({
           featureId,
           genotypes: samp,
         })
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
-          const { name, HP, baseName } = source
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, baseName } = sources[j]!
           const sampleName = baseName ?? name
           const genotype = samp[sampleName]
           if (genotype) {
@@ -210,9 +210,8 @@ export function computeVariantMatrixCells({
           genotypes,
         })
 
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
-          const sampleName = source.baseName ?? source.name
+        for (let j = 0; j < numSources; j++) {
+          const sampleName = sources[j]!.baseName ?? sources[j]!.name
           const s = samp[sampleName]
           if (s) {
             const genotype = s.GT?.[0]
@@ -253,9 +252,8 @@ export function computeVariantMatrixCells({
           featureId,
           genotypes: samp,
         })
-        for (const [j, source_] of sources.entries()) {
-          const source = source_
-          const sampleName = source.baseName ?? source.name
+        for (let j = 0; j < numSources; j++) {
+          const sampleName = sources[j]!.baseName ?? sources[j]!.name
           const genotype = samp[sampleName]
           if (genotype) {
             const c = getAlleleColor(
@@ -282,10 +280,48 @@ export function computeVariantMatrixCells({
     }
   }
 
+  const refRGBA = colorToRGBA(REFERENCE_COLOR)
+  const outFeatureIndices = new Float32Array(cellCount)
+  const outRowIndices = new Uint32Array(cellCount)
+  const outColors = new Uint8Array(cellCount * 4)
+  let w = 0
+  for (let i = 0; i < cellCount; i++) {
+    const off = i * 4
+    if (
+      colors[off] === refRGBA[0] &&
+      colors[off + 1] === refRGBA[1] &&
+      colors[off + 2] === refRGBA[2]
+    ) {
+      outFeatureIndices[w] = featureIndices[i]
+      outRowIndices[w] = rowIndices[i]
+      outColors[w * 4] = colors[off]
+      outColors[w * 4 + 1] = colors[off + 1]
+      outColors[w * 4 + 2] = colors[off + 2]
+      outColors[w * 4 + 3] = colors[off + 3]
+      w++
+    }
+  }
+  for (let i = 0; i < cellCount; i++) {
+    const off = i * 4
+    if (
+      colors[off] !== refRGBA[0] ||
+      colors[off + 1] !== refRGBA[1] ||
+      colors[off + 2] !== refRGBA[2]
+    ) {
+      outFeatureIndices[w] = featureIndices[i]
+      outRowIndices[w] = rowIndices[i]
+      outColors[w * 4] = colors[off]
+      outColors[w * 4 + 1] = colors[off + 1]
+      outColors[w * 4 + 2] = colors[off + 2]
+      outColors[w * 4 + 3] = colors[off + 3]
+      w++
+    }
+  }
+
   return {
-    cellFeatureIndices: featureIndices.subarray(0, cellCount),
-    cellRowIndices: rowIndices.subarray(0, cellCount),
-    cellColors: colors.subarray(0, cellCount * 4),
+    cellFeatureIndices: outFeatureIndices,
+    cellRowIndices: outRowIndices,
+    cellColors: outColors,
     numCells: cellCount,
     numFeatures,
     featureData,
