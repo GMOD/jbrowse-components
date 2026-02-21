@@ -21,6 +21,7 @@ export interface VariantDisplayModel {
   regionTooLarge: boolean
   regionTooLargeReason: string
   featuresReady: boolean
+  webglCellDataLoading: boolean
   statusMessage?: string
   visibleRegions: {
     refName: string
@@ -347,7 +348,11 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
                   ? 'Loading features'
                   : 'Computing display data')
         }
-        isVisible={!model.webglCellData || model.regionTooLarge}
+        isVisible={
+          !model.webglCellData ||
+          model.webglCellDataLoading ||
+          model.regionTooLarge
+        }
       />
     </div>
   )

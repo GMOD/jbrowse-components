@@ -27,6 +27,7 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       webglCellData: undefined as MatrixCellData | undefined,
+      webglCellDataLoading: false,
     }))
     .views(() => ({
       get DisplayMessageComponent() {
@@ -54,6 +55,10 @@ export default function stateModelFactory(
     .actions(self => ({
       setWebGLCellData(data: unknown) {
         self.webglCellData = data as MatrixCellData | undefined
+        self.webglCellDataLoading = false
+      },
+      setWebGLCellDataLoading(val: boolean) {
+        self.webglCellDataLoading = val
       },
       setLineZoneHeight(n: number) {
         self.lineZoneHeight = clamp(n, 10, 1000)

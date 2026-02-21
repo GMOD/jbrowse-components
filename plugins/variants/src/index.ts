@@ -14,7 +14,6 @@ import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/in
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
 import { MultiVariantClusterGenotypeMatrix } from './VariantRPC/MultiVariantClusterGenotypeMatrix.ts'
 import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix.ts'
-import { MultiVariantGetSimplifiedFeatures } from './VariantRPC/MultiVariantGetSimplifiedFeatures.ts'
 import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources.ts'
 import { MultiVariantGetWebGLCellData } from './VariantRPC/MultiVariantGetWebGLCellData.ts'
 import VariantTrackF from './VariantTrack/index.ts'
@@ -57,10 +56,7 @@ export default class VariantsPlugin extends Plugin {
     pluginManager.addRpcMethod(
       () => new MultiVariantClusterGenotypeMatrix(pluginManager),
     )
-    pluginManager.addRpcMethod(
-      () => new MultiVariantGetSimplifiedFeatures(pluginManager),
-    )
-    pluginManager.addRpcMethod(
+pluginManager.addRpcMethod(
       () => new MultiVariantGetWebGLCellData(pluginManager),
     )
   }

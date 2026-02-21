@@ -23,6 +23,7 @@ export interface VariantMatrixDisplayModel {
   regionTooLarge: boolean
   regionTooLargeReason: string
   featuresReady: boolean
+  webglCellDataLoading: boolean
   statusMessage?: string
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
@@ -269,7 +270,11 @@ const WebGLVariantMatrixComponent = observer(
               ? model.regionTooLargeReason
               : model.statusMessage || 'Computing display data'
           }
-          isVisible={!model.webglCellData || model.regionTooLarge}
+          isVisible={
+            !model.webglCellData ||
+            model.webglCellDataLoading ||
+            model.regionTooLarge
+          }
         />
       </div>
     )
