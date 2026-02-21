@@ -63,6 +63,7 @@ void main() {
     uint instance_index = uint(gl_InstanceID);
     float cx1_ = 0.0;
     float cx2_ = 0.0;
+    float y_bot = 0.0;
     float sx = 0.0;
     float sy = 0.0;
     bool local = false;
@@ -97,68 +98,73 @@ void main() {
     float _e66 = _group_0_binding_1_vs.row_height;
     float _e70 = _group_0_binding_1_vs.scroll_top;
     float y_top_px = ((float(inst.row_index) * _e66) - _e70);
-    float _e74 = _group_0_binding_1_vs.row_height;
-    float y_bot_px = (y_top_px + _e74);
     float y_top = floor((y_top_px + 0.5));
-    float y_bot = floor((y_bot_px + 0.5));
-    float y_mid = ((y_top + y_bot) * 0.5);
-    float _e87 = _group_0_binding_1_vs.canvas_height;
-    float px_to_clip_y = (2.0 / _e87);
+    float _e77 = _group_0_binding_1_vs.row_height;
+    y_bot = floor(((y_top_px + _e77) + 0.5));
+    float _e83 = y_bot;
+    if (((_e83 - y_top) < 1.0)) {
+        y_bot = (y_top + 1.0);
+    }
+    float _e89 = y_bot;
+    float y_mid = ((y_top + _e89) * 0.5);
+    float _e95 = _group_0_binding_1_vs.canvas_height;
+    float px_to_clip_y = (2.0 / _e95);
     float cy_top = (1.0 - (y_top * px_to_clip_y));
-    float cy_bot = (1.0 - (y_bot * px_to_clip_y));
+    float _e101 = y_bot;
+    float cy_bot = (1.0 - (_e101 * px_to_clip_y));
     float cy_mid = (1.0 - (y_mid * px_to_clip_y));
-    float _e99 = cx1_;
-    float _e100 = cx2_;
-    float x_mid = ((_e99 + _e100) * 0.5);
+    float _e108 = cx1_;
+    float _e109 = cx2_;
+    float x_mid = ((_e108 + _e109) * 0.5);
     if ((inst.shape_type == 0u)) {
         if (!((vid == 0u))) {
             local = (vid == 2u);
         } else {
             local = true;
         }
-        bool _e117 = local;
-        if (!(_e117)) {
+        bool _e126 = local;
+        if (!(_e126)) {
             local_1 = (vid == 3u);
         } else {
             local_1 = true;
         }
-        bool _e124 = local_1;
-        float lx = (_e124 ? 0.0 : 1.0);
+        bool _e133 = local_1;
+        float lx = (_e133 ? 0.0 : 1.0);
         if (!((vid == 0u))) {
             local_2 = (vid == 1u);
         } else {
             local_2 = true;
         }
-        bool _e136 = local_2;
-        if (!(_e136)) {
+        bool _e145 = local_2;
+        if (!(_e145)) {
             local_3 = (vid == 4u);
         } else {
             local_3 = true;
         }
-        bool _e143 = local_3;
-        float ly = (_e143 ? 0.0 : 1.0);
-        float _e147 = cx1_;
-        float _e148 = cx2_;
-        sx = mix(_e147, _e148, lx);
+        bool _e152 = local_3;
+        float ly = (_e152 ? 0.0 : 1.0);
+        float _e156 = cx1_;
+        float _e157 = cx2_;
+        sx = mix(_e156, _e157, lx);
         sy = mix(cy_bot, cy_top, ly);
     } else {
         if ((inst.shape_type == 1u)) {
             switch(vid) {
                 case 0u: {
-                    float _e154 = cx1_;
-                    sx = _e154;
+                    float _e163 = cx1_;
+                    sx = _e163;
                     sy = cy_top;
                     break;
                 }
                 case 1u: {
-                    float _e155 = cx1_;
-                    sx = _e155;
+                    float _e164 = cx1_;
+                    sx = _e164;
                     sy = cy_bot;
                     break;
                 }
                 default: {
-                    float _e156 = cx2_;
-                    sx = _e156;
+                    float _e165 = cx2_;
+                    sx = _e165;
                     sy = cy_mid;
                     break;
                 }
@@ -167,37 +173,37 @@ void main() {
             if ((inst.shape_type == 2u)) {
                 switch(vid) {
                     case 0u: {
-                        float _e160 = cx2_;
-                        sx = _e160;
-                        sy = cy_top;
-                        break;
-                    }
-                    case 1u: {
-                        float _e161 = cx2_;
-                        sx = _e161;
-                        sy = cy_bot;
-                        break;
-                    }
-                    default: {
-                        float _e162 = cx1_;
-                        sx = _e162;
-                        sy = cy_mid;
-                        break;
-                    }
-                }
-            } else {
-                float _e165 = _group_0_binding_1_vs.canvas_width;
-                float width_extend = (6.0 / _e165);
-                switch(vid) {
-                    case 0u: {
-                        float _e168 = cx1_;
-                        sx = (_e168 - width_extend);
+                        float _e169 = cx2_;
+                        sx = _e169;
                         sy = cy_top;
                         break;
                     }
                     case 1u: {
                         float _e170 = cx2_;
-                        sx = (_e170 + width_extend);
+                        sx = _e170;
+                        sy = cy_bot;
+                        break;
+                    }
+                    default: {
+                        float _e171 = cx1_;
+                        sx = _e171;
+                        sy = cy_mid;
+                        break;
+                    }
+                }
+            } else {
+                float _e174 = _group_0_binding_1_vs.canvas_width;
+                float width_extend = (6.0 / _e174);
+                switch(vid) {
+                    case 0u: {
+                        float _e177 = cx1_;
+                        sx = (_e177 - width_extend);
+                        sy = cy_top;
+                        break;
+                    }
+                    case 1u: {
+                        float _e179 = cx2_;
+                        sx = (_e179 + width_extend);
                         sy = cy_top;
                         break;
                     }
@@ -210,13 +216,13 @@ void main() {
             }
         }
     }
-    float _e174 = sx;
-    float _e175 = sy;
-    out_.position = vec4(_e174, _e175, 0.0, 1.0);
+    float _e183 = sx;
+    float _e184 = sy;
+    out_.position = vec4(_e183, _e184, 0.0, 1.0);
     out_.color = inst.color;
-    VertexOutput _e181 = out_;
-    gl_Position = _e181.position;
-    _vs2fs_location0 = _e181.color;
+    VertexOutput _e190 = out_;
+    gl_Position = _e190.position;
+    _vs2fs_location0 = _e190.color;
     return;
 }
 
@@ -384,3 +390,4 @@ void main() {
 }
 
 `
+

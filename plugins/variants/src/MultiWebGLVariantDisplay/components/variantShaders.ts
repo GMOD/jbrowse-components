@@ -90,9 +90,11 @@ fn vs_main(
   }
 
   let y_top_px = f32(inst.row_index) * u.row_height - u.scroll_top;
-  let y_bot_px = y_top_px + u.row_height;
   let y_top = floor(y_top_px + 0.5);
-  let y_bot = floor(y_bot_px + 0.5);
+  var y_bot = floor(y_top_px + u.row_height + 0.5);
+  if y_bot - y_top < 1.0 {
+    y_bot = y_top + 1.0;
+  }
   let y_mid = (y_top + y_bot) * 0.5;
   let px_to_clip_y = 2.0 / u.canvas_height;
   let cy_top = 1.0 - y_top * px_to_clip_y;
