@@ -211,9 +211,7 @@ function pushMethEntry(
   position: number,
   modType: string,
   strand: number,
-  r: number,
-  g: number,
-  b: number,
+  color: [number, number, number],
   prob: number,
 ) {
   modificationsData.push({
@@ -223,9 +221,9 @@ function pushMethEntry(
     modType,
     isSimplex: false,
     strand,
-    r,
-    g,
-    b,
+    r: color[0],
+    g: color[1],
+    b: color[2],
     prob,
   })
 }
@@ -266,27 +264,19 @@ export function extractMethylation(
       continue
     }
 
-    if (methBins[i]) {
-      const p = methProbs[i] || 0
-      const color = p > 0.5 ? [255, 0, 0] as const : [0, 0, 255] as const
-      pushMethEntry(
-        modificationsData, featureId, j, 'm', methStrand,
-        ...color,
-        p,
-      )
-    } else {
-      pushMethEntry(modificationsData, featureId, j, 'm', methStrand, 0, 0, 255, 0)
-    }
+    const methP = methBins[i] ? (methProbs[i] || 0) : 0
+    pushMethEntry(
+      modificationsData, featureId, j, 'm', methStrand,
+      methP > 0.5 ? [255, 0, 0] : [0, 0, 255],
+      methP,
+    )
 
-    if (hydroxyMethBins[i + 1]) {
-      const p = hydroxyMethProbs[i + 1] || 0
-      const color = p > 0.5 ? [255, 192, 203] as const : [128, 0, 128] as const
-      pushMethEntry(
-        modificationsData, featureId, j + 1, 'h', methStrand,
-        ...color,
-        p,
-      )
-    }
+    const hydroxyP = hydroxyMethBins[i + 1] ? (hydroxyMethProbs[i + 1] || 0) : 0
+    pushMethEntry(
+      modificationsData, featureId, j + 1, 'h', methStrand,
+      hydroxyP > 0.5 ? [255, 192, 203] : [128, 0, 128],
+      hydroxyP,
+    )
   }
 }
 

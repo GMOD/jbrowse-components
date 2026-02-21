@@ -115,7 +115,6 @@ const OverviewBox = observer(function OverviewBox({
         transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
         width: block.widthPx,
         borderColor: refNameColor,
-        overflow: canDisplayCytobands ? 'visible' : undefined,
       }}
     >
       <Typography

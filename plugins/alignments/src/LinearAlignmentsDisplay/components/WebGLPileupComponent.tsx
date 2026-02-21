@@ -1,7 +1,11 @@
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import {
+  FloatingLegend,
+  TooLargeMessage,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
+import BlockMsg from './BlockMsg.tsx'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
@@ -14,6 +18,28 @@ import { useAlignmentsBase } from './useAlignmentsBase.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 
 const WebGLPileupComponent = observer(function WebGLPileupComponent({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { error, regionTooLarge, height } = model
+
+  if (error || regionTooLarge) {
+    return (
+      <div style={{ position: 'relative', width: '100%', height }}>
+        {error ? (
+          <BlockMsg severity="error" message={error.message} />
+        ) : (
+          <TooLargeMessage model={model} />
+        )}
+      </div>
+    )
+  }
+
+  return <WebGLPileupInner model={model} />
+})
+
+const WebGLPileupInner = observer(function WebGLPileupInner({
   model,
 }: {
   model: LinearAlignmentsDisplayModel

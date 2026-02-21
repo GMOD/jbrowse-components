@@ -1,10 +1,6 @@
-import { measureText } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
-
-import { MISMATCH_TYPE } from './forEachMismatchTypes.ts'
 import { SAM_FLAG_PAIRED } from './samFlags.ts'
 
-import type { ChainData, FeatureWithMismatchIterator } from './types.ts'
+import type { ChainData } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
 

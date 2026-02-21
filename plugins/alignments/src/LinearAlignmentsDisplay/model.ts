@@ -204,7 +204,7 @@ async function fetchFeatureDetails(self: any, featureId: string) {
 }
 
 const WebGLAlignmentsComponent = lazy(
-  () => import('./components/WebGLAlignmentsComponent.tsx'),
+  () => import('./components/WebGLPileupComponent.tsx'),
 )
 
 const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
