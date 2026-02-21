@@ -379,7 +379,10 @@ export default function stateModelFactory(
             autorun(
               () => {
                 const { resolution } = self
-                if (prevResolution !== undefined && resolution !== prevResolution) {
+                if (
+                  prevResolution !== undefined &&
+                  resolution !== prevResolution
+                ) {
                   self.clearAllRpcData()
                 }
                 prevResolution = resolution
@@ -449,7 +452,8 @@ export default function stateModelFactory(
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end &&
-                    (loadedBpPerPx === undefined || bpPerPx >= loadedBpPerPx / 2)
+                    (loadedBpPerPx === undefined ||
+                      bpPerPx >= loadedBpPerPx / 2)
                   ) {
                     continue
                   }

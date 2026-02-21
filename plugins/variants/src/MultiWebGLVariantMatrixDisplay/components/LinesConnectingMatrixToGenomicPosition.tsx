@@ -2,7 +2,11 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, getSession, getStrokeProps } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  getStrokeProps,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -145,7 +149,16 @@ const AllLines = observer(function AllLines({
           : undefined,
       )
     },
-    [assembly, n, featuresVolatile, view, offsetAdj, w, lineZoneHeight, onHover],
+    [
+      assembly,
+      n,
+      featuresVolatile,
+      view,
+      offsetAdj,
+      w,
+      lineZoneHeight,
+      onHover,
+    ],
   )
 
   if (!assembly || n === 0) {
@@ -161,7 +174,9 @@ const AllLines = observer(function AllLines({
         height={lineZoneHeight}
         fill="transparent"
         onMouseMove={onMouseMove}
-        onMouseLeave={() => onHover(undefined)}
+        onMouseLeave={() => {
+          onHover(undefined)
+        }}
       />
       <path
         d={pathD}

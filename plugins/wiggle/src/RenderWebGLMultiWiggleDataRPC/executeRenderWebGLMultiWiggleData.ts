@@ -18,14 +18,14 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { WIGGLE_POS_COLOR_DEFAULT } from '../util'
+
 import type {
   WebGLMultiWiggleDataResult,
   WebGLMultiWiggleSourceData,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { WIGGLE_POS_COLOR_DEFAULT } from '../util'
-
 import type { Region } from '@jbrowse/core/util'
 
 interface SourceInfo {
@@ -79,8 +79,13 @@ export async function executeRenderWebGLMultiWiggleData({
   }
 
   const fetchOpts = { bpPerPx, resolution }
-  const featuresArray = await updateStatus('Loading wiggle data', statusCallback, () =>
-    firstValueFrom(dataAdapter.getFeatures(region, fetchOpts).pipe(toArray())),
+  const featuresArray = await updateStatus(
+    'Loading wiggle data',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
+      ),
   )
 
   checkStopToken2(stopTokenCheck)

@@ -41,7 +41,16 @@ export async function executeRenderWebGLWiggleData({
   pluginManager,
   args,
 }: ExecuteParams): Promise<WebGLWiggleDataResult> {
-  const { sessionId, adapterConfig, region, bicolorPivot = 0, stopToken, bpPerPx = 0, resolution = 1, statusCallback } = args
+  const {
+    sessionId,
+    adapterConfig,
+    region,
+    bicolorPivot = 0,
+    stopToken,
+    bpPerPx = 0,
+    resolution = 1,
+    statusCallback,
+  } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -50,8 +59,13 @@ export async function executeRenderWebGLWiggleData({
   ).dataAdapter as BaseFeatureDataAdapter
 
   const fetchOpts = { bpPerPx, resolution }
-  const featuresArray = await updateStatus('Loading wiggle data', statusCallback, () =>
-    firstValueFrom(dataAdapter.getFeatures(region, fetchOpts).pipe(toArray())),
+  const featuresArray = await updateStatus(
+    'Loading wiggle data',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
+      ),
   )
 
   checkStopToken2(stopTokenCheck)

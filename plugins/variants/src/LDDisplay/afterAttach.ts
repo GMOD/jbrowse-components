@@ -134,7 +134,13 @@ export function doAfterAttach(self: SharedLDModel) {
         }
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
-        if (!self.featureDensityStatsReady || !self.showLDTriangle || self.regionTooLarge || untracked(() => self.error) || !regions.length) {
+        if (
+          !self.featureDensityStatsReady ||
+          !self.showLDTriangle ||
+          self.regionTooLarge ||
+          untracked(() => self.error) ||
+          !regions.length
+        ) {
           return
         }
 

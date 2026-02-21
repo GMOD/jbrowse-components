@@ -151,8 +151,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (let j = 0; j < sources.length; j++) {
-        const source = sources[j]!
+      for (const [j, source_] of sources.entries()) {
+        const source = source_
         const { name, HP, baseName } = source
         const sampleName = baseName ?? name
         const genotype = samp[sampleName]
@@ -235,8 +235,8 @@ export function computeVariantCells({
       })
       const renderedGenotypes = {} as Record<string, string>
 
-      for (let j = 0; j < sources.length; j++) {
-        const source = sources[j]!
+      for (const [j, source_] of sources.entries()) {
+        const source = source_
         const { name } = source
         const genotype = samp[name]
         if (genotype) {

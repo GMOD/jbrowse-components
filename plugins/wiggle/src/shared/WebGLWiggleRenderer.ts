@@ -15,7 +15,11 @@ import {
   VERTICES_PER_INSTANCE,
 } from './wiggleShader.ts'
 
-import type { WiggleGPURenderState, WiggleRenderBlock, SourceRenderData } from './WiggleRenderer.ts'
+import type {
+  SourceRenderData,
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from './WiggleRenderer.ts'
 
 interface RegionData {
   regionStart: number
@@ -158,10 +162,7 @@ export class WebGLWiggleRenderer {
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
   }
 
-  renderBlocks(
-    blocks: WiggleRenderBlock[],
-    state: WiggleGPURenderState,
-  ) {
+  renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight } = state
@@ -237,7 +238,12 @@ export class WebGLWiggleRenderer {
 
       gl.activeTexture(gl.TEXTURE0)
       gl.bindTexture(gl.TEXTURE_2D, region.instanceTexture)
-      gl.drawArraysInstanced(drawMode, 0, VERTICES_PER_INSTANCE, region.featureCount)
+      gl.drawArraysInstanced(
+        drawMode,
+        0,
+        VERTICES_PER_INSTANCE,
+        region.featureCount,
+      )
     }
 
     gl.disable(gl.SCISSOR_TEST)

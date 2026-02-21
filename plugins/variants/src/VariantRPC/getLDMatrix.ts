@@ -146,7 +146,12 @@ interface PackedHaplotypes {
 function packHaplotypesWithCounts(
   genotypes: Record<string, string>,
   samples: string[],
-): PackedHaplotypes & { nHomRef: number; nHet: number; nHomAlt: number; nValid: number } {
+): PackedHaplotypes & {
+  nHomRef: number
+  nHet: number
+  nHomAlt: number
+  nValid: number
+} {
   const numSamples = samples.length
   const words = Math.ceil(numSamples / 32)
   const altH1 = new Uint32Array(words)
@@ -160,7 +165,9 @@ function packHaplotypesWithCounts(
   for (let s = 0; s < numSamples; s++) {
     const val = genotypes[samples[s]!]!
     const pipe = val.indexOf('|')
-    if (pipe < 0) { continue }
+    if (pipe === -1) {
+      continue
+    }
     const a0 = val.slice(0, pipe)
     const a1 = val.slice(pipe + 1)
     const w = s >>> 5
@@ -169,22 +176,40 @@ function packHaplotypesWithCounts(
     const v1 = a1 !== '.'
     if (v0) {
       validH1[w] = validH1[w]! | bit
-      if (a0 !== '0') { altH1[w] = altH1[w]! | bit }
+      if (a0 !== '0') {
+        altH1[w] = altH1[w]! | bit
+      }
     }
     if (v1) {
       validH2[w] = validH2[w]! | bit
-      if (a1 !== '0') { altH2[w] = altH2[w]! | bit }
+      if (a1 !== '0') {
+        altH2[w] = altH2[w]! | bit
+      }
     }
     if (v0 && v1) {
       const isAlt0 = a0 !== '0'
       const isAlt1 = a1 !== '0'
       nValid++
-      if (!isAlt0 && !isAlt1) { nHomRef++ }
-      else if (isAlt0 && isAlt1) { nHomAlt++ }
-      else { nHet++ }
+      if (!isAlt0 && !isAlt1) {
+        nHomRef++
+      } else if (isAlt0 && isAlt1) {
+        nHomAlt++
+      } else {
+        nHet++
+      }
     }
   }
-  return { altH1, validH1, altH2, validH2, words, nHomRef, nHet, nHomAlt, nValid }
+  return {
+    altH1,
+    validH1,
+    altH2,
+    validH2,
+    words,
+    nHomRef,
+    nHet,
+    nHomAlt,
+    nValid,
+  }
 }
 
 // Phased haplotypes encode alleles as strictly {-1, 0, 1} (encodePhasedHaplotypes
@@ -418,10 +443,13 @@ export async function getLDMatrix({
 
   const splitCache = {} as Record<string, string[]>
 
-  const rawFeatures = await updateStatus('Loading features', statusCallback, () =>
-    firstValueFrom(
-      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-    ),
+  const rawFeatures = await updateStatus(
+    'Loading features',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+      ),
   )
   const totalVariants = rawFeatures.length
 
@@ -546,8 +574,12 @@ export async function getLDMatrix({
       end: feature.get('end'),
     })
 
-    if (packed) { packedHaplotypes.push(packed) }
-    if (encoded) { encodedGenotypes.push(encoded) }
+    if (packed) {
+      packedHaplotypes.push(packed)
+    }
+    if (encoded) {
+      encodedGenotypes.push(encoded)
+    }
 
     checkStopToken2(stopTokenCheck)
   }

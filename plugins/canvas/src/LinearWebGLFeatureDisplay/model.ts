@@ -284,10 +284,10 @@ export default function stateModelFactory(
           globalMaxY = Math.max(globalMaxY, d.maxY)
         }
         self.maxY = globalMaxY
-      if (self.autoHeight) {
-        self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
-      }
-    },
+        if (self.autoHeight) {
+          self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
+        }
+      },
 
       setLayoutBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
         const next = new Map(self.layoutBpPerPxMap)

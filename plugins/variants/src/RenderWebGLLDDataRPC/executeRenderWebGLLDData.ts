@@ -1,5 +1,5 @@
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { updateStatus } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'

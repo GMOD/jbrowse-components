@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
+import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
@@ -13,14 +14,13 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
 } from '../../shared/wiggleShader.ts'
-import YScaleBar from '../../shared/YScaleBar.tsx'
 
+import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type {
+  SourceRenderData,
   WiggleGPURenderState,
   WiggleRenderBlock,
-  SourceRenderData,
 } from '../../shared/WiggleRenderer.ts'
-import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -157,8 +157,8 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const orderedSources =
         modelSources.length > 0 ? modelSources : data.sources
       const sourcesData: SourceRenderData[] = []
-      for (let idx = 0; idx < orderedSources.length; idx++) {
-        const src = orderedSources[idx]!
+      for (const [idx, orderedSource] of orderedSources.entries()) {
+        const src = orderedSource
         const rpcSource = sourcesByName[src.name]
         if (!rpcSource) {
           continue
@@ -330,7 +330,10 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         ) : null}
       </svg>
 
-      <LoadingOverlay statusMessage={model.statusMessage || 'Loading'} isVisible={model.isLoading} />
+      <LoadingOverlay
+        statusMessage={model.statusMessage || 'Loading'}
+        isVisible={model.isLoading}
+      />
     </div>
   )
 })

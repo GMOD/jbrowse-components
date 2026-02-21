@@ -147,24 +147,26 @@ export class CanvasFeatureRenderer {
   async init() {
     const device = await CanvasFeatureRenderer.ensureDevice()
     if (device) {
-      device.lost.then(info => {
-        console.log('[CanvasFeatureRenderer] Device lost:', info.message)
-        if (CanvasFeatureRenderer.device === device) {
-          CanvasFeatureRenderer.device = null
-          CanvasFeatureRenderer.rectPipeline = null
-          CanvasFeatureRenderer.linePipeline = null
-          CanvasFeatureRenderer.chevronPipeline = null
-          CanvasFeatureRenderer.arrowPipeline = null
-          CanvasFeatureRenderer.bindGroupLayout = null
-        }
-        this.regions.clear()
-        this.uniformBuffer = null
-        this.context = null
-        this.msaaTexture = null
-        this.msaaWidth = 0
-        this.msaaHeight = 0
-        this.onDeviceLost?.()
-      }).catch(console.error)
+      device.lost
+        .then(info => {
+          console.log('[CanvasFeatureRenderer] Device lost:', info.message)
+          if (CanvasFeatureRenderer.device === device) {
+            CanvasFeatureRenderer.device = null
+            CanvasFeatureRenderer.rectPipeline = null
+            CanvasFeatureRenderer.linePipeline = null
+            CanvasFeatureRenderer.chevronPipeline = null
+            CanvasFeatureRenderer.arrowPipeline = null
+            CanvasFeatureRenderer.bindGroupLayout = null
+          }
+          this.regions.clear()
+          this.uniformBuffer = null
+          this.context = null
+          this.msaaTexture = null
+          this.msaaWidth = 0
+          this.msaaHeight = 0
+          this.onDeviceLost?.()
+        })
+        .catch(console.error)
       const result = await initGpuContext(this.canvas)
       if (result) {
         this.context = result.context
@@ -363,7 +365,9 @@ export class CanvasFeatureRenderer {
             resolveTarget,
             loadOp: (hasRenderedBlock ? 'load' : 'clear') as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
-            ...(!hasRenderedBlock && { clearValue: { r: 0, g: 0, b: 0, a: 0 } }),
+            ...(!hasRenderedBlock && {
+              clearValue: { r: 0, g: 0, b: 0, a: 0 },
+            }),
           },
         ],
       })

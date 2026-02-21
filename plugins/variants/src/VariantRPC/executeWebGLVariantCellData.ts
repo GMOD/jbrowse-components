@@ -7,9 +7,9 @@ import { computeVariantCells } from '../MultiWebGLVariantDisplay/components/comp
 import { computeVariantMatrixCells } from '../MultiWebGLVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
-import type { SampleInfo } from '../shared/types.ts'
-import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { GetWebGLCellDataArgs } from './types.ts'
+import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
+import type { SampleInfo } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -91,12 +91,15 @@ export async function executeWebGLVariantCellData({
     adapterConfig,
   )
 
-  const rawFeatures = await updateStatus('Loading features', statusCallback, () =>
-    firstValueFrom(
-      (dataAdapter as BaseFeatureDataAdapter)
-        .getFeaturesInMultipleRegions(regions, args)
-        .pipe(toArray()),
-    ),
+  const rawFeatures = await updateStatus(
+    'Loading features',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        (dataAdapter as BaseFeatureDataAdapter)
+          .getFeaturesInMultipleRegions(regions, args)
+          .pipe(toArray()),
+      ),
   )
 
   const genotypesCache = new Map<string, Record<string, string>>()

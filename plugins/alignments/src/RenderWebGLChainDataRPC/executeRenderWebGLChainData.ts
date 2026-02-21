@@ -240,29 +240,48 @@ export async function executeRenderWebGLChainData({
         | undefined
       if (featureMismatches) {
         extractMismatchData(
-          featureMismatches, featureId, featureStart, strand, feature,
-          gapsData, mismatchesData, insertionsData, softclipsData, hardclipsData,
+          featureMismatches,
+          featureId,
+          featureStart,
+          strand,
+          feature,
+          gapsData,
+          mismatchesData,
+          insertionsData,
+          softclipsData,
+          hardclipsData,
         )
       }
 
       extractModifications(
-        feature, featureId, featureStart, strand, colorBy,
-        detectedModifications, detectedSimplexModifications, modificationsData,
+        feature,
+        featureId,
+        featureStart,
+        strand,
+        colorBy,
+        detectedModifications,
+        detectedSimplexModifications,
+        modificationsData,
       )
 
       if (colorBy?.type === 'methylation' && regionSequence) {
         extractMethylation(
-          feature, featureId, featureStart, strand,
-          regionSequence, regionSequenceStart,
-          regionStart, Math.ceil(region.end), modificationsData,
+          feature,
+          featureId,
+          featureStart,
+          strand,
+          regionSequence,
+          regionSequenceStart,
+          regionStart,
+          Math.ceil(region.end),
+          modificationsData,
         )
       }
     }
 
-    const readTagColors =
-      isTagColorMode
-        ? buildTagColors(featuresData, tagColorValues, colorBy, colorTagMap)
-        : new Uint8Array(0)
+    const readTagColors = isTagColorMode
+      ? buildTagColors(featuresData, tagColorValues, colorBy, colorTagMap)
+      : new Uint8Array(0)
 
     modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
 
@@ -468,16 +487,32 @@ export async function executeRenderWebGLChainData({
 
     return {
       readArrays: {
-        readPositions, readYs, readFlags, readMapqs,
-        readInsertSizes, readPairOrientations, readStrands,
-        readChainHasSupp, readIds, readNames, readNextRefs,
+        readPositions,
+        readYs,
+        readFlags,
+        readMapqs,
+        readInsertSizes,
+        readPairOrientations,
+        readStrands,
+        readChainHasSupp,
+        readIds,
+        readNames,
+        readNextRefs,
       },
       gapArrays: buildGapArrays(gaps, regionStart, getY),
       mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
       interbaseArrays: buildInterbaseArrays(
-        insertions, softclips, hardclips, regionStart, getY,
+        insertions,
+        softclips,
+        hardclips,
+        regionStart,
+        getY,
       ),
-      modificationArrays: buildModificationArrays(modifications, regionStart, getY),
+      modificationArrays: buildModificationArrays(
+        modifications,
+        regionStart,
+        getY,
+      ),
       connectingLineArrays: {
         connectingLinePositions,
         connectingLineYs,
@@ -503,20 +538,37 @@ export async function executeRenderWebGLChainData({
 
   const { mismatchFrequencies, interbaseFrequencies, gapFrequencies } =
     computeFrequenciesAndThresholds(
-      mismatchArrays, interbaseArrays, gapArrays,
-      coverage.depths, coverage.startOffset,
+      mismatchArrays,
+      interbaseArrays,
+      gapArrays,
+      coverage.depths,
+      coverage.startOffset,
     )
 
-  const snpCoverage = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const snpCoverage = computeSNPCoverage(
+    mismatches,
+    coverage.maxDepth,
+    regionStart,
+  )
   const noncovCoverage = computeNoncovCoverage(
-    insertions, softclips, hardclips, coverage.maxDepth, regionStart,
+    insertions,
+    softclips,
+    hardclips,
+    coverage.maxDepth,
+    regionStart,
   )
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
   const { tooltipData, significantSnpOffsets } = buildTooltipData({
-    mismatches, insertions, gaps, softclips, hardclips,
-    modifications, regionStart, coverage,
+    mismatches,
+    insertions,
+    gaps,
+    softclips,
+    hardclips,
+    modifications,
+    regionStart,
+    coverage,
   })
 
   const result: WebGLPileupDataResult = {

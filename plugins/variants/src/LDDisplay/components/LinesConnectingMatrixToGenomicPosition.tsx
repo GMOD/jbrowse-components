@@ -2,7 +2,11 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, getSession, getStrokeProps } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  getStrokeProps,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -93,11 +97,24 @@ const AllLines = observer(function AllLines({
     for (let i = 0; i < n; i++) {
       const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
       const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
-      parts.push(`M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`)
-      parts.push(`M${gx} 0L${gx} ${tickHeight}`)
+      parts.push(
+        `M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`,
+        `M${gx} 0L${gx} ${tickHeight}`,
+      )
     }
     return parts.join('')
-  }, [assembly, n, snps, view, offsetAdj, blockWidth, lineZoneHeight, tickHeight, viewScale, viewOffsetX])
+  }, [
+    assembly,
+    n,
+    snps,
+    view,
+    offsetAdj,
+    blockWidth,
+    lineZoneHeight,
+    tickHeight,
+    viewScale,
+    viewOffsetX,
+  ])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<SVGElement>) => {
@@ -121,7 +138,14 @@ const AllLines = observer(function AllLines({
       for (let i = 0; i < n; i++) {
         const gx = getGenomicX(view, assembly, snps[i]!, offsetAdj)
         const mx = getMatrixX(i, blockWidth, n, viewScale, viewOffsetX)
-        const d1 = pointToSegmentDist(px, py, mx, lineZoneHeight, gx, tickHeight)
+        const d1 = pointToSegmentDist(
+          px,
+          py,
+          mx,
+          lineZoneHeight,
+          gx,
+          tickHeight,
+        )
         const d2 = pointToSegmentDist(px, py, gx, 0, gx, tickHeight)
         const dist = Math.min(d1, d2)
         if (dist < minDist) {
@@ -136,7 +160,19 @@ const AllLines = observer(function AllLines({
           : undefined,
       )
     },
-    [assembly, n, snps, view, offsetAdj, blockWidth, viewScale, viewOffsetX, lineZoneHeight, tickHeight, onHover],
+    [
+      assembly,
+      n,
+      snps,
+      view,
+      offsetAdj,
+      blockWidth,
+      viewScale,
+      viewOffsetX,
+      lineZoneHeight,
+      tickHeight,
+      onHover,
+    ],
   )
 
   if (!assembly || n === 0) {
@@ -152,7 +188,9 @@ const AllLines = observer(function AllLines({
         height={lineZoneHeight}
         fill="transparent"
         onMouseMove={onMouseMove}
-        onMouseLeave={() => onHover(undefined)}
+        onMouseLeave={() => {
+          onHover(undefined)
+        }}
       />
       <path
         d={pathD}

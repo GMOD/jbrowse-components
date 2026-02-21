@@ -36,7 +36,11 @@ export async function executeClusterGenotypeMatrix({
     renderingMode === 'phased' && sampleInfo
       ? await getPhasedGenotypeMatrix({
           pluginManager,
-          args: { ...argsWithCheck, sampleInfo, statusCallback: args.statusCallback },
+          args: {
+            ...argsWithCheck,
+            sampleInfo,
+            statusCallback: args.statusCallback,
+          },
         })
       : await getGenotypeMatrix({
           pluginManager,

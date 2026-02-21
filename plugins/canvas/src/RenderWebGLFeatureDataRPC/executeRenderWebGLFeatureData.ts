@@ -675,7 +675,6 @@ export async function executeRenderWebGLFeatureData({
     'Computing layout',
     statusCallback,
     async () => {
-
       // Layout in pixel space so labels and padding don't blow up at
       // zoomed-out levels (where bpPerPx is large)
       const layout = new GranularRectLayout({ pitchX: 1 })
@@ -878,8 +877,8 @@ export async function executeRenderWebGLFeatureData({
   const rectHeights = new Float32Array(rects.length)
   const rectColors = new Uint8Array(rects.length * 4)
 
-  for (let i = 0; i < rects.length; i++) {
-    const rect = rects[i]!
+  for (const [i, rect_] of rects.entries()) {
+    const rect = rect_
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
     rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
     rectYs[i] = rect.y
@@ -892,8 +891,8 @@ export async function executeRenderWebGLFeatureData({
   const lineColors = new Uint8Array(lines.length * 4)
   const lineDirections = new Int8Array(lines.length)
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!
+  for (const [i, line_] of lines.entries()) {
+    const line = line_
     linePositions[i * 2] = Math.max(0, line.startOffset)
     linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
     lineYs[i] = line.y
@@ -907,8 +906,8 @@ export async function executeRenderWebGLFeatureData({
   const arrowHeights = new Float32Array(arrows.length)
   const arrowColors = new Uint8Array(arrows.length * 4)
 
-  for (let i = 0; i < arrows.length; i++) {
-    const arrow = arrows[i]!
+  for (const [i, arrow_] of arrows.entries()) {
+    const arrow = arrow_
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction

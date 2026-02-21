@@ -1,8 +1,7 @@
 import { Suspense, useRef } from 'react'
 
-import { observer } from 'mobx-react'
-
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import { observer } from 'mobx-react'
 
 import Crosshair from './MultiVariantCrosshairs.tsx'
 import TreeSidebar from './TreeSidebar.tsx'

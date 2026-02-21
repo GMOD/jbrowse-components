@@ -2,11 +2,6 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
-import { parseCigar2 } from '../MismatchParser/index.ts'
-import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
-import { getMethBins } from '../ModificationParser/getMethBins.ts'
-import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import {
   applyDepthDependentThreshold,
   computeMismatchFrequencies,
@@ -19,6 +14,11 @@ import {
   pairOrientationToNum,
   parseCssColor,
 } from './webglRpcUtils.ts'
+import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
+import { parseCigar2 } from '../MismatchParser/index.ts'
+import { detectSimplexModifications } from '../ModificationParser/detectSimplexModifications.ts'
+import { getMethBins } from '../ModificationParser/getMethBins.ts'
+import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
 import type { Mismatch } from './types'
@@ -50,7 +50,12 @@ export async function fetchReferenceSequence({
   sessionId: string
   sequenceAdapter: Record<string, unknown>
   regionWithAssembly: { refName: string; assemblyName: string }
-  region: { refName: string; originalRefName?: string; start: number; end: number }
+  region: {
+    refName: string
+    originalRefName?: string
+    start: number
+    end: number
+  }
   featuresArray: Feature[]
   regionStart: number
 }) {
@@ -262,16 +267,24 @@ export function extractMethylation(
       continue
     }
 
-    const methP = methBins[i] ? (methProbs[i] || 0) : 0
+    const methP = methBins[i] ? methProbs[i] || 0 : 0
     pushMethEntry(
-      modificationsData, featureId, j, 'm', methStrand,
+      modificationsData,
+      featureId,
+      j,
+      'm',
+      methStrand,
       methP > 0.5 ? [255, 0, 0] : [0, 0, 255],
       methP,
     )
 
-    const hydroxyP = hydroxyMethBins[i + 1] ? (hydroxyMethProbs[i + 1] || 0) : 0
+    const hydroxyP = hydroxyMethBins[i + 1] ? hydroxyMethProbs[i + 1] || 0 : 0
     pushMethEntry(
-      modificationsData, featureId, j + 1, 'h', methStrand,
+      modificationsData,
+      featureId,
+      j + 1,
+      'h',
+      methStrand,
       hydroxyP > 0.5 ? [255, 192, 203] : [128, 0, 128],
       hydroxyP,
     )
@@ -300,11 +313,7 @@ export function buildTagColors(
 
     if (tag === 'XS' || tag === 'TS') {
       rgb =
-        val === '-'
-          ? revStrandRgb
-          : val === '+'
-            ? fwdStrandRgb
-            : nostrandRgb
+        val === '-' ? revStrandRgb : val === '+' ? fwdStrandRgb : nostrandRgb
     } else if (tag === 'ts') {
       const featureStrand = featuresDatum.strand
       if (val === '-') {
@@ -324,18 +333,13 @@ export function buildTagColors(
   return readTagColors
 }
 
-export function extractFeatureTagValue(
-  feature: Feature,
-  tag: string,
-) {
+export function extractFeatureTagValue(feature: Feature, tag: string) {
   const tags = feature.get('tags')
   const val = tags ? tags[tag] : feature.get(tag)
   return val != null ? String(val) : ''
 }
 
-export function buildBaseFeatureData(
-  feature: Feature,
-): FeatureData {
+export function buildBaseFeatureData(feature: Feature): FeatureData {
   const strand = feature.get('strand')
   return {
     id: feature.id(),
@@ -364,7 +368,9 @@ export function buildInterbaseArrays(
   regionStart: number,
   getY: (featureId: string) => number,
 ) {
-  const filteredInsertions = insertions.filter(ins => ins.position >= regionStart)
+  const filteredInsertions = insertions.filter(
+    ins => ins.position >= regionStart,
+  )
   const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
   const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
 

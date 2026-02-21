@@ -65,9 +65,12 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
       this.configurePre2(),
     )
   }
-  async getMultiRegionFeatureDensityStats(regions: Region[], opts?: BaseOptions) {
+  async getMultiRegionFeatureDensityStats(
+    regions: Region[],
+    opts?: BaseOptions,
+  ) {
     const { vcf } = await this.configure(opts)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const index = (vcf as any).index as
       | {
           blocksForRange: (

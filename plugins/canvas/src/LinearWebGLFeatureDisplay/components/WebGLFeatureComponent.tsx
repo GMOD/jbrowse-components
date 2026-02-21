@@ -843,7 +843,14 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const isReady = view.initialized
 
   return (
-    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden' }}>
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height,
+        overflow: 'hidden',
+      }}
+    >
       <canvas
         ref={canvasCallbackRef}
         style={{

@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
@@ -13,7 +15,6 @@ import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
-import type React from 'react'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -460,7 +461,9 @@ export default function sharedModelFactory(
        * Returns the effective color scheme, falling back to config
        */
       get colorScheme() {
-        return self.colorSchemeSetting || getConf(self, 'colorScheme') || undefined
+        return (
+          self.colorSchemeSetting || getConf(self, 'colorScheme') || undefined
+        )
       },
       /**
        * #getter

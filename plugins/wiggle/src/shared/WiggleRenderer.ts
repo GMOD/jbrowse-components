@@ -4,7 +4,11 @@ import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
-import { computeNumRows, interleaveInstances, splitPositionWithFrac } from './webglUtils.ts'
+import {
+  computeNumRows,
+  interleaveInstances,
+  splitPositionWithFrac,
+} from './webglUtils.ts'
 import {
   RENDERING_TYPE_LINE,
   UNIFORM_SIZE,
@@ -180,11 +184,7 @@ export class WiggleRenderer {
     }
 
     const device = WiggleRenderer.device
-    if (
-      !device ||
-      !WiggleRenderer.bindGroupLayout ||
-      !this.uniformBuffer
-    ) {
+    if (!device || !WiggleRenderer.bindGroupLayout || !this.uniformBuffer) {
       return
     }
 
@@ -241,10 +241,7 @@ export class WiggleRenderer {
     }
   }
 
-  renderBlocks(
-    blocks: WiggleRenderBlock[],
-    renderState: WiggleGPURenderState,
-  ) {
+  renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
     if (this.glFallback) {
       this.glFallback.renderBlocks(blocks, renderState)
       return
@@ -397,5 +394,4 @@ export class WiggleRenderer {
     this.uniformF32[11] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
-
 }

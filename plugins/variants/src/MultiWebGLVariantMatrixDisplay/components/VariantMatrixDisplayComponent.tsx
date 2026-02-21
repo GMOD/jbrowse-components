@@ -1,10 +1,9 @@
 import { Suspense, useRef } from 'react'
 
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
-
 import Crosshair from '../../shared/components/MultiVariantCrosshairs.tsx'
 import TreeSidebar from '../../shared/components/TreeSidebar.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'

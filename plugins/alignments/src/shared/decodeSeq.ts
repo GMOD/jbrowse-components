@@ -21,4 +21,3 @@ export function decodeSeq(numericSeq: Uint8Array, seqLength: number): string {
 
   return buf.join('')
 }
-

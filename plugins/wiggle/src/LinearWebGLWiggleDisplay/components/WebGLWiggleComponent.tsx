@@ -16,12 +16,12 @@ import {
 } from '../../shared/wiggleShader.ts'
 import { WIGGLE_COLOR_DEFAULT } from '../../util.ts'
 
+import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type {
+  SourceRenderData,
   WiggleGPURenderState,
   WiggleRenderBlock,
-  SourceRenderData,
 } from '../../shared/WiggleRenderer.ts'
-import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -259,7 +259,10 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
           <YScaleBar model={model} />
         </svg>
       ) : null}
-      <LoadingOverlay statusMessage={model.statusMessage || 'Loading'} isVisible={model.isLoading} />
+      <LoadingOverlay
+        statusMessage={model.statusMessage || 'Loading'}
+        isVisible={model.isLoading}
+      />
     </div>
   )
 })

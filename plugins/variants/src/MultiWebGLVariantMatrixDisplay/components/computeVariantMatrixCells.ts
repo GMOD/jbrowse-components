@@ -106,8 +106,8 @@ export function computeVariantMatrixCells({
           genotypes,
         })
 
-        for (let j = 0; j < sources.length; j++) {
-          const source = sources[j]!
+        for (const [j, source_] of sources.entries()) {
+          const source = source_
           const { name, HP, baseName } = source
           const sampleName = baseName ?? name
           const s = samp[sampleName]
@@ -160,8 +160,8 @@ export function computeVariantMatrixCells({
           featureId,
           genotypes: samp,
         })
-        for (let j = 0; j < sources.length; j++) {
-          const source = sources[j]!
+        for (const [j, source_] of sources.entries()) {
+          const source = source_
           const { name, HP, baseName } = source
           const sampleName = baseName ?? name
           const genotype = samp[sampleName]
@@ -227,8 +227,8 @@ export function computeVariantMatrixCells({
           genotypes,
         })
 
-        for (let j = 0; j < sources.length; j++) {
-          const source = sources[j]!
+        for (const [j, source_] of sources.entries()) {
+          const source = source_
           const sampleName = source.baseName ?? source.name
           const s = samp[sampleName]
           if (s) {
@@ -270,8 +270,8 @@ export function computeVariantMatrixCells({
           featureId,
           genotypes: samp,
         })
-        for (let j = 0; j < sources.length; j++) {
-          const source = sources[j]!
+        for (const [j, source_] of sources.entries()) {
+          const source = source_
           const sampleName = source.baseName ?? source.name
           const genotype = samp[sampleName]
           if (genotype) {

@@ -152,7 +152,9 @@ export default function NoConfigMessage() {
         </li>
         <li>
           <a href="?config=test_data%2Fconfig_demo.json&session=share-n9_vE%2FEl2R&password=wu9J6">
-            {'SV inspector displaying inter-chromosomal translocations in SKBR3'}
+            {
+              'SV inspector displaying inter-chromosomal translocations in SKBR3'
+            }
           </a>
         </li>
         <li>
@@ -192,7 +194,9 @@ export default function NoConfigMessage() {
         </li>
         <li>
           <a href="?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw">
-            {'1000 genomes structural variant call with large inversion on chromosome 19'}
+            {
+              '1000 genomes structural variant call with large inversion on chromosome 19'
+            }
           </a>
         </li>
       </ul>

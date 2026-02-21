@@ -8,8 +8,8 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type {
   AugmentedRegion as Region,

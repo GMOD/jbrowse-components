@@ -202,7 +202,9 @@ export async function executeRenderWebGLArcsData({
     statusCallback,
     () =>
       firstValueFrom(
-        dataAdapter.getFeaturesInMultipleRegions([region], args).pipe(toArray()),
+        dataAdapter
+          .getFeaturesInMultipleRegions([region], args)
+          .pipe(toArray()),
       ),
   )
 
@@ -379,13 +381,17 @@ export async function executeRenderWebGLArcsData({
 
   const intRegionStart = Math.floor(region.start)
   const regionEnd = Math.ceil(region.end)
-  const coverage = await updateStatus('Computing coverage', statusCallback, () => {
-    const coverageFeatures = deduped.map(f => ({
-      start: f.get('start'),
-      end: f.get('end'),
-    }))
-    return computeCoverage(coverageFeatures, [], intRegionStart, regionEnd)
-  })
+  const coverage = await updateStatus(
+    'Computing coverage',
+    statusCallback,
+    () => {
+      const coverageFeatures = deduped.map(f => ({
+        start: f.get('start'),
+        end: f.get('end'),
+      }))
+      return computeCoverage(coverageFeatures, [], intRegionStart, regionEnd)
+    },
+  )
 
   return {
     regionStart,

@@ -124,8 +124,20 @@ async function runGPUCompute(
   })
 
   try {
-    device.queue.writeBuffer(genoBuffer, 0, inputBuffer.buffer, inputBuffer.byteOffset, inputBuffer.byteLength)
-    device.queue.writeBuffer(uniformBuffer, 0, uniformData.buffer, uniformData.byteOffset, uniformData.byteLength)
+    device.queue.writeBuffer(
+      genoBuffer,
+      0,
+      inputBuffer.buffer,
+      inputBuffer.byteOffset,
+      inputBuffer.byteLength,
+    )
+    device.queue.writeBuffer(
+      uniformBuffer,
+      0,
+      uniformData.buffer,
+      uniformData.byteOffset,
+      uniformData.byteLength,
+    )
 
     const bindGroup = device.createBindGroup({
       layout: bindGroupLayout,
