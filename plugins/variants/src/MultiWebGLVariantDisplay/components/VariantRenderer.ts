@@ -9,7 +9,7 @@ import { splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
 
 import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
 
-const UNIFORM_SIZE = 32
+const UNIFORM_SIZE = 48
 
 interface GpuData {
   instanceBuffer: GPUBuffer

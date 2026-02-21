@@ -20,6 +20,7 @@ struct Uniforms {
     float canvas_width;
     float row_height;
     float scroll_top;
+    float u_zero;
 };
 struct VertexOutput {
     vec4 position;
@@ -49,10 +50,12 @@ vec2 hp_split_uint(uint value) {
     return vec2(float(hi), float(lo));
 }
 
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range) {
-    float hi_1 = (split_pos.x - bp_range.x);
-    float lo_1 = (split_pos.y - bp_range.y);
-    return ((((hi_1 + lo_1) / bp_range.z) * 2.0) - 1.0);
+float hp_to_clip_x(vec2 split_pos, vec3 bp_range, float zero) {
+    float inf = (1.0 / zero);
+    float step_ = (2.0 / bp_range.z);
+    float hi_1 = max((split_pos.x - bp_range.x), -(inf));
+    float lo_1 = max((split_pos.y - bp_range.y), -(inf));
+    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
 }
 
 void main() {
@@ -76,84 +79,86 @@ void main() {
     vec2 _e19 = hp_split_uint(abs_start);
     vec2 _e20 = hp_split_uint(abs_end);
     vec3 _e23 = _group_0_binding_1_vs.bp_range_x;
-    float _e24 = hp_to_clip_x(_e19, _e23);
-    vec3 _e27 = _group_0_binding_1_vs.bp_range_x;
-    float _e28 = hp_to_clip_x(_e20, _e27);
-    float _e31 = _group_0_binding_1_vs.canvas_width;
-    float px_size = (2.0 / _e31);
-    cx1_ = (floor(((_e24 / px_size) + 0.5)) * px_size);
-    cx2_ = (floor(((_e28 / px_size) + 0.5)) * px_size);
-    float _e46 = cx2_;
-    float _e47 = cx1_;
-    if (((_e46 - _e47) < (2.0 * px_size))) {
-        float _e52 = cx1_;
-        cx2_ = (_e52 + (2.0 * px_size));
+    float _e26 = _group_0_binding_1_vs.u_zero;
+    float _e27 = hp_to_clip_x(_e19, _e23, _e26);
+    vec3 _e30 = _group_0_binding_1_vs.bp_range_x;
+    float _e33 = _group_0_binding_1_vs.u_zero;
+    float _e34 = hp_to_clip_x(_e20, _e30, _e33);
+    float _e37 = _group_0_binding_1_vs.canvas_width;
+    float px_size = (2.0 / _e37);
+    cx1_ = (floor(((_e27 / px_size) + 0.5)) * px_size);
+    cx2_ = (floor(((_e34 / px_size) + 0.5)) * px_size);
+    float _e52 = cx2_;
+    float _e53 = cx1_;
+    if (((_e52 - _e53) < (2.0 * px_size))) {
+        float _e58 = cx1_;
+        cx2_ = (_e58 + (2.0 * px_size));
     }
-    float _e60 = _group_0_binding_1_vs.row_height;
-    float _e64 = _group_0_binding_1_vs.scroll_top;
-    float y_top_px = ((float(inst.row_index) * _e60) - _e64);
-    float _e68 = _group_0_binding_1_vs.row_height;
-    float y_bot_px = (y_top_px + _e68);
+    float _e66 = _group_0_binding_1_vs.row_height;
+    float _e70 = _group_0_binding_1_vs.scroll_top;
+    float y_top_px = ((float(inst.row_index) * _e66) - _e70);
+    float _e74 = _group_0_binding_1_vs.row_height;
+    float y_bot_px = (y_top_px + _e74);
     float y_top = floor((y_top_px + 0.5));
     float y_bot = floor((y_bot_px + 0.5));
     float y_mid = ((y_top + y_bot) * 0.5);
-    float _e81 = _group_0_binding_1_vs.canvas_height;
-    float px_to_clip_y = (2.0 / _e81);
+    float _e87 = _group_0_binding_1_vs.canvas_height;
+    float px_to_clip_y = (2.0 / _e87);
     float cy_top = (1.0 - (y_top * px_to_clip_y));
     float cy_bot = (1.0 - (y_bot * px_to_clip_y));
     float cy_mid = (1.0 - (y_mid * px_to_clip_y));
-    float _e93 = cx1_;
-    float _e94 = cx2_;
-    float x_mid = ((_e93 + _e94) * 0.5);
+    float _e99 = cx1_;
+    float _e100 = cx2_;
+    float x_mid = ((_e99 + _e100) * 0.5);
     if ((inst.shape_type == 0u)) {
         if (!((vid == 0u))) {
             local = (vid == 2u);
         } else {
             local = true;
         }
-        bool _e111 = local;
-        if (!(_e111)) {
+        bool _e117 = local;
+        if (!(_e117)) {
             local_1 = (vid == 3u);
         } else {
             local_1 = true;
         }
-        bool _e118 = local_1;
-        float lx = (_e118 ? 0.0 : 1.0);
+        bool _e124 = local_1;
+        float lx = (_e124 ? 0.0 : 1.0);
         if (!((vid == 0u))) {
             local_2 = (vid == 1u);
         } else {
             local_2 = true;
         }
-        bool _e130 = local_2;
-        if (!(_e130)) {
+        bool _e136 = local_2;
+        if (!(_e136)) {
             local_3 = (vid == 4u);
         } else {
             local_3 = true;
         }
-        bool _e137 = local_3;
-        float ly = (_e137 ? 0.0 : 1.0);
-        float _e141 = cx1_;
-        float _e142 = cx2_;
-        sx = mix(_e141, _e142, lx);
+        bool _e143 = local_3;
+        float ly = (_e143 ? 0.0 : 1.0);
+        float _e147 = cx1_;
+        float _e148 = cx2_;
+        sx = mix(_e147, _e148, lx);
         sy = mix(cy_bot, cy_top, ly);
     } else {
         if ((inst.shape_type == 1u)) {
             switch(vid) {
                 case 0u: {
-                    float _e148 = cx1_;
-                    sx = _e148;
+                    float _e154 = cx1_;
+                    sx = _e154;
                     sy = cy_top;
                     break;
                 }
                 case 1u: {
-                    float _e149 = cx1_;
-                    sx = _e149;
+                    float _e155 = cx1_;
+                    sx = _e155;
                     sy = cy_bot;
                     break;
                 }
                 default: {
-                    float _e150 = cx2_;
-                    sx = _e150;
+                    float _e156 = cx2_;
+                    sx = _e156;
                     sy = cy_mid;
                     break;
                 }
@@ -162,37 +167,37 @@ void main() {
             if ((inst.shape_type == 2u)) {
                 switch(vid) {
                     case 0u: {
-                        float _e154 = cx2_;
-                        sx = _e154;
+                        float _e160 = cx2_;
+                        sx = _e160;
                         sy = cy_top;
                         break;
                     }
                     case 1u: {
-                        float _e155 = cx2_;
-                        sx = _e155;
+                        float _e161 = cx2_;
+                        sx = _e161;
                         sy = cy_bot;
                         break;
                     }
                     default: {
-                        float _e156 = cx1_;
-                        sx = _e156;
+                        float _e162 = cx1_;
+                        sx = _e162;
                         sy = cy_mid;
                         break;
                     }
                 }
             } else {
-                float _e159 = _group_0_binding_1_vs.canvas_width;
-                float width_extend = (6.0 / _e159);
+                float _e165 = _group_0_binding_1_vs.canvas_width;
+                float width_extend = (6.0 / _e165);
                 switch(vid) {
                     case 0u: {
-                        float _e162 = cx1_;
-                        sx = (_e162 - width_extend);
+                        float _e168 = cx1_;
+                        sx = (_e168 - width_extend);
                         sy = cy_top;
                         break;
                     }
                     case 1u: {
-                        float _e164 = cx2_;
-                        sx = (_e164 + width_extend);
+                        float _e170 = cx2_;
+                        sx = (_e170 + width_extend);
                         sy = cy_top;
                         break;
                     }
@@ -205,13 +210,13 @@ void main() {
             }
         }
     }
-    float _e168 = sx;
-    float _e169 = sy;
-    out_.position = vec4(_e168, _e169, 0.0, 1.0);
+    float _e174 = sx;
+    float _e175 = sy;
+    out_.position = vec4(_e174, _e175, 0.0, 1.0);
     out_.color = inst.color;
-    VertexOutput _e175 = out_;
-    gl_Position = _e175.position;
-    _vs2fs_location0 = _e175.color;
+    VertexOutput _e181 = out_;
+    gl_Position = _e181.position;
+    _vs2fs_location0 = _e181.color;
     return;
 }
 
@@ -379,3 +384,4 @@ void main() {
 }
 
 `
+

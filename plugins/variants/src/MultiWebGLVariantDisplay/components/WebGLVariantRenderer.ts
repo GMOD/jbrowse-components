@@ -15,7 +15,7 @@ export interface VariantRenderBlock {
   screenEndPx: number
 }
 
-const UNIFORM_SIZE = 32
+const UNIFORM_SIZE = 48
 
 export class WebGLVariantRenderer {
   private gl: WebGL2RenderingContext

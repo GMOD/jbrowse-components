@@ -34,10 +34,12 @@ fn hp_split_uint(value: u32) -> vec2f {
   return vec2f(f32(hi), f32(lo));
 }
 
-fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let hi = split_pos.x - bp_range.x;
-  let lo = split_pos.y - bp_range.y;
-  return (hi + lo) / bp_range.z * 2.0 - 1.0;
+fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32) -> f32 {
+  let inf = 1.0 / zero;
+  let step = 2.0 / bp_range.z;
+  let hi = max(split_pos.x - bp_range.x, -inf);
+  let lo = max(split_pos.y - bp_range.y, -inf);
+  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
 }
 
 struct CellInstance {
@@ -54,6 +56,7 @@ struct Uniforms {
   canvas_width: f32,
   row_height: f32,
   scroll_top: f32,
+  u_zero: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<CellInstance>;
@@ -76,8 +79,8 @@ fn vs_main(
   let abs_end = inst.start_end.y + u.region_start;
   let split_start = hp_split_uint(abs_start);
   let split_end = hp_split_uint(abs_end);
-  let clip_x1 = hp_to_clip_x(split_start, u.bp_range_x);
-  let clip_x2 = hp_to_clip_x(split_end, u.bp_range_x);
+  let clip_x1 = hp_to_clip_x(split_start, u.bp_range_x, u.u_zero);
+  let clip_x2 = hp_to_clip_x(split_end, u.bp_range_x, u.u_zero);
 
   let px_size = 2.0 / u.canvas_width;
   var cx1 = floor(clip_x1 / px_size + 0.5) * px_size;
