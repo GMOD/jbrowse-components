@@ -102,8 +102,6 @@ export async function executeRenderWebGLMultiWiggleData({
 
   // Build per-source data
   const sourcesData: WebGLMultiWiggleSourceData[] = []
-  let globalScoreMin = Number.POSITIVE_INFINITY
-  let globalScoreMax = Number.NEGATIVE_INFINITY
 
   // Use sourcesList order if available, otherwise use whatever sources we found
   const sourceNames =
@@ -122,9 +120,6 @@ export async function executeRenderWebGLMultiWiggleData({
     const posScores: number[] = []
     const negPositions: number[] = []
     const negScores: number[] = []
-
-    let scoreMin = Number.POSITIVE_INFINITY
-    let scoreMax = Number.NEGATIVE_INFINITY
 
     for (const [j, feature_] of features.entries()) {
       const feature = feature_
@@ -145,25 +140,6 @@ export async function executeRenderWebGLMultiWiggleData({
         negPositions.push(startOffset, endOffset)
         negScores.push(score)
       }
-
-      if (score < scoreMin) {
-        scoreMin = score
-      }
-      if (score > scoreMax) {
-        scoreMax = score
-      }
-    }
-
-    if (features.length === 0) {
-      scoreMin = 0
-      scoreMax = 0
-    }
-
-    if (scoreMin < globalScoreMin) {
-      globalScoreMin = scoreMin
-    }
-    if (scoreMax > globalScoreMax) {
-      globalScoreMax = scoreMax
     }
 
     sourcesData.push({
@@ -178,21 +154,11 @@ export async function executeRenderWebGLMultiWiggleData({
       negFeaturePositions: new Uint32Array(negPositions),
       negFeatureScores: new Float32Array(negScores),
       negNumFeatures: negScores.length,
-      scoreMin,
-      scoreMax,
     })
-  }
-
-  // Handle case with no data
-  if (sourcesData.length === 0) {
-    globalScoreMin = 0
-    globalScoreMax = 0
   }
 
   return {
     regionStart,
     sources: sourcesData,
-    scoreMin: globalScoreMin,
-    scoreMax: globalScoreMax,
   }
 }

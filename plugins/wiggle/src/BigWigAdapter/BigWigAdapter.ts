@@ -10,13 +10,10 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { UnrectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-
-interface WiggleOptions extends BaseOptions {
-  resolution?: number
-}
 
 function computeStatsFromView(
   view: ArrayFeatureView,

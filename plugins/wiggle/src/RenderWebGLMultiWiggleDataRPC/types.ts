@@ -18,8 +18,6 @@ export interface WebGLMultiWiggleSourceData {
   negFeaturePositions: Uint32Array
   negFeatureScores: Float32Array
   negNumFeatures: number
-  scoreMin: number
-  scoreMax: number
 }
 
 export interface WebGLMultiWiggleDataResult {
@@ -27,6 +25,4 @@ export interface WebGLMultiWiggleDataResult {
   // All position data in this result is stored as integer offsets from regionStart.
   regionStart: number
   sources: WebGLMultiWiggleSourceData[]
-  scoreMin: number
-  scoreMax: number
 }

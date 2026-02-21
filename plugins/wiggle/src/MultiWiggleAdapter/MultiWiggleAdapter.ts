@@ -9,14 +9,14 @@ import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type {
   AugmentedRegion as Region,
   FileLocation,
 } from '@jbrowse/core/util/types'
 
-interface WiggleOptions extends BaseOptions {
-  resolution?: number
+interface WiggleOptions extends WiggleAdapterOptions {
   staticBlocks?: Region[]
   sources?: { name: string }[]
 }

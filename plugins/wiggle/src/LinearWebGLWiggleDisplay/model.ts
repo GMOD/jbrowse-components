@@ -90,6 +90,7 @@ export default function stateModelFactory(
     .volatile(() => ({
       rpcDataMap: new Map<number, WebGLWiggleDataResult>(),
       visibleScoreRange: undefined as [number, number] | undefined,
+      loadedBpPerPx: new Map<number, number>(),
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -220,9 +221,16 @@ export default function stateModelFactory(
         self.visibleScoreRange = range
       },
 
+      setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
+        const next = new Map(self.loadedBpPerPx)
+        next.set(regionNumber, bpPerPx)
+        self.loadedBpPerPx = next
+      },
+
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
         self.visibleScoreRange = undefined
+        self.loadedBpPerPx = new Map()
       },
 
       setColor(color?: string) {
@@ -294,6 +302,7 @@ export default function stateModelFactory(
             start: region.start,
             end: region.end,
           })
+          self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
         }
       }
 
@@ -429,10 +438,12 @@ export default function stateModelFactory(
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
+                  const loadedBpPerPx = self.loadedBpPerPx.get(vr.regionNumber)
                   if (
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
-                    vr.end <= loaded.end
+                    vr.end <= loaded.end &&
+                    (loadedBpPerPx === undefined || bpPerPx >= loadedBpPerPx / 2)
                   ) {
                     continue
                   }

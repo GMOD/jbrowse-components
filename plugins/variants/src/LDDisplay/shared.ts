@@ -578,12 +578,6 @@ export default function sharedModelFactory(
           adapterType === 'LdmatAdapter'
         )
       },
-      /**
-       * #method
-       */
-      regionCannotBeRendered() {
-        return null
-      },
     }))
     .views(self => ({
       /**

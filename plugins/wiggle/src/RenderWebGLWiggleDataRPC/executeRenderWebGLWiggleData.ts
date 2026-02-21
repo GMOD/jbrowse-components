@@ -66,9 +66,6 @@ export async function executeRenderWebGLWiggleData({
   const negPositions: number[] = []
   const negScores: number[] = []
 
-  let scoreMin = Number.POSITIVE_INFINITY
-  let scoreMax = Number.NEGATIVE_INFINITY
-
   let featureIndex = 0
   for (const feature of featuresArray) {
     const start = feature.get('start')
@@ -89,19 +86,7 @@ export async function executeRenderWebGLWiggleData({
       negScores.push(score)
     }
 
-    if (score < scoreMin) {
-      scoreMin = score
-    }
-    if (score > scoreMax) {
-      scoreMax = score
-    }
-
     featureIndex++
-  }
-
-  if (featureIndex === 0) {
-    scoreMin = 0
-    scoreMax = 0
   }
 
   return {
@@ -115,7 +100,5 @@ export async function executeRenderWebGLWiggleData({
     negFeaturePositions: new Uint32Array(negPositions),
     negFeatureScores: new Float32Array(negScores),
     negNumFeatures: negScores.length,
-    scoreMin,
-    scoreMax,
   }
 }

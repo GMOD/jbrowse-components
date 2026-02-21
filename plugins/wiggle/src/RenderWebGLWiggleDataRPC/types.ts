@@ -17,6 +17,4 @@ export interface WebGLWiggleDataResult {
   negFeaturePositions: Uint32Array
   negFeatureScores: Float32Array
   negNumFeatures: number
-  scoreMin: number
-  scoreMax: number
 }
