@@ -23,7 +23,10 @@ import { darken, lighten } from '@mui/material'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { createFeatureFloatingLabels } from './floatingLabels.ts'
+import {
+  createFeatureFloatingLabels,
+  createTranscriptFloatingLabel,
+} from './floatingLabels.ts'
 import { layoutFeature } from './layout/layoutFeature.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
@@ -421,10 +424,36 @@ function collectRenderData(
         startBp: transcriptStart,
         endBp: transcriptEnd,
         topPx: transcriptTopPx,
-        bottomPx: transcriptTopPx + transcriptLayout.height,
+        bottomPx: transcriptTopPx + transcriptLayout.totalLayoutHeight,
         displayLabel: transcriptName || 'transcript',
         tooltip: transcriptTooltipParts.join('\n'),
       })
+
+      if (
+        configContext.labelAllowed &&
+        configContext.subfeatureLabels !== 'none' &&
+        transcriptName
+      ) {
+        const label = createTranscriptFloatingLabel({
+          displayLabel: transcriptName,
+          featureHeight: transcriptLayout.height,
+          subfeatureLabels: configContext.subfeatureLabels,
+          color: 'black',
+          parentFeatureId: parentFeature.id(),
+          subfeatureId: transcriptFeature.id(),
+          tooltip: transcriptTooltipParts.join('\n'),
+        })
+        if (label) {
+          floatingLabelsData[transcriptFeature.id()] = {
+            featureId: transcriptFeature.id(),
+            minX: transcriptStart - regionStart,
+            maxX: transcriptEnd - regionStart,
+            topY: transcriptTopPx,
+            featureHeight: transcriptLayout.height,
+            floatingLabels: [label],
+          }
+        }
+      }
 
       // Add strand arrow for transcript
       if (transcriptStrand !== 0) {
@@ -618,7 +647,7 @@ export async function executeRenderWebGLFeatureData({
     color3: '#357089',
     outline: '',
     height: 10,
-    subfeatureLabels: 'none',
+    subfeatureLabels: 'none' as string,
     displayMode: 'normal',
     maxFeatureGlyphExpansion: 500,
     maxHeight: 5000,

@@ -15,6 +15,7 @@ export interface RenderWebGLFeatureDataArgs {
   displayConfig: {
     showLabels: boolean
     showDescriptions: boolean
+    subfeatureLabels: string
     geneGlyphMode: string
   }
   region: {

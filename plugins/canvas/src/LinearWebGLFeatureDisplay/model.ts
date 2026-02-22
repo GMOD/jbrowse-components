@@ -84,6 +84,7 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         trackShowLabels: types.maybe(types.boolean),
         trackShowDescriptions: types.maybe(types.boolean),
+        trackSubfeatureLabels: types.maybe(types.string),
         trackGeneGlyphMode: types.maybe(types.string),
         trackDisplayMode: types.maybe(types.string),
         showOnlyGenes: false,
@@ -159,6 +160,10 @@ export default function stateModelFactory(
 
       get showDescriptions(): boolean {
         return self.trackShowDescriptions ?? true
+      },
+
+      get subfeatureLabels(): string {
+        return self.trackSubfeatureLabels ?? 'none'
       },
 
       get displayMode(): string {
@@ -349,6 +354,10 @@ export default function stateModelFactory(
         self.trackShowDescriptions = value
       },
 
+      setSubfeatureLabels(value: string) {
+        self.trackSubfeatureLabels = value
+      },
+
       setGeneGlyphMode(value: string) {
         self.trackGeneGlyphMode = value
       },
@@ -475,6 +484,7 @@ export default function stateModelFactory(
             displayConfig: {
               showLabels: self.showLabels,
               showDescriptions: self.showDescriptions,
+              subfeatureLabels: self.subfeatureLabels,
               geneGlyphMode: self.effectiveGeneGlyphMode,
               displayMode: self.displayMode,
             },
@@ -663,6 +673,7 @@ export default function stateModelFactory(
               () => ({
                 showLabels: self.showLabels,
                 showDescriptions: self.showDescriptions,
+                subfeatureLabels: self.subfeatureLabels,
                 colorByCDS: self.colorByCDS,
                 geneGlyphMode: self.effectiveGeneGlyphMode,
                 showOnlyGenes: self.showOnlyGenes,
@@ -682,6 +693,7 @@ export default function stateModelFactory(
                 equals: (a, b) =>
                   a.showLabels === b.showLabels &&
                   a.showDescriptions === b.showDescriptions &&
+                  a.subfeatureLabels === b.subfeatureLabels &&
                   a.colorByCDS === b.colorByCDS &&
                   a.geneGlyphMode === b.geneGlyphMode &&
                   a.showOnlyGenes === b.showOnlyGenes &&
@@ -741,6 +753,23 @@ export default function stateModelFactory(
             ],
           },
           {
+            label: 'Transcript labels',
+            subMenu: (
+              [
+                { value: 'none', label: 'None' },
+                { value: 'overlay', label: 'Overlay' },
+                { value: 'below', label: 'Below' },
+              ] as const
+            ).map(({ value, label }) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.subfeatureLabels === value,
+              onClick: () => {
+                self.setSubfeatureLabels(value)
+              },
+            })),
+          },
+          {
             label: 'Gene glyph',
             subMenu: (
               [
@@ -781,6 +810,7 @@ export default function stateModelFactory(
       const {
         trackShowLabels,
         trackShowDescriptions,
+        trackSubfeatureLabels,
         trackGeneGlyphMode,
         trackDisplayMode,
         showOnlyGenes,
@@ -790,6 +820,7 @@ export default function stateModelFactory(
         ...rest,
         ...(trackShowLabels !== undefined && { trackShowLabels }),
         ...(trackShowDescriptions !== undefined && { trackShowDescriptions }),
+        ...(trackSubfeatureLabels !== undefined && { trackSubfeatureLabels }),
         ...(trackGeneGlyphMode !== undefined && { trackGeneGlyphMode }),
         ...(trackDisplayMode !== undefined && { trackDisplayMode }),
         ...(showOnlyGenes && { showOnlyGenes }),

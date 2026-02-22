@@ -597,8 +597,15 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
         const featureBottomPx = labelData.topY + labelData.featureHeight
 
         for (const [i, label] of labelData.floatingLabels.entries()) {
-          const { text, relativeY, color, textWidth: labelWidth } = label
-          const labelPadding = 2
+          const {
+            text,
+            relativeY,
+            color,
+            textWidth: labelWidth,
+            isOverlay,
+            subfeatureId,
+          } = label
+          const labelPadding = subfeatureId ? 0 : 2
           const labelY = featureBottomPx + relativeY + labelPadding
 
           let labelX: number
@@ -617,9 +624,13 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
                 position: 'absolute',
                 transform: `translate(${labelX}px, ${labelY}px)`,
                 fontSize: 11,
+                lineHeight: 1,
                 color,
                 pointerEvents: 'none',
                 whiteSpace: 'nowrap',
+                ...(isOverlay
+                  ? { background: 'rgba(255,255,255,0.65)' }
+                  : undefined),
               }}
             >
               {text}
