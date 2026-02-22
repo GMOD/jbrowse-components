@@ -24,11 +24,7 @@ import { autorun } from 'mobx'
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getRowHeight } from '../shared/wiggleComponentUtils.ts'
-import {
-  computeAutoscaleDomain,
-  getNiceDomain,
-  getScale,
-} from '../util.ts'
+import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
@@ -554,9 +550,8 @@ export default function stateModelFactory(
           superAfterAttach()
 
           try {
-            const { setupTreeDrawingAutorun } = await import(
-              './treeDrawingAutorun.ts'
-            )
+            const { setupTreeDrawingAutorun } =
+              await import('./treeDrawingAutorun.ts')
             if (isAlive(self)) {
               setupTreeDrawingAutorun(self)
             }
@@ -632,8 +627,7 @@ export default function stateModelFactory(
                 )
                 if (
                   range &&
-                  (!self.visibleScoreRange ||
-                    range[0] !== self.visibleScoreRange[0] ||
+                  (range[0] !== self.visibleScoreRange?.[0] ||
                     range[1] !== self.visibleScoreRange[1])
                 ) {
                   self.setVisibleScoreRange(range)
@@ -745,16 +739,16 @@ export default function stateModelFactory(
                     },
                     {
                       label: 'Summary score mode',
-                      subMenu: (
-                        ['min', 'max', 'avg', 'whiskers'] as const
-                      ).map(elt => ({
-                        label: elt,
-                        type: 'radio' as const,
-                        checked: self.summaryScoreMode === elt,
-                        onClick: () => {
-                          self.setSummaryScoreMode(elt)
-                        },
-                      })),
+                      subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
+                        elt => ({
+                          label: elt,
+                          type: 'radio' as const,
+                          checked: self.summaryScoreMode === elt,
+                          onClick: () => {
+                            self.setSummaryScoreMode(elt)
+                          },
+                        }),
+                      ),
                     },
                   ]
                 : []),
@@ -908,13 +902,17 @@ export default function stateModelFactory(
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
-        ...(showRowSeparatorsSetting !== undefined ? { showRowSeparatorsSetting } : {}),
+        ...(showRowSeparatorsSetting !== undefined
+          ? { showRowSeparatorsSetting }
+          : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
         ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
-        ...(summaryScoreModeSetting !== undefined ? { summaryScoreModeSetting } : {}),
+        ...(summaryScoreModeSetting !== undefined
+          ? { summaryScoreModeSetting }
+          : {}),
         ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })

@@ -49,7 +49,9 @@ export default class VariantsPlugin extends Plugin {
     ChordVariantDisplayF(pluginManager)
     WebGLLDDataRPCMethodsF(pluginManager)
 
-    pluginManager.addRpcMethod(() => new MultiSampleVariantGetSources(pluginManager))
+    pluginManager.addRpcMethod(
+      () => new MultiSampleVariantGetSources(pluginManager),
+    )
     pluginManager.addRpcMethod(
       () => new MultiSampleVariantGetGenotypeMatrix(pluginManager),
     )

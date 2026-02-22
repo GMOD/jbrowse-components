@@ -145,11 +145,6 @@ export default function stateModelFactory(
         return self.autoscaleSetting ?? getConf(self, 'autoscale')
       },
 
-      /**
-       * #method
-       * Returns adapter configuration. Can be overridden by subclasses to
-       * provide custom adapter configs (e.g., GC content display)
-       */
       get hasResolution() {
         const track = getContainingTrack(self)
         const adapterConfig = getConf(track, 'adapter') as { type: string }
@@ -458,8 +453,7 @@ export default function stateModelFactory(
                 )
                 if (
                   range &&
-                  (!self.visibleScoreRange ||
-                    range[0] !== self.visibleScoreRange[0] ||
+                  (range[0] !== self.visibleScoreRange?.[0] ||
                     range[1] !== self.visibleScoreRange[1])
                 ) {
                   self.setVisibleScoreRange(range)
@@ -689,7 +683,9 @@ export default function stateModelFactory(
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
         ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
-        ...(summaryScoreModeSetting !== undefined ? { summaryScoreModeSetting } : {}),
+        ...(summaryScoreModeSetting !== undefined
+          ? { summaryScoreModeSetting }
+          : {}),
         ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })

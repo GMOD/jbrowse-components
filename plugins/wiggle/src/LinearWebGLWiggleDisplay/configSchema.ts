@@ -8,7 +8,12 @@ export default ConfigurationSchema(
   {
     defaultRendering: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering type', ['xyplot', 'density', 'line', 'scatter']),
+      model: types.enumeration('Rendering type', [
+        'xyplot',
+        'density',
+        'line',
+        'scatter',
+      ]),
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     },

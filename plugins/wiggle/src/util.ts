@@ -312,7 +312,11 @@ export function processFeatures(
 }
 
 export function getEffectiveScores(
-  data: { featureScores: Float32Array; featureMinScores: Float32Array; featureMaxScores: Float32Array },
+  data: {
+    featureScores: Float32Array
+    featureMinScores: Float32Array
+    featureMaxScores: Float32Array
+  },
   mode: string,
 ) {
   if (mode === 'min') {
@@ -354,44 +358,25 @@ function computeStats(
           continue
         }
       }
-      let s: number
       if (useWhiskers) {
-        const sMin = data.featureMinScores[i]!
-        const sMax = data.featureMaxScores[i]!
-        if (sMin < min) {
-          min = sMin
-        }
-        if (sMax > max) {
-          max = sMax
-        }
-        s = data.featureScores[i]!
+        min = Math.min(min, data.featureMinScores[i]!)
+        max = Math.max(max, data.featureMaxScores[i]!)
       } else if (useMin) {
-        s = data.featureMinScores[i]!
-        if (s < min) {
-          min = s
-        }
-        if (s > max) {
-          max = s
-        }
+        const s = data.featureMinScores[i]!
+        min = Math.min(min, s)
+        max = Math.max(max, s)
       } else if (useMax) {
-        s = data.featureMaxScores[i]!
-        if (s < min) {
-          min = s
-        }
-        if (s > max) {
-          max = s
-        }
+        const s = data.featureMaxScores[i]!
+        min = Math.min(min, s)
+        max = Math.max(max, s)
       } else {
-        s = data.featureScores[i]!
-        if (s < min) {
-          min = s
-        }
-        if (s > max) {
-          max = s
-        }
+        const s = data.featureScores[i]!
+        min = Math.min(min, s)
+        max = Math.max(max, s)
       }
-      sum += s
-      sumSq += s * s
+      const avg = data.featureScores[i]!
+      sum += avg
+      sumSq += avg * avg
       count++
     }
   }
@@ -434,7 +419,6 @@ export function computeAutoscaleDomain(
   }
   return [stats.scoreMin, stats.scoreMax]
 }
-
 
 // Shared constants for wiggle drawing
 export const WIGGLE_FUDGE_FACTOR = 0.3

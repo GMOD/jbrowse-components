@@ -56,7 +56,7 @@ const WebGLVariantMatrixComponent = observer(
         if (!view.initialized) {
           return
         }
-        const cellData = model.webglCellData as MatrixCellData | undefined
+        const cellData = model.webglCellData
         if (!cellData) {
           lastCellData = null
           return

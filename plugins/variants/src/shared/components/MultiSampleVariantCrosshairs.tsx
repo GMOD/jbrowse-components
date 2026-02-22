@@ -33,50 +33,52 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const MultiSampleVariantCrosshairs = observer(function MultiSampleVariantCrosshairs({
-  mouseX,
-  mouseY,
-  model,
-  offsetX,
-  offsetY,
-}: {
-  mouseX: number
-  mouseY: number
-  model: MultiSampleVariantBaseModel
-  offsetX: number
-  offsetY: number
-}) {
-  const { classes } = useStyles()
-  const { hoveredGenotype, height, sourceMap } = model
-  const { width } = getContainingView(model) as LinearGenomeViewModel
+const MultiSampleVariantCrosshairs = observer(
+  function MultiSampleVariantCrosshairs({
+    mouseX,
+    mouseY,
+    model,
+    offsetX,
+    offsetY,
+  }: {
+    mouseX: number
+    mouseY: number
+    model: MultiSampleVariantBaseModel
+    offsetX: number
+    offsetY: number
+  }) {
+    const { classes } = useStyles()
+    const { hoveredGenotype, height, sourceMap } = model
+    const { width } = getContainingView(model) as LinearGenomeViewModel
 
-  const tooltipSource = useMemo(() => {
-    if (!hoveredGenotype) {
-      return undefined
-    }
-    const source = sourceMap?.[hoveredGenotype.name]
-    return source ? { ...source, ...hoveredGenotype } : undefined
-  }, [hoveredGenotype, sourceMap])
+    const tooltipSource = useMemo(() => {
+      if (!hoveredGenotype) {
+        return undefined
+      }
+      const source = sourceMap?.[hoveredGenotype.name]
+      return source ? { ...source, ...hoveredGenotype } : undefined
+    }, [hoveredGenotype, sourceMap])
 
-  return (
-    <div className={classes.container} style={{ width, height }}>
-      <div
-        className={classes.horizontalLine}
-        style={{ transform: `translateY(${mouseY}px)`, width }}
-      />
-      <div
-        className={classes.verticalLine}
-        style={{ transform: `translateX(${mouseX}px)`, height }}
-      />
-      {tooltipSource ? (
-        <MultiSampleVariantTooltip
-          source={tooltipSource}
-          x={offsetX + mouseX}
-          y={offsetY + mouseY}
+    return (
+      <div className={classes.container} style={{ width, height }}>
+        <div
+          className={classes.horizontalLine}
+          style={{ transform: `translateY(${mouseY}px)`, width }}
         />
-      ) : null}
-    </div>
-  )
-})
+        <div
+          className={classes.verticalLine}
+          style={{ transform: `translateX(${mouseX}px)`, height }}
+        />
+        {tooltipSource ? (
+          <MultiSampleVariantTooltip
+            source={tooltipSource}
+            x={offsetX + mouseX}
+            y={offsetY + mouseY}
+          />
+        ) : null}
+      </div>
+    )
+  },
+)
 
 export default MultiSampleVariantCrosshairs

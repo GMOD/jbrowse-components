@@ -9,13 +9,11 @@ import { toArray } from 'rxjs/operators'
 
 import { WIGGLE_POS_COLOR_DEFAULT, processFeatures } from '../util.ts'
 
-import type {
-  WebGLMultiWiggleDataResult,
-} from './types.ts'
+import type { WebGLMultiWiggleDataResult } from './types.ts'
+import type { SourceInfo } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
-import type { SourceInfo } from '../util.ts'
 
 interface ExecuteParams {
   pluginManager: PluginManager

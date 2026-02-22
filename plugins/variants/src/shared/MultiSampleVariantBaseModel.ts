@@ -55,7 +55,8 @@ const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 const ClusterDialog = lazy(
-  () => import('./components/MultiSampleVariantClusterDialog/ClusterDialog.tsx'),
+  () =>
+    import('./components/MultiSampleVariantClusterDialog/ClusterDialog.tsx'),
 )
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
@@ -1094,4 +1095,5 @@ export default function MultiSampleVariantBaseModelF(
 export type MultiSampleVariantBaseStateModel = ReturnType<
   typeof MultiSampleVariantBaseModelF
 >
-export type MultiSampleVariantBaseModel = Instance<MultiSampleVariantBaseStateModel>
+export type MultiSampleVariantBaseModel =
+  Instance<MultiSampleVariantBaseStateModel>

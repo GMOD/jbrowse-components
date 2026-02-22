@@ -66,7 +66,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
         return
       }
 
-      const cellData = model.webglCellData as VariantCellData | undefined
+      const cellData = model.webglCellData
       if (!cellData) {
         lastCellData = null
         return

@@ -75,7 +75,14 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self)) {
           return
         }
-        const { mouseoverCanvas, hierarchy, rowHeight, hoveredTreeNode, height, sources } = self
+        const {
+          mouseoverCanvas,
+          hierarchy,
+          rowHeight,
+          hoveredTreeNode,
+          height,
+          sources,
+        } = self
         if (!mouseoverCanvas) {
           return
         }

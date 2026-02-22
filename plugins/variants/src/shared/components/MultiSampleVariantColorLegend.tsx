@@ -57,65 +57,67 @@ const LegendItemText = function ({
   )
 }
 
-const MultiSampleVariantColorLegend = observer(function MultiSampleVariantColorLegend({
-  model,
-  labelWidth,
-}: {
-  model: {
-    canDisplayLabels: boolean
-    rowHeight: number
-    sources?: Source[]
-  }
-  labelWidth: number
-}) {
-  const { canDisplayLabels, rowHeight, sources } = model
-  const colorBoxWidth = 15
-  const theme = useTheme()
+const MultiSampleVariantColorLegend = observer(
+  function MultiSampleVariantColorLegend({
+    model,
+    labelWidth,
+  }: {
+    model: {
+      canDisplayLabels: boolean
+      rowHeight: number
+      sources?: Source[]
+    }
+    labelWidth: number
+  }) {
+    const { canDisplayLabels, rowHeight, sources } = model
+    const colorBoxWidth = 15
+    const theme = useTheme()
 
-  const hasColors = useMemo(
-    () => sources?.some(s => s.color) ?? false,
-    [sources],
-  )
-  const legendWidth = labelWidth + (hasColors ? colorBoxWidth + 5 : 0)
+    const hasColors = useMemo(
+      () => sources?.some(s => s.color) ?? false,
+      [sources],
+    )
+    const legendWidth = labelWidth + (hasColors ? colorBoxWidth + 5 : 0)
 
-  const textFillProps = useMemo(
-    () => getFillProps(theme.palette.text.primary),
-    [theme.palette.text.primary],
-  )
+    const textFillProps = useMemo(
+      () => getFillProps(theme.palette.text.primary),
+      [theme.palette.text.primary],
+    )
 
-  return sources ? (
-    <>
-      {canDisplayLabels ? (
-        <RectBg
-          y={0}
-          x={0}
-          width={legendWidth}
-          height={(sources.length + 0.25) * rowHeight}
-        />
-      ) : null}
-      {/* Render all background rectangles first */}
-      {sources.map((source, idx) => (
-        <LegendItem
-          key={`${source.name}-${idx}`}
-          source={source}
-          idx={idx}
-          rowHeight={rowHeight}
-        />
-      ))}
-      {/* Then render all text elements on top */}
-      {canDisplayLabels
-        ? sources.map((source, idx) => (
-            <LegendItemText
-              key={`${source.name}-text-${idx}`}
-              source={source}
-              idx={idx}
-              rowHeight={rowHeight}
-              textFillProps={textFillProps}
-            />
-          ))
-        : null}
-    </>
-  ) : null
-})
+    return sources ? (
+      <>
+        {canDisplayLabels ? (
+          <RectBg
+            y={0}
+            x={0}
+            width={legendWidth}
+            height={(sources.length + 0.25) * rowHeight}
+          />
+        ) : null}
+        {/* Render all background rectangles first */}
+        {sources.map((source, idx) => (
+          <LegendItem
+            key={`${source.name}-${idx}`}
+            source={source}
+            idx={idx}
+            rowHeight={rowHeight}
+          />
+        ))}
+        {/* Then render all text elements on top */}
+        {canDisplayLabels
+          ? sources.map((source, idx) => (
+              <LegendItemText
+                key={`${source.name}-text-${idx}`}
+                source={source}
+                idx={idx}
+                rowHeight={rowHeight}
+                textFillProps={textFillProps}
+              />
+            ))
+          : null}
+      </>
+    ) : null
+  },
+)
 
 export default MultiSampleVariantColorLegend

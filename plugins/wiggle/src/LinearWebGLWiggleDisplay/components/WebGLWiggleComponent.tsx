@@ -4,13 +4,17 @@ import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import WiggleTooltip from './WiggleTooltip.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
-import { parseColor, lightenColor, darkenColor } from '../../shared/webglUtils.ts'
+import {
+  darkenColor,
+  lightenColor,
+  parseColor,
+} from '../../shared/webglUtils.ts'
 import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
 import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
-import WiggleTooltip from './WiggleTooltip.tsx'
 
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type {
@@ -227,7 +231,16 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         screenEndPx: vr.screenEndPx,
       }))
 
-      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, width, model.height))
+      renderer.renderBlocks(
+        blocks,
+        makeRenderState(
+          model.domain,
+          model.scaleType,
+          model.renderingType,
+          width,
+          model.height,
+        ),
+      )
     })
   }, [model, view, ready])
 

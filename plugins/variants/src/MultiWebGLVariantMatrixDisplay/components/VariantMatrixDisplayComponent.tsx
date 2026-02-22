@@ -1,7 +1,7 @@
 import { Suspense, useRef } from 'react'
 
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { getContainingView } from '@jbrowse/core/util'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'

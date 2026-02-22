@@ -4,13 +4,20 @@ import { getContainingView, measureText } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import MultiWiggleTooltip from './Tooltip.tsx'
+import TreeSidebar from './TreeSidebar.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
-import { darkenColor, lightenColor, parseColor } from '../../shared/webglUtils.ts'
-import { getRowTop, makeRenderState } from '../../shared/wiggleComponentUtils.ts'
-import MultiWiggleTooltip from './Tooltip.tsx'
-import TreeSidebar from './TreeSidebar.tsx'
+import {
+  darkenColor,
+  lightenColor,
+  parseColor,
+} from '../../shared/webglUtils.ts'
+import {
+  getRowTop,
+  makeRenderState,
+} from '../../shared/wiggleComponentUtils.ts'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
 import type {
@@ -67,7 +74,9 @@ export interface MultiWiggleDisplayModel {
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
-  setFeatureUnderMouse: (feat?: MultiWiggleDisplayModel['featureUnderMouse']) => void
+  setFeatureUnderMouse: (
+    feat?: MultiWiggleDisplayModel['featureUnderMouse'],
+  ) => void
 }
 
 const ScoreLegend = observer(function ScoreLegend({
@@ -193,10 +202,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
                 rowIndex: idx,
               },
             )
-          } else if (
-            summaryScoreMode === 'min' ||
-            summaryScoreMode === 'max'
-          ) {
+          } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
             const scores =
               summaryScoreMode === 'min'
                 ? rpcSource.featureMinScores
@@ -265,7 +271,16 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         screenEndPx: vr.screenEndPx,
       }))
 
-      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, totalWidth, model.height))
+      renderer.renderBlocks(
+        blocks,
+        makeRenderState(
+          model.domain,
+          model.scaleType,
+          model.renderingType,
+          totalWidth,
+          model.height,
+        ),
+      )
     })
   }, [model, view, ready])
 
@@ -349,8 +364,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const fStart = featurePositions[foundIdx * 2]! + data.regionStart
       const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
       const hasSummary =
-        summaryScoreMode !== 'avg' &&
-        rpcSource.featureMinScores.length > 0
+        summaryScoreMode !== 'avg' && rpcSource.featureMinScores.length > 0
 
       model.setFeatureUnderMouse({
         refName: region.refName,
