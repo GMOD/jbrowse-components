@@ -56,6 +56,7 @@ const TreeSidebar = observer(function TreeSidebar({
   useEffect(() => {
     return autorun(
       function treeSpatialIndexAutorun() {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { treeAreaWidth: _t, hierarchy: h } = model
         if (!h) {
           setNodeIndex(null)
@@ -81,17 +82,23 @@ const TreeSidebar = observer(function TreeSidebar({
     )
   }, [model])
 
-  const handleMouseMove = useCallback(
+  const hitTestNode = useCallback(
     (event: React.MouseEvent) => {
       if (!hierarchy || !nodeIndex) {
-        return
+        return undefined
       }
       const rect = event.currentTarget.getBoundingClientRect()
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
-
       const results = nodeIndex.search(x, y, x, y)
-      const node = results.length > 0 ? nodeData[results[0]!] : undefined
+      return results.length > 0 ? nodeData[results[0]!] : undefined
+    },
+    [hierarchy, nodeIndex, nodeData],
+  )
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      const node = hitTestNode(event)
       if (node) {
         model.setHoveredTreeNode({
           node,
@@ -101,7 +108,7 @@ const TreeSidebar = observer(function TreeSidebar({
         model.setHoveredTreeNode(undefined)
       }
     },
-    [hierarchy, nodeIndex, nodeData, model],
+    [hitTestNode, model],
   )
 
   const handleMouseLeave = useCallback(() => {
@@ -110,15 +117,7 @@ const TreeSidebar = observer(function TreeSidebar({
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
-      if (!hierarchy || !nodeIndex) {
-        return
-      }
-      const rect = event.currentTarget.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-
-      const results = nodeIndex.search(x, y, x, y)
-      const node = results.length > 0 ? nodeData[results[0]!] : undefined
+      const node = hitTestNode(event)
       if (node) {
         setMenuAnchor({
           x: event.clientX,
@@ -127,14 +126,14 @@ const TreeSidebar = observer(function TreeSidebar({
         })
       }
     },
-    [hierarchy, nodeIndex, nodeData],
+    [hitTestNode],
   )
 
   const handleCloseMenu = useCallback(() => {
     setMenuAnchor(null)
   }, [])
 
-  if (!hierarchy || !showTree || !sources?.length) {
+  if (!hierarchy || !showTree || !sources.length) {
     return null
   }
 

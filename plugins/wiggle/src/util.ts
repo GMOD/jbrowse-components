@@ -272,7 +272,7 @@ export function processFeatures(
   for (const [i, feature] of features.entries()) {
     const start = feature.get('start') as number
     const end = feature.get('end') as number
-    const score = (feature.get('score') as number) ?? 0
+    const score = (feature.get('score') as number | undefined) ?? 0
     const summary = feature.get('summary')
 
     const startOffset = Math.floor(start - regionStart)
@@ -281,10 +281,10 @@ export function processFeatures(
     featurePositions[i * 2 + 1] = endOffset
     featureScores[i] = score
     featureMinScores[i] = summary
-      ? ((feature.get('minScore') as number) ?? score)
+      ? ((feature.get('minScore') as number | undefined) ?? score)
       : score
     featureMaxScores[i] = summary
-      ? ((feature.get('maxScore') as number) ?? score)
+      ? ((feature.get('maxScore') as number | undefined) ?? score)
       : score
 
     if (score >= bicolorPivot) {

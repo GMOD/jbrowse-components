@@ -251,7 +251,7 @@ cat(resultClusters$order,sep='\n')`
             const { sourcesWithoutLayout } = model
             if (sourcesWithoutLayout) {
               try {
-                const currentLayout = model.layout?.length
+                const currentLayout = model.layout.length
                   ? model.layout
                   : sourcesWithoutLayout
                 const sourcesByName = Object.fromEntries(

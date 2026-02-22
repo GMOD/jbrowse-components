@@ -255,6 +255,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
       // access sources so MobX tracks it as a dependency,
       // ensuring re-render when source order/filtering changes
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _sources = model.sources
 
       const visibleRegions = view.visibleRegions

@@ -97,7 +97,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
 
         ctx.clearRect(0, 0, viewWidth, height)
 
-        if (hierarchy && hoveredTreeNode && sources) {
+        if (hierarchy && hoveredTreeNode) {
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
           const descendantSet = new Set(hoveredTreeNode.descendantNames)
           for (let i = 0, l = sources.length; i < l; i++) {

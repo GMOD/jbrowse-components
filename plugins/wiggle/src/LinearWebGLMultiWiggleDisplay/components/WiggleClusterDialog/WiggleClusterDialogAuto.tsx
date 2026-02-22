@@ -125,7 +125,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                   },
                 )) as { order: number[]; tree: string }
 
-                const currentLayout = model.layout?.length
+                const currentLayout = model.layout.length
                   ? model.layout
                   : sourcesWithoutLayout
                 const sourcesByName = Object.fromEntries(
@@ -156,7 +156,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
             } finally {
               setLoading(false)
               setProgress('')
-              setStopToken('')
+              setStopToken(undefined)
             }
           }}
         >

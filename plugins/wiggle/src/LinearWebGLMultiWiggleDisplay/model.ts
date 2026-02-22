@@ -322,7 +322,7 @@ export default function stateModelFactory(
     .views(self => ({
       get hierarchy() {
         const r = self.root
-        if (!r || !self.sources?.length) {
+        if (!r || !self.sources.length) {
           return undefined
         }
         const clust = cluster()

@@ -1,4 +1,3 @@
-import type { Source } from '../../util.ts'
 import type { HierarchyNode } from 'd3-hierarchy'
 
 export interface ClusterNodeData {
