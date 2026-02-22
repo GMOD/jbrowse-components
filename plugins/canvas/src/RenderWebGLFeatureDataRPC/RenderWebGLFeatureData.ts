@@ -33,6 +33,17 @@ export default class RenderWebGLFeatureData extends RpcMethodType {
       return args
     }
 
+    let seqAdapterRefName: string | undefined
+    const { sequenceAdapter } = args
+    if (sequenceAdapter) {
+      const seqResult = await renameRegionsIfNeeded(assemblyManager, {
+        sessionId,
+        adapterConfig: sequenceAdapter,
+        regions: [regionWithAssembly],
+      })
+      seqAdapterRefName = seqResult.regions[0]?.refName
+    }
+
     return {
       ...args,
       region: {
@@ -40,6 +51,7 @@ export default class RenderWebGLFeatureData extends RpcMethodType {
         start: renamedRegion.start,
         end: renamedRegion.end,
         assemblyName: renamedRegion.assemblyName,
+        seqAdapterRefName,
       },
     }
   }

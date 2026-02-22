@@ -680,6 +680,7 @@ export async function executeRenderWebGLFeatureData({
       const layout = new GranularRectLayout({ pitchX: 1 })
       const reversed = region.reversed ?? false
       const yPadding = 5
+      const xPadding = 4
       const maxGlyphExpansion = mockConfig.maxFeatureGlyphExpansion || 500
 
       const records: LayoutRecordWithLabels[] = []
@@ -710,11 +711,11 @@ export async function executeRenderWebGLFeatureData({
         let layoutStartPx: number
         let layoutEndPx: number
         if (reversed) {
-          layoutStartPx = featureStartPx - rightPaddingPx
-          layoutEndPx = featureEndPx + leftPaddingPx
+          layoutStartPx = featureStartPx - rightPaddingPx - xPadding
+          layoutEndPx = featureEndPx + leftPaddingPx + xPadding
         } else {
-          layoutStartPx = featureStartPx - leftPaddingPx
-          layoutEndPx = featureEndPx + rightPaddingPx
+          layoutStartPx = featureStartPx - leftPaddingPx - xPadding
+          layoutEndPx = featureEndPx + rightPaddingPx + xPadding
         }
 
         // Add space for labels in pixel space (naturally bounded)

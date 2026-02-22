@@ -23,6 +23,7 @@ export interface RenderWebGLFeatureDataArgs {
     end: number
     assemblyName?: string
     reversed?: boolean
+    seqAdapterRefName?: string
   }
   bpPerPx: number
   colorByCDS?: boolean
