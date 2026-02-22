@@ -20,10 +20,14 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { autorun } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { getNiceDomain, getScale } from '../util.ts'
+import {
+  computeVisibleScoreRange,
+  getNiceDomain,
+  getScale,
+} from '../util.ts'
 
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
-import type { Source } from '../util.ts'
+import type { Source, SourceInfo } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -33,11 +37,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-interface SourceInfo {
-  name: string
-  color?: string
-}
 
 const WebGLMultiWiggleComponent = lazy(
   () => import('./components/WebGLMultiWiggleComponent.tsx'),
@@ -423,68 +422,27 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const { summaryScoreMode } = self
-                const useWhiskers = summaryScoreMode === 'whiskers'
-                const useMin = summaryScoreMode === 'min'
-                const useMax = summaryScoreMode === 'max'
-                const blocks = view.dynamicBlocks.contentBlocks
-                let min = Infinity
-                let max = -Infinity
-                for (const block of blocks) {
-                  if (block.regionNumber === undefined) {
-                    continue
-                  }
-                  const data = self.rpcDataMap.get(block.regionNumber)
-                  if (!data) {
-                    continue
-                  }
-                  const visStart = block.start - data.regionStart
-                  const visEnd = block.end - data.regionStart
-                  for (const source of data.sources) {
-                    for (let i = 0; i < source.numFeatures; i++) {
-                      const fStart = source.featurePositions[i * 2]!
-                      const fEnd = source.featurePositions[i * 2 + 1]!
-                      if (fEnd > visStart && fStart < visEnd) {
-                        if (useWhiskers) {
-                          const sMin = source.featureMinScores[i]!
-                          const sMax = source.featureMaxScores[i]!
-                          if (sMin < min) {
-                            min = sMin
-                          }
-                          if (sMax > max) {
-                            max = sMax
-                          }
-                        } else if (useMin) {
-                          const s = source.featureMinScores[i]!
-                          if (s < min) {
-                            min = s
-                          }
-                          if (s > max) {
-                            max = s
-                          }
-                        } else if (useMax) {
-                          const s = source.featureMaxScores[i]!
-                          if (s < min) {
-                            min = s
-                          }
-                          if (s > max) {
-                            max = s
-                          }
-                        } else {
-                          const s = source.featureScores[i]!
-                          if (s < min) {
-                            min = s
-                          }
-                          if (s > max) {
-                            max = s
-                          }
-                        }
-                      }
+                const entries = view.dynamicBlocks.contentBlocks
+                  .filter(block => block.regionNumber !== undefined)
+                  .flatMap(block => {
+                    const regionData = self.rpcDataMap.get(block.regionNumber!)
+                    if (!regionData) {
+                      return []
                     }
-                  }
-                }
-                if (Number.isFinite(min) && Number.isFinite(max)) {
-                  self.setVisibleScoreRange([min, max])
+                    const visStart = block.start - regionData.regionStart
+                    const visEnd = block.end - regionData.regionStart
+                    return regionData.sources.map(source => ({
+                      visStart,
+                      visEnd,
+                      data: source,
+                    }))
+                  })
+                const range = computeVisibleScoreRange(
+                  self.summaryScoreMode,
+                  entries,
+                )
+                if (range) {
+                  self.setVisibleScoreRange(range)
                 }
               },
               { delay: 400, name: 'VisibleScoreRange' },

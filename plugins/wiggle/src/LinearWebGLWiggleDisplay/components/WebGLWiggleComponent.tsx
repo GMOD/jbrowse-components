@@ -8,20 +8,12 @@ import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor, lightenColor, darkenColor } from '../../shared/webglUtils.ts'
-import {
-  RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_SCATTER,
-  RENDERING_TYPE_XYPLOT,
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
-} from '../../shared/wiggleShader.ts'
-import { WIGGLE_COLOR_DEFAULT } from '../../util.ts'
+import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
+import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
 
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
-  WiggleGPURenderState,
   WiggleRenderBlock,
 } from '../../shared/WiggleRenderer.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
@@ -44,43 +36,6 @@ export interface WiggleDisplayModel {
   isLoading: boolean
   statusMessage?: string
   scalebarOverlapLeft: number
-}
-
-function renderingTypeToInt(type: string) {
-  if (type === 'density') {
-    return RENDERING_TYPE_DENSITY
-  }
-  if (type === 'line') {
-    return RENDERING_TYPE_LINE
-  }
-  if (type === 'scatter') {
-    return RENDERING_TYPE_SCATTER
-  }
-  return RENDERING_TYPE_XYPLOT
-}
-
-function makeRenderState(
-  model: WiggleDisplayModel,
-  width: number,
-): WiggleGPURenderState {
-  return {
-    domainY: model.domain!,
-    scaleType: model.scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
-    renderingType: renderingTypeToInt(model.renderingType),
-    rowPadding: 0,
-    canvasWidth: width,
-    canvasHeight: model.height,
-  }
-}
-
-function getEffectiveScores(data: WebGLWiggleDataResult, mode: string) {
-  if (mode === 'min') {
-    return data.featureMinScores
-  }
-  if (mode === 'max') {
-    return data.featureMaxScores
-  }
-  return data.featureScores
 }
 
 function buildSourceRenderData(
@@ -261,7 +216,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         screenEndPx: vr.screenEndPx,
       }))
 
-      renderer.renderBlocks(blocks, makeRenderState(model, width))
+      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, 0, width, model.height))
     })
   }, [model, view, ready])
 

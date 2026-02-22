@@ -8,19 +8,11 @@ import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { darkenColor, lightenColor, parseColor } from '../../shared/webglUtils.ts'
-import {
-  RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_SCATTER,
-  RENDERING_TYPE_XYPLOT,
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
-} from '../../shared/wiggleShader.ts'
+import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
 
 import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
-  WiggleGPURenderState,
   WiggleRenderBlock,
 } from '../../shared/WiggleRenderer.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
@@ -48,33 +40,6 @@ export interface MultiWiggleDisplayModel {
 }
 
 const ROW_PADDING = 2
-
-function renderingTypeToInt(type: string) {
-  if (type === 'multirowdensity') {
-    return RENDERING_TYPE_DENSITY
-  }
-  if (type === 'multirowline') {
-    return RENDERING_TYPE_LINE
-  }
-  if (type === 'multirowscatter') {
-    return RENDERING_TYPE_SCATTER
-  }
-  return RENDERING_TYPE_XYPLOT
-}
-
-function makeRenderState(
-  model: MultiWiggleDisplayModel,
-  width: number,
-): WiggleGPURenderState {
-  return {
-    domainY: model.domain!,
-    scaleType: model.scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
-    renderingType: renderingTypeToInt(model.renderingType),
-    rowPadding: ROW_PADDING,
-    canvasWidth: width,
-    canvasHeight: model.height,
-  }
-}
 
 const ScoreLegend = observer(function ScoreLegend({
   model,
@@ -262,7 +227,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         screenEndPx: vr.screenEndPx,
       }))
 
-      renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
+      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, ROW_PADDING, totalWidth, model.height))
     })
   }, [model, view, ready])
 

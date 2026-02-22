@@ -1,12 +1,8 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
+import type { SourceInfo } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
-
-interface SourceInfo {
-  name: string
-  color?: string
-}
 
 interface RenderWebGLMultiWiggleDataArgs {
   sessionId: string

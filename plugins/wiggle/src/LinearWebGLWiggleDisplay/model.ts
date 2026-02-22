@@ -23,6 +23,7 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import {
   WIGGLE_COLOR_DEFAULT,
   YSCALEBAR_LABEL_OFFSET,
+  computeVisibleScoreRange,
   getNiceDomain,
   getScale,
 } from '../util.ts'
@@ -408,66 +409,25 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const { summaryScoreMode } = self
-                const useWhiskers = summaryScoreMode === 'whiskers'
-                const useMin = summaryScoreMode === 'min'
-                const useMax = summaryScoreMode === 'max'
-                const blocks = view.dynamicBlocks.contentBlocks
-                let min = Infinity
-                let max = -Infinity
-                for (const block of blocks) {
-                  if (block.regionNumber === undefined) {
-                    continue
-                  }
-                  const data = self.rpcDataMap.get(block.regionNumber)
-                  if (!data) {
-                    continue
-                  }
-                  const visStart = block.start - data.regionStart
-                  const visEnd = block.end - data.regionStart
-                  for (let i = 0; i < data.numFeatures; i++) {
-                    const fStart = data.featurePositions[i * 2]!
-                    const fEnd = data.featurePositions[i * 2 + 1]!
-                    if (fEnd > visStart && fStart < visEnd) {
-                      if (useWhiskers) {
-                        const sMin = data.featureMinScores[i]!
-                        const sMax = data.featureMaxScores[i]!
-                        if (sMin < min) {
-                          min = sMin
+                const entries = view.dynamicBlocks.contentBlocks
+                  .filter(block => block.regionNumber !== undefined)
+                  .map(block => {
+                    const data = self.rpcDataMap.get(block.regionNumber!)
+                    return data
+                      ? {
+                          visStart: block.start - data.regionStart,
+                          visEnd: block.end - data.regionStart,
+                          data,
                         }
-                        if (sMax > max) {
-                          max = sMax
-                        }
-                      } else if (useMin) {
-                        const s = data.featureMinScores[i]!
-                        if (s < min) {
-                          min = s
-                        }
-                        if (s > max) {
-                          max = s
-                        }
-                      } else if (useMax) {
-                        const s = data.featureMaxScores[i]!
-                        if (s < min) {
-                          min = s
-                        }
-                        if (s > max) {
-                          max = s
-                        }
-                      } else {
-                        const s = data.featureScores[i]!
-                        if (s < min) {
-                          min = s
-                        }
-                        if (s > max) {
-                          max = s
-                        }
-                      }
-                    }
-                  }
-                }
-                if (Number.isFinite(min) && Number.isFinite(max)) {
-                  self.setVisibleScoreRange([min, max])
+                      : undefined
+                  })
+                  .filter((e): e is NonNullable<typeof e> => !!e)
+                const range = computeVisibleScoreRange(
+                  self.summaryScoreMode,
+                  entries,
+                )
+                if (range) {
+                  self.setVisibleScoreRange(range)
                 }
               },
               { delay: 400, name: 'VisibleScoreRange' },
