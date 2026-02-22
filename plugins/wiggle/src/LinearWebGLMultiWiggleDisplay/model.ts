@@ -313,7 +313,7 @@ export default function stateModelFactory(
           return undefined
         }
         const clust = cluster()
-        clust.size([self.rowHeight * self.sources.length, self.treeAreaWidth])
+        clust.size([self.height, self.treeAreaWidth])
         clust.separation(() => 1)
         clust(r)
         return r

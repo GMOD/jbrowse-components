@@ -24,7 +24,7 @@ type LGV = LinearGenomeViewModel
 
 export interface MultiWiggleDisplayModel {
   rpcDataMap: Map<number, WebGLMultiWiggleDataResult>
-  sources: { name: string; color?: string }[]
+  sources: { name: string; color?: string; labelColor?: string }[]
   height: number
   domain: [number, number] | undefined
   scaleType: string
@@ -130,8 +130,8 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       }
 
       const modelSources = model.sources
-      const posColor = parseColor(model.posColor)
-      const negColor = parseColor(model.negColor)
+      const defaultPosColor = parseColor(model.posColor)
+      const defaultNegColor = parseColor(model.negColor)
       const { summaryScoreMode } = model
       const activeRegions: number[] = []
       for (const [regionNumber, data] of dataMap) {
@@ -147,6 +147,11 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
           if (!rpcSource) {
             continue
           }
+
+          const posColor = orderedSource.color
+            ? parseColor(orderedSource.color)
+            : defaultPosColor
+          const negColor = defaultNegColor
 
           if (summaryScoreMode === 'whiskers') {
             const lightColor = lightenColor(posColor, 0.4)
@@ -227,6 +232,10 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       if (!view.initialized || !model.domain) {
         return
       }
+
+      // access sources so MobX tracks it as a dependency,
+      // ensuring re-render when source order/filtering changes
+      const _sources = model.sources
 
       const visibleRegions = view.visibleRegions
       if (visibleRegions.length === 0) {
@@ -310,6 +319,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
             {displaySources.map((source, idx) => {
               const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
               const boxHeight = Math.min(20, rowHeight)
+              const lc = source.labelColor
               return (
                 <g key={source.name}>
                   <rect
@@ -317,13 +327,13 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
                     y={y}
                     width={labelWidth}
                     height={boxHeight}
-                    fill="rgba(255,255,255,0.8)"
+                    fill={lc ?? 'rgba(255,255,255,0.8)'}
                   />
                   <text
                     x={4}
                     y={y + boxHeight / 2 + 3}
                     fontSize={10}
-                    fill="black"
+                    fill={lc ? 'white' : 'black'}
                   >
                     {source.name}
                   </text>
