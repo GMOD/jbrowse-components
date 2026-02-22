@@ -25,7 +25,7 @@ import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getRowHeight } from '../shared/wiggleComponentUtils.ts'
 import {
-  computeVisibleScoreRange,
+  computeAutoscaleDomain,
   getNiceDomain,
   getScale,
 } from '../util.ts'
@@ -79,6 +79,7 @@ export default function stateModelFactory(
         maxScoreSetting: types.maybe(types.number),
         renderingTypeSetting: types.maybe(types.string),
         summaryScoreModeSetting: types.maybe(types.string),
+        autoscaleSetting: types.maybe(types.string),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -185,6 +186,10 @@ export default function stateModelFactory(
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
       },
 
+      get autoscaleType() {
+        return self.autoscaleSetting ?? getConf(self, 'autoscale')
+      },
+
       get summaryScoreMode() {
         return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
       },
@@ -219,11 +224,10 @@ export default function stateModelFactory(
         if (!range) {
           return undefined
         }
-        const scaleType = this.scaleType
         return getNiceDomain({
           domain: range,
           bounds: [this.minScoreConfig, this.maxScoreConfig],
-          scaleType,
+          scaleType: this.scaleType,
         })
       },
 
@@ -424,6 +428,10 @@ export default function stateModelFactory(
         self.featureUnderMouse = feat
       },
 
+      setAutoscale(val?: string) {
+        self.autoscaleSetting = val
+      },
+
       setScaleType(scaleType: string) {
         self.scaleTypeSetting = scaleType
       },
@@ -595,7 +603,8 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const entries = view.dynamicBlocks.contentBlocks
+                const numStdDev = getConf(self, 'numStdDev') || 3
+                const visibleEntries = view.dynamicBlocks.contentBlocks
                   .filter(block => block.regionNumber !== undefined)
                   .flatMap(block => {
                     const regionData = self.rpcDataMap.get(block.regionNumber!)
@@ -610,9 +619,16 @@ export default function stateModelFactory(
                       data: source,
                     }))
                   })
-                const range = computeVisibleScoreRange(
+                const allEntries = [...self.rpcDataMap.values()].flatMap(
+                  regionData =>
+                    regionData.sources.map(source => ({ data: source })),
+                )
+                const range = computeAutoscaleDomain(
+                  self.autoscaleType,
                   self.summaryScoreMode,
-                  entries,
+                  numStdDev,
+                  visibleEntries,
+                  allEntries,
                 )
                 if (
                   range &&
@@ -764,6 +780,24 @@ export default function stateModelFactory(
                 ],
               },
               {
+                label: 'Autoscale type',
+                subMenu: (
+                  [
+                    ['local', 'Local'],
+                    ['global', 'Global'],
+                    ['globalsd', 'Global ± 3σ'],
+                    ['localsd', 'Local ± 3σ'],
+                  ] as const
+                ).map(([val, label]) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: self.autoscaleType === val,
+                  onClick: () => {
+                    self.setAutoscale(val)
+                  },
+                })),
+              },
+              {
                 label: 'Set min/max score',
                 onClick: () => {
                   getSession(self).queueDialog(handleClose => [
@@ -865,6 +899,7 @@ export default function stateModelFactory(
         maxScoreSetting,
         renderingTypeSetting,
         summaryScoreModeSetting,
+        autoscaleSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -880,6 +915,7 @@ export default function stateModelFactory(
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
         ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
         ...(summaryScoreModeSetting !== undefined ? { summaryScoreModeSetting } : {}),
+        ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })
 }

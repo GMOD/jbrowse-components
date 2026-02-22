@@ -324,71 +324,115 @@ export function getEffectiveScores(
   return data.featureScores
 }
 
-export function computeVisibleScoreRange(
+interface FeatureArrays {
+  featurePositions: Uint32Array
+  featureScores: Float32Array
+  featureMinScores: Float32Array
+  featureMaxScores: Float32Array
+  numFeatures: number
+}
+
+function computeStats(
   summaryScoreMode: string,
-  entries: {
-    visStart: number
-    visEnd: number
-    data: {
-      featurePositions: Uint32Array
-      featureScores: Float32Array
-      featureMinScores: Float32Array
-      featureMaxScores: Float32Array
-      numFeatures: number
-    }
-  }[],
+  datasets: { data: FeatureArrays; visStart?: number; visEnd?: number }[],
+  filterVisible: boolean,
 ) {
   const useWhiskers = summaryScoreMode === 'whiskers'
   const useMin = summaryScoreMode === 'min'
   const useMax = summaryScoreMode === 'max'
   let min = Infinity
   let max = -Infinity
-  for (const { visStart, visEnd, data } of entries) {
+  let sum = 0
+  let sumSq = 0
+  let count = 0
+  for (const { data, visStart, visEnd } of datasets) {
     for (let i = 0; i < data.numFeatures; i++) {
-      const fStart = data.featurePositions[i * 2]!
-      const fEnd = data.featurePositions[i * 2 + 1]!
-      if (fEnd > visStart && fStart < visEnd) {
-        if (useWhiskers) {
-          const sMin = data.featureMinScores[i]!
-          const sMax = data.featureMaxScores[i]!
-          if (sMin < min) {
-            min = sMin
-          }
-          if (sMax > max) {
-            max = sMax
-          }
-        } else if (useMin) {
-          const s = data.featureMinScores[i]!
-          if (s < min) {
-            min = s
-          }
-          if (s > max) {
-            max = s
-          }
-        } else if (useMax) {
-          const s = data.featureMaxScores[i]!
-          if (s < min) {
-            min = s
-          }
-          if (s > max) {
-            max = s
-          }
-        } else {
-          const s = data.featureScores[i]!
-          if (s < min) {
-            min = s
-          }
-          if (s > max) {
-            max = s
-          }
+      if (filterVisible && visStart !== undefined && visEnd !== undefined) {
+        const fStart = data.featurePositions[i * 2]!
+        const fEnd = data.featurePositions[i * 2 + 1]!
+        if (fEnd <= visStart || fStart >= visEnd) {
+          continue
         }
       }
+      let s: number
+      if (useWhiskers) {
+        const sMin = data.featureMinScores[i]!
+        const sMax = data.featureMaxScores[i]!
+        if (sMin < min) {
+          min = sMin
+        }
+        if (sMax > max) {
+          max = sMax
+        }
+        s = data.featureScores[i]!
+      } else if (useMin) {
+        s = data.featureMinScores[i]!
+        if (s < min) {
+          min = s
+        }
+        if (s > max) {
+          max = s
+        }
+      } else if (useMax) {
+        s = data.featureMaxScores[i]!
+        if (s < min) {
+          min = s
+        }
+        if (s > max) {
+          max = s
+        }
+      } else {
+        s = data.featureScores[i]!
+        if (s < min) {
+          min = s
+        }
+        if (s > max) {
+          max = s
+        }
+      }
+      sum += s
+      sumSq += s * s
+      count++
     }
   }
-  if (Number.isFinite(min) && Number.isFinite(max)) {
-    return [min, max] as [number, number]
+  if (count === 0 || !Number.isFinite(min) || !Number.isFinite(max)) {
+    return undefined
   }
-  return undefined
+  const mean = sum / count
+  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
+  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
+}
+
+export function computeAutoscaleDomain(
+  autoscaleType: string,
+  summaryScoreMode: string,
+  numStdDev: number,
+  visibleEntries: {
+    data: FeatureArrays
+    visStart: number
+    visEnd: number
+  }[],
+  allEntries: { data: FeatureArrays }[],
+): [number, number] | undefined {
+  const isGlobal = autoscaleType === 'global' || autoscaleType === 'globalsd'
+  const isSd = autoscaleType === 'localsd' || autoscaleType === 'globalsd'
+
+  const stats = isGlobal
+    ? computeStats(summaryScoreMode, allEntries, false)
+    : computeStats(summaryScoreMode, visibleEntries, true)
+
+  if (!stats) {
+    return undefined
+  }
+
+  if (isSd) {
+    const { scoreMean, scoreStdDev, scoreMin } = stats
+    return [
+      scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+      scoreMean + numStdDev * scoreStdDev,
+    ]
+  }
+  return [stats.scoreMin, stats.scoreMax]
 }
 
 

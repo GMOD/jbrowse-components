@@ -23,7 +23,7 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import {
   WIGGLE_COLOR_DEFAULT,
   YSCALEBAR_LABEL_OFFSET,
-  computeVisibleScoreRange,
+  computeAutoscaleDomain,
   getNiceDomain,
   getScale,
 } from '../util.ts'
@@ -70,6 +70,7 @@ export default function stateModelFactory(
         maxScoreSetting: types.maybe(types.number),
         renderingTypeSetting: types.maybe(types.string),
         summaryScoreModeSetting: types.maybe(types.string),
+        autoscaleSetting: types.maybe(types.string),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -140,6 +141,10 @@ export default function stateModelFactory(
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
       },
 
+      get autoscaleType() {
+        return self.autoscaleSetting ?? getConf(self, 'autoscale')
+      },
+
       /**
        * #method
        * Returns adapter configuration. Can be overridden by subclasses to
@@ -197,11 +202,10 @@ export default function stateModelFactory(
         if (!range) {
           return undefined
         }
-        const scaleType = this.scaleType
         return getNiceDomain({
           domain: range,
           bounds: [this.minScoreConfig, this.maxScoreConfig],
-          scaleType,
+          scaleType: this.scaleType,
         })
       },
 
@@ -288,6 +292,10 @@ export default function stateModelFactory(
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
         self.featureUnderMouse = feat
+      },
+
+      setAutoscale(val?: string) {
+        self.autoscaleSetting = val
       },
     }))
     .actions(self => {
@@ -424,7 +432,8 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
-                const entries = view.dynamicBlocks.contentBlocks
+                const numStdDev = getConf(self, 'numStdDev') || 3
+                const visibleEntries = view.dynamicBlocks.contentBlocks
                   .filter(block => block.regionNumber !== undefined)
                   .map(block => {
                     const data = self.rpcDataMap.get(block.regionNumber!)
@@ -437,9 +446,15 @@ export default function stateModelFactory(
                       : undefined
                   })
                   .filter((e): e is NonNullable<typeof e> => !!e)
-                const range = computeVisibleScoreRange(
+                const allEntries = [...self.rpcDataMap.values()].map(data => ({
+                  data,
+                }))
+                const range = computeAutoscaleDomain(
+                  self.autoscaleType,
                   self.summaryScoreMode,
-                  entries,
+                  numStdDev,
+                  visibleEntries,
+                  allEntries,
                 )
                 if (
                   range &&
@@ -574,20 +589,43 @@ export default function stateModelFactory(
             icon: EqualizerIcon,
             subMenu: [
               {
-                label: 'Linear scale',
-                type: 'radio',
-                checked: self.scaleType === 'linear',
-                onClick: () => {
-                  self.setScaleType('linear')
-                },
+                label: 'Scale type',
+                subMenu: [
+                  {
+                    label: 'Linear scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'linear',
+                    onClick: () => {
+                      self.setScaleType('linear')
+                    },
+                  },
+                  {
+                    label: 'Log scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'log',
+                    onClick: () => {
+                      self.setScaleType('log')
+                    },
+                  },
+                ],
               },
               {
-                label: 'Log scale',
-                type: 'radio',
-                checked: self.scaleType === 'log',
-                onClick: () => {
-                  self.setScaleType('log')
-                },
+                label: 'Autoscale type',
+                subMenu: (
+                  [
+                    ['local', 'Local'],
+                    ['global', 'Global'],
+                    ['globalsd', 'Global ± 3σ'],
+                    ['localsd', 'Local ± 3σ'],
+                  ] as const
+                ).map(([val, label]) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: self.autoscaleType === val,
+                  onClick: () => {
+                    self.setAutoscale(val)
+                  },
+                })),
               },
               {
                 label: 'Set min/max score',
@@ -639,6 +677,7 @@ export default function stateModelFactory(
         maxScoreSetting,
         renderingTypeSetting,
         summaryScoreModeSetting,
+        autoscaleSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -651,6 +690,7 @@ export default function stateModelFactory(
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
         ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
         ...(summaryScoreModeSetting !== undefined ? { summaryScoreModeSetting } : {}),
+        ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })
 }
