@@ -5,9 +5,9 @@ import { observer } from 'mobx-react'
 
 import TreeSidebar from './TreeSidebar.tsx'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
+import type { MultiSampleVariantBaseModel } from '../MultiSampleVariantBaseModel.ts'
 
-type Model = MultiVariantBaseModel & {
+type Model = MultiSampleVariantBaseModel & {
   DisplayMessageComponent: React.ComponentType<any>
 }
 

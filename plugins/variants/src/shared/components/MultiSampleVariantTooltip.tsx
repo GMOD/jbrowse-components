@@ -47,7 +47,7 @@ const useStyles = makeStyles()(theme => ({
 
 const EXCLUDE_KEYS = new Set(['color', 'HP', 'name', 'baseName', 'id'])
 
-const MultiVariantTooltip = memo(function MultiVariantTooltip({
+const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   source,
   x,
   y,
@@ -96,4 +96,4 @@ const MultiVariantTooltip = memo(function MultiVariantTooltip({
   )
 })
 
-export default MultiVariantTooltip
+export default MultiSampleVariantTooltip

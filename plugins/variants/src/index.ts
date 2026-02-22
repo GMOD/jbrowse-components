@@ -12,10 +12,10 @@ import WebGLLDDataRPCMethodsF from './RenderWebGLLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/index.ts'
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
-import { MultiVariantClusterGenotypeMatrix } from './VariantRPC/MultiVariantClusterGenotypeMatrix.ts'
-import { MultiVariantGetGenotypeMatrix } from './VariantRPC/MultiVariantGetGenotypeMatrix.ts'
-import { MultiVariantGetSources } from './VariantRPC/MultiVariantGetSources.ts'
-import { MultiVariantGetWebGLCellData } from './VariantRPC/MultiVariantGetWebGLCellData.ts'
+import { MultiSampleVariantClusterGenotypeMatrix } from './VariantRPC/MultiSampleVariantClusterGenotypeMatrix.ts'
+import { MultiSampleVariantGetGenotypeMatrix } from './VariantRPC/MultiSampleVariantGetGenotypeMatrix.ts'
+import { MultiSampleVariantGetSources } from './VariantRPC/MultiSampleVariantGetSources.ts'
+import { MultiSampleVariantGetWebGLCellData } from './VariantRPC/MultiSampleVariantGetWebGLCellData.ts'
 import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
@@ -49,15 +49,15 @@ export default class VariantsPlugin extends Plugin {
     ChordVariantDisplayF(pluginManager)
     WebGLLDDataRPCMethodsF(pluginManager)
 
-    pluginManager.addRpcMethod(() => new MultiVariantGetSources(pluginManager))
+    pluginManager.addRpcMethod(() => new MultiSampleVariantGetSources(pluginManager))
     pluginManager.addRpcMethod(
-      () => new MultiVariantGetGenotypeMatrix(pluginManager),
+      () => new MultiSampleVariantGetGenotypeMatrix(pluginManager),
     )
     pluginManager.addRpcMethod(
-      () => new MultiVariantClusterGenotypeMatrix(pluginManager),
+      () => new MultiSampleVariantClusterGenotypeMatrix(pluginManager),
     )
     pluginManager.addRpcMethod(
-      () => new MultiVariantGetWebGLCellData(pluginManager),
+      () => new MultiSampleVariantGetWebGLCellData(pluginManager),
     )
   }
 

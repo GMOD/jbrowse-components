@@ -2,7 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaFactory from './configSchema.ts'
 import modelFactory from './model.ts'
-import MultiVariantBaseDisplayComponent from '../shared/components/MultiVariantBaseDisplayComponent.tsx'
+import MultiSampleVariantBaseDisplayComponent from '../shared/components/MultiSampleVariantBaseDisplayComponent.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -20,7 +20,7 @@ export default function MultiWebGLVariantDisplayF(
       stateModel: modelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: MultiVariantBaseDisplayComponent,
+      ReactComponent: MultiSampleVariantBaseDisplayComponent,
     })
   })
 }

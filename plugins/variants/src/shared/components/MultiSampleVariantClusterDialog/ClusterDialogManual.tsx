@@ -73,7 +73,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         const sessionId = getRpcSessionId(model)
         const ret = (await rpcManager.call(
           sessionId,
-          'MultiVariantGetGenotypeMatrix',
+          'MultiSampleVariantGetGenotypeMatrix',
           {
             regions: view.dynamicBlocks.contentBlocks,
             sources: sourcesWithoutLayout,

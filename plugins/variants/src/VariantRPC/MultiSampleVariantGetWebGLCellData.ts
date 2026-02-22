@@ -2,8 +2,8 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { GetWebGLCellDataArgs } from './types.ts'
 
-export class MultiVariantGetWebGLCellData extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiVariantGetWebGLCellData'
+export class MultiSampleVariantGetWebGLCellData extends RpcMethodTypeWithFiltersAndRenameRegions {
+  name = 'MultiSampleVariantGetWebGLCellData'
 
   async execute(args: GetWebGLCellDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

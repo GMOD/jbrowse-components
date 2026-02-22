@@ -10,7 +10,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function getMultiVariantSourcesAutorun(self: {
+export function getMultiSampleVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   isMinimized: boolean
@@ -40,7 +40,7 @@ export function getMultiVariantSourcesAutorun(self: {
           const sessionId = getRpcSessionId(self)
           const sources = (await rpcManager.call(
             sessionId,
-            'MultiVariantGetSources',
+            'MultiSampleVariantGetSources',
             {
               sessionId,
               adapterConfig,
@@ -63,7 +63,7 @@ export function getMultiVariantSourcesAutorun(self: {
       },
       {
         delay: 1000,
-        name: 'GetMultiVariantSources',
+        name: 'GetMultiSampleVariantSources',
       },
     ),
   )

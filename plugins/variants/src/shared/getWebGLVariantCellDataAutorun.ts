@@ -68,7 +68,7 @@ export function getWebGLVariantCellDataAutorun(self: {
             try {
               const result = (await rpcManager.call(
                 sessionId,
-                'MultiVariantGetWebGLCellData',
+                'MultiSampleVariantGetWebGLCellData',
                 {
                   regions: view.dynamicBlocks.contentBlocks,
                   sources,

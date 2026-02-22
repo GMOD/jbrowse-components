@@ -57,7 +57,7 @@ const LegendItemText = function ({
   )
 }
 
-const MultiVariantColorLegend = observer(function MultiVariantColorLegend({
+const MultiSampleVariantColorLegend = observer(function MultiSampleVariantColorLegend({
   model,
   labelWidth,
 }: {
@@ -118,4 +118,4 @@ const MultiVariantColorLegend = observer(function MultiVariantColorLegend({
   ) : null
 })
 
-export default MultiVariantColorLegend
+export default MultiSampleVariantColorLegend

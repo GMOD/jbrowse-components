@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import MultiVariantBaseModelF from '../shared/MultiVariantBaseModel.ts'
+import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -17,7 +17,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'MultiLinearVariantDisplay',
-      MultiVariantBaseModelF(configSchema),
+      MultiSampleVariantBaseModelF(configSchema),
       types.model({
         type: types.literal('MultiLinearVariantDisplay'),
       }),

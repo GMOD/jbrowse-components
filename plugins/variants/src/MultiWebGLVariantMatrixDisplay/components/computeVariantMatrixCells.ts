@@ -3,32 +3,25 @@ import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
-function writeCell(
-  dst: {
-    featureIndices: Float32Array
-    rowIndices: Uint32Array
-    colors: Uint8Array
-  },
-  w: number,
-  src: {
-    featureIndices: Float32Array
-    rowIndices: Uint32Array
-    colors: Uint8Array
-  },
-  i: number,
-) {
-  dst.featureIndices[w] = src.featureIndices[i]!
-  dst.rowIndices[w] = src.rowIndices[i]!
-  const so = i * 4
-  const do_ = w * 4
-  dst.colors[do_] = src.colors[so]!
-  dst.colors[do_ + 1] = src.colors[so + 1]!
-  dst.colors[do_ + 2] = src.colors[so + 2]!
-  dst.colors[do_ + 3] = src.colors[so + 3]!
-}
-
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
+
+interface CellArrays {
+  featureIndices: Float32Array
+  rowIndices: Uint32Array
+  colors: Uint8Array
+}
+
+function writeCell(dst: CellArrays, w: number, src: CellArrays, i: number) {
+  dst.featureIndices[w] = src.featureIndices[i]!
+  dst.rowIndices[w] = src.rowIndices[i]!
+  const sOff = i * 4
+  const dOff = w * 4
+  dst.colors[dOff] = src.colors[sOff]!
+  dst.colors[dOff + 1] = src.colors[sOff + 1]!
+  dst.colors[dOff + 2] = src.colors[sOff + 2]!
+  dst.colors[dOff + 3] = src.colors[sOff + 3]!
+}
 
 interface FeatureData {
   alt: string[]

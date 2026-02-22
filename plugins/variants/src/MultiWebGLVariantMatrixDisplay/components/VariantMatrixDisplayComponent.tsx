@@ -4,7 +4,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
-import Crosshair from '../../shared/components/MultiVariantCrosshairs.tsx'
+import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import TreeSidebar from '../../shared/components/TreeSidebar.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 

@@ -5,8 +5,8 @@ import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 
 import type { GetGenotypeMatrixArgs } from './types.ts'
 
-export class MultiVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiVariantGetGenotypeMatrix'
+export class MultiSampleVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
+  name = 'MultiSampleVariantGetGenotypeMatrix'
 
   async execute(args: GetGenotypeMatrixArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

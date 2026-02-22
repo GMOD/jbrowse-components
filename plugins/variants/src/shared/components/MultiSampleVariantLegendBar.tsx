@@ -3,11 +3,11 @@ import { useMemo } from 'react'
 import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import ColorLegend from './MultiVariantColorLegend.tsx'
+import ColorLegend from './MultiSampleVariantColorLegend.tsx'
 
 import type { LegendBarModel } from './types.ts'
 
-const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
+const MultiSampleVariantLegendBar = observer(function MultiSampleVariantLegendBar(props: {
   model: LegendBarModel
   orientation?: string
   exportSVG?: boolean
@@ -49,4 +49,4 @@ const MultiVariantLegendBar = observer(function MultiVariantLegendBar(props: {
   ) : null
 })
 
-export default MultiVariantLegendBar
+export default MultiSampleVariantLegendBar

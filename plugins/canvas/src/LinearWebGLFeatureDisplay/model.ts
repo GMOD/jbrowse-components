@@ -512,9 +512,6 @@ export default function stateModelFactory(
           }
         }
         if (anyTooLarge) {
-          // Set the flag — the autorun is gated on regionTooLarge so it
-          // won't retry. A bpPerPx reaction clears the flag on zoom,
-          // which lets the autorun fire fresh for all regions.
           self.setRegionTooLarge(true, totalTooLargeCount)
         } else {
           self.setRegionTooLarge(false, 0)
@@ -536,6 +533,7 @@ export default function stateModelFactory(
           stopStopToken(self.renderingStopToken)
         }
         const stopToken = createStopToken()
+        const generation = self.fetchGeneration
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(null)
@@ -544,18 +542,18 @@ export default function stateModelFactory(
             fetchFeaturesForRegion(region, regionNumber, bpPerPx, stopToken),
           )
           const results = await Promise.all(promises)
-          if (isAlive(self) && self.renderingStopToken === stopToken) {
+          if (isAlive(self) && self.fetchGeneration === generation) {
             applyFetchResults(results)
           }
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
-            if (isAlive(self) && self.renderingStopToken === stopToken) {
+            if (isAlive(self) && self.fetchGeneration === generation) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
         } finally {
-          if (isAlive(self) && self.renderingStopToken === stopToken) {
+          if (isAlive(self) && self.fetchGeneration === generation) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
           }
@@ -597,8 +595,16 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LinearGenomeViewModel
-                if (!view.initialized || self.regionTooLarge) {
+                if (
+                  !view.initialized ||
+                  self.regionTooLarge ||
+                  self.isLoading
+                ) {
                   return
+                }
+
+                if (self.needsLayoutRefresh) {
+                  self.clearAllRpcData()
                 }
 
                 const bpPerPx = view.bpPerPx
@@ -624,31 +630,6 @@ export default function stateModelFactory(
               {
                 name: 'FetchVisibleRegions',
                 delay: 300,
-              },
-            ),
-          )
-
-          // Autorun: re-layout when zoom changes significantly
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                const session = getSession(self)
-                try {
-                  const view = getContainingView(self) as LGV
-                  if (view.initialized && self.needsLayoutRefresh) {
-                    // refetch contains all its async behavior, so no need to await
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    refetchForCurrentView()
-                  }
-                } catch (e) {
-                  session.notifyError(`${e}`, e)
-                  console.error(e)
-                }
-              },
-              {
-                name: 'ZoomLayoutRefresh',
-                delay: 500,
               },
             ),
           )

@@ -4,8 +4,8 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 
-export class MultiVariantGetSources extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiVariantGetSources'
+export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRenameRegions {
+  name = 'MultiSampleVariantGetSources'
 
   async execute(
     args: {

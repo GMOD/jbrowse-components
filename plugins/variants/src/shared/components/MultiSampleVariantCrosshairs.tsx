@@ -4,9 +4,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import MultiVariantTooltip from './MultiVariantTooltip.tsx'
+import MultiSampleVariantTooltip from './MultiSampleVariantTooltip.tsx'
 
-import type { MultiVariantBaseModel } from '../MultiVariantBaseModel.ts'
+import type { MultiSampleVariantBaseModel } from '../MultiSampleVariantBaseModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()(theme => ({
@@ -33,7 +33,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const MultiVariantCrosshairs = observer(function MultiVariantCrosshairs({
+const MultiSampleVariantCrosshairs = observer(function MultiSampleVariantCrosshairs({
   mouseX,
   mouseY,
   model,
@@ -42,7 +42,7 @@ const MultiVariantCrosshairs = observer(function MultiVariantCrosshairs({
 }: {
   mouseX: number
   mouseY: number
-  model: MultiVariantBaseModel
+  model: MultiSampleVariantBaseModel
   offsetX: number
   offsetY: number
 }) {
@@ -69,7 +69,7 @@ const MultiVariantCrosshairs = observer(function MultiVariantCrosshairs({
         style={{ transform: `translateX(${mouseX}px)`, height }}
       />
       {tooltipSource ? (
-        <MultiVariantTooltip
+        <MultiSampleVariantTooltip
           source={tooltipSource}
           x={offsetX + mouseX}
           y={offsetY + mouseY}
@@ -79,4 +79,4 @@ const MultiVariantCrosshairs = observer(function MultiVariantCrosshairs({
   )
 })
 
-export default MultiVariantCrosshairs
+export default MultiSampleVariantCrosshairs

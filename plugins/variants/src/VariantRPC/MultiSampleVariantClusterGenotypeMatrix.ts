@@ -2,8 +2,8 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { ClusterGenotypeMatrixArgs } from './types.ts'
 
-export class MultiVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiVariantClusterGenotypeMatrix'
+export class MultiSampleVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
+  name = 'MultiSampleVariantClusterGenotypeMatrix'
 
   async execute(args: ClusterGenotypeMatrixArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

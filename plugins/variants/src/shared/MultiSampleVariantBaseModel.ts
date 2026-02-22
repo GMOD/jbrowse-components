@@ -55,19 +55,19 @@ const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
 const ClusterDialog = lazy(
-  () => import('./components/MultiVariantClusterDialog/ClusterDialog.tsx'),
+  () => import('./components/MultiSampleVariantClusterDialog/ClusterDialog.tsx'),
 )
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
 /**
- * #stateModel MultiVariantBaseModel
+ * #stateModel MultiSampleVariantBaseModel
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
  */
-export default function MultiVariantBaseModelF(
+export default function MultiSampleVariantBaseModelF(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
@@ -1031,9 +1031,9 @@ export default function MultiVariantBaseModelF(
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
-            const { setupMultiVariantAutoruns } =
-              await import('./setupMultiVariantAutoruns.ts')
-            setupMultiVariantAutoruns(self)
+            const { setupMultiSampleVariantAutoruns } =
+              await import('./setupMultiSampleVariantAutoruns.ts')
+            setupMultiSampleVariantAutoruns(self)
           } catch (e) {
             if (isAlive(self)) {
               console.error(e)
@@ -1091,7 +1091,7 @@ export default function MultiVariantBaseModelF(
     })
 }
 
-export type MultiVariantBaseStateModel = ReturnType<
-  typeof MultiVariantBaseModelF
+export type MultiSampleVariantBaseStateModel = ReturnType<
+  typeof MultiSampleVariantBaseModelF
 >
-export type MultiVariantBaseModel = Instance<MultiVariantBaseStateModel>
+export type MultiSampleVariantBaseModel = Instance<MultiSampleVariantBaseStateModel>

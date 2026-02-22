@@ -86,7 +86,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                 setStopToken(stopToken)
                 const ret = (await rpcManager.call(
                   sessionId,
-                  'MultiVariantClusterGenotypeMatrix',
+                  'MultiSampleVariantClusterGenotypeMatrix',
                   {
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesVolatile,
