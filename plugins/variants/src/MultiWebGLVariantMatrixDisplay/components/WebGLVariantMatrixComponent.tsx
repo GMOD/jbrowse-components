@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
@@ -89,38 +90,33 @@ const WebGLVariantMatrixComponent = observer(
       renderer.uploadCellData(cellData)
     }, [model.webglCellData, ready])
 
-    // Render when scroll/size changes
     useEffect(() => {
       const renderer = rendererRef.current
-      if (!renderer || !ready || !view.initialized) {
-        return
-      }
-      const cellData = cellDataRef.current
-      if (!cellData) {
+      if (!renderer || !ready) {
         return
       }
 
-      const width = Math.round(view.dynamicBlocks.totalWidthPx)
-      const height = model.availableHeight
+      return autorun(() => {
+        if (!view.initialized) {
+          return
+        }
+        const cellData = cellDataRef.current
+        if (!cellData) {
+          return
+        }
 
-      renderer.render({
-        canvasWidth: width,
-        canvasHeight: height,
-        rowHeight: model.rowHeight,
-        scrollTop: model.scrollTop,
-        numFeatures: cellData.numFeatures,
+        const width = Math.round(view.dynamicBlocks.totalWidthPx)
+        const height = model.availableHeight
+
+        renderer.render({
+          canvasWidth: width,
+          canvasHeight: height,
+          rowHeight: model.rowHeight,
+          scrollTop: model.scrollTop,
+          numFeatures: cellData.numFeatures,
+        })
       })
-    }, [
-      model,
-      model.webglCellData,
-      model.availableHeight,
-      model.rowHeight,
-      model.scrollTop,
-      model.sources,
-      view.initialized,
-      view.dynamicBlocks.totalWidthPx,
-      ready,
-    ])
+    }, [model, view, ready])
 
     const lastHoveredRef = useRef<string | undefined>(undefined)
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
@@ -159,57 +160,51 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
       return
     }
 
-    const dataMap = model.rpcDataMap
-    if (dataMap.size === 0) {
-      renderer.pruneRegions([])
-      return
-    }
+    return autorun(() => {
+      const dataMap = model.rpcDataMap
+      if (dataMap.size === 0) {
+        renderer.pruneRegions([])
+        return
+      }
 
-    const activeRegions: number[] = []
-    for (const [regionNumber, data] of dataMap) {
-      activeRegions.push(regionNumber)
-      const sources = buildSourceRenderData(data, model)
-      renderer.uploadRegion(regionNumber, data.regionStart, sources)
-    }
-    renderer.pruneRegions(activeRegions)
+      const activeRegions: number[] = []
+      for (const [regionNumber, data] of dataMap) {
+        activeRegions.push(regionNumber)
+        const sources = buildSourceRenderData(data, model)
+        renderer.uploadRegion(regionNumber, data.regionStart, sources)
+      }
+      renderer.pruneRegions(activeRegions)
+    })
   }, [model, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !ready || !view.initialized || !model.domain) {
+    if (!renderer || !ready) {
       return
     }
 
-    const visibleRegions = view.visibleRegions
-    if (visibleRegions.length === 0) {
-      return
-    }
+    return autorun(() => {
+      if (!view.initialized || !model.domain) {
+        return
+      }
 
-    const width = Math.round(view.width)
+      const visibleRegions = view.visibleRegions
+      if (visibleRegions.length === 0) {
+        return
+      }
 
-    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-      regionNumber: vr.regionNumber,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-    }))
+      const width = Math.round(view.width)
 
-    renderer.renderBlocks(blocks, makeRenderState(model, width))
-  }, [
-    model,
-    model.rpcDataMap,
-    model.height,
-    model.color,
-    model.scaleType,
-    model.renderingType,
-    view.visibleRegions,
-    model.domain,
-    view.initialized,
-    view.width,
-    view.offsetPx,
-    view.bpPerPx,
-    ready,
-  ])
+      const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
+        regionNumber: vr.regionNumber,
+        bpRangeX: [vr.start, vr.end] as [number, number],
+        screenStartPx: vr.screenStartPx,
+        screenEndPx: vr.screenEndPx,
+      }))
+
+      renderer.renderBlocks(blocks, makeRenderState(model, width))
+    })
+  }, [model, view, ready])
 
   const width = Math.round(view.width)
   const height = model.height

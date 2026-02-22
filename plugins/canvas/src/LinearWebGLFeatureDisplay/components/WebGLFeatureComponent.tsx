@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, useDebounce } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
@@ -207,6 +207,7 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
   const view = getContainingView(model) as LGV
 
   const { rpcDataMap, isLoading, error } = model
+  const debouncedLoading = useDebounce(isLoading, 500)
 
   const width = view.initialized ? view.width : undefined
   const height = model.height
@@ -903,8 +904,8 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
       ) : null}
 
       <LoadingOverlay
-        statusMessage={isLoading ? 'Loading features' : 'Initializing'}
-        isVisible={isLoading || !isReady}
+        statusMessage={debouncedLoading ? 'Loading features' : 'Initializing'}
+        isVisible={debouncedLoading || !isReady}
       />
     </div>
   )

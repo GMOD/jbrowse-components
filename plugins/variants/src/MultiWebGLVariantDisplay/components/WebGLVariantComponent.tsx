@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
@@ -90,49 +91,40 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     renderer.uploadCellData(cellData)
   }, [model.webglCellData, ready])
 
-  // Render when view state changes
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !ready || !view.initialized) {
+    if (!renderer || !ready) {
       return
     }
 
-    const regions = model.visibleRegions
-    if (regions.length === 0) {
-      return
-    }
+    return autorun(() => {
+      if (!view.initialized) {
+        return
+      }
 
-    const width = Math.round(view.dynamicBlocks.totalWidthPx)
-    const height = model.availableHeight
+      const regions = model.visibleRegions
+      if (regions.length === 0) {
+        return
+      }
 
-    const blocks = regions.map(r => ({
-      regionNumber: r.regionNumber,
-      bpRangeX: [r.start, r.end] as [number, number],
-      screenStartPx: r.screenStartPx,
-      screenEndPx: r.screenEndPx,
-    }))
+      const width = Math.round(view.dynamicBlocks.totalWidthPx)
+      const height = model.availableHeight
 
-    renderer.renderBlocks(blocks, {
-      canvasWidth: width,
-      canvasHeight: height,
-      rowHeight: model.rowHeight,
-      scrollTop: model.scrollTop,
+      const blocks = regions.map(r => ({
+        regionNumber: r.regionNumber,
+        bpRangeX: [r.start, r.end] as [number, number],
+        screenStartPx: r.screenStartPx,
+        screenEndPx: r.screenEndPx,
+      }))
+
+      renderer.renderBlocks(blocks, {
+        canvasWidth: width,
+        canvasHeight: height,
+        rowHeight: model.rowHeight,
+        scrollTop: model.scrollTop,
+      })
     })
-  }, [
-    model,
-    model.webglCellData,
-    model.availableHeight,
-    model.rowHeight,
-    model.scrollTop,
-    model.sources,
-    model.visibleRegions,
-    view,
-    view.initialized,
-    view.bpPerPx,
-    view.offsetPx,
-    view.dynamicBlocks.totalWidthPx,
-    ready,
-  ])
+  }, [model, view, ready])
 
   const lastHoveredRef = useRef<string | undefined>(undefined)
 

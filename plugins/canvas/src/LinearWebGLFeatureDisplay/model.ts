@@ -260,7 +260,7 @@ export default function stateModelFactory(
         endBp: number,
       ): Region | undefined {
         for (const region of self.loadedRegions.values()) {
-          if (startBp >= region.start && endBp <= region.end) {
+          if (startBp < region.end && endBp > region.start) {
             return region
           }
         }

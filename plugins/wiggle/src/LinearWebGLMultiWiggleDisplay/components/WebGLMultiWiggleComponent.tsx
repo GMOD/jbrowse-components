@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getContainingView, measureText } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
@@ -136,93 +137,84 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       return
     }
 
-    const dataMap = model.rpcDataMap
-    if (dataMap.size === 0) {
-      renderer.pruneRegions([])
-      return
-    }
-
-    const modelSources = model.sources
-    const posColor = parseColor(model.posColor)
-    const negColor = parseColor(model.negColor)
-    const activeRegions: number[] = []
-    for (const [regionNumber, data] of dataMap) {
-      activeRegions.push(regionNumber)
-      const sourcesByName = Object.fromEntries(
-        data.sources.map(s => [s.name, s]),
-      )
-      const orderedSources =
-        modelSources.length > 0 ? modelSources : data.sources
-      const sourcesData: SourceRenderData[] = []
-      for (const [idx, orderedSource] of orderedSources.entries()) {
-        const src = orderedSource
-        const rpcSource = sourcesByName[src.name]
-        if (!rpcSource) {
-          continue
-        }
-        if (rpcSource.posNumFeatures > 0) {
-          sourcesData.push({
-            featurePositions: rpcSource.posFeaturePositions,
-            featureScores: rpcSource.posFeatureScores,
-            numFeatures: rpcSource.posNumFeatures,
-            color: posColor,
-            rowIndex: idx,
-          })
-        }
-        if (rpcSource.negNumFeatures > 0) {
-          sourcesData.push({
-            featurePositions: rpcSource.negFeaturePositions,
-            featureScores: rpcSource.negFeatureScores,
-            numFeatures: rpcSource.negNumFeatures,
-            color: negColor,
-            rowIndex: idx,
-          })
-        }
+    return autorun(() => {
+      const dataMap = model.rpcDataMap
+      if (dataMap.size === 0) {
+        renderer.pruneRegions([])
+        return
       }
 
-      renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
-    }
-    renderer.pruneRegions(activeRegions)
-  }, [model.rpcDataMap, model.sources, model.posColor, model.negColor, ready])
+      const modelSources = model.sources
+      const posColor = parseColor(model.posColor)
+      const negColor = parseColor(model.negColor)
+      const activeRegions: number[] = []
+      for (const [regionNumber, data] of dataMap) {
+        activeRegions.push(regionNumber)
+        const sourcesByName = Object.fromEntries(
+          data.sources.map(s => [s.name, s]),
+        )
+        const orderedSources =
+          modelSources.length > 0 ? modelSources : data.sources
+        const sourcesData: SourceRenderData[] = []
+        for (const [idx, orderedSource] of orderedSources.entries()) {
+          const rpcSource = sourcesByName[orderedSource.name]
+          if (!rpcSource) {
+            continue
+          }
+          if (rpcSource.posNumFeatures > 0) {
+            sourcesData.push({
+              featurePositions: rpcSource.posFeaturePositions,
+              featureScores: rpcSource.posFeatureScores,
+              numFeatures: rpcSource.posNumFeatures,
+              color: posColor,
+              rowIndex: idx,
+            })
+          }
+          if (rpcSource.negNumFeatures > 0) {
+            sourcesData.push({
+              featurePositions: rpcSource.negFeaturePositions,
+              featureScores: rpcSource.negFeatureScores,
+              numFeatures: rpcSource.negNumFeatures,
+              color: negColor,
+              rowIndex: idx,
+            })
+          }
+        }
+
+        renderer.uploadRegion(regionNumber, data.regionStart, sourcesData)
+      }
+      renderer.pruneRegions(activeRegions)
+    })
+  }, [model, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !ready || !view.initialized || !model.domain) {
+    if (!renderer || !ready) {
       return
     }
 
-    const visibleRegions = view.visibleRegions
-    if (visibleRegions.length === 0) {
-      return
-    }
+    return autorun(() => {
+      if (!view.initialized || !model.domain) {
+        return
+      }
 
-    const totalWidth = Math.round(view.width)
+      const visibleRegions = view.visibleRegions
+      if (visibleRegions.length === 0) {
+        return
+      }
 
-    const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
-      regionNumber: vr.regionNumber,
-      bpRangeX: [vr.start, vr.end] as [number, number],
-      screenStartPx: vr.screenStartPx,
-      screenEndPx: vr.screenEndPx,
-    }))
+      const totalWidth = Math.round(view.width)
 
-    renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
-  }, [
-    model,
-    model.rpcDataMap,
-    model.sources,
-    model.height,
-    model.posColor,
-    model.negColor,
-    model.scaleType,
-    model.renderingType,
-    view.visibleRegions,
-    model.domain,
-    view.initialized,
-    view.width,
-    view.offsetPx,
-    view.bpPerPx,
-    ready,
-  ])
+      const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
+        regionNumber: vr.regionNumber,
+        bpRangeX: [vr.start, vr.end] as [number, number],
+        screenStartPx: vr.screenStartPx,
+        screenEndPx: vr.screenEndPx,
+      }))
+
+      renderer.renderBlocks(blocks, makeRenderState(model, totalWidth))
+    })
+  }, [model, view, ready])
 
   const totalWidth = Math.round(view.width)
   const height = model.height
