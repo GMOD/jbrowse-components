@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -47,49 +47,12 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
 }: {
   model: VariantDisplayModel
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const cellDataRef = useRef<VariantCellData | null>(null)
   const [error, setError] = useState<unknown>(null)
   const [ready, setReady] = useState(false)
+  const rendererRef = useRef<VariantRenderer | null>(null)
+  const lastHoveredRef = useRef<string | undefined>(undefined)
 
   const view = getContainingView(model) as LGV
-
-  const rendererRef = useRef<VariantRenderer | null>(null)
-
-  const canvasRefCallback = useCallback((canvas: HTMLCanvasElement | null) => {
-    if (!canvas) {
-      return
-    }
-    canvasRef.current = canvas
-    const renderer = VariantRenderer.getOrCreate(canvas)
-    rendererRef.current = renderer
-    renderer
-      .init()
-      .then(ok => {
-        if (!ok) {
-          console.error('[WebGLVariantComponent] GPU initialization failed')
-          setError(new Error('GPU initialization failed'))
-        } else {
-          setReady(true)
-        }
-      })
-      .catch((e: unknown) => {
-        console.error('[WebGLVariantComponent] GPU initialization error:', e)
-        setError(e)
-      })
-  }, [])
-
-  // Upload pre-computed cell data from worker when it arrives
-  useEffect(() => {
-    const renderer = rendererRef.current
-    const cellData = model.webglCellData
-    if (!renderer || !ready || !cellData) {
-      cellDataRef.current = null
-      return
-    }
-    cellDataRef.current = cellData
-    renderer.uploadCellData(cellData)
-  }, [model.webglCellData, ready])
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -97,18 +60,27 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       return
     }
 
+    let lastCellData: VariantCellData | null = null
     return autorun(() => {
       if (!view.initialized) {
         return
+      }
+
+      const cellData = model.webglCellData as VariantCellData | undefined
+      if (!cellData) {
+        lastCellData = null
+        return
+      }
+
+      if (lastCellData !== cellData) {
+        lastCellData = cellData
+        renderer.uploadCellData(cellData)
       }
 
       const regions = model.visibleRegions
       if (regions.length === 0) {
         return
       }
-
-      const width = Math.round(view.dynamicBlocks.totalWidthPx)
-      const height = model.availableHeight
 
       const blocks = regions.map(r => ({
         regionNumber: r.regionNumber,
@@ -118,158 +90,88 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       }))
 
       renderer.renderBlocks(blocks, {
-        canvasWidth: width,
-        canvasHeight: height,
+        canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
+        canvasHeight: model.availableHeight,
         rowHeight: model.rowHeight,
         scrollTop: model.scrollTop,
       })
     })
   }, [model, view, ready])
 
-  const lastHoveredRef = useRef<string | undefined>(undefined)
+  const flatbushIndex = model.webglCellData?.flatbushData
+    ? Flatbush.from(model.webglCellData.flatbushData)
+    : null
 
-  const flatbushIndex = useMemo(
-    () =>
-      model.webglCellData?.flatbushData
-        ? Flatbush.from(model.webglCellData.flatbushData)
-        : null,
-    [model.webglCellData],
-  )
-
-  const getFeatureUnderMouse = useCallback(
-    (eventClientX: number, eventClientY: number) => {
-      const canvas = canvasRef.current
-      const cellData = cellDataRef.current
-      if (!canvas || !cellData || !flatbushIndex) {
-        return undefined
-      }
-      const rect = canvas.getBoundingClientRect()
-      const mouseX = eventClientX - rect.left
-      const mouseY = eventClientY - rect.top
-
-      const regions = model.visibleRegions
-      const region = regions.find(
-        r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
-      )
-      if (!region) {
-        return undefined
-      }
-
-      const blockWidth = region.screenEndPx - region.screenStartPx
-      const regionLengthBp = region.end - region.start
-      const bpPerPx = regionLengthBp / blockWidth
-
-      const genomicPos =
-        region.start +
-        ((mouseX - region.screenStartPx) / blockWidth) * regionLengthBp
-      const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
-
-      const bpPadding = 10 * bpPerPx
-      const hits = flatbushIndex.search(
-        genomicPos - bpPadding,
-        rowFrac - 0.5,
-        genomicPos + bpPadding,
-        rowFrac + 0.5,
-      )
-
-      let bestIdx = -1
-      let bestDist = Infinity
-      for (const idx of hits) {
-        const item = cellData.flatbushItems[idx]!
-        const dx =
-          genomicPos < item.genomicStart
-            ? item.genomicStart - genomicPos
-            : genomicPos > item.genomicEnd
-              ? genomicPos - item.genomicEnd
-              : 0
-        if (dx < bestDist) {
-          bestDist = dx
-          bestIdx = idx
-        }
-      }
-
-      if (bestIdx >= 0) {
-        const item = cellData.flatbushItems[bestIdx]!
-        const info = cellData.featureGenotypeMap[item.featureId]!
-        const genotype = info.genotypes[item.sourceName]!
-        const alleles = makeSimpleAltString(genotype, info.ref, info.alt)
-        return {
-          genotype,
-          alleles,
-          featureName: info.name,
-          description:
-            info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
-          length: getBpDisplayStr(info.length),
-          name: item.sourceName,
-          featureId: item.featureId,
-        }
-      }
+  function getFeatureUnderMouse(
+    rect: DOMRect,
+    eventClientX: number,
+    eventClientY: number,
+  ) {
+    const cellData = model.webglCellData
+    if (!cellData || !flatbushIndex) {
       return undefined
-    },
-    [model, flatbushIndex],
-  )
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      const result = getFeatureUnderMouse(e.clientX, e.clientY)
-      const key = result
-        ? `${result.name}:${result.genotype}:${result.featureId}`
-        : undefined
-      if (key !== lastHoveredRef.current) {
-        lastHoveredRef.current = key
-        if (result) {
-          const { featureId, ...tooltip } = result
-          model.setHoveredGenotype(tooltip)
-        } else {
-          model.setHoveredGenotype(undefined)
-        }
-      }
-    },
-    [getFeatureUnderMouse, model],
-  )
-
-  const handleMouseLeave = useCallback(() => {
-    if (lastHoveredRef.current !== undefined) {
-      lastHoveredRef.current = undefined
-      model.setHoveredGenotype(undefined)
     }
-  }, [model])
+    const mouseX = eventClientX - rect.left
+    const mouseY = eventClientY - rect.top
 
-  const getFeatureAtMouse = useCallback(
-    (e: React.MouseEvent) => {
-      const cellData = cellDataRef.current
-      const features = model.featuresVolatile
-      if (!cellData || !features) {
-        return undefined
-      }
-      const result = getFeatureUnderMouse(e.clientX, e.clientY)
-      if (result) {
-        return features.find(f => f.id() === result.featureId)
-      }
+    const regions = model.visibleRegions
+    const region = regions.find(
+      r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
+    )
+    if (!region) {
       return undefined
-    },
-    [getFeatureUnderMouse, model],
-  )
+    }
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      const feature = getFeatureAtMouse(e)
-      if (feature) {
-        model.selectFeature(feature)
-      }
-    },
-    [getFeatureAtMouse, model],
-  )
+    const blockWidth = region.screenEndPx - region.screenStartPx
+    const regionLengthBp = region.end - region.start
+    const bpPerPx = regionLengthBp / blockWidth
 
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent) => {
-      const feature = getFeatureAtMouse(e)
-      if (feature) {
-        model.setContextMenuFeature(feature)
+    const genomicPos =
+      region.start +
+      ((mouseX - region.screenStartPx) / blockWidth) * regionLengthBp
+    const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
+
+    const bpPadding = 10 * bpPerPx
+    const hits = flatbushIndex.search(
+      genomicPos - bpPadding,
+      rowFrac - 0.5,
+      genomicPos + bpPadding,
+      rowFrac + 0.5,
+    )
+
+    let bestIdx = -1
+    let bestDist = Infinity
+    for (const idx of hits) {
+      const item = cellData.flatbushItems[idx]!
+      const dx =
+        genomicPos < item.genomicStart
+          ? item.genomicStart - genomicPos
+          : genomicPos > item.genomicEnd
+            ? genomicPos - item.genomicEnd
+            : 0
+      if (dx < bestDist) {
+        bestDist = dx
+        bestIdx = idx
       }
-    },
-    [getFeatureAtMouse, model],
-  )
+    }
+
+    if (bestIdx >= 0) {
+      const item = cellData.flatbushItems[bestIdx]!
+      const info = cellData.featureGenotypeMap[item.featureId]!
+      const genotype = info.genotypes[item.sourceName]!
+      return {
+        genotype,
+        alleles: makeSimpleAltString(genotype, info.ref, info.alt),
+        featureName: info.name,
+        description:
+          info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
+        length: getBpDisplayStr(info.length),
+        name: item.sourceName,
+        featureId: item.featureId,
+      }
+    }
+    return undefined
+  }
 
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const height = model.availableHeight
@@ -285,7 +187,27 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvasRefCallback}
+        ref={canvas => {
+          if (!canvas) {
+            return
+          }
+          if (!rendererRef.current) {
+            const renderer = VariantRenderer.getOrCreate(canvas)
+            rendererRef.current = renderer
+            renderer
+              .init()
+              .then(ok => {
+                if (!ok) {
+                  setError(new Error('GPU initialization failed'))
+                } else {
+                  setReady(true)
+                }
+              })
+              .catch((e: unknown) => {
+                setError(e)
+              })
+          }
+        }}
         style={{
           width,
           height,
@@ -297,10 +219,48 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
         }}
         width={width}
         height={height}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
-        onContextMenu={handleContextMenu}
+        onMouseMove={e => {
+          const rect = e.currentTarget.getBoundingClientRect()
+          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
+          const key = result
+            ? `${result.name}:${result.genotype}:${result.featureId}`
+            : undefined
+          if (key !== lastHoveredRef.current) {
+            lastHoveredRef.current = key
+            if (result) {
+              const { featureId, ...tooltip } = result
+              model.setHoveredGenotype(tooltip)
+            } else {
+              model.setHoveredGenotype(undefined)
+            }
+          }
+        }}
+        onMouseLeave={() => {
+          if (lastHoveredRef.current !== undefined) {
+            lastHoveredRef.current = undefined
+            model.setHoveredGenotype(undefined)
+          }
+        }}
+        onClick={e => {
+          const rect = e.currentTarget.getBoundingClientRect()
+          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
+          const feature = result
+            ? model.featuresVolatile?.find(f => f.id() === result.featureId)
+            : undefined
+          if (feature) {
+            model.selectFeature(feature)
+          }
+        }}
+        onContextMenu={e => {
+          const rect = e.currentTarget.getBoundingClientRect()
+          const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
+          const feature = result
+            ? model.featuresVolatile?.find(f => f.id() === result.featureId)
+            : undefined
+          if (feature) {
+            model.setContextMenuFeature(feature)
+          }
+        }}
       />
       <LoadingOverlay
         statusMessage={

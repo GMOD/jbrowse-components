@@ -441,7 +441,12 @@ export default function stateModelFactory(
                   self.summaryScoreMode,
                   entries,
                 )
-                if (range) {
+                if (
+                  range &&
+                  (!self.visibleScoreRange ||
+                    range[0] !== self.visibleScoreRange[0] ||
+                    range[1] !== self.visibleScoreRange[1])
+                ) {
                   self.setVisibleScoreRange(range)
                 }
               },
