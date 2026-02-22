@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -10,15 +11,17 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionWebGLDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
+import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import {
   computeVisibleScoreRange,
@@ -28,6 +31,10 @@ import {
 
 import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
+import type {
+  ClusterHierarchyNode,
+  HoveredTreeNode,
+} from './components/treeTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -43,6 +50,9 @@ const WebGLMultiWiggleComponent = lazy(
 )
 const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+const WiggleClusterDialog = lazy(
+  () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
+)
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -58,6 +68,10 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         resolution: types.optional(types.number, 1),
         layout: types.frozen([] as Source[]),
+        clusterTree: types.maybe(types.string),
+        treeAreaWidth: types.optional(types.number, 80),
+        showTreeSetting: types.maybe(types.boolean),
+        subtreeFilter: types.maybe(types.array(types.string)),
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
@@ -87,6 +101,9 @@ export default function stateModelFactory(
       sourcesVolatile: [] as SourceInfo[],
       visibleScoreRange: undefined as [number, number] | undefined,
       loadedBpPerPx: new Map<number, number>(),
+      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
+      treeCanvas: undefined as HTMLCanvasElement | undefined,
+      mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -97,16 +114,34 @@ export default function stateModelFactory(
         return { notReady: true }
       },
 
+      get sourcesWithoutLayout() {
+        return self.sourcesVolatile.map(s => ({
+          source: s.name,
+          ...s,
+        }))
+      },
+
       get sources(): Source[] {
         const sourceMap = Object.fromEntries(
           self.sourcesVolatile.map(s => [s.name, s]),
         )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        return iter.map(s => ({
+        let result = iter.map(s => ({
           source: s.name,
           ...sourceMap[s.name],
           ...s,
         }))
+
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          result = result.filter(s => filterSet.has(s.name))
+        }
+        return result
+      },
+
+      get adapterConfig() {
+        const track = getContainingTrack(self)
+        return getConf(track, 'adapter')
       },
 
       get hasResolution() {
@@ -179,8 +214,7 @@ export default function stateModelFactory(
       },
 
       get numSources() {
-        const firstData = self.rpcDataMap.values().next()
-        return firstData.done ? 0 : firstData.value.sources.length
+        return this.sources.length
       },
 
       get rowHeight() {
@@ -216,6 +250,73 @@ export default function stateModelFactory(
         return rowHeight < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
+      },
+    }))
+    .views(self => ({
+      get showTree() {
+        return self.showTreeSetting ?? true
+      },
+
+      get root() {
+        const newick = self.clusterTree
+        if (!newick) {
+          return undefined
+        }
+        const tree = fromNewick(newick)
+        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
+          .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
+          .sort(
+            (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
+              (a.data.height || 1) - (b.data.height || 1),
+          )
+
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
+            if (!node.children?.length) {
+              return [node.data.name]
+            }
+            return node.children.flatMap(child => getLeafNames(child))
+          }
+          const findSubtree = (
+            node: ClusterHierarchyNode,
+          ): ClusterHierarchyNode | undefined => {
+            const leafNames = getLeafNames(node)
+            if (
+              leafNames.length === filterSet.size &&
+              leafNames.every(name => filterSet.has(name))
+            ) {
+              return node
+            }
+            if (node.children) {
+              for (const child of node.children) {
+                const found = findSubtree(child)
+                if (found) {
+                  return found
+                }
+              }
+            }
+            return undefined
+          }
+          const subtree = findSubtree(root)
+          if (subtree) {
+            root = subtree
+          }
+        }
+        return root
+      },
+    }))
+    .views(self => ({
+      get hierarchy() {
+        const r = self.root
+        if (!r || !self.sources?.length) {
+          return undefined
+        }
+        const clust = cluster()
+        clust.size([self.rowHeight * self.sources.length, self.treeAreaWidth])
+        clust.separation(() => 1)
+        clust(r)
+        return r
       },
     }))
     .actions(self => ({
@@ -254,12 +355,52 @@ export default function stateModelFactory(
         self.sourcesVolatile = sources
       },
 
-      setLayout(layout: Source[]) {
+      setLayout(layout: Source[], clearTree = true) {
+        const orderChanged =
+          clearTree &&
+          self.clusterTree &&
+          self.layout.length === layout.length &&
+          (self.layout as Source[]).some(
+            (source: Source, idx: number) => source.name !== layout[idx]?.name,
+          )
+
         self.layout = layout
+        if (orderChanged) {
+          self.clusterTree = undefined
+        }
       },
 
       clearLayout() {
         self.layout = []
+        self.clusterTree = undefined
+      },
+
+      setClusterTree(tree?: string) {
+        self.clusterTree = tree
+      },
+
+      setTreeAreaWidth(width: number) {
+        self.treeAreaWidth = width
+      },
+
+      setShowTree(arg: boolean) {
+        self.showTreeSetting = arg
+      },
+
+      setSubtreeFilter(names?: string[]) {
+        self.subtreeFilter = names ? cast(names) : undefined
+      },
+
+      setHoveredTreeNode(node?: HoveredTreeNode) {
+        self.hoveredTreeNode = node
+      },
+
+      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
+        self.treeCanvas = ref || undefined
+      },
+
+      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverCanvas = ref || undefined
       },
 
       setScaleType(scaleType: string) {
@@ -380,8 +521,19 @@ export default function stateModelFactory(
       let prevResolution: number | undefined
 
       return {
-        afterAttach() {
+        async afterAttach() {
           superAfterAttach()
+
+          try {
+            const { setupTreeDrawingAutorun } = await import(
+              './treeDrawingAutorun.ts'
+            )
+            if (isAlive(self)) {
+              setupTreeDrawingAutorun(self)
+            }
+          } catch (e) {
+            console.error(e)
+          }
 
           addDisposer(
             self,
@@ -507,6 +659,43 @@ export default function stateModelFactory(
             },
           },
           {
+            label: 'Cluster rows by score',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                WiggleClusterDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
+          {
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              {
+                label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
+                type: 'checkbox',
+                checked: self.showTree,
+                disabled: !self.clusterTree,
+                onClick: () => {
+                  self.setShowTree(!self.showTree)
+                },
+              },
+              ...(self.subtreeFilter?.length
+                ? [
+                    {
+                      label: 'Clear subtree filter',
+                      onClick: () => {
+                        self.setSubtreeFilter(undefined)
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+          {
             label: 'Rendering type',
             subMenu: [
               {
@@ -627,6 +816,10 @@ export default function stateModelFactory(
       }
       const {
         layout,
+        clusterTree,
+        treeAreaWidth,
+        showTreeSetting,
+        subtreeFilter,
         scaleTypeSetting,
         minScoreSetting,
         maxScoreSetting,
@@ -637,6 +830,10 @@ export default function stateModelFactory(
       return {
         ...rest,
         ...(layout.length > 0 ? { layout } : {}),
+        ...(clusterTree !== undefined ? { clusterTree } : {}),
+        ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
+        ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
+        ...(subtreeFilter?.length ? { subtreeFilter } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),

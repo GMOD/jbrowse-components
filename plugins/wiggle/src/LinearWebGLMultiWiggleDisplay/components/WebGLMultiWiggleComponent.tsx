@@ -9,7 +9,9 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { darkenColor, lightenColor, parseColor } from '../../shared/webglUtils.ts'
 import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
+import TreeSidebar from './TreeSidebar.tsx'
 
+import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
 import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
@@ -31,12 +33,25 @@ export interface MultiWiggleDisplayModel {
   renderingType: string
   summaryScoreMode: string
   numSources: number
+  rowHeight: number
   rowHeightTooSmallForScalebar: boolean
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
   statusMessage?: string
   scalebarOverlapLeft: number
+  hierarchy?: ClusterHierarchyNode
+  treeAreaWidth: number
+  showTree: boolean
+  subtreeFilter?: string[]
+  hoveredTreeNode?: HoveredTreeNode
+  treeCanvas?: HTMLCanvasElement
+  mouseoverCanvas?: HTMLCanvasElement
+  setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
+  setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
+  setHoveredTreeNode: (node?: HoveredTreeNode) => void
+  setTreeAreaWidth: (width: number) => void
+  setSubtreeFilter: (names?: string[]) => void
 }
 
 const ROW_PADDING = 2
@@ -262,6 +277,8 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     displaySources.length > 0
       ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10
       : 0
+  const treeShowing = model.showTree && !!model.hierarchy
+  const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
   return (
     <div style={{ position: 'relative', width: totalWidth, height }}>
@@ -289,7 +306,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         }}
       >
         {displaySources.length > 1 ? (
-          <>
+          <g transform={`translate(${labelOffset} 0)`}>
             {displaySources.map((source, idx) => {
               const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
               const boxHeight = Math.min(20, rowHeight)
@@ -313,7 +330,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
                 </g>
               )
             })}
-          </>
+          </g>
         ) : null}
 
         {model.ticks ? (
@@ -333,6 +350,8 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
           )
         ) : null}
       </svg>
+
+      <TreeSidebar model={model} />
 
       <LoadingOverlay
         statusMessage={model.statusMessage || 'Loading'}
