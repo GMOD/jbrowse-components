@@ -35,6 +35,7 @@ const uint HP_LOW_MASK = 4095u;
 const int RENDERING_TYPE_XYPLOT = 0;
 const int RENDERING_TYPE_DENSITY = 1;
 const int RENDERING_TYPE_LINE = 2;
+const int RENDERING_TYPE_SCATTER = 3;
 const int SCALE_TYPE_LOG = 1;
 const uint VERTICES_PER_INSTANCE = 6u;
 
@@ -108,6 +109,10 @@ void main() {
     bool local_5 = false;
     bool local_6 = false;
     bool local_7 = false;
+    bool local_8 = false;
+    bool local_9 = false;
+    bool local_10 = false;
+    bool local_11 = false;
     vec3 color = vec3(0.0);
     VertexOutput out_ = VertexOutput(vec4(0.0), vec4(0.0));
     Instance inst = _fetch_Instance(int(instance_index));
@@ -212,68 +217,106 @@ void main() {
             float sy_bot = (1.0 - (row_bot * px_to_clip));
             sy = mix(sy_bot, sy_top, local_y);
         } else {
-            if (!((vid == 0u))) {
-                local_4 = (vid == 2u);
+            int _e144 = _group_0_binding_1_vs.rendering_type;
+            if ((_e144 == RENDERING_TYPE_SCATTER)) {
+                if (!((vid == 0u))) {
+                    local_4 = (vid == 2u);
+                } else {
+                    local_4 = true;
+                }
+                bool _e155 = local_4;
+                if (!(_e155)) {
+                    local_5 = (vid == 3u);
+                } else {
+                    local_5 = true;
+                }
+                bool _e162 = local_5;
+                float local_x_1 = (_e162 ? 0.0 : 1.0);
+                if (!((vid == 0u))) {
+                    local_6 = (vid == 1u);
+                } else {
+                    local_6 = true;
+                }
+                bool _e174 = local_6;
+                if (!(_e174)) {
+                    local_7 = (vid == 4u);
+                } else {
+                    local_7 = true;
+                }
+                bool _e181 = local_7;
+                float local_y_1 = (_e181 ? 0.0 : 1.0);
+                vec2 _e188 = _group_0_binding_1_vs.domain_y;
+                int _e191 = _group_0_binding_1_vs.scale_type;
+                float _e192 = score_to_y(inst.score, _e188, _e44, _e191);
+                float score_y_1 = (_e192 + _e49);
+                float sy_top_1 = (1.0 - ((score_y_1 - 1.0) * px_to_clip));
+                float sy_bot_1 = (1.0 - ((score_y_1 + 1.0) * px_to_clip));
+                sx = mix(_e27, _e34, local_x_1);
+                sy = mix(sy_bot_1, sy_top_1, local_y_1);
             } else {
-                local_4 = true;
+                if (!((vid == 0u))) {
+                    local_8 = (vid == 2u);
+                } else {
+                    local_8 = true;
+                }
+                bool _e214 = local_8;
+                if (!(_e214)) {
+                    local_9 = (vid == 3u);
+                } else {
+                    local_9 = true;
+                }
+                bool _e221 = local_9;
+                float local_x_2 = (_e221 ? 0.0 : 1.0);
+                if (!((vid == 0u))) {
+                    local_10 = (vid == 1u);
+                } else {
+                    local_10 = true;
+                }
+                bool _e233 = local_10;
+                if (!(_e233)) {
+                    local_11 = (vid == 4u);
+                } else {
+                    local_11 = true;
+                }
+                bool _e240 = local_11;
+                float local_y_2 = (_e240 ? 0.0 : 1.0);
+                sx = mix(_e27, _e34, local_x_2);
+                vec2 _e248 = _group_0_binding_1_vs.domain_y;
+                int _e251 = _group_0_binding_1_vs.scale_type;
+                float _e252 = score_to_y(inst.score, _e248, _e44, _e251);
+                vec2 _e256 = _group_0_binding_1_vs.domain_y;
+                int _e259 = _group_0_binding_1_vs.scale_type;
+                float _e260 = score_to_y(0.0, _e256, _e44, _e259);
+                float y_top = (min(_e252, _e260) + _e49);
+                float y_bot = (max(_e252, _e260) + _e49);
+                float sy_top_2 = (1.0 - (y_top * px_to_clip));
+                float sy_bot_2 = (1.0 - (y_bot * px_to_clip));
+                sy = mix(sy_bot_2, sy_top_2, local_y_2);
             }
-            bool _e150 = local_4;
-            if (!(_e150)) {
-                local_5 = (vid == 3u);
-            } else {
-                local_5 = true;
-            }
-            bool _e157 = local_5;
-            float local_x_1 = (_e157 ? 0.0 : 1.0);
-            if (!((vid == 0u))) {
-                local_6 = (vid == 1u);
-            } else {
-                local_6 = true;
-            }
-            bool _e169 = local_6;
-            if (!(_e169)) {
-                local_7 = (vid == 4u);
-            } else {
-                local_7 = true;
-            }
-            bool _e176 = local_7;
-            float local_y_1 = (_e176 ? 0.0 : 1.0);
-            sx = mix(_e27, _e34, local_x_1);
-            vec2 _e184 = _group_0_binding_1_vs.domain_y;
-            int _e187 = _group_0_binding_1_vs.scale_type;
-            float _e188 = score_to_y(inst.score, _e184, _e44, _e187);
-            vec2 _e192 = _group_0_binding_1_vs.domain_y;
-            int _e195 = _group_0_binding_1_vs.scale_type;
-            float _e196 = score_to_y(0.0, _e192, _e44, _e195);
-            float y_top = (min(_e188, _e196) + _e49);
-            float y_bot = (max(_e188, _e196) + _e49);
-            float sy_top_1 = (1.0 - (y_top * px_to_clip));
-            float sy_bot_1 = (1.0 - (y_bot * px_to_clip));
-            sy = mix(sy_bot_1, sy_top_1, local_y_1);
         }
     }
-    int _e211 = _group_0_binding_1_vs.rendering_type;
-    if ((_e211 == RENDERING_TYPE_DENSITY)) {
-        vec2 _e217 = _group_0_binding_1_vs.domain_y;
-        int _e220 = _group_0_binding_1_vs.scale_type;
-        float _e221 = normalize_score(inst.score, _e217, _e220);
-        vec2 _e225 = _group_0_binding_1_vs.domain_y;
-        int _e228 = _group_0_binding_1_vs.scale_type;
-        float _e229 = normalize_score(0.0, _e225, _e228);
-        float max_dist = max(_e229, (1.0 - _e229));
-        float t = (abs((_e221 - _e229)) / max(max_dist, 0.0001));
+    int _e275 = _group_0_binding_1_vs.rendering_type;
+    if ((_e275 == RENDERING_TYPE_DENSITY)) {
+        vec2 _e281 = _group_0_binding_1_vs.domain_y;
+        int _e284 = _group_0_binding_1_vs.scale_type;
+        float _e285 = normalize_score(inst.score, _e281, _e284);
+        vec2 _e289 = _group_0_binding_1_vs.domain_y;
+        int _e292 = _group_0_binding_1_vs.scale_type;
+        float _e293 = normalize_score(0.0, _e289, _e292);
+        float max_dist = max(_e293, (1.0 - _e293));
+        float t = (abs((_e285 - _e293)) / max(max_dist, 0.0001));
         color = mix(vec3(1.0), inst_color, t);
     } else {
         color = inst_color;
     }
-    float _e243 = sx;
-    float _e244 = sy;
-    out_.position = vec4(_e243, _e244, 0.0, 1.0);
-    vec3 _e249 = color;
-    out_.color = vec4(_e249, 1.0);
-    VertexOutput _e252 = out_;
-    gl_Position = _e252.position;
-    _vs2fs_location0 = _e252.color;
+    float _e307 = sx;
+    float _e308 = sy;
+    out_.position = vec4(_e307, _e308, 0.0, 1.0);
+    vec3 _e313 = color;
+    out_.color = vec4(_e313, 1.0);
+    VertexOutput _e316 = out_;
+    gl_Position = _e316.position;
+    _vs2fs_location0 = _e316.color;
     return;
 }
 
@@ -292,6 +335,7 @@ const uint HP_LOW_MASK = 4095u;
 const int RENDERING_TYPE_XYPLOT = 0;
 const int RENDERING_TYPE_DENSITY = 1;
 const int RENDERING_TYPE_LINE = 2;
+const int RENDERING_TYPE_SCATTER = 3;
 const int SCALE_TYPE_LOG = 1;
 const uint VERTICES_PER_INSTANCE = 6u;
 
@@ -305,3 +349,4 @@ void main() {
 }
 
 `
+

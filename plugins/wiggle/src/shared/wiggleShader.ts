@@ -4,6 +4,7 @@ export const VERTICES_PER_INSTANCE = 6
 export const RENDERING_TYPE_XYPLOT = 0
 export const RENDERING_TYPE_DENSITY = 1
 export const RENDERING_TYPE_LINE = 2
+export const RENDERING_TYPE_SCATTER = 3
 export const SCALE_TYPE_LINEAR = 0
 export const SCALE_TYPE_LOG = 1
 
@@ -12,6 +13,7 @@ const HP_LOW_MASK: u32 = 0xFFFu;
 const RENDERING_TYPE_XYPLOT: i32 = 0;
 const RENDERING_TYPE_DENSITY: i32 = 1;
 const RENDERING_TYPE_LINE: i32 = 2;
+const RENDERING_TYPE_SCATTER: i32 = 3;
 const SCALE_TYPE_LOG: i32 = 1;
 const VERTICES_PER_INSTANCE: u32 = 6u;
 
@@ -133,6 +135,16 @@ fn vs_main(
     let row_bot = row_top + row_height;
     let sy_top = 1.0 - row_top * px_to_clip;
     let sy_bot = 1.0 - row_bot * px_to_clip;
+    sy = mix(sy_bot, sy_top, local_y);
+  } else if (u.rendering_type == RENDERING_TYPE_SCATTER) {
+    let local_x = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
+    let local_y = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
+
+    let score_y = score_to_y(inst.score, u.domain_y, row_height, u.scale_type) + row_top;
+    let sy_top = 1.0 - (score_y - 1.0) * px_to_clip;
+    let sy_bot = 1.0 - (score_y + 1.0) * px_to_clip;
+
+    sx = mix(sx1, sx2, local_x);
     sy = mix(sy_bot, sy_top, local_y);
   } else {
     let local_x = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);

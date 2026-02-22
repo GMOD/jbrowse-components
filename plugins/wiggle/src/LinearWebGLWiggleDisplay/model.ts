@@ -505,6 +505,14 @@ export default function stateModelFactory(
                   self.setRenderingType('line')
                 },
               },
+              {
+                label: 'Scatter',
+                type: 'radio',
+                checked: self.renderingType === 'scatter',
+                onClick: () => {
+                  self.setRenderingType('scatter')
+                },
+              },
             ],
           },
           ...(self.hasResolution

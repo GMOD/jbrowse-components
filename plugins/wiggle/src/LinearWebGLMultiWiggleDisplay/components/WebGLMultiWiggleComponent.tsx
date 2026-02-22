@@ -11,6 +11,7 @@ import { parseColor } from '../../shared/webglUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
+  RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -53,6 +54,9 @@ function renderingTypeToInt(type: string) {
   }
   if (type === 'multirowline') {
     return RENDERING_TYPE_LINE
+  }
+  if (type === 'multirowscatter') {
+    return RENDERING_TYPE_SCATTER
   }
   return RENDERING_TYPE_XYPLOT
 }

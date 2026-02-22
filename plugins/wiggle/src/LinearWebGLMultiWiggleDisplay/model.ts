@@ -535,6 +535,14 @@ export default function stateModelFactory(
                   self.setRenderingType('multirowline')
                 },
               },
+              {
+                label: 'Multi-row scatter',
+                type: 'radio',
+                checked: self.renderingType === 'multirowscatter',
+                onClick: () => {
+                  self.setRenderingType('multirowscatter')
+                },
+              },
             ],
           },
           ...(self.hasResolution

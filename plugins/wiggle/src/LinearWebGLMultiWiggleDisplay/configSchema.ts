@@ -48,6 +48,7 @@ export default ConfigurationSchema(
         'multirowxy',
         'multirowdensity',
         'multirowline',
+        'multirowscatter',
       ]),
       defaultValue: 'multirowxy',
       description: 'Default rendering type',
