@@ -1,5 +1,5 @@
 export const INSTANCE_STRIDE = 8
-export const UNIFORM_SIZE = 48
+export const UNIFORM_SIZE = 64
 export const VERTICES_PER_INSTANCE = 6
 export const RENDERING_TYPE_XYPLOT = 0
 export const RENDERING_TYPE_DENSITY = 1
@@ -80,6 +80,7 @@ struct Uniforms {
   domain_y: vec2f,
   row_padding: f32,
   zero: f32, // MUST be 0.0 at runtime — used by hp_to_clip_x to create runtime infinity
+  viewport_width: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
@@ -103,7 +104,11 @@ fn vs_main(
   let split_start = hp_split_uint(abs_start);
   let split_end = hp_split_uint(abs_end);
   let sx1 = hp_to_clip_x(split_start, u.bp_range_x, u.zero);
-  let sx2 = hp_to_clip_x(split_end, u.bp_range_x, u.zero);
+  var sx2 = hp_to_clip_x(split_end, u.bp_range_x, u.zero);
+  let min_clip_w = 3.0 / u.viewport_width;
+  if (sx2 - sx1 < min_clip_w) {
+    sx2 = sx1 + min_clip_w;
+  }
 
   let row_height = get_row_height(u.canvas_height, u.num_rows, u.row_padding);
   let row_top = get_row_top(inst.row_index, row_height, u.row_padding);

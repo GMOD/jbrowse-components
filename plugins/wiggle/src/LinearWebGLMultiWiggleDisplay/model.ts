@@ -642,6 +642,7 @@ export default function stateModelFactory(
         minScoreSetting,
         maxScoreSetting,
         renderingTypeSetting,
+        summaryScoreModeSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -651,6 +652,7 @@ export default function stateModelFactory(
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
         ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
+        ...(summaryScoreModeSetting !== undefined ? { summaryScoreModeSetting } : {}),
       } as typeof snap
     })
 }
