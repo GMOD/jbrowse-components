@@ -78,14 +78,11 @@ const ScoreLegend = observer(function ScoreLegend({
   canvasWidth: number
 }) {
   const { ticks, scaleType } = model
-  if (!ticks) {
-    return null
-  }
-  const legend = `[${ticks.values[0]?.toFixed(0)}-${ticks.values[1]?.toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
+  const legend = `[${ticks!.values[0]?.toFixed(0)}-${ticks!.values[1]?.toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
   const len = measureText(legend, 12)
   const xpos = canvasWidth - len - 60
   return (
-    <>
+    <g>
       <rect
         x={xpos - 3}
         y={0}
@@ -96,7 +93,7 @@ const ScoreLegend = observer(function ScoreLegend({
       <text y={12} x={xpos} fontSize={12}>
         {legend}
       </text>
-    </>
+    </g>
   )
 })
 
@@ -313,20 +310,20 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         ) : null}
 
         {model.ticks ? (
-          <g transform={`translate(${scalebarLeft || 50} 0)`}>
-            {model.rowHeightTooSmallForScalebar ? (
-              <ScoreLegend model={model} canvasWidth={totalWidth} />
-            ) : (
-              Array.from({ length: numSources }).map((_, idx) => (
+          model.rowHeightTooSmallForScalebar ? (
+            <ScoreLegend model={model} canvasWidth={totalWidth} />
+          ) : (
+            <g transform={`translate(${scalebarLeft || 50} 0)`}>
+              {Array.from({ length: numSources }).map((_, idx) => (
                 <g
                   transform={`translate(0 ${rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)})`}
                   key={`scalebar-${idx}`}
                 >
                   <YScaleBar model={model} />
                 </g>
-              ))
-            )}
-          </g>
+              ))}
+            </g>
+          )
         ) : null}
       </svg>
 
