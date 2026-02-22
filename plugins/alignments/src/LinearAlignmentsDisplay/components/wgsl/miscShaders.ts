@@ -11,12 +11,22 @@ import {
 
 const ARC_PREAMBLE = PREAMBLE
 
+// WARNING: DO NOT DELETE THIS COMMENT.
+// The arc/sashimi geometry and AA formula in this file MUST be kept in sync with
+// the hand-written WebGL GLSL in shaders/arcShaders.ts (ARC_VERTEX_SHADER /
+// ARC_FRAGMENT_SHADER / SASHIMI_ARC_VERTEX_SHADER / SASHIMI_ARC_FRAGMENT_SHADER).
+// Both implement the same stroke rendering logic:
+//   - vertex: hw = lineWidth * 0.5 + 1.0  (geometry padding)
+//   - fragment: alpha = smoothstep(0.0, aa, hw - d)  (AA formula)
+// If you change either, update the other file to match.
 export const ARC_WGSL = `
 ${ARC_PREAMBLE}
 
 const SEGMENTS: u32 = ${ARC_CURVE_SEGMENTS}u;
+// SYNC(shaders/arcShaders.ts): PI = 3.14159265359
 const PI: f32 = 3.14159265359;
 
+// SYNC(shaders/arcShaders.ts): ArcInst field order must match GLSL in attributes
 struct ArcInst { x1: f32, x2: f32, color_type: f32, is_arc: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<ArcInst>;
 
@@ -55,6 +65,7 @@ fn eval_arc(t: f32, inst: ArcInst) -> vec2f {
     x_bp = cx + cos(angle) * radius;
     y_px = select(0.0, sin(angle) * absrad_px * (dest_y / absrad_px), absrad_px > 0.0);
   } else {
+    // SYNC(shaders/arcShaders.ts): cubic Bezier basis mt3, 3*mt2*t, 3*mt*t2, t3
     let mt = 1.0 - t; let mt2 = mt*mt; let mt3 = mt2*mt;
     let t2 = t*t; let t3 = t2*t;
     x_bp = mt3*inst.x1 + 3.0*mt2*t*inst.x1 + 3.0*mt*t2*inst.x2 + t3*inst.x2;
@@ -80,6 +91,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let tang = p1 - p0;
   let tlen = length(tang);
   var normal: vec2f;
+  // SYNC(shaders/arcShaders.ts): tangent threshold 0.001, halfWidth = lineWidth*0.5+1.0
   if tlen > 0.001 { let tn = tang / tlen; normal = vec2f(-tn.y, tn.x); }
   else { normal = vec2f(0.0, 1.0); }
 
@@ -96,6 +108,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
 @fragment
 fn fs_main(in: ArcOut) -> @location(0) vec4f {
+  // SYNC(shaders/arcShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
   let hw = uf(26u) * 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
@@ -142,6 +155,7 @@ ${ARC_PREAMBLE}
 
 const SEGMENTS: u32 = ${ARC_CURVE_SEGMENTS}u;
 
+// SYNC(shaders/arcShaders.ts): SashimiInst field order must match GLSL in attributes
 struct SashimiInst { x1: f32, x2: f32, color_type: f32, line_width: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<SashimiInst>;
 
@@ -157,6 +171,7 @@ fn eval_sashimi(t: f32, inst: SashimiInst) -> vec2f {
   let t2 = t*t; let t3 = t2*t;
   let x_bp = mt3*inst.x1 + 3.0*mt2*t*inst.x1 + 3.0*mt*t2*inst.x2 + t3*inst.x2;
   let ch = uf(16u);
+  // SYNC(shaders/arcShaders.ts): destY = coverageHeight * (0.8/0.75), baseline at 0.9*covH
   let dest_y = ch * (0.8 / 0.75);
   let y_px = 3.0*mt2*t*dest_y + 3.0*mt*t2*dest_y;
   let px_per_bp = uf(25u) / uf(2u);
@@ -179,6 +194,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let tang = p1 - p0;
   let tlen = length(tang);
   var normal: vec2f;
+  // SYNC(shaders/arcShaders.ts): tangent threshold 0.001, halfWidth = lineWidth*0.5+1.0
   if tlen > 0.001 { let tn = tang / tlen; normal = vec2f(-tn.y, tn.x); }
   else { normal = vec2f(0.0, 1.0); }
 
@@ -196,6 +212,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
 @fragment
 fn fs_main(in: SashimiOut) -> @location(0) vec4f {
+  // SYNC(shaders/arcShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
   let hw = in.lw * 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
@@ -208,6 +225,7 @@ export const CONNECTING_LINE_WGSL = `
 ${ARC_PREAMBLE}
 ${SIMPLE_VERTEX_OUTPUT}
 
+// SYNC(shaders/connectingLineShaders.ts): ConnectingLineInst field order must match GLSL in attributes
 struct ConnLineInst { start_off: u32, end_off: u32, y: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<ConnLineInst>;
 
@@ -233,6 +251,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy_bot = 1.0 - y_bot * px2clip;
 
   out.position = vec4f(mix(sx1, sx2, lx), mix(sy_bot, sy_top, ly), 0.0, 1.0);
+  // SYNC(shaders/connectingLineShaders.ts): line color vec4(0,0,0,0.45), 1px tall with floor snapping
   out.color = vec4f(0.0, 0.0, 0.0, 0.45);
   return out;
 }

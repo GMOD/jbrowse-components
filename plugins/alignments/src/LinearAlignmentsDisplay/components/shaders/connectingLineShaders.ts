@@ -7,6 +7,7 @@ export const CONNECTING_LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/miscShaders.ts): ConnectingLineInst struct { start_off, end_off, y }
 in uvec2 a_position; // [startOffset, endOffset] from regionStart
 in float a_y;        // row number
 
@@ -47,6 +48,7 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
   // Plain grey line matching canvas LinearReadCloudDisplay (#6665)
+  // SYNC(wgsl/miscShaders.ts): line color vec4(0,0,0,0.45), 1px tall with floor snapping
   v_color = vec4(0, 0, 0, 0.45);
 }
 `

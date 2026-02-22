@@ -3,6 +3,7 @@
 export const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
+// SYNC(wgsl/coverageShaders.ts): CovInst struct { position, depth }
 in float a_position;    // position offset from regionStart
 in float a_depth;       // normalized depth (0-1, against per-region max)
 
@@ -30,7 +31,7 @@ void main() {
   float x1 = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
   float x2 = (a_position + u_binSize - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
 
-  // Ensure minimum width of 1 pixel
+  // SYNC(wgsl/coverageShaders.ts): min width enforcement 2.0/canvasWidth
   float minWidth = 2.0 / u_canvasWidth;
   if (x2 - x1 < minWidth) {
     float mid = (x1 + x2) * 0.5;
@@ -43,6 +44,7 @@ void main() {
   // Y: coverage area at top of canvas with offset padding
   // Effective drawing area is from offset to coverageHeight-offset
   // depthScale corrects for nice() domain expansion and multi-region max differences
+  // SYNC(wgsl/coverageShaders.ts): effectiveHeight, coverageBottom, depthScale formulas
   float effectiveHeight = u_coverageHeight - 2.0 * u_coverageYOffset;
   float coverageBottom = 1.0 - ((u_coverageHeight - u_coverageYOffset) / u_canvasHeight) * 2.0;
   float barTop = coverageBottom + (a_depth * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
@@ -67,6 +69,7 @@ void main() {
 export const SNP_COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
+// SYNC(wgsl/coverageShaders.ts): SnpCovInst struct { position, y_offset, seg_height, color_type }
 in float a_position;       // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
@@ -143,6 +146,7 @@ void main() {
 export const MOD_COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
+// SYNC(wgsl/coverageShaders.ts): ModCovInst struct { position, y_offset, seg_height, packed_color }
 in float a_position;       // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
@@ -203,6 +207,7 @@ void main() {
 export const NONCOV_HISTOGRAM_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
+// SYNC(wgsl/coverageShaders.ts): NoncovInst struct { position, y_offset, seg_height, color_type }
 in float a_position;      // position offset from regionStart
 in float a_yOffset;       // cumulative height below this segment (normalized 0-1)
 in float a_segmentHeight; // height of this segment (normalized 0-1)
@@ -274,6 +279,7 @@ void main() {
 export const INDICATOR_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
+// SYNC(wgsl/coverageShaders.ts): IndicatorInst struct { position, color_type }
 in float a_position;   // position offset from regionStart
 in float a_colorType;  // 1=insertion, 2=softclip, 3=hardclip (dominant type)
 
@@ -296,6 +302,7 @@ void main() {
   float cx = (a_position - u_visibleRange.x) / domainWidth * 2.0 - 1.0;
 
   // Triangle dimensions in clip space
+  // SYNC(wgsl/coverageShaders.ts): indicator triangle 7px wide, 4.5px tall
   float triangleWidth = 7.0 / u_canvasWidth * 2.0;  // 7px wide
   float triangleHeight = 4.5 / u_canvasHeight * 2.0; // 4.5px tall
 

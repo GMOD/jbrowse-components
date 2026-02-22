@@ -8,6 +8,7 @@ export function splitPositionWithFrac(value: number): [number, number] {
 }
 
 export const HP_GLSL_FUNCTIONS = `
+// SYNC(wgsl/common.ts): HP_LOW_MASK=0xFFF, hpSplitUint/hpToClipX/hpScaleLinear must match hp_split_uint/hp_to_clip_x/hp_scale_linear
 const uint HP_LOW_MASK = 0xFFFu;
 
 // WARNING: u_zero MUST be 0.0 at runtime. Produces runtime infinity (1.0/0.0)

@@ -22,6 +22,7 @@ export const GAP_WGSL = `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}
 
+// SYNC(shaders/cigarShaders.ts): GapInst field order must match GLSL; gap types deletion=0, skip=1
 struct GapInst { start_off: u32, end_off: u32, y: u32, gap_type: u32, frequency: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<GapInst>;
 
@@ -58,6 +59,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy = mix(y_bot, y_top, ly);
   out.position = vec4f(sx, sy, 0.0, 1.0);
 
+  // SYNC(shaders/cigarShaders.ts): deletion sub-pixel alpha = widthPx^2
   var alpha = 1.0;
   if inst.gap_type == 0u {
     let width_px = f32(inst.end_off - inst.start_off) * canvas_width() / domain_len;
@@ -76,6 +78,7 @@ export const MISMATCH_WGSL = `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}
 
+// SYNC(shaders/cigarShaders.ts): MismatchInst field order must match GLSL; base ASCII A=65/97, C=67/99, G=71/103, T=84/116
 struct MismatchInst { position: u32, y: u32, base: u32, frequency: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<MismatchInst>;
 
@@ -92,6 +95,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let pos = f32(inst.position);
   let px_per_bp = canvas_width() / domain_len;
 
+  // SYNC(shaders/cigarShaders.ts): mismatch sub-pixel alpha = pxPerBp
   var alpha = 1.0;
   if px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp; }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
@@ -126,6 +130,7 @@ export const INSERTION_WGSL = `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}
 
+// SYNC(shaders/cigarShaders.ts): InsertionInst field order must match GLSL; serif 3px, text 6px/digit+10px padding
 struct InsertionInst { position: u32, y: u32, length: u32, frequency: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<InsertionInst>;
 
@@ -212,6 +217,7 @@ const CLIP_SHADER_BODY = (colorSlot: number) => `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}
 
+// SYNC(shaders/cigarShaders.ts): ClipInst field order must match GLSL; bar width = max(bpPerPx, min(2*bpPerPx, 1.0))
 struct ClipInst { position: u32, y: u32, length: u32, frequency: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<ClipInst>;
 
@@ -259,6 +265,7 @@ export const MODIFICATION_WGSL = `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}
 
+// SYNC(shaders/cigarShaders.ts): ModInst field order must match GLSL
 struct ModInst { position: u32, y: u32, packed_color: u32, _pad: u32 }
 @group(0) @binding(0) var<storage, read> instances: array<ModInst>;
 

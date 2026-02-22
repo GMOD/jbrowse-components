@@ -12,6 +12,8 @@ export const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/cigarShaders.ts): GapInst struct { start_off, end_off, y, gap_type, frequency }
+// SYNC(wgsl/cigarShaders.ts): gap types deletion=0, skip=1; skip renders as 1px centerline
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in uint a_y;          // pileup row
 in uint a_type;       // 0=deletion, 1=skip
@@ -69,6 +71,7 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
+  // SYNC(wgsl/cigarShaders.ts): deletion sub-pixel alpha = widthPx^2
   float alpha = 1.0;
   if (a_type == 0u) {
     float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / regionLengthBp;
@@ -100,6 +103,8 @@ export const MISMATCH_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/cigarShaders.ts): MismatchInst struct { position, y, base, frequency }
+// SYNC(wgsl/cigarShaders.ts): base ASCII codes A=65/97, C=67/99, G=71/103, T=84/116
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in uint a_base;       // ASCII character code (65='A', 67='C', 71='G', 84='T', etc.)
@@ -138,6 +143,7 @@ void main() {
   float sx1 = px1 / u_canvasWidth * 2.0 - 1.0;
   float sx2 = px2 / u_canvasWidth * 2.0 - 1.0;
 
+  // SYNC(wgsl/cigarShaders.ts): mismatch sub-pixel alpha = pxPerBp
   float alpha = 1.0;
   if (pxPerBp < 1.0 && a_frequency == 0.0) {
     alpha = pxPerBp;
@@ -201,6 +207,7 @@ export const INSERTION_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/cigarShaders.ts): InsertionInst struct { position, y, length, frequency }
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in uint a_length;     // insertion length
@@ -269,7 +276,7 @@ void main() {
   // Convert pixel width to clip space
   float onePixelClip = 2.0 / u_canvasWidth;
   float rectWidthClip = rectWidthPx * 2.0 / u_canvasWidth;
-  // Serifs: 3px wide, 1px tall lines
+  // SYNC(wgsl/cigarShaders.ts): serif 3px wide, text width = 6px/digit + 10px padding
   float tickWidthClip = onePixelClip * 3.0;
 
   // Calculate Y position in pixels (constant height per row)
@@ -358,6 +365,7 @@ export const SOFTCLIP_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/cigarShaders.ts): ClipInst struct { position, y, length, frequency }
 in uint a_position;  // Position offset from regionStart
 in uint a_y;         // pileup row
 in uint a_length;    // clip length
@@ -395,6 +403,7 @@ void main() {
   }
 
   float bpPerPx = 1.0 / pxPerBp;
+  // SYNC(wgsl/cigarShaders.ts): bar width = max(bpPerPx, min(2*bpPerPx, 1.0))
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
 
   float x1 = pos - barWidthBp * 0.5;
@@ -443,6 +452,7 @@ export const HARDCLIP_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/cigarShaders.ts): ClipInst struct { position, y, length, frequency }
 in uint a_position;  // Position offset from regionStart
 in uint a_y;         // pileup row
 in uint a_length;    // clip length
@@ -480,6 +490,7 @@ void main() {
   }
 
   float bpPerPx = 1.0 / pxPerBp;
+  // SYNC(wgsl/cigarShaders.ts): bar width = max(bpPerPx, min(2*bpPerPx, 1.0))
   float barWidthBp = max(bpPerPx, min(2.0 * bpPerPx, 1.0));
 
   float x1 = pos - barWidthBp * 0.5;
@@ -528,6 +539,7 @@ export const MODIFICATION_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/cigarShaders.ts): ModInst struct { position, y, packed_color, _pad }
 in uint a_position;   // Position offset from regionStart
 in uint a_y;          // pileup row
 in vec4 a_color;      // RGBA color (normalized from Uint8)

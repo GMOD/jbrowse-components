@@ -4,6 +4,7 @@ export const READ_WGSL = `
 ${PREAMBLE}
 ${PILEUP_Y}
 
+// SYNC(shaders/readShaders.ts): ReadInst field order must match GLSL in attributes (12 fields)
 struct ReadInst {
   start_off: u32, end_off: u32, y: u32, flags: u32,
   mapq: u32, insert_size: f32, pair_orient: u32, strand: i32,
@@ -20,6 +21,7 @@ struct VertexOutput {
   @location(3) edge_flags: f32,
 }
 
+// SYNC(shaders/readShaders.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
 fn normal_color() -> vec3f { return color3(41u); }
 
 fn strand_color(s: i32) -> vec3f {
@@ -28,6 +30,7 @@ fn strand_color(s: i32) -> vec3f {
   return color3(38u);
 }
 
+// SYNC(shaders/readShaders.ts): MAPQ HSL formula h=mapq/360, s=0.5, l=0.5 with HSL->RGB conversion
 fn mapq_color(mapq: u32) -> vec3f {
   let h = f32(mapq) / 360.0;
   let c = 0.5;
@@ -121,6 +124,7 @@ fn vs_main(
   let sy_bot = yy.y;
   let sy_mid = (sy_top + sy_bot) * 0.5;
 
+  // SYNC(shaders/readShaders.ts): chevron 8px wide, featureHeight>=3.0 threshold, alt calculation
   let chevron_clip = 8.0 / canvas_width() * 2.0;
   let bp_per_px = uf(2u) / canvas_width();
   let chain_mode = ui(14u);
@@ -172,6 +176,7 @@ fn vs_main(
   out.edge_flags = ef;
   out.position = vec4f(sx, sy, 0.0, 1.0);
 
+  // SYNC(shaders/readShaders.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
   if highlight_only == 1 {
     out.color = vec4f(0.0, 0.0, 0.0, 0.4);
   } else {
@@ -195,6 +200,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
       let dy = min(in.local_pos.y, 1.0 - in.local_pos.y) * in.feat_size_px.y;
       edge_dist = min(min(dx_ll, dx_r), dy);
     }
+    // SYNC(shaders/readShaders.ts): edge threshold 1.0px, darkening 0.7, size threshold 4.0px
     if edge_dist < 1.0 && in.feat_size_px.x > 4.0 && in.feat_size_px.y > 4.0 {
       return vec4f(in.color.rgb * 0.7, in.color.a);
     }

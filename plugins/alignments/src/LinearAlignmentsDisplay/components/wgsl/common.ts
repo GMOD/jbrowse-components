@@ -1,3 +1,4 @@
+// SYNC(shaders/utils.ts): HP_LOW_MASK=0xFFF, hp_split_uint/hp_to_clip_x/hp_scale_linear must match hpSplitUint/hpToClipX/hpScaleLinear
 export const HP_WGSL = `
 const HP_LOW_MASK: u32 = 0xFFFu;
 
@@ -33,6 +34,8 @@ fn snap_to_pixel_x(clip_x: f32, canvas_width: f32) -> f32 {
 }
 `
 
+// SYNC(shaders/readShaders.ts, shaders/arcShaders.ts, shaders/cigarShaders.ts, shaders/coverageShaders.ts, shaders/connectingLineShaders.ts):
+// Uniform slot indices below map to named GLSL uniforms. GLSL uses named uniforms; WGSL uses raw[i] via uf()/uu()/ui().
 export const UNIFORM_WGSL = `
 @group(0) @binding(1) var<uniform> raw: array<vec4u, 40>;
 
@@ -120,6 +123,8 @@ export const U_SCROLL_TOP = 28
 export const U_DOMAIN_START = 30
 export const U_DOMAIN_END = 31
 
+// SYNC(shaders/*): Color uniform slots. Each color takes 3 consecutive slots (R,G,B).
+// GLSL maps these to named vec3 uniforms (e.g. u_colorFwdStrand -> slots 32-34).
 export const U_COLOR_FWD = 32
 export const U_COLOR_REV = 35
 export const U_COLOR_NOSTRAND = 38
@@ -146,6 +151,8 @@ export const U_ARC_COLORS = 98
 export const U_ARC_LINE_COLORS = 122
 export const U_SASHIMI_COLORS = 128
 
+// SYNC(shaders/*): Stride constants must match GLSL instance attribute layouts.
+// See individual shader files for field-by-field struct documentation.
 export const READ_STRIDE = 12
 export const GAP_STRIDE = 5
 export const MISMATCH_STRIDE = 4
@@ -163,6 +170,7 @@ export const SASHIMI_STRIDE = 4
 export const ARC_LINE_STRIDE = 4
 export const CONN_LINE_STRIDE = 3
 
+// SYNC(shaders/arcShaders.ts): shared constants
 export const ARC_CURVE_SEGMENTS = 64
 export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2

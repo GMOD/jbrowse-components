@@ -8,6 +8,7 @@ fn vis_range_len() -> f32 { return uf(31u) - uf(30u); }
 fn cov_height() -> f32 { return uf(16u); }
 fn cov_y_offset() -> f32 { return uf(17u); }
 fn depth_scale() -> f32 { return uf(18u); }
+// SYNC(shaders/coverageShaders.ts): effectiveHeight, coverageBottom, depthScale formulas
 fn eff_height() -> f32 { return cov_height() - 2.0 * cov_y_offset(); }
 fn cov_bottom() -> f32 { return 1.0 - ((cov_height() - cov_y_offset()) / canvas_height()) * 2.0; }
 `
@@ -16,6 +17,7 @@ export const COVERAGE_WGSL = `
 ${COV_PREAMBLE}
 ${COV_DOMAIN}
 
+// SYNC(shaders/coverageShaders.ts): CovInst field order must match GLSL; effectiveHeight/depthScale formulas
 struct CovInst { position: f32, depth: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<CovInst>;
 
@@ -47,6 +49,7 @@ export const SNP_COVERAGE_WGSL = `
 ${COV_PREAMBLE}
 ${COV_DOMAIN}
 
+// SYNC(shaders/coverageShaders.ts): SnpCovInst field order must match GLSL
 struct SnpCovInst { position: f32, y_offset: f32, seg_height: f32, color_type: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<SnpCovInst>;
 
@@ -86,6 +89,7 @@ export const MOD_COVERAGE_WGSL = `
 ${COV_PREAMBLE}
 ${COV_DOMAIN}
 
+// SYNC(shaders/coverageShaders.ts): ModCovInst field order must match GLSL
 struct ModCovInst { position: f32, y_offset: f32, seg_height: f32, packed_color: u32 }
 @group(0) @binding(0) var<storage, read> instances: array<ModCovInst>;
 
@@ -125,6 +129,7 @@ ${COV_PREAMBLE}
 fn vis_range() -> vec2f { return vec2f(uf(30u), uf(31u)); }
 fn vis_range_len() -> f32 { return uf(31u) - uf(30u); }
 
+// SYNC(shaders/coverageShaders.ts): NoncovInst field order must match GLSL
 struct NoncovInst { position: f32, y_offset: f32, seg_height: f32, color_type: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<NoncovInst>;
 
@@ -166,6 +171,7 @@ ${COV_PREAMBLE}
 fn vis_range() -> vec2f { return vec2f(uf(30u), uf(31u)); }
 fn vis_range_len() -> f32 { return uf(31u) - uf(30u); }
 
+// SYNC(shaders/coverageShaders.ts): IndicatorInst field order must match GLSL; triangle 7px wide, 4.5px tall
 struct IndicatorInst { position: f32, color_type: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<IndicatorInst>;
 

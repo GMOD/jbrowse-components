@@ -4,6 +4,9 @@ export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
+// SYNC(wgsl/readShader.ts): ReadInst struct field order (12 fields):
+// start_off(u32), end_off(u32), y(u32), flags(u32), mapq(u32), insert_size(f32),
+// pair_orient(u32), strand(i32), tag_r(f32), tag_g(f32), tag_b(f32), chain_supp(u32)
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in float a_y;
 in float a_flags;
@@ -50,6 +53,7 @@ out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=ch
 
 ${HP_GLSL_FUNCTIONS}
 
+// SYNC(wgsl/readShader.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
 // Color scheme 0: normal
 vec3 normalColor() {
   return u_colorPairLR;
@@ -62,6 +66,7 @@ vec3 strandColor(float strand) {
   return u_colorNostrand;
 }
 
+// SYNC(wgsl/readShader.ts): MAPQ HSL formula h=mapq/360, s=0.5, l=0.5 with HSL->RGB conversion
 // Color scheme 2: mapping quality - hsl(mapq, 50%, 50%)
 vec3 mapqColor(float mapq) {
   float h = mapq / 360.0;
@@ -166,7 +171,7 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float syMid = (syTop + syBot) * 0.5;
 
-  // Chevron width: 8px in clip space
+  // SYNC(wgsl/readShader.ts): chevron 8px wide, featureHeight>=3.0 threshold, alt calculation
   float chevronClip = 8.0 / u_canvasWidth * 2.0;
   float regionLengthBp = u_bpRangeX.z;
   float bpPerPx = regionLengthBp / u_canvasWidth;
@@ -237,6 +242,7 @@ void main() {
   v_edgeFlags = edgeFlags;
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
+  // SYNC(wgsl/readShader.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
   if (u_highlightOnlyMode == 1) {
     v_color = vec4(0.0, 0.0, 0.0, 0.4);
     return;
@@ -286,6 +292,7 @@ void main() {
       edgeDist = min(min(dx_left, dx_right), dy);
     }
 
+    // SYNC(wgsl/readShader.ts): edge threshold 1.0px, darkening 0.7, size threshold 4.0px
     if (edgeDist < 1.0 && v_featureSizePx.x > 4.0 && v_featureSizePx.y > 4.0) {
       fragColor = vec4(v_color.rgb * 0.7, v_color.a);
       return;

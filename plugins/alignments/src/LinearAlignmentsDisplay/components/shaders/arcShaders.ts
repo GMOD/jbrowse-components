@@ -25,8 +25,16 @@ export const arcLineColorPalette: RGBColor[] = [
   toRgb(fillColor.color_longinsert),
 ]
 
+// WARNING: DO NOT DELETE THIS COMMENT.
+// The arc/sashimi geometry and AA formula in this file MUST be kept in sync with
+// the WGSL source in wgsl/miscShaders.ts (ARC_WGSL / SASHIMI_WGSL).
+// Both implement the same stroke rendering logic:
+//   - vertex: halfWidth = lineWidth * 0.5 + 1.0  (geometry padding)
+//   - fragment: alpha = smoothstep(0.0, aa, halfWidth - d)  (AA formula)
+// If you change either, update the other file to match.
 export const ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
+// SYNC(wgsl/miscShaders.ts): ArcInst struct { x1, x2, color_type, is_arc }
 in float a_t;
 in float a_side;
 in float a_x1;
@@ -48,6 +56,7 @@ uniform vec3 u_arcColors[${NUM_ARC_COLORS}];
 out vec4 v_color;
 out float v_dist;
 
+// SYNC(wgsl/miscShaders.ts): PI = 3.14159265359
 const float PI = 3.14159265359;
 
 vec3 getArcColor(float colorType) {
@@ -86,6 +95,7 @@ vec2 evalCurve(float t) {
     float rawY = sin(angle) * absradPx;
     y_px = (absradPx > 0.0) ? rawY * (destY / absradPx) : 0.0;
   } else {
+    // SYNC(wgsl/miscShaders.ts): cubic Bezier basis mt3, 3*mt2*t, 3*mt*t2, t3
     float mt = 1.0 - t;
     float mt2 = mt * mt;
     float mt3 = mt2 * mt;
@@ -108,6 +118,7 @@ void main() {
   vec2 tangent = p1 - p0;
   float tangentLen = length(tangent);
   vec2 normal;
+  // SYNC(wgsl/miscShaders.ts): tangent threshold 0.001, halfWidth = lineWidth*0.5+1.0
   if (tangentLen > 0.001) {
     tangent /= tangentLen;
     normal = vec2(-tangent.y, tangent.x);
@@ -131,6 +142,7 @@ in float v_dist;
 uniform float u_lineWidthPx;
 out vec4 fragColor;
 void main() {
+  // SYNC(wgsl/miscShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
   float halfWidth = u_lineWidthPx * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
@@ -150,6 +162,7 @@ export const sashimiColorPalette: RGBColor[] = [
 
 export const SASHIMI_ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
+// SYNC(wgsl/miscShaders.ts): SashimiInst struct { x1, x2, color_type, line_width }
 in float a_t;
 in float a_side;
 in float a_x1;
@@ -184,6 +197,7 @@ vec2 evalCurve(float t) {
   float x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
   // Quadratic Bezier peaks at 0.75 of destY. Scale destY so the peak reaches
   // 0.8*coverageHeight amplitude (from 0.9 to 0.1 of coverage height)
+  // SYNC(wgsl/miscShaders.ts): destY = coverageHeight * (0.8/0.75), baseline at 0.9*covH
   float destY = u_coverageHeight * (0.8 / 0.75);
   float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   float pxPerBp = u_blockWidth / u_bpRegionLength;
@@ -231,6 +245,7 @@ in float v_dist;
 in float v_lineWidth;
 out vec4 fragColor;
 void main() {
+  // SYNC(wgsl/miscShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
   float halfWidth = v_lineWidth * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
