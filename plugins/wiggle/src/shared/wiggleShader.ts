@@ -51,13 +51,12 @@ fn score_to_y(score: f32, domain_y: vec2f, height: f32, scale_type: i32) -> f32 
   return (1.0 - normalize_score(score, domain_y, scale_type)) * height;
 }
 
-fn get_row_height(canvas_height: f32, num_rows: f32, row_padding: f32) -> f32 {
-  let total_padding = row_padding * (num_rows - 1.0);
-  return (canvas_height - total_padding) / num_rows;
+fn get_row_height(canvas_height: f32, num_rows: f32) -> f32 {
+  return canvas_height / num_rows;
 }
 
-fn get_row_top(row_index: f32, row_height: f32, row_padding: f32) -> f32 {
-  return row_index * (row_height + row_padding);
+fn get_row_top(row_index: f32, row_height: f32) -> f32 {
+  return row_index * row_height;
 }
 
 struct Instance {
@@ -78,7 +77,6 @@ struct Uniforms {
   rendering_type: i32,
   num_rows: f32,
   domain_y: vec2f,
-  row_padding: f32,
   zero: f32, // MUST be 0.0 at runtime — used by hp_to_clip_x to create runtime infinity
   viewport_width: f32,
 }
@@ -110,8 +108,8 @@ fn vs_main(
     sx2 = sx1 + min_clip_w;
   }
 
-  let row_height = get_row_height(u.canvas_height, u.num_rows, u.row_padding);
-  let row_top = get_row_top(inst.row_index, row_height, u.row_padding);
+  let row_height = get_row_height(u.canvas_height, u.num_rows);
+  let row_top = get_row_top(inst.row_index, row_height);
   let px_to_clip = 2.0 / u.canvas_height;
 
   var sx: f32;

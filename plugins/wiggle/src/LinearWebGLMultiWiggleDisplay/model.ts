@@ -23,6 +23,7 @@ import { autorun } from 'mobx'
 
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { getRowHeight } from '../shared/wiggleComponentUtils.ts'
 import {
   computeVisibleScoreRange,
   getNiceDomain,
@@ -71,6 +72,7 @@ export default function stateModelFactory(
         clusterTree: types.maybe(types.string),
         treeAreaWidth: types.optional(types.number, 80),
         showTreeSetting: types.maybe(types.boolean),
+        showRowSeparatorsSetting: types.maybe(types.boolean),
         subtreeFilter: types.maybe(types.array(types.string)),
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
@@ -218,12 +220,7 @@ export default function stateModelFactory(
       },
 
       get rowHeight() {
-        const numSources = this.numSources
-        if (numSources === 0) {
-          return self.height
-        }
-        const totalPadding = 2 * (numSources - 1)
-        return (self.height - totalPadding) / numSources
+        return getRowHeight(self.height, this.numSources)
       },
 
       get rowHeightTooSmallForScalebar() {
@@ -255,6 +252,10 @@ export default function stateModelFactory(
     .views(self => ({
       get showTree() {
         return self.showTreeSetting ?? true
+      },
+
+      get showRowSeparators() {
+        return self.showRowSeparatorsSetting ?? false
       },
 
       get root() {
@@ -385,6 +386,10 @@ export default function stateModelFactory(
 
       setShowTree(arg: boolean) {
         self.showTreeSetting = arg
+      },
+
+      setShowRowSeparators(arg: boolean) {
+        self.showRowSeparatorsSetting = arg
       },
 
       setSubtreeFilter(names?: string[]) {
@@ -646,31 +651,6 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           {
-            label: 'Edit colors/arrangement...',
-            icon: PaletteIcon,
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                SetColorDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
-          {
-            label: 'Cluster rows by score',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                WiggleClusterDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
-          {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
@@ -683,6 +663,14 @@ export default function stateModelFactory(
                   self.setShowTree(!self.showTree)
                 },
               },
+              {
+                label: 'Show row separators',
+                type: 'checkbox',
+                checked: self.showRowSeparators,
+                onClick: () => {
+                  self.setShowRowSeparators(!self.showRowSeparators)
+                },
+              },
               ...(self.subtreeFilter?.length
                 ? [
                     {
@@ -693,6 +681,79 @@ export default function stateModelFactory(
                     },
                   ]
                 : []),
+            ],
+          },
+          {
+            label: 'Score',
+            icon: EqualizerIcon,
+            subMenu: [
+              ...(self.hasResolution
+                ? [
+                    {
+                      label: 'Resolution',
+                      subMenu: [
+                        {
+                          label: 'Finer resolution',
+                          onClick: () => {
+                            self.setResolution(self.resolution * 5)
+                          },
+                        },
+                        {
+                          label: 'Coarser resolution',
+                          onClick: () => {
+                            self.setResolution(self.resolution / 5)
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      label: 'Summary score mode',
+                      subMenu: (
+                        ['min', 'max', 'avg', 'whiskers'] as const
+                      ).map(elt => ({
+                        label: elt,
+                        type: 'radio' as const,
+                        checked: self.summaryScoreMode === elt,
+                        onClick: () => {
+                          self.setSummaryScoreMode(elt)
+                        },
+                      })),
+                    },
+                  ]
+                : []),
+              {
+                label: 'Scale type',
+                subMenu: [
+                  {
+                    label: 'Linear scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'linear',
+                    onClick: () => {
+                      self.setScaleType('linear')
+                    },
+                  },
+                  {
+                    label: 'Log scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'log',
+                    onClick: () => {
+                      self.setScaleType('log')
+                    },
+                  },
+                ],
+              },
+              {
+                label: 'Set min/max score',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    SetMinMaxDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
             ],
           },
           {
@@ -732,73 +793,30 @@ export default function stateModelFactory(
               },
             ],
           },
-          ...(self.hasResolution
-            ? [
-                {
-                  label: 'Resolution',
-                  subMenu: [
-                    {
-                      label: 'Finer resolution',
-                      onClick: () => {
-                        self.setResolution(self.resolution * 5)
-                      },
-                    },
-                    {
-                      label: 'Coarser resolution',
-                      onClick: () => {
-                        self.setResolution(self.resolution / 5)
-                      },
-                    },
-                  ],
-                },
-                {
-                  label: 'Summary score mode',
-                  subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
-                    elt => ({
-                      label: elt,
-                      type: 'radio' as const,
-                      checked: self.summaryScoreMode === elt,
-                      onClick: () => {
-                        self.setSummaryScoreMode(elt)
-                      },
-                    }),
-                  ),
-                },
-              ]
-            : []),
           {
-            label: 'Score',
-            icon: EqualizerIcon,
-            subMenu: [
-              {
-                label: 'Linear scale',
-                type: 'radio',
-                checked: self.scaleType === 'linear',
-                onClick: () => {
-                  self.setScaleType('linear')
+            label: 'Cluster rows by score',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                WiggleClusterDialog,
+                {
+                  model: self,
+                  handleClose,
                 },
-              },
-              {
-                label: 'Log scale',
-                type: 'radio',
-                checked: self.scaleType === 'log',
-                onClick: () => {
-                  self.setScaleType('log')
+              ])
+            },
+          },
+          {
+            label: 'Edit colors/arrangement...',
+            icon: PaletteIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
                 },
-              },
-              {
-                label: 'Set min/max score',
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    SetMinMaxDialog,
-                    {
-                      model: self,
-                      handleClose,
-                    },
-                  ])
-                },
-              },
-            ],
+              ])
+            },
           },
         ]
       },
@@ -819,6 +837,7 @@ export default function stateModelFactory(
         clusterTree,
         treeAreaWidth,
         showTreeSetting,
+        showRowSeparatorsSetting,
         subtreeFilter,
         scaleTypeSetting,
         minScoreSetting,
@@ -833,6 +852,7 @@ export default function stateModelFactory(
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
+        ...(showRowSeparatorsSetting !== undefined ? { showRowSeparatorsSetting } : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
         ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),

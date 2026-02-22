@@ -9,6 +9,14 @@ import {
 
 import type { WiggleGPURenderState } from './WiggleRenderer.ts'
 
+export function getRowHeight(canvasHeight: number, numRows: number) {
+  return numRows > 0 ? canvasHeight / numRows : canvasHeight
+}
+
+export function getRowTop(rowIndex: number, rowHeight: number) {
+  return rowIndex * rowHeight
+}
+
 const renderingTypeMap: Record<string, number> = {
   density: RENDERING_TYPE_DENSITY,
   multirowdensity: RENDERING_TYPE_DENSITY,
@@ -26,7 +34,6 @@ export function makeRenderState(
   domain: [number, number],
   scaleType: string,
   renderingType: string,
-  rowPadding: number,
   width: number,
   height: number,
 ): WiggleGPURenderState {
@@ -34,7 +41,6 @@ export function makeRenderState(
     domainY: domain,
     scaleType: scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
     renderingType: renderingTypeToInt(renderingType),
-    rowPadding,
     canvasWidth: width,
     canvasHeight: height,
   }

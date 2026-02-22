@@ -28,7 +28,6 @@ export interface WiggleGPURenderState {
   domainY: [number, number]
   scaleType: number
   renderingType: number
-  rowPadding: number
   canvasWidth: number
   canvasHeight: number
 }
@@ -392,9 +391,8 @@ export class WiggleRenderer {
     this.uniformF32[7] = numRows
     this.uniformF32[8] = state.domainY[0]
     this.uniformF32[9] = state.domainY[1]
-    this.uniformF32[10] = state.rowPadding
-    this.uniformF32[11] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
-    this.uniformF32[12] = viewportWidth
+    this.uniformF32[10] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
+    this.uniformF32[11] = viewportWidth
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 }

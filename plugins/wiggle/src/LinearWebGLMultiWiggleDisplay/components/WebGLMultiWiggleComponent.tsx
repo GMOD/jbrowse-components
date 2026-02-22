@@ -8,7 +8,7 @@ import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { darkenColor, lightenColor, parseColor } from '../../shared/webglUtils.ts'
-import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
+import { getRowTop, makeRenderState } from '../../shared/wiggleComponentUtils.ts'
 import TreeSidebar from './TreeSidebar.tsx'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
@@ -43,6 +43,7 @@ export interface MultiWiggleDisplayModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   showTree: boolean
+  showRowSeparators: boolean
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement
@@ -53,8 +54,6 @@ export interface MultiWiggleDisplayModel {
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
 }
-
-const ROW_PADDING = 2
 
 const ScoreLegend = observer(function ScoreLegend({
   model,
@@ -251,7 +250,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         screenEndPx: vr.screenEndPx,
       }))
 
-      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, ROW_PADDING, totalWidth, model.height))
+      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, totalWidth, model.height))
     })
   }, [model, view, ready])
 
@@ -276,10 +275,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   }
 
   const numSources = model.numSources
-  const rowHeight =
-    numSources > 0
-      ? (height - ROW_PADDING * (numSources - 1)) / numSources
-      : height
+  const rowHeight = model.rowHeight
 
   const displaySources = model.sources
   const labelWidth =
@@ -317,7 +313,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         {displaySources.length > 1 ? (
           <g transform={`translate(${labelOffset} 0)`}>
             {displaySources.map((source, idx) => {
-              const y = rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)
+              const y = getRowTop(idx, rowHeight)
               const boxHeight = Math.min(20, rowHeight)
               const lc = source.labelColor
               return (
@@ -350,7 +346,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
               {Array.from({ length: numSources }).map((_, idx) => (
                 <g
-                  transform={`translate(0 ${rowHeight * idx + (idx > 0 ? ROW_PADDING * idx : 0)})`}
+                  transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
                   key={`scalebar-${idx}`}
                 >
                   <YScaleBar model={model} />
@@ -359,6 +355,23 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
             </g>
           )
         ) : null}
+
+        {model.showRowSeparators && numSources > 1
+          ? Array.from({ length: numSources - 1 }).map((_, idx) => {
+              const y = getRowTop(idx + 1, rowHeight)
+              return (
+                <line
+                  key={`sep-${idx}`}
+                  x1={0}
+                  y1={y}
+                  x2={totalWidth}
+                  y2={y}
+                  stroke="#0003"
+                  strokeWidth={1}
+                />
+              )
+            })
+          : null}
       </svg>
 
       <TreeSidebar model={model} />

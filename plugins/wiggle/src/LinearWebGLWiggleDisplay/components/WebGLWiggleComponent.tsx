@@ -216,7 +216,7 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         screenEndPx: vr.screenEndPx,
       }))
 
-      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, 0, width, model.height))
+      renderer.renderBlocks(blocks, makeRenderState(model.domain!, model.scaleType, model.renderingType, width, model.height))
     })
   }, [model, view, ready])
 

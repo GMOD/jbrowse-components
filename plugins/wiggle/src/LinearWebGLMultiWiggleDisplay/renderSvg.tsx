@@ -1,6 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util'
 
 import YScaleBar from '../shared/YScaleBar.tsx'
+import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type { LinearWebGLMultiWiggleDisplayModel } from './model.ts'
@@ -10,8 +11,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-const ROW_PADDING = 2
 
 export async function renderSvg(
   model: LinearWebGLMultiWiggleDisplayModel,
@@ -29,7 +28,7 @@ export async function renderSvg(
 
   const [minScore, maxScore] = domain
   const blocks = view.dynamicBlocks.contentBlocks
-  const rowHeight = (height - ROW_PADDING * (numSources - 1)) / numSources
+  const rowHeight = getRowHeight(height, numSources)
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveRowHeight = rowHeight - offset * 2
 
@@ -55,7 +54,7 @@ export async function renderSvg(
     for (let sourceIdx = 0; sourceIdx < data.sources.length; sourceIdx++) {
       const source = data.sources[sourceIdx]!
       const { featurePositions, featureScores, numFeatures, color } = source
-      const rowY = sourceIdx * (rowHeight + ROW_PADDING)
+      const rowY = getRowTop(sourceIdx, rowHeight)
 
       if (renderingType === 'multirowline') {
         let pathData = ''

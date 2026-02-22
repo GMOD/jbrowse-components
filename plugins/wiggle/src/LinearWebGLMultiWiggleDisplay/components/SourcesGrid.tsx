@@ -39,16 +39,20 @@ function SourcesGrid({
   showTips: boolean
 }) {
   const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [colorAnchorEl, setColorAnchorEl] = useState<HTMLElement | null>(null)
+  const [labelColorAnchorEl, setLabelColorAnchorEl] =
+    useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as GridRowId[])
   const {
     name: _name,
     color: _color,
+    labelColor: _labelColor,
     source: _source,
     baseUri: _baseUri,
     ...rest
   } = rows.length > 0 ? rows[0]! : {}
   const [widgetColor, setWidgetColor] = useState('blue')
+  const [widgetLabelColor, setWidgetLabelColor] = useState('blue')
   const [currSort, setCurrSort] = useState<SortField>({
     idx: 0,
     field: null,
@@ -59,10 +63,18 @@ function SourcesGrid({
       <Button
         disabled={!selected.length}
         onClick={event => {
-          setAnchorEl(event.currentTarget)
+          setColorAnchorEl(event.currentTarget)
         }}
       >
-        Change color of selected items
+        Change track color of selected
+      </Button>
+      <Button
+        disabled={!selected.length}
+        onClick={event => {
+          setLabelColorAnchorEl(event.currentTarget)
+        }}
+      >
+        Change label color of selected
       </Button>
       <Button
         disabled={!selected.length}
@@ -101,7 +113,7 @@ function SourcesGrid({
         {showTips ? 'Move selected items to bottom' : null}
       </Button>
       <ColorPopover
-        anchorEl={anchorEl}
+        anchorEl={colorAnchorEl}
         color={widgetColor}
         onChange={c => {
           setWidgetColor(c)
@@ -111,11 +123,27 @@ function SourcesGrid({
               elt.color = c
             }
           }
-
           onChange([...rows])
         }}
         onClose={() => {
-          setAnchorEl(null)
+          setColorAnchorEl(null)
+        }}
+      />
+      <ColorPopover
+        anchorEl={labelColorAnchorEl}
+        color={widgetLabelColor}
+        onChange={c => {
+          setWidgetLabelColor(c)
+          for (const id of selected) {
+            const elt = rows.find(f => f.name === id)
+            if (elt) {
+              elt.labelColor = c
+            }
+          }
+          onChange([...rows])
+        }}
+        onClose={() => {
+          setLabelColorAnchorEl(null)
         }}
       />
       <div style={{ height: 400, width: '100%' }}>
@@ -132,7 +160,8 @@ function SourcesGrid({
           columns={[
             {
               field: 'color',
-              headerName: 'Color',
+              headerName: 'Track color',
+              width: 100,
               renderCell: ({ value, id }) => (
                 <ColorPicker
                   color={value || 'blue'}
@@ -140,6 +169,23 @@ function SourcesGrid({
                     const elt = rows.find(f => f.name === id)
                     if (elt) {
                       elt.color = c
+                    }
+                    onChange([...rows])
+                  }}
+                />
+              ),
+            },
+            {
+              field: 'labelColor',
+              headerName: 'Label color',
+              width: 100,
+              renderCell: ({ value, id }) => (
+                <ColorPicker
+                  color={value || ''}
+                  onChange={c => {
+                    const elt = rows.find(f => f.name === id)
+                    if (elt) {
+                      elt.labelColor = c
                     }
                     onChange([...rows])
                   }}

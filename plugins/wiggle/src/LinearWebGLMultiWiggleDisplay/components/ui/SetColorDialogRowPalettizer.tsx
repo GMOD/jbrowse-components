@@ -19,6 +19,7 @@ export default function SetColorDialogRowPalettizer({
     f =>
       f !== 'name' &&
       f !== 'color' &&
+      f !== 'labelColor' &&
       f !== 'source' &&
       f !== 'label' &&
       f !== 'id' &&
@@ -70,7 +71,19 @@ export default function SetColorDialogRowPalettizer({
           )
         }}
       >
-        Clear colors
+        Clear track colors
+      </Button>
+      <Button
+        onClick={() => {
+          setCurrLayout(
+            currLayout.map(row => ({
+              ...row,
+              labelColor: undefined,
+            })),
+          )
+        }}
+      >
+        Clear label colors
       </Button>
     </div>
   )

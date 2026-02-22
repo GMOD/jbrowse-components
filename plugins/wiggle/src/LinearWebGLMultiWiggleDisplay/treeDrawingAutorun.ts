@@ -2,6 +2,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { getRowTop } from '../shared/wiggleComponentUtils.ts'
+
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -94,8 +96,8 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           for (let i = 0, l = sources.length; i < l; i++) {
             const source = sources[i]!
             if (descendantSet.has(source.name)) {
-              const y = (i + 0.5) * rowHeight
-              ctx.fillRect(0, y - rowHeight / 2, viewWidth, rowHeight)
+              const y = getRowTop(i, rowHeight)
+              ctx.fillRect(0, y, viewWidth, rowHeight)
             }
           }
 

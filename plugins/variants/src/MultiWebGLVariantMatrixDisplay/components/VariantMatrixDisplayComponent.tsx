@@ -1,6 +1,7 @@
 import { Suspense, useRef } from 'react'
 
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
@@ -9,6 +10,7 @@ import TreeSidebar from '../../shared/components/TreeSidebar.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
 import type { LinearVariantMatrixDisplayModel } from '../model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VariantMatrixDisplayComponent = observer(
   function VariantMatrixDisplayComponent(props: {
@@ -16,6 +18,8 @@ const VariantMatrixDisplayComponent = observer(
   }) {
     const { model } = props
     const { DisplayMessageComponent, lineZoneHeight, height } = model
+    const view = getContainingView(model) as LinearGenomeViewModel
+    const left = Math.max(0, -view.offsetPx)
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
@@ -28,7 +32,7 @@ const VariantMatrixDisplayComponent = observer(
         onMouseLeave={handleMouseLeave}
       >
         <LinesConnectingMatrixToGenomicPosition model={model} />
-        <div style={{ position: 'absolute', top: lineZoneHeight }}>
+        <div style={{ position: 'absolute', top: lineZoneHeight, left }}>
           <Suspense fallback={null}>
             <DisplayMessageComponent model={model} />
           </Suspense>
