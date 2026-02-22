@@ -122,6 +122,8 @@ export async function executeRenderWebGLMultiWiggleData({
 
     const featurePositions = new Uint32Array(features.length * 2)
     const featureScores = new Float32Array(features.length)
+    const featureMinScores = new Float32Array(features.length)
+    const featureMaxScores = new Float32Array(features.length)
     const posPositions: number[] = []
     const posScores: number[] = []
     const negPositions: number[] = []
@@ -132,12 +134,19 @@ export async function executeRenderWebGLMultiWiggleData({
       const start = feature.get('start')
       const end = feature.get('end')
       const score = feature.get('score') ?? 0
+      const summary = feature.get('summary')
 
       const startOffset = Math.floor(start - regionStart)
       const endOffset = Math.floor(end - regionStart)
       featurePositions[j * 2] = startOffset
       featurePositions[j * 2 + 1] = endOffset
       featureScores[j] = score
+      featureMinScores[j] = summary
+        ? (feature.get('minScore') ?? score)
+        : score
+      featureMaxScores[j] = summary
+        ? (feature.get('maxScore') ?? score)
+        : score
 
       if (score >= bicolorPivot) {
         posPositions.push(startOffset, endOffset)
@@ -153,6 +162,8 @@ export async function executeRenderWebGLMultiWiggleData({
       color,
       featurePositions,
       featureScores,
+      featureMinScores,
+      featureMaxScores,
       numFeatures: features.length,
       posFeaturePositions: new Uint32Array(posPositions),
       posFeatureScores: new Float32Array(posScores),

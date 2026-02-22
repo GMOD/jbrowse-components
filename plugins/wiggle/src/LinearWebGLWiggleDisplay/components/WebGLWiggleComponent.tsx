@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
-import { parseColor } from '../../shared/webglUtils.ts'
+import { parseColor, lightenColor, darkenColor } from '../../shared/webglUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -38,6 +38,7 @@ export interface WiggleDisplayModel {
   posColor: string
   negColor: string
   renderingType: string
+  summaryScoreMode: string
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
   isLoading: boolean
@@ -72,6 +73,16 @@ function makeRenderState(
   }
 }
 
+function getEffectiveScores(data: WebGLWiggleDataResult, mode: string) {
+  if (mode === 'min') {
+    return data.featureMinScores
+  }
+  if (mode === 'max') {
+    return data.featureMaxScores
+  }
+  return data.featureScores
+}
+
 function buildSourceRenderData(
   data: WebGLWiggleDataResult,
   model: WiggleDisplayModel,
@@ -81,15 +92,59 @@ function buildSourceRenderData(
   const baseColor = parseColor(model.color)
   const posColor = parseColor(model.posColor)
   const negColor = parseColor(model.negColor)
+  const { summaryScoreMode } = model
+
+  if (summaryScoreMode === 'whiskers') {
+    const color = useBicolor ? posColor : baseColor
+    const lightColor = lightenColor(color, 0.4)
+    const darkColor = darkenColor(color, 0.4)
+    return [
+      {
+        featurePositions: data.featurePositions,
+        featureScores: data.featureMaxScores,
+        numFeatures: data.numFeatures,
+        color: lightColor,
+        rowIndex: 0,
+      },
+      {
+        featurePositions: data.featurePositions,
+        featureScores: data.featureScores,
+        numFeatures: data.numFeatures,
+        color,
+        rowIndex: 0,
+      },
+      {
+        featurePositions: data.featurePositions,
+        featureScores: data.featureMinScores,
+        numFeatures: data.numFeatures,
+        color: darkColor,
+        rowIndex: 0,
+      },
+    ]
+  }
+
+  const scores = getEffectiveScores(data, summaryScoreMode)
 
   if (!useBicolor) {
     const color = model.renderingType === 'density' ? posColor : baseColor
     return [
       {
-        featurePositions: data.posFeaturePositions,
-        featureScores: data.posFeatureScores,
-        numFeatures: data.posNumFeatures,
+        featurePositions: data.featurePositions,
+        featureScores: scores,
+        numFeatures: data.numFeatures,
         color,
+      },
+    ]
+  }
+
+  if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
+    return [
+      {
+        featurePositions: data.featurePositions,
+        featureScores: scores,
+        numFeatures: data.numFeatures,
+        color: posColor,
+        rowIndex: 0,
       },
     ]
   }

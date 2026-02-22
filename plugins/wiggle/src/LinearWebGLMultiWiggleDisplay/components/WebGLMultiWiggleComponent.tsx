@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
-import { parseColor } from '../../shared/webglUtils.ts'
+import { darkenColor, lightenColor, parseColor } from '../../shared/webglUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -37,6 +37,7 @@ export interface MultiWiggleDisplayModel {
   posColor: string
   negColor: string
   renderingType: string
+  summaryScoreMode: string
   numSources: number
   rowHeightTooSmallForScalebar: boolean
   ticks?: ReturnType<typeof axisPropsFromTickScale>
@@ -151,6 +152,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const modelSources = model.sources
       const posColor = parseColor(model.posColor)
       const negColor = parseColor(model.negColor)
+      const { summaryScoreMode } = model
       const activeRegions: number[] = []
       for (const [regionNumber, data] of dataMap) {
         activeRegions.push(regionNumber)
@@ -165,23 +167,67 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
           if (!rpcSource) {
             continue
           }
-          if (rpcSource.posNumFeatures > 0) {
+
+          if (summaryScoreMode === 'whiskers') {
+            const lightColor = lightenColor(posColor, 0.4)
+            const darkColor = darkenColor(posColor, 0.4)
+            sourcesData.push(
+              {
+                featurePositions: rpcSource.featurePositions,
+                featureScores: rpcSource.featureMaxScores,
+                numFeatures: rpcSource.numFeatures,
+                color: lightColor,
+                rowIndex: idx,
+              },
+              {
+                featurePositions: rpcSource.featurePositions,
+                featureScores: rpcSource.featureScores,
+                numFeatures: rpcSource.numFeatures,
+                color: posColor,
+                rowIndex: idx,
+              },
+              {
+                featurePositions: rpcSource.featurePositions,
+                featureScores: rpcSource.featureMinScores,
+                numFeatures: rpcSource.numFeatures,
+                color: darkColor,
+                rowIndex: idx,
+              },
+            )
+          } else if (
+            summaryScoreMode === 'min' ||
+            summaryScoreMode === 'max'
+          ) {
+            const scores =
+              summaryScoreMode === 'min'
+                ? rpcSource.featureMinScores
+                : rpcSource.featureMaxScores
             sourcesData.push({
-              featurePositions: rpcSource.posFeaturePositions,
-              featureScores: rpcSource.posFeatureScores,
-              numFeatures: rpcSource.posNumFeatures,
+              featurePositions: rpcSource.featurePositions,
+              featureScores: scores,
+              numFeatures: rpcSource.numFeatures,
               color: posColor,
               rowIndex: idx,
             })
-          }
-          if (rpcSource.negNumFeatures > 0) {
-            sourcesData.push({
-              featurePositions: rpcSource.negFeaturePositions,
-              featureScores: rpcSource.negFeatureScores,
-              numFeatures: rpcSource.negNumFeatures,
-              color: negColor,
-              rowIndex: idx,
-            })
+          } else {
+            if (rpcSource.posNumFeatures > 0) {
+              sourcesData.push({
+                featurePositions: rpcSource.posFeaturePositions,
+                featureScores: rpcSource.posFeatureScores,
+                numFeatures: rpcSource.posNumFeatures,
+                color: posColor,
+                rowIndex: idx,
+              })
+            }
+            if (rpcSource.negNumFeatures > 0) {
+              sourcesData.push({
+                featurePositions: rpcSource.negFeaturePositions,
+                featureScores: rpcSource.negFeatureScores,
+                numFeatures: rpcSource.negNumFeatures,
+                color: negColor,
+                rowIndex: idx,
+              })
+            }
           }
         }
 

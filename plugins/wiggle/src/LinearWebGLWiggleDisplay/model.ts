@@ -408,6 +408,10 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+                const { summaryScoreMode } = self
+                const useWhiskers = summaryScoreMode === 'whiskers'
+                const useMin = summaryScoreMode === 'min'
+                const useMax = summaryScoreMode === 'max'
                 const blocks = view.dynamicBlocks.contentBlocks
                 let min = Infinity
                 let max = -Infinity
@@ -425,12 +429,39 @@ export default function stateModelFactory(
                     const fStart = data.featurePositions[i * 2]!
                     const fEnd = data.featurePositions[i * 2 + 1]!
                     if (fEnd > visStart && fStart < visEnd) {
-                      const s = data.featureScores[i]!
-                      if (s < min) {
-                        min = s
-                      }
-                      if (s > max) {
-                        max = s
+                      if (useWhiskers) {
+                        const sMin = data.featureMinScores[i]!
+                        const sMax = data.featureMaxScores[i]!
+                        if (sMin < min) {
+                          min = sMin
+                        }
+                        if (sMax > max) {
+                          max = sMax
+                        }
+                      } else if (useMin) {
+                        const s = data.featureMinScores[i]!
+                        if (s < min) {
+                          min = s
+                        }
+                        if (s > max) {
+                          max = s
+                        }
+                      } else if (useMax) {
+                        const s = data.featureMaxScores[i]!
+                        if (s < min) {
+                          min = s
+                        }
+                        if (s > max) {
+                          max = s
+                        }
+                      } else {
+                        const s = data.featureScores[i]!
+                        if (s < min) {
+                          min = s
+                        }
+                        if (s > max) {
+                          max = s
+                        }
                       }
                     }
                   }

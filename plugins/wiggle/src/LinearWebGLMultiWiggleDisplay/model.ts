@@ -423,6 +423,10 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+                const { summaryScoreMode } = self
+                const useWhiskers = summaryScoreMode === 'whiskers'
+                const useMin = summaryScoreMode === 'min'
+                const useMax = summaryScoreMode === 'max'
                 const blocks = view.dynamicBlocks.contentBlocks
                 let min = Infinity
                 let max = -Infinity
@@ -441,12 +445,39 @@ export default function stateModelFactory(
                       const fStart = source.featurePositions[i * 2]!
                       const fEnd = source.featurePositions[i * 2 + 1]!
                       if (fEnd > visStart && fStart < visEnd) {
-                        const s = source.featureScores[i]!
-                        if (s < min) {
-                          min = s
-                        }
-                        if (s > max) {
-                          max = s
+                        if (useWhiskers) {
+                          const sMin = source.featureMinScores[i]!
+                          const sMax = source.featureMaxScores[i]!
+                          if (sMin < min) {
+                            min = sMin
+                          }
+                          if (sMax > max) {
+                            max = sMax
+                          }
+                        } else if (useMin) {
+                          const s = source.featureMinScores[i]!
+                          if (s < min) {
+                            min = s
+                          }
+                          if (s > max) {
+                            max = s
+                          }
+                        } else if (useMax) {
+                          const s = source.featureMaxScores[i]!
+                          if (s < min) {
+                            min = s
+                          }
+                          if (s > max) {
+                            max = s
+                          }
+                        } else {
+                          const s = source.featureScores[i]!
+                          if (s < min) {
+                            min = s
+                          }
+                          if (s > max) {
+                            max = s
+                          }
                         }
                       }
                     }
