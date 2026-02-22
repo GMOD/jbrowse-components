@@ -1,13 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import baseConfigFactory from '../LinearComparativeDisplay/configSchemaF.ts'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
-
 /**
  * #config LinearSyntenyDisplay
  */
-function configSchemaFactory(pluginManager: PluginManager) {
+function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearSyntenyDisplay',
     {
@@ -30,12 +26,8 @@ function configSchemaFactory(pluginManager: PluginManager) {
       },
     },
     {
-      /**
-       * #baseConfiguration
-       * this refers to the LinearComparativeDisplay
-       */
-      baseConfiguration: baseConfigFactory(pluginManager),
       explicitlyTyped: true,
+      explicitIdentifier: 'displayId',
     },
   )
 }

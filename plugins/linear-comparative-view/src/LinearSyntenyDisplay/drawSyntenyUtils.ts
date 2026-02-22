@@ -1,22 +1,9 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
-
 export const lineLimit = 3
 
 export const oobLimit = 1600
-
-export function makeColor(idx: number) {
-  const r = Math.floor(idx / (255 * 255)) % 255
-  const g = Math.floor(idx / 255) % 255
-  const b = idx % 255
-  return `rgb(${r},${g},${b})`
-}
-
-export function getId(r: number, g: number, b: number, unitMultiplier: number) {
-  return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
-}
 
 // Simple hash function to generate consistent colors for query names
 function hashString(str: string) {
@@ -37,22 +24,22 @@ export function getQueryColor(queryName: string) {
 
 // Default CIGAR operation colors
 export const defaultCigarColors = {
-  I: '#ff03',
-  N: '#0a03',
-  D: '#00f3',
+  I: '#ff0a',
+  N: '#0a0a',
+  D: '#00fa',
   X: 'brown',
-  M: '#f003',
-  '=': '#f003',
+  M: '#f00a',
+  '=': '#f00a',
 }
 
 // Strand-specific CIGAR operation colors (purple deletion instead of blue)
 export const strandCigarColors = {
-  I: '#ff03',
-  N: '#a020f0', // Purple for deletion
-  D: '#a020f0', // Purple for deletion
+  I: '#ff0a',
+  N: '#a020f0',
+  D: '#a020f0',
   X: 'brown',
-  M: '#f003',
-  '=': '#f003',
+  M: '#f00a',
+  '=': '#f00a',
 }
 
 // Color scheme configuration

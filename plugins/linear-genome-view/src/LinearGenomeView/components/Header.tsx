@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { FormGroup } from '@mui/material'
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
+import { FormGroup, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HeaderPanControls from './HeaderPanControls.tsx'
@@ -24,6 +25,33 @@ const useStyles = makeStyles()({
   spacer: {
     flexGrow: 1,
   },
+  scrollZoomButton: {
+    height: 44,
+    border: 'none',
+    textTransform: 'none',
+  },
+})
+
+const ScrollZoomButton = observer(function ScrollZoomButton({
+  model,
+}: {
+  model: LinearGenomeViewModel
+}) {
+  const { classes } = useStyles()
+  return (
+    <ToggleButton
+      value="scrollZoom"
+      selected={model.scrollZoom}
+      onChange={() => {
+        model.setScrollZoom(!model.scrollZoom)
+      }}
+      title="Toggle scroll zoom on WebGL tracks"
+      className={classes.scrollZoomButton}
+      size="small"
+    >
+      <ZoomInMapIcon />
+    </ToggleButton>
+  )
 })
 
 const Controls = function ({ model }: { model: LinearGenomeViewModel }) {
@@ -31,6 +59,7 @@ const Controls = function ({ model }: { model: LinearGenomeViewModel }) {
   return (
     <div className={classes.headerBar}>
       <HeaderTrackSelectorButton model={model} />
+      <ScrollZoomButton model={model} />
       <div className={classes.spacer} />
       <FormGroup row className={classes.headerForm}>
         <HeaderPanControls model={model} />

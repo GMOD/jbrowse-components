@@ -40,7 +40,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
-  const { trackRefs, id, scaleFactor } = model
+  const { trackRefs, id } = model
   const trackId = track.trackId
   const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
@@ -65,14 +65,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
     >
       {!minimized ? (
         <>
-          <div
-            ref={ref}
-            className={classes.renderingComponentContainer}
-            style={{
-              transform:
-                scaleFactor !== 1 ? `scaleX(${scaleFactor})` : undefined,
-            }}
-          >
+          <div ref={ref} className={classes.renderingComponentContainer}>
             <Suspense fallback={<LoadingEllipses />}>
               <RenderingComponent
                 model={display}

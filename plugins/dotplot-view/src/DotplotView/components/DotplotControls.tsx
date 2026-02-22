@@ -12,8 +12,7 @@ import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
 import { CursorMouse, CursorMove } from './CursorIcon.tsx'
-import MinLengthSlider from './MinLengthSlider.tsx'
-import OpacitySlider from './OpacitySlider.tsx'
+import DotplotSettingsPopover from './DotplotSettingsPopover.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -205,10 +204,7 @@ const DotplotControls = observer(function DotplotControls({
       <ColorBySelector model={model} />
 
       {hasDisplays && showDynamicControls ? (
-        <>
-          <OpacitySlider model={model} />
-          <MinLengthSlider model={model} />
-        </>
+        <DotplotSettingsPopover model={model} />
       ) : null}
     </div>
   )

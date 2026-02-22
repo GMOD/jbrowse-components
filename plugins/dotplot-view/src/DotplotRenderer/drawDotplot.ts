@@ -4,15 +4,13 @@ import { category10 } from '@jbrowse/core/ui/colors'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { colord } from '@jbrowse/core/util/colord'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import { parseCigar } from '@jbrowse/plugin-alignments'
 
 import { type Warning, clampWithWarnX, clampWithWarnY } from './clamp.ts'
 
 import type { RenderArgsDeserialized } from './DotplotRenderer.ts'
 import type { Dotplot1DViewModel } from '../DotplotView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-const { parseCigar } = MismatchParser
 
 // Simple hash function to generate consistent colors for query names
 function hashString(str: string) {

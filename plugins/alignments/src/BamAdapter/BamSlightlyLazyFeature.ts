@@ -1,11 +1,7 @@
 import { BamRecord } from '@gmod/bam'
 
 import { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
-import {
-  CHAR_FROM_CODE,
-  CIGAR_H,
-  CIGAR_S,
-} from '../PileupRenderer/renderers/cigarUtil.ts'
+import { CHAR_FROM_CODE, CIGAR_H, CIGAR_S } from '../shared/cigarUtil.ts'
 import { decodeSeq } from '../shared/decodeSeq.ts'
 import {
   HARDCLIP_TYPE,
@@ -165,6 +161,8 @@ export default class BamSlightlyLazyFeature
         return this.template_length
       case 'clipLengthAtStartOfRead':
         return this.clipLengthAtStartOfRead
+      case 'score':
+        return this.score
 
       default:
         return this.fields[field]

@@ -189,37 +189,6 @@
         }
         return snap
       })
-
-      // Example: Add LinearReadCloudDisplay as the first display for AlignmentsTracks
-      // that have "_sv" in their trackId (e.g. structural variant tracks)
-      // This now works because showTrackGeneric calls Core-preProcessTrackConfig
-      // and spreads display config properties into the display state
-      pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
-        if (snap.type === 'AlignmentsTrack' && snap.trackId?.includes('_sv')) {
-          const displays = snap.displays || []
-          const hasReadCloud = displays.some(
-            d => d.type === 'LinearReadCloudDisplay',
-          )
-          if (!hasReadCloud) {
-            console.log(
-              'Adding LinearReadCloudDisplay with drawCloud:true for',
-              snap.trackId,
-            )
-            return {
-              ...snap,
-              displays: [
-                {
-                  type: 'LinearReadCloudDisplay',
-                  displayId: `${snap.trackId}-LinearReadCloudDisplay`,
-                  drawCloud: true,
-                },
-                ...displays,
-              ],
-            }
-          }
-        }
-        return snap
-      })
     }
 
     configure(pluginManager) {

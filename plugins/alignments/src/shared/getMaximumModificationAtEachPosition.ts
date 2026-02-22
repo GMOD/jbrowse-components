@@ -7,6 +7,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 interface MaximumProbabilityMod {
   type: string
+  base: string
   prob: number
   allProbs: number[]
 }
@@ -24,7 +25,7 @@ export function getMaxProbModAtEachPosition(
     const maxProbModForPosition = [] as MaximumProbabilityMod[]
 
     let probIndex = 0
-    for (const { type, positions } of modifications) {
+    for (const { type, base, positions } of modifications) {
       for (const { ref, idx } of getNextRefPos(ops, positions)) {
         const prob =
           probabilities?.[
@@ -33,6 +34,7 @@ export function getMaxProbModAtEachPosition(
         if (!maxProbModForPosition[ref]) {
           maxProbModForPosition[ref] = {
             type,
+            base,
             prob,
             allProbs: [prob],
           }
@@ -42,6 +44,7 @@ export function getMaxProbModAtEachPosition(
             allProbs: [...old.allProbs, prob],
             prob: Math.max(old.prob, prob),
             type: old.prob > prob ? old.type : type,
+            base: old.prob > prob ? old.base : base,
           }
         }
       }

@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@fontsource/roboto": "^5.2.9",
+    "@fontsource/roboto": "^5.2.10",
     "@gmod/faidx": "^2.0.0",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
@@ -77,7 +77,7 @@
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
-    "dockview": "^4.13.1",
+    "dockview": "^5.0.0",
     "electron-context-menu": "^4.1.1",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
@@ -97,7 +97,7 @@
     "electron": "40.4.0",
     "electron-chromedriver": "^40.6.0",
     "esbuild": "^0.27.3",
-    "selenium-webdriver": "^4.40.0"
+    "selenium-webdriver": "^4.41.0"
   },
   "browserslist": [
     "last 1 chrome version"

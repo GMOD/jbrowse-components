@@ -1,37 +1,87 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
-import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
 
+import type { SyntenyRenderer } from './SyntenyRenderer.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-interface Pos {
-  offsetPx: number
+export interface SyntenyFeatureData {
+  p11_offsetPx: Float64Array
+  p12_offsetPx: Float64Array
+  p21_offsetPx: Float64Array
+  p22_offsetPx: Float64Array
+  strands: Int8Array
+  starts: Float64Array
+  ends: Float64Array
+  identities: Float64Array
+  padTop: Float64Array
+  padBottom: Float64Array
+  featureIds: string[]
+  names: string[]
+  refNames: string[]
+  assemblyNames: string[]
+  cigars: string[]
+  mates: {
+    start: number
+    end: number
+    refName: string
+    name: string
+    assemblyName: string
+  }[]
 }
 
 export interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
+  id: string
+  strand: number
+  name: string
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+  mate: {
+    start: number
+    end: number
+    refName: string
+    name: string
+    assemblyName: string
+  }
+  identity?: number
+}
+
+export function getFeatureAtIndex(
+  data: SyntenyFeatureData,
+  i: number,
+): FeatPos {
+  const identity = data.identities[i]!
+  return {
+    id: data.featureIds[i]!,
+    strand: data.strands[i]!,
+    name: data.names[i]!,
+    refName: data.refNames[i]!,
+    start: data.starts[i]!,
+    end: data.ends[i]!,
+    assemblyName: data.assemblyNames[i]!,
+    mate: data.mates[i]!,
+    identity: identity === -1 ? undefined : identity,
+  }
 }
 
 /**
  * #stateModel LinearSyntenyDisplay
  * extends
- * - [LinearComparativeDisplay](../linearcomparativedisplay)
+ * - [BaseDisplay](../basedisplay)
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearSyntenyDisplay',
-      baseModelFactory(configSchema),
+      BaseDisplay,
       types.model({
         /**
          * #property
@@ -61,88 +111,44 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       /**
        * #volatile
-       * canvas used for drawing visible screen
        */
-      mainCanvas: null as HTMLCanvasElement | null,
+      featureData: undefined as SyntenyFeatureData | undefined,
 
       /**
        * #volatile
-       * canvas used for drawing click map with feature ids this renders a
-       * unique color per alignment, so that it can be re-traced after a
-       * feature click with getImageData at that pixel
-       */
-      clickMapCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas used for drawing click map with cigar data this can show if you
-       * are mousing over a insertion/deletion. it is similar in purpose to the
-       * clickMapRef but was not feasible to pack this into the clickMapRef
-       */
-      cigarClickMapCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas for drawing mouseover shading this is separate from the other
-       * code for speed: don't have to redraw entire canvas to do a feature's
-       * mouseover shading
-       */
-      mouseoverCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * assigned by reaction
-       */
-      featPositions: [] as FeatPos[],
-
-      /**
-       * #volatile
-       * currently mouse'd over feature
        */
       mouseoverId: undefined as string | undefined,
 
-      /**
-       * #volatile
-       * currently click'd over feature
-       */
-      clickId: undefined as string | undefined,
+      hoveredFeatureIdx: -1,
+
+      clickedFeatureIdx: -1,
 
       /**
        * #volatile
-       * currently mouseover'd CIGAR subfeature
        */
-      cigarMouseoverId: -1,
+      gpuInstanceData: undefined as SyntenyInstanceData | undefined,
+
+      /**
+       * #volatile
+       */
+      gpuRenderer: null as SyntenyRenderer | null,
+
+      /**
+       * #volatile
+       */
+      gpuInitialized: false,
+
+      /**
+       * #volatile
+       */
+      isScrolling: false,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setFeatPositions(arg: FeatPos[]) {
-        self.featPositions = arg
-      },
-      /**
-       * #action
-       */
-      setMainCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mainCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.clickMapCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setCigarClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.cigarClickMapCanvas = ref
-      },
-      /**
-       * #action
-       */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
+      setFeatureData(arg: SyntenyFeatureData | undefined) {
+        self.featureData = arg
       },
       /**
        * #action
@@ -150,17 +156,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setMouseoverId(arg?: string) {
         self.mouseoverId = arg
       },
-      /**
-       * #action
-       */
-      setCigarMouseoverId(arg: number) {
-        self.cigarMouseoverId = arg
+      setHoveredFeatureIdx(idx: number) {
+        self.hoveredFeatureIdx = idx
       },
-      /**
-       * #action
-       */
-      setClickId(arg?: string) {
-        self.clickId = arg
+      setClickedFeatureIdx(idx: number) {
+        self.clickedFeatureIdx = idx
       },
       /**
        * #action
@@ -180,9 +180,45 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setColorBy(value: string) {
         self.colorBy = value
       },
+      /**
+       * #action
+       */
+      setGpuInstanceData(data: SyntenyInstanceData | undefined) {
+        self.gpuInstanceData = data
+      },
+      /**
+       * #action
+       */
+      setGpuRenderer(renderer: SyntenyRenderer | null) {
+        self.gpuRenderer = renderer
+      },
+      /**
+       * #action
+       */
+      setGpuInitialized(value: boolean) {
+        self.gpuInitialized = value
+      },
+      /**
+       * #action
+       */
+      setIsScrolling(value: boolean) {
+        self.isScrolling = value
+      },
     }))
 
     .views(self => ({
+      /**
+       * #getter
+       */
+      get level() {
+        return getParent<{ height: number; level: number }>(self, 4).level
+      },
+      /**
+       * #getter
+       */
+      get height() {
+        return getParent<{ height: number; level: number }>(self, 4).height
+      },
       /**
        * #getter
        */
@@ -205,7 +241,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get numFeats() {
-        return self.featPositions.length
+        return self.featureData?.featureIds.length ?? 0
+      },
+
+      get parsedCigars() {
+        return self.featureData?.cigars.map(s => (s ? parseCigar2(s) : []))
       },
 
       /**
@@ -214,13 +254,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get ready() {
         return this.numFeats > 0
-      },
-
-      /**
-       * #getter
-       */
-      get featMap() {
-        return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
       },
 
       /**
@@ -290,17 +323,27 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * cached query total lengths for minAlignmentLength filtering
        */
       get queryTotalLengths() {
-        if (self.minAlignmentLength <= 0) {
+        const { featureData } = self
+        if (self.minAlignmentLength <= 0 || !featureData) {
           return undefined
         }
         const lengths = new Map<string, number>()
-        for (const { f } of self.featPositions) {
-          const queryName = f.get('name') || f.get('id') || f.id()
-          const alignmentLength = Math.abs(f.get('end') - f.get('start'))
+        for (let i = 0; i < featureData.featureIds.length; i++) {
+          const queryName = featureData.names[i] || featureData.featureIds[i]!
+          const alignmentLength = Math.abs(
+            featureData.ends[i]! - featureData.starts[i]!,
+          )
           const currentTotal = lengths.get(queryName) || 0
           lengths.set(queryName, currentTotal + alignmentLength)
         }
         return lengths
+      },
+
+      getFeature(index: number) {
+        if (!self.featureData) {
+          return undefined
+        }
+        return getFeatureAtIndex(self.featureData, index)
       },
     }))
     .actions(self => ({
@@ -309,7 +352,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
+            doAfterAttach(self as typeof self & { afterAttach(): void })
           } catch (e) {
             console.error(e)
             self.setError(e)

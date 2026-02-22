@@ -59,41 +59,10 @@
           {
             "id": "cdW7g9U6CX",
             "type": "LinearAlignmentsDisplay",
-            "PileupDisplay": {
-              "id": "r2Hxu1gUyr",
-              "type": "LinearPileupDisplay",
-              "height": 100,
-              "configuration": {
-                "type": "LinearPileupDisplay",
-                "displayId": "skbr3.ont.sort.mod-LinearAlignmentsDisplay_pileup_xyz",
-                "renderers": {
-                  "PileupRenderer": { "type": "PileupRenderer" },
-                  "SvgFeatureRenderer": { "type": "SvgFeatureRenderer" }
-                }
-              },
-              "showSoftClipping": false,
-              "filterBy": { "flagInclude": 0, "flagExclude": 1536 }
-            },
-            "SNPCoverageDisplay": {
-              "id": "7ZQsC0O7tV",
-              "type": "LinearSNPCoverageDisplay",
-              "height": 45,
-              "configuration": {
-                "type": "LinearSNPCoverageDisplay",
-                "displayId": "skbr3.ont.sort.mod-LinearAlignmentsDisplay_snpcoverage_xyz",
-                "renderers": {
-                  "SNPCoverageRenderer": { "type": "SNPCoverageRenderer" }
-                }
-              },
-              "selectedRendering": "",
-              "resolution": 1,
-              "constraints": {},
-              "filterBy": { "flagInclude": 0, "flagExclude": 1536 }
-            },
             "configuration": "skbr3.ont.sort.mod-LinearAlignmentsDisplay",
             "height": 250,
             "showCoverage": true,
-            "showPileup": true
+            "filterBySetting": { "flagInclude": 0, "flagExclude": 1536 }
           }
         ]
       }

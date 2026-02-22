@@ -26,7 +26,7 @@ const HeaderSearchBoxes = observer(function HeaderSearchBoxes({
   const { assemblyDisplayNames, coarseTotalBp } = view
   return (
     <span className={classes.searchBox}>
-      <SearchBox model={view} showHelp={false} />
+      <SearchBox model={view} showHelp={false} maxWidth={250} minWidth={100} />
       <Typography variant="body2" color="textSecondary" className={classes.bp}>
         {assemblyDisplayNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
       </Typography>

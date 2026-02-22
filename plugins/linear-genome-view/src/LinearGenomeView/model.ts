@@ -94,6 +94,8 @@ function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
  * extends
  * - [BaseViewModel](../baseviewmodel)
  */
+export const AUTO_FORCE_LOAD_BP = 20_000
+
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -223,6 +225,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         showTrackOutlines: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showTrackOutlines', true),
         ),
+
+        /**
+         * #property
+         * enable scroll-to-zoom on WebGL tracks
+         */
+        scrollZoom: types.optional(types.boolean, () =>
+          localStorageGetBoolean('lgv-scrollZoom', false),
+        ),
         /**
          * #property
          * this is a non-serialized property that can be used for loading the
@@ -260,16 +270,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       volatileError: undefined as unknown,
-
-      /**
-       * #volatile
-       */
-      scaleFactor: 1,
-      /**
-       * #volatile
-       * target bpPerPx during zoom animation, used for immediate UI feedback
-       */
-      targetBpPerPx: undefined as number | undefined,
       /**
        * #volatile
        */
@@ -303,6 +303,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * temporary vertical guides that can be set by displays (e.g., LD display hover)
        */
       volatileGuides: [] as VolatileGuide[],
+      /**
+       * #volatile
+       */
     }))
     .views(self => ({
       /**
@@ -757,6 +760,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setScrollZoom(flag: boolean) {
+        self.scrollZoom = flag
+      },
+      /**
+       * #action
+       */
       setColorByCDS(flag: boolean) {
         self.colorByCDS = flag
       },
@@ -839,6 +848,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setVolatileGuides(guides: VolatileGuide[]) {
         self.volatileGuides = guides
       },
+      /**
+       * #action
+       */
       /**
        * #action
        */
@@ -1146,20 +1158,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       */
-      setScaleFactor(factor: number) {
-        self.scaleFactor = factor
-      },
-
-      /**
-       * #action
-       */
-      setTargetBpPerPx(target: number | undefined) {
-        self.targetBpPerPx = target
-      },
-
-      /**
-       * #action
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
@@ -1262,44 +1260,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
       function zoom(targetBpPerPx: number) {
         cancelLastAnimation()
 
-        // Calculate the zoom factor the caller intended (e.g., 2 for zoom out, 0.5 for zoom in)
-        const intendedFactor = targetBpPerPx / self.bpPerPx
-
-        // Apply that factor to the pending target (if mid-animation) or current bpPerPx
-        // This allows rapid clicks to accumulate
-        const effectiveBase = self.targetBpPerPx ?? self.bpPerPx
-        let effectiveTarget = effectiveBase * intendedFactor
-
         // Clamp to zoom limits
-        effectiveTarget = Math.max(
+        const effectiveTarget = Math.max(
           self.minBpPerPx,
-          Math.min(self.maxBpPerPx, effectiveTarget),
+          Math.min(self.maxBpPerPx, targetBpPerPx),
         )
 
-        const currentTarget = self.targetBpPerPx ?? self.bpPerPx
-
         // If already at limit (or effectively no change), do nothing
-        if (effectiveTarget === currentTarget) {
+        if (effectiveTarget === self.bpPerPx) {
           return
         }
 
-        // Set target immediately for UI feedback
-        self.setTargetBpPerPx(effectiveTarget)
-
-        // Calculate target scale factor relative to committed bpPerPx
-        // Don't update bpPerPx until animation completes - keeps blocks stable
-        const targetScaleFactor = self.bpPerPx / effectiveTarget
-
-        // Animate from current scaleFactor to target (smooth continuation on rapid clicks)
+        // Animate bpPerPx directly from current to target
         const [animate, cancelAnimation] = springAnimate(
-          self.scaleFactor,
-          targetScaleFactor,
-          self.setScaleFactor,
-          () => {
-            self.zoomTo(effectiveTarget)
-            self.setScaleFactor(1)
-            self.setTargetBpPerPx(undefined)
-          },
+          self.bpPerPx,
+          effectiveTarget,
+          self.zoomTo,
+          undefined,
           0,
           1000,
           50,
@@ -1355,6 +1332,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let currentBlockKeys: string | undefined
+      let coverageLeftPx = 0
+      let coverageRightPx = 0
+      let prevBpPerPx: number | undefined
+      let prevWidth: number | undefined
+      let prevDisplayedRegions: typeof self.displayedRegions | undefined
       return {
         /**
          * #getter
@@ -1365,18 +1347,46 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
+          const { offsetPx, bpPerPx, width, displayedRegions } = self
+
+          // Fast path: if only offsetPx changed and viewport is still within
+          // the coverage range of existing blocks, skip the expensive
+          // calculateStaticBlocks call entirely
+          if (
+            currentlyCalculatedStaticBlocks !== undefined &&
+            bpPerPx === prevBpPerPx &&
+            width === prevWidth &&
+            displayedRegions === prevDisplayedRegions &&
+            offsetPx >= coverageLeftPx &&
+            offsetPx + width <= coverageRightPx
+          ) {
+            return currentlyCalculatedStaticBlocks
+          }
+
           const newBlocks = calculateStaticBlocks(self)
           const newKeys = newBlocks.blocks.map(b => b.key).join(',')
           if (
             currentlyCalculatedStaticBlocks === undefined ||
-            currentBlockKeys !== newKeys
+            currentBlockKeys !== newKeys ||
+            bpPerPx !== prevBpPerPx ||
+            width !== prevWidth
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
             currentBlockKeys = newKeys
-            return currentlyCalculatedStaticBlocks
-          } else {
-            return currentlyCalculatedStaticBlocks
           }
+
+          // Update coverage range from the block extent
+          const allBlocks = currentlyCalculatedStaticBlocks.blocks
+          if (allBlocks.length > 0) {
+            const last = allBlocks[allBlocks.length - 1]!
+            coverageLeftPx = allBlocks[0]!.offsetPx
+            coverageRightPx = last.offsetPx + last.widthPx
+          }
+
+          prevBpPerPx = bpPerPx
+          prevWidth = width
+          prevDisplayedRegions = displayedRegions
+          return currentlyCalculatedStaticBlocks
         },
         /**
          * #getter
@@ -1387,6 +1397,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
+        },
+        /**
+         * #getter
+         */
+        get visibleBp() {
+          return this.dynamicBlocks.totalBp
         },
         /**
          * #getter
@@ -1402,6 +1418,64 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 end: Math.ceil(block.end),
               }) as BaseBlock,
           )
+        },
+
+        /**
+         * #getter
+         * Returns the currently visible content blocks with screen pixel
+         * positions and regionNumber guaranteed.
+         * Used by WebGL displays for per-region data fetching and rendering.
+         */
+        get visibleRegions() {
+          return this.dynamicBlocks.contentBlocks.map(block => ({
+            refName: block.refName,
+            start: block.start,
+            end: block.end,
+            assemblyName: block.assemblyName,
+            reversed: block.reversed,
+            regionNumber: block.regionNumber!,
+            offsetPx: block.offsetPx,
+            widthPx: block.widthPx,
+            screenStartPx: block.offsetPx - self.offsetPx,
+            screenEndPx: block.offsetPx - self.offsetPx + block.widthPx,
+          }))
+        },
+
+        /**
+         * #getter
+         * Merges staticBlocks back into one region per regionNumber. This
+         * undoes the 800px chunking that staticBlocks performs, but reuses
+         * its caching/stability so the result doesn't change on small pans.
+         * Used by WebGL displays as pre-expanded fetch regions.
+         */
+        get staticRegions() {
+          const regionMap = new Map<
+            number,
+            {
+              refName: string
+              start: number
+              end: number
+              assemblyName?: string
+              regionNumber: number
+            }
+          >()
+          for (const block of this.staticBlocks.contentBlocks) {
+            const regionNumber = block.regionNumber!
+            const existing = regionMap.get(regionNumber)
+            if (existing) {
+              existing.start = Math.min(existing.start, block.start)
+              existing.end = Math.max(existing.end, block.end)
+            } else {
+              regionMap.set(regionNumber, {
+                refName: block.refName,
+                start: block.start,
+                end: block.end,
+                assemblyName: block.assemblyName,
+                regionNumber,
+              })
+            }
+          }
+          return [...regionMap.values()]
         },
 
         /**
@@ -1430,23 +1504,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * effective bpPerPx accounting for pending zoom target
          */
         get effectiveBpPerPx() {
-          return self.targetBpPerPx ?? self.bpPerPx
+          return self.bpPerPx
         },
 
         /**
          * #getter
-         * total bp based on effective bpPerPx (updates immediately on zoom click)
          */
         get effectiveTotalBp() {
-          return this.effectiveBpPerPx * self.width
+          return self.bpPerPx * self.width
         },
 
         /**
          * #getter
-         * display string for effective total bp (updates immediately on zoom click)
          */
         get effectiveTotalBpDisplayStr() {
           return getBpDisplayStr(this.effectiveTotalBp)
@@ -1838,8 +1909,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : undefined
       },
 
-      get visibleRegions() {
-        return self.dynamicBlocks.contentBlocks
+      /**
+       * #getter
+       * Returns visible regions with integer bp coordinates suitable for data fetching.
+       * Uses floor(start) and ceil(end) to ensure complete coverage of visible bases.
+       * Note: dynamicBlocks.contentBlocks can have fractional start/end values.
+       */
+      get visibleRegionsBp() {
+        return self.dynamicBlocks.contentBlocks.map(block => ({
+          assemblyName: block.assemblyName,
+          refName: block.refName,
+          start: Math.floor(block.start),
+          end: Math.ceil(block.end),
+          reversed: block.reversed,
+        }))
       },
     }))
     .views(self => ({
@@ -1897,6 +1980,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabels,
         colorByCDS,
         showTrackOutlines,
+        scrollZoom,
         ...rest
       } = snap as Omit<typeof snap, symbol>
 
@@ -1917,6 +2001,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
+        ...(scrollZoom ? { scrollZoom } : {}),
       } as typeof snap
     })
 }

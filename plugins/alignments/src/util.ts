@@ -14,7 +14,7 @@ import type { IAutorunOptions } from 'mobx'
 // exist e.g. Mm/MM for base modifications
 export function getTagAlt(feature: Feature, tag: string, alt: string) {
   const tags = feature.get('tags')
-  return tags[tag] ?? tags[alt]
+  return tags !== undefined ? (tags[tag] ?? tags[alt]) : undefined
 }
 
 // orientation definitions from igv.js, see also
@@ -117,15 +117,18 @@ export function createAutorun(
 ) {
   addDisposer(
     self,
-    autorun(async function sharedAlignmentsAutorun() {
-      try {
-        await cb()
-      } catch (e) {
-        if (isAlive(self)) {
-          self.setError?.(e)
+    autorun(
+      async function sharedAlignmentsAutorun() {
+        try {
+          await cb()
+        } catch (e) {
+          if (isAlive(self)) {
+            self.setError?.(e)
+          }
         }
-      }
-    }, opts),
+      },
+      { ...opts, name: opts?.name ?? 'sharedAlignmentsAutorun' },
+    ),
   )
 }
 

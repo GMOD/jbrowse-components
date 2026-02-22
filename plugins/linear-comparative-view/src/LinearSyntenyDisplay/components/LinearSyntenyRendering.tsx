@@ -1,13 +1,20 @@
+import type React from 'react'
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
-import { getContainingView } from '@jbrowse/core/util'
+import { LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
+import { SyntenyRenderer } from '../SyntenyRenderer.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
-import { getTooltip, onSynClick, onSynContextClick } from './util.ts'
+import { getTooltip } from './util.ts'
 
 import type { ClickCoord } from './util.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -15,25 +22,35 @@ import type { LinearSyntenyDisplayModel } from '../model.ts'
 
 const SyntenyTooltip = lazy(() => import('./SyntenyTooltip.tsx'))
 
-type Timer = ReturnType<typeof setTimeout>
-
-const useStyles = makeStyles()({
-  pix: {
-    imageRendering: 'pixelated',
-    pointerEvents: 'none',
-    visibility: 'hidden',
-    position: 'absolute',
-  },
-  rel: {
-    position: 'relative',
-  },
-  mouseoverCanvas: {
-    position: 'absolute',
-    pointerEvents: 'none',
-  },
-  mainCanvas: {
-    position: 'absolute',
-  },
+const useStyles = makeStyles()(theme => {
+  const bg = theme.palette.action.disabledBackground
+  return {
+    rel: {
+      position: 'relative',
+    },
+    gpuCanvas: {
+      position: 'absolute',
+      imageRendering: 'auto',
+      willChange: 'transform',
+      contain: 'strict',
+    },
+    gpuLoadingOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      padding: theme.spacing(0, 2),
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+    },
+  }
 })
 
 const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
@@ -43,225 +60,316 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }) {
   const { classes } = useStyles()
   const { mouseoverId, height } = model
-  const xOffset = useRef(0)
   const view = getContainingView(model) as LinearSyntenyViewModel
   const width = view.width
-  const delta = useRef(0)
+
+  const gpuCanvasRef = useRef<HTMLCanvasElement>(null)
+  const initStarted = useRef(false)
+  const canvasRectRef = useRef<DOMRect | null>(null)
+  const xOffset = useRef(0)
   const scheduled = useRef(false)
-  const timeout = useRef<Timer>(null)
+  const zoomDelta = useRef(0)
+  const zoomScheduled = useRef(false)
+  const lastZoomClientX = useRef(0)
+  const mouseCurrDownX = useRef<number | undefined>(undefined)
+  const mouseInitialDownX = useRef<number | undefined>(undefined)
+
   const [anchorEl, setAnchorEl] = useState<ClickCoord>()
   const [tooltip, setTooltip] = useState('')
-  const [currX, setCurrX] = useState<number>()
-  const [mouseCurrDownX, setMouseCurrDownX] = useState<number>()
-  const [mouseInitialDownX, setMouseInitialDownX] = useState<number>()
-  const [currY, setCurrY] = useState<number>()
-  const mainSyntenyCanvasRefp = useRef<HTMLCanvasElement>(null)
-
-  // these useCallbacks avoid new refs from being created on any mouseover,
-  // etc.
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const mouseoverDetectionCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setMouseoverCanvasRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
+  const [gpuStatus, setGpuStatus] = useState<'loading' | 'ready' | 'failed'>(
+    'loading',
   )
+  const [gpuError, setGpuError] = useState('')
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const mainSyntenyCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setMainCanvasRef(ref)
-      mainSyntenyCanvasRefp.current = ref // this ref is additionally used in useEffect below
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
-  )
+  useEffect(() => {
+    canvasRectRef.current = null
+  }, [height, width])
+
+  function getCanvasRect() {
+    if (!canvasRectRef.current) {
+      canvasRectRef.current =
+        gpuCanvasRef.current?.getBoundingClientRect() ?? null
+    }
+    return canvasRectRef.current
+  }
+
+  function getEventCanvasCoords(evt: { clientX: number; clientY: number }) {
+    const rect = getCanvasRect()
+    if (!rect) {
+      return undefined
+    }
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+  }
+
+  function scheduleHorizontalScroll() {
+    if (scheduled.current) {
+      return
+    }
+    scheduled.current = true
+    window.requestAnimationFrame(() => {
+      transaction(() => {
+        for (const v of view.views) {
+          v.horizontalScroll(xOffset.current)
+        }
+        xOffset.current = 0
+        scheduled.current = false
+      })
+    })
+  }
+
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   useEffect(() => {
+    let scrollingTimer: ReturnType<typeof setTimeout> | undefined
     function onWheel(event: WheelEvent) {
       event.preventDefault()
-      if (event.ctrlKey) {
-        delta.current += event.deltaY / 500
-        for (const v of view.views) {
-          v.setScaleFactor(
-            delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
-          )
+      model.setIsScrolling(true)
+      clearTimeout(scrollingTimer)
+      scrollingTimer = setTimeout(() => {
+        model.setIsScrolling(false)
+      }, 150)
+
+      const doZoom =
+        event.ctrlKey ||
+        (view.scrollZoom && Math.abs(event.deltaY) > Math.abs(event.deltaX))
+      if (doZoom) {
+        zoomDelta.current += event.deltaY / 500
+        lastZoomClientX.current = event.clientX
+        if (!zoomScheduled.current) {
+          zoomScheduled.current = true
+          window.requestAnimationFrame(() => {
+            const d = zoomDelta.current
+            transaction(() => {
+              for (const v of view.views) {
+                v.zoomTo(
+                  d > 0 ? v.bpPerPx * (1 + d) : v.bpPerPx / (1 - d),
+                  lastZoomClientX.current - (getCanvasRect()?.left ?? 0),
+                )
+              }
+            })
+            zoomDelta.current = 0
+            zoomScheduled.current = false
+          })
         }
-        if (timeout.current) {
-          clearTimeout(timeout.current)
-        }
-        timeout.current = setTimeout(() => {
-          for (const v of view.views) {
-            v.setScaleFactor(1)
-            v.zoomTo(
-              delta.current > 0
-                ? v.bpPerPx * (1 + delta.current)
-                : v.bpPerPx / (1 - delta.current),
-              event.clientX -
-                (mainSyntenyCanvasRefp.current?.getBoundingClientRect().left ||
-                  0),
-            )
-          }
-          delta.current = 0
-        }, 300)
       } else {
         if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
           xOffset.current += event.deltaX / 2
         }
-        if (!scheduled.current) {
-          scheduled.current = true
-          window.requestAnimationFrame(() => {
-            transaction(() => {
-              for (const v of view.views) {
-                v.horizontalScroll(xOffset.current)
-              }
-              xOffset.current = 0
-              scheduled.current = false
-            })
-          })
-        }
+        scheduleHorizontalScroll()
       }
     }
-    mainSyntenyCanvasRefp.current?.addEventListener('wheel', onWheel)
+    const target = gpuCanvasRef.current
+    target?.addEventListener('wheel', onWheel, { passive: false })
     return () => {
-      mainSyntenyCanvasRefp.current?.removeEventListener('wheel', onWheel)
+      target?.removeEventListener('wheel', onWheel)
+      clearTimeout(scrollingTimer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, height, width])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const clickMapCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setClickMapCanvasRef(ref)
+  const gpuCanvasCallbackRef = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      gpuCanvasRef.current = canvas
+      if (!canvas || initStarted.current) {
+        return
+      }
+      initStarted.current = true
+      const renderer = SyntenyRenderer.getOrCreate(canvas)
+      renderer
+        .init()
+        .then(success => {
+          if (!success) {
+            console.error('[LinearSyntenyRendering] GPU initialization failed')
+            setGpuError('WebGPU device not available')
+          }
+          model.setGpuRenderer(renderer)
+          model.setGpuInitialized(success)
+          setGpuStatus(success ? 'ready' : 'failed')
+        })
+        .catch((e: unknown) => {
+          console.error('[LinearSyntenyRendering] GPU initialization error:', e)
+          setGpuError(e instanceof Error ? e.message : `${e}`)
+          model.setGpuInitialized(false)
+          setGpuStatus('failed')
+        })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
+    [model],
   )
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const cigarClickMapCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setCigarClickMapCanvasRef(ref)
+
+  const pickFeature = useCallback(
+    (x: number, y: number) => {
+      if (model.gpuRenderer && model.gpuInitialized) {
+        const featureIndex = model.gpuRenderer.pick(x, y)
+        if (
+          featureIndex !== undefined &&
+          featureIndex >= 0 &&
+          featureIndex < model.numFeats
+        ) {
+          return model.getFeature(featureIndex)
+        }
+      }
+      return undefined
+    },
+    [model],
+  )
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLCanvasElement>) => {
+      if (mouseCurrDownX.current !== undefined) {
+        xOffset.current += mouseCurrDownX.current - event.clientX
+        mouseCurrDownX.current = event.clientX
+        scheduleHorizontalScroll()
+        return
+      }
+
+      const coords = getEventCanvasCoords(event)
+      if (!coords) {
+        return
+      }
+
+      if (model.isScrolling) {
+        model.setMouseoverId(undefined)
+        model.setHoveredFeatureIdx(-1)
+        setTooltip('')
+      } else {
+        const applyHover = (featureIndex: number) => {
+          model.setHoveredFeatureIdx(featureIndex)
+          if (featureIndex >= 0 && featureIndex < model.numFeats) {
+            const feat = model.getFeature(featureIndex)
+            if (feat) {
+              model.setMouseoverId(feat.id)
+              setTooltip(getTooltip(feat))
+            }
+          } else {
+            model.setMouseoverId(undefined)
+            setTooltip('')
+          }
+        }
+        const featureIndex = model.gpuRenderer?.pick(
+          coords.x,
+          coords.y,
+          applyHover,
+        )
+        if (featureIndex !== undefined) {
+          applyHover(featureIndex)
+        }
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height, width],
+    [view, model],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    model.setMouseoverId(undefined)
+    model.setHoveredFeatureIdx(-1)
+    mouseInitialDownX.current = undefined
+    mouseCurrDownX.current = undefined
+    model.setIsScrolling(false)
+  }, [model])
+
+  const handleMouseDown = useCallback(
+    (evt: React.MouseEvent) => {
+      mouseCurrDownX.current = evt.clientX
+      mouseInitialDownX.current = evt.clientX
+      model.setIsScrolling(true)
+    },
+    [model],
+  )
+
+  const handleMouseUp = useCallback(
+    (evt: React.MouseEvent<HTMLCanvasElement>) => {
+      mouseCurrDownX.current = undefined
+      model.setIsScrolling(false)
+      if (
+        mouseInitialDownX.current !== undefined &&
+        Math.abs(evt.clientX - mouseInitialDownX.current) < 5
+      ) {
+        const coords = getEventCanvasCoords(evt)
+        if (!coords || !model.gpuRenderer || !model.gpuInitialized) {
+          return
+        }
+        const feat = pickFeature(coords.x, coords.y)
+        if (feat) {
+          const featureIndex = model.gpuRenderer.pick(coords.x, coords.y)
+          if (featureIndex !== undefined) {
+            model.setClickedFeatureIdx(featureIndex)
+          }
+          const session = getSession(model)
+          if (isSessionModelWithWidgets(session)) {
+            session.showWidget(
+              session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+                view: getContainingView(model),
+                track: getContainingTrack(model),
+                featureData: {
+                  uniqueId: feat.id,
+                  start: feat.start,
+                  end: feat.end,
+                  strand: feat.strand,
+                  refName: feat.refName,
+                  name: feat.name,
+                  assemblyName: feat.assemblyName,
+                  mate: feat.mate,
+                  identity: feat.identity,
+                },
+                level: model.level,
+              }),
+            )
+          }
+        } else {
+          model.setClickedFeatureIdx(-1)
+        }
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, pickFeature],
+  )
+
+  const handleContextMenu = useCallback(
+    (evt: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!model.gpuRenderer || !model.gpuInitialized) {
+        return
+      }
+      evt.preventDefault()
+      const coords = getEventCanvasCoords(evt)
+      if (!coords) {
+        return
+      }
+      const feat = pickFeature(coords.x, coords.y)
+      if (feat) {
+        setAnchorEl({
+          clientX: evt.clientX,
+          clientY: evt.clientY,
+          feature: feat,
+        })
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, pickFeature],
   )
 
   return (
     <div className={classes.rel}>
       <canvas
-        ref={mainSyntenyCanvasRef}
-        onMouseMove={event => {
-          if (mouseCurrDownX !== undefined) {
-            xOffset.current += mouseCurrDownX - event.clientX
-            setMouseCurrDownX(event.clientX)
-            if (!scheduled.current) {
-              scheduled.current = true
-              window.requestAnimationFrame(() => {
-                transaction(() => {
-                  for (const v of view.views) {
-                    v.horizontalScroll(xOffset.current)
-                  }
-                  xOffset.current = 0
-                  scheduled.current = false
-                })
-              })
-            }
-          } else {
-            const ref1 = model.clickMapCanvas
-            const ref2 = model.cigarClickMapCanvas
-            if (!ref1 || !ref2) {
-              return
-            }
-            const rect = ref1.getBoundingClientRect()
-            const ctx1 = ref1.getContext('2d')
-            const ctx2 = ref2.getContext('2d')
-            if (!ctx1 || !ctx2) {
-              return
-            }
-            const { clientX, clientY } = event
-            const x = clientX - rect.left
-            const y = clientY - rect.top
-            setCurrX(clientX)
-            setCurrY(clientY)
-            const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-            const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
-            if (model.numFeats === 0) {
-              setTooltip('')
-              return
-            }
-            const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
-            const id = getId(r1!, g1!, b1!, unitMultiplier)
-            model.setMouseoverId(model.featPositions[id]?.f.id())
-            if (id === -1 || !model.featPositions[id]) {
-              setTooltip('')
-            } else {
-              const { f, cigar } = model.featPositions[id]
-              const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-              const cigarIdx = getId(r2!, g2!, b2!, unitMultiplier2)
-              // this is hacky but the index sometimes returns odd number which
-              // is invalid due to the color-to-id mapping, check it is even to
-              // ensure better validity
-              // Also check that the CIGAR pixel data is not all zeros (no CIGAR data drawn)
-              const hasCigarData =
-                cigarIdx % 2 === 0 && (r2 !== 0 || g2 !== 0 || b2 !== 0)
-              setTooltip(
-                getTooltip({
-                  feature: f,
-                  cigarOp: hasCigarData ? cigar[cigarIdx + 1] : undefined,
-                  cigarOpLen: hasCigarData ? cigar[cigarIdx] : undefined,
-                }),
-              )
-            }
-          }
-        }}
-        onMouseLeave={() => {
-          model.setMouseoverId(undefined)
-          setMouseInitialDownX(undefined)
-          setMouseCurrDownX(undefined)
-        }}
-        onMouseDown={evt => {
-          setMouseCurrDownX(evt.clientX)
-          setMouseInitialDownX(evt.clientX)
-        }}
-        onMouseUp={evt => {
-          setMouseCurrDownX(undefined)
-          if (
-            mouseInitialDownX !== undefined &&
-            Math.abs(evt.clientX - mouseInitialDownX) < 5
-          ) {
-            onSynClick(evt, model)
-          }
-        }}
-        onContextMenu={evt => {
-          onSynContextClick(evt, model, setAnchorEl)
-        }}
+        ref={gpuCanvasCallbackRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onContextMenu={handleContextMenu}
         data-testid="synteny_canvas"
-        className={classes.mainCanvas}
-        width={width}
-        height={height}
+        className={classes.gpuCanvas}
+        style={{ width, height }}
       />
-      <canvas
-        ref={mouseoverDetectionCanvasRef}
-        width={width}
-        height={height}
-        className={classes.mouseoverCanvas}
-      />
-      <canvas
-        ref={clickMapCanvasRef}
-        className={classes.pix}
-        width={width}
-        height={height}
-      />
-      <canvas
-        ref={cigarClickMapCanvasRef}
-        className={classes.pix}
-        width={width}
-        height={height}
-      />
-      {mouseoverId && tooltip && currX && currY ? (
-        <SyntenyTooltip title={tooltip} />
+      {gpuStatus === 'loading' ? (
+        <div className={classes.gpuLoadingOverlay}>
+          <LoadingEllipses message="Initializing GPU renderer" />
+        </div>
       ) : null}
+      {gpuStatus === 'failed' ? (
+        <div className={classes.gpuLoadingOverlay}>
+          GPU initialization failed: {gpuError}
+        </div>
+      ) : null}
+      {mouseoverId && tooltip ? <SyntenyTooltip title={tooltip} /> : null}
       {anchorEl ? (
         <SyntenyContextMenu
           model={model}

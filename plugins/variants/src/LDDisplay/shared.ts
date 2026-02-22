@@ -5,7 +5,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
-  NonBlockCanvasDisplayMixin,
+  FeatureDensityMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -13,10 +13,14 @@ import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
+import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel SharedLDModel
@@ -24,7 +28,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
+ * - [FeatureDensityMixin](../featuredensitymixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -34,7 +38,7 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      NonBlockCanvasDisplayMixin(),
+      FeatureDensityMixin(),
       types.model({
         /**
          * #property
@@ -153,7 +157,31 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      flatbush: undefined as ArrayBufferLike | undefined,
+      rpcData: null as WebGLLDDataResult | null,
+      /**
+       * #volatile
+       */
+      loading: false,
+      /**
+       * #volatile
+       */
+      statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      lastDrawnBpPerPx: undefined as number | undefined,
+      /**
+       * #volatile
+       */
+      renderingStopToken: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      flatbush: undefined as ArrayBuffer | undefined,
       /**
        * #volatile
        */
@@ -177,10 +205,6 @@ export default function sharedModelFactory(
       cellWidth: 0,
       /**
        * #volatile
-       */
-      error: undefined as Error | undefined,
-      /**
-       * #volatile
        * Stats about filtered variants
        */
       filterStats: undefined as FilterStats | undefined,
@@ -196,8 +220,44 @@ export default function sharedModelFactory(
       /**
        * #action
        */
+      setRpcData(data: WebGLLDDataResult | null) {
+        self.rpcData = data
+      },
+      /**
+       * #action
+       */
+      setLoading(loading: boolean) {
+        self.loading = loading
+      },
+      /**
+       * #action
+       */
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
+      },
+      /**
+       * #action
+       */
+      setLastDrawnOffsetPx(px: number) {
+        self.lastDrawnOffsetPx = px
+      },
+      /**
+       * #action
+       */
+      setLastDrawnBpPerPx(bpPerPx: number) {
+        self.lastDrawnBpPerPx = bpPerPx
+      },
+      /**
+       * #action
+       */
+      setRenderingStopToken(token?: string) {
+        self.renderingStopToken = token
+      },
+      /**
+       * #action
+       */
       setFlatbushData(
-        flatbush: ArrayBufferLike | undefined,
+        flatbush: ArrayBuffer | undefined,
         items: LDFlatbushItem[],
         snps: LDMatrixResult['snps'],
         maxScore: number,
@@ -216,12 +276,6 @@ export default function sharedModelFactory(
        */
       setLineZoneHeight(n: number) {
         self.lineZoneHeightSetting = Math.max(0, n)
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error as Error | undefined
       },
       /**
        * #action
@@ -363,17 +417,11 @@ export default function sharedModelFactory(
       get rendererTypeName() {
         return 'LDRenderer'
       },
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        return getConf(self, 'renderer')
+      get drawn() {
+        return !!self.rpcData
       },
-      /**
-       * #getter
-       */
-      get regionTooLarge() {
-        return false
+      get fullyDrawn() {
+        return !!self.rpcData
       },
       /**
        * #getter
@@ -413,12 +461,9 @@ export default function sharedModelFactory(
        * Returns the effective color scheme, falling back to config
        */
       get colorScheme() {
-        const setting = self.colorSchemeSetting
-        if (setting !== undefined) {
-          return setting || undefined
-        }
-        const conf = getConf(self, 'colorScheme')
-        return conf || undefined
+        return (
+          self.colorSchemeSetting || getConf(self, 'colorScheme') || undefined
+        )
       },
       /**
        * #getter
@@ -536,12 +581,6 @@ export default function sharedModelFactory(
           adapterType === 'LdmatAdapter'
         )
       },
-      /**
-       * #method
-       */
-      regionCannotBeRendered() {
-        return null
-      },
     }))
     .views(self => ({
       /**
@@ -553,69 +592,60 @@ export default function sharedModelFactory(
         return Math.max(50, self.height - self.lineZoneHeight)
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        filterMenuItems() {
-          // Filter settings only available for VCF-computed LD, not pre-computed
-          if (self.isPrecomputedLD) {
-            return []
-          }
-          return [
-            {
-              label: 'LD-specific filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  LDFilterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+    .views(self => ({
+      /**
+       * #method
+       */
+      filterMenuItems() {
+        // Filter settings only available for VCF-computed LD, not pre-computed
+        if (self.isPrecomputedLD) {
+          return []
+        }
+        return [
+          {
+            label: 'LD-specific filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                LDFilterDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-            {
-              label: 'General JEXL filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+          },
+          {
+            label: 'General JEXL filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                AddFiltersDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-          ]
-        },
-        /**
-         * #method
-         */
-        renderProps() {
-          return {
-            ...superRenderProps(),
-            config: self.rendererConfig,
-            // Only pass displayHeight when fitToHeight is true
-            // This avoids tracking height changes when using natural triangle size
-            // ldCanvasHeight already accounts for lineZoneHeight and recombinationZoneHeight
-            ...(self.fitToHeight ? { displayHeight: self.ldCanvasHeight } : {}),
-            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-            lengthCutoffFilter: self.lengthCutoffFilter,
-            hweFilterThreshold: self.hweFilterThreshold,
-            callRateFilter: self.callRateFilter,
-            jexlFilters: self.jexlFilters,
-            ldMetric: self.ldMetric,
-            colorScheme: self.colorScheme,
-            fitToHeight: self.fitToHeight,
-            useGenomicPositions: self.useGenomicPositions,
-            signedLD: self.signedLD,
-          }
-        },
-      }
-    })
+          },
+        ]
+      },
+      renderProps() {
+        return { notReady: true }
+      },
+      /**
+       * #method
+       */
+      legendItems(): LegendItem[] {
+        const metric = self.ldMetric === 'dprime' ? "D'" : 'R²'
+        const range = self.signedLD ? '-1 to 1' : '0 to 1'
+        return [{ label: `${metric}: ${range}` }]
+      },
+      /**
+       * #method
+       */
+      svgLegendWidth(): number {
+        return self.showLegend ? 140 : 0
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
@@ -750,20 +780,24 @@ export default function sharedModelFactory(
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as SharedLDModel)
-          } catch (e) {
-            console.error(e)
-            getSession(self).notifyError(`${e}`, e)
-          }
-        })()
-      },
-    }))
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+      return {
+        afterAttach() {
+          superAfterAttach()
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const { doAfterAttach } = await import('./afterAttach.ts')
+              doAfterAttach(self as SharedLDModel)
+            } catch (e) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          })()
+        },
+      }
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
@@ -790,66 +824,53 @@ export default function sharedModelFactory(
         jexlFiltersSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
+
+      const defaults: Record<string, unknown> = {
+        minorAlleleFrequencyFilterSetting: 0.1,
+        lengthCutoffFilterSetting: Number.MAX_SAFE_INTEGER,
+        lineZoneHeightSetting: 100,
+        ldMetricSetting: 'r2',
+        colorSchemeSetting: '',
+        showLegendSetting: false,
+        showLDTriangleSetting: true,
+        showRecombinationSetting: false,
+        recombinationZoneHeightSetting: 50,
+        fitToHeightSetting: false,
+        hweFilterThresholdSetting: 0,
+        callRateFilterSetting: 0,
+        showVerticalGuidesSetting: true,
+        showLabelsSetting: false,
+        tickHeightSetting: 6,
+        useGenomicPositionsSetting: false,
+        signedLDSetting: false,
+      }
+      const settings = {
+        minorAlleleFrequencyFilterSetting,
+        lengthCutoffFilterSetting,
+        lineZoneHeightSetting,
+        ldMetricSetting,
+        colorSchemeSetting,
+        showLegendSetting,
+        showLDTriangleSetting,
+        showRecombinationSetting,
+        recombinationZoneHeightSetting,
+        fitToHeightSetting,
+        hweFilterThresholdSetting,
+        callRateFilterSetting,
+        showVerticalGuidesSetting,
+        showLabelsSetting,
+        tickHeightSetting,
+        useGenomicPositionsSetting,
+        signedLDSetting,
+      }
+      const nonDefault = Object.fromEntries(
+        Object.entries(settings).filter(
+          ([k, v]) => v !== undefined && v !== defaults[k],
+        ),
+      )
       return {
         ...rest,
-        // Only save settings that differ from config defaults
-        ...(minorAlleleFrequencyFilterSetting !== undefined &&
-        minorAlleleFrequencyFilterSetting !== 0.1
-          ? { minorAlleleFrequencyFilterSetting }
-          : {}),
-        ...(lengthCutoffFilterSetting !== undefined &&
-        lengthCutoffFilterSetting !== Number.MAX_SAFE_INTEGER
-          ? { lengthCutoffFilterSetting }
-          : {}),
-        ...(lineZoneHeightSetting !== undefined && lineZoneHeightSetting !== 100
-          ? { lineZoneHeightSetting }
-          : {}),
-        ...(ldMetricSetting !== undefined && ldMetricSetting !== 'r2'
-          ? { ldMetricSetting }
-          : {}),
-        ...(colorSchemeSetting !== undefined && colorSchemeSetting !== ''
-          ? { colorSchemeSetting }
-          : {}),
-        ...(showLegendSetting !== undefined && showLegendSetting
-          ? { showLegendSetting }
-          : {}),
-        ...(showLDTriangleSetting !== undefined && !showLDTriangleSetting
-          ? { showLDTriangleSetting }
-          : {}),
-        ...(showRecombinationSetting !== undefined && showRecombinationSetting
-          ? { showRecombinationSetting }
-          : {}),
-        ...(recombinationZoneHeightSetting !== undefined &&
-        recombinationZoneHeightSetting !== 50
-          ? { recombinationZoneHeightSetting }
-          : {}),
-        ...(fitToHeightSetting !== undefined && fitToHeightSetting
-          ? { fitToHeightSetting }
-          : {}),
-        ...(hweFilterThresholdSetting !== undefined &&
-        hweFilterThresholdSetting !== 0.001
-          ? { hweFilterThresholdSetting }
-          : {}),
-        ...(callRateFilterSetting !== undefined && callRateFilterSetting !== 0
-          ? { callRateFilterSetting }
-          : {}),
-        ...(showVerticalGuidesSetting !== undefined &&
-        !showVerticalGuidesSetting
-          ? { showVerticalGuidesSetting }
-          : {}),
-        ...(showLabelsSetting !== undefined && showLabelsSetting
-          ? { showLabelsSetting }
-          : {}),
-        ...(tickHeightSetting !== undefined && tickHeightSetting !== 6
-          ? { tickHeightSetting }
-          : {}),
-        ...(useGenomicPositionsSetting !== undefined &&
-        useGenomicPositionsSetting
-          ? { useGenomicPositionsSetting }
-          : {}),
-        ...(signedLDSetting !== undefined && signedLDSetting
-          ? { signedLDSetting }
-          : {}),
+        ...nonDefault,
         ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
       } as typeof snap
     })

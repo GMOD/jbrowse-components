@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
@@ -26,6 +27,7 @@ export async function getPhasedGenotypeMatrix({
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     sampleInfo: Record<string, SampleInfo>
+    statusCallback?: (arg: string) => void
   }
 }) {
   const {
@@ -37,6 +39,7 @@ export async function getPhasedGenotypeMatrix({
     lengthCutoffFilter,
     stopTokenCheck,
     sampleInfo,
+    statusCallback,
   } = args
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
@@ -57,8 +60,10 @@ export async function getPhasedGenotypeMatrix({
     lengthCutoffFilter,
     stopTokenCheck,
     splitCache,
-    features: await firstValueFrom(
-      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+    features: await updateStatus('Loading features', statusCallback, () =>
+      firstValueFrom(
+        dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
+      ),
     ),
   })
 

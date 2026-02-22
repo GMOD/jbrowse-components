@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaF(pluginManager)
+    const configSchema = configSchemaF()
     return new DisplayType({
       name: 'LinearSyntenyDisplay',
       configSchema,

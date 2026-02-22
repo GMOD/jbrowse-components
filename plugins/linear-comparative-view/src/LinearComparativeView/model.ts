@@ -67,6 +67,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
+        scrollZoom: false,
+        /**
+         * #property
+         */
         showDynamicControls: true,
         /**
          * #property
@@ -156,11 +160,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
               // doesn't link showTrack/hideTrack, doesn't make sense in
               // synteny views most time
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-                'setScaleFactor',
-              ]
+              const syncActions = ['horizontalScroll', 'zoomTo']
 
               if (self.linkViews && syncActions.includes(rawCall.name)) {
                 const sourcePath = getPath(rawCall.context)
@@ -236,6 +236,15 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
+      },
+      /**
+       * #action
+       */
+      setScrollZoom(arg: boolean) {
+        self.scrollZoom = arg
+        for (const v of self.views) {
+          v.setScrollZoom(arg)
+        }
       },
       /**
        * #action
@@ -317,6 +326,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       headerMenuItems(): MenuItem[] {
         return []
       },
+      /**
+       * #method
+       * items for the "Show..." submenu in the header. overridden by
+       * subclasses to add view-specific toggle options
+       */
+      showMenuItems(): MenuItem[] {
+        return []
+      },
     }))
     .views(self => ({
       /**
@@ -394,6 +411,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         showIntraviewLinks,
         linkViews,
         interactiveOverlay,
+        scrollZoom,
         showDynamicControls,
         viewTrackConfigs,
         ...rest
@@ -404,6 +422,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
         ...(linkViews ? { linkViews } : {}),
         ...(interactiveOverlay ? { interactiveOverlay } : {}),
+        ...(scrollZoom ? { scrollZoom } : {}),
         ...(!showDynamicControls ? { showDynamicControls } : {}),
         ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
       } as typeof snap

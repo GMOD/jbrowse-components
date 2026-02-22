@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
@@ -17,11 +16,7 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() =>
-        import('@jbrowse/plugin-linear-genome-view').then(m => ({
-          default: m.LinearBasicDisplayComponent,
-        })),
-      ),
+      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

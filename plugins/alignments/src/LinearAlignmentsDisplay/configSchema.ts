@@ -1,45 +1,49 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * #config LinearAlignmentsDisplay
- * has a "pileup" sub-display, where you can see individual reads and a
- * quantitative "snpcoverage" sub-display track showing SNP frequencies
- * extends
- * - [BaseLinearDisplay](../baselineardisplay)
+ * Configuration schema for the LinearAlignmentsDisplay
  */
-export default function configModelFactory(pluginManager: PluginManager) {
+export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearAlignmentsDisplay',
     {
-      /**
-       * #slot
-       */
-      pileupDisplay: pluginManager.getDisplayType('LinearPileupDisplay')!
-        .configSchema,
-
-      /**
-       * #slot
-       */
-      snpCoverageDisplay: pluginManager.getDisplayType(
-        'LinearSNPCoverageDisplay',
-      )!.configSchema,
-
-      /**
-       * #slot
-       */
-      height: {
+      featureHeight: {
         type: 'number',
-        defaultValue: 250,
+        defaultValue: 7,
+        description: 'Height of each feature (read) in pixels',
+      },
+      featureSpacing: {
+        type: 'number',
+        defaultValue: 1,
+        description: 'Spacing between features in pixels',
+      },
+      maxHeight: {
+        type: 'number',
+        defaultValue: 1200,
+        description: 'Maximum height of the display in pixels',
+      },
+      colorBy: {
+        type: 'frozen',
+        defaultValue: { type: 'normal' },
+        description: 'Color scheme for reads',
+      },
+      filterBy: {
+        type: 'frozen',
+        defaultValue: {
+          flagInclude: 0,
+          flagExclude: 1540,
+        },
+        description: 'Filter settings for reads',
       },
     },
     {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: baseLinearDisplayConfigSchema,
+      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

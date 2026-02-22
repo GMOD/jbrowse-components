@@ -184,6 +184,24 @@
           }
         }
       }
+    },
+    {
+      "name": "volvox_joined",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_joined-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox_joined.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox_joined.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "configuration": {
@@ -446,12 +464,8 @@
           "type": "LinearAlignmentsDisplay",
           "height": 600,
           "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "colorBy": {
-              "type": "mappingQuality"
-            }
+          "colorBy": {
+            "type": "mappingQuality"
           }
         }
       ]
@@ -571,16 +585,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10
-              }
-            }
-          }
+          "maxHeight": 10
         }
       ]
     },
@@ -1533,6 +1538,63 @@
       }
     },
     {
+      "type": "AlignmentsTrack",
+      "trackId": "wgsim_short_reads",
+      "name": "wgsim short reads (joined genome)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "wgsim_short_reads.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "wgsim_short_reads.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "badread_long_reads",
+      "name": "badread long reads (joined genome)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "badread_long_reads.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "badread_long_reads.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_joined_vs_volvox",
+      "name": "volvox_joined_vs_volvox",
+      "assemblyNames": ["volvox", "volvox_joined"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_joined_vs_volvox.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox", "volvox_joined"]
+      }
+    },
+    {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
       "trackId": "volvox_fake_synteny_alt",
@@ -1643,10 +1705,7 @@
           "type": "LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-          }
+          "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
         }
       ]
     },
@@ -1813,16 +1872,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "deep_seq_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "deep_seq_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10000
-              }
-            }
-          }
+          "maxHeight": 10000
         }
       ]
     },
@@ -2380,20 +2430,17 @@
       },
       "displays": [
         {
-          "type": "LinearBasicDisplay",
+          "type": "LinearWebGLFeatureDisplay",
           "displayId": "gff3_custom_tooltips_linear",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
-            "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
-            },
-            "showLabels": true,
-            "showDescriptions": true,
-            "subfeatureLabels": "below"
-          }
+          "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
+          "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+          "labels": {
+            "name": "jexl:get(feature,'name') || get(feature,'id')",
+            "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+          },
+          "showLabels": true,
+          "showDescriptions": true,
+          "subfeatureLabels": "below"
         }
       ]
     },
@@ -2412,18 +2459,15 @@
       },
       "displays": [
         {
-          "type": "LinearBasicDisplay",
+          "type": "LinearWebGLFeatureDisplay",
           "displayId": "gff3_mouseover_attr_linear",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
-            },
-            "showLabels": true,
-            "showDescriptions": false,
-            "subfeatureLabels": "below"
-          }
+          "labels": {
+            "name": "jexl:get(feature,'name') || get(feature,'id')",
+            "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+          },
+          "showLabels": true,
+          "showDescriptions": false,
+          "subfeatureLabels": "below"
         }
       ]
     },
@@ -2478,12 +2522,48 @@
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
           "jexlFilters": ["get(feature,'start')<8000"],
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
-          }
+          "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
         }
       ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_posneg_multi",
+      "name": "MultiWig (pos/neg values)",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "sample1",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "posneg_rw1.bw"
+            }
+          },
+          {
+            "name": "sample2",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "posneg_rw2.bw"
+            }
+          },
+          {
+            "name": "sample3",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "posneg_rw3.bw"
+            }
+          },
+          {
+            "name": "sample4",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "posneg_rw4.bw"
+            }
+          }
+        ]
+      }
     }
   ],
   "plugins": [

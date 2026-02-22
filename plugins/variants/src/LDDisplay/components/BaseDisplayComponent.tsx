@@ -4,19 +4,10 @@ import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-/**
- * Custom display component for LD display that handles offset positioning
- * differently than the standard NonBlockCanvasDisplayComponent.
- *
- * The LD display needs to position content at Math.max(0, -offsetPx) when
- * scrolled beyond the region start, without the smooth scrolling shift
- * that NonBlockCanvasDisplayComponent provides.
- */
 export interface LDDisplayModel {
   error?: unknown
-  regionTooLarge?: boolean
-  reload: () => void
-  regionCannotBeRendered: () => React.ReactElement | null
+  regionTooLarge: boolean
+  regionCannotBeRendered: (region?: unknown) => React.ReactElement | null
   drawn: boolean
   loading: boolean
   statusMessage?: string

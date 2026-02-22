@@ -1,35 +1,29 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { autorun, reaction } from 'mobx'
-
 import {
-  drawCigarClickMap,
-  drawMouseoverClickMap,
-  drawRef,
-} from './drawSynteny.ts'
+  getContainingView,
+  getSession,
+  isAbortException,
+} from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
-import type { LinearSyntenyDisplayModel } from './model.ts'
+import type { LinearSyntenyDisplayModel, SyntenyFeatureData } from './model.ts'
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-import type { Feature } from '@jbrowse/core/util'
-
-interface Pos {
-  offsetPx: number
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
-}
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
 
+export interface SyntenyRpcResult extends SyntenyFeatureData {
+  instanceData: SyntenyInstanceData
+}
+
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
+  let lastInstanceData: SyntenyInstanceData | undefined
+  let lastRenderer: unknown = null
+  let currentStopToken: StopToken | undefined
+
   addDisposer(
     self,
     autorun(
@@ -45,144 +39,177 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        const ctx1 = self.mainCanvas?.getContext('2d')
-        const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
-        if (!ctx1 || !ctx3) {
+        const {
+          alpha,
+          featureData,
+          level,
+          minAlignmentLength,
+          hoveredFeatureIdx,
+          clickedFeatureIdx,
+        } = self
+        const gpuInstanceData = self.gpuInstanceData
+        const height = self.height
+        const width = view.width
+
+        if (!self.gpuRenderer || !self.gpuInitialized) {
           return
         }
 
-        // Access alpha to make autorun react to alpha changes
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { alpha } = self
-        const height = self.height
-        const width = view.width
-        ctx1.clearRect(0, 0, width, height)
+        if (self.gpuRenderer !== lastRenderer) {
+          lastInstanceData = undefined
+          lastRenderer = self.gpuRenderer
+        }
 
-        // Draw main canvas immediately
-        drawRef(self, ctx1)
+        self.gpuRenderer.resize(width, height)
 
-        drawCigarClickMap(self, ctx3)
+        if (gpuInstanceData && gpuInstanceData !== lastInstanceData) {
+          lastInstanceData = gpuInstanceData
+          self.gpuRenderer.uploadGeometry(gpuInstanceData)
+        }
+
+        if (!featureData) {
+          return
+        }
+
+        const v0 = view.views[level]!
+        const v1 = view.views[level + 1]!
+        const maxOffScreenPx = view.maxOffScreenDrawPx
+
+        const hoveredFeatureId =
+          hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0
+        const clickedFeatureId =
+          clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0
+
+        self.gpuRenderer.render(
+          v0.offsetPx,
+          v1.offsetPx,
+          height,
+          v0.bpPerPx,
+          v1.bpPerPx,
+          maxOffScreenPx,
+          minAlignmentLength,
+          alpha,
+          hoveredFeatureId,
+          clickedFeatureId,
+        )
       },
-      { name: 'SyntenyDraw' },
+      {
+        name: 'SyntenyDraw',
+      },
     ),
   )
+
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
   addDisposer(
     self,
     autorun(
-      function syntenyMouseoverAutorun() {
+      function syntenyFetchAutorun() {
         if (self.isMinimized) {
           return
         }
-        const view = getContainingView(self) as LinearSyntenyViewModel
+        const view = getContainingView(self) as LSV
         if (
           !view.initialized ||
           !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
           return
         }
-        // Access reactive properties so autorun is triggered when they change
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { clickId, mouseoverId } = self
-        drawMouseoverClickMap(self)
+
+        // access observables to track them (issue #3456)
+        JSON.stringify(view.views.map(v => v.displayedRegions))
+        view.views.map(v => v.bpPerPx)
+        view.views.map(v => v.staticBlocks.contentBlocks.map(b => b.key))
+
+        // Track rendering settings so RPC re-fires when they change
+        const colorBy = self.colorBy
+        const drawCurves = view.drawCurves
+        const drawCIGAR = view.drawCIGAR
+        const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
+        const drawLocationMarkers = view.drawLocationMarkers
+
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+        }
+        if (currentStopToken) {
+          stopStopToken(currentStopToken)
+        }
+
+        const thisStopToken = createStopToken()
+        currentStopToken = thisStopToken
+
+        debounceTimer = setTimeout(async () => {
+          try {
+            const { level, adapterConfig } = self
+            const { rpcManager } = getSession(self)
+            const view = getContainingView(self) as LSV
+            if (
+              !view.initialized ||
+              !view.views.every(
+                a => a.displayedRegions.length > 0 && a.initialized,
+              )
+            ) {
+              return
+            }
+            const sessionId = getRpcSessionId(self)
+
+            const viewSnaps = view.views.map(v => ({
+              bpPerPx: v.bpPerPx,
+              offsetPx: v.offsetPx,
+              displayedRegions: v.displayedRegions,
+              staticBlocks: {
+                contentBlocks: v.staticBlocks.contentBlocks,
+                blocks: v.staticBlocks.blocks,
+              },
+              interRegionPaddingWidth: v.interRegionPaddingWidth,
+              minimumBlockWidth: v.minimumBlockWidth,
+              width: v.width,
+            }))
+
+            const regions = view.views[level]!.staticBlocks.contentBlocks
+
+            const result = (await rpcManager.call(
+              sessionId,
+              'SyntenyGetFeaturesAndPositions',
+              {
+                adapterConfig,
+                regions,
+                viewSnaps,
+                level,
+                sessionId,
+                stopToken: thisStopToken,
+                colorBy,
+                drawCurves,
+                drawCIGAR,
+                drawCIGARMatchesOnly,
+                drawLocationMarkers,
+              },
+            )) as SyntenyRpcResult
+
+            if (thisStopToken !== currentStopToken || !isAlive(self)) {
+              return
+            }
+
+            const { instanceData, ...featureData } = result
+            self.setFeatureData(featureData)
+            self.setGpuInstanceData(instanceData)
+          } catch (e) {
+            if (!isAbortException(e)) {
+              if (isAlive(self)) {
+                console.error(e)
+                self.setError(e)
+              }
+            }
+          }
+        }, 300)
       },
-      { name: 'SyntenyMouseover' },
+      { name: 'SyntenyFetch' },
     ),
   )
-
-  // this attempts to reduce recalculation of feature positions drawn by the
-  // synteny view
-  //
-  // uses a reaction to say "we know the positions don't change in any relevant
-  // way unless bpPerPx changes or displayedRegions changes"
-  addDisposer(
-    self,
-    reaction(
-      () => {
-        if (self.isMinimized) {
-          return { initialized: false }
-        }
-        const view = getContainingView(self) as LSV
-        return {
-          bpPerPx: view.views.map(v => v.bpPerPx),
-
-          // stringifying 'deeply' accesses the displayed regions, see
-          // issue #3456
-          displayedRegions: JSON.stringify(
-            view.views.map(v => v.displayedRegions),
-          ),
-          features: self.features,
-          initialized:
-            view.initialized &&
-            view.views.every(
-              a => a.displayedRegions.length > 0 && a.initialized,
-            ),
-        }
-      },
-      ({ initialized }) => {
-        if (!initialized) {
-          return
-        }
-        const { level } = self
-        const { assemblyManager } = getSession(self)
-        const view = getContainingView(self) as LSV
-        const viewSnaps = view.views.map(view => ({
-          ...getSnapshot(view),
-          width: view.width,
-          staticBlocks: view.staticBlocks,
-          interRegionPaddingWidth: view.interRegionPaddingWidth,
-          minimumBlockWidth: view.minimumBlockWidth,
-        }))
-
-        const map = [] as FeatPos[]
-        const feats = self.features || []
-
-        for (const f of feats) {
-          const mate = f.get('mate')
-          let f1s = f.get('start')
-          let f1e = f.get('end')
-          const f2s = mate.start
-          const f2e = mate.end
-
-          if (f.get('strand') === -1) {
-            ;[f1e, f1s] = [f1s, f1e]
-          }
-          const a1 = assemblyManager.get(f.get('assemblyName'))
-          const a2 = assemblyManager.get(mate.assemblyName)
-          const r1 = f.get('refName')
-          const r2 = mate.refName
-          const ref1 = a1?.getCanonicalRefName(r1) || r1
-          const ref2 = a2?.getCanonicalRefName(r2) || r2
-          const v1 = viewSnaps[level]!
-          const v2 = viewSnaps[level + 1]!
-          const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
-          const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
-          const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })
-          const p22 = bpToPx({ self: v2, refName: ref2, coord: f2e })
-
-          if (
-            p11 === undefined ||
-            p12 === undefined ||
-            p21 === undefined ||
-            p22 === undefined
-          ) {
-            continue
-          }
-
-          const cigar = f.get('CIGAR') as string | undefined
-          map.push({
-            p11,
-            p12,
-            p21,
-            p22,
-            f,
-            cigar: MismatchParser.parseCigar(cigar),
-          })
-        }
-
-        self.setFeatPositions(map)
-      },
-      { fireImmediately: true },
-    ),
-  )
+  addDisposer(self, () => {
+    clearTimeout(debounceTimer)
+    if (currentStopToken) {
+      stopStopToken(currentStopToken)
+    }
+  })
 }

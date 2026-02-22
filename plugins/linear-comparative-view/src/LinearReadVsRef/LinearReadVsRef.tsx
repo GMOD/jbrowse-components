@@ -9,7 +9,13 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+  getTag,
+} from '@jbrowse/plugin-alignments'
 import {
   Button,
   CircularProgress,
@@ -20,9 +26,6 @@ import {
 } from '@mui/material'
 
 import type { Feature } from '@jbrowse/core/util'
-
-const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
-  MismatchParser
 
 interface ReducedFeature {
   refName: string

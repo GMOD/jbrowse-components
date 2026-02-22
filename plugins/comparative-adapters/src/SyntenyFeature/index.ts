@@ -1,7 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-
-const { getMismatches } = MismatchParser
+import { getMismatches } from '@jbrowse/plugin-alignments'
 
 export default class SyntenyFeature extends SimpleFeature {
   get(arg: string): any {

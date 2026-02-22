@@ -2,13 +2,12 @@ import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
-import type { LinearSyntenyDisplayModel } from '../model.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { FeatPos, LinearSyntenyDisplayModel } from '../model.ts'
 
 interface ClickCoord {
   clientX: number
   clientY: number
-  feature: { f: Feature }
+  feature: FeatPos
 }
 
 export default function SyntenyContextMenu({
@@ -36,11 +35,7 @@ export default function SyntenyContextMenu({
         {
           label: 'Center on feature',
           onClick: () => {
-            const { f } = feature
-            const start = f.get('start')
-            const end = f.get('end')
-            const refName = f.get('refName')
-            const mate = f.get('mate')
+            const { start, end, refName, mate } = feature
 
             const l1 = view.views[model.level]!
             const l2 = view.views[model.level + 1]!

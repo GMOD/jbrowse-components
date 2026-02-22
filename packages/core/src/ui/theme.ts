@@ -9,6 +9,9 @@ import type {
   ThemeOptions,
 } from '@mui/material/styles'
 
+// Re-export Theme as JBrowseTheme for type imports that need custom palette properties
+// (framesCDS, frames, bases, etc.). Use this instead of importing Theme directly from @mui/material
+
 interface PaletteAugmentColorOptions {
   color: PaletteColorOptions
 }
@@ -35,6 +38,8 @@ declare module '@mui/material/styles' {
     skip: string
     hardclip: string
     deletion: string
+    modificationFwd: string
+    modificationRev: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -55,6 +60,8 @@ declare module '@mui/material/styles' {
     insertion?: string
     skip?: string
     deletion?: string
+    modificationFwd?: string
+    modificationRev?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -102,7 +109,9 @@ const insertion = '#800080'
 const deletion = '#808080'
 const hardclip = '#f00'
 const softclip = '#00f'
-const skip = '#97b8c9'
+const skip = '#009a8a'
+const modificationFwd = '#c8c8c8'
+const modificationRev = '#c8dcc8'
 
 const defaults = {
   primary: midnight,
@@ -116,6 +125,8 @@ const defaults = {
   deletion,
   softclip,
   hardclip,
+  modificationFwd,
+  modificationRev,
   bases,
   frames,
   framesCDS,
@@ -533,9 +544,16 @@ function addMissingColors(theme: ThemeOptions = {}) {
         skip: palette?.skip || skip,
         hardclip: palette?.hardclip || hardclip,
         deletion: palette?.deletion || deletion,
+        modificationFwd: palette?.modificationFwd || modificationFwd,
+        modificationRev: palette?.modificationRev || modificationRev,
         startCodon: palette?.startCodon || startCodon,
         stopCodon: palette?.stopCodon || stopCodon,
+        bases: palette?.bases || bases,
+        frames: palette?.frames || frames,
+        framesCDS: palette?.framesCDS || framesCDS,
       },
     }),
   )
 }
+
+export { type Theme as JBrowseTheme } from '@mui/material/styles'

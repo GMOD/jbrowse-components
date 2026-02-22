@@ -16,7 +16,7 @@ export interface SampleInfo {
   maxPloidy: number
 }
 
-export interface MultiVariantRenderArgsBase extends FeatureRenderArgsDeserialized {
+export interface MultiSampleVariantRenderArgsBase extends FeatureRenderArgsDeserialized {
   sources: Source[]
   bpPerPx: number
   minorAlleleFrequencyFilter: number

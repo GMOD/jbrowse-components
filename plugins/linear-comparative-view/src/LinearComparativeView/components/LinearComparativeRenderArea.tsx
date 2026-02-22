@@ -59,9 +59,11 @@ const LinearComparativeRenderArea = observer(
                   <Overlays model={model} level={i - 1} />
                 </div>
                 <ResizeHandle
-                  onDrag={n =>
-                    levels[i - 1]?.setHeight((levels[i - 1]?.height || 0) + n)
-                  }
+                  onDrag={n => {
+                    const level = levels[i - 1]
+                    level?.setHeight(level.height + n)
+                    return undefined
+                  }}
                   className={classes.resizeHandle}
                 />
               </>
@@ -83,6 +85,7 @@ const Overlays = observer(function Overlays({
 }) {
   const { classes } = useStyles()
   const levelImpl = model.levels[level]!
+
   const tracks = levelImpl.tracks as TrackEntry[]
   return (
     <>

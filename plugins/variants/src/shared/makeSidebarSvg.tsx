@@ -2,7 +2,7 @@ import { getContainingView } from '@jbrowse/core/util'
 
 import RectBg from './components/RectBg.tsx'
 import SvgTree from './components/SvgTree.tsx'
-import LegendBar from '../shared/components/MultiVariantLegendBar.tsx'
+import LegendBar from '../shared/components/MultiSampleVariantLegendBar.tsx'
 
 import type { LegendBarModel } from './components/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

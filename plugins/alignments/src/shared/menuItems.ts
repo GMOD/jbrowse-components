@@ -16,6 +16,7 @@ const SetModificationThresholdDialog = lazy(
 )
 
 interface LinearReadDisplayModel {
+  colorBy?: ColorBy
   setColorScheme: (colorBy: ColorBy) => void
 }
 
@@ -23,7 +24,6 @@ export interface ModificationsModel extends LinearReadDisplayModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
-  colorBy?: ColorBy
 }
 
 export function hasModificationsSupport(
@@ -59,6 +59,11 @@ export function getModificationsSubMenu(
       ? [
           {
             label: `All modifications (>= ${modificationThreshold}% prob)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              !model.colorBy.modifications?.isolatedModification &&
+              !model.colorBy.modifications?.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -70,6 +75,11 @@ export function getModificationsSubMenu(
           },
           ...model.visibleModificationTypes.map(key => ({
             label: `Show only ${modificationData[key]?.name || key} (>= ${modificationThreshold}% prob)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              model.colorBy.modifications?.isolatedModification === key &&
+              !model.colorBy.modifications.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -83,6 +93,11 @@ export function getModificationsSubMenu(
           { type: 'divider' as const },
           {
             label: 'All modifications (<50% prob colored blue)',
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              !model.colorBy.modifications?.isolatedModification &&
+              !!model.colorBy.modifications?.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -95,6 +110,11 @@ export function getModificationsSubMenu(
           },
           ...model.visibleModificationTypes.map(key => ({
             label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              model.colorBy.modifications?.isolatedModification === key &&
+              !!model.colorBy.modifications.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -111,6 +131,8 @@ export function getModificationsSubMenu(
                 { type: 'divider' as const },
                 {
                   label: 'All reference CpGs',
+                  type: 'radio' as const,
+                  checked: model.colorBy?.type === 'methylation',
                   onClick: () => {
                     model.setColorScheme({
                       type: 'methylation',
@@ -136,7 +158,13 @@ export function getModificationsSubMenu(
             },
           },
         ]
-      : [{ label: 'No modifications currently visible' }]
+      : [
+          {
+            label: 'No modifications currently visible',
+            disabled: true,
+            onClick: () => {},
+          },
+        ]
   }
 }
 
@@ -155,27 +183,36 @@ export function getModificationsMenuItem(
  * Shared color scheme menu items for all LinearRead displays
  */
 export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
+  const { type } = model.colorBy || {}
   const baseItems = [
     {
       label: 'Insert size ± 3σ and orientation',
+      type: 'radio' as const,
+      checked: type === 'insertSizeAndOrientation',
       onClick: () => {
         model.setColorScheme({ type: 'insertSizeAndOrientation' })
       },
     },
     {
       label: 'Insert size ± 3σ',
+      type: 'radio' as const,
+      checked: type === 'insertSize',
       onClick: () => {
         model.setColorScheme({ type: 'insertSize' })
       },
     },
     {
       label: 'Orientation',
+      type: 'radio' as const,
+      checked: type === 'orientation',
       onClick: () => {
         model.setColorScheme({ type: 'orientation' })
       },
     },
     {
       label: 'Insert size gradient',
+      type: 'radio' as const,
+      checked: type === 'gradient',
       onClick: () => {
         model.setColorScheme({ type: 'gradient' })
       },

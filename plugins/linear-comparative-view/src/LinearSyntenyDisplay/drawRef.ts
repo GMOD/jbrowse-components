@@ -1,24 +1,26 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 
-import {
-  draw,
-  drawLocationMarkers,
-  drawMatchSimple,
-} from './components/util.ts'
-import {
-  MAX_COLOR_RANGE,
-  lineLimit,
-  makeColor,
-  oobLimit,
-} from './drawSyntenyUtils.ts'
+import { draw, drawLocationMarkers } from './components/util.ts'
+import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 
 import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
-// Constant callback for click map fill - avoids creating new function each iteration
-const fillCb = (ctx: CanvasRenderingContext2D) => {
-  ctx.fill()
+const OP_M = 0
+const OP_I = 1
+const OP_D = 2
+const OP_N = 3
+const OP_EQ = 7
+const OP_X = 8
+
+const OP_TO_CIGAR_KEY: Record<number, string> = {
+  [OP_M]: 'M',
+  [OP_I]: 'I',
+  [OP_D]: 'D',
+  [OP_N]: 'N',
+  [OP_EQ]: '=',
+  [OP_X]: 'X',
 }
 
 export function drawRef(
@@ -30,11 +32,19 @@ export function drawRef(
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly
   const drawLocationMarkersEnabled = view.drawLocationMarkers
-  const { level, height, featPositions, minAlignmentLength, colorBy } = model
+  const { level, height, featureData, minAlignmentLength, colorBy } = model
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  // Use cached colors from model (only recalculated when alpha/colorBy change)
+  if (!featureData) {
+    return
+  }
+
+  const parsedCigars = model.parsedCigars
+  if (!parsedCigars) {
+    return
+  }
+
   const colorMapWithAlpha = model.colorMapWithAlpha
   const posColorWithAlpha = model.posColorWithAlpha
   const negColorWithAlpha = model.negColorWithAlpha
@@ -45,66 +55,49 @@ export function drawRef(
   const offsetsL0 = offsets[level]!
   const offsetsL1 = offsets[level + 1]!
 
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPositions.length)
   const y1 = 0
   const y2 = height
   const mid = (y2 - y1) / 2
 
-  // Cache colorBy checks outside loop for performance
   const useStrandColor = colorBy === 'strand'
   const useQueryColor = colorBy === 'query'
 
-  // Cache bpPerPx values and reciprocals for division in CIGAR loop
   const bpPerPx0 = bpPerPxs[level]!
   const bpPerPx1 = bpPerPxs[level + 1]!
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 
-  // Get click map context once
-  const clickMapCtx = model.clickMapCanvas?.getContext('2d')
-  if (clickMapCtx) {
-    clickMapCtx.imageSmoothingEnabled = false
-    clickMapCtx.clearRect(0, 0, width, height)
-  }
-
   mainCanvas.fillStyle = colorMapWithAlpha.M
   mainCanvas.strokeStyle = colorMapWithAlpha.M
 
-  // Single loop over features - draw main canvas and click map together
-  for (const [i, featPosition] of featPositions.entries()) {
-    const feature = featPosition
-    const { p11, p12, p21, p22, f, cigar } = feature
+  const featureCount = featureData.featureIds.length
+  for (let fi = 0; fi < featureCount; fi++) {
+    const strand = featureData.strands[fi]!
+    const refName = featureData.refNames[fi]!
 
-    // Cache feature properties
-    const strand = f.get('strand')
-    const refName = f.get('refName')
-
-    // Filter by minAlignmentLength if enabled
     if (queryTotalLengths) {
-      const queryName = f.get('name') || f.get('id') || f.id()
+      const queryName = featureData.names[fi] || featureData.featureIds[fi]!
       const totalLength = queryTotalLengths.get(queryName) || 0
       if (totalLength < minAlignmentLength) {
         continue
       }
     }
 
-    const x11 = p11.offsetPx - offsetsL0
-    const x12 = p12.offsetPx - offsetsL0
-    const x21 = p21.offsetPx - offsetsL1
-    const x22 = p22.offsetPx - offsetsL1
+    const x11 = featureData.p11_offsetPx[fi]! - offsetsL0
+    const x12 = featureData.p12_offsetPx[fi]! - offsetsL0
+    const x21 = featureData.p21_offsetPx[fi]! - offsetsL1
+    const x22 = featureData.p22_offsetPx[fi]! - offsetsL1
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
     const minX = Math.min(x21, x22)
     const maxX = Math.max(x21, x22)
 
-    // Draw thin lines (when both dimensions are small)
     if (
       l1 <= lineLimit &&
       l2 <= lineLimit &&
       x21 < width + oobLimit &&
       x21 > -oobLimit
     ) {
-      // Set color for this line
       if (useStrandColor) {
         mainCanvas.strokeStyle =
           strand === -1 ? negColorWithAlpha : posColorWithAlpha
@@ -122,32 +115,26 @@ export function drawRef(
         mainCanvas.lineTo(x21, y2)
       }
       mainCanvas.stroke()
-    }
-    // Draw thick features
-    else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
+    } else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
       const k2 = s1 === -1 ? x11 : x12
 
-      // rev1/rev2 flip the direction of the CIGAR drawing in horizontally flipped
-      // modes. somewhat heuristically determined, but tested for
       const rev1 = k1 < k2 ? 1 : -1
       const rev2 = (x21 < x22 ? 1 : -1) * s1
 
-      // cx1/cx2 are the current x positions on top and bottom rows
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
-      if (cigar.length && drawCIGAR) {
-        // continuingFlag skips drawing commands on very small CIGAR features
+      const cigar = parsedCigars[fi]!
+      if (cigar.length > 0 && drawCIGAR) {
         let continuingFlag = false
-
-        // px1/px2 are the previous x positions on the top and bottom rows
         let px1 = 0
         let px2 = 0
 
-        for (let j = 0; j < cigar.length; j += 2) {
-          const len = +cigar[j]!
-          const op = cigar[j + 1] as keyof typeof defaultCigarColors
+        for (let j = 0; j < cigar.length; j++) {
+          const packed = cigar[j]!
+          const len = packed >>> 4
+          const op = packed & 0xf
 
           if (!continuingFlag) {
             px1 = cx1
@@ -157,29 +144,30 @@ export function drawRef(
           const d1 = len * bpPerPxInv0
           const d2 = len * bpPerPxInv1
 
-          if (op === 'M' || op === '=' || op === 'X') {
+          if (op === OP_M || op === OP_EQ || op === OP_X) {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
-          } else if (op === 'D' || op === 'N') {
+          } else if (op === OP_D || op === OP_N) {
             cx1 += d1 * rev1
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          else if (op === 'I') {
+          } else if (op === OP_I) {
             cx2 += d2 * rev2
           }
 
-          // check that we are even drawing in view here, e.g. that all
-          // points are not all less than 0 or greater than width
+          if (op === OP_D || op === OP_N || op === OP_I) {
+            const relevantPx = op === OP_I ? d2 : d1
+            if (relevantPx < 1) {
+              continuingFlag = true
+              continue
+            }
+          }
+
           if (
             !(
               Math.max(px1, px2, cx1, cx2) < 0 ||
               Math.min(px1, px2, cx1, cx2) > width
             )
           ) {
-            // if it is a small feature and not the last element of the
-            // CIGAR (which could skip rendering it entire if we did turn
-            // it on), then turn on continuing flag
-            const isNotLast = j < cigar.length - 2
+            const isNotLast = j < cigar.length - 1
             if (
               Math.abs(cx1 - px1) <= 1 &&
               Math.abs(cx2 - px2) <= 1 &&
@@ -187,22 +175,22 @@ export function drawRef(
             ) {
               continuingFlag = true
             } else {
-              // allow rendering the dominant color when using continuing
-              // flag if the last element of continuing was a large
-              // feature, else just use match
-              const letter = (continuingFlag && d1 > 1) || d2 > 1 ? op : 'M'
+              const resolvedOp =
+                (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
+              const letter = OP_TO_CIGAR_KEY[resolvedOp] || 'M'
 
-              // Use custom coloring based on colorBy setting
-              // Always keep yellow/blue for insertions/deletions regardless of colorBy
               const isInsertionOrDeletion =
-                letter === 'I' || letter === 'D' || letter === 'N'
+                resolvedOp === OP_I ||
+                resolvedOp === OP_D ||
+                resolvedOp === OP_N
               if (useStrandColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle =
                   strand === -1 ? negColorWithAlpha : posColorWithAlpha
               } else if (useQueryColor && !isInsertionOrDeletion) {
                 mainCanvas.fillStyle = getQueryColorWithAlpha(refName)
               } else {
-                mainCanvas.fillStyle = colorMapWithAlpha[letter]
+                mainCanvas.fillStyle =
+                  colorMapWithAlpha[letter as keyof typeof defaultCigarColors]
               }
 
               continuingFlag = false
@@ -250,7 +238,6 @@ export function drawRef(
           }
         }
       } else {
-        // Use custom coloring based on colorBy setting
         if (useStrandColor) {
           mainCanvas.fillStyle =
             strand === -1 ? negColorWithAlpha : posColorWithAlpha
@@ -261,30 +248,10 @@ export function drawRef(
         draw(mainCanvas, x11, x12, y1, x22, x21, y2, mid, drawCurves)
         mainCanvas.fill()
 
-        // Reset to default color if needed
         if (useStrandColor || useQueryColor) {
           mainCanvas.fillStyle = colorMapWithAlpha.M
         }
       }
-    }
-
-    // Draw to click map (for all visible features, not just thick ones)
-    if (clickMapCtx) {
-      const idx = i * unitMultiplier + 1
-      clickMapCtx.fillStyle = makeColor(idx)
-
-      drawMatchSimple({
-        cb: fillCb,
-        feature,
-        ctx: clickMapCtx,
-        drawCurves,
-        level,
-        offsets,
-        oobLimit,
-        viewWidth: view.width,
-        hideTiny: true,
-        height,
-      })
     }
   }
 }

@@ -8,7 +8,7 @@ import {
   CIGAR_X,
   SEQRET,
   SEQRET_NUMERIC_DECODER,
-} from '../PileupRenderer/renderers/cigarUtil.ts'
+} from '../shared/cigarUtil.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,

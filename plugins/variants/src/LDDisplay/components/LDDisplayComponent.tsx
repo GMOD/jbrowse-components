@@ -1,7 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  max,
+  setupWebGLContextLossHandler,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
@@ -9,6 +20,7 @@ import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
+import { WebGLLDRenderer, generateLDColorRamp } from './WebGLLDRenderer.ts'
 import Wrapper from './Wrapper.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
@@ -34,7 +46,6 @@ function LDTooltip({
   ldMetric: string
   signedLD: boolean
 }) {
-  // Show appropriate metric label based on signed/unsigned mode
   let metricLabel: string
   if (ldMetric === 'dprime') {
     metricLabel = "D'"
@@ -53,10 +64,6 @@ function LDTooltip({
   )
 }
 
-/**
- * Draw V-shape highlight from the hovered cell to the matrix diagonal,
- * plus connecting lines to genomic positions.
- */
 function Crosshairs({
   hoveredItem,
   cellWidth,
@@ -71,7 +78,8 @@ function Crosshairs({
   snps,
   regionStart,
   bpPerPx,
-  canvasOffset,
+  viewScale,
+  viewOffsetX,
 }: {
   hoveredItem: LDFlatbushItem
   cellWidth: number
@@ -86,29 +94,25 @@ function Crosshairs({
   snps: { start: number }[]
   regionStart: number
   bpPerPx: number
-  canvasOffset: number
+  viewScale: number
+  viewOffsetX: number
 }) {
   const { i, j } = hoveredItem
 
-  // Transform a point from unrotated cell coordinates to screen coordinates
-  // Canvas transformations: rotate(-45°), scale(1, yScalar), translate(0, lineZoneHeight)
   const toScreen = (x: number, y: number) => {
-    // Rotate -45 degrees
     const rx = (x + y) / SQRT2
     const ry = (y - x) / SQRT2
-    // Scale Y and translate
-    return { x: rx, y: ry * yScalar + lineZoneHeight }
+    return {
+      x: rx * viewScale + viewOffsetX,
+      y: ry * viewScale * yScalar + lineZoneHeight,
+    }
   }
 
-  // Calculate positions based on mode
   let hoveredCenter: { x: number; y: number }
   let snpJPos: { x: number; y: number }
   let snpIPos: { x: number; y: number }
 
   if (useGenomicPositions && snps.length > 0) {
-    // Use midpoint boundaries (matching makeImageData.ts)
-    // Each SNP's cell extends from the midpoint to the previous SNP
-    // to the midpoint to the next SNP
     const getBoundary = (idx: number) => {
       const snpPos = snps[idx]!.start
       const prevPos = idx > 0 ? snps[idx - 1]!.start : regionStart
@@ -122,7 +126,6 @@ function Crosshairs({
         const nextPos = snps[idx + 1]!.start
         return ((snpPos + nextPos) / 2 - regionStart) / bpPerPx / SQRT2
       }
-      // Small fixed offset past the last SNP (50px)
       const lastSnpPos = snps[snps.length - 1]!.start
       return (lastSnpPos + 50 * bpPerPx - regionStart) / bpPerPx / SQRT2
     }
@@ -132,23 +135,17 @@ function Crosshairs({
     const jNextBoundary = getNextBoundary(j)
     const iNextBoundary = getNextBoundary(i)
 
-    // Cell center for the V-shape apex
     const cellCenterX = (jBoundary + jNextBoundary) / 2
     const cellCenterY = (iBoundary + iNextBoundary) / 2
     hoveredCenter = toScreen(cellCenterX, cellCenterY)
 
-    // Diagonal positions should connect to the vertical guides at genomicX1/genomicX2
-    // The diagonal after rotation is at y = lineZoneHeight, x = genomicX
     snpJPos = { x: genomicX1, y: lineZoneHeight }
     snpIPos = { x: genomicX2, y: lineZoneHeight }
   } else {
-    // Uniform cell positioning
     const w = cellWidth
 
-    // Cell center for hovered cell
     hoveredCenter = toScreen((j + 0.5) * w, (i + 0.5) * w)
 
-    // Diagonal positions at cell centers (matching where connecting lines attach)
     snpJPos = toScreen((j + 0.5) * w, (j + 0.5) * w)
     snpIPos = toScreen((i + 0.5) * w, (i + 0.5) * w)
   }
@@ -157,23 +154,20 @@ function Crosshairs({
     <svg
       style={{
         position: 'absolute',
-        left: canvasOffset,
+        left: 0,
         top: 0,
         width,
         height,
         pointerEvents: 'none',
       }}
     >
-      {/* V-shape: single line from snp j through hovered cell to snp i */}
       <path
         stroke="rgba(0, 0, 0, 0.6)"
         strokeWidth={1}
         fill="none"
         d={`M ${snpJPos.x} ${snpJPos.y} L ${hoveredCenter.x} ${hoveredCenter.y} L ${snpIPos.x} ${snpIPos.y}`}
       />
-      {/* Highlighted connecting lines from matrix to genome */}
       <g stroke="#e00" strokeWidth="1.5" fill="none">
-        {/* Diagonal lines ending at top of tick marks (only when not using genomic positions) */}
         {!useGenomicPositions ? (
           <>
             <path
@@ -184,7 +178,6 @@ function Crosshairs({
             />
           </>
         ) : null}
-        {/* Vertical tick marks */}
         <path d={`M ${genomicX1} 0 L ${genomicX1} ${tickHeight}`} />
         <path d={`M ${genomicX2} 0 L ${genomicX2} ${tickHeight}`} />
       </g>
@@ -192,23 +185,61 @@ function Crosshairs({
   )
 }
 
-/**
- * Transform screen coordinates to the unrotated coordinate space.
- * The canvas is rotated by -45 degrees, so we apply the inverse rotation (+45 degrees).
- * Also accounts for the yScalar transformation and lineZoneHeight offset.
- */
 function screenToUnrotated(
   screenX: number,
   screenY: number,
   yScalar: number,
   lineZoneHeight: number,
 ): { x: number; y: number } {
-  // Subtract lineZoneHeight since the matrix is translated down by that amount
   const matrixY = screenY - lineZoneHeight
   const scaledY = matrixY / yScalar
   const x = (screenX - scaledY) / SQRT2
   const y = (screenX + scaledY) / SQRT2
   return { x, y }
+}
+
+function RecombinationOverlay({
+  model,
+  width,
+  recombHeight,
+  top,
+  useGenomicPositions,
+  regionStart,
+  bpPerPx,
+}: {
+  model: SharedLDModel
+  width: number
+  recombHeight: number
+  top: number
+  useGenomicPositions: boolean
+  regionStart?: number
+  bpPerPx: number
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 0,
+        top,
+        width,
+        height: recombHeight,
+        pointerEvents: 'none',
+      }}
+    >
+      <RecombinationTrack
+        model={model}
+        width={width}
+        height={recombHeight}
+        useGenomicPositions={useGenomicPositions}
+        regionStart={regionStart}
+        bpPerPx={bpPerPx}
+      />
+      <RecombinationYScaleBar
+        height={recombHeight}
+        maxValue={max(model.recombination!.values, 0.1)}
+      />
+    </div>
+  )
 }
 
 const LDCanvas = observer(function LDCanvas({
@@ -219,7 +250,7 @@ const LDCanvas = observer(function LDCanvas({
   const view = getContainingView(model) as LGV
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const {
-    fullyDrawn,
+    rpcData,
     flatbush,
     flatbushItems,
     yScalar,
@@ -230,25 +261,44 @@ const LDCanvas = observer(function LDCanvas({
     fitToHeight,
     ldCanvasHeight,
     useGenomicPositions,
+    showRecombination,
+    recombinationZoneHeight,
     snps,
     lastDrawnOffsetPx,
     signedLD,
+    loading,
   } = model
 
-  // Container height includes lineZoneHeight + triangle
-  // Canvas height is just the triangle (lineZoneHeight is handled by CSS positioning)
-  // ldCanvasHeight already has lineZoneHeight subtracted
   const triangleHeight = width / 2
   const canvasOnlyHeight = fitToHeight ? ldCanvasHeight : triangleHeight
-  const containerHeight = canvasOnlyHeight + lineZoneHeight
+  const effectiveLineZoneHeight = useGenomicPositions
+    ? showRecombination
+      ? recombinationZoneHeight
+      : 0
+    : lineZoneHeight
+  const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
-  const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>()
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rendererRef = useRef<WebGLLDRenderer | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
+  const [mousePosition, setMousePosition] = useState<{
+    x: number
+    y: number
+  }>()
+  const [glError, setGlError] = useState<string>()
+  const [contextVersion, setContextVersion] = useState(0)
 
-  // Calculate genomic positions for hovered item
-  // These are raw pixel positions from region start - no offset adjustment needed
-  // because the SVG/canvas is already positioned at Math.max(0, -offsetPx)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      return setupWebGLContextLossHandler(canvas, () => {
+        setContextVersion(v => v + 1)
+      })
+    }
+    return undefined
+  }, [])
+
   const region = view.dynamicBlocks.contentBlocks[0]
   const bpPerPx = view.bpPerPx
   const genomicX1 =
@@ -260,16 +310,16 @@ const LDCanvas = observer(function LDCanvas({
       ? (hoveredItem.snp1.start - region.start) / bpPerPx
       : undefined
 
-  // When offsetPx >= 0: use scroll offset for smooth scrolling between renders
-  // When offsetPx < 0: use boundary offset to prevent content going past left edge
-  const canvasOffset =
-    view.offsetPx >= 0
-      ? (lastDrawnOffsetPx ?? 0) - view.offsetPx
-      : Math.max(0, -view.offsetPx)
+  // Compute view transform for smooth zoom/scroll
+  const viewScale =
+    model.lastDrawnBpPerPx !== undefined
+      ? model.lastDrawnBpPerPx / view.bpPerPx
+      : 1
+  const viewOffsetX =
+    lastDrawnOffsetPx !== undefined
+      ? lastDrawnOffsetPx * viewScale - view.offsetPx
+      : 0
 
-  // Update volatile guides when hovered item changes
-  // Add canvas offset to guide positions
-  const guideOffset = canvasOffset
   useEffect(() => {
     if (
       genomicX1 !== undefined &&
@@ -277,8 +327,8 @@ const LDCanvas = observer(function LDCanvas({
       model.showVerticalGuides
     ) {
       view.setVolatileGuides([
-        { xPos: genomicX1 + guideOffset },
-        { xPos: genomicX2 + guideOffset },
+        { xPos: genomicX1 + viewOffsetX },
+        { xPos: genomicX2 + viewOffsetX },
       ])
     } else {
       view.setVolatileGuides([])
@@ -286,54 +336,108 @@ const LDCanvas = observer(function LDCanvas({
     return () => {
       view.setVolatileGuides([])
     }
-  }, [genomicX1, genomicX2, model.showVerticalGuides, view, guideOffset])
+  }, [genomicX1, genomicX2, model.showVerticalGuides, view, viewOffsetX])
 
-  // Convert flatbush data to Flatbush instance
   const flatbushIndex = useMemo(
     () => (flatbush ? Flatbush.from(flatbush) : null),
     [flatbush],
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
-  const cb = useCallback(
-    (ref: HTMLCanvasElement) => {
-      model.setRef(ref)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, width, canvasOnlyHeight],
-  )
+  // Initialize WebGL renderer
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+
+    try {
+      rendererRef.current = new WebGLLDRenderer(canvas)
+    } catch (e) {
+      setGlError(e instanceof Error ? e.message : 'WebGL initialization failed')
+    }
+
+    return () => {
+      rendererRef.current?.destroy()
+      rendererRef.current = null
+    }
+  }, [contextVersion])
+
+  // Upload data when rpcData changes
+  useLayoutEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
+    renderer.uploadData({
+      positions: rpcData.positions,
+      cellSizes: rpcData.cellSizes,
+      ldValues: rpcData.ldValues,
+      numCells: rpcData.numCells,
+    })
+  }, [rpcData, contextVersion])
+
+  // Upload color ramp when data changes
+  useLayoutEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
+    renderer.uploadColorRamp(
+      generateLDColorRamp(rpcData.metric, rpcData.signedLD),
+    )
+  }, [rpcData, contextVersion])
+
+  // Re-render on every view change (zoom/scroll) - cheap, just uniforms + draw
+  useLayoutEffect(() => {
+    const renderer = rendererRef.current
+    if (!renderer || !rpcData) {
+      return
+    }
+
+    renderer.render({
+      yScalar: rpcData.yScalar,
+      canvasWidth: width,
+      canvasHeight: canvasOnlyHeight,
+      signedLD: rpcData.signedLD,
+      viewScale,
+      viewOffsetX,
+    })
+  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX, contextVersion])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
       const container = containerRef.current
-      if (!container || !flatbushIndex || !flatbushItems.length) {
+      if (!container || !flatbushIndex || !flatbushItems.length || loading) {
         setHoveredItem(undefined)
         setMousePosition(undefined)
         return
       }
 
       const rect = container.getBoundingClientRect()
-      const mouseCanvasOffset = canvasOffset
-      const screenX = event.clientX - rect.left - mouseCanvasOffset
-      const screenY = event.clientY - rect.top
+      const mouseX = event.clientX - rect.left
+      const mouseY = event.clientY - rect.top
 
       setMousePosition({ x: event.clientX, y: event.clientY })
 
-      // Only query if we're below the line zone
-      if (screenY < lineZoneHeight) {
+      if (mouseY < effectiveLineZoneHeight) {
         setHoveredItem(undefined)
         return
       }
 
-      // Transform screen coordinates to unrotated space for Flatbush query
+      // Reverse the shader transform to get data-space screen coordinates
+      const dataScreenX = (mouseX - viewOffsetX) / viewScale
+      const dataScreenY =
+        (mouseY - effectiveLineZoneHeight) / viewScale + effectiveLineZoneHeight
+
       const { x, y } = screenToUnrotated(
-        screenX,
-        screenY,
+        dataScreenX,
+        dataScreenY,
         yScalar,
-        lineZoneHeight,
+        effectiveLineZoneHeight,
       )
 
-      // Query Flatbush with a small region around the transformed point
       const results = flatbushIndex.search(x - 1, y - 1, x + 1, y + 1)
 
       if (results.length > 0) {
@@ -343,13 +447,27 @@ const LDCanvas = observer(function LDCanvas({
         setHoveredItem(undefined)
       }
     },
-    [flatbushIndex, flatbushItems, yScalar, lineZoneHeight, canvasOffset],
+    [
+      flatbushIndex,
+      flatbushItems,
+      yScalar,
+      effectiveLineZoneHeight,
+      viewScale,
+      viewOffsetX,
+      loading,
+    ],
   )
 
   const onMouseLeave = useCallback(() => {
     setHoveredItem(undefined)
     setMousePosition(undefined)
   }, [])
+
+  if (glError) {
+    return (
+      <div style={{ color: 'red', padding: 10 }}>WebGL Error: {glError}</div>
+    )
+  }
 
   return (
     <div
@@ -365,17 +483,17 @@ const LDCanvas = observer(function LDCanvas({
       onMouseLeave={onMouseLeave}
     >
       <canvas
-        data-testid={`ld_canvas${fullyDrawn ? '_done' : ''}`}
-        ref={cb}
+        data-testid={`ld_canvas${rpcData ? '_done' : ''}`}
+        ref={canvasRef}
         style={{
           width,
           height: canvasOnlyHeight,
           position: 'absolute',
-          left: canvasOffset,
-          top: lineZoneHeight,
+          left: 0,
+          top: effectiveLineZoneHeight,
         }}
-        width={width * 2}
-        height={canvasOnlyHeight * 2}
+        width={width}
+        height={canvasOnlyHeight}
       />
 
       {hoveredItem && genomicX1 !== undefined && genomicX2 !== undefined ? (
@@ -385,7 +503,7 @@ const LDCanvas = observer(function LDCanvas({
           genomicX1={genomicX1}
           genomicX2={genomicX2}
           yScalar={yScalar}
-          lineZoneHeight={lineZoneHeight}
+          lineZoneHeight={effectiveLineZoneHeight}
           tickHeight={model.tickHeight}
           width={width}
           height={containerHeight}
@@ -393,7 +511,8 @@ const LDCanvas = observer(function LDCanvas({
           snps={snps}
           regionStart={region?.start ?? 0}
           bpPerPx={bpPerPx}
-          canvasOffset={canvasOffset}
+          viewScale={viewScale}
+          viewOffsetX={viewOffsetX}
         />
       ) : null}
 
@@ -416,31 +535,18 @@ const LDCanvas = observer(function LDCanvas({
       ) : (
         <LinesConnectingMatrixToGenomicPosition model={model} />
       )}
-      {/* Recombination track overlaid at bottom of line zone */}
       {model.showRecombination && model.recombination ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: canvasOffset,
-            top: lineZoneHeight / 2,
-            width,
-            height: lineZoneHeight / 2,
-            pointerEvents: 'none',
-          }}
-        >
-          <RecombinationTrack
-            model={model}
-            width={width}
-            height={lineZoneHeight / 2}
-            useGenomicPositions={useGenomicPositions}
-            regionStart={region?.start}
-            bpPerPx={bpPerPx}
-          />
-          <RecombinationYScaleBar
-            height={lineZoneHeight / 2}
-            maxValue={Math.max(...model.recombination.values, 0.1)}
-          />
-        </div>
+        <RecombinationOverlay
+          model={model}
+          width={width}
+          recombHeight={
+            useGenomicPositions ? effectiveLineZoneHeight : lineZoneHeight / 2
+          }
+          top={useGenomicPositions ? 0 : lineZoneHeight / 2}
+          useGenomicPositions={useGenomicPositions}
+          regionStart={region?.start}
+          bpPerPx={bpPerPx}
+        />
       ) : null}
     </div>
   )
@@ -455,7 +561,6 @@ const LDDisplayContent = observer(function LDDisplayContent({
   const width = Math.round(view.dynamicBlocks.totalWidthPx)
   const { height, showLDTriangle, showRecombination } = model
 
-  // Show message when zoomed out
   if (view.bpPerPx > 1000) {
     return (
       <div
@@ -473,7 +578,6 @@ const LDDisplayContent = observer(function LDDisplayContent({
     )
   }
 
-  // Show message when nothing is enabled
   if (!showLDTriangle && !showRecombination) {
     return (
       <div
@@ -493,7 +597,6 @@ const LDDisplayContent = observer(function LDDisplayContent({
 
   return (
     <div style={{ position: 'relative', width, height }}>
-      {/* LD canvas with recombination track overlaid on line zone */}
       {showLDTriangle ? <LDCanvas model={model} /> : null}
     </div>
   )

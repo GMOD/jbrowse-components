@@ -2,6 +2,8 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -28,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
   },
   iconButton: {
-    padding: theme.spacing(1),
+    padding: 0,
   },
 }))
 
@@ -63,17 +65,22 @@ const TrackLabel = observer(function TrackLabel({ track, className }: Props) {
       >
         <CloseIcon fontSize="small" />
       </IconButton>
+      <IconButton
+        onClick={() => {
+          track.setMinimized(!minimized)
+        }}
+        className={classes.iconButton}
+        title={minimized ? 'restore track' : 'minimize track'}
+      >
+        {minimized ? <ArrowRightIcon /> : <ArrowDropDownIcon />}
+      </IconButton>
 
       <Typography
         variant="body1"
         component="span"
         className={classes.trackName}
       >
-        <SanitizedHTML
-          html={[trackName, minimized ? '(minimized)' : '']
-            .filter(f => !!f)
-            .join(' ')}
-        />
+        <SanitizedHTML html={trackName} />
       </Typography>
       <TrackLabelMenu track={track} />
     </Paper>

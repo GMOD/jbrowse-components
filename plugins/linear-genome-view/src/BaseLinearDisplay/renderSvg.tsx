@@ -66,13 +66,14 @@ export async function renderBaseLinearDisplaySvg(
         ] as const
       }
 
+      const blockData = renderBlockData(blockState, self)!
       const {
         rpcManager,
         renderArgs,
         renderProps,
         renderingProps,
         rendererType,
-      } = renderBlockData(blockState, self)
+      } = blockData
 
       return [
         block,

@@ -1,12 +1,9 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { Dotplot1DView } from './DotplotView/model.ts'
-
-import type { Dotplot1DViewModel } from './DotplotView/model.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// Copied types from linear-comparative-view to avoid cross-package imports
+// copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
 interface AlignmentData {
   queryRefName: string
   refRefName: string
@@ -29,15 +26,13 @@ interface DiagonalizationResult {
 
 type ProgressCallback = (progress: number, message: string) => void
 
-/**
- * Diagonalize a set of regions based on alignment data.
- * Copied from linear-comparative-view to avoid cross-package imports.
- */
-async function diagonalizeRegions(
+// copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
+function diagonalizeRegions(
   alignments: AlignmentData[],
+  referenceRegions: Region[],
   currentRegions: Region[],
   progressCallback?: ProgressCallback,
-): Promise<DiagonalizationResult> {
+): DiagonalizationResult {
   const updateProgress = (progress: number, message: string) => {
     if (progressCallback) {
       progressCallback(progress, message)
@@ -46,11 +41,13 @@ async function diagonalizeRegions(
 
   updateProgress(20, `Grouping ${alignments.length} alignments...`)
 
-  // Group alignments by the second view's refName (mate.refName)
   const queryGroups = new Map<
     string,
     {
-      refAlignments: Map<string, { bases: number; positions: number[] }>
+      refAlignments: Map<
+        string,
+        { bases: number; weightedPosSum: number; maxAlnLength: number }
+      >
       strandWeightedSum: number
     }
   >()
@@ -66,18 +63,20 @@ async function diagonalizeRegions(
     }
 
     const group = queryGroups.get(targetRefName)!
-    const alnLength = Math.abs(aln.queryEnd - aln.queryStart)
+    const alnLength = Math.abs(aln.refEnd - aln.refStart)
 
     if (!group.refAlignments.has(aln.queryRefName)) {
       group.refAlignments.set(aln.queryRefName, {
         bases: 0,
-        positions: [],
+        weightedPosSum: 0,
+        maxAlnLength: 0,
       })
     }
 
     const refData = group.refAlignments.get(aln.queryRefName)!
     refData.bases += alnLength
-    refData.positions.push((aln.queryStart + aln.queryEnd) / 2)
+    refData.weightedPosSum += ((aln.queryStart + aln.queryEnd) / 2) * alnLength
+    refData.maxAlnLength = Math.max(refData.maxAlnLength, alnLength)
 
     const direction = aln.strand >= 0 ? 1 : -1
     group.strandWeightedSum += direction * alnLength
@@ -85,7 +84,6 @@ async function diagonalizeRegions(
 
   updateProgress(50, 'Determining optimal ordering and orientation...')
 
-  // Determine ordering and orientation for query regions
   const queryOrdering: {
     refName: string
     bestRefName: string
@@ -95,19 +93,20 @@ async function diagonalizeRegions(
 
   for (const [targetRefName, group] of queryGroups) {
     let bestRefName = ''
-    let maxBases = 0
-    let bestPositions: number[] = []
+    let maxAlnLength = 0
+    let bestBases = 0
+    let bestWeightedPosSum = 0
 
     for (const [firstViewRefName, data] of group.refAlignments) {
-      if (data.bases > maxBases) {
-        maxBases = data.bases
+      if (data.maxAlnLength > maxAlnLength) {
+        maxAlnLength = data.maxAlnLength
         bestRefName = firstViewRefName
-        bestPositions = data.positions
+        bestBases = data.bases
+        bestWeightedPosSum = data.weightedPosSum
       }
     }
 
-    const bestRefPos =
-      bestPositions.reduce((a, b) => a + b, 0) / bestPositions.length
+    const bestRefPos = bestBases > 0 ? bestWeightedPosSum / bestBases : 0
     const shouldReverse = group.strandWeightedSum < 0
 
     queryOrdering.push({
@@ -120,9 +119,13 @@ async function diagonalizeRegions(
 
   updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
 
+  const refOrder = new Map(referenceRegions.map((r, i) => [r.refName, i]))
+
   queryOrdering.sort((a, b) => {
-    if (a.bestRefName !== b.bestRefName) {
-      return a.bestRefName.localeCompare(b.bestRefName)
+    const aIdx = refOrder.get(a.bestRefName) ?? Infinity
+    const bIdx = refOrder.get(b.bestRefName) ?? Infinity
+    if (aIdx !== bIdx) {
+      return aIdx - bIdx
     }
     return a.bestRefPos - b.bestRefPos
   })
@@ -145,7 +148,6 @@ async function diagonalizeRegions(
     }
   }
 
-  // Preserve regions without alignments at the end
   const regionsWithoutAlignments = currentRegions.filter(
     r => !newQueryRegions.some(nr => nr.refName === r.refName),
   )
@@ -174,9 +176,6 @@ interface DiagonalizeDotplotArgs {
   statusCallback?: (message: string) => void
 }
 
-/**
- * RPC method to diagonalize a dotplot view on the webworker
- */
 export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'DiagonalizeDotplot'
 
@@ -194,20 +193,9 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
 
     statusCallback?.('Initializing diagonalization...')
 
-    // Create view instances on the worker to access features
-    const dimensions = [800, 800] // Dummy dimensions, we only need features
-    const views = [view.hview, view.vview].map((snap, idx) => {
-      const v = Dotplot1DView.create(snap)
-      v.setVolatileWidth(dimensions[idx]!)
-      return v
-    }) as [Dotplot1DViewModel, Dotplot1DViewModel]
-
-    const targetView = views[0]
-
     checkStopToken(stopToken)
     statusCallback?.('Getting renderer...')
 
-    // Get the renderer to access features
     const rendererType = this.pluginManager.getRendererType('DotplotRenderer')
     if (!rendererType) {
       throw new Error('DotplotRenderer not found')
@@ -216,8 +204,6 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     checkStopToken(stopToken)
     statusCallback?.('Fetching features...')
 
-    // Get features from adapter - DotplotRenderer extends ComparativeRenderer
-    // which has getFeatures method
     const feats = await (
       rendererType as unknown as {
         getFeatures: (args: {
@@ -227,7 +213,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
         }) => Promise<Map<string, Feature>>
       }
     ).getFeatures({
-      regions: targetView.dynamicBlocks.contentBlocks,
+      regions: view.hview.displayedRegions,
       adapterConfig,
       sessionId,
     })
@@ -235,7 +221,6 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     checkStopToken(stopToken)
     statusCallback?.('Extracting alignment data...')
 
-    // Extract alignment data from features
     const alignments: AlignmentData[] = []
 
     for (const feat of feats.values()) {
@@ -268,9 +253,9 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
       `Running diagonalization on ${alignments.length} alignments...`,
     )
 
-    // Run diagonalization algorithm with progress callback
-    const result = await diagonalizeRegions(
+    const result = diagonalizeRegions(
       alignments,
+      view.hview.displayedRegions,
       view.vview.displayedRegions,
       (progress, message) => {
         checkStopToken(stopToken)

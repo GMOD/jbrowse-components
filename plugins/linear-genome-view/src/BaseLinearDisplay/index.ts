@@ -24,6 +24,11 @@ export {
   type NonBlockCanvasDisplayMixinType,
   default as NonBlockCanvasDisplayMixin,
 } from './models/NonBlockCanvasDisplayMixin.tsx'
+export {
+  type MultiRegionWebGLDisplayMixinType,
+  type Region as MultiRegionWebGLRegion,
+  default as MultiRegionWebGLDisplayMixin,
+} from './models/MultiRegionWebGLDisplayMixin.ts'
 export { drawCanvasImageData } from './util.ts'
 export { default as TooLargeMessage } from './components/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'

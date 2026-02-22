@@ -36,9 +36,16 @@ export async function executeClusterGenotypeMatrix({
     renderingMode === 'phased' && sampleInfo
       ? await getPhasedGenotypeMatrix({
           pluginManager,
-          args: { ...argsWithCheck, sampleInfo },
+          args: {
+            ...argsWithCheck,
+            sampleInfo,
+            statusCallback: args.statusCallback,
+          },
         })
-      : await getGenotypeMatrix({ pluginManager, args: argsWithCheck })
+      : await getGenotypeMatrix({
+          pluginManager,
+          args: { ...argsWithCheck, statusCallback: args.statusCallback },
+        })
   const sampleLabels = Object.keys(matrix)
   const result = await clusterData({
     data: Object.values(matrix),

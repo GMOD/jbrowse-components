@@ -6,42 +6,17 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, untracked } from 'mobx'
 
 import type { SharedLDModel } from './shared.ts'
-import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-interface RenderResult {
-  imageData?: ImageBitmap
-  flatbush?: ArrayBufferLike
-  items?: LDFlatbushItem[]
-  ldData?: {
-    snps: LDMatrixResult['snps']
-  }
-  filterStats?: FilterStats
-  recombination?: {
-    values: number[]
-    positions: number[]
-  }
-  maxScore?: number
-  yScalar?: number
-  w?: number
-  width: number
-  height: number
-}
-
 export function doAfterAttach(self: SharedLDModel) {
   const performRender = async () => {
     if (self.isMinimized) {
-      return
-    }
-    // Skip rendering if LD triangle is hidden
-    if (!self.showLDTriangle) {
       return
     }
     const view = getContainingView(self) as LGV
@@ -52,15 +27,11 @@ export function doAfterAttach(self: SharedLDModel) {
       return
     }
 
-    // Don't render when zoomed out too far
     if (bpPerPx > 1000) {
       return
     }
 
-    // Use untracked to prevent these from being tracked by the autorun
-    // We explicitly list what should trigger re-rendering above
     const { adapterConfig } = self
-    const renderProps = untracked(() => self.renderProps())
 
     try {
       const session = getSession(self)
@@ -75,19 +46,26 @@ export function doAfterAttach(self: SharedLDModel) {
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
-      self.setCanvasDrawn(false)
 
       const result = (await rpcManager.call(
         rpcSessionId,
-        'CoreRender',
+        'RenderWebGLLDData',
         {
           sessionId: rpcSessionId,
-          rendererType: 'LDRenderer',
-          regions: [...regions],
           adapterConfig,
+          regions: [...regions],
           bpPerPx,
+          ldMetric: self.ldMetric,
+          minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+          lengthCutoffFilter: self.lengthCutoffFilter,
+          hweFilterThreshold: self.hweFilterThreshold,
+          callRateFilter: self.callRateFilter,
+          jexlFilters: self.jexlFilters,
+          signedLD: self.signedLD,
+          useGenomicPositions: self.useGenomicPositions,
+          fitToHeight: self.fitToHeight,
+          displayHeight: self.fitToHeight ? self.ldCanvasHeight : undefined,
           stopToken,
-          ...renderProps,
         },
         {
           statusCallback: (msg: string) => {
@@ -96,25 +74,20 @@ export function doAfterAttach(self: SharedLDModel) {
             }
           },
         },
-      )) as RenderResult
+      )) as WebGLLDDataResult
 
-      if (result.imageData) {
-        self.setRenderingImageData(result.imageData)
-        self.setLastDrawnOffsetPx(view.offsetPx)
-        self.setLastDrawnBpPerPx(view.bpPerPx)
-      }
-      // Store flatbush data for mouseover
+      self.setRpcData(result)
+      self.setLastDrawnOffsetPx(view.offsetPx)
+      self.setLastDrawnBpPerPx(view.bpPerPx)
       self.setFlatbushData(
         result.flatbush,
-        result.items ?? [],
-        result.ldData?.snps ?? [],
-        result.maxScore ?? 1,
-        result.yScalar ?? 1,
-        result.w ?? 0,
+        result.items,
+        result.snps,
+        result.maxScore,
+        result.yScalar,
+        result.uniformW,
       )
-      // Store filter stats
       self.setFilterStats(result.filterStats)
-      // Store recombination data
       self.setRecombination(result.recombination)
     } catch (error) {
       if (!isAbortException(error)) {
@@ -127,11 +100,11 @@ export function doAfterAttach(self: SharedLDModel) {
       if (isAlive(self)) {
         self.setRenderingStopToken(undefined)
         self.setLoading(false)
+        self.setStatusMessage(undefined)
       }
     }
   }
 
-  // Autorun to trigger rendering when parameters change
   addDisposer(
     self,
     autorun(
@@ -147,27 +120,27 @@ export function doAfterAttach(self: SharedLDModel) {
         const regions = dynamicBlocks.contentBlocks
 
         /* eslint-disable @typescript-eslint/no-unused-expressions */
-        // access these to trigger autorun on changes
         self.ldMetric
         self.minorAlleleFrequencyFilter
         self.lengthCutoffFilter
         self.hweFilterThreshold
         self.callRateFilter
-        self.colorScheme
-        self.showLDTriangle
         self.fitToHeight
         self.useGenomicPositions
         self.signedLD
-        // When fitToHeight is true, also track ldCanvasHeight so resizing
-        // the display triggers a re-render
+        self.jexlFilters
         if (self.fitToHeight) {
           self.ldCanvasHeight
         }
-        // Note: lineZoneHeight, recombinationZoneHeight, and showRecombination
-        // are handled by CSS/React, not canvas rendering
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
-        if (untracked(() => self.error) || !regions.length) {
+        if (
+          !self.featureDensityStatsReady ||
+          !self.showLDTriangle ||
+          self.regionTooLarge ||
+          untracked(() => self.error) ||
+          !regions.length
+        ) {
           return
         }
 
@@ -177,30 +150,6 @@ export function doAfterAttach(self: SharedLDModel) {
       {
         delay: 500,
         name: 'LDDisplayRender',
-      },
-    ),
-  )
-
-  // Autorun to draw the canvas when imageData changes
-  addDisposer(
-    self,
-    autorun(
-      () => {
-        if (self.isMinimized) {
-          return
-        }
-        const view = getContainingView(self) as LGV
-        if (!view.initialized) {
-          return
-        }
-        const success = drawCanvasImageData(self.ref, self.renderingImageData)
-        if (isAlive(self)) {
-          self.setCanvasDrawn(success)
-        }
-      },
-      {
-        delay: 1000,
-        name: 'LDDisplayCanvas',
       },
     ),
   )

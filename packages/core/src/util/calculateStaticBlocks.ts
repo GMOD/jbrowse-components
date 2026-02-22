@@ -80,6 +80,7 @@ export default function calculateStaticBlocks(
     }
 
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
+    let paddingAddedInLoop = false
 
     for (
       let blockNum = windowLeftBlockNum;
@@ -141,13 +142,13 @@ export default function calculateStaticBlocks(
       }
 
       if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
         if (
           regionWidthPx >= minimumBlockWidth &&
           blockData.isRightEndOfDisplayedRegion &&
           regionNumber < displayedRegions.length - 1
         ) {
           regionBpOffset += interRegionPaddingWidth * bpPerPx
+          paddingAddedInLoop = true
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
@@ -171,6 +172,14 @@ export default function calculateStaticBlocks(
           )
         }
       }
+    }
+    if (
+      padding &&
+      !paddingAddedInLoop &&
+      regionWidthPx >= minimumBlockWidth &&
+      regionNumber < displayedRegions.length - 1
+    ) {
+      regionBpOffset += interRegionPaddingWidth * bpPerPx
     }
     regionBpOffset += regionEnd - regionStart
   }

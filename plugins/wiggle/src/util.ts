@@ -12,6 +12,7 @@ export const YSCALEBAR_LABEL_OFFSET = 5
 
 // Default color used by wiggle config schema
 export const WIGGLE_COLOR_DEFAULT = '#f0f'
+export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
 
 /**
  * Determines the appropriate color callback for wiggle plots.
@@ -64,6 +65,7 @@ export interface Source {
   name: string
   source: string
   color?: string
+  labelColor?: string
   group?: string
 }
 
@@ -232,6 +234,190 @@ export function serializeWiggleFeature(f: {
 
 export function round(value: number) {
   return Math.round(value * 1e5) / 1e5
+}
+
+export interface SourceInfo {
+  name: string
+  color?: string
+}
+
+export interface WiggleFeatureArrays {
+  featurePositions: Uint32Array
+  featureScores: Float32Array
+  featureMinScores: Float32Array
+  featureMaxScores: Float32Array
+  numFeatures: number
+  posFeaturePositions: Uint32Array
+  posFeatureScores: Float32Array
+  posNumFeatures: number
+  negFeaturePositions: Uint32Array
+  negFeatureScores: Float32Array
+  negNumFeatures: number
+}
+
+export function processFeatures(
+  features: { get: (key: string) => unknown }[],
+  regionStart: number,
+  bicolorPivot: number,
+): WiggleFeatureArrays {
+  const featurePositions = new Uint32Array(features.length * 2)
+  const featureScores = new Float32Array(features.length)
+  const featureMinScores = new Float32Array(features.length)
+  const featureMaxScores = new Float32Array(features.length)
+  const posPositions: number[] = []
+  const posScores: number[] = []
+  const negPositions: number[] = []
+  const negScores: number[] = []
+
+  for (const [i, feature] of features.entries()) {
+    const start = feature.get('start') as number
+    const end = feature.get('end') as number
+    const score = (feature.get('score') as number | undefined) ?? 0
+    const summary = feature.get('summary')
+
+    const startOffset = Math.floor(start - regionStart)
+    const endOffset = Math.floor(end - regionStart)
+    featurePositions[i * 2] = startOffset
+    featurePositions[i * 2 + 1] = endOffset
+    featureScores[i] = score
+    featureMinScores[i] = summary
+      ? ((feature.get('minScore') as number | undefined) ?? score)
+      : score
+    featureMaxScores[i] = summary
+      ? ((feature.get('maxScore') as number | undefined) ?? score)
+      : score
+
+    if (score >= bicolorPivot) {
+      posPositions.push(startOffset, endOffset)
+      posScores.push(score)
+    } else {
+      negPositions.push(startOffset, endOffset)
+      negScores.push(score)
+    }
+  }
+
+  return {
+    featurePositions: featurePositions.slice(0, features.length * 2),
+    featureScores: featureScores.slice(0, features.length),
+    featureMinScores: featureMinScores.slice(0, features.length),
+    featureMaxScores: featureMaxScores.slice(0, features.length),
+    numFeatures: features.length,
+    posFeaturePositions: new Uint32Array(posPositions),
+    posFeatureScores: new Float32Array(posScores),
+    posNumFeatures: posScores.length,
+    negFeaturePositions: new Uint32Array(negPositions),
+    negFeatureScores: new Float32Array(negScores),
+    negNumFeatures: negScores.length,
+  }
+}
+
+export function getEffectiveScores(
+  data: {
+    featureScores: Float32Array
+    featureMinScores: Float32Array
+    featureMaxScores: Float32Array
+  },
+  mode: string,
+) {
+  if (mode === 'min') {
+    return data.featureMinScores
+  }
+  if (mode === 'max') {
+    return data.featureMaxScores
+  }
+  return data.featureScores
+}
+
+interface FeatureArrays {
+  featurePositions: Uint32Array
+  featureScores: Float32Array
+  featureMinScores: Float32Array
+  featureMaxScores: Float32Array
+  numFeatures: number
+}
+
+function computeStats(
+  summaryScoreMode: string,
+  datasets: { data: FeatureArrays; visStart?: number; visEnd?: number }[],
+  filterVisible: boolean,
+) {
+  const useWhiskers = summaryScoreMode === 'whiskers'
+  const useMin = summaryScoreMode === 'min'
+  const useMax = summaryScoreMode === 'max'
+  let min = Infinity
+  let max = -Infinity
+  let sum = 0
+  let sumSq = 0
+  let count = 0
+  for (const { data, visStart, visEnd } of datasets) {
+    for (let i = 0; i < data.numFeatures; i++) {
+      if (filterVisible && visStart !== undefined && visEnd !== undefined) {
+        const fStart = data.featurePositions[i * 2]!
+        const fEnd = data.featurePositions[i * 2 + 1]!
+        if (fEnd <= visStart || fStart >= visEnd) {
+          continue
+        }
+      }
+      if (useWhiskers) {
+        min = Math.min(min, data.featureMinScores[i]!)
+        max = Math.max(max, data.featureMaxScores[i]!)
+      } else if (useMin) {
+        const s = data.featureMinScores[i]!
+        min = Math.min(min, s)
+        max = Math.max(max, s)
+      } else if (useMax) {
+        const s = data.featureMaxScores[i]!
+        min = Math.min(min, s)
+        max = Math.max(max, s)
+      } else {
+        const s = data.featureScores[i]!
+        min = Math.min(min, s)
+        max = Math.max(max, s)
+      }
+      const avg = data.featureScores[i]!
+      sum += avg
+      sumSq += avg * avg
+      count++
+    }
+  }
+  if (count === 0 || !Number.isFinite(min) || !Number.isFinite(max)) {
+    return undefined
+  }
+  const mean = sum / count
+  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
+  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
+}
+
+export function computeAutoscaleDomain(
+  autoscaleType: string,
+  summaryScoreMode: string,
+  numStdDev: number,
+  visibleEntries: {
+    data: FeatureArrays
+    visStart: number
+    visEnd: number
+  }[],
+  allEntries: { data: FeatureArrays }[],
+): [number, number] | undefined {
+  const isGlobal = autoscaleType === 'global' || autoscaleType === 'globalsd'
+  const isSd = autoscaleType === 'localsd' || autoscaleType === 'globalsd'
+
+  const stats = isGlobal
+    ? computeStats(summaryScoreMode, allEntries, false)
+    : computeStats(summaryScoreMode, visibleEntries, true)
+
+  if (!stats) {
+    return undefined
+  }
+
+  if (isSd) {
+    const { scoreMean, scoreStdDev, scoreMin } = stats
+    return [
+      scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
+      scoreMean + numStdDev * scoreStdDev,
+    ]
+  }
+  return [stats.scoreMin, stats.scoreMax]
 }
 
 // Shared constants for wiggle drawing
