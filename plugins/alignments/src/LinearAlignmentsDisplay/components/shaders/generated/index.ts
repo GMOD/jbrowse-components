@@ -3207,7 +3207,7 @@ void main() {
         normal = vec2(0.0, 1.0);
     }
     float _e47 = uf(26u);
-    float hw = ((_e47 * 0.5) + 0.5);
+    float hw = ((_e47 * 0.5) + 1.0);
     vec2 _e52 = normal;
     vec2 offset_pos = (_e18 + ((_e52 * hw) * side));
     float _e57 = canvas_width();
@@ -3259,7 +3259,7 @@ void main() {
     float hw = (_e2 * 0.5);
     float d = abs(in_.dist);
     float aa = fwidth(in_.dist);
-    float alpha = (1.0 - smoothstep((hw - (aa * 0.5)), (hw + aa), d));
+    float alpha = smoothstep(0.0, aa, (hw - d));
     _fs2p_location0 = vec4(in_.color.xyz, (in_.color.w * alpha));
     return;
 }
@@ -3522,7 +3522,7 @@ void main() {
     } else {
         normal = vec2(0.0, 1.0);
     }
-    float hw = ((inst_1.line_width * 0.5) + 0.5);
+    float hw = ((inst_1.line_width * 0.5) + 1.0);
     vec2 _e51 = normal;
     vec2 offset_pos = (_e18 + ((_e51 * hw) * side));
     float _e56 = canvas_width();
@@ -3570,222 +3570,8 @@ void main() {
     float hw = (in_.lw * 0.5);
     float d = abs(in_.dist);
     float aa = fwidth(in_.dist);
-    float alpha = (1.0 - smoothstep((hw - (aa * 0.5)), (hw + aa), d));
+    float alpha = smoothstep(0.0, aa, (hw - d));
     _fs2p_location0 = vec4(in_.color.xyz, (in_.color.w * alpha));
-    return;
-}
-
-`
-
-export const CLOUD_VERTEX_SHADER = `#version 300 es
-
-precision highp float;
-precision highp int;
-
-
-struct VertexOutput {
-    vec4 position;
-    vec4 color;
-};
-struct CloudInst {
-    uint start_off;
-    uint end_off;
-    float y;
-    float flags;
-    float color_type;
-};
-const uint HP_LOW_MASK = 4095u;
-
-layout(std140) uniform type_2_block_0Vertex { uvec4 _group_0_binding_1_vs[40]; };
-
-uniform highp usampler2D u_instanceData;
-
-CloudInst _fetch_CloudInst(int idx) {
-    int base = idx * 5;
-    CloudInst s;
-    s.start_off = texelFetch(u_instanceData, ivec2((base + 0) / 4, 0), 0)[(base + 0) % 4];
-    s.end_off = texelFetch(u_instanceData, ivec2((base + 1) / 4, 0), 0)[(base + 1) % 4];
-    s.y = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 2) / 4, 0), 0)[(base + 2) % 4]);
-    s.flags = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 3) / 4, 0), 0)[(base + 3) % 4]);
-    s.color_type = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 4) / 4, 0), 0)[(base + 4) % 4]);
-    return s;
-}
-
-smooth out vec4 _vs2fs_location0;
-
-float uf(uint i) {
-    uint _e8 = _group_0_binding_1_vs[(i / 4u)][(i % 4u)];
-    return uintBitsToFloat(_e8);
-}
-
-uint uu(uint i_1) {
-    uint _e8 = _group_0_binding_1_vs[(i_1 / 4u)][(i_1 % 4u)];
-    return _e8;
-}
-
-int ui(uint i_2) {
-    uint _e8 = _group_0_binding_1_vs[(i_2 / 4u)][(i_2 % 4u)];
-    return int(_e8);
-}
-
-vec3 bp_range() {
-    float _e1 = uf(0u);
-    float _e3 = uf(1u);
-    float _e5 = uf(2u);
-    return vec3(_e1, _e3, _e5);
-}
-
-uint region_start() {
-    uint _e1 = uu(3u);
-    return _e1;
-}
-
-float canvas_height() {
-    float _e1 = uf(6u);
-    return _e1;
-}
-
-float coverage_offset() {
-    float _e1 = uf(8u);
-    return _e1;
-}
-
-float feature_height() {
-    float _e1 = uf(9u);
-    return _e1;
-}
-
-vec2 hp_split_uint(uint value) {
-    uint lo = (value & HP_LOW_MASK);
-    uint hi = (value - lo);
-    return vec2(float(hi), float(lo));
-}
-
-float hp_to_clip_x(vec2 split_pos, vec3 bp_range_1) {
-    float _e3 = uf(5u);
-    float inf = (1.0 / _e3);
-    float step_ = (2.0 / bp_range_1.z);
-    float hi_1 = max((split_pos.x - bp_range_1.x), -(inf));
-    float lo_1 = max((split_pos.y - bp_range_1.y), -(inf));
-    return dot(vec3(-1.0, hi_1, lo_1), vec3(1.0, step_, step_));
-}
-
-vec3 iso_color(float ct, float flags) {
-    if ((ct < 0.5)) {
-        return vec3(0.55);
-    }
-    if ((ct < 1.5)) {
-        return vec3(0.85, 0.25, 0.25);
-    }
-    if ((ct < 2.5)) {
-        return vec3(0.25, 0.35, 0.85);
-    }
-    if ((ct < 3.5)) {
-        return vec3(0.5, 0.0, 0.5);
-    }
-    return vec3(0.0, 0.5, 0.0);
-}
-
-vec3 cloud_strand(float flags_1) {
-    bool is_rev = (fract((floor((flags_1 / 16.0)) / 2.0)) > 0.25);
-    return (is_rev ? vec3(0.55, 0.55, 0.85) : vec3(0.85, 0.55, 0.55));
-}
-
-void main() {
-    uint vid = uint(gl_VertexID);
-    uint iid = uint(gl_InstanceID);
-    VertexOutput out_ = VertexOutput(vec4(0.0), vec4(0.0));
-    bool local = false;
-    bool local_1 = false;
-    bool local_2 = false;
-    bool local_3 = false;
-    vec3 c = vec3(0.0);
-    CloudInst inst = _fetch_CloudInst(int(iid));
-    uint v = (vid % 6u);
-    if (!((v == 0u))) {
-        local = (v == 2u);
-    } else {
-        local = true;
-    }
-    bool _e16 = local;
-    if (!(_e16)) {
-        local_1 = (v == 3u);
-    } else {
-        local_1 = true;
-    }
-    bool _e23 = local_1;
-    float lx = (_e23 ? 0.0 : 1.0);
-    if (!((v == 0u))) {
-        local_2 = (v == 1u);
-    } else {
-        local_2 = true;
-    }
-    bool _e35 = local_2;
-    if (!(_e35)) {
-        local_3 = (v == 4u);
-    } else {
-        local_3 = true;
-    }
-    bool _e42 = local_3;
-    float ly = (_e42 ? 0.0 : 1.0);
-    uint _e47 = region_start();
-    uint abs_start = (inst.start_off + _e47);
-    uint _e50 = region_start();
-    uint abs_end = (inst.end_off + _e50);
-    vec2 _e52 = hp_split_uint(abs_start);
-    vec3 _e53 = bp_range();
-    float _e54 = hp_to_clip_x(_e52, _e53);
-    vec2 _e55 = hp_split_uint(abs_end);
-    vec3 _e56 = bp_range();
-    float _e57 = hp_to_clip_x(_e55, _e56);
-    float _e58 = canvas_height();
-    float _e59 = coverage_offset();
-    float avail = (_e58 - _e59);
-    float _e61 = coverage_offset();
-    float _e67 = feature_height();
-    float y_top_px = ((_e61 + ((1.0 - inst.y) * avail)) - (_e67 * 0.5));
-    float _e71 = feature_height();
-    float y_bot_px = (y_top_px + _e71);
-    float _e73 = canvas_height();
-    float px2clip = (2.0 / _e73);
-    float sy_top = (1.0 - (y_top_px * px2clip));
-    float sy_bot = (1.0 - (y_bot_px * px2clip));
-    out_.position = vec4(mix(_e54, _e57, lx), mix(sy_bot, sy_top, ly), 0.0, 1.0);
-    int _e89 = ui(29u);
-    if ((_e89 == 0)) {
-        vec3 _e95 = iso_color(inst.color_type, inst.flags);
-        c = _e95;
-    } else {
-        if ((_e89 == 1)) {
-            vec3 _e99 = cloud_strand(inst.flags);
-            c = _e99;
-        } else {
-            c = vec3(0.55);
-        }
-    }
-    vec3 _e103 = c;
-    out_.color = vec4(_e103, 1.0);
-    VertexOutput _e106 = out_;
-    gl_Position = _e106.position;
-    _vs2fs_location0 = _e106.color;
-    return;
-}
-
-`
-
-export const CLOUD_FRAGMENT_SHADER = `#version 300 es
-
-precision highp float;
-precision highp int;
-
-const uint HP_LOW_MASK = 4095u;
-
-smooth in vec4 _vs2fs_location0;
-out vec4 _fs2p_location0;
-
-void main() {
-    vec4 color = _vs2fs_location0;
-    _fs2p_location0 = color;
     return;
 }
 
@@ -3966,3 +3752,4 @@ void main() {
 }
 
 `
+

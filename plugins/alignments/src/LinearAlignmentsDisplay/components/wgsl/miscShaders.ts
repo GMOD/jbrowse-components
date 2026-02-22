@@ -84,7 +84,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   else { normal = vec2f(0.0, 1.0); }
 
   let lw = uf(26u);
-  let hw = lw * 0.5 + 0.5;
+  let hw = lw * 0.5 + 1.0;
   let offset_pos = pos + normal * hw * side;
   let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
   let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
@@ -99,7 +99,7 @@ fn fs_main(in: ArcOut) -> @location(0) vec4f {
   let hw = uf(26u) * 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
-  let alpha = 1.0 - smoothstep(hw - aa*0.5, hw + aa, d);
+  let alpha = smoothstep(0.0, aa, hw - d);
   return vec4f(in.color.rgb, in.color.a * alpha);
 }
 `
@@ -182,7 +182,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   if tlen > 0.001 { let tn = tang / tlen; normal = vec2f(-tn.y, tn.x); }
   else { normal = vec2f(0.0, 1.0); }
 
-  let hw = inst.line_width * 0.5 + 0.5;
+  let hw = inst.line_width * 0.5 + 1.0;
   let offset_pos = pos + normal * hw * side;
   let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
   let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
@@ -199,7 +199,7 @@ fn fs_main(in: SashimiOut) -> @location(0) vec4f {
   let hw = in.lw * 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
-  let alpha = 1.0 - smoothstep(hw - aa*0.5, hw + aa, d);
+  let alpha = smoothstep(0.0, aa, hw - d);
   return vec4f(in.color.rgb, in.color.a * alpha);
 }
 `

@@ -114,7 +114,7 @@ void main() {
   } else {
     normal = vec2(0.0, 1.0);
   }
-  float halfWidth = u_lineWidthPx * 0.5 + 0.5;
+  float halfWidth = u_lineWidthPx * 0.5 + 1.0;
   pos += normal * halfWidth * a_side;
   float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
   float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
@@ -134,7 +134,7 @@ void main() {
   float halfWidth = u_lineWidthPx * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
-  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  float alpha = smoothstep(0.0, aa, halfWidth - d);
   fragColor = vec4(v_color.rgb, v_color.a * alpha);
 }
 `
@@ -208,7 +208,7 @@ void main() {
   } else {
     normal = vec2(0.0, 1.0);
   }
-  float halfWidth = a_lineWidth * 0.5 + 0.5;
+  float halfWidth = a_lineWidth * 0.5 + 1.0;
   pos += normal * halfWidth * a_side;
   float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
   float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
@@ -234,7 +234,7 @@ void main() {
   float halfWidth = v_lineWidth * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
-  float alpha = 1.0 - smoothstep(halfWidth - aa * 0.5, halfWidth + aa, d);
+  float alpha = smoothstep(0.0, aa, halfWidth - d);
   fragColor = vec4(v_color.rgb, v_color.a * alpha);
 }
 `
