@@ -78,18 +78,6 @@ const WebGLVariantMatrixComponent = observer(
       [],
     )
 
-    // Upload pre-computed cell data from worker when it arrives
-    useEffect(() => {
-      const renderer = rendererRef.current
-      const cellData = model.webglCellData
-      if (!renderer || !ready || !cellData) {
-        cellDataRef.current = null
-        return
-      }
-      cellDataRef.current = cellData
-      renderer.uploadCellData(cellData)
-    }, [model.webglCellData, ready])
-
     useEffect(() => {
       const renderer = rendererRef.current
       if (!renderer || !ready) {
@@ -100,9 +88,15 @@ const WebGLVariantMatrixComponent = observer(
         if (!view.initialized) {
           return
         }
-        const cellData = cellDataRef.current
+        const cellData = model.webglCellData as MatrixCellData | undefined
         if (!cellData) {
+          cellDataRef.current = null
           return
+        }
+
+        if (cellDataRef.current !== cellData) {
+          cellDataRef.current = cellData
+          renderer.uploadCellData(cellData)
         }
 
         const width = Math.round(view.dynamicBlocks.totalWidthPx)

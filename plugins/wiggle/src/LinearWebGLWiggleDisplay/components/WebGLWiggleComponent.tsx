@@ -10,6 +10,7 @@ import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor, lightenColor, darkenColor } from '../../shared/webglUtils.ts'
 import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
 import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
+import WiggleTooltip from './WiggleTooltip.tsx'
 
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
 import type {
@@ -36,6 +37,16 @@ export interface WiggleDisplayModel {
   isLoading: boolean
   statusMessage?: string
   scalebarOverlapLeft: number
+  featureUnderMouse?: {
+    refName: string
+    start: number
+    end: number
+    score: number
+    minScore?: number
+    maxScore?: number
+    summary?: boolean
+  }
+  setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
 }
 
 function buildSourceRenderData(
@@ -220,6 +231,93 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
     })
   }, [model, view, ready])
 
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
+    0, 0,
+  ])
+  const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
+    0, 0,
+  ])
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      const container = containerRef.current
+      if (!container) {
+        return
+      }
+      const rect = container.getBoundingClientRect()
+      const offsetX = event.clientX - rect.left
+      setOffsetMouseCoord([offsetX, event.clientY - rect.top])
+      setClientMouseCoord([event.clientX, event.clientY])
+
+      const { rpcDataMap, summaryScoreMode } = model
+      if (rpcDataMap.size === 0) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const visibleRegions = view.visibleRegions
+      const region = visibleRegions.find(
+        r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
+      )
+      if (!region) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const data = rpcDataMap.get(region.regionNumber)
+      if (!data) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const blockWidth = region.screenEndPx - region.screenStartPx
+      const frac = (offsetX - region.screenStartPx) / blockWidth
+      const bp = Math.round(region.start + frac * (region.end - region.start))
+      const bpOffset = bp - data.regionStart
+
+      const { featurePositions, featureScores, numFeatures } = data
+      let foundIdx = -1
+      for (let i = 0; i < numFeatures; i++) {
+        const fStart = featurePositions[i * 2]!
+        const fEnd = featurePositions[i * 2 + 1]!
+        if (bpOffset >= fStart && bpOffset < fEnd) {
+          foundIdx = i
+          break
+        }
+      }
+
+      if (foundIdx === -1) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const fStart = featurePositions[foundIdx * 2]! + data.regionStart
+      const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
+      const hasSummary =
+        summaryScoreMode !== 'avg' && data.featureMinScores.length > 0
+
+      model.setFeatureUnderMouse({
+        refName: region.refName,
+        start: fStart,
+        end: fEnd,
+        score: featureScores[foundIdx]!,
+        ...(hasSummary
+          ? {
+              summary: true,
+              minScore: data.featureMinScores[foundIdx],
+              maxScore: data.featureMaxScores[foundIdx],
+            }
+          : {}),
+      })
+    },
+    [model, view],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    model.setFeatureUnderMouse(undefined)
+  }, [model])
+
   const width = Math.round(view.width)
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
@@ -241,7 +339,12 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   }
 
   return (
-    <div style={{ position: 'relative', width, height }}>
+    <div
+      ref={containerRef}
+      style={{ position: 'relative', width, height }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       <canvas
         ref={canvasRefCallback}
         style={{
@@ -268,6 +371,12 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
           <YScaleBar model={model} />
         </svg>
       ) : null}
+      <WiggleTooltip
+        model={model}
+        clientMouseCoord={clientMouseCoord}
+        offsetMouseCoord={offsetMouseCoord}
+        height={height}
+      />
       <LoadingOverlay
         statusMessage={model.statusMessage || 'Loading'}
         isVisible={model.isLoading}

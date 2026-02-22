@@ -93,6 +93,17 @@ export default function stateModelFactory(
       rpcDataMap: new Map<number, WebGLWiggleDataResult>(),
       visibleScoreRange: undefined as [number, number] | undefined,
       loadedBpPerPx: new Map<number, number>(),
+      featureUnderMouse: undefined as
+        | {
+            refName: string
+            start: number
+            end: number
+            score: number
+            minScore?: number
+            maxScore?: number
+            summary?: boolean
+          }
+        | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -273,6 +284,10 @@ export default function stateModelFactory(
 
       setResolution(res: number) {
         self.resolution = res
+      },
+
+      setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
+        self.featureUnderMouse = feat
       },
     }))
     .actions(self => {

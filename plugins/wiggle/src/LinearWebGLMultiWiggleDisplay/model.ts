@@ -106,6 +106,18 @@ export default function stateModelFactory(
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
       treeCanvas: undefined as HTMLCanvasElement | undefined,
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
+      featureUnderMouse: undefined as
+        | {
+            refName: string
+            start: number
+            end: number
+            score: number
+            minScore?: number
+            maxScore?: number
+            source: string
+            summary?: boolean
+          }
+        | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -406,6 +418,10 @@ export default function stateModelFactory(
 
       setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
         self.mouseoverCanvas = ref || undefined
+      },
+
+      setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
+        self.featureUnderMouse = feat
       },
 
       setScaleType(scaleType: string) {

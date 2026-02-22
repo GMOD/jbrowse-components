@@ -9,10 +9,14 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { darkenColor, lightenColor, parseColor } from '../../shared/webglUtils.ts'
 import { getRowTop, makeRenderState } from '../../shared/wiggleComponentUtils.ts'
+import MultiWiggleTooltip from './Tooltip.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
-import type { WebGLMultiWiggleDataResult } from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
+import type {
+  WebGLMultiWiggleDataResult,
+  WebGLMultiWiggleSourceData,
+} from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
   WiggleRenderBlock,
@@ -48,11 +52,22 @@ export interface MultiWiggleDisplayModel {
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement
   mouseoverCanvas?: HTMLCanvasElement
+  featureUnderMouse?: {
+    refName: string
+    start: number
+    end: number
+    score: number
+    minScore?: number
+    maxScore?: number
+    source: string
+    summary?: boolean
+  }
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
+  setFeatureUnderMouse: (feat?: MultiWiggleDisplayModel['featureUnderMouse']) => void
 }
 
 const ScoreLegend = observer(function ScoreLegend({
@@ -254,6 +269,111 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
     })
   }, [model, view, ready])
 
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
+    0, 0,
+  ])
+  const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
+    0, 0,
+  ])
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      const container = containerRef.current
+      if (!container) {
+        return
+      }
+      const rect = container.getBoundingClientRect()
+      const offsetX = event.clientX - rect.left
+      const offsetY = event.clientY - rect.top
+      setOffsetMouseCoord([offsetX, offsetY])
+      setClientMouseCoord([event.clientX, event.clientY])
+
+      const { rowHeight, sources, rpcDataMap, summaryScoreMode } = model
+      if (sources.length === 0 || rpcDataMap.size === 0) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const rowIdx = Math.floor(offsetY / rowHeight)
+      if (rowIdx < 0 || rowIdx >= sources.length) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const sourceName = sources[rowIdx]!.name
+      const visibleRegions = view.visibleRegions
+      const region = visibleRegions.find(
+        r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
+      )
+      if (!region) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const data = rpcDataMap.get(region.regionNumber)
+      if (!data) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const blockWidth = region.screenEndPx - region.screenStartPx
+      const frac = (offsetX - region.screenStartPx) / blockWidth
+      const bp = Math.round(region.start + frac * (region.end - region.start))
+      const bpOffset = bp - data.regionStart
+
+      const rpcSource = data.sources.find(
+        (s: WebGLMultiWiggleSourceData) => s.name === sourceName,
+      )
+      if (!rpcSource) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const { featurePositions, featureScores, numFeatures } = rpcSource
+      let foundIdx = -1
+      for (let i = 0; i < numFeatures; i++) {
+        const fStart = featurePositions[i * 2]!
+        const fEnd = featurePositions[i * 2 + 1]!
+        if (bpOffset >= fStart && bpOffset < fEnd) {
+          foundIdx = i
+          break
+        }
+      }
+
+      if (foundIdx === -1) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const fStart = featurePositions[foundIdx * 2]! + data.regionStart
+      const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
+      const hasSummary =
+        summaryScoreMode !== 'avg' &&
+        rpcSource.featureMinScores.length > 0
+
+      model.setFeatureUnderMouse({
+        refName: region.refName,
+        start: fStart,
+        end: fEnd,
+        score: featureScores[foundIdx]!,
+        source: sourceName,
+        ...(hasSummary
+          ? {
+              summary: true,
+              minScore: rpcSource.featureMinScores[foundIdx],
+              maxScore: rpcSource.featureMaxScores[foundIdx],
+            }
+          : {}),
+      })
+    },
+    [model, view],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    model.setFeatureUnderMouse(undefined)
+  }, [model])
+
   const totalWidth = Math.round(view.width)
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
@@ -286,7 +406,12 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
   return (
-    <div style={{ position: 'relative', width: totalWidth, height }}>
+    <div
+      ref={containerRef}
+      style={{ position: 'relative', width: totalWidth, height }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       <canvas
         ref={canvasRefCallback}
         style={{
@@ -375,6 +500,13 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       </svg>
 
       <TreeSidebar model={model} />
+
+      <MultiWiggleTooltip
+        model={model}
+        clientMouseCoord={clientMouseCoord}
+        offsetMouseCoord={offsetMouseCoord}
+        height={height}
+      />
 
       <LoadingOverlay
         statusMessage={model.statusMessage || 'Loading'}
