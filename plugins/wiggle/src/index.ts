@@ -52,7 +52,6 @@ export default class WigglePlugin extends Plugin {
 
 export * from './util.ts'
 
-export { default as WiggleRendering } from './WiggleRendering.tsx'
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   Tooltip,

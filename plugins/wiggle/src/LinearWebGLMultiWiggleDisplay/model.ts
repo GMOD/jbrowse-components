@@ -63,6 +63,7 @@ export default function stateModelFactory(
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
         renderingTypeSetting: types.maybe(types.string),
+        summaryScoreModeSetting: types.maybe(types.string),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -134,6 +135,10 @@ export default function stateModelFactory(
 
       get scaleType() {
         return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+      },
+
+      get summaryScoreMode() {
+        return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
       },
 
       get renderingType() {
@@ -272,6 +277,10 @@ export default function stateModelFactory(
 
       setRenderingType(type: string) {
         self.renderingTypeSetting = type
+      },
+
+      setSummaryScoreMode(val: string) {
+        self.summaryScoreModeSetting = val
       },
 
       setResolution(res: number) {
@@ -563,6 +572,19 @@ export default function stateModelFactory(
                       },
                     },
                   ],
+                },
+                {
+                  label: 'Summary score mode',
+                  subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
+                    elt => ({
+                      label: elt,
+                      type: 'radio' as const,
+                      checked: self.summaryScoreMode === elt,
+                      onClick: () => {
+                        self.setSummaryScoreMode(elt)
+                      },
+                    }),
+                  ),
                 },
               ]
             : []),

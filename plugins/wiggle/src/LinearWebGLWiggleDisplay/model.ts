@@ -68,6 +68,7 @@ export default function stateModelFactory(
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
         renderingTypeSetting: types.maybe(types.string),
+        summaryScoreModeSetting: types.maybe(types.string),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -148,6 +149,10 @@ export default function stateModelFactory(
         return {
           adapterConfig: getConf(track, 'adapter'),
         }
+      },
+
+      get summaryScoreMode() {
+        return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
       },
 
       get renderingType() {
@@ -259,6 +264,10 @@ export default function stateModelFactory(
 
       setRenderingType(type: string) {
         self.renderingTypeSetting = type
+      },
+
+      setSummaryScoreMode(val: string) {
+        self.summaryScoreModeSetting = val
       },
 
       setResolution(res: number) {
@@ -534,6 +543,19 @@ export default function stateModelFactory(
                     },
                   ],
                 },
+                {
+                  label: 'Summary score mode',
+                  subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
+                    elt => ({
+                      label: elt,
+                      type: 'radio' as const,
+                      checked: self.summaryScoreMode === elt,
+                      onClick: () => {
+                        self.setSummaryScoreMode(elt)
+                      },
+                    }),
+                  ),
+                },
               ]
             : []),
           {
@@ -605,6 +627,7 @@ export default function stateModelFactory(
         minScoreSetting,
         maxScoreSetting,
         renderingTypeSetting,
+        summaryScoreModeSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -616,6 +639,7 @@ export default function stateModelFactory(
         ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
         ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
         ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
+        ...(summaryScoreModeSetting !== undefined ? { summaryScoreModeSetting } : {}),
       } as typeof snap
     })
 }

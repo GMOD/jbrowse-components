@@ -53,6 +53,13 @@ export default ConfigurationSchema(
       defaultValue: 'linear',
       description: 'Scale type (linear or log)',
     },
+    summaryScoreMode: {
+      type: 'stringEnum',
+      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+      description:
+        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+      defaultValue: 'whiskers',
+    },
   },
   { explicitlyTyped: true },
 )
