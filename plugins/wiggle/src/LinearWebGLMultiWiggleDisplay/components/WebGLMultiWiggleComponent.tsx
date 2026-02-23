@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView, measureText } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -50,6 +51,7 @@ export interface MultiWiggleDisplayModel {
   error: Error | null
   isLoading: boolean
   statusMessage?: string
+  reload: () => void
   scalebarOverlapLeft: number
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
@@ -393,18 +395,16 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (error) {
+  if (error !== null || model.error) {
     return (
-      <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
-        Error: {error}
-      </div>
-    )
-  }
-
-  if (model.error) {
-    return (
-      <div style={{ width: totalWidth, height, color: 'red', padding: 10 }}>
-        Error: {model.error.message}
+      <div style={{ position: 'relative', width: totalWidth, height }}>
+        <ErrorBar
+          error={error ?? model.error}
+          onRetry={() => {
+            setError(null)
+            model.reload()
+          }}
+        />
       </div>
     )
   }

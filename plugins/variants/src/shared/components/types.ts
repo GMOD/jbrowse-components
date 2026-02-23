@@ -42,6 +42,7 @@ export interface LegendBarModel {
   rowHeight: number
   sources?: Source[]
   showTree: boolean
+  showLegend: boolean
 }
 
 export interface MouseState {

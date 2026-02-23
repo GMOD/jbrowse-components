@@ -25,7 +25,6 @@ const Wrapper = observer(function Wrapper({
       style={{
         position: 'absolute',
         top: 0,
-        left,
         height,
         width,
       }}

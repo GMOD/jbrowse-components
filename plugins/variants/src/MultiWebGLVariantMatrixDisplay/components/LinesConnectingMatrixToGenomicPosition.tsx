@@ -96,7 +96,7 @@ const AllLines = observer(function AllLines({
   const { lineZoneHeight, featuresVolatile } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
+  const b0 = dynamicBlocks.totalWidthPxWithoutBorders
   const n = featuresVolatile?.length || 0
   const w = b0 / (n || 1)
   const offsetAdj = Math.max(offsetPx, 0)
@@ -105,11 +105,15 @@ const AllLines = observer(function AllLines({
     if (!assembly || n === 0 || !featuresVolatile) {
       return ''
     }
+    const tickHeight = 6
     const parts = [] as string[]
     for (let i = 0; i < n; i++) {
       const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
       const mx = i * w + w / 2
-      parts.push(`M${mx} ${lineZoneHeight}L${gx} 0`)
+      parts.push(
+        `M${mx} ${lineZoneHeight}L${gx} ${tickHeight}`,
+        `M${gx} 0L${gx} ${tickHeight}`,
+      )
     }
     return parts.join('')
   }, [assembly, n, featuresVolatile, view, offsetAdj, w, lineZoneHeight])
@@ -133,10 +137,20 @@ const AllLines = observer(function AllLines({
       let minDist = 10
       let found = -1
       let foundGx = 0
+      const tickHeight = 6
       for (let i = 0; i < n; i++) {
         const gx = getGenomicX(view, assembly, featuresVolatile[i]!, offsetAdj)
         const mx = i * w + w / 2
-        const dist = pointToSegmentDist(px, py, mx, lineZoneHeight, gx, 0)
+        const d1 = pointToSegmentDist(
+          px,
+          py,
+          mx,
+          lineZoneHeight,
+          gx,
+          tickHeight,
+        )
+        const d2 = pointToSegmentDist(px, py, gx, 0, gx, tickHeight)
+        const dist = Math.min(d1, d2)
         if (dist < minDist) {
           minDist = dist
           found = i
@@ -189,20 +203,72 @@ const AllLines = observer(function AllLines({
   )
 })
 
+const HighlightedLine = observer(function HighlightedLine({
+  model,
+  crosshairX,
+}: {
+  model: MinimalModel
+  crosshairX: number
+}) {
+  const { assemblyManager } = getSession(model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { lineZoneHeight, featuresVolatile } = model
+  const { offsetPx, assemblyNames, dynamicBlocks } = view
+  const assembly = assemblyManager.get(assemblyNames[0]!)
+  const b0 = dynamicBlocks.totalWidthPxWithoutBorders
+  const n = featuresVolatile?.length || 0
+  const w = b0 / (n || 1)
+  const left = Math.max(0, -offsetPx)
+  const svgX = crosshairX - left
+  const idx = Math.floor(svgX / w)
+
+  if (!assembly || !featuresVolatile || idx < 0 || idx >= n) {
+    return null
+  }
+
+  const offsetAdj = Math.max(offsetPx, 0)
+  const gx = getGenomicX(view, assembly, featuresVolatile[idx]!, offsetAdj)
+  const mx = idx * w + w / 2
+
+  return (
+    <>
+      <line
+        stroke="#f00c"
+        strokeWidth={2}
+        style={{ pointerEvents: 'none' }}
+        x1={mx}
+        x2={gx}
+        y1={lineZoneHeight}
+        y2={6}
+      />
+      <line
+        stroke="#f00c"
+        strokeWidth={2}
+        style={{ pointerEvents: 'none' }}
+        x1={gx}
+        x2={gx}
+        y1={0}
+        y2={6}
+      />
+    </>
+  )
+})
+
 const LinesConnectingMatrixToGenomicPosition = observer(
   function LinesConnectingMatrixToGenomicPosition({
     model,
     exportSVG,
+    crosshairX,
   }: {
     model: MinimalModel
     exportSVG?: boolean
+    crosshairX?: number
   }) {
     const { classes } = useStyles()
     const { lineZoneHeight, featuresVolatile } = model
     const [hovered, setHovered] = useState<HoveredLine>()
-    const b0 =
-      (getContainingView(model) as LinearGenomeViewModel).dynamicBlocks
-        .contentBlocks[0]?.widthPx || 0
+    const b0 = (getContainingView(model) as LinearGenomeViewModel).dynamicBlocks
+      .totalWidthPxWithoutBorders
     const n = featuresVolatile?.length || 0
     const w = b0 / (n || 1)
 
@@ -225,10 +291,22 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 x1={hMx}
                 x2={hovered.genomicX}
                 y1={lineZoneHeight}
-                y2={0}
+                y2={6}
+              />
+              <line
+                stroke="#f00c"
+                strokeWidth={2}
+                style={{ pointerEvents: 'none' }}
+                x1={hovered.genomicX}
+                x2={hovered.genomicX}
+                y1={0}
+                y2={6}
               />
               <BaseTooltip>{hovered.feature.get('name')}</BaseTooltip>
             </>
+          ) : null}
+          {crosshairX !== undefined && !hovered ? (
+            <HighlightedLine model={model} crosshairX={crosshairX} />
           ) : null}
         </Wrapper>
         {!exportSVG ? (

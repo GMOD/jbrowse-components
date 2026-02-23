@@ -21,6 +21,7 @@ const MultiSampleVariantBaseDisplayComponent = observer(
       DisplayMessageComponent,
       availableHeight,
       showTree,
+      showLegend,
       hierarchy,
       treeAreaWidth,
     } = model
@@ -54,11 +55,12 @@ const MultiSampleVariantBaseDisplayComponent = observer(
             <LegendBar model={model} />
           </g>
         </svg>
-        <FloatingLegend items={model.legendItems()} />
-        <Suspense fallback={null}>
-          <DisplayMessageComponent model={model} />
-        </Suspense>
-
+        {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
+        <div style={{ position: 'absolute', left: 0 }}>
+          <Suspense fallback={null}>
+            <DisplayMessageComponent model={model} />
+          </Suspense>
+        </div>
         {mouseState ? (
           <Crosshair
             mouseX={mouseState.x}

@@ -1,4 +1,4 @@
-import { createElement, lazy } from 'react'
+import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -21,10 +21,9 @@ import {
 import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionWebGLDisplayMixin,
-  TooLargeMessage,
+  RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -36,7 +35,10 @@ import { autorun, observable } from 'mobx'
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
-import { getModificationsSubMenu } from '../shared/menuItems.ts'
+import {
+  getFiltersMenuItem,
+  getModificationsSubMenu,
+} from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 import {
   CIGAR_TYPE_LABELS,
@@ -216,9 +218,6 @@ const SetFeatureHeightDialog = lazy(
 )
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog.tsx'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
-const FilterByTagDialog = lazy(
-  () => import('../shared/components/FilterByTagDialog.tsx'),
-)
 const SetMaxHeightDialog = lazy(
   () => import('../shared/components/SetMaxHeightDialog.tsx'),
 )
@@ -246,6 +245,7 @@ export default function stateModelFactory(
       'LinearAlignmentsDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      RegionTooLargeMixin(),
       MultiRegionWebGLDisplayMixin(),
       types.model({
         /**
@@ -360,7 +360,7 @@ export default function stateModelFactory(
 
       // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
 
-      const { blockState, showTooltips, ...cleaned } = snap
+      const { blockState, showTooltips, userByteSizeLimit, ...cleaned } = snap
       snap = cleaned
 
       // Rewrite "height" from older snapshots to "heightPreConfig"
@@ -427,12 +427,6 @@ export default function stateModelFactory(
       contextMenuCigarHit: undefined as CigarHitResult | undefined,
       contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
       contextMenuRefName: undefined as string | undefined,
-      userByteSizeLimit: undefined as number | undefined,
-      regionTooLargeState: false,
-      regionTooLargeReasonState: '',
-      featureDensityStats: undefined as
-        | undefined
-        | { bytes?: number; fetchSizeLimit?: number },
       fetchToken: 0,
       rpcDataMap: new Map<number, WebGLPileupDataResult>(),
       statusMessage: 'Loading',
@@ -597,20 +591,6 @@ export default function stateModelFactory(
         return self.regionTooLargeState && view.visibleBp >= AUTO_FORCE_LOAD_BP
       },
 
-      get regionTooLargeReason() {
-        return self.regionTooLargeReasonState
-      },
-
-      regionCannotBeRenderedText(_region: any) {
-        return self.regionTooLargeState ? 'Force load to see features' : ''
-      },
-
-      regionCannotBeRendered(_region: any) {
-        return self.regionTooLargeState
-          ? createElement(TooLargeMessage, { model: self as any })
-          : null
-      },
-
       get sortedBy() {
         return self.sortedBySetting
       },
@@ -650,7 +630,7 @@ export default function stateModelFactory(
       },
 
       get totalPileupHeight() {
-        return self.maxY * (self.featureHeightSetting + self.featureSpacing)
+        return self.maxY * (this.featureHeightSetting + this.featureSpacing)
       },
 
       get legendItems(): LegendItem[] {
@@ -836,6 +816,7 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       const superSetError = self.setError
+      const superSetRegionTooLarge = self.setRegionTooLarge
       return {
         setError(error?: unknown) {
           superSetError(error)
@@ -846,31 +827,11 @@ export default function stateModelFactory(
         },
 
         setRegionTooLarge(val: boolean, reason?: string) {
-          self.regionTooLargeState = val
-          self.regionTooLargeReasonState = reason ?? ''
+          superSetRegionTooLarge(val, reason)
           if (val) {
             self.featureIdUnderMouse = undefined
             self.mouseoverExtraInformation = undefined
           }
-        },
-
-        setFeatureDensityStats(stats?: {
-          bytes?: number
-          fetchSizeLimit?: number
-        }) {
-          self.featureDensityStats = stats
-        },
-
-        setFeatureDensityStatsLimit(stats?: {
-          bytes?: number
-          fetchSizeLimit?: number
-        }) {
-          if (stats?.bytes) {
-            // round up a bit to avoid it re-displaying for similar values
-            self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
-          }
-          self.regionTooLargeState = false
-          self.regionTooLargeReasonState = ''
         },
 
         setRpcData(regionNumber: number, data: WebGLPileupDataResult | null) {
@@ -1921,7 +1882,8 @@ export default function stateModelFactory(
               label: 'Compact',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 3 && self.noSpacingSetting === true,
+                self.featureHeightSetting === 3 &&
+                self.noSpacingSetting === true,
               onClick: () => {
                 self.setFeatureHeight(3)
                 self.setNoSpacing(true)
@@ -1931,7 +1893,8 @@ export default function stateModelFactory(
               label: 'Super-compact',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 1 && self.noSpacingSetting === true,
+                self.featureHeightSetting === 1 &&
+                self.noSpacingSetting === true,
               onClick: () => {
                 self.setFeatureHeight(1)
                 self.setNoSpacing(true)
@@ -2044,19 +2007,9 @@ export default function stateModelFactory(
           },
         }
 
-        const filterByItem = {
-          label: 'Filter by...',
-          icon: ClearAllIcon,
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              FilterByTagDialog,
-              {
-                model: self,
-                handleClose,
-              },
-            ])
-          },
-        }
+        const filterByItem = getFiltersMenuItem(self, {
+          showPairFilters: self.isChainMode,
+        })
 
         const sortByMenu = {
           label: 'Sort by...',
@@ -2124,41 +2077,6 @@ export default function stateModelFactory(
           colorByMenu,
           groupByItem,
         ]
-
-        if (self.isChainMode) {
-          items.push(
-            {
-              label: 'Edit filters',
-              type: 'subMenu' as const,
-              subMenu: [
-                {
-                  label: 'Show singletons',
-                  type: 'checkbox' as const,
-                  checked: self.drawSingletons,
-                  onClick: () => {
-                    self.setDrawSingletons(!self.drawSingletons)
-                  },
-                },
-                {
-                  label: 'Show proper pairs',
-                  type: 'checkbox' as const,
-                  checked: self.drawProperPairs,
-                  onClick: () => {
-                    self.setDrawProperPairs(!self.drawProperPairs)
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Show Y-axis scalebar',
-              type: 'checkbox' as const,
-              checked: self.showYScalebar,
-              onClick: () => {
-                self.setShowYScalebar(!self.showYScalebar)
-              },
-            },
-          )
-        }
 
         return items
       },

@@ -113,6 +113,10 @@ function Crosshairs({
   let snpIPos: { x: number; y: number }
 
   if (useGenomicPositions && snps.length > 0) {
+    if (i >= snps.length || j >= snps.length) {
+      return null
+    }
+
     const getBoundary = (idx: number) => {
       const snpPos = snps[idx]!.start
       const prevPos = idx > 0 ? snps[idx - 1]!.start : regionStart
@@ -248,7 +252,7 @@ const LDCanvas = observer(function LDCanvas({
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
   const {
     rpcData,
     flatbush,
@@ -326,9 +330,10 @@ const LDCanvas = observer(function LDCanvas({
       genomicX2 !== undefined &&
       model.showVerticalGuides
     ) {
+      const left = Math.max(0, -view.offsetPx)
       view.setVolatileGuides([
-        { xPos: genomicX1 + viewOffsetX },
-        { xPos: genomicX2 + viewOffsetX },
+        { xPos: genomicX1 + viewOffsetX + left },
+        { xPos: genomicX2 + viewOffsetX + left },
       ])
     } else {
       view.setVolatileGuides([])
@@ -558,25 +563,8 @@ const LDDisplayContent = observer(function LDDisplayContent({
   model: SharedLDModel
 }) {
   const view = getContainingView(model) as LGV
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
   const { height, showLDTriangle, showRecombination } = model
-
-  if (view.bpPerPx > 1000) {
-    return (
-      <div
-        style={{
-          width,
-          height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#666',
-        }}
-      >
-        Zoom in to see LD data
-      </div>
-    )
-  }
 
   if (!showLDTriangle && !showRecombination) {
     return (
@@ -595,8 +583,9 @@ const LDDisplayContent = observer(function LDDisplayContent({
     )
   }
 
+  const left = Math.max(0, -view.offsetPx)
   return (
-    <div style={{ position: 'relative', width, height }}>
+    <div style={{ position: 'relative', width, height, left }}>
       {showLDTriangle ? <LDCanvas model={model} /> : null}
     </div>
   )

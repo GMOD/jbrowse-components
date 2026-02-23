@@ -97,6 +97,7 @@ export {
   MultiRegionWebGLDisplayMixin,
   NonBlockCanvasDisplayComponent,
   NonBlockCanvasDisplayMixin,
+  RegionTooLargeMixin,
   SVGLegend,
   TooLargeMessage,
   TrackHeightMixin,
@@ -104,6 +105,7 @@ export {
   calculateSvgLegendWidth,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
+  getDisplayStr,
 } from './BaseLinearDisplay/index.ts'
 export type {
   MultiRegionWebGLDisplayMixinType,

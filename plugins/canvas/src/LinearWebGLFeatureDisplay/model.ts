@@ -608,7 +608,8 @@ export default function stateModelFactory(
                 if (
                   !view.initialized ||
                   self.regionTooLarge ||
-                  self.isLoading
+                  self.isLoading ||
+                  self.error
                 ) {
                   return
                 }

@@ -11,21 +11,117 @@ import {
   computeLDMatrixGPU,
   computeLDMatrixGPUPhased,
 } from './getLDMatrixGPU.ts'
+import {
+  encodeGenotypeFromRaw,
+  getRawCallGenotype,
+} from '../shared/rawGenotypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const SPLITTER = /[/|]/
 
-/**
- * Check if genotypes are phased (use | separator)
- */
 function isPhased(genotypes: Record<string, string>): boolean {
   const firstVal = Object.values(genotypes)[0]
   return firstVal?.includes('|') ?? false
+}
+
+function isPhasedRaw(feature: Feature): boolean {
+  const phased = feature.get('callGenotypePhased') as Uint8Array | undefined
+  if (!phased) {
+    return false
+  }
+  for (const element of phased) {
+    if (element) {
+      return true
+    }
+  }
+  return false
+}
+
+function encodeGenotypesFromRaw(
+  callGenotype: Int8Array,
+  ploidy: number,
+  nSamples: number,
+) {
+  const encoded = new Int8Array(nSamples)
+  for (let si = 0; si < nSamples; si++) {
+    encoded[si] = encodeGenotypeFromRaw(callGenotype, si, ploidy)
+  }
+  return encoded
+}
+
+function packHaplotypesFromRaw(
+  callGenotype: Int8Array,
+  callGenotypePhased: Uint8Array | undefined,
+  ploidy: number,
+  nSamples: number,
+) {
+  const words = Math.ceil(nSamples / 32)
+  const altH1 = new Uint32Array(words)
+  const validH1 = new Uint32Array(words)
+  const altH2 = new Uint32Array(words)
+  const validH2 = new Uint32Array(words)
+  let nHomRef = 0
+  let nHet = 0
+  let nHomAlt = 0
+  let nValid = 0
+
+  for (let s = 0; s < nSamples; s++) {
+    if (callGenotypePhased && !callGenotypePhased[s]) {
+      continue
+    }
+    const a0 = callGenotype[s * ploidy]!
+    const a1 = ploidy > 1 ? callGenotype[s * ploidy + 1]! : -2
+    if (a0 === -2 || a1 === -2) {
+      continue
+    }
+
+    const w = s >>> 5
+    const bit = 1 << (s & 31)
+    const v0 = a0 !== -1
+    const v1 = a1 !== -1
+
+    if (v0) {
+      validH1[w] = validH1[w]! | bit
+      if (a0 !== 0) {
+        altH1[w] = altH1[w]! | bit
+      }
+    }
+    if (v1) {
+      validH2[w] = validH2[w]! | bit
+      if (a1 !== 0) {
+        altH2[w] = altH2[w]! | bit
+      }
+    }
+    if (v0 && v1) {
+      const isAlt0 = a0 !== 0
+      const isAlt1 = a1 !== 0
+      nValid++
+      if (!isAlt0 && !isAlt1) {
+        nHomRef++
+      } else if (isAlt0 && isAlt1) {
+        nHomAlt++
+      } else {
+        nHet++
+      }
+    }
+  }
+
+  return {
+    altH1,
+    validH1,
+    altH2,
+    validH2,
+    words,
+    nHomRef,
+    nHet,
+    nHomAlt,
+    nValid,
+  }
 }
 
 /**
@@ -470,14 +566,16 @@ export async function getLDMatrix({
       ? new SerializableFilterChain({ filters: jexlFilters })
       : null
 
-  // Detect phasing from first raw feature (phasing is a dataset-wide property)
   let dataIsPhased = false
   if (rawFeatures.length > 0) {
-    const firstGenotypes = rawFeatures[0]!.get('genotypes') as Record<
-      string,
-      string
-    >
-    dataIsPhased = isPhased(firstGenotypes)
+    const first = rawFeatures[0]!
+    const rawGt = getRawCallGenotype(first)
+    if (rawGt) {
+      dataIsPhased = isPhasedRaw(first)
+    } else {
+      const firstGenotypes = first.get('genotypes') as Record<string, string>
+      dataIsPhased = isPhased(firstGenotypes)
+    }
   }
 
   for (const feature of rawFeatures) {
@@ -496,8 +594,6 @@ export async function getLDMatrix({
       continue
     }
 
-    const genotypes = feature.get('genotypes') as Record<string, string>
-
     let nHomRef = 0
     let nHet = 0
     let nHomAlt = 0
@@ -512,24 +608,55 @@ export async function getLDMatrix({
       | undefined
     let encoded: Int8Array | undefined
 
-    if (dataIsPhased) {
-      packed = packHaplotypesWithCounts(genotypes, samples)
-      nHomRef = packed.nHomRef
-      nHet = packed.nHet
-      nHomAlt = packed.nHomAlt
-      nValid = packed.nValid
+    const rawGt = getRawCallGenotype(feature)
+    if (rawGt) {
+      const ploidy = feature.get('ploidy') as number
+      const rawPhased = feature.get('callGenotypePhased') as
+        | Uint8Array
+        | undefined
+
+      if (dataIsPhased) {
+        packed = packHaplotypesFromRaw(rawGt, rawPhased, ploidy, samples.length)
+        nHomRef = packed.nHomRef
+        nHet = packed.nHet
+        nHomAlt = packed.nHomAlt
+        nValid = packed.nValid
+      } else {
+        encoded = encodeGenotypesFromRaw(rawGt, ploidy, samples.length)
+        for (const g of encoded) {
+          if (g === 0) {
+            nHomRef++
+            nValid++
+          } else if (g === 1) {
+            nHet++
+            nValid++
+          } else if (g === 2) {
+            nHomAlt++
+            nValid++
+          }
+        }
+      }
     } else {
-      encoded = encodeGenotypes(genotypes, samples, splitCache)
-      for (const g of encoded) {
-        if (g === 0) {
-          nHomRef++
-          nValid++
-        } else if (g === 1) {
-          nHet++
-          nValid++
-        } else if (g === 2) {
-          nHomAlt++
-          nValid++
+      const genotypes = feature.get('genotypes') as Record<string, string>
+      if (dataIsPhased) {
+        packed = packHaplotypesWithCounts(genotypes, samples)
+        nHomRef = packed.nHomRef
+        nHet = packed.nHet
+        nHomAlt = packed.nHomAlt
+        nValid = packed.nValid
+      } else {
+        encoded = encodeGenotypes(genotypes, samples, splitCache)
+        for (const g of encoded) {
+          if (g === 0) {
+            nHomRef++
+            nValid++
+          } else if (g === 1) {
+            nHet++
+            nValid++
+          } else if (g === 2) {
+            nHomAlt++
+            nValid++
+          }
         }
       }
     }

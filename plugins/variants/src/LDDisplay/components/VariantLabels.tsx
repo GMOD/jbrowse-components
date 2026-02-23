@@ -30,7 +30,7 @@ const VariantLabels = observer(function VariantLabels({
   const { snps, showLabels } = model
   const { offsetPx, assemblyNames } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const offsetAdj = Math.max(offsetPx, 0)
+  const offsetAdj = Math.max(0, offsetPx)
 
   if (!assembly || snps.length === 0 || !showLabels) {
     return null

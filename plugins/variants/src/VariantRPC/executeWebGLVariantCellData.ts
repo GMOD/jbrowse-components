@@ -21,33 +21,58 @@ function computeSampleInfo(
   let hasPhased = false
 
   for (const { feature } of mafs) {
-    const featureId = feature.id()
-    let samp = genotypesCache.get(featureId)
-    if (!samp) {
-      samp = feature.get('genotypes') as Record<string, string>
-      genotypesCache.set(featureId, samp)
-    }
-
-    for (const key in samp) {
-      const val = samp[key]!
-      const isPhased = val.includes('|')
-      hasPhased ||= isPhased
-      let ploidy = 1
-      if (isPhased) {
-        for (const char of val) {
-          if (char === '|') {
-            ploidy++
+    const callGenotype = feature.get('callGenotype') as Int8Array | undefined
+    if (callGenotype) {
+      const sampleNames = feature.get('sampleNames') as string[]
+      const ploidy = feature.get('ploidy') as number
+      const callGenotypePhased = feature.get('callGenotypePhased') as
+        | Uint8Array
+        | undefined
+      for (const [si, sampleName] of sampleNames.entries()) {
+        const name = sampleName
+        const isPhased = callGenotypePhased
+          ? Boolean(callGenotypePhased[si])
+          : false
+        hasPhased ||= isPhased
+        const existing = sampleInfo[name]
+        if (existing) {
+          if (ploidy > existing.maxPloidy) {
+            existing.maxPloidy = ploidy
           }
+          existing.isPhased ||= isPhased
+        } else {
+          sampleInfo[name] = { maxPloidy: ploidy, isPhased }
         }
       }
-      const existing = sampleInfo[key]
-      if (existing) {
-        if (ploidy > existing.maxPloidy) {
-          existing.maxPloidy = ploidy
+    } else {
+      const featureId = feature.id()
+      let samp = genotypesCache.get(featureId)
+      if (!samp) {
+        samp = feature.get('genotypes') as Record<string, string>
+        genotypesCache.set(featureId, samp)
+      }
+
+      for (const key in samp) {
+        const val = samp[key]!
+        const isPhased = val.includes('|')
+        hasPhased ||= isPhased
+        let ploidy = 1
+        if (isPhased) {
+          for (const char of val) {
+            if (char === '|') {
+              ploidy++
+            }
+          }
         }
-        existing.isPhased ||= isPhased
-      } else {
-        sampleInfo[key] = { maxPloidy: ploidy, isPhased }
+        const existing = sampleInfo[key]
+        if (existing) {
+          if (ploidy > existing.maxPloidy) {
+            existing.maxPloidy = ploidy
+          }
+          existing.isPhased ||= isPhased
+        } else {
+          sampleInfo[key] = { maxPloidy: ploidy, isPhased }
+        }
       }
     }
   }

@@ -364,6 +364,11 @@ export default function stateModelFactory(
         self.loadedBpPerPx = new Map()
       },
 
+      reload() {
+        self.setError(null)
+        self.clearAllRpcData()
+      },
+
       setSources(sources: SourceInfo[]) {
         self.sourcesVolatile = sources
       },

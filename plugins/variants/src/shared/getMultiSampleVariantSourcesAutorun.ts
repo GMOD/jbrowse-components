@@ -14,9 +14,10 @@ export function getMultiSampleVariantSourcesAutorun(self: {
   configuration: AnyConfigurationModel
   adapterConfig: AnyConfigurationModel
   isMinimized: boolean
+  errorRetryCount: number
   adapterProps: () => Record<string, unknown>
   setSourcesLoading: (aborter: StopToken) => void
-  setError: (error: unknown) => void
+  setDisplayError: (error: unknown) => void
   setStatusMessage: (str: string) => void
   setSources: (sources: Source[]) => void
 }) {
@@ -29,6 +30,7 @@ export function getMultiSampleVariantSourcesAutorun(self: {
           if (!isAlive(self) || self.isMinimized) {
             return
           }
+          void self.errorRetryCount
           const view = getContainingView(self) as LinearGenomeViewModel
           if (!view.initialized) {
             return
@@ -57,7 +59,8 @@ export function getMultiSampleVariantSourcesAutorun(self: {
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
-            getSession(self).notifyError(`${e}`, e)
+            console.error(e)
+            self.setDisplayError(e)
           }
         }
       },

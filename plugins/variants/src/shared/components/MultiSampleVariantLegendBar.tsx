@@ -14,8 +14,15 @@ const MultiSampleVariantLegendBar = observer(
     exportSVG?: boolean
   }) {
     const { model } = props
-    const { id, scrollTop, height, canDisplayLabels, rowHeight, sources } =
-      model
+    const {
+      id,
+      scrollTop,
+      height,
+      canDisplayLabels,
+      rowHeight,
+      sources,
+      showLegend,
+    } = model
     const svgFontSize = Math.min(rowHeight, 12)
     const clipid = `legend-${typeof jest === 'undefined' ? id : 'test'}`
 
@@ -36,10 +43,14 @@ const MultiSampleVariantLegendBar = observer(
     }, [sources, svgFontSize, canDisplayLabels])
 
     const nrow = sources?.length ?? 0
-    const startIdx = rowHeight > 0 ? Math.max(0, Math.floor(scrollTop / rowHeight)) : 0
-    const endIdx = rowHeight > 0 ? Math.min(nrow, Math.ceil((scrollTop + height) / rowHeight)) : 0
+    const startIdx =
+      rowHeight > 0 ? Math.max(0, Math.floor(scrollTop / rowHeight)) : 0
+    const endIdx =
+      rowHeight > 0
+        ? Math.min(nrow, Math.ceil((scrollTop + height) / rowHeight))
+        : 0
 
-    return sources ? (
+    return sources && showLegend ? (
       <>
         <defs>
           <clipPath id={clipid}>

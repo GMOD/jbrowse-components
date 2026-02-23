@@ -18,7 +18,10 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  RegionTooLargeMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
@@ -76,6 +79,7 @@ export default function MultiSampleVariantBaseModelF(
       'LinearVariantMatrixDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      RegionTooLargeMixin(),
       types.model({
         /**
          * #property
@@ -185,14 +189,6 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
-      regionTooLarge: false,
-      /**
-       * #volatile
-       */
-      regionTooLargeReason: '',
-      /**
-       * #volatile
-       */
       sourcesLoadingStopToken: undefined as StopToken | undefined,
       /**
        * #volatile
@@ -244,6 +240,8 @@ export default function MultiSampleVariantBaseModelF(
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
       webglCellData: undefined as unknown,
       webglCellDataLoading: false,
+      displayError: undefined as unknown,
+      errorRetryCount: 0,
     }))
     .actions(self => ({
       setWebGLCellData(data: unknown) {
@@ -251,6 +249,13 @@ export default function MultiSampleVariantBaseModelF(
       },
       setWebGLCellDataLoading(val: boolean) {
         self.webglCellDataLoading = val
+      },
+      setDisplayError(e: unknown) {
+        self.displayError = e
+      },
+      retryLoadingData() {
+        self.displayError = undefined
+        self.errorRetryCount++
       },
     }))
     .views(self => ({
@@ -287,13 +292,6 @@ export default function MultiSampleVariantBaseModelF(
        */
       setShowLegend(s: boolean) {
         self.showLegend = s
-      },
-      /**
-       * #action
-       */
-      setRegionTooLarge(val: boolean, reason?: string) {
-        self.regionTooLarge = val
-        self.regionTooLargeReason = reason ?? ''
       },
       /**
        * #action
@@ -711,9 +709,52 @@ export default function MultiSampleVariantBaseModelF(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      showSubmenuItems() {
+        return [
+          {
+            label: 'Show sidebar labels',
+            type: 'checkbox',
+            checked: self.showSidebarLabels,
+            onClick: () => {
+              self.setShowSidebarLabels(!self.showSidebarLabels)
+            },
+          },
+          {
+            label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
+            type: 'checkbox',
+            checked: self.showTree,
+            disabled: !self.clusterTree,
+            onClick: () => {
+              self.setShowTree(!self.showTree)
+            },
+          },
+          ...(self.subtreeFilter?.length
+            ? [
+                {
+                  label: 'Clear subtree filter',
+                  onClick: () => {
+                    self.setSubtreeFilter(undefined)
+                  },
+                },
+              ]
+            : []),
+          {
+            label: 'Show legend',
+            type: 'checkbox',
+            checked: self.showLegend,
+            onClick: () => {
+              self.setShowLegend(!self.showLegend)
+            },
+          },
+        ]
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
-
       return {
         /**
          * #method
@@ -725,55 +766,7 @@ export default function MultiSampleVariantBaseModelF(
               label: 'Show...',
               icon: VisibilityIcon,
               type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Show sidebar labels',
-                  type: 'checkbox',
-                  checked: self.showSidebarLabels,
-                  onClick: () => {
-                    self.setShowSidebarLabels(!self.showSidebarLabels)
-                  },
-                },
-                {
-                  label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
-                  type: 'checkbox',
-                  checked: self.showTree,
-                  disabled: !self.clusterTree,
-                  onClick: () => {
-                    self.setShowTree(!self.showTree)
-                  },
-                },
-                ...(self.subtreeFilter?.length
-                  ? [
-                      {
-                        label: 'Clear subtree filter',
-                        onClick: () => {
-                          self.setSubtreeFilter(undefined)
-                        },
-                      },
-                    ]
-                  : []),
-                {
-                  label: 'Show reference alleles',
-                  helpText:
-                    'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
-                  type: 'checkbox',
-                  checked: self.referenceDrawingMode !== 'skip',
-                  onClick: () => {
-                    self.setReferenceDrawingMode(
-                      self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
-                    )
-                  },
-                },
-                {
-                  label: 'Show legend',
-                  type: 'checkbox',
-                  checked: self.showLegend,
-                  onClick: () => {
-                    self.setShowLegend(!self.showLegend)
-                  },
-                },
-              ],
+              subMenu: self.showSubmenuItems(),
             },
             {
               label: 'Row height',
@@ -1045,6 +1038,7 @@ export default function MultiSampleVariantBaseModelF(
         return snap
       }
       const {
+        userByteSizeLimit: _userByteSizeLimit,
         layout,
         minorAlleleFrequencyFilterSetting,
         showSidebarLabelsSetting,
