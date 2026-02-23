@@ -2043,8 +2043,9 @@ export class WebGLRenderer {
     this.dpr = window.devicePixelRatio || 1
     const dpr = this.dpr
 
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
+    const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number
+    const bufW = Math.min(Math.round(canvasWidth * dpr), maxTex)
+    const bufH = Math.min(Math.round(canvasHeight * dpr), maxTex)
     if (canvas.width !== bufW || canvas.height !== bufH) {
       canvas.width = bufW
       canvas.height = bufH
@@ -2175,6 +2176,18 @@ export class WebGLRenderer {
           0,
           Math.round(scissorW * dpr),
           bufH,
+        )
+      }
+
+      const covH = state.showCoverage ? state.coverageHeight : 0
+      const pileupTopPx = Math.round((covH + arcsHeight) * dpr)
+      const pileupHPx = Math.max(0, bufH - pileupTopPx)
+      if (pileupHPx > 0) {
+        gl.scissor(
+          Math.round(scissorX * dpr),
+          0,
+          Math.round(scissorW * dpr),
+          pileupHPx,
         )
       }
 

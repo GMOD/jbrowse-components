@@ -1071,8 +1071,9 @@ export class AlignmentsRenderer {
     }
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
-    const bufW = Math.round(canvasWidth * dpr)
-    const bufH = Math.round(canvasHeight * dpr)
+    const maxDim = device.limits.maxTextureDimension2D ?? 8192
+    const bufW = Math.min(Math.round(canvasWidth * dpr), maxDim)
+    const bufH = Math.min(Math.round(canvasHeight * dpr), maxDim)
 
     if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
       this.canvas.width = bufW
@@ -1147,6 +1148,8 @@ export class AlignmentsRenderer {
       const arcsHeight =
         state.showArcs && state.arcsHeight ? state.arcsHeight : 0
       const covH = state.showCoverage ? state.coverageHeight : 0
+      const pileupTop = Math.round((covH + arcsHeight) * dpr)
+      const pileupH = Math.max(0, bufH - pileupTop)
 
       {
         const { enc, p } = mkPass(
@@ -1169,6 +1172,14 @@ export class AlignmentsRenderer {
 
         if (state.showCoverage) {
           this.drawCoverage(p, region)
+        }
+        if (pileupH > 0) {
+          p.setScissorRect(
+            Math.round(scissorX * dpr),
+            pileupTop,
+            Math.round(scissorW * dpr),
+            pileupH,
+          )
         }
 
         if (mode === 'linkedRead') {
@@ -1220,9 +1231,9 @@ export class AlignmentsRenderer {
           )
           p.setScissorRect(
             Math.round(scissorX * dpr),
-            0,
+            pileupTop,
             Math.round(scissorW * dpr),
-            bufH,
+            pileupH,
           )
           p.setPipeline(AlignmentsRenderer.readPL!)
           p.setBindGroup(0, region.readBG)
@@ -1302,9 +1313,9 @@ export class AlignmentsRenderer {
           )
           p.setScissorRect(
             Math.round(scissorX * dpr),
-            0,
+            pileupTop,
             Math.round(scissorW * dpr),
-            bufH,
+            pileupH,
           )
           this.drawOverlayQuads(p, quads, 4, tempBuffers)
           submitPass(enc, p)

@@ -649,6 +649,10 @@ export default function stateModelFactory(
         }
       },
 
+      get totalPileupHeight() {
+        return self.maxY * (self.featureHeightSetting + self.featureSpacing)
+      },
+
       get legendItems(): LegendItem[] {
         return getReadDisplayLegendItems(self.colorBySetting)
       },
@@ -717,6 +721,14 @@ export default function stateModelFactory(
           (self.showCoverage ? self.coverageHeight : 0) +
           (self.showArcs ? self.arcsHeight : 0)
         )
+      },
+
+      get pileupViewportHeight() {
+        return Math.max(0, self.height - this.coverageDisplayHeight)
+      },
+
+      get scrollableHeight() {
+        return Math.max(0, self.totalPileupHeight - this.pileupViewportHeight)
       },
 
       /**
@@ -884,6 +896,7 @@ export default function stateModelFactory(
         clearDisplaySpecificData() {
           self.rpcDataMap = new Map()
           self.arcsState.clearAllRpcData()
+          self.currentRangeY = [0, 0]
         },
 
         bumpFetchToken() {
@@ -925,19 +938,13 @@ export default function stateModelFactory(
         },
         setMaxY(y: number) {
           self.maxY = y
-          const rowHeight = self.featureHeightSetting + self.featureSpacing
-          const pileupHeight = y * rowHeight
-          const totalHeight = self.coverageDisplayHeight + pileupHeight + 10
-          // Clamp to maxHeight and ensure a minimum height
-          const clampedHeight = Math.min(
-            Math.max(totalHeight, 100),
-            self.maxHeight,
-          )
-          self.setHeight(clampedHeight)
         },
 
         setScrollTop(scrollTop: number) {
-          this.setCurrentRangeY([scrollTop, self.currentRangeY[1]])
+          this.setCurrentRangeY([
+            scrollTop,
+            scrollTop + self.pileupViewportHeight,
+          ])
         },
 
         setCurrentRangeY(rangeY: [number, number]) {
@@ -1088,10 +1095,12 @@ export default function stateModelFactory(
 
         setFeatureHeight(height?: number) {
           self.featureHeight = height
+          self.currentRangeY = [0, 0]
         },
 
         setNoSpacing(flag?: boolean) {
           self.noSpacing = flag
+          self.currentRangeY = [0, 0]
         },
 
         setShowSashimiArcs(show: boolean) {

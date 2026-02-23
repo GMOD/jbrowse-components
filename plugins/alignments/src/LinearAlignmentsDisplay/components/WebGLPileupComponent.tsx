@@ -1,3 +1,7 @@
+import { useEffect } from 'react'
+
+import { getContainingView } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   FloatingLegend,
   TooLargeMessage,
@@ -16,6 +20,27 @@ import {
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+
+const useStyles = makeStyles()({
+  scrollbarTrack: {
+    position: 'absolute' as const,
+    right: 0,
+    width: 12,
+    cursor: 'default',
+    zIndex: 10,
+    '&:hover > *': {
+      background: 'rgba(0,0,0,0.55)',
+    },
+  },
+  scrollbarThumb: {
+    position: 'absolute' as const,
+    right: 2,
+    width: 6,
+    borderRadius: 3,
+    background: 'rgba(0,0,0,0.3)',
+    pointerEvents: 'none' as const,
+  },
+})
 
 const WebGLPileupComponent = observer(function WebGLPileupComponent({
   model,
@@ -44,6 +69,7 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
+  const { classes } = useStyles()
   const base = useAlignmentsBase(model)
   const {
     canvasRef,
@@ -126,12 +152,58 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
     )
   }
 
+  const view = getContainingView(model) as { scrollZoom?: boolean }
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    const handler = (e: WheelEvent) => {
+      if (view.scrollZoom && !e.shiftKey) {
+        return
+      }
+      const maxScroll = model.scrollableHeight
+      if (maxScroll <= 0) {
+        return
+      }
+      let dy = e.deltaY
+      if (e.deltaMode === 1) {
+        dy *= 40
+      } else if (e.deltaMode === 2) {
+        dy *= model.pileupViewportHeight
+      }
+      const curScroll = model.currentRangeY[0]
+      const newScroll = Math.max(0, Math.min(maxScroll, curScroll + dy))
+      if (newScroll !== curScroll) {
+        e.preventDefault()
+        model.setCurrentRangeY([
+          newScroll,
+          newScroll + model.pileupViewportHeight,
+        ])
+      }
+    }
+    canvas.addEventListener('wheel', handler, { passive: false })
+    return () => {
+      canvas.removeEventListener('wheel', handler)
+    }
+  }, [canvasRef, model, view])
+
+  const hasOverflow = model.scrollableHeight > 0
+  const trackHeight = model.pileupViewportHeight
+  const thumbHeight = hasOverflow
+    ? Math.max(20, trackHeight * (trackHeight / model.totalPileupHeight))
+    : 0
+  const thumbTop = hasOverflow
+    ? topOffset +
+      (model.currentRangeY[0] / model.scrollableHeight) *
+        (trackHeight - thumbHeight)
+    : 0
+
   return (
     <div style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasRef}
-        width={width}
-        height={height}
         style={{
           display: 'block',
           width,
@@ -225,6 +297,43 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
         statusMessage={model.statusMessage}
         isVisible={model.showLoading}
       />
+
+      {hasOverflow ? (
+        <div
+          className={classes.scrollbarTrack}
+          style={{ top: topOffset, height: trackHeight }}
+          onMouseDown={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            const startY = e.clientY
+            const startScroll = model.currentRangeY[0]
+            const scrollRange = model.scrollableHeight
+            const usableTrack = trackHeight - thumbHeight
+
+            const onMouseMove = (me: MouseEvent) => {
+              const dy = me.clientY - startY
+              const scrollDelta =
+                usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
+              const next = Math.max(
+                0,
+                Math.min(scrollRange, startScroll + scrollDelta),
+              )
+              model.setCurrentRangeY([next, next + model.pileupViewportHeight])
+            }
+            const onMouseUp = () => {
+              document.removeEventListener('mousemove', onMouseMove)
+              document.removeEventListener('mouseup', onMouseUp)
+            }
+            document.addEventListener('mousemove', onMouseMove)
+            document.addEventListener('mouseup', onMouseUp)
+          }}
+        >
+          <div
+            className={classes.scrollbarThumb}
+            style={{ top: thumbTop - topOffset, height: thumbHeight }}
+          />
+        </div>
+      ) : null}
     </div>
   )
 })

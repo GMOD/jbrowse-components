@@ -64,7 +64,9 @@ export interface LinearAlignmentsDisplayModel {
   coverageDisplayHeight: number
   showInterbaseIndicators: boolean
   showSashimiArcs: boolean
-  maxY: number
+  totalPileupHeight: number
+  scrollableHeight: number
+  pileupViewportHeight: number
   regionTooLarge: boolean
   regionTooLargeReason: string
   setFeatureDensityStatsLimit: (s?: unknown) => void
