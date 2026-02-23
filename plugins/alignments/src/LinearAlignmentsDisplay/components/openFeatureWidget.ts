@@ -7,10 +7,6 @@ import {
 
 import { CIGAR_TYPE_LABELS, getTooltipBin } from './alignmentComponentUtils.ts'
 
-function pct(n: number, total: number) {
-  return `${((n / (total || 1)) * 100).toFixed(1)}%`
-}
-
 import type {
   CigarHitResult,
   IndicatorHitResult,
@@ -18,6 +14,10 @@ import type {
 } from './hitTesting.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+function pct(n: number, total: number) {
+  return `${((n / (total || 1)) * 100).toFixed(1)}%`
+}
 
 function showWidget(
   model: IAnyStateTreeNode,
@@ -113,7 +113,7 @@ export function openSashimiWidget(
   sashimiHit: SashimiArcHitResult,
 ) {
   const strandLabel =
-    sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : '.'
+    sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : 'unknown'
   const featureData: Record<string, unknown> = {
     uniqueId: `sashimi-${sashimiHit.refName}-${sashimiHit.start}-${sashimiHit.end}`,
     name: 'Splice Junction',

@@ -12,6 +12,7 @@ import {
 } from './shaders/arcShaders.ts'
 import { splitPositionWithFrac } from './shaders/utils.ts'
 import {
+  GAP_ERASE_WGSL,
   GAP_WGSL,
   HARDCLIP_WGSL,
   INSERTION_WGSL,
@@ -181,6 +182,7 @@ export class AlignmentsRenderer {
   private static layout: GPUBindGroupLayout | null = null
   private static readPL: GPURenderPipeline | null = null
   private static gapPL: GPURenderPipeline | null = null
+  private static gapErasePL: GPURenderPipeline | null = null
   private static mismatchPL: GPURenderPipeline | null = null
   private static insertionPL: GPURenderPipeline | null = null
   private static softclipPL: GPURenderPipeline | null = null
@@ -284,6 +286,34 @@ export class AlignmentsRenderer {
 
     AlignmentsRenderer.readPL = mkPL(READ_WGSL)
     AlignmentsRenderer.gapPL = mkPL(GAP_WGSL)
+    {
+      const replaceTarget: GPUColorTargetState = {
+        format: 'bgra8unorm',
+        blend: {
+          color: {
+            srcFactor: 'one',
+            dstFactor: 'zero',
+            operation: 'add',
+          },
+          alpha: {
+            srcFactor: 'one',
+            dstFactor: 'zero',
+            operation: 'add',
+          },
+        },
+      }
+      const mod = device.createShaderModule({ code: GAP_ERASE_WGSL })
+      AlignmentsRenderer.gapErasePL = device.createRenderPipeline({
+        layout: pLayout,
+        vertex: { module: mod, entryPoint: 'vs_main' },
+        fragment: {
+          module: mod,
+          entryPoint: 'fs_main',
+          targets: [replaceTarget],
+        },
+        primitive: { topology: 'triangle-list' },
+      })
+    }
     AlignmentsRenderer.mismatchPL = mkPL(MISMATCH_WGSL)
     AlignmentsRenderer.insertionPL = mkPL(INSERTION_WGSL)
     AlignmentsRenderer.softclipPL = mkPL(SOFTCLIP_WGSL)
@@ -1375,21 +1405,24 @@ export class AlignmentsRenderer {
     r: GpuRegion,
     state: RenderState,
   ) {
-    if (state.showMismatches) {
-      if (r.gapBG && r.gapCount > 0) {
-        pass.setPipeline(AlignmentsRenderer.gapPL!)
-        pass.setBindGroup(0, r.gapBG)
-        pass.draw(6, r.gapCount)
-      }
-    }
-
     if (r.readBG && r.readCount > 0) {
       pass.setPipeline(AlignmentsRenderer.readPL!)
       pass.setBindGroup(0, r.readBG)
       pass.draw(9, r.readCount)
     }
 
+    if (state.showMismatches && r.gapBG && r.gapCount > 0) {
+      pass.setPipeline(AlignmentsRenderer.gapErasePL!)
+      pass.setBindGroup(0, r.gapBG)
+      pass.draw(6, r.gapCount)
+    }
+
     if (state.showMismatches) {
+      if (r.gapBG && r.gapCount > 0) {
+        pass.setPipeline(AlignmentsRenderer.gapPL!)
+        pass.setBindGroup(0, r.gapBG)
+        pass.draw(6, r.gapCount)
+      }
       if (r.mismatchBG && r.mismatchCount > 0) {
         pass.setPipeline(AlignmentsRenderer.mismatchPL!)
         pass.setBindGroup(0, r.mismatchBG)

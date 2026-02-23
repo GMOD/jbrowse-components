@@ -18,6 +18,44 @@ fn cigar_domain() -> vec2f { return vec2f(uf(30u), uf(31u)); }
 fn cigar_domain_len() -> f32 { return uf(31u) - uf(30u); }
 `
 
+// SYNC(GAP_WGSL): GapInst struct must match
+export const GAP_ERASE_WGSL = `
+${CIGAR_PREAMBLE}
+${CIGAR_DOMAIN}
+
+struct GapInst { start_off: u32, end_off: u32, y: u32, gap_type: u32, frequency: f32 }
+@group(0) @binding(0) var<storage, read> instances: array<GapInst>;
+
+@vertex
+fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VertexOutput {
+  var out: VertexOutput;
+  let inst = instances[iid];
+
+  if inst.gap_type == 0u {
+    out.position = vec4f(0.0); out.color = vec4f(0.0); return out;
+  }
+
+  let v = vid % 6u;
+  let lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
+  let ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
+
+  let domain_len = cigar_domain_len();
+  let domain = cigar_domain();
+  let sx1 = (f32(inst.start_off) - domain.x) / domain_len * 2.0 - 1.0;
+  let sx2 = (f32(inst.end_off) - domain.x) / domain_len * 2.0 - 1.0;
+
+  let yy = pileup_y(f32(inst.y));
+
+  let sx = mix(sx1, sx2, lx);
+  let sy = mix(yy.y, yy.x, ly);
+  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.color = vec4f(0.0, 0.0, 0.0, 0.0);
+  return out;
+}
+
+${SIMPLE_FS}
+`
+
 export const GAP_WGSL = `
 ${CIGAR_PREAMBLE}
 ${CIGAR_DOMAIN}

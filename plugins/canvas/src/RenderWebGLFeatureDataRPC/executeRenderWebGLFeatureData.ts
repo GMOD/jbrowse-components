@@ -647,7 +647,6 @@ export async function executeRenderWebGLFeatureData({
     color3: '#357089',
     outline: '',
     height: 10,
-    subfeatureLabels: 'none' as string,
     displayMode: 'normal',
     maxFeatureGlyphExpansion: 500,
     maxHeight: 5000,
@@ -664,6 +663,7 @@ export async function executeRenderWebGLFeatureData({
       fontSize: 12,
     },
     ...displayConfig,
+    subfeatureLabels: displayConfig.subfeatureLabels ?? ('none' as string),
   }
 
   // Create default config context for WebGL rendering
