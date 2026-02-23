@@ -4,6 +4,7 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshair from './MultiSampleVariantCrosshairs.tsx'
+import LegendBar from './MultiSampleVariantLegendBar.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import { useMouseTracking } from '../hooks/useMouseTracking.ts'
 
@@ -16,7 +17,13 @@ type Model = MultiSampleVariantBaseModel & {
 const MultiSampleVariantBaseDisplayComponent = observer(
   function MultiSampleVariantBaseDisplayComponent(props: { model: Model }) {
     const { model } = props
-    const { DisplayMessageComponent } = model
+    const {
+      DisplayMessageComponent,
+      availableHeight,
+      showTree,
+      hierarchy,
+      treeAreaWidth,
+    } = model
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
@@ -29,6 +36,23 @@ const MultiSampleVariantBaseDisplayComponent = observer(
         onMouseLeave={handleMouseLeave}
       >
         <TreeSidebar model={model} />
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: availableHeight,
+            zIndex: 100,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        >
+          <g
+            transform={`translate(${showTree && hierarchy ? treeAreaWidth : 0})`}
+          >
+            <LegendBar model={model} />
+          </g>
+        </svg>
         <FloatingLegend items={model.legendItems()} />
         <Suspense fallback={null}>
           <DisplayMessageComponent model={model} />

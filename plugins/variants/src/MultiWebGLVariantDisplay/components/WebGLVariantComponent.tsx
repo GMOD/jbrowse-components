@@ -8,6 +8,10 @@ import { observer } from 'mobx-react'
 import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
+import {
+  useScrollbarStyles,
+  useVariantVirtualScroll,
+} from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -17,6 +21,9 @@ export interface VariantDisplayModel {
   availableHeight: number
   rowHeight: number
   scrollTop: number
+  totalHeight: number
+  nrow: number
+  autoHeight: boolean
   sources: { name: string; baseName?: string }[] | undefined
   featuresVolatile: { id(): string }[] | undefined
   referenceDrawingMode: string
@@ -36,6 +43,7 @@ export interface VariantDisplayModel {
   }[]
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
+  setScrollTop: (n: number) => void
   selectFeature: (feature: { id(): string }) => void
   setContextMenuFeature: (feature?: { id(): string }) => void
 }
@@ -51,8 +59,20 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   const [ready, setReady] = useState(false)
   const rendererRef = useRef<VariantRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const { classes } = useScrollbarStyles()
 
   const view = getContainingView(model) as LGV
+
+  const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
+    useVariantVirtualScroll({
+      canvasRef,
+      scrollTop: model.scrollTop,
+      setScrollTop: n => model.setScrollTop(n),
+      totalHeight: model.totalHeight,
+      viewportHeight: model.availableHeight,
+      scrollZoom: view.scrollZoom,
+    })
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -188,6 +208,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     <div style={{ position: 'relative', width, height }}>
       <canvas
         ref={canvas => {
+          canvasRef.current = canvas
           if (!canvas) {
             return
           }
@@ -262,6 +283,18 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
           }
         }}
       />
+      {hasOverflow && !model.autoHeight ? (
+        <div
+          className={classes.scrollbarTrack}
+          style={{ top: 0, height }}
+          onMouseDown={handleScrollbarMouseDown}
+        >
+          <div
+            className={classes.scrollbarThumb}
+            style={{ top: thumbTop, height: thumbHeight }}
+          />
+        </div>
+      ) : null}
       <LoadingOverlay
         statusMessage={
           model.regionTooLarge

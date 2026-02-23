@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
+import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
 import TreeSidebar from '../../shared/components/TreeSidebar.tsx'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
@@ -17,7 +18,15 @@ const VariantMatrixDisplayComponent = observer(
     model: LinearVariantMatrixDisplayModel
   }) {
     const { model } = props
-    const { DisplayMessageComponent, lineZoneHeight, height } = model
+    const {
+      DisplayMessageComponent,
+      lineZoneHeight,
+      height,
+      availableHeight,
+      showTree,
+      hierarchy,
+      treeAreaWidth,
+    } = model
     const view = getContainingView(model) as LinearGenomeViewModel
     const left = Math.max(0, -view.offsetPx)
     const ref = useRef<HTMLDivElement>(null)
@@ -38,6 +47,23 @@ const VariantMatrixDisplayComponent = observer(
           </Suspense>
         </div>
         <TreeSidebar model={model} />
+        <svg
+          style={{
+            position: 'absolute',
+            top: lineZoneHeight,
+            left: 0,
+            height: availableHeight,
+            zIndex: 100,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        >
+          <g
+            transform={`translate(${showTree && hierarchy ? treeAreaWidth : 0})`}
+          >
+            <LegendBar model={model} />
+          </g>
+        </svg>
         <FloatingLegend items={model.legendItems()} />
         {mouseState && mouseState.y > lineZoneHeight ? (
           <Crosshair
