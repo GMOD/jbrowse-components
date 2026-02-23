@@ -52,6 +52,7 @@ const VariantMatrixDisplayComponent = observer(
             position: 'absolute',
             top: lineZoneHeight,
             left: 0,
+            width: '100%',
             height: availableHeight,
             zIndex: 100,
             pointerEvents: 'none',

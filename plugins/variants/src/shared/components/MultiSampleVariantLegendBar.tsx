@@ -35,6 +35,10 @@ const MultiSampleVariantLegendBar = observer(
       return maxWidth
     }, [sources, svgFontSize, canDisplayLabels])
 
+    const nrow = sources?.length ?? 0
+    const startIdx = rowHeight > 0 ? Math.max(0, Math.floor(scrollTop / rowHeight)) : 0
+    const endIdx = rowHeight > 0 ? Math.min(nrow, Math.ceil((scrollTop + height) / rowHeight)) : 0
+
     return sources ? (
       <>
         <defs>
@@ -44,7 +48,12 @@ const MultiSampleVariantLegendBar = observer(
         </defs>
         <g clipPath={`url(#${clipid})`}>
           <g transform={`translate(0,${-scrollTop})`}>
-            <ColorLegend model={model} labelWidth={labelWidth} />
+            <ColorLegend
+              model={model}
+              labelWidth={labelWidth}
+              startIdx={startIdx}
+              endIdx={endIdx}
+            />
           </g>
         </g>
       </>

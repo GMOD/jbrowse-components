@@ -120,10 +120,7 @@ export default function MultiSampleVariantBaseModelF(
          * Controls row height: 'auto' calculates from available height,
          * or a number specifies manual pixel height per row
          */
-        rowHeightMode: types.optional(
-          types.union(types.literal('auto'), types.number),
-          'auto',
-        ),
+        rowHeightMode: types.optional(types.number, 0),
 
         /**
          * #property
@@ -336,7 +333,7 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #action
        */
-      setRowHeight(arg: number | 'auto') {
+      setRowHeight(arg: number) {
         self.rowHeightMode = arg
       },
       /**
@@ -482,8 +479,9 @@ export default function MultiSampleVariantBaseModelF(
        * #action
        * Toggle auto height mode. When turning off, uses default of 10px per row.
        */
-      setAutoHeight(auto: boolean) {
-        self.rowHeightMode = auto ? 'auto' : 10
+      setFitToHeight() {
+        self.rowHeightMode = 0
+        self.scrollTop = 0
       },
       /**
        * #action
@@ -511,7 +509,7 @@ export default function MultiSampleVariantBaseModelF(
        * #getter
        */
       get autoHeight() {
-        return self.rowHeightMode === 'auto'
+        return self.rowHeightMode === 0
       },
 
       /**
@@ -684,7 +682,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          */
         get rowHeight() {
-          return self.rowHeightMode === 'auto'
+          return self.rowHeightMode === 0
             ? this.availableHeight / this.nrow
             : self.rowHeightMode
         },
@@ -783,7 +781,6 @@ export default function MultiSampleVariantBaseModelF(
               subMenu: [
                 {
                   label: 'Manually set row height',
-                  disabled: self.autoHeight,
                   onClick: () => {
                     getSession(self).queueDialog(handleClose => [
                       SetRowHeightDialog,
@@ -795,11 +792,9 @@ export default function MultiSampleVariantBaseModelF(
                   },
                 },
                 {
-                  label: 'Auto-adjust to display height',
-                  type: 'checkbox',
-                  checked: self.autoHeight,
+                  label: 'Fit to display height',
                   onClick: () => {
-                    self.setAutoHeight(!self.autoHeight)
+                    self.setFitToHeight()
                   },
                 },
               ],
@@ -1076,7 +1071,7 @@ export default function MultiSampleVariantBaseModelF(
           : {}),
         ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
         ...(renderingModeSetting !== undefined ? { renderingModeSetting } : {}),
-        ...(rowHeightMode !== 'auto' ? { rowHeightMode } : {}),
+        ...(rowHeightMode !== 0 ? { rowHeightMode } : {}),
         ...(lengthCutoffFilter !== Number.MAX_SAFE_INTEGER
           ? { lengthCutoffFilter }
           : {}),

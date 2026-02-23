@@ -23,7 +23,6 @@ export interface VariantDisplayModel {
   scrollTop: number
   totalHeight: number
   nrow: number
-  autoHeight: boolean
   sources: { name: string; baseName?: string }[] | undefined
   featuresVolatile: { id(): string }[] | undefined
   referenceDrawingMode: string
@@ -44,6 +43,7 @@ export interface VariantDisplayModel {
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   setScrollTop: (n: number) => void
+  setRowHeight: (n: number) => void
   selectFeature: (feature: { id(): string }) => void
   setContextMenuFeature: (feature?: { id(): string }) => void
 }
@@ -68,10 +68,13 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     useVariantVirtualScroll({
       canvasRef,
       scrollTop: model.scrollTop,
-      setScrollTop: n => model.setScrollTop(n),
+      setScrollTop: model.setScrollTop,
       totalHeight: model.totalHeight,
       viewportHeight: model.availableHeight,
       scrollZoom: view.scrollZoom,
+      rowHeight: model.rowHeight,
+      nrow: model.nrow,
+      setRowHeight: model.setRowHeight,
     })
 
   useEffect(() => {
@@ -283,7 +286,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
           }
         }}
       />
-      {hasOverflow && !model.autoHeight ? (
+      {hasOverflow ? (
         <div
           className={classes.scrollbarTrack}
           style={{ top: 0, height }}

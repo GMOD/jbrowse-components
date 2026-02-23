@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
@@ -30,6 +30,9 @@ export function useVariantVirtualScroll({
   totalHeight,
   viewportHeight,
   scrollZoom,
+  rowHeight,
+  nrow,
+  setRowHeight,
 }: {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
   scrollTop: number
@@ -37,13 +40,21 @@ export function useVariantVirtualScroll({
   totalHeight: number
   viewportHeight: number
   scrollZoom: boolean
+  rowHeight: number
+  nrow: number
+  setRowHeight: (n: number) => void
 }) {
   const scrollableHeight = Math.max(0, totalHeight - viewportHeight)
   const hasOverflow = scrollableHeight > 0
-  const [isDragging, setIsDragging] = useState(false)
 
   const scrollTopRef = useRef(scrollTop)
   scrollTopRef.current = scrollTop
+  const setScrollTopRef = useRef(setScrollTop)
+  setScrollTopRef.current = setScrollTop
+  const rowHeightRef = useRef(rowHeight)
+  rowHeightRef.current = rowHeight
+  const setRowHeightRef = useRef(setRowHeight)
+  setRowHeightRef.current = setRowHeight
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -51,7 +62,24 @@ export function useVariantVirtualScroll({
       return
     }
     const handler = (e: WheelEvent) => {
-      if (scrollZoom && !e.shiftKey) {
+      if (e.shiftKey) {
+        e.preventDefault()
+        const curRowHeight = rowHeightRef.current
+        const delta = e.deltaY > 0 ? -1 : 1
+        const minRowHeight = viewportHeight / nrow
+        const newRowHeight = Math.min(20, Math.max(minRowHeight, curRowHeight + delta))
+        const rect = canvas.getBoundingClientRect()
+        const mouseY = e.clientY - rect.top
+        const rowUnderMouse = (mouseY + scrollTopRef.current) / curRowHeight
+        const newScrollTop = Math.max(
+          0,
+          rowUnderMouse * newRowHeight - mouseY,
+        )
+        setRowHeightRef.current(newRowHeight)
+        setScrollTopRef.current(newScrollTop)
+        return
+      }
+      if (scrollZoom) {
         return
       }
       if (scrollableHeight <= 0) {
@@ -67,14 +95,14 @@ export function useVariantVirtualScroll({
       const next = Math.max(0, Math.min(scrollableHeight, cur + dy))
       if (next !== cur) {
         e.preventDefault()
-        setScrollTop(next)
+        setScrollTopRef.current(next)
       }
     }
     canvas.addEventListener('wheel', handler, { passive: false })
     return () => {
       canvas.removeEventListener('wheel', handler)
     }
-  }, [canvasRef, scrollableHeight, viewportHeight, setScrollTop, scrollZoom])
+  }, [canvasRef, scrollableHeight, viewportHeight, scrollZoom, nrow])
 
   const thumbHeight = hasOverflow
     ? Math.max(20, (viewportHeight * viewportHeight) / totalHeight)
@@ -89,7 +117,6 @@ export function useVariantVirtualScroll({
     const startY = e.clientY
     const startScroll = scrollTop
     const usableTrack = viewportHeight - thumbHeight
-    setIsDragging(true)
 
     const onMouseMove = (me: MouseEvent) => {
       const dy = me.clientY - startY
@@ -102,7 +129,6 @@ export function useVariantVirtualScroll({
       setScrollTop(next)
     }
     const onMouseUp = () => {
-      setIsDragging(false)
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
@@ -110,5 +136,5 @@ export function useVariantVirtualScroll({
     document.addEventListener('mouseup', onMouseUp)
   }
 
-  return { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown, isDragging }
+  return { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown }
 }

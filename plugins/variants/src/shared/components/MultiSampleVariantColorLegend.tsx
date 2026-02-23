@@ -61,6 +61,8 @@ const MultiSampleVariantColorLegend = observer(
   function MultiSampleVariantColorLegend({
     model,
     labelWidth,
+    startIdx,
+    endIdx,
   }: {
     model: {
       canDisplayLabels: boolean
@@ -68,6 +70,8 @@ const MultiSampleVariantColorLegend = observer(
       sources?: Source[]
     }
     labelWidth: number
+    startIdx: number
+    endIdx: number
   }) {
     const { canDisplayLabels, rowHeight, sources } = model
     const colorBoxWidth = 15
@@ -84,32 +88,32 @@ const MultiSampleVariantColorLegend = observer(
       [theme.palette.text.primary],
     )
 
-    return sources ? (
+    const visibleSources = sources?.slice(startIdx, endIdx)
+
+    return visibleSources ? (
       <>
         {canDisplayLabels ? (
           <RectBg
-            y={0}
+            y={startIdx * rowHeight}
             x={0}
             width={legendWidth}
-            height={(sources.length + 0.25) * rowHeight}
+            height={(endIdx - startIdx + 0.25) * rowHeight}
           />
         ) : null}
-        {/* Render all background rectangles first */}
-        {sources.map((source, idx) => (
+        {visibleSources.map((source, i) => (
           <LegendItem
-            key={`${source.name}-${idx}`}
+            key={`${source.name}-${startIdx + i}`}
             source={source}
-            idx={idx}
+            idx={startIdx + i}
             rowHeight={rowHeight}
           />
         ))}
-        {/* Then render all text elements on top */}
         {canDisplayLabels
-          ? sources.map((source, idx) => (
+          ? visibleSources.map((source, i) => (
               <LegendItemText
-                key={`${source.name}-text-${idx}`}
+                key={`${source.name}-text-${startIdx + i}`}
                 source={source}
-                idx={idx}
+                idx={startIdx + i}
                 rowHeight={rowHeight}
                 textFillProps={textFillProps}
               />
