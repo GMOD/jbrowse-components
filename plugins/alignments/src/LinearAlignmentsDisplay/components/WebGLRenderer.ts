@@ -1072,7 +1072,6 @@ export class WebGLRenderer {
   uploadCoverageFromTypedArrays(data: {
     coverageDepths: Float32Array
     coverageMaxDepth: number
-    coverageBinSize: number
     coverageStartOffset: number // offset from regionStart where coverage begins
     numCoverageBins: number
     snpPositions: Uint32Array // offsets from regionStart
@@ -1119,7 +1118,7 @@ export class WebGLRenderer {
       // (can be negative if features extend before regionStart)
       const positions = new Float32Array(data.numCoverageBins)
       for (let i = 0; i < data.numCoverageBins; i++) {
-        positions[i] = data.coverageStartOffset + i * data.coverageBinSize
+        positions[i] = data.coverageStartOffset + i
       }
 
       // Normalize depths
@@ -1138,7 +1137,7 @@ export class WebGLRenderer {
       this.buffers.coverageVAO = coverageVAO
       this.buffers.coverageCount = data.numCoverageBins
       this.buffers.maxDepth = data.coverageMaxDepth
-      this.buffers.binSize = data.coverageBinSize
+      this.buffers.binSize = 1
     } else {
       this.buffers.coverageVAO = null
       this.buffers.coverageCount = 0

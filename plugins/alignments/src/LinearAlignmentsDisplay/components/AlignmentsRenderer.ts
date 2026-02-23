@@ -700,14 +700,14 @@ export class AlignmentsRenderer {
       const buf = new ArrayBuffer(n * COVERAGE_STRIDE * 4)
       const f32 = new Float32Array(buf)
       for (let i = 0; i < n; i++) {
-        f32[i * 2] = data.coverageStartOffset + i * data.coverageBinSize
+        f32[i * 2] = data.coverageStartOffset + i
         f32[i * 2 + 1] = (data.coverageDepths[i] ?? 0) / data.coverageMaxDepth
       }
       r.coverageBuffer = this.mkBuf(device, buf)
       r.coverageBG = this.mkBG(device, r.coverageBuffer)
       r.coverageCount = n
       r.maxDepth = data.coverageMaxDepth
-      r.binSize = data.coverageBinSize
+      r.binSize = 1
     }
 
     if (data.numSnpSegments > 0) {

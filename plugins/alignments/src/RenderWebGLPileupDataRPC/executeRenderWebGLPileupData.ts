@@ -546,16 +546,17 @@ export async function executeRenderWebGLPileupData({
     regionSequenceStart,
   )
 
-  const { tooltipData, significantSnpOffsets } = buildTooltipData({
-    mismatches,
-    insertions,
-    gaps,
-    softclips,
-    hardclips,
-    modifications,
-    regionStart,
-    coverage,
-  })
+  const { tooltipData, significantSnpOffsets, significantNoncovOffsets } =
+    buildTooltipData({
+      mismatches,
+      insertions,
+      gaps,
+      softclips,
+      hardclips,
+      modifications,
+      regionStart,
+      coverage,
+    })
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
@@ -585,7 +586,6 @@ export async function executeRenderWebGLPileupData({
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageBinSize: coverage.binSize,
     coverageStartOffset: coverage.startOffset,
 
     snpPositions: snpCoverage.positions,
@@ -612,6 +612,7 @@ export async function executeRenderWebGLPileupData({
 
     tooltipData: Object.fromEntries(tooltipData),
     significantSnpOffsets,
+    significantNoncovOffsets,
 
     maxY,
     numReads: features.length,

@@ -20,6 +20,7 @@ import {
   openCigarWidget,
   openCoverageWidget,
   openIndicatorWidget,
+  openSashimiWidget,
 } from './openFeatureWidget.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
@@ -413,6 +414,11 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       rangeY: model.currentRangeY,
       isChainMode,
     })
+
+    if (result.type === 'sashimi') {
+      openSashimiWidget(model, result.hit)
+      return
+    }
 
     if (result.type === 'indicator') {
       const refName = result.resolved.refName

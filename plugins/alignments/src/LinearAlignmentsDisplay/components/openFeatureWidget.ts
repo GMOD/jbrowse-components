@@ -11,7 +11,11 @@ function pct(n: number, total: number) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
 }
 
-import type { CigarHitResult, IndicatorHitResult } from './hitTesting.ts'
+import type {
+  CigarHitResult,
+  IndicatorHitResult,
+  SashimiArcHitResult,
+} from './hitTesting.ts'
 import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -101,6 +105,26 @@ export function openCoverageWidget(
       `${interbaseEntry.count}/${tooltipBin.depth} (${pct(interbaseEntry.count, tooltipBin.depth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
   }
 
+  showWidget(model, featureData)
+}
+
+export function openSashimiWidget(
+  model: IAnyStateTreeNode,
+  sashimiHit: SashimiArcHitResult,
+) {
+  const strandLabel =
+    sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : '.'
+  const featureData: Record<string, unknown> = {
+    uniqueId: `sashimi-${sashimiHit.refName}-${sashimiHit.start}-${sashimiHit.end}`,
+    name: 'Splice Junction',
+    type: 'skip',
+    refName: sashimiHit.refName,
+    start: sashimiHit.start,
+    end: sashimiHit.end,
+    score: sashimiHit.score,
+    strand: strandLabel,
+    length: sashimiHit.end - sashimiHit.start,
+  }
   showWidget(model, featureData)
 }
 

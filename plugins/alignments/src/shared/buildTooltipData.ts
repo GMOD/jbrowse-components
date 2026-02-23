@@ -219,7 +219,9 @@ export function buildTooltipData({
   }
 
   const SNP_SIGNIFICANCE_THRESHOLD = 0.05
+  const NONCOV_SIGNIFICANCE_THRESHOLD = 0.20
   const significantSnpOffsets: number[] = []
+  const significantNoncovOffsets: number[] = []
   for (const [posOffset, bin] of tooltipData) {
     if (bin.depth > 0) {
       let totalSnpCount = 0
@@ -229,9 +231,18 @@ export function buildTooltipData({
       if (totalSnpCount / bin.depth > SNP_SIGNIFICANCE_THRESHOLD) {
         significantSnpOffsets.push(posOffset)
       }
+
+      let totalNoncovCount = 0
+      for (const ev of Object.values(bin.interbase)) {
+        totalNoncovCount += ev.count
+      }
+      if (totalNoncovCount / bin.depth > NONCOV_SIGNIFICANCE_THRESHOLD) {
+        significantNoncovOffsets.push(posOffset)
+      }
     }
   }
   significantSnpOffsets.sort((a, b) => a - b)
+  significantNoncovOffsets.sort((a, b) => a - b)
 
-  return { tooltipData, significantSnpOffsets }
+  return { tooltipData, significantSnpOffsets, significantNoncovOffsets }
 }

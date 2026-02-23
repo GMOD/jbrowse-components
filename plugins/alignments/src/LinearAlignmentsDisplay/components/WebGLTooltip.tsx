@@ -1,4 +1,4 @@
-import { forwardRef, isValidElement } from 'react'
+import { isValidElement } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
 import type { CoverageTooltipBin } from '../../RenderWebGLPileupDataRPC/types'
-import type { Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -25,6 +24,16 @@ const useStyles = makeStyles()(theme => ({
   td: {
     whiteSpace: 'nowrap',
   },
+  tooltipContent: {
+    fontSize: theme.typography.fontSize * 0.85,
+    '& table': {
+      borderCollapse: 'collapse',
+    },
+    '& td, & th': {
+      border: '1px solid rgba(255,255,255,0.3)',
+      padding: '2px 4px',
+    },
+  },
 }))
 
 function pct(n: number, total = 1) {
@@ -39,23 +48,13 @@ function formatLocation(refName?: string, position?: number) {
   return refName ? `${refName}:${pos}` : pos
 }
 
-interface TooltipProps {
-  message: React.ReactNode | string
+function SimpleTooltipContents({ message }: { message: React.ReactNode | string }) {
+  return isValidElement(message) ? (
+    message
+  ) : message ? (
+    <div dangerouslySetInnerHTML={{ __html: String(message) }} />
+  ) : null
 }
-
-const SimpleTooltipContents = forwardRef<HTMLDivElement, TooltipProps>(
-  function SimpleTooltipContents2({ message }, ref) {
-    return (
-      <div ref={ref}>
-        {isValidElement(message) ? (
-          message
-        ) : message ? (
-          <div dangerouslySetInnerHTML={{ __html: String(message) }} />
-        ) : null}
-      </div>
-    )
-  },
-)
 
 function InterbaseTooltip({
   interbaseData,
@@ -84,8 +83,7 @@ function InterbaseTooltip({
       <thead>
         <tr>
           <th>Type</th>
-          <th># of Reads</th>
-          <th>% of Reads</th>
+          <th>Reads</th>
           <th>Size</th>
         </tr>
       </thead>
@@ -93,7 +91,6 @@ function InterbaseTooltip({
         <tr>
           <td>Total</td>
           <td>{total}</td>
-          <td />
           <td />
         </tr>
         {Object.entries(interbaseData).map(([type, data]) => {
@@ -106,14 +103,13 @@ function InterbaseTooltip({
             <tr key={type}>
               <td>
                 {getInterbaseTypeLabel(type)}
-                {data.topSeq && data.minLen <= 10 ? (
-                  <div style={{ fontSize: '0.85em', marginTop: '0.25em' }}>
-                    Top seq: {data.topSeq} ({data.topSeqCount}/{data.count})
-                  </div>
-                ) : null}
+                {data.topSeq && data.minLen <= 10
+                  ? ` (most frequent ${data.topSeq})`
+                  : null}
               </td>
-              <td className={classes.td}>{data.count}</td>
-              <td>{pct(data.count, total)}</td>
+              <td className={classes.td}>
+                {data.count}/{total} ({pct(data.count, total)})
+              </td>
               <td className={classes.td}>
                 {data.minLen > 0 || data.maxLen > 0 ? sizeStr : null}
               </td>
@@ -126,10 +122,7 @@ function InterbaseTooltip({
 }
 
 // Coverage tooltip - matches LinearSNPCoverageDisplay/components/TooltipContents BinTooltip structure
-const CoverageTooltipContents = forwardRef<
-  HTMLDivElement,
-  { bin: CoverageTooltipBin; refName?: string }
->(function CoverageTooltipContents2({ bin, refName }, ref) {
+function CoverageTooltipContents({ bin, refName }: { bin: CoverageTooltipBin; refName?: string }) {
   const { classes } = useStyles()
   const { position, depth, snps, deletions, interbase, modifications } = bin
   const location = formatLocation(refName, position)
@@ -145,25 +138,22 @@ const CoverageTooltipContents = forwardRef<
   const hasModifications = modEntries.length > 0
 
   return (
-    <div ref={ref}>
-      <table>
-        <caption>{location}</caption>
+    <table>
+      <caption>{location}</caption>
         <thead>
           <tr>
-            <th />
+            {hasModifications && <th />}
             <th>Base</th>
-            <th># of Reads</th>
-            <th>% of Reads</th>
+            <th>Reads</th>
             {hasModifications && <th>Avg Prob</th>}
             <th>Strands</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td />
+            {hasModifications && <td />}
             <td>Total</td>
             <td>{depth}</td>
-            <td />
             {hasModifications && <td />}
             <td />
           </tr>
@@ -183,8 +173,9 @@ const CoverageTooltipContents = forwardRef<
                       />
                     </td>
                     <td>{data.name}</td>
-                    <td className={classes.td}>{data.count}</td>
-                    <td>{pct(data.count, depth)}</td>
+                    <td className={classes.td}>
+                      {data.count}/{depth} ({pct(data.count, depth)})
+                    </td>
                     <td>{(avgProb * 100).toFixed(1)}%</td>
                     <td>
                       {data.fwd}(+) {data.rev}(-)
@@ -194,10 +185,10 @@ const CoverageTooltipContents = forwardRef<
               })
             : snpEntries.map(([base, data]) => (
                 <tr key={base}>
-                  <td />
                   <td>{base.toUpperCase()}</td>
-                  <td className={classes.td}>{data.count}</td>
-                  <td>{pct(data.count, depth)}</td>
+                  <td className={classes.td}>
+                    {data.count}/{depth} ({pct(data.count, depth)})
+                  </td>
                   <td>
                     {data.fwd}(+) {data.rev}(-)
                   </td>
@@ -205,7 +196,7 @@ const CoverageTooltipContents = forwardRef<
               ))}
           {deletions && (
             <tr>
-              <td />
+              {hasModifications && <td />}
               <td>
                 Deletion (
                 {deletions.minLen === deletions.maxLen
@@ -213,8 +204,9 @@ const CoverageTooltipContents = forwardRef<
                   : `${deletions.minLen}-${deletions.maxLen}bp`}
                 )
               </td>
-              <td className={classes.td}>{deletions.count}</td>
-              <td>{pct(deletions.count, depth)}</td>
+              <td className={classes.td}>
+                {deletions.count}/{depth} ({pct(deletions.count, depth)})
+              </td>
               {hasModifications && <td />}
               <td />
             </tr>
@@ -227,33 +219,18 @@ const CoverageTooltipContents = forwardRef<
                 : `${data.minLen}-${data.maxLen}bp`
             const shouldShowSeq = data.topSeq && data.minLen <= 10
 
-            // Build tooltip text for interbase histogram
-            const tooltipParts = [
-              typeLabel,
-              `Count: ${data.count}`,
-              `Size range: ${sizeStr}`,
-              `Avg size: ${data.avgLen.toFixed(1)}bp`,
-            ]
-            if (shouldShowSeq) {
-              tooltipParts.push(
-                `Top sequence: ${data.topSeq} (${data.topSeqCount}/${data.count})`,
-              )
-            }
-            const tooltipText = tooltipParts.join('\n')
-
             return (
-              <tr key={type} title={tooltipText}>
-                <td />
+              <tr key={type}>
+                {hasModifications && <td />}
                 <td>
                   {typeLabel} ({sizeStr})
-                  {shouldShowSeq && (
-                    <div style={{ fontSize: '0.85em', marginTop: '0.25em' }}>
-                      Top seq: {data.topSeq} ({data.topSeqCount}/{data.count})
-                    </div>
-                  )}
+                  {shouldShowSeq
+                    ? ` (most frequent ${data.topSeq})`
+                    : null}
                 </td>
-                <td className={classes.td}>{data.count}</td>
-                <td>{pct(data.count, depth)}</td>
+                <td className={classes.td}>
+                  {data.count}/{depth} ({pct(data.count, depth)})
+                </td>
                 {hasModifications && <td />}
                 <td />
               </tr>
@@ -261,9 +238,8 @@ const CoverageTooltipContents = forwardRef<
           })}
         </tbody>
       </table>
-    </div>
   )
-})
+}
 
 type Coord = [number, number]
 
@@ -307,8 +283,6 @@ const WebGLTooltip = observer(function WebGLTooltip({
   offsetMouseCoord,
 }: {
   model: {
-    featureUnderMouse: Feature | undefined
-    featureIdUnderMouse: string | undefined
     mouseoverExtraInformation: string | undefined
     showCoverage: boolean
     coverageHeight: number
@@ -318,8 +292,6 @@ const WebGLTooltip = observer(function WebGLTooltip({
   clientMouseCoord: Coord
 }) {
   const {
-    featureUnderMouse,
-    featureIdUnderMouse,
     mouseoverExtraInformation,
     showCoverage,
     coverageHeight,
@@ -351,11 +323,13 @@ const WebGLTooltip = observer(function WebGLTooltip({
       return (
         <>
           <BaseTooltip clientPoint={{ x, y }}>
-            <InterbaseTooltip
-              interbaseData={bin.interbase}
-              total={bin.depth}
-              location={location}
-            />
+            <div className={classes.tooltipContent}>
+              <InterbaseTooltip
+                interbaseData={bin.interbase}
+                total={bin.depth}
+                location={location}
+              />
+            </div>
           </BaseTooltip>
           {offsetMouseCoord && (
             <div
@@ -382,7 +356,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
     const { start, end, score, strand, refName } = tooltipData
     return (
       <BaseTooltip clientPoint={{ x, y }}>
-        <div>
+        <div className={classes.tooltipContent}>
           <div>
             <strong>Intron/Skip</strong>
           </div>
@@ -406,10 +380,12 @@ const WebGLTooltip = observer(function WebGLTooltip({
     return (
       <>
         <BaseTooltip clientPoint={{ x, y }}>
-          <CoverageTooltipContents
-            bin={tooltipData.bin}
-            refName={tooltipData.refName}
-          />
+          <div className={classes.tooltipContent}>
+            <CoverageTooltipContents
+              bin={tooltipData.bin}
+              refName={tooltipData.refName}
+            />
+          </div>
         </BaseTooltip>
         {offsetMouseCoord && (
           <div
@@ -426,20 +402,12 @@ const WebGLTooltip = observer(function WebGLTooltip({
     )
   }
 
-  // Simple string tooltip (CIGAR items, features)
-  if (!featureUnderMouse && mouseoverExtraInformation) {
+  if (mouseoverExtraInformation) {
     return (
       <BaseTooltip clientPoint={{ x, y }}>
-        <SimpleTooltipContents message={mouseoverExtraInformation} />
-      </BaseTooltip>
-    )
-  }
-
-  // Feature tooltip with mouseoverExtraInformation
-  if (featureIdUnderMouse && mouseoverExtraInformation) {
-    return (
-      <BaseTooltip clientPoint={{ x, y }}>
-        <SimpleTooltipContents message={mouseoverExtraInformation} />
+        <div className={classes.tooltipContent}>
+          <SimpleTooltipContents message={mouseoverExtraInformation} />
+        </div>
       </BaseTooltip>
     )
   }

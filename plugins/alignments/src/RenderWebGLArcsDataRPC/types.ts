@@ -14,6 +14,5 @@ export interface WebGLArcsDataResult {
   // Coverage data (basic depth from feature start/end, no CIGAR-level detail)
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageBinSize: number
   coverageStartOffset: number
 }

@@ -464,11 +464,8 @@ export function hitTestCoverage(
   const blockData = resolved.rpcData
   const { posOffset, bpPerPx } = canvasXToPosOffset(canvasX, resolved)
 
-  const { coverageDepths, coverageBinSize, coverageStartOffset, regionStart } =
-    blockData
-  const binIndex = Math.floor(
-    (posOffset - coverageStartOffset) / coverageBinSize,
-  )
+  const { coverageDepths, coverageStartOffset, regionStart } = blockData
+  const binIndex = Math.floor(posOffset - coverageStartOffset)
   if (binIndex < 0 || binIndex >= coverageDepths.length) {
     return undefined
   }
@@ -478,7 +475,7 @@ export function hitTestCoverage(
     return undefined
   }
 
-  const binStartOffset = coverageStartOffset + binIndex * coverageBinSize
+  const binStartOffset = coverageStartOffset + binIndex
   if (bpPerPx > 1 && blockData.significantSnpOffsets.length) {
     const binEndOffset = binStartOffset + Math.ceil(bpPerPx)
     const snpOffset = findSnpInBin(
@@ -490,6 +487,21 @@ export function hitTestCoverage(
       return {
         type: 'coverage',
         position: regionStart + snpOffset,
+      }
+    }
+  }
+
+  if (bpPerPx > 1 && blockData.significantNoncovOffsets.length) {
+    const binEndOffset = binStartOffset + Math.ceil(bpPerPx)
+    const noncovOffset = findSnpInBin(
+      blockData.significantNoncovOffsets,
+      binStartOffset,
+      binEndOffset,
+    )
+    if (noncovOffset !== undefined) {
+      return {
+        type: 'coverage',
+        position: regionStart + noncovOffset,
       }
     }
   }

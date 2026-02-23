@@ -560,16 +560,17 @@ export async function executeRenderWebGLChainData({
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
-  const { tooltipData, significantSnpOffsets } = buildTooltipData({
-    mismatches,
-    insertions,
-    gaps,
-    softclips,
-    hardclips,
-    modifications,
-    regionStart,
-    coverage,
-  })
+  const { tooltipData, significantSnpOffsets, significantNoncovOffsets } =
+    buildTooltipData({
+      mismatches,
+      insertions,
+      gaps,
+      softclips,
+      hardclips,
+      modifications,
+      regionStart,
+      coverage,
+    })
 
   const result: WebGLPileupDataResult = {
     regionStart,
@@ -588,7 +589,6 @@ export async function executeRenderWebGLChainData({
 
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageBinSize: coverage.binSize,
     coverageStartOffset: coverage.startOffset,
 
     snpPositions: snpCoverage.positions,
@@ -615,6 +615,7 @@ export async function executeRenderWebGLChainData({
 
     tooltipData: Object.fromEntries(tooltipData),
     significantSnpOffsets,
+    significantNoncovOffsets,
 
     ...connectingLineArrays,
 

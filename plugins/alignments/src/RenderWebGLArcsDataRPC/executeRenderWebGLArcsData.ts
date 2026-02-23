@@ -406,7 +406,6 @@ export async function executeRenderWebGLArcsData({
     numLines: lineData.positions.length / 2,
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
-    coverageBinSize: coverage.binSize,
     coverageStartOffset: coverage.startOffset,
   }
 }

@@ -44,7 +44,6 @@ export async function renderSvg(
     const {
       coverageDepths,
       coverageMaxDepth,
-      coverageBinSize,
       coverageStartOffset,
       numCoverageBins,
       regionStart,
@@ -73,15 +72,15 @@ export async function renderSvg(
         continue
       }
 
-      const binStart = regionStart + coverageStartOffset + i * coverageBinSize
-      const binEnd = binStart + coverageBinSize
+      const binStart = regionStart + coverageStartOffset + i
+      const binEnd = binStart + 1
 
       if (binEnd < block.start || binStart > block.end) {
         continue
       }
 
       const x = (binStart - block.start) / bpPerPx + blockScreenX
-      const w = Math.max(coverageBinSize / bpPerPx, 1)
+      const w = Math.max(1 / bpPerPx, 1)
       const normalizedDepth = depth / nicedMax
       const barHeight = normalizedDepth * effectiveHeight
       const y = coverageHeight - offset - barHeight

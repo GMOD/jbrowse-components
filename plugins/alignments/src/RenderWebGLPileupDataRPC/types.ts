@@ -134,11 +134,11 @@ export interface WebGLPileupDataResult {
   interbaseSequences: string[] // insertion sequences (empty string for clips or if unavailable)
   interbaseFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
-  // Coverage data - positions computed from regionStart + coverageStartOffset + index * binSize
+  // Coverage data - positions computed from regionStart + coverageStartOffset + index
+  // (bin size is always 1bp)
   // Coverage may extend beyond the requested region to cover full feature extents
   coverageDepths: Float32Array
   coverageMaxDepth: number
-  coverageBinSize: number
   coverageStartOffset: number // offset from regionStart where coverage begins (can be negative)
 
   // SNP coverage data - offsets from regionStart
@@ -166,6 +166,10 @@ export interface WebGLPileupDataResult {
   // Sorted offsets of positions with significant SNPs (>5% of depth)
   // Used by hitTestCoverage to snap to SNP positions when zoomed out
   significantSnpOffsets: number[]
+
+  // Sorted offsets of positions with significant interbase events (>20% of depth)
+  // Used by hitTestCoverage to snap to noncov histogram positions when zoomed out
+  significantNoncovOffsets: number[]
 
   // Tag color data - RGB per read (3 bytes each), only populated when colorBy.type === 'tag'
   readTagColors: Uint8Array

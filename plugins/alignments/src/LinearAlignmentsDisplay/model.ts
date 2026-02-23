@@ -1618,22 +1618,15 @@ export default function stateModelFactory(
                   const {
                     coverageDepths,
                     coverageStartOffset,
-                    coverageBinSize,
                     regionStart,
                   } = data
                   const startBin = Math.max(
                     0,
-                    Math.floor(
-                      (block.start - regionStart - coverageStartOffset) /
-                        coverageBinSize,
-                    ),
+                    Math.floor(block.start - regionStart - coverageStartOffset),
                   )
                   const endBin = Math.min(
                     coverageDepths.length,
-                    Math.ceil(
-                      (block.end - regionStart - coverageStartOffset) /
-                        coverageBinSize,
-                    ),
+                    Math.ceil(block.end - regionStart - coverageStartOffset),
                   )
                   for (let i = startBin; i < endBin; i++) {
                     const d = coverageDepths[i]!
