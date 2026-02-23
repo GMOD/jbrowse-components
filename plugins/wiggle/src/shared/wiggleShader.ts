@@ -1,21 +1,21 @@
-export const INSTANCE_STRIDE = 8
-export const UNIFORM_SIZE = 64
-export const VERTICES_PER_INSTANCE = 6
-export const RENDERING_TYPE_XYPLOT = 0
-export const RENDERING_TYPE_DENSITY = 1
-export const RENDERING_TYPE_LINE = 2
-export const RENDERING_TYPE_SCATTER = 3
+export const INSTANCE_STRIDE = 8 // SYNC: must match field count in WGSL struct Instance
+export const UNIFORM_SIZE = 64 // SYNC: must match byte size of WGSL struct Uniforms
+export const VERTICES_PER_INSTANCE = 6 // SYNC: VERTICES_PER_INSTANCE in WGSL
+export const RENDERING_TYPE_XYPLOT = 0 // SYNC: RENDERING_TYPE_XYPLOT in WGSL
+export const RENDERING_TYPE_DENSITY = 1 // SYNC: RENDERING_TYPE_DENSITY in WGSL
+export const RENDERING_TYPE_LINE = 2 // SYNC: RENDERING_TYPE_LINE in WGSL
+export const RENDERING_TYPE_SCATTER = 3 // SYNC: RENDERING_TYPE_SCATTER in WGSL
 export const SCALE_TYPE_LINEAR = 0
-export const SCALE_TYPE_LOG = 1
+export const SCALE_TYPE_LOG = 1 // SYNC: SCALE_TYPE_LOG in WGSL
 
 export const wiggleShader = /* wgsl */ `
 const HP_LOW_MASK: u32 = 0xFFFu;
-const RENDERING_TYPE_XYPLOT: i32 = 0;
-const RENDERING_TYPE_DENSITY: i32 = 1;
-const RENDERING_TYPE_LINE: i32 = 2;
-const RENDERING_TYPE_SCATTER: i32 = 3;
-const SCALE_TYPE_LOG: i32 = 1;
-const VERTICES_PER_INSTANCE: u32 = 6u;
+const RENDERING_TYPE_XYPLOT: i32 = 0; // SYNC: RENDERING_TYPE_XYPLOT in TS
+const RENDERING_TYPE_DENSITY: i32 = 1; // SYNC: RENDERING_TYPE_DENSITY in TS
+const RENDERING_TYPE_LINE: i32 = 2; // SYNC: RENDERING_TYPE_LINE in TS
+const RENDERING_TYPE_SCATTER: i32 = 3; // SYNC: RENDERING_TYPE_SCATTER in TS
+const SCALE_TYPE_LOG: i32 = 1; // SYNC: SCALE_TYPE_LOG in TS
+const VERTICES_PER_INSTANCE: u32 = 6u; // SYNC: VERTICES_PER_INSTANCE in TS
 
 fn hp_split_uint(value: u32) -> vec2f {
   let lo = value & HP_LOW_MASK;
@@ -59,7 +59,7 @@ fn get_row_top(row_index: f32, row_height: f32) -> f32 {
   return row_index * row_height;
 }
 
-struct Instance {
+struct Instance { // SYNC: field count must match INSTANCE_STRIDE in TS
   start_end: vec2u,
   score: f32,
   prev_score: f32,
@@ -69,7 +69,7 @@ struct Instance {
   color_b: f32,
 }
 
-struct Uniforms {
+struct Uniforms { // SYNC: byte size must match UNIFORM_SIZE in TS
   bp_range_x: vec3f,
   region_start: u32,
   canvas_height: f32,

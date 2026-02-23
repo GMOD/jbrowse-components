@@ -1,9 +1,13 @@
+// SYNC: must match Instance struct in WGSL (16 f32 fields * 4 bytes = 64)
 export const INSTANCE_BYTE_SIZE = 64
 export const FILL_SEGMENTS = 16
 export const EDGE_SEGMENTS = 4
+// SYNC: 6 verts per segment must match WGSL switch (cases 0u..5u)
 export const FILL_VERTS_PER_INSTANCE = FILL_SEGMENTS * 6
+// SYNC: 2 edges (edgeIdx 0/1) and 6 verts per segment must match WGSL edge shader
 export const EDGE_VERTS_PER_INSTANCE = 2 * EDGE_SEGMENTS * 6
 
+// SYNC: field count * 4 bytes must equal INSTANCE_BYTE_SIZE above
 const INSTANCE_STRUCT = /* wgsl */ `
 struct Instance {
   x1: f32, x2: f32, x3: f32, x4: f32,
@@ -17,6 +21,7 @@ struct Instance {
 }
 `
 
+// SYNC: field order must match uniformF32/uniformU32 indices in SyntenyRenderer and WebGLSyntenyRenderer
 const UNIFORMS_STRUCT = /* wgsl */ `
 struct Uniforms {
   resolution: vec2f,
