@@ -153,6 +153,13 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
   }
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
+  const { scrollZoom } = view
+  const {
+    scrollableHeight,
+    pileupViewportHeight,
+    currentRangeY,
+    setCurrentRangeY,
+  } = model
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -160,34 +167,37 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
       return
     }
     const handler = (e: WheelEvent) => {
-      if (view.scrollZoom && !e.shiftKey) {
+      if (scrollZoom && !e.shiftKey) {
         return
       }
-      const maxScroll = model.scrollableHeight
-      if (maxScroll <= 0) {
+      if (scrollableHeight <= 0) {
         return
       }
       let dy = e.deltaY
       if (e.deltaMode === 1) {
         dy *= 40
       } else if (e.deltaMode === 2) {
-        dy *= model.pileupViewportHeight
+        dy *= pileupViewportHeight
       }
-      const curScroll = model.currentRangeY[0]
-      const newScroll = Math.max(0, Math.min(maxScroll, curScroll + dy))
+      const curScroll = currentRangeY[0]
+      const newScroll = Math.max(0, Math.min(scrollableHeight, curScroll + dy))
       if (newScroll !== curScroll) {
         e.preventDefault()
-        model.setCurrentRangeY([
-          newScroll,
-          newScroll + model.pileupViewportHeight,
-        ])
+        setCurrentRangeY([newScroll, newScroll + pileupViewportHeight])
       }
     }
     canvas.addEventListener('wheel', handler, { passive: false })
     return () => {
       canvas.removeEventListener('wheel', handler)
     }
-  }, [canvasRef, model, view])
+  }, [
+    canvasRef,
+    scrollZoom,
+    scrollableHeight,
+    pileupViewportHeight,
+    currentRangeY,
+    setCurrentRangeY,
+  ])
 
   const hasOverflow = model.scrollableHeight > 0
   const trackHeight = model.pileupViewportHeight

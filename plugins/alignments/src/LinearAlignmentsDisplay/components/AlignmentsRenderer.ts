@@ -1071,7 +1071,7 @@ export class AlignmentsRenderer {
     }
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
-    const maxDim = device.limits.maxTextureDimension2D ?? 8192
+    const maxDim = device.limits.maxTextureDimension2D
     const bufW = Math.min(Math.round(canvasWidth * dpr), maxDim)
     const bufH = Math.min(Math.round(canvasHeight * dpr), maxDim)
 

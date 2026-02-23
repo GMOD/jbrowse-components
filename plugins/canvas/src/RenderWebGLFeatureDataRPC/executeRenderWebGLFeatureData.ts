@@ -663,7 +663,7 @@ export async function executeRenderWebGLFeatureData({
       fontSize: 12,
     },
     ...displayConfig,
-    subfeatureLabels: displayConfig.subfeatureLabels ?? ('none' as string),
+    subfeatureLabels: displayConfig.subfeatureLabels,
   }
 
   // Create default config context for WebGL rendering
