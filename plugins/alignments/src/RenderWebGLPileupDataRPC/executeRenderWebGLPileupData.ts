@@ -9,7 +9,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { computeLayout, computeSortedLayout } from './sortLayout.ts'
-import { buildTooltipData } from '../shared/buildTooltipData.ts'
+import { buildModTooltipData } from '../shared/buildTooltipData.ts'
 import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
 import {
   computeCoverage,
@@ -546,17 +546,7 @@ export async function executeRenderWebGLPileupData({
     regionSequenceStart,
   )
 
-  const { tooltipData, significantSnpOffsets, significantNoncovOffsets } =
-    buildTooltipData({
-      mismatches,
-      insertions,
-      gaps,
-      softclips,
-      hardclips,
-      modifications,
-      regionStart,
-      coverage,
-    })
+  const modTooltipData = buildModTooltipData({ modifications, regionStart })
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
@@ -610,9 +600,7 @@ export async function executeRenderWebGLPileupData({
 
     ...sashimi,
 
-    tooltipData: Object.fromEntries(tooltipData),
-    significantSnpOffsets,
-    significantNoncovOffsets,
+    modTooltipData,
 
     maxY,
     numReads: features.length,

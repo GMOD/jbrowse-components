@@ -527,19 +527,20 @@ export default function stateModelFactory(
        * Cached as a MST getter so it only recomputes when rpcDataMap changes
        */
       get chainIndexMap() {
-        const map = new Map<string, number[]>()
+        const map = new Map<number, number[]>()
         if (self.showLinkedReads) {
           for (const data of self.rpcDataMap.values()) {
+            if (!data.readChainIndices) {
+              continue
+            }
             for (let i = 0; i < data.numReads; i++) {
-              const name = data.readNames[i]
-              if (name) {
-                let indices = map.get(name)
-                if (!indices) {
-                  indices = []
-                  map.set(name, indices)
-                }
-                indices.push(i)
+              const chainIdx = data.readChainIndices[i]!
+              let indices = map.get(chainIdx)
+              if (!indices) {
+                indices = []
+                map.set(chainIdx, indices)
               }
+              indices.push(i)
             }
           }
         }
@@ -1615,11 +1616,8 @@ export default function stateModelFactory(
                   if (!data) {
                     continue
                   }
-                  const {
-                    coverageDepths,
-                    coverageStartOffset,
-                    regionStart,
-                  } = data
+                  const { coverageDepths, coverageStartOffset, regionStart } =
+                    data
                   const startBin = Math.max(
                     0,
                     Math.floor(block.start - regionStart - coverageStartOffset),
@@ -1904,7 +1902,7 @@ export default function stateModelFactory(
               label: 'Normal',
               type: 'radio' as const,
               checked:
-                self.featureHeight === 7 && self.noSpacingSetting === false,
+                self.featureHeightSetting === 7 && self.noSpacing !== true,
               onClick: () => {
                 self.setFeatureHeight(7)
                 self.setNoSpacing(false)

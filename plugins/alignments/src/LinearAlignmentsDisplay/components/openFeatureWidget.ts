@@ -61,7 +61,7 @@ export function openIndicatorWidget(
 
   const interbaseEntry = tooltipBin.interbase[indicatorHit.indicatorType]
   if (interbaseEntry) {
-    featureData.count = `${interbaseEntry.count}/${tooltipBin.depth} (${pct(interbaseEntry.count, tooltipBin.depth)})`
+    featureData.count = `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)})`
     featureData.size =
       interbaseEntry.minLen === interbaseEntry.maxLen
         ? `${interbaseEntry.minLen}bp`
@@ -102,7 +102,7 @@ export function openCoverageWidget(
   }
   for (const [type, interbaseEntry] of Object.entries(tooltipBin.interbase)) {
     featureData[type] =
-      `${interbaseEntry.count}/${tooltipBin.depth} (${pct(interbaseEntry.count, tooltipBin.depth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
+      `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
   }
 
   showWidget(model, featureData)

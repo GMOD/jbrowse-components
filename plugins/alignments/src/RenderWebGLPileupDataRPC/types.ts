@@ -33,27 +33,17 @@ export interface RenderWebGLPileupDataArgs {
   stopToken?: string
 }
 
-// Detailed tooltip data for a coverage position (SNPs + deletions + interbase)
-// Note: Skips (splice junctions) appear in sashimi arc tooltips, not coverage tooltips
 export interface CoverageTooltipBin {
-  position: number // absolute genomic position
-  depth: number // total reads at this position
-  // SNP data: base -> { count, fwd, rev }
+  position: number
+  depth: number
+  interbaseDepth: number
   snps: Record<string, { count: number; fwd: number; rev: number }>
-  // Deletion data: { count, minLen, maxLen, avgLen }
   deletions?: {
     count: number
     minLen: number
     maxLen: number
     avgLen: number
   }
-  skips?: {
-    count: number
-    minLen: number
-    maxLen: number
-    avgLen: number
-  }
-  // Interbase data: type -> { count, minLen, maxLen, avgLen, topSeq, topSeqCount }
   interbase: Record<
     string,
     {
@@ -65,7 +55,6 @@ export interface CoverageTooltipBin {
       topSeqCount?: number
     }
   >
-  // Modification data: modType -> { count, fwd, rev, probabilityTotal, color, name }
   modifications?: Record<
     string,
     {
@@ -77,6 +66,15 @@ export interface CoverageTooltipBin {
       name: string
     }
   >
+}
+
+export interface ModTooltipEntry {
+  count: number
+  fwd: number
+  rev: number
+  probabilityTotal: number
+  color: string
+  name: string
 }
 
 // Internal type for modification data during processing
@@ -110,6 +108,7 @@ export interface WebGLPileupDataResult {
   readIds: string[] // feature IDs for hit testing
   readNames: string[] // read names (QNAME) for tooltip display
   readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
+  readChainIndices?: Uint32Array // chain index per read (only in chain mode)
 
   // Gap data (deletions/skips) - offsets from regionStart
   gapPositions: Uint32Array // [startOffset, endOffset] pairs
@@ -159,17 +158,8 @@ export interface WebGLPileupDataResult {
   indicatorPositions: Uint32Array // offsets from regionStart
   indicatorColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip (dominant type)
 
-  // Tooltip data - detailed info for positions with SNPs or interbase events
-  // Record from position offset to tooltip bin data
-  tooltipData: Record<number, CoverageTooltipBin>
-
-  // Sorted offsets of positions with significant SNPs (>5% of depth)
-  // Used by hitTestCoverage to snap to SNP positions when zoomed out
-  significantSnpOffsets: number[]
-
-  // Sorted offsets of positions with significant interbase events (>20% of depth)
-  // Used by hitTestCoverage to snap to noncov histogram positions when zoomed out
-  significantNoncovOffsets: number[]
+  // Modification tooltip data - only populated when colorBy is modifications/methylation
+  modTooltipData?: Record<number, Record<string, ModTooltipEntry>>
 
   // Tag color data - RGB per read (3 bytes each), only populated when colorBy.type === 'tag'
   readTagColors: Uint8Array

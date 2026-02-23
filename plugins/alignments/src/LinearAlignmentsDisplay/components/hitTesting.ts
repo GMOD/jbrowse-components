@@ -413,9 +413,8 @@ export function hitTestCigarItem(
   return undefined
 }
 
-/**
- * Binary search for the leftmost index in a sorted array where arr[index] >= value
- */
+const significantOffsetsCache = new WeakMap<Uint32Array, number[]>()
+
 function lowerBound(arr: number[], value: number) {
   let lo = 0
   let hi = arr.length
@@ -430,26 +429,47 @@ function lowerBound(arr: number[], value: number) {
   return lo
 }
 
-/**
- * Find a significant SNP offset within a bin range via binary search.
- * Returns the first match, since all positions in a bin map to the same pixel.
- */
-function findSnpInBin(
-  significantSnpOffsets: number[],
+function findInBin(
+  offsets: number[],
   binStartOffset: number,
   binEndOffset: number,
 ) {
-  const idx = lowerBound(significantSnpOffsets, binStartOffset)
-  const offset = significantSnpOffsets[idx]
-  if (offset !== undefined && offset < binEndOffset) {
-    return offset
-  }
-  return undefined
+  const idx = lowerBound(offsets, binStartOffset)
+  const offset = offsets[idx]
+  return offset !== undefined && offset < binEndOffset ? offset : undefined
 }
 
-/**
- * Hit test for coverage area (grey bars + SNP segments)
- */
+function getSignificantOffsets(
+  positions: Uint32Array,
+  count: number,
+  coverageDepths: Float32Array,
+  coverageStartOffset: number,
+  threshold: number,
+) {
+  const cached = significantOffsetsCache.get(positions)
+  if (cached) {
+    return cached
+  }
+
+  const counts = new Map<number, number>()
+  for (let i = 0; i < count; i++) {
+    const pos = positions[i]!
+    counts.set(pos, (counts.get(pos) ?? 0) + 1)
+  }
+
+  const result: number[] = []
+  for (const [posOffset, n] of counts) {
+    const binIdx = Math.floor(posOffset - coverageStartOffset)
+    const depth = coverageDepths[binIdx]
+    if (depth && n / depth > threshold) {
+      result.push(posOffset)
+    }
+  }
+  result.sort((a, b) => a - b)
+  significantOffsetsCache.set(positions, result)
+  return result
+}
+
 export function hitTestCoverage(
   canvasX: number,
   canvasY: number,
@@ -470,46 +490,44 @@ export function hitTestCoverage(
     return undefined
   }
 
-  const depth = coverageDepths[binIndex]
-  if (depth === undefined || depth === 0) {
-    return undefined
-  }
-
   const binStartOffset = coverageStartOffset + binIndex
-  if (bpPerPx > 1 && blockData.significantSnpOffsets.length) {
+  if (bpPerPx > 1) {
     const binEndOffset = binStartOffset + Math.ceil(bpPerPx)
-    const snpOffset = findSnpInBin(
-      blockData.significantSnpOffsets,
-      binStartOffset,
-      binEndOffset,
+
+    const snpOffsets = getSignificantOffsets(
+      blockData.mismatchPositions,
+      blockData.numMismatches,
+      coverageDepths,
+      coverageStartOffset,
+      0.05,
     )
-    if (snpOffset !== undefined) {
-      return {
-        type: 'coverage',
-        position: regionStart + snpOffset,
+    if (snpOffsets.length > 0) {
+      const snpOffset = findInBin(snpOffsets, binStartOffset, binEndOffset)
+      if (snpOffset !== undefined) {
+        return { type: 'coverage', position: regionStart + snpOffset }
+      }
+    }
+
+    const noncovOffsets = getSignificantOffsets(
+      blockData.interbasePositions,
+      blockData.numInterbases,
+      coverageDepths,
+      coverageStartOffset,
+      0.2,
+    )
+    if (noncovOffsets.length > 0) {
+      const noncovOffset = findInBin(
+        noncovOffsets,
+        binStartOffset,
+        binEndOffset,
+      )
+      if (noncovOffset !== undefined) {
+        return { type: 'coverage', position: regionStart + noncovOffset }
       }
     }
   }
 
-  if (bpPerPx > 1 && blockData.significantNoncovOffsets.length) {
-    const binEndOffset = binStartOffset + Math.ceil(bpPerPx)
-    const noncovOffset = findSnpInBin(
-      blockData.significantNoncovOffsets,
-      binStartOffset,
-      binEndOffset,
-    )
-    if (noncovOffset !== undefined) {
-      return {
-        type: 'coverage',
-        position: regionStart + noncovOffset,
-      }
-    }
-  }
-
-  return {
-    type: 'coverage',
-    position: regionStart + binStartOffset,
-  }
+  return { type: 'coverage', position: regionStart + binStartOffset }
 }
 
 /**

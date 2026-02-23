@@ -10,7 +10,7 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { buildTooltipData } from '../shared/buildTooltipData.ts'
+import { buildModTooltipData } from '../shared/buildTooltipData.ts'
 import { PairType, getPairedType } from '../shared/color.ts'
 import {
   computeCoverage,
@@ -408,6 +408,7 @@ export async function executeRenderWebGLChainData({
     const readIds: string[] = []
     const readNames: string[] = []
     const readNextRefs: string[] = []
+    const readChainIndices = new Uint32Array(features.length)
 
     for (const [i, f] of features.entries()) {
       const y = getY(f.id)
@@ -421,6 +422,7 @@ export async function executeRenderWebGLChainData({
       readStrands[i] = f.strand
       const cIdx = featureIdToChainIdx.get(f.id)
       readChainHasSupp[i] = cIdx !== undefined && chainHasSupp.has(cIdx) ? 1 : 0
+      readChainIndices[i] = cIdx ?? 0
       readIds.push(f.id)
       readNames.push(f.name)
       readNextRefs.push(f.nextRef ?? '')
@@ -498,6 +500,7 @@ export async function executeRenderWebGLChainData({
         readIds,
         readNames,
         readNextRefs,
+        readChainIndices,
       },
       gapArrays: buildGapArrays(gaps, regionStart, getY),
       mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
@@ -560,17 +563,7 @@ export async function executeRenderWebGLChainData({
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)
 
-  const { tooltipData, significantSnpOffsets, significantNoncovOffsets } =
-    buildTooltipData({
-      mismatches,
-      insertions,
-      gaps,
-      softclips,
-      hardclips,
-      modifications,
-      regionStart,
-      coverage,
-    })
+  const modTooltipData = buildModTooltipData({ modifications, regionStart })
 
   const result: WebGLPileupDataResult = {
     regionStart,
@@ -613,9 +606,7 @@ export async function executeRenderWebGLChainData({
 
     ...sashimi,
 
-    tooltipData: Object.fromEntries(tooltipData),
-    significantSnpOffsets,
-    significantNoncovOffsets,
+    modTooltipData,
 
     ...connectingLineArrays,
 
@@ -691,6 +682,7 @@ export async function executeRenderWebGLChainData({
     result.connectingLineYs!.buffer,
     result.connectingLineColorTypes!.buffer,
     result.chainFirstReadIndices!.buffer,
+    result.readChainIndices!.buffer,
     ...(result.chainFlatbushData ? [result.chainFlatbushData] : []),
   ] as ArrayBuffer[]
 

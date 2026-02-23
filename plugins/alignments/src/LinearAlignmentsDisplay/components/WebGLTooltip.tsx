@@ -48,7 +48,11 @@ function formatLocation(refName?: string, position?: number) {
   return refName ? `${refName}:${pos}` : pos
 }
 
-function SimpleTooltipContents({ message }: { message: React.ReactNode | string }) {
+function SimpleTooltipContents({
+  message,
+}: {
+  message: React.ReactNode | string
+}) {
   return isValidElement(message) ? (
     message
   ) : message ? (
@@ -79,7 +83,7 @@ function InterbaseTooltip({
 
   return (
     <table>
-      <caption>{location}</caption>
+      <caption>Interbase - {location}</caption>
       <thead>
         <tr>
           <th>Type</th>
@@ -122,9 +126,23 @@ function InterbaseTooltip({
 }
 
 // Coverage tooltip - matches LinearSNPCoverageDisplay/components/TooltipContents BinTooltip structure
-function CoverageTooltipContents({ bin, refName }: { bin: CoverageTooltipBin; refName?: string }) {
+function CoverageTooltipContents({
+  bin,
+  refName,
+}: {
+  bin: CoverageTooltipBin
+  refName?: string
+}) {
   const { classes } = useStyles()
-  const { position, depth, snps, deletions, interbase, modifications } = bin
+  const {
+    position,
+    depth,
+    interbaseDepth,
+    snps,
+    deletions,
+    interbase,
+    modifications,
+  } = bin
   const location = formatLocation(refName, position)
 
   const snpEntries = Object.entries(snps)
@@ -139,105 +157,104 @@ function CoverageTooltipContents({ bin, refName }: { bin: CoverageTooltipBin; re
 
   return (
     <table>
-      <caption>{location}</caption>
-        <thead>
-          <tr>
-            {hasModifications && <th />}
-            <th>Base</th>
-            <th>Reads</th>
-            {hasModifications && <th>Avg Prob</th>}
-            <th>Strands</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {hasModifications && <td />}
-            <td>Total</td>
-            <td>{depth}</td>
-            {hasModifications && <td />}
-            <td />
-          </tr>
-          {hasModifications
-            ? modEntries.map(([, data]) => {
-                const avgProb =
-                  data.count > 0 ? data.probabilityTotal / data.count : 0
-                return (
-                  <tr key={data.name}>
-                    <td>
-                      <div
-                        style={{
-                          width: 10,
-                          height: 10,
-                          background: data.color,
-                        }}
-                      />
-                    </td>
-                    <td>{data.name}</td>
-                    <td className={classes.td}>
-                      {data.count}/{depth} ({pct(data.count, depth)})
-                    </td>
-                    <td>{(avgProb * 100).toFixed(1)}%</td>
-                    <td>
-                      {data.fwd}(+) {data.rev}(-)
-                    </td>
-                  </tr>
-                )
-              })
-            : snpEntries.map(([base, data]) => (
-                <tr key={base}>
-                  <td>{base.toUpperCase()}</td>
+      <caption>Coverage - {location}</caption>
+      <thead>
+        <tr>
+          {hasModifications && <th />}
+          <th>Base</th>
+          <th>Reads</th>
+          {hasModifications && <th>Avg Prob</th>}
+          <th>Strands</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {hasModifications && <td />}
+          <td>Total</td>
+          <td>{depth}</td>
+          {hasModifications && <td />}
+          <td />
+        </tr>
+        {hasModifications
+          ? modEntries.map(([, data]) => {
+              const avgProb =
+                data.count > 0 ? data.probabilityTotal / data.count : 0
+              return (
+                <tr key={data.name}>
+                  <td>
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        background: data.color,
+                      }}
+                    />
+                  </td>
+                  <td>{data.name}</td>
                   <td className={classes.td}>
                     {data.count}/{depth} ({pct(data.count, depth)})
                   </td>
+                  <td>{(avgProb * 100).toFixed(1)}%</td>
                   <td>
                     {data.fwd}(+) {data.rev}(-)
                   </td>
                 </tr>
-              ))}
-          {deletions && (
-            <tr>
+              )
+            })
+          : snpEntries.map(([base, data]) => (
+              <tr key={base}>
+                <td>{base.toUpperCase()}</td>
+                <td className={classes.td}>
+                  {data.count}/{depth} ({pct(data.count, depth)})
+                </td>
+                <td>
+                  {data.fwd}(+) {data.rev}(-)
+                </td>
+              </tr>
+            ))}
+        {deletions && (
+          <tr>
+            {hasModifications && <td />}
+            <td>
+              Deletion (
+              {deletions.minLen === deletions.maxLen
+                ? `${deletions.minLen}bp`
+                : `${deletions.minLen}-${deletions.maxLen}bp`}
+              )
+            </td>
+            <td className={classes.td}>
+              {deletions.count}/{depth} ({pct(deletions.count, depth)})
+            </td>
+            {hasModifications && <td />}
+            <td />
+          </tr>
+        )}
+        {interbaseEntries.map(([type, data]) => {
+          const typeLabel = getInterbaseTypeLabel(type)
+          const sizeStr =
+            data.minLen === data.maxLen
+              ? `${data.minLen}bp`
+              : `${data.minLen}-${data.maxLen}bp`
+          const shouldShowSeq = data.topSeq && data.minLen <= 10
+
+          return (
+            <tr key={type}>
               {hasModifications && <td />}
               <td>
-                Deletion (
-                {deletions.minLen === deletions.maxLen
-                  ? `${deletions.minLen}bp`
-                  : `${deletions.minLen}-${deletions.maxLen}bp`}
-                )
+                {typeLabel} ({sizeStr})
+                {shouldShowSeq ? ` (most frequent ${data.topSeq})` : null}
               </td>
               <td className={classes.td}>
-                {deletions.count}/{depth} ({pct(deletions.count, depth)})
+                {data.count}/{interbaseDepth} ({pct(data.count, interbaseDepth)}
+                )
               </td>
               {hasModifications && <td />}
               <td />
             </tr>
-          )}
-          {interbaseEntries.map(([type, data]) => {
-            const typeLabel = getInterbaseTypeLabel(type)
-            const sizeStr =
-              data.minLen === data.maxLen
-                ? `${data.minLen}bp`
-                : `${data.minLen}-${data.maxLen}bp`
-            const shouldShowSeq = data.topSeq && data.minLen <= 10
-
-            return (
-              <tr key={type}>
-                {hasModifications && <td />}
-                <td>
-                  {typeLabel} ({sizeStr})
-                  {shouldShowSeq
-                    ? ` (most frequent ${data.topSeq})`
-                    : null}
-                </td>
-                <td className={classes.td}>
-                  {data.count}/{depth} ({pct(data.count, depth)})
-                </td>
-                {hasModifications && <td />}
-                <td />
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+          )
+        })}
+      </tbody>
+    </table>
   )
 }
 
@@ -291,11 +308,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
   offsetMouseCoord?: Coord
   clientMouseCoord: Coord
 }) {
-  const {
-    mouseoverExtraInformation,
-    showCoverage,
-    coverageHeight,
-  } = model
+  const { mouseoverExtraInformation, showCoverage, coverageHeight } = model
   const { classes } = useStyles()
   const x = clientMouseCoord[0] + 5
   const y = clientMouseCoord[1]
@@ -326,7 +339,7 @@ const WebGLTooltip = observer(function WebGLTooltip({
             <div className={classes.tooltipContent}>
               <InterbaseTooltip
                 interbaseData={bin.interbase}
-                total={bin.depth}
+                total={bin.interbaseDepth}
                 location={location}
               />
             </div>

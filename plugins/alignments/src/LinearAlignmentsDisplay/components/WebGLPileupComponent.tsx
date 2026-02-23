@@ -81,10 +81,11 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
           model.setHighlightedFeatureIndex(hit.index)
         }
         if (isChainMode) {
-          const readName = resolved.rpcData.readNames[hit.index]
-          const chainIndices = readName
-            ? (model.chainIndexMap.get(readName) ?? [])
-            : []
+          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
+          const chainIndices =
+            chainIdx !== undefined
+              ? (model.chainIndexMap.get(chainIdx) ?? [])
+              : []
           model.setHighlightedChainIndices(chainIndices)
           model.setMouseoverExtraInformation(
             formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
@@ -111,10 +112,11 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
         model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
         if (isChainMode) {
-          const readName = resolved.rpcData.readNames[hit.index]
-          const chainIndices = readName
-            ? (model.chainIndexMap.get(readName) ?? [])
-            : []
+          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
+          const chainIndices =
+            chainIdx !== undefined
+              ? (model.chainIndexMap.get(chainIdx) ?? [])
+              : []
           model.setSelectedChainIndices(chainIndices)
         }
       },

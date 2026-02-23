@@ -78,7 +78,7 @@ export interface LinearAlignmentsDisplayModel {
   selectedFeatureIndex: number
   highlightedChainIndices: number[]
   selectedChainIndices: number[]
-  chainIndexMap: Map<string, number[]>
+  chainIndexMap: Map<number, number[]>
   overCigarItem: boolean
   visibleLabels: VisibleLabel[]
   isChainMode: boolean
@@ -149,12 +149,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   } = model
 
   const width = view.initialized ? view.width : undefined
-
-  const viewRef = useRef(view)
-
-  useEffect(() => {
-    viewRef.current = view
-  })
 
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
     if (!view.initialized) {
@@ -502,66 +496,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   useEffect(() => {
     model.setColorPalette(colorPalette)
   }, [model, colorPalette])
-
-  // Wheel handler (needs passive:false, must use addEventListener)
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-
-    const handleWheel = (e: WheelEvent) => {
-      const v = viewRef.current
-
-      if (!v.initialized) {
-        return
-      }
-
-      const absX = Math.abs(e.deltaX)
-      const absY = Math.abs(e.deltaY)
-
-      if (absX > 5 && absX > absY * 2) {
-        e.preventDefault()
-        e.stopPropagation()
-        const minOff = v.minOffset
-        const maxOff = v.maxOffset
-        const newOffsetPx = Math.max(
-          minOff,
-          Math.min(maxOff, v.offsetPx + e.deltaX),
-        )
-        v.setNewView(v.bpPerPx, newOffsetPx)
-        return
-      }
-
-      if (absY < 1) {
-        return
-      }
-
-      if (e.shiftKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        const rowHeight = model.featureHeightSetting + model.featureSpacing
-        const totalHeight = model.maxY * rowHeight
-        const panAmount = e.deltaY * 0.5
-
-        const prev = model.currentRangeY
-        let newY: [number, number] = [prev[0] + panAmount, prev[1] + panAmount]
-        if (newY[0] < 0) {
-          newY = [0, newY[1] - newY[0]]
-        }
-        if (newY[1] > totalHeight + 50) {
-          const overflow = newY[1] - totalHeight - 50
-          newY = [newY[0] - overflow, newY[1] - overflow]
-        }
-        model.setCurrentRangeY(newY)
-      }
-    }
-
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
-    }
-  }, [model])
 
   return {
     canvasRef,

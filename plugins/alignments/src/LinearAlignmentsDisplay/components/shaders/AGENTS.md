@@ -1,7 +1,7 @@
-The GLSL shaders in this directory are hand-written, not auto-generated from
-the WGSL sources in `../wgsl/`. The hand-written shaders use simple vertex
-attributes (`in`) and individual `uniform` declarations, which is what the
-WebGL renderer (`WebGLRenderer.ts`) expects.
+The GLSL shaders in this directory are hand-written, not auto-generated from the
+WGSL sources in `../wgsl/`. The hand-written shaders use simple vertex
+attributes (`in`) and individual `uniform` declarations, which is what the WebGL
+renderer (`WebGLRenderer.ts`) expects.
 
 ## Keeping GLSL and WGSL in sync
 
