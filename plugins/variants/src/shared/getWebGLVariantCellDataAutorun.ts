@@ -26,8 +26,10 @@ export function getWebGLVariantCellDataAutorun(self: {
   renderingMode: string
   referenceDrawingMode: string
   webglCellDataMode: 'regular' | 'matrix'
+  errorRetryCount: number
   setWebGLCellData: (data: unknown) => void
   setWebGLCellDataLoading: (val: boolean) => void
+  setDisplayError: (e: unknown) => void
   setStatusMessage: (str?: string) => void
   setFeatures: (f: Feature[]) => void
   setHasPhased: (arg: boolean) => void
@@ -42,6 +44,7 @@ export function getWebGLVariantCellDataAutorun(self: {
           if (!isAlive(self) || self.isMinimized) {
             return
           }
+          void self.errorRetryCount
           const view = getContainingView(self) as LinearGenomeViewModel
           if (
             !view.initialized ||
@@ -110,7 +113,8 @@ export function getWebGLVariantCellDataAutorun(self: {
           if (isAlive(self)) {
             self.setWebGLCellDataLoading(false)
             if (!isAbortException(e)) {
-              getSession(self).notifyError(`${e}`, e)
+              console.error(e)
+              self.setDisplayError(e)
             }
           }
         }

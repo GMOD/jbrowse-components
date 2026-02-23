@@ -9,7 +9,7 @@ export default function SetRowHeight({
 }: {
   model: {
     rowHeight: number
-    setRowHeight: (arg: number | 'auto') => void
+    setRowHeight: (arg: number) => void
   }
   handleClose: () => void
 }) {

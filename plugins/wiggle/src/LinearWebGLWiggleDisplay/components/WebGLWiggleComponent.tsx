@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from './WiggleTooltip.tsx'
+import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
@@ -35,6 +36,7 @@ export interface WiggleDisplayModel {
   posColor: string
   negColor: string
   renderingType: string
+  isDensityMode: boolean
   summaryScoreMode: string
   ticks?: ReturnType<typeof axisPropsFromTickScale>
   error: Error | null
@@ -96,7 +98,7 @@ function buildSourceRenderData(
   const scores = getEffectiveScores(data, summaryScoreMode)
 
   if (!useBicolor) {
-    const color = model.renderingType === 'density' ? posColor : baseColor
+    const color = model.isDensityMode ? posColor : baseColor
     return [
       {
         featurePositions: data.featurePositions,
@@ -370,7 +372,20 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
         width={width}
         height={height}
       />
-      {model.ticks ? (
+      {model.isDensityMode && model.domain ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            height: 16,
+            width,
+          }}
+        >
+          <DensityLegend domain={model.domain} scaleType={model.scaleType} canvasWidth={width} />
+        </svg>
+      ) : model.ticks ? (
         <svg
           style={{
             position: 'absolute',

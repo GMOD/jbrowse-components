@@ -51,11 +51,18 @@ export default function SVGTracks({
                 ...reactElements,
                 <g key={conf.trackId} transform={`translate(0 ${prevOffset})`}>
                   <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
+                    <defs>
+                      <clipPath id={`track-clip-${conf.trackId}`}>
+                        <rect x={0} y={0} width={model.width} height={display.height} />
+                      </clipPath>
+                    </defs>
                     <SVGRegionSeparators
                       model={model}
                       height={display.height}
                     />
-                    {result}
+                    <g clipPath={`url(#track-clip-${conf.trackId})`}>
+                      {result}
+                    </g>
                   </g>
                   <SVGTrackLabel
                     trackName={trackName}

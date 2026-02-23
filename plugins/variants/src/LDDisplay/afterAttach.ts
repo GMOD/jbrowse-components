@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getRpcSessionId,
@@ -6,6 +7,10 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import {
+  AUTO_FORCE_LOAD_BP,
+  getDisplayStr,
+} from '@jbrowse/plugin-linear-genome-view'
 import { autorun, untracked } from 'mobx'
 
 import type { SharedLDModel } from './shared.ts'
@@ -15,6 +20,22 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export function doAfterAttach(self: SharedLDModel) {
+  async function fetchByteEstimate(regions: { refName: string }[]) {
+    const session = getSession(self)
+    const sessionId = getRpcSessionId(self)
+    return (await session.rpcManager.call(
+      sessionId,
+      'CoreGetFeatureDensityStats',
+      {
+        sessionId,
+        regions,
+        adapterConfig: self.adapterConfig,
+      },
+    )) as { bytes?: number; fetchSizeLimit?: number } | undefined
+  }
+
+  let fetchGeneration = 0
+
   const performRender = async () => {
     if (self.isMinimized) {
       return
@@ -27,13 +48,10 @@ export function doAfterAttach(self: SharedLDModel) {
       return
     }
 
-    if (bpPerPx > 1000) {
-      return
-    }
-
     const { adapterConfig } = self
 
     try {
+      const gen = ++fetchGeneration
       const session = getSession(self)
       const { rpcManager } = session
       const rpcSessionId = getRpcSessionId(self)
@@ -46,6 +64,25 @@ export function doAfterAttach(self: SharedLDModel) {
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
+
+      const stats = await fetchByteEstimate([...regions])
+      if (fetchGeneration !== gen) {
+        return
+      }
+      self.setFeatureDensityStats(stats ?? undefined)
+      if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
+        const fetchSizeLimit =
+          stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+        const limit = self.userByteSizeLimit || fetchSizeLimit
+        if (stats?.bytes && stats.bytes > limit) {
+          self.setRegionTooLarge(
+            true,
+            `Requested too much data (${getDisplayStr(stats.bytes)})`,
+          )
+          return
+        }
+      }
+      self.setRegionTooLarge(false)
 
       const result = (await rpcManager.call(
         rpcSessionId,
@@ -129,13 +166,13 @@ export function doAfterAttach(self: SharedLDModel) {
         self.useGenomicPositions
         self.signedLD
         self.jexlFilters
+        self.userByteSizeLimit
         if (self.fitToHeight) {
           self.ldCanvasHeight
         }
         /* eslint-enable @typescript-eslint/no-unused-expressions */
 
         if (
-          !self.featureDensityStatsReady ||
           !self.showLDTriangle ||
           self.regionTooLarge ||
           untracked(() => self.error) ||

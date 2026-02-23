@@ -1,5 +1,4 @@
 import { measureGridWidth } from '@jbrowse/core/util'
-import { Checkbox } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 import type { FrequencyTable, VariantSampleGridRow } from './types.ts'
@@ -38,9 +37,15 @@ export default function VariantGenotypeFrequencyTable({
     frequency: `${toP((val.count / rows.length) * 100)}%`,
   }))
 
-  const allSelected =
-    selectedGenotypes === null ||
-    gridRows.every(r => selectedGenotypes.has(r.GT))
+  const rowSelectionModel =
+    selectedGenotypes === null
+      ? { type: 'exclude' as const, ids: new Set<string>() }
+      : {
+          type: 'include' as const,
+          ids: new Set(
+            gridRows.filter(r => selectedGenotypes.has(r.GT)).map(r => r.id),
+          ),
+        }
 
   const height = 25 + gridRows.length * 25 + 15 + (showToolbar ? 40 : 0)
 
@@ -51,60 +56,28 @@ export default function VariantGenotypeFrequencyTable({
         hideFooter
         rowHeight={25}
         columnHeaderHeight={25}
+        checkboxSelection
+        rowSelectionModel={rowSelectionModel}
+        onRowSelectionModelChange={newSelection => {
+          if (newSelection.type === 'exclude' && newSelection.ids.size === 0) {
+            setSelectedGenotypes(null)
+          } else if (newSelection.type === 'include') {
+            setSelectedGenotypes(
+              new Set(
+                gridRows.filter(r => newSelection.ids.has(r.id)).map(r => r.GT),
+              ),
+            )
+          } else {
+            setSelectedGenotypes(
+              new Set(
+                gridRows
+                  .filter(r => !newSelection.ids.has(r.id))
+                  .map(r => r.GT),
+              ),
+            )
+          }
+        }}
         columns={[
-          {
-            field: 'select',
-            headerName: '',
-            width: 27,
-            sortable: false,
-            disableColumnMenu: true,
-            renderHeader: () => (
-              <Checkbox
-                checked={allSelected}
-                indeterminate={
-                  selectedGenotypes !== null &&
-                  selectedGenotypes.size > 0 &&
-                  selectedGenotypes.size < gridRows.length
-                }
-                onChange={(_, checked) => {
-                  if (checked) {
-                    setSelectedGenotypes(null)
-                  } else {
-                    setSelectedGenotypes(new Set())
-                  }
-                }}
-                size="small"
-              />
-            ),
-            renderCell: params => {
-              const isChecked =
-                selectedGenotypes === null ||
-                selectedGenotypes.has(params.row.GT)
-              return (
-                <Checkbox
-                  checked={isChecked}
-                  onChange={(_, checked) => {
-                    const newSet = new Set(
-                      selectedGenotypes === null
-                        ? gridRows.map(r => r.GT)
-                        : selectedGenotypes,
-                    )
-                    if (checked) {
-                      newSet.add(params.row.GT)
-                    } else {
-                      newSet.delete(params.row.GT)
-                    }
-                    if (newSet.size === gridRows.length) {
-                      setSelectedGenotypes(null)
-                    } else {
-                      setSelectedGenotypes(newSet)
-                    }
-                  }}
-                  size="small"
-                />
-              )
-            },
-          },
           { field: 'GT', width: measureGridWidth(gridRows.map(r => r.GT)) },
           {
             field: 'count',

@@ -1,21 +1,41 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
-import {
-  useScrollbarStyles,
-  useVariantVirtualScroll,
-} from '../../shared/useVariantVirtualScroll.ts'
+import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+const useStyles = makeStyles()({
+  scrollbarTrack: {
+    position: 'absolute' as const,
+    right: 0,
+    width: 12,
+    cursor: 'default',
+    zIndex: 10,
+    '&:hover > *': {
+      background: 'rgba(0,0,0,0.55)',
+    },
+  },
+  scrollbarThumb: {
+    position: 'absolute' as const,
+    right: 2,
+    width: 6,
+    borderRadius: 3,
+    background: 'rgba(0,0,0,0.3)',
+    pointerEvents: 'none' as const,
+  },
+})
 
 export interface VariantMatrixDisplayModel {
   webglCellData: MatrixCellData | undefined
@@ -32,12 +52,14 @@ export interface VariantMatrixDisplayModel {
   featuresReady: boolean
   webglCellDataLoading: boolean
   statusMessage?: string
+  displayError: unknown
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   setScrollTop: (n: number) => void
   setRowHeight: (n: number) => void
   selectFeature: (feature: { id(): string }) => void
   setContextMenuFeature: (feature?: { id(): string }) => void
+  retryLoadingData: () => void
 }
 
 const WebGLVariantMatrixComponent = observer(
@@ -51,7 +73,7 @@ const WebGLVariantMatrixComponent = observer(
     const rendererRef = useRef<VariantMatrixRenderer | null>(null)
     const lastHoveredRef = useRef<string | undefined>(undefined)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
-    const { classes } = useScrollbarStyles()
+    const { classes } = useStyles()
 
     const view = getContainingView(model) as LGV
 
@@ -91,7 +113,9 @@ const WebGLVariantMatrixComponent = observer(
         }
 
         renderer.render({
-          canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
+          canvasWidth: Math.round(
+            view.dynamicBlocks.totalWidthPxWithoutBorders,
+          ),
           canvasHeight: model.availableHeight,
           rowHeight: model.rowHeight,
           scrollTop: model.scrollTop,
@@ -110,7 +134,7 @@ const WebGLVariantMatrixComponent = observer(
       if (!cellData || !sources?.length || cellData.numFeatures === 0) {
         return undefined
       }
-      const w = Math.round(view.dynamicBlocks.totalWidthPx)
+      const w = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
       const mouseX = eventClientX - rect.left
       const mouseY = eventClientY - rect.top
 
@@ -139,7 +163,7 @@ const WebGLVariantMatrixComponent = observer(
       return undefined
     }
 
-    const width = Math.round(view.dynamicBlocks.totalWidthPx)
+    const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
     const height = model.availableHeight
 
     if (error) {
@@ -248,11 +272,20 @@ const WebGLVariantMatrixComponent = observer(
               : model.statusMessage || 'Computing display data'
           }
           isVisible={
-            !model.webglCellData ||
-            model.webglCellDataLoading ||
-            model.regionTooLarge
+            !model.displayError &&
+            (!model.webglCellData ||
+              model.webglCellDataLoading ||
+              model.regionTooLarge)
           }
         />
+        {model.displayError ? (
+          <ErrorBar
+            error={model.displayError}
+            onRetry={() => {
+              model.retryLoadingData()
+            }}
+          />
+        ) : null}
       </div>
     )
   },

@@ -1,5 +1,10 @@
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
+import {
+  calculateAlleleCountsFromRaw,
+  getRawCallGenotype,
+} from './rawGenotypes.ts'
+
 import type VcfFeature from '../VcfFeature/index.ts'
 import type { Feature, LastStopTokenCheck } from '@jbrowse/core/util'
 
@@ -301,17 +306,21 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
     if (feature.get('end') - feature.get('start') <= lengthCutoffFilter) {
       let alleleCounts: Record<string, number>
 
-      // Use fast path if feature has processGenotypes (VcfFeature)
       if ('processGenotypes' in feature) {
         alleleCounts = calculateAlleleCountsFast(feature as VcfFeature)
       } else {
-        const featureId = feature.id()
-        let genotypes = genotypesCache?.get(featureId)
-        if (!genotypes) {
-          genotypes = feature.get('genotypes') as Record<string, string>
-          genotypesCache?.set(featureId, genotypes)
+        const rawGt = getRawCallGenotype(feature)
+        if (rawGt) {
+          alleleCounts = calculateAlleleCountsFromRaw(rawGt)
+        } else {
+          const featureId = feature.id()
+          let genotypes = genotypesCache?.get(featureId)
+          if (!genotypes) {
+            genotypes = feature.get('genotypes') as Record<string, string>
+            genotypesCache?.set(featureId, genotypes)
+          }
+          alleleCounts = calculateAlleleCounts(genotypes, splitCache)
         }
-        alleleCounts = calculateAlleleCounts(genotypes, splitCache)
       }
 
       if (

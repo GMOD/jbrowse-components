@@ -24,6 +24,7 @@ const VariantMatrixDisplayComponent = observer(
       height,
       availableHeight,
       showTree,
+      showLegend,
       hierarchy,
       treeAreaWidth,
     } = model
@@ -32,6 +33,7 @@ const VariantMatrixDisplayComponent = observer(
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
+    const inMatrix = mouseState && mouseState.y > lineZoneHeight
 
     return (
       <div
@@ -40,7 +42,10 @@ const VariantMatrixDisplayComponent = observer(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <LinesConnectingMatrixToGenomicPosition model={model} />
+        <LinesConnectingMatrixToGenomicPosition
+          model={model}
+          crosshairX={inMatrix ? mouseState.x : undefined}
+        />
         <div style={{ position: 'absolute', top: lineZoneHeight, left }}>
           <Suspense fallback={null}>
             <DisplayMessageComponent model={model} />
@@ -65,8 +70,8 @@ const VariantMatrixDisplayComponent = observer(
             <LegendBar model={model} />
           </g>
         </svg>
-        <FloatingLegend items={model.legendItems()} />
-        {mouseState && mouseState.y > lineZoneHeight ? (
+        {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
+        {inMatrix ? (
           <Crosshair
             mouseX={mouseState.x}
             mouseY={mouseState.y}

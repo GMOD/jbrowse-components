@@ -7,6 +7,7 @@ import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 const WebGLVariantMatrixComponent = lazy(
   () => import('./components/WebGLVariantMatrixComponent.tsx'),
@@ -24,7 +25,7 @@ export default function stateModelFactory(
         lineZoneHeight: types.optional(types.number, 20),
       }),
     )
-    .views(() => ({
+    .views(self => ({
       get DisplayMessageComponent() {
         return WebGLVariantMatrixComponent
       },
@@ -39,6 +40,13 @@ export default function stateModelFactory(
       },
       renderProps() {
         return { notReady: true }
+      },
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(
+          self as LinearVariantMatrixDisplayModel,
+          opts,
+        )
       },
     }))
     .actions(self => ({

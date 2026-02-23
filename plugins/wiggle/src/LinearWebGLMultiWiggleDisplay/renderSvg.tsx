@@ -1,5 +1,6 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, measureText } from '@jbrowse/core/util'
 
+import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
@@ -113,14 +114,113 @@ export async function renderSvg(
     }
   }
 
+  const canvasWidth = Math.round(view.width)
+  const tooSmallForScalebar = rowHeight < 70
+  const isDensity = model.isDensityMode
+
+  let legendEl: React.ReactNode = null
+  if (isDensity && domain) {
+    legendEl = (
+      <DensityLegend domain={domain} scaleType={scaleType} canvasWidth={canvasWidth} />
+    )
+  } else if (ticks) {
+    if (tooSmallForScalebar) {
+      const legend = `[${ticks.values[0]?.toFixed(0)}-${ticks.values[1]?.toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
+      const len = measureText(legend, 12)
+      const xpos = canvasWidth - len - 60
+      legendEl = (
+        <g>
+          <rect
+            x={xpos - 3}
+            y={0}
+            width={len + 6}
+            height={16}
+            fill="rgba(255,255,255,0.8)"
+          />
+          <text y={12} x={xpos} fontSize={12}>
+            {legend}
+          </text>
+        </g>
+      )
+    } else {
+      legendEl = (
+        <g transform={`translate(${Math.max(-offsetPx, 0) + 50} 0)`}>
+          {Array.from({ length: numSources }).map((_, idx) => (
+            <g
+              transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
+              key={`scalebar-${idx}`}
+            >
+              <YScaleBar model={model as unknown as { ticks: typeof ticks }} />
+            </g>
+          ))}
+        </g>
+      )
+    }
+  }
+
+  const sources = model.sources
+  const { hierarchy, showTree, treeAreaWidth } = model
+  const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
+  let labelsEl: React.ReactNode = null
+  if (sources.length > 1) {
+    const labelWidth =
+      Math.max(...sources.map(s => measureText(s.name, 10))) + 10
+    labelsEl = (
+      <g transform={`translate(${labelOffset} 0)`}>
+        {sources.map((source, idx) => {
+          const y = getRowTop(idx, rowHeight)
+          const boxHeight = Math.min(20, rowHeight)
+          const lc = source.labelColor
+          return (
+            <g key={source.name}>
+              <rect
+                x={0}
+                y={y}
+                width={labelWidth}
+                height={boxHeight}
+                fill={lc ?? 'rgba(255,255,255,0.8)'}
+              />
+              <text
+                x={4}
+                y={y + boxHeight / 2 + 3}
+                fontSize={10}
+                fill={lc ? 'white' : 'black'}
+              >
+                {source.name}
+              </text>
+            </g>
+          )
+        })}
+      </g>
+    )
+  }
+
+  let treeEl: React.ReactNode = null
+  if (showTree && hierarchy) {
+    let treePaths = ''
+    for (const link of hierarchy.links()) {
+      const sx = link.source.y!
+      const sy = link.source.x!
+      const tx = link.target.y!
+      const ty = link.target.x!
+      treePaths += `M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`
+    }
+    treeEl = (
+      <path
+        d={treePaths}
+        fill="none"
+        stroke="#0008"
+        strokeWidth={1}
+      />
+    )
+  }
+
   return (
     <>
       <g dangerouslySetInnerHTML={{ __html: content }} />
-      {ticks ? (
-        <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-          <YScaleBar model={model as unknown as { ticks: typeof ticks }} />
-        </g>
-      ) : null}
+      {labelsEl}
+      {legendEl}
+      {treeEl}
     </>
   )
 }

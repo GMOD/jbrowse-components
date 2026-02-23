@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
-import {
-  useScrollbarStyles,
-  useVariantVirtualScroll,
-} from '../../shared/useVariantVirtualScroll.ts'
+import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -40,15 +39,38 @@ export interface VariantDisplayModel {
     screenStartPx: number
     screenEndPx: number
   }[]
+  displayError: unknown
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   setScrollTop: (n: number) => void
   setRowHeight: (n: number) => void
   selectFeature: (feature: { id(): string }) => void
   setContextMenuFeature: (feature?: { id(): string }) => void
+  retryLoadingData: () => void
 }
 
 type LGV = LinearGenomeViewModel
+
+const useStyles = makeStyles()({
+  scrollbarTrack: {
+    position: 'absolute' as const,
+    right: 0,
+    width: 12,
+    cursor: 'default',
+    zIndex: 10,
+    '&:hover > *': {
+      background: 'rgba(0,0,0,0.55)',
+    },
+  },
+  scrollbarThumb: {
+    position: 'absolute' as const,
+    right: 2,
+    width: 6,
+    borderRadius: 3,
+    background: 'rgba(0,0,0,0.3)',
+    pointerEvents: 'none' as const,
+  },
+})
 
 const WebGLVariantComponent = observer(function WebGLVariantComponent({
   model,
@@ -60,7 +82,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
   const rendererRef = useRef<VariantRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const { classes } = useScrollbarStyles()
+  const { classes } = useStyles()
 
   const view = getContainingView(model) as LGV
 
@@ -113,7 +135,7 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
       }))
 
       renderer.renderBlocks(blocks, {
-        canvasWidth: Math.round(view.dynamicBlocks.totalWidthPx),
+        canvasWidth: Math.round(view.width),
         canvasHeight: model.availableHeight,
         rowHeight: model.rowHeight,
         scrollTop: model.scrollTop,
@@ -196,13 +218,19 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
     return undefined
   }
 
-  const width = Math.round(view.dynamicBlocks.totalWidthPx)
+  const width = Math.round(view.width)
   const height = model.availableHeight
 
   if (error) {
     return (
-      <div style={{ width, height, color: 'red', padding: 10 }}>
-        GPU Error: {`${error}`}
+      <div style={{ position: 'relative', width, height }}>
+        <ErrorBar
+          error={error}
+          onRetry={() => {
+            rendererRef.current = null
+            setError(null)
+          }}
+        />
       </div>
     )
   }
@@ -310,11 +338,20 @@ const WebGLVariantComponent = observer(function WebGLVariantComponent({
                   : 'Computing display data')
         }
         isVisible={
-          !model.webglCellData ||
-          model.webglCellDataLoading ||
-          model.regionTooLarge
+          !model.displayError &&
+          (!model.webglCellData ||
+            model.webglCellDataLoading ||
+            model.regionTooLarge)
         }
       />
+      {model.displayError ? (
+        <ErrorBar
+          error={model.displayError}
+          onRetry={() => {
+            model.retryLoadingData()
+          }}
+        />
+      ) : null}
     </div>
   )
 })

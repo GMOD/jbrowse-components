@@ -5,7 +5,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
-  FeatureDensityMixin,
+  RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -28,7 +28,6 @@ import type {
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [FeatureDensityMixin](../featuredensitymixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -38,7 +37,7 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      FeatureDensityMixin(),
+      RegionTooLargeMixin(),
       types.model({
         /**
          * #property
@@ -217,9 +216,6 @@ export default function sharedModelFactory(
         | undefined,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
       setRpcData(data: WebGLLDDataResult | null) {
         self.rpcData = data
       },
@@ -399,9 +395,6 @@ export default function sharedModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
       get blockType() {
         return 'dynamicBlocks'
       },
@@ -780,30 +773,27 @@ export default function sharedModelFactory(
         },
       }
     })
-    .actions(self => {
-      const superAfterAttach = self.afterAttach
-      return {
-        afterAttach() {
-          superAfterAttach()
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const { doAfterAttach } = await import('./afterAttach.ts')
-              doAfterAttach(self as SharedLDModel)
-            } catch (e) {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            }
-          })()
-        },
-      }
-    })
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach.ts')
+            doAfterAttach(self as SharedLDModel)
+          } catch (e) {
+            console.error(e)
+            getSession(self).notifyError(`${e}`, e)
+          }
+        })()
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
       const {
+        userByteSizeLimit: _userByteSizeLimit,
         minorAlleleFrequencyFilterSetting,
         lengthCutoffFilterSetting,
         lineZoneHeightSetting,

@@ -231,58 +231,46 @@ export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
   }
 }
 
-/**
- * Shared filter by menu item for all LinearRead displays
- */
-export function getFilterByMenuItem(model: unknown) {
-  return {
-    label: 'Filter by',
-    icon: ClearAllIcon,
-    onClick: () => {
-      // @ts-expect-error getSession works on model
-      getSession(model).queueDialog((handleClose: () => void) => [
-        FilterByTagDialog,
-        { model, handleClose },
-      ])
-    },
-  }
+interface FiltersModel {
+  drawSingletons?: boolean
+  drawProperPairs?: boolean
+  setDrawSingletons?: (arg: boolean) => void
+  setDrawProperPairs?: (arg: boolean) => void
 }
 
-interface EditFiltersModel {
-  drawSingletons: boolean
-  drawProperPairs: boolean
-  setDrawSingletons: (arg: boolean) => void
-  setDrawProperPairs: (arg: boolean) => void
-}
-
-/**
- * Edit filters submenu for LinearReadCloudDisplay
- */
-export function getEditFiltersMenuItem(model: EditFiltersModel) {
+export function getFiltersMenuItem(
+  model: FiltersModel,
+  opts?: { showPairFilters?: boolean },
+) {
+  const showPairFilters = opts?.showPairFilters ?? false
   return {
-    label: 'Edit filters',
+    label: 'Filters...',
     icon: ClearAllIcon,
     type: 'subMenu' as const,
     subMenu: [
+      ...(showPairFilters
+        ? [
+            {
+              label: 'Show singletons',
+              type: 'checkbox' as const,
+              checked: model.drawSingletons ?? false,
+              onClick: () => {
+                model.setDrawSingletons?.(!model.drawSingletons)
+              },
+            },
+            {
+              label: 'Show proper pairs',
+              type: 'checkbox' as const,
+              checked: model.drawProperPairs ?? false,
+              onClick: () => {
+                model.setDrawProperPairs?.(!model.drawProperPairs)
+              },
+            },
+            { type: 'divider' as const },
+          ]
+        : []),
       {
-        label: 'Show singletons',
-        type: 'checkbox' as const,
-        checked: model.drawSingletons,
-        onClick: () => {
-          model.setDrawSingletons(!model.drawSingletons)
-        },
-      },
-      {
-        label: 'Show proper pairs',
-        type: 'checkbox' as const,
-        checked: model.drawProperPairs,
-        onClick: () => {
-          model.setDrawProperPairs(!model.drawProperPairs)
-        },
-      },
-      { type: 'divider' as const },
-      {
-        label: 'Edit filters...',
+        label: 'Filter by tag...',
         onClick: () => {
           // @ts-expect-error getSession works on model
           getSession(model).queueDialog((handleClose: () => void) => [

@@ -171,6 +171,10 @@ export default function stateModelFactory(
         return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
       },
 
+      get isDensityMode() {
+        return this.renderingType === 'density'
+      },
+
       get minScore() {
         return self.minScoreSetting ?? getConf(self, 'minScore')
       },

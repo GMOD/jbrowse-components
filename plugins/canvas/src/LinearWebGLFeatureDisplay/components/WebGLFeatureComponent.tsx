@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView, useDebounce } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
@@ -847,7 +848,14 @@ const WebGLFeatureComponent = observer(function WebGLFeatureComponent({
 
   if (error) {
     return (
-      <div style={{ color: '#c00', padding: 16 }}>Error: {error.message}</div>
+      <div style={{ position: 'relative', width: width ?? '100%', height }}>
+        <ErrorBar
+          error={error}
+          onRetry={() => {
+            model.reload()
+          }}
+        />
+      </div>
     )
   }
 

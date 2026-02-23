@@ -60,10 +60,33 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const displayResults = await Promise.all(
     [...pinnedTracks, ...unpinnedTracks].map(async track => {
       const display = track.displays[0]
-      await when(() => isReadyOrHasError(display))
+      const hasRenderSvg = typeof display.renderSvg === 'function'
+      console.log(
+        '[SVG export] track',
+        getTrackName(track.configuration, session),
+        'display type',
+        display.type,
+        'hasRenderSvg',
+        hasRenderSvg,
+        'notReady',
+        display.renderProps().notReady,
+        'error',
+        display.error,
+      )
+      if (!hasRenderSvg) {
+        await when(() => isReadyOrHasError(display))
+      } else {
+        console.log(
+          '[SVG export] skipping readiness wait for display with renderSvg:',
+          display.type,
+        )
+      }
+      console.log('[SVG export] calling renderSvg for', display.type)
+      const result = await display.renderSvg({ ...opts, theme, legendWidth })
+      console.log('[SVG export] renderSvg complete for', display.type)
       return {
         track,
-        result: await display.renderSvg({ ...opts, theme, legendWidth }),
+        result,
       }
     }),
   )

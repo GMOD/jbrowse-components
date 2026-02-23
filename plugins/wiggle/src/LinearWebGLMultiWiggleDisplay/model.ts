@@ -194,6 +194,10 @@ export default function stateModelFactory(
         return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
       },
 
+      get isDensityMode() {
+        return this.renderingType === 'multirowdensity'
+      },
+
       get minScore() {
         return self.minScoreSetting ?? getConf(self, 'minScore')
       },
@@ -362,6 +366,11 @@ export default function stateModelFactory(
         self.rpcDataMap = new Map()
         self.visibleScoreRange = undefined
         self.loadedBpPerPx = new Map()
+      },
+
+      reload() {
+        self.setError(null)
+        self.clearAllRpcData()
       },
 
       setSources(sources: SourceInfo[]) {

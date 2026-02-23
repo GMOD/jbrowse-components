@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -9,7 +10,6 @@ import {
 import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
-import BlockMsg from './BlockMsg.tsx'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import LoadingOverlay from './LoadingOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
@@ -53,7 +53,12 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     return (
       <div style={{ position: 'relative', width: '100%', height }}>
         {error ? (
-          <BlockMsg severity="error" message={error.message} />
+          <ErrorBar
+            error={error}
+            onRetry={() => {
+              model.reload()
+            }}
+          />
         ) : (
           <TooLargeMessage model={model} />
         )}

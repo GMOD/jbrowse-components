@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 
+import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
@@ -122,14 +123,24 @@ export async function renderSvg(
     }
   }
 
+  let legendEl: React.ReactNode = null
+  if (model.isDensityMode && domain) {
+    const canvasWidth = Math.round(view.width)
+    legendEl = (
+      <DensityLegend domain={domain} scaleType={scaleType} canvasWidth={canvasWidth} />
+    )
+  } else if (ticks) {
+    legendEl = (
+      <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
+        <YScaleBar model={model as unknown as { ticks: typeof ticks }} />
+      </g>
+    )
+  }
+
   return (
     <>
       <g dangerouslySetInnerHTML={{ __html: content }} />
-      {ticks ? (
-        <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-          <YScaleBar model={model as unknown as { ticks: typeof ticks }} />
-        </g>
-      ) : null}
+      {legendEl}
     </>
   )
 }

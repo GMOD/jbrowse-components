@@ -35,6 +35,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  ExportSvgDisplayOptions,
   LinearGenomeViewModel,
   MultiRegionWebGLRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -144,6 +145,11 @@ export default function stateModelFactory(
 
       renderProps() {
         return { notReady: true }
+      },
+
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self as LinearWebGLFeatureDisplayModel, opts)
       },
 
       get maxHeight(): number {
@@ -608,7 +614,8 @@ export default function stateModelFactory(
                 if (
                   !view.initialized ||
                   self.regionTooLarge ||
-                  self.isLoading
+                  self.isLoading ||
+                  self.error
                 ) {
                   return
                 }

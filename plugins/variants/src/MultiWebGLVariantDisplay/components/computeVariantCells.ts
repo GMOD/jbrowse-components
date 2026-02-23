@@ -1,8 +1,17 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
-import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
+import {
+  getAlleleColor,
+  getColorAlleleCount,
+} from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
+import {
+  buildSampleIndexMap,
+  genotypeStringFromRaw,
+  getPhasedColorFromRaw,
+  getRawCallGenotype,
+} from '../../shared/rawGenotypes.ts'
 import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
@@ -110,6 +119,11 @@ export function computeVariantCells({
   const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
   const allCells: TempCell[] = []
 
+  const firstRaw = mafs[0] ? getRawCallGenotype(mafs[0].feature) : undefined
+  const sampleIndexMap = firstRaw
+    ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
+    : undefined
+
   if (renderingMode === 'phased') {
     for (const { feature, mostFrequentAlt } of mafs) {
       const featureId = feature.id()
@@ -119,35 +133,244 @@ export function computeVariantCells({
       const featureStrand = feature.get('strand') as number | undefined
       const bpLen = end - start
       const shape = getShapeType(featureType, featureStrand)
-
-      let samp = genotypesCache.get(featureId)
-      if (!samp) {
-        samp = feature.get('genotypes') as Record<string, string>
-        genotypesCache.set(featureId, samp)
-      }
-
       const alt = feature.get('ALT') as string[]
       const ref = feature.get('REF') as string
       const featureName = feature.get('name') as string
       const description = feature.get('description') as string
-
       const renderedGenotypes = {} as Record<string, string>
 
-      for (let j = 0; j < numSources; j++) {
-        const { name, HP, baseName } = sources[j]!
-        const sampleName = baseName ?? name
-        const genotype = samp[sampleName]
-        if (genotype) {
-          const isPhased = genotype.includes('|')
+      const callGt = getRawCallGenotype(feature)
+      if (callGt && sampleIndexMap) {
+        const callGtPhased = feature.get('callGenotypePhased') as
+          | Uint8Array
+          | undefined
+        const ploidy = feature.get('ploidy') as number
+        const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
+
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, baseName } = sources[j]!
+          const sampleName = baseName ?? name
+          const si = sampleIndexMap.get(sampleName)
+          if (si === undefined) {
+            continue
+          }
+          const isPhased = callGtPhased ? Boolean(callGtPhased[si]) : false
           if (isPhased) {
-            const alleles =
-              splitCache[genotype] ??
-              (splitCache[genotype] = genotype.split('|'))
-            const c = getPhasedColor(
-              alleles,
-              HP!,
-              mostFrequentAlt,
+            const allele = callGt[si * ploidy + HP!]!
+            const c = getPhasedColorFromRaw(
+              allele,
+              mostFreqAltInt,
               undefined,
+              drawRef,
+            )
+            if (c) {
+              const rgba = getCachedRGBA(c)
+              allCells.push({
+                genomicStart: start,
+                genomicEnd: end,
+                rowIndex: j,
+                color: [rgba[0], rgba[1], rgba[2], rgba[3]],
+                shapeType: shape,
+                isReference: c === REFERENCE_COLOR,
+                featureId,
+                sourceName: name,
+              })
+              renderedGenotypes[name] = genotypeStringFromRaw(
+                callGt,
+                si,
+                ploidy,
+                callGtPhased,
+              )
+            }
+          } else {
+            allCells.push({
+              genomicStart: start,
+              genomicEnd: end,
+              rowIndex: j,
+              color: [0, 0, 0, 255],
+              shapeType: shape,
+              isReference: false,
+              featureId,
+              sourceName: name,
+            })
+            renderedGenotypes[name] = genotypeStringFromRaw(
+              callGt,
+              si,
+              ploidy,
+              callGtPhased,
+            )
+          }
+        }
+      } else {
+        let samp = genotypesCache.get(featureId)
+        if (!samp) {
+          samp = feature.get('genotypes') as Record<string, string>
+          genotypesCache.set(featureId, samp)
+        }
+
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, baseName } = sources[j]!
+          const sampleName = baseName ?? name
+          const genotype = samp[sampleName]
+          if (genotype) {
+            const isPhased = genotype.includes('|')
+            if (isPhased) {
+              const alleles =
+                splitCache[genotype] ??
+                (splitCache[genotype] = genotype.split('|'))
+              const c = getPhasedColor(
+                alleles,
+                HP!,
+                mostFrequentAlt,
+                undefined,
+                drawRef,
+              )
+              if (c) {
+                const rgba = getCachedRGBA(c)
+                allCells.push({
+                  genomicStart: start,
+                  genomicEnd: end,
+                  rowIndex: j,
+                  color: [rgba[0], rgba[1], rgba[2], rgba[3]],
+                  shapeType: shape,
+                  isReference: c === REFERENCE_COLOR,
+                  featureId,
+                  sourceName: name,
+                })
+                renderedGenotypes[name] = genotype
+              }
+            } else {
+              allCells.push({
+                genomicStart: start,
+                genomicEnd: end,
+                rowIndex: j,
+                color: [0, 0, 0, 255],
+                shapeType: shape,
+                isReference: false,
+                featureId,
+                sourceName: name,
+              })
+              renderedGenotypes[name] = genotype
+            }
+          }
+        }
+      }
+
+      featureGenotypeMap[featureId] = {
+        alt,
+        ref,
+        name: featureName,
+        description,
+        length: bpLen,
+        genotypes: renderedGenotypes,
+      }
+    }
+  } else {
+    const rawColorCache = {} as Record<string, string>
+
+    for (const { mostFrequentAlt, feature } of mafs) {
+      const featureId = feature.id()
+      const start = feature.get('start')
+      const end = feature.get('end')
+      const featureType = (feature.get('type') as string) || ''
+      const featureStrand = feature.get('strand') as number | undefined
+      const bpLen = end - start
+      const shape = getShapeType(featureType, featureStrand)
+      const alt = feature.get('ALT') as string[]
+      const ref = feature.get('REF') as string
+      const featureName = feature.get('name') as string
+      const description = feature.get('description') as string
+      const renderedGenotypes = {} as Record<string, string>
+
+      const callGt = getRawCallGenotype(feature)
+      if (callGt && sampleIndexMap) {
+        const callGtPhased = feature.get('callGenotypePhased') as
+          | Uint8Array
+          | undefined
+        const ploidy = feature.get('ploidy') as number
+        const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
+
+        for (let j = 0; j < numSources; j++) {
+          const { name } = sources[j]!
+          const si = sampleIndexMap.get(name)
+          if (si === undefined) {
+            continue
+          }
+          const offset = si * ploidy
+          let refCount = 0
+          let altCount = 0
+          let alt2Count = 0
+          let uncalled = 0
+          let total = 0
+          for (let pi = 0; pi < ploidy; pi++) {
+            const a = callGt[offset + pi]!
+            if (a === -2) {
+              continue
+            }
+            total++
+            if (a === 0) {
+              refCount++
+            } else if (a === -1) {
+              uncalled++
+            } else if (a === mostFreqAltInt) {
+              altCount++
+            } else {
+              alt2Count++
+            }
+          }
+          if (total === 0) {
+            continue
+          }
+
+          const cacheKey = `${refCount}:${altCount}:${alt2Count}:${uncalled}:${total}:${drawRef ? 1 : 0}`
+          let c = rawColorCache[cacheKey]
+          if (c === undefined) {
+            c = getColorAlleleCount(
+              refCount,
+              altCount,
+              alt2Count,
+              uncalled,
+              total,
+              drawRef,
+            )
+            rawColorCache[cacheKey] = c
+          }
+          if (c) {
+            const rgba = getCachedRGBA(c)
+            allCells.push({
+              genomicStart: start,
+              genomicEnd: end,
+              rowIndex: j,
+              color: [rgba[0], rgba[1], rgba[2], rgba[3]],
+              shapeType: shape,
+              isReference: c === REFERENCE_COLOR,
+              featureId,
+              sourceName: name,
+            })
+            renderedGenotypes[name] = genotypeStringFromRaw(
+              callGt,
+              si,
+              ploidy,
+              callGtPhased,
+            )
+          }
+        }
+      } else {
+        let samp = genotypesCache.get(featureId)
+        if (!samp) {
+          samp = feature.get('genotypes') as Record<string, string>
+          genotypesCache.set(featureId, samp)
+        }
+
+        for (let j = 0; j < numSources; j++) {
+          const { name } = sources[j]!
+          const genotype = samp[name]
+          if (genotype) {
+            const c = getAlleleColor(
+              genotype,
+              mostFrequentAlt,
+              alleleColorCache,
+              splitCache,
               drawRef,
             )
             if (c) {
@@ -164,78 +387,6 @@ export function computeVariantCells({
               })
               renderedGenotypes[name] = genotype
             }
-          } else {
-            allCells.push({
-              genomicStart: start,
-              genomicEnd: end,
-              rowIndex: j,
-              color: [0, 0, 0, 255],
-              shapeType: shape,
-              isReference: false,
-              featureId,
-              sourceName: name,
-            })
-            renderedGenotypes[name] = genotype
-          }
-        }
-      }
-
-      featureGenotypeMap[featureId] = {
-        alt,
-        ref,
-        name: featureName,
-        description,
-        length: bpLen,
-        genotypes: renderedGenotypes,
-      }
-    }
-  } else {
-    for (const { mostFrequentAlt, feature } of mafs) {
-      const featureId = feature.id()
-      const start = feature.get('start')
-      const end = feature.get('end')
-      const featureType = (feature.get('type') as string) || ''
-      const featureStrand = feature.get('strand') as number | undefined
-      const bpLen = end - start
-      const shape = getShapeType(featureType, featureStrand)
-
-      let samp = genotypesCache.get(featureId)
-      if (!samp) {
-        samp = feature.get('genotypes') as Record<string, string>
-        genotypesCache.set(featureId, samp)
-      }
-
-      const alt = feature.get('ALT') as string[]
-      const ref = feature.get('REF') as string
-      const featureName = feature.get('name') as string
-      const description = feature.get('description') as string
-
-      const renderedGenotypes = {} as Record<string, string>
-
-      for (let j = 0; j < numSources; j++) {
-        const { name } = sources[j]!
-        const genotype = samp[name]
-        if (genotype) {
-          const c = getAlleleColor(
-            genotype,
-            mostFrequentAlt,
-            alleleColorCache,
-            splitCache,
-            drawRef,
-          )
-          if (c) {
-            const rgba = getCachedRGBA(c)
-            allCells.push({
-              genomicStart: start,
-              genomicEnd: end,
-              rowIndex: j,
-              color: [rgba[0], rgba[1], rgba[2], rgba[3]],
-              shapeType: shape,
-              isReference: c === REFERENCE_COLOR,
-              featureId,
-              sourceName: name,
-            })
-            renderedGenotypes[name] = genotype
           }
         }
       }

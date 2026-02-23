@@ -84,9 +84,9 @@ const AllLines = observer(function AllLines({
   const { lineZoneHeight, snps, tickHeight } = model
   const { offsetPx, assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const blockWidth = dynamicBlocks.contentBlocks[0]?.widthPx || 0
+  const blockWidth = dynamicBlocks.totalWidthPxWithoutBorders
   const n = snps.length
-  const offsetAdj = Math.max(offsetPx, 0)
+  const offsetAdj = Math.max(0, offsetPx)
   const { viewScale, viewOffsetX } = getViewTransform(model, view)
 
   const pathD = useMemo(() => {
@@ -218,7 +218,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const view = getContainingView(model) as LinearGenomeViewModel
     const [hovered, setHovered] = useState<HoveredLine>()
     const { lineZoneHeight, snps, tickHeight } = model
-    const blockWidth = view.dynamicBlocks.contentBlocks[0]?.widthPx || 0
+    const blockWidth = view.dynamicBlocks.totalWidthPxWithoutBorders
     const n = snps.length
 
     if (n === 0) {

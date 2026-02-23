@@ -16,7 +16,10 @@ import { autorun } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -258,6 +261,10 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .views(self => ({
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
+      },
       /**
        * #method
        */
