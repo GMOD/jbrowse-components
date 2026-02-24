@@ -882,7 +882,7 @@ export default function stateModelFactory(
     .actions(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearWebGLMultiWiggleDisplayModel, opts)
+        return renderSvg(self as MultiLinearWiggleDisplayModel, opts)
       },
     }))
     .postProcessSnapshot(snap => {
@@ -927,8 +927,8 @@ export default function stateModelFactory(
     })
 }
 
-export type LinearWebGLMultiWiggleDisplayStateModel = ReturnType<
+export type MultiLinearWiggleDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearWebGLMultiWiggleDisplayModel =
-  Instance<LinearWebGLMultiWiggleDisplayStateModel>
+export type MultiLinearWiggleDisplayModel =
+  Instance<MultiLinearWiggleDisplayStateModel>

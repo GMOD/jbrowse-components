@@ -6,7 +6,7 @@ import { getDensityColor } from '../shared/getDensityColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
-import type { LinearWebGLMultiWiggleDisplayModel } from './model.ts'
+import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -15,7 +15,7 @@ import type {
 type LGV = LinearGenomeViewModel
 
 export async function renderSvg(
-  model: LinearWebGLMultiWiggleDisplayModel,
+  model: MultiLinearWiggleDisplayModel,
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
