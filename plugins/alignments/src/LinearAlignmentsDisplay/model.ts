@@ -1457,6 +1457,155 @@ export default function stateModelFactory(
 
       let activeStopToken: string | undefined
 
+      function reconcileLayouts(rpcDataMap: Map<number, PileupDataResult>) {
+        const entries = [...rpcDataMap.entries()]
+        if (entries.length <= 1) {
+          return
+        }
+
+        const allFeatures = new Map<
+          string,
+          { start: number; end: number }
+        >()
+        for (const [, data] of entries) {
+          for (let i = 0; i < data.numReads; i++) {
+            const id = data.readIds[i]!
+            if (!allFeatures.has(id)) {
+              allFeatures.set(id, {
+                start: data.regionStart + data.readPositions[i * 2]!,
+                end: data.regionStart + data.readPositions[i * 2 + 1]!,
+              })
+            }
+          }
+        }
+
+        const sorted = [...allFeatures.entries()]
+          .map(([id, { start, end }]) => ({ id, start, end }))
+          .sort((a, b) => a.start - b.start)
+        const levels: number[] = []
+        const unifiedLayout = new Map<string, number>()
+        let maxY = 0
+        for (const f of sorted) {
+          let y = 0
+          for (let i = 0; i < levels.length; i++) {
+            if (levels[i]! <= f.start) {
+              y = i
+              break
+            }
+            y = i + 1
+          }
+          unifiedLayout.set(f.id, y)
+          levels[y] = f.end + 2
+          if (y > maxY) {
+            maxY = y
+          }
+        }
+        const newMaxY = maxY + 1
+
+        for (const [regionNumber, data] of entries) {
+          let changed = false
+          for (let i = 0; i < data.numReads; i++) {
+            if (data.readYs[i] !== unifiedLayout.get(data.readIds[i]!)) {
+              changed = true
+              break
+            }
+          }
+          if (!changed) {
+            continue
+          }
+
+          // build oldY→newY per read, using sorted intervals for binary search.
+          // reads within the same Y row are non-overlapping, so binary search
+          // on start position finds the unique containing read.
+          const oldYs = new Uint16Array(data.readYs)
+          for (let i = 0; i < data.numReads; i++) {
+            data.readYs[i] = unifiedLayout.get(data.readIds[i]!)!
+          }
+
+          const rowStarts: number[][] = []
+          const rowNewYs: number[][] = []
+          for (let i = 0; i < data.numReads; i++) {
+            const oldY = oldYs[i]!
+            if (!rowStarts[oldY]) {
+              rowStarts[oldY] = []
+              rowNewYs[oldY] = []
+            }
+            rowStarts[oldY].push(data.readPositions[i * 2]!)
+            rowNewYs[oldY].push(data.readYs[i]!)
+          }
+          for (let y = 0; y < rowStarts.length; y++) {
+            const starts = rowStarts[y]
+            if (!starts || starts.length <= 1) {
+              continue
+            }
+            const newYs = rowNewYs[y]!
+            const indices = Array.from({ length: starts.length }, (_, i) => i)
+            indices.sort((a, b) => starts[a]! - starts[b]!)
+            rowStarts[y] = indices.map(i => starts[i]!)
+            rowNewYs[y] = indices.map(i => newYs[i]!)
+          }
+
+          const resolveNewY = (oldY: number, pos: number) => {
+            const starts = rowStarts[oldY]
+            if (!starts) {
+              return oldY
+            }
+            if (starts.length === 1) {
+              return rowNewYs[oldY]![0]!
+            }
+            let lo = 0
+            let hi = starts.length
+            while (lo < hi) {
+              const mid = (lo + hi) >>> 1
+              if (starts[mid]! <= pos) {
+                lo = mid + 1
+              } else {
+                hi = mid
+              }
+            }
+            return rowNewYs[oldY]![Math.max(0, lo - 1)]!
+          }
+
+          for (let i = 0; i < data.numMismatches; i++) {
+            data.mismatchYs[i] = resolveNewY(
+              data.mismatchYs[i]!,
+              data.mismatchPositions[i]!,
+            )
+          }
+          for (let i = 0; i < data.numGaps; i++) {
+            data.gapYs[i] = resolveNewY(
+              data.gapYs[i]!,
+              data.gapPositions[i * 2]!,
+            )
+          }
+          for (let i = 0; i < data.numInterbases; i++) {
+            data.interbaseYs[i] = resolveNewY(
+              data.interbaseYs[i]!,
+              data.interbasePositions[i]!,
+            )
+          }
+          if (data.modificationYs) {
+            for (let i = 0; i < data.numModifications; i++) {
+              data.modificationYs[i] = resolveNewY(
+                data.modificationYs[i]!,
+                data.modificationPositions[i]!,
+              )
+            }
+          }
+          if (data.connectingLineYs && data.numConnectingLines) {
+            for (let i = 0; i < data.numConnectingLines; i++) {
+              data.connectingLineYs[i] = resolveNewY(
+                data.connectingLineYs[i]!,
+                data.connectingLinePositions![i * 2]!,
+              )
+            }
+          }
+
+          data.maxY = newMaxY
+          self.setRpcData(regionNumber, data)
+        }
+      }
+
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
       ) {
@@ -1473,6 +1622,9 @@ export default function stateModelFactory(
             fetchFeaturesForRegion(region, regionNumber, stopToken),
           )
           await Promise.all(promises)
+          if (isAlive(self) && self.rpcDataMap.size > 1) {
+            reconcileLayouts(self.rpcDataMap)
+          }
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
