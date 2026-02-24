@@ -107,6 +107,14 @@ export async function renderSvg(
               : negColor
             : color
           content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${fillColor}"/>`
+        } else if (renderingType === 'scatter') {
+          const y = scale(score) + offset
+          const fillColor = useBicolor
+            ? score >= bicolorPivot
+              ? posColor
+              : negColor
+            : color
+          content += `<rect x="${x}" y="${y - 1}" width="${w}" height="2" fill="${fillColor}"/>`
         } else if (renderingType === 'density') {
           const densityColor = getDensityColor(
             score,
@@ -134,7 +142,7 @@ export async function renderSvg(
   } else if (ticks) {
     legendEl = (
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <YScaleBar model={model as unknown as { ticks: typeof ticks }} />
+        <YScaleBar model={model as unknown as { ticks: typeof ticks }} orientation="left" />
       </g>
     )
   }

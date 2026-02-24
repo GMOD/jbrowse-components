@@ -23,7 +23,6 @@ interface RenderSettings {
   sequenceType: string
   rowHeight: number
   colorByCDS: boolean
-  showSequence: boolean
   showBorders: boolean
 }
 
@@ -174,7 +173,6 @@ export function buildSequenceGeometry(
     sequenceType,
     rowHeight,
     colorByCDS,
-    showSequence,
     showBorders,
   } = settings
   const { seq, start } = data
@@ -211,7 +209,7 @@ export function buildSequenceGeometry(
     currentY += rowHeight
   }
 
-  if (showForward && showSequence) {
+  if (showForward) {
     writeBaseRects(
       writer,
       seq,
@@ -226,7 +224,7 @@ export function buildSequenceGeometry(
     currentY += rowHeight
   }
 
-  if (showReverseActual && showSequence) {
+  if (showReverseActual) {
     writeBaseRects(
       writer,
       seq,

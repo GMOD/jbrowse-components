@@ -100,7 +100,6 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           sequenceType,
           rowHeight,
           colorByCDS: false,
-          showSequence: true,
           showBorders,
         }
 

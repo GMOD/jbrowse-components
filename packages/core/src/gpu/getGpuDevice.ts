@@ -50,7 +50,19 @@ async function createDevice(): Promise<GPUDevice | null> {
   }
 }
 
+function getGpuOverride() {
+  try {
+    return new URLSearchParams(window.location.search).get('gpu')
+  } catch {
+    return null
+  }
+}
+
 export default function getGpuDevice() {
+  const override = getGpuOverride()
+  if (override === 'webgl' || override === 'off') {
+    return Promise.resolve(null)
+  }
   if (device) {
     return Promise.resolve(device)
   }

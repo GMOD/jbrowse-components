@@ -5,10 +5,10 @@ import { fileURLToPath } from 'url'
 
 import { launch } from 'puppeteer'
 
-import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
+import { BASICAUTH_PORT, OAUTH_PORT, PORT, setActiveBackend } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
-import { setUpdateSnapshots } from './snapshot.ts'
+import { setBackend, setUpdateSnapshots } from './snapshot.ts'
 
 import type { TestSuite } from './types.ts'
 import type { Server } from 'http'
@@ -26,8 +26,16 @@ const updateSnapshots =
 const runAuthTests = args.includes('--auth')
 const filterArg = args.find(a => a.startsWith('--filter='))
 const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
+const backendArg = args.find(a => a.startsWith('--backend='))
+const backend = backendArg
+  ? (backendArg.split('=')[1]! as 'webgl' | 'webgpu')
+  : undefined
 
 setUpdateSnapshots(updateSnapshots)
+if (backend) {
+  setBackend(backend)
+  setActiveBackend(backend)
+}
 
 async function discoverSuites(): Promise<TestSuite[]> {
   const suitesDir = path.resolve(__dirname, 'suites')
@@ -146,15 +154,24 @@ async function main() {
     console.log(`Found ${suites.length} test suites`)
 
     console.log(`Launching browser (headed: ${headed})...`)
+    const chromeArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-web-security',
+      '--disable-popup-blocking',
+    ]
+    if (backend === 'webgl') {
+      chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
+    } else if (backend === 'webgpu') {
+      chromeArgs.push(
+        '--enable-unsafe-webgpu',
+        '--enable-features=Vulkan',
+      )
+    }
     browser = await launch({
       headless: !headed,
       slowMo,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-web-security',
-        '--disable-popup-blocking',
-      ],
+      args: chromeArgs,
       defaultViewport: { width: 1280, height: 800 },
     })
 
@@ -172,6 +189,9 @@ async function main() {
     }
     if (filter) {
       console.log(`(filtering by: ${filter})`)
+    }
+    if (backend) {
+      console.log(`(backend: ${backend})`)
     }
     const { passed, failed } = await runTests(
       page,

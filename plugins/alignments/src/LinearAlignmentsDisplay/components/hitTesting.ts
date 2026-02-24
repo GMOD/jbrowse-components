@@ -372,13 +372,7 @@ export function hitTestCigarItem(
     }
     const pos = interbasePositions[i]
     const len = interbaseLengths[i]
-    // Softclips are rendered as blocks starting at their position
-    if (
-      pos !== undefined &&
-      len !== undefined &&
-      posOffset >= pos &&
-      posOffset <= pos + len
-    ) {
+    if (pos !== undefined && len !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
       return {
         type: 'softclip',
         index: i,

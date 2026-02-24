@@ -97,6 +97,9 @@ export async function renderSvg(
             const rectY = Math.min(y, originY)
             const rectHeight = Math.abs(originY - y) || 1
             content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${color}"/>`
+          } else if (renderingType === 'multirowscatter') {
+            const y = scale(score) + offset + rowY
+            content += `<rect x="${x}" y="${y - 1}" width="${w}" height="2" fill="${color}"/>`
           } else if (renderingType === 'multirowdensity') {
             const densityColor = getDensityColor(
               score,
@@ -146,13 +149,13 @@ export async function renderSvg(
       )
     } else {
       legendEl = (
-        <g transform={`translate(${Math.max(-offsetPx, 0) + 50} 0)`}>
+        <g transform={`translate(${Math.max(-offsetPx, 0)} 0)`}>
           {Array.from({ length: numSources }).map((_, idx) => (
             <g
               transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
               key={`scalebar-${idx}`}
             >
-              <YScaleBar model={model as unknown as { ticks: typeof ticks }} />
+              <YScaleBar model={model as unknown as { ticks: typeof ticks }} orientation="left" />
             </g>
           ))}
         </g>

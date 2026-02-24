@@ -169,7 +169,6 @@ export async function renderSvg(
     sequenceType,
     rowHeight,
     colorByCDS: false,
-    showSequence: true,
     showBorders,
   }
 

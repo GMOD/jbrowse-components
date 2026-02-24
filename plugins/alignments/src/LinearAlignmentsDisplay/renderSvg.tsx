@@ -11,6 +11,12 @@ import {
   arcLineColorPalette,
   sashimiColorPalette,
 } from './components/shaders/arcShaders.ts'
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  INSERTION_TEXT_MIN_PX_PER_BP,
+} from './constants.ts'
 import { ColorScheme, YSCALEBAR_LABEL_OFFSET } from './model.ts'
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
@@ -477,6 +483,7 @@ export async function renderSvg(
     arcsState,
     showSashimiArcs,
     showLinkedReads,
+    showInterbaseIndicators,
   } = model
 
   if (rpcDataMap.size === 0) {
@@ -578,43 +585,69 @@ export async function renderSvg(
           content += `<rect x="${x}" y="${y}" width="${w}" height="${barHeight}" fill="${coverageColor}"/>`
         }
 
-        const baseNames = ['A', 'C', 'G', 'T']
         const depthScale = coverageMaxDepth / nicedMax
 
-        for (let i = 0; i < numSnpSegments; i++) {
-          const pos = snpPositions[i]
-          const yOffset = snpYOffsets[i]
-          const segHeight = snpHeights[i]
-          const colorType = snpColorTypes[i]
+        if (model.showModifications && data.numModCovSegments > 0) {
+          for (let i = 0; i < data.numModCovSegments; i++) {
+            const pos = data.modCovPositions[i]!
+            const modStart = regionStart + pos
+            if (modStart < block.start || modStart > block.end) {
+              continue
+            }
+            const yOff = data.modCovYOffsets[i]!
+            const segH = data.modCovHeights[i]!
+            const r = data.modCovColors[i * 4]!
+            const g = data.modCovColors[i * 4 + 1]!
+            const b = data.modCovColors[i * 4 + 2]!
+            const a = data.modCovColors[i * 4 + 3]! / 255
 
-          if (
-            pos === undefined ||
-            yOffset === undefined ||
-            segHeight === undefined ||
-            colorType === undefined
-          ) {
-            continue
+            const x = (modStart - block.start) / bpPerPx + blockScreenX
+            const w = Math.max(1 / bpPerPx, 1)
+            const barY =
+              coverageHeight -
+              offset -
+              (yOff + segH) * depthScale * effectiveHeight
+            const barH = segH * depthScale * effectiveHeight
+
+            content += `<rect x="${x}" y="${barY}" width="${w}" height="${barH}" fill="rgb(${r},${g},${b})" fill-opacity="${a}"/>`
           }
+        } else {
+          const baseNames = ['A', 'C', 'G', 'T']
+          for (let i = 0; i < numSnpSegments; i++) {
+            const pos = snpPositions[i]
+            const yOffset = snpYOffsets[i]
+            const segHeight = snpHeights[i]
+            const colorType = snpColorTypes[i]
 
-          const snpStart = regionStart + pos
-          if (snpStart < block.start || snpStart > block.end) {
-            continue
+            if (
+              pos === undefined ||
+              yOffset === undefined ||
+              segHeight === undefined ||
+              colorType === undefined
+            ) {
+              continue
+            }
+
+            const snpStart = regionStart + pos
+            if (snpStart < block.start || snpStart > block.end) {
+              continue
+            }
+
+            const x = (snpStart - block.start) / bpPerPx + blockScreenX
+            const w = Math.max(1 / bpPerPx, 1)
+            const barY =
+              coverageHeight -
+              offset -
+              (yOffset + segHeight) * depthScale * effectiveHeight
+            const barH = segHeight * depthScale * effectiveHeight
+
+            const baseName = baseNames[colorType - 1]
+            const fillColor = baseName
+              ? theme.palette.bases[baseName as 'A' | 'C' | 'G' | 'T'].main
+              : theme.palette.grey[600]
+
+            content += `<rect x="${x}" y="${barY}" width="${w}" height="${barH}" fill="${fillColor}"/>`
           }
-
-          const x = (snpStart - block.start) / bpPerPx + blockScreenX
-          const w = Math.max(1 / bpPerPx, 1)
-          const barY =
-            coverageHeight -
-            offset -
-            (yOffset + segHeight) * depthScale * effectiveHeight
-          const barH = segHeight * depthScale * effectiveHeight
-
-          const baseName = baseNames[colorType - 1]
-          const fillColor = baseName
-            ? theme.palette.bases[baseName as 'A' | 'C' | 'G' | 'T'].main
-            : theme.palette.grey[600]
-
-          content += `<rect x="${x}" y="${barY}" width="${w}" height="${barH}" fill="${fillColor}"/>`
         }
       }
 
@@ -722,6 +755,111 @@ export async function renderSvg(
             : rgb255(palette.colorNostrand)
           pileupCtx.fillRect(x, y, w, featureHeightSetting)
         }
+
+        const pxPerBp = 1 / bpPerPx
+        const deletionColor = rgb255(palette.colorDeletion)
+        const skipColor = rgb255(palette.colorSkip)
+        for (let i = 0; i < data.numGaps; i++) {
+          const startBp = regionStart + data.gapPositions[i * 2]!
+          const endBp = regionStart + data.gapPositions[i * 2 + 1]!
+          if (endBp < block.start || startBp > block.end) {
+            continue
+          }
+          const gapType = data.gapTypes[i]!
+          const clippedStart = Math.max(startBp, block.start)
+          const clippedEnd = Math.min(endBp, block.end)
+          const gx = (clippedStart - block.start) / bpPerPx + blockScreenX
+          const gx2 = (clippedEnd - block.start) / bpPerPx + blockScreenX
+          const gw = Math.max(gx2 - gx, 0.5)
+          const gy = data.gapYs[i]! * rowHeight
+
+          if (gapType === 0) {
+            const widthPx = (endBp - startBp) * pxPerBp
+            const alpha = widthPx < 1 && data.gapFrequencies[i] === 0 ? widthPx * widthPx : 1
+            if (alpha > 0) {
+              pileupCtx.globalAlpha = alpha
+              pileupCtx.fillStyle = deletionColor
+              pileupCtx.fillRect(gx, gy, gw, featureHeightSetting)
+              pileupCtx.globalAlpha = 1
+            }
+          } else {
+            const midY = gy + featureHeightSetting * 0.5
+            pileupCtx.strokeStyle = skipColor
+            pileupCtx.lineWidth = 1
+            pileupCtx.beginPath()
+            pileupCtx.moveTo(gx, midY)
+            pileupCtx.lineTo(gx + gw, midY)
+            pileupCtx.stroke()
+          }
+        }
+
+        const insertionColor = rgb255(palette.colorInsertion)
+        const softclipColor = rgb255(palette.colorSoftclip)
+        const hardclipColor = rgb255(palette.colorHardclip)
+        for (let i = 0; i < data.numInterbases; i++) {
+          const pos = regionStart + data.interbasePositions[i]!
+          if (pos < block.start || pos > block.end) {
+            continue
+          }
+          const ibType = data.interbaseTypes[i]!
+          const ibY = data.interbaseYs[i]! * rowHeight
+          const cx = (pos - block.start) / bpPerPx + blockScreenX
+
+          if (ibType === 1) {
+            pileupCtx.fillStyle = insertionColor
+            const len = data.interbaseLengths[i]!
+            const isLong = len >= LONG_INSERTION_MIN_LENGTH
+            const insertionWidthPx = len * pxPerBp
+            const canShowText = insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
+            const isLarge = isLong && canShowText
+            let barW: number
+            if (isLarge) {
+              const digits = len < 10 ? 1 : len < 100 ? 2 : len < 1000 ? 3 : len < 10000 ? 4 : 5
+              barW = digits * 6 + 10
+            } else if (isLong) {
+              barW = Math.min(5, insertionWidthPx / 3)
+            } else {
+              barW = 1
+            }
+            pileupCtx.fillRect(cx - barW / 2, ibY, barW, featureHeightSetting)
+            if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+              pileupCtx.fillRect(cx - 1.5, ibY, 3, 1)
+              pileupCtx.fillRect(cx - 1.5, ibY + featureHeightSetting - 1, 3, 1)
+            }
+            if (isLarge) {
+              pileupCtx.fillStyle = 'white'
+              pileupCtx.font = '9px sans-serif'
+              pileupCtx.textAlign = 'center'
+              pileupCtx.textBaseline = 'middle'
+              pileupCtx.fillText(`${len}`, cx, ibY + featureHeightSetting / 2)
+            }
+          } else {
+            const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
+            const bw = Math.max(barWidthBp / bpPerPx, 1)
+            pileupCtx.fillStyle = ibType === 2 ? softclipColor : hardclipColor
+            pileupCtx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
+          }
+        }
+
+        if (model.showModifications && data.numModifications > 0) {
+          for (let i = 0; i < data.numModifications; i++) {
+            const pos = regionStart + data.modificationPositions[i]!
+            if (pos < block.start || pos > block.end) {
+              continue
+            }
+            const mx = (pos - block.start) / bpPerPx + blockScreenX
+            const mw = Math.max(1 / bpPerPx, 0.5)
+            const my = data.modificationYs[i]! * rowHeight
+            const r = data.modificationColors[i * 4]!
+            const g = data.modificationColors[i * 4 + 1]!
+            const b = data.modificationColors[i * 4 + 2]!
+            const a = data.modificationColors[i * 4 + 3]! / 255
+            pileupCtx.globalAlpha = a
+            pileupCtx.fillStyle = `rgb(${r},${g},${b})`
+            pileupCtx.fillRect(mx, my, mw, featureHeightSetting)
+          }
+          pileupCtx.globalAlpha = 1
+        }
       }
     } else {
       for (let i = 0; i < numReads; i++) {
@@ -769,6 +907,135 @@ export async function renderSvg(
             : rgb255(palette.colorNostrand)
           content += `<rect x="${x}" y="${y}" width="${w}" height="${featureHeightSetting}" fill="${color}"/>`
         }
+
+        const pxPerBp = 1 / bpPerPx
+        const deletionColor = rgb255(palette.colorDeletion)
+        const skipColor = rgb255(palette.colorSkip)
+        for (let i = 0; i < data.numGaps; i++) {
+          const startBp = regionStart + data.gapPositions[i * 2]!
+          const endBp = regionStart + data.gapPositions[i * 2 + 1]!
+          if (endBp < block.start || startBp > block.end) {
+            continue
+          }
+          const gapType = data.gapTypes[i]!
+          const clippedStart = Math.max(startBp, block.start)
+          const clippedEnd = Math.min(endBp, block.end)
+          const gx = (clippedStart - block.start) / bpPerPx + blockScreenX
+          const gx2 = (clippedEnd - block.start) / bpPerPx + blockScreenX
+          const gw = Math.max(gx2 - gx, 0.5)
+          const gy = pileupTopOffset + data.gapYs[i]! * rowHeight
+
+          if (gapType === 0) {
+            const widthPx = (endBp - startBp) * pxPerBp
+            const alpha = widthPx < 1 && data.gapFrequencies[i] === 0 ? widthPx * widthPx : 1
+            if (alpha > 0) {
+              content += `<rect x="${gx}" y="${gy}" width="${gw}" height="${featureHeightSetting}" fill="${deletionColor}" fill-opacity="${alpha}"/>`
+            }
+          } else {
+            const midY = gy + featureHeightSetting * 0.5
+            content += `<line x1="${gx}" y1="${midY}" x2="${gx + gw}" y2="${midY}" stroke="${skipColor}" stroke-width="1"/>`
+          }
+        }
+
+        const insertionColor = rgb255(palette.colorInsertion)
+        const softclipColor = rgb255(palette.colorSoftclip)
+        const hardclipColor = rgb255(palette.colorHardclip)
+        for (let i = 0; i < data.numInterbases; i++) {
+          const pos = regionStart + data.interbasePositions[i]!
+          if (pos < block.start || pos > block.end) {
+            continue
+          }
+          const ibType = data.interbaseTypes[i]!
+          const ibY = pileupTopOffset + data.interbaseYs[i]! * rowHeight
+          const cx = (pos - block.start) / bpPerPx + blockScreenX
+
+          if (ibType === 1) {
+            const len = data.interbaseLengths[i]!
+            const isLong = len >= LONG_INSERTION_MIN_LENGTH
+            const insertionWidthPx = len * pxPerBp
+            const canShowText = insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
+            const isLarge = isLong && canShowText
+            let barW: number
+            if (isLarge) {
+              const digits = len < 10 ? 1 : len < 100 ? 2 : len < 1000 ? 3 : len < 10000 ? 4 : 5
+              barW = digits * 6 + 10
+            } else if (isLong) {
+              barW = Math.min(5, insertionWidthPx / 3)
+            } else {
+              barW = 1
+            }
+            content += `<rect x="${cx - barW / 2}" y="${ibY}" width="${barW}" height="${featureHeightSetting}" fill="${insertionColor}"/>`
+            if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+              const tickW = 3
+              content += `<rect x="${cx - tickW / 2}" y="${ibY}" width="${tickW}" height="1" fill="${insertionColor}"/>`
+              content += `<rect x="${cx - tickW / 2}" y="${ibY + featureHeightSetting - 1}" width="${tickW}" height="1" fill="${insertionColor}"/>`
+            }
+            if (isLarge) {
+              const textY = ibY + featureHeightSetting / 2
+              content += `<text x="${cx}" y="${textY}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="white">${len}</text>`
+            }
+          } else {
+            const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
+            const bw = Math.max(barWidthBp / bpPerPx, 1)
+            const color = ibType === 2 ? softclipColor : hardclipColor
+            content += `<rect x="${cx - bw / 2}" y="${ibY}" width="${bw}" height="${featureHeightSetting}" fill="${color}"/>`
+          }
+        }
+
+        if (model.showModifications && data.numModifications > 0) {
+          for (let i = 0; i < data.numModifications; i++) {
+            const pos = regionStart + data.modificationPositions[i]!
+            if (pos < block.start || pos > block.end) {
+              continue
+            }
+            const mx = (pos - block.start) / bpPerPx + blockScreenX
+            const mw = Math.max(1 / bpPerPx, 0.5)
+            const my = pileupTopOffset + data.modificationYs[i]! * rowHeight
+            const r = data.modificationColors[i * 4]!
+            const g = data.modificationColors[i * 4 + 1]!
+            const b = data.modificationColors[i * 4 + 2]!
+            const a = data.modificationColors[i * 4 + 3]! / 255
+            content += `<rect x="${mx}" y="${my}" width="${mw}" height="${featureHeightSetting}" fill="rgb(${r},${g},${b})" fill-opacity="${a}"/>`
+          }
+        }
+      }
+    }
+
+    if (showCoverage && showInterbaseIndicators) {
+      const { regionStart } = data
+
+      const insertionColor = rgb255(palette.colorInsertion)
+      const softclipColor = rgb255(palette.colorSoftclip)
+      const hardclipColor = rgb255(palette.colorHardclip)
+      const noncovColors = [insertionColor, softclipColor, hardclipColor]
+
+      const noncovHeight = 15
+      const indicatorTriangleH = 4.5
+      for (let i = 0; i < data.numNoncovSegments; i++) {
+        const pos = regionStart + data.noncovPositions[i]!
+        if (pos < block.start || pos > block.end) {
+          continue
+        }
+        const cx = (pos - block.start) / bpPerPx + blockScreenX
+        const yOff = data.noncovYOffsets[i]!
+        const segH = data.noncovHeights[i]!
+        const colorType = data.noncovColorTypes[i]!
+        const color = noncovColors[colorType - 1] ?? noncovColors[0]!
+        const segTopPx = indicatorTriangleH + yOff * noncovHeight
+        const segHeightPx = segH * noncovHeight
+        content += `<rect x="${cx - 0.5}" y="${segTopPx}" width="1" height="${segHeightPx}" fill="${color}"/>`
+      }
+
+      for (let i = 0; i < data.numIndicators; i++) {
+        const pos = regionStart + data.indicatorPositions[i]!
+        if (pos < block.start || pos > block.end) {
+          continue
+        }
+        const cx = (pos - block.start) / bpPerPx + blockScreenX
+        const colorType = data.indicatorColorTypes[i]!
+        const color = noncovColors[colorType - 1] ?? noncovColors[0]!
+        const hw = 3.5
+        content += `<polygon points="${cx - hw},0 ${cx + hw},0 ${cx},${indicatorTriangleH}" fill="${color}"/>`
       }
     }
   }

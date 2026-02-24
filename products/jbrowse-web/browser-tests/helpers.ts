@@ -4,6 +4,20 @@ export const PORT = 3333
 export const OAUTH_PORT = 3030
 export const BASICAUTH_PORT = 3040
 
+let activeBackend: 'webgl' | 'webgpu' | undefined
+
+export function setActiveBackend(b: 'webgl' | 'webgpu' | undefined) {
+  activeBackend = b
+}
+
+function appendGpuParam(url: string) {
+  if (!activeBackend) {
+    return url
+  }
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}gpu=${activeBackend}`
+}
+
 export const delay = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms))
 
@@ -43,13 +57,13 @@ export async function navigateToApp(
   config = 'test_data/volvox/config.json',
   sessionName = 'Test Session',
 ) {
-  await page.goto(
+  const url = appendGpuParam(
     `http://localhost:${PORT}/?config=${config}&sessionName=${encodeURIComponent(sessionName)}`,
-    {
-      waitUntil: 'networkidle0',
-      timeout: 60000,
-    },
   )
+  await page.goto(url, {
+    waitUntil: 'networkidle0',
+    timeout: 60000,
+  })
   await findByText(page, 'ctgA')
 }
 
@@ -59,7 +73,9 @@ export async function navigateWithSessionSpec(
   config = 'test_data/volvox/config.json',
 ) {
   const specParam = encodeURIComponent(JSON.stringify(spec))
-  const url = `http://localhost:${PORT}/?config=${config}&session=spec-${specParam}&sessionName=Test%20Session`
+  const url = appendGpuParam(
+    `http://localhost:${PORT}/?config=${config}&session=spec-${specParam}&sessionName=Test%20Session`,
+  )
   await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
 }
 

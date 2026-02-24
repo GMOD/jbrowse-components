@@ -9,12 +9,23 @@ import { PNG } from 'pngjs'
 import type { ElementHandle, Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-export const snapshotsDir = path.resolve(__dirname, '__snapshots__')
+const baseSnapshotsDir = path.resolve(__dirname, '__snapshots__')
 
+let activeBackend: string | undefined
 let updateSnapshots = false
+
+export function setBackend(b: string) {
+  activeBackend = b
+}
 
 export function setUpdateSnapshots(val: boolean) {
   updateSnapshots = val
+}
+
+export function getSnapshotsDir() {
+  return activeBackend
+    ? path.join(baseSnapshotsDir, activeBackend)
+    : baseSnapshotsDir
 }
 
 function compareImages(
@@ -22,6 +33,7 @@ function compareImages(
   actualBuffer: Buffer | Uint8Array,
   threshold = 0.1,
 ) {
+  const snapshotsDir = getSnapshotsDir()
   if (!fs.existsSync(snapshotsDir)) {
     fs.mkdirSync(snapshotsDir, { recursive: true })
   }

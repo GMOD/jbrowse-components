@@ -23,7 +23,13 @@
     "autogen": "pnpm statedocs && pnpm configdocs && pnpm format",
     "fix-extensions": "node scripts/add-extensions.ts",
     "releasenotes": "pnpm prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
-    "copynotes": "pnpm --silent releasenotes | xclip -selection clipboard"
+    "copynotes": "pnpm --silent releasenotes | xclip -selection clipboard",
+    "test:browser": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/runner.ts",
+    "test:browser:headed": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/runner.ts --headed",
+    "test:browser:update": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/runner.ts --update-snapshots",
+    "test:browser:webgl": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/runner.ts --backend=webgl",
+    "test:browser:compare": "pnpm --filter @jbrowse/web build && node --experimental-strip-types products/jbrowse-web/browser-tests/compare-backends.ts",
+    "test:e2e:desktop": "pnpm --filter @jbrowse/desktop test:e2e"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

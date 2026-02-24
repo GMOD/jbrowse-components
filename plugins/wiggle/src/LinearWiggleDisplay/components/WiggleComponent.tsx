@@ -68,7 +68,15 @@ function buildSourceRenderData(
 
   if (summaryScoreMode === 'whiskers') {
     const color = useBicolor ? posColor : baseColor
-    return makeWhiskersSourceData(data, color, model.isDensityMode, 0)
+    const isScatter = model.renderingType === 'scatter'
+    console.log('buildSourceRenderData', {
+      renderingType: model.renderingType,
+      summaryScoreMode,
+      numFeatures: data.numFeatures,
+      useBicolor,
+      color,
+    })
+    return makeWhiskersSourceData(data, color, model.isDensityMode, isScatter, 0)
   }
 
   const scores = getEffectiveScores(data, summaryScoreMode)

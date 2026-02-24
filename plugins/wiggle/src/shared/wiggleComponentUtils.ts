@@ -42,31 +42,26 @@ interface FeatureArrays {
   numFeatures: number
 }
 
+function hasSummaryFeatures(data: FeatureArrays) {
+  for (let i = 0; i < data.numFeatures; i++) {
+    if (
+      data.featureMinScores[i] !== data.featureScores[i] ||
+      data.featureMaxScores[i] !== data.featureScores[i]
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
 export function makeWhiskersSourceData(
   data: FeatureArrays,
   color: [number, number, number],
   isDensityMode: boolean,
+  isScatterMode: boolean,
   rowIndex: number,
 ): SourceRenderData[] {
-  if (isDensityMode) {
-    return [
-      {
-        featurePositions: data.featurePositions,
-        featureScores: data.featureScores,
-        numFeatures: data.numFeatures,
-        color,
-        rowIndex,
-      },
-    ]
-  }
-  return [
-    {
-      featurePositions: data.featurePositions,
-      featureScores: data.featureMaxScores,
-      numFeatures: data.numFeatures,
-      color: lightenColor(color, 0.4),
-      rowIndex,
-    },
+  const singleSource = [
     {
       featurePositions: data.featurePositions,
       featureScores: data.featureScores,
@@ -74,6 +69,19 @@ export function makeWhiskersSourceData(
       color,
       rowIndex,
     },
+  ]
+  if (isDensityMode || (isScatterMode && !hasSummaryFeatures(data))) {
+    return singleSource
+  }
+  const sources = [
+    {
+      featurePositions: data.featurePositions,
+      featureScores: data.featureMaxScores,
+      numFeatures: data.numFeatures,
+      color: lightenColor(color, 0.4),
+      rowIndex,
+    },
+    ...singleSource,
     {
       featurePositions: data.featurePositions,
       featureScores: data.featureMinScores,
@@ -82,6 +90,10 @@ export function makeWhiskersSourceData(
       rowIndex,
     },
   ]
+  if (isScatterMode) {
+    sources.reverse()
+  }
+  return sources
 }
 
 export function isSummaryFeature(
