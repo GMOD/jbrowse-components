@@ -5,17 +5,17 @@ import LDDisplayF from './LDDisplay/index.ts'
 import LDRendererF from './LDRenderer/index.ts'
 import LDTrackF from './LDTrack/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
-import MultiWebGLVariantDisplayF from './MultiWebGLVariantDisplay/index.ts'
-import MultiWebGLVariantMatrixDisplayF from './MultiWebGLVariantMatrixDisplay/index.ts'
+import MultiVariantDisplayF from './MultiVariantDisplay/index.ts'
+import MultiVariantMatrixDisplayF from './MultiVariantMatrixDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
-import WebGLLDDataRPCMethodsF from './RenderWebGLLDDataRPC/index.ts'
+import LDDataRPCMethodsF from './RenderLDDataRPC/index.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer/index.ts'
 import VariantFeatureWidgetF from './VariantFeatureWidget/index.ts'
 import { MultiSampleVariantClusterGenotypeMatrix } from './VariantRPC/MultiSampleVariantClusterGenotypeMatrix.ts'
+import { MultiSampleVariantGetCellData } from './VariantRPC/MultiSampleVariantGetCellData.ts'
 import { MultiSampleVariantGetGenotypeMatrix } from './VariantRPC/MultiSampleVariantGetGenotypeMatrix.ts'
 import { MultiSampleVariantGetSources } from './VariantRPC/MultiSampleVariantGetSources.ts'
-import { MultiSampleVariantGetWebGLCellData } from './VariantRPC/MultiSampleVariantGetWebGLCellData.ts'
 import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
@@ -41,13 +41,13 @@ export default class VariantsPlugin extends Plugin {
     LDTrackF(pluginManager)
     ExtensionPointsF(pluginManager)
     LinearVariantDisplayF(pluginManager)
-    MultiWebGLVariantDisplayF(pluginManager)
-    MultiWebGLVariantMatrixDisplayF(pluginManager)
+    MultiVariantDisplayF(pluginManager)
+    MultiVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
-    WebGLLDDataRPCMethodsF(pluginManager)
+    LDDataRPCMethodsF(pluginManager)
 
     pluginManager.addRpcMethod(
       () => new MultiSampleVariantGetSources(pluginManager),
@@ -59,7 +59,7 @@ export default class VariantsPlugin extends Plugin {
       () => new MultiSampleVariantClusterGenotypeMatrix(pluginManager),
     )
     pluginManager.addRpcMethod(
-      () => new MultiSampleVariantGetWebGLCellData(pluginManager),
+      () => new MultiSampleVariantGetCellData(pluginManager),
     )
   }
 

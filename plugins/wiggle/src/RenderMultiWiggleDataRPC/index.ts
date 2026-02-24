@@ -5,7 +5,5 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function RenderMultiWiggleDataRPCF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addRpcMethod(
-    () => new RenderMultiWiggleData(pluginManager),
-  )
+  pluginManager.addRpcMethod(() => new RenderMultiWiggleData(pluginManager))
 }

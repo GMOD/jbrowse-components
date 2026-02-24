@@ -56,8 +56,8 @@ fn vs_main(
   let cx = select(0.0, 1.0, v == 1u || v == 4u || v == 5u);
   let cy = select(0.0, 1.0, v == 2u || v == 3u || v == 5u);
 
-  let x_bp_local = inst.x_bp + cx * inst.width_bp;
-  let x_px = x_bp_local / u.bp_per_px + u.base_px;
+  let width_px = max(inst.width_bp / u.bp_per_px, 1.0);
+  let x_px = inst.x_bp / u.bp_per_px + u.base_px + cx * width_px;
   let y_px = inst.y_px + cy * inst.height_px;
 
   let clip_x = (x_px / u.canvas_width) * 2.0 - 1.0;
@@ -67,7 +67,7 @@ fn vs_main(
   out.position = vec4f(clip_x, clip_y, 0.0, 1.0);
   out.color = vec3f(inst.color_r, inst.color_g, inst.color_b);
   out.uv = vec2f(cx, cy);
-  out.rect_size_px = vec2f(inst.width_bp / u.bp_per_px, inst.height_px);
+  out.rect_size_px = vec2f(width_px, inst.height_px);
   out.border_flag = inst.border_flag;
   return out;
 }

@@ -1,5 +1,5 @@
-import RenderPileupData from './RenderPileupData.ts'
 import GetFeatureDetails from './GetFeatureDetails.ts'
+import RenderPileupData from './RenderPileupData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -42,10 +42,6 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
 
   const palette = useMemo(() => buildColorPalette(theme), [theme])
 
-  const showSequenceComputed = useMemo(
-    () => computed(() => view.bpPerPx <= 1),
-    [view],
-  )
   const showBordersComputed = useMemo(
     () => computed(() => 1 / view.bpPerPx >= 12),
     [view],
@@ -96,7 +92,6 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           return
         }
 
-        const showSequence = showSequenceComputed.get()
         const showBorders = showBordersComputed.get()
         const settings = {
           showForward: showForwardActual,
@@ -105,13 +100,11 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           sequenceType,
           rowHeight,
           colorByCDS: false,
-          showSequence,
+          showSequence: true,
           showBorders,
         }
 
-        const baseBp = Math.min(
-          ...regionEntries.map(([, d]) => d.start),
-        )
+        const baseBp = Math.min(...regionEntries.map(([, d]) => d.start))
         baseBpRef.current = baseBp
 
         let totalRects = 0
@@ -151,11 +144,10 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         instanceCountRef.current = totalRects
 
         untracked(() => {
-          const cssWidth = view.width
+          const cssWidth = view.trackWidthPx
           const cssHeight = model.height
           if (cssWidth > 0 && cssHeight > 0) {
-            const basePx =
-              baseBpRef.current / view.bpPerPx - view.offsetPx
+            const basePx = baseBpRef.current / view.bpPerPx - view.offsetPx
             renderer.render(
               totalRects,
               basePx,
@@ -181,7 +173,6 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     rowHeight,
     palette,
     view,
-    showSequenceComputed,
     showBordersComputed,
     initReady,
   ])
@@ -197,7 +188,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           return
         }
         const { bpPerPx, offsetPx } = view
-        const cssWidth = view.width
+        const cssWidth = view.trackWidthPx
         const cssHeight = model.height
         if (cssWidth > 0 && cssHeight > 0) {
           const basePx = baseBpRef.current / bpPerPx - offsetPx
@@ -221,8 +212,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
     return <Alert severity="error">{`${error}`}</Alert>
   }
 
-  const zoomedOut = view.bpPerPx > 3
-  const viewWidth = view.width
+  const zoomedOut = view.bpPerPx > 10
 
   return (
     <div style={{ position: 'relative', width: '100%', height }}>
@@ -250,7 +240,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
               showTranslation={showTranslationActual}
               sequenceType={sequenceType}
               displayedRegions={view.displayedRegions}
-              width={viewWidth}
+              width={view.trackWidthPx}
               totalHeight={height}
             />
           ) : null}

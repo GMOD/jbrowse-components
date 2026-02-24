@@ -44,8 +44,7 @@ export default class RenderArcsData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderArcsData } =
-      await import('./executeRenderArcsData.ts')
+    const { executeRenderArcsData } = await import('./executeRenderArcsData.ts')
     return executeRenderArcsData({
       pluginManager: this.pluginManager,
       args: args as unknown as RenderArcsDataArgs,

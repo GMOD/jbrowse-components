@@ -187,7 +187,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           autorun(
             function sequenceHeightAutorun() {
               const view = getContainingView(self) as LGV
-              if (!view.initialized || view.bpPerPx > 3) {
+              if (!view.initialized || view.bpPerPx > 10) {
                 self.setComputedHeight(50)
               } else {
                 self.setComputedHeight(self.sequenceHeight)
@@ -201,7 +201,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           self,
           () => {
             const view = getContainingView(self) as LGV
-            if (!view.initialized || view.bpPerPx > 3) {
+            if (!view.initialized || view.bpPerPx > 10) {
               return undefined
             }
             return {

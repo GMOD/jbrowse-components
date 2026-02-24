@@ -98,6 +98,8 @@ function renderTranslationLetters(
   bpPerPx: number,
   offsetPx: number,
   reversed: boolean,
+  startCodonContrastColor: string,
+  stopCodonContrastColor: string,
 ) {
   let content = ''
   const normalizedFrame = Math.abs(frame) - 1
@@ -123,7 +125,11 @@ function renderTranslationLetters(
 
     const isStart = defaultStarts.includes(upperCodon)
     const isStop = defaultStops.includes(upperCodon)
-    const fill = isStart || isStop ? '#fff' : '#000'
+    const fill = isStart
+      ? startCodonContrastColor
+      : isStop
+        ? stopCodonContrastColor
+        : '#000'
 
     content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`
   }
@@ -137,7 +143,7 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const { sequenceData } = model
 
-  if (sequenceData.size === 0 || view.bpPerPx > 3) {
+  if (sequenceData.size === 0 || view.bpPerPx > 10) {
     return null
   }
 
@@ -154,7 +160,6 @@ export async function renderSvg(
 
   const showBorders = 1 / bpPerPx >= 12
   const showLetters = 1 / bpPerPx >= 12
-  const showSequence = bpPerPx <= 1
   const isDna = sequenceType === 'dna'
 
   const settings = {
@@ -164,7 +169,7 @@ export async function renderSvg(
     sequenceType,
     rowHeight,
     colorByCDS: false,
-    showSequence,
+    showSequence: true,
     showBorders,
   }
 
@@ -173,6 +178,13 @@ export async function renderSvg(
   const reverseFrames: Frame[] =
     showTranslationActual && showReverseActual ? [-1, -2, -3] : []
 
+  const startCodonContrastColor = theme.palette.getContrastText(
+    theme.palette.startCodon,
+  )
+  const stopCodonContrastColor = theme.palette.getContrastText(
+    theme.palette.stopCodon,
+  )
+
   let rectContent = ''
   let textContent = ''
 
@@ -180,7 +192,13 @@ export async function renderSvg(
 
   for (const [regionNum, data] of sequenceData) {
     const reversed = view.displayedRegions[regionNum]?.reversed ?? false
-    const geom = buildSequenceGeometry(data, settings, reversed, palette, baseBp)
+    const geom = buildSequenceGeometry(
+      data,
+      settings,
+      reversed,
+      palette,
+      baseBp,
+    )
     const basePx = baseBp / bpPerPx - offsetPx
 
     rectContent += renderRects(
@@ -209,6 +227,8 @@ export async function renderSvg(
           bpPerPx,
           offsetPx,
           reversed,
+          startCodonContrastColor,
+          stopCodonContrastColor,
         )
         currentY += rowHeight
       }
@@ -251,6 +271,8 @@ export async function renderSvg(
           bpPerPx,
           offsetPx,
           !reversed,
+          startCodonContrastColor,
+          stopCodonContrastColor,
         )
         currentY += rowHeight
       }

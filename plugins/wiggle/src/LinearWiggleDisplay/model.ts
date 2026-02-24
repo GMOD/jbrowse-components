@@ -42,9 +42,7 @@ export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-
 
 type LGV = LinearGenomeViewModel
 
-const WiggleComponent = lazy(
-  () => import('./components/WiggleComponent.tsx'),
-)
+const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
 const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
@@ -695,8 +693,5 @@ export default function stateModelFactory(
     })
 }
 
-export type LinearWiggleDisplayStateModel = ReturnType<
-  typeof stateModelFactory
->
-export type LinearWiggleDisplayModel =
-  Instance<LinearWiggleDisplayStateModel>
+export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>

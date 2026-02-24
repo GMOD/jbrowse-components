@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearWebGLFeatureDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
+import { linearFeatureDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -7,7 +7,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearVariantDisplay
  *
- * Extends LinearWebGLFeatureDisplay for GPU-accelerated rendering.
+ * Extends LinearFeatureDisplay for GPU-accelerated rendering.
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -19,8 +19,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration:
-        linearWebGLFeatureDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: linearFeatureDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

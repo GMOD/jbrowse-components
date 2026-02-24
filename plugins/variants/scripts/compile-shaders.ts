@@ -2,8 +2,8 @@ import path from 'path'
 
 import { compileShaders } from '../../../compile-shader-utils/index.ts'
 import { ldShader } from '../src/LDDisplay/components/ldShaders.ts'
-import { variantShader } from '../src/MultiWebGLVariantDisplay/components/variantShaders.ts'
-import { variantMatrixShader } from '../src/MultiWebGLVariantMatrixDisplay/components/variantMatrixShaders.ts'
+import { variantShader } from '../src/MultiVariantDisplay/components/variantShaders.ts'
+import { variantMatrixShader } from '../src/MultiVariantMatrixDisplay/components/variantMatrixShaders.ts'
 
 compileShaders({
   shaders: [

@@ -1,5 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearWebGLFeatureDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
+import { linearFeatureDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -9,7 +9,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * GPU-accelerated variant display with custom feature widget on click.
  * extends
  *
- * - [LinearWebGLFeatureDisplay](../linearwebglfeaturedisplay)
+ * - [LinearFeatureDisplay](../linearfeaturedisplay)
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -17,7 +17,7 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearVariantDisplay',
-      linearWebGLFeatureDisplayStateModelFactory(configSchema),
+      linearFeatureDisplayStateModelFactory(configSchema),
       types.model({
         /**
          * #property

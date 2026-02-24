@@ -192,7 +192,7 @@ async function fetchFeatureDetails(self: any, featureId: string) {
   const sessionId = getRpcSessionId(self)
   const { feature } = (await session.rpcManager.call(
     sessionId,
-    'GetFeatureDetails',
+    'GetPileupFeatureDetails',
     { sessionId, adapterConfig, sequenceAdapter, region, featureId },
   )) as {
     feature: (Record<string, unknown> & { uniqueId: string }) | undefined
@@ -209,7 +209,9 @@ const AlignmentsComponent = lazy(
   () => import('./components/PileupComponent.tsx'),
 )
 
-const AlignmentsTooltip = lazy(() => import('./components/AlignmentsTooltip.tsx'))
+const AlignmentsTooltip = lazy(
+  () => import('./components/AlignmentsTooltip.tsx'),
+)
 const ColorByTagDialog = lazy(
   () => import('../shared/components/ColorByTagDialog.tsx'),
 )

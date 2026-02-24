@@ -94,13 +94,19 @@ export class WebGLWiggleRenderer {
   private createRegionVAO(vbo: WebGLBuffer) {
     const gl = this.gl
     const locs = this.attrLocs
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
     // a_start_end: uvec2 at offset 0
     gl.enableVertexAttribArray(locs.startEnd)
-    gl.vertexAttribIPointer(locs.startEnd, 2, gl.UNSIGNED_INT, INSTANCE_BYTES, 0)
+    gl.vertexAttribIPointer(
+      locs.startEnd,
+      2,
+      gl.UNSIGNED_INT,
+      INSTANCE_BYTES,
+      0,
+    )
     gl.vertexAttribDivisor(locs.startEnd, 1)
 
     // a_score: float at offset 8
@@ -110,12 +116,26 @@ export class WebGLWiggleRenderer {
 
     // a_prev_score: float at offset 12
     gl.enableVertexAttribArray(locs.prevScore)
-    gl.vertexAttribPointer(locs.prevScore, 1, gl.FLOAT, false, INSTANCE_BYTES, 12)
+    gl.vertexAttribPointer(
+      locs.prevScore,
+      1,
+      gl.FLOAT,
+      false,
+      INSTANCE_BYTES,
+      12,
+    )
     gl.vertexAttribDivisor(locs.prevScore, 1)
 
     // a_row_index: float at offset 16
     gl.enableVertexAttribArray(locs.rowIndex)
-    gl.vertexAttribPointer(locs.rowIndex, 1, gl.FLOAT, false, INSTANCE_BYTES, 16)
+    gl.vertexAttribPointer(
+      locs.rowIndex,
+      1,
+      gl.FLOAT,
+      false,
+      INSTANCE_BYTES,
+      16,
+    )
     gl.vertexAttribDivisor(locs.rowIndex, 1)
 
     // a_color: vec3 at offset 20
@@ -152,7 +172,7 @@ export class WebGLWiggleRenderer {
 
     const buf = interleaveInstances(sources, totalFeatures)
 
-    const vbo = gl.createBuffer()!
+    const vbo = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW)
 

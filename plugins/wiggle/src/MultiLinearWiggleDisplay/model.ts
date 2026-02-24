@@ -337,10 +337,7 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcDataForRegion(
-        regionNumber: number,
-        data: MultiWiggleDataResult,
-      ) {
+      setRpcDataForRegion(regionNumber: number, data: MultiWiggleDataResult) {
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
         self.rpcDataMap = next

@@ -33,7 +33,7 @@ import {
   fetchReferenceSequence,
 } from '../shared/processFeatureAlignments.ts'
 
-import type { RenderPileupDataArgs, PileupDataResult } from './types'
+import type { PileupDataResult, RenderPileupDataArgs } from './types'
 import type { Mismatch } from '../shared/types'
 import type {
   FeatureData,

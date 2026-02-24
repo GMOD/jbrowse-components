@@ -26,7 +26,7 @@ export interface GetLDMatrixArgs extends BaseVariantRpcArgs {
   ldMetric?: 'r2' | 'dprime'
 }
 
-export interface GetWebGLCellDataArgs extends BaseVariantRpcArgs {
+export interface GetCellDataArgs extends BaseVariantRpcArgs {
   sources: Source[]
   renderingMode: string
   referenceDrawingMode?: string

@@ -14,7 +14,7 @@ import {
 import { autorun, untracked } from 'mobx'
 
 import type { SharedLDModel } from './shared.ts'
-import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
+import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -86,7 +86,7 @@ export function doAfterAttach(self: SharedLDModel) {
 
       const result = (await rpcManager.call(
         rpcSessionId,
-        'RenderWebGLLDData',
+        'RenderLDData',
         {
           sessionId: rpcSessionId,
           adapterConfig,
@@ -111,7 +111,7 @@ export function doAfterAttach(self: SharedLDModel) {
             }
           },
         },
-      )) as WebGLLDDataResult
+      )) as LDDataResult
 
       self.setRpcData(result)
       self.setLastDrawnOffsetPx(view.offsetPx)

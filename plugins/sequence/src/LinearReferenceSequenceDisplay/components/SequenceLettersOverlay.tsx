@@ -24,6 +24,8 @@ function TranslationLetters({
   reversed,
   visibleStartBp,
   visibleEndBp,
+  startCodonContrastColor,
+  stopCodonContrastColor,
 }: {
   seq: string
   seqStart: number
@@ -35,6 +37,8 @@ function TranslationLetters({
   reversed: boolean
   visibleStartBp: number
   visibleEndBp: number
+  startCodonContrastColor: string
+  stopCodonContrastColor: string
 }) {
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
@@ -69,7 +73,11 @@ function TranslationLetters({
 
     const isStart = defaultStarts.includes(upperCodon)
     const isStop = defaultStops.includes(upperCodon)
-    const fill = isStart || isStop ? '#fff' : '#000'
+    const fill = isStart
+      ? startCodonContrastColor
+      : isStop
+        ? stopCodonContrastColor
+        : '#000'
 
     parts.push(
       `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`,
@@ -158,11 +166,19 @@ export default function SequenceLettersOverlay({
   width: number
   totalHeight: number
 }) {
+  const theme = useTheme()
   const renderLetters = 1 / bpPerPx >= 12
 
   if (!renderLetters) {
     return null
   }
+
+  const startCodonContrastColor = theme.palette.getContrastText(
+    theme.palette.startCodon,
+  )
+  const stopCodonContrastColor = theme.palette.getContrastText(
+    theme.palette.stopCodon,
+  )
 
   const visibleStartBp = offsetPx * bpPerPx
   const visibleEndBp = (offsetPx + width) * bpPerPx
@@ -200,6 +216,8 @@ export default function SequenceLettersOverlay({
           reversed={reversed}
           visibleStartBp={visibleStartBp}
           visibleEndBp={visibleEndBp}
+          startCodonContrastColor={startCodonContrastColor}
+          stopCodonContrastColor={stopCodonContrastColor}
         />,
       )
       currentY += rowHeight
@@ -257,6 +275,8 @@ export default function SequenceLettersOverlay({
           reversed={!reversed}
           visibleStartBp={visibleStartBp}
           visibleEndBp={visibleEndBp}
+          startCodonContrastColor={startCodonContrastColor}
+          stopCodonContrastColor={stopCodonContrastColor}
         />,
       )
       currentY += rowHeight

@@ -200,7 +200,7 @@ const WiggleComponent = observer(function WiggleComponent({
         return
       }
 
-      const width = Math.round(view.width)
+      const width = view.trackWidthPx
 
       const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
         regionNumber: vr.regionNumber,
@@ -307,7 +307,7 @@ const WiggleComponent = observer(function WiggleComponent({
     model.setFeatureUnderMouse(undefined)
   }, [model])
 
-  const width = Math.round(view.width)
+  const width = view.trackWidthPx
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 

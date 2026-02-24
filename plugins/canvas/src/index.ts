@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import LinearWebGLFeatureDisplayF from './LinearWebGLFeatureDisplay/index.ts'
-import WebGLFeatureDataRPCMethodsF from './RenderWebGLFeatureDataRPC/index.ts'
+import LinearFeatureDisplayF from './LinearFeatureDisplay/index.ts'
+import FeatureDataRPCMethodsF from './RenderFeatureDataRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -9,13 +9,13 @@ export default class CanvasPlugin extends Plugin {
   name = 'CanvasPlugin'
 
   install(pluginManager: PluginManager) {
-    LinearWebGLFeatureDisplayF(pluginManager)
-    WebGLFeatureDataRPCMethodsF(pluginManager)
+    LinearFeatureDisplayF(pluginManager)
+    FeatureDataRPCMethodsF(pluginManager)
   }
 }
 
 export {
-  linearWebGLFeatureDisplayConfigSchemaFactory,
-  linearWebGLFeatureDisplayStateModelFactory,
-} from './LinearWebGLFeatureDisplay/index.ts'
-export type { LinearWebGLFeatureDisplayModel } from './LinearWebGLFeatureDisplay/index.ts'
+  linearFeatureDisplayConfigSchemaFactory,
+  linearFeatureDisplayStateModelFactory,
+} from './LinearFeatureDisplay/index.ts'
+export type { LinearFeatureDisplayModel } from './LinearFeatureDisplay/index.ts'

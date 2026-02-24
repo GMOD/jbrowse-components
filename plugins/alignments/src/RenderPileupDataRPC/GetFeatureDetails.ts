@@ -21,7 +21,7 @@ interface GetFeatureDetailsArgs {
 }
 
 export default class GetFeatureDetails extends RpcMethodType {
-  name = 'GetFeatureDetails'
+  name = 'GetPileupFeatureDetails'
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const assemblyManager =

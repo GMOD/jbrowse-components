@@ -35,8 +35,8 @@ import {
 } from '../shared/processFeatureAlignments.ts'
 
 import type {
-  RenderPileupDataArgs,
   PileupDataResult,
+  RenderPileupDataArgs,
 } from '../RenderPileupDataRPC/types.ts'
 import type { Mismatch } from '../shared/types'
 import type { ChainStats } from '../shared/types.ts'

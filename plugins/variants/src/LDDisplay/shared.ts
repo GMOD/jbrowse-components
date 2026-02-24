@@ -13,7 +13,7 @@ import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { WebGLLDDataResult } from '../RenderWebGLLDDataRPC/types.ts'
+import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -156,7 +156,7 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      rpcData: null as WebGLLDDataResult | null,
+      rpcData: null as LDDataResult | null,
       /**
        * #volatile
        */
@@ -216,7 +216,7 @@ export default function sharedModelFactory(
         | undefined,
     }))
     .actions(self => ({
-      setRpcData(data: WebGLLDDataResult | null) {
+      setRpcData(data: LDDataResult | null) {
         self.rpcData = data
       },
       /**

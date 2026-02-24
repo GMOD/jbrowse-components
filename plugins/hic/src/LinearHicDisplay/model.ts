@@ -9,7 +9,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import type { HicFlatbushItem } from '../HicRenderer/types.ts'
-import type { WebGLHicDataResult } from '../RenderWebGLHicDataRPC/types.ts'
+import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -76,7 +76,7 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      rpcData: null as WebGLHicDataResult | null,
+      rpcData: null as HicDataResult | null,
       /**
        * #volatile
        */
@@ -168,7 +168,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setRpcData(data: WebGLHicDataResult | null) {
+      setRpcData(data: HicDataResult | null) {
         self.rpcData = data
       },
       /**

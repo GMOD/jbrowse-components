@@ -238,17 +238,17 @@ export default function MultiSampleVariantBaseModelF(
        * #volatile
        */
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
-      webglCellData: undefined as unknown,
-      webglCellDataLoading: false,
+      cellData: undefined as unknown,
+      cellDataLoading: false,
       displayError: undefined as unknown,
       errorRetryCount: 0,
     }))
     .actions(self => ({
-      setWebGLCellData(data: unknown) {
-        self.webglCellData = data
+      setCellData(data: unknown) {
+        self.cellData = data
       },
-      setWebGLCellDataLoading(val: boolean) {
-        self.webglCellDataLoading = val
+      setCellDataLoading(val: boolean) {
+        self.cellDataLoading = val
       },
       setDisplayError(e: unknown) {
         self.displayError = e

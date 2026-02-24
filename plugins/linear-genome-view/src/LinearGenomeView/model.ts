@@ -345,6 +345,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * width minus track outline borders (1px each side when shown)
+       */
+      get trackWidthPx(): number {
+        return this.width - (self.showTrackOutlines ? 2 : 0)
+      },
+      /**
+       * #getter
        */
       get interRegionPaddingWidth() {
         return INTER_REGION_PADDING_WIDTH

@@ -275,8 +275,8 @@ export function processFeatures(
     const score = (feature.get('score') as number | undefined) ?? 0
     const summary = feature.get('summary')
 
-    const startOffset = Math.floor(start - regionStart)
-    const endOffset = Math.floor(end - regionStart)
+    const startOffset = Math.max(0, Math.floor(start - regionStart))
+    const endOffset = Math.max(0, Math.floor(end - regionStart))
     featurePositions[i * 2] = startOffset
     featurePositions[i * 2 + 1] = endOffset
     featureScores[i] = score

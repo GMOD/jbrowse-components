@@ -21,18 +21,17 @@ void main() {
   float cx = (vid == 1 || vid == 4 || vid == 5) ? 1.0 : 0.0;
   float cy = (vid == 2 || vid == 3 || vid == 5) ? 1.0 : 0.0;
 
-  float xBpLocal = a_rect.x + cx * a_rect.z;
-  float xPx = xBpLocal / u_bpPerPx + u_basePx;
+  float widthPx = max(a_rect.z / u_bpPerPx, 1.0);
+  float xPx = a_rect.x / u_bpPerPx + u_basePx + cx * widthPx;
   float yPx = a_rect.y + cy * a_rect.w;
 
-  // convert pixel coords to clip space
   float clipX = (xPx / u_canvasWidth) * 2.0 - 1.0;
   float clipY = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
   gl_Position = vec4(clipX, clipY, 0.0, 1.0);
   v_color = a_color;
   v_uv = vec2(cx, cy);
-  v_rectSizePx = vec2(a_rect.z / u_bpPerPx, a_rect.w);
+  v_rectSizePx = vec2(widthPx, a_rect.w);
 }
 `
 
