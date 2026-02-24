@@ -431,12 +431,12 @@ export default function stateModelFactory(
       contextMenuRefName: undefined as string | undefined,
       fetchToken: 0,
       rpcDataMap: new Map<number, PileupDataResult>(),
-      statusMessage: 'Loading',
       webglRef: null as unknown,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
       highlightedFeatureIndex: -1,
       selectedFeatureIndex: -1,
+      selectedFeatureId: undefined as string | undefined,
       highlightedChainIndices: [] as number[],
       selectedChainIndices: [] as number[],
       colorTagMap: {} as Record<string, string>,
@@ -577,15 +577,6 @@ export default function stateModelFactory(
       get showModifications(): boolean {
         const t = this.colorBy.type
         return t === 'modifications' || t === 'methylation'
-      },
-
-      get showLoading() {
-        const view = getContainingView(self) as LGV
-        return (
-          self.isLoading ||
-          !view.initialized ||
-          view.dynamicBlocks.contentBlocks.length === 0
-        )
       },
 
       get regionTooLarge() {
@@ -876,10 +867,6 @@ export default function stateModelFactory(
           }
         },
 
-        setStatusMessage(msg?: string) {
-          self.statusMessage = msg ?? ''
-        },
-
         setWebGLRef(ref: unknown) {
           self.webglRef = ref
         },
@@ -921,8 +908,9 @@ export default function stateModelFactory(
           self.highlightedFeatureIndex = index
         },
 
-        setSelectedFeatureIndex(index: number) {
+        setSelectedFeatureIndex(index: number, featureId?: string) {
           self.selectedFeatureIndex = index
+          self.selectedFeatureId = featureId
         },
 
         setHighlightedChainIndices(indices: number[]) {
@@ -953,6 +941,7 @@ export default function stateModelFactory(
         clearSelection() {
           if (self.selectedFeatureIndex !== -1) {
             self.selectedFeatureIndex = -1
+            self.selectedFeatureId = undefined
           }
           if (self.selectedChainIndices.length > 0) {
             self.selectedChainIndices = []
@@ -1239,11 +1228,6 @@ export default function stateModelFactory(
             colorTagMap: self.colorTagMap,
             sortedBy: self.sortedBy,
             stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
           },
         )) as PileupDataResult
         if (isAlive(self)) {
@@ -1276,11 +1260,6 @@ export default function stateModelFactory(
             drawInter: self.arcsState.drawInter,
             drawLongRange: self.arcsState.drawLongRange,
             stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
           },
         )) as ArcsDataResult
         if (isAlive(self)) {
@@ -1311,11 +1290,6 @@ export default function stateModelFactory(
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
           },
         )) as PileupDataResult
         if (isAlive(self)) {
@@ -1584,13 +1558,11 @@ export default function stateModelFactory(
               data.interbasePositions[i]!,
             )
           }
-          if (data.modificationYs) {
-            for (let i = 0; i < data.numModifications; i++) {
-              data.modificationYs[i] = resolveNewY(
-                data.modificationYs[i]!,
-                data.modificationPositions[i]!,
-              )
-            }
+          for (let i = 0; i < data.numModifications; i++) {
+            data.modificationYs[i] = resolveNewY(
+              data.modificationYs[i]!,
+              data.modificationPositions[i]!,
+            )
           }
           if (data.connectingLineYs && data.numConnectingLines) {
             for (let i = 0; i < data.numConnectingLines; i++) {
@@ -1807,7 +1779,9 @@ export default function stateModelFactory(
                   canvasWidth: view.width,
                   canvasHeight: self.height,
                   highlightedFeatureIndex: self.highlightedFeatureIndex,
+                  highlightedFeatureId: self.featureIdUnderMouse,
                   selectedFeatureIndex: self.selectedFeatureIndex,
+                  selectedFeatureId: self.selectedFeatureId,
                   highlightedChainIndices: self.highlightedChainIndices,
                   selectedChainIndices: self.selectedChainIndices,
                   colors: palette,
@@ -1901,7 +1875,6 @@ export default function stateModelFactory(
                   key !== prevInvalidationKey
                 ) {
                   self.setLoading(true)
-                  self.setStatusMessage('Loading')
                   self.setError(null)
                   self.clearAllRpcData()
                   self.bumpFetchToken()

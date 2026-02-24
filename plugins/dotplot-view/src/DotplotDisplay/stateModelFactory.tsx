@@ -100,7 +100,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #method
        */
       renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        return renderSvg(self as DotplotDisplayModel)
+        return renderSvg(self)
       },
     }))
     .actions(self => ({

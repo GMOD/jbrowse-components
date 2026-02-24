@@ -2,12 +2,14 @@ import { Suspense, useRef, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
+import { getContainingView, useDebounce } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import LoadingOverlay from './LoadingOverlay.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type Coord = [number, number]
 
@@ -36,9 +38,9 @@ const AlignmentsDisplayComponent = observer(
       DisplayMessageComponent,
       height,
       contextMenuCoord,
-      showLoading,
-      statusMessage,
     } = model
+    const view = getContainingView(model) as LinearGenomeViewModel
+    const debouncedLoading = useDebounce(model.isLoading, 500)
     const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
       <div
@@ -56,7 +58,10 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
-        <LoadingOverlay statusMessage={statusMessage} isVisible={showLoading} />
+        <LoadingOverlay
+          statusMessage={debouncedLoading ? 'Loading features' : 'Initializing'}
+          isVisible={debouncedLoading || !view.initialized}
+        />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}

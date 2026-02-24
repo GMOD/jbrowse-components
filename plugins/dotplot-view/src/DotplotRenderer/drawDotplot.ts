@@ -165,7 +165,7 @@ export async function drawDotplot(
       let r = 'black'
       if (colorBy === 'identity') {
         const identity = feature.get('identity')
-        // eslint-disable-next-line unicorn/no-for-loop
+         
         for (let i = 0; i < thresholds.length; i++) {
           if (identity > +thresholds[i]) {
             r = palette[i] || 'black'

@@ -12,10 +12,10 @@ import {
   sashimiColorPalette,
 } from './components/shaders/arcShaders.ts'
 import {
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
   INSERTION_SERIF_MIN_PX_PER_BP,
   INSERTION_TEXT_MIN_PX_PER_BP,
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from './constants.ts'
 import { ColorScheme, YSCALEBAR_LABEL_OFFSET } from './model.ts'
 

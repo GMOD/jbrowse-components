@@ -153,6 +153,7 @@ export default defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/no-for-loop': 'off',
       'unicorn/prefer-response-static-json': 'off',
       'unicorn/text-encoding-identifier-case': 'off',
       'unicorn/prefer-global-this': 'off',

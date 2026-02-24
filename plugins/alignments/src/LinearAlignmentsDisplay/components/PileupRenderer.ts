@@ -108,10 +108,10 @@ export class PileupRenderer {
     gl.uniform1f(this.parent.readUniforms.u_coverageOffset!, coverageOffset)
     gl.uniform1f(this.parent.readUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(this.parent.readUniforms.u_canvasWidth!, canvasWidth)
-    gl.uniform1i(
-      this.parent.readUniforms.u_highlightedIndex!,
-      state.highlightedFeatureIndex,
-    )
+    const regionHlIdx = state.highlightedFeatureId
+      ? (buffers.readIdToIndex.get(state.highlightedFeatureId) ?? -1)
+      : -1
+    gl.uniform1i(this.parent.readUniforms.u_highlightedIndex!, regionHlIdx)
     const mode = state.renderingMode ?? 'pileup'
     const isChainMode = mode === 'linkedRead'
     gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
@@ -428,16 +428,16 @@ export class PileupRenderer {
         )
         this.drawFilledRect(gl, clip)
       }
-    } else if (state.highlightedFeatureIndex >= 0) {
-      gl.useProgram(this.parent.readProgram)
-      gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
-      gl.uniform1i(
-        this.parent.readUniforms.u_highlightedIndex!,
-        state.highlightedFeatureIndex,
-      )
-      gl.bindVertexArray(buffers.readVAO)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.readCount)
-      gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
+    } else if (state.highlightedFeatureId) {
+      const hlIdx = buffers.readIdToIndex.get(state.highlightedFeatureId) ?? -1
+      if (hlIdx >= 0) {
+        gl.useProgram(this.parent.readProgram)
+        gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
+        gl.uniform1i(this.parent.readUniforms.u_highlightedIndex!, hlIdx)
+        gl.bindVertexArray(buffers.readVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.readCount)
+        gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
+      }
     }
 
     gl.disable(gl.SCISSOR_TEST)
@@ -462,38 +462,37 @@ export class PileupRenderer {
         )
         this.drawOutlineRect(gl, clip, 0, canvasWidth, regionLengthBp, state)
       }
-    } else if (
-      state.selectedFeatureIndex >= 0 &&
-      state.selectedFeatureIndex < buffers.readCount
-    ) {
-      const idx = state.selectedFeatureIndex
-      const startOffset = buffers.readPositions[idx * 2]
-      const endOffset = buffers.readPositions[idx * 2 + 1]
-      const y = buffers.readYs[idx]
-      if (
-        startOffset !== undefined &&
-        endOffset !== undefined &&
-        y !== undefined
-      ) {
-        const clip = toClipRect(
-          startOffset + regionStart,
-          endOffset + regionStart,
-          y,
-          state,
-          bpStartHi,
-          bpStartLo,
-          regionLengthBp,
-          coverageOffset,
-          canvasHeight,
-        )
-        this.drawOutlineRect(
-          gl,
-          clip,
-          buffers.readStrands[idx] ?? 0,
-          canvasWidth,
-          regionLengthBp,
-          state,
-        )
+    } else if (state.selectedFeatureId) {
+      const idx = buffers.readIdToIndex.get(state.selectedFeatureId) ?? -1
+      if (idx >= 0 && idx < buffers.readCount) {
+        const startOffset = buffers.readPositions[idx * 2]
+        const endOffset = buffers.readPositions[idx * 2 + 1]
+        const y = buffers.readYs[idx]
+        if (
+          startOffset !== undefined &&
+          endOffset !== undefined &&
+          y !== undefined
+        ) {
+          const clip = toClipRect(
+            startOffset + regionStart,
+            endOffset + regionStart,
+            y,
+            state,
+            bpStartHi,
+            bpStartLo,
+            regionLengthBp,
+            coverageOffset,
+            canvasHeight,
+          )
+          this.drawOutlineRect(
+            gl,
+            clip,
+            buffers.readStrands[idx] ?? 0,
+            canvasWidth,
+            regionLengthBp,
+            state,
+          )
+        }
       }
     }
 

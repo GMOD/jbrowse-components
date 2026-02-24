@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -11,11 +12,12 @@ import {
 } from '../helpers.ts'
 
 import type { TestSuite } from '../types.ts'
+import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const downloadDir = path.resolve(__dirname, '../__downloads__')
 
-async function setupDownloadInterception(page: import('puppeteer').Page) {
+async function setupDownloadInterception(page: Page) {
   if (!fs.existsSync(downloadDir)) {
     fs.mkdirSync(downloadDir, { recursive: true })
   }
@@ -45,7 +47,7 @@ function waitForDownload(filename: string, timeout = 30000) {
   })
 }
 
-async function triggerSvgExport(page: import('puppeteer').Page) {
+async function triggerSvgExport(page: Page) {
   const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
   await viewMenu?.click()
   await delay(300)

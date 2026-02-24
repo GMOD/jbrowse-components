@@ -52,8 +52,7 @@ interface FeatureInfo {
 export interface LinearAlignmentsDisplayModel {
   height: number
   rpcDataMap: Map<number, PileupDataResult>
-  showLoading: boolean
-  statusMessage?: string
+  isLoading: boolean
   error: Error | null
   featureHeightSetting: number
   featureSpacing: number
@@ -91,7 +90,7 @@ export interface LinearAlignmentsDisplayModel {
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
   setHighlightedFeatureIndex: (index: number) => void
-  setSelectedFeatureIndex: (index: number) => void
+  setSelectedFeatureIndex: (index: number, featureId?: string) => void
   setHighlightedChainIndices: (indices: number[]) => void
   setSelectedChainIndices: (indices: number[]) => void
   clearHighlights: () => void
@@ -150,7 +149,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     isChainMode,
   } = model
 
-  const width = view.initialized ? view.width : undefined
+  const viewInitialized = view.initialized
+  const width = viewInitialized ? view.width : undefined
 
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
     if (!view.initialized) {
@@ -436,7 +436,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (result.type === 'cigar') {
       const refName = result.resolved.refName
       if (result.featureHit) {
-        model.setSelectedFeatureIndex(result.featureHit.index)
+        model.setSelectedFeatureIndex(result.featureHit.index, result.featureHit.id)
       }
       openCigarWidget(model, result.hit, refName)
       return

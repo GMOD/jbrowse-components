@@ -2,7 +2,6 @@ import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
-import LoadingOverlay from './LoadingOverlay.tsx'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -43,7 +42,7 @@ const ArcsComponent = observer(function ArcsComponent({
     processClick(
       e,
       hit => {
-        model.setSelectedFeatureIndex(hit.index)
+        model.setSelectedFeatureIndex(hit.index, hit.id)
         model.selectFeatureById(hit.id)
       },
       () => {
@@ -112,10 +111,6 @@ const ArcsComponent = observer(function ArcsComponent({
         />
       ) : null}
 
-      <LoadingOverlay
-        statusMessage={model.statusMessage}
-        isVisible={model.showLoading}
-      />
     </div>
   )
 })

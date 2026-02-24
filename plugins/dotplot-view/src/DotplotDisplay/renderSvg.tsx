@@ -4,14 +4,14 @@ import { when } from 'mobx'
 import { createDotplotColorFunction } from './dotplotWebGLColors.ts'
 import { buildLineSegments } from './drawDotplotWebGL.ts'
 
-import type { DotplotDisplayModel } from './stateModelFactory.tsx'
+import type { DotplotRenderModel } from './types.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 
 function rgbaToCSS(r: number, g: number, b: number, a: number) {
   return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${a})`
 }
 
-export async function renderSvg(model: DotplotDisplayModel) {
+export async function renderSvg(model: DotplotRenderModel) {
   await when(() => model.featPositions.length > 0 || !!model.error)
   const view = getContainingView(model) as DotplotViewModel
   const { viewHeight, hview, vview, drawCigar } = view

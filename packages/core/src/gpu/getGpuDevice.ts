@@ -50,12 +50,17 @@ async function createDevice(): Promise<GPUDevice | null> {
   }
 }
 
+let gpuOverride: string | null | undefined
+
 function getGpuOverride() {
-  try {
-    return new URLSearchParams(window.location.search).get('gpu')
-  } catch {
-    return null
+  if (gpuOverride === undefined) {
+    try {
+      gpuOverride = new URLSearchParams(window.location.search).get('gpu')
+    } catch {
+      gpuOverride = null
+    }
   }
+  return gpuOverride
 }
 
 export default function getGpuDevice() {

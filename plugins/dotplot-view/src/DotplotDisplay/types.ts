@@ -1,3 +1,5 @@
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 import type { Feature } from '@jbrowse/core/util'
 
 export interface DotplotFeatPos {
@@ -7,6 +9,16 @@ export interface DotplotFeatPos {
   p22: number
   f: Feature
   cigar: string[]
+}
+
+export interface DotplotRenderModel extends IAnyStateTreeNode {
+  featPositions: DotplotFeatPos[]
+  error: unknown
+  featPositionsBpPerPxH: number
+  featPositionsBpPerPxV: number
+  alpha: number
+  minAlignmentLength: number
+  colorBy: string
 }
 
 export interface DotplotFeatureData {

@@ -270,7 +270,7 @@ function writeBaseRects(
   palette: ColorPalette,
 ) {
   const doComplement = reversed !== useComplement
-  // eslint-disable-next-line unicorn/no-for-loop
+   
   for (let i = 0; i < seq.length; i++) {
     let base = seq[i]!
     if (doComplement) {

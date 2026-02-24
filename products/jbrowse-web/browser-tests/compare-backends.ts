@@ -11,7 +11,7 @@ import { launch } from 'puppeteer'
 import { PORT } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
 
-import type { ElementHandle } from 'puppeteer'
+import type { ElementHandle, Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const outputDir = path.resolve(__dirname, '__compare__')
@@ -89,7 +89,7 @@ const sessions: SessionSpec[] = [
 ]
 
 async function captureCanvas(
-  page: import('puppeteer').Page,
+  page: Page,
   session: SessionSpec,
   gpuParam: string,
 ) {
@@ -231,12 +231,12 @@ async function main() {
 
     console.log(`\n${'─'.repeat(60)}`)
     console.log('  Backend Comparison Report')
-    console.log(`${'─'.repeat(60)}`)
+    console.log('─'.repeat(60))
     for (const r of results) {
       const pct = r.diffPercent >= 0 ? `${r.diffPercent.toFixed(2)}%` : 'N/A'
       console.log(`  ${r.name.padEnd(30)} ${pct.padStart(8)}  ${r.status}`)
     }
-    console.log(`${'─'.repeat(60)}`)
+    console.log('─'.repeat(60))
     console.log(`  Output saved to: ${outputDir}`)
     console.log()
 

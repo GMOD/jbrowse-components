@@ -206,7 +206,7 @@ jobs:
         continue-on-error: true
       - name: Run WebGL backend browser tests
         id: webgl-browser-tests
-        run: node --experimental-strip-types browser-tests/runner.ts --backend=webgl --filter=gpu-rendering
+        run: node --experimental-strip-types browser-tests/runner.ts --backend=webgl
         working-directory: products/jbrowse-web
         continue-on-error: true
       - name: Upload snapshot diffs to S3

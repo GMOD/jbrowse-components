@@ -18,6 +18,10 @@ export function setBackend(b: string) {
   activeBackend = b
 }
 
+export function getBackend() {
+  return activeBackend
+}
+
 export function setUpdateSnapshots(val: boolean) {
   updateSnapshots = val
 }

@@ -118,6 +118,7 @@ export type { RenderState } from './WebGLRenderer.ts'
 
 interface GpuRegion {
   regionStart: number
+  readIdToIndex: Map<string, number>
   readBuffer: GPUBuffer | null
   readCount: number
   readBG: GPUBindGroup | null
@@ -394,6 +395,7 @@ export class AlignmentsRenderer {
   private emptyRegion(regionStart: number): GpuRegion {
     return {
       regionStart,
+      readIdToIndex: new Map(),
       readBuffer: null,
       readCount: 0,
       readBG: null,
@@ -499,6 +501,9 @@ export class AlignmentsRenderer {
     r.readPositions = data.readPositions
     r.readYs = data.readYs
     r.readStrands = data.readStrands
+    for (let i = 0; i < data.numReads; i++) {
+      r.readIdToIndex.set(data.readIds[i]!, i)
+    }
     if (data.numReads > 0) {
       const n = data.numReads
       const buf = new ArrayBuffer(n * READ_STRIDE * 4)
@@ -998,7 +1003,7 @@ export class AlignmentsRenderer {
     f[U_FEAT_H] = state.featureHeight
     f[U_FEAT_SPACING] = state.featureSpacing
     ii[U_COLOR_SCHEME] = state.colorScheme
-    ii[U_HIGHLIGHT_IDX] = state.highlightedFeatureIndex
+    ii[U_HIGHLIGHT_IDX] = -1
     ii[U_HIGHLIGHT_ONLY] = 0
     ii[U_CHAIN_MODE] = state.renderingMode === 'linkedRead' ? 1 : 0
     ii[U_SHOW_STROKE] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
@@ -1202,13 +1207,19 @@ export class AlignmentsRenderer {
         submitPass(enc, p)
       }
 
+      const regionHighlightIdx = state.highlightedFeatureId
+        ? (region.readIdToIndex.get(state.highlightedFeatureId) ?? -1)
+        : -1
+      const regionSelectIdx = state.selectedFeatureId
+        ? (region.readIdToIndex.get(state.selectedFeatureId) ?? -1)
+        : -1
+
       const needsFeatureHighlight =
-        state.highlightedChainIndices.length === 0 &&
-        state.highlightedFeatureIndex >= 0
+        state.highlightedChainIndices.length === 0 && regionHighlightIdx >= 0
       const needsFeatureSelection =
         state.selectedChainIndices.length === 0 &&
-        state.selectedFeatureIndex >= 0 &&
-        state.selectedFeatureIndex < region.readCount
+        regionSelectIdx >= 0 &&
+        regionSelectIdx < region.readCount
 
       if (
         (needsFeatureHighlight || needsFeatureSelection) &&
@@ -1217,7 +1228,7 @@ export class AlignmentsRenderer {
       ) {
         if (needsFeatureHighlight) {
           this.uI32[U_HIGHLIGHT_ONLY] = 1
-          this.uI32[U_HIGHLIGHT_IDX] = state.highlightedFeatureIndex
+          this.uI32[U_HIGHLIGHT_IDX] = regionHighlightIdx
           device.queue.writeBuffer(this.uBuf!, 0, this.uData)
 
           const { enc, p } = mkPass('load' as GPULoadOp)
@@ -1247,7 +1258,7 @@ export class AlignmentsRenderer {
         }
 
         if (needsFeatureSelection) {
-          const idx = state.selectedFeatureIndex
+          const idx = regionSelectIdx
           const absStart = region.readPositions[idx * 2]! + region.regionStart
           const absEnd = region.readPositions[idx * 2 + 1]! + region.regionStart
           const y = region.readYs[idx]!

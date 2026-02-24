@@ -87,8 +87,10 @@ export interface RenderState {
   canvasHeight: number
   // Feature highlighting (-1 means no highlight)
   highlightedFeatureIndex: number
+  highlightedFeatureId?: string
   // Selected feature for outline (-1 means no selection)
   selectedFeatureIndex: number
+  selectedFeatureId?: string
   // Chain highlighting: all feature indices in the highlighted chain
   highlightedChainIndices: number[]
   // Chain selection: all feature indices in the selected chain
@@ -108,6 +110,7 @@ export interface RenderState {
 export interface GPUBuffers {
   // Reference point for all position offsets
   regionStart: number
+  readIdToIndex: Map<string, number>
   readVAO: WebGLVertexArrayObject
   readCount: number
   // CPU-side copies for selection outline drawing
@@ -686,6 +689,7 @@ export class WebGLRenderer {
       gl.bindVertexArray(null)
       this.buffers = {
         regionStart: data.regionStart,
+        readIdToIndex: new Map(),
         readVAO: emptyVAO,
         readCount: 0,
         readPositions: data.readPositions,
@@ -793,8 +797,13 @@ export class WebGLRenderer {
     }
     gl.bindVertexArray(null)
 
+    const readIdToIndex = new Map<string, number>()
+    for (let i = 0; i < data.numReads; i++) {
+      readIdToIndex.set(data.readIds[i]!, i)
+    }
     this.buffers = {
       regionStart: data.regionStart,
+      readIdToIndex,
       readVAO,
       readCount: data.numReads,
       readPositions: data.readPositions,

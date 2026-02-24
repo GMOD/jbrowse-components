@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 
 import { launch } from 'puppeteer'
 
-import { BASICAUTH_PORT, OAUTH_PORT, PORT, setActiveBackend } from './helpers.ts'
+import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 import { setBackend, setUpdateSnapshots } from './snapshot.ts'
@@ -34,7 +34,6 @@ const backend = backendArg
 setUpdateSnapshots(updateSnapshots)
 if (backend) {
   setBackend(backend)
-  setActiveBackend(backend)
 }
 
 async function discoverSuites(): Promise<TestSuite[]> {

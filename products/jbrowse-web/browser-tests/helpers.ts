@@ -4,18 +4,15 @@ export const PORT = 3333
 export const OAUTH_PORT = 3030
 export const BASICAUTH_PORT = 3040
 
-let activeBackend: 'webgl' | 'webgpu' | undefined
-
-export function setActiveBackend(b: 'webgl' | 'webgpu' | undefined) {
-  activeBackend = b
-}
+import { getBackend } from './snapshot.ts'
 
 function appendGpuParam(url: string) {
-  if (!activeBackend) {
+  const backend = getBackend()
+  if (!backend) {
     return url
   }
   const sep = url.includes('?') ? '&' : '?'
-  return `${url}${sep}gpu=${activeBackend}`
+  return `${url}${sep}gpu=${backend}`
 }
 
 export const delay = (ms: number) =>
