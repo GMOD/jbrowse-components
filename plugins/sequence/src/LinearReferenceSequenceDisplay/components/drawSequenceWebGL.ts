@@ -107,9 +107,11 @@ class GeometryWriter {
   colors: Uint8Array
   count = 0
   capacity: number
+  baseBp: number
 
-  constructor(initialCapacity: number) {
+  constructor(initialCapacity: number, baseBp: number) {
     this.capacity = initialCapacity
+    this.baseBp = baseBp
     this.rects = new Float32Array(initialCapacity * 4)
     this.colors = new Uint8Array(initialCapacity * 4)
   }
@@ -138,7 +140,7 @@ class GeometryWriter {
       this.grow()
     }
     const i = this.count * 4
-    this.rects[i] = x
+    this.rects[i] = x - this.baseBp
     this.rects[i + 1] = y
     this.rects[i + 2] = w
     this.rects[i + 3] = h
@@ -163,6 +165,7 @@ export function buildSequenceGeometry(
   settings: RenderSettings,
   reversed: boolean,
   palette: ColorPalette,
+  baseBp: number,
 ) {
   const {
     showForward,
@@ -189,7 +192,7 @@ export function buildSequenceGeometry(
     : [forwardFrames, reverseFrames]
 
   const estimated = seq.length * 2 + topFrames.length + bottomFrames.length
-  const writer = new GeometryWriter(estimated)
+  const writer = new GeometryWriter(estimated, baseBp)
   let currentY = 0
 
   for (const frame of topFrames) {
@@ -434,7 +437,7 @@ export interface GLHandles {
   vao: WebGLVertexArrayObject
   rectBuffer: WebGLBuffer
   colorBuffer: WebGLBuffer
-  uOffsetPx: WebGLUniformLocation
+  uBasePx: WebGLUniformLocation
   uBpPerPx: WebGLUniformLocation
   uCanvasWidth: WebGLUniformLocation
   uCanvasHeight: WebGLUniformLocation
@@ -470,7 +473,7 @@ export function initGL(gl: WebGL2RenderingContext): GLHandles {
     vao,
     rectBuffer,
     colorBuffer,
-    uOffsetPx: gl.getUniformLocation(program, 'u_offsetPx')!,
+    uBasePx: gl.getUniformLocation(program, 'u_basePx')!,
     uBpPerPx: gl.getUniformLocation(program, 'u_bpPerPx')!,
     uCanvasWidth: gl.getUniformLocation(program, 'u_canvasWidth')!,
     uCanvasHeight: gl.getUniformLocation(program, 'u_canvasHeight')!,
@@ -494,7 +497,7 @@ export function render(
   gl: WebGL2RenderingContext,
   handles: GLHandles,
   instanceCount: number,
-  offsetPx: number,
+  basePx: number,
   bpPerPx: number,
   cssWidth: number,
   cssHeight: number,
@@ -515,7 +518,7 @@ export function render(
   }
 
   gl.useProgram(handles.program)
-  gl.uniform1f(handles.uOffsetPx, offsetPx)
+  gl.uniform1f(handles.uBasePx, basePx)
   gl.uniform1f(handles.uBpPerPx, bpPerPx)
   gl.uniform1f(handles.uCanvasWidth, cssWidth)
   gl.uniform1f(handles.uCanvasHeight, cssHeight)

@@ -68,10 +68,6 @@ function buildSourceRenderData(
 
   if (summaryScoreMode === 'whiskers') {
     const color = useBicolor ? posColor : baseColor
-    console.log('[wiggle-debug] whiskers mode, numFeatures:', data.numFeatures,
-      'maxScores sample:', data.featureMaxScores.slice(0, 5),
-      'minScores sample:', data.featureMinScores.slice(0, 5),
-      'scores sample:', data.featureScores.slice(0, 5))
     return makeWhiskersSourceData(data, color, model.isDensityMode, 0)
   }
 

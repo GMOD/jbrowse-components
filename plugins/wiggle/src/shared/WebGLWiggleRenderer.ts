@@ -1,13 +1,13 @@
 import {
-  WIGGLE_FRAGMENT_SHADER,
-  WIGGLE_VERTEX_SHADER,
-} from './generated/index.ts'
-import {
   computeNumRows,
   createProgram,
   interleaveInstances,
   splitPositionWithFrac,
 } from './webglUtils.ts'
+import {
+  WIGGLE_FRAGMENT_SHADER_GLSL,
+  WIGGLE_VERTEX_SHADER_GLSL,
+} from './wiggleGlslShaders.ts'
 import {
   INSTANCE_STRIDE,
   RENDERING_TYPE_LINE,
@@ -21,24 +21,33 @@ import type {
   WiggleRenderBlock,
 } from './WiggleRenderer.ts'
 
+const INSTANCE_BYTES = INSTANCE_STRIDE * 4
+
 interface RegionData {
   regionStart: number
   featureCount: number
   numRows: number
-  instanceTexture: WebGLTexture
+  vao: WebGLVertexArrayObject
+  vbo: WebGLBuffer
 }
 
 export class WebGLWiggleRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
-  private emptyVAO: WebGLVertexArrayObject
   private ubo: WebGLBuffer
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformI32 = new Int32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, RegionData>()
+  private attrLocs: {
+    startEnd: number
+    score: number
+    prevScore: number
+    rowIndex: number
+    color: number
+  }
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -54,25 +63,24 @@ export class WebGLWiggleRenderer {
 
     this.program = createProgram(
       gl,
-      WIGGLE_VERTEX_SHADER,
-      WIGGLE_FRAGMENT_SHADER,
+      WIGGLE_VERTEX_SHADER_GLSL,
+      WIGGLE_FRAGMENT_SHADER_GLSL,
     )
 
-    const uboIndex = gl.getUniformBlockIndex(
-      this.program,
-      'Uniforms_block_1Vertex',
-    )
+    const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms')
     gl.uniformBlockBinding(this.program, uboIndex, 0)
 
     this.ubo = gl.createBuffer()!
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_SIZE, gl.DYNAMIC_DRAW)
 
-    gl.useProgram(this.program)
-    const texLoc = gl.getUniformLocation(this.program, 'u_instanceData')
-    gl.uniform1i(texLoc, 0)
-
-    this.emptyVAO = gl.createVertexArray()!
+    this.attrLocs = {
+      startEnd: gl.getAttribLocation(this.program, 'a_start_end'),
+      score: gl.getAttribLocation(this.program, 'a_score'),
+      prevScore: gl.getAttribLocation(this.program, 'a_prev_score'),
+      rowIndex: gl.getAttribLocation(this.program, 'a_row_index'),
+      color: gl.getAttribLocation(this.program, 'a_color'),
+    }
 
     gl.enable(gl.BLEND)
     gl.blendFuncSeparate(
@@ -81,6 +89,42 @@ export class WebGLWiggleRenderer {
       gl.ONE,
       gl.ONE_MINUS_SRC_ALPHA,
     )
+  }
+
+  private createRegionVAO(vbo: WebGLBuffer) {
+    const gl = this.gl
+    const locs = this.attrLocs
+    const vao = gl.createVertexArray()!
+    gl.bindVertexArray(vao)
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+
+    // a_start_end: uvec2 at offset 0
+    gl.enableVertexAttribArray(locs.startEnd)
+    gl.vertexAttribIPointer(locs.startEnd, 2, gl.UNSIGNED_INT, INSTANCE_BYTES, 0)
+    gl.vertexAttribDivisor(locs.startEnd, 1)
+
+    // a_score: float at offset 8
+    gl.enableVertexAttribArray(locs.score)
+    gl.vertexAttribPointer(locs.score, 1, gl.FLOAT, false, INSTANCE_BYTES, 8)
+    gl.vertexAttribDivisor(locs.score, 1)
+
+    // a_prev_score: float at offset 12
+    gl.enableVertexAttribArray(locs.prevScore)
+    gl.vertexAttribPointer(locs.prevScore, 1, gl.FLOAT, false, INSTANCE_BYTES, 12)
+    gl.vertexAttribDivisor(locs.prevScore, 1)
+
+    // a_row_index: float at offset 16
+    gl.enableVertexAttribArray(locs.rowIndex)
+    gl.vertexAttribPointer(locs.rowIndex, 1, gl.FLOAT, false, INSTANCE_BYTES, 16)
+    gl.vertexAttribDivisor(locs.rowIndex, 1)
+
+    // a_color: vec3 at offset 20
+    gl.enableVertexAttribArray(locs.color)
+    gl.vertexAttribPointer(locs.color, 3, gl.FLOAT, false, INSTANCE_BYTES, 20)
+    gl.vertexAttribDivisor(locs.color, 1)
+
+    gl.bindVertexArray(null)
+    return vao
   }
 
   uploadRegion(
@@ -92,7 +136,8 @@ export class WebGLWiggleRenderer {
 
     const old = this.regions.get(regionNumber)
     if (old) {
-      gl.deleteTexture(old.instanceTexture)
+      gl.deleteVertexArray(old.vao)
+      gl.deleteBuffer(old.vbo)
       this.regions.delete(regionNumber)
     }
 
@@ -107,48 +152,18 @@ export class WebGLWiggleRenderer {
 
     const buf = interleaveInstances(sources, totalFeatures)
 
-    const texWidth = totalFeatures * (INSTANCE_STRIDE / 4)
-    const maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE)
-    console.log('[webgl-debug] uploadRegion:', {
-      regionNumber,
-      totalFeatures,
-      texWidth,
-      maxTexSize,
-      numSources: sources.length,
-      sourceSizes: sources.map(s => s.numFeatures),
-    })
-    if (texWidth > maxTexSize) {
-      console.error('[webgl-debug] TEXTURE WIDTH EXCEEDS MAX_TEXTURE_SIZE!', texWidth, '>', maxTexSize)
-    }
-    const tex = gl.createTexture()
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, tex)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA32UI,
-      texWidth,
-      1,
-      0,
-      gl.RGBA_INTEGER,
-      gl.UNSIGNED_INT,
-      new Uint32Array(buf),
-    )
-    const glError = gl.getError()
-    if (glError !== gl.NO_ERROR) {
-      console.error('[webgl-debug] GL error after texImage2D:', glError)
-    }
+    const vbo = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+    gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW)
 
+    const vao = this.createRegionVAO(vbo)
     const numRows = computeNumRows(sources)
     this.regions.set(regionNumber, {
       regionStart,
       featureCount: totalFeatures,
       numRows,
-      instanceTexture: tex,
+      vao,
+      vbo,
     })
   }
 
@@ -180,12 +195,6 @@ export class WebGLWiggleRenderer {
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
-    console.log('[webgl-debug] renderBlocks:', {
-      numBlocks: blocks.length,
-      state,
-      regionKeys: [...this.regions.keys()],
-      regionFeatureCounts: [...this.regions.entries()].map(([k, v]) => [k, v.featureCount]),
-    })
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight } = state
@@ -210,7 +219,6 @@ export class WebGLWiggleRenderer {
     const drawMode = isLine ? gl.LINES : gl.TRIANGLES
 
     gl.useProgram(this.program)
-    gl.bindVertexArray(this.emptyVAO)
     gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
     gl.enable(gl.SCISSOR_TEST)
 
@@ -260,8 +268,7 @@ export class WebGLWiggleRenderer {
         state,
       )
 
-      gl.activeTexture(gl.TEXTURE0)
-      gl.bindTexture(gl.TEXTURE_2D, region.instanceTexture)
+      gl.bindVertexArray(region.vao)
       gl.drawArraysInstanced(
         drawMode,
         0,
@@ -280,7 +287,8 @@ export class WebGLWiggleRenderer {
       if (!activeRegionNumbers.has(regionNumber)) {
         const region = this.regions.get(regionNumber)
         if (region) {
-          this.gl.deleteTexture(region.instanceTexture)
+          this.gl.deleteVertexArray(region.vao)
+          this.gl.deleteBuffer(region.vbo)
         }
         this.regions.delete(regionNumber)
       }
@@ -289,11 +297,11 @@ export class WebGLWiggleRenderer {
 
   destroy() {
     for (const region of this.regions.values()) {
-      this.gl.deleteTexture(region.instanceTexture)
+      this.gl.deleteVertexArray(region.vao)
+      this.gl.deleteBuffer(region.vbo)
     }
     this.regions.clear()
     const gl = this.gl
-    gl.deleteVertexArray(this.emptyVAO)
     gl.deleteBuffer(this.ubo)
     gl.deleteProgram(this.program)
   }

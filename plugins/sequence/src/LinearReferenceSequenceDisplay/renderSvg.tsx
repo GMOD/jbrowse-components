@@ -36,18 +36,18 @@ function renderRects(
   rectBuf: Float32Array,
   colorBuf: Uint8Array,
   instanceCount: number,
-  offsetPx: number,
+  basePx: number,
   bpPerPx: number,
   showBorders: boolean,
 ) {
   let content = ''
   for (let i = 0; i < instanceCount; i++) {
-    const xBp = rectBuf[i * 4]!
+    const xBpLocal = rectBuf[i * 4]!
     const yPx = rectBuf[i * 4 + 1]!
     const wBp = rectBuf[i * 4 + 2]!
     const hPx = rectBuf[i * 4 + 3]!
 
-    const x = xBp / bpPerPx - offsetPx
+    const x = xBpLocal / bpPerPx + basePx
     const w = wBp / bpPerPx
     const r = colorBuf[i * 4]!
     const g = colorBuf[i * 4 + 1]!
@@ -176,15 +176,18 @@ export async function renderSvg(
   let rectContent = ''
   let textContent = ''
 
+  const baseBp = Math.min(...[...sequenceData.values()].map(d => d.start))
+
   for (const [regionNum, data] of sequenceData) {
     const reversed = view.displayedRegions[regionNum]?.reversed ?? false
-    const geom = buildSequenceGeometry(data, settings, reversed, palette)
+    const geom = buildSequenceGeometry(data, settings, reversed, palette, baseBp)
+    const basePx = baseBp / bpPerPx - offsetPx
 
     rectContent += renderRects(
       geom.rectBuf,
       geom.colorBuf,
       geom.instanceCount,
-      offsetPx,
+      basePx,
       bpPerPx,
       showBorders,
     )

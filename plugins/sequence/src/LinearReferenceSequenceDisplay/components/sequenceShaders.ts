@@ -2,10 +2,10 @@ export const SEQUENCE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
 // per-instance attributes
-layout(location = 0) in vec4 a_rect;  // x (bp offset), y (px), width (bp), height (px)
+layout(location = 0) in vec4 a_rect;  // x (bp offset from baseBp), y (px), width (bp), height (px)
 layout(location = 1) in vec4 a_color; // RGBA normalized from ubyte
 
-uniform float u_offsetPx;
+uniform float u_basePx;
 uniform float u_bpPerPx;
 uniform float u_canvasWidth;
 uniform float u_canvasHeight;
@@ -21,8 +21,8 @@ void main() {
   float cx = (vid == 1 || vid == 4 || vid == 5) ? 1.0 : 0.0;
   float cy = (vid == 2 || vid == 3 || vid == 5) ? 1.0 : 0.0;
 
-  float xBp = a_rect.x + cx * a_rect.z;
-  float xPx = xBp / u_bpPerPx - u_offsetPx;
+  float xBpLocal = a_rect.x + cx * a_rect.z;
+  float xPx = xBpLocal / u_bpPerPx + u_basePx;
   float yPx = a_rect.y + cy * a_rect.w;
 
   // convert pixel coords to clip space

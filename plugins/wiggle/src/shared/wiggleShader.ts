@@ -8,6 +8,8 @@ export const RENDERING_TYPE_SCATTER = 3 // SYNC: RENDERING_TYPE_SCATTER in WGSL
 export const SCALE_TYPE_LINEAR = 0
 export const SCALE_TYPE_LOG = 1 // SYNC: SCALE_TYPE_LOG in WGSL
 
+// SYNC: The WebGL2 fallback uses a hand-written GLSL version of this shader
+// in wiggleGlslShaders.ts. When updating rendering logic here, update that file too.
 export const wiggleShader = /* wgsl */ `
 const HP_LOW_MASK: u32 = 0xFFFu;
 const RENDERING_TYPE_XYPLOT: i32 = 0; // SYNC: RENDERING_TYPE_XYPLOT in TS

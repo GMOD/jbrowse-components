@@ -37,6 +37,7 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<WebGPUSequenceRenderer | null>(null)
   const instanceCountRef = useRef(0)
+  const baseBpRef = useRef(0)
   const [initReady, setInitReady] = useState(0)
 
   const palette = useMemo(() => buildColorPalette(theme), [theme])
@@ -108,6 +109,11 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           showBorders,
         }
 
+        const baseBp = Math.min(
+          ...regionEntries.map(([, d]) => d.start),
+        )
+        baseBpRef.current = baseBp
+
         let totalRects = 0
         const allGeom: {
           rectBuf: Float32Array
@@ -118,7 +124,13 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         for (const [regionNumber, data] of regionEntries) {
           const reversed =
             view.displayedRegions[regionNumber]?.reversed ?? false
-          const geom = buildSequenceGeometry(data, settings, reversed, palette)
+          const geom = buildSequenceGeometry(
+            data,
+            settings,
+            reversed,
+            palette,
+            baseBp,
+          )
           allGeom.push(geom)
           totalRects += geom.instanceCount
         }
@@ -139,12 +151,14 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
         instanceCountRef.current = totalRects
 
         untracked(() => {
-          const cssWidth = Math.round(view.width)
+          const cssWidth = view.width
           const cssHeight = model.height
           if (cssWidth > 0 && cssHeight > 0) {
+            const basePx =
+              baseBpRef.current / view.bpPerPx - view.offsetPx
             renderer.render(
               totalRects,
-              view.offsetPx,
+              basePx,
               view.bpPerPx,
               cssWidth,
               cssHeight,
@@ -183,12 +197,13 @@ const WebGLSequenceComponent = observer(function WebGLSequenceComponent({
           return
         }
         const { bpPerPx, offsetPx } = view
-        const cssWidth = Math.round(view.width)
+        const cssWidth = view.width
         const cssHeight = model.height
         if (cssWidth > 0 && cssHeight > 0) {
+          const basePx = baseBpRef.current / bpPerPx - offsetPx
           renderer.render(
             instanceCountRef.current,
-            offsetPx,
+            basePx,
             bpPerPx,
             cssWidth,
             cssHeight,

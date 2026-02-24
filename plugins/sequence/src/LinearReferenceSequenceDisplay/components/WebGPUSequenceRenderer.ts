@@ -25,7 +25,7 @@ struct RectInstance {
 }
 
 struct Uniforms {
-  offset_px: f32,
+  base_px: f32,
   bp_per_px: f32,
   canvas_width: f32,
   canvas_height: f32,
@@ -56,8 +56,8 @@ fn vs_main(
   let cx = select(0.0, 1.0, v == 1u || v == 4u || v == 5u);
   let cy = select(0.0, 1.0, v == 2u || v == 3u || v == 5u);
 
-  let x_bp = inst.x_bp + cx * inst.width_bp;
-  let x_px = x_bp / u.bp_per_px - u.offset_px;
+  let x_bp_local = inst.x_bp + cx * inst.width_bp;
+  let x_px = x_bp_local / u.bp_per_px + u.base_px;
   let y_px = inst.y_px + cy * inst.height_px;
 
   let clip_x = (x_px / u.canvas_width) * 2.0 - 1.0;
@@ -253,7 +253,7 @@ export class WebGPUSequenceRenderer {
 
   render(
     instanceCount: number,
-    offsetPx: number,
+    basePx: number,
     bpPerPx: number,
     cssWidth: number,
     cssHeight: number,
@@ -264,7 +264,7 @@ export class WebGPUSequenceRenderer {
           this.glContext,
           this.glHandles,
           instanceCount,
-          offsetPx,
+          basePx,
           bpPerPx,
           cssWidth,
           cssHeight,
@@ -293,7 +293,7 @@ export class WebGPUSequenceRenderer {
 
     const borderWidth = 1 / bpPerPx >= 12 ? 1 : 0
 
-    this.uniformF32[0] = offsetPx
+    this.uniformF32[0] = basePx
     this.uniformF32[1] = bpPerPx
     this.uniformF32[2] = cssWidth
     this.uniformF32[3] = cssHeight
