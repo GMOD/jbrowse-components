@@ -42,7 +42,7 @@ const ArcsComponent = observer(function ArcsComponent({
     processClick(
       e,
       hit => {
-        model.setSelectedFeatureIndex(hit.index, hit.id)
+        model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
       },
       () => {
@@ -110,7 +110,6 @@ const ArcsComponent = observer(function ArcsComponent({
           title="Drag to resize coverage track"
         />
       ) : null}
-
     </div>
   )
 })

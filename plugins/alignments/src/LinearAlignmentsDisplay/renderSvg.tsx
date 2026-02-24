@@ -775,7 +775,10 @@ export async function renderSvg(
 
           if (gapType === 0) {
             const widthPx = (endBp - startBp) * pxPerBp
-            const alpha = widthPx < 1 && data.gapFrequencies[i] === 0 ? widthPx * widthPx : 1
+            const alpha =
+              widthPx < 1 && data.gapFrequencies[i] === 0
+                ? widthPx * widthPx
+                : 1
             if (alpha > 0) {
               pileupCtx.globalAlpha = alpha
               pileupCtx.fillStyle = deletionColor
@@ -810,11 +813,22 @@ export async function renderSvg(
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const insertionWidthPx = len * pxPerBp
-            const canShowText = insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
+            const canShowText =
+              insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
+              pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
             const isLarge = isLong && canShowText
             let barW: number
             if (isLarge) {
-              const digits = len < 10 ? 1 : len < 100 ? 2 : len < 1000 ? 3 : len < 10000 ? 4 : 5
+              const digits =
+                len < 10
+                  ? 1
+                  : len < 100
+                    ? 2
+                    : len < 1000
+                      ? 3
+                      : len < 10000
+                        ? 4
+                        : 5
               barW = digits * 6 + 10
             } else if (isLong) {
               barW = Math.min(5, insertionWidthPx / 3)
@@ -927,7 +941,10 @@ export async function renderSvg(
 
           if (gapType === 0) {
             const widthPx = (endBp - startBp) * pxPerBp
-            const alpha = widthPx < 1 && data.gapFrequencies[i] === 0 ? widthPx * widthPx : 1
+            const alpha =
+              widthPx < 1 && data.gapFrequencies[i] === 0
+                ? widthPx * widthPx
+                : 1
             if (alpha > 0) {
               content += `<rect x="${gx}" y="${gy}" width="${gw}" height="${featureHeightSetting}" fill="${deletionColor}" fill-opacity="${alpha}"/>`
             }
@@ -953,11 +970,22 @@ export async function renderSvg(
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const insertionWidthPx = len * pxPerBp
-            const canShowText = insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
+            const canShowText =
+              insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
+              pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
             const isLarge = isLong && canShowText
             let barW: number
             if (isLarge) {
-              const digits = len < 10 ? 1 : len < 100 ? 2 : len < 1000 ? 3 : len < 10000 ? 4 : 5
+              const digits =
+                len < 10
+                  ? 1
+                  : len < 100
+                    ? 2
+                    : len < 1000
+                      ? 3
+                      : len < 10000
+                        ? 4
+                        : 5
               barW = digits * 6 + 10
             } else if (isLong) {
               barW = Math.min(5, insertionWidthPx / 3)

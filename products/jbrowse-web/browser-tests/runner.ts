@@ -162,10 +162,7 @@ async function main() {
     if (backend === 'webgl') {
       chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
     } else if (backend === 'webgpu') {
-      chromeArgs.push(
-        '--enable-unsafe-webgpu',
-        '--enable-features=Vulkan',
-      )
+      chromeArgs.push('--enable-unsafe-webgpu', '--enable-features=Vulkan')
     }
     browser = await launch({
       headless: !headed,

@@ -102,14 +102,10 @@ const PileupInner = observer(function PileupInner({
     coverageDisplayHeight: topOffset,
   } = model
 
-
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
       e,
       (hit, resolved) => {
-        console.log(
-          `[highlight-debug] hover featureId=${hit.id} index=${hit.index} refName=${resolved.refName}`,
-        )
         model.setFeatureIdUnderMouse(hit.id)
         if (model.highlightedFeatureIndex !== hit.index) {
           model.setHighlightedFeatureIndex(hit.index)
@@ -143,7 +139,7 @@ const PileupInner = observer(function PileupInner({
     processClick(
       e,
       (hit, resolved) => {
-        model.setSelectedFeatureIndex(hit.index, hit.id)
+        model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
         if (isChainMode) {
           const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]

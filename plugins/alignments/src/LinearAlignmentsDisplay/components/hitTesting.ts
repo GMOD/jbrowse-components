@@ -372,7 +372,11 @@ export function hitTestCigarItem(
     }
     const pos = interbasePositions[i]
     const len = interbaseLengths[i]
-    if (pos !== undefined && len !== undefined && Math.abs(posOffset - pos) < hitToleranceBp) {
+    if (
+      pos !== undefined &&
+      len !== undefined &&
+      Math.abs(posOffset - pos) < hitToleranceBp
+    ) {
       return {
         type: 'softclip',
         index: i,

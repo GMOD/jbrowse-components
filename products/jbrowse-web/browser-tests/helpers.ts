@@ -1,10 +1,10 @@
+import { getBackend } from './snapshot.ts'
+
 import type { Browser, Page } from 'puppeteer'
 
 export const PORT = 3333
 export const OAUTH_PORT = 3030
 export const BASICAUTH_PORT = 3040
-
-import { getBackend } from './snapshot.ts'
 
 function appendGpuParam(url: string) {
   const backend = getBackend()

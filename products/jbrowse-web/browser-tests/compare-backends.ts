@@ -224,7 +224,11 @@ async function main() {
         console.log(` ${diffPercent.toFixed(2)}% diff [${status}]`)
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e)
-        results.push({ name: session.name, diffPercent: -1, status: `ERROR: ${msg}` })
+        results.push({
+          name: session.name,
+          diffPercent: -1,
+          status: `ERROR: ${msg}`,
+        })
         console.log(` ERROR: ${msg}`)
       }
     }
@@ -240,9 +244,7 @@ async function main() {
     console.log(`  Output saved to: ${outputDir}`)
     console.log()
 
-    const hasIssues = results.some(
-      r => r.diffPercent < 0 || r.diffPercent >= 5,
-    )
+    const hasIssues = results.some(r => r.diffPercent < 0 || r.diffPercent >= 5)
     process.exit(hasIssues ? 1 : 0)
   } finally {
     await webglBrowser.close()

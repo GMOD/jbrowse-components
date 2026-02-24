@@ -155,7 +155,10 @@ export async function renderSvg(
               transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
               key={`scalebar-${idx}`}
             >
-              <YScaleBar model={model as unknown as { ticks: typeof ticks }} orientation="left" />
+              <YScaleBar
+                model={model as unknown as { ticks: typeof ticks }}
+                orientation="left"
+              />
             </g>
           ))}
         </g>

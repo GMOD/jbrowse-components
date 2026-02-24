@@ -270,7 +270,7 @@ function writeBaseRects(
   palette: ColorPalette,
 ) {
   const doComplement = reversed !== useComplement
-   
+
   for (let i = 0; i < seq.length; i++) {
     let base = seq[i]!
     if (doComplement) {

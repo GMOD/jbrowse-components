@@ -88,9 +88,7 @@ const suite: TestSuite = {
         if (!svg.includes('</svg>')) {
           throw new Error('SVG file appears truncated')
         }
-        console.log(
-          `    SVG exported: ${(svg.length / 1024).toFixed(1)}KB`,
-        )
+        console.log(`    SVG exported: ${(svg.length / 1024).toFixed(1)}KB`)
       },
     },
     {
@@ -117,9 +115,7 @@ const suite: TestSuite = {
         if (!svg.includes('<svg')) {
           throw new Error('Downloaded file is not valid SVG')
         }
-        console.log(
-          `    SVG exported: ${(svg.length / 1024).toFixed(1)}KB`,
-        )
+        console.log(`    SVG exported: ${(svg.length / 1024).toFixed(1)}KB`)
       },
     },
     {

@@ -1,6 +1,5 @@
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
 import type { Feature } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface DotplotFeatPos {
   p11: number

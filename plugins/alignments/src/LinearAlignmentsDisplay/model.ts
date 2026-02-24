@@ -9,6 +9,7 @@ import {
   getRpcSessionId,
   getSession,
   isAbortException,
+  isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -436,7 +437,6 @@ export default function stateModelFactory(
       maxY: 0,
       highlightedFeatureIndex: -1,
       selectedFeatureIndex: -1,
-      selectedFeatureId: undefined as string | undefined,
       highlightedChainIndices: [] as number[],
       selectedChainIndices: [] as number[],
       colorTagMap: {} as Record<string, string>,
@@ -450,6 +450,14 @@ export default function stateModelFactory(
       visibleMaxDepth: 0,
     }))
     .views(self => ({
+      get selectedFeatureId() {
+        const { selection } = getSession(self)
+        if (isFeature(selection)) {
+          return selection.id()
+        }
+        return undefined
+      },
+
       get renderingMode(): 'pileup' | 'linkedRead' {
         if (self.showLinkedReads) {
           return 'linkedRead'
@@ -908,9 +916,8 @@ export default function stateModelFactory(
           self.highlightedFeatureIndex = index
         },
 
-        setSelectedFeatureIndex(index: number, featureId?: string) {
+        setSelectedFeatureIndex(index: number) {
           self.selectedFeatureIndex = index
-          self.selectedFeatureId = featureId
         },
 
         setHighlightedChainIndices(indices: number[]) {
@@ -941,7 +948,10 @@ export default function stateModelFactory(
         clearSelection() {
           if (self.selectedFeatureIndex !== -1) {
             self.selectedFeatureIndex = -1
-            self.selectedFeatureId = undefined
+          }
+          const session = getSession(self)
+          if (isFeature(session.selection)) {
+            session.clearSelection()
           }
           if (self.selectedChainIndices.length > 0) {
             self.selectedChainIndices = []
@@ -1437,10 +1447,7 @@ export default function stateModelFactory(
           return
         }
 
-        const allFeatures = new Map<
-          string,
-          { start: number; end: number }
-        >()
+        const allFeatures = new Map<string, { start: number; end: number }>()
         for (const [, data] of entries) {
           for (let i = 0; i < data.numReads; i++) {
             const id = data.readIds[i]!

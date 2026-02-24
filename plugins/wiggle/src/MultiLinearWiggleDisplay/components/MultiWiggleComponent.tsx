@@ -180,7 +180,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
           if (summaryScoreMode === 'whiskers') {
             const isScatter = model.renderingType === 'multirowscatter'
-for (const s of makeWhiskersSourceData(
+            for (const s of makeWhiskersSourceData(
               rpcSource,
               posColor,
               model.isDensityMode,

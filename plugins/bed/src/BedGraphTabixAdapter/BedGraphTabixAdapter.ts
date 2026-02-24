@@ -101,7 +101,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
               )
             }
 
-             
             for (let j = 0; j < rest.length; j++) {
               const uniqueId = `${this.id}-${fileOffset}-${j}`
               const score = Math.abs(+rest[j]!)

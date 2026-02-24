@@ -90,7 +90,7 @@ export interface LinearAlignmentsDisplayModel {
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
   setHighlightedFeatureIndex: (index: number) => void
-  setSelectedFeatureIndex: (index: number, featureId?: string) => void
+  setSelectedFeatureIndex: (index: number) => void
   setHighlightedChainIndices: (indices: number[]) => void
   setSelectedChainIndices: (indices: number[]) => void
   clearHighlights: () => void
@@ -436,7 +436,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (result.type === 'cigar') {
       const refName = result.resolved.refName
       if (result.featureHit) {
-        model.setSelectedFeatureIndex(result.featureHit.index, result.featureHit.id)
+        model.setSelectedFeatureIndex(result.featureHit.index)
       }
       openCigarWidget(model, result.hit, refName)
       return

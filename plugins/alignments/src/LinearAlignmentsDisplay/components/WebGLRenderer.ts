@@ -799,7 +799,7 @@ export class WebGLRenderer {
 
     const readIdToIndex = new Map<string, number>()
     for (let i = 0; i < data.numReads; i++) {
-      readIdToIndex.set(data.readIds[i]!, i)
+      readIdToIndex.set(data.readIds[i], i)
     }
     this.buffers = {
       regionStart: data.regionStart,
