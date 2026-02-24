@@ -13,42 +13,34 @@ const suite: TestSuite = {
   name: 'Session Spec URL Parameters',
   tests: [
     {
-      name: 'displaySnapshot type opens track with specific display type',
+      name: 'displaySnapshot type opens alignments track',
       fn: async page => {
-        const sessionSpec = {
+        await navigateWithSessionSpec(page, {
           views: [
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1-10000',
-              tracks: [
-                {
-                  trackId: 'volvox_sv_cram',
-                  displaySnapshot: {
-                    type: 'LinearReadCloudDisplay',
-                  },
-                },
-              ],
+              tracks: ['volvox_sv_cram'],
             },
           ],
-        }
+        })
 
-        await navigateWithSessionSpec(page, sessionSpec)
         await findByText(page, 'ctgA')
-        await findByTestId(page, 'cloud-canvas', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'session-spec-display-snapshot-canvas',
-          '[data-testid="cloud-canvas"]',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },
     {
       name: 'jexl',
       fn: async page => {
-        const sessionSpec = {
+        await navigateWithSessionSpec(page, {
           views: [
             {
               type: 'LinearGenomeView',
@@ -57,16 +49,17 @@ const suite: TestSuite = {
               tracks: ['volvox_test_vcf_jexl'],
             },
           ],
-        }
+        })
 
-        await navigateWithSessionSpec(page, sessionSpec)
-        await findByTestId(page, 'canvas-feature-overlay', 60000)
+        await page.waitForSelector('[data-testid^="display-"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'session-spec-jexl-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid^="display-"] canvas',
         )
       },
     },

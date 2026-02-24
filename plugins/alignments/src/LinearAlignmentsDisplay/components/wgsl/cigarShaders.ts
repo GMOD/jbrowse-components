@@ -6,7 +6,6 @@ import {
 } from './common.ts'
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
-  INSERTION_TEXT_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
@@ -200,7 +199,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let is_long = inst.length >= ${LONG_INSERTION_MIN_LENGTH}u;
   let ins_w_px = f32(inst.length) * px_per_bp;
-  let can_text = ins_w_px >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && px_per_bp >= ${INSERTION_TEXT_MIN_PX_PER_BP};
+  let can_text = ins_w_px >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0;
   let is_large = is_long && can_text;
 
   var rect_w: f32;

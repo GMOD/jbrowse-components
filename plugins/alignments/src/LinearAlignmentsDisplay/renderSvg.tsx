@@ -13,7 +13,6 @@ import {
 } from './components/shaders/arcShaders.ts'
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
-  INSERTION_TEXT_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from './constants.ts'
@@ -813,10 +812,7 @@ export async function renderSvg(
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const insertionWidthPx = len * pxPerBp
-            const canShowText =
-              insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
-              pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
-            const isLarge = isLong && canShowText
+            const isLarge = isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
             let barW: number
             if (isLarge) {
               const digits =
@@ -970,10 +966,7 @@ export async function renderSvg(
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const insertionWidthPx = len * pxPerBp
-            const canShowText =
-              insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
-              pxPerBp >= INSERTION_TEXT_MIN_PX_PER_BP
-            const isLarge = isLong && canShowText
+            const isLarge = isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
             let barW: number
             if (isLarge) {
               const digits =

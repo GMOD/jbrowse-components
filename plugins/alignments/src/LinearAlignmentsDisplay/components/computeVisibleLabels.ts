@@ -142,7 +142,7 @@ export function computeVisibleLabels(
       if (type === 1) {
         const insertionType = getInsertionType(length, pxPerBp)
 
-        if (insertionType === 'large' && canRenderText) {
+        if (insertionType === 'large' && featureHeightSetting >= minFeatureHeightForText) {
           labels.push({
             type: 'insertion',
             x: xPx,

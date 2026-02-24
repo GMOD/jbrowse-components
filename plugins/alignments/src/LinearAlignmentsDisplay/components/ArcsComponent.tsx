@@ -46,7 +46,6 @@ const ArcsComponent = observer(function ArcsComponent({
     processClick(
       e,
       hit => {
-        model.setSelectedFeatureIndex(hit.index)
         model.selectFeatureById(hit.id)
       },
       () => {

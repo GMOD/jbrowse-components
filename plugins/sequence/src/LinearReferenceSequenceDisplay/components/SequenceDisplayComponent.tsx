@@ -13,6 +13,7 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 }) {
   return (
     <div
+      data-testid="sequence-display"
       style={{
         position: 'relative',
         whiteSpace: 'nowrap',

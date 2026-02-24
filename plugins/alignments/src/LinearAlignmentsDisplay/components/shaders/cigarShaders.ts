@@ -1,6 +1,5 @@
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
-  INSERTION_TEXT_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
@@ -261,7 +260,7 @@ void main() {
 
   bool isLongInsertion = a_length >= ${LONG_INSERTION_MIN_LENGTH}u;
   float insertionWidthPx = len * pxPerBp;
-  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0 && pxPerBp >= ${INSERTION_TEXT_MIN_PX_PER_BP};
+  bool canShowText = insertionWidthPx >= ${LONG_INSERTION_TEXT_THRESHOLD_PX}.0;
   bool isLargeInsertion = isLongInsertion && canShowText;
 
   float rectWidthPx;

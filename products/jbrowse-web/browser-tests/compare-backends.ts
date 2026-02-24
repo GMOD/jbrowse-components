@@ -37,8 +37,8 @@ const sessions: SessionSpec[] = [
         },
       ],
     },
-    waitForSelector: '[data-testid="wiggle-rendering-test"]',
-    canvasSelector: '[data-testid="wiggle-rendering-test"] canvas',
+    waitForSelector: '[data-testid="wiggle-display"]',
+    canvasSelector: '[data-testid="wiggle-display"] canvas',
   },
   {
     name: 'sequence-display',
@@ -52,8 +52,8 @@ const sessions: SessionSpec[] = [
         },
       ],
     },
-    waitForSelector: '[data-testid^="prerendered_canvas"]',
-    canvasSelector: '[data-testid^="prerendered_canvas"]',
+    waitForSelector: '[data-testid="sequence-display"]',
+    canvasSelector: '[data-testid="sequence-display"] canvas',
   },
   {
     name: 'variant-track',
@@ -67,8 +67,8 @@ const sessions: SessionSpec[] = [
         },
       ],
     },
-    waitForSelector: '[data-testid^="prerendered_canvas"]',
-    canvasSelector: '[data-testid^="prerendered_canvas"]',
+    waitForSelector: '[data-testid^="display-"]',
+    canvasSelector: '[data-testid^="display-"] canvas',
   },
   {
     name: 'multibigwig-xyplot',
@@ -82,8 +82,8 @@ const sessions: SessionSpec[] = [
         },
       ],
     },
-    waitForSelector: '[data-testid^="trackRenderingContainer"] canvas',
-    canvasSelector: '[data-testid^="trackRenderingContainer"] canvas',
+    waitForSelector: '[data-testid="multi-wiggle-display"]',
+    canvasSelector: '[data-testid="multi-wiggle-display"] canvas',
     delayMs: 3000,
   },
 ]

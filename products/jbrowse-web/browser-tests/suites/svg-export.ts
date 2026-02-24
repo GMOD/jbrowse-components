@@ -75,7 +75,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-rendering-test', 60000)
+        await findByTestId(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
 
@@ -105,7 +105,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
 
@@ -132,9 +132,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
-          timeout: 60000,
-        })
+        await findByTestId(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
 

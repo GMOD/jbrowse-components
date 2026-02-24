@@ -96,10 +96,7 @@ export function getInsertionType(
   const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
   if (isLongInsertion) {
     const insertionWidthPx = length * pxPerBp
-    if (
-      insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
-      pxPerBp >= 6.5
-    ) {
+    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
       return 'large'
     }
     return 'long'
@@ -435,8 +432,6 @@ export default function stateModelFactory(
       webglRef: null as unknown,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
-      highlightedFeatureIndex: -1,
-      selectedFeatureIndex: -1,
       highlightedChainIndices: [] as number[],
       selectedChainIndices: [] as number[],
       colorTagMap: {} as Record<string, string>,
@@ -912,22 +907,11 @@ export default function stateModelFactory(
           }
         },
 
-        setHighlightedFeatureIndex(index: number) {
-          self.highlightedFeatureIndex = index
-        },
-
-        setSelectedFeatureIndex(index: number) {
-          self.selectedFeatureIndex = index
-        },
-
         setHighlightedChainIndices(indices: number[]) {
           self.highlightedChainIndices = indices
         },
 
         clearHighlights() {
-          if (self.highlightedFeatureIndex !== -1) {
-            self.highlightedFeatureIndex = -1
-          }
           if (self.highlightedChainIndices.length > 0) {
             self.highlightedChainIndices = []
           }
@@ -937,18 +921,12 @@ export default function stateModelFactory(
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
           self.overCigarItem = false
-          if (self.highlightedFeatureIndex !== -1) {
-            self.highlightedFeatureIndex = -1
-          }
           if (self.highlightedChainIndices.length > 0) {
             self.highlightedChainIndices = []
           }
         },
 
         clearSelection() {
-          if (self.selectedFeatureIndex !== -1) {
-            self.selectedFeatureIndex = -1
-          }
           const session = getSession(self)
           if (isFeature(session.selection)) {
             session.clearSelection()
@@ -1785,9 +1763,7 @@ export default function stateModelFactory(
                   arcsHeight: self.arcsHeight,
                   canvasWidth: view.width,
                   canvasHeight: self.height,
-                  highlightedFeatureIndex: self.highlightedFeatureIndex,
                   highlightedFeatureId: self.featureIdUnderMouse,
-                  selectedFeatureIndex: self.selectedFeatureIndex,
                   selectedFeatureId: self.selectedFeatureId,
                   highlightedChainIndices: self.highlightedChainIndices,
                   selectedChainIndices: self.selectedChainIndices,

@@ -26,13 +26,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(2000)
         await canvasSnapshot(
           page,
           'misc-snpcoverage-canvas',
-          '[data-testid="Blockset-pileup"] canvas',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },
@@ -44,7 +44,7 @@ const suite: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+        await page.waitForSelector('[data-testid^="display-"] canvas', {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
@@ -52,7 +52,7 @@ const suite: TestSuite = {
         await canvasSnapshot(
           page,
           'misc-ncbi-alias-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid^="display-"] canvas',
         )
       },
     },

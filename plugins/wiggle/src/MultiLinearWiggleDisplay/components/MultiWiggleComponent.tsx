@@ -406,6 +406,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   return (
     <div
       ref={containerRef}
+      data-testid="multi-wiggle-display"
       style={{ position: 'relative', width: totalWidth, height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

@@ -337,6 +337,7 @@ const WiggleComponent = observer(function WiggleComponent({
   return (
     <div
       ref={containerRef}
+      data-testid="wiggle-display"
       style={{ position: 'relative', width, height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

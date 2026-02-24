@@ -75,8 +75,6 @@ export interface LinearAlignmentsDisplayModel {
   showLegend: boolean | undefined
   legendItems: LegendItem[]
   currentRangeY: [number, number]
-  highlightedFeatureIndex: number
-  selectedFeatureIndex: number
   highlightedChainIndices: number[]
   selectedChainIndices: number[]
   chainIndexMap: Map<number, number[]>
@@ -89,8 +87,6 @@ export interface LinearAlignmentsDisplayModel {
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
-  setHighlightedFeatureIndex: (index: number) => void
-  setSelectedFeatureIndex: (index: number) => void
   setHighlightedChainIndices: (indices: number[]) => void
   setSelectedChainIndices: (indices: number[]) => void
   clearHighlights: () => void
@@ -367,12 +363,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (result.type === 'cigar') {
       model.setOverCigarItem(true)
       model.setMouseoverExtraInformation(formatCigarTooltip(result.hit))
-      const featureId = result.featureHit?.id
-      const featureIndex = result.featureHit?.index ?? -1
-      model.setFeatureIdUnderMouse(featureId)
-      if (model.highlightedFeatureIndex !== featureIndex) {
-        model.setHighlightedFeatureIndex(featureIndex)
-      }
+      model.setFeatureIdUnderMouse(result.featureHit?.id)
       return
     }
 
@@ -435,7 +426,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (result.type === 'cigar') {
       const refName = result.resolved.refName
       if (result.featureHit) {
-        model.setSelectedFeatureIndex(result.featureHit.index)
+        model.selectFeatureById(result.featureHit.id)
       }
       openCigarWidget(model, result.hit, refName)
       return

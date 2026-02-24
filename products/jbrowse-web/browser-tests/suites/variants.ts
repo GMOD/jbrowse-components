@@ -24,7 +24,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+        await page.waitForSelector('[data-testid^="display-"]', {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
@@ -32,7 +32,7 @@ const suite: TestSuite = {
         await canvasSnapshot(
           page,
           'variants-assembly-aliases-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid^="display-"] canvas',
         )
       },
     },

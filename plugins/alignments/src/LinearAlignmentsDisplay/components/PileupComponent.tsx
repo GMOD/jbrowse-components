@@ -93,73 +93,6 @@ const PileupInner = observer(function PileupInner({
     processClick,
   } = base
 
-  if (!width) {
-    return null
-  }
-
-  const {
-    height,
-    showCoverage,
-    coverageHeight,
-    showArcs,
-    isChainMode,
-    coverageDisplayHeight: topOffset,
-  } = model
-
-  function handleCanvasMouseMove(e: React.MouseEvent) {
-    processMouseMove(
-      e,
-      (hit, resolved) => {
-        model.setFeatureIdUnderMouse(hit.id)
-        if (model.highlightedFeatureIndex !== hit.index) {
-          model.setHighlightedFeatureIndex(hit.index)
-        }
-        if (isChainMode) {
-          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-          const chainIndices =
-            chainIdx !== undefined
-              ? (model.chainIndexMap.get(chainIdx) ?? [])
-              : []
-          model.setHighlightedChainIndices(chainIndices)
-          model.setMouseoverExtraInformation(
-            formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
-          )
-        } else {
-          if (model.highlightedChainIndices.length > 0) {
-            model.setHighlightedChainIndices([])
-          }
-          model.setMouseoverExtraInformation(
-            formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
-          )
-        }
-      },
-      () => {
-        model.clearMouseoverState()
-      },
-    )
-  }
-
-  function handleClick(e: React.MouseEvent) {
-    processClick(
-      e,
-      (hit, resolved) => {
-        model.setSelectedFeatureIndex(hit.index)
-        model.selectFeatureById(hit.id)
-        if (isChainMode) {
-          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-          const chainIndices =
-            chainIdx !== undefined
-              ? (model.chainIndexMap.get(chainIdx) ?? [])
-              : []
-          model.setSelectedChainIndices(chainIndices)
-        }
-      },
-      () => {
-        model.clearSelection()
-      },
-    )
-  }
-
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
   const {
@@ -207,6 +140,69 @@ const PileupInner = observer(function PileupInner({
     setCurrentRangeY,
   ])
 
+  if (!width) {
+    return null
+  }
+
+  const {
+    height,
+    showCoverage,
+    coverageHeight,
+    showArcs,
+    isChainMode,
+    coverageDisplayHeight: topOffset,
+  } = model
+
+  function handleCanvasMouseMove(e: React.MouseEvent) {
+    processMouseMove(
+      e,
+      (hit, resolved) => {
+        model.setFeatureIdUnderMouse(hit.id)
+        if (isChainMode) {
+          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
+          const chainIndices =
+            chainIdx !== undefined
+              ? (model.chainIndexMap.get(chainIdx) ?? [])
+              : []
+          model.setHighlightedChainIndices(chainIndices)
+          model.setMouseoverExtraInformation(
+            formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
+          )
+        } else {
+          if (model.highlightedChainIndices.length > 0) {
+            model.setHighlightedChainIndices([])
+          }
+          model.setMouseoverExtraInformation(
+            formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
+          )
+        }
+      },
+      () => {
+        model.clearMouseoverState()
+      },
+    )
+  }
+
+  function handleClick(e: React.MouseEvent) {
+    processClick(
+      e,
+      (hit, resolved) => {
+        model.selectFeatureById(hit.id)
+        if (isChainMode) {
+          const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
+          const chainIndices =
+            chainIdx !== undefined
+              ? (model.chainIndexMap.get(chainIdx) ?? [])
+              : []
+          model.setSelectedChainIndices(chainIndices)
+        }
+      },
+      () => {
+        model.clearSelection()
+      },
+    )
+  }
+
   const hasOverflow = model.scrollableHeight > 0
   const trackHeight = model.pileupViewportHeight
   const thumbHeight = hasOverflow
@@ -219,7 +215,7 @@ const PileupInner = observer(function PileupInner({
     : 0
 
   return (
-    <div style={{ position: 'relative', width: '100%', height }}>
+    <div data-testid="pileup-display" style={{ position: 'relative', width: '100%', height }}>
       <canvas
         ref={canvasRef}
         style={{

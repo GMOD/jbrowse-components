@@ -18,7 +18,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         await openTrack(page, 'volvox_alignments')
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
       },
     },
     {
@@ -26,7 +26,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         await openTrack(page, 'volvox_cram_alignments')
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
       },
     },
     {
@@ -34,13 +34,13 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         await openTrack(page, 'volvox_alignments')
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'alignments-bam-canvas',
-          '[data-testid="Blockset-pileup"] canvas',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },
@@ -58,13 +58,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'cloud-canvas', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'alignments-volvox-sv-canvas',
-          '[data-testid="cloud-canvas"]',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },
@@ -82,13 +82,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'alignments-pileup-coverage-canvas',
-          '[data-testid="Blockset-pileup"] canvas',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },

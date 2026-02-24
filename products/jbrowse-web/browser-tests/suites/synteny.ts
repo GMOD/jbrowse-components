@@ -84,7 +84,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+        await page.waitForSelector('[data-testid^="display-"] canvas', {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
@@ -92,7 +92,7 @@ const suite: TestSuite = {
         await canvasSnapshot(
           page,
           'synteny-lgv-paf-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid^="display-"] canvas',
         )
       },
     },

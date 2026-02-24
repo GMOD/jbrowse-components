@@ -25,13 +25,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'wiggle-rendering-test', 60000)
+        await findByTestId(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'bigwig-gc-content-canvas',
-          '[data-testid="wiggle-rendering-test"] canvas',
+          '[data-testid="wiggle-display"] canvas',
         )
       },
     },
@@ -49,16 +49,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector(
-          '[data-testid^="trackRenderingContainer"] canvas',
-          { timeout: 60000 },
-        )
+        await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(3000)
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-xyplot-canvas',
-          '[data-testid^="trackRenderingContainer"] canvas',
+          '[data-testid="multi-wiggle-display"] canvas',
         )
       },
     },
@@ -76,15 +73,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
-          timeout: 60000,
-        })
+        await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-multirowxy-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid="multi-wiggle-display"] canvas',
         )
       },
     },
@@ -102,15 +97,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
-          timeout: 60000,
-        })
+        await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-multirowdensity-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid="multi-wiggle-display"] canvas',
         )
       },
     },
@@ -128,15 +121,13 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
-          timeout: 60000,
-        })
+        await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-multirowline-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid="multi-wiggle-display"] canvas',
         )
       },
     },

@@ -85,11 +85,7 @@ export interface RenderState {
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number
-  // Feature highlighting (-1 means no highlight)
-  highlightedFeatureIndex: number
   highlightedFeatureId?: string
-  // Selected feature for outline (-1 means no selection)
-  selectedFeatureIndex: number
   selectedFeatureId?: string
   // Chain highlighting: all feature indices in the highlighted chain
   highlightedChainIndices: number[]

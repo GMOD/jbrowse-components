@@ -10,8 +10,7 @@ import { getInsertionRectWidthPx, textWidthForNumber } from './model.ts'
 function shaderRectWidthPx(length: number, pxPerBp: number) {
   const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
   const insertionWidthPx = length * pxPerBp
-  const canShowText =
-    insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && pxPerBp >= 6.5
+  const canShowText = insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
   const isLargeInsertion = isLongInsertion && canShowText
 
   if (isLargeInsertion) {

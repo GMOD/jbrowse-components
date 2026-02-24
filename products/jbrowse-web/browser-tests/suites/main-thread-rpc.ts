@@ -25,7 +25,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
         await openTrack(page, 'volvox_sv')
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
       },
     },
     {
@@ -43,13 +43,13 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
         await openTrack(page, 'volvox_sv')
-        await findByTestId(page, 'Blockset-pileup', 60000)
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
         await delay(1000)
         await canvasSnapshot(
           page,
           'main-thread-rpc-bam-canvas',
-          '[data-testid="Blockset-pileup"] canvas',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },

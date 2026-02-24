@@ -32,6 +32,7 @@ const MultiSampleVariantBaseDisplayComponent = observer(
     return (
       <div
         ref={ref}
+        data-testid="variant-display"
         style={{ position: 'relative' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
