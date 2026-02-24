@@ -357,7 +357,11 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
             width,
           }}
         >
-          <DensityLegend domain={model.domain} scaleType={model.scaleType} canvasWidth={width} />
+          <DensityLegend
+            domain={model.domain}
+            scaleType={model.scaleType}
+            canvasWidth={width}
+          />
         </svg>
       ) : model.ticks ? (
         <svg

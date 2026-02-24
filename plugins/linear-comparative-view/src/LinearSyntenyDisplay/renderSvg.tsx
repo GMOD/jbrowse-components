@@ -96,11 +96,9 @@ function svgLocationMarkers(
     const t = step / numMarkers
     const topX = x1 + (x2 - x1) * t
     const bottomX = x4 + (x3 - x4) * t
-    if (drawCurves) {
-      paths += `<path d="M${topX},${y1} C${topX},${mid} ${bottomX},${mid} ${bottomX},${y2}" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`
-    } else {
-      paths += `<line x1="${topX}" y1="${y1}" x2="${bottomX}" y2="${y2}" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`
-    }
+    paths += drawCurves
+      ? `<path d="M${topX},${y1} C${topX},${mid} ${bottomX},${mid} ${bottomX},${y2}" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`
+      : `<line x1="${topX}" y1="${y1}" x2="${bottomX}" y2="${y2}" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`
   }
   return paths
 }
@@ -185,11 +183,9 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
         strokeColor = getQueryColorWithAlpha(refName)
       }
 
-      if (drawCurves) {
-        content += `<path d="M${x11},${y1} C${x11},${mid} ${x21},${mid} ${x21},${y2}" fill="none" stroke="${strokeColor}" stroke-width="1"/>`
-      } else {
-        content += `<line x1="${x11}" y1="${y1}" x2="${x21}" y2="${y2}" stroke="${strokeColor}" stroke-width="1"/>`
-      }
+      content += drawCurves
+        ? `<path d="M${x11},${y1} C${x11},${mid} ${x21},${mid} ${x21},${y2}" fill="none" stroke="${strokeColor}" stroke-width="1"/>`
+        : `<line x1="${x11}" y1="${y1}" x2="${x21}" y2="${y2}" stroke="${strokeColor}" stroke-width="1"/>`
     } else if (doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)) {
       const s1 = strand
       const k1 = s1 === -1 ? x12 : x11
@@ -274,16 +270,7 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
 
               const shouldDraw = drawCIGARMatchesOnly ? letter === 'M' : true
               if (shouldDraw) {
-                const d = svgShape(
-                  px1,
-                  cx1,
-                  y1,
-                  cx2,
-                  px2,
-                  y2,
-                  mid,
-                  drawCurves,
-                )
+                const d = svgShape(px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                 content += `<path d="${d}" fill="${fillColor}"/>`
                 if (drawLocationMarkersEnabled) {
                   content += svgLocationMarkers(

@@ -26,7 +26,13 @@ function DensityLegend({
   const x = canvasWidth - len - 10
   return (
     <g>
-      <rect x={x - 3} y={0} width={len + 6} height={16} fill="rgba(255,255,255,0.8)" />
+      <rect
+        x={x - 3}
+        y={0}
+        width={len + 6}
+        height={16}
+        fill="rgba(255,255,255,0.8)"
+      />
       <text y={12} x={x} fontSize={12}>
         {legend}
       </text>

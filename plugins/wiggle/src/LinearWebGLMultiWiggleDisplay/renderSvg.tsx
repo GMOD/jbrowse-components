@@ -1,8 +1,8 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
 
-import { getDensityColor } from '../shared/getDensityColor.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
+import { getDensityColor } from '../shared/getDensityColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
@@ -98,7 +98,13 @@ export async function renderSvg(
             const rectHeight = Math.abs(originY - y) || 1
             content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${color}"/>`
           } else if (renderingType === 'multirowdensity') {
-            const densityColor = getDensityColor(score, minScore, maxScore, scaleType, color)
+            const densityColor = getDensityColor(
+              score,
+              minScore,
+              maxScore,
+              scaleType,
+              color,
+            )
             content += `<rect x="${x}" y="${rowY}" width="${w}" height="${rowHeight}" fill="${densityColor}"/>`
           }
         }
@@ -111,9 +117,13 @@ export async function renderSvg(
   const isDensity = model.isDensityMode
 
   let legendEl: React.ReactNode = null
-  if (isDensity && domain) {
+  if (isDensity) {
     legendEl = (
-      <DensityLegend domain={domain} scaleType={scaleType} canvasWidth={canvasWidth} />
+      <DensityLegend
+        domain={domain}
+        scaleType={scaleType}
+        canvasWidth={canvasWidth}
+      />
     )
   } else if (ticks) {
     if (tooSmallForScalebar) {
@@ -197,14 +207,7 @@ export async function renderSvg(
       const ty = link.target.x!
       treePaths += `M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`
     }
-    treeEl = (
-      <path
-        d={treePaths}
-        fill="none"
-        stroke="#0008"
-        strokeWidth={1}
-      />
-    )
+    treeEl = <path d={treePaths} fill="none" stroke="#0008" strokeWidth={1} />
   }
 
   return (

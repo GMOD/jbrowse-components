@@ -3,12 +3,8 @@
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
-import {
-  WebGLLDRenderer,
-  generateLDColorRamp,
-  type LDRenderState,
-} from './WebGLLDRenderer.ts'
-import { ldShader, interleaveLDInstances } from './ldShaders.ts'
+import { type LDRenderState, WebGLLDRenderer } from './WebGLLDRenderer.ts'
+import { interleaveLDInstances, ldShader } from './ldShaders.ts'
 
 const UNIFORM_SIZE = 32
 
@@ -253,8 +249,14 @@ export class LDRenderer {
       return
     }
 
-    const { canvasWidth, canvasHeight, yScalar, signedLD, viewScale, viewOffsetX } =
-      state
+    const {
+      canvasWidth,
+      canvasHeight,
+      yScalar,
+      signedLD,
+      viewScale,
+      viewOffsetX,
+    } = state
 
     const dpr = window.devicePixelRatio || 1
     const bufW = Math.round(canvasWidth * dpr)

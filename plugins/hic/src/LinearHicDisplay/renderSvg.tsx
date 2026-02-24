@@ -1,8 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-import { generateColorRamp } from './components/WebGLHicRenderer.ts'
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
+import { generateColorRamp } from './components/WebGLHicRenderer.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
 import type {
@@ -31,12 +31,9 @@ function lookupColorCSS(ramp: Uint8Array, t: number) {
 }
 
 function computeT(count: number, m: number, useLogScale: boolean) {
-  let t: number
-  if (useLogScale) {
-    t = Math.log2(Math.max(count, 1)) / Math.log2(Math.max(m, 1))
-  } else {
-    t = count / Math.max(m, 0.001)
-  }
+  const t = useLogScale
+    ? Math.log2(Math.max(count, 1)) / Math.log2(Math.max(m, 1))
+    : count / Math.max(m, 0.001)
   return Math.max(0, Math.min(1, t))
 }
 
@@ -58,14 +55,18 @@ export async function renderSvg(
 
   const m = useLogScale ? maxScore : maxScore / 20
   const ramp = generateColorRamp(colorScheme)
-  const rasterize = opts?.rasterizeLayers
+  const rasterize = opts.rasterizeLayers
   const clipId = `clip-${self.id}-svg`
 
   let matrixEl: React.ReactNode
 
   if (rasterize) {
     const scale = 2
-    const canvas = opts.createCanvas?.(Math.round(visibleWidth * scale), Math.round(height * scale)) ?? document.createElement('canvas')
+    const canvas =
+      opts.createCanvas?.(
+        Math.round(visibleWidth * scale),
+        Math.round(height * scale),
+      ) ?? document.createElement('canvas')
     canvas.width = Math.round(visibleWidth * scale)
     canvas.height = Math.round(height * scale)
     const ctx = canvas.getContext('2d')
@@ -132,9 +133,7 @@ export async function renderSvg(
           <rect x={0} y={0} width={visibleWidth} height={height} />
         </clipPath>
       </defs>
-      <g clipPath={`url(#${clipId})`}>
-        {matrixEl}
-      </g>
+      <g clipPath={`url(#${clipId})`}>{matrixEl}</g>
       {showLegend && maxScore > 0 ? (
         <HicSVGColorLegend
           maxScore={maxScore}

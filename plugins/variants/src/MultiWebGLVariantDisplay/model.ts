@@ -44,10 +44,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(
-            self as MultiLinearVariantDisplayModel,
-            opts,
-          )
+          return renderSvg(self as MultiLinearVariantDisplayModel, opts)
         },
         showSubmenuItems() {
           return [

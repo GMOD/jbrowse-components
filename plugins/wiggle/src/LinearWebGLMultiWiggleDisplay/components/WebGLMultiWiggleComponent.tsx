@@ -461,7 +461,11 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
         ) : null}
 
         {model.isDensityMode && model.domain ? (
-          <DensityLegend domain={model.domain} scaleType={model.scaleType} canvasWidth={totalWidth} />
+          <DensityLegend
+            domain={model.domain}
+            scaleType={model.scaleType}
+            canvasWidth={totalWidth}
+          />
         ) : model.ticks ? (
           model.rowHeightTooSmallForScalebar ? (
             <ScoreLegend model={model} canvasWidth={totalWidth} />

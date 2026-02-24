@@ -4,8 +4,8 @@ import { when } from 'mobx'
 import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
-import Wrapper from './components/Wrapper.tsx'
 import { generateLDColorRamp } from './components/WebGLLDRenderer.ts'
+import Wrapper from './components/Wrapper.tsx'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 
@@ -36,7 +36,7 @@ function lookupColorCSS(ramp: Uint8Array, t: number) {
 }
 
 function computeT(ldVal: number, signedLD: boolean) {
-  let t = signedLD ? (ldVal + 1) / 2 : ldVal
+  const t = signedLD ? (ldVal + 1) / 2 : ldVal
   return Math.max(0, Math.min(1, t))
 }
 
@@ -65,14 +65,18 @@ export async function renderSvg(
   const { positions, ldValues, cellSizes, numCells, yScalar } = rpcData
   const visibleWidth = view.width
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
-  const rasterize = opts?.rasterizeLayers
+  const rasterize = opts.rasterizeLayers
   const triangleHeight = height - lineZoneHeight
 
   let matrixEl: React.ReactNode
 
   if (rasterize) {
     const scale = 2
-    const canvas = opts.createCanvas?.(Math.round(visibleWidth * scale), Math.round(triangleHeight * scale)) ?? document.createElement('canvas')
+    const canvas =
+      opts.createCanvas?.(
+        Math.round(visibleWidth * scale),
+        Math.round(triangleHeight * scale),
+      ) ?? document.createElement('canvas')
     canvas.width = Math.round(visibleWidth * scale)
     canvas.height = Math.round(triangleHeight * scale)
     const ctx = canvas.getContext('2d')
@@ -146,9 +150,7 @@ export async function renderSvg(
         </clipPath>
       </defs>
       <g clipPath={`url(#${clipId})`}>
-        <g transform={`translate(0 ${lineZoneHeight})`}>
-          {matrixEl}
-        </g>
+        <g transform={`translate(0 ${lineZoneHeight})`}>{matrixEl}</g>
         {useGenomicPositions ? (
           <Wrapper model={self} exportSVG>
             <VariantLabels model={self} />

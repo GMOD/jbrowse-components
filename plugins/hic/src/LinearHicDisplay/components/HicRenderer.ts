@@ -3,12 +3,10 @@
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
-import {
-  WebGLHicRenderer,
-  generateColorRamp,
-  type HicRenderState,
-} from './WebGLHicRenderer.ts'
+import { WebGLHicRenderer } from './WebGLHicRenderer.ts'
 import { hicShader, interleaveHicInstances } from './hicShaders.ts'
+
+import type { HicRenderState } from './WebGLHicRenderer.ts'
 
 const UNIFORM_SIZE = 48
 
@@ -243,7 +241,12 @@ export class HicRenderer {
     }
 
     const device = HicRenderer.device
-    if (!device || !HicRenderer.pipeline || !this.context || !this.gpuData?.bindGroup) {
+    if (
+      !device ||
+      !HicRenderer.pipeline ||
+      !this.context ||
+      !this.gpuData?.bindGroup
+    ) {
       return
     }
 

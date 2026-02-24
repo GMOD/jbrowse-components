@@ -52,7 +52,7 @@ function renderRects(
     const r = colorBuf[i * 4]!
     const g = colorBuf[i * 4 + 1]!
     const b = colorBuf[i * 4 + 2]!
-    const hasBorder = colorBuf[i * 4 + 3]! === 255
+    const hasBorder = colorBuf[i * 4 + 3] === 255
 
     content += `<rect x="${x}" y="${yPx}" width="${w}" height="${hPx}" fill="rgb(${r},${g},${b})"`
     if (showBorders && hasBorder) {
@@ -76,8 +76,7 @@ function renderBaseLetters(
   const w = 1 / bpPerPx
   const fontSize = rowHeight - 2
 
-  for (let i = 0; i < seq.length; i++) {
-    const letter = seq[i]!
+  for (const [i, letter] of seq.split('').entries()) {
     const x = (seqStart + i) / bpPerPx - offsetPx
     const cx = x + w / 2
     const cy = y + rowHeight / 2
@@ -199,7 +198,14 @@ export async function renderSvg(
 
       for (const frame of topFrames) {
         textContent += renderTranslationLetters(
-          data.seq, data.start, frame, currentY, rowHeight, bpPerPx, offsetPx, reversed,
+          data.seq,
+          data.start,
+          frame,
+          currentY,
+          rowHeight,
+          bpPerPx,
+          offsetPx,
+          reversed,
         )
         currentY += rowHeight
       }
@@ -207,7 +213,13 @@ export async function renderSvg(
       if (showForwardActual) {
         const fwdSeq = reversed ? complement(data.seq) : data.seq
         textContent += renderBaseLetters(
-          fwdSeq, data.start, currentY, rowHeight, bpPerPx, offsetPx, palette.baseColors,
+          fwdSeq,
+          data.start,
+          currentY,
+          rowHeight,
+          bpPerPx,
+          offsetPx,
+          palette.baseColors,
         )
         currentY += rowHeight
       }
@@ -215,14 +227,27 @@ export async function renderSvg(
       if (showReverseActual && isDna) {
         const revSeq = reversed ? data.seq : complement(data.seq)
         textContent += renderBaseLetters(
-          revSeq, data.start, currentY, rowHeight, bpPerPx, offsetPx, palette.baseColors,
+          revSeq,
+          data.start,
+          currentY,
+          rowHeight,
+          bpPerPx,
+          offsetPx,
+          palette.baseColors,
         )
         currentY += rowHeight
       }
 
       for (const frame of bottomFrames) {
         textContent += renderTranslationLetters(
-          data.seq, data.start, frame, currentY, rowHeight, bpPerPx, offsetPx, !reversed,
+          data.seq,
+          data.start,
+          frame,
+          currentY,
+          rowHeight,
+          bpPerPx,
+          offsetPx,
+          !reversed,
         )
         currentY += rowHeight
       }

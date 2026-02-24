@@ -14,7 +14,7 @@ function rgbaToCSS(r: number, g: number, b: number, a: number) {
 export async function renderSvg(model: DotplotDisplayModel) {
   await when(() => model.featPositions.length > 0 || !!model.error)
   const view = getContainingView(model) as DotplotViewModel
-  const { viewWidth, viewHeight, hview, vview, drawCigar } = view
+  const { viewHeight, hview, vview, drawCigar } = view
   const {
     featPositions,
     featPositionsBpPerPxH,

@@ -16,7 +16,9 @@ function rgbaAttrs(colors: Uint8Array, i: number) {
   const b = colors[i * 4 + 2]!
   const a = colors[i * 4 + 3]!
   const rgb = `rgb(${r},${g},${b})`
-  return a === 255 ? `fill="${rgb}"` : `fill="${rgb}" fill-opacity="${(a / 255).toFixed(3)}"`
+  return a === 255
+    ? `fill="${rgb}"`
+    : `fill="${rgb}" fill-opacity="${(a / 255).toFixed(3)}"`
 }
 
 export async function renderSvg(
@@ -24,7 +26,9 @@ export async function renderSvg(
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await when(() => model.webglCellData != null || !!model.error || model.regionTooLarge)
+  await when(
+    () => model.webglCellData != null || !!model.error || model.regionTooLarge,
+  )
   const cellData = model.webglCellData as VariantCellData | undefined
   if (!cellData || cellData.numCells === 0) {
     return null
@@ -154,12 +158,7 @@ export async function renderSvg(
     }
     treeEl = (
       <g transform={`translate(0 ${-scrollTop})`}>
-        <path
-          d={treePaths}
-          fill="none"
-          stroke="#0008"
-          strokeWidth={1}
-        />
+        <path d={treePaths} fill="none" stroke="#0008" strokeWidth={1} />
       </g>
     )
   }

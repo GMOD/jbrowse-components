@@ -49,7 +49,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
-  const height = totalHeight(visibleTracks, textHeight, trackLabels) + offset + 100
+  const height =
+    totalHeight(visibleTracks, textHeight, trackLabels) + offset + 100
 
   // Calculate maximum legend width across all displays
   const legendWidth = max(
@@ -64,7 +65,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     visibleTracks.map(async track => {
       const display = track.displays[0]
       const hasRenderSvg = typeof display.renderSvg === 'function'
-      console.log(
+      console.warn(
         '[SVG export] track',
         getTrackName(track.configuration, session),
         'display type',
@@ -79,14 +80,14 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       if (!hasRenderSvg) {
         await when(() => isReadyOrHasError(display))
       } else {
-        console.log(
+        console.warn(
           '[SVG export] skipping readiness wait for display with renderSvg:',
           display.type,
         )
       }
-      console.log('[SVG export] calling renderSvg for', display.type)
+      console.warn('[SVG export] calling renderSvg for', display.type)
       const result = await display.renderSvg({ ...opts, theme, legendWidth })
-      console.log('[SVG export] renderSvg complete for', display.type)
+      console.warn('[SVG export] renderSvg complete for', display.type)
       return {
         track,
         result,

@@ -3,18 +3,19 @@ import type React from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
+
+import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
 import {
   arcColorPalette,
   arcLineColorPalette,
   sashimiColorPalette,
 } from './components/shaders/arcShaders.ts'
-import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import { ColorScheme, YSCALEBAR_LABEL_OFFSET } from './model.ts'
 
-import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
-import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types.ts'
 import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
+import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types.ts'
+import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
@@ -32,7 +33,9 @@ function hslToRgbString(h: number, s: number, l: number) {
   const hp = (h / 360) * 6
   const x = c * (1 - Math.abs((hp % 2) - 1))
   const m = l - c / 2
-  let r: number, g: number, b: number
+  let r: number
+  let g: number
+  let b: number
   if (hp < 1) {
     ;[r, g, b] = [c, x, 0]
   } else if (hp < 2) {
@@ -136,9 +139,7 @@ function getReadColor(
     case ColorScheme.modifications: {
       const isReverse = (flags & 16) !== 0
       return rgb255(
-        isReverse
-          ? palette.colorModificationRev
-          : palette.colorModificationFwd,
+        isReverse ? palette.colorModificationRev : palette.colorModificationFwd,
       )
     }
 
@@ -287,7 +288,8 @@ function renderPairedArcsSvg(
         ? rgb255(arcLineColorPalette[colorType]!)
         : 'grey'
 
-    const screenX = blockStartPx + (xPos - arcsData.regionStart - bpStartOffset) * pxPerBp
+    const screenX =
+      blockStartPx + (xPos - arcsData.regionStart - bpStartOffset) * pxPerBp
     content += `<line x1="${screenX}" y1="${y0}" x2="${screenX}" y2="${y1}" stroke="${color}" stroke-width="1"/>`
   }
 
@@ -356,7 +358,8 @@ function renderPairedArcsCanvas(
         : 'grey'
     ctx.lineWidth = 1
 
-    const screenX = blockStartPx + (xPos - arcsData.regionStart - bpStartOffset) * pxPerBp
+    const screenX =
+      blockStartPx + (xPos - arcsData.regionStart - bpStartOffset) * pxPerBp
     ctx.beginPath()
     ctx.moveTo(screenX, y0)
     ctx.lineTo(screenX, y1)
@@ -457,7 +460,9 @@ export async function renderSvg(
 ): Promise<React.ReactNode> {
   const theme = createJBrowseTheme(opts?.theme)
   const view = getContainingView(model) as LGV
-  await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge)
+  await when(
+    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
+  )
   const { offsetPx, bpPerPx } = view
   const {
     rpcDataMap,
@@ -495,7 +500,9 @@ export async function renderSvg(
   let pileupCanvas: HTMLCanvasElement | undefined
   let pileupCtx: CanvasRenderingContext2D | undefined
   if (rasterize && pileupHeight > 0 && totalWidth > 0) {
-    pileupCanvas = opts?.createCanvas?.(totalWidth * 2, pileupHeight * 2) ?? document.createElement('canvas')
+    pileupCanvas =
+      opts.createCanvas?.(totalWidth * 2, pileupHeight * 2) ??
+      document.createElement('canvas')
     pileupCanvas.width = totalWidth * 2
     pileupCanvas.height = pileupHeight * 2
     pileupCtx = pileupCanvas.getContext('2d') ?? undefined
@@ -505,7 +512,9 @@ export async function renderSvg(
   let arcsCanvas: HTMLCanvasElement | undefined
   let arcsCtx: CanvasRenderingContext2D | undefined
   if (rasterize && showArcs && arcsHeight > 0 && totalWidth > 0) {
-    arcsCanvas = opts?.createCanvas?.(totalWidth * 2, arcsHeight * 2) ?? document.createElement('canvas')
+    arcsCanvas =
+      opts.createCanvas?.(totalWidth * 2, arcsHeight * 2) ??
+      document.createElement('canvas')
     arcsCanvas.width = totalWidth * 2
     arcsCanvas.height = arcsHeight * 2
     arcsCtx = arcsCanvas.getContext('2d') ?? undefined
@@ -691,12 +700,8 @@ export async function renderSvg(
       }
 
       if (model.showMismatches) {
-        const {
-          mismatchPositions,
-          mismatchYs,
-          mismatchBases,
-          numMismatches,
-        } = data
+        const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
+          data
         for (let i = 0; i < numMismatches; i++) {
           const pos = regionStart + mismatchPositions[i]!
           if (pos < block.start || pos > block.end) {
@@ -742,12 +747,8 @@ export async function renderSvg(
       }
 
       if (model.showMismatches) {
-        const {
-          mismatchPositions,
-          mismatchYs,
-          mismatchBases,
-          numMismatches,
-        } = data
+        const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
+          data
         for (let i = 0; i < numMismatches; i++) {
           const pos = regionStart + mismatchPositions[i]!
           if (pos < block.start || pos > block.end) {

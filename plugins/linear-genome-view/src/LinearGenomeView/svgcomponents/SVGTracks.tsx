@@ -53,7 +53,12 @@ export default function SVGTracks({
                   <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
                     <defs>
                       <clipPath id={`track-clip-${conf.trackId}`}>
-                        <rect x={0} y={0} width={model.width} height={display.height} />
+                        <rect
+                          x={0}
+                          y={0}
+                          width={model.width}
+                          height={display.height}
+                        />
                       </clipPath>
                     </defs>
                     <SVGRegionSeparators

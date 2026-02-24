@@ -1,3 +1,4 @@
+import { darkenColor, lightenColor } from './webglUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -6,9 +7,11 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
 } from './wiggleShader.ts'
-import { darkenColor, lightenColor } from './webglUtils.ts'
 
-import type { SourceRenderData, WiggleGPURenderState } from './WiggleRenderer.ts'
+import type {
+  SourceRenderData,
+  WiggleGPURenderState,
+} from './WiggleRenderer.ts'
 
 export function getRowHeight(canvasHeight: number, numRows: number) {
   return numRows > 0 ? canvasHeight / numRows : canvasHeight

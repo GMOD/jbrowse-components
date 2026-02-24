@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import { createCanvas } from 'canvas'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { createCanvas } from 'canvas'
 
 import { booleanize } from './util.ts'
 

@@ -424,7 +424,15 @@ const LDCanvas = observer(function LDCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX, contextVersion, ready])
+  }, [
+    rpcData,
+    width,
+    canvasOnlyHeight,
+    viewScale,
+    viewOffsetX,
+    contextVersion,
+    ready,
+  ])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

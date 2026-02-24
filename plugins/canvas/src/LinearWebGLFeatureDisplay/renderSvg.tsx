@@ -3,8 +3,8 @@ import { when } from 'mobx'
 
 import { shouldRenderPeptideText } from '../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 
-import type { WebGLFeatureDataResult } from '../RenderWebGLFeatureDataRPC/rpcTypes.ts'
 import type { LinearWebGLFeatureDisplayModel } from './model.ts'
+import type { WebGLFeatureDataResult } from '../RenderWebGLFeatureDataRPC/rpcTypes.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -22,12 +22,16 @@ function rgbaColor(colors: Uint8Array, i: number) {
 
 function fillAttrs(colors: Uint8Array, i: number) {
   const { rgb, opacity } = rgbaColor(colors, i)
-  return opacity === 1 ? `fill="${rgb}"` : `fill="${rgb}" fill-opacity="${opacity.toFixed(3)}"`
+  return opacity === 1
+    ? `fill="${rgb}"`
+    : `fill="${rgb}" fill-opacity="${opacity.toFixed(3)}"`
 }
 
 function strokeAttr(colors: Uint8Array, i: number) {
   const { rgb, opacity } = rgbaColor(colors, i)
-  return opacity === 1 ? `stroke="${rgb}"` : `stroke="${rgb}" stroke-opacity="${opacity.toFixed(3)}"`
+  return opacity === 1
+    ? `stroke="${rgb}"`
+    : `stroke="${rgb}" stroke-opacity="${opacity.toFixed(3)}"`
 }
 
 function bpToScreenX(
@@ -51,7 +55,14 @@ function renderRectsForRegion(
   scrollY: number,
 ) {
   let content = ''
-  const { rectPositions, rectYs, rectHeights, rectColors, numRects, regionStart: dataRegionStart } = data
+  const {
+    rectPositions,
+    rectYs,
+    rectHeights,
+    rectColors,
+    numRects,
+    regionStart: dataRegionStart,
+  } = data
 
   for (let i = 0; i < numRects; i++) {
     const startBp = dataRegionStart + rectPositions[i * 2]!
@@ -64,8 +75,20 @@ function renderRectsForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const x = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx)
-    const x2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx)
+    const x = bpToScreenX(
+      clippedStart,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+    )
+    const x2 = bpToScreenX(
+      clippedEnd,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+    )
     const w = Math.max(x2 - x, 0.5)
     const y = rectYs[i]! - scrollY
     const h = rectHeights[i]!
@@ -83,7 +106,14 @@ function renderLinesForRegion(
   scrollY: number,
 ) {
   let content = ''
-  const { linePositions, lineYs, lineColors, lineDirections, numLines, regionStart: dataRegionStart } = data
+  const {
+    linePositions,
+    lineYs,
+    lineColors,
+    lineDirections,
+    numLines,
+    regionStart: dataRegionStart,
+  } = data
   const blockWidth = screenEndPx - screenStartPx
   const regionLengthBp = regionEnd - regionStart
   const bpPerPx = regionLengthBp / blockWidth
@@ -99,8 +129,20 @@ function renderLinesForRegion(
     const clippedStart = Math.max(startBp, regionStart)
     const clippedEnd = Math.min(endBp, regionEnd)
 
-    const x1 = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx)
-    const x2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx)
+    const x1 = bpToScreenX(
+      clippedStart,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+    )
+    const x2 = bpToScreenX(
+      clippedEnd,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+    )
     const y = rectRound(lineYs[i]! - scrollY)
     const lineStroke = strokeAttr(lineColors, i)
     const direction = lineDirections[i]!
@@ -110,7 +152,10 @@ function renderLinesForRegion(
     if (direction !== 0) {
       const lineWidthPx = (endBp - startBp) / bpPerPx
       const chevronSpacing = 25
-      const totalChevrons = Math.max(1, Math.floor(lineWidthPx / chevronSpacing))
+      const totalChevrons = Math.max(
+        1,
+        Math.floor(lineWidthPx / chevronSpacing),
+      )
       const bpSpacing = (endBp - startBp) / (totalChevrons + 1)
       const chevronW = 4.5
       const chevronH = 3.5
@@ -120,7 +165,13 @@ function renderLinesForRegion(
         if (chevronBp < regionStart || chevronBp > regionEnd) {
           continue
         }
-        const cx = bpToScreenX(chevronBp, regionStart, regionEnd, screenStartPx, screenEndPx)
+        const cx = bpToScreenX(
+          chevronBp,
+          regionStart,
+          regionEnd,
+          screenStartPx,
+          screenEndPx,
+        )
         const tipX = cx + chevronW * 0.5 * direction
         const baseX = cx - chevronW * 0.5 * direction
 
@@ -140,7 +191,15 @@ function renderArrowsForRegion(
   scrollY: number,
 ) {
   let content = ''
-  const { arrowXs, arrowYs, arrowDirections, arrowHeights, arrowColors, numArrows, regionStart: dataRegionStart } = data
+  const {
+    arrowXs,
+    arrowYs,
+    arrowDirections,
+    arrowHeights,
+    arrowColors,
+    numArrows,
+    regionStart: dataRegionStart,
+  } = data
 
   for (let i = 0; i < numArrows; i++) {
     const bpPos = dataRegionStart + arrowXs[i]!
@@ -149,7 +208,13 @@ function renderArrowsForRegion(
       continue
     }
 
-    const cx = bpToScreenX(bpPos, regionStart, regionEnd, screenStartPx, screenEndPx)
+    const cx = bpToScreenX(
+      bpPos,
+      regionStart,
+      regionEnd,
+      screenStartPx,
+      screenEndPx,
+    )
     const cy = arrowYs[i]! - scrollY
     const dir = arrowDirections[i]!
     const h = arrowHeights[i]!
@@ -185,12 +250,8 @@ function renderLabelsForRegion(
 ) {
   let content = ''
   const { floatingLabelsData, regionStart: dataRegionStart } = data
-  if (!floatingLabelsData) {
-    return content
-  }
 
-  const blockBpPerPx =
-    (regionEnd - regionStart) / (screenEndPx - screenStartPx)
+  const blockBpPerPx = (regionEnd - regionStart) / (screenEndPx - screenStartPx)
   const fontSize = 11
 
   for (const labelData of Object.values(floatingLabelsData)) {
@@ -209,7 +270,14 @@ function renderLabelsForRegion(
     const featureBottomPx = labelData.topY + labelData.featureHeight
 
     for (const label of labelData.floatingLabels) {
-      const { text, relativeY, color, textWidth: labelWidth, isOverlay, subfeatureId } = label
+      const {
+        text,
+        relativeY,
+        color,
+        textWidth: labelWidth,
+        isOverlay,
+        subfeatureId,
+      } = label
       const labelPadding = subfeatureId ? 0 : 2
       const labelY = featureBottomPx + relativeY + labelPadding
 
@@ -225,7 +293,10 @@ function renderLabelsForRegion(
       if (isOverlay) {
         content += `<rect x="${labelX - 1}" y="${labelY}" width="${labelWidth + 2}" height="${fontSize + 1}" fill="rgb(255,255,255)" fill-opacity="0.8"/>`
       }
-      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
       content += `<text x="${labelX}" y="${labelY + fontSize}" font-size="${fontSize}" fill="${color}" style="pointer-events:none">${escaped}</text>`
     }
   }
@@ -245,18 +316,15 @@ function renderPeptideLettersForRegion(
     return content
   }
 
-  const blockBpPerPx =
-    (regionEnd - regionStart) / (screenEndPx - screenStartPx)
+  const blockBpPerPx = (regionEnd - regionStart) / (screenEndPx - screenStartPx)
 
   for (const item of aminoAcidOverlay) {
     if (item.endBp < regionStart || item.startBp > regionEnd) {
       continue
     }
 
-    const leftPx =
-      screenStartPx + (item.startBp - regionStart) / blockBpPerPx
-    const rightPx =
-      screenStartPx + (item.endBp - regionStart) / blockBpPerPx
+    const leftPx = screenStartPx + (item.startBp - regionStart) / blockBpPerPx
+    const rightPx = screenStartPx + (item.endBp - regionStart) / blockBpPerPx
     const centerPx = (leftPx + rightPx) / 2
     const fontSize = Math.min(item.heightPx - 2, 12)
     const color = item.isStopOrNonTriplet ? 'red' : 'black'
@@ -273,7 +341,9 @@ export async function renderSvg(
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge)
+  await when(
+    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
+  )
   const { rpcDataMap } = model
 
   if (rpcDataMap.size === 0) {
@@ -299,12 +369,45 @@ export async function renderSvg(
       continue
     }
 
-    content += renderLinesForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY)
-    content += renderRectsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY)
-    content += renderArrowsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx, scrollY)
-    content += renderLabelsForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx)
+    content += renderLinesForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      scrollY,
+    )
+    content += renderRectsForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      scrollY,
+    )
+    content += renderArrowsForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+      scrollY,
+    )
+    content += renderLabelsForRegion(
+      data,
+      vr.start,
+      vr.end,
+      vr.screenStartPx,
+      vr.screenEndPx,
+    )
     if (renderPeptides) {
-      content += renderPeptideLettersForRegion(data, vr.start, vr.end, vr.screenStartPx, vr.screenEndPx)
+      content += renderPeptideLettersForRegion(
+        data,
+        vr.start,
+        vr.end,
+        vr.screenStartPx,
+        vr.screenEndPx,
+      )
     }
   }
 

@@ -1,8 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
 
-import { getDensityColor } from '../shared/getDensityColor.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
+import { getDensityColor } from '../shared/getDensityColor.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
 import type { LinearWebGLWiggleDisplayModel } from './model.ts'
@@ -108,7 +108,13 @@ export async function renderSvg(
             : color
           content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${fillColor}"/>`
         } else if (renderingType === 'density') {
-          const densityColor = getDensityColor(score, minScore, maxScore, scaleType, posColor)
+          const densityColor = getDensityColor(
+            score,
+            minScore,
+            maxScore,
+            scaleType,
+            posColor,
+          )
           content += `<rect x="${x}" y="0" width="${w}" height="${height}" fill="${densityColor}"/>`
         }
       }
@@ -116,10 +122,14 @@ export async function renderSvg(
   }
 
   let legendEl: React.ReactNode = null
-  if (model.isDensityMode && domain) {
+  if (model.isDensityMode) {
     const canvasWidth = Math.round(view.width)
     legendEl = (
-      <DensityLegend domain={domain} scaleType={scaleType} canvasWidth={canvasWidth} />
+      <DensityLegend
+        domain={domain}
+        scaleType={scaleType}
+        canvasWidth={canvasWidth}
+      />
     )
   } else if (ticks) {
     legendEl = (
