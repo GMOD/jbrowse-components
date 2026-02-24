@@ -1,5 +1,6 @@
 import {
   PORT,
+  appendGpuParam,
   waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
@@ -14,19 +15,24 @@ const suite: TestSuite = {
       name: 'dotplot default session',
       fn: async page => {
         await page.goto(
-          `http://localhost:${PORT}/?config=test_data/config_dotplot.json&sessionName=Test%20Session`,
+          appendGpuParam(
+            `http://localhost:${PORT}/?config=test_data/config_dotplot.json&sessionName=Test%20Session`,
+          ),
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas"]', {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid^="prerendered_canvas"]')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="dotplot_webgl_canvas"]',
+        )
         await canvasSnapshot(
           page,
           'dotplot-default-canvas',
-          '[data-testid^="prerendered_canvas"]',
+          '[data-testid="dotplot_webgl_canvas"]',
         )
       },
     },

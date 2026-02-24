@@ -4,16 +4,20 @@ import { Alert, Tooltip } from '@mui/material'
 import type { AlertColor } from '@mui/material'
 
 const useStyles = makeStyles()({
-  ellipses: {
-    textOverflow: 'ellipsis',
+  alert: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  message: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
   },
-  content: {
+  text: {
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
-    maxWidth: '80%',
-    textAlign: 'center',
   },
 })
 
@@ -30,9 +34,9 @@ export default function BlockMsg({
   return (
     <Alert
       severity={severity}
-      action={action}
       classes={{
-        message: classes.ellipses,
+        root: classes.alert,
+        message: classes.message,
       }}
       onMouseDown={event => {
         event.stopPropagation()
@@ -42,8 +46,9 @@ export default function BlockMsg({
       }}
     >
       <Tooltip title={message}>
-        <div className={classes.content}>{message}</div>
+        <span className={classes.text}>{message}</span>
       </Tooltip>
+      {action}
     </Alert>
   )
 }

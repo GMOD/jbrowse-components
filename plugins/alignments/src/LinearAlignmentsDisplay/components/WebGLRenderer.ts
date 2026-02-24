@@ -80,6 +80,7 @@ export interface RenderState {
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
   coverageNicedMax: number | undefined // niced domain max from D3 scale (matches Y scalebar labels)
   showMismatches: boolean
+  showSoftClipping: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
@@ -136,6 +137,8 @@ export interface GPUBuffers {
   insertionCount: number
   softclipVAO: WebGLVertexArrayObject | null
   softclipCount: number
+  softclipBaseVAO: WebGLVertexArrayObject | null
+  softclipBaseCount: number
   hardclipVAO: WebGLVertexArrayObject | null
   hardclipCount: number
   modificationVAO: WebGLVertexArrayObject | null
@@ -710,6 +713,8 @@ export class WebGLRenderer {
         insertionCount: 0,
         softclipVAO: null,
         softclipCount: 0,
+        softclipBaseVAO: null,
+        softclipBaseCount: 0,
         hardclipVAO: null,
         hardclipCount: 0,
         modificationVAO: null,
@@ -824,6 +829,8 @@ export class WebGLRenderer {
       insertionCount: 0,
       softclipVAO: null,
       softclipCount: 0,
+      softclipBaseVAO: null,
+      softclipBaseCount: 0,
       hardclipVAO: null,
       hardclipCount: 0,
       modificationVAO: null,
@@ -886,6 +893,10 @@ export class WebGLRenderer {
     if (this.buffers.softclipVAO) {
       gl.deleteVertexArray(this.buffers.softclipVAO)
       this.buffers.softclipVAO = null
+    }
+    if (this.buffers.softclipBaseVAO) {
+      gl.deleteVertexArray(this.buffers.softclipBaseVAO)
+      this.buffers.softclipBaseVAO = null
     }
     if (this.buffers.hardclipVAO) {
       gl.deleteVertexArray(this.buffers.hardclipVAO)
@@ -1029,6 +1040,43 @@ export class WebGLRenderer {
       this.buffers.softclipCount = softclipIndices.length
     } else {
       this.buffers.softclipCount = 0
+    }
+
+    // Upload soft clip bases (per-base colored rectangles for showSoftClipping)
+    if (data.numSoftclipBases > 0) {
+      const softclipBaseVAO = gl.createVertexArray()
+      gl.bindVertexArray(softclipBaseVAO)
+      this.uploadUintBuffer(
+        this.mismatchProgram,
+        'a_position',
+        data.softclipBasePositions,
+        1,
+      )
+      this.uploadUint16Buffer(
+        this.mismatchProgram,
+        'a_y',
+        data.softclipBaseYs,
+        1,
+      )
+      this.uploadUint8Buffer(
+        this.mismatchProgram,
+        'a_base',
+        data.softclipBaseBases,
+        1,
+      )
+      // frequency=0 → sub-pixel alpha when zoomed out (same fading as rare mismatches)
+      const frequencies = new Uint8Array(data.numSoftclipBases)
+      this.uploadNormalizedUint8Buffer(
+        this.mismatchProgram,
+        'a_frequency',
+        frequencies,
+        1,
+      )
+      gl.bindVertexArray(null)
+      this.buffers.softclipBaseVAO = softclipBaseVAO
+      this.buffers.softclipBaseCount = data.numSoftclipBases
+    } else {
+      this.buffers.softclipBaseCount = 0
     }
 
     // Upload hard clips - use integer buffers directly
@@ -1534,6 +1582,8 @@ export class WebGLRenderer {
       insertionCount: 0,
       softclipVAO: null,
       softclipCount: 0,
+      softclipBaseVAO: null,
+      softclipBaseCount: 0,
       hardclipVAO: null,
       hardclipCount: 0,
       modificationVAO: null,

@@ -10,6 +10,7 @@ import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -262,15 +263,13 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           />
         </div>
       ) : null}
+      {model.regionTooLarge ? <TooLargeMessage model={model} /> : null}
       <LoadingOverlay
-        statusMessage={
-          model.regionTooLarge
-            ? model.regionTooLargeReason
-            : model.statusMessage || 'Computing display data'
-        }
+        statusMessage={model.statusMessage || 'Computing display data'}
         isVisible={
           !model.displayError &&
-          (!model.cellData || model.cellDataLoading || model.regionTooLarge)
+          !model.regionTooLarge &&
+          (!model.cellData || model.cellDataLoading)
         }
       />
       {model.displayError ? (

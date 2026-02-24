@@ -298,7 +298,7 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, buffers.insertionCount)
     }
 
-    if (state.showMismatches && !state.showModifications) {
+    if (state.showSoftClipping) {
       if (buffers.softclipVAO && buffers.softclipCount > 0) {
         gl.useProgram(this.parent.softclipProgram)
         gl.uniform2f(
@@ -367,6 +367,52 @@ export class PileupRenderer {
 
         gl.bindVertexArray(buffers.hardclipVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.hardclipCount)
+      }
+
+      if (buffers.softclipBaseVAO && buffers.softclipBaseCount > 0) {
+        gl.useProgram(this.parent.mismatchProgram)
+        gl.uniform2f(
+          this.parent.mismatchUniforms.u_bpRangeX!,
+          domainOffset[0],
+          domainOffset[1],
+        )
+        gl.uniform2f(
+          this.parent.mismatchUniforms.u_rangeY!,
+          state.rangeY[0],
+          state.rangeY[1],
+        )
+        gl.uniform1f(
+          this.parent.mismatchUniforms.u_featureHeight!,
+          state.featureHeight,
+        )
+        gl.uniform1f(
+          this.parent.mismatchUniforms.u_featureSpacing!,
+          state.featureSpacing,
+        )
+        gl.uniform1f(
+          this.parent.mismatchUniforms.u_coverageOffset!,
+          coverageOffset,
+        )
+        gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
+        gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
+        gl.uniform3f(
+          this.parent.mismatchUniforms.u_colorBaseA!,
+          ...colors.colorBaseA,
+        )
+        gl.uniform3f(
+          this.parent.mismatchUniforms.u_colorBaseC!,
+          ...colors.colorBaseC,
+        )
+        gl.uniform3f(
+          this.parent.mismatchUniforms.u_colorBaseG!,
+          ...colors.colorBaseG,
+        )
+        gl.uniform3f(
+          this.parent.mismatchUniforms.u_colorBaseT!,
+          ...colors.colorBaseT,
+        )
+        gl.bindVertexArray(buffers.softclipBaseVAO)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipBaseCount)
       }
     }
 

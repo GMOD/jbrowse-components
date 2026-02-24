@@ -11,6 +11,7 @@ import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 
 import type { VariantCellData } from './computeVariantCells.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -326,20 +327,20 @@ const VariantComponent = observer(function VariantComponent({
           />
         </div>
       ) : null}
+      {model.regionTooLarge ? <TooLargeMessage model={model} /> : null}
       <LoadingOverlay
         statusMessage={
-          model.regionTooLarge
-            ? model.regionTooLargeReason
-            : model.statusMessage ||
-              (!model.sources
-                ? 'Loading samples'
-                : !model.featuresReady
-                  ? 'Loading features'
-                  : 'Computing display data')
+          model.statusMessage ||
+          (!model.sources
+            ? 'Loading samples'
+            : !model.featuresReady
+              ? 'Loading features'
+              : 'Computing display data')
         }
         isVisible={
           !model.displayError &&
-          (!model.cellData || model.cellDataLoading || model.regionTooLarge)
+          !model.regionTooLarge &&
+          (!model.cellData || model.cellDataLoading)
         }
       />
       {model.displayError ? (

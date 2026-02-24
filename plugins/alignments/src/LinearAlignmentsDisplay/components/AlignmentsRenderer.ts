@@ -152,6 +152,9 @@ interface GpuRegion {
   softclipBuffer: GPUBuffer | null
   softclipCount: number
   softclipBG: GPUBindGroup | null
+  softclipBaseBuffer: GPUBuffer | null
+  softclipBaseCount: number
+  softclipBaseBG: GPUBindGroup | null
   hardclipBuffer: GPUBuffer | null
   hardclipCount: number
   hardclipBG: GPUBindGroup | null
@@ -383,6 +386,7 @@ export class AlignmentsRenderer {
     r.mismatchBuffer?.destroy()
     r.insertionBuffer?.destroy()
     r.softclipBuffer?.destroy()
+    r.softclipBaseBuffer?.destroy()
     r.hardclipBuffer?.destroy()
     r.modBuffer?.destroy()
     r.modCovBuffer?.destroy()
@@ -429,6 +433,9 @@ export class AlignmentsRenderer {
       softclipBuffer: null,
       softclipCount: 0,
       softclipBG: null,
+      softclipBaseBuffer: null,
+      softclipBaseCount: 0,
+      softclipBaseBG: null,
       hardclipBuffer: null,
       hardclipCount: 0,
       hardclipBG: null,
@@ -568,6 +575,9 @@ export class AlignmentsRenderer {
     r.softclipBuffer?.destroy()
     r.softclipBG = null
     r.softclipCount = 0
+    r.softclipBaseBuffer?.destroy()
+    r.softclipBaseBG = null
+    r.softclipBaseCount = 0
     r.hardclipBuffer?.destroy()
     r.hardclipBG = null
     r.hardclipCount = 0
@@ -654,6 +664,21 @@ export class AlignmentsRenderer {
     r.hardclipBuffer = hc.buffer
     r.hardclipBG = hc.bg
     r.hardclipCount = hc.count
+
+    if (data.numSoftclipBases > 0) {
+      const buf = new ArrayBuffer(data.numSoftclipBases * MISMATCH_STRIDE * 4)
+      const u32 = new Uint32Array(buf)
+      for (let i = 0; i < data.numSoftclipBases; i++) {
+        const o = i * MISMATCH_STRIDE
+        u32[o] = data.softclipBasePositions[i]!
+        u32[o + 1] = data.softclipBaseYs[i]!
+        u32[o + 2] = data.softclipBaseBases[i]!
+        // frequency=0 → sub-pixel alpha when zoomed out
+      }
+      r.softclipBaseBuffer = this.mkBuf(device, buf)
+      r.softclipBaseBG = this.mkBG(device, r.softclipBaseBuffer)
+      r.softclipBaseCount = data.numSoftclipBases
+    }
   }
 
   uploadModificationsFromTypedArraysForRegion(
@@ -1462,6 +1487,9 @@ export class AlignmentsRenderer {
         pass.setBindGroup(0, r.insertionBG)
         pass.draw(18, r.insertionCount)
       }
+    }
+
+    if (state.showSoftClipping) {
       if (r.softclipBG && r.softclipCount > 0) {
         pass.setPipeline(AlignmentsRenderer.softclipPL!)
         pass.setBindGroup(0, r.softclipBG)
@@ -1471,6 +1499,11 @@ export class AlignmentsRenderer {
         pass.setPipeline(AlignmentsRenderer.hardclipPL!)
         pass.setBindGroup(0, r.hardclipBG)
         pass.draw(6, r.hardclipCount)
+      }
+      if (r.softclipBaseBG && r.softclipBaseCount > 0) {
+        pass.setPipeline(AlignmentsRenderer.mismatchPL!)
+        pass.setBindGroup(0, r.softclipBaseBG)
+        pass.draw(6, r.softclipBaseCount)
       }
     }
 

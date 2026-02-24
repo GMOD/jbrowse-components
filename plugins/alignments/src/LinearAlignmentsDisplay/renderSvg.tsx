@@ -852,6 +852,29 @@ export async function renderSvg(
           }
         }
 
+        if (model.showSoftClipping && data.numSoftclipBases > 0) {
+          const scBasePalette: Record<string, RGBColor> = {
+            A: palette.colorBaseA,
+            C: palette.colorBaseC,
+            G: palette.colorBaseG,
+            T: palette.colorBaseT,
+          }
+          for (let i = 0; i < data.numSoftclipBases; i++) {
+            const pos = regionStart + data.softclipBasePositions[i]!
+            if (pos < block.start || pos > block.end) {
+              continue
+            }
+            const base = String.fromCharCode(data.softclipBaseBases[i]!)
+            const x = (pos - block.start) / bpPerPx + blockScreenX
+            const w = Math.max(1 / bpPerPx, 0.5)
+            const y = data.softclipBaseYs[i]! * rowHeight
+            pileupCtx.fillStyle = scBasePalette[base]
+              ? rgb255(scBasePalette[base])
+              : rgb255(palette.colorNostrand)
+            pileupCtx.fillRect(x, y, w, featureHeightSetting)
+          }
+        }
+
         if (model.showModifications && data.numModifications > 0) {
           for (let i = 0; i < data.numModifications; i++) {
             const pos = regionStart + data.modificationPositions[i]!
@@ -1002,6 +1025,29 @@ export async function renderSvg(
             const bw = Math.max(barWidthBp / bpPerPx, 1)
             const color = ibType === 2 ? softclipColor : hardclipColor
             content += `<rect x="${cx - bw / 2}" y="${ibY}" width="${bw}" height="${featureHeightSetting}" fill="${color}"/>`
+          }
+        }
+
+        if (model.showSoftClipping && data.numSoftclipBases > 0) {
+          const scBasePalette: Record<string, RGBColor> = {
+            A: palette.colorBaseA,
+            C: palette.colorBaseC,
+            G: palette.colorBaseG,
+            T: palette.colorBaseT,
+          }
+          for (let i = 0; i < data.numSoftclipBases; i++) {
+            const pos = regionStart + data.softclipBasePositions[i]!
+            if (pos < block.start || pos > block.end) {
+              continue
+            }
+            const base = String.fromCharCode(data.softclipBaseBases[i]!)
+            const x = (pos - block.start) / bpPerPx + blockScreenX
+            const w = Math.max(1 / bpPerPx, 0.5)
+            const ibY = pileupTopOffset + data.softclipBaseYs[i]! * rowHeight
+            const color = scBasePalette[base]
+              ? rgb255(scBasePalette[base])
+              : rgb255(palette.colorNostrand)
+            content += `<rect x="${x}" y="${ibY}" width="${w}" height="${featureHeightSetting}" fill="${color}"/>`
           }
         }
 

@@ -1765,6 +1765,7 @@ export default function stateModelFactory(
                   coverageYOffset: YSCALEBAR_LABEL_OFFSET,
                   coverageNicedMax: self.coverageTicks?.nicedMax,
                   showMismatches: self.showMismatches,
+                  showSoftClipping: self.showSoftClipping,
                   showInterbaseIndicators: self.showInterbaseIndicators,
                   showModifications: self.showModifications,
                   showSashimiArcs: self.showSashimiArcs,

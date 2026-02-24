@@ -1,5 +1,6 @@
 import {
   PORT,
+  appendGpuParam,
   findByTestId,
   navigateWithSessionSpec,
   waitForCanvasRendered,
@@ -40,7 +41,9 @@ const suite: TestSuite = {
       name: 'NCBI alias adapter',
       fn: async page => {
         await page.goto(
-          `http://localhost:${PORT}/?config=test_data/cfam2/config.json&sessionName=Test%20Session`,
+          appendGpuParam(
+            `http://localhost:${PORT}/?config=test_data/cfam2/config.json&sessionName=Test%20Session`,
+          ),
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 

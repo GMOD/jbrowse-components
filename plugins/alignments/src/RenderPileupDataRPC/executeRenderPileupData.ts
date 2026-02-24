@@ -24,6 +24,7 @@ import {
   buildInterbaseArrays,
   buildMismatchArrays,
   buildModificationArrays,
+  buildSoftclipBaseArrays,
   buildTagColors,
   computeFrequenciesAndThresholds,
   extractFeatureTagValue,
@@ -429,6 +430,7 @@ export async function executeRenderPileupData({
     readArrays,
     gapArrays,
     mismatchArrays,
+    softclipBaseArrays,
     interbaseArrays,
     modificationArrays,
   } = await updateStatus('Computing layout', statusCallback, async () => {
@@ -440,8 +442,9 @@ export async function executeRenderPileupData({
           { insertions, softclips, hardclips },
           sortTagValues,
           sortedBy,
+          softclips,
         )
-      : computeLayout(features)
+      : computeLayout(features, softclips)
     const numLevels = max(layout.values(), 0) + 1
     const getY = (id: string) => layout.get(id) ?? 0
 
@@ -484,6 +487,7 @@ export async function executeRenderPileupData({
       },
       gapArrays: buildGapArrays(gaps, regionStart, getY),
       mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
+      softclipBaseArrays: buildSoftclipBaseArrays(softclips, regionStart, getY),
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,
@@ -567,6 +571,8 @@ export async function executeRenderPileupData({
     gapFrequencies,
     ...mismatchArrays,
     mismatchFrequencies,
+    ...softclipBaseArrays,
+    numSoftclipBases: softclipBaseArrays.softclipBasePositions.length,
     ...interbaseArrays,
     interbaseFrequencies,
     ...modificationArrays,
@@ -637,6 +643,9 @@ export async function executeRenderPileupData({
     result.mismatchBases.buffer,
     result.mismatchStrands.buffer,
     result.mismatchFrequencies.buffer,
+    result.softclipBasePositions.buffer,
+    result.softclipBaseYs.buffer,
+    result.softclipBaseBases.buffer,
     result.interbasePositions.buffer,
     result.interbaseYs.buffer,
     result.interbaseLengths.buffer,

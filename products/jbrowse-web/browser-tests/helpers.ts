@@ -6,7 +6,7 @@ export const PORT = 3333
 export const OAUTH_PORT = 3030
 export const BASICAUTH_PORT = 3040
 
-function appendGpuParam(url: string) {
+export function appendGpuParam(url: string) {
   const backend = getBackend()
   if (!backend) {
     return url
@@ -60,36 +60,18 @@ export async function waitForCanvasRendered(
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         return false
       }
-      const w = Math.min(canvas.width, 100)
-      const h = Math.min(canvas.height, 100)
-      const gl =
-        (canvas.getContext('webgl2', {
-          preserveDrawingBuffer: true,
-        }) as WebGL2RenderingContext | null) ||
-        (canvas.getContext('webgl', {
-          preserveDrawingBuffer: true,
-        }) as WebGLRenderingContext | null)
-      if (gl) {
-        const pixels = new Uint8Array(w * h * 4)
-        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
-        for (let i = 3; i < pixels.length; i += 4) {
-          if (pixels[i]! > 0) {
-            return true
-          }
-        }
-        return false
+
+      // check the drawn-true testid on the parent container, this is
+      // set by NonBlockCanvasDisplayComponent when rendering is complete
+      const parent = canvas.closest('[data-testid^="drawn-"]')
+      if (parent) {
+        return parent.getAttribute('data-testid') === 'drawn-true'
       }
-      const ctx = canvas.getContext('2d', { willReadFrequently: true })
-      if (!ctx) {
-        return false
-      }
-      const { data } = ctx.getImageData(0, 0, w, h)
-      for (let i = 3; i < data.length; i += 4) {
-        if (data[i]! > 0) {
-          return true
-        }
-      }
-      return false
+
+      // for canvas elements without drawn- indicator, check if toDataURL
+      // produces something beyond a blank image
+      const dataUrl = canvas.toDataURL()
+      return dataUrl.length > 500
     },
     { timeout, polling: 200 },
     selector,

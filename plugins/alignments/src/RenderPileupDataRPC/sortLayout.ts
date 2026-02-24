@@ -10,22 +10,44 @@ import type {
   SoftclipData,
 } from '../shared/webglRpcTypes.ts'
 
-export function computeLayout(features: FeatureData[]): Map<string, number> {
+function buildClipExpansions(softclips: SoftclipData[]) {
+  const expansions = new Map<string, { start: number; end: number }>()
+  for (const sc of softclips) {
+    const existing = expansions.get(sc.featureId)
+    const clipEnd = sc.clipStart + sc.length
+    if (!existing) {
+      expansions.set(sc.featureId, { start: sc.clipStart, end: clipEnd })
+    } else {
+      existing.start = Math.min(existing.start, sc.clipStart)
+      existing.end = Math.max(existing.end, clipEnd)
+    }
+  }
+  return expansions
+}
+
+export function computeLayout(
+  features: FeatureData[],
+  softclips?: SoftclipData[],
+): Map<string, number> {
+  const expansions = softclips ? buildClipExpansions(softclips) : undefined
   const sorted = [...features].sort((a, b) => a.start - b.start)
   const levels: number[] = []
   const layoutMap = new Map<string, number>()
 
   for (const feature of sorted) {
+    const exp = expansions?.get(feature.id)
+    const effectiveStart = exp ? Math.min(feature.start, exp.start) : feature.start
+    const effectiveEnd = exp ? Math.max(feature.end, exp.end) : feature.end
     let y = 0
     for (const [i, level] of levels.entries()) {
-      if (level <= feature.start) {
+      if (level <= effectiveStart) {
         y = i
         break
       }
       y = i + 1
     }
     layoutMap.set(feature.id, y)
-    levels[y] = feature.end + 2
+    levels[y] = effectiveEnd + 2
   }
 
   return layoutMap
@@ -148,7 +170,9 @@ export function computeSortedLayout(
   interbaseData: InterbaseData | undefined,
   tagValues: Map<string, string> | undefined,
   sortedBy: SortedBy,
+  softclips?: SoftclipData[],
 ) {
+  const expansions = softclips ? buildClipExpansions(softclips) : undefined
   const { pos } = sortedBy
   const overlapping: FeatureData[] = []
   const nonOverlapping: FeatureData[] = []
@@ -174,15 +198,10 @@ export function computeSortedLayout(
 
   let nextRow = 0
   for (const f of overlapping) {
-    const top = layout.addRect(
-      f.id,
-      f.start,
-      f.end + 2,
-      1,
-      undefined,
-      undefined,
-      nextRow,
-    )
+    const exp = expansions?.get(f.id)
+    const s = exp ? Math.min(f.start, exp.start) : f.start
+    const e = exp ? Math.max(f.end, exp.end) : f.end
+    const top = layout.addRect(f.id, s, e + 2, 1, undefined, undefined, nextRow)
     if (top !== null) {
       layoutMap.set(f.id, top)
       nextRow = top + 1
@@ -190,7 +209,10 @@ export function computeSortedLayout(
   }
 
   for (const f of nonOverlapping) {
-    const top = layout.addRect(f.id, f.start, f.end + 2, 1)
+    const exp = expansions?.get(f.id)
+    const s = exp ? Math.min(f.start, exp.start) : f.start
+    const e = exp ? Math.max(f.end, exp.end) : f.end
+    const top = layout.addRect(f.id, s, e + 2, 1)
     if (top !== null) {
       layoutMap.set(f.id, top)
     }

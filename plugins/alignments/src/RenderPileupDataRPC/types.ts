@@ -124,6 +124,13 @@ export interface PileupDataResult {
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
 
+  // Soft clip base data - per-base rendering for showSoftClipping feature
+  // Positions may wrap (uint32) for bases that extend before regionStart
+  softclipBasePositions: Uint32Array
+  softclipBaseYs: Uint16Array
+  softclipBaseBases: Uint8Array // ASCII character code
+  numSoftclipBases: number
+
   // Interbase data - insertions, soft clips, and hard clips combined (offsets from regionStart)
   // These three feature types have identical structure, so combining reduces memory and transfer overhead
   interbasePositions: Uint32Array
