@@ -24,5 +24,5 @@ export default function LinearWiggleDisplayF(
 }
 
 export { default as Tooltip } from './components/Tooltip.tsx'
-export { default as ReactComponent } from './components/WebGLWiggleComponent.tsx'
+export { default as ReactComponent } from './components/WiggleComponent.tsx'
 export { default as modelFactory } from './model.ts'

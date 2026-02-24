@@ -2,7 +2,7 @@ import { measureText } from '@jbrowse/core/util'
 
 import { getInsertionType } from '../model.ts'
 
-import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
 export interface VisibleLabel {
   type: 'deletion' | 'insertion' | 'softclip' | 'hardclip' | 'mismatch'
@@ -13,7 +13,7 @@ export interface VisibleLabel {
 }
 
 interface BlockLabelParams {
-  rpcData: WebGLPileupDataResult
+  rpcData: PileupDataResult
   blockStart: number
   blockEnd: number
   blockScreenOffsetPx: number

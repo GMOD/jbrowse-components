@@ -26,10 +26,10 @@ export {
   default as NonBlockCanvasDisplayMixin,
 } from './models/NonBlockCanvasDisplayMixin.tsx'
 export {
-  type MultiRegionWebGLDisplayMixinType,
-  type Region as MultiRegionWebGLRegion,
-  default as MultiRegionWebGLDisplayMixin,
-} from './models/MultiRegionWebGLDisplayMixin.ts'
+  type MultiRegionDisplayMixinType,
+  type Region as MultiRegionRegion,
+  default as MultiRegionDisplayMixin,
+} from './models/MultiRegionDisplayMixin.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'
 export { default as TooLargeMessage } from './components/TooLargeMessage.tsx'

@@ -1,14 +1,14 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { RenderWebGLPileupDataArgs } from './types'
+import type { RenderPileupDataArgs } from './types'
 
-export default class RenderWebGLPileupData extends RpcMethodType {
-  name = 'RenderWebGLPileupData'
+export default class RenderPileupData extends RpcMethodType {
+  name = 'RenderPileupData'
 
   async renameRegionsIfNeeded(
-    args: RenderWebGLPileupDataArgs,
-  ): Promise<RenderWebGLPileupDataArgs> {
+    args: RenderPileupDataArgs,
+  ): Promise<RenderPileupDataArgs> {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
@@ -47,7 +47,7 @@ export default class RenderWebGLPileupData extends RpcMethodType {
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const renamed = await this.renameRegionsIfNeeded(
-      args as unknown as RenderWebGLPileupDataArgs,
+      args as unknown as RenderPileupDataArgs,
     )
     return super.serializeArguments(
       renamed as unknown as Record<string, unknown>,
@@ -56,11 +56,11 @@ export default class RenderWebGLPileupData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLPileupData } =
-      await import('./executeRenderWebGLPileupData.ts')
-    return executeRenderWebGLPileupData({
+    const { executeRenderPileupData } =
+      await import('./executeRenderPileupData.ts')
+    return executeRenderPileupData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderWebGLPileupDataArgs,
+      args: args as unknown as RenderPileupDataArgs,
     })
   }
 }

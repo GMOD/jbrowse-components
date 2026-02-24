@@ -20,7 +20,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
-  MultiRegionWebGLDisplayMixin,
+  MultiRegionDisplayMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -60,8 +60,8 @@ import type {
   CigarHitResult,
   IndicatorHitResult,
 } from './components/hitTesting.ts'
-import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
-import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types'
+import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -71,7 +71,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
-  MultiRegionWebGLRegion as Region,
+  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -147,7 +147,7 @@ export function getInsertionRectWidthPx(
   return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
 }
 
-export type { MultiRegionWebGLRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
 function getDisplayStr(totalBytes: number) {
   if (Math.floor(totalBytes / 1000000) > 0) {
@@ -192,7 +192,7 @@ async function fetchFeatureDetails(self: any, featureId: string) {
   const sessionId = getRpcSessionId(self)
   const { feature } = (await session.rpcManager.call(
     sessionId,
-    'WebGLGetFeatureDetails',
+    'GetFeatureDetails',
     { sessionId, adapterConfig, sequenceAdapter, region, featureId },
   )) as {
     feature: (Record<string, unknown> & { uniqueId: string }) | undefined
@@ -205,11 +205,11 @@ async function fetchFeatureDetails(self: any, featureId: string) {
   )
 }
 
-const WebGLAlignmentsComponent = lazy(
-  () => import('./components/WebGLPileupComponent.tsx'),
+const AlignmentsComponent = lazy(
+  () => import('./components/PileupComponent.tsx'),
 )
 
-const WebGLTooltip = lazy(() => import('./components/WebGLTooltip.tsx'))
+const AlignmentsTooltip = lazy(() => import('./components/AlignmentsTooltip.tsx'))
 const ColorByTagDialog = lazy(
   () => import('../shared/components/ColorByTagDialog.tsx'),
 )
@@ -246,7 +246,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       RegionTooLargeMixin(),
-      MultiRegionWebGLDisplayMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         /**
          * #property
@@ -428,7 +428,7 @@ export default function stateModelFactory(
       contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
       contextMenuRefName: undefined as string | undefined,
       fetchToken: 0,
-      rpcDataMap: new Map<number, WebGLPileupDataResult>(),
+      rpcDataMap: new Map<number, PileupDataResult>(),
       statusMessage: 'Loading',
       webglRef: null as unknown,
       currentRangeY: [0, 600] as [number, number],
@@ -459,14 +459,14 @@ export default function stateModelFactory(
        * Use custom component instead of block-based rendering
        */
       get DisplayMessageComponent() {
-        return WebGLAlignmentsComponent
+        return AlignmentsComponent
       },
 
       /**
        * Custom tooltip that prioritizes mouseoverExtraInformation for CIGAR items
        */
       get TooltipComponent() {
-        return WebGLTooltip
+        return AlignmentsTooltip
       },
 
       /**
@@ -834,7 +834,7 @@ export default function stateModelFactory(
           }
         },
 
-        setRpcData(regionNumber: number, data: WebGLPileupDataResult | null) {
+        setRpcData(regionNumber: number, data: PileupDataResult | null) {
           const next = new Map(self.rpcDataMap)
           if (data) {
             next.set(regionNumber, data)
@@ -1226,7 +1226,7 @@ export default function stateModelFactory(
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
           sessionId,
-          'RenderWebGLPileupData',
+          'RenderPileupData',
           {
             sessionId,
             adapterConfig,
@@ -1243,7 +1243,7 @@ export default function stateModelFactory(
               }
             },
           },
-        )) as WebGLPileupDataResult
+        )) as PileupDataResult
         if (isAlive(self)) {
           self.setRpcData(regionNumber, result)
           self.setModificationsReady(true)
@@ -1262,7 +1262,7 @@ export default function stateModelFactory(
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
           sessionId,
-          'RenderWebGLArcsData',
+          'RenderArcsData',
           {
             sessionId,
             adapterConfig,
@@ -1280,7 +1280,7 @@ export default function stateModelFactory(
               }
             },
           },
-        )) as WebGLArcsDataResult
+        )) as ArcsDataResult
         if (isAlive(self)) {
           self.arcsState.setRpcData(regionNumber, result)
         }
@@ -1297,7 +1297,7 @@ export default function stateModelFactory(
         const sessionId = getRpcSessionId(self)
         const result = (await session.rpcManager.call(
           sessionId,
-          'RenderWebGLChainData',
+          'RenderChainData',
           {
             sessionId,
             adapterConfig,
@@ -1315,7 +1315,7 @@ export default function stateModelFactory(
               }
             },
           },
-        )) as WebGLPileupDataResult
+        )) as PileupDataResult
         if (isAlive(self)) {
           self.setRpcData(regionNumber, result)
           self.setModificationsReady(true)

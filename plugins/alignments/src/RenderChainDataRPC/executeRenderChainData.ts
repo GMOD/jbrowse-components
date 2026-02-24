@@ -1,5 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { max, updateStatus } from '@jbrowse/core/util'
+import { dedupe, groupBy, max, min, updateStatus } from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -8,9 +10,8 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { computeLayout, computeSortedLayout } from './sortLayout.ts'
 import { buildModTooltipData } from '../shared/buildTooltipData.ts'
-import { calculateModificationCounts } from '../shared/calculateModificationCounts.ts'
+import { PairType, getPairedType } from '../shared/color.ts'
 import {
   computeCoverage,
   computeNoncovCoverage,
@@ -33,10 +34,14 @@ import {
   fetchReferenceSequence,
 } from '../shared/processFeatureAlignments.ts'
 
-import type { RenderWebGLPileupDataArgs, WebGLPileupDataResult } from './types'
-import type { Mismatch } from '../shared/types'
 import type {
-  FeatureData,
+  RenderPileupDataArgs,
+  PileupDataResult,
+} from '../RenderPileupDataRPC/types.ts'
+import type { Mismatch } from '../shared/types'
+import type { ChainStats } from '../shared/types.ts'
+import type {
+  ChainFeatureData,
   GapData,
   HardclipData,
   InsertionData,
@@ -46,217 +51,71 @@ import type {
 } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
 
-interface SnpCountEntry {
-  baseCounts: Record<string, number>
-  strandBaseCounts: Record<string, { fwd: number; rev: number }>
+interface ExecuteParams {
+  pluginManager: PluginManager
+  args: RenderChainDataArgs
 }
 
-interface ModificationColorEntry {
-  r: number
-  g: number
-  b: number
-  probabilityTotal: number
-  probabilityCount: number
-  base: string
-  isSimplex: boolean
+export interface RenderChainDataArgs extends RenderPileupDataArgs {
+  drawSingletons?: boolean
+  drawProperPairs?: boolean
 }
 
-type SortTagValuesMap = Map<string, string>
+function getColorType(f: ChainFeatureData, stats?: ChainStats) {
+  const pairType = getPairedType({
+    type: 'insertSizeAndOrientation',
+    f: {
+      refName: f.refName,
+      next_ref: f.nextRef,
+      pair_orientation: f.pairOrientationStr,
+      tlen: f.templateLength,
+      flags: f.flags,
+    },
+    stats,
+  })
 
-function computeModificationCoverage(
-  modifications: ModificationEntry[],
-  mismatches: MismatchData[],
-  depths: Float32Array,
-  regionMaxDepth: number,
-  fwdDepths: Float32Array | undefined,
-  revDepths: Float32Array | undefined,
-  depthStartOffset: number,
-  regionStart: number,
-  regionSequence: string | undefined,
-  regionSequenceStart: number,
+  switch (pairType) {
+    case PairType.LONG_INSERT:
+      return 1
+    case PairType.SHORT_INSERT:
+      return 2
+    case PairType.INTER_CHROM:
+      return 3
+    case PairType.ABNORMAL_ORIENTATION:
+      return 4
+    default:
+      return 0
+  }
+}
+
+function computeChainLayout(
+  chains: { minStart: number; maxEnd: number; distance: number }[],
 ) {
-  if (modifications.length === 0) {
-    return {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colors: new Uint8Array(0),
-      count: 0,
-    }
+  const sorted = chains
+    .map((c, i) => ({ ...c, idx: i }))
+    .sort((a, b) => a.distance - b.distance)
+  const layout = new GranularRectLayout({ pitchX: 1, pitchY: 1 })
+  const layoutMap = new Map<number, number>()
+
+  for (const chain of sorted) {
+    const top = layout.addRect(
+      String(chain.idx),
+      chain.minStart,
+      chain.maxEnd + 2,
+      1,
+    )
+    layoutMap.set(chain.idx, top ?? 0)
   }
 
-  const snpByPosition = new Map<number, SnpCountEntry>()
-  for (const mm of mismatches) {
-    if (mm.position < regionStart) {
-      continue
-    }
-    let entry = snpByPosition.get(mm.position)
-    if (!entry) {
-      entry = { baseCounts: {}, strandBaseCounts: {} }
-      snpByPosition.set(mm.position, entry)
-    }
-    const base = String.fromCharCode(mm.base)
-    entry.baseCounts[base] = (entry.baseCounts[base] ?? 0) + 1
-    if (!entry.strandBaseCounts[base]) {
-      entry.strandBaseCounts[base] = { fwd: 0, rev: 0 }
-    }
-    if (mm.strand === 1) {
-      entry.strandBaseCounts[base].fwd++
-    } else {
-      entry.strandBaseCounts[base].rev++
-    }
-  }
-
-  const byPosition = new Map<number, Map<string, ModificationColorEntry>>()
-
-  for (const mod of modifications) {
-    if (mod.position < regionStart) {
-      continue
-    }
-    let colorMap = byPosition.get(mod.position)
-    if (!colorMap) {
-      colorMap = new Map()
-      byPosition.set(mod.position, colorMap)
-    }
-    const key = `${mod.r},${mod.g},${mod.b}`
-    let entry = colorMap.get(key)
-    if (!entry) {
-      entry = {
-        r: mod.r,
-        g: mod.g,
-        b: mod.b,
-        probabilityTotal: 0,
-        probabilityCount: 0,
-        base: mod.base,
-        isSimplex: mod.isSimplex,
-      }
-      colorMap.set(key, entry)
-    }
-    entry.probabilityTotal += mod.prob
-    entry.probabilityCount++
-  }
-
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    r: number
-    g: number
-    b: number
-    alpha: number
-  }[] = []
-
-  for (const [position, colorMap] of byPosition) {
-    const binIdx = Math.floor(position - regionStart - depthStartOffset)
-    const depthAtPosition = depths[binIdx] ?? 0
-    if (depthAtPosition === 0) {
-      continue
-    }
-
-    const refbase = regionSequence
-      ? (
-          regionSequence[position - regionSequenceStart + 1] ?? 'N'
-        ).toUpperCase()
-      : 'N'
-
-    const snpEntry = snpByPosition.get(position)
-    const snpBaseCounts = snpEntry?.baseCounts ?? {}
-    const snpStrandBaseCounts = snpEntry?.strandBaseCounts ?? {}
-
-    const totalSnp = Object.values(snpBaseCounts).reduce((a, b) => a + b, 0)
-    const refCount = Math.max(0, depthAtPosition - totalSnp)
-
-    const baseCounts: Record<string, number> = { ...snpBaseCounts }
-    baseCounts[refbase] = (baseCounts[refbase] ?? 0) + refCount
-
-    const strandBaseCounts: Record<string, { fwd: number; rev: number }> = {}
-    for (const [base, sc] of Object.entries(snpStrandBaseCounts)) {
-      strandBaseCounts[base] = { ...sc }
-    }
-
-    if (fwdDepths && revDepths) {
-      const fwdDepthAtPosition = fwdDepths[binIdx] ?? 0
-      const revDepthAtPosition = revDepths[binIdx] ?? 0
-      let snpFwd = 0
-      let snpRev = 0
-      for (const sc of Object.values(snpStrandBaseCounts)) {
-        snpFwd += sc.fwd
-        snpRev += sc.rev
-      }
-      const refFwd = Math.max(0, fwdDepthAtPosition - snpFwd)
-      const refRev = Math.max(0, revDepthAtPosition - snpRev)
-      if (!strandBaseCounts[refbase]) {
-        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
-      }
-      strandBaseCounts[refbase].fwd += refFwd
-      strandBaseCounts[refbase].rev += refRev
-    } else {
-      if (!strandBaseCounts[refbase]) {
-        strandBaseCounts[refbase] = { fwd: 0, rev: 0 }
-      }
-      strandBaseCounts[refbase].fwd += refCount
-    }
-
-    let yOffset = 0
-    for (const entry of colorMap.values()) {
-      const { modifiable, detectable } = calculateModificationCounts({
-        base: entry.base,
-        isSimplex: entry.isSimplex,
-        refbase,
-        baseCounts,
-        strandBaseCounts,
-      })
-
-      const modFraction =
-        (modifiable / depthAtPosition) * (entry.probabilityTotal / detectable)
-      const height = modFraction * (depthAtPosition / regionMaxDepth)
-
-      const avgProbability =
-        entry.probabilityCount > 0
-          ? entry.probabilityTotal / entry.probabilityCount
-          : 0
-
-      if (!Number.isNaN(height)) {
-        segments.push({
-          position,
-          yOffset,
-          height,
-          r: entry.r,
-          g: entry.g,
-          b: entry.b,
-          alpha: Math.round(avgProbability * 255),
-        })
-        yOffset += height
-      }
-    }
-  }
-
-  const positions = new Uint32Array(segments.length)
-  const yOffsets = new Float32Array(segments.length)
-  const heights = new Float32Array(segments.length)
-  const colors = new Uint8Array(segments.length * 4)
-
-  for (const [i, seg] of segments.entries()) {
-    positions[i] = seg.position - regionStart
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colors[i * 4] = seg.r
-    colors[i * 4 + 1] = seg.g
-    colors[i * 4 + 2] = seg.b
-    colors[i * 4 + 3] = seg.alpha
-  }
-
-  return { positions, yOffsets, heights, colors, count: segments.length }
+  return layoutMap
 }
 
-export async function executeRenderWebGLPileupData({
+export async function executeRenderChainData({
   pluginManager,
   args,
-}: {
-  pluginManager: PluginManager
-  args: RenderWebGLPileupDataArgs
-}) {
+}: ExecuteParams) {
   const {
     sessionId,
     adapterConfig,
@@ -264,7 +123,8 @@ export async function executeRenderWebGLPileupData({
     region,
     colorBy,
     colorTagMap,
-    sortedBy,
+    drawSingletons = true,
+    drawProperPairs = true,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -314,6 +174,30 @@ export async function executeRenderWebGLPileupData({
   const detectedModifications = new Set<string>()
   const detectedSimplexModifications = new Set<string>()
 
+  const deduped = dedupe(featuresArray, (f: Feature) => f.id())
+  let keptIds: Set<string> | undefined
+  if (!drawSingletons || !drawProperPairs) {
+    const byName = groupBy(deduped, (f: Feature) => f.get('name') ?? '')
+    let rawChains = Object.values(byName)
+    if (!drawSingletons) {
+      rawChains = rawChains.filter(c => c.length > 1)
+    }
+    if (!drawProperPairs) {
+      rawChains = rawChains.filter(
+        c => !c.every((f: Feature) => !!((f.get('flags') ?? 0) & 2)),
+      )
+    }
+    keptIds = new Set<string>()
+    for (const chain of rawChains) {
+      for (const f of chain) {
+        keptIds.add(f.id())
+      }
+    }
+  }
+  const keptFeatures = keptIds
+    ? deduped.filter(f => keptIds.has(f.id()))
+    : deduped
+
   const {
     features,
     gaps,
@@ -323,9 +207,8 @@ export async function executeRenderWebGLPileupData({
     hardclips,
     modifications,
     tagColors,
-    sortTagValues,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
-    const featuresData: FeatureData[] = []
+    const featuresData: ChainFeatureData[] = []
     const gapsData: GapData[] = []
     const mismatchesData: MismatchData[] = []
     const insertionsData: InsertionData[] = []
@@ -334,27 +217,22 @@ export async function executeRenderWebGLPileupData({
     const modificationsData: ModificationEntry[] = []
     const tagColorValues: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
-    const sortTagValues: SortTagValuesMap | undefined =
-      sortedBy?.type === 'tag' && sortedBy.tag
-        ? new Map<string, string>()
-        : undefined
 
-    for (const feature of featuresArray) {
+    for (const feature of keptFeatures) {
       const featureId = feature.id()
       const featureStart = feature.get('start')
       const strand = feature.get('strand')
 
-      featuresData.push(buildBaseFeatureData(feature))
+      featuresData.push({
+        ...buildBaseFeatureData(feature),
+        refName: feature.get('refName'),
+        nextRef: feature.get('next_ref'),
+        pairOrientationStr: feature.get('pair_orientation'),
+        templateLength: feature.get('template_length') ?? 0,
+      })
 
       if (isTagColorMode) {
         tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
-      }
-
-      if (sortTagValues) {
-        const val = extractFeatureTagValue(feature, sortedBy!.tag!)
-        if (val !== '') {
-          sortTagValues.set(featureId, val)
-        }
       }
 
       const featureMismatches = feature.get('mismatches') as
@@ -416,34 +294,108 @@ export async function executeRenderWebGLPileupData({
       hardclips: hardclipsData,
       modifications: modificationsData,
       tagColors: readTagColors,
-      sortTagValues,
     }
   })
 
   checkStopToken2(stopTokenCheck)
 
-  const regionEnd = Math.ceil(region.end)
+  const featuresByName = groupBy(features, f => f.name)
+  const chains = Object.values(featuresByName)
+
+  const tlens: number[] = []
+  for (const f of features) {
+    if (f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048)) {
+      const tlen = f.templateLength
+      if (tlen !== 0 && !Number.isNaN(tlen)) {
+        tlens.push(Math.abs(tlen))
+      }
+    }
+  }
+
+  let chainStats: ChainStats | undefined
+  if (tlens.length > 0) {
+    const insertSizeStats = getInsertSizeStats(tlens)
+    chainStats = {
+      ...insertSizeStats,
+      max: max(tlens),
+      min: min(tlens),
+    }
+  }
+
+  const chainBounds: {
+    minStart: number
+    maxEnd: number
+    distance: number
+    chainIdx: number
+  }[] = []
+
+  for (const [chainIdx, chain] of chains.entries()) {
+    let minStart = Number.MAX_VALUE
+    let maxEnd = Number.MIN_VALUE
+    for (const f of chain) {
+      if (f.start < minStart) {
+        minStart = f.start
+      }
+      if (f.end > maxEnd) {
+        maxEnd = f.end
+      }
+    }
+
+    let distance = maxEnd - minStart
+    if (chain.length === 1) {
+      const tlen = Math.abs(chain[0]!.templateLength || 0)
+      if (tlen > 0) {
+        distance = tlen
+      }
+    }
+
+    chainBounds.push({ minStart, maxEnd, distance, chainIdx })
+  }
+
+  const featureIdToY = new Map<string, number>()
+  let maxY = 0
 
   const {
-    maxY,
     readArrays,
     gapArrays,
     mismatchArrays,
     interbaseArrays,
     modificationArrays,
-  } = await updateStatus('Computing layout', statusCallback, async () => {
-    const layout = sortedBy
-      ? computeSortedLayout(
-          features,
-          mismatches,
-          gaps,
-          { insertions, softclips, hardclips },
-          sortTagValues,
-          sortedBy,
-        )
-      : computeLayout(features)
-    const numLevels = max(layout.values(), 0) + 1
-    const getY = (id: string) => layout.get(id) ?? 0
+    connectingLineArrays,
+    chainFlatbushData,
+    chainFirstReadIndices,
+  } = await updateStatus('Computing chain layout', statusCallback, async () => {
+    const chainLayout = computeChainLayout(chainBounds)
+    for (const cb of chainBounds) {
+      const row = chainLayout.get(cb.chainIdx) ?? 0
+      const chain = chains[cb.chainIdx]!
+      for (const f of chain) {
+        featureIdToY.set(f.id, row)
+      }
+      if (row > maxY) {
+        maxY = row
+      }
+    }
+    maxY += 1
+
+    const chainHasSupp = new Set<number>()
+    for (const [chainIdx, chain] of chains.entries()) {
+      for (const f of chain) {
+        if (f.flags & 2048) {
+          chainHasSupp.add(chainIdx)
+          break
+        }
+      }
+    }
+
+    const featureIdToChainIdx = new Map<string, number>()
+    for (const [chainIdx, chain] of chains.entries()) {
+      for (const f of chain) {
+        featureIdToChainIdx.set(f.id, chainIdx)
+      }
+    }
+
+    const getY = (id: string) => featureIdToY.get(id) ?? 0
 
     const readPositions = new Uint32Array(features.length * 2)
     const readYs = new Uint16Array(features.length)
@@ -452,8 +404,11 @@ export async function executeRenderWebGLPileupData({
     const readInsertSizes = new Float32Array(features.length)
     const readPairOrientations = new Uint8Array(features.length)
     const readStrands = new Int8Array(features.length)
+    const readChainHasSupp = new Uint8Array(features.length)
     const readIds: string[] = []
     const readNames: string[] = []
+    const readNextRefs: string[] = []
+    const readChainIndices = new Uint32Array(features.length)
 
     for (const [i, f] of features.entries()) {
       const y = getY(f.id)
@@ -465,12 +420,74 @@ export async function executeRenderWebGLPileupData({
       readInsertSizes[i] = f.insertSize
       readPairOrientations[i] = f.pairOrientation
       readStrands[i] = f.strand
+      const cIdx = featureIdToChainIdx.get(f.id)
+      readChainHasSupp[i] = cIdx !== undefined && chainHasSupp.has(cIdx) ? 1 : 0
+      readChainIndices[i] = cIdx ?? 0
       readIds.push(f.id)
       readNames.push(f.name)
+      readNextRefs.push(f.nextRef ?? '')
+    }
+
+    const connectingLines: {
+      start: number
+      end: number
+      y: number
+      colorType: number
+    }[] = []
+    for (const cb of chainBounds) {
+      const chain = chains[cb.chainIdx]!
+      if (chain.length < 2) {
+        continue
+      }
+      const y = getY(chain[0]!.id)
+      const colorType = chainHasSupp.has(cb.chainIdx)
+        ? 5
+        : getColorType(chain[0]!, chainStats)
+      connectingLines.push({
+        start: Math.max(0, cb.minStart - regionStart),
+        end: cb.maxEnd - regionStart,
+        y,
+        colorType,
+      })
+    }
+
+    const connectingLinePositions = new Uint32Array(connectingLines.length * 2)
+    const connectingLineYs = new Uint16Array(connectingLines.length)
+    const connectingLineColorTypes = new Uint8Array(connectingLines.length)
+    for (const [i, line] of connectingLines.entries()) {
+      connectingLinePositions[i * 2] = line.start
+      connectingLinePositions[i * 2 + 1] = line.end
+      connectingLineYs[i] = line.y
+      connectingLineColorTypes[i] = line.colorType
+    }
+
+    const featureIdToIndex = new Map<string, number>()
+    for (const [i, f] of features.entries()) {
+      if (!featureIdToIndex.has(f.id)) {
+        featureIdToIndex.set(f.id, i)
+      }
+    }
+
+    let chainFlatbushData: ArrayBuffer | undefined
+    const chainFirstReadIndices = new Uint32Array(chainBounds.length)
+    if (chainBounds.length > 0) {
+      const flatbush = new Flatbush(chainBounds.length)
+      for (const [i, cb] of chainBounds.entries()) {
+        const chain = chains[cb.chainIdx]!
+        const y = getY(chain[0]!.id)
+        flatbush.add(
+          Math.max(0, cb.minStart - regionStart),
+          y,
+          cb.maxEnd - regionStart,
+          y,
+        )
+        chainFirstReadIndices[i] = featureIdToIndex.get(chain[0]!.id) ?? 0
+      }
+      flatbush.finish()
+      chainFlatbushData = flatbush.data
     }
 
     return {
-      maxY: numLevels,
       readArrays: {
         readPositions,
         readYs,
@@ -479,8 +496,11 @@ export async function executeRenderWebGLPileupData({
         readInsertSizes,
         readPairOrientations,
         readStrands,
+        readChainHasSupp,
         readIds,
         readNames,
+        readNextRefs,
+        readChainIndices,
       },
       gapArrays: buildGapArrays(gaps, regionStart, getY),
       mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
@@ -496,17 +516,25 @@ export async function executeRenderWebGLPileupData({
         regionStart,
         getY,
       ),
+      connectingLineArrays: {
+        connectingLinePositions,
+        connectingLineYs,
+        connectingLineColorTypes,
+        numConnectingLines: connectingLines.length,
+      },
+      chainFlatbushData,
+      chainFirstReadIndices,
     }
   })
 
   checkStopToken2(stopTokenCheck)
 
-  const trackStrands = colorBy?.type === 'modifications'
+  const regionEnd = Math.ceil(region.end)
+
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
-    async () =>
-      computeCoverage(features, gaps, regionStart, regionEnd, trackStrands),
+    async () => computeCoverage(features, gaps, regionStart, regionEnd),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -533,33 +561,11 @@ export async function executeRenderWebGLPileupData({
     regionStart,
   )
 
-  const modCoverage = computeModificationCoverage(
-    modifications,
-    mismatches,
-    coverage.depths,
-    coverage.maxDepth,
-    coverage.fwdDepths,
-    coverage.revDepths,
-    coverage.startOffset,
-    regionStart,
-    regionSequence,
-    regionSequenceStart,
-  )
+  const sashimi = computeSashimiJunctions(gaps, regionStart)
 
   const modTooltipData = buildModTooltipData({ modifications, regionStart })
 
-  const sashimi = computeSashimiJunctions(gaps, regionStart)
-
-  const pairedInsertSizes = features
-    .filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048))
-    .map(f => f.insertSize)
-
-  const insertSizeStats =
-    pairedInsertSizes.length > 0
-      ? getInsertSizeStats(pairedInsertSizes)
-      : undefined
-
-  const result: WebGLPileupDataResult = {
+  const result: PileupDataResult = {
     regionStart,
 
     ...readArrays,
@@ -592,15 +598,20 @@ export async function executeRenderWebGLPileupData({
     indicatorPositions: noncovCoverage.indicatorPositions,
     indicatorColorTypes: noncovCoverage.indicatorColorTypes,
 
-    modCovPositions: modCoverage.positions,
-    modCovYOffsets: modCoverage.yOffsets,
-    modCovHeights: modCoverage.heights,
-    modCovColors: modCoverage.colors,
-    numModCovSegments: modCoverage.count,
+    modCovPositions: new Uint32Array(0),
+    modCovYOffsets: new Float32Array(0),
+    modCovHeights: new Float32Array(0),
+    modCovColors: new Uint8Array(0),
+    numModCovSegments: 0,
 
     ...sashimi,
 
     modTooltipData,
+
+    ...connectingLineArrays,
+
+    chainFlatbushData,
+    chainFirstReadIndices,
 
     maxY,
     numReads: features.length,
@@ -611,12 +622,12 @@ export async function executeRenderWebGLPileupData({
     numModifications: modificationArrays.modificationPositions.length,
     numSnpSegments: snpCoverage.count,
     numNoncovSegments: noncovCoverage.segmentCount,
+    numIndicators: noncovCoverage.indicatorCount,
 
     detectedModifications: Array.from(detectedModifications),
     simplexModifications: Array.from(detectedSimplexModifications),
-    numIndicators: noncovCoverage.indicatorCount,
 
-    insertSizeStats,
+    insertSizeStats: chainStats,
   }
 
   const transferables = [
@@ -625,6 +636,7 @@ export async function executeRenderWebGLPileupData({
     result.readFlags.buffer,
     result.readMapqs.buffer,
     result.readInsertSizes.buffer,
+    result.readChainHasSupp!.buffer,
     result.readPairOrientations.buffer,
     result.readStrands.buffer,
     result.gapPositions.buffer,
@@ -666,6 +678,12 @@ export async function executeRenderWebGLPileupData({
     result.sashimiScores.buffer,
     result.sashimiColorTypes.buffer,
     result.sashimiCounts.buffer,
+    result.connectingLinePositions!.buffer,
+    result.connectingLineYs!.buffer,
+    result.connectingLineColorTypes!.buffer,
+    result.chainFirstReadIndices!.buffer,
+    result.readChainIndices!.buffer,
+    ...(result.chainFlatbushData ? [result.chainFlatbushData] : []),
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

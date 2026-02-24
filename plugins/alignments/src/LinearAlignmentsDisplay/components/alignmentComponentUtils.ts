@@ -17,8 +17,8 @@ import type {
 import type { CigarHitResult, SashimiArcHitResult } from './hitTesting'
 import type {
   CoverageTooltipBin,
-  WebGLPileupDataResult,
-} from '../../RenderWebGLPileupDataRPC/types'
+  PileupDataResult,
+} from '../../RenderPileupDataRPC/types'
 import type { Theme } from '@mui/material'
 
 function toRgb(color: string): RGBColor {
@@ -73,7 +73,7 @@ export function canvasToGenomicCoords(
   canvasX: number,
   canvasY: number,
   resolved: {
-    rpcData: WebGLPileupDataResult
+    rpcData: PileupDataResult
     bpRange: [number, number]
     blockStartPx: number
     blockWidth: number
@@ -186,7 +186,7 @@ function getPairTypeDescription(
  * name, location, template length, pair type, supplementary indicator
  */
 export function formatChainTooltip(
-  rpcData: WebGLPileupDataResult,
+  rpcData: PileupDataResult,
   idx: number,
   refName: string,
 ) {
@@ -255,7 +255,7 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
 
 export function getTooltipBin(
   position: number,
-  blockRpcData: WebGLPileupDataResult | undefined,
+  blockRpcData: PileupDataResult | undefined,
 ): CoverageTooltipBin | undefined {
   if (!blockRpcData) {
     return undefined
@@ -402,7 +402,7 @@ export function getTooltipBin(
 
 export function formatIndicatorTooltip(
   position: number,
-  blockRpcData: WebGLPileupDataResult | undefined,
+  blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
 ) {
   const bin = getTooltipBin(position, blockRpcData)
@@ -414,7 +414,7 @@ export function formatIndicatorTooltip(
 
 export function formatCoverageTooltip(
   position: number,
-  blockRpcData: WebGLPileupDataResult | undefined,
+  blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
 ) {
   const bin = getTooltipBin(position, blockRpcData)
@@ -463,7 +463,7 @@ export function formatFeatureTooltip(
  */
 export function uploadRegionDataToGPU(
   renderer: AlignmentsRenderer,
-  rpcDataMap: Map<number, WebGLPileupDataResult>,
+  rpcDataMap: Map<number, PileupDataResult>,
 ) {
   renderer.clearLegacyBuffers()
   let maxYVal = 0

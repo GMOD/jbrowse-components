@@ -9,7 +9,7 @@ import { toArray } from 'rxjs/operators'
 
 import { processFeatures } from '../util.ts'
 
-import type { WebGLWiggleDataResult } from './types.ts'
+import type { WiggleDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -31,7 +31,7 @@ interface ExecuteParams {
 export async function executeRenderWiggleData({
   pluginManager,
   args,
-}: ExecuteParams): Promise<WebGLWiggleDataResult> {
+}: ExecuteParams): Promise<WiggleDataResult> {
   const {
     sessionId,
     adapterConfig,

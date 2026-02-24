@@ -94,7 +94,7 @@ export {
   BlockMsg,
   FeatureDensityMixin,
   FloatingLegend,
-  MultiRegionWebGLDisplayMixin,
+  MultiRegionDisplayMixin,
   NonBlockCanvasDisplayComponent,
   NonBlockCanvasDisplayMixin,
   RegionTooLargeMixin,
@@ -108,8 +108,8 @@ export {
   getDisplayStr,
 } from './BaseLinearDisplay/index.ts'
 export type {
-  MultiRegionWebGLDisplayMixinType,
-  MultiRegionWebGLRegion,
+  MultiRegionDisplayMixinType,
+  MultiRegionRegion,
   NonBlockCanvasDisplayMixinType,
   NonBlockCanvasDisplayModel,
 } from './BaseLinearDisplay/index.ts'

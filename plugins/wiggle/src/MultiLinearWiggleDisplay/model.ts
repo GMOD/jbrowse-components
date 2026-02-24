@@ -13,7 +13,7 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  MultiRegionWebGLDisplayMixin,
+  MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
@@ -26,7 +26,7 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getRowHeight } from '../shared/wiggleComponentUtils.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
-import type { WebGLMultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
+import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
 import type {
   ClusterHierarchyNode,
@@ -37,13 +37,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
-  MultiRegionWebGLRegion as Region,
+  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const WebGLMultiWiggleComponent = lazy(
-  () => import('./components/WebGLMultiWiggleComponent.tsx'),
+const MultiWiggleComponent = lazy(
+  () => import('./components/MultiWiggleComponent.tsx'),
 )
 const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -59,7 +59,7 @@ export default function stateModelFactory(
       'MultiLinearWiggleDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      MultiRegionWebGLDisplayMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -96,7 +96,7 @@ export default function stateModelFactory(
       return snap
     })
     .volatile(() => ({
-      rpcDataMap: new Map<number, WebGLMultiWiggleDataResult>(),
+      rpcDataMap: new Map<number, MultiWiggleDataResult>(),
       sourcesVolatile: [] as SourceInfo[],
       visibleScoreRange: undefined as [number, number] | undefined,
       loadedBpPerPx: new Map<number, number>(),
@@ -118,7 +118,7 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get DisplayMessageComponent() {
-        return WebGLMultiWiggleComponent
+        return MultiWiggleComponent
       },
 
       renderProps() {
@@ -339,7 +339,7 @@ export default function stateModelFactory(
     .actions(self => ({
       setRpcDataForRegion(
         regionNumber: number,
-        data: WebGLMultiWiggleDataResult,
+        data: MultiWiggleDataResult,
       ) {
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
@@ -496,7 +496,7 @@ export default function stateModelFactory(
               }
             },
           },
-        )) as WebGLMultiWiggleDataResult
+        )) as MultiWiggleDataResult
 
         if (isAlive(self)) {
           self.setRpcDataForRegion(regionNumber, result)

@@ -1,5 +1,5 @@
 /**
- * WebGL Pileup Data RPC Types
+ * Pileup Data RPC Types
  *
  * COORDINATE SYSTEM REQUIREMENT:
  * regionStart must be an integer (use Math.floor of view region start).
@@ -10,7 +10,7 @@
 import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-export interface RenderWebGLPileupDataArgs {
+export interface RenderPileupDataArgs {
   sessionId: string
   adapterConfig: AnyConfigurationModel
   sequenceAdapter?: Record<string, unknown>
@@ -91,7 +91,7 @@ export interface ModificationEntry {
   prob: number
 }
 
-export interface WebGLPileupDataResult {
+export interface PileupDataResult {
   // Integer reference point for all positions (floor of view region start).
   // All position data in this result is stored as integer offsets from regionStart.
   regionStart: number

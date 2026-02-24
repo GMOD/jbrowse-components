@@ -7,9 +7,9 @@ import BamAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import WebGLArcsDataRPCMethodsF from './RenderWebGLArcsDataRPC/index.ts'
-import WebGLChainDataRPCMethodsF from './RenderWebGLChainDataRPC/index.ts'
-import WebGLPileupDataRPCMethodsF from './RenderWebGLPileupDataRPC/index.ts'
+import ArcsDataRPCMethodsF from './RenderArcsDataRPC/index.ts'
+import ChainDataRPCMethodsF from './RenderChainDataRPC/index.ts'
+import PileupDataRPCMethodsF from './RenderPileupDataRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -22,9 +22,9 @@ export default class AlignmentsPlugin extends Plugin {
       BamAdapterF,
       AlignmentsTrackF,
       HtsgetBamAdapterF,
-      WebGLPileupDataRPCMethodsF,
-      WebGLArcsDataRPCMethodsF,
-      WebGLChainDataRPCMethodsF,
+      PileupDataRPCMethodsF,
+      ArcsDataRPCMethodsF,
+      ChainDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,

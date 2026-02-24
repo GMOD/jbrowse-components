@@ -19,7 +19,7 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
-  MultiRegionWebGLDisplayMixin,
+  MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -37,7 +37,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
-  MultiRegionWebGLRegion as Region,
+  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -61,7 +61,7 @@ function findSubfeatureById(
   return undefined
 }
 
-export type { MultiRegionWebGLRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
 const WebGLFeatureComponent = lazy(
   () => import('./components/WebGLFeatureComponent.tsx'),
@@ -79,7 +79,7 @@ export default function stateModelFactory(
       'LinearWebGLFeatureDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      MultiRegionWebGLDisplayMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         type: types.literal('LinearWebGLFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),

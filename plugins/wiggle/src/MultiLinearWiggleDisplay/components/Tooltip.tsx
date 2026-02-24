@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import { toP } from '../../util.ts'
 
-import type { MultiWiggleDisplayModel } from './WebGLMultiWiggleComponent.tsx'
+import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
 
 type Coord = [number, number]
 

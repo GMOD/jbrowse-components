@@ -1,14 +1,14 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { RenderWebGLChainDataArgs } from './executeRenderWebGLChainData.ts'
+import type { RenderChainDataArgs } from './executeRenderChainData.ts'
 
-export default class RenderWebGLChainData extends RpcMethodType {
-  name = 'RenderWebGLChainData'
+export default class RenderChainData extends RpcMethodType {
+  name = 'RenderChainData'
 
   async renameRegionsIfNeeded(
-    args: RenderWebGLChainDataArgs,
-  ): Promise<RenderWebGLChainDataArgs> {
+    args: RenderChainDataArgs,
+  ): Promise<RenderChainDataArgs> {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
@@ -47,7 +47,7 @@ export default class RenderWebGLChainData extends RpcMethodType {
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const renamed = await this.renameRegionsIfNeeded(
-      args as unknown as RenderWebGLChainDataArgs,
+      args as unknown as RenderChainDataArgs,
     )
     return super.serializeArguments(
       renamed as unknown as Record<string, unknown>,
@@ -56,11 +56,11 @@ export default class RenderWebGLChainData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLChainData } =
-      await import('./executeRenderWebGLChainData.ts')
-    return executeRenderWebGLChainData({
+    const { executeRenderChainData } =
+      await import('./executeRenderChainData.ts')
+    return executeRenderChainData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderWebGLChainDataArgs,
+      args: args as unknown as RenderChainDataArgs,
     })
   }
 }

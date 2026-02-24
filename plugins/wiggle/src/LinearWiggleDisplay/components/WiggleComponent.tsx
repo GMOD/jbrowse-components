@@ -17,7 +17,7 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
 
-import type { WebGLWiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
+import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
   WiggleRenderBlock,
@@ -28,7 +28,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export interface WiggleDisplayModel {
-  rpcDataMap: Map<number, WebGLWiggleDataResult>
+  rpcDataMap: Map<number, WiggleDataResult>
   height: number
   domain: [number, number] | undefined
   scaleType: string
@@ -56,7 +56,7 @@ export interface WiggleDisplayModel {
 }
 
 function buildSourceRenderData(
-  data: WebGLWiggleDataResult,
+  data: WiggleDataResult,
   model: WiggleDisplayModel,
 ): SourceRenderData[] {
   const useBicolor =
@@ -68,6 +68,10 @@ function buildSourceRenderData(
 
   if (summaryScoreMode === 'whiskers') {
     const color = useBicolor ? posColor : baseColor
+    console.log('[wiggle-debug] whiskers mode, numFeatures:', data.numFeatures,
+      'maxScores sample:', data.featureMaxScores.slice(0, 5),
+      'minScores sample:', data.featureMinScores.slice(0, 5),
+      'scores sample:', data.featureScores.slice(0, 5))
     return makeWhiskersSourceData(data, color, model.isDensityMode, 0)
   }
 
@@ -128,7 +132,7 @@ function buildSourceRenderData(
       ]
 }
 
-const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
+const WiggleComponent = observer(function WiggleComponent({
   model,
 }: {
   model: WiggleDisplayModel
@@ -391,4 +395,4 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
   )
 })
 
-export default WebGLWiggleComponent
+export default WiggleComponent

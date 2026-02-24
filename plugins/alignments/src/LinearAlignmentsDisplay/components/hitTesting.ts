@@ -16,7 +16,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getInsertionRectWidthPx, getInsertionType } from '../model.ts'
 
-import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 
 // Types for CIGAR item hit testing
 export type CigarItemType =
@@ -59,7 +59,7 @@ export interface SashimiArcHitResult {
 
 // Internal types for hit testing
 export interface ResolvedBlock {
-  rpcData: WebGLPileupDataResult
+  rpcData: PileupDataResult
   bpRange: [number, number]
   blockStartPx: number
   blockWidth: number
@@ -145,7 +145,7 @@ function getOrCreateFlatbush(data: ArrayBuffer) {
  */
 export function hitTestChain(
   coords: CigarCoords | undefined,
-  rpcData: WebGLPileupDataResult | undefined,
+  rpcData: PileupDataResult | undefined,
 ) {
   if (
     !coords ||

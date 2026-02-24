@@ -9,7 +9,7 @@ import { toArray } from 'rxjs/operators'
 
 import { WIGGLE_POS_COLOR_DEFAULT, processFeatures } from '../util.ts'
 
-import type { WebGLMultiWiggleDataResult } from './types.ts'
+import type { MultiWiggleDataResult } from './types.ts'
 import type { SourceInfo } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -33,7 +33,7 @@ interface ExecuteParams {
 export async function executeRenderMultiWiggleData({
   pluginManager,
   args,
-}: ExecuteParams): Promise<WebGLMultiWiggleDataResult> {
+}: ExecuteParams): Promise<MultiWiggleDataResult> {
   const {
     sessionId,
     adapterConfig,

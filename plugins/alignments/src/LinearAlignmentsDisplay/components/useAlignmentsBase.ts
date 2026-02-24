@@ -32,7 +32,7 @@ import type {
   IndicatorHitResult,
   ResolvedBlock,
 } from './hitTesting.ts'
-import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type {
   LegendItem,
   LinearGenomeViewModel,
@@ -51,7 +51,7 @@ interface FeatureInfo {
 
 export interface LinearAlignmentsDisplayModel {
   height: number
-  rpcDataMap: Map<number, WebGLPileupDataResult>
+  rpcDataMap: Map<number, PileupDataResult>
   showLoading: boolean
   statusMessage?: string
   error: Error | null

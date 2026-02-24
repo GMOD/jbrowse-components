@@ -12,7 +12,7 @@ import type {
   IndicatorHitResult,
   SashimiArcHitResult,
 } from './hitTesting.ts'
-import type { WebGLPileupDataResult } from '../../RenderWebGLPileupDataRPC/types.ts'
+import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 function pct(n: number, total: number) {
@@ -42,7 +42,7 @@ export function openIndicatorWidget(
   model: IAnyStateTreeNode,
   indicatorHit: IndicatorHitResult,
   refName: string,
-  blockRpcData: WebGLPileupDataResult | undefined,
+  blockRpcData: PileupDataResult | undefined,
 ) {
   const tooltipBin = getTooltipBin(indicatorHit.position, blockRpcData)
   if (!tooltipBin) {
@@ -79,7 +79,7 @@ export function openCoverageWidget(
   model: IAnyStateTreeNode,
   position: number,
   refName: string,
-  blockRpcData: WebGLPileupDataResult | undefined,
+  blockRpcData: PileupDataResult | undefined,
 ) {
   const tooltipBin = getTooltipBin(position, blockRpcData)
   if (!tooltipBin) {

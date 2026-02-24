@@ -23,7 +23,7 @@ import { SAM_FLAG_MATE_UNMAPPED } from '../shared/samFlags.ts'
 import { hasPairedReads } from '../shared/util.ts'
 import { orientationTypes } from '../util.ts'
 
-import type { WebGLArcsDataResult } from './types.ts'
+import type { ArcsDataResult } from './types.ts'
 import type { CoreFeat } from '../shared/arcUtils.ts'
 import type { ChainStats, ColorBy } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -170,10 +170,10 @@ function getArcEndpoint(
       : feat.end
 }
 
-export async function executeRenderWebGLArcsData({
+export async function executeRenderArcsData({
   pluginManager,
   args,
-}: ExecuteParams): Promise<WebGLArcsDataResult> {
+}: ExecuteParams): Promise<ArcsDataResult> {
   const {
     sessionId,
     adapterConfig,

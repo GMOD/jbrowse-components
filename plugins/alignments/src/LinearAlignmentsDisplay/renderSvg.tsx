@@ -13,8 +13,8 @@ import {
 } from './components/shaders/arcShaders.ts'
 import { ColorScheme, YSCALEBAR_LABEL_OFFSET } from './model.ts'
 
-import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
-import type { WebGLPileupDataResult } from '../RenderWebGLPileupDataRPC/types.ts'
+import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from './components/shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
@@ -54,7 +54,7 @@ function hslToRgbString(h: number, s: number, l: number) {
 
 function getReadColor(
   i: number,
-  data: WebGLPileupDataResult,
+  data: PileupDataResult,
   colorScheme: number,
   palette: ColorPalette,
   insertSizeStats?: { upper: number; lower: number },
@@ -233,7 +233,7 @@ function buildCurvePath(
 const ARC_SEGMENTS = 64
 
 function renderPairedArcsSvg(
-  arcsData: WebGLArcsDataResult,
+  arcsData: ArcsDataResult,
   blockStartPx: number,
   bpStartOffset: number,
   regionLengthBp: number,
@@ -298,7 +298,7 @@ function renderPairedArcsSvg(
 
 function renderPairedArcsCanvas(
   ctx: CanvasRenderingContext2D,
-  arcsData: WebGLArcsDataResult,
+  arcsData: ArcsDataResult,
   blockStartPx: number,
   bpStartOffset: number,
   regionLengthBp: number,
@@ -368,7 +368,7 @@ function renderPairedArcsCanvas(
 }
 
 function renderSashimiArcs(
-  data: WebGLPileupDataResult,
+  data: PileupDataResult,
   blockStartPx: number,
   bpStartOffset: number,
   regionLengthBp: number,
@@ -414,7 +414,7 @@ function renderSashimiArcs(
 }
 
 function renderConnectingLines(
-  data: WebGLPileupDataResult,
+  data: PileupDataResult,
   blockStart: number,
   blockEnd: number,
   blockScreenX: number,

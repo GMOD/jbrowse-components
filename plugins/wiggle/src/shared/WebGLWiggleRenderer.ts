@@ -108,6 +108,18 @@ export class WebGLWiggleRenderer {
     const buf = interleaveInstances(sources, totalFeatures)
 
     const texWidth = totalFeatures * (INSTANCE_STRIDE / 4)
+    const maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE)
+    console.log('[webgl-debug] uploadRegion:', {
+      regionNumber,
+      totalFeatures,
+      texWidth,
+      maxTexSize,
+      numSources: sources.length,
+      sourceSizes: sources.map(s => s.numFeatures),
+    })
+    if (texWidth > maxTexSize) {
+      console.error('[webgl-debug] TEXTURE WIDTH EXCEEDS MAX_TEXTURE_SIZE!', texWidth, '>', maxTexSize)
+    }
     const tex = gl.createTexture()
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -126,6 +138,10 @@ export class WebGLWiggleRenderer {
       gl.UNSIGNED_INT,
       new Uint32Array(buf),
     )
+    const glError = gl.getError()
+    if (glError !== gl.NO_ERROR) {
+      console.error('[webgl-debug] GL error after texImage2D:', glError)
+    }
 
     const numRows = computeNumRows(sources)
     this.regions.set(regionNumber, {
@@ -164,6 +180,12 @@ export class WebGLWiggleRenderer {
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], state: WiggleGPURenderState) {
+    console.log('[webgl-debug] renderBlocks:', {
+      numBlocks: blocks.length,
+      state,
+      regionKeys: [...this.regions.keys()],
+      regionFeatureCounts: [...this.regions.entries()].map(([k, v]) => [k, v.featureCount]),
+    })
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight } = state

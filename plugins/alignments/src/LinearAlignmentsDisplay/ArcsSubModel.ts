@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { WebGLArcsDataResult } from '../RenderWebGLArcsDataRPC/types.ts'
+import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export const ArcsSubModel = types
@@ -10,7 +10,7 @@ export const ArcsSubModel = types
     drawLongRange: true,
   })
   .volatile(() => ({
-    rpcDataMap: new Map<number, WebGLArcsDataResult>(),
+    rpcDataMap: new Map<number, ArcsDataResult>(),
   }))
   .views(self => ({
     get lineWidth(): number {
@@ -18,7 +18,7 @@ export const ArcsSubModel = types
     },
   }))
   .actions(self => ({
-    setRpcData(regionNumber: number, data: WebGLArcsDataResult | null) {
+    setRpcData(regionNumber: number, data: ArcsDataResult | null) {
       const next = new Map(self.rpcDataMap)
       if (data) {
         next.set(regionNumber, data)

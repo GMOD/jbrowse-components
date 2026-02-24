@@ -21,8 +21,8 @@ import {
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
 import type {
-  WebGLMultiWiggleDataResult,
-  WebGLMultiWiggleSourceData,
+  MultiWiggleDataResult,
+  MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
@@ -34,7 +34,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export interface MultiWiggleDisplayModel {
-  rpcDataMap: Map<number, WebGLMultiWiggleDataResult>
+  rpcDataMap: Map<number, MultiWiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
   height: number
   domain: [number, number] | undefined
@@ -108,7 +108,7 @@ const ScoreLegend = observer(function ScoreLegend({
   )
 })
 
-const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
+const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model,
 }: {
   model: MultiWiggleDisplayModel
@@ -324,7 +324,7 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
       const bpOffset = bp - data.regionStart
 
       const rpcSource = data.sources.find(
-        (s: WebGLMultiWiggleSourceData) => s.name === sourceName,
+        (s: MultiWiggleSourceData) => s.name === sourceName,
       )
       if (!rpcSource) {
         model.setFeatureUnderMouse(undefined)
@@ -518,4 +518,4 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
   )
 })
 
-export default WebGLMultiWiggleComponent
+export default MultiWiggleComponent

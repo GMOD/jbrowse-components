@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
-import type { CoverageTooltipBin } from '../../RenderWebGLPileupDataRPC/types'
+import type { CoverageTooltipBin } from '../../RenderPileupDataRPC/types'
 
 const useStyles = makeStyles()(theme => ({
   hoverVertical: {
@@ -293,7 +293,7 @@ type TooltipDataType =
  * Custom Tooltip for LinearAlignmentsDisplay
  * Supports flag-style tooltip with vertical line indicator for coverage
  */
-const WebGLTooltip = observer(function WebGLTooltip({
+const AlignmentsTooltip = observer(function AlignmentsTooltip({
   model,
   height,
   clientMouseCoord,
@@ -428,4 +428,4 @@ const WebGLTooltip = observer(function WebGLTooltip({
   return null
 })
 
-export default WebGLTooltip
+export default AlignmentsTooltip

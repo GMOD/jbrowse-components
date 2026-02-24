@@ -7,7 +7,7 @@ import { toArray } from 'rxjs/operators'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-interface WebGLGetFeatureDetailsArgs {
+interface GetFeatureDetailsArgs {
   sessionId: string
   adapterConfig: AnyConfigurationModel
   sequenceAdapter?: Record<string, unknown>
@@ -20,8 +20,8 @@ interface WebGLGetFeatureDetailsArgs {
   featureId: string
 }
 
-export default class WebGLGetFeatureDetails extends RpcMethodType {
-  name = 'WebGLGetFeatureDetails'
+export default class GetFeatureDetails extends RpcMethodType {
+  name = 'GetFeatureDetails'
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
     const assemblyManager =
@@ -30,7 +30,7 @@ export default class WebGLGetFeatureDetails extends RpcMethodType {
       throw new Error('no assembly manager')
     }
 
-    const typedArgs = args as unknown as WebGLGetFeatureDetailsArgs
+    const typedArgs = args as unknown as GetFeatureDetailsArgs
     const { region, sessionId, adapterConfig } = typedArgs
 
     const regionWithAssembly = {
@@ -66,7 +66,7 @@ export default class WebGLGetFeatureDetails extends RpcMethodType {
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
     const { sessionId, adapterConfig, sequenceAdapter, region, featureId } =
-      args as unknown as WebGLGetFeatureDetailsArgs
+      args as unknown as GetFeatureDetailsArgs
 
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)

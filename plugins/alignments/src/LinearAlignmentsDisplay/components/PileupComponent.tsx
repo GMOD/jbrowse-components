@@ -42,7 +42,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const WebGLPileupComponent = observer(function WebGLPileupComponent({
+const PileupComponent = observer(function PileupComponent({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
@@ -66,10 +66,10 @@ const WebGLPileupComponent = observer(function WebGLPileupComponent({
     )
   }
 
-  return <WebGLPileupInner model={model} />
+  return <PileupInner model={model} />
 })
 
-const WebGLPileupInner = observer(function WebGLPileupInner({
+const PileupInner = observer(function PileupInner({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
@@ -353,4 +353,4 @@ const WebGLPileupInner = observer(function WebGLPileupInner({
   )
 })
 
-export default WebGLPileupComponent
+export default PileupComponent

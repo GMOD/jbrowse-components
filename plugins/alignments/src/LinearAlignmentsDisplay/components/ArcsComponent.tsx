@@ -7,7 +7,7 @@ import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 
-const WebGLArcsComponent = observer(function WebGLArcsComponent({
+const ArcsComponent = observer(function ArcsComponent({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
@@ -120,4 +120,4 @@ const WebGLArcsComponent = observer(function WebGLArcsComponent({
   )
 })
 
-export default WebGLArcsComponent
+export default ArcsComponent

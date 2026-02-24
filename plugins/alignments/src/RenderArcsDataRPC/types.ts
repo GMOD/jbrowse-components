@@ -1,4 +1,4 @@
-export interface WebGLArcsDataResult {
+export interface ArcsDataResult {
   regionStart: number
   // Arc data - compact per-arc records (curve computed on GPU)
   arcX1: Float32Array // start x offset from regionStart

@@ -4,7 +4,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import type { ColorBy } from '../shared/types.ts'
 import type { Region } from '@jbrowse/core/util'
 
-interface RenderWebGLArcsDataArgs {
+interface RenderArcsDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
@@ -16,11 +16,11 @@ interface RenderWebGLArcsDataArgs {
   drawLongRange: boolean
 }
 
-export default class RenderWebGLArcsData extends RpcMethodType {
-  name = 'RenderWebGLArcsData'
+export default class RenderArcsData extends RpcMethodType {
+  name = 'RenderArcsData'
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as unknown as RenderWebGLArcsDataArgs
+    const typedArgs = args as unknown as RenderArcsDataArgs
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
@@ -44,11 +44,11 @@ export default class RenderWebGLArcsData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLArcsData } =
-      await import('./executeRenderWebGLArcsData.ts')
-    return executeRenderWebGLArcsData({
+    const { executeRenderArcsData } =
+      await import('./executeRenderArcsData.ts')
+    return executeRenderArcsData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderWebGLArcsDataArgs,
+      args: args as unknown as RenderArcsDataArgs,
     })
   }
 }

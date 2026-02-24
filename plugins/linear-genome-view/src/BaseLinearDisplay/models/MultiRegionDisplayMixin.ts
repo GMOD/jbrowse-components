@@ -18,16 +18,16 @@ export interface Region {
 }
 
 /**
- * Mixin for WebGL displays that fetch data per-region.
+ * Mixin for displays that fetch data per-region.
  *
  * Subclasses MUST implement `clearDisplaySpecificData()` to clear their own
  * rpcDataMap and any other display-specific state. The mixin's
  * `clearAllRpcData()` calls it automatically — subclasses should never need
  * to override `clearAllRpcData` itself.
  */
-export default function MultiRegionWebGLDisplayMixin() {
+export default function MultiRegionDisplayMixin() {
   return types
-    .model('MultiRegionWebGLDisplayMixin', {})
+    .model('MultiRegionDisplayMixin', {})
     .volatile(() => ({
       loadedRegions: new Map<number, Region>(),
       isLoading: false,
@@ -114,6 +114,6 @@ export default function MultiRegionWebGLDisplayMixin() {
     })
 }
 
-export type MultiRegionWebGLDisplayMixinType = ReturnType<
-  typeof MultiRegionWebGLDisplayMixin
+export type MultiRegionDisplayMixinType = ReturnType<
+  typeof MultiRegionDisplayMixin
 >

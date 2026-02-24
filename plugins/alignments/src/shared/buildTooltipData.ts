@@ -2,7 +2,7 @@ import { getModificationName } from './modificationData.ts'
 import { getColorForModification } from '../util.ts'
 
 import type { ModificationEntry } from './webglRpcTypes.ts'
-import type { ModTooltipEntry } from '../RenderWebGLPileupDataRPC/types'
+import type { ModTooltipEntry } from '../RenderPileupDataRPC/types'
 
 export function buildModTooltipData({
   modifications,
