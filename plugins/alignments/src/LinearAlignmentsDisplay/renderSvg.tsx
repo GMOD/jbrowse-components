@@ -812,7 +812,8 @@ export async function renderSvg(
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const insertionWidthPx = len * pxPerBp
-            const isLarge = isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
+            const isLarge =
+              isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
             let barW: number
             if (isLarge) {
               const digits =
@@ -966,7 +967,8 @@ export async function renderSvg(
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const insertionWidthPx = len * pxPerBp
-            const isLarge = isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
+            const isLarge =
+              isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
             let barW: number
             if (isLarge) {
               const digits =

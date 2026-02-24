@@ -67,7 +67,10 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
-        <LoadingOverlay statusMessage="Loading features" isVisible={debouncedLoading} />
+        <LoadingOverlay
+          statusMessage={model.statusMessage ?? 'Loading features'}
+          isVisible={debouncedLoading}
+        />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}

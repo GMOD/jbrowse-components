@@ -443,6 +443,7 @@ export default function stateModelFactory(
       webglRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
+      statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get selectedFeatureId() {
@@ -874,6 +875,10 @@ export default function stateModelFactory(
           self.webglRef = ref
         },
 
+        setStatusMessage(msg?: string) {
+          self.statusMessage = msg
+        },
+
         setOverCigarItem(flag: boolean) {
           self.overCigarItem = flag
         },
@@ -1216,6 +1221,9 @@ export default function stateModelFactory(
             colorTagMap: self.colorTagMap,
             sortedBy: self.sortedBy,
             stopToken,
+            statusCallback: (msg: string) => {
+              self.setStatusMessage(msg)
+            },
           },
         )) as PileupDataResult
         if (isAlive(self)) {
@@ -1248,6 +1256,9 @@ export default function stateModelFactory(
             drawInter: self.arcsState.drawInter,
             drawLongRange: self.arcsState.drawLongRange,
             stopToken,
+            statusCallback: (msg: string) => {
+              self.setStatusMessage(msg)
+            },
           },
         )) as ArcsDataResult
         if (isAlive(self)) {
@@ -1278,6 +1289,9 @@ export default function stateModelFactory(
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             stopToken,
+            statusCallback: (msg: string) => {
+              self.setStatusMessage(msg)
+            },
           },
         )) as PileupDataResult
         if (isAlive(self)) {
@@ -1594,6 +1608,7 @@ export default function stateModelFactory(
             activeStopToken = undefined
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
+            self.setStatusMessage(undefined)
           }
         }
       }
