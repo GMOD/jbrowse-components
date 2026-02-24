@@ -1,5 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
 
+import { getDensityColor } from '../shared/getDensityColor.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
@@ -107,17 +108,8 @@ export async function renderSvg(
             : color
           content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${fillColor}"/>`
         } else if (renderingType === 'density') {
-          let norm: number
-          if (scaleType === 'log') {
-            const logMin = Math.log2(Math.max(minScore, 1))
-            const logMax = Math.log2(Math.max(maxScore, 1))
-            const logScore = Math.log2(Math.max(score, 1))
-            norm = (logScore - logMin) / (logMax - logMin)
-          } else {
-            norm = (score - minScore) / (maxScore - minScore)
-          }
-          norm = Math.max(0, Math.min(1, norm))
-          content += `<rect x="${x}" y="0" width="${w}" height="${height}" fill="${posColor}" fill-opacity="${norm}"/>`
+          const densityColor = getDensityColor(score, minScore, maxScore, scaleType, posColor)
+          content += `<rect x="${x}" y="0" width="${w}" height="${height}" fill="${densityColor}"/>`
         }
       }
     }

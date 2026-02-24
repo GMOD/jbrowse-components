@@ -2139,47 +2139,48 @@ export class WebGLRenderer {
 
       const arcsHeight =
         state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+      const covH = state.showCoverage ? state.coverageHeight : 0
 
       if (arcsHeight > 0) {
-        const covH = state.showCoverage ? state.coverageHeight : 0
-        gl.viewport(
-          0,
-          bufH - Math.round((covH + arcsHeight) * dpr),
-          bufW,
+        const covHPx = Math.round(covH * dpr)
+        const effectiveArcsHPx = Math.min(
           Math.round(arcsHeight * dpr),
+          Math.max(0, bufH - covHPx),
         )
-        gl.scissor(
-          Math.round(scissorX * dpr),
-          bufH - Math.round((covH + arcsHeight) * dpr),
-          Math.round(scissorW * dpr),
-          Math.round(arcsHeight * dpr),
-        )
-        this.arcsRenderer.renderArcs(
-          {
-            ...state,
-            bpRangeX: block.bpRangeX,
-            showCoverage: false,
-            coverageHeight: 0,
-            canvasHeight: arcsHeight,
-          },
-          block.screenStartPx,
-          fullBlockWidth,
-        )
-        gl.viewport(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          bufH,
-        )
-        gl.scissor(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          bufH,
-        )
+        if (effectiveArcsHPx > 0) {
+          const arcsY = bufH - covHPx - effectiveArcsHPx
+          gl.viewport(0, arcsY, bufW, effectiveArcsHPx)
+          gl.scissor(
+            Math.round(scissorX * dpr),
+            arcsY,
+            Math.round(scissorW * dpr),
+            effectiveArcsHPx,
+          )
+          this.arcsRenderer.renderArcs(
+            {
+              ...state,
+              bpRangeX: block.bpRangeX,
+              showCoverage: false,
+              coverageHeight: 0,
+              canvasHeight: effectiveArcsHPx / dpr,
+            },
+            block.screenStartPx,
+            fullBlockWidth,
+          )
+          gl.viewport(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+          gl.scissor(
+            Math.round(scissorX * dpr),
+            0,
+            Math.round(scissorW * dpr),
+            bufH,
+          )
+        }
       }
-
-      const covH = state.showCoverage ? state.coverageHeight : 0
       const pileupTopPx = Math.round((covH + arcsHeight) * dpr)
       const pileupHPx = Math.max(0, bufH - pileupTopPx)
       if (pileupHPx > 0) {

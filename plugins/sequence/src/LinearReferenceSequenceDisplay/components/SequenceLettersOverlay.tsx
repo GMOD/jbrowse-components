@@ -46,7 +46,7 @@ function TranslationLetters({
   const sliceEnd = frameShift + multipleOfThreeLength
 
   const codonWidth = 3 / bpPerPx
-  const fontSize = rowHeight - 2
+  const fontSize = Math.min(rowHeight - 2, 14)
   const parts: string[] = []
 
   // clip to visible range (in sequence-local indices)
@@ -102,7 +102,7 @@ function SequenceLetters({
 }) {
   const theme = useTheme()
   const w = 1 / bpPerPx
-  const fontSize = rowHeight - 2
+  const fontSize = Math.min(rowHeight - 2, 14)
   const parts: string[] = []
 
   const iStart = Math.max(0, Math.floor(visibleStartBp - seqStart))

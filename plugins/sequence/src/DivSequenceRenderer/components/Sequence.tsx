@@ -47,7 +47,8 @@ export default function Sequence({
       const textFill = color
         ? theme.palette.getContrastText(color.main)
         : 'black'
-      svg += `<text x="${x + w / 2}" y="${y + height / 2}" dominant-baseline="middle" text-anchor="middle" font-size="${height - 2}" fill="${textFill}">${letter}</text>`
+      const fontSize = Math.min(height - 2, 14)
+      svg += `<text x="${x + w / 2}" y="${y + height / 2}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${textFill}">${letter}</text>`
     }
   }
 

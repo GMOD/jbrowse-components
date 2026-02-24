@@ -2,6 +2,7 @@ import type React from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
+import { when } from 'mobx'
 import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
 import {
   arcColorPalette,
@@ -456,6 +457,7 @@ export async function renderSvg(
 ): Promise<React.ReactNode> {
   const theme = createJBrowseTheme(opts?.theme)
   const view = getContainingView(model) as LGV
+  await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge)
   const { offsetPx, bpPerPx } = view
   const {
     rpcDataMap,
@@ -493,7 +495,7 @@ export async function renderSvg(
   let pileupCanvas: HTMLCanvasElement | undefined
   let pileupCtx: CanvasRenderingContext2D | undefined
   if (rasterize && pileupHeight > 0 && totalWidth > 0) {
-    pileupCanvas = document.createElement('canvas')
+    pileupCanvas = opts?.createCanvas?.(totalWidth * 2, pileupHeight * 2) ?? document.createElement('canvas')
     pileupCanvas.width = totalWidth * 2
     pileupCanvas.height = pileupHeight * 2
     pileupCtx = pileupCanvas.getContext('2d') ?? undefined
@@ -503,7 +505,7 @@ export async function renderSvg(
   let arcsCanvas: HTMLCanvasElement | undefined
   let arcsCtx: CanvasRenderingContext2D | undefined
   if (rasterize && showArcs && arcsHeight > 0 && totalWidth > 0) {
-    arcsCanvas = document.createElement('canvas')
+    arcsCanvas = opts?.createCanvas?.(totalWidth * 2, arcsHeight * 2) ?? document.createElement('canvas')
     arcsCanvas.width = totalWidth * 2
     arcsCanvas.height = arcsHeight * 2
     arcsCtx = arcsCanvas.getContext('2d') ?? undefined

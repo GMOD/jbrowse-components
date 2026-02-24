@@ -59,4 +59,5 @@ export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   overrideHeight?: number
   theme?: ThemeOptions
   legendWidth?: number
+  createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }

@@ -9,12 +9,12 @@ import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
+import { parseColor } from '../../shared/webglUtils.ts'
 import {
-  darkenColor,
-  lightenColor,
-  parseColor,
-} from '../../shared/webglUtils.ts'
-import { makeRenderState } from '../../shared/wiggleComponentUtils.ts'
+  isSummaryFeature,
+  makeRenderState,
+  makeWhiskersSourceData,
+} from '../../shared/wiggleComponentUtils.ts'
 import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
 
 import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
@@ -68,31 +68,7 @@ function buildSourceRenderData(
 
   if (summaryScoreMode === 'whiskers') {
     const color = useBicolor ? posColor : baseColor
-    const lightColor = lightenColor(color, 0.4)
-    const darkColor = darkenColor(color, 0.4)
-    return [
-      {
-        featurePositions: data.featurePositions,
-        featureScores: data.featureMaxScores,
-        numFeatures: data.numFeatures,
-        color: lightColor,
-        rowIndex: 0,
-      },
-      {
-        featurePositions: data.featurePositions,
-        featureScores: data.featureScores,
-        numFeatures: data.numFeatures,
-        color,
-        rowIndex: 0,
-      },
-      {
-        featurePositions: data.featurePositions,
-        featureScores: data.featureMinScores,
-        numFeatures: data.numFeatures,
-        color: darkColor,
-        rowIndex: 0,
-      },
-    ]
+    return makeWhiskersSourceData(data, color, model.isDensityMode, 0)
   }
 
   const scores = getEffectiveScores(data, summaryScoreMode)
@@ -309,20 +285,18 @@ const WebGLWiggleComponent = observer(function WebGLWiggleComponent({
 
       const fStart = featurePositions[foundIdx * 2]! + data.regionStart
       const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
-      const hasSummary =
-        summaryScoreMode !== 'avg' && data.featureMinScores.length > 0
+      const score = featureScores[foundIdx]!
+      const minScore = data.featureMinScores[foundIdx]
+      const maxScore = data.featureMaxScores[foundIdx]
 
       model.setFeatureUnderMouse({
         refName: region.refName,
         start: fStart,
         end: fEnd,
-        score: featureScores[foundIdx]!,
-        ...(hasSummary
-          ? {
-              summary: true,
-              minScore: data.featureMinScores[foundIdx],
-              maxScore: data.featureMaxScores[foundIdx],
-            }
+        score,
+        ...(summaryScoreMode !== 'avg' &&
+        isSummaryFeature(score, minScore, maxScore)
+          ? { summary: true, minScore, maxScore }
           : {}),
       })
     },

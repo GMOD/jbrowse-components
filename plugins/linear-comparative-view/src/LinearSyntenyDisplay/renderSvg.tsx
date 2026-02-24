@@ -1,4 +1,5 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import { lineLimit, oobLimit } from './drawSyntenyUtils.ts'
 
@@ -106,6 +107,7 @@ function svgLocationMarkers(
 
 export async function renderSvg(model: LinearSyntenyDisplayModel) {
   const view = getContainingView(model) as LinearSyntenyViewModel
+  await when(() => model.featureData != null || !!model.error)
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
   const drawCIGARMatchesOnly = view.drawCIGARMatchesOnly

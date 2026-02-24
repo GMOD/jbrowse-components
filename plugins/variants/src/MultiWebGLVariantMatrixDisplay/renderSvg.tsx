@@ -1,4 +1,5 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
 import type { LinearVariantMatrixDisplayModel } from './model.ts'
@@ -23,6 +24,7 @@ export async function renderSvg(
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
+  await when(() => model.webglCellData != null || !!model.error || model.regionTooLarge)
   const cellData = model.webglCellData as MatrixCellData | undefined
   if (!cellData || cellData.numCells === 0) {
     return null

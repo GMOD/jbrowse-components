@@ -1,4 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import { generateColorRamp } from './components/WebGLHicRenderer.ts'
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
@@ -44,6 +45,7 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
 ) {
   const view = getContainingView(self) as LGV
+  await when(() => self.rpcData != null || !!self.error || self.regionTooLarge)
   const { rpcData, useLogScale, colorScheme, showLegend } = self
   if (!rpcData || rpcData.numContacts === 0) {
     return null
@@ -62,8 +64,8 @@ export async function renderSvg(
   let matrixEl: React.ReactNode
 
   if (rasterize) {
-    const canvas = document.createElement('canvas')
     const scale = 2
+    const canvas = opts.createCanvas?.(Math.round(visibleWidth * scale), Math.round(height * scale)) ?? document.createElement('canvas')
     canvas.width = Math.round(visibleWidth * scale)
     canvas.height = Math.round(height * scale)
     const ctx = canvas.getContext('2d')

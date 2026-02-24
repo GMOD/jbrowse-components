@@ -6,8 +6,9 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
 } from './wiggleShader.ts'
+import { darkenColor, lightenColor } from './webglUtils.ts'
 
-import type { WiggleGPURenderState } from './WiggleRenderer.ts'
+import type { SourceRenderData, WiggleGPURenderState } from './WiggleRenderer.ts'
 
 export function getRowHeight(canvasHeight: number, numRows: number) {
   return numRows > 0 ? canvasHeight / numRows : canvasHeight
@@ -28,6 +29,68 @@ const renderingTypeMap: Record<string, number> = {
 
 export function renderingTypeToInt(type: string) {
   return renderingTypeMap[type] ?? RENDERING_TYPE_XYPLOT
+}
+
+interface FeatureArrays {
+  featurePositions: Uint32Array
+  featureScores: Float32Array
+  featureMinScores: Float32Array
+  featureMaxScores: Float32Array
+  numFeatures: number
+}
+
+export function makeWhiskersSourceData(
+  data: FeatureArrays,
+  color: [number, number, number],
+  isDensityMode: boolean,
+  rowIndex: number,
+): SourceRenderData[] {
+  if (isDensityMode) {
+    return [
+      {
+        featurePositions: data.featurePositions,
+        featureScores: data.featureScores,
+        numFeatures: data.numFeatures,
+        color,
+        rowIndex,
+      },
+    ]
+  }
+  return [
+    {
+      featurePositions: data.featurePositions,
+      featureScores: data.featureMaxScores,
+      numFeatures: data.numFeatures,
+      color: lightenColor(color, 0.4),
+      rowIndex,
+    },
+    {
+      featurePositions: data.featurePositions,
+      featureScores: data.featureScores,
+      numFeatures: data.numFeatures,
+      color,
+      rowIndex,
+    },
+    {
+      featurePositions: data.featurePositions,
+      featureScores: data.featureMinScores,
+      numFeatures: data.numFeatures,
+      color: darkenColor(color, 0.4),
+      rowIndex,
+    },
+  ]
+}
+
+export function isSummaryFeature(
+  score: number,
+  minScore: number | undefined,
+  maxScore: number | undefined,
+) {
+  return (
+    minScore !== undefined &&
+    maxScore !== undefined &&
+    (minScore !== score || maxScore !== score)
+  )
 }
 
 export function makeRenderState(

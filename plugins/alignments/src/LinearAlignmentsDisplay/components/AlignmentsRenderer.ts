@@ -1323,27 +1323,34 @@ export class AlignmentsRenderer {
       }
 
       if (arcsHeight > 0) {
-        this.uF32[U_COV_OFFSET] = 0
-        this.uF32[U_CANVAS_H] = arcsHeight
-        device.queue.writeBuffer(this.uBuf!, 0, this.uData)
+        const covHPx = Math.round(covH * dpr)
+        const effectiveArcsHPx = Math.min(
+          Math.round(arcsHeight * dpr),
+          Math.max(0, bufH - covHPx),
+        )
+        if (effectiveArcsHPx > 0) {
+          this.uF32[U_COV_OFFSET] = 0
+          this.uF32[U_CANVAS_H] = effectiveArcsHPx / dpr
+          device.queue.writeBuffer(this.uBuf!, 0, this.uData)
 
-        const { enc, p } = mkPass('load' as GPULoadOp)
-        p.setViewport(
-          Math.round(scissorX * dpr),
-          Math.round(covH * dpr),
-          Math.round(scissorW * dpr),
-          Math.round(arcsHeight * dpr),
-          0,
-          1,
-        )
-        p.setScissorRect(
-          Math.round(scissorX * dpr),
-          Math.round(covH * dpr),
-          Math.round(scissorW * dpr),
-          Math.round(arcsHeight * dpr),
-        )
-        this.drawArcs(p, region, state, block, scissorX, scissorW)
-        submitPass(enc, p)
+          const { enc, p } = mkPass('load' as GPULoadOp)
+          p.setViewport(
+            Math.round(scissorX * dpr),
+            covHPx,
+            Math.round(scissorW * dpr),
+            effectiveArcsHPx,
+            0,
+            1,
+          )
+          p.setScissorRect(
+            Math.round(scissorX * dpr),
+            covHPx,
+            Math.round(scissorW * dpr),
+            effectiveArcsHPx,
+          )
+          this.drawArcs(p, region, state, block, scissorX, scissorW)
+          submitPass(enc, p)
+        }
 
         this.uF32[U_COV_OFFSET] = covH + arcsHeight
         this.uF32[U_CANVAS_H] = state.canvasHeight

@@ -1,5 +1,6 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
 
+import { getDensityColor } from '../shared/getDensityColor.ts'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
@@ -97,17 +98,8 @@ export async function renderSvg(
             const rectHeight = Math.abs(originY - y) || 1
             content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${color}"/>`
           } else if (renderingType === 'multirowdensity') {
-            let norm: number
-            if (scaleType === 'log') {
-              const logMin = Math.log2(Math.max(minScore, 1))
-              const logMax = Math.log2(Math.max(maxScore, 1))
-              const logScore = Math.log2(Math.max(score, 1))
-              norm = (logScore - logMin) / (logMax - logMin)
-            } else {
-              norm = (score - minScore) / (maxScore - minScore)
-            }
-            norm = Math.max(0, Math.min(1, norm))
-            content += `<rect x="${x}" y="${rowY}" width="${w}" height="${rowHeight}" fill="${color}" fill-opacity="${norm}"/>`
+            const densityColor = getDensityColor(score, minScore, maxScore, scaleType, color)
+            content += `<rect x="${x}" y="${rowY}" width="${w}" height="${rowHeight}" fill="${densityColor}"/>`
           }
         }
       }

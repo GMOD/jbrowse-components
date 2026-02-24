@@ -11,14 +11,12 @@ import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
-import {
-  darkenColor,
-  lightenColor,
-  parseColor,
-} from '../../shared/webglUtils.ts'
+import { parseColor } from '../../shared/webglUtils.ts'
 import {
   getRowTop,
+  isSummaryFeature,
   makeRenderState,
+  makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
@@ -181,31 +179,14 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
           const negColor = defaultNegColor
 
           if (summaryScoreMode === 'whiskers') {
-            const lightColor = lightenColor(posColor, 0.4)
-            const darkColor = darkenColor(posColor, 0.4)
-            sourcesData.push(
-              {
-                featurePositions: rpcSource.featurePositions,
-                featureScores: rpcSource.featureMaxScores,
-                numFeatures: rpcSource.numFeatures,
-                color: lightColor,
-                rowIndex: idx,
-              },
-              {
-                featurePositions: rpcSource.featurePositions,
-                featureScores: rpcSource.featureScores,
-                numFeatures: rpcSource.numFeatures,
-                color: posColor,
-                rowIndex: idx,
-              },
-              {
-                featurePositions: rpcSource.featurePositions,
-                featureScores: rpcSource.featureMinScores,
-                numFeatures: rpcSource.numFeatures,
-                color: darkColor,
-                rowIndex: idx,
-              },
-            )
+            for (const s of makeWhiskersSourceData(
+              rpcSource,
+              posColor,
+              model.isDensityMode,
+              idx,
+            )) {
+              sourcesData.push(s)
+            }
           } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
             const scores =
               summaryScoreMode === 'min'
@@ -368,21 +349,19 @@ const WebGLMultiWiggleComponent = observer(function WebGLMultiWiggleComponent({
 
       const fStart = featurePositions[foundIdx * 2]! + data.regionStart
       const fEnd = featurePositions[foundIdx * 2 + 1]! + data.regionStart
-      const hasSummary =
-        summaryScoreMode !== 'avg' && rpcSource.featureMinScores.length > 0
+      const score = featureScores[foundIdx]!
+      const minScore = rpcSource.featureMinScores[foundIdx]
+      const maxScore = rpcSource.featureMaxScores[foundIdx]
 
       model.setFeatureUnderMouse({
         refName: region.refName,
         start: fStart,
         end: fEnd,
-        score: featureScores[foundIdx]!,
+        score,
         source: sourceName,
-        ...(hasSummary
-          ? {
-              summary: true,
-              minScore: rpcSource.featureMinScores[foundIdx],
-              maxScore: rpcSource.featureMaxScores[foundIdx],
-            }
+        ...(summaryScoreMode !== 'avg' &&
+        isSummaryFeature(score, minScore, maxScore)
+          ? { summary: true, minScore, maxScore }
           : {}),
       })
     },

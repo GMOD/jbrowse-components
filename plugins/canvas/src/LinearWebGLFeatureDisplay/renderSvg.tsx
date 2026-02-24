@@ -1,4 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import { shouldRenderPeptideText } from '../RenderWebGLFeatureDataRPC/zoomThresholds.ts'
 
@@ -272,6 +273,7 @@ export async function renderSvg(
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
+  await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge)
   const { rpcDataMap } = model
 
   if (rpcDataMap.size === 0) {
