@@ -33,14 +33,23 @@ const AlignmentsDisplayComponent = observer(
     const ref = useRef<HTMLDivElement>(null)
     const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
     const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
+    const view = getContainingView(model) as LinearGenomeViewModel
+    const debouncedLoading = useDebounce(model.isLoading, 500)
+
+    if (!view.initialized) {
+      return (
+        <div className={classes.display}>
+          <LoadingOverlay statusMessage="Initializing" isVisible />
+        </div>
+      )
+    }
+
     const {
       TooltipComponent,
       DisplayMessageComponent,
       height,
       contextMenuCoord,
     } = model
-    const view = getContainingView(model) as LinearGenomeViewModel
-    const debouncedLoading = useDebounce(model.isLoading, 500)
     const items = contextMenuCoord ? model.contextMenuItems() : []
     return (
       <div
@@ -58,10 +67,7 @@ const AlignmentsDisplayComponent = observer(
         }}
       >
         <DisplayMessageComponent model={model} />
-        <LoadingOverlay
-          statusMessage={debouncedLoading ? 'Loading features' : 'Initializing'}
-          isVisible={debouncedLoading || !view.initialized}
-        />
+        <LoadingOverlay statusMessage="Loading features" isVisible={debouncedLoading} />
         <Suspense fallback={null}>
           <TooltipComponent
             model={model}

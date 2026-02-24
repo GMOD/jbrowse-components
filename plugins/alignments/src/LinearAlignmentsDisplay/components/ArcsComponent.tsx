@@ -26,6 +26,10 @@ const ArcsComponent = observer(function ArcsComponent({
     processClick,
   } = base
 
+  if (!width) {
+    return null
+  }
+
   const { height, showCoverage, coverageHeight } = model
 
   function handleCanvasMouseMove(e: React.MouseEvent) {

@@ -149,8 +149,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     isChainMode,
   } = model
 
-  const viewInitialized = view.initialized
-  const width = viewInitialized ? view.width : undefined
+  const width = view.initialized ? view.width : undefined
 
   function resolveBlockForCanvasX(canvasX: number): ResolvedBlock | undefined {
     if (!view.initialized) {

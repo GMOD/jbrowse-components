@@ -93,6 +93,10 @@ const PileupInner = observer(function PileupInner({
     processClick,
   } = base
 
+  if (!width) {
+    return null
+  }
+
   const {
     height,
     showCoverage,
