@@ -921,7 +921,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       ) : null}
 
       <LoadingOverlay
-        statusMessage={debouncedLoading ? 'Loading features' : 'Initializing'}
+        statusMessage={
+          debouncedLoading
+            ? model.statusMessage || 'Loading features'
+            : 'Initializing'
+        }
         isVisible={debouncedLoading || !isReady}
       />
     </div>

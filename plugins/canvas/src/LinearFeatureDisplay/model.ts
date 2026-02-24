@@ -500,6 +500,9 @@ export default function stateModelFactory(
                 ? undefined
                 : self.maxFeatureCount,
             stopToken,
+            statusCallback: (msg: string) => {
+              self.setStatusMessage(msg)
+            },
           },
         )) as RenderFeatureDataResult
 
@@ -568,6 +571,7 @@ export default function stateModelFactory(
           if (isAlive(self) && self.fetchGeneration === generation) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
+            self.setStatusMessage(undefined)
           }
         }
       }

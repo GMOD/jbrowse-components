@@ -443,7 +443,6 @@ export default function stateModelFactory(
       webglRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
-      statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get selectedFeatureId() {
@@ -873,10 +872,6 @@ export default function stateModelFactory(
 
         setWebGLRef(ref: unknown) {
           self.webglRef = ref
-        },
-
-        setStatusMessage(msg?: string) {
-          self.statusMessage = msg
         },
 
         setOverCigarItem(flag: boolean) {
