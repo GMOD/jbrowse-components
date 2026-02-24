@@ -4,12 +4,13 @@
 # Region: ctgA:1-50001
 # ============================================================
 
-# Install packages if needed (uncomment to run)
-# install.packages(c("ggplot2", "patchwork", "dplyr", "tibble"))
-# BiocManager::install(c("rtracklayer", "VariantAnnotation", "Rsamtools"))
-# devtools::install_github("GMOD/ggjbrowse")
+if (!requireNamespace("ggjbrowse", quietly = TRUE)) {
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("cmdcolin/ggjbrowse")
+}
 
-# Load required packages
 library(ggjbrowse)
 library(ggplot2)
 library(patchwork)

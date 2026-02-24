@@ -38,7 +38,10 @@ export(jb_track_bigwig)
 export(jb_track_vcf)
 export(jb_track_gff3)
 export(jb_track_bam)
+export(jb_track_cram)
 export(jb_track_bed)
+export(jb_track_gc_content)
+export(jb_track_multi_bigwig)
 
 # Data access - features
 export(jb_features)
@@ -57,6 +60,9 @@ S3method(fetch_features, jbrowse_track_vcf)
 S3method(fetch_features, jbrowse_track_gff3)
 S3method(fetch_features, jbrowse_track_bam)
 S3method(fetch_features, jbrowse_track_bed)
+S3method(fetch_features, jbrowse_track_cram)
+S3method(fetch_features, jbrowse_track_gc_content)
+S3method(fetch_features, jbrowse_track_multi_bigwig)
 S3method(fetch_features, default)
 
 # S3 print methods

@@ -3,22 +3,37 @@ import { getConf } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RCodeFragment } from './types.ts'
 
-/**
- * Generate a safe R variable name from a track ID
- */
-function safeVarName(trackId: string): string {
-  return trackId.replace(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
-}
-
-/**
- * Format a region as an R-compatible string
- */
 function formatRegion(region: {
   refName: string
   start: number
   end: number
-}): string {
+}) {
   return `${region.refName}:${region.start + 1}-${region.end}`
+}
+
+function getVisibleRegions(model: LinearGenomeViewModel) {
+  const blocks = model.coarseDynamicBlocks
+  if (blocks.length === 0) {
+    return model.displayedRegions
+  }
+  const regionMap = new Map<
+    string,
+    { refName: string; start: number; end: number }
+  >()
+  for (const block of blocks) {
+    const existing = regionMap.get(block.refName)
+    if (existing) {
+      existing.start = Math.min(existing.start, Math.floor(block.start))
+      existing.end = Math.max(existing.end, Math.ceil(block.end))
+    } else {
+      regionMap.set(block.refName, {
+        refName: block.refName,
+        start: Math.floor(block.start),
+        end: Math.ceil(block.end),
+      })
+    }
+  }
+  return [...regionMap.values()]
 }
 
 /**
@@ -36,41 +51,82 @@ function generateSessionCode(
     const adapterConf = getConf(track, 'adapter')
     const adapterType = adapterConf?.type as string | undefined
 
-    const safeId = safeVarName(trackId)
+    const key = `"${trackId}"`
 
     if (adapterType === 'BigWigAdapter') {
       const uri = adapterConf.bigWigLocation?.uri
       if (uri) {
-        trackLines.push(`    ${safeId} = jb_track_bigwig("${uri}")`)
+        trackLines.push(`    ${key} = jb_track_bigwig("${uri}")`)
       }
     } else if (
       adapterType === 'Gff3TabixAdapter' ||
       adapterType === 'Gff3Adapter'
     ) {
-      const uri = adapterConf.gffGzLocation?.uri
+      const uri =
+        adapterConf.gffGzLocation?.uri || adapterConf.gffLocation?.uri
       if (uri) {
-        trackLines.push(`    ${safeId} = jb_track_gff3("${uri}")`)
+        trackLines.push(`    ${key} = jb_track_gff3("${uri}")`)
       }
-    } else if (adapterType === 'VcfTabixAdapter' || adapterType === 'VcfAdapter') {
-      const uri = adapterConf.vcfGzLocation?.uri
+    } else if (
+      adapterType === 'VcfTabixAdapter' ||
+      adapterType === 'VcfAdapter'
+    ) {
+      const uri =
+        adapterConf.vcfGzLocation?.uri || adapterConf.vcfLocation?.uri
       if (uri) {
-        trackLines.push(`    ${safeId} = jb_track_vcf("${uri}")`)
+        trackLines.push(`    ${key} = jb_track_vcf("${uri}")`)
       }
     } else if (adapterType === 'BamAdapter') {
       const uri = adapterConf.bamLocation?.uri
       if (uri) {
-        trackLines.push(`    ${safeId} = jb_track_bam("${uri}")`)
+        trackLines.push(`    ${key} = jb_track_bam("${uri}")`)
       }
-    } else if (adapterType === 'BedTabixAdapter' || adapterType === 'BedAdapter') {
-      const uri = adapterConf.bedGzLocation?.uri || adapterConf.bedLocation?.uri
+    } else if (adapterType === 'CramAdapter') {
+      const uri = adapterConf.cramLocation?.uri
       if (uri) {
-        trackLines.push(`    ${safeId} = jb_track_bed("${uri}")`)
+        trackLines.push(`    ${key} = jb_track_cram("${uri}")`)
+      }
+    } else if (
+      adapterType === 'BedTabixAdapter' ||
+      adapterType === 'BedAdapter'
+    ) {
+      const uri =
+        adapterConf.bedGzLocation?.uri || adapterConf.bedLocation?.uri
+      if (uri) {
+        trackLines.push(`    ${key} = jb_track_bed("${uri}")`)
+      }
+    } else if (adapterType === 'MultiWiggleAdapter') {
+      const subadapters = (adapterConf.subadapters || []) as {
+        bigWigLocation?: { uri?: string }
+        name?: string
+      }[]
+      const uris = subadapters
+        .map(s => s.bigWigLocation?.uri)
+        .filter(Boolean)
+        .map(u => `"${u}"`)
+      if (uris.length > 0) {
+        trackLines.push(
+          `    ${key} = jb_track_multi_bigwig(c(${uris.join(', ')}))`,
+        )
+      }
+    } else if (adapterType === 'TwoBitAdapter') {
+      const uri = adapterConf.twoBitLocation?.uri
+      if (uri) {
+        const display = track.displays[0] as Record<string, unknown>
+        const windowSize = display?.windowSizeSetting ?? 100
+        const windowDelta = display?.windowDeltaSetting ?? windowSize
+        trackLines.push(
+          `    ${key} = jb_track_gc_content("${uri}", window_size = ${windowSize}, window_delta = ${windowDelta})`,
+        )
       }
     }
   }
 
   if (trackLines.length === 0) {
-    return '# No supported tracks found for session'
+    return `
+# No supported tracks found for auto-configuration
+# Create session manually:
+session <- jb_session(assembly = "${assemblyName}")`
   }
 
   return `
@@ -89,21 +145,26 @@ ${trackLines.join(',\n')}
 async function collectRCodeFragments(
   model: LinearGenomeViewModel,
   opts: ExportRCodeOptions,
-): Promise<RCodeFragment[]> {
+) {
   const fragments: RCodeFragment[] = []
-  const region = model.displayedRegions[0]
+  const regions = getVisibleRegions(model)
 
-  if (!region) {
+  if (regions.length === 0) {
     return fragments
   }
 
   for (const track of model.tracks) {
     const display = track.displays[0]
+    console.log('exportRCode check', {
+      trackId: track.configuration.trackId,
+      displayType: display?.type,
+      hasExportRCode: typeof display?.exportRCode,
+    })
     if (display && typeof display.exportRCode === 'function') {
       try {
         const fragment = await display.exportRCode({
           ...opts,
-          region,
+          regions,
         })
         if (fragment) {
           fragments.push(fragment)
@@ -125,56 +186,52 @@ function assembleRScript(
   fragments: RCodeFragment[],
   opts: ExportRCodeOptions,
 ): string {
-  const region = model.displayedRegions[0]
-  if (!region) {
+  const regions = getVisibleRegions(model)
+  if (regions.length === 0) {
     return '# Error: No region displayed'
   }
 
-  const regionStr = formatRegion(region)
+  const regionStrs = regions.map(r => formatRegion(r))
   const timestamp = new Date().toISOString()
 
-  // Collect all unique packages
   const allPackages = [...new Set(fragments.flatMap(f => f.packages))]
+  const packages = [
+    ...new Set(['ggjbrowse', 'ggplot2', 'patchwork', ...allPackages]),
+  ]
 
-  // Base packages always needed
-  const basePackages = ['ggplot2', 'patchwork']
-  if (opts.useJbrowseR) {
-    basePackages.unshift('ggjbrowse')
-  }
-
-  const packages = [...new Set([...basePackages, ...allPackages])]
-
-  // Build the script
   const sections: string[] = []
 
-  // Header
   sections.push(`# ============================================================
 # JBrowse 2 - Reproducible R Script
 # Generated: ${timestamp}
-# Region: ${regionStr}
+# Region: ${regionStrs.join(', ')}
 # ============================================================`)
 
-  // Package installation instructions
   sections.push(`
-# Install packages if needed (uncomment to run)
-# install.packages(c("ggplot2", "patchwork", "dplyr", "tibble"))
-# BiocManager::install(c("rtracklayer", "VariantAnnotation", "Rsamtools"))
-# devtools::install_github("GMOD/ggjbrowse")`)
+if (!requireNamespace("ggjbrowse", quietly = TRUE)) {
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  devtools::install_github("cmdcolin/ggjbrowse")
+}
+if (!requireNamespace("patchwork", quietly = TRUE)) {
+  install.packages("patchwork")
+}
 
-  // Load packages
-  sections.push(`
-# Load required packages
 ${packages.map(p => `library(${p})`).join('\n')}`)
 
-  // Define region
-  sections.push(`
-# Define region of interest
-region <- jb_region("${regionStr}")`)
-
-  // Session setup (if using ggjbrowse)
-  if (opts.useJbrowseR) {
-    sections.push(generateSessionCode(model, opts))
+  if (regions.length === 1) {
+    sections.push(`
+region <- jb_region("${regionStrs[0]}")`)
+  } else {
+    sections.push(`
+regions <- list(
+${regionStrs.map(r => `  jb_region("${r}")`).join(',\n')}
+)
+region <- regions[[1]]`)
   }
+
+  sections.push(generateSessionCode(model, opts))
 
   // Setup code from fragments
   const setupCodes = fragments
@@ -222,7 +279,7 @@ ${fragment.plotCode}`)
 combined_plot <- ${plotVars.join(' / ')} +
   plot_layout(heights = c(${heights})) +
   plot_annotation(
-    title = "JBrowse View: ${regionStr}",
+    title = "JBrowse View: ${regionStrs.join(', ')}",
     theme = theme(plot.title = element_text(hjust = 0.5))
   )
 
@@ -234,16 +291,13 @@ ggsave("jbrowse_export.pdf", combined_plot, width = 12, height = ${Math.max(4, f
 ggsave("jbrowse_export.png", combined_plot, width = 12, height = ${Math.max(4, fragments.length * 2)}, dpi = 300)`)
   }
 
-  // Alternative interactive view
-  if (opts.useJbrowseR) {
-    sections.push(`
+  sections.push(`
 # ============================================================
 # Alternative: Launch Interactive JBrowse View
 # ============================================================
 
 # Uncomment to open interactive JBrowse session in browser:
 # jb_view(session, region)`)
-  }
 
   return sections.join('\n')
 }

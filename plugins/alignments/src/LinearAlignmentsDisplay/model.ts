@@ -2201,6 +2201,10 @@ export default function stateModelFactory(
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearAlignmentsDisplayModel, opts)
         },
+        async exportRCode(opts: Record<string, unknown> = {}) {
+          const { exportRCode } = await import('./exportRCode.ts')
+          return exportRCode(self as LinearAlignmentsDisplayModel, opts)
+        },
       }
     })
 }

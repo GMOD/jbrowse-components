@@ -1,14 +1,14 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingTrack } from '@jbrowse/core/util'
 
-import type { BaseLinearDisplayModel } from './model.ts'
+import type { LinearWebGLFeatureDisplayModel } from './model.ts'
 
 function safeVarName(str: string) {
   return str.replace(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
 }
 
 export function exportRCode(
-  self: BaseLinearDisplayModel,
+  self: LinearWebGLFeatureDisplayModel,
   _opts: Record<string, unknown>,
 ) {
   const track = getContainingTrack(self)
@@ -21,18 +21,31 @@ export function exportRCode(
   const dataVar = `features_${safeId}`
   const plotVar = `p_${safeId}`
 
-  const dataCode = `# Columns: ref_name, start, end, strand, type, feature_id, name, parent_id
-${dataVar} <- jb_features(session, "${trackId}", region)`
+  const isVcf =
+    adapterType === 'VcfTabixAdapter' || adapterType === 'VcfAdapter'
 
-  const isGeneTrack =
-    adapterType?.includes('Gff3') ||
-    trackName.toLowerCase().includes('gene') ||
-    trackName.toLowerCase().includes('transcript')
+  const dataCode = isVcf
+    ? `# Columns: ref_name, start, end, feature_id, name, ref, alt, qual, filter, type
+${dataVar} <- jb_features(session, "${trackId}", region)`
+    : `# Columns: ref_name, start, end, strand, type, feature_id, name, parent_id
+${dataVar} <- jb_features(session, "${trackId}", region)`
 
   let plotCode: string
 
-  if (isGeneTrack) {
-    plotCode = `# prepare_gene_data() splits features into top-level genes (with layout_row)
+  if (isVcf) {
+    plotCode = `${plotVar} <- ggplot(${dataVar}, aes(x = start, color = type, label = name)) +
+  geom_variant(style = "lollipop") +
+  scale_x_genomic(region = region) +
+  labs(title = "${trackName}") +
+  theme_jbrowse_track()`
+  } else {
+    const isGeneTrack =
+      adapterType?.includes('Gff3') ||
+      trackName.toLowerCase().includes('gene') ||
+      trackName.toLowerCase().includes('transcript')
+
+    if (isGeneTrack) {
+      plotCode = `# prepare_gene_data() splits features into top-level genes (with layout_row)
 # and subfeatures (exons, CDS, UTRs linked to parent layout_row)
 ${dataVar}_prepared <- prepare_gene_data(${dataVar})
 
@@ -51,8 +64,8 @@ ${plotVar} <- ggplot() +
   labs(title = "${trackName}") +
   theme_jbrowse_track() +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())`
-  } else {
-    plotCode = `${dataVar}_layout <- compute_layout(${dataVar}, padding = 200)
+    } else {
+      plotCode = `${dataVar}_layout <- compute_layout(${dataVar}, padding = 200)
 
 ${plotVar} <- ggplot(${dataVar}_layout) +
   geom_gene(aes(xmin = start, xmax = end, y = layout_row)) +
@@ -60,12 +73,13 @@ ${plotVar} <- ggplot(${dataVar}_layout) +
   labs(title = "${trackName}") +
   theme_jbrowse_track() +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())`
+    }
   }
 
   return {
     trackId,
     trackName,
-    displayType: 'LinearBasicDisplay',
+    displayType: 'LinearWebGLFeatureDisplay',
     packages: ['ggjbrowse', 'ggplot2', 'dplyr'],
     dataCode,
     plotCode,

@@ -807,6 +807,12 @@ export default function stateModelFactory(
         ]
       },
     }))
+    .actions(self => ({
+      async exportRCode(opts: Record<string, unknown> = {}) {
+        const { exportRCode } = await import('./exportRCode.ts')
+        return exportRCode(self as LinearWebGLFeatureDisplayModel, opts)
+      },
+    }))
     .postProcessSnapshot(snap => {
       const {
         trackShowLabels,

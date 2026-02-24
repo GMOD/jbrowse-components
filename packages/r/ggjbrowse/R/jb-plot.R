@@ -104,7 +104,7 @@ create_track_plot <- function(track, features, region) {
   track_type <- track$type
   track_name <- track$name
 
-  if (track_type == "bigwig") {
+  if (track_type %in% c("bigwig", "gc_content")) {
     # Quantitative track
     ggplot2::ggplot(features, ggplot2::aes(x = .data$start, xend = .data$end, y = .data$score)) +
       geom_wiggle(fill = "steelblue", alpha = 0.7) +
@@ -142,7 +142,7 @@ create_track_plot <- function(track, features, region) {
       ggplot2::labs(title = track_name) +
       theme_jbrowse_track()
 
-  } else if (track_type == "bam") {
+  } else if (track_type %in% c("bam", "cram")) {
     # Alignment track - needs pileup computation
     features <- compute_pileup(features)
     ggplot2::ggplot(features, ggplot2::aes(

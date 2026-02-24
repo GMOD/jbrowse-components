@@ -63,20 +63,7 @@ export interface InitState {
 // R Script Export Types
 
 export interface ExportRCodeOptions {
-  // Output options
   filename?: string
-
-  // Package preferences
-  useJbrowseR?: boolean // Use ggjbrowse package for data loading (recommended)
-  useBioconductor?: boolean // Use Bioconductor packages directly
-
-  // Visualization options
-  plotLibrary?: 'ggplot2' | 'base' | 'plotly'
-  includeTheme?: boolean
-
-  // Data options
-  embedData?: boolean // Embed data inline vs. fetch from URLs
-  maxEmbedRows?: number // Max rows to embed (default: 1000)
 }
 
 export interface RCodeFragment {

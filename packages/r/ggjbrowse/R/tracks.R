@@ -146,6 +146,95 @@ jb_track_bed <- function(uri, index = NULL, name = NULL, ...) {
   )
 }
 
+#' Create a CRAM Track
+#'
+#' Creates a track configuration for CRAM alignment data.
+#'
+#' @param uri URL or local path to the CRAM file.
+#' @param index URL or local path to the CRAM index (.crai).
+#'   If NULL, assumes index is at `uri`.crai.
+#' @param name Display name for the track.
+#' @param ... Additional track options.
+#'
+#' @return A jbrowse_track object.
+#'
+#' @export
+jb_track_cram <- function(uri, index = NULL, name = NULL, ...) {
+  if (is.null(index)) {
+    index <- paste0(uri, ".crai")
+  }
+
+  structure(
+    list(
+      type = "cram",
+      uri = uri,
+      index = index,
+      name = name %||% basename(uri),
+      options = list(...)
+    ),
+    class = c("jbrowse_track_cram", "jbrowse_track", "list")
+  )
+}
+
+#' Create a Multi-BigWig Track
+#'
+#' Creates a track that combines multiple BigWig files into a single
+#' multi-source quantitative display.
+#'
+#' @param uris Character vector of URLs or local paths to BigWig files.
+#' @param names Optional character vector of source names.
+#' @param name Display name for the combined track.
+#' @param ... Additional track options.
+#'
+#' @return A jbrowse_track object.
+#'
+#' @export
+jb_track_multi_bigwig <- function(uris, names = NULL, name = NULL, ...) {
+  if (is.null(names)) {
+    names <- tools::file_path_sans_ext(basename(uris))
+  }
+
+  structure(
+    list(
+      type = "multi_bigwig",
+      uris = uris,
+      source_names = names,
+      name = name %||% "Multi-BigWig",
+      options = list(...)
+    ),
+    class = c("jbrowse_track_multi_bigwig", "jbrowse_track", "list")
+  )
+}
+
+#' Create a TwoBit GC Content Track
+#'
+#' Creates a track that computes GC content from a 2bit reference sequence
+#' file using a sliding window, similar to JBrowse's GCContentDisplay.
+#'
+#' @param uri URL or local path to the .2bit file.
+#' @param name Display name for the track.
+#' @param window_size Sliding window size in base pairs (default 100).
+#' @param window_delta Step size between windows (default same as window_size).
+#' @param ... Additional track options.
+#'
+#' @return A jbrowse_track object.
+#'
+#' @export
+jb_track_gc_content <- function(uri, name = NULL, window_size = 100,
+                                window_delta = window_size, ...) {
+  structure(
+    list(
+      type = "gc_content",
+      uri = uri,
+      name = name %||% "GC Content",
+      window_size = window_size,
+      window_delta = window_delta,
+      options = list(...)
+    ),
+    class = c("jbrowse_track_gc_content", "jbrowse_track", "list")
+  )
+}
+
 #' Print method for jbrowse_track
 #' @param x A jbrowse_track object
 #' @param ... Additional arguments (ignored)

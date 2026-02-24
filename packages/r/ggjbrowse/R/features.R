@@ -88,9 +88,24 @@ fetch_features.jbrowse_track_bed <- function(track, region, ...) {
 }
 
 #' @export
+fetch_features.jbrowse_track_cram <- function(track, region, ...) {
+  fetch_bam_features(track, region, ...)
+}
+
+#' @export
+fetch_features.jbrowse_track_multi_bigwig <- function(track, region, ...) {
+  fetch_multi_bigwig_features(track, region, ...)
+}
+
+#' @export
+fetch_features.jbrowse_track_gc_content <- function(track, region, ...) {
+  fetch_gc_content_features(track, region, ...)
+}
+
+#' @export
 fetch_features.default <- function(track, region, ...) {
   stop("Unknown track type: ", paste(class(track), collapse = ", "),
-       "\nSupported types: bigwig, vcf, gff3, bam, bed")
+       "\nSupported types: bigwig, vcf, gff3, bam, cram, bed, gc_content")
 }
 
 # Internal: Fetch BigWig features using rtracklayer
@@ -339,6 +354,63 @@ fetch_bed_features <- function(track, region, ...) {
     name = if ("name" %in% col_names) as.character(mcols_data$name) else NA_character_,
     strand = strand_int,
     score = if ("score" %in% col_names) as.numeric(mcols_data$score) else NA_real_
+  )
+}
+
+# Internal: Fetch and combine multiple BigWig sources
+fetch_multi_bigwig_features <- function(track, region, ...) {
+  if (!requireNamespace("rtracklayer", quietly = TRUE)) {
+    stop("Package 'rtracklayer' is required. Install with: BiocManager::install('rtracklayer')")
+  }
+
+  gr <- region_to_granges(region)
+
+  results <- lapply(seq_along(track$uris), function(i) {
+    bw_data <- rtracklayer::import(track$uris[i], which = gr)
+    if (length(bw_data) == 0) {
+      return(tibble::tibble(
+        ref_name = character(), start = integer(),
+        end = integer(), score = numeric(), source = character()
+      ))
+    }
+    tibble::tibble(
+      ref_name = as.character(GenomicRanges::seqnames(bw_data)),
+      start = GenomicRanges::start(bw_data) - 1L,
+      end = GenomicRanges::end(bw_data),
+      score = GenomicRanges::score(bw_data),
+      source = track$source_names[i]
+    )
+  })
+
+  do.call(rbind, results)
+}
+
+# Internal: Compute GC content from a 2bit reference sequence
+fetch_gc_content_features <- function(track, region, ...) {
+  if (!requireNamespace("rtracklayer", quietly = TRUE)) {
+    stop("Package 'rtracklayer' is required. Install with: BiocManager::install('rtracklayer')")
+  }
+  if (!requireNamespace("Biostrings", quietly = TRUE)) {
+    stop("Package 'Biostrings' is required. Install with: BiocManager::install('Biostrings')")
+  }
+
+  gr <- region_to_granges(region)
+  window_size <- track$window_size %||% 100L
+  window_delta <- track$window_delta %||% window_size
+
+  dna <- rtracklayer::import(rtracklayer::TwoBitFile(track$uri), which = gr)[[1]]
+
+  gc_counts <- Biostrings::letterFrequencyInSlidingView(dna, window_size, c("G", "C"))
+  gc_fraction <- rowSums(gc_counts) / window_size
+
+  indices <- seq(1, length(gc_fraction), by = window_delta)
+  region_start <- GenomicRanges::start(gr) - 1L
+
+  tibble::tibble(
+    ref_name = as.character(GenomicRanges::seqnames(gr)),
+    start = region_start + indices - 1L,
+    end = region_start + indices - 1L + window_size,
+    score = gc_fraction[indices]
   )
 }
 

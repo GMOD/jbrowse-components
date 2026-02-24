@@ -117,6 +117,15 @@ jb_from_config <- function(config_path) {
             index = adapter$index$location$uri,
             name = track_conf$name
           ),
+          "CramAdapter" = jb_track_cram(
+            adapter$cramLocation$uri,
+            index = adapter$index$location$uri,
+            name = track_conf$name
+          ),
+          "TwoBitAdapter" = jb_track_gc_content(
+            adapter$twoBitLocation$uri,
+            name = track_conf$name
+          ),
           # Default: create generic track
           structure(
             list(
