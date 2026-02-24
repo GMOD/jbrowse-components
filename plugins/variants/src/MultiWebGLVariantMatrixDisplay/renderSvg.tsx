@@ -9,14 +9,13 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function rgbaString(colors: Uint8Array, i: number) {
+function rgbaAttrs(colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
   const g = colors[i * 4 + 1]!
   const b = colors[i * 4 + 2]!
   const a = colors[i * 4 + 3]!
-  return a === 255
-    ? `rgb(${r},${g},${b})`
-    : `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
+  const rgb = `rgb(${r},${g},${b})`
+  return a === 255 ? `fill="${rgb}"` : `fill="${rgb}" fill-opacity="${(a / 255).toFixed(3)}"`
 }
 
 export async function renderSvg(
@@ -41,7 +40,7 @@ export async function renderSvg(
   for (let i = 0; i < numCells; i++) {
     const featureIdx = cellFeatureIndices[i]!
     const rowIndex = cellRowIndices[i]!
-    const color = rgbaString(cellColors, i)
+    const fillAttrs = rgbaAttrs(cellColors, i)
 
     const y = rowIndex * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > availableHeight) {
@@ -52,7 +51,7 @@ export async function renderSvg(
     const w = Math.max(colWidth, 1)
     const h = Math.max(rowHeight, 1)
 
-    content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`
+    content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs}/>`
   }
 
   const sources = model.sources ?? []

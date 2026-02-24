@@ -11,14 +11,22 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function rgbaString(colors: Uint8Array, i: number) {
+function rgbaColor(colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
   const g = colors[i * 4 + 1]!
   const b = colors[i * 4 + 2]!
   const a = colors[i * 4 + 3]!
-  return a === 255
-    ? `rgb(${r},${g},${b})`
-    : `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
+  return { rgb: `rgb(${r},${g},${b})`, opacity: a / 255 }
+}
+
+function fillAttrs(colors: Uint8Array, i: number) {
+  const { rgb, opacity } = rgbaColor(colors, i)
+  return opacity === 1 ? `fill="${rgb}"` : `fill="${rgb}" fill-opacity="${opacity.toFixed(3)}"`
+}
+
+function strokeAttr(colors: Uint8Array, i: number) {
+  const { rgb, opacity } = rgbaColor(colors, i)
+  return opacity === 1 ? `stroke="${rgb}"` : `stroke="${rgb}" stroke-opacity="${opacity.toFixed(3)}"`
 }
 
 function bpToScreenX(
@@ -60,9 +68,7 @@ function renderRectsForRegion(
     const w = Math.max(x2 - x, 0.5)
     const y = rectYs[i]! - scrollY
     const h = rectHeights[i]!
-    const color = rgbaString(rectColors, i)
-
-    content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`
+    content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs(rectColors, i)}/>`
   }
   return content
 }
@@ -95,10 +101,10 @@ function renderLinesForRegion(
     const x1 = bpToScreenX(clippedStart, regionStart, regionEnd, screenStartPx, screenEndPx)
     const x2 = bpToScreenX(clippedEnd, regionStart, regionEnd, screenStartPx, screenEndPx)
     const y = rectRound(lineYs[i]! - scrollY)
-    const color = rgbaString(lineColors, i)
+    const lineStroke = strokeAttr(lineColors, i)
     const direction = lineDirections[i]!
 
-    content += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="1"/>`
+    content += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" ${lineStroke} stroke-width="1"/>`
 
     if (direction !== 0) {
       const lineWidthPx = (endBp - startBp) / bpPerPx
@@ -117,7 +123,7 @@ function renderLinesForRegion(
         const tipX = cx + chevronW * 0.5 * direction
         const baseX = cx - chevronW * 0.5 * direction
 
-        content += `<polyline points="${baseX},${y - chevronH} ${tipX},${y} ${baseX},${y + chevronH}" fill="none" stroke="${color}" stroke-width="1"/>`
+        content += `<polyline points="${baseX},${y - chevronH} ${tipX},${y} ${baseX},${y + chevronH}" fill="none" ${lineStroke} stroke-width="1"/>`
       }
     }
   }
@@ -146,7 +152,8 @@ function renderArrowsForRegion(
     const cy = arrowYs[i]! - scrollY
     const dir = arrowDirections[i]!
     const h = arrowHeights[i]!
-    const color = rgbaString(arrowColors, i)
+    const arrowStroke = strokeAttr(arrowColors, i)
+    const arrowFill = fillAttrs(arrowColors, i)
 
     const stemLength = 7
     const stemHalf = 0.5
@@ -156,10 +163,10 @@ function renderArrowsForRegion(
     const stemStartX = cx - stemLength * 0.5 * dir
     const stemEndX = cx + stemLength * 0.5 * dir
 
-    content += `<line x1="${stemStartX}" y1="${cy}" x2="${stemEndX}" y2="${cy}" stroke="${color}" stroke-width="${stemHalf * 2}"/>`
+    content += `<line x1="${stemStartX}" y1="${cy}" x2="${stemEndX}" y2="${cy}" ${arrowStroke} stroke-width="${stemHalf * 2}"/>`
 
     const tipX = stemEndX + headWidth * dir
-    content += `<polygon points="${stemEndX},${cy - headHalf} ${tipX},${cy} ${stemEndX},${cy + headHalf}" fill="${color}"/>`
+    content += `<polygon points="${stemEndX},${cy - headHalf} ${tipX},${cy} ${stemEndX},${cy + headHalf}" ${arrowFill}/>`
   }
   return content
 }
@@ -215,7 +222,7 @@ function renderLabelsForRegion(
       }
 
       if (isOverlay) {
-        content += `<rect x="${labelX - 1}" y="${labelY}" width="${labelWidth + 2}" height="${fontSize + 1}" fill="rgba(255,255,255,0.8)"/>`
+        content += `<rect x="${labelX - 1}" y="${labelY}" width="${labelWidth + 2}" height="${fontSize + 1}" fill="rgb(255,255,255)" fill-opacity="0.8"/>`
       }
       const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       content += `<text x="${labelX}" y="${labelY + fontSize}" font-size="${fontSize}" fill="${color}" style="pointer-events:none">${escaped}</text>`

@@ -1,17 +1,13 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { ReactRendering, getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { renderBlockData } from './renderDotplotBlock.ts'
+import { renderSvg } from './renderSvg.tsx'
 
 import type { DotplotRenderer } from './DotplotRenderer.ts'
 import type { DotplotFeatPos } from './types.ts'
-import type {
-  DotplotViewModel,
-  ExportSvgOptions,
-} from '../DotplotView/model.ts'
+import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -103,27 +99,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        const props = renderBlockData(self)
-        if (!props) {
-          return null
-        }
-
-        const { rendererType, rpcManager, renderProps, renderingProps } = props
-        const rendering = await rendererType.renderInClient(rpcManager, {
-          ...renderProps,
-          renderingProps,
-          exportSVG: opts,
-          theme: opts.theme || renderProps.theme,
-        })
-        const { hview, vview } = getContainingView(self) as DotplotViewModel
-        const offX = -hview.offsetPx + rendering.offsetX
-        const offY = -vview.offsetPx + rendering.offsetY
-        return (
-          <g transform={`translate(${offX} ${-offY})`}>
-            <ReactRendering rendering={rendering} />
-          </g>
-        )
+      renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
+        return renderSvg(self as DotplotDisplayModel)
       },
     }))
     .actions(self => ({

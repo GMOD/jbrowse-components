@@ -9,14 +9,13 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function rgbaString(colors: Uint8Array, i: number) {
+function rgbaAttrs(colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
   const g = colors[i * 4 + 1]!
   const b = colors[i * 4 + 2]!
   const a = colors[i * 4 + 3]!
-  return a === 255
-    ? `rgb(${r},${g},${b})`
-    : `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
+  const rgb = `rgb(${r},${g},${b})`
+  return a === 255 ? `fill="${rgb}"` : `fill="${rgb}" fill-opacity="${(a / 255).toFixed(3)}"`
 }
 
 export async function renderSvg(
@@ -57,7 +56,7 @@ export async function renderSvg(
     const cellEnd = regionStart + cellPositions[i * 2 + 1]!
     const rowIndex = cellRowIndices[i]!
     const shapeType = cellShapeTypes[i]!
-    const color = rgbaString(cellColors, i)
+    const fillAttrs = rgbaAttrs(cellColors, i)
 
     const y = rowIndex * rowHeight - scrollTop
     const yEnd = y + rowHeight
@@ -87,16 +86,16 @@ export async function renderSvg(
       const h = Math.max(rowHeight, 1)
 
       if (shapeType === 0) {
-        content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`
+        content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs}/>`
       } else if (shapeType === 1) {
         const midY = y + h / 2
-        content += `<polygon points="${x},${y} ${x + w},${midY} ${x},${yEnd}" fill="${color}"/>`
+        content += `<polygon points="${x},${y} ${x + w},${midY} ${x},${yEnd}" ${fillAttrs}/>`
       } else if (shapeType === 2) {
         const midY = y + h / 2
-        content += `<polygon points="${x + w},${y} ${x},${midY} ${x + w},${yEnd}" fill="${color}"/>`
+        content += `<polygon points="${x + w},${y} ${x},${midY} ${x + w},${yEnd}" ${fillAttrs}/>`
       } else if (shapeType === 3) {
         const midX = x + w / 2
-        content += `<polygon points="${x},${y} ${x + w},${y} ${midX},${yEnd}" fill="${color}"/>`
+        content += `<polygon points="${x},${y} ${x + w},${y} ${midX},${yEnd}" ${fillAttrs}/>`
       }
 
       drawn = true

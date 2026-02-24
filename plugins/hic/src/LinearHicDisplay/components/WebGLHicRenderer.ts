@@ -58,7 +58,8 @@ void main() {
     t = v_count / max(m, 0.001);
   }
   t = clamp(t, 0.0, 1.0);
-  fragColor = texture(u_colorRamp, vec2(t, 0.5));
+  vec4 c = texture(u_colorRamp, vec2(t, 0.5));
+  fragColor = vec4(c.rgb * c.a, c.a);
 }
 `
 
@@ -157,7 +158,7 @@ export class WebGLHicRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const gl = canvas.getContext('webgl2', {
-      premultipliedAlpha: false,
+      premultipliedAlpha: true,
       preserveDrawingBuffer: true,
     })
 
@@ -180,7 +181,7 @@ export class WebGLHicRenderer {
 
     gl.enable(gl.BLEND)
     gl.blendFuncSeparate(
-      gl.SRC_ALPHA,
+      gl.ONE,
       gl.ONE_MINUS_SRC_ALPHA,
       gl.ONE,
       gl.ONE_MINUS_SRC_ALPHA,

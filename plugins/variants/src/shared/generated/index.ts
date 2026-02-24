@@ -390,3 +390,142 @@ void main() {
 }
 
 `
+
+export const LD_VERTEX_SHADER = `#version 300 es
+
+precision highp float;
+precision highp int;
+
+
+struct LDInstance {
+    vec2 position;
+    vec2 cell_size;
+    float ld_value;
+};
+struct Uniforms {
+    vec2 canvas_size;
+    float y_scalar;
+    float view_scale;
+    float view_offset_x;
+    uint signed_ld;
+};
+struct VertexOutput {
+    vec4 position;
+    float ld_value;
+};
+uniform highp usampler2D u_instanceData;
+
+LDInstance _fetch_LDInstance(int idx) {
+    int base = idx * 5;
+    LDInstance s;
+    s.position = vec2(uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 0) / 4, 0), 0)[(base + 0) % 4]), uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 0 + 1) / 4, 0), 0)[(base + 0 + 1) % 4]));
+    s.cell_size = vec2(uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 2) / 4, 0), 0)[(base + 2) % 4]), uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 2 + 1) / 4, 0), 0)[(base + 2 + 1) % 4]));
+    s.ld_value = uintBitsToFloat(texelFetch(u_instanceData, ivec2((base + 4) / 4, 0), 0)[(base + 4) % 4]);
+    return s;
+}
+
+layout(std140) uniform Uniforms_block_1Vertex { Uniforms _group_0_binding_1_vs; };
+
+smooth out float _vs2fs_location0;
+
+void main() {
+    uint vertex_index = uint(gl_VertexID);
+    uint instance_index = uint(gl_InstanceID);
+    bool local = false;
+    bool local_1 = false;
+    bool local_2 = false;
+    bool local_3 = false;
+    VertexOutput out_ = VertexOutput(vec4(0.0), 0.0);
+    LDInstance inst = _fetch_LDInstance(int(instance_index));
+    uint vid = (vertex_index % 6u);
+    if (!((vid == 0u))) {
+        local = (vid == 2u);
+    } else {
+        local = true;
+    }
+    bool _e15 = local;
+    if (!(_e15)) {
+        local_1 = (vid == 3u);
+    } else {
+        local_1 = true;
+    }
+    bool _e22 = local_1;
+    float lx = (_e22 ? 0.0 : 1.0);
+    if (!((vid == 0u))) {
+        local_2 = (vid == 1u);
+    } else {
+        local_2 = true;
+    }
+    bool _e34 = local_2;
+    if (!(_e34)) {
+        local_3 = (vid == 4u);
+    } else {
+        local_3 = true;
+    }
+    bool _e41 = local_3;
+    float ly = (_e41 ? 0.0 : 1.0);
+    vec2 pos = (inst.position + (vec2(lx, ly) * inst.cell_size));
+    float rx = ((pos.x + pos.y) * 0.70710677);
+    float ry = ((-(pos.x) + pos.y) * 0.70710677);
+    float _e62 = _group_0_binding_1_vs.view_scale;
+    float _e66 = _group_0_binding_1_vs.view_offset_x;
+    float sx = ((rx * _e62) + _e66);
+    float _e70 = _group_0_binding_1_vs.view_scale;
+    float _e74 = _group_0_binding_1_vs.y_scalar;
+    float sy = ((ry * _e70) * _e74);
+    float _e79 = _group_0_binding_1_vs.canvas_size.x;
+    float clip_x = (((sx / _e79) * 2.0) - 1.0);
+    float _e88 = _group_0_binding_1_vs.canvas_size.y;
+    float clip_y = (1.0 - ((sy / _e88) * 2.0));
+    out_.position = vec4(clip_x, clip_y, 0.0, 1.0);
+    out_.ld_value = inst.ld_value;
+    VertexOutput _e101 = out_;
+    gl_Position = _e101.position;
+    _vs2fs_location0 = _e101.ld_value;
+    return;
+}
+
+`
+
+export const LD_FRAGMENT_SHADER = `#version 300 es
+
+precision highp float;
+precision highp int;
+
+struct Uniforms {
+    vec2 canvas_size;
+    float y_scalar;
+    float view_scale;
+    float view_offset_x;
+    uint signed_ld;
+};
+struct VertexOutput {
+    vec4 position;
+    float ld_value;
+};
+layout(std140) uniform Uniforms_block_0Fragment { Uniforms _group_0_binding_1_fs; };
+
+uniform highp sampler2D _group_0_binding_2_fs;
+
+smooth in float _vs2fs_location0;
+out vec4 _fs2p_location0;
+
+void main() {
+    VertexOutput in_ = VertexOutput(gl_FragCoord, _vs2fs_location0);
+    float t = 0.0;
+    uint _e4 = _group_0_binding_1_fs.signed_ld;
+    if ((_e4 == 1u)) {
+        t = ((in_.ld_value + 1.0) / 2.0);
+    } else {
+        t = in_.ld_value;
+    }
+    float _e13 = t;
+    t = clamp(_e13, 0.0, 1.0);
+    float _e19 = t;
+    vec4 color = textureLod(_group_0_binding_2_fs, vec2(vec2(_e19, 0.5)), 0.0);
+    _fs2p_location0 = vec4((color.xyz * color.w), color.w);
+    return;
+}
+
+`
+

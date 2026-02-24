@@ -17,7 +17,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
-import { WebGLHicRenderer, generateColorRamp } from './WebGLHicRenderer.ts'
+import { HicRenderer, generateColorRamp } from './HicRenderer.ts'
 import HicColorLegend from '../../HicRenderer/components/HicColorLegend.tsx'
 
 import type { HicFlatbushItem } from '../../HicRenderer/types.ts'
@@ -109,7 +109,7 @@ const HicCanvas = observer(function HicCanvas({
   } = model
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGLHicRenderer | null>(null)
+  const rendererRef = useRef<HicRenderer | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -146,29 +146,46 @@ const HicCanvas = observer(function HicCanvas({
     [flatbush],
   )
 
-  // Initialize WebGL renderer
+  const [ready, setReady] = useState(false)
+
   useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
       return
     }
 
-    try {
-      rendererRef.current = new WebGLHicRenderer(canvas)
-    } catch (e) {
-      setGlError(e instanceof Error ? e.message : 'WebGL initialization failed')
-    }
+    let cancelled = false
+    const renderer = HicRenderer.getOrCreate(canvas)
+    rendererRef.current = renderer
+    renderer
+      .init()
+      .then(ok => {
+        if (!cancelled) {
+          if (!ok) {
+            setGlError('GPU initialization failed')
+          }
+          setReady(true)
+        }
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          setGlError(
+            e instanceof Error ? e.message : 'GPU initialization failed',
+          )
+        }
+      })
 
     return () => {
+      cancelled = true
       rendererRef.current?.destroy()
       rendererRef.current = null
+      setReady(false)
     }
   }, [contextVersion])
 
-  // Upload data when rpcData changes
   useLayoutEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData) {
+    if (!renderer || !rpcData || !ready) {
       return
     }
 
@@ -177,23 +194,20 @@ const HicCanvas = observer(function HicCanvas({
       counts: rpcData.counts,
       numContacts: rpcData.numContacts,
     })
-  }, [rpcData, contextVersion])
+  }, [rpcData, contextVersion, ready])
 
-  // Upload color ramp when colorScheme changes
   useLayoutEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData) {
+    if (!renderer || !rpcData || !ready) {
       return
     }
 
     renderer.uploadColorRamp(generateColorRamp(colorScheme))
-  }, [rpcData, colorScheme, contextVersion])
+  }, [rpcData, colorScheme, contextVersion, ready])
 
-  // Re-render on every view change (zoom/scroll) - this is cheap,
-  // just updating uniforms and issuing a draw call
   useLayoutEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData) {
+    if (!renderer || !rpcData || !ready) {
       return
     }
 
@@ -215,6 +229,7 @@ const HicCanvas = observer(function HicCanvas({
     viewScale,
     viewOffsetX,
     contextVersion,
+    ready,
   ])
 
   const onMouseMove = useCallback(

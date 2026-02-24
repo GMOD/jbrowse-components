@@ -18,9 +18,9 @@ import { observer } from 'mobx-react'
 
 import BaseDisplayComponent from './BaseDisplayComponent.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
+import { LDRenderer, generateLDColorRamp } from './LDRenderer.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
-import { WebGLLDRenderer, generateLDColorRamp } from './WebGLLDRenderer.ts'
 import Wrapper from './Wrapper.tsx'
 import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
@@ -283,7 +283,7 @@ const LDCanvas = observer(function LDCanvas({
   const containerHeight = canvasOnlyHeight + effectiveLineZoneHeight
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<WebGLLDRenderer | null>(null)
+  const rendererRef = useRef<LDRenderer | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<LDFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -348,29 +348,46 @@ const LDCanvas = observer(function LDCanvas({
     [flatbush],
   )
 
-  // Initialize WebGL renderer
+  const [ready, setReady] = useState(false)
+
   useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
       return
     }
 
-    try {
-      rendererRef.current = new WebGLLDRenderer(canvas)
-    } catch (e) {
-      setGlError(e instanceof Error ? e.message : 'WebGL initialization failed')
-    }
+    let cancelled = false
+    const renderer = LDRenderer.getOrCreate(canvas)
+    rendererRef.current = renderer
+    renderer
+      .init()
+      .then(ok => {
+        if (!cancelled) {
+          if (!ok) {
+            setGlError('GPU initialization failed')
+          }
+          setReady(true)
+        }
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          setGlError(
+            e instanceof Error ? e.message : 'GPU initialization failed',
+          )
+        }
+      })
 
     return () => {
+      cancelled = true
       rendererRef.current?.destroy()
       rendererRef.current = null
+      setReady(false)
     }
   }, [contextVersion])
 
-  // Upload data when rpcData changes
   useLayoutEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData) {
+    if (!renderer || !rpcData || !ready) {
       return
     }
 
@@ -380,24 +397,22 @@ const LDCanvas = observer(function LDCanvas({
       ldValues: rpcData.ldValues,
       numCells: rpcData.numCells,
     })
-  }, [rpcData, contextVersion])
+  }, [rpcData, contextVersion, ready])
 
-  // Upload color ramp when data changes
   useLayoutEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData) {
+    if (!renderer || !rpcData || !ready) {
       return
     }
 
     renderer.uploadColorRamp(
       generateLDColorRamp(rpcData.metric, rpcData.signedLD),
     )
-  }, [rpcData, contextVersion])
+  }, [rpcData, contextVersion, ready])
 
-  // Re-render on every view change (zoom/scroll) - cheap, just uniforms + draw
   useLayoutEffect(() => {
     const renderer = rendererRef.current
-    if (!renderer || !rpcData) {
+    if (!renderer || !rpcData || !ready) {
       return
     }
 
@@ -409,7 +424,7 @@ const LDCanvas = observer(function LDCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX, contextVersion])
+  }, [rpcData, width, canvasOnlyHeight, viewScale, viewOffsetX, contextVersion, ready])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

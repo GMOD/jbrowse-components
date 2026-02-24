@@ -445,7 +445,7 @@ function renderConnectingLines(
     const rowCenter =
       pileupTopOffset + ys[i]! * rowHeight + featureHeightSetting * 0.5
 
-    content += `<line x1="${x1}" y1="${rowCenter}" x2="${x2}" y2="${rowCenter}" stroke="rgba(0,0,0,0.45)" stroke-width="1"/>`
+    content += `<line x1="${x1}" y1="${rowCenter}" x2="${x2}" y2="${rowCenter}" stroke="rgb(0,0,0)" stroke-opacity="0.45" stroke-width="1"/>`
   }
   return content
 }
