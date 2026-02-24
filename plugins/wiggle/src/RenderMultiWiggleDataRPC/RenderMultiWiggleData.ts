@@ -4,7 +4,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import type { SourceInfo } from '../util.ts'
 import type { Region } from '@jbrowse/core/util'
 
-interface RenderWebGLMultiWiggleDataArgs {
+interface RenderMultiWiggleDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
@@ -12,11 +12,11 @@ interface RenderWebGLMultiWiggleDataArgs {
   bicolorPivot?: number
 }
 
-export default class RenderWebGLMultiWiggleData extends RpcMethodType {
-  name = 'RenderWebGLMultiWiggleData'
+export default class RenderMultiWiggleData extends RpcMethodType {
+  name = 'RenderMultiWiggleData'
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as unknown as RenderWebGLMultiWiggleDataArgs
+    const typedArgs = args as unknown as RenderMultiWiggleDataArgs
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
@@ -40,11 +40,11 @@ export default class RenderWebGLMultiWiggleData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLMultiWiggleData } =
-      await import('./executeRenderWebGLMultiWiggleData.ts')
-    return executeRenderWebGLMultiWiggleData({
+    const { executeRenderMultiWiggleData } =
+      await import('./executeRenderMultiWiggleData.ts')
+    return executeRenderMultiWiggleData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderWebGLMultiWiggleDataArgs,
+      args: args as unknown as RenderMultiWiggleDataArgs,
     })
   }
 }

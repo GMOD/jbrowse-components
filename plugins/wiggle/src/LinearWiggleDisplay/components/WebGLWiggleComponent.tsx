@@ -17,7 +17,7 @@ import {
 } from '../../shared/wiggleComponentUtils.ts'
 import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
 
-import type { WebGLWiggleDataResult } from '../../RenderWebGLWiggleDataRPC/types.ts'
+import type { WebGLWiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
   WiggleRenderBlock,

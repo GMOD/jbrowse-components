@@ -23,7 +23,7 @@ import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
 import type {
   WebGLMultiWiggleDataResult,
   WebGLMultiWiggleSourceData,
-} from '../../RenderWebGLMultiWiggleDataRPC/types.ts'
+} from '../../RenderMultiWiggleDataRPC/types.ts'
 import type {
   SourceRenderData,
   WiggleRenderBlock,

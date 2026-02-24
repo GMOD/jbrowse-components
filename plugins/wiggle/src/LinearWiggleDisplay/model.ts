@@ -28,7 +28,7 @@ import {
   getScale,
 } from '../util.ts'
 
-import type { WebGLWiggleDataResult } from '../RenderWebGLWiggleDataRPC/types.ts'
+import type { WebGLWiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -315,7 +315,7 @@ export default function stateModelFactory(
 
         const result = (await rpcManager.call(
           session.id ?? '',
-          'RenderWebGLWiggleData',
+          'RenderWiggleData',
           {
             sessionId: session.id,
             adapterConfig,
@@ -658,7 +658,7 @@ export default function stateModelFactory(
     .actions(self => ({
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearWebGLWiggleDisplayModel, opts)
+        return renderSvg(self as LinearWiggleDisplayModel, opts)
       },
     }))
     .postProcessSnapshot(snap => {
@@ -695,8 +695,8 @@ export default function stateModelFactory(
     })
 }
 
-export type LinearWebGLWiggleDisplayStateModel = ReturnType<
+export type LinearWiggleDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearWebGLWiggleDisplayModel =
-  Instance<LinearWebGLWiggleDisplayStateModel>
+export type LinearWiggleDisplayModel =
+  Instance<LinearWiggleDisplayStateModel>

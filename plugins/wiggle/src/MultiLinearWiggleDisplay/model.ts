@@ -26,7 +26,7 @@ import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getRowHeight } from '../shared/wiggleComponentUtils.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
-import type { WebGLMultiWiggleDataResult } from '../RenderWebGLMultiWiggleDataRPC/types.ts'
+import type { WebGLMultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
 import type {
   ClusterHierarchyNode,
@@ -480,7 +480,7 @@ export default function stateModelFactory(
 
         const result = (await rpcManager.call(
           session.id ?? '',
-          'RenderWebGLMultiWiggleData',
+          'RenderMultiWiggleData',
           {
             sessionId: session.id,
             adapterConfig,

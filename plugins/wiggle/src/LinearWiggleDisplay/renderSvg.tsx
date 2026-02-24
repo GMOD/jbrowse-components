@@ -5,7 +5,7 @@ import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
 import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
 
-import type { LinearWebGLWiggleDisplayModel } from './model.ts'
+import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -14,7 +14,7 @@ import type {
 type LGV = LinearGenomeViewModel
 
 export async function renderSvg(
-  model: LinearWebGLWiggleDisplayModel,
+  model: LinearWiggleDisplayModel,
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV

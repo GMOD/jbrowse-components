@@ -3,18 +3,18 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import type { Region } from '@jbrowse/core/util'
 
-interface RenderWebGLWiggleDataArgs {
+interface RenderWiggleDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
   bicolorPivot?: number
 }
 
-export default class RenderWebGLWiggleData extends RpcMethodType {
-  name = 'RenderWebGLWiggleData'
+export default class RenderWiggleData extends RpcMethodType {
+  name = 'RenderWiggleData'
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as unknown as RenderWebGLWiggleDataArgs
+    const typedArgs = args as unknown as RenderWiggleDataArgs
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
@@ -38,11 +38,11 @@ export default class RenderWebGLWiggleData extends RpcMethodType {
   }
 
   async execute(args: Record<string, unknown>, _rpcDriver: string) {
-    const { executeRenderWebGLWiggleData } =
-      await import('./executeRenderWebGLWiggleData.ts')
-    return executeRenderWebGLWiggleData({
+    const { executeRenderWiggleData } =
+      await import('./executeRenderWiggleData.ts')
+    return executeRenderWiggleData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderWebGLWiggleDataArgs,
+      args: args as unknown as RenderWiggleDataArgs,
     })
   }
 }
