@@ -1,8 +1,8 @@
 import {
-  delay,
   findByTestId,
   findByText,
   navigateWithSessionSpec,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -29,7 +29,7 @@ const suite: TestSuite = {
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
         await canvasSnapshot(
           page,
           'session-spec-display-snapshot-canvas',
@@ -55,7 +55,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'session-spec-jexl-canvas',

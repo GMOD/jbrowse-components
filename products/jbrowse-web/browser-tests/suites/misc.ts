@@ -1,8 +1,8 @@
 import {
   PORT,
-  delay,
   findByTestId,
   navigateWithSessionSpec,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -28,7 +28,7 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await delay(2000)
+        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
         await canvasSnapshot(
           page,
           'misc-snpcoverage-canvas',
@@ -48,7 +48,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'misc-ncbi-alias-canvas',
@@ -74,7 +74,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await delay(2000)
+        await waitForCanvasRendered(page, '[data-testid^="display-gff3tabix_genes"] canvas')
         await canvasSnapshot(
           page,
           'misc-gff3-track-canvas',

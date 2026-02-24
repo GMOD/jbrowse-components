@@ -8,6 +8,7 @@ import {
   findByTestId,
   findByText,
   navigateWithSessionSpec,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 
@@ -77,7 +78,7 @@ const suite: TestSuite = {
         })
         await findByTestId(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid="wiggle-display"] canvas')
 
         await triggerSvgExport(page)
         const svg = await waitForDownload('jbrowse.svg')
@@ -107,7 +108,7 @@ const suite: TestSuite = {
         })
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
 
         await triggerSvgExport(page)
         const svg = await waitForDownload('jbrowse.svg')
@@ -134,7 +135,7 @@ const suite: TestSuite = {
         })
         await findByTestId(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid="wiggle-display"] canvas')
 
         await triggerSvgExport(page)
         const svg = await waitForDownload('jbrowse.svg')

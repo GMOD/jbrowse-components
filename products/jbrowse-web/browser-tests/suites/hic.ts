@@ -1,8 +1,8 @@
 import {
   PORT,
-  delay,
   findByTestId,
   openTrack,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -23,7 +23,7 @@ const suite: TestSuite = {
         await openTrack(page, 'hic_test')
         await findByTestId(page, 'hic_canvas_done', 60000)
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid="hic_canvas_done"]')
         await canvasSnapshot(
           page,
           'hic-rendering-canvas',

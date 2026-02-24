@@ -23,10 +23,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page)
         await openTrack(page, 'volvox_refseq')
-        await findByTestId(
-          page,
-          'display-volvox_refseq-LinearReferenceSequenceDisplay',
-        )
+        await findByTestId(page, 'sequence-display')
       },
     },
     {

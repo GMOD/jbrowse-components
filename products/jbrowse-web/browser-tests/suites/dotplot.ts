@@ -1,7 +1,6 @@
 import {
   PORT,
-  delay,
-  findByTestId,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -19,13 +18,15 @@ const suite: TestSuite = {
           { waitUntil: 'networkidle0', timeout: 60000 },
         )
 
-        await findByTestId(page, 'prerendered_canvas_done', 60000)
+        await page.waitForSelector('[data-testid^="prerendered_canvas"]', {
+          timeout: 60000,
+        })
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid^="prerendered_canvas"]')
         await canvasSnapshot(
           page,
           'dotplot-default-canvas',
-          '[data-testid="prerendered_canvas_done"]',
+          '[data-testid^="prerendered_canvas"]',
         )
       },
     },

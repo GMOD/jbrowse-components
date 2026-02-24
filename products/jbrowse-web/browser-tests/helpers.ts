@@ -49,6 +49,53 @@ export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
   )
 }
 
+export async function waitForCanvasRendered(
+  page: Page,
+  selector: string,
+  timeout = 30000,
+) {
+  await page.waitForFunction(
+    (sel: string) => {
+      const canvas = document.querySelector(sel) as HTMLCanvasElement | null
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        return false
+      }
+      const w = Math.min(canvas.width, 100)
+      const h = Math.min(canvas.height, 100)
+      const gl =
+        (canvas.getContext('webgl2', {
+          preserveDrawingBuffer: true,
+        }) as WebGL2RenderingContext | null) ||
+        (canvas.getContext('webgl', {
+          preserveDrawingBuffer: true,
+        }) as WebGLRenderingContext | null)
+      if (gl) {
+        const pixels = new Uint8Array(w * h * 4)
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+        for (let i = 3; i < pixels.length; i += 4) {
+          if (pixels[i]! > 0) {
+            return true
+          }
+        }
+        return false
+      }
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
+      if (!ctx) {
+        return false
+      }
+      const { data } = ctx.getImageData(0, 0, w, h)
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i]! > 0) {
+          return true
+        }
+      }
+      return false
+    },
+    { timeout, polling: 200 },
+    selector,
+  )
+}
+
 export async function navigateToApp(
   page: Page,
   config = 'test_data/volvox/config.json',

@@ -1,6 +1,6 @@
 import {
-  delay,
   navigateWithSessionSpec,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -28,7 +28,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,
           'variants-assembly-aliases-canvas',

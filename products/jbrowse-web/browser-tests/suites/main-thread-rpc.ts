@@ -1,9 +1,9 @@
 import {
-  delay,
   findByTestId,
   findByText,
   navigateToApp,
   openTrack,
+  waitForCanvasRendered,
   waitForLoadingToComplete,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -45,7 +45,7 @@ const suite: TestSuite = {
         await openTrack(page, 'volvox_sv')
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await delay(1000)
+        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
         await canvasSnapshot(
           page,
           'main-thread-rpc-bam-canvas',
