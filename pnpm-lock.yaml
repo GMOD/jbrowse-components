@@ -395,9 +395,6 @@ importers:
       canvas-sequencer-ts:
         specifier: ^3.1.3
         version: 3.1.3
-      canvas2svg:
-        specifier: ^1.0.16
-        version: 1.0.16
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -625,9 +622,6 @@ importers:
       '@mui/x-charts-vendor':
         specifier: ^8.26.0
         version: 8.26.0
-      canvas2svg:
-        specifier: ^1.0.16
-        version: 1.0.16
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -5171,9 +5165,6 @@ packages:
 
   canvas-sequencer-ts@3.1.3:
     resolution: {integrity: sha512-fwVhT6YRuN/DvziE/2QasFDF8w/qXphuIJgCVeS1YaxJPz/Iam+M8jSgHO+wu/1NNamGUNvtZfr1gca11lnw5Q==}
-
-  canvas2svg@1.0.16:
-    resolution: {integrity: sha512-r3ryHprzDOtAsFuczw+/DKkLR3XexwIlJWnJ+71I9QF7V9scYaV5JZgYDoCUlYtT3ARnOpDcm/hDNZYbWMRHqA==}
 
   canvas@3.2.1:
     resolution: {integrity: sha512-ej1sPFR5+0YWtaVp6S1N1FVz69TQCqmrkGeRvQxZeAB1nAIcjNTHVwrZtYtWFFBmQsF40/uDLehsW5KuYC99mg==}
@@ -12686,8 +12677,6 @@ snapshots:
   caniuse-lite@1.0.30001774: {}
 
   canvas-sequencer-ts@3.1.3: {}
-
-  canvas2svg@1.0.16: {}
 
   canvas@3.2.1:
     dependencies:
