@@ -2,8 +2,8 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { types } from '@jbrowse/mobx-state-tree'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
-import linearFeatureDisplayModelFactory from '../LinearFeatureDisplay/model.ts'
 import configSchemaFactory from './configSchema.ts'
+import linearFeatureDisplayModelFactory from '../LinearFeatureDisplay/model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

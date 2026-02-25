@@ -36,7 +36,9 @@ export function computeLayout(
 
   for (const feature of sorted) {
     const exp = expansions?.get(feature.id)
-    const effectiveStart = exp ? Math.min(feature.start, exp.start) : feature.start
+    const effectiveStart = exp
+      ? Math.min(feature.start, exp.start)
+      : feature.start
     const effectiveEnd = exp ? Math.max(feature.end, exp.end) : feature.end
     let y = 0
     for (const [i, level] of levels.entries()) {

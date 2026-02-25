@@ -4,7 +4,7 @@ import {
   navigateWithSessionSpec,
   openTrack,
   waitForCanvasRendered,
-  waitForLoadingToComplete,
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -35,8 +35,11 @@ const suite: TestSuite = {
         await navigateToApp(page)
         await openTrack(page, 'volvox_alignments')
         await findByTestId(page, 'pileup-display', 60000)
-        await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'alignments-bam-canvas',
@@ -59,8 +62,11 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'pileup-display', 60000)
-        await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'alignments-volvox-sv-canvas',
@@ -83,8 +89,11 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'pileup-display', 60000)
-        await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'alignments-pileup-coverage-canvas',

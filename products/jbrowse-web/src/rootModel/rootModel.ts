@@ -358,7 +358,9 @@ export default function RootModel({
         const sessionName = params.get('sessionName')
         this.setSession({
           ...defaultSession,
-          name: sessionName || `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
+          name:
+            sessionName ||
+            `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**

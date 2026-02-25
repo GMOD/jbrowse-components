@@ -42,7 +42,7 @@ export interface InsertionData {
 
 export interface SoftclipData {
   featureId: string
-  position: number  // alignment edge (for coverage area interbase indicator)
+  position: number // alignment edge (for coverage area interbase indicator)
   clipStart: number // actual genomic start of the soft-clipped bases
   length: number
   sequence?: string // the soft-clipped bases from the read sequence

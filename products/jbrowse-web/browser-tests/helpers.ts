@@ -49,6 +49,22 @@ export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
   )
 }
 
+export async function waitForDataLoaded(page: Page, timeout = 60000) {
+  // wait for loading overlay to appear (may be debounced by 500ms)
+  try {
+    await page.waitForSelector('[data-testid="loading-overlay"]', {
+      timeout: 3000,
+    })
+  } catch {
+    // loading may have completed before we checked
+  }
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
+    { timeout },
+  )
+}
+
 export async function waitForCanvasRendered(
   page: Page,
   selector: string,
@@ -56,22 +72,32 @@ export async function waitForCanvasRendered(
 ) {
   await page.waitForFunction(
     (sel: string) => {
-      const canvas = document.querySelector(sel) as HTMLCanvasElement | null
+      const canvas = document.querySelector(sel)
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         return false
       }
 
-      // check the drawn-true testid on the parent container, this is
-      // set by NonBlockCanvasDisplayComponent when rendering is complete
       const parent = canvas.closest('[data-testid^="drawn-"]')
       if (parent) {
-        return parent.getAttribute('data-testid') === 'drawn-true'
+        return parent.dataset.testid === 'drawn-true'
       }
 
-      // for canvas elements without drawn- indicator, check if toDataURL
-      // produces something beyond a blank image
-      const dataUrl = canvas.toDataURL()
-      return dataUrl.length > 500
+      // for displays without drawn- indicator (e.g. alignments pileup),
+      // check that no loading overlay is present in the display container
+      const displayContainer =
+        canvas.closest('[data-testid^="display-"]') ||
+        canvas.closest('[data-testid="pileup-display"]')
+      if (displayContainer) {
+        const outerDisplay = displayContainer.closest(
+          '[data-testid^="display-"]',
+        )
+        const container = outerDisplay || displayContainer
+        if (container.querySelector('[data-testid="loading-overlay"]')) {
+          return false
+        }
+      }
+
+      return canvas.width > 0 && canvas.height > 0
     },
     { timeout, polling: 200 },
     selector,

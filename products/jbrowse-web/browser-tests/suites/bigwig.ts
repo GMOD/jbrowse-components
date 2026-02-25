@@ -27,7 +27,10 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="wiggle-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="wiggle-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'bigwig-gc-content-canvas',
@@ -51,7 +54,10 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="multi-wiggle-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="multi-wiggle-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-xyplot-canvas',
@@ -75,7 +81,10 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="multi-wiggle-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="multi-wiggle-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-multirowxy-canvas',
@@ -99,7 +108,10 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="multi-wiggle-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="multi-wiggle-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-multirowdensity-canvas',
@@ -123,7 +135,10 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="multi-wiggle-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="multi-wiggle-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'bigwig-multibigwig-multirowline-canvas',

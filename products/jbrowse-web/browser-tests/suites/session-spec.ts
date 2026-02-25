@@ -29,7 +29,10 @@ const suite: TestSuite = {
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'session-spec-display-snapshot-canvas',

@@ -1,7 +1,7 @@
 import {
   navigateWithSessionSpec,
   waitForCanvasRendered,
-  waitForLoadingToComplete,
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -27,7 +27,7 @@ const suite: TestSuite = {
         await page.waitForSelector('[data-testid^="display-"]', {
           timeout: 60000,
         })
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,

@@ -1,11 +1,11 @@
 import fs from 'fs'
-import { Buffer } from 'node:buffer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
 
+import type { Buffer } from 'node:buffer'
 import type { ElementHandle, Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -64,12 +64,18 @@ function compareImages(
     // auto-update it since it was clearly captured blank
     if (expectedImg.width === 300 && expectedImg.height === 150) {
       fs.writeFileSync(snapshotPath, actualBuffer)
-      return { passed: true, message: 'Snapshot auto-updated from blank golden' }
+      return {
+        passed: true,
+        message: 'Snapshot auto-updated from blank golden',
+      }
     }
     // If the new capture is blank but golden is real, treat as pass
     // since this just means WebGL didn't render this time
     if (actualImg.width === 300 && actualImg.height === 150) {
-      return { passed: true, message: 'Skipping comparison - blank canvas capture' }
+      return {
+        passed: true,
+        message: 'Skipping comparison - blank canvas capture',
+      }
     }
     fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), actualBuffer)
     return {
@@ -151,19 +157,13 @@ export async function canvasSnapshot(
   selector: string,
   threshold = 0.05,
 ) {
-  const el = (await page.waitForSelector(selector, {
-    timeout: 60000,
-  })) as ElementHandle<HTMLCanvasElement> | null
+  const el = await page.waitForSelector(selector, { timeout: 60000 })
   if (!el) {
     throw new Error(`Canvas element not found: ${selector}`)
   }
 
-  const pngBase64 = await page.evaluate(canvas => {
-    return canvas.toDataURL('image/png').split(',')[1]!
-  }, el)
-
-  const pngBuffer = Buffer.from(pngBase64, 'base64')
-  const result = compareImages(name, pngBuffer, threshold)
+  const screenshot = await el.screenshot({ type: 'png' })
+  const result = compareImages(name, screenshot, threshold)
   if (!result.passed) {
     throw new Error(result.message)
   }

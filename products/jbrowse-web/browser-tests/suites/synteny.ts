@@ -2,7 +2,7 @@ import {
   findByTestId,
   navigateWithSessionSpec,
   waitForCanvasRendered,
-  waitForLoadingToComplete,
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -44,7 +44,7 @@ function syntenyTest(
       )
 
       await findByTestId(page, 'synteny_canvas', 60000)
-      await waitForLoadingToComplete(page)
+      await waitForDataLoaded(page)
       await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
       await canvasSnapshot(
         page,
@@ -87,7 +87,7 @@ const suite: TestSuite = {
         await page.waitForSelector('[data-testid^="display-"] canvas', {
           timeout: 60000,
         })
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,

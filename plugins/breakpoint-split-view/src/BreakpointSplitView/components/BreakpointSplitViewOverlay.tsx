@@ -70,7 +70,9 @@ const BreakpointSplitViewOverlay = observer(
 
         // Overlay is a sibling of views, so find view by Y-coordinate matching
         // instead of DOM hierarchy traversal
-        const allContainers = document.querySelectorAll('[data-testid="tracksContainer"]')
+        const allContainers = document.querySelectorAll(
+          '[data-testid="tracksContainer"]',
+        )
         if (allContainers.length === 0) {
           return
         }

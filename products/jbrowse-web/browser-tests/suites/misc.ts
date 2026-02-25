@@ -29,7 +29,10 @@ const suite: TestSuite = {
 
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'misc-snpcoverage-canvas',
@@ -77,7 +80,10 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-gff3tabix_genes"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid^="display-gff3tabix_genes"] canvas',
+        )
         await canvasSnapshot(
           page,
           'misc-gff3-track-canvas',

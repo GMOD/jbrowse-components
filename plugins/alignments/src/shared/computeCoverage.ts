@@ -478,7 +478,8 @@ export function computeNoncovCoverage(
     if (coverageDepths !== undefined && coverageStartOffset !== undefined) {
       const posOffset = entry.position - regionStart
       const depthIdx = posOffset - coverageStartOffset
-      const leftDepth = depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
+      const leftDepth =
+        depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
       const rightDepth =
         depthIdx >= 0 && depthIdx < coverageDepths.length
           ? (coverageDepths[depthIdx] ?? 0)

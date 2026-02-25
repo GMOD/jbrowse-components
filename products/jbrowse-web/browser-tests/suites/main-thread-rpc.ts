@@ -45,7 +45,10 @@ const suite: TestSuite = {
         await openTrack(page, 'volvox_sv')
         await findByTestId(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'main-thread-rpc-bam-canvas',
