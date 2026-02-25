@@ -272,7 +272,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
-      const t0 = performance.now()
       const container = containerRef.current
       if (!container) {
         return
@@ -431,9 +430,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           ? { summary: true, minScore, maxScore }
           : {}),
       })
-      console.log(
-        `mousemove handler took ${(performance.now() - t0).toFixed(2)}ms`,
-      )
     },
     [model, view],
   )

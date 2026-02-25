@@ -2,7 +2,7 @@ import { findGlyph } from '../glyphs/index.ts'
 import { applyLabelDimensions } from '../labelUtils.ts'
 
 import type { RenderConfigContext } from '../renderConfig.ts'
-import type { FeatureLayout, LayoutArgs } from '../types.ts'
+import type { LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export { applyLabelDimensions } from '../labelUtils.ts'

@@ -641,9 +641,6 @@ export class WebGLFeatureRenderer {
     // if we have no GPU data at all, leave the last frame on screen rather
     // than clearing to blank — avoids a flash during data refresh
     if (this.regionDataMap.size === 0) {
-      console.log(
-        '[WebGLFeatureRenderer] renderBlocks: no regions, skipping clear to avoid flash',
-      )
       return
     }
 
@@ -686,10 +683,14 @@ export class WebGLFeatureRenderer {
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
       const bpPerPx = regionLengthBp / fullBlockWidth
-      const clippedBpStart =
-        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd =
-        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const clippedBpStart = Math.max(
+        block.bpRangeX[0],
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx,
+      )
+      const clippedBpEnd = Math.min(
+        block.bpRangeX[1],
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx,
+      )
 
       const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart

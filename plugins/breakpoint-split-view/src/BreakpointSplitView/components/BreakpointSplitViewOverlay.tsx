@@ -123,7 +123,7 @@ const BreakpointSplitViewOverlay = observer(
           zoomDivisor.current = getNormalizer(deltaY)
           lastClientX.current = event.clientX
           lastViewIndex.current = viewIndex
-        } else if (targetView.horizontalScroll) {
+        } else {
           event.preventDefault()
           targetView.horizontalScroll(deltaX)
         }

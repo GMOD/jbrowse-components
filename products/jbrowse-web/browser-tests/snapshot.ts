@@ -6,7 +6,7 @@ import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
 
 import type { Buffer } from 'node:buffer'
-import type { ElementHandle, Page } from 'puppeteer'
+import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const baseSnapshotsDir = path.resolve(__dirname, '__snapshots__')

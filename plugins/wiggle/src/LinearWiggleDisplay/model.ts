@@ -334,9 +334,6 @@ export default function stateModelFactory(
         )) as WiggleDataResult
 
         if (isAlive(self) && fetchId === currentFetchId) {
-          console.log(
-            `[wiggle fetch] storing region ${regionNumber} (fetchId=${fetchId})`,
-          )
           self.setRpcDataForRegion(regionNumber, result)
           self.setLoadedRegionForRegion(regionNumber, {
             refName: region.refName,
@@ -345,9 +342,7 @@ export default function stateModelFactory(
           })
           self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
         } else if (isAlive(self)) {
-          console.log(
-            `[wiggle fetch] discarding stale result for region ${regionNumber} (fetchId=${fetchId}, current=${currentFetchId})`,
-          )
+          console.warn('discarding stale result')
         }
       }
 
@@ -365,9 +360,6 @@ export default function stateModelFactory(
         const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
-        console.log(
-          `[wiggle fetch] starting fetchId=${fetchId}, regions=${regions.map(r => r.regionNumber).join(',')}`,
-        )
         try {
           const promises = regions.map(({ region, regionNumber }) =>
             fetchFeaturesForRegion(

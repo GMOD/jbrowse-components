@@ -79,7 +79,6 @@ const TooltipContents = observer(function TooltipContents({
 }: {
   model: MultiWiggleDisplayModel
 }) {
-  console.log('TooltipContents render')
   const { featureUnderMouse } = model
   if (!featureUnderMouse) {
     return null

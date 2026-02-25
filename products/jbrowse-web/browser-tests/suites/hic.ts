@@ -1,6 +1,4 @@
 import {
-  PORT,
-  appendGpuParam,
   findByTestId,
   navigateWithSessionSpec,
   waitForDataLoaded,

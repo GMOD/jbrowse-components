@@ -400,7 +400,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [model.height, model.maxY])
+  }, [model.height, model.maxY, view.scrollZoom])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -581,6 +581,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           vr.screenStartPx + (featureStartBp - vr.start) / blockBpPerPx
         const featureRightPx =
           vr.screenStartPx + (featureEndBp - vr.start) / blockBpPerPx
+
         const featureWidth = featureRightPx - featureLeftPx
 
         const featureBottomPx = labelData.topY + labelData.featureHeight

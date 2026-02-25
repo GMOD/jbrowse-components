@@ -172,7 +172,7 @@ export default class ServerSideRenderer extends RendererType {
 
     if (isCanvasRecordedSvgExport(results)) {
       const { reactElement, ...rest } = results
-      return { ...rest, html: await getSerializedSvg(results) }
+      return { ...rest, html: getSerializedSvg(results) }
     }
     return results
   }

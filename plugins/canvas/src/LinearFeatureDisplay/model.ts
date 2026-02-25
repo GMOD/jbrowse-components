@@ -24,7 +24,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, reaction, trace } from 'mobx'
+import { autorun, reaction } from 'mobx'
 
 import type {
   FeatureDataResult,
@@ -483,10 +483,6 @@ export default function stateModelFactory(
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
 
-        if (!adapterConfig) {
-          return undefined
-        }
-
         const result = (await rpcManager.call(
           session.id ?? '',
           'RenderFeatureData',
@@ -650,8 +646,9 @@ export default function stateModelFactory(
                 }
 
                 const bpPerPx = view.bpPerPx
+                const staticRegs = view.staticRegions
                 const needed: { region: Region; regionNumber: number }[] = []
-                for (const vr of view.staticRegions) {
+                for (const vr of staticRegs) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   if (
                     loaded?.refName === vr.refName &&

@@ -319,7 +319,6 @@ export class CanvasFeatureRenderer {
 
     const msaaView = this.msaaTexture.createView()
     const resolveTarget = this.context.getCurrentTexture().createView()
-    const encoder = device.createCommandEncoder()
     let hasRenderedBlock = false
 
     for (const block of blocks) {
@@ -338,10 +337,14 @@ export class CanvasFeatureRenderer {
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const regionLengthBp = block.bpRangeX[1] - block.bpRangeX[0]
       const bpPerPx = regionLengthBp / fullBlockWidth
-      const clippedBpStart =
-        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
-      const clippedBpEnd =
-        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
+      const clippedBpStart = Math.max(
+        block.bpRangeX[0],
+        block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx,
+      )
+      const clippedBpEnd = Math.min(
+        block.bpRangeX[1],
+        block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx,
+      )
       const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
@@ -357,6 +360,10 @@ export class CanvasFeatureRenderer {
         bpPerPx,
       )
 
+      // Submit per-block: writeBuffer is a queue operation, so we must
+      // submit each block's command buffer separately to ensure the GPU
+      // sees the correct uniform values for each render pass.
+      const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
@@ -407,18 +414,15 @@ export class CanvasFeatureRenderer {
       }
 
       pass.end()
+      device.queue.submit([encoder.finish()])
       hasRenderedBlock = true
     }
 
     if (!hasRenderedBlock) {
-      // if we have no GPU data at all, leave the last frame on screen rather
-      // than clearing to blank — avoids a flash during data refresh
       if (this.regions.size === 0) {
-        console.log(
-          '[CanvasFeatureRenderer] renderBlocks: no regions, skipping clear to avoid flash',
-        )
         return
       }
+      const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
@@ -430,9 +434,8 @@ export class CanvasFeatureRenderer {
         ],
       })
       pass.end()
+      device.queue.submit([encoder.finish()])
     }
-
-    device.queue.submit([encoder.finish()])
   }
 
   pruneStaleRegions(activeRegions: number[]) {
