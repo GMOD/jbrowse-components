@@ -54,6 +54,7 @@ export interface VariantMatrixDisplayModel {
   cellDataLoading: boolean
   statusMessage?: string
   displayError: unknown
+  reload: () => void
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   setScrollTop: (n: number) => void

@@ -68,6 +68,7 @@ export class WebGLWiggleRenderer {
     )
 
     const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms')
+    console.log('[webgl-wiggle] UBO index:', uboIndex, 'INVALID_INDEX:', gl.INVALID_INDEX)
     gl.uniformBlockBinding(this.program, uboIndex, 0)
 
     this.ubo = gl.createBuffer()!
@@ -81,6 +82,7 @@ export class WebGLWiggleRenderer {
       rowIndex: gl.getAttribLocation(this.program, 'a_row_index'),
       color: gl.getAttribLocation(this.program, 'a_color'),
     }
+    console.log('[webgl-wiggle] attr locs:', this.attrLocs)
 
     gl.enable(gl.BLEND)
     gl.blendFuncSeparate(
@@ -232,8 +234,21 @@ export class WebGLWiggleRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (blocks.length === 0) {
+      console.log('[webgl-wiggle] renderBlocks: no blocks')
       return
     }
+
+    console.log('[webgl-wiggle] renderBlocks:', {
+      numBlocks: blocks.length,
+      canvasSize: `${bufW}x${bufH}`,
+      renderingType: state.renderingType,
+      domainY: state.domainY,
+      regions: [...this.regions.entries()].map(([k, v]) => ({
+        key: k,
+        featureCount: v.featureCount,
+        numRows: v.numRows,
+      })),
+    })
 
     const isLine = state.renderingType === RENDERING_TYPE_LINE
     const drawMode = isLine ? gl.LINES : gl.TRIANGLES

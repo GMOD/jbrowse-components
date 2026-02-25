@@ -3,7 +3,6 @@ import { when } from 'mobx'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
-import type { LinearFeatureDisplayModel } from './model.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type {
   ExportSvgDisplayOptions,
@@ -11,6 +10,12 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+interface RenderSvgModel {
+  rpcDataMap: Map<number, FeatureDataResult>
+  error: unknown
+  regionTooLarge: boolean
+}
 
 function rgbaColor(colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
@@ -337,7 +342,7 @@ function renderPeptideLettersForRegion(
 }
 
 export async function renderSvg(
-  model: LinearFeatureDisplayModel,
+  model: RenderSvgModel,
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV

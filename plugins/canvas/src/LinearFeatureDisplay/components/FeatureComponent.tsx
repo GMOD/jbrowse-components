@@ -43,6 +43,7 @@ interface LinearFeatureDisplayModel {
   featureIdUnderMouse: string | null
   regionTooLarge: boolean
   regionTooLargeReason: string
+  statusMessage: string | undefined
   setFeatureDensityStatsLimit: () => void
   reload: () => void
   setFeatureIdUnderMouse: (featureId: string | null) => void

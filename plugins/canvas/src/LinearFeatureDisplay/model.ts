@@ -145,7 +145,7 @@ export default function stateModelFactory(
 
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearFeatureDisplayModel, opts)
+        return renderSvg(self, opts)
       },
 
       get maxHeight(): number {

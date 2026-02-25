@@ -610,6 +610,7 @@ export class WebGLRenderer {
     readStrands: Int8Array
     readTagColors: Uint8Array // RGB per read (3 bytes each), for tag coloring
     readChainHasSupp?: Uint8Array // 1 if chain contains supplementary reads
+    readIds: string[]
     numReads: number
     maxY: number
     insertSizeStats?: { upper: number; lower: number }
@@ -800,7 +801,7 @@ export class WebGLRenderer {
 
     const readIdToIndex = new Map<string, number>()
     for (let i = 0; i < data.numReads; i++) {
-      readIdToIndex.set(data.readIds[i], i)
+      readIdToIndex.set(data.readIds[i]!, i)
     }
     this.buffers = {
       regionStart: data.regionStart,
@@ -870,6 +871,10 @@ export class WebGLRenderer {
     interbaseTypes: Uint8Array
     interbaseFrequencies: Uint8Array
     numInterbases: number
+    softclipBasePositions: Uint32Array
+    softclipBaseYs: Uint16Array
+    softclipBaseBases: Uint8Array
+    numSoftclipBases: number
   }) {
     const gl = this.gl
 
@@ -1558,6 +1563,7 @@ export class WebGLRenderer {
     gl.bindVertexArray(null)
     this.buffers = {
       regionStart,
+      readIdToIndex: new Map(),
       readVAO: emptyVAO,
       readCount: 0,
       readPositions: new Uint32Array(0),

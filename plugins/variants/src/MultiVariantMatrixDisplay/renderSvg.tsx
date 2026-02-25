@@ -2,13 +2,26 @@ import { getContainingView, measureText } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
-import type { LinearVariantMatrixDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { HierarchyNode } from 'd3-hierarchy'
 
 type LGV = LinearGenomeViewModel
+
+interface RenderSvgModel {
+  cellData: unknown
+  error: unknown
+  regionTooLarge: boolean
+  rowHeight: number
+  scrollTop: number
+  availableHeight: number
+  sources: { name: string }[] | undefined
+  hierarchy: HierarchyNode<{ name: string }> | undefined
+  showTree: boolean
+  treeAreaWidth: number
+}
 
 function rgbaAttrs(colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
@@ -22,7 +35,7 @@ function rgbaAttrs(colors: Uint8Array, i: number) {
 }
 
 export async function renderSvg(
-  model: LinearVariantMatrixDisplayModel,
+  model: RenderSvgModel,
   _opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV

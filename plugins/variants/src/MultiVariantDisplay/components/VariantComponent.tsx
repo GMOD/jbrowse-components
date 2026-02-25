@@ -41,6 +41,7 @@ export interface VariantDisplayModel {
     screenEndPx: number
   }[]
   displayError: unknown
+  reload: () => void
   setFeatureDensityStatsLimit: (s?: unknown) => void
   setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
   setScrollTop: (n: number) => void

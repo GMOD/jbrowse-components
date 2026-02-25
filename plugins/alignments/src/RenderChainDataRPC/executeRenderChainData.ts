@@ -250,6 +250,7 @@ export async function executeRenderChainData({
           insertionsData,
           softclipsData,
           hardclipsData,
+          false,
         )
       }
 
@@ -578,6 +579,11 @@ export async function executeRenderChainData({
     ...interbaseArrays,
     interbaseFrequencies,
     ...modificationArrays,
+
+    softclipBasePositions: new Uint32Array(0),
+    softclipBaseYs: new Uint16Array(0),
+    softclipBaseBases: new Uint8Array(0),
+    numSoftclipBases: 0,
 
     readTagColors: tagColors,
     numTagColors: tagColors.length / 3,

@@ -509,7 +509,7 @@ export class AlignmentsRenderer {
     r.readYs = data.readYs
     r.readStrands = data.readStrands
     for (let i = 0; i < data.numReads; i++) {
-      r.readIdToIndex.set(data.readIds[i], i)
+      r.readIdToIndex.set(data.readIds[i]!, i)
     }
     if (data.numReads > 0) {
       const n = data.numReads

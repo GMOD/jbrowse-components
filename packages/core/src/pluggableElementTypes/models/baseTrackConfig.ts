@@ -196,13 +196,17 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
             )
           }
         }
+        const knownDisplayTypes = new Set(
+          pluginManager.getDisplayElements().map(d => d.name),
+        )
         return {
           ...snap,
-          displays: displays.map(d => ({
-            ...d,
-            // synthesize displayId if none provided
-            displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
-          })),
+          displays: displays
+            .filter(d => knownDisplayTypes.has(d.type))
+            .map(d => ({
+              ...d,
+              displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+            })),
         }
       },
       /**
