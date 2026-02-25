@@ -117,6 +117,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const [error, setError] = useState<string | null>(null)
   const rendererRef = useRef<WiggleRenderer | null>(null)
   const [ready, setReady] = useState(false)
+  const [drawn, setDrawn] = useState(false)
 
   const view = getContainingView(model) as LGV
 
@@ -269,8 +270,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           model.height,
         ),
       )
+      if (!drawn) {
+        setDrawn(true)
+      }
     })
-  }, [model, view, ready])
+  }, [model, view, ready, drawn])
 
   const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
     0, 0,
@@ -411,18 +415,20 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <canvas
-        ref={canvasRefCallback}
-        style={{
-          width: totalWidth,
-          height,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-        }}
-        width={totalWidth}
-        height={height}
-      />
+      <div data-testid={`drawn-${drawn}`}>
+        <canvas
+          ref={canvasRefCallback}
+          style={{
+            width: totalWidth,
+            height,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          width={totalWidth}
+          height={height}
+        />
+      </div>
 
       <svg
         style={{

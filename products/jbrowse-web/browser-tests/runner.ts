@@ -174,7 +174,9 @@ async function main() {
     const page = await browser.newPage()
     page.on('console', msg => {
       const text = msg.text()
-      if (msg.type() === 'error' && !text.includes('favicon')) {
+      if (text.includes('[webgl-wiggle]')) {
+        console.log('  Browser:', text)
+      } else if (msg.type() === 'error' && !text.includes('favicon')) {
         console.error('  Browser:', text)
       }
     })

@@ -23,6 +23,7 @@ import type {
 type LGV = LinearGenomeViewModel
 
 interface SequenceDisplayModel {
+  id: string
   height: number
   sequenceData: Map<number, SequenceRegionData>
   showForwardActual: boolean
@@ -278,10 +279,18 @@ export async function renderSvg(
     }
   }
 
+  const clipId = `sequence-clip-${model.id}`
   return (
     <g>
-      <g dangerouslySetInnerHTML={{ __html: rectContent }} />
-      <g dangerouslySetInnerHTML={{ __html: textContent }} />
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={0} y={0} width={view.width} height={model.height} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clipId})`}>
+        <g dangerouslySetInnerHTML={{ __html: rectContent }} />
+        <g dangerouslySetInnerHTML={{ __html: textContent }} />
+      </g>
     </g>
   )
 }

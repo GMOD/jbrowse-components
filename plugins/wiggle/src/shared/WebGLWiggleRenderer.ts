@@ -82,7 +82,7 @@ export class WebGLWiggleRenderer {
       rowIndex: gl.getAttribLocation(this.program, 'a_row_index'),
       color: gl.getAttribLocation(this.program, 'a_color'),
     }
-    console.log('[webgl-wiggle] attr locs:', this.attrLocs)
+    console.log('[webgl-wiggle] attr locs:', JSON.stringify(this.attrLocs))
 
     gl.enable(gl.BLEND)
     gl.blendFuncSeparate(
@@ -238,17 +238,26 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    console.log('[webgl-wiggle] renderBlocks:', {
+    console.log('[webgl-wiggle] renderBlocks:', JSON.stringify({
       numBlocks: blocks.length,
       canvasSize: `${bufW}x${bufH}`,
       renderingType: state.renderingType,
       domainY: state.domainY,
+      canvasHeight: state.canvasHeight,
+      canvasWidth: state.canvasWidth,
+      scaleType: state.scaleType,
       regions: [...this.regions.entries()].map(([k, v]) => ({
         key: k,
         featureCount: v.featureCount,
         numRows: v.numRows,
       })),
-    })
+      blocks: blocks.map(b => ({
+        regionNumber: b.regionNumber,
+        bpRangeX: b.bpRangeX,
+        screenStartPx: b.screenStartPx,
+        screenEndPx: b.screenEndPx,
+      })),
+    }))
 
     const isLine = state.renderingType === RENDERING_TYPE_LINE
     const drawMode = isLine ? gl.LINES : gl.TRIANGLES
@@ -310,7 +319,13 @@ export class WebGLWiggleRenderer {
         VERTICES_PER_INSTANCE,
         region.featureCount,
       )
+      const glErr = gl.getError()
+      if (glErr !== gl.NO_ERROR) {
+        console.log('[webgl-wiggle] GL error after draw:', glErr)
+      }
     }
+
+    console.log('[webgl-wiggle] uniform data (f32):', JSON.stringify(Array.from(this.uniformF32)))
 
     gl.disable(gl.SCISSOR_TEST)
     gl.viewport(0, 0, bufW, bufH)

@@ -144,6 +144,7 @@ const WiggleComponent = observer(function WiggleComponent({
   const [error, setError] = useState<string | null>(null)
   const rendererRef = useRef<WiggleRenderer | null>(null)
   const [ready, setReady] = useState(false)
+  const [drawn, setDrawn] = useState(false)
 
   const view = getContainingView(model) as LGV
 
@@ -226,8 +227,11 @@ const WiggleComponent = observer(function WiggleComponent({
           model.height,
         ),
       )
+      if (!drawn) {
+        setDrawn(true)
+      }
     })
-  }, [model, view, ready])
+  }, [model, view, ready, drawn])
 
   const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
     0, 0,
@@ -342,18 +346,20 @@ const WiggleComponent = observer(function WiggleComponent({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <canvas
-        ref={canvasRefCallback}
-        style={{
-          width,
-          height,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-        }}
-        width={width}
-        height={height}
-      />
+      <div data-testid={`drawn-${drawn}`}>
+        <canvas
+          ref={canvasRefCallback}
+          style={{
+            width,
+            height,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          width={width}
+          height={height}
+        />
+      </div>
       {model.isDensityMode && model.domain ? (
         <svg
           style={{

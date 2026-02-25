@@ -459,12 +459,15 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
+      let currentFetchId = 0
+
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
         stopToken: string,
         bpPerPx: number,
         resolution: number,
+        fetchId: number,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -495,7 +498,10 @@ export default function stateModelFactory(
           },
         )) as MultiWiggleDataResult
 
-        if (isAlive(self)) {
+        if (isAlive(self) && fetchId === currentFetchId) {
+          console.log(
+            `[multi-wiggle fetch] storing region ${regionNumber} (fetchId=${fetchId})`,
+          )
           self.setRpcDataForRegion(regionNumber, result)
           self.setLoadedRegionForRegion(regionNumber, {
             refName: region.refName,
@@ -503,6 +509,10 @@ export default function stateModelFactory(
             end: region.end,
           })
           self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
+        } else if (isAlive(self)) {
+          console.log(
+            `[multi-wiggle fetch] discarding stale result for region ${regionNumber} (fetchId=${fetchId}, current=${currentFetchId})`,
+          )
         }
       }
 
@@ -516,9 +526,13 @@ export default function stateModelFactory(
         }
         const stopToken = createStopToken()
         self.setRenderingStopToken(stopToken)
+        const fetchId = ++currentFetchId
         const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
+        console.log(
+          `[multi-wiggle fetch] starting fetchId=${fetchId}, regions=${regions.map(r => r.regionNumber).join(',')}`,
+        )
         try {
           const promises = regions.map(({ region, regionNumber }) =>
             fetchFeaturesForRegion(
@@ -527,6 +541,7 @@ export default function stateModelFactory(
               stopToken,
               bpPerPx,
               resolution,
+              fetchId,
             ),
           )
           await Promise.all(promises)
@@ -538,7 +553,11 @@ export default function stateModelFactory(
             }
           }
         } finally {
-          if (isAlive(self) && self.fetchGeneration === generation) {
+          if (
+            isAlive(self) &&
+            self.fetchGeneration === generation &&
+            self.renderingStopToken === stopToken
+          ) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
             self.setStatusMessage(undefined)

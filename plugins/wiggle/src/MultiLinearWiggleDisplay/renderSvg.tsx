@@ -1,10 +1,11 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
+import { getScale } from '../util.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -14,36 +15,30 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-export async function renderSvg(
+function renderToCtx(
+  ctx: CanvasRenderingContext2D | SvgCanvas,
   model: MultiLinearWiggleDisplayModel,
-  _opts?: ExportSvgDisplayOptions,
-): Promise<React.ReactNode> {
-  const view = getContainingView(model) as LGV
+  view: LGV,
+) {
   const { offsetPx, bpPerPx } = view
   const height = model.height
-  const { renderingType, ticks, rpcDataMap, domain, scaleType, numSources } =
-    model
+  const { renderingType, rpcDataMap, domain, scaleType, numSources } = model
 
-  if (rpcDataMap.size === 0 || !domain || numSources === 0) {
-    return null
+  if (!domain || numSources === 0) {
+    return
   }
 
   const [minScore, maxScore] = domain
-  const blocks = view.dynamicBlocks.contentBlocks
   const rowHeight = getRowHeight(height, numSources)
-  const offset = YSCALEBAR_LABEL_OFFSET
-  const effectiveRowHeight = rowHeight - offset * 2
 
   const scale = getScale({
     scaleType,
     domain,
-    range: [effectiveRowHeight, 0],
+    range: [rowHeight, 0],
     inverted: false,
   })
 
-  let content = ''
-
-  for (const block of blocks) {
+  for (const block of view.dynamicBlocks.contentBlocks) {
     if (block.regionNumber === undefined) {
       continue
     }
@@ -59,68 +54,88 @@ export async function renderSvg(
       const rowY = getRowTop(sourceIdx, rowHeight)
 
       if (renderingType === 'multirowline') {
-        let pathData = ''
+        ctx.beginPath()
+        ctx.strokeStyle = color
+        ctx.lineWidth = 1
+        let started = false
         for (let i = 0; i < numFeatures; i++) {
           const posIdx = i * 2
           const featureStart = data.regionStart + featurePositions[posIdx]!
           const featureEnd = data.regionStart + featurePositions[posIdx + 1]!
           const score = featureScores[i]!
-
           if (featureEnd < block.start || featureStart > block.end) {
             continue
           }
-
           const x = (featureStart - block.start) / bpPerPx + blockScreenX
-          const y = scale(score) + offset + rowY
-          pathData += `${pathData === '' ? 'M' : 'L'}${x},${y}`
+          const xEnd = (featureEnd - block.start) / bpPerPx + blockScreenX
+          const y = scale(score) + rowY
+          if (!started) {
+            ctx.moveTo(x, y)
+            started = true
+          } else {
+            ctx.lineTo(x, y)
+          }
+          ctx.lineTo(xEnd, y)
         }
-        if (pathData) {
-          content += `<path fill="none" stroke="${color}" stroke-width="1" d="${pathData}"/>`
-        }
+        ctx.stroke()
       } else {
         for (let i = 0; i < numFeatures; i++) {
           const posIdx = i * 2
           const featureStart = data.regionStart + featurePositions[posIdx]!
           const featureEnd = data.regionStart + featurePositions[posIdx + 1]!
           const score = featureScores[i]!
-
           if (featureEnd < block.start || featureStart > block.end) {
             continue
           }
-
           const x = (featureStart - block.start) / bpPerPx + blockScreenX
           const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
 
           if (renderingType === 'multirowxy') {
-            const y = scale(score) + offset + rowY
-            const originY = scale(0) + offset + rowY
+            const y = scale(score) + rowY
+            const originY = scale(0) + rowY
             const rectY = Math.min(y, originY)
             const rectHeight = Math.abs(originY - y) || 1
-            content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${color}"/>`
+            ctx.fillStyle = color
+            ctx.fillRect(x, rectY, w + 0.5, rectHeight)
           } else if (renderingType === 'multirowscatter') {
-            const y = scale(score) + offset + rowY
-            content += `<rect x="${x}" y="${y - 1}" width="${w}" height="2" fill="${color}"/>`
+            const y = scale(score) + rowY
+            ctx.fillStyle = color
+            ctx.fillRect(x, y - 1, w, 2)
           } else if (renderingType === 'multirowdensity') {
-            const densityColor = getDensityColor(
+            ctx.fillStyle = getDensityColor(
               score,
               minScore,
               maxScore,
               scaleType,
               color,
             )
-            content += `<rect x="${x}" y="${rowY}" width="${w}" height="${rowHeight}" fill="${densityColor}"/>`
+            ctx.fillRect(x, rowY, w, rowHeight)
           }
         }
       }
     }
   }
+}
 
+export async function renderSvg(
+  model: MultiLinearWiggleDisplayModel,
+  opts?: ExportSvgDisplayOptions,
+): Promise<React.ReactNode> {
+  const view = getContainingView(model) as LGV
+  const { offsetPx } = view
+  const height = model.height
+  const { ticks, rpcDataMap, domain, scaleType, numSources } = model
+
+  if (rpcDataMap.size === 0 || !domain || numSources === 0) {
+    return null
+  }
+
+  const rowHeight = getRowHeight(height, numSources)
   const canvasWidth = Math.round(view.width)
   const tooSmallForScalebar = rowHeight < 70
-  const isDensity = model.isDensityMode
 
   let legendEl: React.ReactNode = null
-  if (isDensity) {
+  if (model.isDensityMode) {
     legendEl = (
       <DensityLegend
         domain={domain}
@@ -216,9 +231,49 @@ export async function renderSvg(
     treeEl = <path d={treePaths} fill="none" stroke="#0008" strokeWidth={1} />
   }
 
+  const totalWidth = view.dynamicBlocks.totalWidthPx
+  const clipId = `wiggle-clip-${model.id}`
+
+  if (opts?.rasterizeLayers) {
+    const canvas =
+      opts.createCanvas?.(totalWidth * 2, height * 2) ??
+      document.createElement('canvas')
+    canvas.width = totalWidth * 2
+    canvas.height = height * 2
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return null
+    }
+    ctx.scale(2, 2)
+    renderToCtx(ctx, model, view)
+    return (
+      <>
+        <image
+          width={totalWidth}
+          height={height}
+          xlinkHref={canvas.toDataURL('image/png')}
+        />
+        {labelsEl}
+        {legendEl}
+        {treeEl}
+      </>
+    )
+  }
+
+  const ctx = new SvgCanvas()
+  renderToCtx(ctx, model, view)
+
   return (
     <>
-      <g dangerouslySetInnerHTML={{ __html: content }} />
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={0} y={0} width={view.width} height={height} />
+        </clipPath>
+      </defs>
+      <g
+        dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
+        clipPath={`url(#${clipId})`}
+      />
       {labelsEl}
       {legendEl}
       {treeEl}

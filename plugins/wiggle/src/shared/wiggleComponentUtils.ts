@@ -70,7 +70,7 @@ export function makeWhiskersSourceData(
       rowIndex,
     },
   ]
-  if (isDensityMode || (isScatterMode && !hasSummaryFeatures(data))) {
+  if (isDensityMode || !hasSummaryFeatures(data)) {
     return singleSource
   }
   const sources = [

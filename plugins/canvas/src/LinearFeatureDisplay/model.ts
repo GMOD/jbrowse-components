@@ -576,7 +576,11 @@ export default function stateModelFactory(
             }
           }
         } finally {
-          if (isAlive(self) && self.fetchGeneration === generation) {
+          if (
+            isAlive(self) &&
+            self.fetchGeneration === generation &&
+            self.renderingStopToken === stopToken
+          ) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
             self.setStatusMessage(undefined)

@@ -349,9 +349,9 @@ void main() {
         rgb = (_e32 * 0.7);
     }
     float aa = fwidth(in_.dist);
-    float coverage = clamp(((in_.halfWidth - abs(in_.dist) + (0.5 * aa)) / aa), 0.0, 1.0);
-    vec3 _e42 = rgb;
-    _fs2p_location0 = vec4(_e42, (finalAlpha * coverage));
+    float coverage = clamp((((in_.halfWidth - abs(in_.dist)) + (0.5 * aa)) / aa), 0.0, 1.0);
+    vec3 _e46 = rgb;
+    _fs2p_location0 = vec4(_e46, (finalAlpha * coverage));
     return;
 }
 
@@ -704,3 +704,4 @@ void main() {
 }
 
 `
+

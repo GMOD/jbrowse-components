@@ -1,4 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
@@ -13,16 +14,15 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-export async function renderSvg(
+function renderToCtx(
+  ctx: CanvasRenderingContext2D | SvgCanvas,
   model: LinearWiggleDisplayModel,
-  _opts?: ExportSvgDisplayOptions,
-): Promise<React.ReactNode> {
-  const view = getContainingView(model) as LGV
+  view: LGV,
+) {
   const { offsetPx, bpPerPx } = view
   const height = model.height
   const {
     renderingType,
-    ticks,
     rpcDataMap,
     domain,
     scaleType,
@@ -32,8 +32,8 @@ export async function renderSvg(
     bicolorPivot,
   } = model
 
-  if (rpcDataMap.size === 0 || !domain) {
-    return null
+  if (!domain) {
+    return
   }
 
   const [minScore, maxScore] = domain
@@ -48,10 +48,7 @@ export async function renderSvg(
     inverted: false,
   })
 
-  let content = ''
-  const blocks = view.dynamicBlocks.contentBlocks
-
-  for (const block of blocks) {
+  for (const block of view.dynamicBlocks.contentBlocks) {
     if (block.regionNumber === undefined) {
       continue
     }
@@ -63,36 +60,40 @@ export async function renderSvg(
     const blockScreenX = block.offsetPx - offsetPx
 
     if (renderingType === 'line') {
-      let pathData = ''
+      const strokeColor = useBicolor ? posColor : color
+      ctx.beginPath()
+      ctx.strokeStyle = strokeColor
+      ctx.lineWidth = 1
+      let started = false
       for (let i = 0; i < numFeatures; i++) {
         const posIdx = i * 2
         const featureStart = regionStart + featurePositions[posIdx]!
         const featureEnd = regionStart + featurePositions[posIdx + 1]!
         const score = featureScores[i]!
-
         if (featureEnd < block.start || featureStart > block.end) {
           continue
         }
-
         const x = (featureStart - block.start) / bpPerPx + blockScreenX
+        const xEnd = (featureEnd - block.start) / bpPerPx + blockScreenX
         const y = scale(score) + offset
-        pathData += `${pathData === '' ? 'M' : 'L'}${x},${y}`
+        if (!started) {
+          ctx.moveTo(x, y)
+          started = true
+        } else {
+          ctx.lineTo(x, y)
+        }
+        ctx.lineTo(xEnd, y)
       }
-      if (pathData) {
-        const strokeColor = useBicolor ? '#555' : color
-        content += `<path fill="none" stroke="${strokeColor}" stroke-width="1" d="${pathData}"/>`
-      }
+      ctx.stroke()
     } else {
       for (let i = 0; i < numFeatures; i++) {
         const posIdx = i * 2
         const featureStart = regionStart + featurePositions[posIdx]!
         const featureEnd = regionStart + featurePositions[posIdx + 1]!
         const score = featureScores[i]!
-
         if (featureEnd < block.start || featureStart > block.end) {
           continue
         }
-
         const x = (featureStart - block.start) / bpPerPx + blockScreenX
         const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
 
@@ -101,42 +102,55 @@ export async function renderSvg(
           const originY = scale(bicolorPivot) + offset
           const rectY = Math.min(y, originY)
           const rectHeight = Math.abs(originY - y) || 1
-          const fillColor = useBicolor
+          ctx.fillStyle = useBicolor
             ? score >= bicolorPivot
               ? posColor
               : negColor
             : color
-          content += `<rect x="${x}" y="${rectY}" width="${w}" height="${rectHeight}" fill="${fillColor}"/>`
+          ctx.fillRect(x, rectY, w + 0.5, rectHeight)
         } else if (renderingType === 'scatter') {
           const y = scale(score) + offset
-          const fillColor = useBicolor
+          ctx.fillStyle = useBicolor
             ? score >= bicolorPivot
               ? posColor
               : negColor
             : color
-          content += `<rect x="${x}" y="${y - 1}" width="${w}" height="2" fill="${fillColor}"/>`
+          ctx.fillRect(x, y - 1, w, 2)
         } else if (renderingType === 'density') {
-          const densityColor = getDensityColor(
+          ctx.fillStyle = getDensityColor(
             score,
             minScore,
             maxScore,
             scaleType,
             posColor,
           )
-          content += `<rect x="${x}" y="0" width="${w}" height="${height}" fill="${densityColor}"/>`
+          ctx.fillRect(x, 0, w, height)
         }
       }
     }
   }
+}
+
+export async function renderSvg(
+  model: LinearWiggleDisplayModel,
+  opts?: ExportSvgDisplayOptions,
+): Promise<React.ReactNode> {
+  const view = getContainingView(model) as LGV
+  const { offsetPx } = view
+  const height = model.height
+  const { ticks, rpcDataMap, domain, scaleType } = model
+
+  if (rpcDataMap.size === 0 || !domain) {
+    return null
+  }
 
   let legendEl: React.ReactNode = null
   if (model.isDensityMode) {
-    const canvasWidth = Math.round(view.width)
     legendEl = (
       <DensityLegend
         domain={domain}
         scaleType={scaleType}
-        canvasWidth={canvasWidth}
+        canvasWidth={Math.round(view.width)}
       />
     )
   } else if (ticks) {
@@ -150,9 +164,46 @@ export async function renderSvg(
     )
   }
 
+  if (opts?.rasterizeLayers) {
+    const totalWidth = view.dynamicBlocks.totalWidthPx
+    const canvas =
+      opts.createCanvas?.(totalWidth * 2, height * 2) ??
+      document.createElement('canvas')
+    canvas.width = totalWidth * 2
+    canvas.height = height * 2
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return null
+    }
+    ctx.scale(2, 2)
+    renderToCtx(ctx, model, view)
+    return (
+      <>
+        <image
+          width={totalWidth}
+          height={height}
+          xlinkHref={canvas.toDataURL('image/png')}
+        />
+        {legendEl}
+      </>
+    )
+  }
+
+  const ctx = new SvgCanvas()
+  renderToCtx(ctx, model, view)
+
+  const clipId = `wiggle-clip-${model.id}`
   return (
     <>
-      <g dangerouslySetInnerHTML={{ __html: content }} />
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={0} y={0} width={view.width} height={height} />
+        </clipPath>
+      </defs>
+      <g
+        dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
+        clipPath={`url(#${clipId})`}
+      />
       {legendEl}
     </>
   )

@@ -1,8 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// stabilize clipid under test for snapshot
 function getId(id: string) {
   const isJest = typeof jest === 'undefined'
   return `arc-clip-${isJest ? id : 'jest'}`
@@ -10,12 +10,12 @@ function getId(id: string) {
 
 type LGV = LinearGenomeViewModel
 
-export async function renderSvg<T extends { id: string; height: number }>(
+export function renderSvg<T extends { id: string; height: number }>(
   self: T,
   opts: { rasterizeLayers?: boolean },
   cb: (
     model: T,
-    ctx: CanvasRenderingContext2D,
+    ctx: CanvasRenderingContext2D | SvgCanvas,
     width: number,
     height: number,
   ) => void,
@@ -41,8 +41,7 @@ export async function renderSvg<T extends { id: string; height: number }>(
       />
     )
   } else {
-    const C2S = await import('canvas2svg')
-    const ctx = new C2S.default(width, height)
+    const ctx = new SvgCanvas()
     cb(self, ctx, width, height)
     const clipid = getId(self.id)
     return (
@@ -53,7 +52,7 @@ export async function renderSvg<T extends { id: string; height: number }>(
           </clipPath>
         </defs>
         <g
-          dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }}
+          dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }}
           clipPath={`url(#${clipid})`}
         />
       </>
