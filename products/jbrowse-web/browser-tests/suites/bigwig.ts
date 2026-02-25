@@ -2,7 +2,7 @@ import {
   findByTestId,
   navigateWithSessionSpec,
   waitForCanvasRendered,
-  waitForLoadingToComplete,
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -26,7 +26,7 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'wiggle-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="wiggle-display"] canvas',
@@ -53,7 +53,7 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="multi-wiggle-display"] canvas',
@@ -80,7 +80,7 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="multi-wiggle-display"] canvas',
@@ -107,7 +107,7 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="multi-wiggle-display"] canvas',
@@ -134,7 +134,7 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, 'multi-wiggle-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="multi-wiggle-display"] canvas',

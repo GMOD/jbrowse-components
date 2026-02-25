@@ -4,7 +4,7 @@ import {
   navigateToApp,
   openTrack,
   waitForCanvasRendered,
-  waitForLoadingToComplete,
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -44,7 +44,7 @@ const suite: TestSuite = {
         await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
         await openTrack(page, 'volvox_sv')
         await findByTestId(page, 'pileup-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="pileup-display"] canvas',

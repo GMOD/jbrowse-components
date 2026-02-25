@@ -1,257 +1,128 @@
 /* eslint-disable no-console */
 import fs from 'fs'
-import { Buffer } from 'node:buffer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
-import { launch } from 'puppeteer'
-
-import { PORT } from './helpers.ts'
-import { buildPath, startServer } from './server.ts'
-
-import type { ElementHandle, Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const outputDir = path.resolve(__dirname, '__compare__')
+const snapshotsDir = path.resolve(__dirname, '__snapshots__')
 
-interface SessionSpec {
-  name: string
-  spec: Record<string, unknown>
-  canvasSelector: string
-  waitForSelector: string
-  delayMs?: number
-}
+const webglDir = path.join(snapshotsDir, 'webgl')
+const webgpuDir = path.join(snapshotsDir, 'webgpu')
+const diffDir = path.join(snapshotsDir, 'backend-diffs')
 
-const sessions: SessionSpec[] = [
-  {
-    name: 'wiggle-gc-content',
-    spec: {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:39,433..39,804',
-          tracks: ['volvox_gc'],
-        },
-      ],
-    },
-    waitForSelector: '[data-testid="wiggle-display"]',
-    canvasSelector: '[data-testid="wiggle-display"] canvas',
-  },
-  {
-    name: 'sequence-display',
-    spec: {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1..200',
-          tracks: ['volvox_refseq'],
-        },
-      ],
-    },
-    waitForSelector: '[data-testid="sequence-display"]',
-    canvasSelector: '[data-testid="sequence-display"] canvas',
-  },
-  {
-    name: 'variant-track',
-    spec: {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:2,849..3,099',
-          tracks: ['volvox_filtered_vcf_assembly_alias'],
-        },
-      ],
-    },
-    waitForSelector: '[data-testid^="display-"]',
-    canvasSelector: '[data-testid^="display-"] canvas',
-  },
-  {
-    name: 'multibigwig-xyplot',
-    spec: {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-4000',
-          tracks: ['volvox_microarray_multi'],
-        },
-      ],
-    },
-    waitForSelector: '[data-testid="multi-wiggle-display"]',
-    canvasSelector: '[data-testid="multi-wiggle-display"] canvas',
-    delayMs: 3000,
-  },
-]
-
-async function captureCanvas(
-  page: Page,
-  session: SessionSpec,
-  gpuParam: string,
-) {
-  const specParam = encodeURIComponent(JSON.stringify(session.spec))
-  const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session&gpu=${gpuParam}`
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-  await page.waitForSelector(session.waitForSelector, { timeout: 60000 })
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout: 30000 },
-  )
-  await new Promise(r => setTimeout(r, session.delayMs ?? 1000))
-
-  const el = (await page.waitForSelector(session.canvasSelector, {
-    timeout: 60000,
-  })) as ElementHandle<HTMLCanvasElement> | null
-  if (!el) {
-    throw new Error(`Canvas not found: ${session.canvasSelector}`)
-  }
-
-  const pngBase64 = await page.evaluate(canvas => {
-    return canvas.toDataURL('image/png').split(',')[1]!
-  }, el)
-  return Buffer.from(pngBase64, 'base64')
-}
-
-async function main() {
-  if (!fs.existsSync(buildPath)) {
+function run() {
+  if (!fs.existsSync(webglDir)) {
     console.error(
-      'Error: Build directory not found. Run `yarn build` in products/jbrowse-web first.',
+      'No webgl snapshots found. Run tests with --backend=webgl first.',
+    )
+    process.exit(1)
+  }
+  if (!fs.existsSync(webgpuDir)) {
+    console.error(
+      'No webgpu snapshots found. Run tests with --backend=webgpu first.',
     )
     process.exit(1)
   }
 
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true })
+  if (!fs.existsSync(diffDir)) {
+    fs.mkdirSync(diffDir, { recursive: true })
   }
 
-  console.log('Starting test server...')
-  const server = await startServer(PORT)
+  const webglFiles = fs
+    .readdirSync(webglDir)
+    .filter(f => f.endsWith('.png') && !f.includes('.diff'))
+  const webgpuFiles = new Set(
+    fs
+      .readdirSync(webgpuDir)
+      .filter(f => f.endsWith('.png') && !f.includes('.diff')),
+  )
 
-  const webglBrowser = await launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-web-security',
-      '--use-gl=angle',
-      '--use-angle=swiftshader',
-    ],
-    defaultViewport: { width: 1280, height: 800 },
-  })
+  const common = webglFiles.filter(f => webgpuFiles.has(f))
+  const webglOnly = webglFiles.filter(f => !webgpuFiles.has(f))
+  const webgpuOnly = [...webgpuFiles].filter(f => !webglFiles.includes(f))
 
-  const webgpuBrowser = await launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-web-security',
-      '--enable-unsafe-webgpu',
-      '--enable-features=Vulkan',
-    ],
-    defaultViewport: { width: 1280, height: 800 },
-  })
+  console.log(
+    `\nComparing ${common.length} snapshots between webgl and webgpu\n`,
+  )
 
-  try {
-    const webglPage = await webglBrowser.newPage()
-    const webgpuPage = await webgpuBrowser.newPage()
-
-    console.log(`\nComparing ${sessions.length} sessions across backends...\n`)
-
-    const results: { name: string; diffPercent: number; status: string }[] = []
-
-    for (const session of sessions) {
-      process.stdout.write(`  ${session.name}...`)
-
-      try {
-        const [webglPng, webgpuPng] = await Promise.all([
-          captureCanvas(webglPage, session, 'webgl'),
-          captureCanvas(webgpuPage, session, 'webgpu'),
-        ])
-
-        fs.writeFileSync(
-          path.join(outputDir, `${session.name}-webgl.png`),
-          webglPng,
-        )
-        fs.writeFileSync(
-          path.join(outputDir, `${session.name}-webgpu.png`),
-          webgpuPng,
-        )
-
-        // @ts-expect-error Uint8Array works at runtime
-        const webglImg = PNG.sync.read(webglPng)
-        // @ts-expect-error Uint8Array works at runtime
-        const webgpuImg = PNG.sync.read(webgpuPng)
-
-        if (
-          webglImg.width !== webgpuImg.width ||
-          webglImg.height !== webgpuImg.height
-        ) {
-          results.push({
-            name: session.name,
-            diffPercent: 100,
-            status: `size mismatch: ${webglImg.width}x${webglImg.height} vs ${webgpuImg.width}x${webgpuImg.height}`,
-          })
-          console.log(' SIZE MISMATCH')
-          continue
-        }
-
-        const { width, height } = webglImg
-        const diffImg = new PNG({ width, height })
-        const numDiffPixels = pixelmatch(
-          webglImg.data,
-          webgpuImg.data,
-          diffImg.data,
-          width,
-          height,
-          { threshold: 0.1 },
-        )
-
-        const diffPercent = (numDiffPixels / (width * height)) * 100
-
-        fs.writeFileSync(
-          path.join(outputDir, `${session.name}-diff.png`),
-          PNG.sync.write(diffImg),
-        )
-
-        const status =
-          diffPercent < 1 ? 'OK' : diffPercent < 5 ? 'WARN' : 'DRIFT'
-        results.push({ name: session.name, diffPercent, status })
-        console.log(` ${diffPercent.toFixed(2)}% diff [${status}]`)
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e)
-        results.push({
-          name: session.name,
-          diffPercent: -1,
-          status: `ERROR: ${msg}`,
-        })
-        console.log(` ERROR: ${msg}`)
-      }
-    }
-
-    console.log(`\n${'─'.repeat(60)}`)
-    console.log('  Backend Comparison Report')
-    console.log('─'.repeat(60))
-    for (const r of results) {
-      const pct = r.diffPercent >= 0 ? `${r.diffPercent.toFixed(2)}%` : 'N/A'
-      console.log(`  ${r.name.padEnd(30)} ${pct.padStart(8)}  ${r.status}`)
-    }
-    console.log('─'.repeat(60))
-    console.log(`  Output saved to: ${outputDir}`)
+  if (webglOnly.length > 0) {
+    console.log(`  WebGL only: ${webglOnly.join(', ')}`)
+  }
+  if (webgpuOnly.length > 0) {
+    console.log(`  WebGPU only: ${webgpuOnly.join(', ')}`)
+  }
+  if (webglOnly.length > 0 || webgpuOnly.length > 0) {
     console.log()
+  }
 
-    const hasIssues = results.some(r => r.diffPercent < 0 || r.diffPercent >= 5)
-    process.exit(hasIssues ? 1 : 0)
-  } finally {
-    await webglBrowser.close()
-    await webgpuBrowser.close()
-    server.close()
+  let identical = 0
+  let similar = 0
+  let different = 0
+
+  for (const file of common.sort()) {
+    const webglBuf = fs.readFileSync(path.join(webglDir, file))
+    const webgpuBuf = fs.readFileSync(path.join(webgpuDir, file))
+
+    const webglImg = PNG.sync.read(webglBuf)
+    const webgpuImg = PNG.sync.read(webgpuBuf)
+
+    if (
+      webglImg.width !== webgpuImg.width ||
+      webglImg.height !== webgpuImg.height
+    ) {
+      console.log(
+        `  ⚠  ${file}: size differs (${webglImg.width}x${webglImg.height} vs ${webgpuImg.width}x${webgpuImg.height})`,
+      )
+      different++
+      continue
+    }
+
+    const { width, height } = webglImg
+    const diffImg = new PNG({ width, height })
+    const numDiffPixels = pixelmatch(
+      webglImg.data,
+      webgpuImg.data,
+      diffImg.data,
+      width,
+      height,
+      { threshold: 0.1 },
+    )
+
+    const totalPixels = width * height
+    const diffPercent = (numDiffPixels / totalPixels) * 100
+
+    if (diffPercent === 0) {
+      console.log(`  ✓  ${file}: identical`)
+      identical++
+    } else if (diffPercent < 5) {
+      console.log(`  ~  ${file}: ${diffPercent.toFixed(2)}% drift`)
+      similar++
+      fs.writeFileSync(
+        path.join(diffDir, file.replace('.png', '.diff.png')),
+        PNG.sync.write(diffImg),
+      )
+    } else {
+      console.log(`  ✗  ${file}: ${diffPercent.toFixed(2)}% drift`)
+      different++
+      fs.writeFileSync(
+        path.join(diffDir, file.replace('.png', '.diff.png')),
+        PNG.sync.write(diffImg),
+      )
+    }
+  }
+
+  console.log(`\n${'─'.repeat(50)}`)
+  console.log(`  Identical: ${identical}`)
+  console.log(`  Similar (<5% drift): ${similar}`)
+  console.log(`  Different (>=5% drift): ${different}`)
+  console.log(`${'─'.repeat(50)}\n`)
+
+  if (similar > 0 || different > 0) {
+    console.log(`Diff images saved to ${diffDir}`)
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-main()
+run()

@@ -18,7 +18,7 @@ const suite: TestSuite = {
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
-              loc: 'ctgA:2,849..3,099',
+              loc: 'ctgA:1..50,001',
               tracks: ['volvox_filtered_vcf_assembly_alias'],
             },
           ],

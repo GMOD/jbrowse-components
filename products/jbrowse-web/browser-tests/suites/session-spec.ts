@@ -3,7 +3,7 @@ import {
   findByText,
   navigateWithSessionSpec,
   waitForCanvasRendered,
-  waitForLoadingToComplete,
+  waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
@@ -28,7 +28,7 @@ const suite: TestSuite = {
 
         await findByText(page, 'ctgA')
         await findByTestId(page, 'pileup-display', 60000)
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
           '[data-testid="pileup-display"] canvas',
@@ -57,7 +57,7 @@ const suite: TestSuite = {
         await page.waitForSelector('[data-testid^="display-"]', {
           timeout: 60000,
         })
-        await waitForLoadingToComplete(page)
+        await waitForDataLoaded(page)
         await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
         await canvasSnapshot(
           page,

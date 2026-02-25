@@ -2,7 +2,7 @@ import {
   PORT,
   appendGpuParam,
   findByTestId,
-  openTrack,
+  navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
@@ -15,14 +15,21 @@ const suite: TestSuite = {
     {
       name: 'HiC rendering',
       fn: async page => {
-        await page.goto(
-          appendGpuParam(
-            `http://localhost:${PORT}/?config=extra_test_data/hic_integration_test.json&sessionName=Test%20Session`,
-          ),
-          { waitUntil: 'networkidle0', timeout: 60000 },
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'hg19',
+                loc: 'chr1:1..10,000,000',
+                tracks: ['hic_test'],
+              },
+            ],
+          },
+          'extra_test_data/hic_integration_test.json',
         )
 
-        await openTrack(page, 'hic_test')
         await findByTestId(page, 'hic_canvas_done', 60000)
         await waitForDataLoaded(page)
         await canvasSnapshot(
