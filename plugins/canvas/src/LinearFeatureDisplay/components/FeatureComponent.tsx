@@ -64,37 +64,76 @@ export interface Props {
 interface FlatbushRegionCache {
   featureIndex: Flatbush | null
   subfeatureIndex: Flatbush | null
-  flatbushData: ArrayBuffer | null
-  subfeatureFlatbushData: ArrayBuffer | null
+  cachedItems: FlatbushItem[] | null
+  cachedSubInfos: SubfeatureInfo[] | null
+}
+
+function buildFeatureIndex(
+  items: FlatbushItem[],
+  floatingLabelsData: FeatureDataResult['floatingLabelsData'],
+  bpPerPx: number,
+  reversed: boolean,
+) {
+  const index = new Flatbush(items.length)
+  for (const item of items) {
+    let hitStartBp = item.startBp
+    let hitEndBp = item.endBp
+    const labelData = floatingLabelsData[item.featureId]
+    if (labelData) {
+      let maxLabelWidthPx = 0
+      for (const label of labelData.floatingLabels) {
+        maxLabelWidthPx = Math.max(maxLabelWidthPx, label.textWidth)
+      }
+      const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
+      if (maxLabelWidthPx > featureWidthPx) {
+        const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
+        if (reversed) {
+          hitStartBp -= extraBp
+        } else {
+          hitEndBp += extraBp
+        }
+      }
+    }
+    index.add(hitStartBp, item.topPx, hitEndBp, item.bottomPx)
+  }
+  index.finish()
+  return index
+}
+
+function buildSubfeatureIndex(infos: SubfeatureInfo[]) {
+  const index = new Flatbush(infos.length)
+  for (const item of infos) {
+    index.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
+  }
+  index.finish()
+  return index
 }
 
 function getOrCreateFlatbushIndexes(
   cache: FlatbushRegionCache,
-  flatbushData: ArrayBuffer,
-  subfeatureFlatbushData: ArrayBuffer,
+  data: FeatureDataResult,
+  bpPerPx: number,
+  reversed: boolean,
 ) {
-  if (cache.flatbushData !== flatbushData) {
-    cache.flatbushData = flatbushData
-    cache.featureIndex = null
-    if (flatbushData.byteLength > 0) {
-      try {
-        cache.featureIndex = Flatbush.from(flatbushData)
-      } catch {
-        // Index may be invalid
-      }
-    }
+  if (cache.cachedItems !== data.flatbushItems) {
+    cache.cachedItems = data.flatbushItems
+    cache.featureIndex =
+      data.flatbushItems.length > 0
+        ? buildFeatureIndex(
+            data.flatbushItems,
+            data.floatingLabelsData,
+            bpPerPx,
+            reversed,
+          )
+        : null
   }
 
-  if (cache.subfeatureFlatbushData !== subfeatureFlatbushData) {
-    cache.subfeatureFlatbushData = subfeatureFlatbushData
-    cache.subfeatureIndex = null
-    if (subfeatureFlatbushData.byteLength > 0) {
-      try {
-        cache.subfeatureIndex = Flatbush.from(subfeatureFlatbushData)
-      } catch {
-        // Index may be invalid
-      }
-    }
+  if (cache.cachedSubInfos !== data.subfeatureInfos) {
+    cache.cachedSubInfos = data.subfeatureInfos
+    cache.subfeatureIndex =
+      data.subfeatureInfos.length > 0
+        ? buildSubfeatureIndex(data.subfeatureInfos)
+        : null
   }
 
   return {
@@ -105,10 +144,9 @@ function getOrCreateFlatbushIndexes(
 
 function performHitDetection(
   cache: FlatbushRegionCache,
-  flatbushData: ArrayBuffer,
-  flatbushItems: FlatbushItem[],
-  subfeatureFlatbushData: ArrayBuffer,
-  subfeatureInfos: SubfeatureInfo[],
+  data: FeatureDataResult,
+  bpPerPx: number,
+  reversed: boolean,
   bpPos: number,
   yPos: number,
 ) {
@@ -117,14 +155,15 @@ function performHitDetection(
 
   const { featureIndex, subfeatureIndex } = getOrCreateFlatbushIndexes(
     cache,
-    flatbushData,
-    subfeatureFlatbushData,
+    data,
+    bpPerPx,
+    reversed,
   )
 
-  if (subfeatureIndex && subfeatureInfos.length > 0) {
+  if (subfeatureIndex && data.subfeatureInfos.length > 0) {
     const subHits = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)
     for (const idx of subHits) {
-      const info = subfeatureInfos[idx]
+      const info = data.subfeatureInfos[idx]
       if (info) {
         subfeature = info
         break
@@ -132,10 +171,10 @@ function performHitDetection(
     }
   }
 
-  if (featureIndex && flatbushItems.length > 0) {
+  if (featureIndex && data.flatbushItems.length > 0) {
     const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
     for (const idx of hits) {
-      const item = flatbushItems[idx]
+      const item = data.flatbushItems[idx]
       if (item) {
         feature = item
         break
@@ -166,25 +205,18 @@ function performMultiRegionHitDetection(
       cache = {
         featureIndex: null,
         subfeatureIndex: null,
-        flatbushData: null,
-        subfeatureFlatbushData: null,
+        cachedItems: null,
+        cachedSubInfos: null,
       }
       cacheMap.set(vr.regionNumber, cache)
     }
 
     const blockWidth = vr.screenEndPx - vr.screenStartPx
     const bpPerPx = (vr.end - vr.start) / blockWidth
+    const reversed = vr.start > vr.end
     const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
 
-    return performHitDetection(
-      cache,
-      data.flatbushData,
-      data.flatbushItems,
-      data.subfeatureFlatbushData,
-      data.subfeatureInfos,
-      bpPos,
-      yPos,
-    )
+    return performHitDetection(cache, data, bpPerPx, reversed, bpPos, yPos)
   }
   return { feature: null, subfeature: null }
 }
@@ -316,6 +348,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     if (rpcDataMap.size === 0) {
       renderer.pruneStaleRegions([])
       uploadedDataRef.current.clear()
+      flatbushCacheMapRef.current.clear()
       scrollYRef.current = 0
       setScrollY(0)
       if (scrollbarHostRef.current) {
@@ -556,6 +589,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     const elements: React.ReactElement[] = []
+    const renderedLabels = new Set<string>()
 
     for (const vr of visibleRegions) {
       const data = rpcDataMap.get(vr.regionNumber)
@@ -570,12 +604,18 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       for (const [featureId, labelData] of Object.entries(
         data.floatingLabelsData,
       )) {
+        if (renderedLabels.has(featureId)) {
+          continue
+        }
+
         const featureStartBp = labelData.minX + regionStart
         const featureEndBp = labelData.maxX + regionStart
 
         if (featureEndBp < vr.start || featureStartBp > vr.end) {
           continue
         }
+
+        renderedLabels.add(featureId)
 
         const featureLeftPx =
           vr.screenStartPx + (featureStartBp - vr.start) / blockBpPerPx
@@ -715,8 +755,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
       const blockBpPerPx =
         (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-      const leftPx = vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx
-      const rightPx = vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx
+      const leftPx = Math.max(
+        vr.screenStartPx,
+        vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx,
+      )
+      const rightPx = Math.min(
+        vr.screenEndPx,
+        vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx,
+      )
       return {
         leftPx,
         width: rightPx - leftPx,

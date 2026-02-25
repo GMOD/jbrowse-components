@@ -62,9 +62,7 @@ export interface FeatureDataResult {
   numArrows: number
 
   // Hit detection
-  flatbushData: ArrayBuffer
   flatbushItems: FlatbushItem[]
-  subfeatureFlatbushData: ArrayBuffer
   subfeatureInfos: SubfeatureInfo[]
 
   // Floating labels metadata

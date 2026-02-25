@@ -12,7 +12,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { measureText, updateStatus } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -856,58 +855,32 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Build Flatbush spatial indexes for hit detection
-  let flatbushData = new ArrayBuffer(0)
-  let subfeatureFlatbushData = new ArrayBuffer(0)
+  // Flatbush spatial indexes are built client-side so that
+  // reconcileLayouts can adjust y positions across regions without
+  // rebuilding the index on the worker.
 
-  if (flatbushItems.length > 0) {
-    const reversed = region.reversed ?? false
-    const featureIndex = new Flatbush(flatbushItems.length)
-    for (const item of flatbushItems) {
-      let hitStartBp = item.startBp
-      let hitEndBp = item.endBp
-      const labelData = floatingLabelsData[item.featureId]
-      if (labelData) {
-        let maxLabelWidthPx = 0
-        for (const label of labelData.floatingLabels) {
-          const w = measureText(label.text, 11)
-          if (w > maxLabelWidthPx) {
-            maxLabelWidthPx = w
-          }
-        }
-        const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
-        if (maxLabelWidthPx > featureWidthPx) {
-          const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
-          if (reversed) {
-            hitStartBp -= extraBp
-          } else {
-            hitEndBp += extraBp
-          }
-        }
-      }
-      featureIndex.add(hitStartBp, item.topPx, hitEndBp, item.bottomPx)
-    }
-    featureIndex.finish()
-    flatbushData = featureIndex.data
-  }
-
-  if (subfeatureInfos.length > 0) {
-    const subfeatureIndex = new Flatbush(subfeatureInfos.length)
-    for (const item of subfeatureInfos) {
-      subfeatureIndex.add(item.startBp, item.topPx, item.endBp, item.bottomPx)
-    }
-    subfeatureIndex.finish()
-    subfeatureFlatbushData = subfeatureIndex.data
-  }
+  // Filter out elements completely outside the region before converting
+  // to typed arrays. This prevents slivers in collapsed intron views where
+  // a gene spans multiple regions and its children from other regions get
+  // clamped to position 0.
+  const regionWidth = Math.ceil(region.end - region.start)
+  const visibleRects = rects.filter(
+    r => r.endOffset > 0 && r.startOffset < regionWidth,
+  )
+  const visibleLines = lines.filter(
+    l => l.endOffset > 0 && l.startOffset < regionWidth,
+  )
+  const visibleArrows = arrows.filter(
+    a => a.x >= 0 && a.x < regionWidth,
+  )
 
   // Convert to TypedArrays
-  const rectPositions = new Uint32Array(rects.length * 2)
-  const rectYs = new Float32Array(rects.length)
-  const rectHeights = new Float32Array(rects.length)
-  const rectColors = new Uint8Array(rects.length * 4)
+  const rectPositions = new Uint32Array(visibleRects.length * 2)
+  const rectYs = new Float32Array(visibleRects.length)
+  const rectHeights = new Float32Array(visibleRects.length)
+  const rectColors = new Uint8Array(visibleRects.length * 4)
 
-  for (const [i, rect_] of rects.entries()) {
-    const rect = rect_
+  for (const [i, rect] of visibleRects.entries()) {
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
     rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
     rectYs[i] = rect.y
@@ -915,13 +888,12 @@ export async function executeRenderFeatureData({
     writeColorBytes(rectColors, i, rect.color)
   }
 
-  const linePositions = new Uint32Array(lines.length * 2)
-  const lineYs = new Float32Array(lines.length)
-  const lineColors = new Uint8Array(lines.length * 4)
-  const lineDirections = new Int8Array(lines.length)
+  const linePositions = new Uint32Array(visibleLines.length * 2)
+  const lineYs = new Float32Array(visibleLines.length)
+  const lineColors = new Uint8Array(visibleLines.length * 4)
+  const lineDirections = new Int8Array(visibleLines.length)
 
-  for (const [i, line_] of lines.entries()) {
-    const line = line_
+  for (const [i, line] of visibleLines.entries()) {
     linePositions[i * 2] = Math.max(0, line.startOffset)
     linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
     lineYs[i] = line.y
@@ -929,14 +901,13 @@ export async function executeRenderFeatureData({
     lineDirections[i] = line.direction
   }
 
-  const arrowXs = new Uint32Array(arrows.length)
-  const arrowYs = new Float32Array(arrows.length)
-  const arrowDirections = new Int8Array(arrows.length)
-  const arrowHeights = new Float32Array(arrows.length)
-  const arrowColors = new Uint8Array(arrows.length * 4)
+  const arrowXs = new Uint32Array(visibleArrows.length)
+  const arrowYs = new Float32Array(visibleArrows.length)
+  const arrowDirections = new Int8Array(visibleArrows.length)
+  const arrowHeights = new Float32Array(visibleArrows.length)
+  const arrowColors = new Uint8Array(visibleArrows.length * 4)
 
-  for (const [i, arrow_] of arrows.entries()) {
-    const arrow = arrow_
+  for (const [i, arrow] of visibleArrows.entries()) {
     arrowXs[i] = Math.max(0, arrow.x)
     arrowYs[i] = arrow.y
     arrowDirections[i] = arrow.direction
@@ -951,24 +922,22 @@ export async function executeRenderFeatureData({
     rectYs,
     rectHeights,
     rectColors,
-    numRects: rects.length,
+    numRects: visibleRects.length,
 
     linePositions,
     lineYs,
     lineColors,
     lineDirections,
-    numLines: lines.length,
+    numLines: visibleLines.length,
 
     arrowXs,
     arrowYs,
     arrowDirections,
     arrowHeights,
     arrowColors,
-    numArrows: arrows.length,
+    numArrows: visibleArrows.length,
 
-    flatbushData,
     flatbushItems,
-    subfeatureFlatbushData,
     subfeatureInfos,
 
     floatingLabelsData,
@@ -993,8 +962,6 @@ export async function executeRenderFeatureData({
     result.arrowDirections.buffer,
     result.arrowHeights.buffer,
     result.arrowColors.buffer,
-    result.flatbushData,
-    result.subfeatureFlatbushData,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables) as any

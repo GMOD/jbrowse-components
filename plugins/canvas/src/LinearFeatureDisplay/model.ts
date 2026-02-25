@@ -23,8 +23,18 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, reaction } from 'mobx'
+
+import { getTranscripts, hasIntrons } from './components/CollapseIntronsDialog/util.ts'
+
+const CollapseIntronsDialog = lazy(
+  () =>
+    import(
+      './components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'
+    ),
+)
 
 import type {
   FeatureDataResult,
@@ -297,9 +307,13 @@ export default function stateModelFactory(
       setRpcDataForRegion(regionNumber: number, data: FeatureDataResult) {
         const next = new Map(self.rpcDataMap)
         next.set(regionNumber, data)
-        self.rpcDataMap = next
+        this.setRpcDataMap(next)
+      },
+
+      setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
+        self.rpcDataMap = dataMap
         let globalMaxY = 0
-        for (const d of next.values()) {
+        for (const d of dataMap.values()) {
           globalMaxY = Math.max(globalMaxY, d.maxY)
         }
         self.maxY = globalMaxY
@@ -523,6 +537,147 @@ export default function stateModelFactory(
         return { tooLarge: false, regionNumber, data: result, region, bpPerPx }
       }
 
+      function reconcileLayouts(
+        rpcDataMap: Map<number, FeatureDataResult>,
+      ) {
+        const entries = [...rpcDataMap.entries()]
+        if (entries.length <= 1) {
+          return
+        }
+
+        const allFeatures = new Map<
+          string,
+          { start: number; end: number; height: number }
+        >()
+        for (const [, data] of entries) {
+          for (const item of data.flatbushItems) {
+            if (!allFeatures.has(item.featureId)) {
+              allFeatures.set(item.featureId, {
+                start: item.startBp,
+                end: item.endBp,
+                height: item.bottomPx - item.topPx,
+              })
+            }
+          }
+        }
+
+        const sorted = [...allFeatures.entries()]
+          .map(([id, { start, end, height }]) => ({ id, start, end, height }))
+          .sort((a, b) => a.start - b.start)
+
+        const placed: {
+          start: number
+          end: number
+          topPx: number
+          height: number
+        }[] = []
+        const unifiedLayout = new Map<string, number>()
+
+        for (const f of sorted) {
+          let candidateY = 0
+          for (const p of placed) {
+            if (p.end > f.start && p.start < f.end) {
+              candidateY = Math.max(candidateY, p.topPx + p.height)
+            }
+          }
+          unifiedLayout.set(f.id, candidateY)
+          placed.push({
+            start: f.start,
+            end: f.end,
+            topPx: candidateY,
+            height: f.height,
+          })
+        }
+
+        for (const [, data] of entries) {
+          const deltaMap: {
+            oldTop: number
+            oldBottom: number
+            delta: number
+          }[] = []
+          let anyChanged = false
+
+          for (const item of data.flatbushItems) {
+            const newTopPx = unifiedLayout.get(item.featureId)
+            if (newTopPx === undefined) {
+              continue
+            }
+            const delta = newTopPx - item.topPx
+            if (delta !== 0) {
+              anyChanged = true
+            }
+            deltaMap.push({
+              oldTop: item.topPx,
+              oldBottom: item.bottomPx,
+              delta,
+            })
+          }
+
+          if (!anyChanged) {
+            continue
+          }
+
+          deltaMap.sort((a, b) => a.oldTop - b.oldTop)
+
+          const resolveY = (y: number) => {
+            for (const d of deltaMap) {
+              if (y >= d.oldTop && y < d.oldBottom) {
+                return y + d.delta
+              }
+            }
+            return y
+          }
+
+          for (let i = 0; i < data.numRects; i++) {
+            data.rectYs[i] = resolveY(data.rectYs[i]!)
+          }
+          for (let i = 0; i < data.numLines; i++) {
+            data.lineYs[i] = resolveY(data.lineYs[i]!)
+          }
+          for (let i = 0; i < data.numArrows; i++) {
+            data.arrowYs[i] = resolveY(data.arrowYs[i]!)
+          }
+
+          for (const item of data.flatbushItems) {
+            const newTopPx = unifiedLayout.get(item.featureId)
+            if (newTopPx === undefined) {
+              continue
+            }
+            const height = item.bottomPx - item.topPx
+            item.topPx = newTopPx
+            item.bottomPx = newTopPx + height
+          }
+
+          for (const info of data.subfeatureInfos) {
+            const height = info.bottomPx - info.topPx
+            info.topPx = resolveY(info.topPx)
+            info.bottomPx = info.topPx + height
+          }
+
+          for (const labelData of Object.values(data.floatingLabelsData)) {
+            labelData.topY = resolveY(labelData.topY)
+          }
+
+          if (data.aminoAcidOverlay) {
+            for (const item of data.aminoAcidOverlay) {
+              item.topPx = resolveY(item.topPx)
+            }
+          }
+
+          // new array references so client-side flatbush cache rebuilds
+          data.flatbushItems = [...data.flatbushItems]
+          data.subfeatureInfos = [...data.subfeatureInfos]
+
+          let newMaxY = 0
+          for (const item of data.flatbushItems) {
+            if (item.bottomPx > newMaxY) {
+              newMaxY = item.bottomPx
+            }
+          }
+          data.maxY = newMaxY
+        }
+      }
+
       function applyFetchResults(results: (FetchResult | undefined)[]) {
         let totalTooLargeCount = 0
         let anyTooLarge = false
@@ -536,13 +691,23 @@ export default function stateModelFactory(
           self.setRegionTooLarge(true, totalTooLargeCount)
         } else {
           self.setRegionTooLarge(false, 0)
+          // merge new results with already-loaded regions so
+          // reconcileLayouts sees all data and keeps y positions
+          // consistent across incremental fetches
+          const dataMap = new Map(self.rpcDataMap)
           for (const r of results) {
             if (r && !r.tooLarge) {
-              self.setRpcDataForRegion(r.regionNumber, r.data)
+              dataMap.set(r.regionNumber, r.data)
+            }
+          }
+          reconcileLayouts(dataMap)
+          for (const r of results) {
+            if (r && !r.tooLarge) {
               self.setLoadedRegionForRegion(r.regionNumber, r.region)
               self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
             }
           }
+          self.setRpcDataMap(dataMap)
         }
       }
 
@@ -744,6 +909,61 @@ export default function stateModelFactory(
             label: 'Open feature details',
             onClick: () => {
               self.selectFeature(feat)
+            },
+          },
+          {
+            label: 'Collapse introns',
+            icon: CloseFullscreenIcon,
+            onClick: () => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              ;(async () => {
+                try {
+                  const session = getSession(self)
+                  const { rpcManager } = session
+                  const adapterConfig = self.adapterConfigSnapshot
+                  const region = self.findLoadedRegionForFeature(
+                    feat.get('start'),
+                    feat.get('end'),
+                  )
+                  if (!region) {
+                    return
+                  }
+                  const result = (await rpcManager.call(
+                    session.id ?? '',
+                    'GetCanvasFeatureDetails',
+                    {
+                      sessionId: session.id,
+                      adapterConfig,
+                      featureId: feat.id(),
+                      region,
+                    },
+                  )) as { feature: Record<string, unknown> | undefined }
+                  if (!result.feature || !isAlive(self)) {
+                    return
+                  }
+                  // @ts-expect-error
+                  const fullFeature = new SimpleFeature(result.feature)
+                  const transcripts = getTranscripts(fullFeature)
+                  if (!hasIntrons(transcripts)) {
+                    session.notify('No introns found in this feature', 'info')
+                    return
+                  }
+                  const view = getContainingView(self) as LGV
+                  const { assemblyManager } = session
+                  const assembly = assemblyManager.get(
+                    view.assemblyNames[0]!,
+                  )
+                  if (assembly) {
+                    session.queueDialog(handleClose => [
+                      CollapseIntronsDialog,
+                      { view, transcripts, handleClose, assembly },
+                    ])
+                  }
+                } catch (e) {
+                  console.error(e)
+                  getSession(self).notifyError(`${e}`, e)
+                }
+              })()
             },
           },
         ]
