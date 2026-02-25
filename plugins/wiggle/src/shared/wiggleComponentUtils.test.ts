@@ -46,7 +46,7 @@ describe('isScatterMode', () => {
 })
 
 describe('renderingTypeToInt', () => {
-  test('overlay and multirow variants map to same int', () => {
+  test('all variants map to same int', () => {
     expect(renderingTypeToInt('multirowxy')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('multixyplot')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('multirowline')).toBe(RENDERING_TYPE_LINE)

@@ -32,12 +32,13 @@ export function isScatterMode(renderingType: string) {
 }
 
 const renderingTypeMap: Record<string, number> = {
+  multirowxy: RENDERING_TYPE_XYPLOT,
+  multixyplot: RENDERING_TYPE_XYPLOT,
   multirowdensity: RENDERING_TYPE_DENSITY,
   multirowline: RENDERING_TYPE_LINE,
   multiline: RENDERING_TYPE_LINE,
   multirowscatter: RENDERING_TYPE_SCATTER,
   multiscatter: RENDERING_TYPE_SCATTER,
-  multixyplot: RENDERING_TYPE_XYPLOT,
 }
 
 export function renderingTypeToInt(type: string) {

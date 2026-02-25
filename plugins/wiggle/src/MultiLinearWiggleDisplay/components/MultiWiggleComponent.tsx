@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ErrorBar } from '@jbrowse/core/ui'
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -9,7 +9,9 @@ import MultiWiggleTooltip from './Tooltip.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
+import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
+import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
@@ -74,6 +76,13 @@ export interface MultiWiggleDisplayModel {
     maxScore?: number
     source: string
     summary?: boolean
+    allSources?: {
+      source: string
+      score: number
+      minScore?: number
+      maxScore?: number
+      summary?: boolean
+    }[]
   }
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
@@ -83,34 +92,8 @@ export interface MultiWiggleDisplayModel {
   setFeatureUnderMouse: (
     feat?: MultiWiggleDisplayModel['featureUnderMouse'],
   ) => void
+  selectFeature: (feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>) => void
 }
-
-const ScoreLegend = observer(function ScoreLegend({
-  model,
-  canvasWidth,
-}: {
-  model: MultiWiggleDisplayModel
-  canvasWidth: number
-}) {
-  const { ticks, scaleType } = model
-  const legend = `[${ticks!.values[0]?.toFixed(0)}-${ticks!.values[1]?.toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
-  const len = measureText(legend, 12)
-  const xpos = canvasWidth - len - 60
-  return (
-    <g>
-      <rect
-        x={xpos - 3}
-        y={0}
-        width={len + 6}
-        height={16}
-        fill="rgba(255,255,255,0.8)"
-      />
-      <text y={12} x={xpos} fontSize={12}>
-        {legend}
-      </text>
-    </g>
-  )
-})
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model,
@@ -118,7 +101,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model: MultiWiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const rendererRef = useRef<WiggleRenderer | null>(null)
   const [ready, setReady] = useState(false)
   const [drawn, setDrawn] = useState(false)
@@ -136,13 +119,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       .init()
       .then(ok => {
         if (!ok) {
-          setError('GPU initialization failed')
+          setError(new Error('GPU initialization failed'))
         } else {
           setReady(true)
         }
       })
       .catch((e: unknown) => {
-        setError(`GPU initialization error: ${e}`)
+        setError(e)
       })
   }, [])
 
@@ -281,16 +264,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     })
   }, [model, view, ready, drawn])
 
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
-    0, 0,
-  ])
-  const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
-    0, 0,
-  ])
   const containerRef = useRef<HTMLDivElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const crosshairRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
+      const t0 = performance.now()
       const container = containerRef.current
       if (!container) {
         return
@@ -298,8 +278,13 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       const rect = container.getBoundingClientRect()
       const offsetX = event.clientX - rect.left
       const offsetY = event.clientY - rect.top
-      setOffsetMouseCoord([offsetX, offsetY])
-      setClientMouseCoord([event.clientX, event.clientY])
+
+      if (tooltipRef.current) {
+        tooltipRef.current.style.transform = `translate(${event.clientX + 10}px, ${event.clientY}px)`
+      }
+      if (crosshairRef.current) {
+        crosshairRef.current.style.left = `${offsetX}px`
+      }
 
       const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } = model
       if (sources.length === 0 || rpcDataMap.size === 0) {
@@ -334,6 +319,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         let bestIdx = -1
         const mouseScore =
           domain[1] - ((offsetY / model.height) * (domain[1] - domain[0]))
+        const allSources: NonNullable<
+          MultiWiggleDisplayModel['featureUnderMouse']
+        >['allSources'] = []
 
         for (const src of data.sources) {
           if (!sources.some(s => s.name === src.name)) {
@@ -343,13 +331,24 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             const fStart = src.featurePositions[i * 2]!
             const fEnd = src.featurePositions[i * 2 + 1]!
             if (bpOffset >= fStart && bpOffset < fEnd) {
-              const dist = Math.abs(src.featureScores[i]! - mouseScore)
+              const score = src.featureScores[i]!
+              const minS = src.featureMinScores[i]
+              const maxS = src.featureMaxScores[i]
+              const dist = Math.abs(score - mouseScore)
               if (dist < bestDist) {
                 bestDist = dist
                 bestSource = src
-                bestScore = src.featureScores[i]!
+                bestScore = score
                 bestIdx = i
               }
+              allSources.push({
+                source: src.name,
+                score,
+                ...(summaryScoreMode !== 'avg' &&
+                isSummaryFeature(score, minS, maxS)
+                  ? { summary: true, minScore: minS, maxScore: maxS }
+                  : {}),
+              })
               break
             }
           }
@@ -377,6 +376,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           isSummaryFeature(bestScore, minS, maxS)
             ? { summary: true, minScore: minS, maxScore: maxS }
             : {}),
+          allSources,
         })
         return
       }
@@ -429,12 +429,20 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           ? { summary: true, minScore, maxScore }
           : {}),
       })
+      console.log(`mousemove handler took ${(performance.now() - t0).toFixed(2)}ms`)
     },
     [model, view],
   )
 
   const handleMouseLeave = useCallback(() => {
     model.setFeatureUnderMouse(undefined)
+  }, [model])
+
+  const handleClick = useCallback(() => {
+    const feat = model.featureUnderMouse
+    if (feat) {
+      model.selectFeature(feat)
+    }
   }, [model])
 
   const totalWidth = Math.round(view.width)
@@ -445,7 +453,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     return (
       <div style={{ position: 'relative', width: totalWidth, height }}>
         <ErrorBar
-          error={error ?? model.error}
+          error={`${error ?? model.error}`}
           onRetry={() => {
             setError(null)
             model.reload()
@@ -459,10 +467,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const rowHeight = model.rowHeight
 
   const displaySources = model.sources
-  const labelWidth =
-    displaySources.length > 0
-      ? Math.max(...displaySources.map(s => measureText(s.name, 10))) + 10
-      : 0
   const treeShowing = model.showTree && !!model.hierarchy
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
@@ -470,9 +474,14 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     <div
       ref={containerRef}
       data-testid="multi-wiggle-display"
-      style={{ position: 'relative', width: totalWidth, height }}
+      style={{
+        position: 'relative',
+        width: totalWidth,
+        height,
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
     >
       <div data-testid={`drawn-${drawn}`}>
         <canvas
@@ -507,32 +516,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               canvasWidth={totalWidth}
             />
           ) : (
-            <g transform={`translate(${labelOffset} 0)`}>
-              {displaySources.map((source, idx) => {
-                const y = getRowTop(idx, rowHeight)
-                const boxHeight = Math.min(20, rowHeight)
-                const lc = source.labelColor
-                return (
-                  <g key={source.name}>
-                    <rect
-                      x={0}
-                      y={y}
-                      width={labelWidth}
-                      height={boxHeight}
-                      fill={lc ?? 'rgba(255,255,255,0.8)'}
-                    />
-                    <text
-                      x={4}
-                      y={y + boxHeight / 2 + 3}
-                      fontSize={10}
-                      fill={lc ? 'white' : 'black'}
-                    >
-                      {source.name}
-                    </text>
-                  </g>
-                )
-              })}
-            </g>
+            <MultiRowLabels
+              sources={displaySources}
+              rowHeight={rowHeight}
+              labelOffset={labelOffset}
+            />
           )
         ) : null}
 
@@ -544,7 +532,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           />
         ) : model.ticks ? (
           model.rowHeightTooSmallForScalebar ? (
-            <ScoreLegend model={model} canvasWidth={totalWidth} />
+            <ScoreLegend
+              ticks={model.ticks!}
+              scaleType={model.scaleType}
+              canvasWidth={totalWidth}
+            />
           ) : model.isOverlay ? (
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
               <YScaleBar model={model} />
@@ -584,10 +576,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       <TreeSidebar model={model} />
 
       <MultiWiggleTooltip
+        ref={tooltipRef}
         model={model}
-        clientMouseCoord={clientMouseCoord}
-        offsetMouseCoord={offsetMouseCoord}
         height={height}
+        crosshairRef={crosshairRef}
       />
 
       <LoadingOverlay

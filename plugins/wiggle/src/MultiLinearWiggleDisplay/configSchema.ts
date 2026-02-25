@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
+import {
+  MULTI_WIGGLE_RENDERING_TYPES,
+  WIGGLE_POS_COLOR_DEFAULT,
+} from '../util.ts'
 
 export default ConfigurationSchema(
   'MultiLinearWiggleDisplay',
@@ -52,13 +55,7 @@ export default ConfigurationSchema(
     defaultRendering: {
       type: 'stringEnum',
       model: types.enumeration('Rendering', [
-        'multirowxy',
-        'multixyplot',
-        'multirowdensity',
-        'multirowline',
-        'multiline',
-        'multirowscatter',
-        'multiscatter',
+        ...MULTI_WIGGLE_RENDERING_TYPES,
       ]),
       defaultValue: 'multirowxy',
       description: 'Default rendering type',

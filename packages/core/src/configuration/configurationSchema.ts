@@ -304,11 +304,6 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
       }
       // If it's a frozen/plain object, we need to instantiate it
       if (!isStateTreeNode(ret)) {
-        console.warn(
-          'TrackConfigurationReference: creating from plain object',
-          id,
-          ret,
-        )
         return schemaType.create(ret, getEnv(parent))
       }
       return ret

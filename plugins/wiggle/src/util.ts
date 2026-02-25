@@ -10,6 +10,19 @@ import type { Feature } from '@jbrowse/core/util'
 
 export const YSCALEBAR_LABEL_OFFSET = 5
 
+export const MULTI_WIGGLE_RENDERING_TYPES = [
+  'multirowxy',
+  'multixyplot',
+  'multirowdensity',
+  'multirowline',
+  'multiline',
+  'multirowscatter',
+  'multiscatter',
+] as const
+
+export type MultiWiggleRenderingType =
+  (typeof MULTI_WIGGLE_RENDERING_TYPES)[number]
+
 // Default color used by wiggle config schema
 export const WIGGLE_COLOR_DEFAULT = '#f0f'
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'

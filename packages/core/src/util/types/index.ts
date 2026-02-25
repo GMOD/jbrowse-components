@@ -353,9 +353,6 @@ export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
   ) {
     // @ts-expect-error
     const { displayId } = thing.configuration
-    if (!displayId) {
-      console.warn('isDisplayModel: configuration.displayId is falsy', thing)
-    }
     return !!displayId
   }
   return false

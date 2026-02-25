@@ -5,11 +5,13 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
+  SimpleFeature,
   getContainingTrack,
   getContainingView,
   getEnv,
   getSession,
   isAbortException,
+  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -25,7 +27,12 @@ import { autorun } from 'mobx'
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
-import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
+import {
+  MULTI_WIGGLE_RENDERING_TYPES,
+  computeAutoscaleDomain,
+  getNiceDomain,
+  getScale,
+} from '../util.ts'
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
@@ -52,6 +59,14 @@ const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
 )
 
+function resolveOverlayColor(
+  index: number,
+  adapterColor?: string,
+  layoutColor?: string,
+) {
+  return layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
+}
+
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
@@ -74,7 +89,9 @@ export default function stateModelFactory(
         scaleTypeSetting: types.maybe(types.string),
         minScoreSetting: types.maybe(types.number),
         maxScoreSetting: types.maybe(types.number),
-        renderingTypeSetting: types.maybe(types.string),
+        renderingTypeSetting: types.maybe(
+          types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
+        ),
         summaryScoreModeSetting: types.maybe(types.string),
         autoscaleSetting: types.maybe(types.string),
       }),
@@ -114,6 +131,13 @@ export default function stateModelFactory(
             maxScore?: number
             source: string
             summary?: boolean
+            allSources?: {
+              source: string
+              score: number
+              minScore?: number
+              maxScore?: number
+              summary?: boolean
+            }[]
           }
         | undefined,
     }))
@@ -131,7 +155,7 @@ export default function stateModelFactory(
           source: s.name,
           ...s,
           ...(this.isOverlay
-            ? { color: overlayColors[i % overlayColors.length] }
+            ? { color: resolveOverlayColor(i, s.color) }
             : {}),
         }))
       },
@@ -152,9 +176,11 @@ export default function stateModelFactory(
           ...s,
           ...(this.isOverlay
             ? {
-                color:
-                  layoutColors[s.name] ??
-                  overlayColors[i % overlayColors.length],
+                color: resolveOverlayColor(
+                  i,
+                  sourceMap[s.name]?.color,
+                  layoutColors[s.name],
+                ),
               }
             : {}),
         }))
@@ -449,7 +475,47 @@ export default function stateModelFactory(
       },
 
       setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
+        const prev = self.featureUnderMouse
+        if (!feat && !prev) {
+          return
+        }
+        if (
+          feat &&
+          prev &&
+          feat.start === prev.start &&
+          feat.end === prev.end &&
+          feat.source === prev.source &&
+          feat.score === prev.score
+        ) {
+          return
+        }
         self.featureUnderMouse = feat
+      },
+
+      selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
+        const session = getSession(self)
+        if (!isSessionModelWithWidgets(session)) {
+          return
+        }
+        const track = getContainingTrack(self)
+        const view = getContainingView(self)
+        const sources = feat.allSources
+          ? Object.fromEntries(feat.allSources.map(s => [s.source, s.score]))
+          : { [feat.source]: feat.score }
+        const feature = new SimpleFeature({
+          uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
+          refName: feat.refName,
+          start: feat.start,
+          end: feat.end,
+          sources,
+        })
+        session.showWidget(
+          session.addWidget('BaseFeatureWidget', 'baseFeature', {
+            featureData: feature.toJSON(),
+            view,
+            track,
+          }),
+        )
       },
 
       setAutoscale(val?: string) {
@@ -857,12 +923,12 @@ export default function stateModelFactory(
             subMenu: (
               [
                 ['multirowxy', 'Multi-row XY plot'],
-                ['multixyplot', 'XY plot'],
                 ['multirowdensity', 'Multi-row density'],
                 ['multirowline', 'Multi-row line'],
-                ['multiline', 'Line'],
                 ['multirowscatter', 'Multi-row scatter'],
-                ['multiscatter', 'Scatter'],
+                ['multixyplot', 'Overlapping XY plot'],
+                ['multiline', 'Overlapping lines'],
+                ['multiscatter', 'Overlapping scatter'],
               ] as const
             ).map(([value, label]) => ({
               label,

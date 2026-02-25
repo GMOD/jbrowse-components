@@ -1,6 +1,5 @@
 import { Suspense, useRef, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -48,7 +47,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
   return (
     <div
       ref={ref}
-      data-testid={`display-${getConf(model, 'displayId')}`}
+      data-testid={`display-${model.configuration.displayId}`}
       className={classes.display}
       onContextMenu={event => {
         event.preventDefault()
@@ -59,16 +58,20 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
           setContextCoord([event.clientX, event.clientY])
         }
       }}
-      onMouseMove={event => {
-        if (!ref.current) {
-          return
-        }
-        const rect = ref.current.getBoundingClientRect()
-        const { left, top } = rect
-        setOffsetMouseCoord([event.clientX - left, event.clientY - top])
-        setClientMouseCoord([event.clientX, event.clientY])
-        setClientRect(rect)
-      }}
+      onMouseMove={
+        DisplayMessageComponent
+          ? undefined
+          : event => {
+              if (!ref.current) {
+                return
+              }
+              const rect = ref.current.getBoundingClientRect()
+              const { left, top } = rect
+              setOffsetMouseCoord([event.clientX - left, event.clientY - top])
+              setClientMouseCoord([event.clientX, event.clientY])
+              setClientRect(rect)
+            }
+      }
     >
       {DisplayMessageComponent ? (
         <DisplayMessageComponent model={model} />

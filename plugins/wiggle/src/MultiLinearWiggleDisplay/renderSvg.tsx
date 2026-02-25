@@ -1,11 +1,16 @@
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 import DensityLegend from '../shared/DensityLegend.tsx'
+import MultiRowLabels from '../shared/MultiRowLabels.tsx'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
+import ScoreLegend from '../shared/ScoreLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
-import { getRowTop, renderingTypeToInt } from '../shared/wiggleComponentUtils.ts'
+import {
+  getRowTop,
+  renderingTypeToInt,
+} from '../shared/wiggleComponentUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -15,6 +20,7 @@ import {
 import { getScale } from '../util.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
+import type { MultiWiggleSourceData } from '../RenderMultiWiggleDataRPC/types.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -22,14 +28,134 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
+interface FeatureSlice {
+  positions: Uint32Array
+  scores: Float32Array
+  numFeatures: number
+  color: string
+}
+
+function getFeatureSlices(
+  source: MultiWiggleSourceData,
+  color: string,
+  negColor: string,
+  isOverlay: boolean,
+) {
+  const slices: FeatureSlice[] = []
+  if (source.posNumFeatures > 0) {
+    slices.push({
+      positions: source.posFeaturePositions,
+      scores: source.posFeatureScores,
+      numFeatures: source.posNumFeatures,
+      color,
+    })
+  }
+  if (source.negNumFeatures > 0) {
+    slices.push({
+      positions: source.negFeaturePositions,
+      scores: source.negFeatureScores,
+      numFeatures: source.negNumFeatures,
+      color: isOverlay ? color : negColor,
+    })
+  }
+  return slices
+}
+
+function renderFeatureSlice(
+  ctx: CanvasRenderingContext2D | SvgCanvas,
+  slice: FeatureSlice,
+  regionStart: number,
+  block: { start: number; end: number },
+  blockScreenX: number,
+  bpPerPx: number,
+  renderType: number,
+  scale: (v: number) => number,
+  rowY: number,
+  rowHeight: number,
+  minScore: number,
+  maxScore: number,
+  scaleType: string,
+) {
+  const { positions, scores, numFeatures, color } = slice
+
+  if (renderType === RENDERING_TYPE_LINE) {
+    ctx.beginPath()
+    ctx.strokeStyle = color
+    ctx.lineWidth = 1
+    let started = false
+    for (let i = 0; i < numFeatures; i++) {
+      const posIdx = i * 2
+      const featureStart = regionStart + positions[posIdx]!
+      const featureEnd = regionStart + positions[posIdx + 1]!
+      const score = scores[i]!
+      if (featureEnd < block.start || featureStart > block.end) {
+        continue
+      }
+      const x = (featureStart - block.start) / bpPerPx + blockScreenX
+      const xEnd = (featureEnd - block.start) / bpPerPx + blockScreenX
+      const y = scale(score) + rowY
+      if (!started) {
+        ctx.moveTo(x, y)
+        started = true
+      } else {
+        ctx.lineTo(x, y)
+      }
+      ctx.lineTo(xEnd, y)
+    }
+    ctx.stroke()
+  } else {
+    for (let i = 0; i < numFeatures; i++) {
+      const posIdx = i * 2
+      const featureStart = regionStart + positions[posIdx]!
+      const featureEnd = regionStart + positions[posIdx + 1]!
+      const score = scores[i]!
+      if (featureEnd < block.start || featureStart > block.end) {
+        continue
+      }
+      const x = (featureStart - block.start) / bpPerPx + blockScreenX
+      const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
+
+      if (renderType === RENDERING_TYPE_XYPLOT) {
+        const y = scale(score) + rowY
+        const originY = scale(0) + rowY
+        const rectY = Math.min(y, originY)
+        const rectHeight = Math.abs(originY - y) || 1
+        ctx.fillStyle = color
+        ctx.fillRect(x, rectY, w + 0.5, rectHeight)
+      } else if (renderType === RENDERING_TYPE_SCATTER) {
+        const y = scale(score) + rowY
+        ctx.fillStyle = color
+        ctx.fillRect(x, y - 1, w, 2)
+      } else if (renderType === RENDERING_TYPE_DENSITY) {
+        ctx.fillStyle = getDensityColor(
+          score,
+          minScore,
+          maxScore,
+          scaleType,
+          color,
+        )
+        ctx.fillRect(x, rowY, w, rowHeight)
+      }
+    }
+  }
+}
+
 function renderToCtx(
   ctx: CanvasRenderingContext2D | SvgCanvas,
   model: MultiLinearWiggleDisplayModel,
   view: LGV,
 ) {
   const { offsetPx, bpPerPx } = view
-  const height = model.height
-  const { renderingType, rpcDataMap, domain, scaleType, sources: modelSources, isOverlay, rowHeight } = model
+  const {
+    renderingType,
+    rpcDataMap,
+    domain,
+    scaleType,
+    sources: modelSources,
+    isOverlay,
+    rowHeight,
+    negColor,
+  } = model
 
   if (!domain || modelSources.length === 0) {
     return
@@ -37,6 +163,7 @@ function renderToCtx(
 
   const [minScore, maxScore] = domain
   const renderType = renderingTypeToInt(renderingType)
+  const overlay = isOverlay
 
   const scale = getScale({
     scaleType,
@@ -57,70 +184,27 @@ function renderToCtx(
 
     for (let sourceIdx = 0; sourceIdx < data.sources.length; sourceIdx++) {
       const source = data.sources[sourceIdx]!
-      const { featurePositions, featureScores, numFeatures } = source
       const modelSource = modelSources.find(s => s.name === source.name)
       const color = modelSource?.color ?? source.color
-      const rowY = isOverlay ? 0 : getRowTop(sourceIdx, rowHeight)
+      const rowY = overlay ? 0 : getRowTop(sourceIdx, rowHeight)
 
-      if (renderType === RENDERING_TYPE_LINE) {
-        ctx.beginPath()
-        ctx.strokeStyle = color
-        ctx.lineWidth = 1
-        let started = false
-        for (let i = 0; i < numFeatures; i++) {
-          const posIdx = i * 2
-          const featureStart = data.regionStart + featurePositions[posIdx]!
-          const featureEnd = data.regionStart + featurePositions[posIdx + 1]!
-          const score = featureScores[i]!
-          if (featureEnd < block.start || featureStart > block.end) {
-            continue
-          }
-          const x = (featureStart - block.start) / bpPerPx + blockScreenX
-          const xEnd = (featureEnd - block.start) / bpPerPx + blockScreenX
-          const y = scale(score) + rowY
-          if (!started) {
-            ctx.moveTo(x, y)
-            started = true
-          } else {
-            ctx.lineTo(x, y)
-          }
-          ctx.lineTo(xEnd, y)
-        }
-        ctx.stroke()
-      } else {
-        for (let i = 0; i < numFeatures; i++) {
-          const posIdx = i * 2
-          const featureStart = data.regionStart + featurePositions[posIdx]!
-          const featureEnd = data.regionStart + featurePositions[posIdx + 1]!
-          const score = featureScores[i]!
-          if (featureEnd < block.start || featureStart > block.end) {
-            continue
-          }
-          const x = (featureStart - block.start) / bpPerPx + blockScreenX
-          const w = Math.max((featureEnd - featureStart) / bpPerPx, 1)
-
-          if (renderType === RENDERING_TYPE_XYPLOT) {
-            const y = scale(score) + rowY
-            const originY = scale(0) + rowY
-            const rectY = Math.min(y, originY)
-            const rectHeight = Math.abs(originY - y) || 1
-            ctx.fillStyle = color
-            ctx.fillRect(x, rectY, w + 0.5, rectHeight)
-          } else if (renderType === RENDERING_TYPE_SCATTER) {
-            const y = scale(score) + rowY
-            ctx.fillStyle = color
-            ctx.fillRect(x, y - 1, w, 2)
-          } else if (renderType === RENDERING_TYPE_DENSITY) {
-            ctx.fillStyle = getDensityColor(
-              score,
-              minScore,
-              maxScore,
-              scaleType,
-              color,
-            )
-            ctx.fillRect(x, rowY, w, rowHeight)
-          }
-        }
+      const slices = getFeatureSlices(source, color, negColor, overlay)
+      for (const slice of slices) {
+        renderFeatureSlice(
+          ctx,
+          slice,
+          data.regionStart,
+          block,
+          blockScreenX,
+          bpPerPx,
+          renderType,
+          scale,
+          rowY,
+          rowHeight,
+          minScore,
+          maxScore,
+          scaleType,
+        )
       }
     }
   }
@@ -133,7 +217,15 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const { offsetPx } = view
   const height = model.height
-  const { ticks, rpcDataMap, domain, scaleType, numSources, isOverlay, rowHeight } = model
+  const {
+    ticks,
+    rpcDataMap,
+    domain,
+    scaleType,
+    numSources,
+    isOverlay,
+    rowHeight,
+  } = model
 
   if (rpcDataMap.size === 0 || !domain || numSources === 0) {
     return null
@@ -153,22 +245,12 @@ export async function renderSvg(
     )
   } else if (ticks) {
     if (tooSmallForScalebar) {
-      const legend = `[${ticks.values[0]?.toFixed(0)}-${ticks.values[1]?.toFixed(0)}]${scaleType === 'log' ? ' (log)' : ''}`
-      const len = measureText(legend, 12)
-      const xpos = canvasWidth - len - 60
       legendEl = (
-        <g>
-          <rect
-            x={xpos - 3}
-            y={0}
-            width={len + 6}
-            height={16}
-            fill="rgba(255,255,255,0.8)"
-          />
-          <text y={12} x={xpos} fontSize={12}>
-            {legend}
-          </text>
-        </g>
+        <ScoreLegend
+          ticks={ticks}
+          scaleType={scaleType}
+          canvasWidth={canvasWidth}
+        />
       )
     } else if (isOverlay) {
       legendEl = (
@@ -212,35 +294,12 @@ export async function renderSvg(
         />
       )
     } else {
-      const labelWidth =
-        Math.max(...sources.map(s => measureText(s.name, 10))) + 10
       labelsEl = (
-        <g transform={`translate(${labelOffset} 0)`}>
-          {sources.map((source, idx) => {
-            const y = getRowTop(idx, rowHeight)
-            const boxHeight = Math.min(20, rowHeight)
-            const lc = source.labelColor
-            return (
-              <g key={source.name}>
-                <rect
-                  x={0}
-                  y={y}
-                  width={labelWidth}
-                  height={boxHeight}
-                  fill={lc ?? 'rgba(255,255,255,0.8)'}
-                />
-                <text
-                  x={4}
-                  y={y + boxHeight / 2 + 3}
-                  fontSize={10}
-                  fill={lc ? 'white' : 'black'}
-                >
-                  {source.name}
-                </text>
-              </g>
-            )
-          })}
-        </g>
+        <MultiRowLabels
+          sources={sources}
+          rowHeight={rowHeight}
+          labelOffset={labelOffset}
+        />
       )
     }
   }

@@ -167,7 +167,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
     },
     {
       preProcessSnapshot: s2 => {
-        console.warn('baseTrackConfig preProcessSnapshot input', s2)
         const snap = pluginManager.evaluateExtensionPoint(
           'Core-preProcessTrackConfig',
           structuredClone(s2),
@@ -200,7 +199,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         const knownDisplayTypes = new Set(
           pluginManager.getDisplayElements().map(d => d.name),
         )
-        const result = {
+        return {
           ...snap,
           displays: displays
             .filter(d => knownDisplayTypes.has(d.type))
@@ -209,8 +208,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
               displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
             })),
         }
-        console.warn('baseTrackConfig preProcessSnapshot output', result)
-        return result
       },
       /**
        * #identifier

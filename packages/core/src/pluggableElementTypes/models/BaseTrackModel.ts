@@ -191,13 +191,9 @@ export function createBaseTrackModel(
        * #action
        */
       hideDisplay(displayId: string) {
-        const displaysToRemove = self.displays.filter(d => {
-          const id = d.configuration.displayId
-          if (!id) {
-            console.warn('hideDisplay: configuration.displayId is undefined', d)
-          }
-          return id === displayId
-        })
+        const displaysToRemove = self.displays.filter(
+          d => d.configuration.displayId === displayId,
+        )
         for (const display of displaysToRemove) {
           self.displays.remove(display)
         }
