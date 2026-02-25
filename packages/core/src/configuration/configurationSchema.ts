@@ -303,7 +303,15 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         throw new Error(`Could not resolve identifier "${id}"`)
       }
       // If it's a frozen/plain object, we need to instantiate it
-      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+      if (!isStateTreeNode(ret)) {
+        console.warn(
+          'TrackConfigurationReference: creating from plain object',
+          id,
+          ret,
+        )
+        return schemaType.create(ret, getEnv(parent))
+      }
+      return ret
     },
     set(value) {
       return value.trackId

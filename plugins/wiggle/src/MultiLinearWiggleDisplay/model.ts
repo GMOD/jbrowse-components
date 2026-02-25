@@ -130,7 +130,7 @@ export default function stateModelFactory(
         return self.sourcesVolatile.map((s, i) => ({
           source: s.name,
           ...s,
-          ...(!s.color && this.isOverlay
+          ...(this.isOverlay
             ? { color: overlayColors[i % overlayColors.length] }
             : {}),
         }))
@@ -140,13 +140,22 @@ export default function stateModelFactory(
         const sourceMap = Object.fromEntries(
           self.sourcesVolatile.map(s => [s.name, s]),
         )
+        const layoutColors = Object.fromEntries(
+          (self.layout as Source[])
+            .filter(s => s.color)
+            .map(s => [s.name, s.color]),
+        )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
         let result = iter.map((s, i) => ({
           source: s.name,
           ...sourceMap[s.name],
           ...s,
-          ...(!s.color && this.isOverlay
-            ? { color: overlayColors[i % overlayColors.length] }
+          ...(this.isOverlay
+            ? {
+                color:
+                  layoutColors[s.name] ??
+                  overlayColors[i % overlayColors.length],
+              }
             : {}),
         }))
 

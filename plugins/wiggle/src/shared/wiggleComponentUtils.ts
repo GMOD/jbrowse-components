@@ -27,6 +27,10 @@ export function isOverlayMode(renderingType: string) {
   return overlayTypes.has(renderingType)
 }
 
+export function isScatterMode(renderingType: string) {
+  return renderingTypeToInt(renderingType) === RENDERING_TYPE_SCATTER
+}
+
 const renderingTypeMap: Record<string, number> = {
   density: RENDERING_TYPE_DENSITY,
   multirowdensity: RENDERING_TYPE_DENSITY,

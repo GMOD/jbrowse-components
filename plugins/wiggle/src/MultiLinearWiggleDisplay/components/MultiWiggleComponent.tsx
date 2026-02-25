@@ -16,6 +16,7 @@ import { parseColor } from '../../shared/webglUtils.ts'
 import {
   getRowTop,
   isOverlayMode,
+  isScatterMode,
   isSummaryFeature,
   makeRenderState,
   makeWhiskersSourceData,
@@ -181,18 +182,15 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           const posColor = orderedSource.color
             ? parseColor(orderedSource.color)
             : defaultPosColor
-          const negColor = defaultNegColor
+          const negColor = overlay ? posColor : defaultNegColor
           const row = overlay ? 0 : idx
 
           if (summaryScoreMode === 'whiskers') {
-            const isScatter =
-              renderingType === 'multirowscatter' ||
-              renderingType === 'scatter'
             for (const s of makeWhiskersSourceData(
               rpcSource,
               posColor,
               model.isDensityMode,
-              isScatter,
+              isScatterMode(renderingType),
               row,
             )) {
               sourcesData.push(s)
@@ -506,7 +504,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             <OverlayColorLegend
               sources={displaySources}
               fallbackColor={model.posColor}
-              offset={labelOffset}
+              canvasWidth={totalWidth}
             />
           ) : (
             <g transform={`translate(${labelOffset} 0)`}>

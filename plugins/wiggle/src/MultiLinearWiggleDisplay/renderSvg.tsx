@@ -208,7 +208,7 @@ export async function renderSvg(
         <OverlayColorLegend
           sources={sources}
           fallbackColor={model.posColor}
-          offset={labelOffset}
+          canvasWidth={canvasWidth}
         />
       )
     } else {
