@@ -36,5 +36,5 @@ export default ConfigurationSchema(
         'Additional parameters to add to the query, e.g. "format=JSON"',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )

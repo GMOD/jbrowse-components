@@ -43,6 +43,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

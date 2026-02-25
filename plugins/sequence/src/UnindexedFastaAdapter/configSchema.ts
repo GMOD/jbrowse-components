@@ -40,6 +40,7 @@ const UnindexedFastaAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
     /**
      * #preProcessSnapshot
      *

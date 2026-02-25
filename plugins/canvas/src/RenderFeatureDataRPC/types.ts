@@ -1,5 +1,4 @@
 import type { RenderConfigContext } from './renderConfig.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface SequenceData {
@@ -30,13 +29,11 @@ export interface LayoutArgs {
   bpPerPx: number
   reversed: boolean
   configContext: RenderConfigContext
-  pluginManager?: PluginManager
   parentFeature?: Feature
 }
 
 export interface Glyph {
   type: GlyphType
-  match(feature: Feature, configContext: RenderConfigContext): boolean
   layout(args: LayoutArgs): FeatureLayout
   getSubfeatureMouseover?(feature: Feature): string | undefined
   hasIndexableChildren?: boolean

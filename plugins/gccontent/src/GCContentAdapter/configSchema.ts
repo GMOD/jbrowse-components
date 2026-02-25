@@ -34,7 +34,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
         defaultValue: 100,
       },
     },
-    { explicitlyTyped: true },
+    { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
   )
 }
 

@@ -48,6 +48,7 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

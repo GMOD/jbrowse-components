@@ -33,6 +33,7 @@ const TwoBitAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

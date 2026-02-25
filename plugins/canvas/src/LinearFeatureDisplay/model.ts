@@ -5,6 +5,7 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
@@ -23,7 +24,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, reaction } from 'mobx'
+import { autorun, reaction, trace } from 'mobx'
 
 import type {
   FeatureDataResult,
@@ -64,8 +65,6 @@ function findSubfeatureById(
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
-
-const FeatureTooltip = lazy(() => import('./components/FeatureTooltip.tsx'))
 
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -123,16 +122,21 @@ export default function stateModelFactory(
       userForceLoadLimit: undefined as number | undefined,
     }))
     .views(self => ({
+      get adapterConfigSnapshot() {
+        const conf = getConf(getContainingTrack(self), 'adapter') as Record<
+          string,
+          unknown
+        >
+        const { adapterId: _, ...rest } = conf
+        return { ...conf, adapterId: adapterConfigCacheKey(rest) }
+      },
+
       get DisplayMessageComponent() {
         return FeatureComponent
       },
 
-      get TooltipComponent() {
-        return FeatureTooltip
-      },
-
       get showTooltipsEnabled() {
-        return true
+        return false
       },
 
       get showLegend() {
@@ -402,8 +406,7 @@ export default function stateModelFactory(
       ) {
         const session = getSession(self)
         const { rpcManager } = session
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter')
+        const adapterConfig = self.adapterConfigSnapshot
 
         // Find a loaded region that contains this feature
         const region = self.findLoadedRegionForFeature(
@@ -478,8 +481,7 @@ export default function stateModelFactory(
       ): Promise<FetchResult | undefined> {
         const session = getSession(self)
         const { rpcManager } = session
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter')
+        const adapterConfig = self.adapterConfigSnapshot
 
         if (!adapterConfig) {
           return undefined
@@ -617,6 +619,17 @@ export default function stateModelFactory(
 
         afterAttach() {
           superAfterAttach()
+          // adapterConfigSnapshot is only accessed inside a conditional branch
+          // (when new regions need fetching), so MobX drops it from the
+          // dependency set when no fetch is needed and suspends the computed.
+          // This no-op autorun keeps it observed so idMaker isn't re-called on
+          // every fetch.
+          addDisposer(
+            self,
+            autorun(() => {
+              void self.adapterConfigSnapshot
+            }),
+          )
           // Autorun: fetch data for all visible regions
           addDisposer(
             self,

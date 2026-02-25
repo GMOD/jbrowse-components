@@ -55,6 +55,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

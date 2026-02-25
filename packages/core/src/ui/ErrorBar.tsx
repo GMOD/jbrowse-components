@@ -29,8 +29,12 @@ export default function ErrorBar({
   return (
     <div
       style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}
-      onMouseDown={e => e.stopPropagation()}
-      onClick={e => e.stopPropagation()}
+      onMouseDown={e => {
+        e.stopPropagation()
+      }}
+      onClick={e => {
+        e.stopPropagation()
+      }}
     >
       <Alert
         severity="error"

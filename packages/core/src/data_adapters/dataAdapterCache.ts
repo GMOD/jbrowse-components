@@ -1,3 +1,4 @@
+export { adapterConfigCacheKey } from './util.ts'
 import { adapterConfigCacheKey } from './util.ts'
 
 import type PluginManager from '../PluginManager.ts'

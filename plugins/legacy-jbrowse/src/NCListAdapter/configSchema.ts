@@ -29,6 +29,7 @@ const NCListAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
   },
 )
 export default NCListAdapter

@@ -48,6 +48,7 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
   },
 )
 

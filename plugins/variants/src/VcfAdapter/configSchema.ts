@@ -33,6 +33,7 @@ const VcfAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

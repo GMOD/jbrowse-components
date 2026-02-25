@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import { isValidElement } from 'react'
+
 import { getSerializedSvg } from './offscreenCanvasGetSerializingSvg.ts'
 
 export { renderToAbstractCanvas } from './renderToAbstractCanvas.ts'

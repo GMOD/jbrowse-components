@@ -36,6 +36,12 @@ const BreakpointSplitViewOverlay = observer(
     const { matchedTracks, views } = model
     const ref = useRef(null)
     const divRef = useRef<HTMLDivElement>(null)
+    const zoomDelta = useRef(0)
+    const zoomDivisor = useRef(0)
+    const lastClientX = useRef(0)
+    const lastViewIndex = useRef(0)
+    const rafId = useRef<number | null>(null)
+    const lastRafTime = useRef<number | null>(null)
 
     useEffect(() => {
       const div = divRef.current
@@ -62,6 +68,16 @@ const BreakpointSplitViewOverlay = observer(
         return 75
       }
 
+      function normalizeWheel(delta: number, mode: number) {
+        if (mode === 1) {
+          return delta * 16
+        }
+        if (mode === 2) {
+          return delta * 100
+        }
+        return delta
+      }
+
       function handleWheel(event: WheelEvent) {
         const target = event.target as Element
         if (!target.closest('svg')) {
@@ -79,43 +95,81 @@ const BreakpointSplitViewOverlay = observer(
 
         const eventY = event.clientY
         let viewIndex = 0
-        let viewContainer: HTMLElement | undefined
 
         for (let i = 0; i < allContainers.length && i < views.length; i++) {
           const container = allContainers[i] as HTMLElement
           const rect = container.getBoundingClientRect()
           if (eventY >= rect.top && eventY <= rect.bottom) {
             viewIndex = i
-            viewContainer = container
             break
           }
         }
 
         const targetView = views[viewIndex]
-        if (!targetView?.zoomTo || !viewContainer) {
+        if (!targetView?.zoomTo) {
           return
         }
 
-        event.preventDefault()
-
-        const deltaY = event.deltaY
+        const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
+        const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
         const isCtrlZoom = event.ctrlKey || event.metaKey
-        const containerRect = viewContainer.getBoundingClientRect()
 
-        if (isCtrlZoom || (targetView.scrollZoom && Math.abs(deltaY) >= 10)) {
-          const d = deltaY / getNormalizer(deltaY)
-          targetView.zoomTo(
-            d > 0 ? targetView.bpPerPx * (1 + d) : targetView.bpPerPx / (1 - d),
-            event.clientX - containerRect.left,
-          )
+        if (
+          isCtrlZoom ||
+          (targetView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
+        ) {
+          event.preventDefault()
+          zoomDelta.current += deltaY
+          zoomDivisor.current = getNormalizer(deltaY)
+          lastClientX.current = event.clientX
+          lastViewIndex.current = viewIndex
         } else if (targetView.horizontalScroll) {
-          targetView.horizontalScroll(event.deltaX)
+          event.preventDefault()
+          targetView.horizontalScroll(deltaX)
+        }
+
+        if (rafId.current === null) {
+          rafId.current = requestAnimationFrame(now => {
+            const elapsed = Math.min(
+              100,
+              lastRafTime.current !== null ? now - lastRafTime.current : 16.67,
+            )
+            lastRafTime.current = now
+            const maxZoomDelta = (0.2 / 16.67) * elapsed
+            if (zoomDelta.current !== 0) {
+              const view = views[lastViewIndex.current]
+              const containers = document.querySelectorAll(
+                '[data-testid="tracksContainer"]',
+              )
+              const container = containers[lastViewIndex.current] as
+                | HTMLElement
+                | undefined
+              if (view?.zoomTo && container) {
+                const d = Math.max(
+                  -maxZoomDelta,
+                  Math.min(
+                    maxZoomDelta,
+                    zoomDelta.current / zoomDivisor.current,
+                  ),
+                )
+                view.zoomTo(
+                  d > 0 ? view.bpPerPx * (1 + d) : view.bpPerPx / (1 - d),
+                  lastClientX.current - container.getBoundingClientRect().left,
+                )
+              }
+              zoomDelta.current = 0
+            }
+            rafId.current = null
+          })
         }
       }
 
       div.addEventListener('wheel', handleWheel, { passive: false })
       return () => {
         div.removeEventListener('wheel', handleWheel)
+        if (rafId.current !== null) {
+          cancelAnimationFrame(rafId.current)
+        }
       }
     }, [views])
 

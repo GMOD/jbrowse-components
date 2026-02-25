@@ -25,7 +25,7 @@ const HtsgetBamAdapter = ConfigurationSchema(
       defaultValue: '',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )
 
 export default HtsgetBamAdapter

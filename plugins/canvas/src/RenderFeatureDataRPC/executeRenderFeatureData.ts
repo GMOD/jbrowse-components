@@ -720,7 +720,6 @@ export async function executeRenderFeatureData({
           bpPerPx,
           reversed,
           configContext,
-          pluginManager,
         })
 
         const featureStart = feature.get('start')

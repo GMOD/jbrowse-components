@@ -285,23 +285,19 @@ export async function renderSvg(
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
   let labelsEl: React.ReactNode = null
   if (sources.length > 1) {
-    if (isOverlay) {
-      labelsEl = (
-        <OverlayColorLegend
-          sources={sources}
-          fallbackColor={model.posColor}
-          canvasWidth={canvasWidth}
-        />
-      )
-    } else {
-      labelsEl = (
-        <MultiRowLabels
-          sources={sources}
-          rowHeight={rowHeight}
-          labelOffset={labelOffset}
-        />
-      )
-    }
+    labelsEl = isOverlay ? (
+      <OverlayColorLegend
+        sources={sources}
+        fallbackColor={model.posColor}
+        canvasWidth={canvasWidth}
+      />
+    ) : (
+      <MultiRowLabels
+        sources={sources}
+        rowHeight={rowHeight}
+        labelOffset={labelOffset}
+      />
+    )
   }
 
   let treeEl: React.ReactNode = null

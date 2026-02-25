@@ -1,4 +1,4 @@
-import { builtinGlyphs, findGlyph } from './glyphs/index.ts'
+import { findGlyph } from './glyphs/index.ts'
 import { isUTR, truncateLabel } from './util.ts'
 
 import type { RenderConfigContext } from './renderConfig.ts'
@@ -32,21 +32,13 @@ describe('findGlyph (glyph matching)', () => {
         type: 'CDS',
         subfeatures: [createMockFeature({ type: 'exon' })],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('CDS')
     })
 
     it('returns CDS glyph for simple CDS without subfeatures', () => {
       const feature = createMockFeature({ type: 'CDS' })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('CDS')
     })
   })
@@ -54,31 +46,19 @@ describe('findGlyph (glyph matching)', () => {
   describe('Box features (no subfeatures)', () => {
     it('returns Box glyph for simple feature without subfeatures', () => {
       const feature = createMockFeature({ type: 'exon' })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Box')
     })
 
     it('returns Box glyph for feature with empty subfeatures array', () => {
       const feature = createMockFeature({ type: 'exon', subfeatures: [] })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Box')
     })
 
     it('returns Box glyph for gene type without subfeatures', () => {
       const feature = createMockFeature({ type: 'gene' })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Box')
     })
   })
@@ -92,11 +72,7 @@ describe('findGlyph (glyph matching)', () => {
           createMockFeature({ type: 'CDS' }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('ProcessedTranscript')
     })
 
@@ -105,11 +81,7 @@ describe('findGlyph (glyph matching)', () => {
         type: 'transcript',
         subfeatures: [createMockFeature({ type: 'CDS' })],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('ProcessedTranscript')
     })
 
@@ -121,11 +93,7 @@ describe('findGlyph (glyph matching)', () => {
           createMockFeature({ type: 'exon' }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Segments')
     })
   })
@@ -141,11 +109,7 @@ describe('findGlyph (glyph matching)', () => {
           }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Subfeatures')
     })
 
@@ -160,11 +124,7 @@ describe('findGlyph (glyph matching)', () => {
           }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Subfeatures')
     })
 
@@ -180,11 +140,7 @@ describe('findGlyph (glyph matching)', () => {
           }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Segments')
     })
 
@@ -199,11 +155,7 @@ describe('findGlyph (glyph matching)', () => {
           }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Subfeatures')
     })
   })
@@ -217,11 +169,7 @@ describe('findGlyph (glyph matching)', () => {
           createMockFeature({ type: 'match_part' }),
         ],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Segments')
     })
 
@@ -230,11 +178,7 @@ describe('findGlyph (glyph matching)', () => {
         type: 'exon',
         subfeatures: [createMockFeature({ type: 'part' })],
       })
-      const glyph = findGlyph(
-        feature as any,
-        defaultConfigContext,
-        builtinGlyphs,
-      )
+      const glyph = findGlyph(feature as any, defaultConfigContext)
       expect(glyph.type).toBe('Segments')
     })
   })
@@ -249,7 +193,7 @@ describe('findGlyph (glyph matching)', () => {
         type: 'custom_transcript',
         subfeatures: [createMockFeature({ type: 'CDS' })],
       })
-      const glyph = findGlyph(feature as any, customConfig, builtinGlyphs)
+      const glyph = findGlyph(feature as any, customConfig)
       expect(glyph.type).toBe('ProcessedTranscript')
     })
 
@@ -262,7 +206,7 @@ describe('findGlyph (glyph matching)', () => {
         type: 'custom_container',
         subfeatures: [createMockFeature({ type: 'child' })],
       })
-      const glyph = findGlyph(feature as any, customConfig, builtinGlyphs)
+      const glyph = findGlyph(feature as any, customConfig)
       expect(glyph.type).toBe('Subfeatures')
     })
   })

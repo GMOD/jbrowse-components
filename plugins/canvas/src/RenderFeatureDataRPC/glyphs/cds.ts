@@ -5,10 +5,6 @@ import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 export const cdsGlyph: Glyph = {
   type: 'CDS',
 
-  match(feature) {
-    return feature.get('type') === 'CDS'
-  },
-
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, configContext } = args
     const { config, featureHeight, heightMultiplier } = configContext

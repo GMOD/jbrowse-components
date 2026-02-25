@@ -92,7 +92,9 @@ export interface MultiWiggleDisplayModel {
   setFeatureUnderMouse: (
     feat?: MultiWiggleDisplayModel['featureUnderMouse'],
   ) => void
-  selectFeature: (feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>) => void
+  selectFeature: (
+    feat: NonNullable<MultiWiggleDisplayModel['featureUnderMouse']>,
+  ) => void
 }
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
@@ -318,7 +320,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         let bestDist = Infinity
         let bestIdx = -1
         const mouseScore =
-          domain[1] - ((offsetY / model.height) * (domain[1] - domain[0]))
+          domain[1] - (offsetY / model.height) * (domain[1] - domain[0])
         const allSources: NonNullable<
           MultiWiggleDisplayModel['featureUnderMouse']
         >['allSources'] = []
@@ -429,7 +431,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           ? { summary: true, minScore, maxScore }
           : {}),
       })
-      console.log(`mousemove handler took ${(performance.now() - t0).toFixed(2)}ms`)
+      console.log(
+        `mousemove handler took ${(performance.now() - t0).toFixed(2)}ms`,
+      )
     },
     [model, view],
   )
@@ -533,7 +537,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         ) : model.ticks ? (
           model.rowHeightTooSmallForScalebar ? (
             <ScoreLegend
-              ticks={model.ticks!}
+              ticks={model.ticks}
               scaleType={model.scaleType}
               canvasWidth={totalWidth}
             />

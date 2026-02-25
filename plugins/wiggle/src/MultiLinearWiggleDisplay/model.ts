@@ -64,7 +64,9 @@ function resolveOverlayColor(
   adapterColor?: string,
   layoutColor?: string,
 ) {
-  return layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
+  return (
+    layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
+  )
 }
 
 export default function stateModelFactory(
@@ -154,9 +156,7 @@ export default function stateModelFactory(
         return self.sourcesVolatile.map((s, i) => ({
           source: s.name,
           ...s,
-          ...(this.isOverlay
-            ? { color: resolveOverlayColor(i, s.color) }
-            : {}),
+          ...(this.isOverlay ? { color: resolveOverlayColor(i, s.color) } : {}),
         }))
       },
 
@@ -481,8 +481,7 @@ export default function stateModelFactory(
         }
         if (
           feat &&
-          prev &&
-          feat.start === prev.start &&
+          feat.start === prev?.start &&
           feat.end === prev.end &&
           feat.source === prev.source &&
           feat.score === prev.score

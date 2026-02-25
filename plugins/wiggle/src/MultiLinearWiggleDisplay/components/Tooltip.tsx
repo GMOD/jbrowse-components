@@ -1,8 +1,8 @@
 import { forwardRef } from 'react'
 
-import { Portal, alpha, useTheme } from '@mui/material'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Portal, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { toP } from '../../util.ts'

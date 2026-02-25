@@ -54,9 +54,7 @@ export default ConfigurationSchema(
     },
     defaultRendering: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering', [
-        ...MULTI_WIGGLE_RENDERING_TYPES,
-      ]),
+      model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
       defaultValue: 'multirowxy',
       description: 'Default rendering type',
     },

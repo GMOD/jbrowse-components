@@ -346,11 +346,7 @@ export interface AbstractDisplayModel {
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
-  if (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'configuration' in thing
-  ) {
+  if (typeof thing === 'object' && thing !== null && 'configuration' in thing) {
     // @ts-expect-error
     const { displayId } = thing.configuration
     return !!displayId

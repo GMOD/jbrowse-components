@@ -47,26 +47,6 @@ function filterByGeneGlyphMode(
 export const subfeaturesGlyph: Glyph = {
   type: 'Subfeatures',
 
-  match(feature, configContext) {
-    const type = feature.get('type')
-    const subfeatures = feature.get('subfeatures')
-    if (!subfeatures?.length) {
-      return false
-    }
-
-    const { containerTypes } = configContext
-
-    if (containerTypes.includes(type)) {
-      return true
-    }
-
-    const isTopLevel = !feature.parent?.()
-    const hasNestedSubfeatures = subfeatures.some(
-      (f: Feature) => f.get('subfeatures')?.length,
-    )
-    return isTopLevel && hasNestedSubfeatures
-  },
-
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, reversed, configContext } = args
     const {

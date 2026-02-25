@@ -411,6 +411,14 @@ export class CanvasFeatureRenderer {
     }
 
     if (!hasRenderedBlock) {
+      // if we have no GPU data at all, leave the last frame on screen rather
+      // than clearing to blank — avoids a flash during data refresh
+      if (this.regions.size === 0) {
+        console.log(
+          '[CanvasFeatureRenderer] renderBlocks: no regions, skipping clear to avoid flash',
+        )
+        return
+      }
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {

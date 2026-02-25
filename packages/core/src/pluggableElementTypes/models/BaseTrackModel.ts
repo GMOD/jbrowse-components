@@ -171,38 +171,6 @@ export function createBaseTrackModel(
       /**
        * #action
        */
-      showDisplay(displayId: string, initialSnapshot = {}) {
-        const displays = self.configuration.displays as DisplayConf[]
-        const displayConf = getDisplayConf(displays, displayId)
-        const displayType = pm.getDisplayType(displayConf.type)
-        if (!displayType) {
-          throw new Error(`unknown display type ${displayConf.type}`)
-        }
-        self.displays.push(
-          displayType.stateModel.create({
-            ...initialSnapshot,
-            type: displayConf.type,
-            configuration: displayId,
-          }),
-        )
-      },
-
-      /**
-       * #action
-       */
-      hideDisplay(displayId: string) {
-        const displaysToRemove = self.displays.filter(
-          d => d.configuration.displayId === displayId,
-        )
-        for (const display of displaysToRemove) {
-          self.displays.remove(display)
-        }
-        return displaysToRemove.length
-      },
-
-      /**
-       * #action
-       */
       replaceDisplay(
         oldDisplayId: string,
         newDisplayId: string,
@@ -263,7 +231,7 @@ export function createBaseTrackModel(
         const menuItems = self.displays.flatMap(
           d => d.trackMenuItems() as MenuItem[],
         )
-        const shownId = self.displays[0].configuration.displayId
+        const shownId = self.displays[0]?.configuration.displayId
         const compatDisp = getCompatibleDisplays(self)
 
         return [
@@ -282,7 +250,7 @@ export function createBaseTrackModel(
               ])
             },
           },
-          ...(compatDisp.length > 1
+          ...(compatDisp.length > 1 && shownId
             ? [
                 {
                   type: 'subMenu' as const,

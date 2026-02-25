@@ -3,23 +3,9 @@ import { readCachedConfig } from '../renderConfig.ts'
 import { getStrandArrowPadding, layoutChild } from './glyphUtils.ts'
 
 import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
-import type { Feature } from '@jbrowse/core/util'
 
 export const processedTranscriptGlyph: Glyph = {
   type: 'ProcessedTranscript',
-
-  match(feature, configContext) {
-    const type = feature.get('type')
-    const subfeatures = feature.get('subfeatures')
-    if (!subfeatures?.length) {
-      return false
-    }
-    const { transcriptTypes } = configContext
-    if (!transcriptTypes.includes(type)) {
-      return false
-    }
-    return subfeatures.some((f: Feature) => f.get('type') === 'CDS')
-  },
 
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, reversed, configContext } = args

@@ -11,8 +11,7 @@ export default function MultiRowLabels({
   rowHeight: number
   labelOffset: number
 }) {
-  const labelWidth =
-    Math.max(...sources.map(s => measureText(s.name, 10))) + 10
+  const labelWidth = Math.max(...sources.map(s => measureText(s.name, 10))) + 10
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {

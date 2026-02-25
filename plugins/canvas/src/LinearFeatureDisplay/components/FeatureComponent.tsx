@@ -8,6 +8,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
+import FeatureTooltip from './FeatureTooltip.tsx'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
@@ -197,12 +198,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const [hoveredSubfeature, setHoveredSubfeature] =
     useState<SubfeatureInfo | null>(null)
   const [scrollY, setScrollY] = useState(0)
+  const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
   const uploadedDataRef = useRef(new Map<number, FeatureDataResult>())
 
   const scrollYRef = useRef(0)
   const scrollbarHostRef = useRef<HTMLDivElement>(null)
-  const selfUpdateRef = useRef(false)
 
   const view = getContainingView(model) as LGV
 
@@ -291,11 +292,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _h = model.height
 
-        if (selfUpdateRef.current) {
-          selfUpdateRef.current = false
-          return
-        }
-
         if (!initialized) {
           return
         }
@@ -372,24 +368,16 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     const handleWheel = (e: WheelEvent) => {
-      const view = viewRef.current
-      if (!view.initialized) {
-        return
-      }
-
       const absX = Math.abs(e.deltaX)
       const absY = Math.abs(e.deltaY)
 
-      if (absX > 5 && absX > absY * 2) {
-        e.preventDefault()
-        e.stopPropagation()
-        selfUpdateRef.current = true
-        view.setNewView(view.bpPerPx, view.offsetPx + e.deltaX)
-        renderWithBlocksRef.current()
-        return
-      }
-
-      if (absY < 1 || view.scrollZoom) {
+      if (
+        absY < 1 ||
+        view.scrollZoom ||
+        e.ctrlKey ||
+        e.metaKey ||
+        absX > absY * 2
+      ) {
         return
       }
 
@@ -429,6 +417,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     const handleMouseMove = (e: MouseEvent) => {
+      setClientXY([e.clientX, e.clientY])
       const rpcDataMap = model.rpcDataMap
       if (rpcDataMap.size === 0) {
         model.setMouseoverExtraInformation(undefined)
@@ -928,6 +917,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             : 'Initializing'
         }
         isVisible={debouncedLoading || !isReady}
+      />
+      <FeatureTooltip
+        info={model.mouseoverExtraInformation}
+        clientMouseCoord={clientXY}
       />
     </div>
   )

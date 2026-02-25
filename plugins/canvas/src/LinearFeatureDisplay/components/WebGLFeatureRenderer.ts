@@ -638,6 +638,15 @@ export class WebGLFeatureRenderer {
       canvas.height = bufH
     }
 
+    // if we have no GPU data at all, leave the last frame on screen rather
+    // than clearing to blank — avoids a flash during data refresh
+    if (this.regionDataMap.size === 0) {
+      console.log(
+        '[WebGLFeatureRenderer] renderBlocks: no regions, skipping clear to avoid flash',
+      )
+      return
+    }
+
     gl.viewport(0, 0, bufW, bufH)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)

@@ -3,8 +3,8 @@ import { lazy } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
 // lazies
@@ -63,7 +63,13 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
                     ConfirmDialog,
                     {
                       tracks,
-                      onClose: (arg: boolean, arg1?: { name: string; tracks: AnyConfigurationModel[] }) => {
+                      onClose: (
+                        arg: boolean,
+                        arg1?: {
+                          name: string
+                          tracks: AnyConfigurationModel[]
+                        },
+                      ) => {
                         if (arg && arg1) {
                           makeTrack({ model, arg: arg1 })
                         }

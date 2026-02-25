@@ -1,10 +1,10 @@
 import {
-  isOverlayMode,
-  isScatterMode,
-  renderingTypeToInt,
   getRowHeight,
   getRowTop,
+  isOverlayMode,
+  isScatterMode,
   makeWhiskersSourceData,
+  renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
 import {
   RENDERING_TYPE_DENSITY,

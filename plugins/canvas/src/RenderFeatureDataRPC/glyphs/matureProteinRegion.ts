@@ -9,7 +9,12 @@ const MATURE_PROTEIN_TYPES = new Set([
   'mature_protein_region',
 ])
 
-function getMatureProteinChildren(feature: Feature): Feature[] {
+export function hasMatureProteinChildren(feature: Feature) {
+  const subfeatures = feature.get('subfeatures')
+  return !!subfeatures?.some(sub => MATURE_PROTEIN_TYPES.has(sub.get('type')))
+}
+
+export function getMatureProteinChildren(feature: Feature): Feature[] {
   const subfeatures = feature.get('subfeatures')
   return (
     subfeatures?.filter(sub => MATURE_PROTEIN_TYPES.has(sub.get('type'))) ?? []
@@ -30,13 +35,6 @@ function sortByPosition(children: FeatureLayout[]) {
 export const matureProteinRegionGlyph: Glyph = {
   type: 'MatureProteinRegion',
   hasIndexableChildren: true,
-
-  match(feature) {
-    if (feature.get('type') !== 'CDS') {
-      return false
-    }
-    return getMatureProteinChildren(feature).length > 0
-  },
 
   getSubfeatureMouseover(feature: Feature) {
     const product = feature.get('product') as string | undefined

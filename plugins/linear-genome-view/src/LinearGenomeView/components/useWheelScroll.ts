@@ -9,6 +9,8 @@ interface GenomeViewModel {
 }
 
 const SCROLL_ZOOM_FACTOR_DIVISOR = 500
+// max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
+const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
 
 // NOTE: The getNormalizer function and zoom logic below are also implemented in
 // plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx
@@ -50,6 +52,7 @@ export function useWheelScroll(
   const lastClientX = useRef(0)
   const rectLeft = useRef(0)
   const rafId = useRef<number | null>(null)
+  const lastRafTime = useRef<number | null>(null)
 
   useEffect(() => {
     const curr = ref.current
@@ -107,9 +110,18 @@ export function useWheelScroll(
       // of events (e.g. fast trackpad scrolling) don't each trigger expensive
       // model updates
       if (rafId.current === null) {
-        rafId.current = requestAnimationFrame(() => {
+        rafId.current = requestAnimationFrame(now => {
+          const elapsed = Math.min(
+            100,
+            lastRafTime.current !== null ? now - lastRafTime.current : 16.67,
+          )
+          lastRafTime.current = now
+          const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
           if (zoomDelta.current !== 0) {
-            const d = zoomDelta.current / zoomDivisor.current
+            const d = Math.max(
+              -maxZoomDelta,
+              Math.min(maxZoomDelta, zoomDelta.current / zoomDivisor.current),
+            )
             model.zoomTo(
               d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
               lastClientX.current - rectLeft.current,

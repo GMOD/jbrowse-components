@@ -6,12 +6,6 @@ import type { FeatureLayout, Glyph, LayoutArgs } from '../types.ts'
 export const repeatRegionGlyph: Glyph = {
   type: 'RepeatRegion',
 
-  match(feature) {
-    const type = feature.get('type')
-    const subfeatures = feature.get('subfeatures')
-    return type === 'repeat_region' && !!subfeatures?.length
-  },
-
   layout(args: LayoutArgs): FeatureLayout {
     const { feature, bpPerPx, reversed, configContext } = args
     const { config, featureHeight, heightMultiplier } = configContext

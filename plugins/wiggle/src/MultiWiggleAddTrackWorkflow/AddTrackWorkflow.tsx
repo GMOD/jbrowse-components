@@ -79,9 +79,7 @@ function doSubmit({
 
     const items = tracks.map(t => t.item)
     const obj =
-      typeof items[0] === 'string'
-        ? { bigWigs: items }
-        : { subadapters: items }
+      typeof items[0] === 'string' ? { bigWigs: items } : { subadapters: items }
 
     if (isSessionWithAddTracks(session)) {
       session.addTrackConf({

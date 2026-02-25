@@ -355,15 +355,13 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       const track = getContainingTrack(parent)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      const displays = track.configuration.displays || []
+      const displays = track.configuration.displays
       // Find in the track's displays array (may be frozen/plain objects)
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
 
       // If not found by displayId, fall back to matching by display type.
-      // Display config schemas don't store displayId as an MST property, so
-      // d.displayId is always undefined for MST models. Use parent.type (the
-      // display state model's type) to find the matching config instead.
+      // This handles cases where the display state model's type doesn't match
+      // any displayId in the track config (e.g. newly added display types).
       if (!ret) {
         const displayType = (parent as { type?: string }).type
         ret = displays.find((d: { type?: string }) => d.type === displayType)
