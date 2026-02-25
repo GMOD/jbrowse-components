@@ -857,12 +857,12 @@ export default function stateModelFactory(
             subMenu: (
               [
                 ['multirowxy', 'Multi-row XY plot'],
-                ['xyplot', 'XY plot'],
+                ['multixyplot', 'XY plot'],
                 ['multirowdensity', 'Multi-row density'],
                 ['multirowline', 'Multi-row line'],
-                ['line', 'Line'],
+                ['multiline', 'Line'],
                 ['multirowscatter', 'Multi-row scatter'],
-                ['scatter', 'Scatter'],
+                ['multiscatter', 'Scatter'],
               ] as const
             ).map(([value, label]) => ({
               label,

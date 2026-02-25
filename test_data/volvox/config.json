@@ -884,7 +884,7 @@
       "displays": [
         {
           "type": "MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowline"
+          "defaultRendering": "multiline"
         }
       ]
     },

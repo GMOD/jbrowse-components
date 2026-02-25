@@ -15,9 +15,9 @@ import {
 
 describe('isOverlayMode', () => {
   test('overlay types return true', () => {
-    expect(isOverlayMode('xyplot')).toBe(true)
-    expect(isOverlayMode('line')).toBe(true)
-    expect(isOverlayMode('scatter')).toBe(true)
+    expect(isOverlayMode('multixyplot')).toBe(true)
+    expect(isOverlayMode('multiline')).toBe(true)
+    expect(isOverlayMode('multiscatter')).toBe(true)
   })
 
   test('multirow types return false', () => {
@@ -34,26 +34,25 @@ describe('isOverlayMode', () => {
 
 describe('isScatterMode', () => {
   test('scatter types return true', () => {
-    expect(isScatterMode('scatter')).toBe(true)
     expect(isScatterMode('multirowscatter')).toBe(true)
+    expect(isScatterMode('multiscatter')).toBe(true)
   })
 
   test('non-scatter types return false', () => {
-    expect(isScatterMode('xyplot')).toBe(false)
-    expect(isScatterMode('line')).toBe(false)
+    expect(isScatterMode('multixyplot')).toBe(false)
+    expect(isScatterMode('multiline')).toBe(false)
     expect(isScatterMode('multirowxy')).toBe(false)
   })
 })
 
 describe('renderingTypeToInt', () => {
   test('overlay and multirow variants map to same int', () => {
-    expect(renderingTypeToInt('xyplot')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('multirowxy')).toBe(RENDERING_TYPE_XYPLOT)
-    expect(renderingTypeToInt('line')).toBe(RENDERING_TYPE_LINE)
+    expect(renderingTypeToInt('multixyplot')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('multirowline')).toBe(RENDERING_TYPE_LINE)
-    expect(renderingTypeToInt('scatter')).toBe(RENDERING_TYPE_SCATTER)
+    expect(renderingTypeToInt('multiline')).toBe(RENDERING_TYPE_LINE)
     expect(renderingTypeToInt('multirowscatter')).toBe(RENDERING_TYPE_SCATTER)
-    expect(renderingTypeToInt('density')).toBe(RENDERING_TYPE_DENSITY)
+    expect(renderingTypeToInt('multiscatter')).toBe(RENDERING_TYPE_SCATTER)
     expect(renderingTypeToInt('multirowdensity')).toBe(RENDERING_TYPE_DENSITY)
   })
 
