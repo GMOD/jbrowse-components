@@ -1489,22 +1489,20 @@ export class AlignmentsRenderer {
       }
     }
 
-    if (state.showSoftClipping) {
-      if (r.softclipBG && r.softclipCount > 0) {
-        pass.setPipeline(AlignmentsRenderer.softclipPL!)
-        pass.setBindGroup(0, r.softclipBG)
-        pass.draw(6, r.softclipCount)
-      }
-      if (r.hardclipBG && r.hardclipCount > 0) {
-        pass.setPipeline(AlignmentsRenderer.hardclipPL!)
-        pass.setBindGroup(0, r.hardclipBG)
-        pass.draw(6, r.hardclipCount)
-      }
-      if (r.softclipBaseBG && r.softclipBaseCount > 0) {
-        pass.setPipeline(AlignmentsRenderer.mismatchPL!)
-        pass.setBindGroup(0, r.softclipBaseBG)
-        pass.draw(6, r.softclipBaseCount)
-      }
+    if (r.softclipBG && r.softclipCount > 0) {
+      pass.setPipeline(AlignmentsRenderer.softclipPL!)
+      pass.setBindGroup(0, r.softclipBG)
+      pass.draw(6, r.softclipCount)
+    }
+    if (r.hardclipBG && r.hardclipCount > 0) {
+      pass.setPipeline(AlignmentsRenderer.hardclipPL!)
+      pass.setBindGroup(0, r.hardclipBG)
+      pass.draw(6, r.hardclipCount)
+    }
+    if (state.showSoftClipping && r.softclipBaseBG && r.softclipBaseCount > 0) {
+      pass.setPipeline(AlignmentsRenderer.mismatchPL!)
+      pass.setBindGroup(0, r.softclipBaseBG)
+      pass.draw(6, r.softclipBaseCount)
     }
 
     if (state.showModifications && r.modBG && r.modCount > 0) {

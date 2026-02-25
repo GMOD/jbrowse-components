@@ -29,6 +29,7 @@ export interface RenderPileupDataArgs {
   }
   colorTagMap?: Record<string, string>
   sortedBy?: SortedBy
+  showSoftClipping?: boolean
   statusCallback?: (status: string) => void
   stopToken?: string
 }

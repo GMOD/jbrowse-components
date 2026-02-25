@@ -103,6 +103,7 @@ export function extractMismatchData(
   insertionsData: InsertionData[],
   softclipsData: SoftclipData[],
   hardclipsData: HardclipData[],
+  showSoftClipping: boolean,
 ) {
   for (const mm of featureMismatches) {
     if (mm.type === 'deletion') {
@@ -142,7 +143,9 @@ export function extractMismatchData(
       const clipStart = isLeftClip
         ? featureStart - mm.cliplen
         : featureStart + mm.start
-      const seq = feature.get('seq') as string | undefined
+      const seq = showSoftClipping
+        ? (feature.get('seq') as string | undefined)
+        : undefined
       const sequence = seq
         ? seq.slice(
             isLeftClip ? 0 : seq.length - mm.cliplen,
@@ -449,27 +452,25 @@ export function buildSoftclipBaseArrays(
   regionStart: number,
   getY: (featureId: string) => number,
 ) {
-  const entries: { pos: number; y: number; base: number }[] = []
+  const count = softclips.reduce(
+    (sum, sc) => sum + (sc.sequence?.length ?? 0),
+    0,
+  )
+  const softclipBasePositions = new Uint32Array(count)
+  const softclipBaseYs = new Uint16Array(count)
+  const softclipBaseBases = new Uint8Array(count)
+  let i = 0
   for (const sc of softclips) {
     if (!sc.sequence) {
       continue
     }
     const y = getY(sc.featureId)
     for (let k = 0; k < sc.sequence.length; k++) {
-      entries.push({
-        pos: sc.clipStart + k - regionStart,
-        y,
-        base: sc.sequence.charCodeAt(k),
-      })
+      softclipBasePositions[i] = sc.clipStart + k - regionStart
+      softclipBaseYs[i] = y
+      softclipBaseBases[i] = sc.sequence.charCodeAt(k)
+      i++
     }
-  }
-  const softclipBasePositions = new Uint32Array(entries.length)
-  const softclipBaseYs = new Uint16Array(entries.length)
-  const softclipBaseBases = new Uint8Array(entries.length)
-  for (const [i, e] of entries.entries()) {
-    softclipBasePositions[i] = e.pos
-    softclipBaseYs[i] = e.y
-    softclipBaseBases[i] = e.base
   }
   return { softclipBasePositions, softclipBaseYs, softclipBaseBases }
 }

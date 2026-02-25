@@ -151,6 +151,16 @@ insertion/clipping indicators" and "Draw insertion/clipping counts").
 
 :::
 
+#### How the indicator threshold works
+
+A triangle indicator is drawn when an event (insertion, soft clip, or hard
+clip) occurs in more than 30% of reads at that position. The depth used for
+this calculation is `max(coverageDepth[pos - 1], coverageDepth[pos])` — the
+larger of the two bases flanking the interbase position. This correctly handles
+cliffs where reads pile up on one side and then stop, such as when many reads
+end with soft clipping at the same boundary. The tooltip percentage uses the
+same local depth.
+
 ### Using the "Arc display"
 
 In JBrowse 2.3.0, we introduced the ability to render "Arcs" to show long range

@@ -559,6 +559,8 @@ export async function executeRenderChainData({
     hardclips,
     coverage.maxDepth,
     regionStart,
+    coverage.depths,
+    coverage.startOffset,
   )
 
   const sashimi = computeSashimiJunctions(gaps, regionStart)

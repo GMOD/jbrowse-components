@@ -1215,6 +1215,7 @@ export default function stateModelFactory(
             colorBy: self.colorBy,
             colorTagMap: self.colorTagMap,
             sortedBy: self.sortedBy,
+            showSoftClipping: self.showSoftClipping,
             stopToken,
             statusCallback: (msg: string) => {
               self.setStatusMessage(msg)
@@ -1863,6 +1864,7 @@ export default function stateModelFactory(
                   drawProperPairs: self.drawProperPairs,
                   colorType: self.colorBy.type,
                   colorTag: self.colorBy.tag,
+                  showSoftClipping: self.showSoftClipping,
                 })
                 if (
                   prevInvalidationKey !== undefined &&

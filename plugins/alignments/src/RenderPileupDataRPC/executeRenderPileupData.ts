@@ -266,6 +266,7 @@ export async function executeRenderPileupData({
     colorBy,
     colorTagMap,
     sortedBy,
+    showSoftClipping = false,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -373,6 +374,7 @@ export async function executeRenderPileupData({
           insertionsData,
           softclipsData,
           hardclipsData,
+          showSoftClipping,
         )
       }
 
@@ -442,9 +444,9 @@ export async function executeRenderPileupData({
           { insertions, softclips, hardclips },
           sortTagValues,
           sortedBy,
-          softclips,
+          showSoftClipping ? softclips : undefined,
         )
-      : computeLayout(features, softclips)
+      : computeLayout(features, showSoftClipping ? softclips : undefined)
     const numLevels = max(layout.values(), 0) + 1
     const getY = (id: string) => layout.get(id) ?? 0
 
@@ -487,7 +489,13 @@ export async function executeRenderPileupData({
       },
       gapArrays: buildGapArrays(gaps, regionStart, getY),
       mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
-      softclipBaseArrays: buildSoftclipBaseArrays(softclips, regionStart, getY),
+      softclipBaseArrays: showSoftClipping
+        ? buildSoftclipBaseArrays(softclips, regionStart, getY)
+        : {
+            softclipBasePositions: new Uint32Array(0),
+            softclipBaseYs: new Uint16Array(0),
+            softclipBaseBases: new Uint8Array(0),
+          },
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,
@@ -535,6 +543,8 @@ export async function executeRenderPileupData({
     hardclips,
     coverage.maxDepth,
     regionStart,
+    coverage.depths,
+    coverage.startOffset,
   )
 
   const modCoverage = computeModificationCoverage(

@@ -298,122 +298,124 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 18, buffers.insertionCount)
     }
 
-    if (state.showSoftClipping) {
-      if (buffers.softclipVAO && buffers.softclipCount > 0) {
-        gl.useProgram(this.parent.softclipProgram)
-        gl.uniform2f(
-          this.parent.softclipUniforms.u_bpRangeX!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform2f(
-          this.parent.softclipUniforms.u_rangeY!,
-          state.rangeY[0],
-          state.rangeY[1],
-        )
-        gl.uniform1f(
-          this.parent.softclipUniforms.u_featureHeight!,
-          state.featureHeight,
-        )
-        gl.uniform1f(
-          this.parent.softclipUniforms.u_featureSpacing!,
-          state.featureSpacing,
-        )
-        gl.uniform1f(
-          this.parent.softclipUniforms.u_coverageOffset!,
-          coverageOffset,
-        )
-        gl.uniform1f(this.parent.softclipUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.parent.softclipUniforms.u_canvasWidth!, canvasWidth)
-        gl.uniform3f(
-          this.parent.softclipUniforms.u_colorSoftclip!,
-          ...colors.colorSoftclip,
-        )
+    if (buffers.softclipVAO && buffers.softclipCount > 0) {
+      gl.useProgram(this.parent.softclipProgram)
+      gl.uniform2f(
+        this.parent.softclipUniforms.u_bpRangeX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.parent.softclipUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(
+        this.parent.softclipUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.parent.softclipUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
+      gl.uniform1f(
+        this.parent.softclipUniforms.u_coverageOffset!,
+        coverageOffset,
+      )
+      gl.uniform1f(this.parent.softclipUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.parent.softclipUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform3f(
+        this.parent.softclipUniforms.u_colorSoftclip!,
+        ...colors.colorSoftclip,
+      )
 
-        gl.bindVertexArray(buffers.softclipVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipCount)
-      }
+      gl.bindVertexArray(buffers.softclipVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipCount)
+    }
 
-      if (buffers.hardclipVAO && buffers.hardclipCount > 0) {
-        gl.useProgram(this.parent.hardclipProgram)
-        gl.uniform2f(
-          this.parent.hardclipUniforms.u_bpRangeX!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform2f(
-          this.parent.hardclipUniforms.u_rangeY!,
-          state.rangeY[0],
-          state.rangeY[1],
-        )
-        gl.uniform1f(
-          this.parent.hardclipUniforms.u_featureHeight!,
-          state.featureHeight,
-        )
-        gl.uniform1f(
-          this.parent.hardclipUniforms.u_featureSpacing!,
-          state.featureSpacing,
-        )
-        gl.uniform1f(
-          this.parent.hardclipUniforms.u_coverageOffset!,
-          coverageOffset,
-        )
-        gl.uniform1f(this.parent.hardclipUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.parent.hardclipUniforms.u_canvasWidth!, canvasWidth)
-        gl.uniform3f(
-          this.parent.hardclipUniforms.u_colorHardclip!,
-          ...colors.colorHardclip,
-        )
+    if (buffers.hardclipVAO && buffers.hardclipCount > 0) {
+      gl.useProgram(this.parent.hardclipProgram)
+      gl.uniform2f(
+        this.parent.hardclipUniforms.u_bpRangeX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.parent.hardclipUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(
+        this.parent.hardclipUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.parent.hardclipUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
+      gl.uniform1f(
+        this.parent.hardclipUniforms.u_coverageOffset!,
+        coverageOffset,
+      )
+      gl.uniform1f(this.parent.hardclipUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.parent.hardclipUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform3f(
+        this.parent.hardclipUniforms.u_colorHardclip!,
+        ...colors.colorHardclip,
+      )
 
-        gl.bindVertexArray(buffers.hardclipVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.hardclipCount)
-      }
+      gl.bindVertexArray(buffers.hardclipVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.hardclipCount)
+    }
 
-      if (buffers.softclipBaseVAO && buffers.softclipBaseCount > 0) {
-        gl.useProgram(this.parent.mismatchProgram)
-        gl.uniform2f(
-          this.parent.mismatchUniforms.u_bpRangeX!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform2f(
-          this.parent.mismatchUniforms.u_rangeY!,
-          state.rangeY[0],
-          state.rangeY[1],
-        )
-        gl.uniform1f(
-          this.parent.mismatchUniforms.u_featureHeight!,
-          state.featureHeight,
-        )
-        gl.uniform1f(
-          this.parent.mismatchUniforms.u_featureSpacing!,
-          state.featureSpacing,
-        )
-        gl.uniform1f(
-          this.parent.mismatchUniforms.u_coverageOffset!,
-          coverageOffset,
-        )
-        gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
-        gl.uniform3f(
-          this.parent.mismatchUniforms.u_colorBaseA!,
-          ...colors.colorBaseA,
-        )
-        gl.uniform3f(
-          this.parent.mismatchUniforms.u_colorBaseC!,
-          ...colors.colorBaseC,
-        )
-        gl.uniform3f(
-          this.parent.mismatchUniforms.u_colorBaseG!,
-          ...colors.colorBaseG,
-        )
-        gl.uniform3f(
-          this.parent.mismatchUniforms.u_colorBaseT!,
-          ...colors.colorBaseT,
-        )
-        gl.bindVertexArray(buffers.softclipBaseVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipBaseCount)
-      }
+    if (
+      state.showSoftClipping &&
+      buffers.softclipBaseVAO &&
+      buffers.softclipBaseCount > 0
+    ) {
+      gl.useProgram(this.parent.mismatchProgram)
+      gl.uniform2f(
+        this.parent.mismatchUniforms.u_bpRangeX!,
+        domainOffset[0],
+        domainOffset[1],
+      )
+      gl.uniform2f(
+        this.parent.mismatchUniforms.u_rangeY!,
+        state.rangeY[0],
+        state.rangeY[1],
+      )
+      gl.uniform1f(
+        this.parent.mismatchUniforms.u_featureHeight!,
+        state.featureHeight,
+      )
+      gl.uniform1f(
+        this.parent.mismatchUniforms.u_featureSpacing!,
+        state.featureSpacing,
+      )
+      gl.uniform1f(
+        this.parent.mismatchUniforms.u_coverageOffset!,
+        coverageOffset,
+      )
+      gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
+      gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
+      gl.uniform3f(
+        this.parent.mismatchUniforms.u_colorBaseA!,
+        ...colors.colorBaseA,
+      )
+      gl.uniform3f(
+        this.parent.mismatchUniforms.u_colorBaseC!,
+        ...colors.colorBaseC,
+      )
+      gl.uniform3f(
+        this.parent.mismatchUniforms.u_colorBaseG!,
+        ...colors.colorBaseG,
+      )
+      gl.uniform3f(
+        this.parent.mismatchUniforms.u_colorBaseT!,
+        ...colors.colorBaseT,
+      )
+      gl.bindVertexArray(buffers.softclipBaseVAO)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipBaseCount)
     }
 
     if (

@@ -385,6 +385,8 @@ export function computeNoncovCoverage(
   hardclips: ClipEntry[],
   maxDepth: number,
   regionStart: number,
+  coverageDepths?: Float32Array,
+  coverageStartOffset?: number,
 ) {
   const noncovByPosition = new Map<
     number,
@@ -472,9 +474,20 @@ export function computeNoncovCoverage(
         colorType: 3,
       })
     }
+    let localDepth = maxDepth
+    if (coverageDepths !== undefined && coverageStartOffset !== undefined) {
+      const posOffset = entry.position - regionStart
+      const depthIdx = posOffset - coverageStartOffset
+      const leftDepth = depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
+      const rightDepth =
+        depthIdx >= 0 && depthIdx < coverageDepths.length
+          ? (coverageDepths[depthIdx] ?? 0)
+          : 0
+      localDepth = Math.max(leftDepth, rightDepth)
+    }
     if (
       maxDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
-      total > maxDepth * INDICATOR_THRESHOLD
+      total > localDepth * INDICATOR_THRESHOLD
     ) {
       let dominantType = 1
       let dominantCount = entry.insertion
