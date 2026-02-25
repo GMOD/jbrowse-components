@@ -10,6 +10,12 @@ interface GenomeViewModel {
 
 const SCROLL_ZOOM_FACTOR_DIVISOR = 500
 
+// NOTE: The getNormalizer function and zoom logic below are also implemented in
+// plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx
+// If you modify the normalizer logic or zoom calculations here, you must also update
+// the corresponding code in BreakpointSplitViewOverlay.tsx to keep wheel zoom behavior
+// consistent across all genome views.
+
 function getNormalizer(deltaY: number) {
   const abs = Math.abs(deltaY)
   if (abs < 6) {

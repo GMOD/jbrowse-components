@@ -37,9 +37,6 @@ export function createMouseHandlers(
     onMouseOut: () => {
       setMouseoverElt(undefined)
     },
-    onWheel: (e: React.WheelEvent) => {
-      e.stopPropagation()
-    },
   }
 }
 
