@@ -68,7 +68,12 @@ export class WebGLWiggleRenderer {
     )
 
     const uboIndex = gl.getUniformBlockIndex(this.program, 'Uniforms')
-    console.log('[webgl-wiggle] UBO index:', uboIndex, 'INVALID_INDEX:', gl.INVALID_INDEX)
+    console.log(
+      '[webgl-wiggle] UBO index:',
+      uboIndex,
+      'INVALID_INDEX:',
+      gl.INVALID_INDEX,
+    )
     gl.uniformBlockBinding(this.program, uboIndex, 0)
 
     this.ubo = gl.createBuffer()!
@@ -238,26 +243,29 @@ export class WebGLWiggleRenderer {
       return
     }
 
-    console.log('[webgl-wiggle] renderBlocks:', JSON.stringify({
-      numBlocks: blocks.length,
-      canvasSize: `${bufW}x${bufH}`,
-      renderingType: state.renderingType,
-      domainY: state.domainY,
-      canvasHeight: state.canvasHeight,
-      canvasWidth: state.canvasWidth,
-      scaleType: state.scaleType,
-      regions: [...this.regions.entries()].map(([k, v]) => ({
-        key: k,
-        featureCount: v.featureCount,
-        numRows: v.numRows,
-      })),
-      blocks: blocks.map(b => ({
-        regionNumber: b.regionNumber,
-        bpRangeX: b.bpRangeX,
-        screenStartPx: b.screenStartPx,
-        screenEndPx: b.screenEndPx,
-      })),
-    }))
+    console.log(
+      '[webgl-wiggle] renderBlocks:',
+      JSON.stringify({
+        numBlocks: blocks.length,
+        canvasSize: `${bufW}x${bufH}`,
+        renderingType: state.renderingType,
+        domainY: state.domainY,
+        canvasHeight: state.canvasHeight,
+        canvasWidth: state.canvasWidth,
+        scaleType: state.scaleType,
+        regions: [...this.regions.entries()].map(([k, v]) => ({
+          key: k,
+          featureCount: v.featureCount,
+          numRows: v.numRows,
+        })),
+        blocks: blocks.map(b => ({
+          regionNumber: b.regionNumber,
+          bpRangeX: b.bpRangeX,
+          screenStartPx: b.screenStartPx,
+          screenEndPx: b.screenEndPx,
+        })),
+      }),
+    )
 
     const isLine = state.renderingType === RENDERING_TYPE_LINE
     const drawMode = isLine ? gl.LINES : gl.TRIANGLES
@@ -325,7 +333,10 @@ export class WebGLWiggleRenderer {
       }
     }
 
-    console.log('[webgl-wiggle] uniform data (f32):', JSON.stringify(Array.from(this.uniformF32)))
+    console.log(
+      '[webgl-wiggle] uniform data (f32):',
+      JSON.stringify(Array.from(this.uniformF32)),
+    )
 
     gl.disable(gl.SCISSOR_TEST)
     gl.viewport(0, 0, bufW, bufH)

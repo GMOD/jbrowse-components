@@ -260,11 +260,7 @@ export class SvgCanvas {
     const ey = cy + ry * Math.sin(endAngle)
     const largeArc = Math.abs(diff) > Math.PI ? 1 : 0
 
-    if (!this.pathData) {
-      this.pathData += `M${sx},${sy2}`
-    } else {
-      this.pathData += `L${sx},${sy2}`
-    }
+    this.pathData += !this.pathData ? `M${sx},${sy2}` : `L${sx},${sy2}`
     this.pathData += `A${rx},${ry} 0 ${largeArc} ${sweep} ${ex},${ey}`
   }
 
@@ -352,17 +348,14 @@ export class SvgCanvas {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   drawImage(..._args: unknown[]) {
     // no-op: raster images can't be meaningfully serialized to SVG paths
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   putImageData(..._args: unknown[]) {
     // no-op
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   clip(..._args: unknown[]) {
     // no-op: clipping is handled at the SVG wrapper level
   }

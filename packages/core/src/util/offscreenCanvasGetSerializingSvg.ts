@@ -10,6 +10,6 @@ export function getSerializedSvg(results: {
   const { canvasRecordedData } = results
   const ctx = new SvgCanvas()
   const seq = new CanvasSequence(canvasRecordedData as any)
-  seq.execute(ctx)
+  seq.execute(ctx as unknown as CanvasRenderingContext2D)
   return ctx.getSerializedSvg()
 }

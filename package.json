@@ -60,7 +60,7 @@
     "@mui/x-data-grid": "^8.27.1",
     "@node-oauth/express-oauth-server": "^4.1.5",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
-    "@r2wc/react-to-web-component": "^2.1.0",
+    "@r2wc/react-to-web-component": "^2.1.1",
     "@storybook/addon-docs": "^10.2.12",
     "@storybook/react-webpack5": "^10.2.12",
     "@testing-library/dom": "^10.4.1",

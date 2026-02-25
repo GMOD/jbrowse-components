@@ -392,12 +392,8 @@ export default function stateModelFactory(
       // Migrate old nested PileupDisplay/SNPCoverageDisplay sub-display format
       // from v1.x LinearAlignmentsDisplay sessions
       if (snap.PileupDisplay || snap.SNPCoverageDisplay) {
-        const {
-          PileupDisplay,
-          SNPCoverageDisplay,
-          snpCovHeight,
-          ...rest
-        } = snap
+        const { PileupDisplay, SNPCoverageDisplay, snpCovHeight, ...rest } =
+          snap
         const pileup = PileupDisplay ?? {}
         snap = {
           ...rest,
@@ -1518,7 +1514,7 @@ export default function stateModelFactory(
               rowStarts[oldY] = []
               rowNewYs[oldY] = []
             }
-            rowStarts[oldY]!.push(data.readPositions[i * 2]!)
+            rowStarts[oldY].push(data.readPositions[i * 2]!)
             rowNewYs[oldY]!.push(data.readYs[i]!)
           }
           for (let y = 0; y < rowStarts.length; y++) {
