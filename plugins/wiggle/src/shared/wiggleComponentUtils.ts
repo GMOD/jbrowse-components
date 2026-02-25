@@ -21,6 +21,12 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
+const overlayTypes = new Set(['xyplot', 'line', 'scatter'])
+
+export function isOverlayMode(renderingType: string) {
+  return overlayTypes.has(renderingType)
+}
+
 const renderingTypeMap: Record<string, number> = {
   density: RENDERING_TYPE_DENSITY,
   multirowdensity: RENDERING_TYPE_DENSITY,

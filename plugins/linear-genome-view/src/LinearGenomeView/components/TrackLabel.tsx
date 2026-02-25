@@ -50,13 +50,7 @@ const TrackLabel = observer(function TrackLabel({ track, className }: Props) {
   const trackName = getTrackName(track.configuration, session)
 
   return (
-    <Paper
-      className={cx(className, classes.root)}
-      onClick={event => {
-        // avoid clicks on track label from turning into double-click zoom
-        event.stopPropagation()
-      }}
-    >
+    <Paper className={cx(className, classes.root)}>
       <TrackLabelDragHandle track={track} trackId={trackId} view={view} />
       <IconButton
         onClick={() => view.hideTrack(trackId)}

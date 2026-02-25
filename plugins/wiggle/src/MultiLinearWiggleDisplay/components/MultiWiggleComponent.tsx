@@ -9,11 +9,13 @@ import MultiWiggleTooltip from './Tooltip.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
+import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import YScaleBar from '../../shared/YScaleBar.tsx'
 import { parseColor } from '../../shared/webglUtils.ts'
 import {
   getRowTop,
+  isOverlayMode,
   isSummaryFeature,
   makeRenderState,
   makeWhiskersSourceData,
@@ -43,6 +45,7 @@ export interface MultiWiggleDisplayModel {
   negColor: string
   renderingType: string
   isDensityMode: boolean
+  isOverlay: boolean
   summaryScoreMode: string
   numSources: number
   rowHeight: number
@@ -158,7 +161,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       const modelSources = model.sources
       const defaultPosColor = parseColor(model.posColor)
       const defaultNegColor = parseColor(model.negColor)
-      const { summaryScoreMode } = model
+      const { summaryScoreMode, renderingType } = model
+      const overlay = isOverlayMode(renderingType)
       const activeRegions: number[] = []
       for (const [regionNumber, data] of dataMap) {
         activeRegions.push(regionNumber)
@@ -178,15 +182,18 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             ? parseColor(orderedSource.color)
             : defaultPosColor
           const negColor = defaultNegColor
+          const row = overlay ? 0 : idx
 
           if (summaryScoreMode === 'whiskers') {
-            const isScatter = model.renderingType === 'multirowscatter'
+            const isScatter =
+              renderingType === 'multirowscatter' ||
+              renderingType === 'scatter'
             for (const s of makeWhiskersSourceData(
               rpcSource,
               posColor,
               model.isDensityMode,
               isScatter,
-              idx,
+              row,
             )) {
               sourcesData.push(s)
             }
@@ -200,7 +207,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
               featureScores: scores,
               numFeatures: rpcSource.numFeatures,
               color: posColor,
-              rowIndex: idx,
+              rowIndex: row,
             })
           } else {
             if (rpcSource.posNumFeatures > 0) {
@@ -209,7 +216,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                 featureScores: rpcSource.posFeatureScores,
                 numFeatures: rpcSource.posNumFeatures,
                 color: posColor,
-                rowIndex: idx,
+                rowIndex: row,
               })
             }
             if (rpcSource.negNumFeatures > 0) {
@@ -218,7 +225,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                 featureScores: rpcSource.negFeatureScores,
                 numFeatures: rpcSource.negNumFeatures,
                 color: negColor,
-                rowIndex: idx,
+                rowIndex: row,
               })
             }
           }
@@ -296,19 +303,12 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       setOffsetMouseCoord([offsetX, offsetY])
       setClientMouseCoord([event.clientX, event.clientY])
 
-      const { rowHeight, sources, rpcDataMap, summaryScoreMode } = model
+      const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } = model
       if (sources.length === 0 || rpcDataMap.size === 0) {
         model.setFeatureUnderMouse(undefined)
         return
       }
 
-      const rowIdx = Math.floor(offsetY / rowHeight)
-      if (rowIdx < 0 || rowIdx >= sources.length) {
-        model.setFeatureUnderMouse(undefined)
-        return
-      }
-
-      const sourceName = sources[rowIdx]!.name
       const visibleRegions = view.visibleRegions
       const region = visibleRegions.find(
         r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
@@ -329,6 +329,67 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       const bp = Math.round(region.start + frac * (region.end - region.start))
       const bpOffset = bp - data.regionStart
 
+      if (model.isOverlay && domain) {
+        let bestSource: MultiWiggleSourceData | undefined
+        let bestScore = 0
+        let bestDist = Infinity
+        let bestIdx = -1
+        const mouseScore =
+          domain[1] - ((offsetY / model.height) * (domain[1] - domain[0]))
+
+        for (const src of data.sources) {
+          if (!sources.some(s => s.name === src.name)) {
+            continue
+          }
+          for (let i = 0; i < src.numFeatures; i++) {
+            const fStart = src.featurePositions[i * 2]!
+            const fEnd = src.featurePositions[i * 2 + 1]!
+            if (bpOffset >= fStart && bpOffset < fEnd) {
+              const dist = Math.abs(src.featureScores[i]! - mouseScore)
+              if (dist < bestDist) {
+                bestDist = dist
+                bestSource = src
+                bestScore = src.featureScores[i]!
+                bestIdx = i
+              }
+              break
+            }
+          }
+        }
+
+        if (!bestSource || bestIdx === -1) {
+          model.setFeatureUnderMouse(undefined)
+          return
+        }
+
+        const fStart =
+          bestSource.featurePositions[bestIdx * 2]! + data.regionStart
+        const fEnd =
+          bestSource.featurePositions[bestIdx * 2 + 1]! + data.regionStart
+        const minS = bestSource.featureMinScores[bestIdx]
+        const maxS = bestSource.featureMaxScores[bestIdx]
+
+        model.setFeatureUnderMouse({
+          refName: region.refName,
+          start: fStart,
+          end: fEnd,
+          score: bestScore,
+          source: bestSource.name,
+          ...(summaryScoreMode !== 'avg' &&
+          isSummaryFeature(bestScore, minS, maxS)
+            ? { summary: true, minScore: minS, maxScore: maxS }
+            : {}),
+        })
+        return
+      }
+
+      const rowIdx = Math.floor(offsetY / rowHeight)
+      if (rowIdx < 0 || rowIdx >= sources.length) {
+        model.setFeatureUnderMouse(undefined)
+        return
+      }
+
+      const sourceName = sources[rowIdx]!.name
       const rpcSource = data.sources.find(
         (s: MultiWiggleSourceData) => s.name === sourceName,
       )
@@ -441,32 +502,40 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         }}
       >
         {displaySources.length > 1 ? (
-          <g transform={`translate(${labelOffset} 0)`}>
-            {displaySources.map((source, idx) => {
-              const y = getRowTop(idx, rowHeight)
-              const boxHeight = Math.min(20, rowHeight)
-              const lc = source.labelColor
-              return (
-                <g key={source.name}>
-                  <rect
-                    x={0}
-                    y={y}
-                    width={labelWidth}
-                    height={boxHeight}
-                    fill={lc ?? 'rgba(255,255,255,0.8)'}
-                  />
-                  <text
-                    x={4}
-                    y={y + boxHeight / 2 + 3}
-                    fontSize={10}
-                    fill={lc ? 'white' : 'black'}
-                  >
-                    {source.name}
-                  </text>
-                </g>
-              )
-            })}
-          </g>
+          model.isOverlay ? (
+            <OverlayColorLegend
+              sources={displaySources}
+              fallbackColor={model.posColor}
+              offset={labelOffset}
+            />
+          ) : (
+            <g transform={`translate(${labelOffset} 0)`}>
+              {displaySources.map((source, idx) => {
+                const y = getRowTop(idx, rowHeight)
+                const boxHeight = Math.min(20, rowHeight)
+                const lc = source.labelColor
+                return (
+                  <g key={source.name}>
+                    <rect
+                      x={0}
+                      y={y}
+                      width={labelWidth}
+                      height={boxHeight}
+                      fill={lc ?? 'rgba(255,255,255,0.8)'}
+                    />
+                    <text
+                      x={4}
+                      y={y + boxHeight / 2 + 3}
+                      fontSize={10}
+                      fill={lc ? 'white' : 'black'}
+                    >
+                      {source.name}
+                    </text>
+                  </g>
+                )
+              })}
+            </g>
+          )
         ) : null}
 
         {model.isDensityMode && model.domain ? (
@@ -478,6 +547,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         ) : model.ticks ? (
           model.rowHeightTooSmallForScalebar ? (
             <ScoreLegend model={model} canvasWidth={totalWidth} />
+          ) : model.isOverlay ? (
+            <g transform={`translate(${scalebarLeft || 50} 0)`}>
+              <YScaleBar model={model} />
+            </g>
           ) : (
             <g transform={`translate(${scalebarLeft || 50} 0)`}>
               {Array.from({ length: numSources }).map((_, idx) => (
@@ -492,7 +565,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           )
         ) : null}
 
-        {model.showRowSeparators && numSources > 1
+        {!model.isOverlay && model.showRowSeparators && numSources > 1
           ? Array.from({ length: numSources - 1 }).map((_, idx) => {
               const y = getRowTop(idx + 1, rowHeight)
               return (

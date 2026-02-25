@@ -53,9 +53,12 @@ export default ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('Rendering', [
         'multirowxy',
+        'xyplot',
         'multirowdensity',
         'multirowline',
+        'line',
         'multirowscatter',
+        'scatter',
       ]),
       defaultValue: 'multirowxy',
       description: 'Default rendering type',

@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
   getContainingTrack,
   getContainingView,
@@ -23,7 +24,7 @@ import { autorun } from 'mobx'
 
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { getRowHeight } from '../shared/wiggleComponentUtils.ts'
+import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
 import { computeAutoscaleDomain, getNiceDomain, getScale } from '../util.ts'
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
@@ -126,9 +127,12 @@ export default function stateModelFactory(
       },
 
       get sourcesWithoutLayout() {
-        return self.sourcesVolatile.map(s => ({
+        return self.sourcesVolatile.map((s, i) => ({
           source: s.name,
           ...s,
+          ...(!s.color && this.isOverlay
+            ? { color: overlayColors[i % overlayColors.length] }
+            : {}),
         }))
       },
 
@@ -137,10 +141,13 @@ export default function stateModelFactory(
           self.sourcesVolatile.map(s => [s.name, s]),
         )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        let result = iter.map(s => ({
+        let result = iter.map((s, i) => ({
           source: s.name,
           ...sourceMap[s.name],
           ...s,
+          ...(!s.color && this.isOverlay
+            ? { color: overlayColors[i % overlayColors.length] }
+            : {}),
         }))
 
         if (self.subtreeFilter?.length) {
@@ -198,6 +205,10 @@ export default function stateModelFactory(
         return this.renderingType === 'multirowdensity'
       },
 
+      get isOverlay() {
+        return isOverlayMode(this.renderingType)
+      },
+
       get minScore() {
         return self.minScoreSetting ?? getConf(self, 'minScore')
       },
@@ -236,7 +247,9 @@ export default function stateModelFactory(
       },
 
       get rowHeight() {
-        return getRowHeight(self.height, this.numSources)
+        return this.isOverlay
+          ? self.height
+          : getRowHeight(self.height, this.numSources)
       },
 
       get rowHeightTooSmallForScalebar() {
@@ -832,40 +845,24 @@ export default function stateModelFactory(
           },
           {
             label: 'Rendering type',
-            subMenu: [
-              {
-                label: 'Multi-row XY plot',
-                type: 'radio',
-                checked: self.renderingType === 'multirowxy',
-                onClick: () => {
-                  self.setRenderingType('multirowxy')
-                },
+            subMenu: (
+              [
+                ['multirowxy', 'Multi-row XY plot'],
+                ['xyplot', 'XY plot'],
+                ['multirowdensity', 'Multi-row density'],
+                ['multirowline', 'Multi-row line'],
+                ['line', 'Line'],
+                ['multirowscatter', 'Multi-row scatter'],
+                ['scatter', 'Scatter'],
+              ] as const
+            ).map(([value, label]) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.renderingType === value,
+              onClick: () => {
+                self.setRenderingType(value)
               },
-              {
-                label: 'Multi-row density',
-                type: 'radio',
-                checked: self.renderingType === 'multirowdensity',
-                onClick: () => {
-                  self.setRenderingType('multirowdensity')
-                },
-              },
-              {
-                label: 'Multi-row line',
-                type: 'radio',
-                checked: self.renderingType === 'multirowline',
-                onClick: () => {
-                  self.setRenderingType('multirowline')
-                },
-              },
-              {
-                label: 'Multi-row scatter',
-                type: 'radio',
-                checked: self.renderingType === 'multirowscatter',
-                onClick: () => {
-                  self.setRenderingType('multirowscatter')
-                },
-              },
-            ],
+            })),
           },
           {
             label: 'Cluster rows by score',

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getSession,
   isElectron,
@@ -8,7 +9,9 @@ import {
 } from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, Paper, TextField } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { Button, IconButton, Paper, TextField } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { AddTrackModel } from '@jbrowse/plugin-data-management'
@@ -25,7 +28,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// on electron, use path to LocalFileLocation, on web, use the BlobLocation
+type TrackItem = string | Record<string, unknown>
+
+interface TrackRow {
+  id: string
+  name: string
+  item: TrackItem
+}
+
 function makeFileLocation(file: File) {
   return isElectron
     ? {
@@ -35,34 +45,43 @@ function makeFileLocation(file: File) {
     : storeBlobLocation({ blob: file })
 }
 
+function parseItems(val: string): TrackItem[] {
+  try {
+    return JSON.parse(val) as TrackItem[]
+  } catch (e) {
+    return val
+      .split(/\n|\r\n|\r/)
+      .map(f => f.trim())
+      .filter(Boolean)
+  }
+}
+
+function itemToRow(item: TrackItem, id: string): TrackRow {
+  const name =
+    typeof item === 'string'
+      ? item
+      : String((item.source ?? item.name) || 'unnamed')
+  return { id, name, item }
+}
+
 function doSubmit({
   trackName,
-  val,
+  tracks,
   model,
 }: {
-  val: string
+  tracks: TrackRow[]
   trackName: string
   model: AddTrackModel
 }) {
   const session = getSession(model)
   try {
-    const trackId = [
-      `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}`,
-      session.adminMode ? '' : '-sessionTrack',
-    ].join('')
+    const trackId = `${trackName.toLowerCase().replaceAll(' ', '_')}-${Date.now()}${session.adminMode ? '' : '-sessionTrack'}`
 
-    // allow list of bigwigs in JSON format or line-by-line
-    let bigWigs: unknown[]
-    try {
-      bigWigs = JSON.parse(val)
-    } catch (e) {
-      bigWigs = val
-        .split(/\n|\r\n|\r/)
-        .map(f => f.trim())
-        .filter(f => !!f)
-    }
+    const items = tracks.map(t => t.item)
     const obj =
-      typeof bigWigs[0] === 'string' ? { bigWigs } : { subadapters: bigWigs }
+      typeof items[0] === 'string'
+        ? { bigWigs: items }
+        : { subadapters: items }
 
     if (isSessionWithAddTracks(session)) {
       session.addTrackConf({
@@ -91,28 +110,42 @@ function doSubmit({
 const MultiWiggleAddTrackWorkflow = observer(
   function MultiWiggleAddTrackWorkflow({ model }: { model: AddTrackModel }) {
     const { classes } = useStyles()
-    const [val, setVal] = useState('')
+    const [inputVal, setInputVal] = useState('')
+    const [tracks, setTracks] = useState<TrackRow[]>([])
     const [trackName, setTrackName] = useState(`MultiWiggle${Date.now()}`)
+    const counter = useRef(0)
+
+    function addTracks(items: TrackItem[]) {
+      setTracks(prev => [
+        ...prev,
+        ...items.map(item => itemToRow(item, String(counter.current++))),
+      ])
+    }
+
     return (
       <Paper className={classes.paper}>
-        <ul>
-          <li>Enter list of URLs for bigwig files in the textbox</li>
-          <li>
-            Or, use the button below the text box to select files from your
-            computer
-          </li>
-        </ul>
         <TextField
           multiline
           fullWidth
-          rows={10}
-          value={val}
-          placeholder="Paste list of URLs here, or use file selector below"
+          rows={5}
+          value={inputVal}
+          placeholder="Paste list of URLs here, then click 'Add tracks'"
           variant="outlined"
           onChange={event => {
-            setVal(event.target.value)
+            setInputVal(event.target.value)
           }}
         />
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (inputVal.trim()) {
+              addTracks(parseItems(inputVal))
+              setInputVal('')
+            }
+          }}
+        >
+          Add tracks
+        </Button>
         <Button variant="outlined" component="label">
           Choose Files from your computer
           <input
@@ -120,20 +153,50 @@ const MultiWiggleAddTrackWorkflow = observer(
             hidden
             multiple
             onChange={({ target }) => {
-              setVal(
-                JSON.stringify(
-                  [...(target.files || [])].map(file => ({
-                    type: 'BigWigAdapter',
-                    bigWigLocation: makeFileLocation(file),
-                    source: file.name,
-                  })),
-                  null,
-                  2,
-                ),
+              addTracks(
+                [...(target.files || [])].map(file => ({
+                  type: 'BigWigAdapter',
+                  bigWigLocation: makeFileLocation(file),
+                  source: file.name,
+                })),
               )
             }}
           />
         </Button>
+        {tracks.length > 0 ? (
+          <div style={{ height: 300, width: '100%', marginTop: 8 }}>
+            <DataGrid
+              rows={tracks}
+              columns={[
+                {
+                  field: 'name',
+                  headerName: 'Name',
+                  flex: 1,
+                  renderCell: ({ value }) => <SanitizedHTML html={value} />,
+                },
+                {
+                  field: 'remove',
+                  headerName: '',
+                  width: 50,
+                  sortable: false,
+                  renderCell: ({ row }) => (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setTracks(prev => prev.filter(t => t.id !== row.id))
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  ),
+                },
+              ]}
+              rowHeight={25}
+              columnHeaderHeight={33}
+              hideFooter
+            />
+          </div>
+        ) : null}
         <TextField
           value={trackName}
           helperText="Track name"
@@ -144,25 +207,19 @@ const MultiWiggleAddTrackWorkflow = observer(
         <Button
           variant="contained"
           className={classes.submit}
+          disabled={!tracks.length}
           onClick={() => {
-            doSubmit({ trackName, val, model })
+            doSubmit({ trackName, tracks, model })
           }}
         >
           Submit
         </Button>
-        <p>Additional notes: </p>
-        <ul>
-          <li>
-            The list of bigwig files in the text box can be a list of URLs, or a
-            list of elements like{' '}
-            <code>{`[{"type":"BigWigAdapter","bigWigLocation":{"uri":"http://host/file.bw"}, "color":"green","source":"name for subtrack"}]`}</code>{' '}
-            to apply e.g. the color attribute to the view
-          </li>
-          <li>
-            Adding local files will update the textbox with JSON contents that
-            are ready to submit with the "Submit" button
-          </li>
-        </ul>
+        <p>
+          The list of bigwig files in the text box can be a list of URLs, or a
+          list of elements like{' '}
+          <code>{`[{"type":"BigWigAdapter","bigWigLocation":{"uri":"http://host/file.bw"}, "color":"green","source":"name for subtrack"}]`}</code>{' '}
+          to apply e.g. the color attribute to the view
+        </p>
       </Paper>
     )
   },

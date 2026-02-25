@@ -357,12 +357,14 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // Find in the track's displays array (may be frozen/plain objects)
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
 
-      // If not found in config, create a default configuration for this display type
-      // This handles the common case where displays are auto-generated from track types
+      // If not found by displayId, fall back to matching by display type.
+      // Display config schemas don't store displayId as an MST property, so
+      // d.displayId is always undefined for MST models. Use parent.type (the
+      // display state model's type) to find the matching config instead.
       if (!ret) {
-        // Extract display type from the displayId (format: trackId-DisplayType)
-        const displayType = `${id}`.split('-').slice(1).join('-')
-        if (displayType) {
+        const displayType = (parent as { type?: string }).type
+        ret = displays.find((d: { type?: string }) => d.type === displayType)
+        if (!ret && displayType) {
           // @ts-expect-error
           ret = { displayId: `${id}`, type: displayType }
         }
