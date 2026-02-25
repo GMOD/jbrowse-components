@@ -32,6 +32,7 @@
       "type": "FeatureTrack",
       "trackId": "genes.gff",
       "name": "genes.gff",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -43,8 +44,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "assemblyNames": ["UU_Cfam_GSD_1.0"]
+      }
     }
   ],
   "defaultSession": {

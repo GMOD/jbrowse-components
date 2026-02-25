@@ -261,6 +261,14 @@ export default function stateModelFactory(
         return undefined
       },
 
+      searchFeatureByID(id: string) {
+        const item = this.getFeatureById(id)
+        if (!item) {
+          return undefined
+        }
+        return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
+      },
+
       // Find a loaded region that contains the given bp range
       findLoadedRegionForFeature(
         startBp: number,

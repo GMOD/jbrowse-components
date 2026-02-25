@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
+import LinearBasicDisplayF from './LinearBasicDisplay/index.ts'
 import LinearFeatureDisplayF from './LinearFeatureDisplay/index.ts'
 import FeatureDataRPCMethodsF from './RenderFeatureDataRPC/index.ts'
 
@@ -10,6 +11,7 @@ export default class CanvasPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     LinearFeatureDisplayF(pluginManager)
+    LinearBasicDisplayF(pluginManager)
     FeatureDataRPCMethodsF(pluginManager)
   }
 }
