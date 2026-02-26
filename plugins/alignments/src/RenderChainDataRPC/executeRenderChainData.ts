@@ -483,6 +483,7 @@ export async function executeRenderChainData({
         featureIdToIndex.set(f.id, i)
       }
     }
+    const getReadIndex = (id: string) => featureIdToIndex.get(id) ?? 0
 
     let chainFlatbushData: ArrayBuffer | undefined
     const chainFirstReadIndices = new Uint32Array(chainBounds.length)
@@ -518,19 +519,26 @@ export async function executeRenderChainData({
         readNextRefs,
         readChainIndices,
       },
-      gapArrays: buildGapArrays(gaps, regionStart, getY),
-      mismatchArrays: buildMismatchArrays(mismatches, regionStart, getY),
+      gapArrays: buildGapArrays(gaps, regionStart, getY, getReadIndex),
+      mismatchArrays: buildMismatchArrays(
+        mismatches,
+        regionStart,
+        getY,
+        getReadIndex,
+      ),
       interbaseArrays: buildInterbaseArrays(
         insertions,
         softclips,
         hardclips,
         regionStart,
         getY,
+        getReadIndex,
       ),
       modificationArrays: buildModificationArrays(
         modifications,
         regionStart,
         getY,
+        getReadIndex,
       ),
       connectingLineArrays: {
         connectingLinePositions,
@@ -712,6 +720,14 @@ export async function executeRenderChainData({
     result.readChainIndices!.buffer,
     ...(result.chainFlatbushData ? [result.chainFlatbushData] : []),
     result.readNextPositions!.buffer,
+    ...(result.gapReadIndices ? [result.gapReadIndices.buffer] : []),
+    ...(result.mismatchReadIndices ? [result.mismatchReadIndices.buffer] : []),
+    ...(result.interbaseReadIndices
+      ? [result.interbaseReadIndices.buffer]
+      : []),
+    ...(result.modificationReadIndices
+      ? [result.modificationReadIndices.buffer]
+      : []),
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

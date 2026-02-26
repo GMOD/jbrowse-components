@@ -41,7 +41,6 @@ const BigWigAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

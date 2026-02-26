@@ -71,7 +71,6 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

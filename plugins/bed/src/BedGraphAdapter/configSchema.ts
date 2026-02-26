@@ -29,7 +29,6 @@ const BedGraphAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

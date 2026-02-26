@@ -55,7 +55,7 @@ const BlastTabularAdapter = ConfigurationSchema(
         'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore',
     },
   },
-  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
+  { explicitlyTyped: true },
 )
 
 export default BlastTabularAdapter

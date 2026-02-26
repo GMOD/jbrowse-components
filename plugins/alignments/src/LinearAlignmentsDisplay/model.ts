@@ -11,6 +11,7 @@ import {
   isAbortException,
   isFeature,
   isSessionModelWithWidgets,
+  max,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
@@ -34,6 +35,10 @@ import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
+import {
+  computeLayout,
+  computeSortedLayout,
+} from '../RenderPileupDataRPC/sortLayout.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   arcsToRegionResult,
@@ -68,6 +73,14 @@ import type {
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
+import type {
+  FeatureData,
+  GapData,
+  HardclipData,
+  InsertionData,
+  MismatchData,
+  SoftclipData,
+} from '../shared/webglRpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -1211,7 +1224,7 @@ export default function stateModelFactory(
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        return (await session.rpcManager.call(sessionId, 'RenderPileupData', {
+        const result = (await session.rpcManager.call(sessionId, 'RenderPileupData', {
           sessionId,
           adapterConfig,
           sequenceAdapter,
@@ -1219,7 +1232,8 @@ export default function stateModelFactory(
           filterBy: self.filterBy,
           colorBy: self.colorBy,
           colorTagMap: self.colorTagMap,
-          sortedBy: self.sortedBy,
+          sortedBy:
+            self.sortedBy?.type === 'tag' ? self.sortedBy : undefined,
           showSoftClipping: self.showSoftClipping,
           stopToken,
           statusCallback: (msg: string) => {
@@ -1228,6 +1242,7 @@ export default function stateModelFactory(
             }
           },
         })) as PileupDataResult
+        return result
       }
 
       async function fetchChainData(
@@ -1348,148 +1363,194 @@ export default function stateModelFactory(
         }
       }
 
-      function reconcileLayouts(rpcDataMap: Map<number, PileupDataResult>) {
-        const entries = [...rpcDataMap.entries()]
-        if (entries.length <= 1) {
+      function reconstructFromArrays(data: PileupDataResult) {
+        const features: FeatureData[] = []
+        for (let i = 0; i < data.numReads; i++) {
+          features.push({
+            id: data.readIds[i]!,
+            name: data.readNames[i]!,
+            start: data.regionStart + data.readPositions[i * 2]!,
+            end: data.regionStart + data.readPositions[i * 2 + 1]!,
+            flags: data.readFlags[i]!,
+            mapq: data.readMapqs[i]!,
+            insertSize: data.readInsertSizes[i]!,
+            pairOrientation: data.readPairOrientations[i]!,
+            strand: data.readStrands[i]!,
+          })
+        }
+
+        const mismatches: MismatchData[] = []
+        if (data.mismatchReadIndices) {
+          for (let i = 0; i < data.numMismatches; i++) {
+            mismatches.push({
+              featureId: data.readIds[data.mismatchReadIndices[i]!]!,
+              position: data.regionStart + data.mismatchPositions[i]!,
+              base: data.mismatchBases[i]!,
+              strand: data.mismatchStrands[i]!,
+            })
+          }
+        }
+
+        const gaps: GapData[] = []
+        if (data.gapReadIndices) {
+          for (let i = 0; i < data.numGaps; i++) {
+            gaps.push({
+              featureId: data.readIds[data.gapReadIndices[i]!]!,
+              start: data.regionStart + data.gapPositions[i * 2]!,
+              end: data.regionStart + data.gapPositions[i * 2 + 1]!,
+              type: data.gapTypes[i] === 0 ? 'deletion' : 'skip',
+              strand: 0,
+              featureStrand: 0,
+            })
+          }
+        }
+
+        const insertions: InsertionData[] = []
+        const softclips: SoftclipData[] = []
+        const hardclips: HardclipData[] = []
+        if (data.interbaseReadIndices) {
+          for (let i = 0; i < data.numInterbases; i++) {
+            const readIdx = data.interbaseReadIndices[i]!
+            const featureId = data.readIds[readIdx]!
+            const position = data.regionStart + data.interbasePositions[i]!
+            const length = data.interbaseLengths[i]!
+            const t = data.interbaseTypes[i]!
+            if (t === 1) {
+              insertions.push({
+                featureId,
+                position,
+                length,
+                sequence: data.interbaseSequences[i],
+              })
+            } else if (t === 2) {
+              const readStartOffset = data.readPositions[readIdx * 2]!
+              const ibPosOffset = data.interbasePositions[i]!
+              const isLeftClip = ibPosOffset === readStartOffset
+              const clipStart = isLeftClip ? position - length : position
+              softclips.push({ featureId, position, clipStart, length })
+            } else {
+              hardclips.push({ featureId, position, length })
+            }
+          }
+        }
+
+        return { features, mismatches, gaps, insertions, softclips, hardclips }
+      }
+
+      function fillYArraysFromLayout(
+        data: PileupDataResult,
+        layoutMap: Map<string, number>,
+      ) {
+        const yLookup = new Uint16Array(data.numReads)
+        for (let i = 0; i < data.numReads; i++) {
+          yLookup[i] = layoutMap.get(data.readIds[i]!) ?? 0
+          data.readYs[i] = yLookup[i]!
+        }
+
+        if (data.gapReadIndices) {
+          for (let i = 0; i < data.numGaps; i++) {
+            data.gapYs[i] = yLookup[data.gapReadIndices[i]!]!
+          }
+        }
+        if (data.mismatchReadIndices) {
+          for (let i = 0; i < data.numMismatches; i++) {
+            data.mismatchYs[i] = yLookup[data.mismatchReadIndices[i]!]!
+          }
+        }
+        if (data.interbaseReadIndices) {
+          for (let i = 0; i < data.numInterbases; i++) {
+            data.interbaseYs[i] = yLookup[data.interbaseReadIndices[i]!]!
+          }
+        }
+        if (data.modificationReadIndices) {
+          for (let i = 0; i < data.numModifications; i++) {
+            data.modificationYs[i] = yLookup[data.modificationReadIndices[i]!]!
+          }
+        }
+        if (data.softclipBaseReadIndices) {
+          for (let i = 0; i < data.numSoftclipBases; i++) {
+            data.softclipBaseYs[i] = yLookup[data.softclipBaseReadIndices[i]!]!
+          }
+        }
+
+        data.maxY = max(layoutMap.values(), 0) + 1
+      }
+
+      function computeAndAssignLayout(
+        rpcDataMap: Map<number, PileupDataResult>,
+        sortedBy?: SortedBy,
+        showSoftClipping?: boolean,
+      ) {
+        const entries = [...rpcDataMap.entries()].filter(
+          ([, d]) => d.numReads > 0,
+        )
+        if (entries.length === 0) {
           return
         }
 
-        const allFeatures = new Map<string, { start: number; end: number }>()
-        for (const [, data] of entries) {
-          for (let i = 0; i < data.numReads; i++) {
-            const id = data.readIds[i]!
-            if (!allFeatures.has(id)) {
-              allFeatures.set(id, {
-                start: data.regionStart + data.readPositions[i * 2]!,
-                end: data.regionStart + data.readPositions[i * 2 + 1]!,
-              })
-            }
-          }
-        }
+        if (entries.length === 1) {
+          const [regionNumber, data] = entries[0]!
+          const { features, mismatches, gaps, insertions, softclips, hardclips } =
+            reconstructFromArrays(data)
 
-        const sorted = [...allFeatures.entries()]
-          .map(([id, { start, end }]) => ({ id, start, end }))
-          .sort((a, b) => a.start - b.start)
-        const levels: number[] = []
-        const unifiedLayout = new Map<string, number>()
-        let maxY = 0
-        for (const f of sorted) {
-          let y = 0
-          for (let i = 0; i < levels.length; i++) {
-            if (levels[i]! <= f.start) {
-              y = i
-              break
-            }
-            y = i + 1
-          }
-          unifiedLayout.set(f.id, y)
-          levels[y] = f.end + 2
-          if (y > maxY) {
-            maxY = y
-          }
-        }
-        const newMaxY = maxY + 1
+          const layoutMap =
+            sortedBy && sortedBy.type !== 'tag'
+              ? computeSortedLayout(
+                  features,
+                  mismatches,
+                  gaps,
+                  { insertions, softclips, hardclips },
+                  undefined,
+                  sortedBy,
+                  showSoftClipping ? softclips : undefined,
+                )
+              : computeLayout(
+                  features,
+                  showSoftClipping ? softclips : undefined,
+                )
 
-        for (const [regionNumber, data] of entries) {
-          let changed = false
-          for (let i = 0; i < data.numReads; i++) {
-            if (data.readYs[i] !== unifiedLayout.get(data.readIds[i]!)) {
-              changed = true
-              break
-            }
-          }
-          if (!changed) {
-            continue
-          }
-
-          // build oldY→newY per read, using sorted intervals for binary search.
-          // reads within the same Y row are non-overlapping, so binary search
-          // on start position finds the unique containing read.
-          const oldYs = new Uint16Array(data.readYs)
-          for (let i = 0; i < data.numReads; i++) {
-            data.readYs[i] = unifiedLayout.get(data.readIds[i]!)!
-          }
-
-          const rowStarts: number[][] = []
-          const rowNewYs: number[][] = []
-          for (let i = 0; i < data.numReads; i++) {
-            const oldY = oldYs[i]!
-            if (!rowStarts[oldY]) {
-              rowStarts[oldY] = []
-              rowNewYs[oldY] = []
-            }
-            rowStarts[oldY].push(data.readPositions[i * 2]!)
-            rowNewYs[oldY]!.push(data.readYs[i]!)
-          }
-          for (let y = 0; y < rowStarts.length; y++) {
-            const starts = rowStarts[y]
-            if (!starts || starts.length <= 1) {
-              continue
-            }
-            const newYs = rowNewYs[y]!
-            const indices = Array.from({ length: starts.length }, (_, i) => i)
-            indices.sort((a, b) => starts[a]! - starts[b]!)
-            rowStarts[y] = indices.map(i => starts[i]!)
-            rowNewYs[y] = indices.map(i => newYs[i]!)
-          }
-
-          const resolveNewY = (oldY: number, pos: number) => {
-            const starts = rowStarts[oldY]
-            if (!starts) {
-              return oldY
-            }
-            if (starts.length === 1) {
-              return rowNewYs[oldY]![0]!
-            }
-            let lo = 0
-            let hi = starts.length
-            while (lo < hi) {
-              const mid = (lo + hi) >>> 1
-              if (starts[mid]! <= pos) {
-                lo = mid + 1
-              } else {
-                hi = mid
+          fillYArraysFromLayout(data, layoutMap)
+          self.setRpcData(regionNumber, data)
+        } else {
+          const allFeatures = new Map<
+            string,
+            { start: number; end: number; strand: number }
+          >()
+          for (const [, data] of entries) {
+            for (let i = 0; i < data.numReads; i++) {
+              const id = data.readIds[i]!
+              if (!allFeatures.has(id)) {
+                allFeatures.set(id, {
+                  start: data.regionStart + data.readPositions[i * 2]!,
+                  end: data.regionStart + data.readPositions[i * 2 + 1]!,
+                  strand: data.readStrands[i]!,
+                })
               }
             }
-            return rowNewYs[oldY]![Math.max(0, lo - 1)]!
           }
 
-          for (let i = 0; i < data.numMismatches; i++) {
-            data.mismatchYs[i] = resolveNewY(
-              data.mismatchYs[i]!,
-              data.mismatchPositions[i]!,
-            )
-          }
-          for (let i = 0; i < data.numGaps; i++) {
-            data.gapYs[i] = resolveNewY(
-              data.gapYs[i]!,
-              data.gapPositions[i * 2]!,
-            )
-          }
-          for (let i = 0; i < data.numInterbases; i++) {
-            data.interbaseYs[i] = resolveNewY(
-              data.interbaseYs[i]!,
-              data.interbasePositions[i]!,
-            )
-          }
-          for (let i = 0; i < data.numModifications; i++) {
-            data.modificationYs[i] = resolveNewY(
-              data.modificationYs[i]!,
-              data.modificationPositions[i]!,
-            )
-          }
-          if (data.connectingLineYs && data.numConnectingLines) {
-            for (let i = 0; i < data.numConnectingLines; i++) {
-              data.connectingLineYs[i] = resolveNewY(
-                data.connectingLineYs[i]!,
-                data.connectingLinePositions![i * 2]!,
-              )
-            }
-          }
+          const features: FeatureData[] = [...allFeatures.entries()].map(
+            ([id, f]) => ({
+              id,
+              name: '',
+              start: f.start,
+              end: f.end,
+              flags: 0,
+              mapq: 0,
+              insertSize: 0,
+              pairOrientation: 0,
+              strand: f.strand,
+            }),
+          )
 
-          data.maxY = newMaxY
-          self.setRpcData(regionNumber, data)
+          const layoutMap = computeLayout(features)
+
+          for (const [regionNumber, data] of entries) {
+            fillYArraysFromLayout(data, layoutMap)
+            self.setRpcData(regionNumber, data)
+          }
         }
+
       }
 
       function computeAndSetArcs(
@@ -1567,7 +1628,7 @@ export default function stateModelFactory(
           ) {
             return
           }
-          const next = new Map(self.rpcDataMap)
+          const newDataMap = new Map<number, PileupDataResult>()
           for (const r of results) {
             if (!r) {
               continue
@@ -1575,25 +1636,25 @@ export default function stateModelFactory(
             if (r.result.newTagValues) {
               self.updateColorTagMap(r.result.newTagValues)
             }
-            next.set(r.regionNumber, r.result)
-            for (const modType of r.result.detectedModifications) {
-              if (!self.visibleModifications.has(modType)) {
-                self.visibleModifications.set(modType, {
-                  type: modType,
-                  base: '',
-                  strand: '',
-                  color: getColorForModification(modType),
-                })
-              }
-            }
             self.setModificationsReady(true)
             self.setSimplexModifications(r.result.simplexModifications)
             self.setRegionTooLarge(false)
             self.setLoadedRegion(r.regionNumber, r.region)
+            newDataMap.set(r.regionNumber, r.result)
           }
-          self.rpcDataMap = next
-          if (self.rpcDataMap.size > 1) {
-            reconcileLayouts(self.rpcDataMap)
+          if (
+            self.renderingMode !== 'linkedRead' &&
+            self.sortedBy?.type !== 'tag'
+          ) {
+            computeAndAssignLayout(
+              newDataMap,
+              self.sortedBy,
+              self.showSoftClipping,
+            )
+          } else {
+            for (const [regionNumber, data] of newDataMap) {
+              self.setRpcData(regionNumber, data)
+            }
           }
           if (self.showArcs) {
             computeAndSetArcs(regions)
@@ -1853,7 +1914,6 @@ export default function stateModelFactory(
               () => {
                 const key = JSON.stringify({
                   filterBy: self.filterBy,
-                  sortedBy: self.sortedBy,
                   showLinkedReads: self.showLinkedReads,
                   showArcs: self.showArcs,
                   drawInter: self.arcsState.drawInter,
@@ -1878,8 +1938,47 @@ export default function stateModelFactory(
             ),
           )
 
-          // Tag values are now fetched inline in fetchFeaturesForRegion
-          // before the main data RPC, so no separate autorun is needed.
+          // Autorun: recompute layout when sort changes (no RPC refetch needed
+          // for non-tag sorts). Tag sort falls through to refetch.
+          let prevSortKey: string | undefined
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const sortedBy = self.sortedBy
+                const showSoftClipping = self.showSoftClipping
+                const sortKey = JSON.stringify({ sortedBy, showSoftClipping })
+                if (prevSortKey === undefined) {
+                  prevSortKey = sortKey
+                  return
+                }
+                if (sortKey === prevSortKey) {
+                  return
+                }
+                prevSortKey = sortKey
+
+                if (
+                  self.rpcDataMap.size === 0 ||
+                  self.renderingMode === 'linkedRead'
+                ) {
+                  return
+                }
+
+                if (sortedBy?.type === 'tag') {
+                  self.clearAllRpcData()
+                  self.bumpFetchToken()
+                  return
+                }
+
+                computeAndAssignLayout(
+                  self.rpcDataMap,
+                  sortedBy,
+                  showSoftClipping,
+                )
+              },
+              { name: 'LinearAlignmentsDisplay:sortLayout' },
+            ),
+          )
         },
       }
     })

@@ -86,38 +86,13 @@ describe('base data adapter', () => {
 })
 
 describe('adapterConfigCacheKey', () => {
-  it('uses type + adapterId for configs with non-default values', () => {
-    const AdapterConfig = ConfigurationSchema(
-      'FromConfigAdapter',
-      {
-        features: { type: 'frozen', defaultValue: [] },
-      },
-      { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
-    )
-
-    // Config with non-default features - should have type and adapterId in snapshot
-    const adapter = AdapterConfig.create(
-      { features: [{ id: 'feat1', start: 0, end: 100 }] },
-      { pluginManager },
-    )
-    const snap = getSnapshot(adapter)
-
-    // Verify snapshot has type and adapterId
-    expect(snap.type).toBe('FromConfigAdapter')
-    expect(snap.adapterId).toBeDefined()
-
-    // Verify cache key uses type + adapterId (not idMaker hash)
-    const cacheKey = adapterConfigCacheKey(snap)
-    expect(cacheKey).toBe(`FromConfigAdapter-${snap.adapterId}`)
-  })
-
-  it('falls back to idMaker for configs without adapterId', () => {
+  it('returns a stable idMaker hash', () => {
     const AdapterConfig = ConfigurationSchema(
       'SomeAdapter',
       {
         uri: { type: 'string', defaultValue: '' },
       },
-      { explicitlyTyped: true }, // no implicitIdentifier
+      { explicitlyTyped: true },
     )
 
     const adapter = AdapterConfig.create(
@@ -125,13 +100,8 @@ describe('adapterConfigCacheKey', () => {
       { pluginManager },
     )
     const snap = getSnapshot(adapter)
-
-    // Verify snapshot has type but no adapterId
-    expect(snap.type).toBe('SomeAdapter')
-    expect('adapterId' in snap).toBe(false)
-
-    // Cache key should be idMaker hash (starts with 'adp-')
     const cacheKey = adapterConfigCacheKey(snap)
     expect(cacheKey).toMatch(/^adp-/)
+    expect(cacheKey).toBe(adapterConfigCacheKey(snap))
   })
 })

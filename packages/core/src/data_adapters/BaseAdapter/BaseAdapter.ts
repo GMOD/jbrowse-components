@@ -29,11 +29,7 @@ export class BaseAdapter {
     // in test environment
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      const { adapterId: _adapterId, ...stableData } = data as Record<
-        string,
-        unknown
-      >
-      this.id = idMaker(stableData)
+      this.id = idMaker(data as Record<string, unknown>)
     } else {
       this.id = 'test'
     }

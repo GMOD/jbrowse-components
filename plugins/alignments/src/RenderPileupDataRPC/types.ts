@@ -116,6 +116,7 @@ export interface PileupDataResult {
   gapYs: Uint16Array
   gapLengths: Uint16Array // length of each gap in bp
   gapTypes: Uint8Array // 0=deletion, 1=skip
+  gapReadIndices?: Uint32Array // maps each gap to its parent read index
   gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
 
   // Mismatch data - offsets from regionStart
@@ -123,6 +124,7 @@ export interface PileupDataResult {
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array // ASCII character code (e.g. 65='A', 67='C', 71='G', 84='T')
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
+  mismatchReadIndices?: Uint32Array // maps each mismatch to its parent read index
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
 
   // Soft clip base data - per-base rendering for showSoftClipping feature
@@ -130,6 +132,7 @@ export interface PileupDataResult {
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array // ASCII character code
+  softclipBaseReadIndices?: Uint32Array // maps each softclip base to its parent read index
   numSoftclipBases: number
 
   // Interbase data - insertions, soft clips, and hard clips combined (offsets from regionStart)
@@ -138,6 +141,7 @@ export interface PileupDataResult {
   interbaseYs: Uint16Array
   interbaseLengths: Uint16Array
   interbaseTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
+  interbaseReadIndices?: Uint32Array // maps each interbase to its parent read index
   interbaseSequences: string[] // insertion sequences (empty string for clips or if unavailable)
   interbaseFrequencies: Uint8Array // 0-255 representing 0-100% frequency
 
@@ -177,6 +181,7 @@ export interface PileupDataResult {
   modificationPositions: Uint32Array
   modificationYs: Uint16Array
   modificationColors: Uint8Array // packed RGBA (4 bytes per mod), alpha encodes probability
+  modificationReadIndices?: Uint32Array // maps each modification to its parent read index
   numModifications: number
 
   // Modification coverage data - stacked colored bars in coverage area

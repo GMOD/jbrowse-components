@@ -47,7 +47,6 @@ const MashMapAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

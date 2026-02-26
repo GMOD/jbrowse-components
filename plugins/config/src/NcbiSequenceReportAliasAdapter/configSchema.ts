@@ -32,7 +32,6 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
 
     /**
      * #preProcessSnapshot

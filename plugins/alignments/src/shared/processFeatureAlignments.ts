@@ -383,6 +383,7 @@ export function buildInterbaseArrays(
   hardclips: HardclipData[],
   regionStart: number,
   getY: (featureId: string) => number,
+  getReadIndex?: (featureId: string) => number,
 ) {
   const filteredInsertions = insertions.filter(
     ins => ins.position >= regionStart,
@@ -399,6 +400,9 @@ export function buildInterbaseArrays(
   const interbaseYs = new Uint16Array(totalInterbases)
   const interbaseLengths = new Uint16Array(totalInterbases)
   const interbaseTypes = new Uint8Array(totalInterbases)
+  const interbaseReadIndices = getReadIndex
+    ? new Uint32Array(totalInterbases)
+    : undefined
   const interbaseSequences: string[] = []
 
   let idx = 0
@@ -409,6 +413,9 @@ export function buildInterbaseArrays(
       interbaseYs[idx] = y
       interbaseLengths[idx] = Math.min(65535, item.length)
       interbaseTypes[idx] = type
+      if (interbaseReadIndices) {
+        interbaseReadIndices[idx] = getReadIndex!(item.featureId)
+      }
       interbaseSequences.push(item.sequence ?? '')
       idx++
     }
@@ -423,6 +430,7 @@ export function buildInterbaseArrays(
     interbaseYs,
     interbaseLengths,
     interbaseTypes,
+    interbaseReadIndices,
     interbaseSequences,
   }
 }
@@ -431,26 +439,40 @@ export function buildMismatchArrays(
   mismatches: MismatchData[],
   regionStart: number,
   getY: (featureId: string) => number,
+  getReadIndex?: (featureId: string) => number,
 ) {
   const filtered = mismatches.filter(mm => mm.position >= regionStart)
   const mismatchPositions = new Uint32Array(filtered.length)
   const mismatchYs = new Uint16Array(filtered.length)
   const mismatchBases = new Uint8Array(filtered.length)
   const mismatchStrands = new Int8Array(filtered.length)
+  const mismatchReadIndices = getReadIndex
+    ? new Uint32Array(filtered.length)
+    : undefined
   for (const [i, mm] of filtered.entries()) {
     const y = getY(mm.featureId)
     mismatchPositions[i] = mm.position - regionStart
     mismatchYs[i] = y
     mismatchBases[i] = mm.base
     mismatchStrands[i] = mm.strand
+    if (mismatchReadIndices) {
+      mismatchReadIndices[i] = getReadIndex!(mm.featureId)
+    }
   }
-  return { mismatchPositions, mismatchYs, mismatchBases, mismatchStrands }
+  return {
+    mismatchPositions,
+    mismatchYs,
+    mismatchBases,
+    mismatchStrands,
+    mismatchReadIndices,
+  }
 }
 
 export function buildSoftclipBaseArrays(
   softclips: SoftclipData[],
   regionStart: number,
   getY: (featureId: string) => number,
+  getReadIndex?: (featureId: string) => number,
 ) {
   const count = softclips.reduce(
     (sum, sc) => sum + (sc.sequence?.length ?? 0),
@@ -459,32 +481,48 @@ export function buildSoftclipBaseArrays(
   const softclipBasePositions = new Uint32Array(count)
   const softclipBaseYs = new Uint16Array(count)
   const softclipBaseBases = new Uint8Array(count)
+  const softclipBaseReadIndices = getReadIndex
+    ? new Uint32Array(count)
+    : undefined
   let i = 0
   for (const sc of softclips) {
     if (!sc.sequence) {
       continue
     }
     const y = getY(sc.featureId)
+    const ri = getReadIndex ? getReadIndex(sc.featureId) : 0
     for (let k = 0; k < sc.sequence.length; k++) {
       softclipBasePositions[i] = sc.clipStart + k - regionStart
       softclipBaseYs[i] = y
       softclipBaseBases[i] = sc.sequence.charCodeAt(k)
+      if (softclipBaseReadIndices) {
+        softclipBaseReadIndices[i] = ri
+      }
       i++
     }
   }
-  return { softclipBasePositions, softclipBaseYs, softclipBaseBases }
+  return {
+    softclipBasePositions,
+    softclipBaseYs,
+    softclipBaseBases,
+    softclipBaseReadIndices,
+  }
 }
 
 export function buildGapArrays(
   gaps: GapData[],
   regionStart: number,
   getY: (featureId: string) => number,
+  getReadIndex?: (featureId: string) => number,
 ) {
   const filtered = gaps.filter(g => g.start >= regionStart)
   const gapPositions = new Uint32Array(filtered.length * 2)
   const gapYs = new Uint16Array(filtered.length)
   const gapLengths = new Uint16Array(filtered.length)
   const gapTypes = new Uint8Array(filtered.length)
+  const gapReadIndices = getReadIndex
+    ? new Uint32Array(filtered.length)
+    : undefined
   for (const [i, g] of filtered.entries()) {
     const y = getY(g.featureId)
     gapPositions[i * 2] = g.start - regionStart
@@ -492,19 +530,26 @@ export function buildGapArrays(
     gapYs[i] = y
     gapLengths[i] = Math.min(65535, g.end - g.start)
     gapTypes[i] = g.type === 'deletion' ? 0 : 1
+    if (gapReadIndices) {
+      gapReadIndices[i] = getReadIndex!(g.featureId)
+    }
   }
-  return { gapPositions, gapYs, gapLengths, gapTypes }
+  return { gapPositions, gapYs, gapLengths, gapTypes, gapReadIndices }
 }
 
 export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
   getY: (featureId: string) => number,
+  getReadIndex?: (featureId: string) => number,
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
   const modificationPositions = new Uint32Array(filtered.length)
   const modificationYs = new Uint16Array(filtered.length)
   const modificationColors = new Uint8Array(filtered.length * 4)
+  const modificationReadIndices = getReadIndex
+    ? new Uint32Array(filtered.length)
+    : undefined
   for (const [i, m] of filtered.entries()) {
     const y = getY(m.featureId)
     modificationPositions[i] = m.position - regionStart
@@ -513,8 +558,16 @@ export function buildModificationArrays(
     modificationColors[i * 4 + 1] = m.g
     modificationColors[i * 4 + 2] = m.b
     modificationColors[i * 4 + 3] = Math.round(m.prob * 255)
+    if (modificationReadIndices) {
+      modificationReadIndices[i] = getReadIndex!(m.featureId)
+    }
   }
-  return { modificationPositions, modificationYs, modificationColors }
+  return {
+    modificationPositions,
+    modificationYs,
+    modificationColors,
+    modificationReadIndices,
+  }
 }
 
 export function computeFrequenciesAndThresholds(

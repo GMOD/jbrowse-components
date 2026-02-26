@@ -21,7 +21,6 @@ const ChromSizesAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    implicitIdentifier: 'adapterId',
     /**
      * #preProcessSnapshot
      *

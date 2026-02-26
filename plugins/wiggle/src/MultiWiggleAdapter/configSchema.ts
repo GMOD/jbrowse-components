@@ -26,7 +26,7 @@ const MultiWiggleAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
+  { explicitlyTyped: true },
 )
 
 export default MultiWiggleAdapter

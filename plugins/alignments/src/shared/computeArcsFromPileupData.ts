@@ -24,6 +24,7 @@ interface ArcSettings {
 
 const ARC_VS_BEZIER_THRESHOLD = 10_000
 const VERTICAL_LINE_THRESHOLD = 100_000
+const LONG_RANGE_STDDEV_THRESHOLD = 3
 
 // pairOrientationToNum encodes: 0=unknown, 1=LR(normal), 2=RL, 3=RR/FF, 4=LL/RR
 function getOrientationColorIndex(pairOrientationNum: number) {
@@ -84,6 +85,17 @@ interface ComputedLine {
   colorType: number
 }
 
+interface PendingArc {
+  p1Ref: string
+  p1Bp: number
+  p1Strand: number
+  p2Ref: string
+  p2Bp: number
+  p2Strand: number
+  pairOrientationNum: number | undefined
+  tlen: number | undefined
+}
+
 function parseSATag(sa: string): SAAlignment[] {
   if (!sa) {
     return []
@@ -111,6 +123,21 @@ function parseSATag(sa: string): SAAlignment[] {
     result.push({ refName: ref, start: pos, end: pos + lengthOnRef, strand })
   }
   return result
+}
+
+function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
+  const radii = pendingArcs
+    .filter(a => a.p1Ref === a.p2Ref)
+    .map(a => Math.abs(a.p2Bp - a.p1Bp) / 2)
+  if (radii.length === 0) {
+    return Infinity
+  }
+  const mean = radii.reduce((a, b) => a + b, 0) / radii.length
+  const variance = radii.reduce((a, b) => a + (b - mean) ** 2, 0) / radii.length
+  const std = Math.sqrt(variance)
+  const threshold = mean + LONG_RANGE_STDDEV_THRESHOLD * std
+  console.log('longRange threshold', { mean, std, threshold, numArcs: radii.length })
+  return threshold
 }
 
 export function computeArcsFromPileupData(
@@ -167,37 +194,116 @@ export function computeArcsFromPileupData(
     }
   }
 
+  const pendingArcs: PendingArc[] = []
+
+  for (const [, entries] of readsByName) {
+    if (entries.length === 1) {
+      if (!drawLongRange) {
+        continue
+      }
+      const entry = entries[0]!
+      const { data, readIdx, refName } = entry
+      const flags = data.readFlags[readIdx]!
+      const strand = data.readStrands[readIdx]!
+      const start = data.regionStart + data.readPositions[readIdx * 2]!
+      const end = data.regionStart + data.readPositions[readIdx * 2 + 1]!
+      const isMateUnmapped = flags & SAM_FLAG_MATE_UNMAPPED
+
+      if (hasPaired && !isMateUnmapped) {
+        const mateRef = data.readNextRefs?.[readIdx] ?? ''
+        const matePos = data.readNextPositions?.[readIdx] ?? 0
+        const mateStrand = flags & SAM_FLAG_MATE_REVERSE ? -1 : 1
+        const p1 = strand === -1 ? start : end
+        pendingArcs.push({
+          p1Ref: refName,
+          p1Bp: p1,
+          p1Strand: strand,
+          p2Ref: mateRef || refName,
+          p2Bp: matePos,
+          p2Strand: mateStrand,
+          pairOrientationNum: data.readPairOrientations[readIdx]!,
+          tlen: data.readInsertSizes[readIdx],
+        })
+      } else {
+        const sa = data.readSuppAlignments?.[readIdx] ?? ''
+        const saAlns = parseSATag(sa)
+        if (saAlns.length > 0) {
+          const primary = { refName, start, end, strand }
+          const allAlns = [primary, ...saAlns]
+          for (let j = 0; j < allAlns.length - 1; j++) {
+            const a1 = allAlns[j]!
+            const a2 = allAlns[j + 1]!
+            const p1 = a1.strand === -1 ? a1.start : a1.end
+            const p2 = a2.strand === -1 ? a2.end : a2.start
+            pendingArcs.push({
+              p1Ref: a1.refName,
+              p1Bp: p1,
+              p1Strand: a1.strand,
+              p2Ref: a2.refName,
+              p2Bp: p2,
+              p2Strand: a2.strand,
+              pairOrientationNum: undefined,
+              tlen: undefined,
+            })
+          }
+        }
+      }
+    } else {
+      const filtered = hasPaired
+        ? entries.filter(
+            e =>
+              !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SUPPLEMENTARY) &&
+              !(e.data.readFlags[e.readIdx]! & SAM_FLAG_MATE_UNMAPPED),
+          )
+        : entries.filter(
+            e => !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SECONDARY),
+          )
+
+      for (let j = 0; j < filtered.length - 1; j++) {
+        const e1 = filtered[j]!
+        const e2 = filtered[j + 1]!
+        const s1 = e1.data.readStrands[e1.readIdx]!
+        const s2 = e2.data.readStrands[e2.readIdx]!
+        const start1 = e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2]!
+        const end1 = e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2 + 1]!
+        const start2 = e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2]!
+        const end2 = e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2 + 1]!
+        const p1 = s1 === -1 ? start1 : end1
+        const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : (s2 === -1 ? end2 : start2)
+        pendingArcs.push({
+          p1Ref: e1.refName,
+          p1Bp: p1,
+          p1Strand: s1,
+          p2Ref: e2.refName,
+          p2Bp: p2,
+          p2Strand: s2,
+          pairOrientationNum: e1.data.readPairOrientations[e1.readIdx],
+          tlen: e1.data.readInsertSizes[e1.readIdx],
+        })
+      }
+    }
+  }
+
+  const longRangeThreshold = computeLongRangeThreshold(pendingArcs)
+
   const arcs: ComputedArc[] = []
   const lines: ComputedLine[] = []
 
-  function processArc(
-    p1Ref: string,
-    p1Bp: number,
-    p1Strand: number,
-    p2Ref: string,
-    p2Bp: number,
-    p2Strand: number,
-    longRange: boolean,
-    pairOrientationNum?: number,
-    tlen?: number,
-  ) {
+  for (const { p1Ref, p1Bp, p1Strand, p2Ref, p2Bp, p2Strand, pairOrientationNum, tlen } of pendingArcs) {
     if (p1Ref !== p2Ref) {
       if (drawInter) {
-        lines.push({
-          x: { refName: p1Ref, bp: p1Bp },
-          colorType: 3,
-        })
-        lines.push({
-          x: { refName: p2Ref, bp: p2Bp },
-          colorType: 3,
-        })
+        lines.push({ x: { refName: p1Ref, bp: p1Bp }, colorType: 3 })
+        lines.push({ x: { refName: p2Ref, bp: p2Bp }, colorType: 3 })
       }
-      return
+      continue
     }
 
     const radius = (p2Bp - p1Bp) / 2
     const absrad = Math.abs(radius)
+    const longRange = absrad > longRangeThreshold
     const drawArcInsteadOfBezier = absrad > ARC_VS_BEZIER_THRESHOLD
+
+    console.log('processArc', { p1Ref, p1Bp, p2Ref, p2Bp, longRange, absrad, longRangeThreshold, drawArcInsteadOfBezier, pairOrientationNum, tlen, hasPaired, colorByType })
 
     let colorType: number
     if (longRange && drawArcInsteadOfBezier) {
@@ -264,108 +370,6 @@ export function computeArcsFromPileupData(
         colorType,
         isArc: 0,
       })
-    }
-  }
-
-  for (const [, entries] of readsByName) {
-    if (entries.length === 1) {
-      if (!drawLongRange) {
-        continue
-      }
-      const entry = entries[0]!
-      const { data, readIdx, refName } = entry
-      const flags = data.readFlags[readIdx]!
-      const strand = data.readStrands[readIdx]!
-      const start =
-        data.regionStart + data.readPositions[readIdx * 2]!
-      const end =
-        data.regionStart + data.readPositions[readIdx * 2 + 1]!
-      const isMateUnmapped = flags & SAM_FLAG_MATE_UNMAPPED
-
-      if (hasPaired && !isMateUnmapped) {
-        const mateRef = data.readNextRefs?.[readIdx] ?? ''
-        const matePos = data.readNextPositions?.[readIdx] ?? 0
-        const mateStrand = flags & SAM_FLAG_MATE_REVERSE ? -1 : 1
-        const p1 = strand === -1 ? start : end
-        const p2 = matePos
-        const pairOrientationNum = data.readPairOrientations[readIdx]!
-        processArc(
-          refName,
-          p1,
-          strand,
-          mateRef || refName,
-          p2,
-          mateStrand,
-          true,
-          pairOrientationNum,
-          data.readInsertSizes[readIdx],
-        )
-      } else {
-        const sa = data.readSuppAlignments?.[readIdx] ?? ''
-        const saAlns = parseSATag(sa)
-        if (saAlns.length > 0) {
-          const primary = {
-            refName,
-            start,
-            end,
-            strand,
-          }
-          const allAlns = [primary, ...saAlns]
-          for (let j = 0; j < allAlns.length - 1; j++) {
-            const a1 = allAlns[j]!
-            const a2 = allAlns[j + 1]!
-            const p1 = a1.strand === -1 ? a1.start : a1.end
-            const p2 = a2.strand === -1 ? a2.end : a2.start
-            processArc(
-              a1.refName,
-              p1,
-              a1.strand,
-              a2.refName,
-              p2,
-              a2.strand,
-              true,
-            )
-          }
-        }
-      }
-    } else {
-      const filtered = hasPaired
-        ? entries.filter(
-            e =>
-              !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SUPPLEMENTARY) &&
-              !(e.data.readFlags[e.readIdx]! & SAM_FLAG_MATE_UNMAPPED),
-          )
-        : entries.filter(
-            e => !(e.data.readFlags[e.readIdx]! & SAM_FLAG_SECONDARY),
-          )
-
-      for (let j = 0; j < filtered.length - 1; j++) {
-        const e1 = filtered[j]!
-        const e2 = filtered[j + 1]!
-        const s1 = e1.data.readStrands[e1.readIdx]!
-        const s2 = e2.data.readStrands[e2.readIdx]!
-        const start1 =
-          e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2]!
-        const end1 =
-          e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2 + 1]!
-        const start2 =
-          e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2]!
-        const end2 =
-          e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2 + 1]!
-
-        const p1 = s1 === -1 ? start1 : end1
-        const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : (s2 === -1 ? end2 : start2)
-
-        processArc(
-          e1.refName,
-          p1,
-          s1,
-          e2.refName,
-          p2,
-          s2,
-          false,
-        )
-      }
     }
   }
 

@@ -5,7 +5,6 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
@@ -135,12 +134,10 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get adapterConfigSnapshot() {
-        const conf = getConf(getContainingTrack(self), 'adapter') as Record<
+        return getConf(getContainingTrack(self), 'adapter') as Record<
           string,
           unknown
         >
-        const { adapterId: _, ...rest } = conf
-        return { ...conf, adapterId: adapterConfigCacheKey(rest) }
       },
 
       get DisplayMessageComponent() {
