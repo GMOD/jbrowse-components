@@ -14,6 +14,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -564,10 +565,9 @@ export default function stateModelFactory(
         }
 
         const result = await rpcManager.call(
-          session.id ?? '',
+          getRpcSessionId(self),
           'RenderMultiWiggleData',
           {
-            sessionId: session.id,
             adapterConfig,
             region,
             sources: self.sources,

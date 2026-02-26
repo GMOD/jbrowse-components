@@ -223,7 +223,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 'CoreGetFeatures',
                 {
                   regions: [{ ...region, assemblyName: region.assemblyName ?? '' }],
-                  sessionId,
                   adapterConfig,
                 },
               )

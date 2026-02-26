@@ -101,10 +101,12 @@ export default class RpcManager {
   async getDriverForCall(
     _sessionId: string,
     _functionName: string,
-    args: { rpcDriverName?: string },
+    args: Record<string, unknown>,
+    opts?: { rpcDriverName?: string },
   ) {
     const backendName =
-      args.rpcDriverName ||
+      (args.rpcDriverName as string | undefined) ||
+      opts?.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(backendName)
@@ -135,11 +137,12 @@ export default class RpcManager {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    const a = args as Record<string, unknown>
+    const a = { ...args, sessionId } as Record<string, unknown>
     const driverForCall = await this.getDriverForCall(
       sessionId,
       functionName,
       a,
+      opts as { rpcDriverName?: string } | undefined,
     )
     return driverForCall.call(
       this.pluginManager,

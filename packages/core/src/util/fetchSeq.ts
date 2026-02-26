@@ -31,7 +31,6 @@ export async function fetchSeq({
 
   const seq = await rpcManager.call(sessionId, 'CoreGetSequence', {
     adapterConfig,
-    sessionId,
     region: {
       start,
       end,

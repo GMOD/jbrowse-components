@@ -17,6 +17,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
@@ -432,10 +433,9 @@ export default function stateModelFactory(
 
         try {
           const result = (yield rpcManager.call(
-            session.id ?? '',
+            getRpcSessionId(self),
             'GetCanvasFeatureDetails',
             {
-              sessionId: session.id,
               adapterConfig,
               featureId: featureIdToFetch,
               region,
@@ -493,10 +493,9 @@ export default function stateModelFactory(
         const adapterConfig = self.adapterConfigSnapshot
 
         const result = await rpcManager.call(
-          session.id ?? '',
+          getRpcSessionId(self),
           'RenderFeatureData',
           {
-            sessionId: session.id,
             adapterConfig,
             displayConfig: {
               showLabels: self.showLabels,
@@ -793,10 +792,9 @@ export default function stateModelFactory(
                     return
                   }
                   const result = await rpcManager.call(
-                    session.id ?? '',
+                    getRpcSessionId(self),
                     'GetCanvasFeatureDetails',
                     {
-                      sessionId: session.id,
                       adapterConfig,
                       featureId: feat.id(),
                       region,

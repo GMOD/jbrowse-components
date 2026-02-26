@@ -52,11 +52,6 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               assemblyName,
               await rpcManager.call(trackId, 'CoreGetRefNames', {
                 adapterConfig,
-                regions: [
-                  {
-                    assemblyName,
-                  },
-                ],
               }),
             ] as const
           }),

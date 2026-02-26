@@ -22,6 +22,5 @@ export async function fetchSequence({
       ...region,
       refName: assembly.getCanonicalRefName(region.refName) ?? region.refName,
     },
-    sessionId,
   })
 }

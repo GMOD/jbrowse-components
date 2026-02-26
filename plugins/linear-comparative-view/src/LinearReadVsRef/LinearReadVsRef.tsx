@@ -88,7 +88,6 @@ export default function ReadVsRefDialog({
           const [asm] = getConf(track, 'assemblyNames') as string[]
           const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
-            sessionId,
             regions: [
               {
                 refName: saRef!,

@@ -67,7 +67,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
         rpcSessionId,
         'RenderHicData',
         {
-          sessionId: rpcSessionId,
           adapterConfig,
           regions: [...regions],
           bpPerPx,

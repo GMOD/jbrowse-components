@@ -27,7 +27,6 @@ export function doAfterAttach(self: SharedLDModel) {
       sessionId,
       'CoreGetFeatureDensityStats',
       {
-        sessionId,
         regions,
         adapterConfig: self.adapterConfig,
       },
@@ -88,7 +87,6 @@ export function doAfterAttach(self: SharedLDModel) {
         rpcSessionId,
         'RenderLDData',
         {
-          sessionId: rpcSessionId,
           adapterConfig,
           regions: [...regions],
           bpPerPx,

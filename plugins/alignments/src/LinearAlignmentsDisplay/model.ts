@@ -1272,7 +1272,6 @@ export default function stateModelFactory(
           sessionId,
           'CoreGetFeatureDensityStats',
           {
-            sessionId,
             regions: [region],
             adapterConfig,
           },

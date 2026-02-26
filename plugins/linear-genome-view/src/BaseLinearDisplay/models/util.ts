@@ -40,16 +40,14 @@ export async function getFeatureDensityStatsPre(self: {
   } else {
     const sessionId = getRpcSessionId(self)
 
-    return rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
+    return rpcManager.call(
       sessionId,
-      regions,
-      adapterConfig,
-      rpcDriverName: effectiveRpcDriverName,
-      statusCallback: (message: string) => {
-        if (isAlive(self)) {
-          self.setStatusMessage(message)
-        }
+      'CoreGetFeatureDensityStats',
+      {
+        regions,
+        adapterConfig,
       },
-    })
+      { rpcDriverName: effectiveRpcDriverName },
+    )
   }
 }

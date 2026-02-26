@@ -38,6 +38,5 @@ export async function fetchSequence(
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
-    sessionId,
   })
 }

@@ -10,6 +10,7 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -313,10 +314,9 @@ export default function stateModelFactory(
         }
 
         const result = await rpcManager.call(
-          session.id ?? '',
+          getRpcSessionId(self),
           'RenderWiggleData',
           {
-            sessionId: session.id,
             adapterConfig,
             region,
             bicolorPivot: self.effectiveBicolorPivot,

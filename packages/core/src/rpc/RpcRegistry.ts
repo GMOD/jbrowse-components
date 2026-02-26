@@ -2,7 +2,7 @@ import type { Feature } from '../util/simpleFeature.ts'
 import type { Region } from '../util/types/index.ts'
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
 
-type RegionLike = { refName: string; start: number; end: number; assemblyName: string }
+export type RegionLike = { refName: string; start: number; end: number; assemblyName: string }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RpcRegistry {
@@ -11,14 +11,12 @@ export interface RpcRegistry {
       adapterConfig: Record<string, unknown>
       sequenceAdapter?: Record<string, unknown>
       stopToken?: string
-      [key: string]: unknown
     }
     return: string[]
   }
   CoreGetRegions: {
     args: {
       adapterConfig: Record<string, unknown>
-      [key: string]: unknown
     }
     return: Region[]
   }
@@ -27,7 +25,6 @@ export interface RpcRegistry {
       region: RegionLike
       adapterConfig: Record<string, unknown>
       stopToken?: string
-      [key: string]: unknown
     }
     return: string | undefined
   }
@@ -38,7 +35,6 @@ export interface RpcRegistry {
       statusCallback?: (arg: string) => void
       stopToken?: string
       opts?: unknown
-      [key: string]: unknown
     }
     return: Feature[]
   }
@@ -48,7 +44,6 @@ export interface RpcRegistry {
       regions: RegionLike[]
       stopToken?: string
       headers?: Record<string, string>
-      [key: string]: unknown
     }
     return: FeatureDensityStats
   }
@@ -56,7 +51,6 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       stopToken?: string
-      [key: string]: unknown
     }
     return: Record<string, unknown> | null
   }
@@ -64,7 +58,6 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       stopToken?: string
-      [key: string]: unknown
     }
     return: Record<string, unknown> | null
   }
@@ -74,7 +67,6 @@ export interface RpcRegistry {
       adapterConfig: Record<string, unknown>
       formatType: string
       opts?: unknown
-      [key: string]: unknown
     }
     return: string
   }

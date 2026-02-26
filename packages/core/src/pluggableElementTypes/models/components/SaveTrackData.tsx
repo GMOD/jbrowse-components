@@ -51,7 +51,6 @@ async function fetchFeatures(track: IAnyStateTreeNode, regions: Region[]) {
   return rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
     regions,
-    sessionId,
   })
 }
 
@@ -122,7 +121,6 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
               adapterConfig,
               regions,
               formatType: type,
-              sessionId,
             },
           )
 
