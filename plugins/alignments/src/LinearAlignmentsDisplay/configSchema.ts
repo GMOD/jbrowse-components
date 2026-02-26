@@ -25,6 +25,10 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: 1200,
         description: 'Maximum height of the display in pixels',
       },
+      height: {
+        type: 'number',
+        defaultValue: 250,
+      },
       colorBy: {
         type: 'frozen',
         defaultValue: { type: 'normal' },
