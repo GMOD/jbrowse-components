@@ -355,6 +355,34 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs[0]!.colorType).toBe(8)
   })
 
+  test('insert size coloring uses worker-provided insertSizeStats', () => {
+    const data = makePileupData({
+      numReads: 1,
+      regionStart: 0,
+      readPositions: new Uint32Array([0, 100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([10000]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([500]),
+      insertSizeStats: { upper: 500, lower: 100 },
+    })
+
+    const rpcDataMap = new Map([[0, data]])
+    const regions = [{ refName: 'chr1', start: 0, end: 1000, regionNumber: 0 }]
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {
+      colorByType: 'insertSize',
+      drawInter: false,
+      drawLongRange: true,
+    })
+
+    expect(result.arcs.length).toBe(1)
+    // tlen=10000 > upper=500 → colorType 1 (too long)
+    expect(result.arcs[0]!.colorType).toBe(1)
+  })
+
   test('very long range arcs produce vertical lines when drawLongRange=true', () => {
     const data = makePileupData({
       numReads: 1,

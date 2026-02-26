@@ -1,4 +1,3 @@
-import { getInsertSizeStats } from './insertSizeStats.ts'
 import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
@@ -152,29 +151,20 @@ export function computeArcsFromPileupData(
     }
   }
 
-  const tlens: number[] = []
   let hasPaired = false
+  let stats: { upper: number; lower: number } | undefined
   for (const data of rpcDataMap.values()) {
-    for (let i = 0; i < data.numReads; i++) {
-      const flags = data.readFlags[i]!
-      if (flags & SAM_FLAG_PAIRED) {
-        hasPaired = true
-        if (
-          !(flags & SAM_FLAG_SECONDARY) &&
-          !(flags & SAM_FLAG_SUPPLEMENTARY)
-        ) {
-          const tlen = data.readInsertSizes[i]!
-          if (tlen !== 0 && !Number.isNaN(tlen)) {
-            tlens.push(Math.abs(tlen))
-          }
+    if (!hasPaired) {
+      for (let i = 0; i < data.numReads; i++) {
+        if (data.readFlags[i]! & SAM_FLAG_PAIRED) {
+          hasPaired = true
+          break
         }
       }
     }
-  }
-
-  let stats: { upper: number; lower: number } | undefined
-  if (tlens.length > 0) {
-    stats = getInsertSizeStats(tlens)
+    if (!stats && data.insertSizeStats) {
+      stats = data.insertSizeStats
+    }
   }
 
   const arcs: ComputedArc[] = []

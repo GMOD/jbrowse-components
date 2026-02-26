@@ -1209,11 +1209,10 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
-        regionNumber: number,
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        const result = (await session.rpcManager.call(
+        return (await session.rpcManager.call(
           sessionId,
           'RenderPileupData',
           {
@@ -1234,14 +1233,6 @@ export default function stateModelFactory(
             },
           },
         )) as PileupDataResult
-        if (isAlive(self)) {
-          if (result.newTagValues) {
-            self.updateColorTagMap(result.newTagValues)
-          }
-          self.setRpcData(regionNumber, result)
-          self.setModificationsReady(true)
-          self.setSimplexModifications(result.simplexModifications)
-        }
       }
 
       async function fetchChainData(
@@ -1249,11 +1240,10 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
-        regionNumber: number,
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        const result = (await session.rpcManager.call(
+        return (await session.rpcManager.call(
           sessionId,
           'RenderChainData',
           {
@@ -1274,14 +1264,6 @@ export default function stateModelFactory(
             },
           },
         )) as PileupDataResult
-        if (isAlive(self)) {
-          if (result.newTagValues) {
-            self.updateColorTagMap(result.newTagValues)
-          }
-          self.setRpcData(regionNumber, result)
-          self.setModificationsReady(true)
-          self.setSimplexModifications(result.simplexModifications)
-        }
       }
 
       // Estimate bytes for a region via adapter index (cheap, no feature fetch).
@@ -1341,13 +1323,12 @@ export default function stateModelFactory(
 
         const sequenceAdapter = getSequenceAdapter(session, region)
 
-        await (self.renderingMode === 'linkedRead'
+        const result = await (self.renderingMode === 'linkedRead'
           ? fetchChainData(
               session,
               adapterConfig,
               sequenceAdapter,
               region,
-              regionNumber,
               stopToken,
             )
           : fetchPileupData(
@@ -1355,21 +1336,25 @@ export default function stateModelFactory(
               adapterConfig,
               sequenceAdapter,
               region,
-              regionNumber,
               stopToken,
             ))
-        // Discard stale responses from older requests for this regionNumber
-        if (fetchGenerations.get(regionNumber) !== gen) {
+        if (
+          !isAlive(self) ||
+          fetchGenerations.get(regionNumber) !== gen
+        ) {
           return
         }
 
-        self.setRegionTooLarge(false)
-        self.setLoadedRegion(regionNumber, {
-          refName: region.refName,
-          start: region.start,
-          end: region.end,
-          assemblyName: region.assemblyName,
-        })
+        return {
+          regionNumber,
+          result,
+          region: {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+            assemblyName: region.assemblyName,
+          },
+        }
       }
 
       function reconcileLayouts(rpcDataMap: Map<number, PileupDataResult>) {
@@ -1583,7 +1568,7 @@ export default function stateModelFactory(
           const promises = regions.map(({ region, regionNumber }) =>
             fetchFeaturesForRegion(region, regionNumber, stopToken),
           )
-          await Promise.all(promises)
+          const results = await Promise.all(promises)
           if (
             !isAlive(self) ||
             self.fetchGeneration !== generation ||
@@ -1591,6 +1576,31 @@ export default function stateModelFactory(
           ) {
             return
           }
+          const next = new Map(self.rpcDataMap)
+          for (const r of results) {
+            if (!r) {
+              continue
+            }
+            if (r.result.newTagValues) {
+              self.updateColorTagMap(r.result.newTagValues)
+            }
+            next.set(r.regionNumber, r.result)
+            for (const modType of r.result.detectedModifications) {
+              if (!self.visibleModifications.has(modType)) {
+                self.visibleModifications.set(modType, {
+                  type: modType,
+                  base: '',
+                  strand: '',
+                  color: getColorForModification(modType),
+                })
+              }
+            }
+            self.setModificationsReady(true)
+            self.setSimplexModifications(r.result.simplexModifications)
+            self.setRegionTooLarge(false)
+            self.setLoadedRegion(r.regionNumber, r.region)
+          }
+          self.rpcDataMap = next
           if (self.rpcDataMap.size > 1) {
             reconcileLayouts(self.rpcDataMap)
           }
