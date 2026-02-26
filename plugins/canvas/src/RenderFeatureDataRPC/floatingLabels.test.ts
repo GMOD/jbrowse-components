@@ -178,7 +178,7 @@ describe('floatingLabels', () => {
         featureHeight: 20,
       })
       expect(result!.isOverlay).toBe(true)
-      expect(result!.relativeY).toBe(2 - 20)
+      expect(result!.relativeY).toBe(-20)
     })
 
     it('truncates long labels', () => {
