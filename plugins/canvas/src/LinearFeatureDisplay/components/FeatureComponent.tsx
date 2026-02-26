@@ -160,7 +160,7 @@ function performHitDetection(
     reversed,
   )
 
-  if (subfeatureIndex && data.subfeatureInfos.length > 0) {
+  if (subfeatureIndex) {
     const subHits = subfeatureIndex.search(bpPos, yPos, bpPos, yPos)
     for (const idx of subHits) {
       const info = data.subfeatureInfos[idx]
@@ -171,7 +171,7 @@ function performHitDetection(
     }
   }
 
-  if (featureIndex && data.flatbushItems.length > 0) {
+  if (featureIndex) {
     const hits = featureIndex.search(bpPos, yPos, bpPos, yPos)
     for (const idx of hits) {
       const item = data.flatbushItems[idx]
@@ -277,8 +277,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const renderWithBlocksRef = useRef(renderWithBlocks)
   renderWithBlocksRef.current = renderWithBlocks
-  const viewRef = useRef(view)
-  viewRef.current = view
 
   const canvasCallbackRef = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!canvas) {

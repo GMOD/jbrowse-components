@@ -304,12 +304,6 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      setRpcDataForRegion(regionNumber: number, data: FeatureDataResult) {
-        const next = new Map(self.rpcDataMap)
-        next.set(regionNumber, data)
-        this.setRpcDataMap(next)
-      },
-
       setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
         self.rpcDataMap = dataMap
         let globalMaxY = 0
@@ -620,8 +614,16 @@ export default function stateModelFactory(
           deltaMap.sort((a, b) => a.oldTop - b.oldTop)
 
           const resolveY = (y: number) => {
-            for (const d of deltaMap) {
-              if (y >= d.oldTop && y < d.oldBottom) {
+            let lo = 0
+            let hi = deltaMap.length - 1
+            while (lo <= hi) {
+              const mid = (lo + hi) >> 1
+              const d = deltaMap[mid]!
+              if (y < d.oldTop) {
+                hi = mid - 1
+              } else if (y >= d.oldBottom) {
+                lo = mid + 1
+              } else {
                 return y + d.delta
               }
             }
