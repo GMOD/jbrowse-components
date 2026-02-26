@@ -14,7 +14,7 @@ export interface Region {
   refName: string
   start: number
   end: number
-  assemblyName?: string
+  assemblyName: string
 }
 
 /**

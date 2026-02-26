@@ -2,7 +2,7 @@ import type { Feature } from '../util/simpleFeature.ts'
 import type { Region } from '../util/types/index.ts'
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
 
-type RegionLike = { refName: string; start: number; end: number; assemblyName?: string }
+type RegionLike = { refName: string; start: number; end: number; assemblyName: string }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RpcRegistry {

@@ -589,6 +589,7 @@ export default function stateModelFactory(
             refName: region.refName,
             start: region.start,
             end: region.end,
+            assemblyName: region.assemblyName,
           })
           self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
         }

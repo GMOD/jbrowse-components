@@ -187,7 +187,7 @@ async function fetchFeatureDetails(self: any, featureId: string) {
     refName: info.refName,
     start: info.start,
     end: info.end,
-    assemblyName,
+    assemblyName: assemblyName ?? '',
   }
   const sequenceAdapter = getSequenceAdapter(session, region)
   const sessionId = getRpcSessionId(self)
@@ -1212,27 +1212,23 @@ export default function stateModelFactory(
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        return (await session.rpcManager.call(
+        return (await session.rpcManager.call(sessionId, 'RenderPileupData', {
           sessionId,
-          'RenderPileupData',
-          {
-            sessionId,
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            filterBy: self.filterBy,
-            colorBy: self.colorBy,
-            colorTagMap: self.colorTagMap,
-            sortedBy: self.sortedBy,
-            showSoftClipping: self.showSoftClipping,
-            stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
+          adapterConfig,
+          sequenceAdapter,
+          region,
+          filterBy: self.filterBy,
+          colorBy: self.colorBy,
+          colorTagMap: self.colorTagMap,
+          sortedBy: self.sortedBy,
+          showSoftClipping: self.showSoftClipping,
+          stopToken,
+          statusCallback: (msg: string) => {
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
           },
-        )) as PileupDataResult
+        })) as PileupDataResult
       }
 
       async function fetchChainData(
@@ -1243,33 +1239,33 @@ export default function stateModelFactory(
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        return (await session.rpcManager.call(
+        return (await session.rpcManager.call(sessionId, 'RenderChainData', {
           sessionId,
-          'RenderChainData',
-          {
-            sessionId,
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            filterBy: self.filterBy,
-            colorBy: self.colorBy,
-            colorTagMap: self.colorTagMap,
-            drawSingletons: self.drawSingletons,
-            drawProperPairs: self.drawProperPairs,
-            stopToken,
-            statusCallback: (msg: string) => {
-              if (isAlive(self)) {
-                self.setStatusMessage(msg)
-              }
-            },
+          adapterConfig,
+          sequenceAdapter,
+          region,
+          filterBy: self.filterBy,
+          colorBy: self.colorBy,
+          colorTagMap: self.colorTagMap,
+          drawSingletons: self.drawSingletons,
+          drawProperPairs: self.drawProperPairs,
+          stopToken,
+          statusCallback: (msg: string) => {
+            if (isAlive(self)) {
+              self.setStatusMessage(msg)
+            }
           },
-        )) as PileupDataResult
+        })) as PileupDataResult
       }
 
-      // Estimate bytes for a region via adapter index (cheap, no feature fetch).
-      // Returns the stats without modifying model state — the caller applies
-      // state changes only after passing the generation staleness check.
-      async function fetchByteEstimate(adapterConfig: Record<string, unknown>, region: Region) {
+      // Estimate bytes for a region via adapter index (cheap, no feature
+      // fetch). Returns the stats without modifying model state — the caller
+      // applies state changes only after passing the generation staleness
+      // check.
+      async function fetchByteEstimate(
+        adapterConfig: Record<string, unknown>,
+        region: Region,
+      ) {
         const session = getSession(self)
         const sessionId = getRpcSessionId(self)
         const stats = (await session.rpcManager.call(
@@ -1338,10 +1334,7 @@ export default function stateModelFactory(
               region,
               stopToken,
             ))
-        if (
-          !isAlive(self) ||
-          fetchGenerations.get(regionNumber) !== gen
-        ) {
+        if (!isAlive(self) || fetchGenerations.get(regionNumber) !== gen) {
           return
         }
 

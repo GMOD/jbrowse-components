@@ -15,7 +15,6 @@ import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -219,15 +218,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             const result = new Map<number, SequenceRegionData>()
 
             for (const region of regions) {
-              const rawFeatures = (await rpcManager.call(
+              const rawFeatures = await rpcManager.call(
                 sessionId,
                 'CoreGetFeatures',
                 {
-                  regions: [region],
+                  regions: [{ ...region, assemblyName: region.assemblyName ?? '' }],
                   sessionId,
                   adapterConfig,
                 },
-              )) as Feature[]
+              )
               const features = dedupe(rawFeatures, f => f.id())
 
               for (const f of features) {
