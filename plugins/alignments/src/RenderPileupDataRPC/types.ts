@@ -227,4 +227,13 @@ export interface PileupDataResult {
     upper: number // mean + 3*SD (too long → red)
     lower: number // mean - 3*SD (too short → pink)
   }
+
+  // Unique tag values discovered during feature iteration (for colorBy tag mode)
+  newTagValues?: string[]
+
+  // Per-read mate position (PNEXT) for main-thread arc computation
+  readNextPositions?: Uint32Array
+
+  // Per-read SA tag strings for main-thread arc computation
+  readSuppAlignments?: string[]
 }

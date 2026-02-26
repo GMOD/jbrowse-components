@@ -35,6 +35,10 @@ import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import {
+  arcsToRegionResult,
+  computeArcsFromPileupData,
+} from '../shared/computeArcsFromPileupData.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   getFiltersMenuItem,
@@ -61,7 +65,6 @@ import type {
   CigarHitResult,
   IndicatorHitResult,
 } from './components/hitTesting.ts'
-import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
@@ -450,7 +453,6 @@ export default function stateModelFactory(
       highlightedChainIndices: [] as number[],
       selectedChainIndices: [] as number[],
       colorTagMap: {} as Record<string, string>,
-      tagsReady: true,
       visibleModifications: observable.map<string, any>({}),
       simplexModifications: new Set<string>(),
       modificationsReady: false,
@@ -958,13 +960,6 @@ export default function stateModelFactory(
         setColorScheme(colorBy: ColorBy) {
           self.colorTagMap = {}
           self.colorBySetting = colorBy
-          if (colorBy.tag) {
-            self.tagsReady = false
-          }
-        },
-
-        setTagsReady(flag: boolean) {
-          self.tagsReady = flag
         },
 
         updateColorTagMap(uniqueTag: string[]) {
@@ -1233,47 +1228,19 @@ export default function stateModelFactory(
             showSoftClipping: self.showSoftClipping,
             stopToken,
             statusCallback: (msg: string) => {
-              self.setStatusMessage(msg)
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
             },
           },
         )) as PileupDataResult
         if (isAlive(self)) {
+          if (result.newTagValues) {
+            self.updateColorTagMap(result.newTagValues)
+          }
           self.setRpcData(regionNumber, result)
           self.setModificationsReady(true)
           self.setSimplexModifications(result.simplexModifications)
-        }
-      }
-
-      async function fetchArcsData(
-        session: { rpcManager: any },
-        adapterConfig: unknown,
-        sequenceAdapter: unknown,
-        region: Region,
-        regionNumber: number,
-        stopToken: string,
-      ) {
-        const sessionId = getRpcSessionId(self)
-        const result = (await session.rpcManager.call(
-          sessionId,
-          'RenderArcsData',
-          {
-            sessionId,
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            filterBy: self.filterBy,
-            colorBy: self.colorBy,
-            height: self.height,
-            drawInter: self.arcsState.drawInter,
-            drawLongRange: self.arcsState.drawLongRange,
-            stopToken,
-            statusCallback: (msg: string) => {
-              self.setStatusMessage(msg)
-            },
-          },
-        )) as ArcsDataResult
-        if (isAlive(self)) {
-          self.arcsState.setRpcData(regionNumber, result)
         }
       }
 
@@ -1301,11 +1268,16 @@ export default function stateModelFactory(
             drawProperPairs: self.drawProperPairs,
             stopToken,
             statusCallback: (msg: string) => {
-              self.setStatusMessage(msg)
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
             },
           },
         )) as PileupDataResult
         if (isAlive(self)) {
+          if (result.newTagValues) {
+            self.updateColorTagMap(result.newTagValues)
+          }
           self.setRpcData(regionNumber, result)
           self.setModificationsReady(true)
           self.setSimplexModifications(result.simplexModifications)
@@ -1367,37 +1339,6 @@ export default function stateModelFactory(
         }
         self.setRegionTooLarge(false, '')
 
-        // If colorBy is tag mode and tag values haven't been fetched yet,
-        // fetch them inline before the main data RPC so that colorTagMap
-        // is populated when the worker needs it.
-        if (self.colorBy.tag && !self.tagsReady) {
-          const sessionId = getRpcSessionId(self)
-          try {
-            const vals = (await session.rpcManager.call(
-              sessionId,
-              'PileupGetGlobalValueForTag',
-              {
-                adapterConfig,
-                tag: self.colorBy.tag,
-                sessionId,
-                regions: [region],
-              },
-            )) as string[]
-            if (isAlive(self)) {
-              self.updateColorTagMap(vals)
-              self.setTagsReady(true)
-            }
-          } catch (e) {
-            console.error('Failed to fetch tag values:', e)
-            if (isAlive(self)) {
-              self.setTagsReady(true)
-            }
-          }
-          if (fetchGenerations.get(regionNumber) !== gen) {
-            return
-          }
-        }
-
         const sequenceAdapter = getSequenceAdapter(session, region)
 
         await (self.renderingMode === 'linkedRead'
@@ -1417,17 +1358,6 @@ export default function stateModelFactory(
               regionNumber,
               stopToken,
             ))
-        if (self.showArcs) {
-          await fetchArcsData(
-            session,
-            adapterConfig,
-            sequenceAdapter,
-            region,
-            regionNumber,
-            stopToken,
-          )
-        }
-
         // Discard stale responses from older requests for this regionNumber
         if (fetchGenerations.get(regionNumber) !== gen) {
           return
@@ -1441,8 +1371,6 @@ export default function stateModelFactory(
           assemblyName: region.assemblyName,
         })
       }
-
-      let activeStopToken: string | undefined
 
       function reconcileLayouts(rpcDataMap: Map<number, PileupDataResult>) {
         const entries = [...rpcDataMap.entries()]
@@ -1588,14 +1516,66 @@ export default function stateModelFactory(
         }
       }
 
+      function computeAndSetArcs(
+        regions: { region: Region; regionNumber: number }[],
+      ) {
+        const allRegionInfos: {
+          refName: string
+          start: number
+          end: number
+          regionNumber: number
+        }[] = []
+        for (const [regionNumber, loaded] of self.loadedRegions) {
+          allRegionInfos.push({
+            refName: loaded.refName,
+            start: loaded.start,
+            end: loaded.end,
+            regionNumber,
+          })
+        }
+        for (const r of regions) {
+          if (!allRegionInfos.some(ri => ri.regionNumber === r.regionNumber)) {
+            allRegionInfos.push({
+              refName: r.region.refName,
+              start: r.region.start,
+              end: r.region.end,
+              regionNumber: r.regionNumber,
+            })
+          }
+        }
+        const { arcs, lines } = computeArcsFromPileupData(
+          self.rpcDataMap,
+          allRegionInfos,
+          {
+            colorByType: self.colorBy.type || 'insertSizeAndOrientation',
+            drawInter: self.arcsState.drawInter,
+            drawLongRange: self.arcsState.drawLongRange,
+          },
+        )
+        for (const ri of allRegionInfos) {
+          const data = self.rpcDataMap.get(ri.regionNumber)
+          if (!data) {
+            continue
+          }
+          const result = arcsToRegionResult(
+            arcs,
+            lines,
+            ri.refName,
+            data.regionStart,
+            self.height,
+          )
+          self.arcsState.setRpcData(ri.regionNumber, result)
+        }
+      }
+
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
       ) {
-        if (activeStopToken) {
-          stopStopToken(activeStopToken)
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
         }
         const stopToken = createStopToken()
-        activeStopToken = stopToken
+        const generation = self.fetchGeneration
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(null)
@@ -1604,19 +1584,36 @@ export default function stateModelFactory(
             fetchFeaturesForRegion(region, regionNumber, stopToken),
           )
           await Promise.all(promises)
-          if (isAlive(self) && self.rpcDataMap.size > 1) {
+          if (
+            !isAlive(self) ||
+            self.fetchGeneration !== generation ||
+            self.renderingStopToken !== stopToken
+          ) {
+            return
+          }
+          if (self.rpcDataMap.size > 1) {
             reconcileLayouts(self.rpcDataMap)
+          }
+          if (self.showArcs) {
+            computeAndSetArcs(regions)
           }
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
-            if (isAlive(self) && activeStopToken === stopToken) {
+            if (
+              isAlive(self) &&
+              self.fetchGeneration === generation &&
+              self.renderingStopToken === stopToken
+            ) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
         } finally {
-          if (isAlive(self) && activeStopToken === stopToken) {
-            activeStopToken = undefined
+          if (
+            isAlive(self) &&
+            self.fetchGeneration === generation &&
+            self.renderingStopToken === stopToken
+          ) {
             self.setRenderingStopToken(undefined)
             self.setLoading(false)
             self.setStatusMessage(undefined)
@@ -1804,33 +1801,18 @@ export default function stateModelFactory(
             ),
           )
 
-          // Autorun: fetch data for all visible regions.
-          //
-          // IMPORTANT: Observable tracking discipline. This autorun reads
-          // observables before its `await`, which MobX tracks as
-          // dependencies. Any observable that is BOTH read here AND written
-          // by the fetch it launches will cause a re-fire loop (the fetch
-          // mutates state → autorun re-fires → cancels the in-flight fetch
-          // → starts a new one → repeat forever).
-          //
-          // Tracked (read before await):
-          //   view.initialized, self.regionTooLarge, view.visibleBp,
-          //   self.fetchToken, view.staticRegions, self.loadedRegions
-          //
-          // Written by fetchRegions/fetchFeaturesForRegion:
-          //   self.renderingStopToken — uses `activeStopToken` closure
-          //     variable instead of reading the observable, so not tracked
-          //   self.isLoading, self.error — write-only, not read here
-          //   self.regionTooLargeState — only mutated on successful
-          //     completion (alongside setLoadedRegion) or when region is
-          //     too large (guard catches that case). Never mid-RPC.
-          //   self.featureDensityStats — not tracked by this autorun
+          // See MultiRegionDisplayMixin for the fetch lifecycle contract.
           addDisposer(
             self,
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                if (!view.initialized) {
+                if (
+                  !view.initialized ||
+                  self.regionTooLarge ||
+                  self.isLoading ||
+                  self.error
+                ) {
                   return
                 }
                 // Track fetchToken so bumps trigger re-fetch
@@ -1885,7 +1867,6 @@ export default function stateModelFactory(
                   prevInvalidationKey !== undefined &&
                   key !== prevInvalidationKey
                 ) {
-                  self.setLoading(true)
                   self.setError(null)
                   self.clearAllRpcData()
                   self.bumpFetchToken()

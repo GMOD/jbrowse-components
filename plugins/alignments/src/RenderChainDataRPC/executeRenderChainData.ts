@@ -207,6 +207,9 @@ export async function executeRenderChainData({
     hardclips,
     modifications,
     tagColors,
+    uniqueTagValues,
+    nextPositions,
+    suppAlignments,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
     const featuresData: ChainFeatureData[] = []
     const gapsData: GapData[] = []
@@ -216,6 +219,8 @@ export async function executeRenderChainData({
     const hardclipsData: HardclipData[] = []
     const modificationsData: ModificationEntry[] = []
     const tagColorValues: string[] = []
+    const nextPositions: number[] = []
+    const suppAlignments: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
 
     for (const feature of keptFeatures) {
@@ -230,6 +235,9 @@ export async function executeRenderChainData({
         pairOrientationStr: feature.get('pair_orientation'),
         templateLength: feature.get('template_length') ?? 0,
       })
+
+      nextPositions.push(feature.get('next_pos') ?? 0)
+      suppAlignments.push(feature.get('tags')?.SA ?? feature.get('SA') ?? '')
 
       if (isTagColorMode) {
         tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
@@ -286,6 +294,10 @@ export async function executeRenderChainData({
 
     modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
 
+    const uniqueTagValues = isTagColorMode
+      ? [...new Set(tagColorValues)].filter(v => v !== '')
+      : undefined
+
     return {
       features: featuresData,
       gaps: gapsData,
@@ -295,6 +307,9 @@ export async function executeRenderChainData({
       hardclips: hardclipsData,
       modifications: modificationsData,
       tagColors: readTagColors,
+      uniqueTagValues,
+      nextPositions,
+      suppAlignments,
     }
   })
 
@@ -636,6 +651,10 @@ export async function executeRenderChainData({
     simplexModifications: Array.from(detectedSimplexModifications),
 
     insertSizeStats: chainStats,
+
+    newTagValues: uniqueTagValues,
+    readNextPositions: new Uint32Array(nextPositions),
+    readSuppAlignments: suppAlignments,
   }
 
   const transferables = [
@@ -692,6 +711,7 @@ export async function executeRenderChainData({
     result.chainFirstReadIndices!.buffer,
     result.readChainIndices!.buffer,
     ...(result.chainFlatbushData ? [result.chainFlatbushData] : []),
+    result.readNextPositions!.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

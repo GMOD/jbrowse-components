@@ -326,6 +326,10 @@ export async function executeRenderPileupData({
     modifications,
     tagColors,
     sortTagValues,
+    uniqueTagValues,
+    nextRefs,
+    nextPositions,
+    suppAlignments,
   } = await updateStatus('Processing alignments', statusCallback, async () => {
     const featuresData: FeatureData[] = []
     const gapsData: GapData[] = []
@@ -335,6 +339,9 @@ export async function executeRenderPileupData({
     const hardclipsData: HardclipData[] = []
     const modificationsData: ModificationEntry[] = []
     const tagColorValues: string[] = []
+    const nextPositions: number[] = []
+    const nextRefs: string[] = []
+    const suppAlignments: string[] = []
     const isTagColorMode = colorBy?.type === 'tag' && colorBy.tag && colorTagMap
     const sortTagValues: SortTagValuesMap | undefined =
       sortedBy?.type === 'tag' && sortedBy.tag
@@ -347,6 +354,10 @@ export async function executeRenderPileupData({
       const strand = feature.get('strand')
 
       featuresData.push(buildBaseFeatureData(feature))
+
+      nextPositions.push(feature.get('next_pos') ?? 0)
+      nextRefs.push(feature.get('next_ref') ?? '')
+      suppAlignments.push(feature.get('tags')?.SA ?? feature.get('SA') ?? '')
 
       if (isTagColorMode) {
         tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
@@ -410,6 +421,10 @@ export async function executeRenderPileupData({
 
     modificationsData.sort((a, b) => a.modType.localeCompare(b.modType))
 
+    const uniqueTagValues = isTagColorMode
+      ? [...new Set(tagColorValues)].filter(v => v !== '')
+      : undefined
+
     return {
       features: featuresData,
       gaps: gapsData,
@@ -420,6 +435,10 @@ export async function executeRenderPileupData({
       modifications: modificationsData,
       tagColors: readTagColors,
       sortTagValues,
+      uniqueTagValues,
+      nextRefs,
+      nextPositions,
+      suppAlignments,
     }
   })
 
@@ -633,6 +652,11 @@ export async function executeRenderPileupData({
     numIndicators: noncovCoverage.indicatorCount,
 
     insertSizeStats,
+
+    newTagValues: uniqueTagValues,
+    readNextRefs: nextRefs,
+    readNextPositions: new Uint32Array(nextPositions),
+    readSuppAlignments: suppAlignments,
   }
 
   const transferables = [
@@ -685,6 +709,7 @@ export async function executeRenderPileupData({
     result.sashimiScores.buffer,
     result.sashimiColorTypes.buffer,
     result.sashimiCounts.buffer,
+    result.readNextPositions!.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables)

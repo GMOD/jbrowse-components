@@ -296,15 +296,13 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      let currentFetchId = 0
-
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
         stopToken: string,
         bpPerPx: number,
         resolution: number,
-        fetchId: number,
+        generation: number,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
@@ -333,7 +331,7 @@ export default function stateModelFactory(
           },
         )) as WiggleDataResult
 
-        if (isAlive(self) && fetchId === currentFetchId) {
+        if (isAlive(self) && generation === self.fetchGeneration) {
           self.setRpcDataForRegion(regionNumber, result)
           self.setLoadedRegionForRegion(regionNumber, {
             refName: region.refName,
@@ -341,8 +339,6 @@ export default function stateModelFactory(
             end: region.end,
           })
           self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
-        } else if (isAlive(self)) {
-          console.warn('discarding stale result')
         }
       }
 
@@ -356,7 +352,6 @@ export default function stateModelFactory(
         }
         const stopToken = createStopToken()
         self.setRenderingStopToken(stopToken)
-        const fetchId = ++currentFetchId
         const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
@@ -368,14 +363,18 @@ export default function stateModelFactory(
               stopToken,
               bpPerPx,
               resolution,
-              fetchId,
+              generation,
             ),
           )
           await Promise.all(promises)
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch wiggle features:', e)
-            if (isAlive(self) && self.fetchGeneration === generation) {
+            if (
+              isAlive(self) &&
+              self.fetchGeneration === generation &&
+              self.renderingStopToken === stopToken
+            ) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }
@@ -481,7 +480,11 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                if (!view.initialized) {
+                if (
+                  !view.initialized ||
+                  self.isLoading ||
+                  self.error
+                ) {
                   return
                 }
                 const { bpPerPx } = view
@@ -510,7 +513,7 @@ export default function stateModelFactory(
               },
               {
                 name: 'FetchVisibleRegions',
-                delay: 500,
+                delay: 300,
               },
             ),
           )

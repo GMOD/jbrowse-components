@@ -516,7 +516,9 @@ export default function stateModelFactory(
                 : self.maxFeatureCount,
             stopToken,
             statusCallback: (msg: string) => {
-              self.setStatusMessage(msg)
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
             },
           },
         )) as RenderFeatureDataResult
@@ -582,13 +584,21 @@ export default function stateModelFactory(
             fetchFeaturesForRegion(region, regionNumber, bpPerPx, stopToken),
           )
           const results = await Promise.all(promises)
-          if (isAlive(self) && self.fetchGeneration === generation) {
+          if (
+            isAlive(self) &&
+            self.fetchGeneration === generation &&
+            self.renderingStopToken === stopToken
+          ) {
             applyFetchResults(results)
           }
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
-            if (isAlive(self) && self.fetchGeneration === generation) {
+            if (
+              isAlive(self) &&
+              self.fetchGeneration === generation &&
+              self.renderingStopToken === stopToken
+            ) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           }

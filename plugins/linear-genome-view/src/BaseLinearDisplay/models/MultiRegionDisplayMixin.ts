@@ -20,10 +20,43 @@ export interface Region {
 /**
  * Mixin for displays that fetch data per-region.
  *
- * Subclasses MUST implement `clearDisplaySpecificData()` to clear their own
- * rpcDataMap and any other display-specific state. The mixin's
- * `clearAllRpcData()` calls it automatically — subclasses should never need
- * to override `clearAllRpcData` itself.
+ * ## Fetch lifecycle contract
+ *
+ * Subclasses implement a `fetchRegions` function and a fetch autorun.
+ * The autorun MUST guard on `self.isLoading` and `self.error` to prevent
+ * re-fire loops (zombie Promise.all completions modifying loadedRegions
+ * while a fetch is running, or repeated retries after an error).
+ *
+ * The fetch autorun pattern:
+ *
+ *     autorun(async () => {
+ *       if (!view.initialized || self.isLoading || self.error) return
+ *       // ... check which regions need fetching ...
+ *       if (needed.length > 0) await fetchRegions(needed)
+ *     }, { delay: 300 })
+ *
+ * The fetchRegions pattern:
+ *
+ *     1. Stop old token, create new token, capture generation
+ *     2. Set renderingStopToken, isLoading=true, error=null
+ *     3. try: await Promise.all(per-region fetches)
+ *     4. catch: if not abort AND generation+token match → set error
+ *     5. finally: if generation+token match → clear token, loading, status
+ *
+ * Staleness is detected by checking BOTH fetchGeneration (catches external
+ * cancellation via clearAllRpcData) AND renderingStopToken (catches
+ * self-supersession when a new fetchRegions call starts).
+ *
+ * ## Cancellation
+ *
+ * `clearAllRpcData()` is the canonical way to cancel in-flight fetches.
+ * It stops the active token, resets isLoading, clears loadedRegions,
+ * increments fetchGeneration, and calls clearDisplaySpecificData().
+ * The old fetch's finally block will detect the generation mismatch
+ * and skip cleanup (which clearAllRpcData already handled).
+ *
+ * Subclasses MUST implement `clearDisplaySpecificData()` to clear their
+ * own rpcDataMap and any other display-specific state.
  */
 export default function MultiRegionDisplayMixin() {
   return types
@@ -74,6 +107,7 @@ export default function MultiRegionDisplayMixin() {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
         }
+        self.isLoading = false
         self.loadedRegions = new Map()
         self.fetchGeneration++
         self.clearDisplaySpecificData()

@@ -72,12 +72,12 @@ export async function waitForCanvasRendered(
 ) {
   await page.waitForFunction(
     (sel: string) => {
-      const canvas = document.querySelector(sel)
+      const canvas = document.querySelector(sel) as HTMLCanvasElement | null
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         return false
       }
 
-      const parent = canvas.closest('[data-testid^="drawn-"]')
+      const parent = canvas.closest('[data-testid^="drawn-"]') as HTMLElement | null
       if (parent) {
         return parent.dataset.testid === 'drawn-true'
       }
