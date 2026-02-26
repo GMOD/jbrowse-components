@@ -176,18 +176,17 @@ async function fetchFeatureDetails(self: any, featureId: string) {
   if (!info) {
     return undefined
   }
-  let assemblyName: string | undefined
-  for (const loaded of self.loadedRegions.values()) {
-    if (loaded.refName === info.refName) {
-      assemblyName = loaded.assemblyName
-      break
-    }
+  const loaded = [...self.loadedRegions.values()].find(
+    r => r.refName === info.refName,
+  )
+  if (!loaded) {
+    throw new Error(`no loaded region found for refName ${info.refName}`)
   }
   const region = {
     refName: info.refName,
     start: info.start,
     end: info.end,
-    assemblyName: assemblyName ?? '',
+    assemblyName: loaded.assemblyName,
   }
   const sequenceAdapter = getSequenceAdapter(session, region)
   const sessionId = getRpcSessionId(self)

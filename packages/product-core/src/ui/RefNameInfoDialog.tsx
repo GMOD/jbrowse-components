@@ -35,7 +35,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 }) {
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
-  const [refNames, setRefNames] = useState<Record<string, string[]>>()
+  const [refNames, setRefNames] = useState<readonly (readonly [string, string[]])[]>()
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
   const trackId = readConf(config, 'trackId') as string
@@ -52,11 +52,12 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               assemblyName,
               await rpcManager.call(trackId, 'CoreGetRefNames', {
                 adapterConfig,
+                regions: [{ assemblyName }],
               }),
             ] as const
           }),
         )
-        setRefNames(Object.fromEntries(map))
+        setRefNames(map)
       } catch (e) {
         console.error(e)
         setError(e)
@@ -64,8 +65,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
     })()
   }, [config, rpcManager, trackId, assemblyNames])
 
-  const names = refNames ? Object.entries(refNames) : []
-  const result = names
+  const result = (refNames ?? [])
     .flatMap(([assemblyName, refNames]) => {
       return [
         `--- ${assemblyName} ---`,
@@ -97,7 +97,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               onClick={async () => {
                 const { default: copy } = await import('copy-to-clipboard')
                 copy(
-                  names
+                  (refNames ?? [])
                     .flatMap(([assemblyName, refNames]) => [
                       `--- ${assemblyName} ---`,
                       ...refNames,

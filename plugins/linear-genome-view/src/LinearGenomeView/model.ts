@@ -1462,7 +1462,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               refName: string
               start: number
               end: number
-              assemblyName?: string
+              assemblyName: string
               regionNumber: number
             }
           >()
