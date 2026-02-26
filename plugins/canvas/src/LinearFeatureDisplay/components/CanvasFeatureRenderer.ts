@@ -124,7 +124,8 @@ export class CanvasFeatureRenderer {
       bindGroupLayouts: [CanvasFeatureRenderer.bindGroupLayout],
     })
 
-    const multisample: GPUMultisampleState = { count: 4 }
+    // DEBUG: using sampleCount 1 to test if MSAA causes multi-region artifacts
+    const multisample: GPUMultisampleState = { count: 1 }
 
     const makePipeline = (code: string) => {
       const module = device.createShaderModule({ code })
@@ -301,24 +302,8 @@ export class CanvasFeatureRenderer {
       this.canvas.height = bufH
     }
 
-    if (
-      !this.msaaTexture ||
-      this.msaaWidth !== bufW ||
-      this.msaaHeight !== bufH
-    ) {
-      this.msaaTexture?.destroy()
-      this.msaaTexture = device.createTexture({
-        size: [bufW, bufH],
-        format: 'bgra8unorm',
-        sampleCount: 4,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-      })
-      this.msaaWidth = bufW
-      this.msaaHeight = bufH
-    }
-
-    const msaaView = this.msaaTexture.createView()
-    const resolveTarget = this.context.getCurrentTexture().createView()
+    // DEBUG: MSAA disabled - render directly to canvas texture
+    const canvasView = this.context.getCurrentTexture().createView()
     let hasRenderedBlock = false
 
     for (const block of blocks) {
@@ -367,8 +352,7 @@ export class CanvasFeatureRenderer {
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
-            view: msaaView,
-            resolveTarget,
+            view: canvasView,
             loadOp: (hasRenderedBlock ? 'load' : 'clear') as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
             ...(!hasRenderedBlock && {
@@ -426,7 +410,7 @@ export class CanvasFeatureRenderer {
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
-            view: resolveTarget,
+            view: canvasView,
             loadOp: 'clear' as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
             clearValue: { r: 0, g: 0, b: 0, a: 0 },
