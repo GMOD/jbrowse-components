@@ -40,7 +40,7 @@ export function getMultiSampleVariantSourcesAutorun(self: {
           const stopToken = createStopToken()
           self.setSourcesLoading(stopToken)
           const sessionId = getRpcSessionId(self)
-          const sources = (await rpcManager.call(
+          const sources = await rpcManager.call(
             sessionId,
             'MultiSampleVariantGetSources',
             {
@@ -53,7 +53,7 @@ export function getMultiSampleVariantSourcesAutorun(self: {
                 }
               },
             },
-          )) as Source[]
+          )
           if (isAlive(self)) {
             self.setSources(sources)
           }

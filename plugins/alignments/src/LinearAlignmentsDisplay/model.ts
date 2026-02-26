@@ -1269,7 +1269,7 @@ export default function stateModelFactory(
       // Estimate bytes for a region via adapter index (cheap, no feature fetch).
       // Returns the stats without modifying model state — the caller applies
       // state changes only after passing the generation staleness check.
-      async function fetchByteEstimate(adapterConfig: unknown, region: Region) {
+      async function fetchByteEstimate(adapterConfig: Record<string, unknown>, region: Region) {
         const session = getSession(self)
         const sessionId = getRpcSessionId(self)
         const stats = (await session.rpcManager.call(

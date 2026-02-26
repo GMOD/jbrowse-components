@@ -71,7 +71,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
           adapterConfig,
         } = model
         const sessionId = getRpcSessionId(model)
-        const ret = (await rpcManager.call(
+        const ret = await rpcManager.call(
           sessionId,
           'MultiSampleVariantGetGenotypeMatrix',
           {
@@ -82,7 +82,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
             sessionId,
             adapterConfig,
           },
-        )) as Record<string, number[]>
+        )
 
         setRet(ret)
       } catch (e) {

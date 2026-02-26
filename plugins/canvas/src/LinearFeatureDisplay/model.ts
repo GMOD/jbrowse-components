@@ -440,7 +440,7 @@ export default function stateModelFactory(
               featureId: featureIdToFetch,
               region,
             },
-          )) as { feature: Record<string, unknown> | undefined }
+          )) as { feature?: Record<string, unknown> }
 
           if (result.feature && isAlive(self)) {
             // @ts-expect-error
@@ -492,7 +492,7 @@ export default function stateModelFactory(
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
 
-        const result = (await rpcManager.call(
+        const result = await rpcManager.call(
           session.id ?? '',
           'RenderFeatureData',
           {
@@ -521,7 +521,7 @@ export default function stateModelFactory(
               }
             },
           },
-        )) as RenderFeatureDataResult
+        )
 
         if ('regionTooLarge' in result) {
           return {
@@ -792,7 +792,7 @@ export default function stateModelFactory(
                   if (!region) {
                     return
                   }
-                  const result = (await rpcManager.call(
+                  const result = await rpcManager.call(
                     session.id ?? '',
                     'GetCanvasFeatureDetails',
                     {
@@ -801,7 +801,7 @@ export default function stateModelFactory(
                       featureId: feat.id(),
                       region,
                     },
-                  )) as { feature: Record<string, unknown> | undefined }
+                  )
                   if (!result.feature || !isAlive(self)) {
                     return
                   }

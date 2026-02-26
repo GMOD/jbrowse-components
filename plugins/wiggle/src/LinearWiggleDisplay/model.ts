@@ -312,7 +312,7 @@ export default function stateModelFactory(
           return
         }
 
-        const result = (await rpcManager.call(
+        const result = await rpcManager.call(
           session.id ?? '',
           'RenderWiggleData',
           {
@@ -329,7 +329,7 @@ export default function stateModelFactory(
               }
             },
           },
-        )) as WiggleDataResult
+        )
 
         if (isAlive(self) && generation === self.fetchGeneration) {
           self.setRpcDataForRegion(regionNumber, result)

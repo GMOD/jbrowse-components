@@ -64,11 +64,11 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
       }
       const { rpcManager } = getSession(self)
       const { adapterConfig, regions, sessionId } = args
-      const rawFeatures = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+      const rawFeatures = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         regions,
         sessionId,
         adapterConfig,
-      })) as Feature[]
+      })
       return { features: dedupe(rawFeatures, f => f.id()) }
     },
     {

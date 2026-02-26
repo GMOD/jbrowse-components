@@ -2,6 +2,8 @@ import type { Feature } from '../util/simpleFeature.ts'
 import type { Region } from '../util/types/index.ts'
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
 
+type RegionLike = { refName: string; start: number; end: number; assemblyName?: string }
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RpcRegistry {
   CoreGetRefNames: {
@@ -22,7 +24,7 @@ export interface RpcRegistry {
   }
   CoreGetSequence: {
     args: {
-      region: Region
+      region: RegionLike
       adapterConfig: Record<string, unknown>
       stopToken?: string
       [key: string]: unknown
@@ -31,7 +33,7 @@ export interface RpcRegistry {
   }
   CoreGetFeatures: {
     args: {
-      regions: Region[]
+      regions: RegionLike[]
       adapterConfig: Record<string, unknown>
       statusCallback?: (arg: string) => void
       stopToken?: string
@@ -43,7 +45,7 @@ export interface RpcRegistry {
   CoreGetFeatureDensityStats: {
     args: {
       adapterConfig: Record<string, unknown>
-      regions: Region[]
+      regions: RegionLike[]
       stopToken?: string
       headers?: Record<string, string>
       [key: string]: unknown
@@ -68,7 +70,7 @@ export interface RpcRegistry {
   }
   CoreGetExportData: {
     args: {
-      regions: Region[]
+      regions: RegionLike[]
       adapterConfig: Record<string, unknown>
       formatType: string
       opts?: unknown

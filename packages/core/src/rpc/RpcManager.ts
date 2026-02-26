@@ -135,16 +135,17 @@ export default class RpcManager {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
+    const a = args as Record<string, unknown>
     const driverForCall = await this.getDriverForCall(
       sessionId,
       functionName,
-      args,
+      a,
     )
     return driverForCall.call(
       this.pluginManager,
       sessionId,
       functionName,
-      args,
+      a,
       opts ?? {},
     ) as any
   }

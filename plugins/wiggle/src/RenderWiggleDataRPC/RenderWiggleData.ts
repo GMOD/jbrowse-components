@@ -1,6 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
+import type { WiggleDataResult } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 
 interface RenderWiggleDataArgs {
@@ -8,6 +9,15 @@ interface RenderWiggleDataArgs {
   adapterConfig: Record<string, unknown>
   region: Region
   bicolorPivot?: number
+}
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderWiggleData: {
+      args: Record<string, unknown>
+      return: WiggleDataResult
+    }
+  }
 }
 
 export default class RenderWiggleData extends RpcMethodType {

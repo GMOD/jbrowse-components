@@ -1,9 +1,19 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
+import type { LDDataResult } from './types.ts'
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderLDData: {
+      args: Record<string, unknown>
+      return: LDDataResult
+    }
+  }
+}
 
 interface RenderLDDataArgs {
   sessionId: string

@@ -78,10 +78,10 @@ async function loadRefNameMap(
     sessionId || 'assemblyRpc',
     'CoreGetRefNames',
     {
-      adapterConfig,
-      sequenceAdapter,
-      stopToken,
       ...options,
+      adapterConfig: adapterConfig as Record<string, unknown>,
+      sequenceAdapter: sequenceAdapter as Record<string, unknown> | undefined,
+      stopToken,
     },
     { timeout: 1000000 },
   )

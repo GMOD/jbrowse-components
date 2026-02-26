@@ -57,7 +57,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
         const { rpcManager } = getSession(model)
         const { sourcesWithoutLayout, adapterConfig } = model
         const sessionId = getRpcSessionId(model)
-        const ret = (await rpcManager.call(
+        const ret = await rpcManager.call(
           sessionId,
           'MultiWiggleGetScoreMatrix',
           {
@@ -67,7 +67,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
             adapterConfig,
             bpPerPx: bpPerPx / +samplesPerPixel,
           },
-        )) as Record<string, number[]>
+        )
 
         setRet(ret)
       } catch (e) {

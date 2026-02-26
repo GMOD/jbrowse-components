@@ -109,7 +109,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
-                const ret = (await rpcManager.call(
+                const ret = await rpcManager.call(
                   sessionId,
                   'MultiWiggleClusterScoreMatrix',
                   {
@@ -123,7 +123,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[]; tree: string }
+                )
 
                 const currentLayout = model.layout.length
                   ? model.layout

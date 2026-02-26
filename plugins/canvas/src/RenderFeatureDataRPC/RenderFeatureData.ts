@@ -1,7 +1,20 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { RenderFeatureDataArgs } from './rpcTypes.ts'
+import type { RenderFeatureDataArgs, RenderFeatureDataResult } from './rpcTypes.ts'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderFeatureData: {
+      args: Record<string, unknown>
+      return: RenderFeatureDataResult
+    }
+    GetCanvasFeatureDetails: {
+      args: Record<string, unknown>
+      return: { feature?: Record<string, unknown> }
+    }
+  }
+}
 
 export default class RenderFeatureData extends RpcMethodType {
   name = 'RenderFeatureData'

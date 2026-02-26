@@ -84,7 +84,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
-                const ret = (await rpcManager.call(
+                const ret = await rpcManager.call(
                   sessionId,
                   'MultiSampleVariantClusterGenotypeMatrix',
                   {
@@ -101,7 +101,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[]; tree: string }
+                )
 
                 if (isHaplotypeClustering && sampleInfo) {
                   const expandedSources = expandSourcesToHaplotypes({
