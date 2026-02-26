@@ -17,6 +17,7 @@ const UNIFORM_SIZE = 48
 const RECT_STRIDE = 8
 const LINE_STRIDE = 8
 const ARROW_STRIDE = 8
+const MAX_BLOCKS = 64
 
 interface GpuRegionData {
   regionStart: number
@@ -47,6 +48,7 @@ export class CanvasFeatureRenderer {
   private static chevronPipeline: GPURenderPipeline | null = null
   private static arrowPipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
+  private static uniformAlignment = 256
 
   onDeviceLost: (() => void) | null = null
 
@@ -56,6 +58,7 @@ export class CanvasFeatureRenderer {
   private msaaTexture: GPUTexture | null = null
   private msaaWidth = 0
   private msaaHeight = 0
+  private uniformStride = 256
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
@@ -82,6 +85,8 @@ export class CanvasFeatureRenderer {
     }
     if (CanvasFeatureRenderer.device !== device) {
       CanvasFeatureRenderer.device = device
+      CanvasFeatureRenderer.uniformAlignment =
+        device.limits.minUniformBufferOffsetAlignment
       CanvasFeatureRenderer.initPipelines(device)
     }
     return device
@@ -115,7 +120,7 @@ export class CanvasFeatureRenderer {
         {
           binding: 1,
           visibility: GPUShaderStage.VERTEX,
-          buffer: { type: 'uniform' },
+          buffer: { type: 'uniform', hasDynamicOffset: true },
         },
       ],
     })
@@ -124,8 +129,7 @@ export class CanvasFeatureRenderer {
       bindGroupLayouts: [CanvasFeatureRenderer.bindGroupLayout],
     })
 
-    // DEBUG: using sampleCount 1 to test if MSAA causes multi-region artifacts
-    const multisample: GPUMultisampleState = { count: 1 }
+    const multisample: GPUMultisampleState = { count: 4 }
 
     const makePipeline = (code: string) => {
       const module = device.createShaderModule({ code })
@@ -170,8 +174,12 @@ export class CanvasFeatureRenderer {
       const result = await initGpuContext(this.canvas)
       if (result) {
         this.context = result.context
+        this.uniformStride = Math.max(
+          UNIFORM_SIZE,
+          CanvasFeatureRenderer.uniformAlignment,
+        )
         this.uniformBuffer = device.createBuffer({
-          size: UNIFORM_SIZE,
+          size: this.uniformStride * MAX_BLOCKS,
           usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         })
         return true
@@ -302,11 +310,33 @@ export class CanvasFeatureRenderer {
       this.canvas.height = bufH
     }
 
-    // DEBUG: MSAA disabled - render directly to canvas texture
-    const canvasView = this.context.getCurrentTexture().createView()
-    let hasRenderedBlock = false
+    if (
+      !this.msaaTexture ||
+      this.msaaWidth !== bufW ||
+      this.msaaHeight !== bufH
+    ) {
+      this.msaaTexture?.destroy()
+      this.msaaTexture = device.createTexture({
+        size: [bufW, bufH],
+        format: 'bgra8unorm',
+        sampleCount: 4,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      })
+      this.msaaWidth = bufW
+      this.msaaHeight = bufH
+    }
 
-    for (const block of blocks) {
+    const msaaView = this.msaaTexture.createView()
+    const resolveTarget = this.context.getCurrentTexture().createView()
+
+    const blockParams: {
+      region: GpuRegionData
+      scissorX: number
+      scissorW: number
+      uniformOffset: number
+    }[] = []
+
+    for (const [blockIdx, block] of blocks.entries()) {
       const region = this.regions.get(block.regionNumber)
       if (!region) {
         continue
@@ -333,8 +363,8 @@ export class CanvasFeatureRenderer {
       const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
-      this.writeUniforms(
-        device,
+      const uniformOffset = blockIdx * this.uniformStride
+      this.fillUniforms(
         bpStartHi,
         bpStartLo,
         clippedLengthBp,
@@ -344,24 +374,49 @@ export class CanvasFeatureRenderer {
         scrollY,
         bpPerPx,
       )
+      device.queue.writeBuffer(
+        this.uniformBuffer!,
+        uniformOffset,
+        this.uniformData,
+      )
 
-      // Submit per-block: writeBuffer is a queue operation, so we must
-      // submit each block's command buffer separately to ensure the GPU
-      // sees the correct uniform values for each render pass.
+      blockParams.push({ region, scissorX, scissorW, uniformOffset })
+    }
+
+    if (blockParams.length === 0) {
+      if (this.regions.size === 0) {
+        return
+      }
       const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
-            view: canvasView,
-            loadOp: (hasRenderedBlock ? 'load' : 'clear') as GPULoadOp,
+            view: resolveTarget,
+            loadOp: 'clear' as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
-            ...(!hasRenderedBlock && {
-              clearValue: { r: 0, g: 0, b: 0, a: 0 },
-            }),
+            clearValue: { r: 0, g: 0, b: 0, a: 0 },
           },
         ],
       })
+      pass.end()
+      device.queue.submit([encoder.finish()])
+      return
+    }
 
+    const encoder = device.createCommandEncoder()
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: msaaView,
+          resolveTarget,
+          loadOp: 'clear' as GPULoadOp,
+          storeOp: 'store' as GPUStoreOp,
+          clearValue: { r: 0, g: 0, b: 0, a: 0 },
+        },
+      ],
+    })
+
+    for (const { region, scissorX, scissorW, uniformOffset } of blockParams) {
       pass.setViewport(
         Math.round(scissorX * dpr),
         0,
@@ -379,7 +434,7 @@ export class CanvasFeatureRenderer {
 
       if (region.lineBindGroup && region.lineCount > 0) {
         pass.setPipeline(CanvasFeatureRenderer.linePipeline!)
-        pass.setBindGroup(0, region.lineBindGroup)
+        pass.setBindGroup(0, region.lineBindGroup, [uniformOffset])
         pass.draw(6, region.lineCount)
         pass.setPipeline(CanvasFeatureRenderer.chevronPipeline!)
         pass.draw(MAX_VISIBLE_CHEVRONS_PER_LINE * 12, region.lineCount)
@@ -387,39 +442,19 @@ export class CanvasFeatureRenderer {
 
       if (region.rectBindGroup && region.rectCount > 0) {
         pass.setPipeline(CanvasFeatureRenderer.rectPipeline)
-        pass.setBindGroup(0, region.rectBindGroup)
+        pass.setBindGroup(0, region.rectBindGroup, [uniformOffset])
         pass.draw(6, region.rectCount)
       }
 
       if (region.arrowBindGroup && region.arrowCount > 0) {
         pass.setPipeline(CanvasFeatureRenderer.arrowPipeline!)
-        pass.setBindGroup(0, region.arrowBindGroup)
+        pass.setBindGroup(0, region.arrowBindGroup, [uniformOffset])
         pass.draw(9, region.arrowCount)
       }
-
-      pass.end()
-      device.queue.submit([encoder.finish()])
-      hasRenderedBlock = true
     }
 
-    if (!hasRenderedBlock) {
-      if (this.regions.size === 0) {
-        return
-      }
-      const encoder = device.createCommandEncoder()
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: canvasView,
-            loadOp: 'clear' as GPULoadOp,
-            storeOp: 'store' as GPUStoreOp,
-            clearValue: { r: 0, g: 0, b: 0, a: 0 },
-          },
-        ],
-      })
-      pass.end()
-      device.queue.submit([encoder.finish()])
-    }
+    pass.end()
+    device.queue.submit([encoder.finish()])
   }
 
   pruneStaleRegions(activeRegions: number[]) {
@@ -473,13 +508,19 @@ export class CanvasFeatureRenderer {
       layout: CanvasFeatureRenderer.bindGroupLayout!,
       entries: [
         { binding: 0, resource: { buffer: storageBuffer } },
-        { binding: 1, resource: { buffer: this.uniformBuffer! } },
+        {
+          binding: 1,
+          resource: {
+            buffer: this.uniformBuffer!,
+            offset: 0,
+            size: UNIFORM_SIZE,
+          },
+        },
       ],
     })
   }
 
-  private writeUniforms(
-    device: GPUDevice,
+  private fillUniforms(
     bpRangeHi: number,
     bpRangeLo: number,
     bpRangeLength: number,
@@ -498,7 +539,6 @@ export class CanvasFeatureRenderer {
     this.uniformF32[6] = scrollY
     this.uniformF32[7] = bpPerPx
     this.uniformF32[8] = 0
-    device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 
   private splitPositionWithFrac(value: number): [number, number] {

@@ -1,8 +1,6 @@
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-export function reconcileLayouts(
-  rpcDataMap: Map<number, FeatureDataResult>,
-) {
+export function reconcileLayouts(rpcDataMap: Map<number, FeatureDataResult>) {
   const entries = [...rpcDataMap.entries()]
   if (entries.length <= 1) {
     return

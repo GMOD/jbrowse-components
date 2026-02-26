@@ -1,6 +1,9 @@
 import { reconcileLayouts } from './reconcileLayouts.ts'
 
-import type { FeatureDataResult, FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureDataResult,
+  FlatbushItem,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 function makeItem(
   featureId: string,
@@ -192,7 +195,15 @@ describe('reconcileLayouts', () => {
   it('shifts subfeatureInfos preserving height', () => {
     const item1 = makeItem('geneA', 100, 500, 0, 30)
     const item2 = makeItem('geneA', 100, 500, 50, 80)
-    const sub = { featureId: 'tx1', parentFeatureId: 'geneA', type: 'mRNA', startBp: 100, endBp: 500, topPx: 55, bottomPx: 70 }
+    const sub = {
+      featureId: 'tx1',
+      parentFeatureId: 'geneA',
+      type: 'mRNA',
+      startBp: 100,
+      endBp: 500,
+      topPx: 55,
+      bottomPx: 70,
+    }
     const data2 = makeRegionData({ flatbushItems: [item2] })
     data2.subfeatureInfos = [sub]
     const map = new Map([
@@ -318,7 +329,7 @@ describe('reconcileLayouts', () => {
       data1.flatbushItems[0]!,
       data2.flatbushItems[0]!,
     ]
-    expect(items[0].topPx).toBe(items[1].topPx)
-    expect(items[1].topPx).toBe(items[2].topPx)
+    expect(items[0]!.topPx).toBe(items[1]!.topPx)
+    expect(items[1]!.topPx).toBe(items[2]!.topPx)
   })
 })

@@ -534,7 +534,7 @@ export default function stateModelFactory(
       },
 
       setRenderingType(type: string) {
-        self.renderingTypeSetting = type
+        self.renderingTypeSetting = type as typeof self.renderingTypeSetting
       },
 
       setSummaryScoreMode(val: string) {

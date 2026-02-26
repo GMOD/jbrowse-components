@@ -48,6 +48,7 @@ interface LinearFeatureDisplayModel {
   setFeatureDensityStatsLimit: () => void
   reload: () => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
+  mouseoverExtraInformation: string | undefined
   setMouseoverExtraInformation: (info: string | undefined) => void
   selectFeatureById: (
     featureInfo: FlatbushItem,
@@ -268,7 +269,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       })
     }
 
-    console.log('DEBUG renderBlocks', { numBlocks: blocks.length, bpPerPx: view.bpPerPx, blocks: blocks.map(b => ({ region: b.regionNumber, startPx: b.screenStartPx.toFixed(1), endPx: b.screenEndPx.toFixed(1), bpRange: `${b.bpRangeX[0]}-${b.bpRangeX[1]}` })) })
     renderer.renderBlocks(blocks, {
       scrollY: scrollYRef.current,
       canvasWidth: view.trackWidthPx,
@@ -363,7 +363,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         continue
       }
       uploadedDataRef.current.set(regionNumber, data)
-      console.log(`DEBUG region ${regionNumber}: rects=${data.numRects} lines=${data.numLines} arrows=${data.numArrows} aminoAcid=${data.aminoAcidOverlay?.length ?? 0}`)
       renderer.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
         rectPositions: data.rectPositions,
@@ -683,7 +682,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     ) {
       return null
     }
-    console.log('DEBUG amino acid overlay rendering', { bpPerPx, shouldRender: shouldRenderPeptideText(bpPerPx) })
 
     const elements: React.ReactElement[] = []
 
@@ -915,11 +913,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           cursor: hoveredFeature ? 'pointer' : 'default',
         }}
       />
-
-      {/* DEBUG: block boundary visualization */}
-      {visibleRegions.map((vr, i) => (
-        <div key={`debug-block-${i}`} style={{ position: 'absolute', top: 0, left: vr.screenStartPx, width: vr.screenEndPx - vr.screenStartPx, height: '100%', pointerEvents: 'none', borderLeft: '1px solid red', borderRight: '1px solid blue', opacity: 0.5 }} />
-      ))}
 
       {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
         (elements, i) =>

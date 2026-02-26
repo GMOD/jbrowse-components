@@ -27,14 +27,14 @@ import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, reaction } from 'mobx'
 
-import { getTranscripts, hasIntrons } from './components/CollapseIntronsDialog/util.ts'
+import {
+  getTranscripts,
+  hasIntrons,
+} from './components/CollapseIntronsDialog/util.ts'
 import { reconcileLayouts } from './reconcileLayouts.ts'
 
 const CollapseIntronsDialog = lazy(
-  () =>
-    import(
-      './components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'
-    ),
+  () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
 import type {
@@ -804,9 +804,7 @@ export default function stateModelFactory(
                   }
                   const view = getContainingView(self) as LGV
                   const { assemblyManager } = session
-                  const assembly = assemblyManager.get(
-                    view.assemblyNames[0]!,
-                  )
+                  const assembly = assemblyManager.get(view.assemblyNames[0]!)
                   if (assembly) {
                     session.queueDialog(handleClose => [
                       CollapseIntronsDialog,

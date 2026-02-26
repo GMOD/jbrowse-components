@@ -364,7 +364,9 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // any displayId in the track config (e.g. newly added display types).
       if (!ret) {
         const displayType = (parent as { type?: string }).type
-        ret = displays.find((d: { type?: string }) => d.type === displayType)
+        ret = displays.find(
+          (d: unknown) => (d as { type?: string }).type === displayType,
+        )
         if (!ret && displayType) {
           // @ts-expect-error
           ret = { displayId: `${id}`, type: displayType }

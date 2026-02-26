@@ -870,9 +870,7 @@ export async function executeRenderFeatureData({
   const visibleLines = lines.filter(
     l => l.endOffset > 0 && l.startOffset < regionWidth,
   )
-  const visibleArrows = arrows.filter(
-    a => a.x >= 0 && a.x < regionWidth,
-  )
+  const visibleArrows = arrows.filter(a => a.x >= 0 && a.x < regionWidth)
 
   // Convert to TypedArrays
   const rectPositions = new Uint32Array(visibleRects.length * 2)
