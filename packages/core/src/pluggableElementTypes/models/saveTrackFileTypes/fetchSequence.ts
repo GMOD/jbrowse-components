@@ -23,5 +23,5 @@ export async function fetchSequence({
       refName: assembly.getCanonicalRefName(region.refName),
     },
     sessionId,
-  }) as Promise<string | undefined>
+  })
 }

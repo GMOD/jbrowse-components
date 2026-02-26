@@ -6,6 +6,7 @@ import { readConfObject } from '../configuration/index.ts'
 import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type { RpcMethodName, RpcArgs, RpcReturn } from './RpcRegistry.ts'
 
 type DriverClass = BaseRpcDriver
 
@@ -125,12 +126,12 @@ export default class RpcManager {
     return getNextCanvasId()
   }
 
-  async call(
+  async call<M extends string>(
     sessionId: string,
-    functionName: string,
-    args: Record<string, unknown>,
-    opts = {},
-  ) {
+    functionName: M,
+    args: M extends RpcMethodName ? RpcArgs<M & RpcMethodName> : Record<string, unknown>,
+    opts?: Record<string, unknown>,
+  ): Promise<M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
@@ -144,7 +145,7 @@ export default class RpcManager {
       sessionId,
       functionName,
       args,
-      opts,
-    )
+      opts ?? {},
+    ) as any
   }
 }

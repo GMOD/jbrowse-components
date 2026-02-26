@@ -29,7 +29,7 @@ export async function fetchSeq({
   const canonicalRefName = assembly.getCanonicalRefName2(refName)
   const seqAdapterRefName = assembly.getSeqAdapterRefName(canonicalRefName)
 
-  const seq = (await rpcManager.call(sessionId, 'CoreGetSequence', {
+  const seq = await rpcManager.call(sessionId, 'CoreGetSequence', {
     adapterConfig,
     sessionId,
     region: {
@@ -38,7 +38,7 @@ export async function fetchSeq({
       refName: seqAdapterRefName,
       assemblyName,
     },
-  })) as string | undefined
+  })
 
   return seq ?? ''
 }

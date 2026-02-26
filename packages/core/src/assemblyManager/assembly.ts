@@ -74,7 +74,7 @@ async function loadRefNameMap(
     name: 'when assembly ready',
   })
 
-  const refNames = (await assembly.rpcManager.call(
+  const refNames = await assembly.rpcManager.call(
     sessionId || 'assemblyRpc',
     'CoreGetRefNames',
     {
@@ -84,7 +84,7 @@ async function loadRefNameMap(
       ...options,
     },
     { timeout: 1000000 },
-  )) as string[]
+  )
 
   const { refNameAliases } = assembly
   if (!refNameAliases) {
