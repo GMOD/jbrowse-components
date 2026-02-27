@@ -135,18 +135,18 @@ export class WebGLSyntenyRenderer {
     )
     this.edgeProgram = linkProgram(gl, EDGE_VERTEX_SHADER, EDGE_FRAGMENT_SHADER)
 
-    // single UBO shared across all programs, bound to points 0 and 1
     this.ubo = gl.createBuffer()!
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_BYTE_SIZE, gl.DYNAMIC_DRAW)
 
+    // SYNC: block name 'Uniforms' must match the layout(std140) uniform block
+    // in glslShaders.ts, and field order must match struct Uniforms in wgslShaders.ts
     for (const program of [
       this.fillProgram,
       this.pickingProgram,
       this.edgeProgram,
     ]) {
-      bindUniformBlock(gl, program, 'Uniforms_block_1Vertex', 0)
-      bindUniformBlock(gl, program, 'Uniforms_block_0Fragment', 1)
+      bindUniformBlock(gl, program, 'Uniforms', 0)
     }
 
     this.fillVAO = this.createInstancedVAO(this.fillProgram)
@@ -506,6 +506,5 @@ export class WebGLSyntenyRenderer {
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
     gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.ubo)
   }
 }

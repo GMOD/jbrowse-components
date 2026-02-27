@@ -3,11 +3,22 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export type ArcColorByType =
+  | 'insertSizeAndOrientation'
+  | 'insertSize'
+  | 'orientation'
+
+export const arcColorByTypes = types.enumeration<ArcColorByType>(
+  'ArcColorByType',
+  ['insertSizeAndOrientation', 'insertSize', 'orientation'],
+)
+
 export const ArcsSubModel = types
   .model('ArcsSubModel', {
     lineWidthSetting: types.maybe(types.number),
     drawInter: true,
     drawLongRange: true,
+    colorByType: types.optional(arcColorByTypes, 'insertSizeAndOrientation'),
   })
   .volatile(() => ({
     rpcDataMap: new Map<number, ArcsDataResult>(),
@@ -38,6 +49,9 @@ export const ArcsSubModel = types
     },
     setDrawLongRange(draw: boolean) {
       self.drawLongRange = draw
+    },
+    setColorByType(type: ArcColorByType) {
+      self.colorByType = type
     },
   }))
 

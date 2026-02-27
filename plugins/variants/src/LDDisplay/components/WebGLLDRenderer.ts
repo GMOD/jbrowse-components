@@ -1,14 +1,39 @@
+import {
+  INSTANCE_STRIDE,
+  interleaveLDInstances,
+} from './ldShaders.ts'
+import {
+  createProgram,
+  cacheUniforms,
+} from '../../shared/variantWebglUtils.ts'
+
+// SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
+// Mirrors the WGSL shader in ldShaders.ts (used by WebGPU).
+// When updating rendering logic, update BOTH this file and ldShaders.ts.
+//
+// Key differences from the WGSL version:
+//   - WGSL uses var<storage, read> instances: array<LDInstance> (storage buffer)
+//   - GLSL uses instanced vertex attributes via vertexAttribDivisor
+//   - WGSL uses struct Uniforms with @binding(1); GLSL uses individual uniforms
+//   - WGSL uses textureSampleLevel for color ramp; GLSL uses texture()
+//
+// SYNC: attribute layout must match interleaveLDInstances() in ldShaders.ts
+// and struct LDInstance in ldShaders.ts (WGSL):
+//   [0..1] position: vec2f   -> a_position
+//   [2..3] cell_size: vec2f  -> a_cellSize
+//   [4]    ld_value: f32     -> a_ldValue
+//   [5]    padding
+
 const VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-// Per-vertex (quad corners)
-in vec2 a_quadPos;
-
-// Per-instance
+// SYNC: attribute layout must match INSTANCE_STRIDE and interleaveLDInstances()
+// in ldShaders.ts, and struct LDInstance in the WGSL shader
 in vec2 a_position;
 in vec2 a_cellSize;
 in float a_ldValue;
 
+// SYNC: uniforms must match struct Uniforms in ldShaders.ts (WGSL)
 uniform float u_yScalar;
 uniform vec2 u_canvasSize;
 uniform float u_viewScale;
@@ -16,18 +41,19 @@ uniform float u_viewOffsetX;
 
 out float v_ldValue;
 
+// SYNC: vs_main rendering logic must match ldShaders.ts (WGSL)
 void main() {
-  vec2 pos = a_position + a_quadPos * a_cellSize;
+  uint vid = uint(gl_VertexID) % 6u;
+  float lx = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
+  float ly = (vid == 0u || vid == 1u || vid == 4u) ? 0.0 : 1.0;
+  vec2 pos = a_position + vec2(lx, ly) * a_cellSize;
 
-  // Rotate -45 degrees
   float c = 0.7071067811865476;
   float rx = (pos.x + pos.y) * c;
   float ry = (-pos.x + pos.y) * c;
 
-  // Apply view scale (zoom) and offset (scroll)
   rx = rx * u_viewScale + u_viewOffsetX;
   ry = ry * u_viewScale;
-
   ry *= u_yScalar;
 
   float clipX = (rx / u_canvasSize.x) * 2.0 - 1.0;
@@ -38,6 +64,7 @@ void main() {
 }
 `
 
+// SYNC: fs_main must match ldShaders.ts (WGSL) — color ramp lookup + premultiplied alpha
 const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
@@ -51,10 +78,8 @@ out vec4 fragColor;
 void main() {
   float t;
   if (u_signedLD == 1) {
-    // Map -1..1 to 0..1
     t = (v_ldValue + 1.0) / 2.0;
   } else {
-    // Map 0..1 to 0..1
     t = v_ldValue;
   }
   t = clamp(t, 0.0, 1.0);
@@ -62,8 +87,6 @@ void main() {
   fragColor = vec4(c.rgb * c.a, c.a);
 }
 `
-
-// Color ramp generation functions matching the d3 interpolateRgbBasis in makeImageData.ts
 
 function interpolateStops(stops: [number, number, number][]): Uint8Array {
   const data = new Uint8Array(256 * 4)
@@ -170,7 +193,7 @@ export class WebGLLDRenderer {
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
   private vao: WebGLVertexArrayObject | null = null
-  private buffers: WebGLBuffer[] = []
+  private instanceBuffer: WebGLBuffer | null = null
   private instanceCount = 0
   private uniforms: Record<string, WebGLUniformLocation | null> = {}
   private colorRampTexture: WebGLTexture | null = null
@@ -188,8 +211,10 @@ export class WebGLLDRenderer {
     }
     this.gl = gl
 
-    this.program = this.createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
-    this.cacheUniforms([
+    this.program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
+
+    gl.useProgram(this.program)
+    this.uniforms = cacheUniforms(gl, this.program, [
       'u_yScalar',
       'u_canvasSize',
       'u_signedLD',
@@ -200,47 +225,6 @@ export class WebGLLDRenderer {
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
-
-    gl.useProgram(this.program)
-  }
-
-  private createShader(type: number, source: string) {
-    const gl = this.gl
-    const shader = gl.createShader(type)!
-    gl.shaderSource(shader, source)
-    gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      const info = gl.getShaderInfoLog(shader)
-      gl.deleteShader(shader)
-      throw new Error(`Shader compile error: ${info}`)
-    }
-    return shader
-  }
-
-  private createProgram(vsSource: string, fsSource: string) {
-    const gl = this.gl
-    const vs = this.createShader(gl.VERTEX_SHADER, vsSource)
-    const fs = this.createShader(gl.FRAGMENT_SHADER, fsSource)
-    const program = gl.createProgram()
-    gl.attachShader(program, vs)
-    gl.attachShader(program, fs)
-    gl.linkProgram(program)
-    gl.detachShader(program, vs)
-    gl.detachShader(program, fs)
-    gl.deleteShader(vs)
-    gl.deleteShader(fs)
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      const info = gl.getProgramInfoLog(program)
-      gl.deleteProgram(program)
-      throw new Error(`Program link error: ${info}`)
-    }
-    return program
-  }
-
-  private cacheUniforms(names: string[]) {
-    for (const name of names) {
-      this.uniforms[name] = this.gl.getUniformLocation(this.program, name)
-    }
   }
 
   uploadData(data: {
@@ -258,58 +242,33 @@ export class WebGLLDRenderer {
       return
     }
 
+    const buf = interleaveLDInstances(data)
+    const stride = INSTANCE_STRIDE * 4
+
     this.vao = gl.createVertexArray()!
     gl.bindVertexArray(this.vao)
 
-    // Unit quad geometry
-    const quadVertices = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1])
-    const quadIndices = new Uint16Array([0, 1, 2, 0, 2, 3])
+    this.instanceBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW)
 
-    const quadPosLoc = gl.getAttribLocation(this.program, 'a_quadPos')
-    const quadBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, quadVertices, gl.STATIC_DRAW)
-    gl.enableVertexAttribArray(quadPosLoc)
-    gl.vertexAttribPointer(quadPosLoc, 2, gl.FLOAT, false, 0, 0)
-
-    const indexBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, quadIndices, gl.STATIC_DRAW)
-
-    // Per-instance position buffer
+    // SYNC: vertex attribute offsets must match interleaveLDInstances()
+    // in ldShaders.ts and struct LDInstance in the WGSL shader
     const posLoc = gl.getAttribLocation(this.program, 'a_position')
-    const posBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data.positions, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(posLoc)
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, stride, 0)
     gl.vertexAttribDivisor(posLoc, 1)
 
-    // Per-instance cell size buffer
     const cellSizeLoc = gl.getAttribLocation(this.program, 'a_cellSize')
-    const cellSizeBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, cellSizeBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data.cellSizes, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(cellSizeLoc)
-    gl.vertexAttribPointer(cellSizeLoc, 2, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(cellSizeLoc, 2, gl.FLOAT, false, stride, 8)
     gl.vertexAttribDivisor(cellSizeLoc, 1)
 
-    // Per-instance LD value buffer
     const ldValLoc = gl.getAttribLocation(this.program, 'a_ldValue')
-    const ldValBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, ldValBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, data.ldValues, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(ldValLoc)
-    gl.vertexAttribPointer(ldValLoc, 1, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(ldValLoc, 1, gl.FLOAT, false, stride, 16)
     gl.vertexAttribDivisor(ldValLoc, 1)
 
-    this.buffers = [
-      quadBuffer,
-      indexBuffer,
-      posBuffer,
-      cellSizeBuffer,
-      ldValBuffer,
-    ]
     gl.bindVertexArray(null)
     this.instanceCount = data.numCells
   }
@@ -377,22 +336,16 @@ export class WebGLLDRenderer {
     gl.uniform1i(this.uniforms.u_colorRamp!, 0)
 
     gl.bindVertexArray(this.vao)
-    gl.drawElementsInstanced(
-      gl.TRIANGLES,
-      6,
-      gl.UNSIGNED_SHORT,
-      0,
-      this.instanceCount,
-    )
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.instanceCount)
     gl.bindVertexArray(null)
   }
 
   private deleteBuffers() {
     const gl = this.gl
-    for (const buf of this.buffers) {
-      gl.deleteBuffer(buf)
+    if (this.instanceBuffer) {
+      gl.deleteBuffer(this.instanceBuffer)
+      this.instanceBuffer = null
     }
-    this.buffers = []
     if (this.vao) {
       gl.deleteVertexArray(this.vao)
       this.vao = null

@@ -13,7 +13,7 @@ in vec4 a_inst1;
 in vec4 a_inst2;
 in vec4 a_inst3;
 
-layout(std140) uniform Uniforms_block_1Vertex {
+layout(std140) uniform Uniforms {
   vec2 resolution;
   float height;
   float adjOff0;
@@ -160,7 +160,7 @@ void main() {
 export const FILL_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
-layout(std140) uniform Uniforms_block_0Fragment {
+layout(std140) uniform Uniforms {
   vec2 resolution;
   float height;
   float adjOff0;
@@ -230,7 +230,7 @@ in vec4 a_inst1;
 in vec4 a_inst2;
 in vec4 a_inst3;
 
-layout(std140) uniform Uniforms_block_1Vertex {
+layout(std140) uniform Uniforms {
   vec2 resolution;
   float height;
   float adjOff0;

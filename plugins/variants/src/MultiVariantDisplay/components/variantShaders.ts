@@ -56,7 +56,7 @@ struct Uniforms {
   canvas_width: f32,
   row_height: f32,
   scroll_top: f32,
-  u_zero: f32,
+  zero: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<CellInstance>;
@@ -79,8 +79,8 @@ fn vs_main(
   let abs_end = inst.start_end.y + u.region_start;
   let split_start = hp_split_uint(abs_start);
   let split_end = hp_split_uint(abs_end);
-  let clip_x1 = hp_to_clip_x(split_start, u.bp_range_x, u.u_zero);
-  let clip_x2 = hp_to_clip_x(split_end, u.bp_range_x, u.u_zero);
+  let clip_x1 = hp_to_clip_x(split_start, u.bp_range_x, u.zero);
+  let clip_x2 = hp_to_clip_x(split_end, u.bp_range_x, u.zero);
 
   let px_size = 2.0 / u.canvas_width;
   var cx1 = floor(clip_x1 / px_size + 0.5) * px_size;

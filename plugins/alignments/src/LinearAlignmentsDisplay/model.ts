@@ -34,7 +34,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
-import { ArcsSubModel } from './ArcsSubModel.ts'
+import { ArcsSubModel, type ArcColorByType } from './ArcsSubModel.ts'
 import {
   computeLayout,
   computeSortedLayout,
@@ -1569,7 +1569,7 @@ export default function stateModelFactory(
           self.rpcDataMap,
           allRegionInfos,
           {
-            colorByType: 'insertSizeAndOrientation',
+            colorByType: self.arcsState.colorByType,
             drawInter: self.arcsState.drawInter,
             drawLongRange: self.arcsState.drawLongRange,
           },
@@ -1923,6 +1923,35 @@ export default function stateModelFactory(
             ),
           )
 
+          // Autorun: recompute arcs when arc color scheme changes (no
+          // RPC refetch needed — arcs are derived from pileup data)
+          let prevArcColorByType: string | undefined
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const colorByType = self.arcsState.colorByType
+                if (prevArcColorByType === undefined) {
+                  prevArcColorByType = colorByType
+                  return
+                }
+                if (colorByType === prevArcColorByType) {
+                  return
+                }
+                prevArcColorByType = colorByType
+                if (self.showArcs && self.rpcDataMap.size > 0) {
+                  const view = getContainingView(self) as LGV
+                  const regions = view.staticRegions.map(vr => ({
+                    region: vr as Region,
+                    regionNumber: vr.regionNumber,
+                  }))
+                  computeAndSetArcs(regions)
+                }
+              },
+              { name: 'LinearAlignmentsDisplay:recomputeArcColors' },
+            ),
+          )
+
           // Autorun: recompute layout when sort changes (no RPC refetch needed
           // for non-tag sorts). Tag sort falls through to refetch.
           let prevSortKey: string | undefined
@@ -2107,6 +2136,24 @@ export default function stateModelFactory(
               onClick: () => {
                 self.setShowArcs(!self.showArcs)
               },
+            },
+            {
+              label: 'Arc color scheme',
+              type: 'subMenu' as const,
+              subMenu: (
+                [
+                  ['Insert size and orientation', 'insertSizeAndOrientation'],
+                  ['Insert size', 'insertSize'],
+                  ['Orientation', 'orientation'],
+                ] as const
+              ).map(([label, type]) => ({
+                label,
+                type: 'radio' as const,
+                checked: self.arcsState.colorByType === type,
+                onClick: () => {
+                  self.arcsState.setColorByType(type as ArcColorByType)
+                },
+              })),
             },
             {
               label: 'Show sashimi arcs',
