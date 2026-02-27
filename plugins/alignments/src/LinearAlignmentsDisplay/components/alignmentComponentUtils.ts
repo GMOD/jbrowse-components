@@ -472,7 +472,12 @@ export function uploadRegionDataToGPU(
       console.log('[GPU upload] skipping region', regionNumber, '(0 reads)')
       continue
     }
-    console.log('[GPU upload] uploading region', regionNumber, { numReads: data.numReads, numGaps: data.numGaps, numMismatches: data.numMismatches, maxY: data.maxY })
+    console.log('[GPU upload] uploading region', regionNumber, {
+      numReads: data.numReads,
+      numGaps: data.numGaps,
+      numMismatches: data.numMismatches,
+      maxY: data.maxY,
+    })
     const t0 = performance.now()
     renderer.uploadFromTypedArraysForRegion(regionNumber, data)
     const t1 = performance.now()

@@ -7,7 +7,16 @@ import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    BreakpointGetFeatures: {
+      args: Record<string, unknown>
+      return: Feature[]
+    }
+  }
+}
 
 const startClip = /(\d+)[SH]$/
 const endClip = /^(\d+)([SH])/

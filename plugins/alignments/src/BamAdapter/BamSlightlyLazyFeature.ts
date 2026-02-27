@@ -127,11 +127,9 @@ export default class BamSlightlyLazyFeature
     const selfNum = isRead1 ? '1' : '2'
     const mateNum = isRead1 ? '2' : '1'
 
-    if (this.next_refid !== this.ref_id || this.start <= this.next_pos) {
-      return selfStrand + selfNum + mateStrand + mateNum
-    } else {
-      return mateStrand + mateNum + selfStrand + selfNum
-    }
+    return this.next_refid !== this.ref_id || this.start <= this.next_pos
+      ? selfStrand + selfNum + mateStrand + mateNum
+      : mateStrand + mateNum + selfStrand + selfNum
   }
 
   get refName() {

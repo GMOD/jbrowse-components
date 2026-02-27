@@ -9,7 +9,6 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearHicDisplayModel } from './model.ts'
-import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -63,7 +62,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
       self.setRenderingStopToken(stopToken)
       self.setLoading(true)
 
-      const result = (await rpcManager.call(
+      const result = await rpcManager.call(
         rpcSessionId,
         'RenderHicData',
         {
@@ -83,7 +82,7 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
             }
           },
         },
-      )) as HicDataResult
+      )
 
       self.setRpcData(result)
       self.setLastDrawnOffsetPx(view.offsetPx)

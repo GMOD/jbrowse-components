@@ -45,7 +45,6 @@ export default class NonError extends Error {
 
   constructor(value: unknown) {
     if (NonError.isNonError(value)) {
-      // eslint-disable-next-line no-constructor-return
       return value
     }
     if (value instanceof Error) {

@@ -746,11 +746,7 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                if (
-                  !view.initialized ||
-                  self.isLoading ||
-                  self.error
-                ) {
+                if (!view.initialized || self.isLoading || self.error) {
                   return
                 }
                 const { bpPerPx } = view

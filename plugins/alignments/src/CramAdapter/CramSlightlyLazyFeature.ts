@@ -82,15 +82,11 @@ export default class CramSlightlyLazyFeature implements Feature {
     const selfNum = isRead1 ? '1' : '2'
     const mateNum = isRead1 ? '2' : '1'
 
-    if (
-      this.record.mate &&
+    return this.record.mate &&
       (this.record.mate.sequenceId !== this.record.sequenceId ||
         this.start <= this.record.mate.alignmentStart - 1)
-    ) {
-      return selfStrand + selfNum + mateStrand + mateNum
-    } else {
-      return mateStrand + mateNum + selfStrand + selfNum
-    }
+      ? selfStrand + selfNum + mateStrand + mateNum
+      : mateStrand + mateNum + selfStrand + selfNum
   }
 
   get template_length() {

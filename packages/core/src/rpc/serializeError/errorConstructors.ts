@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyErrorConstructor = new (...args: any[]) => Error
 
 const list: [string, AnyErrorConstructor][] = [

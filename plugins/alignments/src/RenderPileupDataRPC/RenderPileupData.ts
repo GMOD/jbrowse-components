@@ -1,7 +1,16 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { RenderPileupDataArgs } from './types'
+import type { PileupDataResult, RenderPileupDataArgs } from './types'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderPileupData: {
+      args: Record<string, unknown>
+      return: PileupDataResult
+    }
+  }
+}
 
 export default class RenderPileupData extends RpcMethodType {
   name = 'RenderPileupData'

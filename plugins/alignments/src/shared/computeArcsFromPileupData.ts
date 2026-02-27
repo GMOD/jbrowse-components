@@ -136,7 +136,12 @@ function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   const variance = radii.reduce((a, b) => a + (b - mean) ** 2, 0) / radii.length
   const std = Math.sqrt(variance)
   const threshold = mean + LONG_RANGE_STDDEV_THRESHOLD * std
-  console.log('longRange threshold', { mean, std, threshold, numArcs: radii.length })
+  console.log('longRange threshold', {
+    mean,
+    std,
+    threshold,
+    numArcs: radii.length,
+  })
   return threshold
 }
 
@@ -264,12 +269,22 @@ export function computeArcsFromPileupData(
         const e2 = filtered[j + 1]!
         const s1 = e1.data.readStrands[e1.readIdx]!
         const s2 = e2.data.readStrands[e2.readIdx]!
-        const start1 = e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2]!
-        const end1 = e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2 + 1]!
-        const start2 = e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2]!
-        const end2 = e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2 + 1]!
+        const start1 =
+          e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2]!
+        const end1 =
+          e1.data.regionStart + e1.data.readPositions[e1.readIdx * 2 + 1]!
+        const start2 =
+          e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2]!
+        const end2 =
+          e2.data.regionStart + e2.data.readPositions[e2.readIdx * 2 + 1]!
         const p1 = s1 === -1 ? start1 : end1
-        const p2 = hasPaired ? (s2 === -1 ? start2 : end2) : (s2 === -1 ? end2 : start2)
+        const p2 = hasPaired
+          ? s2 === -1
+            ? start2
+            : end2
+          : s2 === -1
+            ? end2
+            : start2
         pendingArcs.push({
           p1Ref: e1.refName,
           p1Bp: p1,
@@ -289,11 +304,22 @@ export function computeArcsFromPileupData(
   const arcs: ComputedArc[] = []
   const lines: ComputedLine[] = []
 
-  for (const { p1Ref, p1Bp, p1Strand, p2Ref, p2Bp, p2Strand, pairOrientationNum, tlen } of pendingArcs) {
+  for (const {
+    p1Ref,
+    p1Bp,
+    p1Strand,
+    p2Ref,
+    p2Bp,
+    p2Strand,
+    pairOrientationNum,
+    tlen,
+  } of pendingArcs) {
     if (p1Ref !== p2Ref) {
       if (drawInter) {
-        lines.push({ x: { refName: p1Ref, bp: p1Bp }, colorType: 3 })
-        lines.push({ x: { refName: p2Ref, bp: p2Bp }, colorType: 3 })
+        lines.push(
+          { x: { refName: p1Ref, bp: p1Bp }, colorType: 3 },
+          { x: { refName: p2Ref, bp: p2Bp }, colorType: 3 },
+        )
       }
       continue
     }
@@ -303,7 +329,7 @@ export function computeArcsFromPileupData(
     const longRange = absrad > longRangeThreshold
     const drawArcInsteadOfBezier = absrad > ARC_VS_BEZIER_THRESHOLD
 
-    console.log('processArc', { p1Ref, p1Bp, p2Ref, p2Bp, longRange, absrad, longRangeThreshold, drawArcInsteadOfBezier, pairOrientationNum, tlen, hasPaired, colorByType })
+    // console.log('processArc', { p1Ref, p1Bp, p2Ref, p2Bp, longRange, absrad, longRangeThreshold, drawArcInsteadOfBezier, pairOrientationNum, tlen, hasPaired, colorByType })
 
     let colorType: number
     if (longRange && drawArcInsteadOfBezier) {
@@ -353,8 +379,10 @@ export function computeArcsFromPileupData(
       })
     } else if (longRange && absrad > VERTICAL_LINE_THRESHOLD) {
       if (drawLongRange) {
-        lines.push({ x: { refName: p1Ref, bp: p1Bp }, colorType: 1 })
-        lines.push({ x: { refName: p1Ref, bp: p2Bp }, colorType: 1 })
+        lines.push(
+          { x: { refName: p1Ref, bp: p1Bp }, colorType: 1 },
+          { x: { refName: p1Ref, bp: p2Bp }, colorType: 1 },
+        )
       }
     } else if (longRange && drawArcInsteadOfBezier) {
       arcs.push({

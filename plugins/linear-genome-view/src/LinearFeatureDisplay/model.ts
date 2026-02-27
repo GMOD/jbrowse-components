@@ -26,7 +26,7 @@ import type {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const SetMaxHeightDialog = lazy(
@@ -262,7 +262,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.clearFeatureSelection()
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
+                  const { feature } = await rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
@@ -271,9 +271,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  )) as {
-                    feature: SimpleFeatureSerialized | undefined
-                  }
+                  )
 
                   if (isAlive(self) && feature) {
                     self.selectFeature(new SimpleFeature(feature))
@@ -293,7 +291,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.clearFeatureSelection()
                 } else {
                   const sessionId = getRpcSessionId(self)
-                  const { feature } = (await rpcManager.call(
+                  const { feature } = await rpcManager.call(
                     sessionId,
                     'CoreGetFeatureDetails',
                     {
@@ -302,9 +300,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                       trackInstanceId: parentTrack.id,
                       rendererType: self.rendererTypeName,
                     },
-                  )) as {
-                    feature: SimpleFeatureSerialized | undefined
-                  }
+                  )
 
                   if (isAlive(self) && feature) {
                     self.setContextMenuFeature(new SimpleFeature(feature))
@@ -435,7 +431,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               const { parentTrack } = self
               try {
                 const sessionId = getRpcSessionId(self)
-                const { feature } = (await rpcManager.call(
+                const { feature } = await rpcManager.call(
                   sessionId,
                   'CoreGetFeatureDetails',
                   {
@@ -444,9 +440,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                     trackInstanceId: parentTrack.id,
                     rendererType: self.rendererTypeName,
                   },
-                )) as {
-                  feature: SimpleFeatureSerialized | undefined
-                }
+                )
 
                 // Only set if still alive and feature ID hasn't changed
                 if (

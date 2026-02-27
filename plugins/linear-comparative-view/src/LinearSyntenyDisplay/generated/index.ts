@@ -267,19 +267,37 @@ void main() {
             break;
         }
     }
+    // compute edges at both segment endpoints to get tangent direction
+    float _e_t0 = t0_;
+    float _e_t1 = t1_;
+    vec3 e0 = hermiteEdges(screenX1_1, screenX2_1, screenX3_1, screenX4_1, _e_t0, inst_1.isCurve);
+    vec3 e1 = hermiteEdges(screenX1_1, screenX2_1, screenX3_1, screenX4_1, _e_t1, inst_1.isCurve);
+    vec2 center0 = vec2((e0.x + e0.y) * 0.5, e0.z);
+    vec2 center1 = vec2((e1.x + e1.y) * 0.5, e1.z);
+    vec2 tangent_v = center1 - center0;
+    float tangentLen = length(tangent_v);
+    vec2 normal_v;
+    if (tangentLen > 0.001) {
+        normal_v = vec2(-tangent_v.y, tangent_v.x) / tangentLen;
+    } else {
+        normal_v = vec2(1.0, 0.0);
+    }
+
+    // select the edge at the current t
     float _e177 = t;
-    vec3 _e179 = hermiteEdges(screenX1_1, screenX2_1, screenX3_1, screenX4_1, _e177, inst_1.isCurve);
-    float centerX = ((_e179.x + _e179.y) * 0.5);
-    float halfWidth = (abs((_e179.x - _e179.y)) * 0.5);
+    vec3 e_cur = (abs(_e177 - _e_t1) < abs(_e177 - _e_t0)) ? e1 : e0;
+    float centerX = ((e_cur.x + e_cur.y) * 0.5);
+    float rawHalfWidthX = (abs((e_cur.x - e_cur.y)) * 0.5);
+    float perpHW = max(rawHalfWidthX * abs(normal_v.x), 0.5);
     float _e191 = side;
     float dir = ((_e191 * 2.0) - 1.0);
-    float expandedHalfWidth = (halfWidth + 0.5);
-    float x = (centerX + (dir * expandedHalfWidth));
+    float expandedPerpHW = (perpHW + 0.5);
+    vec2 pos_v = vec2(centerX, e_cur.z) + dir * expandedPerpHW * normal_v;
     vec2 _e204 = _group_0_binding_1_vs.resolution;
-    vec2 clipSpace = (((vec2(x, _e179.z) / _e204) * 2.0) - vec2(1.0));
+    vec2 clipSpace = (((pos_v / _e204) * 2.0) - vec2(1.0));
     out_.pos = vec4(clipSpace.x, -(clipSpace.y), 0.0, 1.0);
-    out_.dist = (dir * expandedHalfWidth);
-    out_.halfWidth = halfWidth;
+    out_.dist = (dir * expandedPerpHW);
+    out_.halfWidth = perpHW;
     VOut _e221 = out_;
     gl_Position = _e221.pos;
     _vs2fs_location0 = _e221.color;
@@ -330,6 +348,8 @@ out vec4 _fs2p_location0;
 
 void main() {
     VOut in_ = VOut(gl_FragCoord, _vs2fs_location0, _vs2fs_location1, _vs2fs_location2, _vs2fs_location3);
+    float aa = fwidth(in_.dist);
+    float coverage = clamp((((in_.halfWidth - abs(in_.dist)) + (0.5 * aa)) / aa), 0.0, 1.0);
     vec3 rgb = vec3(0.0);
     bool local = false;
     rgb = in_.color.xyz;
@@ -348,8 +368,6 @@ void main() {
         vec3 _e32 = rgb;
         rgb = (_e32 * 0.7);
     }
-    float aa = fwidth(in_.dist);
-    float coverage = clamp((((in_.halfWidth - abs(in_.dist)) + (0.5 * aa)) / aa), 0.0, 1.0);
     vec3 _e46 = rgb;
     _fs2p_location0 = vec4(_e46, (finalAlpha * coverage));
     return;

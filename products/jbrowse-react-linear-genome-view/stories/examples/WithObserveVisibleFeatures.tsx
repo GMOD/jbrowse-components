@@ -38,7 +38,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
         adapterConfig,
         regions: view.coarseDynamicBlocks,
       })
-      setFeatures(feats as Feature[])
+      setFeatures(feats)
     })()
   }, [rpcManager, view.initialized, view.coarseDynamicBlocks, view.tracks])
   return (

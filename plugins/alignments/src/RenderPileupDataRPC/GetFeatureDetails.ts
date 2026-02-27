@@ -6,6 +6,16 @@ import { toArray } from 'rxjs/operators'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    GetPileupFeatureDetails: {
+      args: Record<string, unknown>
+      return: { feature: SimpleFeatureSerialized | undefined }
+    }
+  }
+}
 
 interface GetFeatureDetailsArgs {
   sessionId: string

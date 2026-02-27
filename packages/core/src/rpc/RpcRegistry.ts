@@ -1,10 +1,14 @@
-import type { Feature } from '../util/simpleFeature.ts'
-import type { Region } from '../util/types/index.ts'
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
+import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
+import type { Region } from '../util/types/index.ts'
 
-export type RegionLike = { refName: string; start: number; end: number; assemblyName: string }
+export interface RegionLike {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RpcRegistry {
   CoreGetRefNames: {
     args: {
@@ -81,7 +85,7 @@ export interface RpcRegistry {
   }
   CoreGetFeatureDetails: {
     args: Record<string, unknown>
-    return: unknown
+    return: { feature: SimpleFeatureSerialized | undefined }
   }
 }
 

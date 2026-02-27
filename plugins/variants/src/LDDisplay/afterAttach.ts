@@ -20,17 +20,20 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 type LGV = LinearGenomeViewModel
 
 export function doAfterAttach(self: SharedLDModel) {
-  async function fetchByteEstimate(regions: { refName: string; start: number; end: number; assemblyName: string }[]) {
+  async function fetchByteEstimate(
+    regions: {
+      refName: string
+      start: number
+      end: number
+      assemblyName: string
+    }[],
+  ) {
     const session = getSession(self)
     const sessionId = getRpcSessionId(self)
-    return session.rpcManager.call(
-      sessionId,
-      'CoreGetFeatureDensityStats',
-      {
-        regions,
-        adapterConfig: self.adapterConfig,
-      },
-    )
+    return session.rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
+      regions,
+      adapterConfig: self.adapterConfig,
+    })
   }
 
   let fetchGeneration = 0

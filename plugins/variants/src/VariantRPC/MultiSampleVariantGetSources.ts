@@ -1,6 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
+import type { CellDataResult } from './executeVariantCellData.ts'
 import type { Source } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -13,7 +14,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     }
     MultiSampleVariantGetCellData: {
       args: Record<string, unknown>
-      return: Record<string, unknown>
+      return: CellDataResult
     }
     MultiSampleVariantClusterGenotypeMatrix: {
       args: Record<string, unknown>

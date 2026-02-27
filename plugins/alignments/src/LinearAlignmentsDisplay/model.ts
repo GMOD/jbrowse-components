@@ -203,19 +203,15 @@ async function fetchFeatureDetails(self: any, featureId: string) {
   }
   const sequenceAdapter = getSequenceAdapter(session, region)
   const sessionId = getRpcSessionId(self)
-  const { feature } = (await session.rpcManager.call(
+  const { feature } = await session.rpcManager.call(
     sessionId,
     'GetPileupFeatureDetails',
     { sessionId, adapterConfig, sequenceAdapter, region, featureId },
-  )) as {
-    feature: (Record<string, unknown> & { uniqueId: string }) | undefined
-  }
+  )
   if (!feature) {
     return undefined
   }
-  return new SimpleFeature(
-    feature as ConstructorParameters<typeof SimpleFeature>[0],
-  )
+  return new SimpleFeature(feature)
 }
 
 const AlignmentsComponent = lazy(
@@ -1217,14 +1213,13 @@ export default function stateModelFactory(
       const fetchGenerations = new Map<number, number>()
 
       async function fetchPileupData(
-        session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        const result = (await session.rpcManager.call(sessionId, 'RenderPileupData', {
+        return getSession(self).rpcManager.call(sessionId, 'RenderPileupData', {
           sessionId,
           adapterConfig,
           sequenceAdapter,
@@ -1232,8 +1227,7 @@ export default function stateModelFactory(
           filterBy: self.filterBy,
           colorBy: self.colorBy,
           colorTagMap: self.colorTagMap,
-          sortedBy:
-            self.sortedBy?.type === 'tag' ? self.sortedBy : undefined,
+          sortedBy: self.sortedBy?.type === 'tag' ? self.sortedBy : undefined,
           showSoftClipping: self.showSoftClipping,
           stopToken,
           statusCallback: (msg: string) => {
@@ -1241,19 +1235,17 @@ export default function stateModelFactory(
               self.setStatusMessage(msg)
             }
           },
-        })) as PileupDataResult
-        return result
+        })
       }
 
       async function fetchChainData(
-        session: { rpcManager: any },
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
         stopToken: string,
       ) {
         const sessionId = getRpcSessionId(self)
-        return (await session.rpcManager.call(sessionId, 'RenderChainData', {
+        return getSession(self).rpcManager.call(sessionId, 'RenderChainData', {
           sessionId,
           adapterConfig,
           sequenceAdapter,
@@ -1269,7 +1261,7 @@ export default function stateModelFactory(
               self.setStatusMessage(msg)
             }
           },
-        })) as PileupDataResult
+        })
       }
 
       // Estimate bytes for a region via adapter index (cheap, no feature
@@ -1282,14 +1274,14 @@ export default function stateModelFactory(
       ) {
         const session = getSession(self)
         const sessionId = getRpcSessionId(self)
-        const stats = (await session.rpcManager.call(
+        const stats = await session.rpcManager.call(
           sessionId,
           'CoreGetFeatureDensityStats',
           {
             regions: [region],
             adapterConfig,
           },
-        )) as { bytes?: number; fetchSizeLimit?: number } | undefined
+        )
         return stats
       }
 
@@ -1333,20 +1325,8 @@ export default function stateModelFactory(
         const sequenceAdapter = getSequenceAdapter(session, region)
 
         const result = await (self.renderingMode === 'linkedRead'
-          ? fetchChainData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-              stopToken,
-            )
-          : fetchPileupData(
-              session,
-              adapterConfig,
-              sequenceAdapter,
-              region,
-              stopToken,
-            ))
+          ? fetchChainData(adapterConfig, sequenceAdapter, region, stopToken)
+          : fetchPileupData(adapterConfig, sequenceAdapter, region, stopToken))
         if (!isAlive(self) || fetchGenerations.get(regionNumber) !== gen) {
           return
         }
@@ -1490,8 +1470,14 @@ export default function stateModelFactory(
 
         if (entries.length === 1) {
           const [regionNumber, data] = entries[0]!
-          const { features, mismatches, gaps, insertions, softclips, hardclips } =
-            reconstructFromArrays(data)
+          const {
+            features,
+            mismatches,
+            gaps,
+            insertions,
+            softclips,
+            hardclips,
+          } = reconstructFromArrays(data)
 
           const layoutMap =
             sortedBy && sortedBy.type !== 'tag'
@@ -1550,7 +1536,6 @@ export default function stateModelFactory(
             self.setRpcData(regionNumber, data)
           }
         }
-
       }
 
       function computeAndSetArcs(

@@ -32,8 +32,10 @@ async function createDevice(): Promise<GPUDevice | null> {
         maxBufferSize: adapter.limits.maxBufferSize,
       },
     })
+    // eslint-disable-next-line no-console
+    console.log('WebGPU device created successfully')
     void d.lost.then(info => {
-      console.error('[getGpuDevice] Device lost:', info.message)
+      console.error('Device lost:', info.message)
       device = null
       devicePromise = null
       const listeners = deviceLostListeners.get(d)
@@ -45,7 +47,8 @@ async function createDevice(): Promise<GPUDevice | null> {
     })
     device = d
     return d
-  } catch {
+  } catch (e) {
+    console.error('WebGPU device creation failed:', e)
     return null
   }
 }

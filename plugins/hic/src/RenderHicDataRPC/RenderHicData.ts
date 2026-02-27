@@ -2,6 +2,16 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import type { Region } from '@jbrowse/core/util'
+import type { HicDataResult } from './types.ts'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderHicData: {
+      args: Record<string, unknown>
+      return: HicDataResult
+    }
+  }
+}
 
 interface RenderHicDataArgs {
   sessionId: string

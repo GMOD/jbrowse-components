@@ -120,9 +120,7 @@ function destroyCircular({
       value instanceof Uint8Array &&
       value.constructor.name === 'Buffer'
     ) {
-      ;(to as Record<string, unknown>)[key] = serialize
-        ? '[object Buffer]'
-        : value
+      to[key] = serialize ? '[object Buffer]' : value
       continue
     }
 
@@ -131,22 +129,20 @@ function destroyCircular({
       typeof value === 'object' &&
       typeof (value as { pipe?: unknown }).pipe === 'function'
     ) {
-      ;(to as Record<string, unknown>)[key] = serialize
-        ? '[object Stream]'
-        : value
+      to[key] = serialize ? '[object Stream]' : value
       continue
     }
 
     if (typeof value === 'function') {
       if (!serialize) {
-        ;(to as Record<string, unknown>)[key] = value
+        to[key] = value
       }
       continue
     }
 
     if (!value || typeof value !== 'object') {
       try {
-        ;(to as Record<string, unknown>)[key] = value
+        to[key] = value
       } catch {
         // ignore
       }
@@ -155,18 +151,16 @@ function destroyCircular({
 
     if (!seen.includes(from[key])) {
       depth++
-      ;(to as Record<string, unknown>)[key] = continueDestroyCircular(
-        from[key] as Record<string, unknown>,
-      )
+      to[key] = continueDestroyCircular(from[key] as Record<string, unknown>)
       continue
     }
 
-    ;(to as Record<string, unknown>)[key] = '[Circular]'
+    to[key] = '[Circular]'
   }
 
   if (serialize || to instanceof Error) {
     for (const { property, enumerable } of errorProperties) {
-      const val = (from as Record<string, unknown>)[property]
+      const val = from[property]
       if (val !== undefined && val !== null) {
         Object.defineProperty(to, property, {
           value:
@@ -234,10 +228,7 @@ export function deserializeError(
     return destroyCircular({
       from: value as unknown as Record<string, unknown>,
       seen: [],
-      to: newError(value.name ?? 'Error') as unknown as Record<
-        string,
-        unknown
-      >,
+      to: newError(value.name ?? 'Error') as unknown as Record<string, unknown>,
       maxDepth,
       depth: 0,
       serialize: false,

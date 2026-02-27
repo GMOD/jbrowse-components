@@ -437,10 +437,9 @@ export default function stateModelFactory(
               featureId: featureIdToFetch,
               region,
             },
-          )) as { feature?: Record<string, unknown> }
+          ))
 
           if (result.feature && isAlive(self)) {
-            // @ts-expect-error
             const parentFeature = new SimpleFeature(result.feature)
 
             if (subfeatureInfo) {
@@ -800,7 +799,6 @@ export default function stateModelFactory(
                   if (!result.feature || !isAlive(self)) {
                     return
                   }
-                  // @ts-expect-error
                   const fullFeature = new SimpleFeature(result.feature)
                   const transcripts = getTranscripts(fullFeature)
                   if (!hasIntrons(transcripts)) {

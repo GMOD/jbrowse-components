@@ -488,7 +488,8 @@ export function computeNoncovCoverage(
     }
     if (
       maxDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
-      total > localDepth * INDICATOR_THRESHOLD
+      total > localDepth * INDICATOR_THRESHOLD &&
+      localDepth > 7
     ) {
       let dominantType = 1
       let dominantCount = entry.insertion

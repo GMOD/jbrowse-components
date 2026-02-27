@@ -8,16 +8,15 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { LinearSyntenyDisplayModel, SyntenyFeatureData } from './model.ts'
+import type { LinearSyntenyDisplayModel } from './model.ts'
+import type { SyntenyRpcResult } from '../LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
 
-export interface SyntenyRpcResult extends SyntenyFeatureData {
-  instanceData: SyntenyInstanceData
-}
+export type { SyntenyRpcResult }
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastInstanceData: SyntenyInstanceData | undefined
@@ -168,7 +167,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
             const regions = view.views[level]!.staticBlocks.contentBlocks
 
-            const result = (await rpcManager.call(
+            const result = await rpcManager.call(
               sessionId,
               'SyntenyGetFeaturesAndPositions',
               {
@@ -184,7 +183,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
                 drawCIGARMatchesOnly,
                 drawLocationMarkers,
               },
-            )) as SyntenyRpcResult
+            )
 
             if (thisStopToken !== currentStopToken || !isAlive(self)) {
               return

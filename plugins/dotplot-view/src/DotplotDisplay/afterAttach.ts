@@ -135,7 +135,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
           cachedSerialized = serializeFeatures(self.features, assemblyManager)
         }
 
-        const result = (await rpcManager.call(
+        const result = await rpcManager.call(
           sessionId,
           'DotplotGetWebGLGeometry',
           {
@@ -144,14 +144,7 @@ export function doAfterAttach(self: Omit<DotplotDisplayModel, 'afterAttach'>) {
             vViewSnap,
             sessionId,
           },
-        )) as {
-          p11_offsetPx: Float32Array
-          p12_offsetPx: Float32Array
-          p21_offsetPx: Float32Array
-          p22_offsetPx: Float32Array
-          featureIds: string[]
-          cigars: string[]
-        }
+        )
 
         const featureMap = new Map(self.features.map(f => [f.id(), f]))
         const positions: DotplotFeatPos[] = []

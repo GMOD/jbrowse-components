@@ -1,3 +1,7 @@
+// Line rendering references:
+// - https://mattdesl.svbtle.com/drawing-lines-is-hard (screen-space expansion)
+// - https://blog.frost.kiwi/analytical-anti-aliasing/ (fwidth-based coverage)
+
 // SYNC: must match Instance struct in WGSL (16 f32 fields * 4 bytes = 64)
 export const INSTANCE_BYTE_SIZE = 64
 export const FILL_SEGMENTS = 16
@@ -165,23 +169,44 @@ ${SCREEN_POSITIONS}
     default: { t = 0.0; side = 0.0; }
   }
 
-  let e = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t, inst.isCurve);
-  let centerX = (e.x + e.y) * 0.5;
-  let halfWidth = abs(e.x - e.y) * 0.5;
-  let dir = side * 2.0 - 1.0;
-  let expandedHalfWidth = halfWidth + 0.5;
-  let x = centerX + dir * expandedHalfWidth;
+  // compute edges at both segment endpoints to get the tangent direction
+  let e0 = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t0, inst.isCurve);
+  let e1 = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t1, inst.isCurve);
+  let center0 = vec2f((e0.x + e0.y) * 0.5, e0.z);
+  let center1 = vec2f((e1.x + e1.y) * 0.5, e1.z);
+  let tangent = center1 - center0;
+  let tangentLen = length(tangent);
+  var normal: vec2f;
+  if (tangentLen > 0.001) {
+    normal = vec2f(-tangent.y, tangent.x) / tangentLen;
+  } else {
+    normal = vec2f(1.0, 0.0);
+  }
 
-  let clipSpace = (vec2f(x, e.z) / uniforms.resolution) * 2.0 - 1.0;
+  // compute the current vertex's edge positions
+  let e = select(e0, e1, abs(t - t1) < abs(t - t0));
+  let centerX = (e.x + e.y) * 0.5;
+  let rawHalfWidthX = abs(e.x - e.y) * 0.5;
+
+  // project X-direction half-width into the perpendicular (normal) direction
+  let perpHW = max(rawHalfWidthX * abs(normal.x), 0.5);
+  let dir = side * 2.0 - 1.0;
+  let expandedPerpHW = perpHW + 0.5;
+
+  // expand along the screen-space normal for proper perpendicular coverage
+  let pos = vec2f(centerX, e.z) + dir * expandedPerpHW * normal;
+  let clipSpace = (pos / uniforms.resolution) * 2.0 - 1.0;
 
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-  out.dist = dir * expandedHalfWidth;
-  out.halfWidth = halfWidth;
+  out.dist = dir * expandedPerpHW;
+  out.halfWidth = perpHW;
   return out;
 }
 
 @fragment
 fn fs_main(in: VOut) -> @location(0) vec4f {
+  let aa = fwidth(in.dist);
+  let coverage = saturate((in.halfWidth - abs(in.dist) + 0.5 * aa) / aa);
   var rgb = in.color.rgb;
   let isHovered = uniforms.hoveredFeatureId > 0.0 && abs(in.featureId - uniforms.hoveredFeatureId) < 0.5;
   let baseAlpha = in.color.a * uniforms.alpha;
@@ -189,8 +214,6 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   if (isHovered) {
     rgb = rgb * 0.7;
   }
-  let aa = fwidth(in.dist);
-  let coverage = saturate((in.halfWidth - abs(in.dist) + 0.5 * aa) / aa);
   return vec4f(rgb, finalAlpha * coverage);
 }
 

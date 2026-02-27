@@ -35,7 +35,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 }) {
   const { classes } = useStyles()
   const [error, setError] = useState<unknown>()
-  const [refNames, setRefNames] = useState<readonly (readonly [string, string[]])[]>()
+  const [refNames, setRefNames] =
+    useState<readonly (readonly [string, string[]])[]>()
   const [copied, setCopied] = useState(false)
   const { rpcManager } = session
   const trackId = readConf(config, 'trackId') as string

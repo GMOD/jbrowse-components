@@ -2,6 +2,16 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import type { RenderChainDataArgs } from './executeRenderChainData.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderChainData: {
+      args: Record<string, unknown>
+      return: PileupDataResult
+    }
+  }
+}
 
 export default class RenderChainData extends RpcMethodType {
   name = 'RenderChainData'

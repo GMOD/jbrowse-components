@@ -463,7 +463,7 @@ export async function executeRenderPileupData({
         gaps,
         { insertions, softclips, hardclips },
         sortTagValues,
-        sortedBy!,
+        sortedBy,
         showSoftClipping ? softclips : undefined,
       )
       layoutMaxY = max(layout.values(), 0) + 1

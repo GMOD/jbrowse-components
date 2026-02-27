@@ -1,20 +1,23 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import type { DotplotFeatureData } from './types.ts'
-import type { ViewSnap } from '@jbrowse/core/util'
+import type {
+  DotplotWebGLGeometryArgs,
+  DotplotWebGLGeometryResult,
+} from './types.ts'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    DotplotGetWebGLGeometry: {
+      args: DotplotWebGLGeometryArgs
+      return: DotplotWebGLGeometryResult
+    }
+  }
+}
 
 export class DotplotGetWebGLGeometry extends RpcMethodType {
   name = 'DotplotGetWebGLGeometry'
 
-  async execute(
-    args: {
-      features: DotplotFeatureData[]
-      hViewSnap: ViewSnap
-      vViewSnap: ViewSnap
-      sessionId: string
-    },
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: DotplotWebGLGeometryArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

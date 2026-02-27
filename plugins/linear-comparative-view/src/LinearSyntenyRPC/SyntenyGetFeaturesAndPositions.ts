@@ -1,6 +1,30 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { SyntenyRpcResult } from './executeSyntenyFeaturesAndPositions.ts'
+
+export interface SyntenyGetFeaturesAndPositionsArgs {
+  adapterConfig: Record<string, unknown>
+  regions: Region[]
+  viewSnaps: ViewSnap[]
+  level: number
+  sessionId: string
+  stopToken?: string
+  colorBy?: string
+  drawCurves?: boolean
+  drawCIGAR?: boolean
+  drawCIGARMatchesOnly?: boolean
+  drawLocationMarkers?: boolean
+}
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    SyntenyGetFeaturesAndPositions: {
+      args: SyntenyGetFeaturesAndPositionsArgs
+      return: SyntenyRpcResult
+    }
+  }
+}
 
 export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
   name = 'SyntenyGetFeaturesAndPositions'
@@ -12,22 +36,7 @@ export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
     return args
   }
 
-  async execute(
-    args: {
-      adapterConfig: Record<string, unknown>
-      regions: Region[]
-      viewSnaps: ViewSnap[]
-      level: number
-      sessionId: string
-      stopToken?: string
-      colorBy?: string
-      drawCurves?: boolean
-      drawCIGAR?: boolean
-      drawCIGARMatchesOnly?: boolean
-      drawLocationMarkers?: boolean
-    },
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: SyntenyGetFeaturesAndPositionsArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

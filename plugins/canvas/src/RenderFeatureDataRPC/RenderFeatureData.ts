@@ -1,7 +1,11 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { RenderFeatureDataArgs, RenderFeatureDataResult } from './rpcTypes.ts'
+import type {
+  RenderFeatureDataArgs,
+  RenderFeatureDataResult,
+} from './rpcTypes.ts'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -11,7 +15,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     }
     GetCanvasFeatureDetails: {
       args: Record<string, unknown>
-      return: { feature?: Record<string, unknown> }
+      return: { feature?: SimpleFeatureSerialized }
     }
   }
 }

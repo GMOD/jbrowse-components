@@ -11,7 +11,7 @@ import { autorun } from 'mobx'
 
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -69,7 +69,7 @@ export function getVariantCellDataAutorun(self: {
             self.setCellDataLoading(true)
             const sessionId = getRpcSessionId(self)
             try {
-              const result = (await rpcManager.call(
+              const result = await rpcManager.call(
                 sessionId,
                 'MultiSampleVariantGetCellData',
                 {
@@ -89,11 +89,7 @@ export function getVariantCellDataAutorun(self: {
                     }
                   },
                 },
-              )) as {
-                sampleInfo: Record<string, SampleInfo>
-                hasPhased: boolean
-                simplifiedFeatures: SimpleFeatureSerialized[]
-              }
+              )
               if (isAlive(self)) {
                 self.setHasPhased(result.hasPhased)
                 self.setSampleInfo(result.sampleInfo)
