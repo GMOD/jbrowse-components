@@ -38,6 +38,7 @@ const Translocations = observer(function Translocations({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const yOffset = cachedYOffset ?? 0
   const tracks = views.map(v => v.getTrack(trackId))
+  const hasOverride = !!getTrackYPosOverride
   const cachedHeights =
     cachedTrackTops ??
     getTrackHeightsCache(views, trackId, getTrackYPosOverride)
@@ -86,25 +87,9 @@ const Translocations = observer(function Translocations({
             const reversed2 = views[level2]!.pxToBp(x2).reversed
 
             const y1 =
-              yPos(
-                trackId,
-                level1,
-                views,
-                tracks,
-                c1,
-                getTrackYPosOverride,
-                cachedHeights,
-              ) - yOffset
+              yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
             const y2 =
-              yPos(
-                trackId,
-                level2,
-                views,
-                tracks,
-                c2,
-                getTrackYPosOverride,
-                cachedHeights,
-              ) - yOffset
+              yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
 
             const x1Tick =
               x1 - 20 * strandToSign(myDirection) * (reversed1 ? -1 : 1)

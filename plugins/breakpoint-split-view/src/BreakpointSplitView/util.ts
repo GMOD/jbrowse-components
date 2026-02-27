@@ -55,25 +55,20 @@ export function getTrackHeightsCache(
   )
 }
 
-// gets the y-position of a layout record in a track
 export function yPos(
-  trackId: string,
   level: number,
-  views: LGV[],
   tracks: Track[],
   c: LayoutRecord,
-  getYPosOverride?: (trackId: string, level: number) => number,
-  cachedHeights?: number[],
+  cachedHeights: number[],
+  hasYPosOverride?: boolean,
 ) {
   const display = tracks[level]!.displays[0]!
   const max = display.height
   const offset = display.coverageDisplayHeight ?? 0
-  const scrollTop = getYPosOverride ? 0 : display.scrollTop
-  const height = cachedHeights
-    ? cachedHeights[level]!
-    : heightFromSpecificLevel(views, trackId, level, getYPosOverride)
+  const scrollTop = hasYPosOverride ? 0 : display.scrollTop
   return (
-    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) + height
+    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
+    cachedHeights[level]!
   )
 }
 

@@ -37,6 +37,7 @@ const PairedFeatures = observer(function PairedFeatures({
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   const yOffset = cachedYOffset ?? 0
   const tracks = views.map(v => v.getTrack(trackId))
+  const hasOverride = !!getTrackYPosOverride
   const cachedHeights =
     cachedTrackTops ??
     getTrackHeightsCache(views, trackId, getTrackYPosOverride)
@@ -67,25 +68,9 @@ const PairedFeatures = observer(function PairedFeatures({
           const x2 = getPxFromCoordinate(views[level2]!, f2ref, c2[LEFT])
 
           const y1 =
-            yPos(
-              trackId,
-              level1,
-              views,
-              tracks,
-              c1,
-              getTrackYPosOverride,
-              cachedHeights,
-            ) - yOffset
+            yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
           const y2 =
-            yPos(
-              trackId,
-              level2,
-              views,
-              tracks,
-              c2,
-              getTrackYPosOverride,
-              cachedHeights,
-            ) - yOffset
+            yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
 
           const path = buildSimplePath(x1, y1, x2, y2)
           const mouseHandlers = createMouseHandlers(

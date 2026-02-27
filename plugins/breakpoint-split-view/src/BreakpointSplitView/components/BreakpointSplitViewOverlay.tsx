@@ -233,7 +233,6 @@ const BreakpointSplitViewOverlay = observer(
             const trackId = track.configuration.trackId
             return (
               <Overlay
-                parentRef={ref}
                 key={trackId}
                 model={model}
                 trackId={trackId}
