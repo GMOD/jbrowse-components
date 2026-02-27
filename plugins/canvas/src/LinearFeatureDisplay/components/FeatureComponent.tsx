@@ -44,8 +44,9 @@ interface LinearFeatureDisplayModel {
   featureIdUnderMouse: string | null
   regionTooLarge: boolean
   regionTooLargeReason: string
+  featureDensityStats?: { bytes?: number; fetchSizeLimit?: number }
   statusMessage: string | undefined
-  setFeatureDensityStatsLimit: () => void
+  setFeatureDensityStatsLimit: (s?: { bytes?: number; fetchSizeLimit?: number }) => void
   reload: () => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
   mouseoverExtraInformation: string | undefined

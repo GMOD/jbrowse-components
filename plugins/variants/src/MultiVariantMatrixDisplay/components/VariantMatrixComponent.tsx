@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -49,7 +48,6 @@ export interface VariantMatrixDisplayModel {
   featuresVolatile: { id(): string }[] | undefined
   referenceDrawingMode: string
   regionTooLarge: boolean
-  regionTooLargeReason: string
   featuresReady: boolean
   cellDataLoading: boolean
   statusMessage?: string
@@ -270,7 +268,6 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           />
         </div>
       ) : null}
-      {model.regionTooLarge ? <TooLargeMessage model={model} /> : null}
       <LoadingOverlay
         statusMessage={model.statusMessage || 'Computing display data'}
         isVisible={

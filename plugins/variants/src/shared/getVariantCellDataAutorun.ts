@@ -7,7 +7,10 @@ import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { getDisplayStr } from '@jbrowse/plugin-linear-genome-view'
+import {
+  AUTO_FORCE_LOAD_BP,
+  getDisplayStr,
+} from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import type { SampleInfo, Source } from './types.ts'
@@ -67,6 +70,10 @@ export function getVariantCellDataAutorun(self: {
             cellDataMode,
             fetchSizeLimit,
           } = self
+          const visibleBp = view.dynamicBlocks.contentBlocks.reduce(
+            (acc, b) => acc + b.end - b.start,
+            0,
+          )
           if (sources) {
             self.setCellDataLoading(true)
             const sessionId = getRpcSessionId(self)
@@ -93,7 +100,14 @@ export function getVariantCellDataAutorun(self: {
                   sessionId,
                   adapterConfig,
                   stopToken,
-                  byteSizeLimit: fetchSizeLimit,
+                  // Regions smaller than AUTO_FORCE_LOAD_BP always
+                  // load unconditionally. For larger regions, send
+                  // the byte size limit so the RPC can check the
+                  // adapter index estimate before fetching features.
+                  byteSizeLimit:
+                    visibleBp >= AUTO_FORCE_LOAD_BP
+                      ? fetchSizeLimit
+                      : undefined,
                   statusCallback: (arg: string) => {
                     if (isAlive(self)) {
                       self.setStatusMessage(arg)
@@ -112,7 +126,7 @@ export function getVariantCellDataAutorun(self: {
                     `Requested too much data (${getDisplayStr(result.bytes)})`,
                   )
                 } else {
-                  self.setRegionTooLarge(false)
+                  self.setRegionTooLarge(false, '')
                   self.setHasPhased(result.hasPhased)
                   self.setSampleInfo(result.sampleInfo)
                   self.setFeatures(
@@ -132,8 +146,10 @@ export function getVariantCellDataAutorun(self: {
           if (isAlive(self)) {
             self.setCellDataLoading(false)
             if (!isAbortException(e)) {
-              console.error(e)
+              console.error('[VariantCellData] error', e)
               self.setDisplayError(e)
+            } else {
+              console.log('[VariantCellData] aborted')
             }
           }
         }

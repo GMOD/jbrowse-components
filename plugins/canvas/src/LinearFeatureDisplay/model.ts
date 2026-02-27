@@ -23,6 +23,7 @@ import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -202,6 +203,7 @@ export default function stateModelFactory(
         trackGeneGlyphMode: types.maybe(types.string),
         trackDisplayMode: types.maybe(types.string),
         showOnlyGenes: false,
+        userByteSizeLimit: types.maybe(types.number),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -215,7 +217,6 @@ export default function stateModelFactory(
         showLegend,
         showTooltips,
         userBpPerPxLimit,
-        userByteSizeLimit,
         ...cleaned
       } = snap
       snap = cleaned
@@ -238,8 +239,10 @@ export default function stateModelFactory(
         | { feature: Feature; regionNumber: number }
         | undefined,
       regionTooLarge: false,
-      featureCount: 0,
-      userForceLoadLimit: undefined as number | undefined,
+      regionTooLargeReasonState: '',
+      featureDensityStats: undefined as
+        | { bytes?: number; fetchSizeLimit?: number }
+        | undefined,
     }))
     .views(self => ({
       get adapterConfigSnapshot() {
@@ -317,26 +320,18 @@ export default function stateModelFactory(
         return undefined
       },
 
-      get maxFeatureScreenDensity(): number {
-        return getConf(self, 'maxFeatureScreenDensity') ?? 0.3
-      },
-
-      get maxFeatureCount() {
-        if (self.userForceLoadLimit !== undefined) {
-          return self.userForceLoadLimit
-        }
-        const view = getContainingView(self) as LGV
-        if (!view.initialized) {
-          return undefined
-        }
-        return Math.round(this.maxFeatureScreenDensity * view.width)
+      get fetchSizeLimit() {
+        return (
+          self.userByteSizeLimit ||
+          (getConf(self, 'fetchSizeLimit') as number)
+        )
       },
 
       get regionTooLargeReason() {
-        if (self.regionTooLarge) {
-          return `Too many features (${self.featureCount} in region)`
+        if (!self.regionTooLarge) {
+          return ''
         }
-        return ''
+        return self.regionTooLargeReasonState
       },
 
       get colorByCDS() {
@@ -421,7 +416,7 @@ export default function stateModelFactory(
         self.rpcDataMap = new Map()
         self.layoutBpPerPxMap = new Map()
         self.regionTooLarge = false
-        self.featureCount = 0
+        self.regionTooLargeReasonState = ''
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
@@ -436,9 +431,28 @@ export default function stateModelFactory(
         self.contextMenuInfo = info
       },
 
-      setRegionTooLarge(tooLarge: boolean, count: number) {
+      setRegionTooLarge(tooLarge: boolean, reason: string) {
         self.regionTooLarge = tooLarge
-        self.featureCount = count
+        self.regionTooLargeReasonState = reason
+      },
+
+      setFeatureDensityStats(
+        stats: { bytes?: number; fetchSizeLimit?: number },
+      ) {
+        self.featureDensityStats = stats
+      },
+
+      // Called by TooLargeMessage "Force load" button. Increases the byte
+      // size limit by 1.5x so the next fetch will succeed, then clears the
+      // regionTooLarge state so the fetch autorun retries.
+      setFeatureDensityStatsLimit(
+        stats?: { bytes?: number; fetchSizeLimit?: number },
+      ) {
+        if (stats?.bytes) {
+          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+        }
+        self.regionTooLarge = false
+        self.regionTooLargeReasonState = ''
       },
     }))
     .actions(self => ({
@@ -586,20 +600,12 @@ export default function stateModelFactory(
       }),
     }))
     .actions(self => {
-      type FetchResult =
-        | {
-            tooLarge: true
-            featureCount: number
-            regionNumber: number
-            region: Region
-          }
-        | {
-            tooLarge: false
-            regionNumber: number
-            data: FeatureDataResult
-            region: Region
-            bpPerPx: number
-          }
+      interface FetchResult {
+        regionNumber: number
+        data: FeatureDataResult
+        region: Region
+        bpPerPx: number
+      }
 
       async function fetchFeaturesForRegion(
         region: Region,
@@ -628,10 +634,6 @@ export default function stateModelFactory(
             colorByCDS: self.colorByCDS,
             sequenceAdapter: self.sequenceAdapter,
             showOnlyGenes: self.showOnlyGenes,
-            maxFeatureCount:
-              (getContainingView(self) as LGV).visibleBp < AUTO_FORCE_LOAD_BP
-                ? undefined
-                : self.maxFeatureCount,
             stopToken,
             statusCallback: (msg: string) => {
               if (isAlive(self)) {
@@ -642,49 +644,45 @@ export default function stateModelFactory(
         )
 
         if ('regionTooLarge' in result) {
-          return {
-            tooLarge: true,
-            featureCount: result.featureCount,
-            regionNumber,
-            region,
-          }
+          throw new Error(
+            `Unexpected regionTooLarge from RPC (maxFeatureCount should not be sent)`,
+          )
         }
-        return { tooLarge: false, regionNumber, data: result, region, bpPerPx }
+        return { regionNumber, data: result, region, bpPerPx }
       }
 
       function applyFetchResults(
         results: (FetchResult | undefined)[],
         bpPerPx: number,
       ) {
-        let totalTooLargeCount = 0
-        let anyTooLarge = false
+        self.setRegionTooLarge(false, '')
+        const dataMap = new Map(self.rpcDataMap)
         for (const r of results) {
-          if (r?.tooLarge) {
-            anyTooLarge = true
-            totalTooLargeCount += r.featureCount
+          if (r) {
+            dataMap.set(r.regionNumber, r.data)
           }
         }
-        if (anyTooLarge) {
-          self.setRegionTooLarge(true, totalTooLargeCount)
-        } else {
-          self.setRegionTooLarge(false, 0)
-          // merge new results with already-loaded regions so
-          // layout sees all data and keeps y positions consistent
-          const dataMap = new Map(self.rpcDataMap)
-          for (const r of results) {
-            if (r && !r.tooLarge) {
-              dataMap.set(r.regionNumber, r.data)
-            }
+        computeAndAssignLayout(dataMap, bpPerPx)
+        for (const r of results) {
+          if (r) {
+            self.setLoadedRegionForRegion(r.regionNumber, r.region)
+            self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
           }
-          computeAndAssignLayout(dataMap, bpPerPx)
-          for (const r of results) {
-            if (r && !r.tooLarge) {
-              self.setLoadedRegionForRegion(r.regionNumber, r.region)
-              self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
-            }
-          }
-          self.setRpcDataMap(dataMap)
         }
+        self.setRpcDataMap(dataMap)
+      }
+
+      async function fetchByteEstimate(regions: Region[]) {
+        const session = getSession(self)
+        const sessionId = getRpcSessionId(self)
+        return session.rpcManager.call(
+          sessionId,
+          'CoreGetFeatureDensityStats',
+          {
+            regions,
+            adapterConfig: self.adapterConfigSnapshot,
+          },
+        ) as Promise<{ bytes?: number; fetchSizeLimit?: number }>
       }
 
       async function fetchRegions(
@@ -700,6 +698,34 @@ export default function stateModelFactory(
         self.setLoading(true)
         self.setError(null)
         try {
+          // Byte estimate check. Uses the adapter index (e.g. tabix,
+          // BAI) to estimate compressed bytes for the visible regions.
+          // If the estimate exceeds fetchSizeLimit, show the "force
+          // load" banner immediately without fetching features.
+          // Regions smaller than AUTO_FORCE_LOAD_BP always load
+          // unconditionally.
+          const view = getContainingView(self) as LGV
+          if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
+            const stats = await fetchByteEstimate(
+              regions.map(r => r.region),
+            )
+            if (
+              !isAlive(self) ||
+              self.fetchGeneration !== generation ||
+              self.renderingStopToken !== stopToken
+            ) {
+              return
+            }
+            self.setFeatureDensityStats(stats)
+            if (stats.bytes && stats.bytes > self.fetchSizeLimit) {
+              self.setRegionTooLarge(
+                true,
+                `Requested too much data (${getDisplayStr(stats.bytes)})`,
+              )
+              return
+            }
+          }
+
           const promises = regions.map(({ region, regionNumber }) =>
             fetchFeaturesForRegion(region, regionNumber, bpPerPx, stopToken),
           )
@@ -758,8 +784,17 @@ export default function stateModelFactory(
           refetchForCurrentView()
         },
 
-        setFeatureDensityStatsLimit(_stats?: unknown) {
-          self.userForceLoadLimit = self.featureCount + 1
+        // Called by TooLargeMessage "Force load" button. Increases the
+        // byte size limit by 1.5x so the next fetch will succeed, then
+        // clears the regionTooLarge state so the fetch autorun retries.
+        setFeatureDensityStatsLimit(
+          stats?: { bytes?: number; fetchSizeLimit?: number },
+        ) {
+          if (stats?.bytes) {
+            self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+          }
+          self.regionTooLarge = false
+          self.regionTooLargeReasonState = ''
         },
 
         afterAttach() {

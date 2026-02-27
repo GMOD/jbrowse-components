@@ -1,6 +1,6 @@
 import { Suspense, useRef } from 'react'
 
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
+import { FloatingLegend, TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshair from './MultiSampleVariantCrosshairs.tsx'
@@ -20,6 +20,7 @@ const MultiSampleVariantBaseDisplayComponent = observer(
     const {
       DisplayMessageComponent,
       availableHeight,
+      regionTooLarge,
       showTree,
       showLegend,
       hierarchy,
@@ -28,6 +29,17 @@ const MultiSampleVariantBaseDisplayComponent = observer(
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
+
+    if (regionTooLarge) {
+      return (
+        <div
+          data-testid="variant-display"
+          style={{ position: 'relative', height: availableHeight }}
+        >
+          <TooLargeMessage model={model} />
+        </div>
+      )
+    }
 
     return (
       <div

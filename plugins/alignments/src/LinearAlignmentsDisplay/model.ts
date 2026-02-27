@@ -32,7 +32,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, untracked } from 'mobx'
 
 import { ArcsSubModel, type ArcColorByType } from './ArcsSubModel.ts'
 import {
@@ -468,7 +468,6 @@ export default function stateModelFactory(
       webglRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
-      regionTooLargeBpPerPx: undefined as number | undefined,
     }))
     .views(self => ({
       get selectedFeatureId() {
@@ -608,19 +607,8 @@ export default function stateModelFactory(
         return t === 'modifications' || t === 'methylation'
       },
 
-      // DO NOT REMOVE: all three conditions are important.
-      // - regionTooLargeState: the byte estimate exceeded the limit
-      // - bpPerPx match: clears on zoom so the fetch autorun retries
-      //   with a fresh byte estimate at the new zoom level
-      // - visibleBp >= AUTO_FORCE_LOAD_BP: force-loads small regions
-      //   (< 20kb) regardless of byte size
       get regionTooLarge() {
-        const view = getContainingView(self) as LGV
-        return (
-          self.regionTooLargeState &&
-          view.bpPerPx === self.regionTooLargeBpPerPx &&
-          view.visibleBp >= AUTO_FORCE_LOAD_BP
-        )
+        return self.regionTooLargeState
       },
 
       get sortedBy() {
@@ -858,18 +846,15 @@ export default function stateModelFactory(
           }
         },
 
-        // DO NOT REMOVE: records the bpPerPx at which the region was
-        // deemed too large, so the regionTooLarge getter automatically
-        // clears when the user zooms (changing bpPerPx)
         setRegionTooLarge(val: boolean, reason?: string) {
+          console.log('[Alignments setRegionTooLarge]', {
+            val,
+            reason,
+          })
           superSetRegionTooLarge(val, reason)
           if (val) {
-            const view = getContainingView(self) as LGV
-            self.regionTooLargeBpPerPx = view.bpPerPx
             self.featureIdUnderMouse = undefined
             self.mouseoverExtraInformation = undefined
-          } else {
-            self.regionTooLargeBpPerPx = undefined
           }
         },
 
@@ -1229,6 +1214,10 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       const fetchGenerations = new Map<number, number>()
+      // Tracks the bpPerPx at which the last "too large" result was
+      // returned. The fetch autorun uses this to avoid re-fetching at the
+      // same zoom level while still re-checking when the user zooms.
+      let lastTooLargeBpPerPx: number | undefined
 
       async function fetchPileupData(
         adapterConfig: unknown,
@@ -1322,27 +1311,44 @@ export default function stateModelFactory(
 
         const stats = await fetchByteEstimate(adapterConfig, region)
         if (fetchGenerations.get(regionNumber) !== gen) {
+          console.log('[Alignments fetchFeatures] generation stale, aborting', {
+            regionNumber,
+          })
           return
         }
         self.setFeatureDensityStats(stats)
         const view = getContainingView(self) as LGV
+        console.log('[Alignments fetchFeatures] byte estimate', {
+          regionNumber,
+          bytes: stats.bytes,
+          fetchSizeLimit: stats.fetchSizeLimit,
+          visibleBp: view.visibleBp,
+          AUTO_FORCE_LOAD_BP,
+          userByteSizeLimit: self.userByteSizeLimit,
+          region: { refName: region.refName, start: region.start, end: region.end },
+        })
         if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
           const fetchSizeLimit =
             stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
           const limit = self.userByteSizeLimit || fetchSizeLimit
           if (stats.bytes && stats.bytes > limit) {
+            console.log('[Alignments fetchFeatures] region too large', {
+              bytes: stats.bytes,
+              limit,
+              regionNumber,
+            })
+            lastTooLargeBpPerPx = view.bpPerPx
             self.setRegionTooLarge(
               true,
               `Requested too much data (${getDisplayStr(stats.bytes)})`,
             )
-            // DO NOT REMOVE: marks the region as "checked at these
-            // bounds" so the fetch autorun doesn't re-trigger for the
-            // same region. When the user zooms, staticRegions get new
-            // bounds that won't match, causing a fresh byte estimate.
-            self.setLoadedRegion(regionNumber, region)
             return
           }
         }
+        console.log('[Alignments fetchFeatures] proceeding to fetch data', {
+          regionNumber,
+        })
+        lastTooLargeBpPerPx = undefined
         self.setRegionTooLarge(false, '')
 
         const sequenceAdapter = getSequenceAdapter(session, region)
@@ -1621,6 +1627,10 @@ export default function stateModelFactory(
         }
         const stopToken = createStopToken()
         const generation = self.fetchGeneration
+        console.log('[Alignments fetchRegions] start', {
+          generation,
+          numRegions: regions.length,
+        })
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(null)
@@ -1634,8 +1644,19 @@ export default function stateModelFactory(
             self.fetchGeneration !== generation ||
             self.renderingStopToken !== stopToken
           ) {
+            console.log('[Alignments fetchRegions] stale, discarding', {
+              alive: isAlive(self),
+              generationMatch: self.fetchGeneration === generation,
+              currentGeneration: self.fetchGeneration,
+              capturedGeneration: generation,
+              tokenMatch: self.renderingStopToken === stopToken,
+            })
             return
           }
+          console.log('[Alignments fetchRegions] processing results', {
+            numResults: results.length,
+            numNonNull: results.filter(Boolean).length,
+          })
           const newDataMap = new Map<number, PileupDataResult>()
           for (const r of results) {
             if (!r) {
@@ -1872,22 +1893,52 @@ export default function stateModelFactory(
           )
 
           // See MultiRegionDisplayMixin for the fetch lifecycle contract.
+          // DO NOT REMOVE: the regionTooLarge check uses untracked so
+          // that the banner stays visible while a new byte estimate is
+          // fetched after zooming. The autorun observes bpPerPx so it
+          // re-fires on zoom, and lastTooLargeBpPerPx prevents
+          // re-fetching at the same zoom level.
           addDisposer(
             self,
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
+                // DO NOT REMOVE: observe bpPerPx and fetchToken
+                // unconditionally (before any early returns) so MobX
+                // always tracks them. bpPerPx triggers re-fetch on
+                // zoom; fetchToken triggers re-fetch on force load.
+                const currentBpPerPx = view.bpPerPx
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                self.fetchToken
                 if (
                   !view.initialized ||
-                  self.regionTooLarge ||
                   self.isLoading ||
                   self.error
                 ) {
+                  console.log(
+                    '[Alignments fetchAutorun] skipping',
+                    {
+                      initialized: view.initialized,
+                      isLoading: self.isLoading,
+                      error: !!self.error,
+                    },
+                  )
                   return
                 }
-                // Track fetchToken so bumps trigger re-fetch
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                self.fetchToken
+                // Use untracked so that setting regionTooLargeState
+                // doesn't re-trigger this autorun (the banner stays
+                // visible). Instead we re-fire only when bpPerPx or
+                // fetchToken changes.
+                if (
+                  untracked(() => self.regionTooLargeState) &&
+                  currentBpPerPx === lastTooLargeBpPerPx
+                ) {
+                  console.log(
+                    '[Alignments fetchAutorun] still too large at this zoom',
+                    { currentBpPerPx, lastTooLargeBpPerPx },
+                  )
+                  return
+                }
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
@@ -1903,6 +1954,11 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
+                console.log('[Alignments fetchAutorun]', {
+                  numNeeded: needed.length,
+                  bpPerPx: currentBpPerPx,
+                  lastTooLargeBpPerPx,
+                })
                 if (needed.length > 0) {
                   await fetchRegions(needed)
                 }
@@ -2419,9 +2475,17 @@ export default function stateModelFactory(
       const superReload = self.reload
       return {
         async reload() {
+          console.log('[Alignments reload]', {
+            fetchGenerationBefore: self.fetchGeneration,
+            userByteSizeLimit: self.userByteSizeLimit,
+            regionTooLargeState: self.regionTooLargeState,
+          })
           self.setRegionTooLarge(false)
           self.clearAllRpcData()
           self.bumpFetchToken()
+          console.log('[Alignments reload] after clear', {
+            fetchGenerationAfter: self.fetchGeneration,
+          })
           superReload()
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {

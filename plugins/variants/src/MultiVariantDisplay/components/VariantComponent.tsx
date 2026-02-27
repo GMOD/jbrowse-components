@@ -4,7 +4,6 @@ import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -31,7 +30,6 @@ export interface VariantDisplayModel {
   featuresVolatile: { id(): string }[] | undefined
   referenceDrawingMode: string
   regionTooLarge: boolean
-  regionTooLargeReason: string
   featuresReady: boolean
   cellDataLoading: boolean
   statusMessage?: string
@@ -95,6 +93,9 @@ const VariantComponent = observer(function VariantComponent({
   const [ready, setReady] = useState(false)
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
+  >()
+  const [highlightRect, setHighlightRect] = useState<
+    { left: number; top: number; width: number; height: number } | undefined
   >()
   const rendererRef = useRef<VariantRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -208,12 +209,14 @@ const VariantComponent = observer(function VariantComponent({
       ((mouseX - region.screenStartPx) / blockWidth) * regionLengthBp
     const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
 
-    const bpPadding = 10 * bpPerPx
+    const pxPadding = 5
+    const bpPadding = pxPadding * bpPerPx
+    const rowPadding = Math.max(0.5, pxPadding / model.rowHeight)
     const hits = flatbushIndex.search(
       genomicPos - bpPadding,
-      rowFrac - 0.5,
+      rowFrac - rowPadding,
       genomicPos + bpPadding,
-      rowFrac + 0.5,
+      rowFrac + rowPadding,
     )
 
     let bestIdx = -1
@@ -236,6 +239,15 @@ const VariantComponent = observer(function VariantComponent({
       const item = regionCellData.flatbushItems[bestIdx]!
       const info = regionCellData.featureGenotypeMap[item.featureId]!
       const genotype = info.genotypes[item.sourceName]!
+      const rowIndex = regionCellData.cellRowIndices[bestIdx]!
+      const pxPerBp = blockWidth / regionLengthBp
+      const cellLeft =
+        region.screenStartPx +
+        (item.genomicStart - region.start) * pxPerBp
+      const cellRight =
+        region.screenStartPx +
+        (item.genomicEnd - region.start) * pxPerBp
+      const cellTop = rowIndex * model.rowHeight - model.scrollTop
       return {
         genotype,
         alleles: makeSimpleAltString(genotype, info.ref, info.alt),
@@ -245,6 +257,12 @@ const VariantComponent = observer(function VariantComponent({
         length: getBpDisplayStr(info.length),
         name: item.sourceName,
         featureId: item.featureId,
+        highlightRect: {
+          left: cellLeft,
+          top: cellTop,
+          width: Math.max(cellRight - cellLeft, 2),
+          height: model.rowHeight,
+        },
       }
     }
     return undefined
@@ -312,10 +330,12 @@ const VariantComponent = observer(function VariantComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, ...tooltip } = result
+              const { featureId, highlightRect: hr, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
+              setHighlightRect(hr)
             } else {
               model.setHoveredGenotype(undefined)
+              setHighlightRect(undefined)
             }
           }
         }}
@@ -323,6 +343,7 @@ const VariantComponent = observer(function VariantComponent({
           if (lastHoveredRef.current !== undefined) {
             lastHoveredRef.current = undefined
             model.setHoveredGenotype(undefined)
+            setHighlightRect(undefined)
           }
         }}
         onClick={e => {
@@ -348,6 +369,21 @@ const VariantComponent = observer(function VariantComponent({
           }
         }}
       />
+      {highlightRect ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: highlightRect.left,
+            top: highlightRect.top,
+            width: highlightRect.width,
+            height: highlightRect.height,
+            border: '1px solid rgba(0,0,0,0.5)',
+            background: 'rgba(255,255,255,0.3)',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        />
+      ) : null}
       {hasOverflow ? (
         <div
           className={classes.scrollbarTrack}
@@ -360,7 +396,6 @@ const VariantComponent = observer(function VariantComponent({
           />
         </div>
       ) : null}
-      {model.regionTooLarge ? <TooLargeMessage model={model} /> : null}
       <LoadingOverlay
         statusMessage={
           model.statusMessage ||
