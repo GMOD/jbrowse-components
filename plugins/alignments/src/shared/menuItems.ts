@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
 
 import { modificationData } from './modificationData.ts'
 
@@ -24,12 +23,6 @@ export interface ModificationsModel extends LinearReadDisplayModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
-}
-
-export function hasModificationsSupport(
-  model: LinearReadDisplayModel,
-): model is ModificationsModel {
-  return 'modificationsReady' in model && 'visibleModificationTypes' in model
 }
 
 export interface ModificationsMenuOptions {
@@ -168,68 +161,6 @@ export function getModificationsSubMenu(
   }
 }
 
-export function getModificationsMenuItem(
-  model: ModificationsModel,
-  options: ModificationsMenuOptions = {},
-) {
-  return {
-    label: 'Modifications',
-    type: 'subMenu' as const,
-    subMenu: getModificationsSubMenu(model, options),
-  }
-}
-
-/**
- * Shared color scheme menu items for all LinearRead displays
- */
-export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
-  const { type } = model.colorBy || {}
-  const baseItems = [
-    {
-      label: 'Insert size ± 3σ and orientation',
-      type: 'radio' as const,
-      checked: type === 'insertSizeAndOrientation',
-      onClick: () => {
-        model.setColorScheme({ type: 'insertSizeAndOrientation' })
-      },
-    },
-    {
-      label: 'Insert size ± 3σ',
-      type: 'radio' as const,
-      checked: type === 'insertSize',
-      onClick: () => {
-        model.setColorScheme({ type: 'insertSize' })
-      },
-    },
-    {
-      label: 'Orientation',
-      type: 'radio' as const,
-      checked: type === 'orientation',
-      onClick: () => {
-        model.setColorScheme({ type: 'orientation' })
-      },
-    },
-    {
-      label: 'Insert size gradient',
-      type: 'radio' as const,
-      checked: type === 'gradient',
-      onClick: () => {
-        model.setColorScheme({ type: 'gradient' })
-      },
-    },
-  ]
-
-  const modificationsItem =
-    hasModificationsSupport(model) && model.visibleModificationTypes.length > 0
-      ? [getModificationsMenuItem(model)]
-      : []
-
-  return {
-    label: 'Color scheme',
-    icon: PaletteIcon,
-    subMenu: [...baseItems, ...modificationsItem],
-  }
-}
 
 interface FiltersModel {
   drawSingletons?: boolean

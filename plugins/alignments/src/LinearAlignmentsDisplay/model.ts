@@ -1972,122 +1972,53 @@ export default function stateModelFactory(
        * Track menu items
        */
       trackMenuItems() {
-        const linkedReadColorItems: MenuItem[] = [
-          {
-            label: 'Insert size and orientation',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'insertSizeAndOrientation',
-            onClick: () => {
-              self.setColorScheme({ type: 'insertSizeAndOrientation' })
-            },
+        const colorRadio = (label: string, type: string) => ({
+          label,
+          type: 'radio' as const,
+          checked: self.colorBy.type === type,
+          onClick: () => {
+            self.setColorScheme({ type })
           },
-          {
-            label: 'Insert size',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'insertSize',
-            onClick: () => {
-              self.setColorScheme({ type: 'insertSize' })
-            },
-          },
-          {
-            label: 'Pair orientation',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'pairOrientation',
-            onClick: () => {
-              self.setColorScheme({ type: 'pairOrientation' })
-            },
-          },
-          {
-            label: 'Modifications',
-            type: 'subMenu' as const,
-            subMenu: getModificationsSubMenu(self, {
-              includeMethylation: true,
-            }),
-          },
-        ]
+        })
 
-        const pileupColorItems: MenuItem[] = [
-          {
-            label: 'Normal',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'normal',
-            onClick: () => {
-              self.setColorScheme({ type: 'normal' })
-            },
-          },
-          {
-            label: 'Strand',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'strand',
-            onClick: () => {
-              self.setColorScheme({ type: 'strand' })
-            },
-          },
-          {
-            label: 'Mapping quality',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'mappingQuality',
-            onClick: () => {
-              self.setColorScheme({ type: 'mappingQuality' })
-            },
-          },
-          {
-            label: 'Insert size',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'insertSize',
-            onClick: () => {
-              self.setColorScheme({ type: 'insertSize' })
-            },
-          },
-          {
-            label: 'First of pair strand',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'firstOfPairStrand',
-            onClick: () => {
-              self.setColorScheme({ type: 'firstOfPairStrand' })
-            },
-          },
-          {
-            label: 'Pair orientation',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'pairOrientation',
-            onClick: () => {
-              self.setColorScheme({ type: 'pairOrientation' })
-            },
-          },
-          {
-            label: 'Insert size and orientation',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'insertSizeAndOrientation',
-            onClick: () => {
-              self.setColorScheme({ type: 'insertSizeAndOrientation' })
-            },
-          },
-          {
-            label: 'Modifications',
-            type: 'subMenu' as const,
-            subMenu: getModificationsSubMenu(self, {
-              includeMethylation: true,
-            }),
-          },
-          {
-            label: 'Color by tag...',
-            type: 'radio' as const,
-            checked: self.colorBy.type === 'tag',
-            onClick: () => {
-              getSession(self).queueDialog((onClose: () => void) => [
-                ColorByTagDialog,
-                { model: self, handleClose: onClose },
-              ])
-            },
-          },
-        ]
+        const modificationsItem = {
+          label: 'Modifications',
+          type: 'subMenu' as const,
+          subMenu: getModificationsSubMenu(self, {
+            includeMethylation: true,
+          }),
+        }
 
         const colorByMenu = {
           label: 'Color by...',
           subMenu: self.showLinkedReads
-            ? linkedReadColorItems
-            : pileupColorItems,
+            ? [
+                colorRadio('Insert size and orientation', 'insertSizeAndOrientation'),
+                colorRadio('Insert size', 'insertSize'),
+                colorRadio('Pair orientation', 'pairOrientation'),
+                modificationsItem,
+              ]
+            : [
+                colorRadio('Normal', 'normal'),
+                colorRadio('Strand', 'strand'),
+                colorRadio('Mapping quality', 'mappingQuality'),
+                colorRadio('Insert size', 'insertSize'),
+                colorRadio('First of pair strand', 'firstOfPairStrand'),
+                colorRadio('Pair orientation', 'pairOrientation'),
+                colorRadio('Insert size and orientation', 'insertSizeAndOrientation'),
+                modificationsItem,
+                {
+                  label: 'Color by tag...',
+                  type: 'radio' as const,
+                  checked: self.colorBy.type === 'tag',
+                  onClick: () => {
+                    getSession(self).queueDialog((onClose: () => void) => [
+                      ColorByTagDialog,
+                      { model: self, handleClose: onClose },
+                    ])
+                  },
+                },
+              ],
         }
 
         const featureHeightMenu = {

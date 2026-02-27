@@ -1,8 +1,7 @@
-import { interleaveVariantInstances } from './variantShaders.ts'
 import {
-  VARIANT_FRAGMENT_SHADER,
-  VARIANT_VERTEX_SHADER,
-} from '../../shared/generated/index.ts'
+  INSTANCE_STRIDE,
+  interleaveVariantInstances,
+} from './variantShaders.ts'
 import {
   createProgram,
   splitPositionWithFrac,
@@ -15,18 +14,151 @@ export interface VariantRenderBlock {
   screenEndPx: number
 }
 
-const UNIFORM_SIZE = 48
+// SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
+// Mirrors the WGSL shader in variantShaders.ts (used by WebGPU).
+// When updating rendering logic, update BOTH this file and variantShaders.ts.
+//
+// Key differences from the WGSL version:
+//   - WGSL uses var<storage, read> instances: array<CellInstance> (storage buffer)
+//   - GLSL uses instanced vertex attributes via vertexAttribDivisor
+//   - WGSL uses struct Uniforms with @binding(1); GLSL uses individual uniforms
+//
+// SYNC: attribute layout must match interleaveVariantInstances() in variantShaders.ts
+// and struct CellInstance in variantShaders.ts (WGSL):
+//   [0..1] start_end: uvec2    -> a_start_end
+//   [2]    row_index: u32      -> a_row_index
+//   [3]    shape_type: u32     -> a_shape_type
+//   [4..7] color: vec4f        -> a_color
+//
+// SYNC: uniform names map to struct Uniforms fields in variantShaders.ts (WGSL)
+// HP (high-precision) position technique from genome-spy (MIT)
+
+const VERTEX_SHADER = `#version 300 es
+precision highp float;
+precision highp int;
+
+// SYNC: must match HP_LOW_MASK in variantShaders.ts (WGSL)
+const uint HP_LOW_MASK = 0xFFFu;
+
+// SYNC: attribute layout must match INSTANCE_STRIDE and interleaveVariantInstances()
+// in variantShaders.ts, and struct CellInstance in the WGSL shader
+in uvec2 a_start_end;
+in uint a_row_index;
+in uint a_shape_type;
+in vec4 a_color;
+
+// SYNC: uniforms must match struct Uniforms in variantShaders.ts (WGSL)
+uniform vec3 u_bp_range_x;
+uniform uint u_region_start;
+uniform float u_canvas_height;
+uniform float u_canvas_width;
+uniform float u_row_height;
+uniform float u_scroll_top;
+uniform float u_zero;
+
+out vec4 v_color;
+
+// SYNC: hp_split_uint must match variantShaders.ts (WGSL)
+vec2 hp_split_uint(uint value) {
+  uint lo = value & HP_LOW_MASK;
+  uint hi = value - lo;
+  return vec2(float(hi), float(lo));
+}
+
+// SYNC: hp_to_clip_x must match variantShaders.ts (WGSL)
+// u_zero MUST be 0.0 at runtime to produce runtime infinity (1.0/0.0)
+// that prevents the compiler from combining hi/lo subtractions
+float hp_to_clip_x(vec2 split_pos, vec3 bpr, float z) {
+  float inf_ = 1.0 / z;
+  float step_ = 2.0 / bpr.z;
+  float hi = max(split_pos.x - bpr.x, -inf_);
+  float lo = max(split_pos.y - bpr.y, -inf_);
+  return dot(vec3(-1.0, hi, lo), vec3(1.0, step_, step_));
+}
+
+// SYNC: vs_main rendering logic must match variantShaders.ts (WGSL)
+// shape_type: 0=rect, 1=right-pointing triangle, 2=left-pointing triangle, 3=wide triangle
+void main() {
+  uint vid = uint(gl_VertexID) % 6u;
+
+  uint abs_start = a_start_end.x + u_region_start;
+  uint abs_end = a_start_end.y + u_region_start;
+  float clip_x1 = hp_to_clip_x(hp_split_uint(abs_start), u_bp_range_x, u_zero);
+  float clip_x2 = hp_to_clip_x(hp_split_uint(abs_end), u_bp_range_x, u_zero);
+
+  float px_size = 2.0 / u_canvas_width;
+  float cx1 = floor(clip_x1 / px_size + 0.5) * px_size;
+  float cx2 = floor(clip_x2 / px_size + 0.5) * px_size;
+  if (cx2 - cx1 < 2.0 * px_size) {
+    cx2 = cx1 + 2.0 * px_size;
+  }
+
+  float y_top_px = float(a_row_index) * u_row_height - u_scroll_top;
+  float y_top = floor(y_top_px + 0.5);
+  float y_bot = floor(y_top_px + u_row_height + 0.5);
+  if (y_bot - y_top < 1.0) {
+    y_bot = y_top + 1.0;
+  }
+  float y_mid = (y_top + y_bot) * 0.5;
+  float px_to_clip_y = 2.0 / u_canvas_height;
+  float cy_top = 1.0 - y_top * px_to_clip_y;
+  float cy_bot = 1.0 - y_bot * px_to_clip_y;
+  float cy_mid = 1.0 - y_mid * px_to_clip_y;
+  float x_mid = (cx1 + cx2) * 0.5;
+
+  float sx;
+  float sy;
+
+  if (a_shape_type == 0u) {
+    float lx = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
+    float ly = (vid == 0u || vid == 1u || vid == 4u) ? 0.0 : 1.0;
+    sx = mix(cx1, cx2, lx);
+    sy = mix(cy_bot, cy_top, ly);
+  } else if (a_shape_type == 1u) {
+    switch (vid) {
+      case 0u: sx = cx1; sy = cy_top; break;
+      case 1u: sx = cx1; sy = cy_bot; break;
+      default: sx = cx2; sy = cy_mid; break;
+    }
+  } else if (a_shape_type == 2u) {
+    switch (vid) {
+      case 0u: sx = cx2; sy = cy_top; break;
+      case 1u: sx = cx2; sy = cy_bot; break;
+      default: sx = cx1; sy = cy_mid; break;
+    }
+  } else {
+    float width_extend = 6.0 / u_canvas_width;
+    switch (vid) {
+      case 0u: sx = cx1 - width_extend; sy = cy_top; break;
+      case 1u: sx = cx2 + width_extend; sy = cy_top; break;
+      default: sx = x_mid; sy = cy_bot; break;
+    }
+  }
+
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  v_color = a_color;
+}
+`
+
+// SYNC: fs_main must match variantShaders.ts (WGSL) — premultiplied alpha output
+const FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+in vec4 v_color;
+out vec4 fragColor;
+
+void main() {
+  fragColor = vec4(v_color.rgb * v_color.a, v_color.a);
+}
+`
 
 export class WebGLVariantRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
-  private emptyVAO: WebGLVertexArrayObject
-  private ubo: WebGLBuffer
-  private uniformData = new ArrayBuffer(UNIFORM_SIZE)
-  private uniformF32 = new Float32Array(this.uniformData)
-  private uniformU32 = new Uint32Array(this.uniformData)
-  private instanceTexture: WebGLTexture | null = null
+  private vao: WebGLVertexArrayObject | null = null
+  private instanceBuffer: WebGLBuffer | null = null
+  private uniforms: Record<string, WebGLUniformLocation | null> = {}
   private cellCount = 0
   private regionStart = 0
 
@@ -42,27 +174,20 @@ export class WebGLVariantRenderer {
     }
     this.gl = gl
 
-    this.program = createProgram(
-      gl,
-      VARIANT_VERTEX_SHADER,
-      VARIANT_FRAGMENT_SHADER,
-    )
-
-    const uboIndex = gl.getUniformBlockIndex(
-      this.program,
-      'Uniforms_block_1Vertex',
-    )
-    gl.uniformBlockBinding(this.program, uboIndex, 0)
-
-    this.ubo = gl.createBuffer()!
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
-    gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_SIZE, gl.DYNAMIC_DRAW)
+    this.program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
 
     gl.useProgram(this.program)
-    const texLoc = gl.getUniformLocation(this.program, 'u_instanceData')
-    gl.uniform1i(texLoc, 0)
-
-    this.emptyVAO = gl.createVertexArray()!
+    for (const name of [
+      'u_bp_range_x',
+      'u_region_start',
+      'u_canvas_height',
+      'u_canvas_width',
+      'u_row_height',
+      'u_scroll_top',
+      'u_zero',
+    ]) {
+      this.uniforms[name] = gl.getUniformLocation(this.program, name)
+    }
 
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
@@ -78,10 +203,7 @@ export class WebGLVariantRenderer {
   }) {
     const gl = this.gl
 
-    if (this.instanceTexture) {
-      gl.deleteTexture(this.instanceTexture)
-      this.instanceTexture = null
-    }
+    this.deleteBuffers()
     this.cellCount = 0
 
     if (data.numCells === 0) {
@@ -91,30 +213,39 @@ export class WebGLVariantRenderer {
     this.regionStart = data.regionStart
     this.cellCount = data.numCells
 
-    const count = data.numCells
     const buf = interleaveVariantInstances(data)
+    const stride = INSTANCE_STRIDE * 4
 
-    // RGBA32UI texture: 2 texels × 4 u32s per texel = INSTANCE_STRIDE u32s per instance
-    // WebGL2 lacks storage buffers, so we use a texture to pass per-instance data
-    const tex = gl.createTexture()
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, tex)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA32UI,
-      count * 2,
-      1,
-      0,
-      gl.RGBA_INTEGER,
-      gl.UNSIGNED_INT,
-      new Uint32Array(buf),
-    )
-    this.instanceTexture = tex
+    this.vao = gl.createVertexArray()!
+    gl.bindVertexArray(this.vao)
+
+    this.instanceBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW)
+
+    // SYNC: vertex attribute offsets must match interleaveVariantInstances()
+    // in variantShaders.ts and struct CellInstance in the WGSL shader
+    const startEndLoc = gl.getAttribLocation(this.program, 'a_start_end')
+    gl.enableVertexAttribArray(startEndLoc)
+    gl.vertexAttribIPointer(startEndLoc, 2, gl.UNSIGNED_INT, stride, 0)
+    gl.vertexAttribDivisor(startEndLoc, 1)
+
+    const rowIndexLoc = gl.getAttribLocation(this.program, 'a_row_index')
+    gl.enableVertexAttribArray(rowIndexLoc)
+    gl.vertexAttribIPointer(rowIndexLoc, 1, gl.UNSIGNED_INT, stride, 8)
+    gl.vertexAttribDivisor(rowIndexLoc, 1)
+
+    const shapeTypeLoc = gl.getAttribLocation(this.program, 'a_shape_type')
+    gl.enableVertexAttribArray(shapeTypeLoc)
+    gl.vertexAttribIPointer(shapeTypeLoc, 1, gl.UNSIGNED_INT, stride, 12)
+    gl.vertexAttribDivisor(shapeTypeLoc, 1)
+
+    const colorLoc = gl.getAttribLocation(this.program, 'a_color')
+    gl.enableVertexAttribArray(colorLoc)
+    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, stride, 16)
+    gl.vertexAttribDivisor(colorLoc, 1)
+
+    gl.bindVertexArray(null)
   }
 
   renderBlocks(
@@ -142,15 +273,12 @@ export class WebGLVariantRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.instanceTexture || this.cellCount === 0 || blocks.length === 0) {
+    if (!this.vao || this.cellCount === 0 || blocks.length === 0) {
       return
     }
 
     gl.useProgram(this.program)
-    gl.bindVertexArray(this.emptyVAO)
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
+    gl.bindVertexArray(this.vao)
     gl.enable(gl.SCISSOR_TEST)
 
     for (const block of blocks) {
@@ -209,26 +337,35 @@ export class WebGLVariantRenderer {
     canvasWidth: number,
     state: { canvasHeight: number; rowHeight: number; scrollTop: number },
   ) {
-    this.uniformF32[0] = bpRangeHi
-    this.uniformF32[1] = bpRangeLo
-    this.uniformF32[2] = bpRangeLength
-    this.uniformU32[3] = regionStart
-    this.uniformF32[4] = state.canvasHeight
-    this.uniformF32[5] = canvasWidth
-    this.uniformF32[6] = state.rowHeight
-    this.uniformF32[7] = state.scrollTop
     const gl = this.gl
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
+    gl.uniform3f(
+      this.uniforms.u_bp_range_x!,
+      bpRangeHi,
+      bpRangeLo,
+      bpRangeLength,
+    )
+    gl.uniform1ui(this.uniforms.u_region_start!, regionStart)
+    gl.uniform1f(this.uniforms.u_canvas_height!, state.canvasHeight)
+    gl.uniform1f(this.uniforms.u_canvas_width!, canvasWidth)
+    gl.uniform1f(this.uniforms.u_row_height!, state.rowHeight)
+    gl.uniform1f(this.uniforms.u_scroll_top!, state.scrollTop)
+    gl.uniform1f(this.uniforms.u_zero!, 0.0)
+  }
+
+  private deleteBuffers() {
+    const gl = this.gl
+    if (this.instanceBuffer) {
+      gl.deleteBuffer(this.instanceBuffer)
+      this.instanceBuffer = null
+    }
+    if (this.vao) {
+      gl.deleteVertexArray(this.vao)
+      this.vao = null
+    }
   }
 
   destroy() {
-    const gl = this.gl
-    if (this.instanceTexture) {
-      gl.deleteTexture(this.instanceTexture)
-    }
-    gl.deleteVertexArray(this.emptyVAO)
-    gl.deleteBuffer(this.ubo)
-    gl.deleteProgram(this.program)
+    this.deleteBuffers()
+    this.gl.deleteProgram(this.program)
   }
 }

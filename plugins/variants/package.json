@@ -25,10 +25,9 @@
     "test": "cd ../..; jest --passWithNoTests plugins/variants",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
-    "prebuild": "pnpm clean && pnpm compile-shaders",
+    "prebuild": "pnpm clean",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "clean": "rimraf esm *.tsbuildinfo",
-    "compile-shaders": "node scripts/compile-shaders.ts"
+    "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^2.0.3",
