@@ -29,7 +29,7 @@ struct Instance {
 }
 `
 
-// SYNC: field order must match uniformF32/uniformU32 indices in SyntenyRenderer and WebGLSyntenyRenderer
+// SYNC: field order must match uniformF32/uniformU32 indices in WebGPUSyntenyRenderer and WebGLSyntenyRenderer
 const UNIFORMS_STRUCT = /* wgsl */ `
 struct Uniforms {
   resolution: vec2f,
@@ -173,37 +173,46 @@ ${SCREEN_POSITIONS}
     default: { t = 0.0; side = 0.0; }
   }
 
-  // compute edges at both segment endpoints to get the tangent direction
+  // compute edges at both segment endpoints
   let e0 = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t0, inst.isCurve);
   let e1 = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t1, inst.isCurve);
-  let center0 = vec2f((e0.x + e0.y) * 0.5, e0.z);
-  let center1 = vec2f((e1.x + e1.y) * 0.5, e1.z);
-  let tangent = center1 - center0;
-  let tangentLen = length(tangent);
-  var normal: vec2f;
-  if (tangentLen > 0.001) {
-    normal = vec2f(-tangent.y, tangent.x) / tangentLen;
+  let e = select(e0, e1, abs(t - t1) < abs(t - t0));
+
+  let dir = side * 2.0 - 1.0;
+  let rawHW = abs(e.x - e.y) * 0.5;
+
+  // place vertex at the actual edge position (e.x = left edge, e.y = right edge)
+  let edgeX = select(e.x, e.y, side > 0.5);
+
+  // per-edge tangent for AA expansion perpendicular to the edge
+  let tan = select(
+    vec2f(e1.x - e0.x, e1.z - e0.z),
+    vec2f(e1.y - e0.y, e1.z - e0.z),
+    side > 0.5
+  );
+  let tanLen = length(tan);
+  var perp: vec2f;
+  if (tanLen > 0.001) {
+    perp = vec2f(-tan.y, tan.x) / tanLen;
   } else {
-    normal = vec2f(1.0, 0.0);
+    perp = vec2f(1.0, 0.0);
   }
 
-  // compute the current vertex's edge positions
-  let e = select(e0, e1, abs(t - t1) < abs(t - t0));
-  let centerX = (e.x + e.y) * 0.5;
-  let rawHalfWidthX = abs(e.x - e.y) * 0.5;
+  // ensure perpendicular points outward (away from the other edge)
+  let otherEdgeX = select(e.y, e.x, side > 0.5);
+  let edgeSep = abs(edgeX - otherEdgeX);
+  let outwardSign = select(sign(dir), sign(edgeX - otherEdgeX), edgeSep > 0.5);
+  if (perp.x * outwardSign < 0.0) {
+    perp = -perp;
+  }
 
-  // project X-direction half-width into the perpendicular (normal) direction
-  let perpHW = max(rawHalfWidthX * abs(normal.x), 0.5);
-  let dir = side * 2.0 - 1.0;
-  let expandedPerpHW = perpHW + 0.5;
-
-  // expand along the screen-space normal for proper perpendicular coverage
-  let pos = vec2f(centerX, e.z) + dir * expandedPerpHW * normal;
+  // expand 0.5px along outward edge perpendicular for antialiasing
+  let pos = vec2f(edgeX, e.z) + 0.5 * perp;
   let clipSpace = (pos / uniforms.resolution) * 2.0 - 1.0;
 
   out.pos = vec4f(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-  out.dist = dir * expandedPerpHW;
-  out.halfWidth = perpHW;
+  out.dist = dir * (rawHW + 0.5);
+  out.halfWidth = rawHW;
   return out;
 }
 

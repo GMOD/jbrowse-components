@@ -13,7 +13,7 @@ import {
   edgeVertexShader,
   fillVertexShader,
   interleaveInstances,
-} from './syntenyShaders.ts'
+} from './wgslShaders.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 

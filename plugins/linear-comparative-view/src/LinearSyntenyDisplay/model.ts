@@ -4,8 +4,9 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
+import { getTooltip } from './components/util.ts'
 
-import type { SyntenyRenderer } from './SyntenyRenderer.ts'
+import type { SyntenyRenderer } from './WebGPUSyntenyRenderer.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -114,11 +115,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       featureData: undefined as SyntenyFeatureData | undefined,
 
-      /**
-       * #volatile
-       */
-      mouseoverId: undefined as string | undefined,
-
       hoveredFeatureIdx: -1,
 
       clickedFeatureIdx: -1,
@@ -149,12 +145,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setFeatureData(arg: SyntenyFeatureData | undefined) {
         self.featureData = arg
-      },
-      /**
-       * #action
-       */
-      setMouseoverId(arg?: string) {
-        self.mouseoverId = arg
       },
       setHoveredFeatureIdx(idx: number) {
         self.hoveredFeatureIdx = idx
@@ -344,6 +334,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return undefined
         }
         return getFeatureAtIndex(self.featureData, index)
+      },
+
+      get tooltipText() {
+        const { hoveredFeatureIdx, featureData } = self
+        if (
+          hoveredFeatureIdx < 0 ||
+          !featureData ||
+          hoveredFeatureIdx >= featureData.featureIds.length
+        ) {
+          return ''
+        }
+        return getTooltip(getFeatureAtIndex(featureData, hoveredFeatureIdx))
       },
     }))
     .actions(self => ({

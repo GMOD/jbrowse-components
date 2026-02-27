@@ -1,5 +1,5 @@
 // Hand-written GLSL ES 3.0 shaders for WebGL2 fallback
-// Matches the WGSL shaders in syntenyShaders.ts
+// Matches the WGSL shaders in wgslShaders.ts
 // Line rendering references:
 // - https://mattdesl.svbtle.com/drawing-lines-is-hard (screen-space expansion)
 // - https://blog.frost.kiwi/analytical-anti-aliasing/ (fwidth-based coverage)
@@ -124,26 +124,36 @@ void main() {
 
   vec3 e0 = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t0, isCurve);
   vec3 e1 = hermiteEdges(screenX1, screenX2, screenX3, screenX4, t1, isCurve);
-  vec2 center0 = vec2((e0.x + e0.y) * 0.5, e0.z);
-  vec2 center1 = vec2((e1.x + e1.y) * 0.5, e1.z);
-  vec2 tangent = center1 - center0;
-  float tangentLen = length(tangent);
-  vec2 normal = tangentLen > 0.001
-    ? vec2(-tangent.y, tangent.x) / tangentLen
-    : vec2(1.0, 0.0);
-
   vec3 e = abs(t - t1) < abs(t - t0) ? e1 : e0;
-  float centerX = (e.x + e.y) * 0.5;
-  float rawHalfWidthX = abs(e.x - e.y) * 0.5;
-  float perpHW = max(rawHalfWidthX * abs(normal.x), 0.5);
-  float dir = side * 2.0 - 1.0;
-  float expandedPerpHW = perpHW + 0.5;
 
-  vec2 pos = vec2(centerX, e.z) + dir * expandedPerpHW * normal;
+  float dir = side * 2.0 - 1.0;
+  float rawHW = abs(e.x - e.y) * 0.5;
+
+  float edgeX = side > 0.5 ? e.y : e.x;
+
+  vec2 leftTan = vec2(e1.x - e0.x, e1.z - e0.z);
+  vec2 rightTan = vec2(e1.y - e0.y, e1.z - e0.z);
+  vec2 tan = side > 0.5 ? rightTan : leftTan;
+  float tanLen = length(tan);
+  vec2 perp;
+  if (tanLen > 0.001) {
+    perp = vec2(-tan.y, tan.x) / tanLen;
+  } else {
+    perp = vec2(1.0, 0.0);
+  }
+
+  float otherEdgeX = side > 0.5 ? e.x : e.y;
+  float edgeSep = abs(edgeX - otherEdgeX);
+  float outwardSign = edgeSep > 0.5 ? sign(edgeX - otherEdgeX) : sign(dir);
+  if (perp.x * outwardSign < 0.0) {
+    perp = -perp;
+  }
+
+  vec2 pos = vec2(edgeX, e.z) + 0.5 * perp;
   vec2 clipSpace = pos / u.resolution * 2.0 - 1.0;
   gl_Position = vec4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
-  v_dist = dir * expandedPerpHW;
-  v_halfWidth = perpHW;
+  v_dist = dir * (rawHW + 0.5);
+  v_halfWidth = rawHW;
 }
 `
 

@@ -4,7 +4,7 @@ import {
   FILL_FRAGMENT_SHADER,
   FILL_FRAGMENT_SHADER_PICKING,
   FILL_VERTEX_SHADER,
-} from './generated/index.ts'
+} from './glslShaders.ts'
 import {
   EDGE_SEGMENTS,
   EDGE_VERTS_PER_INSTANCE,
@@ -13,7 +13,7 @@ import {
   INSTANCE_BYTE_SIZE,
   UNIFORM_BYTE_SIZE,
   interleaveInstances,
-} from './syntenyShaders.ts'
+} from './wgslShaders.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 

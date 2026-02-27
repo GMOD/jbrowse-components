@@ -1,7 +1,7 @@
 # LinearSyntenyDisplay
 
-- WGSL shaders in `syntenyShaders.ts` are compiled to GLSL via the
-  `compile-shaders` script. Generated GLSL output lives in `generated/index.ts`.
-- `WebGLSyntenyRenderer.ts` imports and uses the generated GLSL.
-- Shared constants between TypeScript exports and WGSL inline code are marked
-  with `// SYNC:` comments in `syntenyShaders.ts`.
+- WGSL shaders live in `wgslShaders.ts`, GLSL ES 3.0 shaders live in
+  `glslShaders.ts`. Both must be kept in sync manually.
+- `WebGPUSyntenyRenderer.ts` uses the WGSL shaders, `WebGLSyntenyRenderer.ts`
+  uses the GLSL shaders. Shared constants are exported from `wgslShaders.ts`.
+- Constants marked with `// SYNC:` comments must stay in sync across both files.
