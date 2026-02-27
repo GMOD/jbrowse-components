@@ -73,12 +73,16 @@ export async function waitForCanvasRendered(
   await page.waitForFunction(
     (sel: string) => {
       const canvas = document.querySelector(sel)
+      // these always get reverted by lint if we cast to the right return value
+      // @ts-expect-error
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
         return false
       }
 
       const parent = canvas.closest('[data-testid^="drawn-"]')
       if (parent) {
+        // these always get reverted by lint if we cast to the right return value
+        // @ts-expect-error
         return parent.dataset.testid === 'drawn-true'
       }
 
@@ -96,7 +100,8 @@ export async function waitForCanvasRendered(
           return false
         }
       }
-
+      // these always get reverted by lint if we cast to the right return value
+      // @ts-expect-error
       return canvas.width > 0 && canvas.height > 0
     },
     { timeout, polling: 200 },

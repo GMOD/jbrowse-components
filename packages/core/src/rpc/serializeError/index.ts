@@ -34,7 +34,7 @@ function newError(name: string) {
   }
   const ErrorConstructor = errorConstructors.get(name) ?? Error
   if (name === 'AggregateError') {
-    return new AggregateError([])
+    return new AggregateError([], 'AggregateError')
   }
   return new ErrorConstructor()
 }

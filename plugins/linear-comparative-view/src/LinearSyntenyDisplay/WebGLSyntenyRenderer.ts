@@ -166,8 +166,8 @@ export class WebGLSyntenyRenderer {
     const gl = this.gl
     const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
-    for (let i = 0; i < INST_ATTRIB_NAMES.length; i++) {
-      const loc = gl.getAttribLocation(program, INST_ATTRIB_NAMES[i]!)
+    for (const name of INST_ATTRIB_NAMES) {
+      const loc = gl.getAttribLocation(program, name)
       if (loc >= 0) {
         gl.enableVertexAttribArray(loc)
         gl.vertexAttribDivisor(loc, 1)

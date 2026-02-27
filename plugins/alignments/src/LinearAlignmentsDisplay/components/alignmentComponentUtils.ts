@@ -469,37 +469,19 @@ export function uploadRegionDataToGPU(
   let maxYVal = 0
   for (const [regionNumber, data] of rpcDataMap) {
     if (data.numReads === 0) {
-      console.log('[GPU upload] skipping region', regionNumber, '(0 reads)')
       continue
     }
-    console.log('[GPU upload] uploading region', regionNumber, {
-      numReads: data.numReads,
-      numGaps: data.numGaps,
-      numMismatches: data.numMismatches,
-      maxY: data.maxY,
-    })
-    const t0 = performance.now()
     renderer.uploadFromTypedArraysForRegion(regionNumber, data)
-    const t1 = performance.now()
     renderer.uploadCigarFromTypedArraysForRegion(regionNumber, data)
-    const t2 = performance.now()
     renderer.uploadModificationsFromTypedArraysForRegion(regionNumber, data)
-    const t3 = performance.now()
     if (data.maxY > maxYVal) {
       maxYVal = data.maxY
     }
     renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
-    const t4 = performance.now()
     renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
     if (data.numSashimiArcs > 0) {
       renderer.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
     }
-    console.log('[GPU upload] region', regionNumber, 'timings:', {
-      reads: `${(t1 - t0).toFixed(1)}ms`,
-      cigar: `${(t2 - t1).toFixed(1)}ms`,
-      mods: `${(t3 - t2).toFixed(1)}ms`,
-      coverage: `${(t4 - t3).toFixed(1)}ms`,
-    })
   }
   return maxYVal
 }

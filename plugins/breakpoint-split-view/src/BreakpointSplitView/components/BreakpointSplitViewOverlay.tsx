@@ -63,8 +63,8 @@ const BreakpointSplitViewOverlay = observer(
       for (const track of matchedTracks) {
         const trackId = track.configuration.trackId
         const tops: number[] = []
-        for (let level = 0; level < views.length; level++) {
-          const trackRef = views[level]?.trackRefs[trackId]
+        for (const view of views) {
+          const trackRef = view.trackRefs[trackId]
           tops.push(trackRef?.getBoundingClientRect().top ?? 0)
         }
         tracks[trackId] = tops

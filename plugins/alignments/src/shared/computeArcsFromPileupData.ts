@@ -136,12 +136,6 @@ function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   const variance = radii.reduce((a, b) => a + (b - mean) ** 2, 0) / radii.length
   const std = Math.sqrt(variance)
   const threshold = mean + LONG_RANGE_STDDEV_THRESHOLD * std
-  console.log('longRange threshold', {
-    mean,
-    std,
-    threshold,
-    numArcs: radii.length,
-  })
   return threshold
 }
 

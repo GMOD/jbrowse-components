@@ -14,7 +14,6 @@ import {
 import { autorun, untracked } from 'mobx'
 
 import type { SharedLDModel } from './shared.ts'
-import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -71,12 +70,12 @@ export function doAfterAttach(self: SharedLDModel) {
       if (fetchGeneration !== gen) {
         return
       }
-      self.setFeatureDensityStats(stats ?? undefined)
+      self.setFeatureDensityStats(stats)
       if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
         const fetchSizeLimit =
-          stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+          stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
         const limit = self.userByteSizeLimit || fetchSizeLimit
-        if (stats?.bytes && stats.bytes > limit) {
+        if (stats.bytes && stats.bytes > limit) {
           self.setRegionTooLarge(
             true,
             `Requested too much data (${getDisplayStr(stats.bytes)})`,

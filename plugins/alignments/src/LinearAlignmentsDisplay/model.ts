@@ -1306,13 +1306,13 @@ export default function stateModelFactory(
         if (fetchGenerations.get(regionNumber) !== gen) {
           return
         }
-        self.setFeatureDensityStats(stats ?? undefined)
+        self.setFeatureDensityStats(stats)
         const view = getContainingView(self) as LGV
         if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
           const fetchSizeLimit =
-            stats?.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
+            stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
           const limit = self.userByteSizeLimit || fetchSizeLimit
-          if (stats?.bytes && stats.bytes > limit) {
+          if (stats.bytes && stats.bytes > limit) {
             self.setRegionTooLarge(
               true,
               `Requested too much data (${getDisplayStr(stats.bytes)})`,

@@ -16,7 +16,6 @@ export async function initGpuContext(
           format: 'bgra8unorm',
           alphaMode: opts?.alphaMode ?? 'premultiplied',
         })
-        console.log('[initGpuContext] WebGPU context initialized successfully')
         return { device, context }
       }
       console.error(

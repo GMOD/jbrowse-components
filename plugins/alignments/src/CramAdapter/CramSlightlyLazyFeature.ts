@@ -74,7 +74,6 @@ export default class CramSlightlyLazyFeature implements Feature {
     }
     const { flags } = this.record
     const isRead1 = !!(flags & 0x40)
-    const isRead2 = !!(flags & 0x80)
     const isSelfRev = !!(flags & 0x10)
     const isMateRev = !!(flags & 0x20)
     const selfStrand = isSelfRev ? 'R' : 'F'

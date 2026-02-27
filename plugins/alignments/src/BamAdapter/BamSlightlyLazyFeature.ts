@@ -119,7 +119,6 @@ export default class BamSlightlyLazyFeature
       return undefined
     }
     const isRead1 = !!(this.flags & 0x40)
-    const isRead2 = !!(this.flags & 0x80)
     const isSelfRev = !!(this.flags & 0x10)
     const isMateRev = !!(this.flags & 0x20)
     const selfStrand = isSelfRev ? 'R' : 'F'

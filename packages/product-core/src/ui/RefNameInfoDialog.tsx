@@ -98,7 +98,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
               onClick={async () => {
                 const { default: copy } = await import('copy-to-clipboard')
                 copy(
-                  (refNames ?? [])
+                  refNames
                     .flatMap(([assemblyName, refNames]) => [
                       `--- ${assemblyName} ---`,
                       ...refNames,

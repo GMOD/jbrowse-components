@@ -77,7 +77,7 @@ export interface RpcRegistry {
   }
   CoreFreeResources: {
     args: Record<string, unknown>
-    return: void
+    return: undefined
   }
   CoreRender: {
     args: Record<string, unknown>

@@ -150,6 +150,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       target?.removeEventListener('wheel', onWheel)
       clearTimeout(scrollingTimer)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model])
 
   const gpuCanvasCallbackRef = useCallback(

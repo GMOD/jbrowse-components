@@ -40,7 +40,6 @@ const CollapseIntronsDialog = lazy(
 import type {
   FeatureDataResult,
   FlatbushItem,
-  RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

@@ -1,10 +1,8 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export function getDisplayStr(totalBytes: number) {
   if (Math.floor(totalBytes / 1000000) > 0) {

@@ -179,7 +179,6 @@ export class WebGPUSequenceRenderer {
           size: UNIFORM_SIZE,
           usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         })
-        console.log('[WebGPUSequenceRenderer] Using WebGPU backend')
         return true
       }
     }
@@ -191,7 +190,6 @@ export class WebGPUSequenceRenderer {
     this.glContext = gl
     this.glHandles = initGL(gl)
     this.useWebGL = true
-    console.log('[WebGPUSequenceRenderer] Using WebGL2 fallback backend')
     return true
   }
 

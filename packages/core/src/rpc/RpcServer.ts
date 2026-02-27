@@ -3,8 +3,7 @@ import { serializeError } from './serializeError/index.ts'
 import type { ErrorObject } from './serializeError/index.ts'
 
 interface WorkerSelf {
-  postMessage(message: unknown, transfer: Transferable[]): void
-  postMessage(message: unknown): void
+  postMessage(message: unknown, transfer?: Transferable[]): void
   addEventListener(type: string, listener: (e: MessageEvent) => void): void
 }
 

@@ -113,9 +113,8 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         const regions = roundRegions(visibleRegions)
         if (supportsExport) {
           const { rpcManager } = session
-          const sessionId = getRpcSessionId(model)
           const exportResult = await rpcManager.call(
-            'getExportData',
+            getRpcSessionId(model),
             'CoreGetExportData',
             {
               adapterConfig,
@@ -129,7 +128,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             return
           }
           setUsedAdapterExport(true)
-          setStr(exportResult ?? '')
+          setStr(exportResult)
         } else {
           const features = await fetchFeatures(model, regions)
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
