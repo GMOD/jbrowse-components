@@ -31,9 +31,16 @@ interface CellDataBase {
   simplifiedFeatures: SimplifiedVariantFeature[]
 }
 
+export interface RegionTooLargeResult {
+  regionTooLarge: true
+  bytes: number
+  fetchSizeLimit: number
+}
+
 export type CellDataResult =
   | (CellDataBase & VariantCellData & { mode: 'regular' })
   | (CellDataBase & MatrixCellData & { mode: 'matrix' })
+  | RegionTooLargeResult
 
 function computeSampleInfo(
   mafs: MAFFilteredFeature[],
@@ -130,6 +137,8 @@ export async function executeVariantCellData({
     adapterConfig,
     sessionId,
     statusCallback,
+    regionNumberMap,
+    byteSizeLimit,
   } = args
 
   const { dataAdapter } = await getAdapter(
@@ -138,14 +147,24 @@ export async function executeVariantCellData({
     adapterConfig,
   )
 
+  const adapter = dataAdapter as BaseFeatureDataAdapter
+  if (byteSizeLimit) {
+    const stats = await adapter.getMultiRegionFeatureDensityStats(regions, args)
+    if (stats.bytes && stats.bytes > byteSizeLimit) {
+      return {
+        regionTooLarge: true as const,
+        bytes: stats.bytes,
+        fetchSizeLimit: stats.fetchSizeLimit ?? byteSizeLimit,
+      }
+    }
+  }
+
   const rawFeatures = await updateStatus(
     'Loading features',
     statusCallback,
     () =>
       firstValueFrom(
-        (dataAdapter as BaseFeatureDataAdapter)
-          .getFeaturesInMultipleRegions(regions, args)
-          .pipe(toArray()),
+        adapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
       ),
   )
 
@@ -177,6 +196,7 @@ export async function executeVariantCellData({
           renderingMode,
           referenceDrawingMode: referenceDrawingMode ?? 'skip',
           genotypesCache,
+          regionNumberMap,
         }),
     )
 
@@ -193,6 +213,7 @@ export async function executeVariantCellData({
         cellData.cellRowIndices.buffer,
         cellData.cellColors.buffer,
         cellData.cellShapeTypes.buffer,
+        cellData.cellRegionNumbers.buffer,
       ] as ArrayBuffer[],
     )
   } else {

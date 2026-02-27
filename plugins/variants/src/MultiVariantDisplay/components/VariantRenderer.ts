@@ -9,7 +9,7 @@ import { splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
 
 import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
 
-const UNIFORM_SIZE = 48
+const UNIFORM_SIZE = 48 // 12 f32/u32 slots (48 bytes)
 
 interface GpuData {
   instanceBuffer: GPUBuffer
@@ -237,6 +237,7 @@ export class VariantRenderer {
         clippedLengthBp,
         Math.floor(this.gpuData.regionStart),
         scissorW,
+        block.regionNumber,
         state,
       )
 
@@ -285,6 +286,7 @@ export class VariantRenderer {
     bpRangeLength: number,
     regionStart: number,
     canvasWidth: number,
+    regionNumber: number,
     state: { canvasHeight: number; rowHeight: number; scrollTop: number },
   ) {
     this.uniformF32[0] = bpRangeHi
@@ -295,6 +297,8 @@ export class VariantRenderer {
     this.uniformF32[5] = canvasWidth
     this.uniformF32[6] = state.rowHeight
     this.uniformF32[7] = state.scrollTop
+    // [8] = zero (stays 0.0 for HP infinity trick)
+    this.uniformU32[9] = regionNumber
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 

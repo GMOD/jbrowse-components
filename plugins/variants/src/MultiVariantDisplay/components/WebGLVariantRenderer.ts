@@ -55,6 +55,7 @@ uniform float u_canvas_width;
 uniform float u_row_height;
 uniform float u_scroll_top;
 uniform float u_zero;
+uniform uint u_region_number;
 
 out vec4 v_color;
 out vec2 v_local_px;

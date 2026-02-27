@@ -7,10 +7,12 @@ import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { getDisplayStr } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -21,12 +23,12 @@ export function getVariantCellDataAutorun(self: {
   sources?: Source[]
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
-  featureDensityStatsReadyAndRegionNotTooLarge: boolean
   isMinimized: boolean
   renderingMode: string
   referenceDrawingMode: string
   cellDataMode: 'regular' | 'matrix'
   errorRetryCount: number
+  fetchSizeLimit: number
   setCellData: (data: unknown) => void
   setCellDataLoading: (val: boolean) => void
   setDisplayError: (e: unknown) => void
@@ -35,6 +37,8 @@ export function getVariantCellDataAutorun(self: {
   setHasPhased: (arg: boolean) => void
   setSampleInfo: (arg: Record<string, SampleInfo>) => void
   setSimplifiedFeaturesLoading: (arg: StopToken) => void
+  setRegionTooLarge: (val: boolean, reason?: string) => void
+  setFeatureDensityStats: (stats?: FeatureDensityStats) => void
 }) {
   addDisposer(
     self,
@@ -46,10 +50,7 @@ export function getVariantCellDataAutorun(self: {
           }
           void self.errorRetryCount
           const view = getContainingView(self) as LinearGenomeViewModel
-          if (
-            !view.initialized ||
-            !self.featureDensityStatsReadyAndRegionNotTooLarge
-          ) {
+          if (!view.initialized) {
             return
           }
 
@@ -64,6 +65,7 @@ export function getVariantCellDataAutorun(self: {
             renderingMode,
             referenceDrawingMode,
             cellDataMode,
+            fetchSizeLimit,
           } = self
           if (sources) {
             self.setCellDataLoading(true)
@@ -74,6 +76,12 @@ export function getVariantCellDataAutorun(self: {
                 'MultiSampleVariantGetCellData',
                 {
                   regions: view.dynamicBlocks.contentBlocks,
+                  regionNumberMap: Object.fromEntries(
+                    view.dynamicBlocks.contentBlocks.map(b => [
+                      b.refName,
+                      b.regionNumber ?? 0,
+                    ]),
+                  ),
                   sources,
                   minorAlleleFrequencyFilter,
                   lengthCutoffFilter,
@@ -83,6 +91,7 @@ export function getVariantCellDataAutorun(self: {
                   sessionId,
                   adapterConfig,
                   stopToken,
+                  byteSizeLimit: fetchSizeLimit,
                   statusCallback: (arg: string) => {
                     if (isAlive(self)) {
                       self.setStatusMessage(arg)
@@ -91,12 +100,24 @@ export function getVariantCellDataAutorun(self: {
                 },
               )
               if (isAlive(self)) {
-                self.setHasPhased(result.hasPhased)
-                self.setSampleInfo(result.sampleInfo)
-                self.setFeatures(
-                  result.simplifiedFeatures.map(f => new SimpleFeature(f)),
-                )
-                self.setCellData(result)
+                if ('regionTooLarge' in result) {
+                  self.setFeatureDensityStats({
+                    bytes: result.bytes,
+                    fetchSizeLimit: result.fetchSizeLimit,
+                  })
+                  self.setRegionTooLarge(
+                    true,
+                    `Requested too much data (${getDisplayStr(result.bytes)})`,
+                  )
+                } else {
+                  self.setRegionTooLarge(false)
+                  self.setHasPhased(result.hasPhased)
+                  self.setSampleInfo(result.sampleInfo)
+                  self.setFeatures(
+                    result.simplifiedFeatures.map(f => new SimpleFeature(f)),
+                  )
+                  self.setCellData(result)
+                }
               }
             } finally {
               if (isAlive(self)) {

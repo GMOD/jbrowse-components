@@ -57,10 +57,12 @@ struct Uniforms {
   row_height: f32,
   scroll_top: f32,
   zero: f32,
+  region_number: u32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<CellInstance>;
 @group(0) @binding(1) var<uniform> u: Uniforms;
+@group(0) @binding(2) var<storage, read> region_numbers: array<u32>;
 
 struct VertexOutput {
   @builtin(position) position: vec4f,
@@ -77,6 +79,18 @@ fn vs_main(
 ) -> VertexOutput {
   let inst = instances[instance_index];
   let vid = vertex_index % 6u;
+
+  // skip instances that belong to a different region
+  let inst_region = region_numbers[instance_index];
+  if inst_region != u.region_number {
+    var out: VertexOutput;
+    out.position = vec4f(0.0, 0.0, 0.0, 0.0);
+    out.color = vec4f(0.0);
+    out.local_px = vec2f(0.0);
+    out.size_px = vec2f(0.0);
+    out.shape_type_f = 0u;
+    return out;
+  }
 
   let abs_start = inst.start_end.x + u.region_start;
   let abs_end = inst.start_end.y + u.region_start;

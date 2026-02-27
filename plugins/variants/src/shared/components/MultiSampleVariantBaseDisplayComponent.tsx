@@ -1,6 +1,5 @@
-import { Suspense, useRef, useState } from 'react'
+import { Suspense, useRef } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -29,9 +28,6 @@ const MultiSampleVariantBaseDisplayComponent = observer(
     const ref = useRef<HTMLDivElement>(null)
     const { mouseState, handleMouseMove, handleMouseLeave } =
       useMouseTracking(ref)
-    const [contextCoord, setContextCoord] = useState<
-      [number, number] | undefined
-    >()
 
     return (
       <div
@@ -40,12 +36,6 @@ const MultiSampleVariantBaseDisplayComponent = observer(
         style={{ position: 'relative' }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onContextMenu={e => {
-          if (model.contextMenuFeature) {
-            e.preventDefault()
-            setContextCoord([e.clientX, e.clientY])
-          }
-        }}
       >
         <TreeSidebar model={model} />
         <svg
@@ -79,33 +69,6 @@ const MultiSampleVariantBaseDisplayComponent = observer(
             offsetX={mouseState.offsetX}
             offsetY={mouseState.offsetY}
             model={model}
-          />
-        ) : null}
-        {contextCoord ? (
-          <Menu
-            open
-            onMenuItemClick={(_, callback) => {
-              callback()
-              setContextCoord(undefined)
-            }}
-            onClose={() => {
-              setContextCoord(undefined)
-              model.setContextMenuFeature(undefined)
-            }}
-            slotProps={{
-              transition: {
-                onExit: () => {
-                  setContextCoord(undefined)
-                  model.setContextMenuFeature(undefined)
-                },
-              },
-            }}
-            anchorReference="anchorPosition"
-            anchorPosition={{
-              top: contextCoord[1],
-              left: contextCoord[0],
-            }}
-            menuItems={model.contextMenuItems()}
           />
         ) : null}
       </div>

@@ -47,7 +47,6 @@ import type {
   HoveredTreeNode,
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
-import type { FeatureGenotypeInfo } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -71,8 +70,10 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
-function encodeGenotype(gt: string, splitter: RegExp) {
-  const alleles = gt.split(splitter)
+const GENOTYPE_SPLITTER = /[/|]/
+
+function encodeGenotype(gt: string) {
+  const alleles = gt.split(GENOTYPE_SPLITTER)
   let nonRefCount = 0
   let uncalledCount = 0
   for (const allele of alleles) {
@@ -82,16 +83,30 @@ function encodeGenotype(gt: string, splitter: RegExp) {
       nonRefCount++
     }
   }
-  if (uncalledCount === alleles.length) {
-    return -1
+  return uncalledCount === alleles.length ? -1 : nonRefCount
+}
+
+interface GenotypeMap {
+  genotypes: Record<string, string>
+}
+
+function getGenotypeMapForFeature(cellData: unknown, featureId: string) {
+  const data = cellData as
+    | {
+        featureGenotypeMap?: Record<string, GenotypeMap>
+        featureData?: (GenotypeMap & { featureId: string })[]
+      }
+    | undefined
+  if (!data) {
+    return undefined
   }
-  if (nonRefCount === 0) {
-    return 0
+  if (data.featureGenotypeMap) {
+    return data.featureGenotypeMap[featureId]
   }
-  if (nonRefCount === alleles.length) {
-    return 2
+  if (data.featureData) {
+    return data.featureData.find(f => f.featureId === featureId)
   }
-  return 1
+  return undefined
 }
 
 /**
@@ -312,8 +327,11 @@ export default function MultiSampleVariantBaseModelF(
         }
       },
 
-      get featureDensityStatsReadyAndRegionNotTooLarge() {
-        return !self.regionTooLarge
+      get fetchSizeLimit() {
+        return (
+          self.userByteSizeLimit ||
+          (getConf(self as any, 'fetchSizeLimit') as number)
+        )
       },
     }))
     .actions(self => ({
@@ -519,6 +537,20 @@ export default function MultiSampleVariantBaseModelF(
       },
       /**
        * #action
+       * Override resizeHeight to scale row heights proportionally when
+       * the display is vertically resized
+       */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = Math.max(self.height + distance, 20)
+        self.heightPreConfig = newHeight
+        if (self.rowHeightMode > 0) {
+          self.rowHeightMode = self.rowHeightMode * (newHeight / oldHeight)
+        }
+        return newHeight - oldHeight
+      },
+      /**
+       * #action
        */
       setHasPhased(arg: boolean) {
         self.hasPhased = arg
@@ -539,13 +571,6 @@ export default function MultiSampleVariantBaseModelF(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get autoHeight() {
-        return self.rowHeightMode === 0
-      },
-
       /**
        * #getter
        * Returns the effective minor allele frequency filter, falling back to config
@@ -715,9 +740,19 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          */
+        get autoRowHeight() {
+          return this.availableHeight / this.nrow
+        },
+
+        /**
+         * #getter
+         */
         get rowHeight() {
-          return self.rowHeightMode === 0
-            ? this.availableHeight / this.nrow
+          if (self.rowHeightMode === 0) {
+            return this.autoRowHeight
+          }
+          return Math.abs(self.rowHeightMode - this.autoRowHeight) < 0.01
+            ? this.autoRowHeight
             : self.rowHeightMode
         },
         /**
@@ -745,23 +780,46 @@ export default function MultiSampleVariantBaseModelF(
         },
       }
     })
+    .views(self => ({
+      get featureNearestCenter() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        const centerInfo = view.centerLineInfo
+        const features = self.featuresVolatile
+        if (!centerInfo || !features?.length) {
+          return undefined
+        }
+        const { coord, refName } = centerInfo
+        let bestFeature = features[0]!
+        let bestDist = Infinity
+        for (const f of features) {
+          if (f.get('refName') === refName) {
+            const start = f.get('start') as number
+            const end = f.get('end') as number
+            const mid = (start + end) / 2
+            const dist = Math.abs(mid - coord)
+            if (dist < bestDist) {
+              bestDist = dist
+              bestFeature = f
+            }
+          }
+        }
+        return bestFeature
+      },
+    }))
     .actions(self => ({
       sortByGenotype(featureId: string) {
-        const data = self.cellData as
-          | { featureGenotypeMap: Record<string, FeatureGenotypeInfo> }
-          | undefined
-        if (!data?.featureGenotypeMap || !self.sourcesWithoutLayout) {
+        const sources = self.sourcesWithoutLayout
+        if (!sources) {
           return
         }
-        const info = data.featureGenotypeMap[featureId]
+        const info = getGenotypeMapForFeature(self.cellData, featureId)
         if (!info) {
           return
         }
-        const splitter = /[/|]/
-        const sorted = [...self.sourcesWithoutLayout].sort((a, b) => {
+        const sorted = [...sources].sort((a, b) => {
           const ga = info.genotypes[a.name] ?? './.'
           const gb = info.genotypes[b.name] ?? './.'
-          return encodeGenotype(gb, splitter) - encodeGenotype(ga, splitter)
+          return encodeGenotype(gb) - encodeGenotype(ga)
         })
         self.setLayout(sorted, true)
       },
@@ -919,34 +977,10 @@ export default function MultiSampleVariantBaseModelF(
               label: 'Sort by genotype',
               icon: SortIcon,
               onClick: () => {
-                const view = getContainingView(self) as LinearGenomeViewModel
-                const centerInfo = view.centerLineInfo
-                if (!centerInfo) {
-                  return
+                const feat = self.featureNearestCenter
+                if (feat) {
+                  self.sortByGenotype(feat.id())
                 }
-                const features = self.featuresVolatile
-                if (!features?.length) {
-                  return
-                }
-                const { coord, refName } = centerInfo
-                let bestFeature = features[0]!
-                let bestDist = Infinity
-                for (const f of features) {
-                  if (f.get('refName') === refName) {
-                    const start = f.get('start') as number
-                    const end = f.get('end') as number
-                    const mid = (start + end) / 2
-                    const dist = Math.abs(mid - coord)
-                    if (dist < bestDist) {
-                      bestDist = dist
-                      bestFeature = f
-                      if (dist === 0) {
-                        break
-                      }
-                    }
-                  }
-                }
-                self.sortByGenotype(bestFeature.id())
               },
             },
             {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { ErrorBar } from '@jbrowse/core/ui'
+import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
@@ -61,6 +61,7 @@ export interface VariantMatrixDisplayModel {
   setRowHeight: (n: number) => void
   selectFeature: (feature: { id(): string }) => void
   setContextMenuFeature: (feature?: { id(): string }) => void
+  contextMenuItems: () => { label: string; onClick: () => void }[]
   retryLoadingData: () => void
 }
 
@@ -71,6 +72,9 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 }) {
   const [error, setError] = useState<unknown>(null)
   const [ready, setReady] = useState(false)
+  const [contextMenuCoord, setContextMenuCoord] = useState<
+    [number, number] | undefined
+  >()
   const rendererRef = useRef<VariantMatrixRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -248,7 +252,9 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
             ? model.featuresVolatile?.find(f => f.id() === result.featureId)
             : undefined
           if (feature) {
+            e.preventDefault()
             model.setContextMenuFeature(feature)
+            setContextMenuCoord([e.clientX, e.clientY])
           }
         }}
       />
@@ -279,6 +285,25 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           onRetry={() => {
             model.retryLoadingData()
           }}
+        />
+      ) : null}
+      {contextMenuCoord ? (
+        <Menu
+          open
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setContextMenuCoord(undefined)
+          }}
+          onClose={() => {
+            setContextMenuCoord(undefined)
+            model.setContextMenuFeature(undefined)
+          }}
+          anchorReference="anchorPosition"
+          anchorPosition={{
+            top: contextMenuCoord[1],
+            left: contextMenuCoord[0],
+          }}
+          menuItems={model.contextMenuItems()}
         />
       ) : null}
     </div>
