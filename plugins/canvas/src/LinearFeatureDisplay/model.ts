@@ -126,7 +126,9 @@ export default function stateModelFactory(
       maxY: 0,
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
-      contextMenuFeature: undefined as Feature | undefined,
+      contextMenuInfo: undefined as
+        | { feature: Feature; regionNumber: number }
+        | undefined,
       regionTooLarge: false,
       featureCount: 0,
       userForceLoadLimit: undefined as number | undefined,
@@ -281,19 +283,6 @@ export default function stateModelFactory(
         return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
       },
 
-      // Find a loaded region that contains the given bp range
-      findLoadedRegionForFeature(
-        startBp: number,
-        endBp: number,
-      ): Region | undefined {
-        for (const region of self.loadedRegions.values()) {
-          if (startBp < region.end && endBp > region.start) {
-            return region
-          }
-        }
-        return undefined
-      },
-
       get featureWidgetType() {
         return {
           type: 'BaseFeatureWidget',
@@ -328,15 +317,17 @@ export default function stateModelFactory(
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
-        ;(self as any).featureIdUnderMouse = featureId
+        self.featureIdUnderMouse = featureId
       },
 
       setMouseoverExtraInformation(info: string | undefined) {
         self.mouseoverExtraInformation = info
       },
 
-      setContextMenuFeature(feature?: Feature) {
-        self.contextMenuFeature = feature
+      setContextMenuInfo(
+        info?: { feature: Feature; regionNumber: number },
+      ) {
+        self.contextMenuInfo = info
       },
 
       setRegionTooLarge(tooLarge: boolean, count: number) {
@@ -390,7 +381,7 @@ export default function stateModelFactory(
         self.showOnlyGenes = value
       },
 
-      showContextMenuForFeature(featureInfo: FlatbushItem) {
+      showContextMenuForFeature(featureInfo: FlatbushItem, regionNumber: number) {
         const feature = new SimpleFeature({
           id: featureInfo.featureId,
           data: {
@@ -402,39 +393,21 @@ export default function stateModelFactory(
             strand: featureInfo.strand,
           },
         })
-        self.setContextMenuFeature(feature)
+        self.setContextMenuInfo({ feature, regionNumber })
       },
     }))
     .actions(self => ({
       selectFeatureById: flow(function* (
         featureInfo: FlatbushItem,
-        subfeatureInfo?: SubfeatureInfo,
-        regionNumber?: number,
+        subfeatureInfo: SubfeatureInfo | undefined,
+        regionNumber: number,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
 
-        // Find the loaded region for this feature, preferring the specific
-        // regionNumber if provided (important for multi-chromosome views where
-        // features on different chromosomes can have overlapping bp ranges)
-        let region: Region | undefined
-        if (regionNumber !== undefined) {
-          region = self.loadedRegions.get(regionNumber)
-        }
+        const region = self.loadedRegions.get(regionNumber)
         if (!region) {
-          region = self.findLoadedRegionForFeature(
-            featureInfo.startBp,
-            featureInfo.endBp,
-          )
-        }
-        if (!region) {
-          console.warn(
-            '[selectFeatureById] No loaded region found for feature',
-            featureInfo.featureId,
-            'regionNumber=',
-            regionNumber,
-          )
           return
         }
 
@@ -783,10 +756,11 @@ export default function stateModelFactory(
     })
     .views(self => ({
       contextMenuItems() {
-        const feat = self.contextMenuFeature
-        if (!feat) {
+        const info = self.contextMenuInfo
+        if (!info) {
           return []
         }
+        const { feature: feat, regionNumber } = info
         return [
           {
             label: 'Open feature details',
@@ -804,10 +778,7 @@ export default function stateModelFactory(
                   const session = getSession(self)
                   const { rpcManager } = session
                   const adapterConfig = self.adapterConfigSnapshot
-                  const region = self.findLoadedRegionForFeature(
-                    feat.get('start'),
-                    feat.get('end'),
-                  )
+                  const region = self.loadedRegions.get(regionNumber)
                   if (!region) {
                     return
                   }

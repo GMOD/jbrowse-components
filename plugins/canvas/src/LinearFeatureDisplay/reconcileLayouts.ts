@@ -103,67 +103,29 @@ function applyDeltas(
 
 export function reconcileLayouts(
   rpcDataMap: Map<number, FeatureDataResult>,
-  regionRefNames?: Map<number, string>,
+  regionRefNames: Map<number, string>,
 ) {
   const entries = [...rpcDataMap.entries()]
   if (entries.length <= 1) {
     return
   }
 
-  // DEBUG: Log region info to understand multi-chromosome layout
-  console.log(
-    '[reconcileLayouts] Reconciling',
-    entries.length,
-    'regions. refNames:',
-    regionRefNames ? [...regionRefNames.entries()] : 'not provided',
-  )
-  for (const [regionNumber, data] of entries) {
-    const bpRange =
-      data.flatbushItems.length > 0
-        ? {
-            minBp: Math.min(...data.flatbushItems.map(f => f.startBp)),
-            maxBp: Math.max(...data.flatbushItems.map(f => f.endBp)),
-          }
-        : { minBp: 0, maxBp: 0 }
-    console.log(
-      `[reconcileLayouts] Region ${regionNumber}: regionStart=${data.regionStart}, features=${data.flatbushItems.length}, bpRange=[${bpRange.minBp}, ${bpRange.maxBp}], maxY=${data.maxY}`,
-    )
-  }
-
-  // Group regions by refName so we only reconcile within the same chromosome
   const regionsByRef = new Map<string, number[]>()
-  if (regionRefNames) {
-    for (const [regionNumber] of entries) {
-      const refName =
-        regionRefNames.get(regionNumber) ?? `unknown-${regionNumber}`
-      let group = regionsByRef.get(refName)
-      if (!group) {
-        group = []
-        regionsByRef.set(refName, group)
-      }
-      group.push(regionNumber)
+  for (const [regionNumber] of entries) {
+    const refName =
+      regionRefNames.get(regionNumber) ?? `unknown-${regionNumber}`
+    let group = regionsByRef.get(refName)
+    if (!group) {
+      group = []
+      regionsByRef.set(refName, group)
     }
-  } else {
-    // Fallback: all regions in one group (old behavior)
-    regionsByRef.set('all', entries.map(([n]) => n))
+    group.push(regionNumber)
   }
 
-  console.log(
-    '[reconcileLayouts] Region groups by refName:',
-    [...regionsByRef.entries()].map(([ref, nums]) => `${ref}: [${nums}]`),
-  )
-
-  for (const [refName, regionNumbers] of regionsByRef) {
+  for (const [, regionNumbers] of regionsByRef) {
     if (regionNumbers.length <= 1) {
-      console.log(
-        `[reconcileLayouts] Skipping refName=${refName} (single region)`,
-      )
       continue
     }
-
-    console.log(
-      `[reconcileLayouts] Reconciling refName=${refName} across regions [${regionNumbers}]`,
-    )
 
     const groupEntries = regionNumbers
       .map(n => [n, rpcDataMap.get(n)!] as const)
