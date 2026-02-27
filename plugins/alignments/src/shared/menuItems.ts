@@ -161,7 +161,6 @@ export function getModificationsSubMenu(
   }
 }
 
-
 interface FiltersModel {
   drawSingletons?: boolean
   drawProperPairs?: boolean

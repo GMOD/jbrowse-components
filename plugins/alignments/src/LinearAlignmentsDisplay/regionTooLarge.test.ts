@@ -138,7 +138,8 @@ describe('setRegionTooLarge + force load flow', () => {
     const configFetchSizeLimit = 1_000_000
 
     // Before force load: userByteSizeLimit is undefined
-    let userByteSizeLimit: number | undefined
+    let userByteSizeLimit: number | undefined = undefined
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const limitBefore = userByteSizeLimit || configFetchSizeLimit
     expect(limitBefore).toBe(1_000_000)
 

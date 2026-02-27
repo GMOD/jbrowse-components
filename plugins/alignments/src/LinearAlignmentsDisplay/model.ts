@@ -34,7 +34,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable, untracked } from 'mobx'
 
-import { ArcsSubModel, type ArcColorByType } from './ArcsSubModel.ts'
+import { type ArcColorByType, ArcsSubModel } from './ArcsSubModel.ts'
 import {
   computeLayout,
   computeSortedLayout,
@@ -847,10 +847,6 @@ export default function stateModelFactory(
         },
 
         setRegionTooLarge(val: boolean, reason?: string) {
-          console.log('[Alignments setRegionTooLarge]', {
-            val,
-            reason,
-          })
           superSetRegionTooLarge(val, reason)
           if (val) {
             self.featureIdUnderMouse = undefined
@@ -1311,32 +1307,15 @@ export default function stateModelFactory(
 
         const stats = await fetchByteEstimate(adapterConfig, region)
         if (fetchGenerations.get(regionNumber) !== gen) {
-          console.log('[Alignments fetchFeatures] generation stale, aborting', {
-            regionNumber,
-          })
           return
         }
         self.setFeatureDensityStats(stats)
         const view = getContainingView(self) as LGV
-        console.log('[Alignments fetchFeatures] byte estimate', {
-          regionNumber,
-          bytes: stats.bytes,
-          fetchSizeLimit: stats.fetchSizeLimit,
-          visibleBp: view.visibleBp,
-          AUTO_FORCE_LOAD_BP,
-          userByteSizeLimit: self.userByteSizeLimit,
-          region: { refName: region.refName, start: region.start, end: region.end },
-        })
         if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
           const fetchSizeLimit =
             stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
           const limit = self.userByteSizeLimit || fetchSizeLimit
           if (stats.bytes && stats.bytes > limit) {
-            console.log('[Alignments fetchFeatures] region too large', {
-              bytes: stats.bytes,
-              limit,
-              regionNumber,
-            })
             lastTooLargeBpPerPx = view.bpPerPx
             self.setRegionTooLarge(
               true,
@@ -1345,9 +1324,6 @@ export default function stateModelFactory(
             return
           }
         }
-        console.log('[Alignments fetchFeatures] proceeding to fetch data', {
-          regionNumber,
-        })
         lastTooLargeBpPerPx = undefined
         self.setRegionTooLarge(false, '')
 
@@ -1627,10 +1603,6 @@ export default function stateModelFactory(
         }
         const stopToken = createStopToken()
         const generation = self.fetchGeneration
-        console.log('[Alignments fetchRegions] start', {
-          generation,
-          numRegions: regions.length,
-        })
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(null)
@@ -1644,19 +1616,8 @@ export default function stateModelFactory(
             self.fetchGeneration !== generation ||
             self.renderingStopToken !== stopToken
           ) {
-            console.log('[Alignments fetchRegions] stale, discarding', {
-              alive: isAlive(self),
-              generationMatch: self.fetchGeneration === generation,
-              currentGeneration: self.fetchGeneration,
-              capturedGeneration: generation,
-              tokenMatch: self.renderingStopToken === stopToken,
-            })
             return
           }
-          console.log('[Alignments fetchRegions] processing results', {
-            numResults: results.length,
-            numNonNull: results.filter(Boolean).length,
-          })
           const newDataMap = new Map<number, PileupDataResult>()
           for (const r of results) {
             if (!r) {
@@ -1910,19 +1871,7 @@ export default function stateModelFactory(
                 const currentBpPerPx = view.bpPerPx
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchToken
-                if (
-                  !view.initialized ||
-                  self.isLoading ||
-                  self.error
-                ) {
-                  console.log(
-                    '[Alignments fetchAutorun] skipping',
-                    {
-                      initialized: view.initialized,
-                      isLoading: self.isLoading,
-                      error: !!self.error,
-                    },
-                  )
+                if (!view.initialized || self.isLoading || self.error) {
                   return
                 }
                 // Use untracked so that setting regionTooLargeState
@@ -1933,10 +1882,6 @@ export default function stateModelFactory(
                   untracked(() => self.regionTooLargeState) &&
                   currentBpPerPx === lastTooLargeBpPerPx
                 ) {
-                  console.log(
-                    '[Alignments fetchAutorun] still too large at this zoom',
-                    { currentBpPerPx, lastTooLargeBpPerPx },
-                  )
                   return
                 }
                 const needed: { region: Region; regionNumber: number }[] = []
@@ -1954,11 +1899,6 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
-                console.log('[Alignments fetchAutorun]', {
-                  numNeeded: needed.length,
-                  bpPerPx: currentBpPerPx,
-                  lastTooLargeBpPerPx,
-                })
                 if (needed.length > 0) {
                   await fetchRegions(needed)
                 }
@@ -2101,7 +2041,10 @@ export default function stateModelFactory(
           label: 'Color by...',
           subMenu: self.showLinkedReads
             ? [
-                colorRadio('Insert size and orientation', 'insertSizeAndOrientation'),
+                colorRadio(
+                  'Insert size and orientation',
+                  'insertSizeAndOrientation',
+                ),
                 colorRadio('Insert size', 'insertSize'),
                 colorRadio('Pair orientation', 'pairOrientation'),
                 modificationsItem,
@@ -2113,7 +2056,10 @@ export default function stateModelFactory(
                 colorRadio('Insert size', 'insertSize'),
                 colorRadio('First of pair strand', 'firstOfPairStrand'),
                 colorRadio('Pair orientation', 'pairOrientation'),
-                colorRadio('Insert size and orientation', 'insertSizeAndOrientation'),
+                colorRadio(
+                  'Insert size and orientation',
+                  'insertSizeAndOrientation',
+                ),
                 modificationsItem,
                 {
                   label: 'Color by tag...',
@@ -2475,17 +2421,9 @@ export default function stateModelFactory(
       const superReload = self.reload
       return {
         async reload() {
-          console.log('[Alignments reload]', {
-            fetchGenerationBefore: self.fetchGeneration,
-            userByteSizeLimit: self.userByteSizeLimit,
-            regionTooLargeState: self.regionTooLargeState,
-          })
           self.setRegionTooLarge(false)
           self.clearAllRpcData()
           self.bumpFetchToken()
-          console.log('[Alignments reload] after clear', {
-            fetchGenerationAfter: self.fetchGeneration,
-          })
           superReload()
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {

@@ -6,7 +6,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -16,12 +15,14 @@ import {
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
+  RegionTooLargeMixin,
   TrackHeightMixin,
   getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -91,8 +92,9 @@ function computeAndAssignLayout(
   const layout = new GranularRectLayout({ displayMode: 'normal' })
   const layoutMap = new Map<string, number>()
 
-  const sorted = [...allFeatures.entries()]
-    .sort(([, a], [, b]) => a.startBp - b.startBp)
+  const sorted = [...allFeatures.entries()].sort(
+    ([, a], [, b]) => a.startBp - b.startBp,
+  )
 
   for (const [id, { startBp, layoutEndBp, height }] of sorted) {
     const leftPx = startBp / bpPerPx
@@ -194,6 +196,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      RegionTooLargeMixin(),
       types.model({
         type: types.literal('LinearFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -203,7 +206,6 @@ export default function stateModelFactory(
         trackGeneGlyphMode: types.maybe(types.string),
         trackDisplayMode: types.maybe(types.string),
         showOnlyGenes: false,
-        userByteSizeLimit: types.maybe(types.number),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -217,6 +219,7 @@ export default function stateModelFactory(
         showLegend,
         showTooltips,
         userBpPerPxLimit,
+        userByteSizeLimit,
         ...cleaned
       } = snap
       snap = cleaned
@@ -237,11 +240,6 @@ export default function stateModelFactory(
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuInfo: undefined as
         | { feature: Feature; regionNumber: number }
-        | undefined,
-      regionTooLarge: false,
-      regionTooLargeReasonState: '',
-      featureDensityStats: undefined as
-        | { bytes?: number; fetchSizeLimit?: number }
         | undefined,
     }))
     .views(self => ({
@@ -322,16 +320,8 @@ export default function stateModelFactory(
 
       get fetchSizeLimit() {
         return (
-          self.userByteSizeLimit ||
-          (getConf(self, 'fetchSizeLimit') as number)
+          self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number)
         )
-      },
-
-      get regionTooLargeReason() {
-        if (!self.regionTooLarge) {
-          return ''
-        }
-        return self.regionTooLargeReasonState
       },
 
       get colorByCDS() {
@@ -415,8 +405,7 @@ export default function stateModelFactory(
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
         self.layoutBpPerPxMap = new Map()
-        self.regionTooLarge = false
-        self.regionTooLargeReasonState = ''
+        self.setRegionTooLarge(false)
       },
 
       setFeatureIdUnderMouse(featureId: string | null) {
@@ -429,30 +418,6 @@ export default function stateModelFactory(
 
       setContextMenuInfo(info?: { feature: Feature; regionNumber: number }) {
         self.contextMenuInfo = info
-      },
-
-      setRegionTooLarge(tooLarge: boolean, reason: string) {
-        self.regionTooLarge = tooLarge
-        self.regionTooLargeReasonState = reason
-      },
-
-      setFeatureDensityStats(
-        stats: { bytes?: number; fetchSizeLimit?: number },
-      ) {
-        self.featureDensityStats = stats
-      },
-
-      // Called by TooLargeMessage "Force load" button. Increases the byte
-      // size limit by 1.5x so the next fetch will succeed, then clears the
-      // regionTooLarge state so the fetch autorun retries.
-      setFeatureDensityStatsLimit(
-        stats?: { bytes?: number; fetchSizeLimit?: number },
-      ) {
-        if (stats?.bytes) {
-          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
-        }
-        self.regionTooLarge = false
-        self.regionTooLargeReasonState = ''
       },
     }))
     .actions(self => ({
@@ -706,9 +671,7 @@ export default function stateModelFactory(
           // unconditionally.
           const view = getContainingView(self) as LGV
           if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
-            const stats = await fetchByteEstimate(
-              regions.map(r => r.region),
-            )
+            const stats = await fetchByteEstimate(regions.map(r => r.region))
             if (
               !isAlive(self) ||
               self.fetchGeneration !== generation ||
@@ -782,19 +745,6 @@ export default function stateModelFactory(
           // refetch contains all its async behavior, so no need to await
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           refetchForCurrentView()
-        },
-
-        // Called by TooLargeMessage "Force load" button. Increases the
-        // byte size limit by 1.5x so the next fetch will succeed, then
-        // clears the regionTooLarge state so the fetch autorun retries.
-        setFeatureDensityStatsLimit(
-          stats?: { bytes?: number; fetchSizeLimit?: number },
-        ) {
-          if (stats?.bytes) {
-            self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
-          }
-          self.regionTooLarge = false
-          self.regionTooLargeReasonState = ''
         },
 
         afterAttach() {

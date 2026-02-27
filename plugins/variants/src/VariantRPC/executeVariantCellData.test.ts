@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs'
+
 import { executeVariantCellData } from './executeVariantCellData.ts'
 
 // Minimal mock adapter that returns a configurable byte estimate
@@ -8,7 +10,6 @@ function mockCreateAdapter(bytes: number) {
       fetchSizeLimit: 1_000_000,
     }),
     getFeaturesInMultipleRegions: () => {
-      const { Observable } = require('rxjs')
       return new Observable((subscriber: { complete: () => void }) => {
         subscriber.complete()
       })
@@ -33,9 +34,7 @@ const baseArgs = {
   referenceDrawingMode: 'skip',
   minorAlleleFrequencyFilter: 0,
   lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
-  regions: [
-    { refName: 'chr1', start: 0, end: 1000, assemblyName: 'test' },
-  ],
+  regions: [{ refName: 'chr1', start: 0, end: 1000, assemblyName: 'test' }],
   sessionId: 'test-session',
   bpPerPx: 1,
   statusCallback: () => {},

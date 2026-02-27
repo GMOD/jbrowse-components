@@ -793,7 +793,6 @@ export default function sharedModelFactory(
         return snap
       }
       const {
-        userByteSizeLimit: _userByteSizeLimit,
         minorAlleleFrequencyFilterSetting,
         lengthCutoffFilterSetting,
         lineZoneHeightSetting,

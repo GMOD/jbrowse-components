@@ -255,10 +255,10 @@ export class WebGLVariantRenderer {
     const buf = interleaveVariantInstances(data)
     const stride = INSTANCE_STRIDE * 4
 
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
 
-    const instanceBuffer = gl.createBuffer()!
+    const instanceBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW)
 
@@ -413,7 +413,7 @@ export class WebGLVariantRenderer {
     gl.uniform1f(this.uniforms.u_canvas_width!, canvasWidth)
     gl.uniform1f(this.uniforms.u_row_height!, state.rowHeight)
     gl.uniform1f(this.uniforms.u_scroll_top!, state.scrollTop)
-    gl.uniform1f(this.uniforms.u_zero!, 0.0)
+    gl.uniform1f(this.uniforms.u_zero!, 0)
   }
 
   destroy() {

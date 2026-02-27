@@ -1,6 +1,9 @@
 import { Suspense, useRef } from 'react'
 
-import { FloatingLegend, TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
+import {
+  FloatingLegend,
+  TooLargeMessage,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshair from './MultiSampleVariantCrosshairs.tsx'

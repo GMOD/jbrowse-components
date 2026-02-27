@@ -205,10 +205,13 @@ export async function executeVariantCellData({
         if (regionLookup) {
           const grouped = new Map<number, MAFFilteredFeature[]>()
           for (const maf of mafs) {
-            const refName = maf.feature.get('refName') as string
-            const featureStart = maf.feature.get('start') as number
+            const refName = maf.feature.get('refName')
+            const featureStart = maf.feature.get('start')
             const entry = regionLookup.find(
-              r => r.refName === refName && featureStart >= r.start && featureStart < r.end,
+              r =>
+                r.refName === refName &&
+                featureStart >= r.start &&
+                featureStart < r.end,
             )
             if (!entry) {
               throw new Error(

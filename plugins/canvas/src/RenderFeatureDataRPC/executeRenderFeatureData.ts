@@ -815,14 +815,14 @@ export async function executeRenderFeatureData({
   }
   for (const labelData of Object.values(floatingLabelsData)) {
     const parentId = labelData.floatingLabels[0]?.parentFeatureId
-    const item = flatbushItemByFeatureId.get(labelData.featureId)
-      ?? (parentId ? flatbushItemByFeatureId.get(parentId) : undefined)
+    const item =
+      flatbushItemByFeatureId.get(labelData.featureId) ??
+      (parentId ? flatbushItemByFeatureId.get(parentId) : undefined)
     if (item) {
       const labelStartBp = labelData.minX + regionStart
       for (const label of labelData.floatingLabels) {
         const labelEndBp = labelStartBp + label.textWidth * bpPerPx
         if (labelEndBp > item.layoutEndBp) {
-          console.log('[layoutEndBp] extending', item.name, 'from', item.endBp, 'to', labelEndBp, '(label:', label.text, 'width:', label.textWidth, 'bpPerPx:', bpPerPx, ')')
           item.layoutEndBp = labelEndBp
         }
       }

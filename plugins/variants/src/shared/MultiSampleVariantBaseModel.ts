@@ -48,8 +48,8 @@ import type {
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -805,8 +805,8 @@ export default function MultiSampleVariantBaseModelF(
         let bestDist = Infinity
         for (const f of features) {
           if (f.get('refName') === refName) {
-            const start = f.get('start') as number
-            const end = f.get('end') as number
+            const start = f.get('start')
+            const end = f.get('end')
             const mid = (start + end) / 2
             const dist = Math.abs(mid - coord)
             if (dist < bestDist) {
@@ -1222,7 +1222,6 @@ export default function MultiSampleVariantBaseModelF(
         return snap
       }
       const {
-        userByteSizeLimit: _userByteSizeLimit,
         layout,
         minorAlleleFrequencyFilterSetting,
         showSidebarLabelsSetting,

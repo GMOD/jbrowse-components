@@ -1,8 +1,5 @@
-import {
-  INSTANCE_STRIDE,
-  interleaveHicInstances,
-} from './hicShaders.ts'
-import { createProgram, cacheUniforms } from './webglUtils.ts'
+import { INSTANCE_STRIDE, interleaveHicInstances } from './hicShaders.ts'
+import { cacheUniforms, createProgram } from './webglUtils.ts'
 
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in hicShaders.ts (used by WebGPU).

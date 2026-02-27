@@ -11,10 +11,9 @@ export interface FeatureDensityStats {
 
 export default function RegionTooLargeMixin() {
   return types
-    .model({
-      userByteSizeLimit: types.maybe(types.number),
-    })
+    .model({})
     .volatile(() => ({
+      userByteSizeLimit: undefined as number | undefined,
       regionTooLargeState: false,
       regionTooLargeReasonState: '',
       featureDensityStats: undefined as FeatureDensityStats | undefined,

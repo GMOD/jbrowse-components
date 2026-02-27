@@ -148,8 +148,6 @@ export function getVariantCellDataAutorun(self: {
             if (!isAbortException(e)) {
               console.error('[VariantCellData] error', e)
               self.setDisplayError(e)
-            } else {
-              console.log('[VariantCellData] aborted')
             }
           }
         }

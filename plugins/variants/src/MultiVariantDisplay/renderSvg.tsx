@@ -11,11 +11,7 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function setFillFromCellColor(
-  ctx: SvgCanvas,
-  colors: Uint8Array,
-  i: number,
-) {
+function setFillFromCellColor(ctx: SvgCanvas, colors: Uint8Array, i: number) {
   const r = colors[i * 4]!
   const g = colors[i * 4 + 1]!
   const b = colors[i * 4 + 2]!

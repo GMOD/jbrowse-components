@@ -1,11 +1,5 @@
-import {
-  INSTANCE_STRIDE,
-  interleaveLDInstances,
-} from './ldShaders.ts'
-import {
-  createProgram,
-  cacheUniforms,
-} from '../../shared/variantWebglUtils.ts'
+import { INSTANCE_STRIDE, interleaveLDInstances } from './ldShaders.ts'
+import { cacheUniforms, createProgram } from '../../shared/variantWebglUtils.ts'
 
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in ldShaders.ts (used by WebGPU).

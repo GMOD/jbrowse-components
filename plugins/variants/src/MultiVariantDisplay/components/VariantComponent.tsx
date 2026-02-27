@@ -78,11 +78,51 @@ const useStyles = makeStyles()({
 })
 
 function buildFlatbushIndex(cellData: VariantCellData) {
-  if (cellData.flatbushData) {
-    return Flatbush.from(cellData.flatbushData)
-  }
-  return null
+  return Flatbush.from(cellData.flatbushData)
 }
+
+const HoveredCellHighlight = observer(function HoveredCellHighlight({
+  cell,
+  model,
+}: {
+  cell: {
+    rowIndex: number
+    genomicStart: number
+    genomicEnd: number
+    regionNumber: number
+  }
+  model: VariantDisplayModel
+}) {
+  const region = model.visibleRegions.find(
+    r => r.regionNumber === cell.regionNumber,
+  )
+  if (!region) {
+    return null
+  }
+  const blockWidth = region.screenEndPx - region.screenStartPx
+  const regionLengthBp = region.end - region.start
+  const pxPerBp = blockWidth / regionLengthBp
+  const left =
+    region.screenStartPx + (cell.genomicStart - region.start) * pxPerBp
+  const right =
+    region.screenStartPx + (cell.genomicEnd - region.start) * pxPerBp
+  const top = cell.rowIndex * model.rowHeight - model.scrollTop
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left,
+        top,
+        width: Math.max(right - left, 2),
+        height: model.rowHeight,
+        border: '1px solid rgba(0,0,0,0.5)',
+        background: 'rgba(255,255,255,0.3)',
+        pointerEvents: 'none',
+        zIndex: 5,
+      }}
+    />
+  )
+})
 
 const VariantComponent = observer(function VariantComponent({
   model,
@@ -94,8 +134,14 @@ const VariantComponent = observer(function VariantComponent({
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
-  const [highlightRect, setHighlightRect] = useState<
-    { left: number; top: number; width: number; height: number } | undefined
+  const [hoveredCell, setHoveredCell] = useState<
+    | {
+        rowIndex: number
+        genomicStart: number
+        genomicEnd: number
+        regionNumber: number
+      }
+    | undefined
   >()
   const rendererRef = useRef<VariantRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
@@ -189,16 +235,12 @@ const VariantComponent = observer(function VariantComponent({
       return undefined
     }
 
-    const regionCellData =
-      cellData.perRegionCellData[region.regionNumber]
+    const regionCellData = cellData.perRegionCellData[region.regionNumber]
     if (!regionCellData) {
       return undefined
     }
 
     const flatbushIndex = buildFlatbushIndex(regionCellData)
-    if (!flatbushIndex) {
-      return undefined
-    }
 
     const blockWidth = region.screenEndPx - region.screenStartPx
     const regionLengthBp = region.end - region.start
@@ -239,15 +281,6 @@ const VariantComponent = observer(function VariantComponent({
       const item = regionCellData.flatbushItems[bestIdx]!
       const info = regionCellData.featureGenotypeMap[item.featureId]!
       const genotype = info.genotypes[item.sourceName]!
-      const rowIndex = regionCellData.cellRowIndices[bestIdx]!
-      const pxPerBp = blockWidth / regionLengthBp
-      const cellLeft =
-        region.screenStartPx +
-        (item.genomicStart - region.start) * pxPerBp
-      const cellRight =
-        region.screenStartPx +
-        (item.genomicEnd - region.start) * pxPerBp
-      const cellTop = rowIndex * model.rowHeight - model.scrollTop
       return {
         genotype,
         alleles: makeSimpleAltString(genotype, info.ref, info.alt),
@@ -257,11 +290,11 @@ const VariantComponent = observer(function VariantComponent({
         length: getBpDisplayStr(info.length),
         name: item.sourceName,
         featureId: item.featureId,
-        highlightRect: {
-          left: cellLeft,
-          top: cellTop,
-          width: Math.max(cellRight - cellLeft, 2),
-          height: model.rowHeight,
+        cell: {
+          rowIndex: regionCellData.cellRowIndices[bestIdx]!,
+          genomicStart: item.genomicStart,
+          genomicEnd: item.genomicEnd,
+          regionNumber: region.regionNumber,
         },
       }
     }
@@ -330,12 +363,12 @@ const VariantComponent = observer(function VariantComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, highlightRect: hr, ...tooltip } = result
+              const { featureId, cell, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
-              setHighlightRect(hr)
+              setHoveredCell(cell)
             } else {
               model.setHoveredGenotype(undefined)
-              setHighlightRect(undefined)
+              setHoveredCell(undefined)
             }
           }
         }}
@@ -343,7 +376,7 @@ const VariantComponent = observer(function VariantComponent({
           if (lastHoveredRef.current !== undefined) {
             lastHoveredRef.current = undefined
             model.setHoveredGenotype(undefined)
-            setHighlightRect(undefined)
+            setHoveredCell(undefined)
           }
         }}
         onClick={e => {
@@ -369,20 +402,8 @@ const VariantComponent = observer(function VariantComponent({
           }
         }}
       />
-      {highlightRect ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: highlightRect.left,
-            top: highlightRect.top,
-            width: highlightRect.width,
-            height: highlightRect.height,
-            border: '1px solid rgba(0,0,0,0.5)',
-            background: 'rgba(255,255,255,0.3)',
-            pointerEvents: 'none',
-            zIndex: 5,
-          }}
-        />
+      {hoveredCell ? (
+        <HoveredCellHighlight cell={hoveredCell} model={model} />
       ) : null}
       {hasOverflow ? (
         <div

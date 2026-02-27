@@ -233,7 +233,7 @@ export function computeVariantCells({
                   rowIndex: j,
                   color: [rgba[0], rgba[1], rgba[2], rgba[3]],
                   shapeType: shape,
-  
+
                   isReference: c === REFERENCE_COLOR,
                   featureId,
                   sourceName: name,
