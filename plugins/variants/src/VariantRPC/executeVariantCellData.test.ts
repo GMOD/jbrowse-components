@@ -1,7 +1,7 @@
 import { executeVariantCellData } from './executeVariantCellData.ts'
 
 // Minimal mock adapter that returns a configurable byte estimate
-function createMockAdapter(bytes: number) {
+function mockCreateAdapter(bytes: number) {
   return {
     getMultiRegionFeatureDensityStats: async () => ({
       bytes,
@@ -22,7 +22,7 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
     _sessionId: string,
     adapterConfig: { mockBytes: number },
   ) => ({
-    dataAdapter: createMockAdapter(adapterConfig.mockBytes),
+    dataAdapter: mockCreateAdapter(adapterConfig.mockBytes),
   }),
 }))
 
