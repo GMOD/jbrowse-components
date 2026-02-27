@@ -222,8 +222,6 @@ function collectRenderData(
     const colorUint = colorToUint32(fillColor)
     const strokeUint = colorToUint32(strokeColor)
 
-    // Collect floating labels
-    // Match the JEXL expressions from config schema for name and description
     const name = String(feature.get('name') || feature.get('id') || '')
     const description = String(
       feature.get('note') || feature.get('description') || '',
@@ -490,7 +488,12 @@ function collectRenderData(
           childLayout.glyphType === 'Segments'
         ) {
           const childTopPx = childLayout.y
-          processTranscriptLayout(childLayout, childTopPx, feature, currentFlatbushIdx)
+          processTranscriptLayout(
+            childLayout,
+            childTopPx,
+            feature,
+            currentFlatbushIdx,
+          )
         } else {
           // Child is a simple feature - draw as box
           const childFeature = childLayout.feature
@@ -654,7 +657,6 @@ export async function executeRenderFeatureData({
     outline: '',
     height: 10,
     displayMode: 'normal',
-    maxFeatureGlyphExpansion: 500,
     maxHeight: 5000,
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     impliedUTRs: false,

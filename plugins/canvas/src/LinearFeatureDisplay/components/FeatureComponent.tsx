@@ -55,7 +55,10 @@ interface LinearFeatureDisplayModel {
     subfeatureInfo: SubfeatureInfo | undefined,
     regionNumber: number,
   ) => void
-  showContextMenuForFeature: (featureInfo: FlatbushItem, regionNumber: number) => void
+  showContextMenuForFeature: (
+    featureInfo: FlatbushItem,
+    regionNumber: number,
+  ) => void
   setContextMenuInfo: (info?: unknown) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
@@ -229,7 +232,12 @@ function performMultiRegionHitDetection(
     const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
 
     const { feature, subfeature } = performHitDetection(
-      cache, data, bpPerPx, reversed, bpPos, yPos,
+      cache,
+      data,
+      bpPerPx,
+      reversed,
+      bpPos,
+      yPos,
     )
 
     if (feature) {

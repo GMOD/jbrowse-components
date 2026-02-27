@@ -55,9 +55,7 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function computeAndAssignLayout(
-  rpcDataMap: Map<number, FeatureDataResult>,
-) {
+function computeAndAssignLayout(rpcDataMap: Map<number, FeatureDataResult>) {
   const entries = [...rpcDataMap.entries()].filter(
     ([, d]) => d.flatbushItems.length > 0,
   )
@@ -65,7 +63,8 @@ function computeAndAssignLayout(
     return
   }
 
-  // Collect all unique features across all regions
+  // Collect all unique features across all regions (keyed by featureId).
+  // bottomPx equals layoutHeight since topPx is always 0 from the worker.
   const allFeatures = new Map<
     string,
     { start: number; end: number; height: number }
@@ -76,7 +75,7 @@ function computeAndAssignLayout(
         allFeatures.set(item.featureId, {
           start: item.startBp,
           end: item.endBp,
-          height: item.bottomPx - item.topPx,
+          height: item.bottomPx,
         })
       }
     }
@@ -88,95 +87,67 @@ function computeAndAssignLayout(
     .sort((a, b) => a.start - b.start)
 
   const layoutMap = new Map<string, number>()
-  const placed: { start: number; end: number; topPx: number; height: number }[] = []
+  const placed: { start: number; end: number; y: number; height: number }[] = []
 
   for (const f of sorted) {
-    let candidateY = 0
+    let y = 0
     for (const p of placed) {
       if (p.end > f.start && p.start < f.end) {
-        candidateY = Math.max(candidateY, p.topPx + p.height)
+        y = Math.max(y, p.y + p.height)
       }
     }
-    layoutMap.set(f.id, candidateY)
-    placed.push({
-      start: f.start,
-      end: f.end,
-      topPx: candidateY,
-      height: f.height,
-    })
+    layoutMap.set(f.id, y)
+    placed.push({ start: f.start, end: f.end, y, height: f.height })
   }
 
-  // Apply layout to each region's data
   for (const [, data] of entries) {
     fillYArrays(data, layoutMap)
   }
 }
 
-function fillYArrays(
-  data: FeatureDataResult,
-  layoutMap: Map<string, number>,
-) {
-  // Update rect Y positions
+function fillYArrays(data: FeatureDataResult, layoutMap: Map<string, number>) {
+  // Pre-build per-flatbushItem y-offset to avoid repeated Map lookups
+  const featureYOffsets = new Float32Array(data.flatbushItems.length)
+  for (const [i, item] of data.flatbushItems.entries()) {
+    featureYOffsets[i] = layoutMap.get(item.featureId) ?? 0
+  }
+
   for (let i = 0; i < data.numRects; i++) {
-    const flatbushIdx = data.rectFeatureIndices[i]!
-    const item = data.flatbushItems[flatbushIdx]!
-    const topPx = layoutMap.get(item.featureId) ?? 0
-    data.rectYs[i] = data.rectYs[i]! + topPx
+    data.rectYs[i] =
+      data.rectYs[i]! + featureYOffsets[data.rectFeatureIndices[i]!]!
   }
-
-  // Update line Y positions
   for (let i = 0; i < data.numLines; i++) {
-    const flatbushIdx = data.lineFeatureIndices[i]!
-    const item = data.flatbushItems[flatbushIdx]!
-    const topPx = layoutMap.get(item.featureId) ?? 0
-    data.lineYs[i] = data.lineYs[i]! + topPx
+    data.lineYs[i] =
+      data.lineYs[i]! + featureYOffsets[data.lineFeatureIndices[i]!]!
   }
-
-  // Update arrow Y positions
   for (let i = 0; i < data.numArrows; i++) {
-    const flatbushIdx = data.arrowFeatureIndices[i]!
-    const item = data.flatbushItems[flatbushIdx]!
-    const topPx = layoutMap.get(item.featureId) ?? 0
-    data.arrowYs[i] = data.arrowYs[i]! + topPx
+    data.arrowYs[i] =
+      data.arrowYs[i]! + featureYOffsets[data.arrowFeatureIndices[i]!]!
   }
 
-  // Update flatbushItem positions
-  for (const item of data.flatbushItems) {
-    const topPx = layoutMap.get(item.featureId)
-    if (topPx !== undefined) {
-      const height = item.bottomPx - item.topPx
-      item.topPx = topPx
-      item.bottomPx = topPx + height
-    }
+  for (const [i, item] of data.flatbushItems.entries()) {
+    const offset = featureYOffsets[i]!
+    item.topPx = offset
+    item.bottomPx = item.bottomPx + offset
   }
 
-  // Update subfeatureInfo positions using parent's layout
   for (const info of data.subfeatureInfos) {
-    const parentTopPx = layoutMap.get(info.parentFeatureId)
-    if (parentTopPx !== undefined) {
-      const height = info.bottomPx - info.topPx
-      info.topPx = info.topPx + parentTopPx
-      info.bottomPx = info.topPx + height
-    }
+    const offset = layoutMap.get(info.parentFeatureId) ?? 0
+    const height = info.bottomPx - info.topPx
+    info.topPx = info.topPx + offset
+    info.bottomPx = info.topPx + height
   }
 
-  // Update floating label positions
   for (const labelData of Object.values(data.floatingLabelsData)) {
-    const topPx = layoutMap.get(labelData.featureId)
-    if (topPx !== undefined) {
-      labelData.topY = labelData.topY + topPx
-    }
+    labelData.topY = labelData.topY + (layoutMap.get(labelData.featureId) ?? 0)
   }
 
   if (data.aminoAcidOverlay) {
     for (const aaItem of data.aminoAcidOverlay) {
-      const item = data.flatbushItems[aaItem.flatbushIdx]!
-      const topPx = layoutMap.get(item.featureId) ?? 0
-      aaItem.topPx = aaItem.topPx + topPx
+      aaItem.topPx = aaItem.topPx + featureYOffsets[aaItem.flatbushIdx]!
     }
   }
 
-  // Compute maxY
   let maxY = 0
   for (const item of data.flatbushItems) {
     if (item.bottomPx > maxY) {
@@ -461,12 +432,9 @@ export default function stateModelFactory(
         self.mouseoverExtraInformation = info
       },
 
-      setContextMenuInfo(
-        info?: { feature: Feature; regionNumber: number },
-      ) {
+      setContextMenuInfo(info?: { feature: Feature; regionNumber: number }) {
         self.contextMenuInfo = info
       },
-
 
       setRegionTooLarge(tooLarge: boolean, count: number) {
         self.regionTooLarge = tooLarge
@@ -519,7 +487,10 @@ export default function stateModelFactory(
         self.showOnlyGenes = value
       },
 
-      showContextMenuForFeature(featureInfo: FlatbushItem, regionNumber: number) {
+      showContextMenuForFeature(
+        featureInfo: FlatbushItem,
+        regionNumber: number,
+      ) {
         const feature = new SimpleFeature({
           id: featureInfo.featureId,
           data: {
@@ -574,8 +545,10 @@ export default function stateModelFactory(
         featureId: string,
         regionNumber: number,
       ) {
-        const feature: Feature | undefined =
-          yield self.fetchFullFeature(featureId, regionNumber)
+        const feature: Feature | undefined = yield self.fetchFullFeature(
+          featureId,
+          regionNumber,
+        )
         if (feature) {
           self.selectFeature(feature)
         }
@@ -590,8 +563,10 @@ export default function stateModelFactory(
           ? subfeatureInfo.parentFeatureId
           : featureInfo.featureId
 
-        const parentFeature: Feature | undefined =
-          yield self.fetchFullFeature(featureIdToFetch, regionNumber)
+        const parentFeature: Feature | undefined = yield self.fetchFullFeature(
+          featureIdToFetch,
+          regionNumber,
+        )
 
         if (parentFeature) {
           if (subfeatureInfo) {
@@ -913,7 +888,10 @@ export default function stateModelFactory(
         const { feature: feat, regionNumber } = info
         const region = self.loadedRegions.get(regionNumber)
         const type = `${feat.get('type')}`.toLowerCase()
-        const geneLike = type.includes('gene') || type.includes('rna') || type.includes('transcript')
+        const geneLike =
+          type.includes('gene') ||
+          type.includes('rna') ||
+          type.includes('transcript')
         return [
           {
             label: 'Open feature details',
