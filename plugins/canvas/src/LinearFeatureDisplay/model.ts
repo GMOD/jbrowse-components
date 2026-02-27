@@ -81,23 +81,39 @@ function computeAndAssignLayout(rpcDataMap: Map<number, FeatureDataResult>) {
     }
   }
 
-  // Sort by start position and run greedy row-packing layout
+  // Sort by start position and run greedy row-packing layout.
+  // Each "row" tracks the rightmost end coordinate and the row's top y / height.
+  // A feature fits in a row if its start >= row.end. This is O(n * rows)
+  // instead of O(n²).
   const sorted = [...allFeatures.entries()]
     .map(([id, { start, end, height }]) => ({ id, start, end, height }))
     .sort((a, b) => a.start - b.start)
 
   const layoutMap = new Map<string, number>()
-  const placed: { start: number; end: number; y: number; height: number }[] = []
+  const rows: { end: number; y: number; height: number }[] = []
 
   for (const f of sorted) {
-    let y = 0
-    for (const p of placed) {
-      if (p.end > f.start && p.start < f.end) {
-        y = Math.max(y, p.y + p.height)
+    let placed = false
+    for (const row of rows) {
+      if (row.end <= f.start) {
+        layoutMap.set(f.id, row.y)
+        row.end = f.end
+        row.height = Math.max(row.height, f.height)
+        placed = true
+        break
       }
     }
-    layoutMap.set(f.id, y)
-    placed.push({ start: f.start, end: f.end, y, height: f.height })
+    if (!placed) {
+      let nextY = 0
+      for (const row of rows) {
+        const bottom = row.y + row.height
+        if (bottom > nextY) {
+          nextY = bottom
+        }
+      }
+      layoutMap.set(f.id, nextY)
+      rows.push({ end: f.end, y: nextY, height: f.height })
+    }
   }
 
   for (const [, data] of entries) {
