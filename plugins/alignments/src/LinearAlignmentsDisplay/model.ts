@@ -1849,19 +1849,32 @@ export default function stateModelFactory(
           )
 
           // See MultiRegionDisplayMixin for the fetch lifecycle contract.
+          let prevFetchBpPerPx: number | undefined
           addDisposer(
             self,
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
+                const { bpPerPx } = view
                 if (
                   !view.initialized ||
-                  self.regionTooLarge ||
                   self.isLoading ||
                   self.error
                 ) {
                   return
                 }
+                if (self.regionTooLarge) {
+                  if (
+                    prevFetchBpPerPx !== undefined &&
+                    bpPerPx !== prevFetchBpPerPx
+                  ) {
+                    prevFetchBpPerPx = bpPerPx
+                    self.clearAllRpcData()
+                    self.setRegionTooLarge(false)
+                  }
+                  return
+                }
+                prevFetchBpPerPx = bpPerPx
                 // Track fetchToken so bumps trigger re-fetch
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchToken

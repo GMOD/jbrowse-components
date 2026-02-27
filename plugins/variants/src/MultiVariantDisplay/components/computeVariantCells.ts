@@ -37,7 +37,6 @@ export interface VariantCellData {
   cellRowIndices: Uint32Array
   cellColors: Uint8Array
   cellShapeTypes: Uint8Array
-  cellRegionNumbers: Uint32Array
   numCells: number
   featureGenotypeMap: Record<string, FeatureGenotypeInfo>
   flatbushData: ArrayBuffer
@@ -78,14 +77,12 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   genotypesCache,
-  regionNumberMap,
 }: {
   mafs: MAFFilteredFeature[]
   sources: Source[]
   renderingMode: string
   referenceDrawingMode: string
   genotypesCache: Map<string, Record<string, string>>
-  regionNumberMap?: Record<string, number>
 }): VariantCellData {
   const colorCache = new Map<string, [number, number, number, number]>()
   function getCachedRGBA(color: string) {
@@ -107,7 +104,6 @@ export function computeVariantCells({
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint8Array(maxCells * 4)
   const shapeTypes = new Uint8Array(maxCells)
-  const regionNumbers = new Uint32Array(maxCells)
 
   let regionStart = Number.MAX_SAFE_INTEGER
   for (const { feature } of mafs) {
@@ -118,20 +114,6 @@ export function computeVariantCells({
   }
   if (regionStart === Number.MAX_SAFE_INTEGER) {
     regionStart = 0
-  }
-
-  const featureRegionMap = new Map<string, number>()
-  if (regionNumberMap) {
-    for (const { feature } of mafs) {
-      const refName = feature.get('refName') as string
-      const regionNum = regionNumberMap[refName]
-      if (regionNum === undefined) {
-        throw new Error(
-          `Feature refName "${refName}" not found in regionNumberMap`,
-        )
-      }
-      featureRegionMap.set(feature.id(), regionNum)
-    }
   }
 
   const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
@@ -433,13 +415,6 @@ export function computeVariantCells({
     colors[cellCount * 4 + 2] = cell.color[2]
     colors[cellCount * 4 + 3] = cell.color[3]
     shapeTypes[cellCount] = cell.shapeType
-    const rn = featureRegionMap.get(cell.featureId)
-    if (regionNumberMap && rn === undefined) {
-      throw new Error(
-        `Cell featureId "${cell.featureId}" not found in featureRegionMap`,
-      )
-    }
-    regionNumbers[cellCount] = rn ?? 0
     flatbushItems.push({
       featureId: cell.featureId,
       sourceName: cell.sourceName,
@@ -483,7 +458,6 @@ export function computeVariantCells({
     cellRowIndices: rowIndices.subarray(0, cellCount),
     cellColors: colors.subarray(0, cellCount * 4),
     cellShapeTypes: shapeTypes.subarray(0, cellCount),
-    cellRegionNumbers: regionNumbers.subarray(0, cellCount),
     numCells: cellCount,
     featureGenotypeMap,
     flatbushData: flatbush.data,

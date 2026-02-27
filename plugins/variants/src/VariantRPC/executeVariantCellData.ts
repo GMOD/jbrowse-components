@@ -38,7 +38,10 @@ export interface RegionTooLargeResult {
 }
 
 export type CellDataResult =
-  | (CellDataBase & VariantCellData & { mode: 'regular' })
+  | (CellDataBase & {
+      mode: 'regular'
+      perRegionCellData: Record<number, VariantCellData>
+    })
   | (CellDataBase & MatrixCellData & { mode: 'matrix' })
   | RegionTooLargeResult
 
@@ -186,19 +189,61 @@ export async function executeVariantCellData({
   )
 
   if (mode === 'regular') {
-    const cellData = await updateStatus(
+    const perRegionCellData = await updateStatus(
       'Computing variant cells',
       statusCallback,
-      () =>
-        computeVariantCells({
-          mafs,
-          sources,
-          renderingMode,
-          referenceDrawingMode: referenceDrawingMode ?? 'skip',
-          genotypesCache,
-          regionNumberMap,
-        }),
+      () => {
+        if (regionNumberMap) {
+          const grouped = new Map<number, MAFFilteredFeature[]>()
+          for (const maf of mafs) {
+            const refName = maf.feature.get('refName') as string
+            const regionNum = regionNumberMap[refName]
+            if (regionNum === undefined) {
+              throw new Error(
+                `Feature refName "${refName}" not found in regionNumberMap`,
+              )
+            }
+            let list = grouped.get(regionNum)
+            if (!list) {
+              list = []
+              grouped.set(regionNum, list)
+            }
+            list.push(maf)
+          }
+
+          const result = {} as Record<number, VariantCellData>
+          for (const [regionNum, regionMafs] of grouped) {
+            result[regionNum] = computeVariantCells({
+              mafs: regionMafs,
+              sources,
+              renderingMode,
+              referenceDrawingMode: referenceDrawingMode ?? 'skip',
+              genotypesCache,
+            })
+          }
+          return result
+        }
+        return {
+          0: computeVariantCells({
+            mafs,
+            sources,
+            renderingMode,
+            referenceDrawingMode: referenceDrawingMode ?? 'skip',
+            genotypesCache,
+          }),
+        }
+      },
     )
+
+    const transferables = []
+    for (const cellData of Object.values(perRegionCellData)) {
+      transferables.push(
+        cellData.cellPositions.buffer,
+        cellData.cellRowIndices.buffer,
+        cellData.cellColors.buffer,
+        cellData.cellShapeTypes.buffer,
+      )
+    }
 
     return rpcResult(
       {
@@ -206,15 +251,9 @@ export async function executeVariantCellData({
         sampleInfo,
         hasPhased,
         simplifiedFeatures,
-        ...cellData,
+        perRegionCellData,
       },
-      [
-        cellData.cellPositions.buffer,
-        cellData.cellRowIndices.buffer,
-        cellData.cellColors.buffer,
-        cellData.cellShapeTypes.buffer,
-        cellData.cellRegionNumbers.buffer,
-      ] as ArrayBuffer[],
+      transferables,
     )
   } else {
     const cellData = await updateStatus(

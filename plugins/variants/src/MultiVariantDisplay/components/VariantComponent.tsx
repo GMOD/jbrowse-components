@@ -16,8 +16,12 @@ import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts
 import type { VariantCellData } from './computeVariantCells.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+interface PerRegionCellData {
+  perRegionCellData: Record<number, VariantCellData>
+}
+
 export interface VariantDisplayModel {
-  cellData: VariantCellData | undefined
+  cellData: PerRegionCellData | undefined
   availableHeight: number
   rowHeight: number
   scrollTop: number
@@ -75,6 +79,13 @@ const useStyles = makeStyles()({
   },
 })
 
+function buildFlatbushIndex(cellData: VariantCellData) {
+  if (cellData.flatbushData) {
+    return Flatbush.from(cellData.flatbushData)
+  }
+  return null
+}
+
 const VariantComponent = observer(function VariantComponent({
   model,
 }: {
@@ -111,7 +122,7 @@ const VariantComponent = observer(function VariantComponent({
       return
     }
 
-    let lastCellData: VariantCellData | null = null
+    let lastCellData: PerRegionCellData | null = null
     return autorun(() => {
       if (!view.initialized) {
         return
@@ -125,7 +136,15 @@ const VariantComponent = observer(function VariantComponent({
 
       if (lastCellData !== cellData) {
         lastCellData = cellData
-        renderer.uploadCellData(cellData)
+        const activeRegions: number[] = []
+        for (const [regionNumStr, regionData] of Object.entries(
+          cellData.perRegionCellData,
+        )) {
+          const regionNum = Number(regionNumStr)
+          activeRegions.push(regionNum)
+          renderer.uploadRegion(regionNum, regionData)
+        }
+        renderer.pruneStaleRegions(activeRegions)
       }
 
       const regions = model.visibleRegions
@@ -149,17 +168,13 @@ const VariantComponent = observer(function VariantComponent({
     })
   }, [model, view, ready])
 
-  const flatbushIndex = model.cellData?.flatbushData
-    ? Flatbush.from(model.cellData.flatbushData)
-    : null
-
   function getFeatureUnderMouse(
     rect: DOMRect,
     eventClientX: number,
     eventClientY: number,
   ) {
     const cellData = model.cellData
-    if (!cellData || !flatbushIndex) {
+    if (!cellData) {
       return undefined
     }
     const mouseX = eventClientX - rect.left
@@ -170,6 +185,17 @@ const VariantComponent = observer(function VariantComponent({
       r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
     )
     if (!region) {
+      return undefined
+    }
+
+    const regionCellData =
+      cellData.perRegionCellData[region.regionNumber]
+    if (!regionCellData) {
+      return undefined
+    }
+
+    const flatbushIndex = buildFlatbushIndex(regionCellData)
+    if (!flatbushIndex) {
       return undefined
     }
 
@@ -193,7 +219,7 @@ const VariantComponent = observer(function VariantComponent({
     let bestIdx = -1
     let bestDist = Infinity
     for (const idx of hits) {
-      const item = cellData.flatbushItems[idx]!
+      const item = regionCellData.flatbushItems[idx]!
       const dx =
         genomicPos < item.genomicStart
           ? item.genomicStart - genomicPos
@@ -207,8 +233,8 @@ const VariantComponent = observer(function VariantComponent({
     }
 
     if (bestIdx >= 0) {
-      const item = cellData.flatbushItems[bestIdx]!
-      const info = cellData.featureGenotypeMap[item.featureId]!
+      const item = regionCellData.flatbushItems[bestIdx]!
+      const info = regionCellData.featureGenotypeMap[item.featureId]!
       const genotype = info.genotypes[item.sourceName]!
       return {
         genotype,

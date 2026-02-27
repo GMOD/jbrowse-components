@@ -55,7 +55,6 @@ uniform float u_canvas_width;
 uniform float u_row_height;
 uniform float u_scroll_top;
 uniform float u_zero;
-uniform uint u_region_number;
 
 out vec4 v_color;
 out vec2 v_local_px;
@@ -184,15 +183,19 @@ void main() {
 }
 `
 
+interface RegionGLData {
+  regionStart: number
+  vao: WebGLVertexArrayObject
+  instanceBuffer: WebGLBuffer
+  cellCount: number
+}
+
 export class WebGLVariantRenderer {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
-  private vao: WebGLVertexArrayObject | null = null
-  private instanceBuffer: WebGLBuffer | null = null
   private uniforms: Record<string, WebGLUniformLocation | null> = {}
-  private cellCount = 0
-  private regionStart = 0
+  private regionDataMap = new Map<number, RegionGLData>()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -225,34 +228,38 @@ export class WebGLVariantRenderer {
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
   }
 
-  uploadCellData(data: {
-    regionStart: number
-    cellPositions: Uint32Array
-    cellRowIndices: Uint32Array
-    cellColors: Uint8Array
-    cellShapeTypes: Uint8Array
-    numCells: number
-  }) {
+  uploadRegion(
+    regionNumber: number,
+    data: {
+      regionStart: number
+      cellPositions: Uint32Array
+      cellRowIndices: Uint32Array
+      cellColors: Uint8Array
+      cellShapeTypes: Uint8Array
+      numCells: number
+    },
+  ) {
     const gl = this.gl
 
-    this.deleteBuffers()
-    this.cellCount = 0
+    const existing = this.regionDataMap.get(regionNumber)
+    if (existing) {
+      gl.deleteBuffer(existing.instanceBuffer)
+      gl.deleteVertexArray(existing.vao)
+      this.regionDataMap.delete(regionNumber)
+    }
 
     if (data.numCells === 0) {
       return
     }
 
-    this.regionStart = data.regionStart
-    this.cellCount = data.numCells
-
     const buf = interleaveVariantInstances(data)
     const stride = INSTANCE_STRIDE * 4
 
-    this.vao = gl.createVertexArray()!
-    gl.bindVertexArray(this.vao)
+    const vao = gl.createVertexArray()!
+    gl.bindVertexArray(vao)
 
-    this.instanceBuffer = gl.createBuffer()!
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer)
+    const instanceBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW)
 
     // SYNC: vertex attribute offsets must match interleaveVariantInstances()
@@ -278,6 +285,25 @@ export class WebGLVariantRenderer {
     gl.vertexAttribDivisor(colorLoc, 1)
 
     gl.bindVertexArray(null)
+
+    this.regionDataMap.set(regionNumber, {
+      regionStart: data.regionStart,
+      vao,
+      instanceBuffer,
+      cellCount: data.numCells,
+    })
+  }
+
+  pruneStaleRegions(activeRegionNumbers: number[]) {
+    const gl = this.gl
+    const active = new Set(activeRegionNumbers)
+    for (const [regionNumber, data] of this.regionDataMap) {
+      if (!active.has(regionNumber)) {
+        gl.deleteBuffer(data.instanceBuffer)
+        gl.deleteVertexArray(data.vao)
+        this.regionDataMap.delete(regionNumber)
+      }
+    }
   }
 
   renderBlocks(
@@ -305,21 +331,27 @@ export class WebGLVariantRenderer {
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    if (!this.vao || this.cellCount === 0 || blocks.length === 0) {
+    if (blocks.length === 0) {
       return
     }
 
     gl.useProgram(this.program)
-    gl.bindVertexArray(this.vao)
     gl.enable(gl.SCISSOR_TEST)
 
     for (const block of blocks) {
+      const region = this.regionDataMap.get(block.regionNumber)
+      if (!region || region.cellCount === 0) {
+        continue
+      }
+
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
       if (scissorW <= 0) {
         continue
       }
+
+      gl.bindVertexArray(region.vao)
 
       gl.scissor(
         Math.round(scissorX * dpr),
@@ -348,12 +380,12 @@ export class WebGLVariantRenderer {
         bpStartHi,
         bpStartLo,
         clippedLengthBp,
-        Math.floor(this.regionStart),
+        Math.floor(region.regionStart),
         scissorW,
         state,
       )
 
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.cellCount)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.cellCount)
     }
 
     gl.disable(gl.SCISSOR_TEST)
@@ -384,20 +416,13 @@ export class WebGLVariantRenderer {
     gl.uniform1f(this.uniforms.u_zero!, 0.0)
   }
 
-  private deleteBuffers() {
-    const gl = this.gl
-    if (this.instanceBuffer) {
-      gl.deleteBuffer(this.instanceBuffer)
-      this.instanceBuffer = null
-    }
-    if (this.vao) {
-      gl.deleteVertexArray(this.vao)
-      this.vao = null
-    }
-  }
-
   destroy() {
-    this.deleteBuffers()
-    this.gl.deleteProgram(this.program)
+    const gl = this.gl
+    for (const [, data] of this.regionDataMap) {
+      gl.deleteBuffer(data.instanceBuffer)
+      gl.deleteVertexArray(data.vao)
+    }
+    this.regionDataMap.clear()
+    gl.deleteProgram(this.program)
   }
 }

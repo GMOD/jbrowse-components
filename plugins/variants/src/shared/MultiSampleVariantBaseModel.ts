@@ -95,10 +95,22 @@ function getGenotypeMapForFeature(cellData: unknown, featureId: string) {
     | {
         featureGenotypeMap?: Record<string, GenotypeMap>
         featureData?: (GenotypeMap & { featureId: string })[]
+        perRegionCellData?: Record<
+          number,
+          { featureGenotypeMap?: Record<string, GenotypeMap> }
+        >
       }
     | undefined
   if (!data) {
     return undefined
+  }
+  if (data.perRegionCellData) {
+    for (const regionData of Object.values(data.perRegionCellData)) {
+      const result = regionData.featureGenotypeMap?.[featureId]
+      if (result) {
+        return result
+      }
+    }
   }
   if (data.featureGenotypeMap) {
     return data.featureGenotypeMap[featureId]

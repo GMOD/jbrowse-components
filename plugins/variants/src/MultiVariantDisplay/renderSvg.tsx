@@ -1,4 +1,5 @@
 import { getContainingView, measureText } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { when } from 'mobx'
 
 import type { VariantCellData } from './components/computeVariantCells.ts'
@@ -10,15 +11,103 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function rgbaAttrs(colors: Uint8Array, i: number) {
+function setFillFromCellColor(
+  ctx: SvgCanvas,
+  colors: Uint8Array,
+  i: number,
+) {
   const r = colors[i * 4]!
   const g = colors[i * 4 + 1]!
   const b = colors[i * 4 + 2]!
   const a = colors[i * 4 + 3]!
-  const rgb = `rgb(${r},${g},${b})`
-  return a === 255
-    ? `fill="${rgb}"`
-    : `fill="${rgb}" fill-opacity="${(a / 255).toFixed(3)}"`
+  ctx.fillStyle = `rgb(${r},${g},${b})`
+  ctx.globalAlpha = a / 255
+}
+
+function renderCellsForRegion(
+  ctx: SvgCanvas,
+  cellData: VariantCellData,
+  region: {
+    regionNumber: number
+    start: number
+    end: number
+    screenStartPx: number
+    screenEndPx: number
+  },
+  rowHeight: number,
+  scrollTop: number,
+  availableHeight: number,
+) {
+  const {
+    cellPositions,
+    cellRowIndices,
+    cellColors,
+    cellShapeTypes,
+    numCells,
+    regionStart,
+  } = cellData
+
+  const blockWidth = region.screenEndPx - region.screenStartPx
+  const regionLengthBp = region.end - region.start
+
+  for (let i = 0; i < numCells; i++) {
+    const cellStart = regionStart + cellPositions[i * 2]!
+    const cellEnd = regionStart + cellPositions[i * 2 + 1]!
+    const rowIndex = cellRowIndices[i]!
+    const shapeType = cellShapeTypes[i]!
+
+    const y = rowIndex * rowHeight - scrollTop
+    const yEnd = y + rowHeight
+    if (yEnd < 0 || y > availableHeight) {
+      continue
+    }
+
+    if (cellEnd < region.start || cellStart > region.end) {
+      continue
+    }
+
+    const clippedStart = Math.max(cellStart, region.start)
+    const clippedEnd = Math.min(cellEnd, region.end)
+
+    const x =
+      region.screenStartPx +
+      ((clippedStart - region.start) / regionLengthBp) * blockWidth
+    const x2 =
+      region.screenStartPx +
+      ((clippedEnd - region.start) / regionLengthBp) * blockWidth
+    const w = Math.max(x2 - x, 1)
+    const h = Math.max(rowHeight, 1)
+
+    setFillFromCellColor(ctx, cellColors, i)
+
+    if (shapeType === 0) {
+      ctx.fillRect(x, y, w, h)
+    } else if (shapeType === 1) {
+      const midY = y + h / 2
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + w, midY)
+      ctx.lineTo(x, yEnd)
+      ctx.closePath()
+      ctx.fill()
+    } else if (shapeType === 2) {
+      const midY = y + h / 2
+      ctx.beginPath()
+      ctx.moveTo(x + w, y)
+      ctx.lineTo(x, midY)
+      ctx.lineTo(x + w, yEnd)
+      ctx.closePath()
+      ctx.fill()
+    } else if (shapeType === 3) {
+      const midX = x + w / 2
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + w, y)
+      ctx.lineTo(midX, yEnd)
+      ctx.closePath()
+      ctx.fill()
+    }
+  }
 }
 
 export async function renderSvg(
@@ -29,86 +118,41 @@ export async function renderSvg(
   await when(
     () => model.cellData != null || !!model.error || model.regionTooLarge,
   )
-  const cellData = model.cellData as VariantCellData | undefined
-  if (!cellData || cellData.numCells === 0) {
+  const cellData = model.cellData as
+    | { perRegionCellData: Record<number, VariantCellData> }
+    | undefined
+  if (!cellData) {
     return null
   }
 
-  const {
-    cellPositions,
-    cellRowIndices,
-    cellColors,
-    cellShapeTypes,
-    numCells,
-    regionStart,
-  } = cellData
-
   const { rowHeight, scrollTop, availableHeight, referenceDrawingMode } = model
   const regions = view.visibleRegions as {
+    regionNumber: number
     start: number
     end: number
     screenStartPx: number
     screenEndPx: number
   }[]
 
-  let content = ''
+  const ctx = new SvgCanvas()
 
   if (referenceDrawingMode === 'skip') {
-    content += `<rect x="0" y="0" width="${Math.round(view.width)}" height="${availableHeight}" fill="#ccc"/>`
+    ctx.fillStyle = '#ccc'
+    ctx.globalAlpha = 1
+    ctx.fillRect(0, 0, Math.round(view.width), availableHeight)
   }
 
-  for (let i = 0; i < numCells; i++) {
-    const cellStart = regionStart + cellPositions[i * 2]!
-    const cellEnd = regionStart + cellPositions[i * 2 + 1]!
-    const rowIndex = cellRowIndices[i]!
-    const shapeType = cellShapeTypes[i]!
-    const fillAttrs = rgbaAttrs(cellColors, i)
-
-    const y = rowIndex * rowHeight - scrollTop
-    const yEnd = y + rowHeight
-    if (yEnd < 0 || y > availableHeight) {
-      continue
-    }
-
-    let drawn = false
-    for (const region of regions) {
-      if (cellEnd < region.start || cellStart > region.end) {
-        continue
-      }
-
-      const blockWidth = region.screenEndPx - region.screenStartPx
-      const regionLengthBp = region.end - region.start
-
-      const clippedStart = Math.max(cellStart, region.start)
-      const clippedEnd = Math.min(cellEnd, region.end)
-
-      const x =
-        region.screenStartPx +
-        ((clippedStart - region.start) / regionLengthBp) * blockWidth
-      const x2 =
-        region.screenStartPx +
-        ((clippedEnd - region.start) / regionLengthBp) * blockWidth
-      const w = Math.max(x2 - x, 1)
-      const h = Math.max(rowHeight, 1)
-
-      if (shapeType === 0) {
-        content += `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${fillAttrs}/>`
-      } else if (shapeType === 1) {
-        const midY = y + h / 2
-        content += `<polygon points="${x},${y} ${x + w},${midY} ${x},${yEnd}" ${fillAttrs}/>`
-      } else if (shapeType === 2) {
-        const midY = y + h / 2
-        content += `<polygon points="${x + w},${y} ${x},${midY} ${x + w},${yEnd}" ${fillAttrs}/>`
-      } else if (shapeType === 3) {
-        const midX = x + w / 2
-        content += `<polygon points="${x},${y} ${x + w},${y} ${midX},${yEnd}" ${fillAttrs}/>`
-      }
-
-      drawn = true
-    }
-
-    if (!drawn) {
-      continue
+  for (const region of regions) {
+    const regionCellData = cellData.perRegionCellData[region.regionNumber]
+    if (regionCellData && regionCellData.numCells > 0) {
+      renderCellsForRegion(
+        ctx,
+        regionCellData,
+        region,
+        rowHeight,
+        scrollTop,
+        availableHeight,
+      )
     }
   }
 
@@ -165,7 +209,7 @@ export async function renderSvg(
 
   return (
     <>
-      <g dangerouslySetInnerHTML={{ __html: content }} />
+      <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />
       {labelsEl}
       {treeEl}
     </>

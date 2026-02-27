@@ -9,9 +9,9 @@ import { splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
 
 import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
 
-const UNIFORM_SIZE = 48 // 12 f32/u32 slots (48 bytes)
+const UNIFORM_SIZE = 48
 
-interface GpuData {
+interface RegionGpuData {
   instanceBuffer: GPUBuffer
   bindGroup: GPUBindGroup
   cellCount: number
@@ -31,7 +31,7 @@ export class VariantRenderer {
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
-  private gpuData: GpuData | null = null
+  private regionDataMap = new Map<number, RegionGpuData>()
   private glFallback: WebGLVariantRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
@@ -127,16 +127,19 @@ export class VariantRenderer {
     }
   }
 
-  uploadCellData(data: {
-    regionStart: number
-    cellPositions: Uint32Array
-    cellRowIndices: Uint32Array
-    cellColors: Uint8Array
-    cellShapeTypes: Uint8Array
-    numCells: number
-  }) {
+  uploadRegion(
+    regionNumber: number,
+    data: {
+      regionStart: number
+      cellPositions: Uint32Array
+      cellRowIndices: Uint32Array
+      cellColors: Uint8Array
+      cellShapeTypes: Uint8Array
+      numCells: number
+    },
+  ) {
     if (this.glFallback) {
-      this.glFallback.uploadCellData(data)
+      this.glFallback.uploadRegion(regionNumber, data)
       return
     }
 
@@ -145,10 +148,13 @@ export class VariantRenderer {
       return
     }
 
-    this.gpuData?.instanceBuffer.destroy()
+    const existing = this.regionDataMap.get(regionNumber)
+    if (existing) {
+      existing.instanceBuffer.destroy()
+    }
 
     if (data.numCells === 0) {
-      this.gpuData = null
+      this.regionDataMap.delete(regionNumber)
       return
     }
 
@@ -167,11 +173,25 @@ export class VariantRenderer {
       ],
     })
 
-    this.gpuData = {
+    this.regionDataMap.set(regionNumber, {
       instanceBuffer,
       bindGroup,
       cellCount: data.numCells,
       regionStart: data.regionStart,
+    })
+  }
+
+  pruneStaleRegions(activeRegionNumbers: number[]) {
+    if (this.glFallback) {
+      this.glFallback.pruneStaleRegions(activeRegionNumbers)
+      return
+    }
+    const active = new Set(activeRegionNumbers)
+    for (const [regionNumber, data] of this.regionDataMap) {
+      if (!active.has(regionNumber)) {
+        data.instanceBuffer.destroy()
+        this.regionDataMap.delete(regionNumber)
+      }
     }
   }
 
@@ -207,12 +227,12 @@ export class VariantRenderer {
     const textureView = this.context.getCurrentTexture().createView()
     let isFirst = true
 
-    if (!this.gpuData || this.gpuData.cellCount === 0) {
-      this.clearCanvas(device, textureView)
-      return
-    }
-
     for (const block of blocks) {
+      const region = this.regionDataMap.get(block.regionNumber)
+      if (!region || region.cellCount === 0) {
+        continue
+      }
+
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
@@ -235,9 +255,8 @@ export class VariantRenderer {
         bpStartHi,
         bpStartLo,
         clippedLengthBp,
-        Math.floor(this.gpuData.regionStart),
+        Math.floor(region.regionStart),
         scissorW,
-        block.regionNumber,
         state,
       )
 
@@ -253,7 +272,7 @@ export class VariantRenderer {
         ],
       })
       pass.setPipeline(VariantRenderer.pipeline)
-      pass.setBindGroup(0, this.gpuData.bindGroup)
+      pass.setBindGroup(0, region.bindGroup)
       pass.setViewport(
         Math.round(scissorX * dpr),
         0,
@@ -268,7 +287,7 @@ export class VariantRenderer {
         Math.round(scissorW * dpr),
         bufH,
       )
-      pass.draw(6, this.gpuData.cellCount)
+      pass.draw(6, region.cellCount)
       pass.end()
       device.queue.submit([encoder.finish()])
       isFirst = false
@@ -286,7 +305,6 @@ export class VariantRenderer {
     bpRangeLength: number,
     regionStart: number,
     canvasWidth: number,
-    regionNumber: number,
     state: { canvasHeight: number; rowHeight: number; scrollTop: number },
   ) {
     this.uniformF32[0] = bpRangeHi
@@ -297,8 +315,6 @@ export class VariantRenderer {
     this.uniformF32[5] = canvasWidth
     this.uniformF32[6] = state.rowHeight
     this.uniformF32[7] = state.scrollTop
-    // [8] = zero (stays 0.0 for HP infinity trick)
-    this.uniformU32[9] = regionNumber
     device.queue.writeBuffer(this.uniformBuffer!, 0, this.uniformData)
   }
 
