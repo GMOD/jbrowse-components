@@ -7,6 +7,7 @@ import { when } from 'mobx'
 import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
 import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
 import {
+  ARC_HEIGHT_MARGIN,
   arcColorPalette,
   arcLineColorPalette,
   sashimiColorPalette,
@@ -249,7 +250,7 @@ function renderPairedArcsSvg(
 ) {
   let content = ''
   const pxPerBp = blockWidth / regionLengthBp
-  const availableHeight = arcsHeight
+  const availableHeight = arcsHeight - ARC_HEIGHT_MARGIN
 
   for (let i = 0; i < arcsData.numArcs; i++) {
     const x1 = arcsData.arcX1[i]!
@@ -312,7 +313,7 @@ function renderPairedArcsCanvas(
   lineWidth: number,
 ) {
   const pxPerBp = blockWidth / regionLengthBp
-  const availableHeight = arcsHeight
+  const availableHeight = arcsHeight - ARC_HEIGHT_MARGIN
 
   for (let i = 0; i < arcsData.numArcs; i++) {
     const x1 = arcsData.arcX1[i]!

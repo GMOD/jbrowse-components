@@ -172,6 +172,7 @@ export const CONN_LINE_STRIDE = 3
 
 // SYNC(shaders/arcShaders.ts): shared constants
 export const ARC_CURVE_SEGMENTS = 64
+export const ARC_HEIGHT_MARGIN = 8
 export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2
 export const NUM_SASHIMI_COLORS = 2

@@ -6,6 +6,7 @@ import type { RGBColor } from './colors.ts'
 
 // ---- Arc shader constants ----
 export const ARC_CURVE_SEGMENTS = 64
+export const ARC_HEIGHT_MARGIN = 8
 export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2
 
@@ -86,7 +87,7 @@ vec2 evalCurve(float t) {
   float cx = a_x1 + radius;
   float pxPerBp = u_blockWidth / u_bpRegionLength;
   float absradPx = absrad * pxPerBp;
-  float availableHeight = u_canvasHeight - u_coverageOffset;
+  float availableHeight = u_canvasHeight - u_coverageOffset - ${ARC_HEIGHT_MARGIN}.0;
   float destY = min(availableHeight, absradPx);
   float x_bp, y_px;
   if (a_isArc > 0.5) {

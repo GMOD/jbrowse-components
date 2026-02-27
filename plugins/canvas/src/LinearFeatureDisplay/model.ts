@@ -409,17 +409,32 @@ export default function stateModelFactory(
       selectFeatureById: flow(function* (
         featureInfo: FlatbushItem,
         subfeatureInfo?: SubfeatureInfo,
+        regionNumber?: number,
       ) {
         const session = getSession(self)
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
 
-        // Find a loaded region that contains this feature
-        const region = self.findLoadedRegionForFeature(
-          featureInfo.startBp,
-          featureInfo.endBp,
-        )
+        // Find the loaded region for this feature, preferring the specific
+        // regionNumber if provided (important for multi-chromosome views where
+        // features on different chromosomes can have overlapping bp ranges)
+        let region: Region | undefined
+        if (regionNumber !== undefined) {
+          region = self.loadedRegions.get(regionNumber)
+        }
         if (!region) {
+          region = self.findLoadedRegionForFeature(
+            featureInfo.startBp,
+            featureInfo.endBp,
+          )
+        }
+        if (!region) {
+          console.warn(
+            '[selectFeatureById] No loaded region found for feature',
+            featureInfo.featureId,
+            'regionNumber=',
+            regionNumber,
+          )
           return
         }
 
@@ -550,7 +565,17 @@ export default function stateModelFactory(
               dataMap.set(r.regionNumber, r.data)
             }
           }
-          reconcileLayouts(dataMap)
+          // Build refName map from both existing loaded regions and new results
+          const regionRefNames = new Map<number, string>()
+          for (const [regionNumber, region] of self.loadedRegions) {
+            regionRefNames.set(regionNumber, region.refName)
+          }
+          for (const r of results) {
+            if (r && !r.tooLarge) {
+              regionRefNames.set(r.regionNumber, r.region.refName)
+            }
+          }
+          reconcileLayouts(dataMap, regionRefNames)
           for (const r of results) {
             if (r && !r.tooLarge) {
               self.setLoadedRegionForRegion(r.regionNumber, r.region)

@@ -23,6 +23,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+let _lastHitDetectLog = 0
+
 interface VisibleRegion {
   refName: string
   regionNumber: number
@@ -53,6 +55,7 @@ interface LinearFeatureDisplayModel {
   selectFeatureById: (
     featureInfo: FlatbushItem,
     subfeatureInfo?: SubfeatureInfo,
+    regionNumber?: number,
   ) => void
   showContextMenuForFeature: (featureInfo: FlatbushItem) => void
   getFeatureById: (featureId: string) => FlatbushItem | undefined
@@ -217,9 +220,23 @@ function performMultiRegionHitDetection(
     const reversed = vr.start > vr.end
     const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
 
-    return performHitDetection(cache, data, bpPerPx, reversed, bpPos, yPos)
+    const result = performHitDetection(cache, data, bpPerPx, reversed, bpPos, yPos)
+
+    // DEBUG: throttled logging (only log every 500ms to reduce noise)
+    const now = Date.now()
+    if (now - _lastHitDetectLog > 500) {
+      _lastHitDetectLog = now
+      console.log(
+        `[hitDetect] region=${vr.regionNumber} ${vr.refName}, bpPos=${bpPos.toFixed(0)}, yPos=${yPos.toFixed(0)}, hit=${result.feature?.featureId ?? 'none'}`,
+        result.feature
+          ? `hitY=[${result.feature.topPx},${result.feature.bottomPx}]`
+          : `allFeatureYRanges=[${data.flatbushItems.map(f => `${f.topPx}-${f.bottomPx}`).join(', ')}]`,
+      )
+    }
+
+    return { ...result, regionNumber: vr.regionNumber }
   }
-  return { feature: null, subfeature: null }
+  return { feature: null, subfeature: null, regionNumber: undefined }
 }
 
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
@@ -502,16 +519,25 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
       const { mouseX, yPos } = getMouseInfo(e)
 
-      const { feature, subfeature } = performMultiRegionHitDetection(
-        flatbushCacheMapRef.current,
-        model.rpcDataMap,
-        view.visibleRegions,
-        mouseX,
-        yPos,
+      console.log(
+        `[click] mouseX=${mouseX.toFixed(1)}, yPos=${yPos.toFixed(0)}, scrollY=${scrollYRef.current.toFixed(0)}`,
+      )
+
+      const { feature, subfeature, regionNumber } =
+        performMultiRegionHitDetection(
+          flatbushCacheMapRef.current,
+          model.rpcDataMap,
+          view.visibleRegions,
+          mouseX,
+          yPos,
+        )
+
+      console.log(
+        `[click] result: feature=${feature?.featureId ?? 'none'}, subfeature=${subfeature?.type ?? 'none'}, regionNumber=${regionNumber}`,
       )
 
       if (feature) {
-        model.selectFeatureById(feature, subfeature ?? undefined)
+        model.selectFeatureById(feature, subfeature ?? undefined, regionNumber)
       }
     }
 
@@ -913,6 +939,55 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           cursor: hoveredFeature ? 'pointer' : 'default',
         }}
       />
+
+      {/* DEBUG: region boundary visualization */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
+      >
+        {visibleRegions.map((vr, i) => {
+          const colors = ['red', 'blue', 'green', 'orange', 'purple']
+          const color = colors[i % colors.length]
+          const data = rpcDataMap.get(vr.regionNumber)
+          return (
+            <div key={`debug-region-${vr.regionNumber}`}>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: vr.screenStartPx,
+                  top: 0,
+                  width: vr.screenEndPx - vr.screenStartPx,
+                  height: '100%',
+                  border: `2px dashed ${color}`,
+                  boxSizing: 'border-box',
+                  opacity: 0.5,
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: vr.screenStartPx + 2,
+                  top: 2,
+                  fontSize: 10,
+                  color,
+                  background: 'rgba(255,255,255,0.8)',
+                  padding: '1px 3px',
+                  zIndex: 10,
+                }}
+              >
+                R{vr.regionNumber} {vr.refName}:{vr.start}-{vr.end}
+                {data ? ` (${data.flatbushItems.length}f, maxY=${Math.round(data.maxY)})` : ' (no data)'}
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
       {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
         (elements, i) =>

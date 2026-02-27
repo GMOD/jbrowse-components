@@ -1,5 +1,6 @@
 import {
   ARC_CURVE_SEGMENTS,
+  ARC_HEIGHT_MARGIN,
   NUM_ARC_COLORS,
   NUM_LINE_COLORS,
   NUM_SASHIMI_COLORS,
@@ -57,7 +58,7 @@ fn eval_arc(t: f32, inst: ArcInst) -> vec2f {
   let cx = inst.x1 + radius;
   let px_per_bp = uf(25u) / uf(2u);
   let absrad_px = absrad * px_per_bp;
-  let avail_h = canvas_height() - coverage_offset();
+  let avail_h = canvas_height() - coverage_offset() - ${ARC_HEIGHT_MARGIN}.0;
   let dest_y = min(avail_h, absrad_px);
   var x_bp: f32; var y_px: f32;
   if inst.is_arc > 0.5 {
