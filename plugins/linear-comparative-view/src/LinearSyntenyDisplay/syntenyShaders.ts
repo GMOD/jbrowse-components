@@ -2,8 +2,12 @@
 // - https://mattdesl.svbtle.com/drawing-lines-is-hard (screen-space expansion)
 // - https://blog.frost.kiwi/analytical-anti-aliasing/ (fwidth-based coverage)
 
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
+
 // SYNC: must match Instance struct in WGSL (16 f32 fields * 4 bytes = 64)
 export const INSTANCE_BYTE_SIZE = 64
+// SYNC: must match Uniforms struct (16 fields * 4 bytes = 64)
+export const UNIFORM_BYTE_SIZE = 64
 export const FILL_SEGMENTS = 16
 export const EDGE_SEGMENTS = 4
 // SYNC: 6 verts per segment must match WGSL switch (cases 0u..5u)
@@ -329,3 +333,43 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
   return vec4f(0.0, 0.0, 0.0, edgeAlpha * 0.4);
 }
 `
+
+export function interleaveInstances(data: SyntenyInstanceData) {
+  const {
+    x1,
+    x2,
+    x3,
+    x4,
+    colors,
+    featureIds,
+    isCurves,
+    queryTotalLengths,
+    padTops,
+    padBottoms,
+    instanceCount: n,
+  } = data
+  const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
+  const f = new Float32Array(buf)
+  const stride = INSTANCE_BYTE_SIZE / 4
+
+  for (let i = 0; i < n; i++) {
+    const off = i * stride
+    f[off] = x1[i]!
+    f[off + 1] = x2[i]!
+    f[off + 2] = x3[i]!
+    f[off + 3] = x4[i]!
+    f[off + 4] = colors[i * 4]!
+    f[off + 5] = colors[i * 4 + 1]!
+    f[off + 6] = colors[i * 4 + 2]!
+    f[off + 7] = colors[i * 4 + 3]!
+    f[off + 8] = featureIds[i]!
+    f[off + 9] = isCurves[i]!
+    f[off + 10] = queryTotalLengths[i]!
+    f[off + 11] = padTops[i]!
+    f[off + 12] = padBottoms[i]!
+    f[off + 13] = 0
+    f[off + 14] = 0
+    f[off + 15] = 0
+  }
+  return buf
+}

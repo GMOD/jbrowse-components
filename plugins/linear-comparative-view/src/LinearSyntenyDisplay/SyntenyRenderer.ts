@@ -9,14 +9,13 @@ import {
   EDGE_VERTS_PER_INSTANCE,
   FILL_SEGMENTS,
   FILL_VERTS_PER_INSTANCE,
-  INSTANCE_BYTE_SIZE,
+  UNIFORM_BYTE_SIZE,
   edgeVertexShader,
   fillVertexShader,
+  interleaveInstances,
 } from './syntenyShaders.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
-
-const UNIFORM_SIZE = 64
 
 const rendererCache = new WeakMap<HTMLCanvasElement, SyntenyRenderer>()
 
@@ -32,7 +31,7 @@ export class SyntenyRenderer {
   private glFallback: WebGLSyntenyRenderer | null = null
   private context: GPUCanvasContext | null = null
   private uniformBuffer: GPUBuffer | null = null
-  private uniformData = new ArrayBuffer(UNIFORM_SIZE)
+  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
 
@@ -176,7 +175,7 @@ export class SyntenyRenderer {
       if (result) {
         this.context = result.context
         this.uniformBuffer = device.createBuffer({
-          size: UNIFORM_SIZE,
+          size: UNIFORM_BYTE_SIZE,
           usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         })
         this.pickingStagingBuffer = device.createBuffer({
@@ -240,7 +239,7 @@ export class SyntenyRenderer {
     this.refOffset0 = data.refOffset0
     this.refOffset1 = data.refOffset1
 
-    const interleaved = this.interleaveInstances(data)
+    const interleaved = interleaveInstances(data)
 
     this.instanceBuffer?.destroy()
     this.instanceBuffer = device.createBuffer({
@@ -582,43 +581,4 @@ export class SyntenyRenderer {
     pass.end()
   }
 
-  private interleaveInstances(data: SyntenyInstanceData) {
-    const {
-      x1,
-      x2,
-      x3,
-      x4,
-      colors,
-      featureIds,
-      isCurves,
-      queryTotalLengths,
-      padTops,
-      padBottoms,
-      instanceCount: n,
-    } = data
-    const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
-    const f = new Float32Array(buf)
-    const stride = INSTANCE_BYTE_SIZE / 4
-
-    for (let i = 0; i < n; i++) {
-      const off = i * stride
-      f[off] = x1[i]!
-      f[off + 1] = x2[i]!
-      f[off + 2] = x3[i]!
-      f[off + 3] = x4[i]!
-      f[off + 4] = colors[i * 4]!
-      f[off + 5] = colors[i * 4 + 1]!
-      f[off + 6] = colors[i * 4 + 2]!
-      f[off + 7] = colors[i * 4 + 3]!
-      f[off + 8] = featureIds[i]!
-      f[off + 9] = isCurves[i]!
-      f[off + 10] = queryTotalLengths[i]!
-      f[off + 11] = padTops[i]!
-      f[off + 12] = padBottoms[i]!
-      f[off + 13] = 0
-      f[off + 14] = 0
-      f[off + 15] = 0
-    }
-    return buf
-  }
 }

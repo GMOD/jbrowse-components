@@ -11,11 +11,13 @@ import {
   FILL_SEGMENTS,
   FILL_VERTS_PER_INSTANCE,
   INSTANCE_BYTE_SIZE,
+  UNIFORM_BYTE_SIZE,
+  interleaveInstances,
 } from './syntenyShaders.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
-function createShader(
+function compileShader(
   gl: WebGL2RenderingContext,
   type: number,
   source: string,
@@ -31,14 +33,14 @@ function createShader(
   return shader
 }
 
-function createProgram(
+function linkProgram(
   gl: WebGL2RenderingContext,
   vsSource: string,
   fsSource: string,
 ) {
-  const vs = createShader(gl, gl.VERTEX_SHADER, vsSource)
-  const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()
+  const vs = compileShader(gl, gl.VERTEX_SHADER, vsSource)
+  const fs = compileShader(gl, gl.FRAGMENT_SHADER, fsSource)
+  const program = gl.createProgram()!
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -54,7 +56,19 @@ function createProgram(
   return program
 }
 
-const UNIFORM_SIZE = 64
+const INST_ATTRIB_NAMES = ['a_inst0', 'a_inst1', 'a_inst2', 'a_inst3']
+
+function bindUniformBlock(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  blockName: string,
+  bindingPoint: number,
+) {
+  const idx = gl.getUniformBlockIndex(program, blockName)
+  if (idx !== gl.INVALID_INDEX) {
+    gl.uniformBlockBinding(program, idx, bindingPoint)
+  }
+}
 
 export class WebGLSyntenyRenderer {
   private gl: WebGL2RenderingContext
@@ -62,17 +76,15 @@ export class WebGLSyntenyRenderer {
   private fillProgram: WebGLProgram
   private pickingProgram: WebGLProgram
   private edgeProgram: WebGLProgram
-  private emptyVAO: WebGLVertexArrayObject
-  private fillUbo: WebGLBuffer
-  private fillFragUbo: WebGLBuffer
-  private edgeUbo: WebGLBuffer
-  private edgeFragUbo: WebGLBuffer
-  private pickingUbo: WebGLBuffer
-  private uniformData = new ArrayBuffer(UNIFORM_SIZE)
+  private fillVAO: WebGLVertexArrayObject
+  private pickingVAO: WebGLVertexArrayObject
+  private edgeVAO: WebGLVertexArrayObject
+  private ubo: WebGLBuffer
+  private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
 
-  private instanceTexture: WebGLTexture | null = null
+  private instanceVbo: WebGLBuffer | null = null
   private instanceCount = 0
   private nonCigarInstanceCount = 0
   private geometryBpPerPx0 = 1
@@ -114,45 +126,31 @@ export class WebGLSyntenyRenderer {
     }
     this.gl = gl
 
-    this.fillProgram = createProgram(
-      gl,
-      FILL_VERTEX_SHADER,
-      FILL_FRAGMENT_SHADER,
-    )
-    this.pickingProgram = createProgram(
+    this.fillProgram = linkProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
+    this.pickingProgram = linkProgram(
       gl,
       FILL_VERTEX_SHADER,
       FILL_FRAGMENT_SHADER_PICKING,
     )
-    this.edgeProgram = createProgram(
-      gl,
-      EDGE_VERTEX_SHADER,
-      EDGE_FRAGMENT_SHADER,
-    )
+    this.edgeProgram = linkProgram(gl, EDGE_VERTEX_SHADER, EDGE_FRAGMENT_SHADER)
 
-    this.fillUbo = this.setupUbo(this.fillProgram, 'Uniforms_block_1Vertex', 0)
-    this.fillFragUbo = this.setupUbo(
+    // single UBO shared across all programs, bound to points 0 and 1
+    this.ubo = gl.createBuffer()!
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
+    gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_BYTE_SIZE, gl.DYNAMIC_DRAW)
+
+    for (const program of [
       this.fillProgram,
-      'Uniforms_block_0Fragment',
-      1,
-    )
-    this.edgeUbo = this.setupUbo(this.edgeProgram, 'Uniforms_block_1Vertex', 0)
-    this.edgeFragUbo = this.setupUbo(
-      this.edgeProgram,
-      'Uniforms_block_0Fragment',
-      1,
-    )
-    this.pickingUbo = this.setupUbo(
       this.pickingProgram,
-      'Uniforms_block_1Vertex',
-      0,
-    )
+      this.edgeProgram,
+    ]) {
+      bindUniformBlock(gl, program, 'Uniforms_block_1Vertex', 0)
+      bindUniformBlock(gl, program, 'Uniforms_block_0Fragment', 1)
+    }
 
-    this.setupTextureSampler(this.fillProgram)
-    this.setupTextureSampler(this.pickingProgram)
-    this.setupTextureSampler(this.edgeProgram)
-
-    this.emptyVAO = gl.createVertexArray()!
+    this.fillVAO = this.createInstancedVAO(this.fillProgram)
+    this.pickingVAO = this.createInstancedVAO(this.pickingProgram)
+    this.edgeVAO = this.createInstancedVAO(this.edgeProgram)
 
     gl.enable(gl.BLEND)
     gl.blendFuncSeparate(
@@ -163,27 +161,40 @@ export class WebGLSyntenyRenderer {
     )
   }
 
-  private setupUbo(
-    program: WebGLProgram,
-    blockName: string,
-    bindingPoint: number,
-  ) {
+  private createInstancedVAO(program: WebGLProgram) {
     const gl = this.gl
-    const idx = gl.getUniformBlockIndex(program, blockName)
-    if (idx !== gl.INVALID_INDEX) {
-      gl.uniformBlockBinding(program, idx, bindingPoint)
+    const vao = gl.createVertexArray()!
+    gl.bindVertexArray(vao)
+    for (let i = 0; i < INST_ATTRIB_NAMES.length; i++) {
+      const loc = gl.getAttribLocation(program, INST_ATTRIB_NAMES[i]!)
+      if (loc >= 0) {
+        gl.enableVertexAttribArray(loc)
+        gl.vertexAttribDivisor(loc, 1)
+      }
     }
-    const buf = gl.createBuffer()
-    gl.bindBuffer(gl.UNIFORM_BUFFER, buf)
-    gl.bufferData(gl.UNIFORM_BUFFER, UNIFORM_SIZE, gl.DYNAMIC_DRAW)
-    return buf
+    gl.bindVertexArray(null)
+    return vao
   }
 
-  private setupTextureSampler(program: WebGLProgram) {
+  private bindInstanceBuffer(program: WebGLProgram) {
     const gl = this.gl
-    gl.useProgram(program)
-    const texLoc = gl.getUniformLocation(program, 'u_instanceData')
-    gl.uniform1i(texLoc, 0)
+    if (!this.instanceVbo) {
+      return
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceVbo)
+    for (let i = 0; i < INST_ATTRIB_NAMES.length; i++) {
+      const loc = gl.getAttribLocation(program, INST_ATTRIB_NAMES[i]!)
+      if (loc >= 0) {
+        gl.vertexAttribPointer(
+          loc,
+          4,
+          gl.FLOAT,
+          false,
+          INSTANCE_BYTE_SIZE,
+          i * 16,
+        )
+      }
+    }
   }
 
   resize(width: number, height: number) {
@@ -248,38 +259,30 @@ export class WebGLSyntenyRenderer {
     this.refOffset0 = data.refOffset0
     this.refOffset1 = data.refOffset1
 
-    const interleaved = this.interleaveInstances(data)
+    const interleaved = interleaveInstances(data)
 
-    if (this.instanceTexture) {
-      gl.deleteTexture(this.instanceTexture)
+    if (this.instanceVbo) {
+      gl.deleteBuffer(this.instanceVbo)
+      this.instanceVbo = null
     }
 
     if (data.instanceCount === 0) {
-      this.instanceTexture = null
       return
     }
 
-    const texelsPerInstance = INSTANCE_BYTE_SIZE / 16
-    const texWidth = data.instanceCount * texelsPerInstance
+    this.instanceVbo = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceVbo)
+    gl.bufferData(gl.ARRAY_BUFFER, interleaved, gl.STATIC_DRAW)
 
-    this.instanceTexture = gl.createTexture()!
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA32UI,
-      texWidth,
-      1,
-      0,
-      gl.RGBA_INTEGER,
-      gl.UNSIGNED_INT,
-      new Uint32Array(interleaved),
-    )
+    for (const [vao, program] of [
+      [this.fillVAO, this.fillProgram],
+      [this.pickingVAO, this.pickingProgram],
+      [this.edgeVAO, this.edgeProgram],
+    ] as const) {
+      gl.bindVertexArray(vao)
+      this.bindInstanceBuffer(program)
+      gl.bindVertexArray(null)
+    }
 
     this.pickingDirty = true
   }
@@ -297,7 +300,7 @@ export class WebGLSyntenyRenderer {
     clickedFeatureId: number,
   ) {
     const gl = this.gl
-    if (!this.instanceTexture || this.instanceCount === 0) {
+    if (!this.instanceVbo || this.instanceCount === 0) {
       gl.viewport(0, 0, this.canvas.width, this.canvas.height)
       gl.clearColor(1, 1, 1, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
@@ -347,13 +350,8 @@ export class WebGLSyntenyRenderer {
     gl.clearColor(1, 1, 1, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    gl.bindVertexArray(this.emptyVAO)
-
     gl.useProgram(this.fillProgram)
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.fillUbo)
-    gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.fillFragUbo)
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
+    gl.bindVertexArray(this.fillVAO)
     gl.drawArraysInstanced(
       gl.TRIANGLES,
       0,
@@ -363,10 +361,7 @@ export class WebGLSyntenyRenderer {
 
     if (clickedFeatureId > 0) {
       gl.useProgram(this.edgeProgram)
-      gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.edgeUbo)
-      gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.edgeFragUbo)
-      gl.activeTexture(gl.TEXTURE0)
-      gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
+      gl.bindVertexArray(this.edgeVAO)
       gl.drawArraysInstanced(
         gl.TRIANGLES,
         0,
@@ -380,7 +375,7 @@ export class WebGLSyntenyRenderer {
 
   pick(x: number, y: number, onResult?: (result: number) => void) {
     const gl = this.gl
-    if (!this.instanceTexture || this.instanceCount === 0 || !this.pickingFbo) {
+    if (!this.instanceVbo || this.instanceCount === 0 || !this.pickingFbo) {
       return -1
     }
 
@@ -411,11 +406,8 @@ export class WebGLSyntenyRenderer {
       gl.clear(gl.COLOR_BUFFER_BIT)
       gl.disable(gl.BLEND)
 
-      gl.bindVertexArray(this.emptyVAO)
       gl.useProgram(this.pickingProgram)
-      gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.pickingUbo)
-      gl.activeTexture(gl.TEXTURE0)
-      gl.bindTexture(gl.TEXTURE_2D, this.instanceTexture)
+      gl.bindVertexArray(this.pickingVAO)
       gl.drawArraysInstanced(
         gl.TRIANGLES,
         0,
@@ -461,8 +453,8 @@ export class WebGLSyntenyRenderer {
 
   dispose() {
     const gl = this.gl
-    if (this.instanceTexture) {
-      gl.deleteTexture(this.instanceTexture)
+    if (this.instanceVbo) {
+      gl.deleteBuffer(this.instanceVbo)
     }
     if (this.pickingFbo) {
       gl.deleteFramebuffer(this.pickingFbo)
@@ -470,12 +462,10 @@ export class WebGLSyntenyRenderer {
     if (this.pickingColorTex) {
       gl.deleteTexture(this.pickingColorTex)
     }
-    gl.deleteVertexArray(this.emptyVAO)
-    gl.deleteBuffer(this.fillUbo)
-    gl.deleteBuffer(this.fillFragUbo)
-    gl.deleteBuffer(this.edgeUbo)
-    gl.deleteBuffer(this.edgeFragUbo)
-    gl.deleteBuffer(this.pickingUbo)
+    gl.deleteVertexArray(this.fillVAO)
+    gl.deleteVertexArray(this.pickingVAO)
+    gl.deleteVertexArray(this.edgeVAO)
+    gl.deleteBuffer(this.ubo)
     gl.deleteProgram(this.fillProgram)
     gl.deleteProgram(this.pickingProgram)
     gl.deleteProgram(this.edgeProgram)
@@ -513,55 +503,10 @@ export class WebGLSyntenyRenderer {
     this.uniformF32[14] = clickedFeatureId
     this.uniformF32[15] = 0
 
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.fillUbo)
+    gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.fillFragUbo)
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.edgeUbo)
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.edgeFragUbo)
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
-    gl.bindBuffer(gl.UNIFORM_BUFFER, this.pickingUbo)
-    gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.ubo)
   }
 
-  private interleaveInstances(data: SyntenyInstanceData) {
-    const {
-      x1,
-      x2,
-      x3,
-      x4,
-      colors,
-      featureIds,
-      isCurves,
-      queryTotalLengths,
-      padTops,
-      padBottoms,
-      instanceCount: n,
-    } = data
-    const buf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
-    const f = new Float32Array(buf)
-    const stride = INSTANCE_BYTE_SIZE / 4
-
-    for (let i = 0; i < n; i++) {
-      const off = i * stride
-      f[off] = x1[i]!
-      f[off + 1] = x2[i]!
-      f[off + 2] = x3[i]!
-      f[off + 3] = x4[i]!
-      f[off + 4] = colors[i * 4]!
-      f[off + 5] = colors[i * 4 + 1]!
-      f[off + 6] = colors[i * 4 + 2]!
-      f[off + 7] = colors[i * 4 + 3]!
-      f[off + 8] = featureIds[i]!
-      f[off + 9] = isCurves[i]!
-      f[off + 10] = queryTotalLengths[i]!
-      f[off + 11] = padTops[i]!
-      f[off + 12] = padBottoms[i]!
-      f[off + 13] = 0
-      f[off + 14] = 0
-      f[off + 15] = 0
-    }
-    return buf
-  }
 }
