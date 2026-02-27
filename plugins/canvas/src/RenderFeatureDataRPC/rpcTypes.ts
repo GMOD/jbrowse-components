@@ -65,13 +65,18 @@ export interface FeatureDataResult {
   flatbushItems: FlatbushItem[]
   subfeatureInfos: SubfeatureInfo[]
 
+  // Maps each rect/line/arrow element → flatbushItem index (for main-thread layout)
+  rectFeatureIndices: Uint32Array
+  lineFeatureIndices: Uint32Array
+  arrowFeatureIndices: Uint32Array
+
   // Floating labels metadata
   floatingLabelsData: FloatingLabelsDataMap
 
   // Precomputed amino acid overlay items (only when colorByCDS is true)
   aminoAcidOverlay?: AminoAcidOverlayItem[]
 
-  // Layout info
+  // Layout info (computed on main thread after layout pass)
   maxY: number
 }
 
@@ -90,6 +95,7 @@ export interface AminoAcidOverlayItem {
   topPx: number
   heightPx: number
   isStopOrNonTriplet: boolean
+  flatbushIdx: number
 }
 
 export interface FlatbushItem {

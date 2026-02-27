@@ -34,7 +34,6 @@ import {
   getTranscripts,
   hasIntrons,
 } from './components/CollapseIntronsDialog/util.ts'
-import { reconcileLayouts } from './reconcileLayouts.ts'
 
 const CollapseIntronsDialog = lazy(
   () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -55,6 +54,141 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+function computeAndAssignLayout(
+  rpcDataMap: Map<number, FeatureDataResult>,
+) {
+  const entries = [...rpcDataMap.entries()].filter(
+    ([, d]) => d.flatbushItems.length > 0,
+  )
+  if (entries.length === 0) {
+    return
+  }
+
+  // Collect all unique features across all regions
+  const allFeatures = new Map<
+    string,
+    { start: number; end: number; height: number }
+  >()
+  for (const [, data] of entries) {
+    for (const item of data.flatbushItems) {
+      if (!allFeatures.has(item.featureId)) {
+        allFeatures.set(item.featureId, {
+          start: item.startBp,
+          end: item.endBp,
+          height: item.bottomPx - item.topPx,
+        })
+      }
+    }
+  }
+
+  // Sort by start position and run greedy row-packing layout
+  const sorted = [...allFeatures.entries()]
+    .map(([id, { start, end, height }]) => ({ id, start, end, height }))
+    .sort((a, b) => a.start - b.start)
+
+  const layoutMap = new Map<string, number>()
+  const placed: { start: number; end: number; topPx: number; height: number }[] = []
+
+  for (const f of sorted) {
+    let candidateY = 0
+    for (const p of placed) {
+      if (p.end > f.start && p.start < f.end) {
+        candidateY = Math.max(candidateY, p.topPx + p.height)
+      }
+    }
+    layoutMap.set(f.id, candidateY)
+    placed.push({
+      start: f.start,
+      end: f.end,
+      topPx: candidateY,
+      height: f.height,
+    })
+  }
+
+  // Apply layout to each region's data
+  for (const [, data] of entries) {
+    fillYArrays(data, layoutMap)
+  }
+}
+
+function fillYArrays(
+  data: FeatureDataResult,
+  layoutMap: Map<string, number>,
+) {
+  // Update rect Y positions
+  for (let i = 0; i < data.numRects; i++) {
+    const flatbushIdx = data.rectFeatureIndices[i]!
+    const item = data.flatbushItems[flatbushIdx]!
+    const topPx = layoutMap.get(item.featureId) ?? 0
+    data.rectYs[i] = data.rectYs[i]! + topPx
+  }
+
+  // Update line Y positions
+  for (let i = 0; i < data.numLines; i++) {
+    const flatbushIdx = data.lineFeatureIndices[i]!
+    const item = data.flatbushItems[flatbushIdx]!
+    const topPx = layoutMap.get(item.featureId) ?? 0
+    data.lineYs[i] = data.lineYs[i]! + topPx
+  }
+
+  // Update arrow Y positions
+  for (let i = 0; i < data.numArrows; i++) {
+    const flatbushIdx = data.arrowFeatureIndices[i]!
+    const item = data.flatbushItems[flatbushIdx]!
+    const topPx = layoutMap.get(item.featureId) ?? 0
+    data.arrowYs[i] = data.arrowYs[i]! + topPx
+  }
+
+  // Update flatbushItem positions
+  for (const item of data.flatbushItems) {
+    const topPx = layoutMap.get(item.featureId)
+    if (topPx !== undefined) {
+      const height = item.bottomPx - item.topPx
+      item.topPx = topPx
+      item.bottomPx = topPx + height
+    }
+  }
+
+  // Update subfeatureInfo positions using parent's layout
+  for (const info of data.subfeatureInfos) {
+    const parentTopPx = layoutMap.get(info.parentFeatureId)
+    if (parentTopPx !== undefined) {
+      const height = info.bottomPx - info.topPx
+      info.topPx = info.topPx + parentTopPx
+      info.bottomPx = info.topPx + height
+    }
+  }
+
+  // Update floating label positions
+  for (const labelData of Object.values(data.floatingLabelsData)) {
+    const topPx = layoutMap.get(labelData.featureId)
+    if (topPx !== undefined) {
+      labelData.topY = labelData.topY + topPx
+    }
+  }
+
+  if (data.aminoAcidOverlay) {
+    for (const aaItem of data.aminoAcidOverlay) {
+      const item = data.flatbushItems[aaItem.flatbushIdx]!
+      const topPx = layoutMap.get(item.featureId) ?? 0
+      aaItem.topPx = aaItem.topPx + topPx
+    }
+  }
+
+  // Compute maxY
+  let maxY = 0
+  for (const item of data.flatbushItems) {
+    if (item.bottomPx > maxY) {
+      maxY = item.bottomPx
+    }
+  }
+  data.maxY = maxY
+
+  // New array references so client-side flatbush cache rebuilds
+  data.flatbushItems = [...data.flatbushItems]
+  data.subfeatureInfos = [...data.subfeatureInfos]
+}
 
 function findSubfeatureById(
   feature: Feature,
@@ -557,25 +691,14 @@ export default function stateModelFactory(
         } else {
           self.setRegionTooLarge(false, 0)
           // merge new results with already-loaded regions so
-          // reconcileLayouts sees all data and keeps y positions
-          // consistent across incremental fetches
+          // layout sees all data and keeps y positions consistent
           const dataMap = new Map(self.rpcDataMap)
           for (const r of results) {
             if (r && !r.tooLarge) {
               dataMap.set(r.regionNumber, r.data)
             }
           }
-          // Build refName map from both existing loaded regions and new results
-          const regionRefNames = new Map<number, string>()
-          for (const [regionNumber, region] of self.loadedRegions) {
-            regionRefNames.set(regionNumber, region.refName)
-          }
-          for (const r of results) {
-            if (r && !r.tooLarge) {
-              regionRefNames.set(r.regionNumber, r.region.refName)
-            }
-          }
-          reconcileLayouts(dataMap, regionRefNames)
+          computeAndAssignLayout(dataMap)
           for (const r of results) {
             if (r && !r.tooLarge) {
               self.setLoadedRegionForRegion(r.regionNumber, r.region)

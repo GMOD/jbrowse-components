@@ -10,9 +10,8 @@
  */
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { measureText, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -55,6 +54,7 @@ interface RectData {
   y: number
   height: number
   color: number
+  flatbushIdx: number
 }
 
 interface LineData {
@@ -63,6 +63,7 @@ interface LineData {
   y: number
   color: number
   direction: number // strand direction: -1, 0, or 1
+  flatbushIdx: number
 }
 
 interface ArrowData {
@@ -71,6 +72,7 @@ interface ArrowData {
   direction: number
   height: number
   color: number
+  flatbushIdx: number
 }
 
 const UTR_HEIGHT_FRACTION = 0.65
@@ -102,10 +104,6 @@ function writeColorBytes(out: Uint8Array, index: number, color: number) {
   out[o + 3] = (color >> 24) & 0xff
 }
 
-interface LayoutRecordWithLabels extends LayoutRecord {
-  totalHeightWithLabels?: number
-}
-
 function emitCodonData(opts: {
   rects: RectData[]
   overlayItems: AminoAcidOverlayItem[]
@@ -118,6 +116,7 @@ function emitCodonData(opts: {
   height: number
   strand: number
   reversed: boolean
+  flatbushIdx: number
 }) {
   const {
     rects,
@@ -131,6 +130,7 @@ function emitCodonData(opts: {
     height,
     strand,
     reversed,
+    flatbushIdx,
   } = opts
   const baseHex = colord(baseColor).toHex()
   const color1 = lighten(baseHex, 0.2)
@@ -158,6 +158,7 @@ function emitCodonData(opts: {
       y,
       height,
       color: colorToUint32(bgColor),
+      flatbushIdx,
     })
 
     overlayItems.push({
@@ -168,12 +169,13 @@ function emitCodonData(opts: {
       topPx: y,
       heightPx: height,
       isStopOrNonTriplet: aa.aminoAcid === '*' || aa.length !== 3,
+      flatbushIdx,
     })
   }
 }
 
 function collectRenderData(
-  layoutRecords: LayoutRecordWithLabels[],
+  layoutRecords: LayoutRecord[],
   regionStart: number,
   config: unknown,
   configContext: RenderConfigContext,
@@ -199,7 +201,7 @@ function collectRenderData(
   const aminoAcidOverlay: AminoAcidOverlayItem[] = []
 
   for (const record of layoutRecords) {
-    const { feature, layout, topPx, totalHeightWithLabels } = record
+    const { feature, layout, layoutHeight } = record
     const featureStart = feature.get('start')
     const featureEnd = feature.get('end')
     const strand = (feature.get('strand') as number) || 0
@@ -241,7 +243,7 @@ function collectRenderData(
         featureId: feature.id(),
         minX: featureStart - regionStart,
         maxX: featureEnd - regionStart,
-        topY: topPx,
+        topY: 0,
         featureHeight: layout.height,
         floatingLabels,
       }
@@ -254,26 +256,25 @@ function collectRenderData(
       ? `${name}${description ? ` - ${description}` : ''}`
       : `${featureType}: ${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
 
-    // Add to flatbush items for hit detection
-    // Use totalHeightWithLabels to include label area in hit box
-    const hitBoxHeight = totalHeightWithLabels ?? layout.totalLayoutHeight
     flatbushItems.push({
       featureId: feature.id(),
       type: featureType,
       startBp: featureStart,
       endBp: featureEnd,
-      topPx,
-      bottomPx: topPx + hitBoxHeight,
+      topPx: 0,
+      bottomPx: layoutHeight,
       tooltip,
       name: name || undefined,
       strand: strand || undefined,
     })
+    const currentFlatbushIdx = flatbushItems.length - 1
 
     // Helper to process a transcript-like layout (ProcessedTranscript or Segments)
     const processTranscriptLayout = (
       transcriptLayout: typeof layout,
       transcriptTopPx: number,
       parentFeature: typeof feature,
+      parentFlatbushIdx: number,
     ) => {
       const transcriptFeature = transcriptLayout.feature
       const transcriptStart = transcriptFeature.get('start')
@@ -306,6 +307,7 @@ function collectRenderData(
           y: lineY,
           color: transcriptStrokeUint,
           direction: effectiveStrand,
+          flatbushIdx: parentFlatbushIdx,
         })
       } else {
         let prevEnd = transcriptStart
@@ -319,6 +321,7 @@ function collectRenderData(
               y: lineY,
               color: transcriptStrokeUint,
               direction: effectiveStrand,
+              flatbushIdx: parentFlatbushIdx,
             })
           }
           if (childEnd > prevEnd) {
@@ -332,6 +335,7 @@ function collectRenderData(
             y: lineY,
             color: transcriptStrokeUint,
             direction: effectiveStrand,
+            flatbushIdx: parentFlatbushIdx,
           })
         }
       }
@@ -382,6 +386,7 @@ function collectRenderData(
               height: childHeight,
               strand: transcriptStrand,
               reversed,
+              flatbushIdx: parentFlatbushIdx,
             })
           } else {
             rects.push({
@@ -390,6 +395,7 @@ function collectRenderData(
               y: childTopPx,
               height: childHeight,
               color: childColorUint,
+              flatbushIdx: parentFlatbushIdx,
             })
           }
         } else {
@@ -399,6 +405,7 @@ function collectRenderData(
             y: childTopPx,
             height: childHeight,
             color: childColorUint,
+            flatbushIdx: parentFlatbushIdx,
           })
         }
       }
@@ -463,6 +470,7 @@ function collectRenderData(
           direction: effectiveStrand,
           height: transcriptLayout.height,
           color: transcriptStrokeUint,
+          flatbushIdx: parentFlatbushIdx,
         })
       }
     }
@@ -472,7 +480,7 @@ function collectRenderData(
       layout.glyphType === 'ProcessedTranscript' ||
       layout.glyphType === 'Segments'
     ) {
-      processTranscriptLayout(layout, topPx, feature)
+      processTranscriptLayout(layout, 0, feature, currentFlatbushIdx)
     } else if (layout.glyphType === 'Subfeatures') {
       // Gene-like feature with nested transcript children
       // Process each child transcript
@@ -481,9 +489,8 @@ function collectRenderData(
           childLayout.glyphType === 'ProcessedTranscript' ||
           childLayout.glyphType === 'Segments'
         ) {
-          // Child is a transcript - process it with its relative position
-          const childTopPx = topPx + childLayout.y
-          processTranscriptLayout(childLayout, childTopPx, feature)
+          const childTopPx = childLayout.y
+          processTranscriptLayout(childLayout, childTopPx, feature, currentFlatbushIdx)
         } else {
           // Child is a simple feature - draw as box
           const childFeature = childLayout.feature
@@ -501,7 +508,7 @@ function collectRenderData(
           const childColorUint = colorToUint32(childColor)
 
           const [childTopPx, childHeight] = applyUTRSizing(
-            topPx + childLayout.y,
+            childLayout.y,
             childLayout.height,
             childIsUTR,
           )
@@ -512,16 +519,14 @@ function collectRenderData(
             y: childTopPx,
             height: childHeight,
             color: childColorUint,
+            flatbushIdx: currentFlatbushIdx,
           })
-
-          // Note: We don't add simple child features to subfeatureInfos
-          // Only transcript and gene level features are clickable
         }
       }
     } else {
       // Simple box feature
       const [rectTopPx, rectHeight] = applyUTRSizing(
-        topPx,
+        0,
         layout.height,
         isUTR(feature),
       )
@@ -532,6 +537,7 @@ function collectRenderData(
         y: rectTopPx,
         height: rectHeight,
         color: colorUint,
+        flatbushIdx: currentFlatbushIdx,
       })
 
       // Add strand arrow for top-level features
@@ -541,10 +547,11 @@ function collectRenderData(
         const arrowX = effectiveStrand === 1 ? featureEnd : featureStart
         arrows.push({
           x: arrowX - regionStart,
-          y: topPx + layout.height / 2,
+          y: layout.height / 2,
           direction: effectiveStrand,
           height: layout.height,
           color: strokeUint,
+          flatbushIdx: currentFlatbushIdx,
         })
       }
     }
@@ -699,19 +706,16 @@ export async function executeRenderFeatureData({
     }
   }
 
-  const { layoutRecords, maxY } = await updateStatus(
+  // Compute glyph layouts for each feature (no y-position assignment —
+  // that happens on the main thread so all regions share a single layout).
+  const layoutRecords = await updateStatus(
     'Computing layout',
     statusCallback,
     async () => {
-      // Layout in pixel space so labels and padding don't blow up at
-      // zoomed-out levels (where bpPerPx is large)
-      const layout = new GranularRectLayout({ pitchX: 1 })
       const reversed = region.reversed ?? false
       const yPadding = 5
-      const xPadding = 4
-      const maxGlyphExpansion = mockConfig.maxFeatureGlyphExpansion || 500
 
-      const records: LayoutRecordWithLabels[] = []
+      const records: LayoutRecord[] = []
 
       for (const feature of features.values()) {
         const featureLayout = layoutFeature({
@@ -721,87 +725,31 @@ export async function executeRenderFeatureData({
           configContext,
         })
 
-        const featureStart = feature.get('start')
-        const featureEnd = feature.get('end')
-        const featureWidthPx = (featureEnd - featureStart) / bpPerPx
-
-        const leftPaddingPx = featureLayout.leftPadding
-        const rightPaddingPx =
-          featureLayout.totalLayoutWidth -
-          featureLayout.width -
-          featureLayout.leftPadding
-
-        // Convert feature bp bounds to pixel space for layout
-        const featureStartPx = (featureStart - regionStart) / bpPerPx
-        const featureEndPx = (featureEnd - regionStart) / bpPerPx
-
-        let layoutStartPx: number
-        let layoutEndPx: number
-        if (reversed) {
-          layoutStartPx = featureStartPx - rightPaddingPx - xPadding
-          layoutEndPx = featureEndPx + leftPaddingPx + xPadding
-        } else {
-          layoutStartPx = featureStartPx - leftPaddingPx - xPadding
-          layoutEndPx = featureEndPx + rightPaddingPx + xPadding
-        }
-
-        // Add space for labels in pixel space (naturally bounded)
+        const fontSize = mockConfig.labels.fontSize
+        let labelHeight = 0
         const featureName = String(
           feature.get('name') || feature.get('id') || '',
         )
         const featureDescription = String(
           feature.get('note') || feature.get('description') || '',
         )
-        const fontSize = mockConfig.labels.fontSize
-        let labelHeight = 0
-        let maxLabelWidth = 0
         if (featureName && mockConfig.showLabels) {
           labelHeight += fontSize
-          maxLabelWidth = Math.max(maxLabelWidth, measureText(featureName, 11))
         }
         if (featureDescription && mockConfig.showDescriptions) {
           labelHeight += fontSize
-          maxLabelWidth = Math.max(
-            maxLabelWidth,
-            measureText(featureDescription, 11),
-          )
-        }
-
-        if (maxLabelWidth > featureWidthPx) {
-          const extraPx = Math.min(
-            maxLabelWidth - featureWidthPx,
-            maxGlyphExpansion,
-          )
-          if (reversed) {
-            layoutStartPx -= extraPx
-          } else {
-            layoutEndPx += extraPx
-          }
         }
 
         const layoutHeight = featureLayout.height + labelHeight + yPadding
-        const topPx = layout.addRect(
-          feature.id(),
-          layoutStartPx,
-          layoutEndPx,
-          layoutHeight,
+
+        records.push({
           feature,
-        )
-
-        if (topPx !== null) {
-          records.push({
-            feature,
-            layout: featureLayout,
-            topPx,
-            totalHeightWithLabels: layoutHeight,
-          })
-        }
+          layout: featureLayout,
+          layoutHeight,
+        })
       }
 
-      return {
-        layoutRecords: records,
-        maxY: layout.getTotalHeight(),
-      }
+      return records
     },
   )
 
@@ -855,15 +803,12 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Flatbush spatial indexes are built client-side so that
-  // reconcileLayouts can adjust y positions across regions without
-  // rebuilding the index on the worker.
-
   // Filter out elements completely outside the region before converting
   // to typed arrays. This prevents slivers in collapsed intron views where
   // a gene spans multiple regions and its children from other regions get
   // clamped to position 0.
   const regionWidth = Math.ceil(region.end - region.start)
+
   const visibleRects = rects.filter(
     r => r.endOffset > 0 && r.startOffset < regionWidth,
   )
@@ -877,6 +822,7 @@ export async function executeRenderFeatureData({
   const rectYs = new Float32Array(visibleRects.length)
   const rectHeights = new Float32Array(visibleRects.length)
   const rectColors = new Uint8Array(visibleRects.length * 4)
+  const rectFeatureIndices = new Uint32Array(visibleRects.length)
 
   for (const [i, rect] of visibleRects.entries()) {
     rectPositions[i * 2] = Math.max(0, rect.startOffset)
@@ -884,12 +830,14 @@ export async function executeRenderFeatureData({
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
     writeColorBytes(rectColors, i, rect.color)
+    rectFeatureIndices[i] = rect.flatbushIdx
   }
 
   const linePositions = new Uint32Array(visibleLines.length * 2)
   const lineYs = new Float32Array(visibleLines.length)
   const lineColors = new Uint8Array(visibleLines.length * 4)
   const lineDirections = new Int8Array(visibleLines.length)
+  const lineFeatureIndices = new Uint32Array(visibleLines.length)
 
   for (const [i, line] of visibleLines.entries()) {
     linePositions[i * 2] = Math.max(0, line.startOffset)
@@ -897,6 +845,7 @@ export async function executeRenderFeatureData({
     lineYs[i] = line.y
     writeColorBytes(lineColors, i, line.color)
     lineDirections[i] = line.direction
+    lineFeatureIndices[i] = line.flatbushIdx
   }
 
   const arrowXs = new Uint32Array(visibleArrows.length)
@@ -904,6 +853,7 @@ export async function executeRenderFeatureData({
   const arrowDirections = new Int8Array(visibleArrows.length)
   const arrowHeights = new Float32Array(visibleArrows.length)
   const arrowColors = new Uint8Array(visibleArrows.length * 4)
+  const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
 
   for (const [i, arrow] of visibleArrows.entries()) {
     arrowXs[i] = Math.max(0, arrow.x)
@@ -911,6 +861,7 @@ export async function executeRenderFeatureData({
     arrowDirections[i] = arrow.direction
     arrowHeights[i] = arrow.height
     writeColorBytes(arrowColors, i, arrow.color)
+    arrowFeatureIndices[i] = arrow.flatbushIdx
   }
 
   const result: FeatureDataResult = {
@@ -938,12 +889,16 @@ export async function executeRenderFeatureData({
     flatbushItems,
     subfeatureInfos,
 
+    rectFeatureIndices,
+    lineFeatureIndices,
+    arrowFeatureIndices,
+
     floatingLabelsData,
 
     aminoAcidOverlay:
       aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
 
-    maxY,
+    maxY: 0,
   }
 
   const transferables = [
@@ -951,15 +906,18 @@ export async function executeRenderFeatureData({
     result.rectYs.buffer,
     result.rectHeights.buffer,
     result.rectColors.buffer,
+    result.rectFeatureIndices.buffer,
     result.linePositions.buffer,
     result.lineYs.buffer,
     result.lineColors.buffer,
     result.lineDirections.buffer,
+    result.lineFeatureIndices.buffer,
     result.arrowXs.buffer,
     result.arrowYs.buffer,
     result.arrowDirections.buffer,
     result.arrowHeights.buffer,
     result.arrowColors.buffer,
+    result.arrowFeatureIndices.buffer,
   ] as ArrayBuffer[]
 
   return rpcResult(result, transferables) as any
