@@ -17,7 +17,7 @@ const ARC_PREAMBLE = PREAMBLE
 // ARC_FRAGMENT_SHADER / SASHIMI_ARC_VERTEX_SHADER / SASHIMI_ARC_FRAGMENT_SHADER).
 // Both implement the same stroke rendering logic:
 //   - vertex: hw = lineWidth * 0.5 + 1.0  (geometry padding)
-//   - fragment: alpha = smoothstep(0.0, aa, hw - d)  (AA formula)
+//   - fragment: alpha = clamp((hw - d) / aa + 0.5, 0, 1)  (AA formula)
 // If you change either, update the other file to match.
 export const ARC_WGSL = `
 ${ARC_PREAMBLE}
@@ -108,11 +108,11 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
 @fragment
 fn fs_main(in: ArcOut) -> @location(0) vec4f {
-  // SYNC(shaders/arcShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
+  // SYNC(shaders/arcShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
   let hw = uf(26u) * 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
-  let alpha = smoothstep(0.0, aa, hw - d);
+  let alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
   return vec4f(in.color.rgb, in.color.a * alpha);
 }
 `
@@ -212,11 +212,11 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
 @fragment
 fn fs_main(in: SashimiOut) -> @location(0) vec4f {
-  // SYNC(shaders/arcShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
+  // SYNC(shaders/arcShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
   let hw = in.lw * 0.5;
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
-  let alpha = smoothstep(0.0, aa, hw - d);
+  let alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
   return vec4f(in.color.rgb, in.color.a * alpha);
 }
 `

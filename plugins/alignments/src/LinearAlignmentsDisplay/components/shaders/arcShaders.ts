@@ -30,7 +30,7 @@ export const arcLineColorPalette: RGBColor[] = [
 // the WGSL source in wgsl/miscShaders.ts (ARC_WGSL / SASHIMI_WGSL).
 // Both implement the same stroke rendering logic:
 //   - vertex: halfWidth = lineWidth * 0.5 + 1.0  (geometry padding)
-//   - fragment: alpha = smoothstep(0.0, aa, halfWidth - d)  (AA formula)
+//   - fragment: alpha = clamp((halfWidth - d) / aa + 0.5, 0, 1)  (AA formula)
 // If you change either, update the other file to match.
 export const ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -142,11 +142,11 @@ in float v_dist;
 uniform float u_lineWidthPx;
 out vec4 fragColor;
 void main() {
-  // SYNC(wgsl/miscShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
+  // SYNC(wgsl/miscShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
   float halfWidth = u_lineWidthPx * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
-  float alpha = smoothstep(0.0, aa, halfWidth - d);
+  float alpha = clamp((halfWidth - d) / aa + 0.5, 0.0, 1.0);
   fragColor = vec4(v_color.rgb, v_color.a * alpha);
 }
 `
@@ -245,11 +245,11 @@ in float v_dist;
 in float v_lineWidth;
 out vec4 fragColor;
 void main() {
-  // SYNC(wgsl/miscShaders.ts): AA formula smoothstep(0, aa, halfWidth - d)
+  // SYNC(wgsl/miscShaders.ts): AA formula clamp((halfWidth - d) / aa + 0.5, 0, 1)
   float halfWidth = v_lineWidth * 0.5;
   float d = abs(v_dist);
   float aa = fwidth(v_dist);
-  float alpha = smoothstep(0.0, aa, halfWidth - d);
+  float alpha = clamp((halfWidth - d) / aa + 0.5, 0.0, 1.0);
   fragColor = vec4(v_color.rgb, v_color.a * alpha);
 }
 `
