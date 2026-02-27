@@ -28,30 +28,19 @@ function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
 
-export function heightFromSpecificLevel(
-  views: LGV[],
-  trackId: string,
-  level: number,
-  getYPosOverride?: (trackId: string, level: number) => number,
-) {
-  return getYPosOverride
-    ? getYPosOverride(trackId, level)
-    : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
-}
-
 export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
   return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
-// pre-compute getBoundingClientRect().top for each level to avoid layout
-// thrashing when called repeatedly in a loop
 export function getTrackHeightsCache(
   views: LGV[],
   trackId: string,
   getYPosOverride?: (trackId: string, level: number) => number,
 ) {
   return views.map((_, level) =>
-    heightFromSpecificLevel(views, trackId, level, getYPosOverride),
+    getYPosOverride
+      ? getYPosOverride(trackId, level)
+      : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0,
   )
 }
 

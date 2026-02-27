@@ -12,19 +12,19 @@ export interface OverlayProps {
   cachedYOffset?: number
 }
 
-export function createMouseHandlers(
+export function createVariantMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
   session: ReturnType<typeof getSession>,
-  widgetType: string,
-  widgetId: string,
   featureData: unknown,
 ) {
   return {
     onClick: () => {
-      const featureWidget = session.addWidget?.(widgetType, widgetId, {
-        featureData,
-      })
+      const featureWidget = session.addWidget?.(
+        'VariantFeatureWidget',
+        'variantFeature',
+        { featureData },
+      )
       session.showWidget?.(featureWidget)
     },
     onMouseOver: () => {

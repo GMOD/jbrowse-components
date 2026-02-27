@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import {
   LEFT,
   buildBreakpointPath,
-  createMouseHandlers,
+  createVariantMouseHandlers,
   getTestId,
   strandToSign,
 } from './overlayUtils.tsx'
@@ -97,12 +97,10 @@ const Translocations = observer(function Translocations({
               x2 - 20 * strandToSign(mateDirection) * (reversed2 ? -1 : 1)
             const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
 
-            const mouseHandlers = createMouseHandlers(
+            const mouseHandlers = createVariantMouseHandlers(
               id,
               setMouseoverElt,
               session,
-              'VariantFeatureWidget',
-              'variantFeature',
               totalFeatures.get(id)?.toJSON(),
             )
 

@@ -5,24 +5,9 @@ import Breakends from './Breakends.tsx'
 import PairedFeatures from './PairedFeatures.tsx'
 import Translocations from './Translocations.tsx'
 
-import type { BreakpointViewModel } from '../model.ts'
+import type { OverlayProps } from './overlayUtils.tsx'
 
-// Routes to the appropriate overlay component based on track type:
-//
-// - AlignmentsTrack (BAM/CRAM): renders split read / paired-end connections
-//   using AlignmentConnections (curvy bezier arcs)
-//
-// - VariantTrack (VCF): renders structural variant connections using one of:
-//   - Translocations: for TRA type variants (uses INFO.CHR2, INFO.END)
-//   - PairedFeatures: for paired_feature type (e.g. BEDPE-style)
-//   - Breakends: for BND type variants (uses ALT field breakend notation)
-const Overlay = observer(function Overlay(props: {
-  model: BreakpointViewModel
-  trackId: string
-  getTrackYPosOverride?: (trackId: string, level: number) => number
-  cachedTrackTops?: number[]
-  cachedYOffset?: number
-}) {
+const Overlay = observer(function Overlay(props: OverlayProps) {
   const { model, trackId } = props
   const tracks = model.getMatchedTracks(trackId)
   const type = tracks[0]?.type

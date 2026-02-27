@@ -10,17 +10,13 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor.tsx'
-import { LEFT, RIGHT, getTestId } from './overlayUtils.tsx'
+import { LEFT, RIGHT, getCanonicalRefs, getTestId } from './overlayUtils.tsx'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
   hasPairedReads,
 } from './util.ts'
-import {
-  getPxFromCoordinate,
-  getTrackHeightsCache,
-  yPos,
-} from '../util.ts'
+import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
@@ -77,12 +73,11 @@ const AlignmentConnections = observer(function AlignmentConnections({
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
-          const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
-          const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
-
-          if (!f1ref || !f2ref) {
-            throw new Error(`unable to find ref for ${f1ref || f2ref}`)
-          }
+          const { f1ref, f2ref } = getCanonicalRefs(
+            assembly,
+            f1.get('refName'),
+            f2.get('refName'),
+          )
           const r = {
             pair_orientation: f1.get('pair_orientation'),
           }

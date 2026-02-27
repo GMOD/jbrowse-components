@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import {
   LEFT,
   buildBreakpointPath,
-  createMouseHandlers,
+  createVariantMouseHandlers,
   getCanonicalRefs,
   getTestId,
 } from './overlayUtils.tsx'
@@ -89,12 +89,10 @@ const Breakends = observer(function Breakends({
                 (reversed2 ? -1 : 1)
             const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
 
-            const mouseHandlers = createMouseHandlers(
+            const mouseHandlers = createVariantMouseHandlers(
               id,
               setMouseoverElt,
               session,
-              'VariantFeatureWidget',
-              'variantFeature',
               totalFeatures.get(id)?.toJSON(),
             )
 

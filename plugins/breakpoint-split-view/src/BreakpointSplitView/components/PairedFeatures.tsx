@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import {
   LEFT,
   buildSimplePath,
-  createMouseHandlers,
+  createVariantMouseHandlers,
   getCanonicalRefs,
   getTestId,
 } from './overlayUtils.tsx'
@@ -73,12 +73,10 @@ const PairedFeatures = observer(function PairedFeatures({
             yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
 
           const path = buildSimplePath(x1, y1, x2, y2)
-          const mouseHandlers = createMouseHandlers(
+          const mouseHandlers = createVariantMouseHandlers(
             id,
             setMouseoverElt,
             session,
-            'VariantFeatureWidget',
-            'variantFeature',
             totalFeatures.get(id)?.toJSON(),
           )
 
