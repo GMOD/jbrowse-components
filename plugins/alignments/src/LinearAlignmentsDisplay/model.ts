@@ -468,6 +468,7 @@ export default function stateModelFactory(
       webglRenderer: null as AlignmentsRenderer | null,
       colorPalette: null as ColorPalette | null,
       visibleMaxDepth: 0,
+      regionTooLargeBpPerPx: undefined as number | undefined,
     }))
     .views(self => ({
       get selectedFeatureId() {
@@ -607,9 +608,19 @@ export default function stateModelFactory(
         return t === 'modifications' || t === 'methylation'
       },
 
+      // DO NOT REMOVE: all three conditions are important.
+      // - regionTooLargeState: the byte estimate exceeded the limit
+      // - bpPerPx match: clears on zoom so the fetch autorun retries
+      //   with a fresh byte estimate at the new zoom level
+      // - visibleBp >= AUTO_FORCE_LOAD_BP: force-loads small regions
+      //   (< 20kb) regardless of byte size
       get regionTooLarge() {
         const view = getContainingView(self) as LGV
-        return self.regionTooLargeState && view.visibleBp >= AUTO_FORCE_LOAD_BP
+        return (
+          self.regionTooLargeState &&
+          view.bpPerPx === self.regionTooLargeBpPerPx &&
+          view.visibleBp >= AUTO_FORCE_LOAD_BP
+        )
       },
 
       get sortedBy() {
@@ -847,11 +858,18 @@ export default function stateModelFactory(
           }
         },
 
+        // DO NOT REMOVE: records the bpPerPx at which the region was
+        // deemed too large, so the regionTooLarge getter automatically
+        // clears when the user zooms (changing bpPerPx)
         setRegionTooLarge(val: boolean, reason?: string) {
           superSetRegionTooLarge(val, reason)
           if (val) {
+            const view = getContainingView(self) as LGV
+            self.regionTooLargeBpPerPx = view.bpPerPx
             self.featureIdUnderMouse = undefined
             self.mouseoverExtraInformation = undefined
+          } else {
+            self.regionTooLargeBpPerPx = undefined
           }
         },
 
@@ -1317,6 +1335,11 @@ export default function stateModelFactory(
               true,
               `Requested too much data (${getDisplayStr(stats.bytes)})`,
             )
+            // DO NOT REMOVE: marks the region as "checked at these
+            // bounds" so the fetch autorun doesn't re-trigger for the
+            // same region. When the user zooms, staticRegions get new
+            // bounds that won't match, causing a fresh byte estimate.
+            self.setLoadedRegion(regionNumber, region)
             return
           }
         }
@@ -1849,32 +1872,19 @@ export default function stateModelFactory(
           )
 
           // See MultiRegionDisplayMixin for the fetch lifecycle contract.
-          let prevFetchBpPerPx: number | undefined
           addDisposer(
             self,
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                const { bpPerPx } = view
                 if (
                   !view.initialized ||
+                  self.regionTooLarge ||
                   self.isLoading ||
                   self.error
                 ) {
                   return
                 }
-                if (self.regionTooLarge) {
-                  if (
-                    prevFetchBpPerPx !== undefined &&
-                    bpPerPx !== prevFetchBpPerPx
-                  ) {
-                    prevFetchBpPerPx = bpPerPx
-                    self.clearAllRpcData()
-                    self.setRegionTooLarge(false)
-                  }
-                  return
-                }
-                prevFetchBpPerPx = bpPerPx
                 // Track fetchToken so bumps trigger re-fetch
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchToken

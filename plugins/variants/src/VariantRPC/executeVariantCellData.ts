@@ -140,9 +140,18 @@ export async function executeVariantCellData({
     adapterConfig,
     sessionId,
     statusCallback,
-    regionNumberMap,
+    regionNumbers,
     byteSizeLimit,
   } = args
+
+  const regionLookup = regionNumbers
+    ? regions.map((r, i) => ({
+        refName: r.refName,
+        start: r.start,
+        end: r.end,
+        regionNumber: regionNumbers[i]!,
+      }))
+    : undefined
 
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -193,20 +202,23 @@ export async function executeVariantCellData({
       'Computing variant cells',
       statusCallback,
       () => {
-        if (regionNumberMap) {
+        if (regionLookup) {
           const grouped = new Map<number, MAFFilteredFeature[]>()
           for (const maf of mafs) {
             const refName = maf.feature.get('refName') as string
-            const regionNum = regionNumberMap[refName]
-            if (regionNum === undefined) {
+            const featureStart = maf.feature.get('start') as number
+            const entry = regionLookup.find(
+              r => r.refName === refName && featureStart >= r.start && featureStart < r.end,
+            )
+            if (!entry) {
               throw new Error(
-                `Feature refName "${refName}" not found in regionNumberMap`,
+                `Feature at ${refName}:${featureStart} not found in any region`,
               )
             }
-            let list = grouped.get(regionNum)
+            let list = grouped.get(entry.regionNumber)
             if (!list) {
               list = []
-              grouped.set(regionNum, list)
+              grouped.set(entry.regionNumber, list)
             }
             list.push(maf)
           }

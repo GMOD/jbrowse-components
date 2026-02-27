@@ -76,12 +76,14 @@ export function getVariantCellDataAutorun(self: {
                 'MultiSampleVariantGetCellData',
                 {
                   regions: view.dynamicBlocks.contentBlocks,
-                  regionNumberMap: Object.fromEntries(
-                    view.dynamicBlocks.contentBlocks.map(b => [
-                      b.refName,
-                      b.regionNumber ?? 0,
-                    ]),
-                  ),
+                  regionNumbers: view.dynamicBlocks.contentBlocks.map(b => {
+                    if (b.regionNumber === undefined) {
+                      throw new Error(
+                        `Content block for ${b.refName} has no regionNumber`,
+                      )
+                    }
+                    return b.regionNumber
+                  }),
                   sources,
                   minorAlleleFrequencyFilter,
                   lengthCutoffFilter,

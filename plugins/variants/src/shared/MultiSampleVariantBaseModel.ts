@@ -1189,6 +1189,16 @@ export default function MultiSampleVariantBaseModelF(
         return items
       },
     }))
+    .actions(self => {
+      const superReload = self.reload
+      return {
+        reload() {
+          self.setRegionTooLarge(false)
+          self.errorRetryCount++
+          superReload()
+        },
+      }
+    })
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
