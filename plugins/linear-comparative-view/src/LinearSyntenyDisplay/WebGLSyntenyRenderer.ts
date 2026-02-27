@@ -97,6 +97,7 @@ export class WebGLSyntenyRenderer {
   private pickingW = 0
   private pickingH = 0
   private pickingDirty = true
+  private pickPixel = new Uint8Array(4)
   private lastRenderParams = {
     height: 0,
     adjOff0: 0,
@@ -429,7 +430,6 @@ export class WebGLSyntenyRenderer {
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFbo)
-    const pixel = new Uint8Array(4)
     gl.readPixels(
       px,
       this.pickingH - py - 1,
@@ -437,13 +437,13 @@ export class WebGLSyntenyRenderer {
       1,
       gl.RGBA,
       gl.UNSIGNED_BYTE,
-      pixel,
+      this.pickPixel,
     )
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-    const r = pixel[0]!
-    const g = pixel[1]!
-    const b = pixel[2]!
+    const r = this.pickPixel[0]!
+    const g = this.pickPixel[1]!
+    const b = this.pickPixel[2]!
     const result =
       r === 0 && g === 0 && b === 0 ? -1 : r + g * 256 + b * 65536 - 1
 

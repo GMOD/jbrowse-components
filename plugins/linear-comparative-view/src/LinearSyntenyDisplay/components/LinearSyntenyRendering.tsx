@@ -195,23 +195,6 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     [model],
   )
 
-  const pickFeature = useCallback(
-    (x: number, y: number) => {
-      if (model.gpuRenderer && model.gpuInitialized) {
-        const featureIndex = model.gpuRenderer.pick(x, y)
-        if (
-          featureIndex !== undefined &&
-          featureIndex >= 0 &&
-          featureIndex < model.numFeats
-        ) {
-          return model.getFeature(featureIndex)
-        }
-      }
-      return undefined
-    },
-    [model],
-  )
-
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement>) => {
       if (mouseCurrDownX.current !== undefined) {
@@ -287,32 +270,36 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         if (!coords || !model.gpuRenderer || !model.gpuInitialized) {
           return
         }
-        const feat = pickFeature(coords.x, coords.y)
-        if (feat) {
-          const featureIndex = model.gpuRenderer.pick(coords.x, coords.y)
-          if (featureIndex !== undefined) {
-            model.setClickedFeatureIdx(featureIndex)
-          }
-          const session = getSession(model)
-          if (isSessionModelWithWidgets(session)) {
-            session.showWidget(
-              session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-                view: getContainingView(model),
-                track: getContainingTrack(model),
-                featureData: {
-                  uniqueId: feat.id,
-                  start: feat.start,
-                  end: feat.end,
-                  strand: feat.strand,
-                  refName: feat.refName,
-                  name: feat.name,
-                  assemblyName: feat.assemblyName,
-                  mate: feat.mate,
-                  identity: feat.identity,
-                },
-                level: model.level,
-              }),
-            )
+        const featureIndex = model.gpuRenderer.pick(coords.x, coords.y)
+        if (
+          featureIndex !== undefined &&
+          featureIndex >= 0 &&
+          featureIndex < model.numFeats
+        ) {
+          model.setClickedFeatureIdx(featureIndex)
+          const feat = model.getFeature(featureIndex)
+          if (feat) {
+            const session = getSession(model)
+            if (isSessionModelWithWidgets(session)) {
+              session.showWidget(
+                session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+                  view: getContainingView(model),
+                  track: getContainingTrack(model),
+                  featureData: {
+                    uniqueId: feat.id,
+                    start: feat.start,
+                    end: feat.end,
+                    strand: feat.strand,
+                    refName: feat.refName,
+                    name: feat.name,
+                    assemblyName: feat.assemblyName,
+                    mate: feat.mate,
+                    identity: feat.identity,
+                  },
+                  level: model.level,
+                }),
+              )
+            }
           }
         } else {
           model.setClickedFeatureIdx(-1)
@@ -320,7 +307,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, pickFeature],
+    [model],
   )
 
   const handleContextMenu = useCallback(
@@ -333,17 +320,24 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       if (!coords) {
         return
       }
-      const feat = pickFeature(coords.x, coords.y)
-      if (feat) {
-        setAnchorEl({
-          clientX: evt.clientX,
-          clientY: evt.clientY,
-          feature: feat,
-        })
+      const featureIndex = model.gpuRenderer.pick(coords.x, coords.y)
+      if (
+        featureIndex !== undefined &&
+        featureIndex >= 0 &&
+        featureIndex < model.numFeats
+      ) {
+        const feat = model.getFeature(featureIndex)
+        if (feat) {
+          setAnchorEl({
+            clientX: evt.clientX,
+            clientY: evt.clientY,
+            feature: feat,
+          })
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, pickFeature],
+    [model],
   )
 
   return (
