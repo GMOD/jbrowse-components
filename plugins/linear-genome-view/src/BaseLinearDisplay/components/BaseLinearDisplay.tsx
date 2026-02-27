@@ -49,15 +49,18 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
       ref={ref}
       data-testid={`display-${model.configuration.displayId}`}
       className={classes.display}
-      onContextMenu={event => {
-        event.preventDefault()
-        if (contextCoord) {
-          // There's already a context menu open, so close it
-          setContextCoord(undefined)
-        } else if (ref.current) {
-          setContextCoord([event.clientX, event.clientY])
-        }
-      }}
+      onContextMenu={
+        DisplayMessageComponent
+          ? undefined
+          : event => {
+              event.preventDefault()
+              if (contextCoord) {
+                setContextCoord(undefined)
+              } else if (ref.current) {
+                setContextCoord([event.clientX, event.clientY])
+              }
+            }
+      }
       onMouseMove={
         DisplayMessageComponent
           ? undefined
@@ -96,7 +99,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
           />
         </Suspense>
       ) : null}
-      {contextCoord ? (
+      {contextCoord && !DisplayMessageComponent ? (
         <MenuPage
           contextCoord={contextCoord}
           model={model}

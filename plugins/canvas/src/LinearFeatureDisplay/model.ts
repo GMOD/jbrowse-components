@@ -23,7 +23,10 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, reaction } from 'mobx'
 
@@ -330,6 +333,7 @@ export default function stateModelFactory(
         self.contextMenuInfo = info
       },
 
+
       setRegionTooLarge(tooLarge: boolean, count: number) {
         self.regionTooLarge = tooLarge
         self.featureCount = count
@@ -397,9 +401,8 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      selectFeatureById: flow(function* (
-        featureInfo: FlatbushItem,
-        subfeatureInfo: SubfeatureInfo | undefined,
+      fetchFullFeature: flow(function* (
+        featureId: string,
         regionNumber: number,
       ) {
         const session = getSession(self)
@@ -408,12 +411,8 @@ export default function stateModelFactory(
 
         const region = self.loadedRegions.get(regionNumber)
         if (!region) {
-          return
+          return undefined
         }
-
-        const featureIdToFetch = subfeatureInfo
-          ? subfeatureInfo.parentFeatureId
-          : featureInfo.featureId
 
         try {
           const result = yield rpcManager.call(
@@ -421,31 +420,59 @@ export default function stateModelFactory(
             'GetCanvasFeatureDetails',
             {
               adapterConfig,
-              featureId: featureIdToFetch,
+              featureId,
               region,
             },
           )
 
           if (result.feature && isAlive(self)) {
-            const parentFeature = new SimpleFeature(result.feature)
-
-            if (subfeatureInfo) {
-              const subfeature = findSubfeatureById(
-                parentFeature,
-                subfeatureInfo.featureId,
-              )
-              if (subfeature) {
-                self.selectFeature(subfeature)
-              } else {
-                self.selectFeature(parentFeature)
-              }
-            } else {
-              self.selectFeature(parentFeature)
-            }
+            return new SimpleFeature(result.feature)
           }
         } catch (e) {
           console.error('Failed to fetch feature details:', e)
           session.notifyError(`${e}`, e)
+        }
+        return undefined
+      }),
+    }))
+    .actions(self => ({
+      selectFullFeature: flow(function* (
+        featureId: string,
+        regionNumber: number,
+      ) {
+        const feature: Feature | undefined =
+          yield self.fetchFullFeature(featureId, regionNumber)
+        if (feature) {
+          self.selectFeature(feature)
+        }
+      }),
+
+      selectFeatureById: flow(function* (
+        featureInfo: FlatbushItem,
+        subfeatureInfo: SubfeatureInfo | undefined,
+        regionNumber: number,
+      ) {
+        const featureIdToFetch = subfeatureInfo
+          ? subfeatureInfo.parentFeatureId
+          : featureInfo.featureId
+
+        const parentFeature: Feature | undefined =
+          yield self.fetchFullFeature(featureIdToFetch, regionNumber)
+
+        if (parentFeature) {
+          if (subfeatureInfo) {
+            const subfeature = findSubfeatureById(
+              parentFeature,
+              subfeatureInfo.featureId,
+            )
+            if (subfeature) {
+              self.selectFeature(subfeature)
+            } else {
+              self.selectFeature(parentFeature)
+            }
+          } else {
+            self.selectFeature(parentFeature)
+          }
         }
       }),
     }))
@@ -761,61 +788,93 @@ export default function stateModelFactory(
           return []
         }
         const { feature: feat, regionNumber } = info
+        const region = self.loadedRegions.get(regionNumber)
+        const type = `${feat.get('type')}`.toLowerCase()
+        const geneLike = type.includes('gene') || type.includes('rna') || type.includes('transcript')
         return [
           {
             label: 'Open feature details',
+            icon: MenuOpenIcon,
             onClick: () => {
-              self.selectFeature(feat)
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              self.selectFullFeature(feat.id(), regionNumber)
             },
           },
           {
-            label: 'Collapse introns',
-            icon: CloseFullscreenIcon,
+            label: 'Zoom to feature',
+            icon: CenterFocusStrongIcon,
+            onClick: () => {
+              if (region) {
+                const view = getContainingView(self) as LGV
+                view.navTo({
+                  refName: region.refName,
+                  start: feat.get('start'),
+                  end: feat.get('end'),
+                })
+              }
+            },
+          },
+          {
+            label: 'Copy info to clipboard',
+            icon: ContentCopyIcon,
             onClick: () => {
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
               ;(async () => {
-                try {
-                  const session = getSession(self)
-                  const { rpcManager } = session
-                  const adapterConfig = self.adapterConfigSnapshot
-                  const region = self.loadedRegions.get(regionNumber)
-                  if (!region) {
-                    return
-                  }
-                  const result = await rpcManager.call(
-                    getRpcSessionId(self),
-                    'GetCanvasFeatureDetails',
-                    {
-                      adapterConfig,
-                      featureId: feat.id(),
-                      region,
-                    },
-                  )
-                  if (!result.feature || !isAlive(self)) {
-                    return
-                  }
-                  const fullFeature = new SimpleFeature(result.feature)
-                  const transcripts = getTranscripts(fullFeature)
-                  if (!hasIntrons(transcripts)) {
-                    session.notify('No introns found in this feature', 'info')
-                    return
-                  }
-                  const view = getContainingView(self) as LGV
-                  const { assemblyManager } = session
-                  const assembly = assemblyManager.get(view.assemblyNames[0]!)
-                  if (assembly) {
-                    session.queueDialog(handleClose => [
-                      CollapseIntronsDialog,
-                      { view, transcripts, handleClose, assembly },
-                    ])
-                  }
-                } catch (e) {
-                  console.error(e)
-                  getSession(self).notifyError(`${e}`, e)
+                const fullFeature = await self.fetchFullFeature(
+                  feat.id(),
+                  regionNumber,
+                )
+                if (!fullFeature) {
+                  return
                 }
+                const session = getSession(self)
+                const { uniqueId: _, ...rest } = fullFeature.toJSON()
+                const { default: copy } = await import('copy-to-clipboard')
+                copy(JSON.stringify(rest, null, 4))
+                session.notify('Copied to clipboard', 'success')
               })()
             },
           },
+          ...(geneLike
+            ? [
+                {
+                  label: 'Collapse introns',
+                  icon: CloseFullscreenIcon,
+                  onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    ;(async () => {
+                      const fullFeature = await self.fetchFullFeature(
+                        feat.id(),
+                        regionNumber,
+                      )
+                      if (!fullFeature) {
+                        return
+                      }
+                      const session = getSession(self)
+                      const transcripts = getTranscripts(fullFeature)
+                      if (!hasIntrons(transcripts)) {
+                        session.notify(
+                          'No introns found in this feature',
+                          'info',
+                        )
+                        return
+                      }
+                      const view = getContainingView(self) as LGV
+                      const { assemblyManager } = session
+                      const assembly = assemblyManager.get(
+                        view.assemblyNames[0]!,
+                      )
+                      if (assembly) {
+                        session.queueDialog(handleClose => [
+                          CollapseIntronsDialog,
+                          { view, transcripts, handleClose, assembly },
+                        ])
+                      }
+                    })()
+                  },
+                },
+              ]
+            : []),
         ]
       },
 

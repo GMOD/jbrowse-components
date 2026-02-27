@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ErrorBar } from '@jbrowse/core/ui'
+import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import { getContainingView, useDebounce } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
@@ -56,6 +56,8 @@ interface LinearFeatureDisplayModel {
     regionNumber: number,
   ) => void
   showContextMenuForFeature: (featureInfo: FlatbushItem, regionNumber: number) => void
+  setContextMenuInfo: (info?: unknown) => void
+  contextMenuItems: () => { label: string; onClick: () => void }[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
 }
 
@@ -187,13 +189,21 @@ function performHitDetection(
   return { feature, subfeature }
 }
 
+type HitResult =
+  | { feature: null; subfeature: null }
+  | {
+      feature: FlatbushItem
+      subfeature: SubfeatureInfo | null
+      regionNumber: number
+    }
+
 function performMultiRegionHitDetection(
   cacheMap: Map<number, FlatbushRegionCache>,
   rpcDataMap: Map<number, FeatureDataResult>,
   visibleRegions: VisibleRegion[],
   mouseXPx: number,
   yPos: number,
-) {
+): HitResult {
   for (const vr of visibleRegions) {
     if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
       continue
@@ -218,12 +228,45 @@ function performMultiRegionHitDetection(
     const reversed = vr.start > vr.end
     const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
 
-    const result = performHitDetection(cache, data, bpPerPx, reversed, bpPos, yPos)
+    const { feature, subfeature } = performHitDetection(
+      cache, data, bpPerPx, reversed, bpPos, yPos,
+    )
 
-    return { ...result, regionNumber: vr.regionNumber }
+    if (feature) {
+      return { feature, subfeature, regionNumber: vr.regionNumber }
+    }
+    return { feature: null, subfeature: null }
   }
-  return { feature: null, subfeature: null, regionNumber: undefined }
+  return { feature: null, subfeature: null }
 }
+
+const ContextMenu = observer(function ContextMenu({
+  model,
+  contextCoord,
+  onClose,
+}: {
+  model: LinearFeatureDisplayModel
+  contextCoord: [number, number]
+  onClose: () => void
+}) {
+  const items = model.contextMenuItems()
+  return (
+    <Menu
+      open={items.length > 0}
+      onMenuItemClick={(_, callback) => {
+        callback()
+        onClose()
+      }}
+      onClose={onClose}
+      anchorReference="anchorPosition"
+      anchorPosition={{
+        top: contextCoord[1],
+        left: contextCoord[0],
+      }}
+      menuItems={items}
+    />
+  )
+})
 
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -235,6 +278,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     useState<SubfeatureInfo | null>(null)
   const [scrollY, setScrollY] = useState(0)
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
+  const [contextMenuCoord, setContextMenuCoord] = useState<
+    [number, number] | undefined
+  >()
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
   const uploadedDataRef = useRef(new Map<number, FeatureDataResult>())
 
@@ -452,6 +498,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (contextMenuCoord) {
+        return
+      }
       setClientXY([e.clientX, e.clientY])
       const rpcDataMap = model.rpcDataMap
       if (rpcDataMap.size === 0) {
@@ -463,7 +512,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
       const { mouseX, yPos } = getMouseInfo(e)
 
-      const { feature, subfeature } = performMultiRegionHitDetection(
+      const result = performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         rpcDataMap,
         view.visibleRegions,
@@ -471,18 +520,18 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         yPos,
       )
 
-      if (subfeature) {
-        model.setMouseoverExtraInformation(
-          subfeature.tooltip ?? subfeature.type,
-        )
-        setHoveredFeature(feature)
-        setHoveredSubfeature(subfeature)
-        model.setFeatureIdUnderMouse(feature?.featureId ?? null)
-      } else if (feature) {
-        model.setMouseoverExtraInformation(feature.tooltip)
-        setHoveredFeature(feature)
-        setHoveredSubfeature(null)
-        model.setFeatureIdUnderMouse(feature.featureId)
+      if (result.feature) {
+        if (result.subfeature) {
+          model.setMouseoverExtraInformation(
+            result.subfeature.tooltip ?? result.subfeature.type,
+          )
+          setHoveredSubfeature(result.subfeature)
+        } else {
+          model.setMouseoverExtraInformation(result.feature.tooltip)
+          setHoveredSubfeature(null)
+        }
+        setHoveredFeature(result.feature)
+        model.setFeatureIdUnderMouse(result.feature.featureId)
       } else {
         model.setMouseoverExtraInformation(undefined)
         setHoveredFeature(null)
@@ -492,6 +541,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     const handleMouseLeave = () => {
+      if (contextMenuCoord) {
+        return
+      }
       model.setMouseoverExtraInformation(undefined)
       setHoveredFeature(null)
       setHoveredSubfeature(null)
@@ -505,17 +557,20 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
       const { mouseX, yPos } = getMouseInfo(e)
 
-      const { feature, subfeature, regionNumber } =
-        performMultiRegionHitDetection(
-          flatbushCacheMapRef.current,
-          model.rpcDataMap,
-          view.visibleRegions,
-          mouseX,
-          yPos,
-        )
+      const result = performMultiRegionHitDetection(
+        flatbushCacheMapRef.current,
+        model.rpcDataMap,
+        view.visibleRegions,
+        mouseX,
+        yPos,
+      )
 
-      if (feature && regionNumber !== undefined) {
-        model.selectFeatureById(feature, subfeature ?? undefined, regionNumber)
+      if (result.feature) {
+        model.selectFeatureById(
+          result.feature,
+          result.subfeature ?? undefined,
+          result.regionNumber,
+        )
       }
     }
 
@@ -527,7 +582,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
       const { mouseX, yPos } = getMouseInfo(e)
 
-      const { feature, regionNumber } = performMultiRegionHitDetection(
+      const result = performMultiRegionHitDetection(
         flatbushCacheMapRef.current,
         model.rpcDataMap,
         view.visibleRegions,
@@ -535,8 +590,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         yPos,
       )
 
-      if (feature && regionNumber !== undefined) {
-        model.showContextMenuForFeature(feature, regionNumber)
+      if (result.feature) {
+        model.showContextMenuForFeature(result.feature, result.regionNumber)
+        model.setMouseoverExtraInformation(undefined)
+        setContextMenuCoord([e.clientX, e.clientY])
       }
     }
 
@@ -551,7 +608,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       canvas.removeEventListener('contextmenu', handleContextMenu)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model])
+  }, [model, contextMenuCoord])
 
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
@@ -972,6 +1029,20 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         info={model.mouseoverExtraInformation}
         clientMouseCoord={clientXY}
       />
+      {contextMenuCoord ? (
+        <ContextMenu
+          model={model}
+          contextCoord={contextMenuCoord}
+          onClose={() => {
+            setContextMenuCoord(undefined)
+            model.setContextMenuInfo(undefined)
+            setHoveredFeature(null)
+            setHoveredSubfeature(null)
+            model.setFeatureIdUnderMouse(null)
+            model.setMouseoverExtraInformation(undefined)
+          }}
+        />
+      ) : null}
     </div>
   )
 })
