@@ -6,6 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import {
   SimpleFeature,
   getContainingTrack,
@@ -55,7 +56,10 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-function computeAndAssignLayout(rpcDataMap: Map<number, FeatureDataResult>) {
+function computeAndAssignLayout(
+  rpcDataMap: Map<number, FeatureDataResult>,
+  bpPerPx: number,
+) {
   const entries = [...rpcDataMap.entries()].filter(
     ([, d]) => d.flatbushItems.length > 0,
   )
@@ -67,53 +71,33 @@ function computeAndAssignLayout(rpcDataMap: Map<number, FeatureDataResult>) {
   // bottomPx equals layoutHeight since topPx is always 0 from the worker.
   const allFeatures = new Map<
     string,
-    { start: number; end: number; height: number }
+    { startBp: number; layoutEndBp: number; height: number }
   >()
   for (const [, data] of entries) {
     for (const item of data.flatbushItems) {
       if (!allFeatures.has(item.featureId)) {
         allFeatures.set(item.featureId, {
-          start: item.startBp,
-          end: item.endBp,
+          startBp: item.startBp,
+          layoutEndBp: item.layoutEndBp,
           height: item.bottomPx,
         })
       }
     }
   }
 
-  // Sort by start position and run greedy row-packing layout.
-  // Each "row" tracks the rightmost end coordinate and the row's top y / height.
-  // A feature fits in a row if its start >= row.end. This is O(n * rows)
-  // instead of O(n²).
-  const sorted = [...allFeatures.entries()]
-    .map(([id, { start, end, height }]) => ({ id, start, end, height }))
-    .sort((a, b) => a.start - b.start)
-
+  // Use GranularRectLayout for efficient 2D packing with label-width awareness.
+  // Convert bp coordinates to pixel coordinates for the layout.
+  const layout = new GranularRectLayout({ displayMode: 'normal' })
   const layoutMap = new Map<string, number>()
-  const rows: { end: number; y: number; height: number }[] = []
 
-  for (const f of sorted) {
-    let placed = false
-    for (const row of rows) {
-      if (row.end <= f.start) {
-        layoutMap.set(f.id, row.y)
-        row.end = f.end
-        row.height = Math.max(row.height, f.height)
-        placed = true
-        break
-      }
-    }
-    if (!placed) {
-      let nextY = 0
-      for (const row of rows) {
-        const bottom = row.y + row.height
-        if (bottom > nextY) {
-          nextY = bottom
-        }
-      }
-      layoutMap.set(f.id, nextY)
-      rows.push({ end: f.end, y: nextY, height: f.height })
-    }
+  const sorted = [...allFeatures.entries()]
+    .sort(([, a], [, b]) => a.startBp - b.startBp)
+
+  for (const [id, { startBp, layoutEndBp, height }] of sorted) {
+    const leftPx = startBp / bpPerPx
+    const rightPx = layoutEndBp / bpPerPx
+    const top = layout.addRect(id, leftPx, rightPx, height)
+    layoutMap.set(id, top ?? 0)
   }
 
   for (const [, data] of entries) {
@@ -668,7 +652,10 @@ export default function stateModelFactory(
         return { tooLarge: false, regionNumber, data: result, region, bpPerPx }
       }
 
-      function applyFetchResults(results: (FetchResult | undefined)[]) {
+      function applyFetchResults(
+        results: (FetchResult | undefined)[],
+        bpPerPx: number,
+      ) {
         let totalTooLargeCount = 0
         let anyTooLarge = false
         for (const r of results) {
@@ -689,7 +676,7 @@ export default function stateModelFactory(
               dataMap.set(r.regionNumber, r.data)
             }
           }
-          computeAndAssignLayout(dataMap)
+          computeAndAssignLayout(dataMap, bpPerPx)
           for (const r of results) {
             if (r && !r.tooLarge) {
               self.setLoadedRegionForRegion(r.regionNumber, r.region)
@@ -722,7 +709,7 @@ export default function stateModelFactory(
             self.fetchGeneration === generation &&
             self.renderingStopToken === stopToken
           ) {
-            applyFetchResults(results)
+            applyFetchResults(results, bpPerPx)
           }
         } catch (e) {
           if (!isAbortException(e)) {

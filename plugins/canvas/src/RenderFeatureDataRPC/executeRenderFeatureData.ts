@@ -259,6 +259,7 @@ function collectRenderData(
       type: featureType,
       startBp: featureStart,
       endBp: featureEnd,
+      layoutEndBp: featureEnd,
       topPx: 0,
       bottomPx: layoutHeight,
       tooltip,
@@ -804,6 +805,29 @@ export async function executeRenderFeatureData({
   )
 
   checkStopToken2(stopTokenCheck)
+
+  // Extend layoutEndBp for each flatbushItem to cover its floating labels.
+  // Labels can be wider than the feature's genomic extent, so the layout needs
+  // to account for this to prevent label collisions on the same row.
+  const flatbushItemByFeatureId = new Map<string, (typeof flatbushItems)[0]>()
+  for (const item of flatbushItems) {
+    flatbushItemByFeatureId.set(item.featureId, item)
+  }
+  for (const labelData of Object.values(floatingLabelsData)) {
+    const parentId = labelData.floatingLabels[0]?.parentFeatureId
+    const item = flatbushItemByFeatureId.get(labelData.featureId)
+      ?? (parentId ? flatbushItemByFeatureId.get(parentId) : undefined)
+    if (item) {
+      const labelStartBp = labelData.minX + regionStart
+      for (const label of labelData.floatingLabels) {
+        const labelEndBp = labelStartBp + label.textWidth * bpPerPx
+        if (labelEndBp > item.layoutEndBp) {
+          console.log('[layoutEndBp] extending', item.name, 'from', item.endBp, 'to', labelEndBp, '(label:', label.text, 'width:', label.textWidth, 'bpPerPx:', bpPerPx, ')')
+          item.layoutEndBp = labelEndBp
+        }
+      }
+    }
+  }
 
   // Filter out elements completely outside the region before converting
   // to typed arrays. This prevents slivers in collapsed intron views where

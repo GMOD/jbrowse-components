@@ -103,6 +103,7 @@ export interface FlatbushItem {
   type: string
   startBp: number
   endBp: number
+  layoutEndBp: number
   topPx: number
   bottomPx: number
   tooltip: string
