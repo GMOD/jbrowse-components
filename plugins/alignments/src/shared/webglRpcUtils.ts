@@ -38,8 +38,8 @@ export function pairOrientationToNum(pairOrientation: string | undefined) {
   // For 'fr' orientation type (standard Illumina):
   // F1R2, F2R1 -> LR (normal)
   // R1F2, R2F1 -> RL
-  // F1F2, F2F1 -> RR (actually FF)
-  // R1R2, R2R1 -> LL (actually RR)
+  // F1F2, F2F1 -> LL (actually FF orientation)
+  // R1R2, R2R1 -> RR (actually RR orientation)
   switch (pairOrientation) {
     case 'F1R2':
     case 'F2R1':
@@ -49,10 +49,10 @@ export function pairOrientationToNum(pairOrientation: string | undefined) {
       return 2 // RL
     case 'F1F2':
     case 'F2F1':
-      return 3 // RR (FF orientation)
+      return 4 // LL (FF orientation)
     case 'R1R2':
     case 'R2R1':
-      return 4 // LL (RR orientation)
+      return 3 // RR (RR orientation)
     default:
       return 0 // unknown
   }

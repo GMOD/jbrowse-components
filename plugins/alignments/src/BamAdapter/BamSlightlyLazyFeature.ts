@@ -114,6 +114,26 @@ export default class BamSlightlyLazyFeature
     return 0
   }
 
+  get pair_orientation() {
+    if (!this.isPaired()) {
+      return undefined
+    }
+    const isRead1 = !!(this.flags & 0x40)
+    const isRead2 = !!(this.flags & 0x80)
+    const isSelfRev = !!(this.flags & 0x10)
+    const isMateRev = !!(this.flags & 0x20)
+    const selfStrand = isSelfRev ? 'R' : 'F'
+    const mateStrand = isMateRev ? 'R' : 'F'
+    const selfNum = isRead1 ? '1' : '2'
+    const mateNum = isRead1 ? '2' : '1'
+
+    if (this.next_refid !== this.ref_id || this.start <= this.next_pos) {
+      return selfStrand + selfNum + mateStrand + mateNum
+    } else {
+      return mateStrand + mateNum + selfStrand + selfNum
+    }
+  }
+
   get refName() {
     return this.adapter.refIdToName(this.ref_id)!
   }
