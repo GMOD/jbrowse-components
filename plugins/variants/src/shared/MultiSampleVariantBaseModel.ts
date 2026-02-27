@@ -25,6 +25,7 @@ import {
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
+import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ascending } from '@mui/x-charts-vendor/d3-array'
@@ -46,11 +47,16 @@ import type {
   HoveredTreeNode,
 } from './components/types.ts'
 import type { SampleInfo, Source } from './types.ts'
+import type { FeatureGenotypeInfo } from '../MultiVariantDisplay/components/computeVariantCells.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
@@ -64,6 +70,29 @@ const ClusterDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
+
+function encodeGenotype(gt: string, splitter: RegExp) {
+  const alleles = gt.split(splitter)
+  let nonRefCount = 0
+  let uncalledCount = 0
+  for (const allele of alleles) {
+    if (allele === '.') {
+      uncalledCount++
+    } else if (allele !== '0') {
+      nonRefCount++
+    }
+  }
+  if (uncalledCount === alleles.length) {
+    return -1
+  }
+  if (nonRefCount === 0) {
+    return 0
+  }
+  if (nonRefCount === alleles.length) {
+    return 2
+  }
+  return 1
+}
 
 /**
  * #stateModel MultiSampleVariantBaseModel
@@ -201,6 +230,10 @@ export default function MultiSampleVariantBaseModelF(
       /**
        * #volatile
        */
+      contextMenuFeature: undefined as Feature | undefined,
+      /**
+       * #volatile
+       */
       sourcesVolatile: undefined as Source[] | undefined,
       /**
        * #volatile
@@ -252,6 +285,9 @@ export default function MultiSampleVariantBaseModelF(
       },
       setDisplayError(e: unknown) {
         self.displayError = e
+      },
+      setContextMenuFeature(feature?: Feature) {
+        self.contextMenuFeature = feature
       },
       retryLoadingData() {
         self.displayError = undefined
@@ -709,6 +745,27 @@ export default function MultiSampleVariantBaseModelF(
         },
       }
     })
+    .actions(self => ({
+      sortByGenotype(featureId: string) {
+        const data = self.cellData as
+          | { featureGenotypeMap: Record<string, FeatureGenotypeInfo> }
+          | undefined
+        if (!data?.featureGenotypeMap || !self.sourcesWithoutLayout) {
+          return
+        }
+        const info = data.featureGenotypeMap[featureId]
+        if (!info) {
+          return
+        }
+        const splitter = /[/|]/
+        const sorted = [...self.sourcesWithoutLayout].sort((a, b) => {
+          const ga = info.genotypes[a.name] ?? './.'
+          const gb = info.genotypes[b.name] ?? './.'
+          return encodeGenotype(gb, splitter) - encodeGenotype(ga, splitter)
+        })
+        self.setLayout(sorted, true)
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -859,6 +916,40 @@ export default function MultiSampleVariantBaseModelF(
               },
             },
             {
+              label: 'Sort by genotype',
+              icon: SortIcon,
+              onClick: () => {
+                const view = getContainingView(self) as LinearGenomeViewModel
+                const centerInfo = view.centerLineInfo
+                if (!centerInfo) {
+                  return
+                }
+                const features = self.featuresVolatile
+                if (!features?.length) {
+                  return
+                }
+                const { coord, refName } = centerInfo
+                let bestFeature = features[0]!
+                let bestDist = Infinity
+                for (const f of features) {
+                  if (f.get('refName') === refName) {
+                    const start = f.get('start') as number
+                    const end = f.get('end') as number
+                    const mid = (start + end) / 2
+                    const dist = Math.abs(mid - coord)
+                    if (dist < bestDist) {
+                      bestDist = dist
+                      bestFeature = f
+                      if (dist === 0) {
+                        break
+                      }
+                    }
+                  }
+                }
+                self.sortByGenotype(bestFeature.id())
+              },
+            },
+            {
               label: 'Edit group colors/arrangement...',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
@@ -868,6 +959,43 @@ export default function MultiSampleVariantBaseModelF(
                     handleClose,
                   },
                 ])
+              },
+            },
+          ]
+        },
+        contextMenuItems(): MenuItem[] {
+          const feat = self.contextMenuFeature
+          if (!feat) {
+            return []
+          }
+          return [
+            {
+              label: 'Open feature details',
+              onClick: () => {
+                self.selectFeature(feat)
+              },
+            },
+            {
+              label: 'Copy to clipboard',
+              onClick: () => {
+                const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
+                const id = feat.get('name') || feat.id()
+                import('copy-to-clipboard')
+                  .then(({ default: copy }) => {
+                    copy(`${id} ${loc}`)
+                    getSession(self).notify('Copied to clipboard', 'info')
+                  })
+                  .catch((e: unknown) => {
+                    console.error(e)
+                    getSession(self).notifyError(`${e}`, e)
+                  })
+              },
+            },
+            {
+              label: 'Sort by genotype',
+              icon: SortIcon,
+              onClick: () => {
+                self.sortByGenotype(feat.id())
               },
             },
           ]

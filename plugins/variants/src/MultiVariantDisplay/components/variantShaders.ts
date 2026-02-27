@@ -65,6 +65,9 @@ struct Uniforms {
 struct VertexOutput {
   @builtin(position) position: vec4f,
   @location(0) color: vec4f,
+  @location(1) local_px: vec2f,
+  @location(2) @interpolate(flat) size_px: vec2f,
+  @location(3) @interpolate(flat) shape_type_f: u32,
 }
 
 @vertex
@@ -95,50 +98,71 @@ fn vs_main(
   if y_bot - y_top < 1.0 {
     y_bot = y_top + 1.0;
   }
-  let y_mid = (y_top + y_bot) * 0.5;
   let px_to_clip_y = 2.0 / u.canvas_height;
   let cy_top = 1.0 - y_top * px_to_clip_y;
   let cy_bot = 1.0 - y_bot * px_to_clip_y;
-  let cy_mid = 1.0 - y_mid * px_to_clip_y;
-  let x_mid = (cx1 + cx2) * 0.5;
 
-  var sx: f32;
-  var sy: f32;
+  // SDF anti-aliasing: always emit a bounding-box quad, use fragment shader SDF for triangles
+  let lx = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
+  let ly = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
 
-  if inst.shape_type == 0u {
-    let lx = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
-    let ly = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
-    sx = mix(cx1, cx2, lx);
-    sy = mix(cy_bot, cy_top, ly);
-  } else if inst.shape_type == 1u {
-    switch vid {
-      case 0u: { sx = cx1; sy = cy_top; }
-      case 1u: { sx = cx1; sy = cy_bot; }
-      default: { sx = cx2; sy = cy_mid; }
-    }
-  } else if inst.shape_type == 2u {
-    switch vid {
-      case 0u: { sx = cx2; sy = cy_top; }
-      case 1u: { sx = cx2; sy = cy_bot; }
-      default: { sx = cx1; sy = cy_mid; }
-    }
-  } else {
+  var x_left = cx1;
+  var x_right = cx2;
+  if inst.shape_type == 3u {
     let width_extend = 6.0 / u.canvas_width;
-    switch vid {
-      case 0u: { sx = cx1 - width_extend; sy = cy_top; }
-      case 1u: { sx = cx2 + width_extend; sy = cy_top; }
-      default: { sx = x_mid; sy = cy_bot; }
-    }
+    x_left -= width_extend;
+    x_right += width_extend;
   }
 
+  let w_px = (x_right - x_left) * u.canvas_width * 0.5;
+  let h_px = (cy_top - cy_bot) * u.canvas_height * 0.5;
+
   var out: VertexOutput;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(mix(x_left, x_right, lx), mix(cy_bot, cy_top, ly), 0.0, 1.0);
   out.color = inst.color;
+  out.local_px = vec2f(lx * w_px, (1.0 - ly) * h_px);
+  out.size_px = vec2f(w_px, h_px);
+  out.shape_type_f = inst.shape_type;
   return out;
+}
+
+fn tri_sdf_right(p: vec2f, w: f32, h: f32) -> f32 {
+  let d_left = p.x;
+  let hyp = sqrt(h * h * 0.25 + w * w);
+  let d_top = (-0.5 * h * p.x + w * p.y) / hyp;
+  let d_bot = (-0.5 * h * p.x - w * (p.y - h)) / hyp;
+  return min(min(d_left, d_top), d_bot);
+}
+
+fn tri_sdf_down(p: vec2f, w: f32, h: f32) -> f32 {
+  let d_top = p.y;
+  let hyp = sqrt(h * h + w * w * 0.25);
+  let d_left = (h * p.x - 0.5 * w * p.y) / hyp;
+  let d_right = (w * h - h * p.x - 0.5 * w * p.y) / hyp;
+  return min(min(d_top, d_left), d_right);
 }
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-  return vec4f(in.color.rgb * in.color.a, in.color.a);
+  var alpha = in.color.a;
+
+  if in.shape_type_f != 0u {
+    var d: f32;
+    let w = in.size_px.x;
+    let h = in.size_px.y;
+
+    if in.shape_type_f == 1u {
+      d = tri_sdf_right(in.local_px, w, h);
+    } else if in.shape_type_f == 2u {
+      d = tri_sdf_right(vec2f(w - in.local_px.x, in.local_px.y), w, h);
+    } else {
+      d = tri_sdf_down(in.local_px, w, h);
+    }
+
+    alpha *= smoothstep(-0.5, 0.5, d);
+    alpha *= smoothstep(0.0, 3.0, min(w, h));
+  }
+
+  return vec4f(in.color.rgb * alpha, alpha);
 }
 `

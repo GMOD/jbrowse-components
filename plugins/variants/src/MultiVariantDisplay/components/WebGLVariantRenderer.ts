@@ -57,6 +57,9 @@ uniform float u_scroll_top;
 uniform float u_zero;
 
 out vec4 v_color;
+out vec2 v_local_px;
+flat out vec2 v_size_px;
+flat out uint v_shape_type_f;
 
 // SYNC: hp_split_uint must match variantShaders.ts (WGSL)
 vec2 hp_split_uint(uint value) {
@@ -99,56 +102,84 @@ void main() {
   if (y_bot - y_top < 1.0) {
     y_bot = y_top + 1.0;
   }
-  float y_mid = (y_top + y_bot) * 0.5;
   float px_to_clip_y = 2.0 / u_canvas_height;
   float cy_top = 1.0 - y_top * px_to_clip_y;
   float cy_bot = 1.0 - y_bot * px_to_clip_y;
-  float cy_mid = 1.0 - y_mid * px_to_clip_y;
-  float x_mid = (cx1 + cx2) * 0.5;
 
-  float sx;
-  float sy;
+  // SDF anti-aliasing: always emit a bounding-box quad, use fragment shader SDF for triangles
+  float lx = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
+  float ly = (vid == 0u || vid == 1u || vid == 4u) ? 0.0 : 1.0;
 
-  if (a_shape_type == 0u) {
-    float lx = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
-    float ly = (vid == 0u || vid == 1u || vid == 4u) ? 0.0 : 1.0;
-    sx = mix(cx1, cx2, lx);
-    sy = mix(cy_bot, cy_top, ly);
-  } else if (a_shape_type == 1u) {
-    switch (vid) {
-      case 0u: sx = cx1; sy = cy_top; break;
-      case 1u: sx = cx1; sy = cy_bot; break;
-      default: sx = cx2; sy = cy_mid; break;
-    }
-  } else if (a_shape_type == 2u) {
-    switch (vid) {
-      case 0u: sx = cx2; sy = cy_top; break;
-      case 1u: sx = cx2; sy = cy_bot; break;
-      default: sx = cx1; sy = cy_mid; break;
-    }
-  } else {
+  float x_left = cx1;
+  float x_right = cx2;
+  if (a_shape_type == 3u) {
     float width_extend = 6.0 / u_canvas_width;
-    switch (vid) {
-      case 0u: sx = cx1 - width_extend; sy = cy_top; break;
-      case 1u: sx = cx2 + width_extend; sy = cy_top; break;
-      default: sx = x_mid; sy = cy_bot; break;
-    }
+    x_left -= width_extend;
+    x_right += width_extend;
   }
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(mix(x_left, x_right, lx), mix(cy_bot, cy_top, ly), 0.0, 1.0);
+
+  float w_px = (x_right - x_left) * u_canvas_width * 0.5;
+  float h_px = (cy_top - cy_bot) * u_canvas_height * 0.5;
+  v_local_px = vec2(lx * w_px, (1.0 - ly) * h_px);
+  v_size_px = vec2(w_px, h_px);
+  v_shape_type_f = a_shape_type;
   v_color = a_color;
 }
 `
 
 // SYNC: fs_main must match variantShaders.ts (WGSL) — premultiplied alpha output
+// SDF anti-aliasing for triangle shapes: renders all shapes as bounding-box quads,
+// then uses signed distance fields to produce smooth edges.
 const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
 in vec4 v_color;
+in vec2 v_local_px;
+flat in vec2 v_size_px;
+flat in uint v_shape_type_f;
 out vec4 fragColor;
 
+// SDF for right-pointing triangle: vertices (0,0), (0,h), (w,h/2)
+float tri_sdf_right(vec2 p, float w, float h) {
+  float d_left = p.x;
+  float hyp = sqrt(h * h * 0.25 + w * w);
+  float d_top = (-0.5 * h * p.x + w * p.y) / hyp;
+  float d_bot = (-0.5 * h * p.x - w * (p.y - h)) / hyp;
+  return min(min(d_left, d_top), d_bot);
+}
+
+// SDF for down-pointing triangle: vertices (0,0), (w,0), (w/2,h)
+float tri_sdf_down(vec2 p, float w, float h) {
+  float d_top = p.y;
+  float hyp = sqrt(h * h + w * w * 0.25);
+  float d_left = (h * p.x - 0.5 * w * p.y) / hyp;
+  float d_right = (w * h - h * p.x - 0.5 * w * p.y) / hyp;
+  return min(min(d_top, d_left), d_right);
+}
+
 void main() {
-  fragColor = vec4(v_color.rgb * v_color.a, v_color.a);
+  float alpha = v_color.a;
+
+  if (v_shape_type_f != 0u) {
+    float d;
+    float w = v_size_px.x;
+    float h = v_size_px.y;
+
+    if (v_shape_type_f == 1u) {
+      d = tri_sdf_right(v_local_px, w, h);
+    } else if (v_shape_type_f == 2u) {
+      d = tri_sdf_right(vec2(w - v_local_px.x, v_local_px.y), w, h);
+    } else {
+      d = tri_sdf_down(v_local_px, w, h);
+    }
+
+    alpha *= smoothstep(-0.5, 0.5, d);
+    alpha *= smoothstep(0.0, 3.0, min(w, h));
+  }
+
+  fragColor = vec4(v_color.rgb * alpha, alpha);
 }
 `
 
