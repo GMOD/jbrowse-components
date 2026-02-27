@@ -313,9 +313,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           GPU initialization failed: {gpuError}
         </div>
       ) : null}
-      {tooltipText ? (
-        <SyntenyTooltip title={tooltipText} />
-      ) : null}
+      {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {anchorEl ? (
         <SyntenyContextMenu
           model={model}

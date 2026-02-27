@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -45,6 +43,18 @@ export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
   return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
+// pre-compute getBoundingClientRect().top for each level to avoid layout
+// thrashing when called repeatedly in a loop
+export function getTrackHeightsCache(
+  views: LGV[],
+  trackId: string,
+  getYPosOverride?: (trackId: string, level: number) => number,
+) {
+  return views.map((_, level) =>
+    heightFromSpecificLevel(views, trackId, level, getYPosOverride),
+  )
+}
+
 // gets the y-position of a layout record in a track
 export function yPos(
   trackId: string,
@@ -53,23 +63,18 @@ export function yPos(
   tracks: Track[],
   c: LayoutRecord,
   getYPosOverride?: (trackId: string, level: number) => number,
+  cachedHeights?: number[],
 ) {
   const display = tracks[level]!.displays[0]!
   const max = display.height
   const offset = display.coverageDisplayHeight ?? 0
   const scrollTop = getYPosOverride ? 0 : display.scrollTop
+  const height = cachedHeights
+    ? cachedHeights[level]!
+    : heightFromSpecificLevel(views, trackId, level, getYPosOverride)
   return (
-    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
-    heightFromSpecificLevel(views, trackId, level, getYPosOverride)
+    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) + height
   )
-}
-
-// forces a re-render on the next frame when the variable changes
-export const useNextFrame = (variable: unknown) => {
-  const [, setNextFrameState] = useState<unknown>()
-  useEffect(() => {
-    setNextFrameState(variable)
-  }, [variable])
 }
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
@@ -99,13 +104,12 @@ export async function getBlockFeatures(
   const sessionId = getRpcSessionId(track)
 
   return Promise.all(
-    views.flatMap(
-      async view =>
-        rpcManager.call(sessionId, 'BreakpointGetFeatures', {
-          adapterConfig: getConf(track, ['adapter']),
-          sessionId,
-          regions: view.staticBlocks.contentBlocks,
-        }),
+    views.flatMap(async view =>
+      rpcManager.call(sessionId, 'BreakpointGetFeatures', {
+        adapterConfig: getConf(track, ['adapter']),
+        sessionId,
+        regions: view.staticBlocks.contentBlocks,
+      }),
     ),
   )
 }

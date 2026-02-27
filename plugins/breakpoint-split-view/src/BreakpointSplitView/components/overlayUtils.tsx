@@ -9,11 +9,8 @@ export interface OverlayProps {
   trackId: string
   parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
-}
-
-export function getYOffset(parentRef: React.RefObject<SVGSVGElement | null>) {
-  // Reading ref during render is intentional for synchronous positioning
-  return parentRef.current?.getBoundingClientRect().top ?? 0
+  cachedTrackTops?: number[]
+  cachedYOffset?: number
 }
 
 export function createMouseHandlers(

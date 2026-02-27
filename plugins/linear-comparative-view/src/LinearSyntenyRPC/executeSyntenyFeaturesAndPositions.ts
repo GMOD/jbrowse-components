@@ -10,11 +10,11 @@ import { toArray } from 'rxjs/operators'
 
 import { executeSyntenyInstanceData } from './executeSyntenyInstanceData.ts'
 
+import type { SyntenyInstanceData } from './executeSyntenyInstanceData.ts'
+import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
-import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
-import type { SyntenyInstanceData } from './executeSyntenyInstanceData.ts'
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyInstanceData

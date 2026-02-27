@@ -580,5 +580,4 @@ export class SyntenyRenderer {
     pass.draw(vertexCount, drawInstanceCount ?? this.instanceCount)
     pass.end()
   }
-
 }

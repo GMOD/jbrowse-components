@@ -40,7 +40,7 @@ function linkProgram(
 ) {
   const vs = compileShader(gl, gl.VERTEX_SHADER, vsSource)
   const fs = compileShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()!
+  const program = gl.createProgram()
   gl.attachShader(program, vs)
   gl.attachShader(program, fs)
   gl.linkProgram(program)
@@ -164,7 +164,7 @@ export class WebGLSyntenyRenderer {
 
   private createInstancedVAO(program: WebGLProgram) {
     const gl = this.gl
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
     for (let i = 0; i < INST_ATTRIB_NAMES.length; i++) {
       const loc = gl.getAttribLocation(program, INST_ATTRIB_NAMES[i]!)
@@ -508,5 +508,4 @@ export class WebGLSyntenyRenderer {
     gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.ubo)
     gl.bindBufferBase(gl.UNIFORM_BUFFER, 1, this.ubo)
   }
-
 }

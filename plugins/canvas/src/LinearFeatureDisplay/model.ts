@@ -429,7 +429,7 @@ export default function stateModelFactory(
           : featureInfo.featureId
 
         try {
-          const result = (yield rpcManager.call(
+          const result = yield rpcManager.call(
             getRpcSessionId(self),
             'GetCanvasFeatureDetails',
             {
@@ -437,7 +437,7 @@ export default function stateModelFactory(
               featureId: featureIdToFetch,
               region,
             },
-          ))
+          )
 
           if (result.feature && isAlive(self)) {
             const parentFeature = new SimpleFeature(result.feature)

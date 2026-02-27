@@ -1,8 +1,8 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
-import type { Region } from '@jbrowse/core/util'
 import type { HicDataResult } from './types.ts'
+import type { Region } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {

@@ -88,7 +88,20 @@ export default class RpcServer {
     workerSelf.postMessage({ uid, error, libRpc: true })
   }
 
+  private _emitCount = 0
+  private _emitTimer: ReturnType<typeof setTimeout> | undefined
+
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {
+    this._emitCount++
+    if (!this._emitTimer) {
+      this._emitTimer = setTimeout(() => {
+        console.log(
+          `[RpcServer] emitted ${this._emitCount} status messages in last batch`,
+        )
+        this._emitCount = 0
+        this._emitTimer = undefined
+      }, 1000)
+    }
     workerSelf.postMessage(
       { eventName, data, libRpc: true },
       transferables ?? ([] as Transferable[]),

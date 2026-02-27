@@ -9,14 +9,11 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
-import type { SyntenyRpcResult } from '../LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type LSV = LinearSyntenyViewModel
-
-export type { SyntenyRpcResult }
 
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   let lastInstanceData: SyntenyInstanceData | undefined
@@ -212,3 +209,5 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     }
   })
 }
+
+export { type SyntenyRpcResult } from '../LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'

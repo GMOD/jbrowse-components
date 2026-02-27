@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -6,6 +6,12 @@ import { observer } from 'mobx-react'
 import Overlay from './Overlay.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
+
+interface TrackPositionCache {
+  svgTop: number
+  // trackId -> [level0Top, level1Top, ...]  relative to svgTop
+  tracks: Record<string, number[]>
+}
 
 const useStyles = makeStyles()({
   overlay: {
@@ -34,7 +40,7 @@ const BreakpointSplitViewOverlay = observer(
   }) {
     const { classes } = useStyles()
     const { matchedTracks, views } = model
-    const ref = useRef(null)
+    const ref = useRef<SVGSVGElement>(null)
     const divRef = useRef<HTMLDivElement>(null)
     const zoomDelta = useRef(0)
     const zoomDivisor = useRef(0)
@@ -42,6 +48,53 @@ const BreakpointSplitViewOverlay = observer(
     const lastViewIndex = useRef(0)
     const rafId = useRef<number | null>(null)
     const lastRafTime = useRef<number | null>(null)
+    const [positionCache, setPositionCache] = useState<TrackPositionCache>({
+      svgTop: 0,
+      tracks: {},
+    })
+
+    const measurePositions = useCallback(() => {
+      const svgEl = ref.current
+      if (!svgEl) {
+        return
+      }
+      const svgTop = svgEl.getBoundingClientRect().top
+      const tracks: Record<string, number[]> = {}
+      for (const track of matchedTracks) {
+        const trackId = track.configuration.trackId
+        const tops: number[] = []
+        for (let level = 0; level < views.length; level++) {
+          const trackRef = views[level]?.trackRefs[trackId]
+          tops.push(trackRef?.getBoundingClientRect().top ?? 0)
+        }
+        tracks[trackId] = tops
+      }
+      setPositionCache({ svgTop, tracks })
+    }, [matchedTracks, views])
+
+    useEffect(() => {
+      const observer = new ResizeObserver(() => {
+        measurePositions()
+      })
+
+      for (const view of views) {
+        for (const track of matchedTracks) {
+          const trackRef = view.trackRefs[track.configuration.trackId]
+          if (trackRef) {
+            observer.observe(trackRef)
+          }
+        }
+      }
+      if (ref.current) {
+        observer.observe(ref.current)
+      }
+
+      measurePositions()
+
+      return () => {
+        observer.disconnect()
+      }
+    }, [views, matchedTracks, measurePositions])
 
     useEffect(() => {
       const div = divRef.current
@@ -176,22 +229,19 @@ const BreakpointSplitViewOverlay = observer(
     return (
       <div ref={divRef} className={classes.overlay}>
         <svg ref={ref} className={classes.base}>
-          {matchedTracks.map(track => (
-            // note: we must pass ref down, because:
-            //
-            // 1. the child component needs to getBoundingClientRect on the this
-            // components SVG, and...
-            //
-            // 2. we cannot rely on using getBoundingClientRect in this component
-            // to make sure this works because if it gets shifted around by
-            // another element, this will not re-render necessarily
-            <Overlay
-              parentRef={ref}
-              key={track.configuration.trackId}
-              model={model}
-              trackId={track.configuration.trackId}
-            />
-          ))}
+          {matchedTracks.map(track => {
+            const trackId = track.configuration.trackId
+            return (
+              <Overlay
+                parentRef={ref}
+                key={trackId}
+                model={model}
+                trackId={trackId}
+                cachedTrackTops={positionCache.tracks[trackId]}
+                cachedYOffset={positionCache.svgTop}
+              />
+            )
+          })}
         </svg>
       </div>
     )

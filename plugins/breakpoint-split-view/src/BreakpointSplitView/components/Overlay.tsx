@@ -21,6 +21,8 @@ const Overlay = observer(function Overlay(props: {
   model: BreakpointViewModel
   trackId: string
   getTrackYPosOverride?: (trackId: string, level: number) => number
+  cachedTrackTops?: number[]
+  cachedYOffset?: number
 }) {
   const { model, trackId } = props
   const tracks = model.getMatchedTracks(trackId)

@@ -1,7 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import type { Region, ViewSnap } from '@jbrowse/core/util'
 import type { SyntenyRpcResult } from './executeSyntenyFeaturesAndPositions.ts'
+import type { Region, ViewSnap } from '@jbrowse/core/util'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
   adapterConfig: Record<string, unknown>
@@ -36,7 +36,10 @@ export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
     return args
   }
 
-  async execute(args: SyntenyGetFeaturesAndPositionsArgs, rpcDriverClassName: string) {
+  async execute(
+    args: SyntenyGetFeaturesAndPositionsArgs,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

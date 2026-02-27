@@ -3,8 +3,8 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 import { getTooltip } from './components/util.ts'
+import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 
 import type { SyntenyRenderer } from './WebGPUSyntenyRenderer.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'

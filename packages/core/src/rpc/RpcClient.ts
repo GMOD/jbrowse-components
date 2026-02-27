@@ -59,6 +59,9 @@ export default class RpcClient {
     return this
   }
 
+  private _eventMessageCount = 0
+  private _eventMessageTimer: ReturnType<typeof setTimeout> | undefined
+
   protected handler(e: MessageEvent<RpcMessageData>) {
     const { uid, error, method, eventName, data, libRpc } = e.data
     if (!libRpc) {
@@ -69,6 +72,16 @@ export default class RpcClient {
     } else if (method) {
       this.resolve(uid, data)
     } else if (eventName) {
+      this._eventMessageCount++
+      if (!this._eventMessageTimer) {
+        this._eventMessageTimer = setTimeout(() => {
+          console.log(
+            `[RpcClient] received ${this._eventMessageCount} event messages in last batch`,
+          )
+          this._eventMessageCount = 0
+          this._eventMessageTimer = undefined
+        }, 1000)
+      }
       this.emit(eventName, data)
     }
   }
