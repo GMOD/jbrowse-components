@@ -1,4 +1,4 @@
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 
 import { notEmpty } from '@jbrowse/core/util'
 import { DataGrid } from '@mui/x-data-grid'
@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 import { computeInitialWidths } from './computeInitialWidths.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const FacetedDataGrid = observer(function FacetedDataGrid({
@@ -19,7 +20,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   model: HierarchicalTrackSelectorModel
   columns: GridColDef[]
   shownTrackIds: Set<GridRowId>
-  selection: any[]
+  selection: AnyConfigurationModel[]
 }) {
   const { view, faceted } = model
   const {
@@ -41,6 +42,18 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
       visible,
     ),
   )
+
+  useEffect(() => {
+    setWidths(prev => ({
+      ...computeInitialWidths(
+        rows,
+        filteredNonMetadataKeys,
+        filteredMetadataKeys,
+        visible,
+      ),
+      ...prev,
+    }))
+  }, [rows, filteredNonMetadataKeys, filteredMetadataKeys, visible])
 
   const rowSelectionModel = useMemo(
     () => ({
@@ -89,13 +102,17 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
             const a1 = shownTrackIds
             const a2 = userSelectedIds.ids
             transaction(() => {
-              ;[...a1].filter(x => !a2.has(x)).map(t => view.hideTrack(t))
-              ;[...a2]
-                .filter(x => !a1.has(x))
-                .map(t => {
+              for (const t of a1) {
+                if (!a2.has(t)) {
+                  view.hideTrack(t)
+                }
+              }
+              for (const t of a2) {
+                if (!a1.has(t)) {
                   view.showTrack(t)
                   model.addToRecentlyUsed(t)
-                })
+                }
+              }
             })
           } else {
             model.setSelection(

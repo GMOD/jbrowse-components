@@ -4,6 +4,8 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
+import { findNonSparseKeys, getRootKeys } from '../facetedUtil.ts'
+import { getRowStr } from './faceted/util.ts'
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -1099,7 +1101,213 @@ test('faceted filter tracks unique values per column', () => {
   expect(categories).toContain('Alignments')
 })
 
+// -------------------------- utility function tests -
+
+test('getRootKeys includes string, number, and boolean values', () => {
+  const obj = {
+    name: 'track1',
+    year: 2020,
+    active: true,
+    nested: { a: 1 },
+    list: [1, 2],
+    empty: null,
+    missing: undefined,
+  }
+  const keys = getRootKeys(obj)
+  expect(keys).toContain('name')
+  expect(keys).toContain('year')
+  expect(keys).toContain('active')
+  expect(keys).not.toContain('nested')
+  expect(keys).not.toContain('list')
+  expect(keys).not.toContain('empty')
+  expect(keys).not.toContain('missing')
+})
+
+test('getRootKeys handles empty object', () => {
+  expect(getRootKeys({})).toEqual([])
+})
+
+test('findNonSparseKeys filters keys below threshold', () => {
+  const rows = Array.from({ length: 10 }, (_, i) => ({
+    a: `val${i}`,
+    b: i < 3 ? `val${i}` : '',
+  }))
+  const result = findNonSparseKeys(
+    ['a', 'b'],
+    rows,
+    (r, f) => r[f as keyof typeof r],
+  )
+  expect(result).toContain('a')
+  expect(result).not.toContain('b')
+})
+
+test('findNonSparseKeys short-circuits at threshold', () => {
+  let callCount = 0
+  const rows = Array.from({ length: 100 }, () => ({ a: 'val' }))
+  findNonSparseKeys(['a'], rows, (r, f) => {
+    callCount++
+    return r[f as keyof typeof r]
+  })
+  // should stop after threshold+1 (6) hits, not iterate all 100
+  expect(callCount).toBeLessThan(100)
+})
+
+test('getRowStr extracts regular fields', () => {
+  const row = { id: '1', name: 'track1', category: 'Genes' }
+  expect(getRowStr('name', row)).toBe('track1')
+  expect(getRowStr('category', row)).toBe('Genes')
+})
+
+test('getRowStr extracts metadata fields', () => {
+  const row = { id: '1', metadata: { tissue: 'brain', year: 2020 } }
+  expect(getRowStr('metadata.tissue', row)).toBe('brain')
+  expect(getRowStr('metadata.year', row)).toBe('2020')
+})
+
+test('getRowStr returns empty string for missing fields', () => {
+  const row = { id: '1', metadata: {} }
+  expect(getRowStr('missing', row)).toBe('')
+  expect(getRowStr('metadata.missing', row)).toBe('')
+})
+
+// -------------------------- metadata faceted model tests -
+
+test('faceted model exposes metadata keys from tracks', () => {
+  const session = addTestDataWithMetadata(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { faceted } = model
+
+  expect(faceted.metadataKeys).toContain('tissue')
+  expect(faceted.metadataKeys).toContain('species')
+})
+
+test('faceted model search matches non-string metadata', () => {
+  const session = addTestDataWithMetadata(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { faceted } = model
+
+  // search for numeric metadata value
+  faceted.setFilterText('2020')
+  expect(faceted.rows.length).toBeGreaterThan(0)
+  expect(faceted.rows.some(r => r.metadata.year === 2020)).toBe(true)
+
+  // search for boolean metadata value
+  faceted.setFilterText('true')
+  expect(faceted.rows.length).toBeGreaterThan(0)
+})
+
+test('faceted model filters on metadata columns', () => {
+  const session = addTestDataWithMetadata(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { faceted } = model
+
+  const initialCount = faceted.filteredRows.length
+
+  // filter on metadata.tissue
+  faceted.setFilter('metadata.tissue', ['brain'])
+  expect(faceted.filteredRows.length).toBeLessThan(initialCount)
+  expect(faceted.filteredRows.every(r => r.metadata.tissue === 'brain')).toBe(
+    true,
+  )
+})
+
+test('faceted model fields include metadata columns with prefix', () => {
+  const session = addTestDataWithMetadata(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { faceted } = model
+
+  faceted.setShowSparse(true)
+  const metadataFields = faceted.fields.filter(f => f.startsWith('metadata.'))
+  expect(metadataFields).toContain('metadata.tissue')
+  expect(metadataFields).toContain('metadata.species')
+})
+
 // -------------------------- test utils -
+
+function addTestDataWithMetadata(
+  session: ReturnType<typeof createTestSession>,
+) {
+  session.addAssemblyConf({
+    name: 'volMyt1',
+    sequence: {
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'firstId',
+            start: 0,
+            end: 10,
+            seq: 'cattgttgcg',
+          },
+        ],
+      },
+    },
+  })
+
+  for (let i = 0; i < 10; i++) {
+    session.addTrackConf({
+      trackId: `metaTrack${i}`,
+      name: `Meta Track ${i}`,
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+      metadata: {
+        tissue: i < 5 ? 'brain' : 'liver',
+        species: 'human',
+        year: 2020 + i,
+        active: i % 2 === 0,
+      },
+    })
+  }
+  return session
+}
 
 function addTestData(session: ReturnType<typeof createTestSession>) {
   session.addAssemblyConf({

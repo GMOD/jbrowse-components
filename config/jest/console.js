@@ -1,4 +1,5 @@
 const originalError = console.error
+const originalWarn = console.warn
 
 jest.spyOn(console, 'error').mockImplementation((...args) => {
   const r = String(args)
@@ -14,4 +15,13 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   }
 
   originalError.call(console, ...args)
+})
+
+jest.spyOn(console, 'warn').mockImplementation((...args) => {
+  const r = String(args)
+  if (r.includes('The `anchorEl` prop provided to the component is invalid')) {
+    return undefined
+  }
+
+  originalWarn.call(console, ...args)
 })

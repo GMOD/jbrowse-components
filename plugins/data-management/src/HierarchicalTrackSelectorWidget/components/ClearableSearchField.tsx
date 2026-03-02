@@ -37,7 +37,6 @@ export default function ClearableSearchField({
           onChange(newValue)
         })
       }}
-      fullWidth
       slotProps={{
         input: {
           endAdornment: (
