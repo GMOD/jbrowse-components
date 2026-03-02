@@ -44,7 +44,7 @@ function HighlightText({
   className?: string
 }) {
   if (!query || !text) {
-    return <span className={className}>{text}</span>
+    return <SanitizedHTML html={text} className={className} />
   }
   const lowerText = text.toLowerCase()
   const lowerQuery = query.toLowerCase()
