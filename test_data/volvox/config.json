@@ -271,6 +271,10 @@
       "trackId": "volvox_gc",
       "assemblyNames": ["volvox"],
       "name": "GCContent",
+      "metadata": {
+        "description": "GC content track for <i>Volvox mythicus</i>. See <a href=\"https://en.wikipedia.org/wiki/GC-content\">Wikipedia: GC content</a> for details.",
+        "source": "<b>Simulated</b> genome data"
+      },
       "adapter": {
         "type": "TwoBitAdapter",
         "twoBitLocation": {
@@ -454,6 +458,10 @@
       "trackId": "volvox_alignments",
       "name": "volvox-sorted.bam (ctgA, larger default height, colorBy mappingQual)",
       "category": ["Integration test"],
+      "metadata": {
+        "description": "Paired-end <b>150bp</b> reads aligned to <i>Volvox mythicus</i>. Publication: <a href=\"https://doi.org/10.1093/bioinformatics/btab817\">doi:10.1093/bioinformatics/btab817</a>",
+        "tissue": "<em>leaf</em> tissue"
+      },
       "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
         "type": "BamAdapter",

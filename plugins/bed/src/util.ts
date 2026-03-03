@@ -99,6 +99,7 @@ export function featureData({
   parser,
   uniqueId,
   names,
+  disableGeneHeuristic,
 }: {
   line: string
   colRef: number
@@ -108,6 +109,7 @@ export function featureData({
   parser: BED
   uniqueId: string
   names?: string[]
+  disableGeneHeuristic?: boolean
 }) {
   const splitLine = line.split('\t')
   const refName = splitLine[colRef]!
@@ -124,6 +126,7 @@ export function featureData({
     uniqueId,
     scoreColumn,
     names,
+    disableGeneHeuristic,
   })
 }
 
@@ -158,6 +161,7 @@ export function featureData2({
   uniqueId,
   scoreColumn,
   names,
+  disableGeneHeuristic,
 }: {
   splitLine: string[]
   refName: string
@@ -167,6 +171,7 @@ export function featureData2({
   uniqueId: string
   scoreColumn: string
   names?: string[]
+  disableGeneHeuristic?: boolean
 }): FeatureData {
   const data = names
     ? defaultParser(names, splitLine)
@@ -230,6 +235,7 @@ export function featureData2({
   }
 
   if (
+    !disableGeneHeuristic &&
     subfeatures &&
     isUcscTranscript({
       strand,

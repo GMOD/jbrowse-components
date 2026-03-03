@@ -24,6 +24,10 @@ export default class TextSearchManager {
 
   constructor(public pluginManager: PluginManager) {}
 
+  clearCache() {
+    this.adapterCache.clear()
+  }
+
   loadTextSearchAdapters(searchScope: SearchScope) {
     return Promise.all(
       this.relevantAdapters(searchScope).map(async conf => {

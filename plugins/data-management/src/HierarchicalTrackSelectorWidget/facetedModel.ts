@@ -10,7 +10,6 @@ import { autorun, observable } from 'mobx'
 
 import { getRowStr } from './components/faceted/util.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
-import { matches, matchesMetadata } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -132,30 +131,52 @@ export function facetedStateTreeF() {
     .views(self => ({
       /**
        * #getter
+       * Builds row objects from track configs. Cached and only recomputes when
+       * track configurations change, not on every filterText keystroke.
+       */
+      get allRows() {
+        const session = getSession(self)
+        return self.allTrackConfigurations.map(
+          track =>
+            ({
+              id: track.trackId as string,
+              conf: track,
+              name: getTrackName(track, session),
+              category: readConfObject(track, 'category')?.join(', '),
+              adapter: readConfObject(track, 'adapter')?.type as string,
+              description: readConfObject(track, 'description') as
+                | string
+                | undefined,
+              metadata: (readConfObject(track, 'metadata') || {}) as Record<
+                string,
+                unknown
+              >,
+            }) as const,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Text-filtered rows. Cheap string filtering on already-built allRows.
        */
       get rows() {
-        const session = getSession(self)
-        const { allTrackConfigurations, filterText } = self
-        return allTrackConfigurations
-          .filter(
-            conf =>
-              matches(filterText, conf, session) ||
-              matchesMetadata(filterText, conf),
-          )
-          .map(
-            track =>
-              ({
-                id: track.trackId as string,
-                conf: track,
-                name: getTrackName(track, session),
-                category: readConfObject(track, 'category')?.join(
-                  ', ',
-                ) as string,
-                adapter: readConfObject(track, 'adapter')?.type as string,
-                description: readConfObject(track, 'description') as string,
-                metadata: (track.metadata || {}) as Record<string, unknown>,
-              }) as const,
-          )
+        const queryLower = self.filterText.toLowerCase()
+        if (!queryLower) {
+          return self.allRows
+        }
+        return self.allRows.filter(
+          row =>
+            row.name.toLowerCase().includes(queryLower) ||
+            row.category?.toLowerCase().includes(queryLower) ||
+            row.description?.toLowerCase().includes(queryLower) ||
+            Object.values(row.metadata).some(
+              v =>
+                v !== null &&
+                v !== undefined &&
+                `${v}`.toLowerCase().includes(queryLower),
+            ),
+        )
       },
     }))
 
@@ -166,13 +187,19 @@ export function facetedStateTreeF() {
       get filteredNonMetadataKeys() {
         return self.showSparse
           ? nonMetadataKeys
-          : findNonSparseKeys(nonMetadataKeys, self.rows, (r, f) => r[f])
+          : findNonSparseKeys(
+              nonMetadataKeys,
+              self.allRows,
+              (r, f) => r[f as keyof typeof r],
+            )
       },
       /**
        * #getter
        */
       get metadataKeys() {
-        return [...new Set(self.rows.flatMap(row => getRootKeys(row.metadata)))]
+        return [
+          ...new Set(self.allRows.flatMap(row => getRootKeys(row.metadata))),
+        ]
       },
       /**
        * #getter
@@ -182,8 +209,7 @@ export function facetedStateTreeF() {
           ? this.metadataKeys
           : findNonSparseKeys(
               this.metadataKeys,
-              self.rows,
-              // @ts-expect-error
+              self.allRows,
               (r, f) => r.metadata[f],
             )
       },

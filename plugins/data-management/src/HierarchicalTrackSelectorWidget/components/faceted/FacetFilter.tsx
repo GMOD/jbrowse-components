@@ -14,8 +14,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// icon
-
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -31,12 +29,7 @@ const useStyles = makeStyles()(theme => ({
 function ClearButton({ onClick }: { onClick: () => void }) {
   return (
     <Tooltip title="Clear selection on this facet filter">
-      <IconButton
-        onClick={() => {
-          onClick()
-        }}
-        size="small"
-      >
+      <IconButton onClick={onClick} size="small">
         <ClearIcon />
       </IconButton>
     </Tooltip>
@@ -52,12 +45,7 @@ function ExpandButton({
 }) {
   return (
     <Tooltip title="Minimize/expand this facet filter">
-      <IconButton
-        onClick={() => {
-          onClick()
-        }}
-        size="small"
-      >
+      <IconButton onClick={onClick} size="small">
         {visible ? <MinimizeIcon /> : <AddIcon />}
       </IconButton>
     </Tooltip>
@@ -101,17 +89,16 @@ const FacetFilter = observer(function FacetFilter({
           className={classes.select}
           value={filters.get(column.field) || []}
           onChange={event => {
+            const options = (event.target as unknown as HTMLSelectElement)
+              .options
             faceted.setFilter(
               column.field,
-              // @ts-expect-error
-              [...event.target.options]
-                .filter(opt => opt.selected)
-                .map(opt => opt.value),
+              [...options].filter(opt => opt.selected).map(opt => opt.value),
             )
           }}
         >
           {vals
-            .sort((a, b) => a[0].localeCompare(b[0]))
+            .toSorted((a, b) => a[0].localeCompare(b[0]))
             .map(([name, count]) => (
               <option key={name} value={name}>
                 {coarseStripHTML(name)} ({count})

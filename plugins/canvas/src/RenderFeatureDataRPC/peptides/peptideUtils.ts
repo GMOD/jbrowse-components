@@ -103,7 +103,7 @@ export function findTranscriptsWithCDS(
   return transcripts
 }
 
-function extractCDSRegions(feature: Feature): { start: number; end: number }[] {
+function extractCDSRegions(feature: Feature) {
   const subfeatures = feature.get('subfeatures') || []
   const featureStart = feature.get('start')
 
@@ -113,6 +113,7 @@ function extractCDSRegions(feature: Feature): { start: number; end: number }[] {
     .map((sub: Feature) => ({
       start: sub.get('start') - featureStart,
       end: sub.get('end') - featureStart,
+      phase: (sub.get('phase') as number | undefined) ?? 0,
     }))
 }
 
@@ -145,6 +146,7 @@ async function fetchTranscriptPeptides(
       const seqLen = seq.length
       cds = cds
         .map(region => ({
+          ...region,
           start: seqLen - region.end,
           end: seqLen - region.start,
         }))

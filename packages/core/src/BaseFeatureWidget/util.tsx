@@ -7,6 +7,7 @@ export interface Feat {
   type?: string
   name?: string
   id?: string
+  phase?: number
 }
 export interface ParentFeat extends Feat {
   uniqueId: string

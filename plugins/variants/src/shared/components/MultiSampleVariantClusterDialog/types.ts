@@ -2,6 +2,7 @@ import type { SampleInfo, Source } from '../../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface ReducedModel {
+  layout: Source[]
   sourcesWithoutLayout?: Source[]
   sourcesVolatile?: Source[]
   minorAlleleFrequencyFilter?: number

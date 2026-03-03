@@ -106,6 +106,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1
       const names = await this.getNames()
+      const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
       let start = performance.now()
       checkStopToken(stopToken)
       await updateStatus('Downloading features', statusCallback, () =>
@@ -126,6 +127,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,
                   names,
+                  disableGeneHeuristic,
                 }),
               ),
             )
