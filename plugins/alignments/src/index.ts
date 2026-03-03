@@ -40,6 +40,11 @@ export {
 } from './LinearAlignmentsDisplay/index.ts'
 export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
 export {
+  getColorByMenuItem,
+  getFeatureHeightMenuItem,
+  getFiltersMenuItem,
+} from './shared/menuItems.ts'
+export {
   featurizeSA,
   getClip,
   getLength,

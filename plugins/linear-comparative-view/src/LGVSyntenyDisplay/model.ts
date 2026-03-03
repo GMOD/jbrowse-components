@@ -8,9 +8,15 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearAlignmentsDisplayStateModelFactory } from '@jbrowse/plugin-alignments'
+import {
+  getColorByMenuItem,
+  getFeatureHeightMenuItem,
+  getFiltersMenuItem,
+  linearAlignmentsDisplayStateModelFactory,
+} from '@jbrowse/plugin-alignments'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -76,6 +82,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               : []),
           ]
         },
+        /**
+         * #method
+         */
+        trackMenuItems() {
+          const items: MenuItem[] = [
+            getFeatureHeightMenuItem(self),
+            getColorByMenuItem(self),
+            getFiltersMenuItem(self),
+          ]
+          return items
+        },
       }
     })
     .actions(self => ({
@@ -104,6 +121,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         session.setSelection(feature)
       },
       afterCreate() {
+        self.setShowCoverage(false)
         // use color by strand to help indicate inversions better on first load,
         // otherwise use selected orientation
         if (!self.colorBySetting && self.colorBy.type === 'normal') {

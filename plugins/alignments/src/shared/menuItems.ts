@@ -7,6 +7,13 @@ import { modificationData } from './modificationData.ts'
 
 import type { ColorBy } from './types.ts'
 
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog.tsx'),
+)
+const ColorByTagDialog = lazy(
+  () => import('./components/ColorByTagDialog.tsx'),
+)
+
 const FilterByTagDialog = lazy(
   () => import('./components/FilterByTagDialog.tsx'),
 )
@@ -225,6 +232,152 @@ interface MismatchDisplayModel {
 /**
  * Shared mismatch/indel display submenu for pileup and read cloud displays
  */
+interface FeatureHeightModel {
+  featureHeightSetting: number
+  noSpacing?: boolean
+  noSpacingSetting?: boolean
+  setFeatureHeight: (height?: number) => void
+  setNoSpacing: (noSpacing?: boolean) => void
+}
+
+export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
+  return {
+    label: 'Set feature height...',
+    type: 'subMenu' as const,
+    subMenu: [
+      {
+        label: 'Normal',
+        type: 'radio' as const,
+        checked:
+          model.featureHeightSetting === 7 && model.noSpacing !== true,
+        onClick: () => {
+          model.setFeatureHeight(7)
+          model.setNoSpacing(false)
+        },
+      },
+      {
+        label: 'Compact',
+        type: 'radio' as const,
+        checked:
+          model.featureHeightSetting === 3 &&
+          model.noSpacingSetting === true,
+        onClick: () => {
+          model.setFeatureHeight(3)
+          model.setNoSpacing(true)
+        },
+      },
+      {
+        label: 'Super-compact',
+        type: 'radio' as const,
+        checked:
+          model.featureHeightSetting === 1 &&
+          model.noSpacingSetting === true,
+        onClick: () => {
+          model.setFeatureHeight(1)
+          model.setNoSpacing(true)
+        },
+      },
+      {
+        label: 'Custom',
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            SetFeatureHeightDialog,
+            {
+              model,
+              handleClose,
+            },
+          ])
+        },
+      },
+    ],
+  }
+}
+
+interface ColorByModel {
+  colorBy: ColorBy
+  setColorScheme: (colorBy: ColorBy) => void
+}
+
+export interface ColorByMenuOptions {
+  showLinkedReads?: boolean
+  includeModifications?: boolean
+  modificationsModel?: ModificationsModel
+  includeTagOption?: boolean
+  extraItems?: { label: string; type: string }[]
+}
+
+export function getColorByMenuItem(
+  model: ColorByModel,
+  options: ColorByMenuOptions = {},
+) {
+  const {
+    showLinkedReads = false,
+    includeModifications = false,
+    includeTagOption = false,
+  } = options
+
+  const colorRadio = (label: string, type: string) => ({
+    label,
+    type: 'radio' as const,
+    checked: model.colorBy.type === type,
+    onClick: () => {
+      model.setColorScheme({ type })
+    },
+  })
+
+  const modificationsItem =
+    includeModifications && options.modificationsModel
+      ? {
+          label: 'Modifications',
+          type: 'subMenu' as const,
+          subMenu: getModificationsSubMenu(options.modificationsModel, {
+            includeMethylation: true,
+          }),
+        }
+      : undefined
+
+  const subMenu = showLinkedReads
+    ? [
+        colorRadio('Insert size and orientation', 'insertSizeAndOrientation'),
+        colorRadio('Insert size', 'insertSize'),
+        colorRadio('Pair orientation', 'pairOrientation'),
+        ...(modificationsItem ? [modificationsItem] : []),
+      ]
+    : [
+        colorRadio('Normal', 'normal'),
+        colorRadio('Strand', 'strand'),
+        colorRadio('Mapping quality', 'mappingQuality'),
+        colorRadio('Insert size', 'insertSize'),
+        colorRadio('First of pair strand', 'firstOfPairStrand'),
+        colorRadio('Pair orientation', 'pairOrientation'),
+        colorRadio(
+          'Insert size and orientation',
+          'insertSizeAndOrientation',
+        ),
+        ...(modificationsItem ? [modificationsItem] : []),
+        ...(includeTagOption
+          ? [
+              {
+                label: 'Color by tag...',
+                type: 'radio' as const,
+                checked: model.colorBy.type === 'tag',
+                onClick: () => {
+                  getSession(model).queueDialog((onClose: () => void) => [
+                    ColorByTagDialog,
+                    { model, handleClose: onClose },
+                  ])
+                },
+              },
+            ]
+          : []),
+      ]
+
+  return {
+    label: 'Color by...',
+    subMenu,
+  }
+}
+
 export function getMismatchDisplayMenuItem(model: MismatchDisplayModel) {
   return {
     label: 'Mismatch/indel display',

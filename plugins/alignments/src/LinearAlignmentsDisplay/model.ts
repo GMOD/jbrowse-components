@@ -46,8 +46,9 @@ import {
 } from '../shared/computeArcsFromPileupData.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
+  getColorByMenuItem,
+  getFeatureHeightMenuItem,
   getFiltersMenuItem,
-  getModificationsSubMenu,
 } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 import {
@@ -220,12 +221,6 @@ const AlignmentsComponent = lazy(
 
 const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
-)
-const ColorByTagDialog = lazy(
-  () => import('../shared/components/ColorByTagDialog.tsx'),
-)
-const SetFeatureHeightDialog = lazy(
-  () => import('../shared/components/SetFeatureHeightDialog.tsx'),
 )
 const SortByTagDialog = lazy(() => import('./components/SortByTagDialog.tsx'))
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
@@ -2020,111 +2015,14 @@ export default function stateModelFactory(
        * Track menu items
        */
       trackMenuItems() {
-        const colorRadio = (label: string, type: string) => ({
-          label,
-          type: 'radio' as const,
-          checked: self.colorBy.type === type,
-          onClick: () => {
-            self.setColorScheme({ type })
-          },
+        const colorByMenu = getColorByMenuItem(self, {
+          showLinkedReads: self.showLinkedReads,
+          includeModifications: true,
+          modificationsModel: self,
+          includeTagOption: true,
         })
 
-        const modificationsItem = {
-          label: 'Modifications',
-          type: 'subMenu' as const,
-          subMenu: getModificationsSubMenu(self, {
-            includeMethylation: true,
-          }),
-        }
-
-        const colorByMenu = {
-          label: 'Color by...',
-          subMenu: self.showLinkedReads
-            ? [
-                colorRadio(
-                  'Insert size and orientation',
-                  'insertSizeAndOrientation',
-                ),
-                colorRadio('Insert size', 'insertSize'),
-                colorRadio('Pair orientation', 'pairOrientation'),
-                modificationsItem,
-              ]
-            : [
-                colorRadio('Normal', 'normal'),
-                colorRadio('Strand', 'strand'),
-                colorRadio('Mapping quality', 'mappingQuality'),
-                colorRadio('Insert size', 'insertSize'),
-                colorRadio('First of pair strand', 'firstOfPairStrand'),
-                colorRadio('Pair orientation', 'pairOrientation'),
-                colorRadio(
-                  'Insert size and orientation',
-                  'insertSizeAndOrientation',
-                ),
-                modificationsItem,
-                {
-                  label: 'Color by tag...',
-                  type: 'radio' as const,
-                  checked: self.colorBy.type === 'tag',
-                  onClick: () => {
-                    getSession(self).queueDialog((onClose: () => void) => [
-                      ColorByTagDialog,
-                      { model: self, handleClose: onClose },
-                    ])
-                  },
-                },
-              ],
-        }
-
-        const featureHeightMenu = {
-          label: 'Set feature height...',
-          type: 'subMenu' as const,
-          subMenu: [
-            {
-              label: 'Normal',
-              type: 'radio' as const,
-              checked:
-                self.featureHeightSetting === 7 && self.noSpacing !== true,
-              onClick: () => {
-                self.setFeatureHeight(7)
-                self.setNoSpacing(false)
-              },
-            },
-            {
-              label: 'Compact',
-              type: 'radio' as const,
-              checked:
-                self.featureHeightSetting === 3 &&
-                self.noSpacingSetting === true,
-              onClick: () => {
-                self.setFeatureHeight(3)
-                self.setNoSpacing(true)
-              },
-            },
-            {
-              label: 'Super-compact',
-              type: 'radio' as const,
-              checked:
-                self.featureHeightSetting === 1 &&
-                self.noSpacingSetting === true,
-              onClick: () => {
-                self.setFeatureHeight(1)
-                self.setNoSpacing(true)
-              },
-            },
-            {
-              label: 'Custom',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetFeatureHeightDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-          ],
-        }
+        const featureHeightMenu = getFeatureHeightMenuItem(self)
 
         const showSubMenu = {
           label: 'Show...',
