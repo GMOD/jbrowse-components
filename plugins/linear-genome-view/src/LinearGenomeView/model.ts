@@ -1382,11 +1382,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
             currentBlockKeys = newKeys
           }
 
-          // Update coverage range from the block extent
-          const allBlocks = currentlyCalculatedStaticBlocks.blocks
-          if (allBlocks.length > 0) {
-            const last = allBlocks[allBlocks.length - 1]!
-            coverageLeftPx = allBlocks[0]!.offsetPx
+          // Update coverage range from content block extent only.
+          // Using all blocks (including padding) would inflate the range
+          // and let the fast path return stale blocks when the viewport
+          // scrolls into the padding area where no content blocks exist.
+          const cBlocks = currentlyCalculatedStaticBlocks.contentBlocks
+          if (cBlocks.length > 0) {
+            const last = cBlocks[cBlocks.length - 1]!
+            coverageLeftPx = cBlocks[0]!.offsetPx
             coverageRightPx = last.offsetPx + last.widthPx
           }
 
