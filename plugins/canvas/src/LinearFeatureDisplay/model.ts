@@ -56,6 +56,14 @@ import type {
   MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
+export interface ContextMenuFeatureInfo {
+  featureId: string
+  type: string
+  startBp: number
+  endBp: number
+  regionNumber: number
+}
+
 type LGV = LinearGenomeViewModel
 
 function computeAndAssignLayout(
@@ -238,9 +246,7 @@ export default function stateModelFactory(
       maxY: 0,
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
-      contextMenuInfo: undefined as
-        | { feature: Feature; regionNumber: number }
-        | undefined,
+      contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
     }))
     .views(self => ({
       get adapterConfigSnapshot() {
@@ -416,7 +422,7 @@ export default function stateModelFactory(
         self.mouseoverExtraInformation = info
       },
 
-      setContextMenuInfo(info?: { feature: Feature; regionNumber: number }) {
+      setContextMenuInfo(info?: ContextMenuFeatureInfo) {
         self.contextMenuInfo = info
       },
     }))
@@ -470,18 +476,13 @@ export default function stateModelFactory(
         featureInfo: FlatbushItem,
         regionNumber: number,
       ) {
-        const feature = new SimpleFeature({
-          id: featureInfo.featureId,
-          data: {
-            uniqueId: featureInfo.featureId,
-            type: featureInfo.type,
-            start: featureInfo.startBp,
-            end: featureInfo.endBp,
-            name: featureInfo.name,
-            strand: featureInfo.strand,
-          },
+        self.setContextMenuInfo({
+          featureId: featureInfo.featureId,
+          type: featureInfo.type,
+          startBp: featureInfo.startBp,
+          endBp: featureInfo.endBp,
+          regionNumber,
         })
-        self.setContextMenuInfo({ feature, regionNumber })
       },
     }))
     .actions(self => ({
@@ -869,13 +870,8 @@ export default function stateModelFactory(
     })
 
     .views(self => ({
-      get contextMenuFeature() {
-        return self.contextMenuInfo?.feature
-      },
-    }))
-    .views(self => ({
       get isGeneLike() {
-        const type = `${self.contextMenuFeature?.get('type')}`.toLowerCase()
+        const type = (self.contextMenuInfo?.type ?? '').toLowerCase()
         return (
           type.includes('gene') ||
           type.includes('rna') ||
@@ -889,7 +885,7 @@ export default function stateModelFactory(
         if (!info) {
           return []
         }
-        const { feature: feat, regionNumber } = info
+        const { featureId, startBp, endBp, regionNumber } = info
         const region = self.loadedRegions.get(regionNumber)
         return [
           {
@@ -897,7 +893,7 @@ export default function stateModelFactory(
             icon: MenuOpenIcon,
             onClick: () => {
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              self.selectFullFeature(feat.id(), regionNumber)
+              self.selectFullFeature(featureId, regionNumber)
             },
           },
           {
@@ -908,8 +904,8 @@ export default function stateModelFactory(
                 const view = getContainingView(self) as LGV
                 view.navTo({
                   refName: region.refName,
-                  start: feat.get('start'),
-                  end: feat.get('end'),
+                  start: startBp,
+                  end: endBp,
                 })
               }
             },
@@ -921,7 +917,7 @@ export default function stateModelFactory(
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
               ;(async () => {
                 const fullFeature = await self.fetchFullFeature(
-                  feat.id(),
+                  featureId,
                   regionNumber,
                 )
                 if (!fullFeature) {
@@ -944,7 +940,7 @@ export default function stateModelFactory(
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     ;(async () => {
                       const fullFeature = await self.fetchFullFeature(
-                        feat.id(),
+                        featureId,
                         regionNumber,
                       )
                       if (!fullFeature) {

@@ -63,7 +63,7 @@ export async function run(args?: string[]) {
   validateRequiredCommands(['sh', 'sort', 'grep', 'tabix', 'bgzip'])
 
   const { out, csi = false } = flags
-  const splitThreshold = Number(flags['split-threshold'] ?? '10000')
+  const splitThreshold = Number(flags['split-threshold'])
   const outputFile = getOutputFilename(file, out)
 
   const child = spawnSortProcess(outputFile, csi)

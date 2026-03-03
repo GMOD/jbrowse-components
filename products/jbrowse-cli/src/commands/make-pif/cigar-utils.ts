@@ -31,7 +31,8 @@ export function splitAlignmentByCigar(
   columns: string[],
   threshold: number,
 ): string[][] {
-  const [qname, qlen, qstart, qend, strand, tname, tlen, tstart, tend, ...rest] = columns
+  const [qname, qlen, qstart, , strand, tname, tlen, tstart, , ...rest] =
+    columns
   const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z:'))
   if (cigarIdx === -1) {
     return [columns]
@@ -69,10 +70,15 @@ export function splitAlignmentByCigar(
     const newRest = [...rest]
     newRest[cigarIdx] = `cg:Z:${blockCigarOps.join('')}`
     results.push([
-      qname!, qlen!,
-      String(blockQueryStart), String(queryPos),
-      strand!, tname!, tlen!,
-      String(blockRefStart), String(refPos),
+      qname!,
+      qlen!,
+      String(blockQueryStart),
+      String(queryPos),
+      strand!,
+      tname!,
+      tlen!,
+      String(blockRefStart),
+      String(refPos),
       ...newRest,
     ])
     blockCigarOps = []

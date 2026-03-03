@@ -29,12 +29,10 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable, untracked } from 'mobx'
 
-import { type ArcColorByType, ArcsSubModel } from './ArcsSubModel.ts'
+import { ArcsSubModel } from './ArcsSubModel.ts'
 import {
   computeLayout,
   computeSortedLayout,
@@ -49,6 +47,10 @@ import {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
+  getGroupByMenuItem,
+  getSetMaxHeightMenuItem,
+  getShowMenuItem,
+  getSortByMenuItem,
 } from '../shared/menuItems.ts'
 import { getColorForModification } from '../util.ts'
 import {
@@ -221,11 +223,6 @@ const AlignmentsComponent = lazy(
 
 const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
-)
-const SortByTagDialog = lazy(() => import('./components/SortByTagDialog.tsx'))
-const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
-const SetMaxHeightDialog = lazy(
-  () => import('../shared/components/SetMaxHeightDialog.tsx'),
 )
 
 export const ColorScheme = {
@@ -2018,191 +2015,17 @@ export default function stateModelFactory(
         const colorByMenu = getColorByMenuItem(self, {
           showLinkedReads: self.showLinkedReads,
           includeModifications: true,
-          modificationsModel: self,
           includeTagOption: true,
         })
 
-        const featureHeightMenu = getFeatureHeightMenuItem(self)
-
-        const showSubMenu = {
-          label: 'Show...',
-          icon: VisibilityIcon,
-          subMenu: [
-            {
-              label: 'Show soft clipping',
-              type: 'checkbox' as const,
-              checked: self.showSoftClipping,
-              onClick: () => {
-                self.toggleSoftClipping()
-              },
-            },
-            {
-              label: 'Show mismatches faded by quality',
-              type: 'checkbox' as const,
-              checked: !!self.mismatchAlpha,
-              onClick: () => {
-                self.toggleMismatchAlpha()
-              },
-            },
-            {
-              label: 'Show coverage',
-              type: 'checkbox' as const,
-              checked: self.showCoverage,
-              onClick: () => {
-                self.setShowCoverage(!self.showCoverage)
-              },
-            },
-            {
-              label: 'Show arcs',
-              type: 'checkbox' as const,
-              checked: self.showArcs,
-              onClick: () => {
-                self.setShowArcs(!self.showArcs)
-              },
-            },
-            {
-              label: 'Arc color scheme',
-              type: 'subMenu' as const,
-              subMenu: (
-                [
-                  ['Insert size and orientation', 'insertSizeAndOrientation'],
-                  ['Insert size', 'insertSize'],
-                  ['Orientation', 'orientation'],
-                ] as const
-              ).map(([label, type]) => ({
-                label,
-                type: 'radio' as const,
-                checked: self.arcsState.colorByType === type,
-                onClick: () => {
-                  self.arcsState.setColorByType(type as ArcColorByType)
-                },
-              })),
-            },
-            {
-              label: 'Show sashimi arcs',
-              type: 'checkbox' as const,
-              checked: self.showSashimiArcs,
-              onClick: () => {
-                self.setShowSashimiArcs(!self.showSashimiArcs)
-              },
-            },
-            {
-              label: 'Show mismatches',
-              type: 'checkbox' as const,
-              checked: self.showMismatches,
-              onClick: () => {
-                self.setShowMismatches(!self.showMismatches)
-              },
-            },
-            {
-              label: 'Show interbase indicators',
-              type: 'checkbox' as const,
-              checked: self.showInterbaseIndicators,
-              onClick: () => {
-                self.setShowInterbaseIndicators(!self.showInterbaseIndicators)
-              },
-            },
-            {
-              label: 'Show outline on reads',
-              type: 'checkbox' as const,
-              checked: self.showOutlineSetting,
-              onClick: () => {
-                self.setShowOutline(!self.showOutlineSetting)
-              },
-            },
-            {
-              label: 'Link paired/supplementary reads',
-              type: 'checkbox' as const,
-              checked: self.showLinkedReads,
-              onClick: () => {
-                self.setShowLinkedReads(!self.showLinkedReads)
-              },
-            },
-          ],
-        }
-
-        const setMaxHeightItem = {
-          label: 'Set max track height...',
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              SetMaxHeightDialog,
-              {
-                model: self,
-                handleClose,
-              },
-            ])
-          },
-        }
-
-        const filterByItem = getFiltersMenuItem(self, {
-          showPairFilters: self.isChainMode,
-        })
-
-        const sortByMenu = {
-          label: 'Sort by...',
-          icon: SwapVertIcon,
-          subMenu: [
-            {
-              label: 'Start location',
-              onClick: () => {
-                self.setSortedBy('position')
-              },
-            },
-            {
-              label: 'Read strand',
-              onClick: () => {
-                self.setSortedBy('strand')
-              },
-            },
-            {
-              label: 'Base pair',
-              onClick: () => {
-                self.setSortedBy('basePair')
-              },
-            },
-            {
-              label: 'Sort by tag...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SortByTagDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-            {
-              label: 'Clear sort',
-              onClick: () => {
-                self.clearSelected()
-              },
-            },
-          ],
-        }
-
-        const groupByItem = {
-          label: 'Group by...',
-          icon: WorkspacesIcon,
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              GroupByDialog,
-              {
-                model: self,
-                handleClose,
-              },
-            ])
-          },
-        }
-
         const items: MenuItem[] = [
-          featureHeightMenu,
-          showSubMenu,
-          setMaxHeightItem,
-          filterByItem,
-          sortByMenu,
+          getFeatureHeightMenuItem(self),
+          getShowMenuItem(self),
+          getSetMaxHeightMenuItem(self),
+          getFiltersMenuItem(self, { showPairFilters: self.isChainMode }),
+          getSortByMenuItem(self),
           colorByMenu,
-          groupByItem,
+          getGroupByMenuItem(self),
         ]
 
         return items

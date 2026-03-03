@@ -28,12 +28,14 @@ export async function createPIF(
   const writeWithBackpressure = createWriteWithBackpressure(stream)
 
   try {
+    await writeWithBackpressure(`#splitThreshold=${splitThreshold}\n`)
     for await (const line of rl1) {
       const columns = line.split('\t')
       const subAlignments = splitAlignmentByCigar(columns, splitThreshold)
 
       for (const cols of subAlignments) {
         const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = cols
+        const summaryRest = stripCigarFromRest(rest)
 
         // t-prefix line (full, with CIGAR)
         await writeWithBackpressure(
@@ -41,12 +43,11 @@ export async function createPIF(
         )
 
         // st-prefix line (summary, no CIGAR)
-        const summaryRestT = stripCigarFromRest(rest)
         await writeWithBackpressure(
-          `${[`st${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRestT].join('\t')}\n`,
+          `${[`st${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest].join('\t')}\n`,
         )
 
-        const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
+        const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z:'))
         const CIGAR = rest[cigarIdx]
         if (CIGAR) {
           rest[cigarIdx] = `cg:Z:${
@@ -62,9 +63,8 @@ export async function createPIF(
         )
 
         // sq-prefix line (summary, no CIGAR)
-        const summaryRestQ = stripCigarFromRest(rest)
         await writeWithBackpressure(
-          `${[`sq${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...summaryRestQ].join('\t')}\n`,
+          `${[`sq${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...summaryRest].join('\t')}\n`,
         )
       }
     }

@@ -43,6 +43,10 @@ export {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
+  getGroupByMenuItem,
+  getSetMaxHeightMenuItem,
+  getShowMenuItem,
+  getSortByMenuItem,
 } from './shared/menuItems.ts'
 export {
   featurizeSA,

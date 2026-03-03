@@ -2,23 +2,33 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { modificationData } from './modificationData.ts'
 
 import type { ColorBy } from './types.ts'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
   () => import('./components/SetFeatureHeightDialog.tsx'),
 )
-const ColorByTagDialog = lazy(
-  () => import('./components/ColorByTagDialog.tsx'),
-)
-
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog.tsx'))
 const FilterByTagDialog = lazy(
   () => import('./components/FilterByTagDialog.tsx'),
 )
 const SetModificationThresholdDialog = lazy(
   () => import('./components/SetModificationThresholdDialog.tsx'),
+)
+const SetMaxHeightDialog = lazy(
+  () => import('./components/SetMaxHeightDialog.tsx'),
+)
+const SortByTagDialog = lazy(
+  () => import('../LinearAlignmentsDisplay/components/SortByTagDialog.tsx'),
+)
+const GroupByDialog = lazy(
+  () => import('../LinearAlignmentsDisplay/components/GroupByDialog.tsx'),
 )
 
 interface LinearReadDisplayModel {
@@ -30,6 +40,16 @@ export interface ModificationsModel extends LinearReadDisplayModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
+}
+
+function isModificationsModel(model: unknown): model is ModificationsModel {
+  return (
+    typeof model === 'object' &&
+    model !== null &&
+    'modificationsReady' in model &&
+    'visibleModificationTypes' in model &&
+    'modificationThreshold' in model
+  )
 }
 
 export interface ModificationsMenuOptions {
@@ -229,9 +249,6 @@ interface MismatchDisplayModel {
   setHideLargeIndels: (arg: boolean) => void
 }
 
-/**
- * Shared mismatch/indel display submenu for pileup and read cloud displays
- */
 interface FeatureHeightModel {
   featureHeightSetting: number
   noSpacing?: boolean
@@ -248,8 +265,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
       {
         label: 'Normal',
         type: 'radio' as const,
-        checked:
-          model.featureHeightSetting === 7 && model.noSpacing !== true,
+        checked: model.featureHeightSetting === 7 && model.noSpacing !== true,
         onClick: () => {
           model.setFeatureHeight(7)
           model.setNoSpacing(false)
@@ -259,8 +275,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         label: 'Compact',
         type: 'radio' as const,
         checked:
-          model.featureHeightSetting === 3 &&
-          model.noSpacingSetting === true,
+          model.featureHeightSetting === 3 && model.noSpacingSetting === true,
         onClick: () => {
           model.setFeatureHeight(3)
           model.setNoSpacing(true)
@@ -270,8 +285,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         label: 'Super-compact',
         type: 'radio' as const,
         checked:
-          model.featureHeightSetting === 1 &&
-          model.noSpacingSetting === true,
+          model.featureHeightSetting === 1 && model.noSpacingSetting === true,
         onClick: () => {
           model.setFeatureHeight(1)
           model.setNoSpacing(true)
@@ -301,10 +315,25 @@ interface ColorByModel {
 export interface ColorByMenuOptions {
   showLinkedReads?: boolean
   includeModifications?: boolean
-  modificationsModel?: ModificationsModel
   includeTagOption?: boolean
-  extraItems?: { label: string; type: string }[]
+  colorOptions?: { label: string; type: string }[]
 }
+
+const defaultColorOptions = [
+  { label: 'Normal', type: 'normal' },
+  { label: 'Strand', type: 'strand' },
+  { label: 'Mapping quality', type: 'mappingQuality' },
+  { label: 'Insert size', type: 'insertSize' },
+  { label: 'First of pair strand', type: 'firstOfPairStrand' },
+  { label: 'Pair orientation', type: 'pairOrientation' },
+  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
+]
+
+const linkedReadsColorOptions = [
+  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
+  { label: 'Insert size', type: 'insertSize' },
+  { label: 'Pair orientation', type: 'pairOrientation' },
+]
 
 export function getColorByMenuItem(
   model: ColorByModel,
@@ -326,55 +355,246 @@ export function getColorByMenuItem(
   })
 
   const modificationsItem =
-    includeModifications && options.modificationsModel
+    includeModifications && isModificationsModel(model)
       ? {
           label: 'Modifications',
           type: 'subMenu' as const,
-          subMenu: getModificationsSubMenu(options.modificationsModel, {
+          subMenu: getModificationsSubMenu(model, {
             includeMethylation: true,
           }),
         }
       : undefined
 
-  const subMenu = showLinkedReads
-    ? [
-        colorRadio('Insert size and orientation', 'insertSizeAndOrientation'),
-        colorRadio('Insert size', 'insertSize'),
-        colorRadio('Pair orientation', 'pairOrientation'),
-        ...(modificationsItem ? [modificationsItem] : []),
-      ]
-    : [
-        colorRadio('Normal', 'normal'),
-        colorRadio('Strand', 'strand'),
-        colorRadio('Mapping quality', 'mappingQuality'),
-        colorRadio('Insert size', 'insertSize'),
-        colorRadio('First of pair strand', 'firstOfPairStrand'),
-        colorRadio('Pair orientation', 'pairOrientation'),
-        colorRadio(
-          'Insert size and orientation',
-          'insertSizeAndOrientation',
-        ),
-        ...(modificationsItem ? [modificationsItem] : []),
-        ...(includeTagOption
-          ? [
-              {
-                label: 'Color by tag...',
-                type: 'radio' as const,
-                checked: model.colorBy.type === 'tag',
-                onClick: () => {
-                  getSession(model).queueDialog((onClose: () => void) => [
-                    ColorByTagDialog,
-                    { model, handleClose: onClose },
-                  ])
-                },
-              },
-            ]
-          : []),
-      ]
+  const items =
+    options.colorOptions ||
+    (showLinkedReads ? linkedReadsColorOptions : defaultColorOptions)
+
+  const subMenu = [
+    ...items.map(({ label, type }) => colorRadio(label, type)),
+    ...(modificationsItem ? [modificationsItem] : []),
+    ...(includeTagOption
+      ? [
+          {
+            label: 'Color by tag...',
+            type: 'radio' as const,
+            checked: model.colorBy.type === 'tag',
+            onClick: () => {
+              getSession(model).queueDialog((onClose: () => void) => [
+                ColorByTagDialog,
+                { model, handleClose: onClose },
+              ])
+            },
+          },
+        ]
+      : []),
+  ]
 
   return {
     label: 'Color by...',
     subMenu,
+  }
+}
+
+interface ShowMenuModel {
+  showSoftClipping: boolean
+  mismatchAlpha?: boolean
+  showCoverage: boolean
+  showArcs: boolean
+  showSashimiArcs: boolean
+  showMismatches: boolean
+  showInterbaseIndicators: boolean
+  showOutlineSetting: boolean
+  showLinkedReads: boolean
+  arcsState: {
+    colorByType: string
+    setColorByType: (
+      type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation',
+    ) => void
+  }
+  toggleSoftClipping: () => void
+  toggleMismatchAlpha: () => void
+  setShowCoverage: (show: boolean) => void
+  setShowArcs: (show: boolean) => void
+  setShowSashimiArcs: (show: boolean) => void
+  setShowMismatches: (show: boolean) => void
+  setShowInterbaseIndicators: (show: boolean) => void
+  setShowOutline: (show: boolean) => void
+  setShowLinkedReads: (show: boolean) => void
+}
+
+export function getShowMenuItem(model: ShowMenuModel) {
+  return {
+    label: 'Show...',
+    icon: VisibilityIcon,
+    subMenu: [
+      {
+        label: 'Show soft clipping',
+        type: 'checkbox' as const,
+        checked: model.showSoftClipping,
+        onClick: () => {
+          model.toggleSoftClipping()
+        },
+      },
+      {
+        label: 'Show mismatches faded by quality',
+        type: 'checkbox' as const,
+        checked: !!model.mismatchAlpha,
+        onClick: () => {
+          model.toggleMismatchAlpha()
+        },
+      },
+      {
+        label: 'Show coverage',
+        type: 'checkbox' as const,
+        checked: model.showCoverage,
+        onClick: () => {
+          model.setShowCoverage(!model.showCoverage)
+        },
+      },
+      {
+        label: 'Show arcs',
+        type: 'checkbox' as const,
+        checked: model.showArcs,
+        onClick: () => {
+          model.setShowArcs(!model.showArcs)
+        },
+      },
+      {
+        label: 'Arc color scheme',
+        type: 'subMenu' as const,
+        subMenu: (
+          [
+            ['Insert size and orientation', 'insertSizeAndOrientation'],
+            ['Insert size', 'insertSize'],
+            ['Orientation', 'orientation'],
+          ] as const
+        ).map(([label, type]) => ({
+          label,
+          type: 'radio' as const,
+          checked: model.arcsState.colorByType === type,
+          onClick: () => {
+            model.arcsState.setColorByType(type)
+          },
+        })),
+      },
+      {
+        label: 'Show sashimi arcs',
+        type: 'checkbox' as const,
+        checked: model.showSashimiArcs,
+        onClick: () => {
+          model.setShowSashimiArcs(!model.showSashimiArcs)
+        },
+      },
+      {
+        label: 'Show mismatches',
+        type: 'checkbox' as const,
+        checked: model.showMismatches,
+        onClick: () => {
+          model.setShowMismatches(!model.showMismatches)
+        },
+      },
+      {
+        label: 'Show interbase indicators',
+        type: 'checkbox' as const,
+        checked: model.showInterbaseIndicators,
+        onClick: () => {
+          model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+        },
+      },
+      {
+        label: 'Show outline on reads',
+        type: 'checkbox' as const,
+        checked: model.showOutlineSetting,
+        onClick: () => {
+          model.setShowOutline(!model.showOutlineSetting)
+        },
+      },
+      {
+        label: 'Link paired/supplementary reads',
+        type: 'checkbox' as const,
+        checked: model.showLinkedReads,
+        onClick: () => {
+          model.setShowLinkedReads(!model.showLinkedReads)
+        },
+      },
+    ],
+  }
+}
+
+interface MaxHeightModel {
+  maxHeight?: number
+  setMaxHeight: (arg?: number) => void
+}
+
+export function getSetMaxHeightMenuItem(model: MaxHeightModel) {
+  return {
+    label: 'Set max track height...',
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        SetMaxHeightDialog,
+        { model, handleClose },
+      ])
+    },
+  }
+}
+
+interface SortByModel {
+  setSortedBy: (type: string) => void
+  clearSelected: () => void
+}
+
+export function getSortByMenuItem(model: SortByModel) {
+  return {
+    label: 'Sort by...',
+    icon: SwapVertIcon,
+    subMenu: [
+      {
+        label: 'Start location',
+        onClick: () => {
+          model.setSortedBy('position')
+        },
+      },
+      {
+        label: 'Read strand',
+        onClick: () => {
+          model.setSortedBy('strand')
+        },
+      },
+      {
+        label: 'Base pair',
+        onClick: () => {
+          model.setSortedBy('basePair')
+        },
+      },
+      {
+        label: 'Sort by tag...',
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            SortByTagDialog,
+            { model, handleClose },
+          ])
+        },
+      },
+      {
+        label: 'Clear sort',
+        onClick: () => {
+          model.clearSelected()
+        },
+      },
+    ],
+  }
+}
+
+export function getGroupByMenuItem(model: IAnyStateTreeNode) {
+  return {
+    label: 'Group by...',
+    icon: WorkspacesIcon,
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        GroupByDialog,
+        { model, handleClose },
+      ])
+    },
   }
 }
 

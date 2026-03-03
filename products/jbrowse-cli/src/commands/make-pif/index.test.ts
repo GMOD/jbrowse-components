@@ -34,11 +34,32 @@ test('make pif with CSI', async () => {
 
 describe('splitAlignmentByCigar', () => {
   const cols = (cigar: string, qs = '0', qe = '100', ts = '0', te = '100') => [
-    'q1', '1000', qs, qe, '+', 't1', '1000', ts, te, 'NM:i:5', `cg:Z:${cigar}`,
+    'q1',
+    '1000',
+    qs,
+    qe,
+    '+',
+    't1',
+    '1000',
+    ts,
+    te,
+    'NM:i:5',
+    `cg:Z:${cigar}`,
   ]
 
   test('returns unchanged when no CIGAR', () => {
-    const input = ['q1', '1000', '0', '100', '+', 't1', '1000', '0', '100', 'NM:i:5']
+    const input = [
+      'q1',
+      '1000',
+      '0',
+      '100',
+      '+',
+      't1',
+      '1000',
+      '0',
+      '100',
+      'NM:i:5',
+    ]
     expect(splitAlignmentByCigar(input, 50)).toEqual([input])
   })
 
@@ -49,7 +70,10 @@ describe('splitAlignmentByCigar', () => {
 
   test('splits at large deletion', () => {
     // 50M then 100D gap then 50M
-    const result = splitAlignmentByCigar(cols('50M100D50M', '0', '100', '0', '200'), 50)
+    const result = splitAlignmentByCigar(
+      cols('50M100D50M', '0', '100', '0', '200'),
+      50,
+    )
     expect(result).toHaveLength(2)
     // Block 1: query 0-50, ref 0-50
     expect(result[0]![2]).toBe('0')
@@ -65,7 +89,10 @@ describe('splitAlignmentByCigar', () => {
 
   test('splits at large insertion', () => {
     // 50M then 100I gap then 50M
-    const result = splitAlignmentByCigar(cols('50M100I50M', '0', '200', '0', '100'), 50)
+    const result = splitAlignmentByCigar(
+      cols('50M100I50M', '0', '200', '0', '100'),
+      50,
+    )
     expect(result).toHaveLength(2)
     // Block 1: query 0-50, ref 0-50
     expect(result[0]![2]).toBe('0')
@@ -88,7 +115,10 @@ describe('splitAlignmentByCigar', () => {
   })
 
   test('each sub-alignment has its own CIGAR', () => {
-    const result = splitAlignmentByCigar(cols('30M5I20M100D40M10M', '0', '105', '0', '200'), 50)
+    const result = splitAlignmentByCigar(
+      cols('30M5I20M100D40M10M', '0', '105', '0', '200'),
+      50,
+    )
     expect(result).toHaveLength(2)
     const cg0 = result[0]!.find(f => f.startsWith('cg:Z:'))
     const cg1 = result[1]!.find(f => f.startsWith('cg:Z:'))

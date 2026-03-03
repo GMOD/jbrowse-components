@@ -23,6 +23,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   protected pif: TabixIndexedFile
   private summaryRefsPromise?: Promise<Set<string>>
+  private splitThresholdPromise?: Promise<number | undefined>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -73,6 +74,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return this.summaryRefsPromise
   }
 
+  private getSplitThreshold() {
+    if (!this.splitThresholdPromise) {
+      this.splitThresholdPromise = this.pif.getHeader().then(header => {
+        const match = /splitThreshold=(\d+)/.exec(header)
+        return match ? +match[1]! : undefined
+      })
+    }
+    return this.splitThresholdPromise
+  }
+
   public async hasDataForRefName() {
     return true
   }
@@ -119,8 +130,18 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // - 't' prefix lines are indexed by target coordinates
       const letter = flip ? 'q' : 't'
 
-      // Use summary prefix (sq/st) when zoomed out for faster queries
-      const useSummary = bpPerPx !== undefined && bpPerPx > 500
+      // LOD: switch to CIGAR-free summary lines when zoomed out past the
+      // split threshold T. make-pif guarantees every indel < T after
+      // splitting, and the renderer already skips CIGARs whose largest
+      // indel is smaller than one pixel. At bpPerPx >= T those two
+      // conditions overlap perfectly: every indel is sub-pixel, so every
+      // CIGAR would be downloaded then thrown away. Summary lines skip
+      // the download with no visual difference.
+      const splitThreshold = await this.getSplitThreshold()
+      const useSummary =
+        splitThreshold !== undefined &&
+        bpPerPx !== undefined &&
+        bpPerPx > splitThreshold
       let prefix = useSummary ? `s${letter}` : letter
 
       // Fallback: if summary refs don't exist (old PIF file), use full prefix
