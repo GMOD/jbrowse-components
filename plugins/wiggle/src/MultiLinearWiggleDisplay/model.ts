@@ -608,6 +608,11 @@ export default function stateModelFactory(
         const generation = self.fetchGeneration
         self.setLoading(true)
         self.setError(null)
+        console.debug(
+          '[MultiLinearWiggleDisplay] fetchRegions start',
+          regions.map(r => `${r.region.refName}:${r.region.start}-${r.region.end}`),
+          { bpPerPx, generation },
+        )
         try {
           const promises = regions.map(({ region, regionNumber }) =>
             fetchFeaturesForRegion(
@@ -620,6 +625,9 @@ export default function stateModelFactory(
             ),
           )
           await Promise.all(promises)
+          console.debug('[MultiLinearWiggleDisplay] fetchRegions complete', {
+            generation,
+          })
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch multi-wiggle features:', e)
@@ -628,8 +636,16 @@ export default function stateModelFactory(
               self.fetchGeneration === generation &&
               self.renderingStopToken === stopToken
             ) {
+              console.debug(
+                '[MultiLinearWiggleDisplay] fetchRegions error set',
+                e,
+              )
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
+          } else {
+            console.debug('[MultiLinearWiggleDisplay] fetchRegions aborted', {
+              generation,
+            })
           }
         } finally {
           if (
@@ -747,6 +763,14 @@ export default function stateModelFactory(
               async () => {
                 const view = getContainingView(self) as LGV
                 if (!view.initialized || self.isLoading || self.error) {
+                  console.debug(
+                    '[MultiLinearWiggleDisplay] FetchVisibleRegions autorun skipped',
+                    {
+                      initialized: view.initialized,
+                      isLoading: self.isLoading,
+                      error: self.error?.message,
+                    },
+                  )
                   return
                 }
                 const { bpPerPx } = view
@@ -755,13 +779,26 @@ export default function stateModelFactory(
                 for (const vr of view.staticRegions) {
                   const loaded = self.loadedRegions.get(vr.regionNumber)
                   const loadedBpPerPx = self.loadedBpPerPx.get(vr.regionNumber)
-                  if (
+                  const skip =
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end &&
                     (loadedBpPerPx === undefined ||
                       bpPerPx >= loadedBpPerPx / 2)
-                  ) {
+                  console.debug(
+                    '[MultiLinearWiggleDisplay] FetchVisibleRegions check region',
+                    {
+                      regionNumber: vr.regionNumber,
+                      region: `${vr.refName}:${vr.start}-${vr.end}`,
+                      loaded: loaded
+                        ? `${loaded.refName}:${loaded.start}-${loaded.end}`
+                        : 'none',
+                      loadedBpPerPx,
+                      bpPerPx,
+                      skip,
+                    },
+                  )
+                  if (skip) {
                     continue
                   }
                   needed.push({
@@ -771,6 +808,10 @@ export default function stateModelFactory(
                 }
                 if (needed.length > 0) {
                   await fetchRegions(needed, bpPerPx, resolution)
+                } else {
+                  console.debug(
+                    '[MultiLinearWiggleDisplay] FetchVisibleRegions all regions loaded',
+                  )
                 }
               },
               {

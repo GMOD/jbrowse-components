@@ -84,6 +84,7 @@ export default function MultiRegionDisplayMixin() {
       },
 
       setError(error: Error | null) {
+        console.debug('[MultiRegionDisplayMixin] setError', error?.message ?? null)
         self.error = error
       },
 
@@ -103,11 +104,18 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       clearAllRpcData() {
+        console.debug('[MultiRegionDisplayMixin] clearAllRpcData called', {
+          hadToken: !!self.renderingStopToken,
+          wasLoading: self.isLoading,
+          hadError: !!self.error,
+          fetchGeneration: self.fetchGeneration,
+        })
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
         }
         self.isLoading = false
+        self.error = null
         self.loadedRegions = new Map()
         self.fetchGeneration++
         self.clearDisplaySpecificData()
@@ -136,6 +144,9 @@ export default function MultiRegionDisplayMixin() {
                   prevDisplayedRegionsStr !== '' &&
                   regionStr !== prevDisplayedRegionsStr
                 ) {
+                  console.debug(
+                    '[MultiRegionDisplayMixin] DisplayedRegionsChange → clearAllRpcData',
+                  )
                   self.clearAllRpcData()
                 }
                 prevDisplayedRegionsStr = regionStr

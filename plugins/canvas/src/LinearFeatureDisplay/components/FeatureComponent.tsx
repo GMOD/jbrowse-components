@@ -847,12 +847,16 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
     const addOverlay = (
       item: { startBp: number; endBp: number; topPx: number; bottomPx: number },
+      refName: string,
       style: React.CSSProperties,
       key: string,
       extraWidth = 0,
       padding = 0,
     ) => {
       for (const vr of visibleRegions) {
+        if (vr.refName !== refName) {
+          continue
+        }
         const rect = getItemRect(item, vr)
         if (rect) {
           overlays.push(
@@ -894,10 +898,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
     const hoverItem = hoveredSubfeature ?? hoveredFeature
     if (hoverItem) {
-      let hoverExtraWidth = 0
-      if (hoveredFeature && !hoveredSubfeature) {
-        const result = findItemForId(hoveredFeature.featureId)
-        if (result?.data) {
+      const featureId = hoveredSubfeature
+        ? hoveredSubfeature.featureId
+        : hoveredFeature!.featureId
+      const result = findItemForId(featureId)
+      if (result) {
+        let hoverExtraWidth = 0
+        if (hoveredFeature && !hoveredSubfeature && result.data) {
           hoverExtraWidth = computeExtraWidth(
             hoveredFeature.featureId,
             hoverItem,
@@ -905,13 +912,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             result.data,
           )
         }
+        addOverlay(
+          hoverItem,
+          result.vr.refName,
+          { backgroundColor: 'rgba(0, 0, 0, 0.15)' },
+          'hover',
+          hoverExtraWidth,
+        )
       }
-      addOverlay(
-        hoverItem,
-        { backgroundColor: 'rgba(0, 0, 0, 0.15)' },
-        'hover',
-        hoverExtraWidth,
-      )
     }
 
     if (model.selectedFeatureId) {
@@ -926,6 +934,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         )
         addOverlay(
           item,
+          result.vr.refName,
           {
             border: '2px solid rgba(0, 100, 255, 0.8)',
             borderRadius: 3,

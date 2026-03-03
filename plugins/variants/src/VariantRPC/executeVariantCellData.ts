@@ -204,6 +204,8 @@ export async function executeVariantCellData({
       () => {
         if (regionLookup) {
           const grouped = new Map<number, MAFFilteredFeature[]>()
+          // TODO: consider using an interval tree or sorted lookup for large
+          // region counts instead of linear find per feature
           for (const maf of mafs) {
             const refName = maf.feature.get('refName')
             const featureStart = maf.feature.get('start')
@@ -214,9 +216,7 @@ export async function executeVariantCellData({
                 featureStart < r.end,
             )
             if (!entry) {
-              throw new Error(
-                `Feature at ${refName}:${featureStart} not found in any region`,
-              )
+              continue
             }
             let list = grouped.get(entry.regionNumber)
             if (!list) {

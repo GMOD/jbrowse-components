@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -53,6 +54,7 @@ export interface WiggleDisplayModel {
     summary?: boolean
   }
   setFeatureUnderMouse: (feat?: WiggleDisplayModel['featureUnderMouse']) => void
+  reload: () => void
 }
 
 function buildSourceRenderData(
@@ -332,8 +334,13 @@ const WiggleComponent = observer(function WiggleComponent({
 
   if (model.error) {
     return (
-      <div style={{ width, height, color: 'red', padding: 10 }}>
-        Error: {model.error.message}
+      <div style={{ position: 'relative', width, height }}>
+        <ErrorBar
+          error={`${model.error}`}
+          onRetry={() => {
+            model.reload()
+          }}
+        />
       </div>
     )
   }
