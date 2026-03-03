@@ -864,11 +864,7 @@ export async function renderSvg(
                 pileupCtx.font = '9px sans-serif'
                 pileupCtx.textAlign = 'center'
                 pileupCtx.textBaseline = 'middle'
-                pileupCtx.fillText(
-                  `${len}`,
-                  cx,
-                  ibY + featureHeightSetting / 2,
-                )
+                pileupCtx.fillText(`${len}`, cx, ibY + featureHeightSetting / 2)
               }
               pileupCtx.globalAlpha = 1
             }

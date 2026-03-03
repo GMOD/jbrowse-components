@@ -23,15 +23,32 @@ export interface Region {
  * ## Fetch lifecycle contract
  *
  * Subclasses implement a `fetchRegions` function and a fetch autorun.
- * The autorun MUST guard on `self.isLoading` and `self.error` to prevent
- * re-fire loops (zombie Promise.all completions modifying loadedRegions
- * while a fetch is running, or repeated retries after an error).
+ * The autorun MUST:
+ *  - Read `self.fetchGeneration` unconditionally (before any early
+ *    returns) so MobX always tracks it. fetchGeneration re-fires
+ *    after clearAllRpcData.
+ *  - Guard on `!view.initialized` first — staticRegions reads
+ *    view.width which throws before the view is initialized.
+ *  - Guard on `self.error` to prevent repeated retries after an error.
+ *  - Read `view.staticRegions` after the initialized guard.
+ *    staticRegions implicitly tracks bpPerPx (via staticBlocks),
+ *    so it re-fires on both scroll and zoom.
+ *  - Read `self.loadedRegions` and `self.isLoading` inside
+ *    `untracked()` so that fetch-initiated state changes don't
+ *    re-trigger the autorun (loadedRegions changes during partial
+ *    Promise.all completions; isLoading changes when fetchRegions
+ *    starts/finishes).
  *
  * The fetch autorun pattern:
  *
  *     autorun(async () => {
- *       if (!view.initialized || self.isLoading || self.error) return
- *       // ... check which regions need fetching ...
+ *       self.fetchGeneration  // observe unconditionally
+ *       if (!view.initialized || self.error) return
+ *       const staticRegions = view.staticRegions
+ *       for (const vr of staticRegions) {
+ *         const loaded = untracked(() => self.loadedRegions.get(...))
+ *         // ... check if region needs fetching ...
+ *       }
  *       if (needed.length > 0) await fetchRegions(needed)
  *     }, { delay: 300 })
  *
@@ -54,6 +71,19 @@ export interface Region {
  * increments fetchGeneration, and calls clearDisplaySpecificData().
  * The old fetch's finally block will detect the generation mismatch
  * and skip cleanup (which clearAllRpcData already handled).
+ *
+ * When the user scrolls during a fetch, staticRegions changes and the
+ * autorun re-fires (after the 300ms debounce). fetchRegions cancels the
+ * stale fetch via stopStopToken and starts a new one for the current
+ * position.
+ *
+ * ## GPU render lifecycle (dataVersion)
+ *
+ * GPU-backed displays split data upload (expensive) and rendering (cheap)
+ * into separate autoruns. Because the GPU renderer is outside MobX
+ * tracking, render autoruns must read `self.dataVersion` to ensure a
+ * redraw fires after each upload. dataVersion is incremented in
+ * setLoadedRegionForRegion.
  *
  * Subclasses MUST implement `clearDisplaySpecificData()` to clear their
  * own rpcDataMap and any other display-specific state.
@@ -95,7 +125,6 @@ export default function MultiRegionDisplayMixin() {
       },
 
       setError(error: Error | null) {
-        console.debug('[MultiRegionDisplayMixin] setError', error?.message ?? null)
         self.error = error
       },
 

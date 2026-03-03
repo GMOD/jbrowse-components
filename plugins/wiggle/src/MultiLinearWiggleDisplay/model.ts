@@ -23,7 +23,7 @@ import {
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
@@ -600,6 +600,7 @@ export default function stateModelFactory(
         bpPerPx: number,
         resolution: number,
       ) {
+        const hadToken = !!self.renderingStopToken
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
         }
@@ -609,9 +610,11 @@ export default function stateModelFactory(
         self.setLoading(true)
         self.setError(null)
         console.debug(
-          '[MultiLinearWiggleDisplay] fetchRegions start',
-          regions.map(r => `${r.region.refName}:${r.region.start}-${r.region.end}`),
-          { bpPerPx, generation },
+          '[MultiLinearWiggleDisplay] fetchRegions',
+          regions.map(
+            r => `${r.region.refName}:${r.region.start}-${r.region.end}`,
+          ),
+          { bpPerPx, generation, canceledStale: hadToken },
         )
         try {
           const promises = regions.map(({ region, regionNumber }) =>
@@ -636,14 +639,10 @@ export default function stateModelFactory(
               self.fetchGeneration === generation &&
               self.renderingStopToken === stopToken
             ) {
-              console.debug(
-                '[MultiLinearWiggleDisplay] fetchRegions error set',
-                e,
-              )
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
           } else {
-            console.debug('[MultiLinearWiggleDisplay] fetchRegions aborted', {
+            console.debug('[MultiLinearWiggleDisplay] fetchRegions canceled', {
               generation,
             })
           }
@@ -762,60 +761,70 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                // DO NOT REMOVE: observe bpPerPx unconditionally
-                // (before any early returns) so MobX always tracks it.
-                // bpPerPx triggers re-evaluation on zoom even while
-                // a fetch is in progress.
-                const { bpPerPx } = view
-                if (!view.initialized || self.isLoading || self.error) {
-                  console.debug(
-                    '[MultiLinearWiggleDisplay] FetchVisibleRegions autorun skipped',
-                    {
-                      initialized: view.initialized,
-                      isLoading: self.isLoading,
-                      error: self.error?.message,
-                    },
-                  )
+                // DO NOT REMOVE: observe fetchGeneration
+                // unconditionally (before any early returns) so MobX
+                // always tracks it. fetchGeneration re-fires after
+                // clearAllRpcData.
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                self.fetchGeneration
+                if (!view.initialized || self.error) {
                   return
                 }
+                const staticRegions = view.staticRegions
+                const { bpPerPx } = view
                 const { resolution } = self
                 const needed: { region: Region; regionNumber: number }[] = []
-                for (const vr of view.staticRegions) {
-                  const loaded = self.loadedRegions.get(vr.regionNumber)
-                  const loadedBpPerPx = self.loadedBpPerPx.get(vr.regionNumber)
+                const skipped: string[] = []
+                for (const vr of staticRegions) {
+                  // Read loadedRegions inside untracked so that partial
+                  // Promise.all completions don't re-trigger this autorun
+                  // and cancel sibling fetches still in flight.
+                  const loaded = untracked(() =>
+                    self.loadedRegions.get(vr.regionNumber),
+                  )
+                  const regionBpPerPx = untracked(() =>
+                    self.loadedBpPerPx.get(vr.regionNumber),
+                  )
                   const skip =
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end &&
-                    (loadedBpPerPx === undefined ||
-                      bpPerPx >= loadedBpPerPx / 2)
-                  console.debug(
-                    '[MultiLinearWiggleDisplay] FetchVisibleRegions check region',
-                    {
-                      regionNumber: vr.regionNumber,
-                      region: `${vr.refName}:${vr.start}-${vr.end}`,
-                      loaded: loaded
-                        ? `${loaded.refName}:${loaded.start}-${loaded.end}`
-                        : 'none',
-                      loadedBpPerPx,
-                      bpPerPx,
-                      skip,
-                    },
-                  )
+                    (regionBpPerPx === undefined ||
+                      bpPerPx >= regionBpPerPx / 2)
                   if (skip) {
-                    continue
+                    skipped.push(
+                      `r${vr.regionNumber}:${vr.refName}:${vr.start}-${vr.end}`,
+                    )
+                  } else {
+                    needed.push({
+                      region: vr as Region,
+                      regionNumber: vr.regionNumber,
+                    })
                   }
-                  needed.push({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  })
+                }
+                const currentlyLoading = untracked(() => self.isLoading)
+                console.debug(
+                  '[MultiLinearWiggleDisplay] FetchVisibleRegions',
+                  needed.length > 0
+                    ? `fetching ${needed.length} region(s)`
+                    : 'all cached',
+                  {
+                    needed: needed.map(
+                      r =>
+                        `r${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
+                    ),
+                    skipped,
+                    bpPerPx,
+                    isLoading: currentlyLoading,
+                  },
+                )
+                if (currentlyLoading && needed.length > 0) {
+                  console.warn(
+                    '[MultiLinearWiggleDisplay] FetchVisibleRegions re-fetching while already loading — previous fetch will be canceled',
+                  )
                 }
                 if (needed.length > 0) {
                   await fetchRegions(needed, bpPerPx, resolution)
-                } else {
-                  console.debug(
-                    '[MultiLinearWiggleDisplay] FetchVisibleRegions all regions loaded',
-                  )
                 }
               },
               {

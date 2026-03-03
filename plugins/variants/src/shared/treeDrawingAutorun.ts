@@ -123,6 +123,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         const view = getContainingView(self) as LinearGenomeViewModel
+        if (!view.initialized) {
+          return
+        }
         const viewWidth = view.width
 
         ctx.clearRect(0, 0, viewWidth, height)

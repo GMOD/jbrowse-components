@@ -445,7 +445,6 @@ export default function stateModelFactory(
       contextMenuCigarHit: undefined as CigarHitResult | undefined,
       contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
       contextMenuRefName: undefined as string | undefined,
-      fetchToken: 0,
       rpcDataMap: new Map<number, PileupDataResult>(),
       webglRef: null as unknown,
       currentRangeY: [0, 600] as [number, number],
@@ -870,10 +869,7 @@ export default function stateModelFactory(
           self.rpcDataMap = new Map()
           self.arcsState.clearAllRpcData()
           self.currentRangeY = [0, 0]
-        },
-
-        bumpFetchToken() {
-          self.fetchToken++
+          self.setRegionTooLarge(false)
         },
 
         setLoadedRegion(regionNumber: number, region: Region | null) {
@@ -1202,10 +1198,6 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       const fetchGenerations = new Map<number, number>()
-      // Tracks the bpPerPx at which the last "too large" result was
-      // returned. The fetch autorun uses this to avoid re-fetching at the
-      // same zoom level while still re-checking when the user zooms.
-      let lastTooLargeBpPerPx: number | undefined
 
       async function fetchPileupData(
         adapterConfig: unknown,
@@ -1308,7 +1300,6 @@ export default function stateModelFactory(
             stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
           const limit = self.userByteSizeLimit || fetchSizeLimit
           if (stats.bytes && stats.bytes > limit) {
-            lastTooLargeBpPerPx = view.bpPerPx
             self.setRegionTooLarge(
               true,
               `Requested too much data (${getDisplayStr(stats.bytes)})`,
@@ -1316,8 +1307,7 @@ export default function stateModelFactory(
             return
           }
         }
-        lastTooLargeBpPerPx = undefined
-        self.setRegionTooLarge(false, '')
+        self.setRegionTooLarge(false)
 
         const sequenceAdapter = getSequenceAdapter(session, region)
 
@@ -1590,6 +1580,7 @@ export default function stateModelFactory(
       async function fetchRegions(
         regions: { region: Region; regionNumber: number }[],
       ) {
+        const hadToken = !!self.renderingStopToken
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
         }
@@ -1598,6 +1589,13 @@ export default function stateModelFactory(
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(null)
+        console.debug(
+          '[LinearAlignmentsDisplay] fetchRegions',
+          regions.map(
+            r => `${r.region.refName}:${r.region.start}-${r.region.end}`,
+          ),
+          { generation, canceledStale: hadToken },
+        )
         try {
           const promises = regions.map(({ region, regionNumber }) =>
             fetchFeaturesForRegion(region, regionNumber, stopToken),
@@ -1620,7 +1618,6 @@ export default function stateModelFactory(
             }
             self.setModificationsReady(true)
             self.setSimplexModifications(r.result.simplexModifications)
-            self.setRegionTooLarge(false)
             self.setLoadedRegion(r.regionNumber, r.region)
             newDataMap.set(r.regionNumber, r.result)
           }
@@ -1641,6 +1638,9 @@ export default function stateModelFactory(
           if (self.showArcs) {
             computeAndSetArcs(regions)
           }
+          console.debug('[LinearAlignmentsDisplay] fetchRegions complete', {
+            generation,
+          })
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Failed to fetch features:', e)
@@ -1651,6 +1651,10 @@ export default function stateModelFactory(
             ) {
               self.setError(e instanceof Error ? e : new Error(String(e)))
             }
+          } else {
+            console.debug('[LinearAlignmentsDisplay] fetchRegions canceled', {
+              generation,
+            })
           }
         } finally {
           if (
@@ -1851,44 +1855,37 @@ export default function stateModelFactory(
           )
 
           // See MultiRegionDisplayMixin for the fetch lifecycle contract.
-          // DO NOT REMOVE: the regionTooLarge check uses untracked so
-          // that the banner stays visible while a new byte estimate is
-          // fetched after zooming. The autorun observes bpPerPx so it
-          // re-fires on zoom, and lastTooLargeBpPerPx prevents
-          // re-fetching at the same zoom level.
           addDisposer(
             self,
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
-                // DO NOT REMOVE: observe bpPerPx and fetchToken
-                // unconditionally (before any early returns) so MobX
-                // always tracks them. bpPerPx triggers re-fetch on
-                // zoom; fetchToken triggers re-fetch on force load.
-                const currentBpPerPx = view.bpPerPx
+                // DO NOT REMOVE: observe fetchGeneration unconditionally
+                // (before any early returns) so MobX always tracks it.
+                // fetchGeneration re-fires after clearAllRpcData.
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                self.fetchToken
-                if (!view.initialized || self.isLoading || self.error) {
+                self.fetchGeneration
+                if (!view.initialized || self.error) {
                   return
                 }
-                // Use untracked so that setting regionTooLargeState
-                // doesn't re-trigger this autorun (the banner stays
-                // visible). Instead we re-fire only when bpPerPx or
-                // fetchToken changes.
-                if (
-                  untracked(() => self.regionTooLargeState) &&
-                  currentBpPerPx === lastTooLargeBpPerPx
-                ) {
-                  return
-                }
+                const staticRegions = view.staticRegions
                 const needed: { region: Region; regionNumber: number }[] = []
-                for (const vr of view.staticRegions) {
-                  const loaded = self.loadedRegions.get(vr.regionNumber)
+                const skipped: string[] = []
+                for (const vr of staticRegions) {
+                  // Read loadedRegions inside untracked so that partial
+                  // Promise.all completions don't re-trigger this autorun
+                  // and cancel sibling fetches still in flight.
+                  const loaded = untracked(() =>
+                    self.loadedRegions.get(vr.regionNumber),
+                  )
                   if (
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
                   ) {
+                    skipped.push(
+                      `r${vr.regionNumber}:${vr.refName}:${vr.start}-${vr.end}`,
+                    )
                     continue
                   }
                   needed.push({
@@ -1896,8 +1893,34 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
+                const currentlyLoading = untracked(() => self.isLoading)
+                console.debug(
+                  '[LinearAlignmentsDisplay] FetchVisibleRegions',
+                  needed.length > 0
+                    ? `fetching ${needed.length} region(s)`
+                    : 'all cached',
+                  {
+                    needed: needed.map(
+                      r =>
+                        `r${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
+                    ),
+                    skipped,
+                    bpPerPx: view.bpPerPx,
+                    isLoading: currentlyLoading,
+                  },
+                )
+                if (currentlyLoading && needed.length > 0) {
+                  console.warn(
+                    '[LinearAlignmentsDisplay] FetchVisibleRegions re-fetching while already loading — previous fetch will be canceled',
+                  )
+                }
                 if (needed.length > 0) {
                   await fetchRegions(needed)
+                } else if (untracked(() => self.regionTooLargeState)) {
+                  // All regions are cached from a previous fetch but the
+                  // "too large" banner is stale (set at a different zoom).
+                  // Clear it without re-fetching data.
+                  self.setRegionTooLarge(false)
                 }
               },
               {
@@ -1931,7 +1954,6 @@ export default function stateModelFactory(
                 ) {
                   self.setError(null)
                   self.clearAllRpcData()
-                  self.bumpFetchToken()
                 }
                 prevInvalidationKey = key
               },
@@ -1996,7 +2018,6 @@ export default function stateModelFactory(
 
                 if (sortedBy?.type === 'tag') {
                   self.clearAllRpcData()
-                  self.bumpFetchToken()
                   return
                 }
 
@@ -2147,9 +2168,7 @@ export default function stateModelFactory(
       const superReload = self.reload
       return {
         async reload() {
-          self.setRegionTooLarge(false)
           self.clearAllRpcData()
-          self.bumpFetchToken()
           superReload()
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {

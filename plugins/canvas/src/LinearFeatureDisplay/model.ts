@@ -15,7 +15,6 @@ import {
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -31,12 +30,13 @@ import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, reaction } from 'mobx'
+import { autorun, reaction, untracked } from 'mobx'
 
 import {
   getTranscripts,
   hasIntrons,
 } from './components/CollapseIntronsDialog/util.ts'
+import { computeAndAssignLayout } from './layout.ts'
 
 const CollapseIntronsDialog = lazy(
   () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -65,165 +65,6 @@ export interface ContextMenuFeatureInfo {
 }
 
 type LGV = LinearGenomeViewModel
-
-function computeAndAssignLayout(
-  rpcDataMap: Map<number, FeatureDataResult>,
-  bpPerPx: number,
-  staticRegions: { regionNumber: number; start: number; end: number }[],
-) {
-  const entries = [...rpcDataMap.entries()].filter(
-    ([, d]) => d.flatbushItems.length > 0,
-  )
-  if (entries.length === 0) {
-    return
-  }
-
-  // Build a pixel offset and width for each region so features from different
-  // chromosomes/regions are placed at non-overlapping horizontal positions
-  // in layout space. Without this, features from different regions with
-  // similar absolute bp coordinates would incorrectly overlap in the layout.
-  const regionLayoutInfo = new Map<
-    number,
-    { offsetPx: number; widthPx: number }
-  >()
-  let cumulativeOffsetPx = 0
-  for (const region of staticRegions) {
-    const widthPx = (region.end - region.start) / bpPerPx
-    regionLayoutInfo.set(region.regionNumber, {
-      offsetPx: cumulativeOffsetPx,
-      widthPx,
-    })
-    cumulativeOffsetPx += widthPx
-  }
-
-  // Collect all unique features across all regions (keyed by featureId).
-  // bottomPx equals layoutHeight since topPx is always 0 from the worker.
-  // Clamp rightPx to the region boundary so that label-width extensions
-  // (layoutEndBp > region end) don't bleed into the next region's pixel
-  // range, which would cause false horizontal overlaps in the layout and
-  // push features from the next region to unnecessarily high Y positions.
-  const allFeatures = new Map<
-    string,
-    { leftPx: number; rightPx: number; height: number }
-  >()
-  for (const [regionNumber, data] of entries) {
-    const info = regionLayoutInfo.get(regionNumber)
-    if (!info) {
-      continue
-    }
-    const { offsetPx, widthPx } = info
-    const regionEndPx = offsetPx + widthPx
-    for (const item of data.flatbushItems) {
-      if (!allFeatures.has(item.featureId)) {
-        allFeatures.set(item.featureId, {
-          leftPx: offsetPx + (item.startBp - data.regionStart) / bpPerPx,
-          rightPx: Math.min(
-            regionEndPx,
-            offsetPx + (item.layoutEndBp - data.regionStart) / bpPerPx,
-          ),
-          height: item.bottomPx,
-        })
-      }
-    }
-  }
-
-  console.debug(
-    '[computeAndAssignLayout]',
-    'regions:',
-    staticRegions.length,
-    'features:',
-    allFeatures.size,
-    'regionOffsets:',
-    [...regionLayoutInfo.entries()],
-  )
-
-  // Use GranularRectLayout for efficient 2D packing with label-width awareness.
-  const layout = new GranularRectLayout({ displayMode: 'normal' })
-  const layoutMap = new Map<string, number>()
-
-  const sorted = [...allFeatures.entries()].sort(
-    ([, a], [, b]) => a.leftPx - b.leftPx,
-  )
-
-  for (const [id, { leftPx, rightPx, height }] of sorted) {
-    const top = layout.addRect(id, leftPx, rightPx, height)
-    layoutMap.set(id, top ?? 0)
-    console.debug(
-      '[layout]',
-      id,
-      'leftPx:',
-      Math.round(leftPx),
-      'rightPx:',
-      Math.round(rightPx),
-      'widthPx:',
-      Math.round(rightPx - leftPx),
-      'height:',
-      height,
-      '→ top:',
-      top,
-    )
-  }
-
-  for (const [, data] of entries) {
-    fillYArrays(data, layoutMap)
-  }
-}
-
-function fillYArrays(data: FeatureDataResult, layoutMap: Map<string, number>) {
-  // Pre-build per-flatbushItem y-offset to avoid repeated Map lookups
-  const featureYOffsets = new Float32Array(data.flatbushItems.length)
-  for (const [i, item] of data.flatbushItems.entries()) {
-    featureYOffsets[i] = layoutMap.get(item.featureId) ?? 0
-  }
-
-  for (let i = 0; i < data.numRects; i++) {
-    data.rectYs[i] =
-      data.rectYs[i]! + featureYOffsets[data.rectFeatureIndices[i]!]!
-  }
-  for (let i = 0; i < data.numLines; i++) {
-    data.lineYs[i] =
-      data.lineYs[i]! + featureYOffsets[data.lineFeatureIndices[i]!]!
-  }
-  for (let i = 0; i < data.numArrows; i++) {
-    data.arrowYs[i] =
-      data.arrowYs[i]! + featureYOffsets[data.arrowFeatureIndices[i]!]!
-  }
-
-  for (const [i, item] of data.flatbushItems.entries()) {
-    const offset = featureYOffsets[i]!
-    item.topPx = offset
-    item.bottomPx = item.bottomPx + offset
-  }
-
-  for (const info of data.subfeatureInfos) {
-    const offset = layoutMap.get(info.parentFeatureId) ?? 0
-    const height = info.bottomPx - info.topPx
-    info.topPx = info.topPx + offset
-    info.bottomPx = info.topPx + height
-  }
-
-  for (const labelData of Object.values(data.floatingLabelsData)) {
-    labelData.topY = labelData.topY + (layoutMap.get(labelData.featureId) ?? 0)
-  }
-
-  if (data.aminoAcidOverlay) {
-    for (const aaItem of data.aminoAcidOverlay) {
-      aaItem.topPx = aaItem.topPx + featureYOffsets[aaItem.flatbushIdx]!
-    }
-  }
-
-  let maxY = 0
-  for (const item of data.flatbushItems) {
-    if (item.bottomPx > maxY) {
-      maxY = item.bottomPx
-    }
-  }
-  data.maxY = maxY
-
-  // New array references so client-side flatbush cache rebuilds
-  data.flatbushItems = [...data.flatbushItems]
-  data.subfeatureInfos = [...data.subfeatureInfos]
-}
 
 function findSubfeatureById(
   feature: Feature,
@@ -676,13 +517,22 @@ export default function stateModelFactory(
       ) {
         self.setRegionTooLarge(false, '')
         const dataMap = new Map(self.rpcDataMap)
+        const regionKeys = new Map<number, string>()
+        const newRegionNumbers = new Set<number>()
+        for (const [num, region] of self.loadedRegions) {
+          regionKeys.set(num, `${region.assemblyName}:${region.refName}`)
+        }
         for (const r of results) {
           if (r) {
             dataMap.set(r.regionNumber, r.data)
+            newRegionNumbers.add(r.regionNumber)
+            regionKeys.set(
+              r.regionNumber,
+              `${r.region.assemblyName}:${r.region.refName}`,
+            )
           }
         }
-        const view = getContainingView(self) as LGV
-        computeAndAssignLayout(dataMap, bpPerPx, view.staticRegions)
+        computeAndAssignLayout(dataMap, bpPerPx, regionKeys, newRegionNumbers)
         for (const r of results) {
           if (r) {
             self.setLoadedRegionForRegion(r.regionNumber, r.region)
@@ -821,24 +671,30 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LinearGenomeViewModel
-                if (
-                  !view.initialized ||
-                  self.regionTooLarge ||
-                  self.isLoading ||
-                  self.error
-                ) {
+                // DO NOT REMOVE: observe fetchGeneration
+                // unconditionally (before any early returns) so MobX
+                // always tracks it. fetchGeneration re-fires after
+                // clearAllRpcData.
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                self.fetchGeneration
+                if (!view.initialized || self.regionTooLarge || self.error) {
                   return
                 }
 
-                if (self.needsLayoutRefresh) {
+                const staticRegs = view.staticRegions
+                const bpPerPx = view.bpPerPx
+                if (untracked(() => self.needsLayoutRefresh)) {
                   self.clearAllRpcData()
                 }
 
-                const bpPerPx = view.bpPerPx
-                const staticRegs = view.staticRegions
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of staticRegs) {
-                  const loaded = self.loadedRegions.get(vr.regionNumber)
+                  // Read loadedRegions inside untracked so that partial
+                  // Promise.all completions don't re-trigger this autorun
+                  // and cancel sibling fetches still in flight.
+                  const loaded = untracked(() =>
+                    self.loadedRegions.get(vr.regionNumber),
+                  )
                   if (
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
