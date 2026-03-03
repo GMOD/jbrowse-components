@@ -136,6 +136,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     const { statusCallback = () => {} } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
+    const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
     const { parser, bigbed } = await updateStatus(
       'Downloading header',
       statusCallback,
@@ -200,6 +201,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           start: feat.start,
           end: feat.end,
           refName: query.refName,
+          disableGeneHeuristic,
         })
         if (aggrIsNotNone) {
           parentAggregation[aggr]!.push(f)

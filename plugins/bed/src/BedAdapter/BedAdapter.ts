@@ -125,6 +125,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
     const names = await this.getNames()
+    const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
 
     const intervalTree = new IntervalTree<Feature>()
     // eslint-disable-next-line unicorn/no-for-loop
@@ -141,6 +142,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
           parser,
           uniqueId,
           names,
+          disableGeneHeuristic,
         }),
       )
       intervalTree.insert([feat.get('start'), feat.get('end')], feat)

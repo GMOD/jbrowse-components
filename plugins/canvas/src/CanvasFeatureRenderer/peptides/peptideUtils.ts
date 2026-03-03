@@ -113,7 +113,7 @@ function extractCDSRegions(feature: Feature) {
     .map((sub: Feature) => ({
       start: sub.get('start') - featureStart,
       end: sub.get('end') - featureStart,
-      phase: (sub.get('phase') as number) ?? 0,
+      phase: (sub.get('phase') as number | undefined) ?? 0,
     }))
 }
 
