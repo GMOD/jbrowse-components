@@ -67,6 +67,17 @@ export default function MultiRegionDisplayMixin() {
       error: null as Error | null,
       renderingStopToken: undefined as string | undefined,
       fetchGeneration: 0,
+      // Monotonic counter bumped each time new data arrives via
+      // setLoadedRegionForRegion. GPU-backed displays have separate
+      // "upload" and "render" autoruns: the upload autorun observes
+      // rpcDataMap and pushes geometry to the GPU (expensive), while
+      // the render autorun observes view coordinates and issues draw
+      // calls (cheap). Because the GPU renderer is a black box outside
+      // MobX tracking, there is no observable link between "data was
+      // uploaded" and "canvas needs redrawing." Render autoruns should
+      // read this counter to create that link, ensuring a redraw fires
+      // after every upload.
+      dataVersion: 0,
     }))
     .views(self => ({
       get scalebarOverlapLeft() {
@@ -96,6 +107,7 @@ export default function MultiRegionDisplayMixin() {
         const next = new Map(self.loadedRegions)
         next.set(regionNumber, region)
         self.loadedRegions = next
+        self.dataVersion++
       },
 
       clearDisplaySpecificData() {

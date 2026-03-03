@@ -22,6 +22,8 @@ export const ArcsSubModel = types
   })
   .volatile(() => ({
     rpcDataMap: new Map<number, ArcsDataResult>(),
+    // See dataVersion comment in MultiRegionDisplayMixin.
+    dataVersion: 0,
   }))
   .views(self => ({
     get lineWidth(): number {
@@ -37,6 +39,7 @@ export const ArcsSubModel = types
         next.delete(regionNumber)
       }
       self.rpcDataMap = next
+      self.dataVersion++
     },
     clearAllRpcData() {
       self.rpcDataMap = new Map()

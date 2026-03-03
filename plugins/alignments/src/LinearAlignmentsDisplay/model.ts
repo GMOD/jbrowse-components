@@ -1791,7 +1791,6 @@ export default function stateModelFactory(
           )
 
           // Draw autorun: re-renders whenever visual settings change.
-          // Also tracks rpcDataMap so it re-fires after uploads above.
           addDisposer(
             self,
             autorun(
@@ -1805,6 +1804,12 @@ export default function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+
+                // See dataVersion comment in MultiRegionDisplayMixin.
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const _dv = self.dataVersion
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const _adv = self.arcsState.dataVersion
                 const regions = view.visibleRegions
                 const blocks = regions.map(r => ({
                   regionNumber: r.regionNumber,

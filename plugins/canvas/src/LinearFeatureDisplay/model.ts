@@ -69,6 +69,7 @@ type LGV = LinearGenomeViewModel
 function computeAndAssignLayout(
   rpcDataMap: Map<number, FeatureDataResult>,
   bpPerPx: number,
+  staticRegions: { regionNumber: number; start: number; end: number }[],
 ) {
   const entries = [...rpcDataMap.entries()].filter(
     ([, d]) => d.flatbushItems.length > 0,
@@ -77,38 +78,90 @@ function computeAndAssignLayout(
     return
   }
 
+  // Build a pixel offset and width for each region so features from different
+  // chromosomes/regions are placed at non-overlapping horizontal positions
+  // in layout space. Without this, features from different regions with
+  // similar absolute bp coordinates would incorrectly overlap in the layout.
+  const regionLayoutInfo = new Map<
+    number,
+    { offsetPx: number; widthPx: number }
+  >()
+  let cumulativeOffsetPx = 0
+  for (const region of staticRegions) {
+    const widthPx = (region.end - region.start) / bpPerPx
+    regionLayoutInfo.set(region.regionNumber, {
+      offsetPx: cumulativeOffsetPx,
+      widthPx,
+    })
+    cumulativeOffsetPx += widthPx
+  }
+
   // Collect all unique features across all regions (keyed by featureId).
   // bottomPx equals layoutHeight since topPx is always 0 from the worker.
+  // Clamp rightPx to the region boundary so that label-width extensions
+  // (layoutEndBp > region end) don't bleed into the next region's pixel
+  // range, which would cause false horizontal overlaps in the layout and
+  // push features from the next region to unnecessarily high Y positions.
   const allFeatures = new Map<
     string,
-    { startBp: number; layoutEndBp: number; height: number }
+    { leftPx: number; rightPx: number; height: number }
   >()
-  for (const [, data] of entries) {
+  for (const [regionNumber, data] of entries) {
+    const info = regionLayoutInfo.get(regionNumber)
+    if (!info) {
+      continue
+    }
+    const { offsetPx, widthPx } = info
+    const regionEndPx = offsetPx + widthPx
     for (const item of data.flatbushItems) {
       if (!allFeatures.has(item.featureId)) {
         allFeatures.set(item.featureId, {
-          startBp: item.startBp,
-          layoutEndBp: item.layoutEndBp,
+          leftPx: offsetPx + (item.startBp - data.regionStart) / bpPerPx,
+          rightPx: Math.min(
+            regionEndPx,
+            offsetPx + (item.layoutEndBp - data.regionStart) / bpPerPx,
+          ),
           height: item.bottomPx,
         })
       }
     }
   }
 
+  console.debug(
+    '[computeAndAssignLayout]',
+    'regions:',
+    staticRegions.length,
+    'features:',
+    allFeatures.size,
+    'regionOffsets:',
+    [...regionLayoutInfo.entries()],
+  )
+
   // Use GranularRectLayout for efficient 2D packing with label-width awareness.
-  // Convert bp coordinates to pixel coordinates for the layout.
   const layout = new GranularRectLayout({ displayMode: 'normal' })
   const layoutMap = new Map<string, number>()
 
   const sorted = [...allFeatures.entries()].sort(
-    ([, a], [, b]) => a.startBp - b.startBp,
+    ([, a], [, b]) => a.leftPx - b.leftPx,
   )
 
-  for (const [id, { startBp, layoutEndBp, height }] of sorted) {
-    const leftPx = startBp / bpPerPx
-    const rightPx = layoutEndBp / bpPerPx
+  for (const [id, { leftPx, rightPx, height }] of sorted) {
     const top = layout.addRect(id, leftPx, rightPx, height)
     layoutMap.set(id, top ?? 0)
+    console.debug(
+      '[layout]',
+      id,
+      'leftPx:',
+      Math.round(leftPx),
+      'rightPx:',
+      Math.round(rightPx),
+      'widthPx:',
+      Math.round(rightPx - leftPx),
+      'height:',
+      height,
+      '→ top:',
+      top,
+    )
   }
 
   for (const [, data] of entries) {
@@ -628,7 +681,8 @@ export default function stateModelFactory(
             dataMap.set(r.regionNumber, r.data)
           }
         }
-        computeAndAssignLayout(dataMap, bpPerPx)
+        const view = getContainingView(self) as LGV
+        computeAndAssignLayout(dataMap, bpPerPx, view.staticRegions)
         for (const r of results) {
           if (r) {
             self.setLoadedRegionForRegion(r.regionNumber, r.region)

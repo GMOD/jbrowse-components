@@ -40,6 +40,7 @@ type LGV = LinearGenomeViewModel
 
 export interface MultiWiggleDisplayModel {
   rpcDataMap: Map<number, MultiWiggleDataResult>
+  dataVersion: number
   sources: { name: string; color?: string; labelColor?: string }[]
   height: number
   domain: [number, number] | undefined
@@ -227,7 +228,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     }
 
     return autorun(() => {
-      if (!view.initialized || !model.domain) {
+      if (!view.initialized) {
         return
       }
 
@@ -236,12 +237,21 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _sources = model.sources
 
+      // See dataVersion comment in MultiRegionDisplayMixin.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _dv = model.dataVersion
+
+      const { domain } = model
       const visibleRegions = view.visibleRegions
-      if (visibleRegions.length === 0) {
+      const totalWidth = Math.round(view.width)
+
+      if (!domain || visibleRegions.length === 0) {
+        renderer.renderBlocks(
+          [],
+          makeRenderState([0, 1], 'linear', 'xyplot', totalWidth, model.height),
+        )
         return
       }
-
-      const totalWidth = Math.round(view.width)
 
       const blocks: WiggleRenderBlock[] = visibleRegions.map(vr => ({
         regionNumber: vr.regionNumber,
@@ -253,7 +263,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       renderer.renderBlocks(
         blocks,
         makeRenderState(
-          model.domain,
+          domain,
           model.scaleType,
           model.renderingType,
           totalWidth,

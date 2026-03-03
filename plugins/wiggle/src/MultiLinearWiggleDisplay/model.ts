@@ -762,6 +762,11 @@ export default function stateModelFactory(
             autorun(
               async () => {
                 const view = getContainingView(self) as LGV
+                // DO NOT REMOVE: observe bpPerPx unconditionally
+                // (before any early returns) so MobX always tracks it.
+                // bpPerPx triggers re-evaluation on zoom even while
+                // a fetch is in progress.
+                const { bpPerPx } = view
                 if (!view.initialized || self.isLoading || self.error) {
                   console.debug(
                     '[MultiLinearWiggleDisplay] FetchVisibleRegions autorun skipped',
@@ -773,7 +778,6 @@ export default function stateModelFactory(
                   )
                   return
                 }
-                const { bpPerPx } = view
                 const { resolution } = self
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of view.staticRegions) {
