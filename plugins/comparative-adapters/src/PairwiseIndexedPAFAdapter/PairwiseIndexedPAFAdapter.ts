@@ -63,7 +63,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     if (!this.summaryRefsPromise) {
       this.summaryRefsPromise = this.pif
         .getReferenceSequenceNames()
-        .then(names => new Set(names.filter(n => n.startsWith('s'))))
+        .then(
+          names =>
+            new Set(
+              names.filter(n => n.startsWith('sq') || n.startsWith('st')),
+            ),
+        )
     }
     return this.summaryRefsPromise
   }

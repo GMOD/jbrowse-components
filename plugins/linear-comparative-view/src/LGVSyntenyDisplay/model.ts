@@ -51,6 +51,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(schema),
       }),
     )
+    .preProcessSnapshot(snap => ({
+      showCoverage: false,
+      ...snap,
+    }))
     .views(self => {
       const superContextMenuItems = self.contextMenuItems
       return {
@@ -121,7 +125,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         session.setSelection(feature)
       },
       afterCreate() {
-        self.setShowCoverage(false)
         // use color by strand to help indicate inversions better on first load,
         // otherwise use selected orientation
         if (!self.colorBySetting && self.colorBy.type === 'normal') {
