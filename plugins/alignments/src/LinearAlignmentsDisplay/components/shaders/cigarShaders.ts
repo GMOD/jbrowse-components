@@ -224,8 +224,7 @@ uniform vec3 u_colorInsertion;
 
 out vec4 v_color;
 
-// Approximate text width in pixels for a number
-// Returns width needed to display the number as text
+// SYNC: must match textWidthForNumber() and insertionBarWidth() in constants.ts
 float textWidthForNumber(uint num) {
   // Approximate character widths: ~6px per digit
   // Plus padding of 5px on each side = 10px total

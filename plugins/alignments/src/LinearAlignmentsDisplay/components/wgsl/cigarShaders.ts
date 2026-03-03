@@ -171,6 +171,7 @@ ${CIGAR_DOMAIN}
 struct InsertionInst { position: u32, y: u32, length: u32, frequency: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<InsertionInst>;
 
+// SYNC: must match textWidthForNumber() and insertionBarWidth() in constants.ts
 fn text_width(num: u32) -> f32 {
   let cw = 6.0; let pad = 10.0;
   if num < 10u { return cw + pad; }

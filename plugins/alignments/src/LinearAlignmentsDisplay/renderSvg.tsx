@@ -15,7 +15,7 @@ import {
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  insertionBarWidth,
 } from './constants.ts'
 import { ColorScheme, YSCALEBAR_LABEL_OFFSET } from './model.ts'
 
@@ -56,6 +56,25 @@ function hslToRgbString(h: number, s: number, l: number) {
     ;[r, g, b] = [c, 0, x]
   }
   return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
+}
+
+function makeBasePalette(palette: ColorPalette) {
+  return {
+    A: palette.colorBaseA,
+    C: palette.colorBaseC,
+    G: palette.colorBaseG,
+    T: palette.colorBaseT,
+  } as Record<string, RGBColor>
+}
+
+function getBaseColorString(
+  base: string,
+  basePalette: Record<string, RGBColor>,
+  palette: ColorPalette,
+) {
+  return basePalette[base]
+    ? rgb255(basePalette[base])
+    : rgb255(palette.colorNostrand)
 }
 
 function getReadColor(
@@ -709,6 +728,7 @@ export async function renderSvg(
     }
 
     const { regionStart, numReads, readPositions, readYs } = data
+    const basePal = makeBasePalette(palette)
 
     if (pileupCtx) {
       for (let i = 0; i < numReads; i++) {
@@ -736,30 +756,35 @@ export async function renderSvg(
       if (model.showMismatches) {
         const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
           data
+        const pxPerBp = 1 / bpPerPx
+        // SYNC: mismatch rendering must match shaders/cigarShaders.ts
+        // MISMATCH_VERTEX_SHADER and wgsl/cigarShaders.ts MISMATCH_WGSL
+        // (sub-pixel alpha = pxPerBp, min 1px width)
         for (let i = 0; i < numMismatches; i++) {
           const pos = regionStart + mismatchPositions[i]!
           if (pos < block.start || pos > block.end) {
             continue
           }
           const x = (pos - block.start) / bpPerPx + blockScreenX
-          const w = Math.max(1 / bpPerPx, 0.5)
+          const w = Math.max(1 / bpPerPx, 1)
           const y = mismatchYs[i]! * rowHeight
-          const base = String.fromCharCode(mismatchBases[i]!)
-          const basePalette: Record<string, RGBColor> = {
-            A: palette.colorBaseA,
-            C: palette.colorBaseC,
-            G: palette.colorBaseG,
-            T: palette.colorBaseT,
+          let mismatchAlpha = 1
+          if (pxPerBp < 1 && data.mismatchFrequencies[i] === 0) {
+            mismatchAlpha = pxPerBp
           }
-          pileupCtx.fillStyle = basePalette[base]
-            ? rgb255(basePalette[base])
-            : rgb255(palette.colorNostrand)
-          pileupCtx.fillRect(x, y, w, featureHeightSetting)
+          if (mismatchAlpha > 0) {
+            const base = String.fromCharCode(mismatchBases[i]!)
+            pileupCtx.globalAlpha = mismatchAlpha
+            pileupCtx.fillStyle = getBaseColorString(base, basePal, palette)
+            pileupCtx.fillRect(x, y, w, featureHeightSetting)
+            pileupCtx.globalAlpha = 1
+          }
         }
 
-        const pxPerBp = 1 / bpPerPx
         const deletionColor = rgb255(palette.colorDeletion)
         const skipColor = rgb255(palette.colorSkip)
+        // SYNC: gap rendering must match shaders/cigarShaders.ts GAP_VERTEX_SHADER
+        // and wgsl/cigarShaders.ts GAP_WGSL (sub-pixel alpha = widthPx^2)
         for (let i = 0; i < data.numGaps; i++) {
           const startBp = regionStart + data.gapPositions[i * 2]!
           const endBp = regionStart + data.gapPositions[i * 2 + 1]!
@@ -771,7 +796,7 @@ export async function renderSvg(
           const clippedEnd = Math.min(endBp, block.end)
           const gx = (clippedStart - block.start) / bpPerPx + blockScreenX
           const gx2 = (clippedEnd - block.start) / bpPerPx + blockScreenX
-          const gw = Math.max(gx2 - gx, 0.5)
+          const gw = gx2 - gx
           const gy = data.gapYs[i]! * rowHeight
 
           if (gapType === 0) {
@@ -800,6 +825,9 @@ export async function renderSvg(
         const insertionColor = rgb255(palette.colorInsertion)
         const softclipColor = rgb255(palette.colorSoftclip)
         const hardclipColor = rgb255(palette.colorHardclip)
+        // SYNC: insertion rendering must match shaders/cigarShaders.ts
+        // INSERTION_VERTEX_SHADER and wgsl/cigarShaders.ts INSERTION_WGSL
+        // (sub-pixel alpha = pxPerBp^2, width thresholds, serif logic)
         for (let i = 0; i < data.numInterbases; i++) {
           const pos = regionStart + data.interbasePositions[i]!
           if (pos < block.start || pos > block.end) {
@@ -810,47 +838,56 @@ export async function renderSvg(
           const cx = (pos - block.start) / bpPerPx + blockScreenX
 
           if (ibType === 1) {
-            pileupCtx.fillStyle = insertionColor
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
-            const insertionWidthPx = len * pxPerBp
-            const isLarge =
-              isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
-            let barW: number
-            if (isLarge) {
-              const digits =
-                len < 10
-                  ? 1
-                  : len < 100
-                    ? 2
-                    : len < 1000
-                      ? 3
-                      : len < 10000
-                        ? 4
-                        : 5
-              barW = digits * 6 + 10
-            } else if (isLong) {
-              barW = Math.min(5, insertionWidthPx / 3)
-            } else {
-              barW = 1
+            const barW = insertionBarWidth(len, pxPerBp)
+            const isLarge = barW > 5
+            let insertionAlpha = 1
+            if (!isLong && pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
+              insertionAlpha = pxPerBp * pxPerBp
             }
-            pileupCtx.fillRect(cx - barW / 2, ibY, barW, featureHeightSetting)
-            if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
-              pileupCtx.fillRect(cx - 1.5, ibY, 3, 1)
-              pileupCtx.fillRect(cx - 1.5, ibY + featureHeightSetting - 1, 3, 1)
-            }
-            if (isLarge) {
-              pileupCtx.fillStyle = 'white'
-              pileupCtx.font = '9px sans-serif'
-              pileupCtx.textAlign = 'center'
-              pileupCtx.textBaseline = 'middle'
-              pileupCtx.fillText(`${len}`, cx, ibY + featureHeightSetting / 2)
+            if (insertionAlpha > 0) {
+              pileupCtx.globalAlpha = insertionAlpha
+              pileupCtx.fillStyle = insertionColor
+              pileupCtx.fillRect(cx - barW / 2, ibY, barW, featureHeightSetting)
+              if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+                pileupCtx.fillRect(cx - 1.5, ibY, 3, 1)
+                pileupCtx.fillRect(
+                  cx - 1.5,
+                  ibY + featureHeightSetting - 1,
+                  3,
+                  1,
+                )
+              }
+              if (isLarge) {
+                pileupCtx.fillStyle = 'white'
+                pileupCtx.font = '9px sans-serif'
+                pileupCtx.textAlign = 'center'
+                pileupCtx.textBaseline = 'middle'
+                pileupCtx.fillText(
+                  `${len}`,
+                  cx,
+                  ibY + featureHeightSetting / 2,
+                )
+              }
+              pileupCtx.globalAlpha = 1
             }
           } else {
+            // SYNC: softclip/hardclip rendering must match
+            // shaders/cigarShaders.ts SOFTCLIP_VERTEX_SHADER/HARDCLIP_VERTEX_SHADER
+            // and wgsl/cigarShaders.ts (sub-pixel alpha = pxPerBp)
             const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
             const bw = Math.max(barWidthBp / bpPerPx, 1)
-            pileupCtx.fillStyle = ibType === 2 ? softclipColor : hardclipColor
-            pileupCtx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
+            let clipAlpha = 1
+            if (pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
+              clipAlpha = pxPerBp
+            }
+            if (clipAlpha > 0) {
+              pileupCtx.globalAlpha = clipAlpha
+              pileupCtx.fillStyle = ibType === 2 ? softclipColor : hardclipColor
+              pileupCtx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
+              pileupCtx.globalAlpha = 1
+            }
           }
         }
 
@@ -876,12 +913,6 @@ export async function renderSvg(
       }
 
       if (showSoftClipping && data.numSoftclipBases > 0) {
-        const scBasePalette: Record<string, RGBColor> = {
-          A: palette.colorBaseA,
-          C: palette.colorBaseC,
-          G: palette.colorBaseG,
-          T: palette.colorBaseT,
-        }
         for (let i = 0; i < data.numSoftclipBases; i++) {
           const pos = regionStart + data.softclipBasePositions[i]!
           if (pos < block.start || pos > block.end) {
@@ -891,9 +922,7 @@ export async function renderSvg(
           const x = (pos - block.start) / bpPerPx + blockScreenX
           const w = Math.max(1 / bpPerPx, 0.5)
           const y = data.softclipBaseYs[i]! * rowHeight
-          pileupCtx.fillStyle = scBasePalette[base]
-            ? rgb255(scBasePalette[base])
-            : rgb255(palette.colorNostrand)
+          pileupCtx.fillStyle = getBaseColorString(base, basePal, palette)
           pileupCtx.fillRect(x, y, w, featureHeightSetting)
         }
       }
@@ -923,30 +952,33 @@ export async function renderSvg(
       if (model.showMismatches) {
         const { mismatchPositions, mismatchYs, mismatchBases, numMismatches } =
           data
+        const pxPerBp = 1 / bpPerPx
+        // SYNC: mismatch rendering must match shaders/cigarShaders.ts
+        // MISMATCH_VERTEX_SHADER and wgsl/cigarShaders.ts MISMATCH_WGSL
+        // (sub-pixel alpha = pxPerBp, min 1px width)
         for (let i = 0; i < numMismatches; i++) {
           const pos = regionStart + mismatchPositions[i]!
           if (pos < block.start || pos > block.end) {
             continue
           }
           const x = (pos - block.start) / bpPerPx + blockScreenX
-          const w = Math.max(1 / bpPerPx, 0.5)
+          const w = Math.max(1 / bpPerPx, 1)
           const y = pileupTopOffset + mismatchYs[i]! * rowHeight
-          const base = String.fromCharCode(mismatchBases[i]!)
-          const basePalette: Record<string, RGBColor> = {
-            A: palette.colorBaseA,
-            C: palette.colorBaseC,
-            G: palette.colorBaseG,
-            T: palette.colorBaseT,
+          let mismatchAlpha = 1
+          if (pxPerBp < 1 && data.mismatchFrequencies[i] === 0) {
+            mismatchAlpha = pxPerBp
           }
-          const color = basePalette[base]
-            ? rgb255(basePalette[base])
-            : rgb255(palette.colorNostrand)
-          content += `<rect x="${x}" y="${y}" width="${w}" height="${featureHeightSetting}" fill="${color}"/>`
+          if (mismatchAlpha > 0) {
+            const base = String.fromCharCode(mismatchBases[i]!)
+            const color = getBaseColorString(base, basePal, palette)
+            content += `<rect x="${x}" y="${y}" width="${w}" height="${featureHeightSetting}" fill="${color}" fill-opacity="${mismatchAlpha}"/>`
+          }
         }
 
-        const pxPerBp = 1 / bpPerPx
         const deletionColor = rgb255(palette.colorDeletion)
         const skipColor = rgb255(palette.colorSkip)
+        // SYNC: gap rendering must match shaders/cigarShaders.ts GAP_VERTEX_SHADER
+        // and wgsl/cigarShaders.ts GAP_WGSL (sub-pixel alpha = widthPx^2)
         for (let i = 0; i < data.numGaps; i++) {
           const startBp = regionStart + data.gapPositions[i * 2]!
           const endBp = regionStart + data.gapPositions[i * 2 + 1]!
@@ -958,7 +990,7 @@ export async function renderSvg(
           const clippedEnd = Math.min(endBp, block.end)
           const gx = (clippedStart - block.start) / bpPerPx + blockScreenX
           const gx2 = (clippedEnd - block.start) / bpPerPx + blockScreenX
-          const gw = Math.max(gx2 - gx, 0.5)
+          const gw = gx2 - gx
           const gy = pileupTopOffset + data.gapYs[i]! * rowHeight
 
           if (gapType === 0) {
@@ -979,6 +1011,9 @@ export async function renderSvg(
         const insertionColor = rgb255(palette.colorInsertion)
         const softclipColor = rgb255(palette.colorSoftclip)
         const hardclipColor = rgb255(palette.colorHardclip)
+        // SYNC: insertion rendering must match shaders/cigarShaders.ts
+        // INSERTION_VERTEX_SHADER and wgsl/cigarShaders.ts INSERTION_WGSL
+        // (sub-pixel alpha = pxPerBp^2, width thresholds, serif logic)
         for (let i = 0; i < data.numInterbases; i++) {
           const pos = regionStart + data.interbasePositions[i]!
           if (pos < block.start || pos > block.end) {
@@ -991,42 +1026,38 @@ export async function renderSvg(
           if (ibType === 1) {
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
-            const insertionWidthPx = len * pxPerBp
-            const isLarge =
-              isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
-            let barW: number
-            if (isLarge) {
-              const digits =
-                len < 10
-                  ? 1
-                  : len < 100
-                    ? 2
-                    : len < 1000
-                      ? 3
-                      : len < 10000
-                        ? 4
-                        : 5
-              barW = digits * 6 + 10
-            } else if (isLong) {
-              barW = Math.min(5, insertionWidthPx / 3)
-            } else {
-              barW = 1
+            const barW = insertionBarWidth(len, pxPerBp)
+            const isLarge = barW > 5
+            let insertionAlpha = 1
+            if (!isLong && pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
+              insertionAlpha = pxPerBp * pxPerBp
             }
-            content += `<rect x="${cx - barW / 2}" y="${ibY}" width="${barW}" height="${featureHeightSetting}" fill="${insertionColor}"/>`
-            if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
-              const tickW = 3
-              content += `<rect x="${cx - tickW / 2}" y="${ibY}" width="${tickW}" height="1" fill="${insertionColor}"/>`
-              content += `<rect x="${cx - tickW / 2}" y="${ibY + featureHeightSetting - 1}" width="${tickW}" height="1" fill="${insertionColor}"/>`
-            }
-            if (isLarge) {
-              const textY = ibY + featureHeightSetting / 2
-              content += `<text x="${cx}" y="${textY}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="white">${len}</text>`
+            if (insertionAlpha > 0) {
+              content += `<rect x="${cx - barW / 2}" y="${ibY}" width="${barW}" height="${featureHeightSetting}" fill="${insertionColor}" fill-opacity="${insertionAlpha}"/>`
+              if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+                const tickW = 3
+                content += `<rect x="${cx - tickW / 2}" y="${ibY}" width="${tickW}" height="1" fill="${insertionColor}" fill-opacity="${insertionAlpha}"/>`
+                content += `<rect x="${cx - tickW / 2}" y="${ibY + featureHeightSetting - 1}" width="${tickW}" height="1" fill="${insertionColor}" fill-opacity="${insertionAlpha}"/>`
+              }
+              if (isLarge) {
+                const textY = ibY + featureHeightSetting / 2
+                content += `<text x="${cx}" y="${textY}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="white">${len}</text>`
+              }
             }
           } else {
+            // SYNC: softclip/hardclip rendering must match
+            // shaders/cigarShaders.ts SOFTCLIP_VERTEX_SHADER/HARDCLIP_VERTEX_SHADER
+            // and wgsl/cigarShaders.ts (sub-pixel alpha = pxPerBp)
             const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
             const bw = Math.max(barWidthBp / bpPerPx, 1)
-            const color = ibType === 2 ? softclipColor : hardclipColor
-            content += `<rect x="${cx - bw / 2}" y="${ibY}" width="${bw}" height="${featureHeightSetting}" fill="${color}"/>`
+            let clipAlpha = 1
+            if (pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
+              clipAlpha = pxPerBp
+            }
+            if (clipAlpha > 0) {
+              const color = ibType === 2 ? softclipColor : hardclipColor
+              content += `<rect x="${cx - bw / 2}" y="${ibY}" width="${bw}" height="${featureHeightSetting}" fill="${color}" fill-opacity="${clipAlpha}"/>`
+            }
           }
         }
 
@@ -1049,12 +1080,6 @@ export async function renderSvg(
       }
 
       if (showSoftClipping && data.numSoftclipBases > 0) {
-        const scBasePalette: Record<string, RGBColor> = {
-          A: palette.colorBaseA,
-          C: palette.colorBaseC,
-          G: palette.colorBaseG,
-          T: palette.colorBaseT,
-        }
         for (let i = 0; i < data.numSoftclipBases; i++) {
           const pos = regionStart + data.softclipBasePositions[i]!
           if (pos < block.start || pos > block.end) {
@@ -1064,9 +1089,7 @@ export async function renderSvg(
           const x = (pos - block.start) / bpPerPx + blockScreenX
           const w = Math.max(1 / bpPerPx, 0.5)
           const ibY = pileupTopOffset + data.softclipBaseYs[i]! * rowHeight
-          const color = scBasePalette[base]
-            ? rgb255(scBasePalette[base])
-            : rgb255(palette.colorNostrand)
+          const color = getBaseColorString(base, basePal, palette)
           content += `<rect x="${x}" y="${ibY}" width="${w}" height="${featureHeightSetting}" fill="${color}"/>`
         }
       }
