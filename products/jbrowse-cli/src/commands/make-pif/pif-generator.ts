@@ -1,7 +1,12 @@
 import { spawn } from 'child_process'
 import path from 'path'
 
-import { flipCigar, parseCigar, swapIndelCigar } from './cigar-utils.ts'
+import {
+  flipCigar,
+  parseCigar,
+  splitAlignmentByCigar,
+  swapIndelCigar,
+} from './cigar-utils.ts'
 import {
   createWriteWithBackpressure,
   getReadline,
@@ -10,38 +15,58 @@ import {
 
 import type { WritableStream } from './file-utils.ts'
 
+function stripCigarFromRest(rest: string[]) {
+  return rest.filter(f => !f.startsWith('cg:Z:'))
+}
+
 export async function createPIF(
   filename: string | undefined,
   stream: WritableStream,
+  splitThreshold = 10000,
 ): Promise<void> {
   const rl1 = filename ? getReadline(filename) : getStdReadline()
   const writeWithBackpressure = createWriteWithBackpressure(stream)
 
-  // Process the file line by line with backpressure handling
   try {
     for await (const line of rl1) {
-      const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
+      const columns = line.split('\t')
+      const subAlignments = splitAlignmentByCigar(columns, splitThreshold)
 
-      // Write the first line and handle backpressure
-      await writeWithBackpressure(
-        `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`,
-      )
+      for (const cols of subAlignments) {
+        const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = cols
 
-      const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
+        // t-prefix line (full, with CIGAR)
+        await writeWithBackpressure(
+          `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`,
+        )
 
-      const CIGAR = rest[cigarIdx]
-      if (CIGAR) {
-        rest[cigarIdx] = `cg:Z:${
-          strand === '-'
-            ? flipCigar(parseCigar(CIGAR.slice(5))).join('')
-            : swapIndelCigar(CIGAR.slice(5))
-        }`
+        // st-prefix line (summary, no CIGAR)
+        const summaryRestT = stripCigarFromRest(rest)
+        await writeWithBackpressure(
+          `${[`st${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRestT].join('\t')}\n`,
+        )
+
+        const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
+        const CIGAR = rest[cigarIdx]
+        if (CIGAR) {
+          rest[cigarIdx] = `cg:Z:${
+            strand === '-'
+              ? flipCigar(parseCigar(CIGAR.slice(5))).join('')
+              : swapIndelCigar(CIGAR.slice(5))
+          }`
+        }
+
+        // q-prefix line (full, with CIGAR)
+        await writeWithBackpressure(
+          `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
+        )
+
+        // sq-prefix line (summary, no CIGAR)
+        const summaryRestQ = stripCigarFromRest(rest)
+        await writeWithBackpressure(
+          `${[`sq${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...summaryRestQ].join('\t')}\n`,
+        )
       }
-
-      // Write the second line and handle backpressure
-      await writeWithBackpressure(
-        `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest].join('\t')}\n`,
-      )
     }
   } catch (error) {
     console.error('Error processing PAF file:', error)

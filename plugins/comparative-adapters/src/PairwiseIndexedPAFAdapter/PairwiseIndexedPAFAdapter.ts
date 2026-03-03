@@ -22,6 +22,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
+  private summaryRefsPromise?: Promise<Set<string>>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -58,6 +59,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       : assemblyNames
   }
 
+  private getSummaryRefNames() {
+    if (!this.summaryRefsPromise) {
+      this.summaryRefsPromise = this.pif
+        .getReferenceSequenceNames()
+        .then(names => new Set(names.filter(n => n.startsWith('s'))))
+    }
+    return this.summaryRefsPromise
+  }
+
   public async hasDataForRefName() {
     return true
   }
@@ -65,22 +75,29 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
     if (!r1) {
-      throw new Error('no assembly name provided')
+      // Called without assembly context (e.g. from CoreGetRefNames RPC via
+      // assembly manager). Return empty — hasDataForRefName returns true
+      // unconditionally so the ref name map isn't needed for this adapter.
+      return []
     }
 
     const idx = this.getAssemblyNames().indexOf(r1)
     const names = await this.pif.getReferenceSequenceNames(opts)
     if (idx === 0) {
-      return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
+      return names
+        .filter(n => n.startsWith('q') && !n.startsWith('sq'))
+        .map(n => n.slice(1))
     } else if (idx === 1) {
-      return names.filter(n => n.startsWith('t')).map(n => n.slice(1))
+      return names
+        .filter(n => n.startsWith('t') && !n.startsWith('st'))
+        .map(n => n.slice(1))
     } else {
       return []
     }
   }
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
-    const { statusCallback = () => {} } = opts
+    const { statusCallback = () => {}, bpPerPx } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
@@ -97,11 +114,23 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // - 't' prefix lines are indexed by target coordinates
       const letter = flip ? 'q' : 't'
 
+      // Use summary prefix (sq/st) when zoomed out for faster queries
+      const useSummary = bpPerPx !== undefined && bpPerPx > 500
+      let prefix = useSummary ? `s${letter}` : letter
+
+      // Fallback: if summary refs don't exist (old PIF file), use full prefix
+      if (useSummary) {
+        const summaryRefs = await this.getSummaryRefNames()
+        if (!summaryRefs.has(prefix + query.refName)) {
+          prefix = letter
+        }
+      }
+
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]
 
       await updateStatus('Downloading features', statusCallback, () =>
-        this.pif.getLines(letter + query.refName, query.start, query.end, {
+        this.pif.getLines(prefix + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
             const { extra, strand } = r
@@ -118,7 +147,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             // represent the mate coords
             const start = r.qstart
             const end = r.qend
-            const refName = r.qname.slice(1) // Strip 'q'/'t' prefix
+            const prefixLen = prefix.length
+            const refName = r.qname.slice(prefixLen)
             const mateName = r.tname
             const mateStart = r.tstart
             const mateEnd = r.tend

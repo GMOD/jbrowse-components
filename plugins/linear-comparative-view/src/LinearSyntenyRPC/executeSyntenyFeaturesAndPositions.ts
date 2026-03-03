@@ -105,9 +105,10 @@ export async function executeSyntenyFeaturesAndPositions({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
+  const bpPerPx = viewSnaps[level]!.bpPerPx
   const allFeatures = await firstValueFrom(
     dataAdapter
-      .getFeaturesInMultipleRegions(regions, { stopToken })
+      .getFeaturesInMultipleRegions(regions, { stopToken, bpPerPx })
       .pipe(toArray()),
   )
   const seen = new Set<string>()

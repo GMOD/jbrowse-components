@@ -867,6 +867,22 @@ export default function stateModelFactory(
         },
       }
     })
+
+    .views(self => ({
+      get contextMenuFeature() {
+        return self.contextMenuInfo?.feature
+      },
+    }))
+    .views(self => ({
+      get isGeneLike() {
+        const type = `${self.contextMenuFeature?.get('type')}`.toLowerCase()
+        return (
+          type.includes('gene') ||
+          type.includes('rna') ||
+          type.includes('transcript')
+        )
+      },
+    }))
     .views(self => ({
       contextMenuItems() {
         const info = self.contextMenuInfo
@@ -875,11 +891,6 @@ export default function stateModelFactory(
         }
         const { feature: feat, regionNumber } = info
         const region = self.loadedRegions.get(regionNumber)
-        const type = `${feat.get('type')}`.toLowerCase()
-        const geneLike =
-          type.includes('gene') ||
-          type.includes('rna') ||
-          type.includes('transcript')
         return [
           {
             label: 'Open feature details',
@@ -924,7 +935,7 @@ export default function stateModelFactory(
               })()
             },
           },
-          ...(geneLike
+          ...(self.isGeneLike
             ? [
                 {
                   label: 'Collapse introns',
