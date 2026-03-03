@@ -181,4 +181,46 @@ describe('getSources', () => {
       HP: 0,
     })
   })
+
+  test('layout colors are preserved when reordering (e.g. after clustering)', () => {
+    const layout = [
+      { name: 'HG003', color: 'blue' },
+      { name: 'HG001', color: 'red' },
+      { name: 'HG002', color: 'green' },
+    ]
+
+    const result = getSources({
+      sources: baseSources,
+      layout,
+      renderingMode: 'alleleCount',
+      sampleInfo,
+    })
+
+    expect(result).toHaveLength(3)
+    expect(result[0]).toMatchObject({ name: 'HG003', color: 'blue' })
+    expect(result[1]).toMatchObject({ name: 'HG001', color: 'red' })
+    expect(result[2]).toMatchObject({ name: 'HG002', color: 'green' })
+  })
+
+  test('layout colors are preserved in phased mode with haplotype layout', () => {
+    const haplotypeLayout = [
+      { name: 'HG002 HP0', baseName: 'HG002', HP: 0, color: 'green' },
+      { name: 'HG001 HP1', baseName: 'HG001', HP: 1, color: 'red' },
+      { name: 'HG001 HP0', baseName: 'HG001', HP: 0, color: 'red' },
+      { name: 'HG002 HP1', baseName: 'HG002', HP: 1, color: 'green' },
+    ]
+
+    const result = getSources({
+      sources: baseSources,
+      layout: haplotypeLayout,
+      renderingMode: 'phased',
+      sampleInfo,
+    })
+
+    expect(result).toHaveLength(4)
+    expect(result[0]).toMatchObject({ name: 'HG002 HP0', color: 'green' })
+    expect(result[1]).toMatchObject({ name: 'HG001 HP1', color: 'red' })
+    expect(result[2]).toMatchObject({ name: 'HG001 HP0', color: 'red' })
+    expect(result[3]).toMatchObject({ name: 'HG002 HP1', color: 'green' })
+  })
 })

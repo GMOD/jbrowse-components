@@ -103,18 +103,29 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                   },
                 )) as { order: number[]; tree: string }
 
+                const existingLayoutMap = Object.fromEntries(
+                  model.layout.map(s => [s.name, s]),
+                )
                 if (isHaplotypeClustering && sampleInfo) {
                   const expandedSources = expandSourcesToHaplotypes({
                     sources: sourcesVolatile,
                     sampleInfo,
                   })
                   model.setLayout(
-                    ret.order.map(idx => expandedSources[idx]!),
+                    ret.order.map(idx => {
+                      const source = expandedSources[idx]!
+                      const existing = existingLayoutMap[source.name]
+                      return existing ? { ...source, ...existing } : source
+                    }),
                     false,
                   )
                 } else {
                   model.setLayout(
-                    ret.order.map(idx => sourcesVolatile[idx]!),
+                    ret.order.map(idx => {
+                      const source = sourcesVolatile[idx]!
+                      const existing = existingLayoutMap[source.name]
+                      return existing ? { ...source, ...existing } : source
+                    }),
                     false,
                   )
                 }
