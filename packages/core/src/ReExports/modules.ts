@@ -34,7 +34,9 @@ import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRenderer
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType.tsx'
 import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType.ts'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType.tsx'
+import * as SerializableFilterChain from '../pluggableElementTypes/renderers/util/serializableFilterChain.ts'
 import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
+import * as BaseTooltip from '../ui/BaseTooltip.tsx'
 import * as coreUi from '../ui/index.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'
@@ -43,9 +45,11 @@ import * as coreUtil from '../util/index.ts'
 import * as coreIo from '../util/io/index.ts'
 import * as coreLayouts from '../util/layouts/index.ts'
 import * as coreMstReflection from '../util/mst-reflection.ts'
+import * as jexlStrings from '../util/jexlStrings.ts'
 import * as rxjs from '../util/rxjs.ts'
 import * as trackUtils from '../util/tracks.ts'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
+import * as tssReact from '../util/tss-react/index.ts'
 import * as mstTypes from '../util/types/mst.ts'
 
 const libs = {
@@ -139,7 +143,9 @@ const libs = {
   '@jbrowse/core/util/Base1DViewModel': Base1DView,
   '@jbrowse/core/util/io': coreIo,
   '@jbrowse/core/util/mst-reflection': coreMstReflection,
+  '@jbrowse/core/util/jexlStrings': jexlStrings,
   '@jbrowse/core/util/rxjs': rxjs,
+  '@jbrowse/core/util/tss-react': tssReact,
   '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
   '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
   '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
@@ -155,7 +161,10 @@ const libs = {
     BoxRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
     FeatureRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain':
+    SerializableFilterChain,
 
+  '@jbrowse/core/ui/BaseTooltip': BaseTooltip,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
