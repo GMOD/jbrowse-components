@@ -67,6 +67,16 @@ const BedTabixAdapter = ConfigurationSchema(
       description: 'The autoSql definition for the data fields in the file',
       defaultValue: '',
     },
+
+    /**
+     * #slot
+     */
+    disableGeneHeuristic: {
+      type: 'boolean',
+      description:
+        'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
+      defaultValue: false,
+    },
   },
   {
     explicitlyTyped: true,
