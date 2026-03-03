@@ -10,7 +10,7 @@ import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu.tsx'
 
 import type { FacetedRow } from '../../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
 type T = GridColDef<FacetedRow>
 
@@ -64,18 +64,20 @@ function HighlightText({
 
 const frac = 0.75
 
-function highlightRenderCell(
-  filterText: string,
-  className: string,
-): T['renderCell'] {
-  return params => {
-    const val = params.value
-    return val ? (
-      <HighlightText className={className} text={val} query={filterText} />
-    ) : (
-      ''
-    )
-  }
+function HighlightCell({
+  value,
+  filterText,
+  className,
+}: {
+  value: string | undefined
+  filterText: string
+  className: string
+}) {
+  return value ? (
+    <HighlightText className={className} text={value} query={filterText} />
+  ) : (
+    ''
+  )
 }
 
 const FacetedSelector = observer(function FacetedSelector({
@@ -94,7 +96,6 @@ const FacetedSelector = observer(function FacetedSelector({
     filteredMetadataKeys,
   } = faceted
 
-  const renderCell = highlightRenderCell(filterText, classes.cell)
   const nonMetadataFieldSet = new Set(['name', ...filteredNonMetadataKeys])
 
   const columns: T[] = [
@@ -115,7 +116,13 @@ const FacetedSelector = observer(function FacetedSelector({
     ...filteredNonMetadataKeys.map(e => {
       return {
         field: e,
-        renderCell,
+        renderCell: (params: GridRenderCellParams<FacetedRow>) => (
+          <HighlightCell
+            value={params.value}
+            filterText={filterText}
+            className={classes.cell}
+          />
+        ),
       } satisfies T
     }),
     ...filteredMetadataKeys.map(e => {
@@ -123,7 +130,13 @@ const FacetedSelector = observer(function FacetedSelector({
         field: `metadata.${e}`,
         headerName: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
         valueGetter: (_, row) => `${row.metadata[e] ?? ''}`,
-        renderCell,
+        renderCell: (params: GridRenderCellParams<FacetedRow>) => (
+          <HighlightCell
+            value={params.value}
+            filterText={filterText}
+            className={classes.cell}
+          />
+        ),
       } satisfies T
     }),
   ]
