@@ -3,13 +3,14 @@ import { useState } from 'react'
 import { Menu } from '@jbrowse/core/ui'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import ClearableSearchField from '../ClearableSearchField.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
-export default function FacetedHeader({
+const FacetedHeader = observer(function FacetedHeader({
   model,
 }: {
   model: HierarchicalTrackSelectorModel
@@ -21,7 +22,7 @@ export default function FacetedHeader({
 
   return (
     <>
-      <Grid container spacing={4} alignItems="center">
+      <Grid container alignItems="center">
         <ClearableSearchField
           label="Search..."
           value={filterText}
@@ -85,4 +86,6 @@ export default function FacetedHeader({
       />
     </>
   )
-}
+})
+
+export default FacetedHeader

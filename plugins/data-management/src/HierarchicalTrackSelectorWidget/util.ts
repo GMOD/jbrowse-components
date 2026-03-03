@@ -36,11 +36,17 @@ export function matches(
 export function matchesMetadata(query: string, conf: AnyConfigurationModel) {
   const queryLower = query.toLowerCase()
   const description = (readConfObject(conf, 'description') || '') as string
-  const metadata = (conf.metadata || {}) as Record<string, unknown>
+  const metadata = (readConfObject(conf, 'metadata') || {}) as Record<
+    string,
+    unknown
+  >
   return (
     description.toLowerCase().includes(queryLower) ||
     Object.values(metadata).some(
-      v => typeof v === 'string' && v.toLowerCase().includes(queryLower),
+      v =>
+        v !== null &&
+        v !== undefined &&
+        `${v}`.toLowerCase().includes(queryLower),
     )
   )
 }

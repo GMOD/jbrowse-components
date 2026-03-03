@@ -1,13 +1,26 @@
-export function findNonSparseKeys(
+export function findNonSparseKeys<T>(
   keys: readonly string[],
-  rows: Record<string, unknown>[],
-  cb: (row: Record<string, unknown>, f: string) => unknown,
+  rows: T[],
+  cb: (row: T, f: string) => unknown,
+  threshold = 5,
 ) {
-  return keys.filter(key => rows.filter(row => cb(row, key)).length > 5)
+  return keys.filter(key => {
+    let count = 0
+    for (const row of rows) {
+      if (cb(row, key)) {
+        count++
+        if (count > threshold) {
+          return true
+        }
+      }
+    }
+    return false
+  })
 }
 
 export function getRootKeys(obj: Record<string, unknown>) {
-  return Object.entries(obj)
-    .map(([key, val]) => (typeof val === 'string' ? key : ''))
-    .filter((f): f is string => !!f)
+  return Object.keys(obj).filter(key => {
+    const val = obj[key]
+    return val !== null && val !== undefined && typeof val !== 'object'
+  })
 }

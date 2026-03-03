@@ -10,16 +10,9 @@ import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu.tsx'
 
 import type { FacetedRow } from '../../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
 type T = GridColDef<FacetedRow>
-
-export interface InfoArgs {
-  target: HTMLElement
-  id: string
-  conf: AnyConfigurationModel
-}
 
 const useStyles = makeStyles()({
   cell: {
@@ -44,7 +37,7 @@ function HighlightText({
   className?: string
 }) {
   if (!query || !text) {
-    return <span className={className}>{text}</span>
+    return <SanitizedHTML html={text} className={className} />
   }
   const lowerText = text.toLowerCase()
   const lowerQuery = query.toLowerCase()
@@ -71,6 +64,22 @@ function HighlightText({
 
 const frac = 0.75
 
+function HighlightCell({
+  value,
+  filterText,
+  className,
+}: {
+  value: string | undefined
+  filterText: string
+  className: string
+}) {
+  return value ? (
+    <HighlightText className={className} text={value} query={filterText} />
+  ) : (
+    ''
+  )
+}
+
 const FacetedSelector = observer(function FacetedSelector({
   model,
 }: {
@@ -87,6 +96,8 @@ const FacetedSelector = observer(function FacetedSelector({
     filteredMetadataKeys,
   } = faceted
 
+  const nonMetadataFieldSet = new Set(['name', ...filteredNonMetadataKeys])
+
   const columns: T[] = [
     {
       field: 'name',
@@ -96,7 +107,7 @@ const FacetedSelector = observer(function FacetedSelector({
         const { id, conf } = row
         return (
           <div className={classes.cell}>
-            <SanitizedHTML html={value as string} />
+            <HighlightText text={value as string} query={filterText} />
             <TrackSelectorTrackMenu id={id} conf={conf} model={model} />
           </div>
         )
@@ -105,39 +116,27 @@ const FacetedSelector = observer(function FacetedSelector({
     ...filteredNonMetadataKeys.map(e => {
       return {
         field: e,
-        renderCell: params => {
-          const val = params.value
-          return val ? (
-            <HighlightText
-              className={classes.cell}
-              text={val}
-              query={filterText}
-            />
-          ) : (
-            ''
-          )
-        },
+        renderCell: (params: GridRenderCellParams<FacetedRow>) => (
+          <HighlightCell
+            value={params.value}
+            filterText={filterText}
+            className={classes.cell}
+          />
+        ),
       } satisfies T
     }),
     ...filteredMetadataKeys.map(e => {
       return {
         field: `metadata.${e}`,
-        headerName: ['name', ...filteredNonMetadataKeys].includes(e)
-          ? `${e} (from metadata)`
-          : e,
+        headerName: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
         valueGetter: (_, row) => `${row.metadata[e] ?? ''}`,
-        renderCell: params => {
-          const val = params.value
-          return val ? (
-            <HighlightText
-              className={classes.cell}
-              text={val}
-              query={filterText}
-            />
-          ) : (
-            ''
-          )
-        },
+        renderCell: (params: GridRenderCellParams<FacetedRow>) => (
+          <HighlightCell
+            value={params.value}
+            filterText={filterText}
+            className={classes.cell}
+          />
+        ),
       } satisfies T
     }),
   ]

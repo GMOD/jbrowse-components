@@ -19,29 +19,18 @@ const FacetFilters = observer(function FacetFilters({
   const { filters } = faceted
   const facets = columns.slice(1)
   const facetFieldToCategoryCountMap = new Map(
-    columns.slice(1).map(f => [f.field, new Map<string, number>()] as const),
+    facets.map(f => [f.field, new Map<string, number>()] as const),
   )
 
-  // 1. filterKeys: the title of the facets (right hand panel) that have been
-  // already filtered e.g. user clicked a facet on the right hand panel
-  const filterKeys = faceted.filters.keys()
-
-  // 2. facetKeys: the title of the facets (right hand panel), just the rest of
-  // them
-  const facetKeys = facets.map(f => f.field)
-
-  // these two loops add facet filters in the order that the user has selected
-  // them, which is the intuitive 'drilling down' behavior users want from
-  // faceted selections
+  // prioritize facets that already have active filters for drill-down behavior
   const facetKeysPrioritizingUserSelections = new Set<string>()
-  for (const entry of filterKeys) {
-    // give non-empty filters priority
+  for (const entry of filters.keys()) {
     if (filters.get(entry)?.length) {
       facetKeysPrioritizingUserSelections.add(entry)
     }
   }
-  for (const entry of facetKeys) {
-    facetKeysPrioritizingUserSelections.add(entry)
+  for (const f of facets) {
+    facetKeysPrioritizingUserSelections.add(f.field)
   }
 
   let currentRows = rows
@@ -50,24 +39,18 @@ const FacetFilters = observer(function FacetFilters({
     if (categoryCountMap) {
       for (const row of currentRows) {
         const key = getRowStr(facetKey, row)
-        const currentCount = categoryCountMap.get(key)
-        // we don't allow filtering on empty yet
         if (key) {
-          if (currentCount === undefined) {
-            categoryCountMap.set(key, 1)
-          } else {
-            categoryCountMap.set(key, currentCount + 1)
-          }
+          categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
         }
       }
     }
-    const filter = filters.get(facetKey)?.length
-      ? new Set(filters.get(facetKey))
-      : undefined
-
-    currentRows = currentRows.filter(row =>
-      filter !== undefined ? filter.has(getRowStr(facetKey, row)) : true,
-    )
+    const filterValues = filters.get(facetKey)
+    if (filterValues?.length) {
+      const filterSet = new Set(filterValues)
+      currentRows = currentRows.filter(row =>
+        filterSet.has(getRowStr(facetKey, row)),
+      )
+    }
   }
 
   return (
