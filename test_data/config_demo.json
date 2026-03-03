@@ -309,13 +309,9 @@
           "type": "LinearVariantDisplay",
           "displayId": "clinvar_ncbi-LinearVariantDisplay",
           "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'INFO').CLNSIG=='Benign'?'blue':get(feature,'INFO').CLNSIG=='Likely_benign'?'deepskyblue':get(feature,'INFO').CLNSIG=='Uncertain_significance'?'gray':get(feature,'INFO').CLNSIG=='Pathogenic'?'red':get(feature,'INFO').CLNSIG=='Likely_pathogenic'?'orange':get(feature,'INFO').CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
+            "type": "CanvasFeatureRenderer",
+            "color1": "jexl:s = get(feature,'INFO').CLNSIG; ({'Benign':'blue','Likely_benign':'deepskyblue','Uncertain_significance':'gray','Pathogenic':'red','Likely_pathogenic':'orange','Conflicting_interpretations_of_pathogenicity':'brown'})[s] || 'purple'"
           }
-        },
-        {
-          "type": "ChordVariantDisplay",
-          "displayId": "clinvar_ncbi-ChordVariantDisplay"
         }
       ]
     },
