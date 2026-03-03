@@ -277,6 +277,11 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               )
             }
           }
+
+          // clear the text search adapter cache so stale adapters pointing
+          // at old index files are discarded
+          const rootModel = getParent<{ textSearchManager: { clearCache: () => void } }>(self)
+          rootModel.textSearchManager.clearCache()
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
           if (current) {
