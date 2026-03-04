@@ -20,7 +20,6 @@ import {
   MultiRegionDisplayMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
-  checkByteEstimate,
   getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -517,7 +516,6 @@ export default function stateModelFactory(
         results: (FetchResult | undefined)[],
         bpPerPx: number,
       ) {
-        self.setRegionTooLarge(false, '')
         const dataMap = new Map(self.rpcDataMap)
         const regionKeys = new Map<number, string>()
         const newRegionNumbers = new Set<number>()
@@ -576,34 +574,21 @@ export default function stateModelFactory(
           }
         },
 
+        getByteEstimateConfig() {
+          const view = getContainingView(self) as LGV
+          return {
+            adapterConfig: self.adapterConfigSnapshot,
+            fetchSizeLimit: self.fetchSizeLimit,
+            visibleBp: view.visibleBp,
+          }
+        },
+
         onFetchNeeded(
           needed: { region: Region; regionNumber: number }[],
         ) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
-          self.withFetchLifecycle(async (ctx: FetchContext) => {
-            const session = getSession(self)
-            const proceed = await checkByteEstimate(
-              session.rpcManager,
-              getRpcSessionId(self),
-              needed.map(r => r.region),
-              self.adapterConfigSnapshot,
-              self.fetchSizeLimit,
-              view.visibleBp,
-              ctx,
-              {
-                setFeatureDensityStats: stats => {
-                  self.setFeatureDensityStats(stats)
-                },
-                setRegionTooLarge: (val, reason) => {
-                  self.setRegionTooLarge(val, reason)
-                },
-              },
-            )
-            if (!proceed) {
-              return
-            }
-
+          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
                 region,

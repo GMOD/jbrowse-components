@@ -2,48 +2,50 @@ import { getDisplayStr } from './util.ts'
 
 export const AUTO_FORCE_LOAD_BP = 20_000
 
-interface ByteEstimateCallbacks {
-  setFeatureDensityStats: (stats: { bytes?: number; fetchSizeLimit?: number }) => void
-  setRegionTooLarge: (val: boolean, reason?: string) => void
+export interface ByteEstimateConfig {
+  adapterConfig: unknown
+  fetchSizeLimit: number
+  visibleBp: number
+}
+
+export interface ByteEstimateResult {
+  stats: { bytes?: number; fetchSizeLimit?: number }
+  tooLarge: boolean
+  reason?: string
 }
 
 export async function checkByteEstimate(
   rpcManager: { call: (sessionId: string, method: string, args: Record<string, unknown>) => Promise<unknown> },
   sessionId: string,
   regions: { refName: string; start: number; end: number; assemblyName: string }[],
-  adapterConfig: unknown,
-  fetchSizeLimit: number,
-  visibleBp: number,
+  config: ByteEstimateConfig,
   ctx: { isStale: () => boolean },
-  callbacks: ByteEstimateCallbacks,
-) {
-  if (visibleBp < AUTO_FORCE_LOAD_BP) {
-    return true
+): Promise<ByteEstimateResult | null> {
+  if (config.visibleBp < AUTO_FORCE_LOAD_BP) {
+    return null
   }
 
   const stats = (await rpcManager.call(
     sessionId,
     'CoreGetFeatureDensityStats',
-    { regions, adapterConfig },
+    { regions, adapterConfig: config.adapterConfig },
   )) as { bytes?: number; fetchSizeLimit?: number }
 
   if (ctx.isStale()) {
-    return false
+    return null
   }
 
-  callbacks.setFeatureDensityStats(stats)
-
-  if (stats.bytes && stats.bytes > fetchSizeLimit) {
+  if (stats.bytes && stats.bytes > config.fetchSizeLimit) {
     console.debug('[checkByteEstimate] regionTooLarge', {
       bytes: stats.bytes,
-      limit: fetchSizeLimit,
+      limit: config.fetchSizeLimit,
     })
-    callbacks.setRegionTooLarge(
-      true,
-      `Requested too much data (${getDisplayStr(stats.bytes)})`,
-    )
-    return false
+    return {
+      stats,
+      tooLarge: true,
+      reason: `Requested too much data (${getDisplayStr(stats.bytes)})`,
+    }
   }
 
-  return true
+  return { stats, tooLarge: false }
 }

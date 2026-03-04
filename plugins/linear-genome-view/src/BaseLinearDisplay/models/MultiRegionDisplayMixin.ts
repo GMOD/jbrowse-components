@@ -2,6 +2,8 @@ import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
+  getRpcSessionId,
+  getSession,
   isAbortException,
   measureText,
 } from '@jbrowse/core/util'
@@ -12,6 +14,9 @@ import {
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
+import { checkByteEstimate } from './fetchHelpers.ts'
+
+import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 
 export interface Region {
@@ -91,7 +96,7 @@ export default function MultiRegionDisplayMixin() {
         self.clearDisplaySpecificData()
       },
     }))
-    .actions(self => ({
+    .actions(() => ({
       // Overridable hooks — subclasses override these
       onFetchNeeded(
         _needed: { region: Region; regionNumber: number }[],
@@ -107,7 +112,25 @@ export default function MultiRegionDisplayMixin() {
         // no-op base
       },
 
+      setStatusMessage(_msg?: string) {
+        // no-op base — subclasses override (e.g. NonBlockCanvasDisplayMixin)
+      },
+
+      setFeatureDensityStats(_stats?: { bytes?: number; fetchSizeLimit?: number }) {
+        // no-op base — RegionTooLargeMixin overrides
+      },
+
+      setRegionTooLarge(_val: boolean, _reason?: string) {
+        // no-op base — RegionTooLargeMixin overrides
+      },
+
+      getByteEstimateConfig(): ByteEstimateConfig | null {
+        return null
+      },
+    }))
+    .actions(self => ({
       withFetchLifecycle(
+        needed: { region: Region; regionNumber: number }[],
         work: (ctx: FetchContext) => Promise<void>,
       ) {
         if (self.renderingStopToken) {
@@ -129,6 +152,28 @@ export default function MultiRegionDisplayMixin() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
+            const byteEstimateConfig = self.getByteEstimateConfig()
+            if (byteEstimateConfig) {
+              const session = getSession(self)
+              const result = await checkByteEstimate(
+                session.rpcManager,
+                getRpcSessionId(self),
+                needed.map(r => r.region),
+                byteEstimateConfig,
+                ctx,
+              )
+              if (isStale()) {
+                return
+              }
+              if (result) {
+                self.setFeatureDensityStats(result.stats)
+                if (result.tooLarge) {
+                  self.setRegionTooLarge(true, result.reason)
+                  return
+                }
+              }
+            }
+            self.setRegionTooLarge(false)
             await work(ctx)
           } catch (e) {
             if (!isAbortException(e)) {
@@ -143,9 +188,7 @@ export default function MultiRegionDisplayMixin() {
             if (!isStale()) {
               self.setRenderingStopToken(undefined)
               self.setLoading(false)
-              if ('setStatusMessage' in self) {
-                ;(self as unknown as { setStatusMessage: (m: undefined) => void }).setStatusMessage(undefined)
-              }
+              self.setStatusMessage(undefined)
             }
           }
         })()

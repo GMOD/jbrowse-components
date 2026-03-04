@@ -22,7 +22,6 @@ import {
   MultiRegionDisplayMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
-  checkByteEstimate,
 } from '@jbrowse/plugin-linear-genome-view'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -237,8 +236,8 @@ export default function stateModelFactory(
       'LinearAlignmentsDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      RegionTooLargeMixin(),
       MultiRegionDisplayMixin(),
+      RegionTooLargeMixin(),
       types.model({
         /**
          * #property
@@ -1518,6 +1517,20 @@ export default function stateModelFactory(
           self.onFetchNeeded([{ region, regionNumber }])
         },
 
+        getByteEstimateConfig() {
+          const track = getContainingTrack(self)
+          const adapterConfig = getConf(track, 'adapter')
+          if (!adapterConfig) {
+            return null
+          }
+          const view = getContainingView(self) as LGV
+          return {
+            adapterConfig,
+            fetchSizeLimit: self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number),
+            visibleBp: view.visibleBp,
+          }
+        },
+
         onFetchNeeded(
           needed: { region: Region; regionNumber: number }[],
         ) {
@@ -1526,33 +1539,8 @@ export default function stateModelFactory(
           if (!adapterConfig) {
             return
           }
-          const view = getContainingView(self) as LGV
-          const fetchSizeLimit =
-            self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number)
 
-          self.withFetchLifecycle(async (ctx: FetchContext) => {
-            const session = getSession(self)
-            const proceed = await checkByteEstimate(
-              session.rpcManager,
-              getRpcSessionId(self),
-              needed.map(r => r.region),
-              adapterConfig,
-              fetchSizeLimit,
-              view.visibleBp,
-              ctx,
-              {
-                setFeatureDensityStats: stats => {
-                  self.setFeatureDensityStats(stats)
-                },
-                setRegionTooLarge: (val, reason) => {
-                  self.setRegionTooLarge(val, reason)
-                },
-              },
-            )
-            if (!proceed) {
-              return
-            }
-            self.setRegionTooLarge(false)
+          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
 
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(

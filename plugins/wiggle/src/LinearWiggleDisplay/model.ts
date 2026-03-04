@@ -370,7 +370,7 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           const { bpPerPx } = view
           const { resolution } = self
-          self.withFetchLifecycle(async (ctx: FetchContext) => {
+          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
                 region,
