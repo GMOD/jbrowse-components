@@ -1,6 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper, Typography } from '@mui/material'
 
+import GlobalPluginsPanel from './GlobalPluginsPanel.tsx'
 import Logo from './Logo.tsx'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
@@ -48,6 +49,11 @@ export default function StartScreen({
         <Paper elevation={3} className={classes.recentPanel}>
           <Typography variant="h5">Recently opened sessions</Typography>
           <RecentSessionPanel setPluginManager={setPluginManager} />
+        </Paper>
+      </div>
+      <div className={classes.root}>
+        <Paper elevation={3} className={classes.panel}>
+          <GlobalPluginsPanel />
         </Paper>
       </div>
     </div>

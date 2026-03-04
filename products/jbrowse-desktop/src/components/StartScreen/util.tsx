@@ -20,12 +20,24 @@ import { newSessionName, resolveSessionName } from './sessionName.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfig } from './types.ts'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
 
 const { ipcRenderer } = window.require('electron')
+
+// A failure here (unreadable or corrupt globalPlugins.json) must not take the
+// whole session down with it, so it degrades to no global plugins
+async function getGlobalPlugins() {
+  try {
+    return (await ipcRenderer.invoke('getGlobalPlugins')) as PluginDefinition[]
+  } catch (e) {
+    console.error(e)
+    return []
+  }
+}
 
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
@@ -70,8 +82,15 @@ export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
+  // Global plugins load in every session, so they join the config's own list
+  // before the loader runs. Deduped because a config can name one the user has
+  // also installed globally.
+  const plugins = dedupe([
+    ...(configSnapshot.plugins ?? []),
+    ...(await getGlobalPlugins()),
+  ])
   const pluginLoader = new PluginLoader(
-    dropVendoredPlugins(configSnapshot.plugins ?? [], DESKTOP_VENDORED),
+    dropVendoredPlugins(plugins, DESKTOP_VENDORED),
     {
       fetchESM: url => import(/* webpackIgnore:true */ url),
       fetchCJS,
