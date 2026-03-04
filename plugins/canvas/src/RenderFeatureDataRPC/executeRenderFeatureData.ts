@@ -28,6 +28,7 @@ import {
 import { layoutFeature } from './layout/layoutFeature.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
+import { maxLabelTextWidth } from './rpcTypes.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
@@ -36,7 +37,6 @@ import type { RenderConfigContext } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
-  FeatureLabelData,
   FlatbushItem,
   FloatingLabelsDataMap,
   RenderFeatureDataArgs,
@@ -226,7 +226,7 @@ function collectRenderData(
     const description = String(
       feature.get('note') || feature.get('description') || '',
     )
-    const floatingLabels = createFeatureFloatingLabels({
+    const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
       feature,
       config: config as any,
       configContext,
@@ -236,16 +236,16 @@ function collectRenderData(
       description,
     })
 
-    if (floatingLabels.length > 0) {
-      const labelData: FeatureLabelData = {
+    if (nameLabel || descriptionLabel) {
+      floatingLabelsData[feature.id()] = {
         featureId: feature.id(),
         minX: featureStart - regionStart,
         maxX: featureEnd - regionStart,
         topY: 0,
         featureHeight: layout.height,
-        floatingLabels,
+        nameLabel,
+        descriptionLabel,
       }
-      floatingLabelsData[feature.id()] = labelData
     }
 
     // Build tooltip
@@ -439,7 +439,7 @@ function collectRenderData(
         configContext.subfeatureLabels !== 'none' &&
         transcriptName
       ) {
-        const label = createTranscriptFloatingLabel({
+        const result = createTranscriptFloatingLabel({
           displayLabel: transcriptName,
           featureHeight: transcriptLayout.height,
           subfeatureLabels: configContext.subfeatureLabels,
@@ -448,14 +448,15 @@ function collectRenderData(
           subfeatureId: transcriptFeature.id(),
           tooltip: transcriptTooltipParts.join('\n'),
         })
-        if (label) {
+        if (result) {
           floatingLabelsData[transcriptFeature.id()] = {
             featureId: transcriptFeature.id(),
             minX: transcriptStart - regionStart,
             maxX: transcriptEnd - regionStart,
             topY: transcriptTopPx,
             featureHeight: transcriptLayout.height,
-            floatingLabels: [label],
+            parentFeatureId: result.parentFeatureId,
+            subfeatureLabel: result.subfeatureLabel,
           }
         }
       }
@@ -682,21 +683,12 @@ export async function executeRenderFeatureData({
     subfeatureLabels: displayConfig.subfeatureLabels,
   }
 
-  // Auto-suppress descriptions when feature density is high to reduce noise
-  // at zoomed-out scales. The region span in pixels gives a sense of viewport
-  // width; dividing feature count by that gives a per-pixel density.
-  const regionSpanBp = region.end - region.start
-  const regionSpanPx = regionSpanBp / bpPerPx
-  const featureDensityPerPx = featuresArray.length / regionSpanPx
-  const effectiveShowDescriptions =
-    mockConfig.showDescriptions && featureDensityPerPx < 0.2
-
   // Create default config context for WebGL rendering
   const configContext: RenderConfigContext = {
     config: mockConfig as any,
     displayMode: mockConfig.displayMode,
     showLabels: mockConfig.showLabels,
-    showDescriptions: effectiveShowDescriptions,
+    showDescriptions: mockConfig.showDescriptions,
     subfeatureLabels: mockConfig.subfeatureLabels,
     transcriptTypes: mockConfig.transcriptTypes,
     containerTypes: mockConfig.containerTypes,
@@ -754,7 +746,7 @@ export async function executeRenderFeatureData({
         if (featureName && mockConfig.showLabels) {
           labelHeight += fontSize
         }
-        if (featureDescription && effectiveShowDescriptions) {
+        if (featureDescription && mockConfig.showDescriptions) {
           labelHeight += fontSize
         }
 
@@ -833,17 +825,16 @@ export async function executeRenderFeatureData({
     flatbushItemByFeatureId.set(item.featureId, item)
   }
   for (const labelData of Object.values(floatingLabelsData)) {
-    const parentId = labelData.floatingLabels[0]?.parentFeatureId
     const item =
       flatbushItemByFeatureId.get(labelData.featureId) ??
-      (parentId ? flatbushItemByFeatureId.get(parentId) : undefined)
+      (labelData.parentFeatureId
+        ? flatbushItemByFeatureId.get(labelData.parentFeatureId)
+        : undefined)
     if (item) {
-      const labelStartBp = labelData.minX + regionStart
-      for (const label of labelData.floatingLabels) {
-        const labelEndBp = labelStartBp + label.textWidth * bpPerPx
-        if (labelEndBp > item.layoutEndBp) {
-          item.layoutEndBp = labelEndBp
-        }
+      const labelEndBp =
+        labelData.minX + regionStart + maxLabelTextWidth(labelData) * bpPerPx
+      if (labelEndBp > item.layoutEndBp) {
+        item.layoutEndBp = labelEndBp
       }
     }
   }
@@ -952,6 +943,7 @@ export async function executeRenderFeatureData({
     aminoAcidOverlay:
       aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
 
+    featureCount: features.size,
     maxY: 0,
   }
 

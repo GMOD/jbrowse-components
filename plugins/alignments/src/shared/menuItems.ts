@@ -535,9 +535,7 @@ export function getShowMenuItem(model: ShowMenuModel) {
         type: 'checkbox' as const,
         checked: model.flipStrandLongReadChains,
         onClick: () => {
-          model.setFlipStrandLongReadChains(
-            !model.flipStrandLongReadChains,
-          )
+          model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
         },
       },
     ],

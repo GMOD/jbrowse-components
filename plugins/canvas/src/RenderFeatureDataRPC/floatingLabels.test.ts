@@ -44,7 +44,7 @@ function createMockConfigContext(
 
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
-    it('returns empty array when both showLabels and showDescriptions are false', () => {
+    it('returns no labels when both showLabels and showDescriptions are false', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: mockConfig,
@@ -57,10 +57,11 @@ describe('floatingLabels', () => {
         name: 'Gene1',
         description: 'A gene',
       })
-      expect(result).toEqual([])
+      expect(result.nameLabel).toBeUndefined()
+      expect(result.descriptionLabel).toBeUndefined()
     })
 
-    it('returns empty array when name and description are whitespace-only', () => {
+    it('returns no labels when name and description are whitespace-only', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: mockConfig,
@@ -70,7 +71,8 @@ describe('floatingLabels', () => {
         name: '   ',
         description: '   ',
       })
-      expect(result).toEqual([])
+      expect(result.nameLabel).toBeUndefined()
+      expect(result.descriptionLabel).toBeUndefined()
     })
 
     it('returns only name label when showDescriptions is false', () => {
@@ -83,10 +85,11 @@ describe('floatingLabels', () => {
         name: 'Gene1',
         description: 'A gene',
       })
-      expect(result).toHaveLength(1)
-      expect(result[0]!.text).toBe('Gene1')
-      expect(result[0]!.color).toBe('black')
-      expect(result[0]!.relativeY).toBe(0)
+      expect(result.nameLabel).toBeDefined()
+      expect(result.nameLabel!.text).toBe('Gene1')
+      expect(result.nameLabel!.color).toBe('black')
+      expect(result.nameLabel!.relativeY).toBe(0)
+      expect(result.descriptionLabel).toBeUndefined()
     })
 
     it('returns only description label when showLabels is false', () => {
@@ -99,10 +102,11 @@ describe('floatingLabels', () => {
         name: 'Gene1',
         description: 'A gene',
       })
-      expect(result).toHaveLength(1)
-      expect(result[0]!.text).toBe('A gene')
-      expect(result[0]!.color).toBe('blue')
-      expect(result[0]!.relativeY).toBe(0)
+      expect(result.nameLabel).toBeUndefined()
+      expect(result.descriptionLabel).toBeDefined()
+      expect(result.descriptionLabel!.text).toBe('A gene')
+      expect(result.descriptionLabel!.color).toBe('blue')
+      expect(result.descriptionLabel!.relativeY).toBe(0)
     })
 
     it('returns both labels with correct positioning when both enabled', () => {
@@ -115,11 +119,12 @@ describe('floatingLabels', () => {
         name: 'Gene1',
         description: 'A gene',
       })
-      expect(result).toHaveLength(2)
-      expect(result[0]!.text).toBe('Gene1')
-      expect(result[0]!.relativeY).toBe(0)
-      expect(result[1]!.text).toBe('A gene')
-      expect(result[1]!.relativeY).toBe(12) // fontHeight value from mock
+      expect(result.nameLabel).toBeDefined()
+      expect(result.nameLabel!.text).toBe('Gene1')
+      expect(result.nameLabel!.relativeY).toBe(0)
+      expect(result.descriptionLabel).toBeDefined()
+      expect(result.descriptionLabel!.text).toBe('A gene')
+      expect(result.descriptionLabel!.relativeY).toBe(12) // fontHeight value from mock
     })
 
     it('includes textWidth for each label', () => {
@@ -132,8 +137,8 @@ describe('floatingLabels', () => {
         name: 'Gene1',
         description: 'A gene',
       })
-      expect(result[0]!.textWidth).toBeGreaterThan(0)
-      expect(result[1]!.textWidth).toBeGreaterThan(0)
+      expect(result.nameLabel!.textWidth).toBeGreaterThan(0)
+      expect(result.descriptionLabel!.textWidth).toBeGreaterThan(0)
     })
   })
 
@@ -148,17 +153,17 @@ describe('floatingLabels', () => {
       tooltip: 'Gene: BRCA1',
     }
 
-    it('returns null when displayLabel is empty', () => {
+    it('returns undefined when displayLabel is empty', () => {
       const result = createTranscriptFloatingLabel({
         ...baseArgs,
         displayLabel: '',
       })
-      expect(result).toBeNull()
+      expect(result).toBeUndefined()
     })
 
     it('includes parentFeatureId in the result for mouseover highlight', () => {
       const result = createTranscriptFloatingLabel(baseArgs)
-      expect(result).not.toBeNull()
+      expect(result).toBeDefined()
       expect(result!.parentFeatureId).toBe('parent-gene-123')
     })
 
@@ -167,8 +172,8 @@ describe('floatingLabels', () => {
         ...baseArgs,
         subfeatureLabels: 'below',
       })
-      expect(result!.isOverlay).toBe(false)
-      expect(result!.relativeY).toBe(0)
+      expect(result!.subfeatureLabel.isOverlay).toBe(false)
+      expect(result!.subfeatureLabel.relativeY).toBe(0)
     })
 
     it('sets isOverlay to true for "overlay" mode', () => {
@@ -177,8 +182,8 @@ describe('floatingLabels', () => {
         subfeatureLabels: 'overlay',
         featureHeight: 20,
       })
-      expect(result!.isOverlay).toBe(true)
-      expect(result!.relativeY).toBe(-20)
+      expect(result!.subfeatureLabel.isOverlay).toBe(true)
+      expect(result!.subfeatureLabel.relativeY).toBe(-20)
     })
 
     it('truncates long labels', () => {
@@ -187,21 +192,23 @@ describe('floatingLabels', () => {
         ...baseArgs,
         displayLabel: longLabel,
       })
-      expect(result!.text.length).toBeLessThan(longLabel.length)
-      expect(result!.text).toContain('…')
+      expect(result!.subfeatureLabel.text.length).toBeLessThan(longLabel.length)
+      expect(result!.subfeatureLabel.text).toContain('…')
     })
 
     it('includes all required fields', () => {
       const result = createTranscriptFloatingLabel(baseArgs)
 
       expect(result).toMatchObject({
-        text: expect.any(String),
-        relativeY: expect.any(Number),
-        color: '#000000',
-        textWidth: expect.any(Number),
-        isOverlay: false,
         parentFeatureId: 'parent-gene-123',
-        tooltip: 'Gene: BRCA1',
+        subfeatureLabel: {
+          text: expect.any(String),
+          relativeY: expect.any(Number),
+          color: '#000000',
+          textWidth: expect.any(Number),
+          isOverlay: false,
+          tooltip: 'Gene: BRCA1',
+        },
       })
     })
 
@@ -225,7 +232,7 @@ describe('floatingLabels', () => {
         tooltip: 'Custom parent tooltip',
       })
 
-      expect(result!.tooltip).toBe('Custom parent tooltip')
+      expect(result!.subfeatureLabel.tooltip).toBe('Custom parent tooltip')
     })
   })
 })

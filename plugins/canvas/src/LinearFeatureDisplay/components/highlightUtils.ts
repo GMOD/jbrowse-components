@@ -1,12 +1,10 @@
+import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+
 import type { FeatureLabelData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 export function computeLabelExtraWidth(
   labelData: FeatureLabelData,
   featureWidthPx: number,
 ) {
-  let extraWidth = 0
-  for (const label of labelData.floatingLabels) {
-    extraWidth = Math.max(extraWidth, label.textWidth - featureWidthPx)
-  }
-  return extraWidth
+  return Math.max(0, maxLabelTextWidth(labelData) - featureWidthPx)
 }

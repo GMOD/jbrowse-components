@@ -15,8 +15,8 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -87,6 +87,8 @@ export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-
 
 const FeatureComponent = lazy(() => import('./components/FeatureComponent.tsx'))
 
+const DESCRIPTION_DENSITY_THRESHOLD = 0.2
+
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
@@ -139,6 +141,7 @@ export default function stateModelFactory(
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
       userFeatureCountLimit: undefined as number | undefined,
+      featureDensityPerPx: 0,
     }))
     .views(self => ({
       get scalebarOverlapLeft() {
@@ -192,6 +195,13 @@ export default function stateModelFactory(
 
       get showDescriptions(): boolean {
         return self.trackShowDescriptions ?? true
+      },
+
+      get effectiveShowDescriptions(): boolean {
+        if (self.trackShowDescriptions === false) {
+          return false
+        }
+        return self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
       },
 
       get subfeatureLabels(): string {
@@ -308,6 +318,10 @@ export default function stateModelFactory(
         if (self.autoHeight) {
           self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
         }
+      },
+
+      setFeatureDensityPerPx(value: number) {
+        self.featureDensityPerPx = value
       },
 
       setLayoutBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
@@ -479,6 +493,29 @@ export default function stateModelFactory(
       }),
     }))
     .actions(self => {
+      return {
+        // Soft reset: clears tracking state (loadedRegions,
+        // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
+        // invalidate in-flight fetches, but intentionally preserves
+        // rpcDataMap so the previous frame's rendered data stays visible
+        // while the new fetch is in progress, avoiding a flash of empty
+        // content. Compare with reload()/clearAllRpcData() which is a
+        // "hard reset" that also wipes rpcDataMap.
+        softReset() {
+          if (self.renderingStopToken) {
+            stopStopToken(self.renderingStopToken)
+            self.renderingStopToken = undefined
+          }
+          self.isLoading = false
+          self.error = undefined
+          self.loadedRegions = new Map()
+          self.layoutBpPerPxMap = new Map()
+          self.setRegionTooLarge(false)
+          self.fetchGeneration++
+        },
+      }
+    })
+    .actions(self => {
       interface FetchResult {
         regionNumber: number
         data: FeatureDataResult
@@ -564,16 +601,21 @@ export default function stateModelFactory(
           numRegions: dataMap.size,
           newRegions: [...newRegionNumbers],
         })
+        let totalFeatures = 0
+        let totalSpanPx = 0
         for (const r of results) {
           if (r) {
             self.setLoadedRegionForRegion(r.regionNumber, r.region)
             self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
+            totalFeatures += r.data.featureCount
+            totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
           }
         }
+        self.setFeatureDensityPerPx(
+          totalSpanPx > 0 ? totalFeatures / totalSpanPx : 0,
+        )
         self.setRpcDataMap(dataMap)
       }
-
-      const superAfterAttach = self.afterAttach
 
       function fetchAllRegions() {
         const view = getContainingView(self) as LinearGenomeViewModel
@@ -583,35 +625,14 @@ export default function stateModelFactory(
         }))
         self.onFetchNeeded(regions)
       }
-
       return {
-        // Soft reset: clears tracking state (loadedRegions,
-        // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
-        // invalidate in-flight fetches, but intentionally preserves
-        // rpcDataMap so the previous frame's rendered data stays visible
-        // while the new fetch is in progress, avoiding a flash of empty
-        // content. Compare with reload()/clearAllRpcData() which is a
-        // "hard reset" that also wipes rpcDataMap.
-        softReset() {
-          if (self.renderingStopToken) {
-            stopStopToken(self.renderingStopToken)
-            self.renderingStopToken = undefined
-          }
-          self.isLoading = false
-          self.error = undefined
-          self.loadedRegions = new Map()
-          self.layoutBpPerPxMap = new Map()
-          self.setRegionTooLarge(false)
-          self.fetchGeneration++
-        },
-
         refetchForCurrentView() {
           const view = getContainingView(self) as LinearGenomeViewModel
           if (!view.initialized) {
             return
           }
           self.softReset()
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
           fetchAllRegions()
         },
 
@@ -621,7 +642,7 @@ export default function stateModelFactory(
             return
           }
           self.clearAllRpcData()
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
           fetchAllRegions()
         },
 
@@ -662,19 +683,21 @@ export default function stateModelFactory(
             if (ctx.isStale()) {
               return
             }
-            if (results.some(r => r === 'regionTooLarge')) {
+            if (results.includes('regionTooLarge')) {
               self.setRegionTooLarge(true, 'Too many features')
               return
             }
             applyFetchResults(
-              results.filter(
-                (r): r is FetchResult => r !== 'regionTooLarge',
-              ),
+              results.filter((r): r is FetchResult => r !== 'regionTooLarge'),
               bpPerPx,
             )
           })
         },
-
+      }
+    })
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+      return {
         afterAttach() {
           superAfterAttach()
           // adapterConfigSnapshot is only accessed inside a conditional branch
@@ -704,7 +727,6 @@ export default function stateModelFactory(
               }),
               () => {
                 if (self.loadedRegions.size > 0 || self.regionTooLarge) {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   self.refetchForCurrentView()
                 }
               },

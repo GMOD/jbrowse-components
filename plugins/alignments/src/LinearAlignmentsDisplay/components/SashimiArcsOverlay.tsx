@@ -36,10 +36,26 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   const baseline = effectiveHeight * 0.9
   const peak = effectiveHeight * 0.1
 
-  const paths: { d: string; stroke: string; strokeWidth: number; start: number; end: number; refName: string; score: number; strand: number }[] = []
+  const paths: {
+    d: string
+    stroke: string
+    strokeWidth: number
+    start: number
+    end: number
+    refName: string
+    score: number
+    strand: number
+  }[] = []
 
   for (const [, rpcData] of rpcDataMap) {
-    const { sashimiX1, sashimiX2, sashimiCounts, sashimiColorTypes, numSashimiArcs, regionStart } = rpcData
+    const {
+      sashimiX1,
+      sashimiX2,
+      sashimiCounts,
+      sashimiColorTypes,
+      numSashimiArcs,
+      regionStart,
+    } = rpcData
 
     if (numSashimiArcs === 0) {
       continue

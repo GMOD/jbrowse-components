@@ -8,20 +8,31 @@ function makeLabelData(
   texts: string[],
   overrides?: Partial<FeatureLabelData>,
 ): FeatureLabelData {
-  return {
+  const base: FeatureLabelData = {
     featureId: 'feat1',
     minX: 0,
     maxX: 100,
     topY: 0,
     featureHeight: 10,
-    floatingLabels: texts.map(text => ({
-      text,
-      relativeY: 0,
-      color: 'black',
-      textWidth: measureText(text, 11),
-    })),
     ...overrides,
   }
+  if (texts.length >= 1) {
+    base.nameLabel = {
+      text: texts[0]!,
+      relativeY: 0,
+      color: 'black',
+      textWidth: measureText(texts[0]!, 11),
+    }
+  }
+  if (texts.length >= 2) {
+    base.descriptionLabel = {
+      text: texts[1]!,
+      relativeY: 0,
+      color: 'black',
+      textWidth: measureText(texts[1]!, 11),
+    }
+  }
+  return base
 }
 
 describe('computeLabelExtraWidth', () => {

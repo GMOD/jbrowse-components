@@ -4,9 +4,9 @@ import { readCachedConfig } from './renderConfig.ts'
 import { truncateLabel } from './util.ts'
 
 import type { RenderConfigContext } from './renderConfig.ts'
+import type { LabelItem } from './rpcTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { FloatingLabelData } from '@jbrowse/plugin-linear-genome-view'
 
 const FLOATING_LABEL_FONT_SIZE = 11
 
@@ -32,7 +32,7 @@ export function createFeatureFloatingLabels({
   descriptionColor: string
   name: string
   description: string
-}): FloatingLabelData[] {
+}) {
   const { showLabels, showDescriptions, fontHeight } = configContext
 
   const name = truncateLabel(rawName)
@@ -41,16 +41,17 @@ export function createFeatureFloatingLabels({
   const shouldShowLabel = /\S/.test(name) && showLabels
   const shouldShowDescription = /\S/.test(description) && showDescriptions
 
-  const floatingLabels: FloatingLabelData[] = []
+  let nameLabel: LabelItem | undefined
+  let descriptionLabel: LabelItem | undefined
   let currentY = 0
 
   if (shouldShowLabel) {
-    floatingLabels.push({
+    nameLabel = {
       text: name,
       relativeY: currentY,
       color: nameColor,
       textWidth: measureText(name, FLOATING_LABEL_FONT_SIZE),
-    })
+    }
     currentY += readCachedConfig(
       fontHeight,
       config,
@@ -60,15 +61,15 @@ export function createFeatureFloatingLabels({
   }
 
   if (shouldShowDescription) {
-    floatingLabels.push({
+    descriptionLabel = {
       text: description,
       relativeY: currentY,
       color: descriptionColor,
       textWidth: measureText(description, FLOATING_LABEL_FONT_SIZE),
-    })
+    }
   }
 
-  return floatingLabels
+  return { nameLabel, descriptionLabel }
 }
 
 /**
@@ -93,9 +94,9 @@ export function createTranscriptFloatingLabel({
   parentFeatureId: string
   subfeatureId: string
   tooltip: string
-}): FloatingLabelData | null {
+}) {
   if (!displayLabel) {
-    return null
+    return undefined
   }
 
   const truncatedName = truncateLabel(displayLabel)
@@ -104,15 +105,14 @@ export function createTranscriptFloatingLabel({
   const relativeY = isOverlay ? -featureHeight : 0
 
   return {
-    text: truncatedName,
-    relativeY,
-    color,
-    textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
-    isOverlay,
+    subfeatureLabel: {
+      text: truncatedName,
+      relativeY,
+      color,
+      textWidth: measureText(truncatedName, FLOATING_LABEL_FONT_SIZE),
+      isOverlay,
+      tooltip,
+    },
     parentFeatureId,
-    subfeatureId,
-    tooltip,
   }
 }
-
-export { type FloatingLabelData } from '@jbrowse/plugin-linear-genome-view'

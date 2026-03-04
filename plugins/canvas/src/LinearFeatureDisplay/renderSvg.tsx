@@ -274,35 +274,43 @@ function renderLabelsForRegion(
     const featureWidth = featureRightPx - featureLeftPx
     const featureBottomPx = labelData.topY + labelData.featureHeight
 
-    for (const label of labelData.floatingLabels) {
-      const {
-        text,
-        relativeY,
-        color,
-        textWidth: labelWidth,
-        isOverlay,
-        subfeatureId,
-      } = label
-      const labelPadding = subfeatureId ? 0 : 2
-      const labelY = featureBottomPx + relativeY + labelPadding
+    const emitLabel = (
+      label: {
+        text: string
+        relativeY: number
+        color: string
+        textWidth: number
+        isOverlay?: boolean
+      },
+      padding: number,
+    ) => {
+      const labelY = featureBottomPx + label.relativeY + padding
+      const labelX =
+        label.textWidth > featureWidth
+          ? featureLeftPx
+          : Math.min(
+              Math.max(Math.max(screenStartPx, featureLeftPx), 0),
+              featureRightPx - label.textWidth,
+            )
 
-      let labelX: number
-      if (labelWidth > featureWidth) {
-        labelX = featureLeftPx
-      } else {
-        const minX = Math.max(screenStartPx, featureLeftPx)
-        const maxX = featureRightPx - labelWidth
-        labelX = Math.min(Math.max(minX, 0), maxX)
+      if (label.isOverlay) {
+        content += `<rect x="${labelX - 1}" y="${labelY}" width="${label.textWidth + 2}" height="${fontSize + 1}" fill="rgb(255,255,255)" fill-opacity="0.8"/>`
       }
-
-      if (isOverlay) {
-        content += `<rect x="${labelX - 1}" y="${labelY}" width="${labelWidth + 2}" height="${fontSize + 1}" fill="rgb(255,255,255)" fill-opacity="0.8"/>`
-      }
-      const escaped = text
+      const escaped = label.text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-      content += `<text x="${labelX}" y="${labelY + fontSize}" font-size="${fontSize}" fill="${color}" style="pointer-events:none">${escaped}</text>`
+      content += `<text x="${labelX}" y="${labelY + fontSize}" font-size="${fontSize}" fill="${label.color}" style="pointer-events:none">${escaped}</text>`
+    }
+
+    if (labelData.nameLabel) {
+      emitLabel(labelData.nameLabel, 2)
+    }
+    if (labelData.descriptionLabel) {
+      emitLabel(labelData.descriptionLabel, 2)
+    }
+    if (labelData.subfeatureLabel) {
+      emitLabel(labelData.subfeatureLabel, 0)
     }
   }
   return content

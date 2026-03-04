@@ -7,7 +7,12 @@
  * This is critical for alignment between features and hit detection.
  */
 
-import type { FloatingLabelData } from '@jbrowse/plugin-linear-genome-view'
+export interface LabelItem {
+  text: string
+  relativeY: number
+  color: string
+  textWidth: number
+}
 
 export interface RenderFeatureDataArgs {
   sessionId: string
@@ -76,6 +81,9 @@ export interface FeatureDataResult {
   // Precomputed amino acid overlay items (only when colorByCDS is true)
   aminoAcidOverlay?: AminoAcidOverlayItem[]
 
+  // Number of top-level features in this region (used for density calculations)
+  featureCount: number
+
   // Layout info (computed on main thread after layout pass)
   maxY: number
 }
@@ -129,7 +137,18 @@ export interface FeatureLabelData {
   maxX: number
   topY: number
   featureHeight: number
-  floatingLabels: FloatingLabelData[]
+  nameLabel?: LabelItem
+  descriptionLabel?: LabelItem
+  parentFeatureId?: string
+  subfeatureLabel?: LabelItem & { isOverlay: boolean; tooltip: string }
+}
+
+export function maxLabelTextWidth(labelData: FeatureLabelData) {
+  return Math.max(
+    labelData.nameLabel?.textWidth ?? 0,
+    labelData.descriptionLabel?.textWidth ?? 0,
+    labelData.subfeatureLabel?.textWidth ?? 0,
+  )
 }
 
 export type FloatingLabelsDataMap = Record<string, FeatureLabelData>

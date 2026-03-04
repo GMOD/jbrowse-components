@@ -648,7 +648,9 @@ export class WebGLFeatureRenderer {
     // if we have no GPU data at all, leave the last frame on screen rather
     // than clearing to blank — avoids a flash during data refresh
     if (this.regionDataMap.size === 0) {
-      console.debug('[WebGLRenderer.renderBlocks] no GPU data, preserving last frame')
+      console.debug(
+        '[WebGLRenderer.renderBlocks] no GPU data, preserving last frame',
+      )
       return
     }
 
@@ -657,7 +659,9 @@ export class WebGLFeatureRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (blocks.length === 0) {
-      console.debug('[WebGLRenderer.renderBlocks] no blocks to render (canvas cleared)')
+      console.debug(
+        '[WebGLRenderer.renderBlocks] no blocks to render (canvas cleared)',
+      )
       return
     }
 

@@ -162,9 +162,7 @@ const PileupInner = observer(function PileupInner({
         if (isChainMode) {
           const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
           const chainIds =
-            chainIdx !== undefined
-              ? (model.chainIdMap.get(chainIdx) ?? [])
-              : []
+            chainIdx !== undefined ? (model.chainIdMap.get(chainIdx) ?? []) : []
           model.setHighlightedChainIds(chainIds)
           model.setMouseoverExtraInformation(
             formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
@@ -192,9 +190,7 @@ const PileupInner = observer(function PileupInner({
         if (isChainMode) {
           const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
           const chainIds =
-            chainIdx !== undefined
-              ? (model.chainIdMap.get(chainIdx) ?? [])
-              : []
+            chainIdx !== undefined ? (model.chainIdMap.get(chainIdx) ?? []) : []
           model.setSelectedChainIds(chainIds)
         }
       },

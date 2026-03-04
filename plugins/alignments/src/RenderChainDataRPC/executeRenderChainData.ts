@@ -447,7 +447,8 @@ export async function executeRenderChainData({
       readPairOrientations[i] = f.pairOrientation
       readStrands[i] = f.strand
       const cIdx = featureIdToChainIdx.get(f.id)
-      readChainHasSupp[i] = cIdx !== undefined ? (chainSuppInfo.get(cIdx) ?? 0) : 0
+      readChainHasSupp[i] =
+        cIdx !== undefined ? (chainSuppInfo.get(cIdx) ?? 0) : 0
       readChainIndices[i] = cIdx ?? 0
       readIds.push(f.id)
       readNames.push(f.name)

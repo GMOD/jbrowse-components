@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
+import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
@@ -42,6 +43,7 @@ interface LinearFeatureDisplayModel {
   maxY: number
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
+  effectiveShowDescriptions: boolean
   regionTooLarge: boolean
   regionTooLargeReason: string
   featureDensityStats?: { bytes?: number }
@@ -88,10 +90,7 @@ function buildFeatureIndex(
     let hitEndBp = item.endBp
     const labelData = floatingLabelsData[item.featureId]
     if (labelData) {
-      let maxLabelWidthPx = 0
-      for (const label of labelData.floatingLabels) {
-        maxLabelWidthPx = Math.max(maxLabelWidthPx, label.textWidth)
-      }
+      const maxLabelWidthPx = maxLabelTextWidth(labelData)
       const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
       if (maxLabelWidthPx > featureWidthPx) {
         const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
@@ -728,46 +727,55 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
         const featureBottomPx = labelData.topY + labelData.featureHeight
 
-        for (const [i, label] of labelData.floatingLabels.entries()) {
-          const {
-            text,
-            relativeY,
-            color,
-            textWidth: labelWidth,
-            isOverlay,
-            subfeatureId,
-          } = label
-          const labelPadding = subfeatureId ? 0 : 2
-          const labelY = featureBottomPx + relativeY + labelPadding
-
-          let labelX: number
-          if (labelWidth > featureWidth) {
-            labelX = featureLeftPx
-          } else {
-            const minX = Math.max(vr.screenStartPx, featureLeftPx)
-            const maxX = featureRightPx - labelWidth
-            labelX = Math.min(Math.max(minX, 0), maxX)
-          }
+        const emitLabel = (
+          label: {
+            text: string
+            relativeY: number
+            color: string
+            textWidth: number
+            isOverlay?: boolean
+          },
+          padding: number,
+          key: string,
+        ) => {
+          const labelY = featureBottomPx + label.relativeY + padding
+          const labelX =
+            label.textWidth > featureWidth
+              ? featureLeftPx
+              : Math.min(
+                  Math.max(Math.max(vr.screenStartPx, featureLeftPx), 0),
+                  featureRightPx - label.textWidth,
+                )
 
           elements.push(
             <div
-              key={`${vr.regionNumber}-${featureId}-${i}`}
+              key={`${vr.regionNumber}-${featureId}-${key}`}
               style={{
                 position: 'absolute',
                 transform: `translate(${labelX}px, ${labelY}px)`,
                 fontSize: 11,
                 lineHeight: 1,
-                color,
+                color: label.color,
                 pointerEvents: 'none',
                 whiteSpace: 'nowrap',
-                ...(isOverlay
+                ...(label.isOverlay
                   ? { background: 'rgba(255,255,255,0.65)' }
                   : undefined),
               }}
             >
-              {text}
+              {label.text}
             </div>,
           )
+        }
+
+        if (labelData.nameLabel) {
+          emitLabel(labelData.nameLabel, 2, 'name')
+        }
+        if (labelData.descriptionLabel && model.effectiveShowDescriptions) {
+          emitLabel(labelData.descriptionLabel, 2, 'desc')
+        }
+        if (labelData.subfeatureLabel) {
+          emitLabel(labelData.subfeatureLabel, 0, 'sub')
         }
       }
     }
@@ -782,7 +790,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       bpPerPx,
     })
     return elements.length > 0 ? elements : null
-  }, [rpcDataMap, view, width, bpPerPx, visibleRegions])
+  }, [
+    rpcDataMap,
+    view,
+    width,
+    bpPerPx,
+    visibleRegions,
+    model.effectiveShowDescriptions,
+  ])
 
   const aminoAcidOverlayElements = useMemo(() => {
     if (

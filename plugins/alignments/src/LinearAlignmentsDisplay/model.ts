@@ -1769,8 +1769,7 @@ export default function stateModelFactory(
                   selectedChainIds: self.selectedChainIds,
                   colors: palette,
                   renderingMode: self.renderingMode,
-                  flipStrandLongReadChains:
-                    self.flipStrandLongReadChains,
+                  flipStrandLongReadChains: self.flipStrandLongReadChains,
                   arcLineWidth: self.arcsState.lineWidth,
                   bpRangeX: [0, 0],
                 })

@@ -1032,7 +1032,8 @@ export class AlignmentsRenderer {
     ii[U_HIGHLIGHT_IDX] = -1
     ii[U_HIGHLIGHT_ONLY] = 0
     ii[U_CHAIN_MODE] = state.renderingMode === 'linkedRead' ? 1 : 0
-    ii[U_FLIP_STRAND_LONG_READ] = state.flipStrandLongReadChains !== false ? 1 : 0
+    ii[U_FLIP_STRAND_LONG_READ] =
+      state.flipStrandLongReadChains !== false ? 1 : 0
     ii[U_SHOW_STROKE] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     f[U_COV_HEIGHT] = state.coverageHeight
     f[U_COV_Y_OFFSET] = state.coverageYOffset

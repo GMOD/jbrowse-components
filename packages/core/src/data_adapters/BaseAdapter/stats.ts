@@ -94,7 +94,10 @@ export async function calculateFeatureDensityStats(
     if (expansionTime > DENSITY_SAMPLE_TIMEOUT_MS) {
       console.warn(
         "[calculateFeatureDensityStats] timeout, or didn't get enough features",
-        { totalRounds: rounds, totalElapsed: `${(performance.now() - t0).toFixed(0)}ms` },
+        {
+          totalRounds: rounds,
+          totalElapsed: `${(performance.now() - t0).toFixed(0)}ms`,
+        },
       )
       return { featureDensity: Number.POSITIVE_INFINITY }
     }
