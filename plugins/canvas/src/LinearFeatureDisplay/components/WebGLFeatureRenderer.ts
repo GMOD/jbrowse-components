@@ -633,7 +633,14 @@ export class WebGLFeatureRenderer {
     const bufW = Math.round(canvasWidth * dpr)
     const bufH = Math.round(canvasHeight * dpr)
 
-    if (canvas.width !== bufW || canvas.height !== bufH) {
+    const didResize = canvas.width !== bufW || canvas.height !== bufH
+    if (didResize) {
+      console.debug('[WebGLRenderer.renderBlocks] canvas resized', {
+        oldW: canvas.width,
+        oldH: canvas.height,
+        newW: bufW,
+        newH: bufH,
+      })
       canvas.width = bufW
       canvas.height = bufH
     }
@@ -641,6 +648,7 @@ export class WebGLFeatureRenderer {
     // if we have no GPU data at all, leave the last frame on screen rather
     // than clearing to blank — avoids a flash during data refresh
     if (this.regionDataMap.size === 0) {
+      console.debug('[WebGLRenderer.renderBlocks] no GPU data, preserving last frame')
       return
     }
 
@@ -649,16 +657,27 @@ export class WebGLFeatureRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (blocks.length === 0) {
+      console.debug('[WebGLRenderer.renderBlocks] no blocks to render (canvas cleared)')
       return
     }
 
     gl.enable(gl.SCISSOR_TEST)
 
+    let blocksRendered = 0
+    let blocksSkipped = 0
     for (const block of blocks) {
       const region = this.regionDataMap.get(block.regionNumber)
       if (!region || region.rectCount === 0) {
+        blocksSkipped++
+        console.debug('[WebGLRenderer.renderBlocks] no GPU data for block', {
+          regionNumber: block.regionNumber,
+          hasRegion: !!region,
+          rectCount: region?.rectCount ?? 0,
+          availableRegions: [...this.regionDataMap.keys()],
+        })
         continue
       }
+      blocksRendered++
 
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
@@ -774,6 +793,13 @@ export class WebGLFeatureRenderer {
       }
     }
 
+    if (blocksSkipped > 0) {
+      console.debug('[WebGLRenderer.renderBlocks] summary', {
+        blocksRendered,
+        blocksSkipped,
+        totalBlocks: blocks.length,
+      })
+    }
     gl.bindVertexArray(null)
     gl.disable(gl.SCISSOR_TEST)
     gl.viewport(0, 0, bufW, bufH)

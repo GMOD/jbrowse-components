@@ -394,13 +394,23 @@ export async function executeRenderChainData({
     }
     maxY += 1
 
-    const chainHasSupp = new Set<number>()
+    // Detect chains with supplementary alignments and compute primary strand
+    // per chain. Values: 0=no supp, 1=has supp + primary forward,
+    // 2=has supp + primary reverse
+    const chainSuppInfo = new Map<number, number>()
     for (const [chainIdx, chain] of chains.entries()) {
+      let hasSupp = false
+      let primaryStrand = 1
       for (const f of chain) {
         if (f.flags & 2048) {
-          chainHasSupp.add(chainIdx)
-          break
+          hasSupp = true
+        } else {
+          // Non-supplementary alignment determines primary strand
+          primaryStrand = f.flags & 16 ? -1 : 1
         }
+      }
+      if (hasSupp) {
+        chainSuppInfo.set(chainIdx, primaryStrand === -1 ? 2 : 1)
       }
     }
 
@@ -437,7 +447,7 @@ export async function executeRenderChainData({
       readPairOrientations[i] = f.pairOrientation
       readStrands[i] = f.strand
       const cIdx = featureIdToChainIdx.get(f.id)
-      readChainHasSupp[i] = cIdx !== undefined && chainHasSupp.has(cIdx) ? 1 : 0
+      readChainHasSupp[i] = cIdx !== undefined ? (chainSuppInfo.get(cIdx) ?? 0) : 0
       readChainIndices[i] = cIdx ?? 0
       readIds.push(f.id)
       readNames.push(f.name)
@@ -456,7 +466,7 @@ export async function executeRenderChainData({
         continue
       }
       const y = getY(chain[0]!.id)
-      const colorType = chainHasSupp.has(cb.chainIdx)
+      const colorType = chainSuppInfo.has(cb.chainIdx)
         ? 5
         : getColorType(chain[0]!, chainStats)
       connectingLines.push({

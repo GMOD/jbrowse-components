@@ -120,6 +120,7 @@ export const U_BLOCK_WIDTH = 25
 export const U_LINE_WIDTH_PX = 26
 export const U_GRADIENT_HUE = 27
 export const U_SCROLL_TOP = 28
+export const U_FLIP_STRAND_LONG_READ = 29
 export const U_DOMAIN_START = 30
 export const U_DOMAIN_END = 31
 

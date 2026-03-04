@@ -161,17 +161,17 @@ const PileupInner = observer(function PileupInner({
         model.setFeatureIdUnderMouse(hit.id)
         if (isChainMode) {
           const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-          const chainIndices =
+          const chainIds =
             chainIdx !== undefined
-              ? (model.chainIndexMap.get(chainIdx) ?? [])
+              ? (model.chainIdMap.get(chainIdx) ?? [])
               : []
-          model.setHighlightedChainIndices(chainIndices)
+          model.setHighlightedChainIds(chainIds)
           model.setMouseoverExtraInformation(
             formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
           )
         } else {
-          if (model.highlightedChainIndices.length > 0) {
-            model.setHighlightedChainIndices([])
+          if (model.highlightedChainIds.length > 0) {
+            model.setHighlightedChainIds([])
           }
           model.setMouseoverExtraInformation(
             formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
@@ -191,11 +191,11 @@ const PileupInner = observer(function PileupInner({
         model.selectFeatureById(hit.id)
         if (isChainMode) {
           const chainIdx = resolved.rpcData.readChainIndices?.[hit.index]
-          const chainIndices =
+          const chainIds =
             chainIdx !== undefined
-              ? (model.chainIndexMap.get(chainIdx) ?? [])
+              ? (model.chainIdMap.get(chainIdx) ?? [])
               : []
-          model.setSelectedChainIndices(chainIndices)
+          model.setSelectedChainIds(chainIds)
         }
       },
       () => {

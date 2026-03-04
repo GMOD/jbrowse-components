@@ -16,6 +16,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -137,6 +138,7 @@ export default function stateModelFactory(
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
+      userFeatureCountLimit: undefined as number | undefined,
     }))
     .views(self => ({
       get scalebarOverlapLeft() {
@@ -223,10 +225,8 @@ export default function stateModelFactory(
         return undefined
       },
 
-      get fetchSizeLimit() {
-        return (
-          self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number)
-        )
+      get maxFeatureCount() {
+        return self.userFeatureCountLimit ?? 5000
       },
 
       get colorByCDS() {
@@ -290,6 +290,15 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
+        console.debug('[LinearFeatureDisplay] setRpcDataMap', {
+          oldSize: self.rpcDataMap.size,
+          newSize: dataMap.size,
+          regions: [...dataMap.keys()],
+          labelCounts: [...dataMap.entries()].map(([k, v]) => [
+            k,
+            Object.keys(v.floatingLabelsData).length,
+          ]),
+        })
         self.rpcDataMap = dataMap
         let globalMaxY = 0
         for (const d of dataMap.values()) {
@@ -310,6 +319,11 @@ export default function stateModelFactory(
       clearDisplaySpecificData() {
         self.rpcDataMap = new Map()
         self.layoutBpPerPxMap = new Map()
+        self.setRegionTooLarge(false)
+      },
+
+      setFeatureDensityStatsLimit() {
+        self.userFeatureCountLimit = Math.ceil(self.maxFeatureCount * 3)
         self.setRegionTooLarge(false)
       },
 
@@ -477,7 +491,7 @@ export default function stateModelFactory(
         regionNumber: number,
         bpPerPx: number,
         stopToken: string,
-      ): Promise<FetchResult | undefined> {
+      ): Promise<FetchResult | 'regionTooLarge'> {
         const session = getSession(self)
         const { rpcManager } = session
         const adapterConfig = self.adapterConfigSnapshot
@@ -496,6 +510,7 @@ export default function stateModelFactory(
             },
             region,
             bpPerPx,
+            maxFeatureCount: self.maxFeatureCount,
             colorByCDS: self.colorByCDS,
             sequenceAdapter: self.sequenceAdapter,
             showOnlyGenes: self.showOnlyGenes,
@@ -509,9 +524,7 @@ export default function stateModelFactory(
         )
 
         if ('regionTooLarge' in result) {
-          throw new Error(
-            `Unexpected regionTooLarge from RPC (maxFeatureCount should not be sent)`,
-          )
+          return 'regionTooLarge'
         }
         return { regionNumber, data: result, region, bpPerPx }
       }
@@ -520,6 +533,14 @@ export default function stateModelFactory(
         results: (FetchResult | undefined)[],
         bpPerPx: number,
       ) {
+        const labelCounts = results.map(r =>
+          r ? Object.keys(r.data.floatingLabelsData).length : 0,
+        )
+        console.debug('[LinearFeatureDisplay] applyFetchResults', {
+          numResults: results.filter(Boolean).length,
+          labelCounts,
+          bpPerPx,
+        })
         const dataMap = new Map(self.rpcDataMap)
         const regionKeys = new Map<number, string>()
         const newRegionNumbers = new Set<number>()
@@ -536,7 +557,13 @@ export default function stateModelFactory(
             )
           }
         }
+        const layoutT0 = performance.now()
         computeAndAssignLayout(dataMap, bpPerPx, regionKeys, newRegionNumbers)
+        console.debug('[applyFetchResults] layout computed', {
+          elapsed: `${(performance.now() - layoutT0).toFixed(0)}ms`,
+          numRegions: dataMap.size,
+          newRegions: [...newRegionNumbers],
+        })
         for (const r of results) {
           if (r) {
             self.setLoadedRegionForRegion(r.regionNumber, r.region)
@@ -546,46 +573,82 @@ export default function stateModelFactory(
         self.setRpcDataMap(dataMap)
       }
 
-      async function refetchForCurrentView() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return
+      const superAfterAttach = self.afterAttach
+
+      // Soft reset: clears tracking state (loadedRegions,
+      // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
+      // invalidate in-flight fetches, but intentionally preserves
+      // rpcDataMap so the previous frame's rendered data stays visible
+      // while the new fetch is in progress, avoiding a flash of empty
+      // content. Compare with reload()/clearAllRpcData() which is a
+      // "hard reset" that also wipes rpcDataMap.
+      function softReset() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
         }
-        self.clearAllRpcData()
+        self.isLoading = false
+        self.error = undefined
+        self.loadedRegions = new Map()
+        self.layoutBpPerPxMap = new Map()
+        self.setRegionTooLarge(false)
+        self.fetchGeneration++
+      }
+
+      function fetchAllRegions() {
+        const view = getContainingView(self) as LinearGenomeViewModel
         const regions = view.staticRegions.map(vr => ({
           region: vr as Region,
           regionNumber: vr.regionNumber,
         }))
-        // Trigger fetch via onFetchNeeded
         self.onFetchNeeded(regions)
       }
 
-      const superAfterAttach = self.afterAttach
-
       return {
-        async reload() {
+        refetchForCurrentView() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          if (!view.initialized) {
+            return
+          }
+          softReset()
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          refetchForCurrentView()
+          fetchAllRegions()
+        },
+
+        async reload() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          if (!view.initialized) {
+            return
+          }
+          self.clearAllRpcData()
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          fetchAllRegions()
         },
 
         beforeFetchCheck() {
           if (untracked(() => self.needsLayoutRefresh)) {
-            self.clearAllRpcData()
+            softReset()
           }
         },
 
         getByteEstimateConfig() {
-          const view = getContainingView(self) as LGV
-          return {
-            adapterConfig: self.adapterConfigSnapshot,
-            fetchSizeLimit: self.fetchSizeLimit,
-            visibleBp: view.visibleBp,
-          }
+          return null
         },
 
         onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
+          const fetchT0 = performance.now()
+          console.debug('[onFetchNeeded] starting', {
+            numNeeded: needed.length,
+            bpPerPx,
+            regions: needed.map(n => ({
+              regionNumber: n.regionNumber,
+              refName: n.region.refName,
+              start: n.region.start,
+              end: n.region.end,
+            })),
+          })
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
@@ -596,9 +659,19 @@ export default function stateModelFactory(
               ),
             )
             const results = await Promise.all(promises)
-            if (!ctx.isStale()) {
-              applyFetchResults(results, bpPerPx)
+            if (ctx.isStale()) {
+              return
             }
+            if (results.some(r => r === 'regionTooLarge')) {
+              self.setRegionTooLarge(true, 'Too many features')
+              return
+            }
+            applyFetchResults(
+              results.filter(
+                (r): r is FetchResult => r !== 'regionTooLarge',
+              ),
+              bpPerPx,
+            )
           })
         },
 
@@ -632,7 +705,7 @@ export default function stateModelFactory(
               () => {
                 if (self.loadedRegions.size > 0 || self.regionTooLarge) {
                   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  refetchForCurrentView()
+                  self.refetchForCurrentView()
                 }
               },
               {

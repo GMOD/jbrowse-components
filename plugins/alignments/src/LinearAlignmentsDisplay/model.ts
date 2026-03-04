@@ -316,6 +316,10 @@ export default function stateModelFactory(
         /**
          * #property
          */
+        flipStrandLongReadChains: true,
+        /**
+         * #property
+         */
         arcsState: types.optional(ArcsSubModel, {}),
         /**
          * #property
@@ -445,8 +449,8 @@ export default function stateModelFactory(
       webglRef: null as unknown,
       currentRangeY: [0, 600] as [number, number],
       maxY: 0,
-      highlightedChainIndices: [] as number[],
-      selectedChainIndices: [] as number[],
+      highlightedChainIds: [] as string[],
+      selectedChainIds: [] as string[],
       colorTagMap: {} as Record<string, string>,
       visibleModifications: observable.map<string, any>({}),
       simplexModifications: new Set<string>(),
@@ -550,8 +554,8 @@ export default function stateModelFactory(
        * Used in linkedRead mode for chain-level highlighting
        * Cached as a MST getter so it only recomputes when rpcDataMap changes
        */
-      get chainIndexMap() {
-        const map = new Map<number, number[]>()
+      get chainIdMap() {
+        const map = new Map<number, string[]>()
         if (self.showLinkedReads) {
           for (const data of self.rpcDataMap.values()) {
             if (!data.readChainIndices) {
@@ -559,12 +563,15 @@ export default function stateModelFactory(
             }
             for (let i = 0; i < data.numReads; i++) {
               const chainIdx = data.readChainIndices[i]!
-              let indices = map.get(chainIdx)
-              if (!indices) {
-                indices = []
-                map.set(chainIdx, indices)
+              let ids = map.get(chainIdx)
+              if (!ids) {
+                ids = []
+                map.set(chainIdx, ids)
               }
-              indices.push(i)
+              const id = data.readIds[i]
+              if (id !== undefined) {
+                ids.push(id)
+              }
             }
           }
         }
@@ -928,13 +935,13 @@ export default function stateModelFactory(
           }
         },
 
-        setHighlightedChainIndices(indices: number[]) {
-          self.highlightedChainIndices = indices
+        setHighlightedChainIds(ids: string[]) {
+          self.highlightedChainIds = ids
         },
 
         clearHighlights() {
-          if (self.highlightedChainIndices.length > 0) {
-            self.highlightedChainIndices = []
+          if (self.highlightedChainIds.length > 0) {
+            self.highlightedChainIds = []
           }
         },
 
@@ -942,8 +949,8 @@ export default function stateModelFactory(
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
           self.overCigarItem = false
-          if (self.highlightedChainIndices.length > 0) {
-            self.highlightedChainIndices = []
+          if (self.highlightedChainIds.length > 0) {
+            self.highlightedChainIds = []
           }
         },
 
@@ -952,13 +959,13 @@ export default function stateModelFactory(
           if (isFeature(session.selection)) {
             session.clearSelection()
           }
-          if (self.selectedChainIndices.length > 0) {
-            self.selectedChainIndices = []
+          if (self.selectedChainIds.length > 0) {
+            self.selectedChainIds = []
           }
         },
 
-        setSelectedChainIndices(indices: number[]) {
-          self.selectedChainIndices = indices
+        setSelectedChainIds(ids: string[]) {
+          self.selectedChainIds = ids
         },
 
         setColorScheme(colorBy: ColorBy) {
@@ -1099,6 +1106,10 @@ export default function stateModelFactory(
 
         setShowInterbaseIndicators(show: boolean) {
           self.showInterbaseIndicators = show
+        },
+
+        setFlipStrandLongReadChains(flag: boolean) {
+          self.flipStrandLongReadChains = flag
         },
 
         setShowLinkedReads(flag: boolean) {
@@ -1754,10 +1765,12 @@ export default function stateModelFactory(
                   canvasHeight: self.height,
                   highlightedFeatureId: self.featureIdUnderMouse,
                   selectedFeatureId: self.selectedFeatureId,
-                  highlightedChainIndices: self.highlightedChainIndices,
-                  selectedChainIndices: self.selectedChainIndices,
+                  highlightedChainIds: self.highlightedChainIds,
+                  selectedChainIds: self.selectedChainIds,
                   colors: palette,
                   renderingMode: self.renderingMode,
+                  flipStrandLongReadChains:
+                    self.flipStrandLongReadChains,
                   arcLineWidth: self.arcsState.lineWidth,
                   bpRangeX: [0, 0],
                 })
@@ -1878,6 +1891,7 @@ export default function stateModelFactory(
           showLinkedReads: self.showLinkedReads,
           includeModifications: true,
           includeTagOption: true,
+          arcsState: self.arcsState,
         })
 
         const items: MenuItem[] = [

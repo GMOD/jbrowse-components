@@ -12,6 +12,10 @@ const Overlay = observer(function Overlay(props: OverlayProps) {
   const tracks = model.getMatchedTracks(trackId)
   const type = tracks[0]?.type
 
+  if (tracks.some(t => t.displays[0]?.regionTooLarge)) {
+    return null
+  }
+
   if (type === 'AlignmentsTrack') {
     return <AlignmentConnections {...props} />
   }

@@ -84,7 +84,15 @@ fn modifications_color(flags: u32) -> vec3f {
 fn get_read_color(inst: ReadInst) -> vec3f {
   let cs = ui(11u);
   let cm = ui(14u);
-  if cm == 1 && inst.chain_supp > 0u { return color3(95u); }
+  let is_paired = (inst.flags & 1u) != 0u;
+  // chain_supp: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
+  if cm == 1 && inst.chain_supp > 0u && is_paired { return color3(95u); }
+  if cm == 1 && inst.chain_supp > 0u {
+    let primary_strand = select(1, -1, inst.chain_supp > 1u);
+    let flip = ui(29u);
+    let eff = select(inst.strand, inst.strand * primary_strand, flip == 1);
+    return strand_color(eff);
+  }
   if cs == 0 { return normal_color(); }
   if cs == 1 { return strand_color(inst.strand); }
   if cs == 2 { return mapq_color(inst.mapq); }

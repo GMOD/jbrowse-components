@@ -82,6 +82,7 @@ import {
   U_ERASE_MODE,
   U_FEAT_H,
   U_FEAT_SPACING,
+  U_FLIP_STRAND_LONG_READ,
   U_GRADIENT_HUE,
   U_HIGHLIGHT_IDX,
   U_HIGHLIGHT_ONLY,
@@ -1031,6 +1032,7 @@ export class AlignmentsRenderer {
     ii[U_HIGHLIGHT_IDX] = -1
     ii[U_HIGHLIGHT_ONLY] = 0
     ii[U_CHAIN_MODE] = state.renderingMode === 'linkedRead' ? 1 : 0
+    ii[U_FLIP_STRAND_LONG_READ] = state.flipStrandLongReadChains !== false ? 1 : 0
     ii[U_SHOW_STROKE] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     f[U_COV_HEIGHT] = state.coverageHeight
     f[U_COV_Y_OFFSET] = state.coverageYOffset
@@ -1240,9 +1242,9 @@ export class AlignmentsRenderer {
         : -1
 
       const needsFeatureHighlight =
-        state.highlightedChainIndices.length === 0 && regionHighlightIdx >= 0
+        state.highlightedChainIds.length === 0 && regionHighlightIdx >= 0
       const needsFeatureSelection =
-        state.selectedChainIndices.length === 0 &&
+        state.selectedChainIds.length === 0 &&
         regionSelectIdx >= 0 &&
         regionSelectIdx < region.readCount
 
@@ -1593,9 +1595,10 @@ export class AlignmentsRenderer {
     const arcsOff = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const covOff = (state.showCoverage ? state.coverageHeight : 0) + arcsOff
 
-    if (state.highlightedChainIndices.length > 0) {
+    if (state.highlightedChainIds.length > 0) {
       const bounds = getChainBounds(
-        state.highlightedChainIndices,
+        state.highlightedChainIds,
+        region.readIdToIndex,
         region.readPositions,
         region.readYs,
       )
@@ -1615,9 +1618,10 @@ export class AlignmentsRenderer {
       }
     }
 
-    if (state.selectedChainIndices.length > 0) {
+    if (state.selectedChainIds.length > 0) {
       const bounds = getChainBounds(
-        state.selectedChainIndices,
+        state.selectedChainIds,
+        region.readIdToIndex,
         region.readPositions,
         region.readYs,
       )

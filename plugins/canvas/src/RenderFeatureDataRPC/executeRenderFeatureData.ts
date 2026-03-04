@@ -596,6 +596,7 @@ export async function executeRenderFeatureData({
   }
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
+  const rpcT0 = performance.now()
 
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
@@ -606,6 +607,7 @@ export async function executeRenderFeatureData({
     assemblyName: region.assemblyName ?? '',
   }
 
+  const fetchT0 = performance.now()
   let featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
@@ -614,6 +616,11 @@ export async function executeRenderFeatureData({
         dataAdapter.getFeatures(regionWithAssembly).pipe(toArray()),
       ),
   )
+  console.debug('[executeRenderFeatureData] features fetched', {
+    elapsed: `${(performance.now() - fetchT0).toFixed(0)}ms`,
+    numFeatures: featuresArray.length,
+    region: `${region.refName}:${region.start}-${region.end}`,
+  })
 
   checkStopToken2(stopTokenCheck)
 
@@ -709,8 +716,7 @@ export async function executeRenderFeatureData({
     }
   }
 
-  // Compute glyph layouts for each feature (no y-position assignment —
-  // that happens on the main thread so all regions share a single layout).
+  const layoutT0 = performance.now()
   const layoutRecords = await updateStatus(
     'Computing layout',
     statusCallback,
@@ -755,6 +761,10 @@ export async function executeRenderFeatureData({
       return records
     },
   )
+  console.debug('[executeRenderFeatureData] layout computed', {
+    elapsed: `${(performance.now() - layoutT0).toFixed(0)}ms`,
+    numRecords: layoutRecords.length,
+  })
 
   checkStopToken2(stopTokenCheck)
 
@@ -889,6 +899,15 @@ export async function executeRenderFeatureData({
     writeColorBytes(arrowColors, i, arrow.color)
     arrowFeatureIndices[i] = arrow.flatbushIdx
   }
+
+  console.debug('[executeRenderFeatureData] total', {
+    elapsed: `${(performance.now() - rpcT0).toFixed(0)}ms`,
+    numRects: visibleRects.length,
+    numLines: visibleLines.length,
+    numArrows: visibleArrows.length,
+    numFlatbushItems: flatbushItems.length,
+    numLabels: Object.keys(floatingLabelsData).length,
+  })
 
   const result: FeatureDataResult = {
     regionStart,

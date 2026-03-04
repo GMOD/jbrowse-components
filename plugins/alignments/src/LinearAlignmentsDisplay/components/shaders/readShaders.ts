@@ -7,6 +7,7 @@ precision highp int;
 // SYNC(wgsl/readShader.ts): ReadInst struct field order (12 fields):
 // start_off(u32), end_off(u32), y(u32), flags(u32), mapq(u32), insert_size(f32),
 // pair_orient(u32), strand(i32), tag_r(f32), tag_g(f32), tag_b(f32), chain_supp(u32)
+// chain_supp values: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
 in uvec2 a_position;  // [start, end] as uint offsets from regionStart
 in float a_y;
 in float a_flags;
@@ -15,7 +16,7 @@ in float a_insertSize;
 in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
 in vec3 a_tagColor;
-in float a_chainHasSupp;
+in float a_chainHasSupp;     // 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
 
 uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
@@ -45,6 +46,7 @@ uniform vec3 u_colorSupplementary;
 
 uniform float u_insertSizeUpper;
 uniform float u_insertSizeLower;
+uniform int u_flipStrandLongReadChains;
 
 out vec4 v_color;
 out vec2 v_localPos;       // 0-1 UV within the feature rectangle
@@ -249,9 +251,18 @@ void main() {
   }
 
   vec3 color;
-  // In chain mode, supplementary chains override all color schemes
-  if (u_chainMode == 1 && a_chainHasSupp > 0.5) {
+  // In chain mode, supplementary chains use orange for paired-end reads only.
+  // Long reads (non-paired) use strand-based coloring with optional flip.
+  // a_chainHasSupp: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
+  bool isPaired = mod(a_flags, 2.0) > 0.5;
+  if (u_chainMode == 1 && a_chainHasSupp > 0.5 && isPaired) {
     color = u_colorSupplementary;
+  } else if (u_chainMode == 1 && a_chainHasSupp > 0.5) {
+    float primaryStrand = a_chainHasSupp > 1.5 ? -1.0 : 1.0;
+    float effectiveStrand = u_flipStrandLongReadChains == 1
+      ? a_strand * primaryStrand
+      : a_strand;
+    color = strandColor(effectiveStrand);
   } else if (u_colorScheme == 0) color = normalColor();
   else if (u_colorScheme == 1) color = strandColor(a_strand);
   else if (u_colorScheme == 2) color = mapqColor(a_mapq);

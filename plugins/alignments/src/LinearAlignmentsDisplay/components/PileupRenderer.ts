@@ -115,6 +115,10 @@ export class PileupRenderer {
     const mode = state.renderingMode ?? 'pileup'
     const isChainMode = mode === 'linkedRead'
     gl.uniform1i(this.parent.readUniforms.u_chainMode!, isChainMode ? 1 : 0)
+    gl.uniform1i(
+      this.parent.readUniforms.u_flipStrandLongReadChains!,
+      state.flipStrandLongReadChains !== false ? 1 : 0,
+    )
     const showStroke = state.showOutline && state.featureHeight >= 4 ? 1 : 0
     gl.uniform1i(this.parent.readUniforms.u_showStroke!, showStroke)
 
@@ -456,9 +460,10 @@ export class PileupRenderer {
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.modificationCount)
     }
 
-    if (state.highlightedChainIndices.length > 0) {
+    if (state.highlightedChainIds.length > 0) {
       const bounds = getChainBounds(
-        state.highlightedChainIndices,
+        state.highlightedChainIds,
+        buffers.readIdToIndex,
         buffers.readPositions,
         buffers.readYs,
       )
@@ -490,9 +495,10 @@ export class PileupRenderer {
 
     gl.disable(gl.SCISSOR_TEST)
 
-    if (state.selectedChainIndices.length > 0) {
+    if (state.selectedChainIds.length > 0) {
       const bounds = getChainBounds(
-        state.selectedChainIndices,
+        state.selectedChainIds,
+        buffers.readIdToIndex,
         buffers.readPositions,
         buffers.readYs,
       )

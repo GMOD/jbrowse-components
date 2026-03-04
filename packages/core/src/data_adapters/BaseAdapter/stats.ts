@@ -60,9 +60,13 @@ export async function calculateFeatureDensityStats(
   let interval = DENSITY_SAMPLE_INITIAL_INTERVAL
   let expansionTime = 0
   let lastTime = performance.now()
+  const t0 = lastTime
+  let rounds = 0
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
+    rounds++
+    const roundT0 = performance.now()
     const features = await sampleFeaturesForInterval(
       region,
       interval,
@@ -70,14 +74,27 @@ export async function calculateFeatureDensityStats(
       opts,
     )
     const featureCount = features.length
+    console.debug('[calculateFeatureDensityStats] sample round', {
+      round: rounds,
+      interval,
+      featureCount,
+      roundElapsed: `${(performance.now() - roundT0).toFixed(0)}ms`,
+      refLen,
+    })
 
     if (featureCount >= DENSITY_SAMPLE_MIN_FEATURES || interval * 2 > refLen) {
+      console.debug('[calculateFeatureDensityStats] done', {
+        totalRounds: rounds,
+        totalElapsed: `${(performance.now() - t0).toFixed(0)}ms`,
+        featureDensity: featureCount / interval,
+      })
       return { featureDensity: featureCount / interval }
     }
 
     if (expansionTime > DENSITY_SAMPLE_TIMEOUT_MS) {
       console.warn(
-        "Stats estimation reached timeout, or didn't get enough features",
+        "[calculateFeatureDensityStats] timeout, or didn't get enough features",
+        { totalRounds: rounds, totalElapsed: `${(performance.now() - t0).toFixed(0)}ms` },
       )
       return { featureDensity: Number.POSITIVE_INFINITY }
     }

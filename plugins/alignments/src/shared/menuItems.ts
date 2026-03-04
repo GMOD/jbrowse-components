@@ -316,11 +316,19 @@ interface ColorByModel {
   setColorScheme: (colorBy: ColorBy) => void
 }
 
+interface ArcsState {
+  colorByType: string
+  setColorByType: (
+    type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation',
+  ) => void
+}
+
 export interface ColorByMenuOptions {
   showLinkedReads?: boolean
   includeModifications?: boolean
   includeTagOption?: boolean
   colorOptions?: { label: string; type: string }[]
+  arcsState?: ArcsState
 }
 
 const defaultColorOptions = [
@@ -347,6 +355,7 @@ export function getColorByMenuItem(
     showLinkedReads = false,
     includeModifications = false,
     includeTagOption = false,
+    arcsState,
   } = options
 
   const colorRadio = (label: string, type: string) => ({
@@ -391,6 +400,28 @@ export function getColorByMenuItem(
           },
         ]
       : []),
+    ...(arcsState
+      ? [
+          {
+            label: 'Arc color scheme',
+            type: 'subMenu' as const,
+            subMenu: (
+              [
+                ['Insert size and orientation', 'insertSizeAndOrientation'],
+                ['Insert size', 'insertSize'],
+                ['Orientation', 'orientation'],
+              ] as const
+            ).map(([label, type]) => ({
+              label,
+              type: 'radio' as const,
+              checked: arcsState.colorByType === type,
+              onClick: () => {
+                arcsState.setColorByType(type)
+              },
+            })),
+          },
+        ]
+      : []),
   ]
 
   return {
@@ -409,12 +440,7 @@ interface ShowMenuModel {
   showInterbaseIndicators: boolean
   showOutlineSetting: boolean
   showLinkedReads: boolean
-  arcsState: {
-    colorByType: string
-    setColorByType: (
-      type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation',
-    ) => void
-  }
+  flipStrandLongReadChains: boolean
   toggleSoftClipping: () => void
   toggleMismatchAlpha: () => void
   setShowCoverage: (show: boolean) => void
@@ -424,6 +450,7 @@ interface ShowMenuModel {
   setShowInterbaseIndicators: (show: boolean) => void
   setShowOutline: (show: boolean) => void
   setShowLinkedReads: (show: boolean) => void
+  setFlipStrandLongReadChains: (flip: boolean) => void
 }
 
 export function getShowMenuItem(model: ShowMenuModel) {
@@ -464,24 +491,6 @@ export function getShowMenuItem(model: ShowMenuModel) {
         },
       },
       {
-        label: 'Arc color scheme',
-        type: 'subMenu' as const,
-        subMenu: (
-          [
-            ['Insert size and orientation', 'insertSizeAndOrientation'],
-            ['Insert size', 'insertSize'],
-            ['Orientation', 'orientation'],
-          ] as const
-        ).map(([label, type]) => ({
-          label,
-          type: 'radio' as const,
-          checked: model.arcsState.colorByType === type,
-          onClick: () => {
-            model.arcsState.setColorByType(type)
-          },
-        })),
-      },
-      {
         label: 'Show sashimi arcs',
         type: 'checkbox' as const,
         checked: model.showSashimiArcs,
@@ -519,6 +528,16 @@ export function getShowMenuItem(model: ShowMenuModel) {
         checked: model.showLinkedReads,
         onClick: () => {
           model.setShowLinkedReads(!model.showLinkedReads)
+        },
+      },
+      {
+        label: 'Flip strand on long read chains',
+        type: 'checkbox' as const,
+        checked: model.flipStrandLongReadChains,
+        onClick: () => {
+          model.setFlipStrandLongReadChains(
+            !model.flipStrandLongReadChains,
+          )
         },
       },
     ],

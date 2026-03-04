@@ -73,9 +73,9 @@ export interface LinearAlignmentsDisplayModel {
   showLegend: boolean | undefined
   legendItems: LegendItem[]
   currentRangeY: [number, number]
-  highlightedChainIndices: number[]
-  selectedChainIndices: number[]
-  chainIndexMap: Map<number, number[]>
+  highlightedChainIds: string[]
+  selectedChainIds: string[]
+  chainIdMap: Map<number, string[]>
   overCigarItem: boolean
   visibleLabels: VisibleLabel[]
   isChainMode: boolean
@@ -85,8 +85,8 @@ export interface LinearAlignmentsDisplayModel {
   setCurrentRangeY: (rangeY: [number, number]) => void
   setCoverageHeight: (height: number) => void
   setArcsHeight: (height: number) => void
-  setHighlightedChainIndices: (indices: number[]) => void
-  setSelectedChainIndices: (indices: number[]) => void
+  setHighlightedChainIds: (ids: string[]) => void
+  setSelectedChainIds: (ids: string[]) => void
   clearHighlights: () => void
   clearMouseoverState: () => void
   clearSelection: () => void

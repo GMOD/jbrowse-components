@@ -212,6 +212,33 @@ export function computeMismatchFrequencies(
   return frequencies
 }
 
+function getDepthAt(
+  coverageDepths: Float32Array,
+  depthIdx: number,
+  fallback: number,
+) {
+  return depthIdx >= 0 && depthIdx < coverageDepths.length
+    ? coverageDepths[depthIdx]!
+    : fallback
+}
+
+/**
+ * For interbase features (insertions, softclips, hardclips), use
+ * Math.max(leftDepth, rightDepth) because these features sit between two
+ * bases. At coverage cliffs (e.g. soft clips at the edge of read pileups),
+ * one side may have near-zero depth which would give misleading proportions.
+ */
+function getInterbaseDepth(
+  coverageDepths: Float32Array,
+  depthIdx: number,
+  fallback: number,
+) {
+  const leftDepth = getDepthAt(coverageDepths, depthIdx - 1, 0)
+  const rightDepth = getDepthAt(coverageDepths, depthIdx, 0)
+  const depth = Math.max(leftDepth, rightDepth)
+  return depth > 0 ? depth : fallback
+}
+
 /**
  * Compute per-position frequency (count at position / total depth) for point
  * features like insertions, softclips, hardclips. For paired position data
@@ -232,10 +259,7 @@ export function computePositionFrequencies(
   for (let i = 0; i < n; i++) {
     const posOffset = positions[i]!
     const depthIdx = posOffset - coverageStartOffset
-    const depth =
-      depthIdx >= 0 && depthIdx < coverageDepths.length
-        ? coverageDepths[depthIdx]!
-        : 1
+    const depth = getInterbaseDepth(coverageDepths, depthIdx, 1)
     const count = posCounts.get(posOffset) ?? 1
     const freq = depth > 0 ? count / depth : 0
     frequencies[i] = Math.min(255, Math.round(freq * 255))
@@ -249,14 +273,14 @@ export function applyDepthDependentThreshold(
   coverageDepths: Float32Array,
   coverageStartOffset: number,
   thresholdFn: (depth: number) => number,
+  interbase?: boolean,
 ) {
   for (let i = 0; i < frequencies.length; i++) {
     const posOffset = positions[i]!
     const depthIdx = posOffset - coverageStartOffset
-    const depth =
-      depthIdx >= 0 && depthIdx < coverageDepths.length
-        ? coverageDepths[depthIdx]!
-        : 0
+    const depth = interbase
+      ? getInterbaseDepth(coverageDepths, depthIdx, 0)
+      : getDepthAt(coverageDepths, depthIdx, 0)
     const freq = frequencies[i]! / 255
     if (freq < thresholdFn(depth)) {
       frequencies[i] = 0

@@ -8,14 +8,19 @@ export interface ClipRect {
 }
 
 export function getChainBounds(
-  indices: number[],
+  ids: string[],
+  readIdToIndex: Map<string, number>,
   readPositions: Uint32Array,
   readYs: Uint16Array,
 ) {
   let minStart = Infinity
   let maxEnd = -Infinity
   let y = 0
-  for (const idx of indices) {
+  for (const id of ids) {
+    const idx = readIdToIndex.get(id)
+    if (idx === undefined) {
+      continue
+    }
     const s = readPositions[idx * 2]
     const e = readPositions[idx * 2 + 1]
     const row = readYs[idx]

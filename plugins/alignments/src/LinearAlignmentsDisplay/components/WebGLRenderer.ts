@@ -89,13 +89,12 @@ export interface RenderState {
   canvasHeight: number
   highlightedFeatureId?: string
   selectedFeatureId?: string
-  // Chain highlighting: all feature indices in the highlighted chain
-  highlightedChainIndices: number[]
-  // Chain selection: all feature indices in the selected chain
-  selectedChainIndices: number[]
+  highlightedChainIds: string[]
+  selectedChainIds: string[]
   // Color palette from theme
   colors: ColorPalette
   renderingMode?: 'pileup' | 'linkedRead'
+  flipStrandLongReadChains?: boolean
   arcLineWidth?: number
   // Sashimi arcs (splice junctions overlaid on coverage)
   showSashimiArcs?: boolean
@@ -338,6 +337,7 @@ export class WebGLRenderer {
       'u_insertSizeUpper',
       'u_insertSizeLower',
       'u_chainMode',
+      'u_flipStrandLongReadChains',
       'u_showStroke',
       'u_zero',
     ])

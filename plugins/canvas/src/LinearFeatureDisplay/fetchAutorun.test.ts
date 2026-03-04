@@ -238,29 +238,12 @@ describe('FetchVisibleRegions autorun', () => {
   it('does not loop after regionTooLarge is set', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    const { view, display } = createDisplay()
+    const { display } = createDisplay()
 
-    // Widen the displayed region and zoom out so
-    // visibleBp >= AUTO_FORCE_LOAD_BP (20_000).
-    view.setDisplayedRegions([
-      {
-        assemblyName: 'volvox',
-        start: 0,
-        end: 500_000,
-        refName: 'ctgA',
-      },
-    ])
-    view.zoomTo(50)
-
-    // Route mock by RPC method
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
-      }
-      return Promise.resolve(makeEmptyFeatureData(0))
+    // RPC returns regionTooLarge when feature count exceeds limit
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 10_000,
     })
 
     jest.advanceTimersByTime(400)
@@ -283,29 +266,12 @@ describe('FetchVisibleRegions autorun', () => {
   it('clears regionTooLarge and re-fetches after force load + reload', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
 
-    // Widen the displayed region and zoom out so
-    // visibleBp >= AUTO_FORCE_LOAD_BP (20_000).
-    view.setDisplayedRegions([
-      {
-        assemblyName: 'volvox',
-        start: 0,
-        end: 500_000,
-        refName: 'ctgA',
-      },
-    ])
-    view.zoomTo(50)
-
-    // First: byte estimate says too large
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({
-          bytes: 50_000_000,
-          fetchSizeLimit: 1_000_000,
-        })
-      }
-      return Promise.resolve(makeEmptyFeatureData(0))
+    // First: RPC returns regionTooLarge
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 10_000,
     })
 
     jest.advanceTimersByTime(400)
@@ -316,9 +282,9 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     // Now simulate "Force Load": raise limit, clear state, reload.
-    // After force load, userByteSizeLimit is raised to 75_000_000 (1.5x)
-    // so byte estimate of 50M passes.
-    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    // setFeatureDensityStatsLimit triples the limit so the RPC succeeds.
+    display.setFeatureDensityStatsLimit()
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
     display.reload()
 
     jest.advanceTimersByTime(400)
@@ -384,6 +350,43 @@ describe('FetchVisibleRegions autorun', () => {
     // Error guard in autorun prevents re-fetching
     jest.advanceTimersByTime(2000)
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
+  })
+
+  it('preserves rpcDataMap during layout refresh (soft reset)', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    const featureData = makeEmptyFeatureData(0)
+    mockRpcCall.mockResolvedValue(featureData)
+
+    const { display, view } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    // Verify data is loaded
+    expect(display.rpcDataMap.size).toBe(1)
+
+    // Simulate zoom that triggers needsLayoutRefresh:
+    // The layout was done at bpPerPx ~12.5 (10000bp / 800px).
+    // Zooming to 3x that (ratio > 2) triggers needsLayoutRefresh.
+    const originalBpPerPx = view.bpPerPx
+    view.zoomTo(originalBpPerPx * 3)
+
+    // beforeFetchCheck should do a soft reset
+    jest.advanceTimersByTime(400)
+
+    // rpcDataMap should still have the old data (soft reset preserves it)
+    expect(display.rpcDataMap.size).toBe(1)
+
+    // But loadedRegions should be cleared (triggering refetch)
+    // and eventually new data arrives
+    await waitFor(() => {
+      expect(display.isLoading).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
   })
 
   it('clearAllRpcData resets state and triggers a new fetch', async () => {

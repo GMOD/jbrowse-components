@@ -601,6 +601,7 @@ export function computeFrequenciesAndThresholds(
     depths,
     startOffset,
     featureFrequencyThreshold,
+    true,
   )
   const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
   for (let i = 0; i < gapStartPositions.length; i++) {
@@ -617,6 +618,7 @@ export function computeFrequenciesAndThresholds(
     depths,
     startOffset,
     featureFrequencyThreshold,
+    true,
   )
 
   return { mismatchFrequencies, interbaseFrequencies, gapFrequencies }
