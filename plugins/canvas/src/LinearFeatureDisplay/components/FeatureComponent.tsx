@@ -76,6 +76,7 @@ interface FlatbushRegionCache {
   subfeatureIndex: Flatbush | null
   cachedItems: FlatbushItem[] | null
   cachedSubInfos: SubfeatureInfo[] | null
+  cachedShowDescriptions?: boolean
 }
 
 function buildFeatureIndex(
@@ -83,6 +84,7 @@ function buildFeatureIndex(
   floatingLabelsData: FeatureDataResult['floatingLabelsData'],
   bpPerPx: number,
   reversed: boolean,
+  showDescriptions: boolean,
 ) {
   const index = new Flatbush(items.length)
   for (const item of items) {
@@ -90,7 +92,7 @@ function buildFeatureIndex(
     let hitEndBp = item.endBp
     const labelData = floatingLabelsData[item.featureId]
     if (labelData) {
-      const maxLabelWidthPx = maxLabelTextWidth(labelData)
+      const maxLabelWidthPx = maxLabelTextWidth(labelData, showDescriptions)
       const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
       if (maxLabelWidthPx > featureWidthPx) {
         const extraBp = (maxLabelWidthPx - featureWidthPx) * bpPerPx
@@ -121,9 +123,14 @@ function getOrCreateFlatbushIndexes(
   data: FeatureDataResult,
   bpPerPx: number,
   reversed: boolean,
+  showDescriptions: boolean,
 ) {
-  if (cache.cachedItems !== data.flatbushItems) {
+  if (
+    cache.cachedItems !== data.flatbushItems ||
+    cache.cachedShowDescriptions !== showDescriptions
+  ) {
     cache.cachedItems = data.flatbushItems
+    cache.cachedShowDescriptions = showDescriptions
     cache.featureIndex =
       data.flatbushItems.length > 0
         ? buildFeatureIndex(
@@ -131,6 +138,7 @@ function getOrCreateFlatbushIndexes(
             data.floatingLabelsData,
             bpPerPx,
             reversed,
+            showDescriptions,
           )
         : null
   }
@@ -156,6 +164,7 @@ function performHitDetection(
   reversed: boolean,
   bpPos: number,
   yPos: number,
+  showDescriptions: boolean,
 ) {
   let feature: FlatbushItem | null = null
   let subfeature: SubfeatureInfo | null = null
@@ -165,6 +174,7 @@ function performHitDetection(
     data,
     bpPerPx,
     reversed,
+    showDescriptions,
   )
 
   if (subfeatureIndex) {
@@ -206,6 +216,7 @@ function performMultiRegionHitDetection(
   visibleRegions: VisibleRegion[],
   mouseXPx: number,
   yPos: number,
+  showDescriptions: boolean,
 ): HitResult {
   for (const vr of visibleRegions) {
     if (mouseXPx < vr.screenStartPx || mouseXPx > vr.screenEndPx) {
@@ -238,6 +249,7 @@ function performMultiRegionHitDetection(
       reversed,
       bpPos,
       yPos,
+      showDescriptions,
     )
 
     if (feature) {
@@ -308,17 +320,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const renderWithBlocks = useCallback(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized || width === undefined) {
-      console.debug('[renderWithBlocks] early return', {
-        hasRenderer: !!renderer,
-        initialized: view.initialized,
-        width,
-      })
       return
     }
 
     const visibleRegions = view.visibleRegions
     if (visibleRegions.length === 0) {
-      console.debug('[renderWithBlocks] no visible regions')
       return
     }
 
@@ -331,13 +337,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         screenEndPx: vr.screenEndPx,
       })
     }
-
-    console.debug('[renderWithBlocks] rendering', {
-      numBlocks: blocks.length,
-      bpPerPx: view.bpPerPx,
-      uploadedRegions: [...uploadedDataRef.current.keys()],
-      blockRegions: blocks.map(b => b.regionNumber),
-    })
 
     renderer.renderBlocks(blocks, {
       scrollY: scrollYRef.current,
@@ -415,7 +414,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     if (rpcDataMap.size === 0) {
-      console.debug('[uploadEffect] rpcDataMap empty, pruning all GPU data')
       renderer.pruneStaleRegions([])
       uploadedDataRef.current.clear()
       flatbushCacheMapRef.current.clear()
@@ -433,13 +431,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (uploadedDataRef.current.get(regionNumber) === data) {
         continue
       }
-      console.debug('[uploadEffect] uploading region', {
-        regionNumber,
-        numRects: data.numRects,
-        numLines: data.numLines,
-        regionStart: data.regionStart,
-        wasAlreadyUploaded: uploadedDataRef.current.has(regionNumber),
-      })
       uploadedDataRef.current.set(regionNumber, data)
       renderer.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
@@ -547,6 +538,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         view.visibleRegions,
         mouseX,
         yPos,
+        model.effectiveShowDescriptions,
       )
 
       if (result.feature) {
@@ -592,6 +584,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         view.visibleRegions,
         mouseX,
         yPos,
+        model.effectiveShowDescriptions,
       )
 
       if (result.feature) {
@@ -617,6 +610,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         view.visibleRegions,
         mouseX,
         yPos,
+        model.effectiveShowDescriptions,
       )
 
       if (result.feature) {
@@ -674,25 +668,15 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       !bpPerPx ||
       visibleRegions.length === 0
     ) {
-      console.debug('[floatingLabels] early return', {
-        initialized: view.initialized,
-        width,
-        bpPerPx,
-        numVisibleRegions: visibleRegions.length,
-      })
       return null
     }
 
     const elements: React.ReactElement[] = []
     const renderedLabels = new Set<string>()
-    let skippedNoData = 0
-    let skippedOutOfRange = 0
-    let skippedDuplicate = 0
 
     for (const vr of visibleRegions) {
       const data = rpcDataMap.get(vr.regionNumber)
       if (!data?.floatingLabelsData) {
-        skippedNoData++
         continue
       }
 
@@ -704,7 +688,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         data.floatingLabelsData,
       )) {
         if (renderedLabels.has(featureId)) {
-          skippedDuplicate++
           continue
         }
 
@@ -712,7 +695,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         const featureEndBp = labelData.maxX + regionStart
 
         if (featureEndBp < vr.start || featureStartBp > vr.end) {
-          skippedOutOfRange++
           continue
         }
 
@@ -780,15 +762,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
 
-    console.debug('[floatingLabels] result', {
-      numElements: elements.length,
-      numRpcDataEntries: rpcDataMap.size,
-      numVisibleRegions: visibleRegions.length,
-      skippedNoData,
-      skippedOutOfRange,
-      skippedDuplicate,
-      bpPerPx,
-    })
     return elements.length > 0 ? elements : null
   }, [
     rpcDataMap,
@@ -947,7 +920,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       const blockBpPerPx =
         (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
       const featureWidthPx = (item.endBp - item.startBp) / blockBpPerPx
-      return computeLabelExtraWidth(labelData, featureWidthPx)
+      return computeLabelExtraWidth(
+        labelData,
+        featureWidthPx,
+        model.effectiveShowDescriptions,
+      )
     }
 
     const hoverItem = hoveredSubfeature ?? hoveredFeature
@@ -1010,6 +987,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     hoveredFeature,
     hoveredSubfeature,
     model.selectedFeatureId,
+    model.effectiveShowDescriptions,
   ])
 
   if (model.regionTooLarge) {

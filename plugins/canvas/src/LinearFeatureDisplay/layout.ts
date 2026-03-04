@@ -1,18 +1,27 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
+
+import type {
+  FeatureDataResult,
+  FeatureLabelData,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
+
+function effectiveLabelWidthPx(
+  labelData: FeatureLabelData,
+  showDescriptions: boolean,
+) {
+  return maxLabelTextWidth(labelData, showDescriptions)
+}
 
 export function computeAndAssignLayout(
   rpcDataMap: Map<number, FeatureDataResult>,
   bpPerPx: number,
   regionKeys: Map<number, string>,
   newRegionNumbers: Set<number>,
+  showDescriptions = true,
+  descriptionFontSize = 12,
 ) {
-  // Group regions by reference sequence identity (assemblyName:refName) so
-  // features on the same reference share a layout. A single feature can span
-  // multiple discontiguous regions on the same reference and must get the
-  // same Y value in each. Different references get separate layouts to avoid
-  // false overlaps from unrelated absolute bp coordinates.
   const refGroups = new Map<string, [number, FeatureDataResult][]>()
   for (const [regionNumber, data] of rpcDataMap) {
     if (data.flatbushItems.length === 0) {
@@ -28,18 +37,37 @@ export function computeAndAssignLayout(
   }
 
   for (const [, regions] of refGroups) {
-    // Skip groups where all regions were already processed. fillYArrays adds
-    // offsets to Y values in-place, so re-processing old data would
-    // double the offsets.
     if (!regions.some(([num]) => newRegionNumbers.has(num))) {
       continue
     }
+
     const layout = new GranularRectLayout({ displayMode: 'normal' })
     const layoutMap = new Map<string, number>()
 
-    // Collect unique features across all regions in this refName group.
-    // Use absolute bp coordinates since they are directly comparable
-    // within the same chromosome.
+    const labelInfoByFeatureId = new Map<
+      string,
+      { hasDescription: boolean; maxLabelWidthPx: number }
+    >()
+    for (const [, data] of regions) {
+      for (const labelData of Object.values(data.floatingLabelsData)) {
+        const targetId = labelData.parentFeatureId ?? labelData.featureId
+        const widthPx = effectiveLabelWidthPx(labelData, showDescriptions)
+        const existing = labelInfoByFeatureId.get(targetId)
+        if (existing) {
+          existing.hasDescription =
+            existing.hasDescription || !!labelData.descriptionLabel
+          if (widthPx > existing.maxLabelWidthPx) {
+            existing.maxLabelWidthPx = widthPx
+          }
+        } else {
+          labelInfoByFeatureId.set(targetId, {
+            hasDescription: !!labelData.descriptionLabel,
+            maxLabelWidthPx: widthPx,
+          })
+        }
+      }
+    }
+
     const allFeatures = new Map<
       string,
       { startBp: number; layoutEndBp: number; height: number }
@@ -47,10 +75,25 @@ export function computeAndAssignLayout(
     for (const [, data] of regions) {
       for (const item of data.flatbushItems) {
         if (!allFeatures.has(item.featureId)) {
+          let height = item.bottomPx
+          const labelInfo = labelInfoByFeatureId.get(item.featureId)
+          if (!showDescriptions && labelInfo?.hasDescription) {
+            height -= descriptionFontSize
+          }
+
+          let layoutEndBp = item.endBp
+          if (labelInfo) {
+            const labelEndBp =
+              item.startBp + labelInfo.maxLabelWidthPx * bpPerPx
+            if (labelEndBp > layoutEndBp) {
+              layoutEndBp = labelEndBp
+            }
+          }
+
           allFeatures.set(item.featureId, {
             startBp: item.startBp,
-            layoutEndBp: item.layoutEndBp,
-            height: item.bottomPx,
+            layoutEndBp,
+            height,
           })
         }
       }
@@ -77,7 +120,6 @@ export function fillYArrays(
   data: FeatureDataResult,
   layoutMap: Map<string, number>,
 ) {
-  // Pre-build per-flatbushItem y-offset to avoid repeated Map lookups
   const featureYOffsets = new Float32Array(data.flatbushItems.length)
   for (const [i, item] of data.flatbushItems.entries()) {
     featureYOffsets[i] = layoutMap.get(item.featureId) ?? 0
@@ -110,7 +152,8 @@ export function fillYArrays(
   }
 
   for (const labelData of Object.values(data.floatingLabelsData)) {
-    labelData.topY = labelData.topY + (layoutMap.get(labelData.featureId) ?? 0)
+    const offsetKey = labelData.parentFeatureId ?? labelData.featureId
+    labelData.topY = labelData.topY + (layoutMap.get(offsetKey) ?? 0)
   }
 
   if (data.aminoAcidOverlay) {
@@ -127,7 +170,6 @@ export function fillYArrays(
   }
   data.maxY = maxY
 
-  // New array references so client-side flatbush cache rebuilds
   data.flatbushItems = [...data.flatbushItems]
   data.subfeatureInfos = [...data.subfeatureInfos]
 }

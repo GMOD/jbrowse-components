@@ -143,10 +143,13 @@ export interface FeatureLabelData {
   subfeatureLabel?: LabelItem & { isOverlay: boolean; tooltip: string }
 }
 
-export function maxLabelTextWidth(labelData: FeatureLabelData) {
+export function maxLabelTextWidth(
+  labelData: FeatureLabelData,
+  showDescriptions = true,
+) {
   return Math.max(
     labelData.nameLabel?.textWidth ?? 0,
-    labelData.descriptionLabel?.textWidth ?? 0,
+    showDescriptions ? (labelData.descriptionLabel?.textWidth ?? 0) : 0,
     labelData.subfeatureLabel?.textWidth ?? 0,
   )
 }

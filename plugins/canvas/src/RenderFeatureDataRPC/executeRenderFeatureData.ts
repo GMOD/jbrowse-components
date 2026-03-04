@@ -28,7 +28,6 @@ import {
 import { layoutFeature } from './layout/layoutFeature.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
-import { maxLabelTextWidth } from './rpcTypes.ts'
 import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
@@ -597,7 +596,6 @@ export async function executeRenderFeatureData({
   }
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
-  const rpcT0 = performance.now()
 
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
@@ -608,7 +606,6 @@ export async function executeRenderFeatureData({
     assemblyName: region.assemblyName ?? '',
   }
 
-  const fetchT0 = performance.now()
   let featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
@@ -617,12 +614,6 @@ export async function executeRenderFeatureData({
         dataAdapter.getFeatures(regionWithAssembly).pipe(toArray()),
       ),
   )
-  console.debug('[executeRenderFeatureData] features fetched', {
-    elapsed: `${(performance.now() - fetchT0).toFixed(0)}ms`,
-    numFeatures: featuresArray.length,
-    region: `${region.refName}:${region.start}-${region.end}`,
-  })
-
   checkStopToken2(stopTokenCheck)
 
   if (showOnlyGenes) {
@@ -717,7 +708,6 @@ export async function executeRenderFeatureData({
     }
   }
 
-  const layoutT0 = performance.now()
   const layoutRecords = await updateStatus(
     'Computing layout',
     statusCallback,
@@ -762,11 +752,6 @@ export async function executeRenderFeatureData({
       return records
     },
   )
-  console.debug('[executeRenderFeatureData] layout computed', {
-    elapsed: `${(performance.now() - layoutT0).toFixed(0)}ms`,
-    numRecords: layoutRecords.length,
-  })
-
   checkStopToken2(stopTokenCheck)
 
   // Fetch peptide data when colorByCDS is enabled and zoomed in enough
@@ -816,28 +801,6 @@ export async function executeRenderFeatureData({
   )
 
   checkStopToken2(stopTokenCheck)
-
-  // Extend layoutEndBp for each flatbushItem to cover its floating labels.
-  // Labels can be wider than the feature's genomic extent, so the layout needs
-  // to account for this to prevent label collisions on the same row.
-  const flatbushItemByFeatureId = new Map<string, (typeof flatbushItems)[0]>()
-  for (const item of flatbushItems) {
-    flatbushItemByFeatureId.set(item.featureId, item)
-  }
-  for (const labelData of Object.values(floatingLabelsData)) {
-    const item =
-      flatbushItemByFeatureId.get(labelData.featureId) ??
-      (labelData.parentFeatureId
-        ? flatbushItemByFeatureId.get(labelData.parentFeatureId)
-        : undefined)
-    if (item) {
-      const labelEndBp =
-        labelData.minX + regionStart + maxLabelTextWidth(labelData) * bpPerPx
-      if (labelEndBp > item.layoutEndBp) {
-        item.layoutEndBp = labelEndBp
-      }
-    }
-  }
 
   // Filter out elements completely outside the region before converting
   // to typed arrays. This prevents slivers in collapsed intron views where
@@ -899,15 +862,6 @@ export async function executeRenderFeatureData({
     writeColorBytes(arrowColors, i, arrow.color)
     arrowFeatureIndices[i] = arrow.flatbushIdx
   }
-
-  console.debug('[executeRenderFeatureData] total', {
-    elapsed: `${(performance.now() - rpcT0).toFixed(0)}ms`,
-    numRects: visibleRects.length,
-    numLines: visibleLines.length,
-    numArrows: visibleArrows.length,
-    numFlatbushItems: flatbushItems.length,
-    numLabels: Object.keys(floatingLabelsData).length,
-  })
 
   const result: FeatureDataResult = {
     regionStart,

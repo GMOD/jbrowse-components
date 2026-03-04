@@ -300,15 +300,6 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
-        console.debug('[LinearFeatureDisplay] setRpcDataMap', {
-          oldSize: self.rpcDataMap.size,
-          newSize: dataMap.size,
-          regions: [...dataMap.keys()],
-          labelCounts: [...dataMap.entries()].map(([k, v]) => [
-            k,
-            Object.keys(v.floatingLabelsData).length,
-          ]),
-        })
         self.rpcDataMap = dataMap
         let globalMaxY = 0
         for (const d of dataMap.values()) {
@@ -570,14 +561,6 @@ export default function stateModelFactory(
         results: (FetchResult | undefined)[],
         bpPerPx: number,
       ) {
-        const labelCounts = results.map(r =>
-          r ? Object.keys(r.data.floatingLabelsData).length : 0,
-        )
-        console.debug('[LinearFeatureDisplay] applyFetchResults', {
-          numResults: results.filter(Boolean).length,
-          labelCounts,
-          bpPerPx,
-        })
         const dataMap = new Map(self.rpcDataMap)
         const regionKeys = new Map<number, string>()
         const newRegionNumbers = new Set<number>()
@@ -594,13 +577,8 @@ export default function stateModelFactory(
             )
           }
         }
-        const layoutT0 = performance.now()
-        computeAndAssignLayout(dataMap, bpPerPx, regionKeys, newRegionNumbers)
-        console.debug('[applyFetchResults] layout computed', {
-          elapsed: `${(performance.now() - layoutT0).toFixed(0)}ms`,
-          numRegions: dataMap.size,
-          newRegions: [...newRegionNumbers],
-        })
+        // Compute density BEFORE layout so effectiveShowDescriptions is
+        // accurate for the first layout pass (avoids a re-layout flash)
         let totalFeatures = 0
         let totalSpanPx = 0
         for (const r of results) {
@@ -613,6 +591,14 @@ export default function stateModelFactory(
         }
         self.setFeatureDensityPerPx(
           totalSpanPx > 0 ? totalFeatures / totalSpanPx : 0,
+        )
+
+        computeAndAssignLayout(
+          dataMap,
+          bpPerPx,
+          regionKeys,
+          newRegionNumbers,
+          self.effectiveShowDescriptions,
         )
         self.setRpcDataMap(dataMap)
       }
@@ -659,17 +645,6 @@ export default function stateModelFactory(
         onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
-          const fetchT0 = performance.now()
-          console.debug('[onFetchNeeded] starting', {
-            numNeeded: needed.length,
-            bpPerPx,
-            regions: needed.map(n => ({
-              regionNumber: n.regionNumber,
-              refName: n.region.refName,
-              start: n.region.start,
-              end: n.region.end,
-            })),
-          })
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
@@ -712,7 +687,7 @@ export default function stateModelFactory(
             }),
           )
 
-          // Reaction: re-fetch when label/description/colorByCDS settings change
+          // Reaction: re-fetch when settings that require new RPC data change
           addDisposer(
             self,
             reaction(
