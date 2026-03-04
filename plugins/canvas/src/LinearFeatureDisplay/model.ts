@@ -575,26 +575,6 @@ export default function stateModelFactory(
 
       const superAfterAttach = self.afterAttach
 
-      // Soft reset: clears tracking state (loadedRegions,
-      // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
-      // invalidate in-flight fetches, but intentionally preserves
-      // rpcDataMap so the previous frame's rendered data stays visible
-      // while the new fetch is in progress, avoiding a flash of empty
-      // content. Compare with reload()/clearAllRpcData() which is a
-      // "hard reset" that also wipes rpcDataMap.
-      function softReset() {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-          self.renderingStopToken = undefined
-        }
-        self.isLoading = false
-        self.error = undefined
-        self.loadedRegions = new Map()
-        self.layoutBpPerPxMap = new Map()
-        self.setRegionTooLarge(false)
-        self.fetchGeneration++
-      }
-
       function fetchAllRegions() {
         const view = getContainingView(self) as LinearGenomeViewModel
         const regions = view.staticRegions.map(vr => ({
@@ -605,12 +585,32 @@ export default function stateModelFactory(
       }
 
       return {
+        // Soft reset: clears tracking state (loadedRegions,
+        // layoutBpPerPxMap, error, stopToken) and bumps fetchGeneration to
+        // invalidate in-flight fetches, but intentionally preserves
+        // rpcDataMap so the previous frame's rendered data stays visible
+        // while the new fetch is in progress, avoiding a flash of empty
+        // content. Compare with reload()/clearAllRpcData() which is a
+        // "hard reset" that also wipes rpcDataMap.
+        softReset() {
+          if (self.renderingStopToken) {
+            stopStopToken(self.renderingStopToken)
+            self.renderingStopToken = undefined
+          }
+          self.isLoading = false
+          self.error = undefined
+          self.loadedRegions = new Map()
+          self.layoutBpPerPxMap = new Map()
+          self.setRegionTooLarge(false)
+          self.fetchGeneration++
+        },
+
         refetchForCurrentView() {
           const view = getContainingView(self) as LinearGenomeViewModel
           if (!view.initialized) {
             return
           }
-          softReset()
+          self.softReset()
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           fetchAllRegions()
         },
@@ -627,7 +627,7 @@ export default function stateModelFactory(
 
         beforeFetchCheck() {
           if (untracked(() => self.needsLayoutRefresh)) {
-            softReset()
+            self.softReset()
           }
         },
 

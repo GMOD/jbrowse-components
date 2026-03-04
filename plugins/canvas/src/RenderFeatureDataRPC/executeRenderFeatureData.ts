@@ -682,12 +682,21 @@ export async function executeRenderFeatureData({
     subfeatureLabels: displayConfig.subfeatureLabels,
   }
 
+  // Auto-suppress descriptions when feature density is high to reduce noise
+  // at zoomed-out scales. The region span in pixels gives a sense of viewport
+  // width; dividing feature count by that gives a per-pixel density.
+  const regionSpanBp = region.end - region.start
+  const regionSpanPx = regionSpanBp / bpPerPx
+  const featureDensityPerPx = featuresArray.length / regionSpanPx
+  const effectiveShowDescriptions =
+    mockConfig.showDescriptions && featureDensityPerPx < 0.2
+
   // Create default config context for WebGL rendering
   const configContext: RenderConfigContext = {
     config: mockConfig as any,
     displayMode: mockConfig.displayMode,
     showLabels: mockConfig.showLabels,
-    showDescriptions: mockConfig.showDescriptions,
+    showDescriptions: effectiveShowDescriptions,
     subfeatureLabels: mockConfig.subfeatureLabels,
     transcriptTypes: mockConfig.transcriptTypes,
     containerTypes: mockConfig.containerTypes,
@@ -745,7 +754,7 @@ export async function executeRenderFeatureData({
         if (featureName && mockConfig.showLabels) {
           labelHeight += fontSize
         }
-        if (featureDescription && mockConfig.showDescriptions) {
+        if (featureDescription && effectiveShowDescriptions) {
           labelHeight += fontSize
         }
 
