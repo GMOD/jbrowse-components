@@ -818,12 +818,7 @@ export default function stateModelFactory(
                     isLoading: currentlyLoading,
                   },
                 )
-                if (currentlyLoading && needed.length > 0) {
-                  console.warn(
-                    '[MultiLinearWiggleDisplay] FetchVisibleRegions re-fetching while already loading — previous fetch will be canceled',
-                  )
-                }
-                if (needed.length > 0) {
+                if (needed.length > 0 && !currentlyLoading) {
                   await fetchRegions(needed, bpPerPx, resolution)
                 }
               },

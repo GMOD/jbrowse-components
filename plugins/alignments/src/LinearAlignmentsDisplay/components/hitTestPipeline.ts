@@ -5,21 +5,17 @@ import {
   hitTestCoverage as hitTestCoverageFn,
   hitTestFeature as hitTestFeatureFn,
   hitTestIndicator as hitTestIndicatorFn,
-  hitTestSashimiArc as hitTestSashimiArcFn,
 } from './hitTesting.ts'
 
 import type {
   CigarHitResult,
   CoverageHitResult,
   IndicatorHitResult,
-  RegionTableEntry,
   ResolvedBlock,
-  SashimiArcHitResult,
 } from './hitTesting.ts'
 
 export type HitTestResult =
   | { type: 'indicator'; hit: IndicatorHitResult; resolved: ResolvedBlock }
-  | { type: 'sashimi'; hit: SashimiArcHitResult }
   | { type: 'coverage'; hit: CoverageHitResult; resolved: ResolvedBlock }
   | {
       type: 'cigar'
@@ -37,14 +33,12 @@ export type HitTestResult =
 export interface HitTestOptions {
   showCoverage: boolean
   showInterbaseIndicators: boolean
-  showSashimiArcs: boolean
   coverageHeight: number
   topOffset: number
   featureHeightSetting: number
   featureSpacing: number
   rangeY: [number, number]
   isChainMode: boolean
-  sashimiRegionTable?: RegionTableEntry[]
 }
 
 export function performHitTest(
@@ -56,14 +50,12 @@ export function performHitTest(
   const {
     showCoverage,
     showInterbaseIndicators,
-    showSashimiArcs,
     coverageHeight,
     topOffset,
     featureHeightSetting,
     featureSpacing,
     rangeY,
     isChainMode,
-    sashimiRegionTable,
   } = options
 
   // 1. Indicator hits (triangles at top of coverage)
@@ -78,21 +70,7 @@ export function performHitTest(
     return { type: 'indicator', hit: indicatorHit, resolved }
   }
 
-  // 2. Sashimi arc hits
-  const sashimiHit = hitTestSashimiArcFn(
-    canvasX,
-    canvasY,
-    resolved,
-    showCoverage,
-    showSashimiArcs,
-    coverageHeight,
-    sashimiRegionTable,
-  )
-  if (sashimiHit) {
-    return { type: 'sashimi', hit: sashimiHit }
-  }
-
-  // 3. Coverage area hits
+  // 2. Coverage area hits
   const coverageHit = hitTestCoverageFn(
     canvasX,
     canvasY,

@@ -2259,8 +2259,7 @@ export class WebGLRenderer {
     // Sashimi arcs are now rendered as SVG overlay (SashimiArcsOverlay.tsx)
 
     // Regular arcs (in arcs area)
-    const arcsHeight =
-      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const arcsHeight = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const covH = state.showCoverage ? state.coverageHeight : 0
     if (arcsHeight > 0) {
       const covHPx = Math.round(covH * dpr)

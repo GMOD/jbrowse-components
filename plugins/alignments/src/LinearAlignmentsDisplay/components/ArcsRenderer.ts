@@ -115,10 +115,7 @@ export class ArcsRenderer {
     blockWidth = state.canvasWidth,
   ) {
     const gl = this.parent.gl
-    if (
-      !this.parent.buffers ||
-      !this.parent.arcLineProgram
-    ) {
+    if (!this.parent.buffers || !this.parent.arcLineProgram) {
       return
     }
 
@@ -172,10 +169,7 @@ export class ArcsRenderer {
     gl.bindVertexArray(null)
   }
 
-  renderSashimiArcs(
-    state: RenderState,
-    regionTable: RegionTableEntry[],
-  ) {
+  renderSashimiArcs(state: RenderState, regionTable: RegionTableEntry[]) {
     const gl = this.parent.gl
     if (!this.parent.buffers || !this.parent.sashimiProgram) {
       return

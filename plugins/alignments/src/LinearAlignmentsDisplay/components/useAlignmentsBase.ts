@@ -12,7 +12,6 @@ import {
   formatCigarTooltip,
   formatCoverageTooltip,
   formatIndicatorTooltip,
-  formatSashimiTooltip,
   getCanvasCoords,
 } from './alignmentComponentUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
@@ -20,7 +19,6 @@ import {
   openCigarWidget,
   openCoverageWidget,
   openIndicatorWidget,
-  openSashimiWidget,
 } from './openFeatureWidget.ts'
 import { getContrastBaseMap } from '../../shared/util.ts'
 
@@ -141,7 +139,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     arcsHeight,
     coverageDisplayHeight: topOffset,
     showInterbaseIndicators,
-    showSashimiArcs,
     isChainMode,
   } = model
 
@@ -170,19 +167,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       }
     }
     return undefined
-  }
-
-  function buildSashimiRegionTable(resolved: ResolvedBlock) {
-    if (!view.initialized) {
-      return undefined
-    }
-    const regions = view.visibleRegions
-    return regions.map(r => ({
-      startBpOffset: r.start - resolved.rpcData.regionStart,
-      endBpOffset: r.end - resolved.rpcData.regionStart,
-      startPx: r.screenStartPx,
-      endPx: r.screenEndPx,
-    }))
   }
 
   // --- Shared event handlers ---
@@ -273,16 +257,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
       showCoverage,
       showInterbaseIndicators,
-      showSashimiArcs,
       coverageHeight,
       topOffset,
       featureHeightSetting,
       featureSpacing,
       rangeY: model.currentRangeY,
       isChainMode,
-      sashimiRegionTable: resolved
-        ? buildSashimiRegionTable(resolved)
-        : undefined,
     })
 
     if (result.type === 'cigar') {
@@ -331,16 +311,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const result = performHitTest(coords.canvasX, coords.canvasY, resolved, {
       showCoverage,
       showInterbaseIndicators,
-      showSashimiArcs,
       coverageHeight,
       topOffset,
       featureHeightSetting,
       featureSpacing,
       rangeY: model.currentRangeY,
       isChainMode,
-      sashimiRegionTable: resolved
-        ? buildSashimiRegionTable(resolved)
-        : undefined,
     })
 
     if (result.type === 'indicator') {
@@ -353,14 +329,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           result.resolved.refName,
         ),
       )
-      model.clearHighlights()
-      return
-    }
-
-    if (result.type === 'sashimi') {
-      model.setOverCigarItem(true)
-      model.setFeatureIdUnderMouse(undefined)
-      model.setMouseoverExtraInformation(formatSashimiTooltip(result.hit))
       model.clearHighlights()
       return
     }
@@ -411,22 +379,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const result = performHitTest(canvasX, canvasY, resolved, {
       showCoverage,
       showInterbaseIndicators,
-      showSashimiArcs,
       coverageHeight,
       topOffset,
       featureHeightSetting,
       featureSpacing,
       rangeY: model.currentRangeY,
       isChainMode,
-      sashimiRegionTable: resolved
-        ? buildSashimiRegionTable(resolved)
-        : undefined,
     })
-
-    if (result.type === 'sashimi') {
-      openSashimiWidget(model, result.hit)
-      return
-    }
 
     if (result.type === 'indicator') {
       const refName = result.resolved.refName

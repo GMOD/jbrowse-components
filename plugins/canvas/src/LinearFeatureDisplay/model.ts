@@ -765,17 +765,12 @@ export default function stateModelFactory(
                     ),
                     bpPerPx,
                     fetchGeneration: self.fetchGeneration,
-                    regionTooLarge: untracked(
-                      () => self.regionTooLargeState,
-                    ),
+                    regionTooLarge: untracked(() => self.regionTooLargeState),
                     isLoading: untracked(() => self.isLoading),
                     t: performance.now(),
                   },
                 )
-                if (
-                  needed.length > 0 &&
-                  !untracked(() => self.isLoading)
-                ) {
+                if (needed.length > 0 && !untracked(() => self.isLoading)) {
                   await fetchRegions(needed, bpPerPx)
                 }
               },

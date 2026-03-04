@@ -7,11 +7,7 @@ import {
 
 import { CIGAR_TYPE_LABELS, getTooltipBin } from './alignmentComponentUtils.ts'
 
-import type {
-  CigarHitResult,
-  IndicatorHitResult,
-  SashimiArcHitResult,
-} from './hitTesting.ts'
+import type { CigarHitResult, IndicatorHitResult } from './hitTesting.ts'
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -105,26 +101,6 @@ export function openCoverageWidget(
       `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
   }
 
-  showWidget(model, featureData)
-}
-
-export function openSashimiWidget(
-  model: IAnyStateTreeNode,
-  sashimiHit: SashimiArcHitResult,
-) {
-  const strandLabel =
-    sashimiHit.strand === 1 ? '+' : sashimiHit.strand === -1 ? '-' : 'unknown'
-  const featureData: Record<string, unknown> = {
-    uniqueId: `sashimi-${sashimiHit.refName}-${sashimiHit.start}-${sashimiHit.end}`,
-    name: 'Splice Junction',
-    type: 'skip',
-    refName: sashimiHit.refName,
-    start: sashimiHit.start,
-    end: sashimiHit.end,
-    score: sashimiHit.score,
-    strand: strandLabel,
-    length: sashimiHit.end - sashimiHit.start,
-  }
   showWidget(model, featureData)
 }
 
