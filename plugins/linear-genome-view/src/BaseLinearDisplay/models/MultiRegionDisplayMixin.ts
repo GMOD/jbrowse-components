@@ -1,3 +1,5 @@
+import { createElement } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
@@ -14,8 +16,10 @@ import {
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
+import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 import { checkByteEstimate } from './fetchHelpers.ts'
 
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 
@@ -38,10 +42,14 @@ export default function MultiRegionDisplayMixin() {
     .volatile(() => ({
       loadedRegions: new Map<number, Region>(),
       isLoading: false,
-      error: null as Error | null,
+      error: undefined as unknown,
       renderingStopToken: undefined as string | undefined,
       fetchGeneration: 0,
       dataVersion: 0,
+      userByteSizeLimit: undefined as number | undefined,
+      regionTooLargeState: false,
+      regionTooLargeReasonState: '',
+      featureDensityStats: undefined as FeatureDensityStats | undefined,
     }))
     .views(self => ({
       get scalebarOverlapLeft() {
@@ -54,7 +62,22 @@ export default function MultiRegionDisplayMixin() {
       },
 
       get regionTooLarge() {
-        return false
+        return self.regionTooLargeState
+      },
+
+      get regionTooLargeReason() {
+        return self.regionTooLargeReasonState
+      },
+
+      regionCannotBeRenderedText() {
+        return self.regionTooLargeState ? 'Force load to see features' : ''
+      },
+
+      regionCannotBeRendered() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return self.regionTooLargeState
+          ? createElement(TooLargeMessage, { model: self as any })
+          : null
       },
     }))
     .actions(self => ({
@@ -62,7 +85,7 @@ export default function MultiRegionDisplayMixin() {
         self.isLoading = loading
       },
 
-      setError(error: Error | null) {
+      setError(error?: unknown) {
         self.error = error
       },
 
@@ -94,13 +117,15 @@ export default function MultiRegionDisplayMixin() {
           self.renderingStopToken = undefined
         }
         self.isLoading = false
-        self.error = null
+        self.error = undefined
+        self.regionTooLargeState = false
+        self.regionTooLargeReasonState = ''
         self.loadedRegions = new Map()
         self.fetchGeneration++
         self.clearDisplaySpecificData()
       },
     }))
-    .actions(() => ({
+    .actions(self => ({
       // Overridable hooks — subclasses override these
       onFetchNeeded(
         _needed: { region: Region; regionNumber: number }[],
@@ -120,12 +145,21 @@ export default function MultiRegionDisplayMixin() {
         // no-op base — subclasses override (e.g. NonBlockCanvasDisplayMixin)
       },
 
-      setFeatureDensityStats(_stats?: { bytes?: number; fetchSizeLimit?: number }) {
-        // no-op base — RegionTooLargeMixin overrides
+      setFeatureDensityStats(stats?: FeatureDensityStats) {
+        self.featureDensityStats = stats
       },
 
-      setRegionTooLarge(_val: boolean, _reason?: string) {
-        // no-op base — RegionTooLargeMixin overrides
+      setRegionTooLarge(val: boolean, reason?: string) {
+        self.regionTooLargeState = val
+        self.regionTooLargeReasonState = reason ?? ''
+      },
+
+      setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
+        if (stats?.bytes) {
+          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+        }
+        self.regionTooLargeState = false
+        self.regionTooLargeReasonState = ''
       },
 
       getByteEstimateConfig(): ByteEstimateConfig | null {
@@ -144,7 +178,7 @@ export default function MultiRegionDisplayMixin() {
         const generation = self.fetchGeneration
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
-        self.setError(null)
+        self.setError(undefined)
 
         const isStale = () =>
           !isAlive(self) ||
@@ -183,9 +217,7 @@ export default function MultiRegionDisplayMixin() {
             if (!isAbortException(e)) {
               console.error('Fetch failed:', e)
               if (!isStale()) {
-                self.setError(
-                  e instanceof Error ? e : new Error(String(e)),
-                )
+                self.setError(e)
               }
             }
           } finally {

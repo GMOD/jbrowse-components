@@ -187,7 +187,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Debug: verify the view is initialized
     expect(view.initialized).toBe(true)
     expect(display.regionTooLarge).toBe(false)
-    expect(display.error).toBeNull()
+    expect(display.error).toBeUndefined()
 
     // The autorun has delay: 300
     jest.advanceTimersByTime(400)

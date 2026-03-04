@@ -95,7 +95,6 @@ export {
   MultiRegionDisplayMixin,
   NonBlockCanvasDisplayComponent,
   NonBlockCanvasDisplayMixin,
-  RegionTooLargeMixin,
   SVGLegend,
   TooLargeMessage,
   TrackHeightMixin,

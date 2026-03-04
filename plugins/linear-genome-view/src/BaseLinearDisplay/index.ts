@@ -20,7 +20,6 @@ export {
 } from './components/BaseLinearDisplay.tsx'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { default as FeatureDensityMixin } from './models/FeatureDensityMixin.tsx'
-export { default as RegionTooLargeMixin } from './models/RegionTooLargeMixin.tsx'
 export {
   type NonBlockCanvasDisplayMixinType,
   default as NonBlockCanvasDisplayMixin,
@@ -31,7 +30,6 @@ export {
   type FetchContext,
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
-export type { ByteEstimateConfig } from './models/fetchHelpers.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'
 export { default as TooLargeMessage } from './components/TooLargeMessage.tsx'

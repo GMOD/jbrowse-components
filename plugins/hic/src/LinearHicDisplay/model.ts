@@ -4,7 +4,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  FeatureDensityMixin,
+  MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -36,7 +36,7 @@ export default function stateModelFactory(
       'LinearHicDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      FeatureDensityMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         /**
          * #property
@@ -80,10 +80,6 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      loading: false,
-      /**
-       * #volatile
-       */
       statusMessage: undefined as string | undefined,
       /**
        * #volatile
@@ -93,10 +89,6 @@ export default function stateModelFactory(
        * #volatile
        */
       lastDrawnBpPerPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      renderingStopToken: undefined as string | undefined,
       /**
        * #volatile
        */
@@ -130,6 +122,9 @@ export default function stateModelFactory(
       },
       get fullyDrawn() {
         return !!self.rpcData
+      },
+      get loading() {
+        return self.isLoading
       },
     }))
     .views(self => ({
@@ -188,12 +183,6 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setLoading(loading: boolean) {
-        self.loading = loading
-      },
-      /**
-       * #action
-       */
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
@@ -208,12 +197,6 @@ export default function stateModelFactory(
        */
       setLastDrawnBpPerPx(bpPerPx: number) {
         self.lastDrawnBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
-      setRenderingStopToken(token?: string) {
-        self.renderingStopToken = token
       },
       /**
        * #action

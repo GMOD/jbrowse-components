@@ -19,7 +19,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  RegionTooLargeMixin,
+  MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -135,7 +135,7 @@ export default function MultiSampleVariantBaseModelF(
       'LinearVariantMatrixDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      RegionTooLargeMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         /**
          * #property

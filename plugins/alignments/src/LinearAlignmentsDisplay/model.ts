@@ -20,7 +20,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
-  RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -173,7 +172,7 @@ function getSequenceAdapter(session: any, region: Region) {
 }
 
 interface FetchFeatureDetailsSelf {
-  adapterConfigSnapshot: unknown
+  adapterConfigSnapshot: Record<string, unknown>
   loadedRegions: Map<number, Region>
   getFeatureInfoById: (id: string) => { refName: string; start: number; end: number } | undefined
 }
@@ -242,7 +241,6 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      RegionTooLargeMixin(),
       types.model({
         /**
          * #property
@@ -455,7 +453,10 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get adapterConfigSnapshot() {
-        return getConf(getContainingTrack(self), 'adapter')
+        return getConf(getContainingTrack(self), 'adapter') as Record<
+          string,
+          unknown
+        >
       },
 
       get fetchSizeLimit() {
@@ -1787,7 +1788,7 @@ export default function stateModelFactory(
                   prevInvalidationKey !== undefined &&
                   key !== prevInvalidationKey
                 ) {
-                  self.setError(null)
+                  self.setError(undefined)
                   self.clearAllRpcData()
                 }
                 prevInvalidationKey = key

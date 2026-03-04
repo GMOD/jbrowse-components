@@ -5,7 +5,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { getSession } from '@jbrowse/core/util'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
-  RegionTooLargeMixin,
+  MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -37,7 +37,7 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      RegionTooLargeMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         /**
          * #property
@@ -160,10 +160,6 @@ export default function sharedModelFactory(
       /**
        * #volatile
        */
-      loading: false,
-      /**
-       * #volatile
-       */
       statusMessage: undefined as string | undefined,
       /**
        * #volatile
@@ -173,10 +169,6 @@ export default function sharedModelFactory(
        * #volatile
        */
       lastDrawnBpPerPx: undefined as number | undefined,
-      /**
-       * #volatile
-       */
-      renderingStopToken: undefined as string | undefined,
       /**
        * #volatile
        */
@@ -222,12 +214,6 @@ export default function sharedModelFactory(
       /**
        * #action
        */
-      setLoading(loading: boolean) {
-        self.loading = loading
-      },
-      /**
-       * #action
-       */
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
@@ -242,12 +228,6 @@ export default function sharedModelFactory(
        */
       setLastDrawnBpPerPx(bpPerPx: number) {
         self.lastDrawnBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
-      setRenderingStopToken(token?: string) {
-        self.renderingStopToken = token
       },
       /**
        * #action
@@ -395,6 +375,9 @@ export default function sharedModelFactory(
       },
     }))
     .views(self => ({
+      get loading() {
+        return self.isLoading
+      },
       get blockType() {
         return 'dynamicBlocks'
       },

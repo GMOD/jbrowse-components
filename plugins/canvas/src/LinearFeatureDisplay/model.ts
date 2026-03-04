@@ -18,7 +18,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
-  RegionTooLargeMixin,
   TrackHeightMixin,
   getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -96,7 +95,6 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      RegionTooLargeMixin(),
       types.model({
         type: types.literal('LinearFeatureDisplay'),
         configuration: ConfigurationReference(configSchema),

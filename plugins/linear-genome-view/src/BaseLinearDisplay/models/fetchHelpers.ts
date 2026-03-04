@@ -1,20 +1,23 @@
 import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
 import { getDisplayStr } from './util.ts'
 
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+
 export interface ByteEstimateConfig {
-  adapterConfig: unknown
+  adapterConfig: Record<string, unknown>
   fetchSizeLimit: number
   visibleBp: number
 }
 
-export interface ByteEstimateResult {
-  stats: { bytes?: number; fetchSizeLimit?: number }
+interface ByteEstimateResult {
+  stats: FeatureDensityStats
   tooLarge: boolean
   reason?: string
 }
 
 export async function checkByteEstimate(
-  rpcManager: { call: (sessionId: string, method: string, args: Record<string, unknown>) => Promise<unknown> },
+  rpcManager: RpcManager,
   sessionId: string,
   regions: { refName: string; start: number; end: number; assemblyName: string }[],
   config: ByteEstimateConfig,
@@ -24,11 +27,11 @@ export async function checkByteEstimate(
     return null
   }
 
-  const stats = (await rpcManager.call(
+  const stats = await rpcManager.call(
     sessionId,
     'CoreGetFeatureDensityStats',
     { regions, adapterConfig: config.adapterConfig },
-  )) as { bytes?: number; fetchSizeLimit?: number }
+  )
 
   if (ctx.isStale()) {
     return null
