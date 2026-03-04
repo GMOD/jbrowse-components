@@ -1,4 +1,4 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { pluginUrl } from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -34,12 +34,17 @@ export async function createPluginManager(
     .invoke('getGlobalPlugins')
     .catch(() => [] as PluginDefinition[])
   const sessionPlugins = configSnapshot.plugins ?? []
-  const seen = new Set<string>()
+  const seenNames = new Set<string>()
+  const seenUrls = new Set<string>()
   const allPlugins: PluginDefinition[] = []
   for (const plugin of [...sessionPlugins, ...globalPlugins]) {
-    const key = JSON.stringify(plugin)
-    if (!seen.has(key)) {
-      seen.add(key)
+    const name = 'name' in plugin ? plugin.name : undefined
+    const url = pluginUrl(plugin)
+    if (!(name && seenNames.has(name)) && !seenUrls.has(url)) {
+      if (name) {
+        seenNames.add(name)
+      }
+      seenUrls.add(url)
       allPlugins.push(plugin)
     }
   }
