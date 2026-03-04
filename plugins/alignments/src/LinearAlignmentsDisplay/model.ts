@@ -1855,6 +1855,7 @@ export default function stateModelFactory(
           )
 
           // See MultiRegionDisplayMixin for the fetch lifecycle contract.
+          let lastTooLargeKey: string | undefined
           addDisposer(
             self,
             autorun(
@@ -1894,6 +1895,12 @@ export default function stateModelFactory(
                   })
                 }
                 const currentlyLoading = untracked(() => self.isLoading)
+                const regionKey = needed
+                  .map(
+                    r =>
+                      `${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
+                  )
+                  .join(',')
                 console.debug(
                   '[LinearAlignmentsDisplay] FetchVisibleRegions',
                   needed.length > 0
@@ -1909,17 +1916,30 @@ export default function stateModelFactory(
                     isLoading: currentlyLoading,
                   },
                 )
-                if (
-                  needed.length > 0 &&
-                  !untracked(() => self.regionTooLargeState) &&
-                  !currentlyLoading
+                if (needed.length > 0 && !currentlyLoading) {
+                  if (
+                    untracked(() => self.regionTooLargeState) &&
+                    regionKey === lastTooLargeKey
+                  ) {
+                    // Already attempted this exact region set and it was too
+                    // large. Don't retry until the view changes or user
+                    // force-loads.
+                  } else {
+                    lastTooLargeKey = undefined
+                    await fetchRegions(needed)
+                    if (untracked(() => self.regionTooLargeState)) {
+                      lastTooLargeKey = regionKey
+                    }
+                  }
+                } else if (
+                  needed.length === 0 &&
+                  untracked(() => self.regionTooLargeState)
                 ) {
-                  await fetchRegions(needed)
-                } else if (untracked(() => self.regionTooLargeState)) {
                   // All regions are cached from a previous fetch but the
                   // "too large" banner is stale (set at a different zoom).
                   // Clear it without re-fetching data.
                   self.setRegionTooLarge(false)
+                  lastTooLargeKey = undefined
                 }
               },
               {

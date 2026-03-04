@@ -80,11 +80,13 @@ export function computeCoverage(
     }
   }
 
-  const { actualStart, actualEnd } = getFeatureExtent(
-    features,
-    regionStart,
-    regionEnd,
-  )
+  const extent = getFeatureExtent(features, regionStart, regionEnd)
+
+  // Clamp actualStart to regionStart so coverage doesn't extend before it.
+  // Read positions are stored as Uint32 offsets from regionStart and can't
+  // represent negative values, so coverage must be consistent.
+  const actualStart = Math.max(extent.actualStart, regionStart)
+  const actualEnd = extent.actualEnd
 
   const startOffset = actualStart - regionStart
   const regionLength = actualEnd - actualStart

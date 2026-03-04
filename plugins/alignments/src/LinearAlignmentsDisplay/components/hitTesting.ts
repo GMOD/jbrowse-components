@@ -568,4 +568,3 @@ export function hitTestIndicator(
 
   return undefined
 }
-
