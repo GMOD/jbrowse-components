@@ -336,15 +336,9 @@ export class CanvasFeatureRenderer {
       uniformOffset: number
     }[] = []
 
-    let blocksSkipped = 0
     for (const [blockIdx, block] of blocks.entries()) {
       const region = this.regions.get(block.regionNumber)
       if (!region) {
-        blocksSkipped++
-        console.debug('[GPURenderer.renderBlocks] no GPU data for block', {
-          regionNumber: block.regionNumber,
-          availableRegions: [...this.regions.keys()],
-        })
         continue
       }
 

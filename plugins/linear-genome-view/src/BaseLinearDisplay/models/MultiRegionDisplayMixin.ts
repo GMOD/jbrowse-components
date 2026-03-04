@@ -149,15 +149,10 @@ export default function MultiRegionDisplayMixin() {
         work: (ctx: FetchContext) => Promise<void>,
       ) {
         if (self.renderingStopToken) {
-          console.debug('[withFetchLifecycle] cancelling previous fetch')
           stopStopToken(self.renderingStopToken)
         }
         const stopToken = createStopToken()
         const generation = self.fetchGeneration
-        console.debug('[withFetchLifecycle] starting fetch', {
-          generation,
-          numNeeded: needed.length,
-        })
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(undefined)
@@ -174,7 +169,6 @@ export default function MultiRegionDisplayMixin() {
           try {
             const byteEstimateConfig = self.getByteEstimateConfig()
             if (byteEstimateConfig) {
-              const byteT0 = performance.now()
               const session = getSession(self)
               const result = await checkByteEstimate(
                 session.rpcManager,
@@ -183,12 +177,7 @@ export default function MultiRegionDisplayMixin() {
                 byteEstimateConfig,
                 ctx,
               )
-              console.debug('[withFetchLifecycle] byteEstimate completed', {
-                elapsed: `${(performance.now() - byteT0).toFixed(0)}ms`,
-                tooLarge: result?.tooLarge,
-              })
               if (isStale()) {
-                console.debug('[withFetchLifecycle] stale after byteEstimate')
                 return
               }
               if (result) {
@@ -200,20 +189,13 @@ export default function MultiRegionDisplayMixin() {
               }
             }
             self.setRegionTooLarge(false)
-            const workT0 = performance.now()
             await work(ctx)
-            console.debug('[withFetchLifecycle] work completed', {
-              generation,
-              workElapsed: `${(performance.now() - workT0).toFixed(0)}ms`,
-            })
           } catch (e) {
             if (!isAbortException(e)) {
-              console.error('Fetch failed:', e)
+              console.warn('Fetch failed:', e)
               if (!isStale()) {
                 self.setError(e)
               }
-            } else {
-              console.debug('[withFetchLifecycle] aborted', { generation })
             }
           } finally {
             if (!isStale()) {
@@ -265,11 +247,6 @@ export default function MultiRegionDisplayMixin() {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchGeneration
                 if (!view.initialized || self.error || self.regionTooLarge) {
-                  console.debug('[FetchAutorun] early return', {
-                    initialized: view.initialized,
-                    error: !!self.error,
-                    regionTooLarge: self.regionTooLarge,
-                  })
                   return
                 }
 
@@ -294,11 +271,6 @@ export default function MultiRegionDisplayMixin() {
                   })
                 }
                 const isLoading = untracked(() => self.isLoading)
-                console.debug('[FetchAutorun] check', {
-                  neededCount: needed.length,
-                  isLoading,
-                  fetchGeneration: self.fetchGeneration,
-                })
                 if (needed.length > 0 && !isLoading) {
                   self.onFetchNeeded(needed)
                 }

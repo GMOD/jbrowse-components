@@ -37,7 +37,6 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     },
     rpcDriver: string,
   ) {
-    const t0 = performance.now()
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { adapterConfig, sessionId, regions } = deserializedArgs
     const { dataAdapter } = await getAdapter(
@@ -45,24 +44,14 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
-    const setupElapsed = performance.now() - t0
 
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    const statsT0 = performance.now()
     const result = await dataAdapter.getMultiRegionFeatureDensityStats(
       regions,
       deserializedArgs,
     )
-    console.debug('[CoreGetFeatureDensityStats] execute', {
-      setupElapsed: `${setupElapsed.toFixed(0)}ms`,
-      statsElapsed: `${(performance.now() - statsT0).toFixed(0)}ms`,
-      totalElapsed: `${(performance.now() - t0).toFixed(0)}ms`,
-      adapterType: dataAdapter.constructor.name,
-      numRegions: regions.length,
-      result,
-    })
     return result
   }
 }
