@@ -20,7 +20,7 @@ import { newSessionName, resolveSessionName } from './sessionName.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfig } from './types.ts'
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition, PluginRecord } from '@jbrowse/core/PluginLoader'
 
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
@@ -57,6 +57,59 @@ function dedupePluginDefinitions(defs: PluginDefinition[]) {
     }
     return !duplicate
   })
+}
+
+function pluginRecords(runtimePlugins: PluginRecord[]) {
+  return [
+    ...corePlugins.map(P => ({
+      plugin: new P(),
+      metadata: {
+        isCore: true,
+      },
+    })),
+    ...runtimePlugins.map(({ plugin: P, definition }) => ({
+      plugin: new P(),
+      definition,
+      metadata: {
+        url: 'url' in definition ? definition.url : undefined,
+        esmUrl: 'esmUrl' in definition ? definition.esmUrl : undefined,
+        umdUrl: 'umdUrl' in definition ? definition.umdUrl : undefined,
+        cjsUrl: 'cjsUrl' in definition ? definition.cjsUrl : undefined,
+      },
+    })),
+  ]
+}
+
+// A manager built from the global plugins alone, so the start screen — which
+// has no session, and therefore no session plugin manager — can still fire the
+// extension points a global plugin contributes to.
+export async function createStartScreenPluginManager() {
+  const pluginLoader = new PluginLoader(
+    dropVendoredPlugins(await getGlobalPlugins(), DESKTOP_VENDORED),
+    {
+      fetchESM: url => import(/* webpackIgnore:true */ url),
+      fetchCJS,
+    },
+  )
+  pluginLoader.installGlobalReExports(window)
+  // settled for the same reason the session loader is: one unloadable global
+  // plugin must not cost the user their start screen
+  const { records, failures } = await pluginLoader.loadSettled(
+    window.location.href,
+  )
+  for (const { definition, error } of failures) {
+    console.error(
+      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}`,
+      error,
+    )
+  }
+  const pluginManager = new PluginManager(pluginRecords(records))
+  pluginManager.createPluggableElements()
+  // no root model to configure against, which every plugin's configure()
+  // already guards for (isAbstractMenuManager), but extension points a plugin
+  // registers there have to be in place before the start screen renders
+  pluginManager.configure()
+  return pluginManager
 }
 
 export async function loadPluginManager(configPath: string) {
@@ -122,24 +175,7 @@ export async function createPluginManager(
   // missing one feature. Reported below, once there is a session to report on.
   const { records: runtimePlugins, failures: pluginLoadFailures } =
     await pluginLoader.loadSettled(window.location.href)
-  const pluginManager = new PluginManager([
-    ...corePlugins.map(P => ({
-      plugin: new P(),
-      metadata: {
-        isCore: true,
-      },
-    })),
-    ...runtimePlugins.map(({ plugin: P, definition }) => ({
-      plugin: new P(),
-      definition,
-      metadata: {
-        url: 'url' in definition ? definition.url : undefined,
-        esmUrl: 'esmUrl' in definition ? definition.esmUrl : undefined,
-        umdUrl: 'umdUrl' in definition ? definition.umdUrl : undefined,
-        cjsUrl: 'cjsUrl' in definition ? definition.cjsUrl : undefined,
-      },
-    })),
-  ])
+  const pluginManager = new PluginManager(pluginRecords(runtimePlugins))
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory({
