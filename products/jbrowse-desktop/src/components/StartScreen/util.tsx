@@ -1,4 +1,5 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
@@ -29,7 +30,21 @@ export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
-  const pluginLoader = new PluginLoader(configSnapshot.plugins, {
+  const globalPlugins = await ipcRenderer
+    .invoke('getGlobalPlugins')
+    .catch(() => [] as PluginDefinition[])
+  const sessionPlugins = configSnapshot.plugins ?? []
+  const seen = new Set<string>()
+  const allPlugins: PluginDefinition[] = []
+  for (const plugin of [...sessionPlugins, ...globalPlugins]) {
+    const key = JSON.stringify(plugin)
+    if (!seen.has(key)) {
+      seen.add(key)
+      allPlugins.push(plugin)
+    }
+  }
+
+  const pluginLoader = new PluginLoader(allPlugins, {
     fetchESM: url => import(/* webpackIgnore:true */ url),
     fetchCJS,
   })
