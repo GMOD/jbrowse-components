@@ -10,10 +10,8 @@ import {
   getContainingView,
   getEnv,
   getSession,
-  isAbortException,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -45,6 +43,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -595,76 +594,44 @@ export default function stateModelFactory(
         }
       }
 
-      async function fetchRegions(
-        regions: { region: Region; regionNumber: number }[],
-        bpPerPx: number,
-        resolution: number,
-      ) {
-        const hadToken = !!self.renderingStopToken
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-        const stopToken = createStopToken()
-        self.setRenderingStopToken(stopToken)
-        const generation = self.fetchGeneration
-        self.setLoading(true)
-        self.setError(null)
-        console.debug(
-          '[MultiLinearWiggleDisplay] fetchRegions',
-          regions.map(
-            r => `${r.region.refName}:${r.region.start}-${r.region.end}`,
-          ),
-          { bpPerPx, generation, canceledStale: hadToken },
-        )
-        try {
-          const promises = regions.map(({ region, regionNumber }) =>
-            fetchFeaturesForRegion(
-              region,
-              regionNumber,
-              stopToken,
-              bpPerPx,
-              resolution,
-              generation,
-            ),
-          )
-          await Promise.all(promises)
-          console.debug('[MultiLinearWiggleDisplay] fetchRegions complete', {
-            generation,
-          })
-        } catch (e) {
-          if (!isAbortException(e)) {
-            console.error('Failed to fetch multi-wiggle features:', e)
-            if (
-              isAlive(self) &&
-              self.fetchGeneration === generation &&
-              self.renderingStopToken === stopToken
-            ) {
-              self.setError(e instanceof Error ? e : new Error(String(e)))
-            }
-          } else {
-            console.debug('[MultiLinearWiggleDisplay] fetchRegions canceled', {
-              generation,
-            })
-          }
-        } finally {
-          if (
-            isAlive(self) &&
-            self.fetchGeneration === generation &&
-            self.renderingStopToken === stopToken
-          ) {
-            self.setRenderingStopToken(undefined)
-            self.setLoading(false)
-            self.setStatusMessage(undefined)
-          }
-        }
-      }
-
       const superAfterAttach = self.afterAttach
 
       let prevPivot: number | undefined
       let prevResolution: number | undefined
 
       return {
+        isCacheValid(regionNumber: number) {
+          const view = getContainingView(self) as LGV
+          const regionBpPerPx = untracked(() =>
+            self.loadedBpPerPx.get(regionNumber),
+          )
+          return (
+            regionBpPerPx === undefined ||
+            view.bpPerPx >= regionBpPerPx / 2
+          )
+        },
+
+        onFetchNeeded(
+          needed: { region: Region; regionNumber: number }[],
+        ) {
+          const view = getContainingView(self) as LGV
+          const { bpPerPx } = view
+          const { resolution } = self
+          self.withFetchLifecycle(async (ctx: FetchContext) => {
+            const promises = needed.map(({ region, regionNumber }) =>
+              fetchFeaturesForRegion(
+                region,
+                regionNumber,
+                ctx.stopToken,
+                bpPerPx,
+                resolution,
+                ctx.generation,
+              ),
+            )
+            await Promise.all(promises)
+          })
+        },
+
         async afterAttach() {
           superAfterAttach()
 
@@ -753,79 +720,6 @@ export default function stateModelFactory(
                 }
               },
               { delay: 400, name: 'VisibleScoreRange' },
-            ),
-          )
-
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                const view = getContainingView(self) as LGV
-                // DO NOT REMOVE: observe fetchGeneration
-                // unconditionally (before any early returns) so MobX
-                // always tracks it. fetchGeneration re-fires after
-                // clearAllRpcData.
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                self.fetchGeneration
-                if (!view.initialized || self.error) {
-                  return
-                }
-                const staticRegions = view.staticRegions
-                const { bpPerPx } = view
-                const { resolution } = self
-                const needed: { region: Region; regionNumber: number }[] = []
-                const skipped: string[] = []
-                for (const vr of staticRegions) {
-                  // Read loadedRegions inside untracked so that partial
-                  // Promise.all completions don't re-trigger this autorun
-                  // and cancel sibling fetches still in flight.
-                  const loaded = untracked(() =>
-                    self.loadedRegions.get(vr.regionNumber),
-                  )
-                  const regionBpPerPx = untracked(() =>
-                    self.loadedBpPerPx.get(vr.regionNumber),
-                  )
-                  const skip =
-                    loaded?.refName === vr.refName &&
-                    vr.start >= loaded.start &&
-                    vr.end <= loaded.end &&
-                    (regionBpPerPx === undefined ||
-                      bpPerPx >= regionBpPerPx / 2)
-                  if (skip) {
-                    skipped.push(
-                      `r${vr.regionNumber}:${vr.refName}:${vr.start}-${vr.end}`,
-                    )
-                  } else {
-                    needed.push({
-                      region: vr as Region,
-                      regionNumber: vr.regionNumber,
-                    })
-                  }
-                }
-                const currentlyLoading = untracked(() => self.isLoading)
-                console.debug(
-                  '[MultiLinearWiggleDisplay] FetchVisibleRegions',
-                  needed.length > 0
-                    ? `fetching ${needed.length} region(s)`
-                    : 'all cached',
-                  {
-                    needed: needed.map(
-                      r =>
-                        `r${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
-                    ),
-                    skipped,
-                    bpPerPx,
-                    isLoading: currentlyLoading,
-                  },
-                )
-                if (needed.length > 0 && !currentlyLoading) {
-                  await fetchRegions(needed, bpPerPx, resolution)
-                }
-              },
-              {
-                name: 'FetchVisibleRegions',
-                delay: 300,
-              },
             ),
           )
         },

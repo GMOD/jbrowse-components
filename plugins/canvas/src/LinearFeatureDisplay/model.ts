@@ -11,18 +11,16 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  isAbortException,
   isFeature,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
+  checkByteEstimate,
   getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -52,6 +50,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -545,113 +544,6 @@ export default function stateModelFactory(
         self.setRpcDataMap(dataMap)
       }
 
-      async function fetchByteEstimate(regions: Region[]) {
-        const session = getSession(self)
-        const sessionId = getRpcSessionId(self)
-        return session.rpcManager.call(
-          sessionId,
-          'CoreGetFeatureDensityStats',
-          {
-            regions,
-            adapterConfig: self.adapterConfigSnapshot,
-          },
-        ) as Promise<{ bytes?: number; fetchSizeLimit?: number }>
-      }
-
-      async function fetchRegions(
-        regions: { region: Region; regionNumber: number }[],
-        bpPerPx: number,
-      ) {
-        const hadToken = !!self.renderingStopToken
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-        const stopToken = createStopToken()
-        const generation = self.fetchGeneration
-        self.setRenderingStopToken(stopToken)
-        self.setLoading(true)
-        self.setError(null)
-        console.debug(
-          '[LinearFeatureDisplay] fetchRegions',
-          regions.map(
-            r => `${r.region.refName}:${r.region.start}-${r.region.end}`,
-          ),
-          { generation, canceledStale: hadToken, t: performance.now() },
-        )
-        try {
-          // Byte estimate check. Uses the adapter index (e.g. tabix,
-          // BAI) to estimate compressed bytes for the visible regions.
-          // If the estimate exceeds fetchSizeLimit, show the "force
-          // load" banner immediately without fetching features.
-          // Regions smaller than AUTO_FORCE_LOAD_BP always load
-          // unconditionally.
-          const view = getContainingView(self) as LGV
-          if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
-            const stats = await fetchByteEstimate(regions.map(r => r.region))
-            if (
-              !isAlive(self) ||
-              self.fetchGeneration !== generation ||
-              self.renderingStopToken !== stopToken
-            ) {
-              console.debug(
-                '[LinearFeatureDisplay] fetchRegions stale after byte estimate',
-                { generation },
-              )
-              return
-            }
-            self.setFeatureDensityStats(stats)
-            if (stats.bytes && stats.bytes > self.fetchSizeLimit) {
-              console.debug(
-                '[LinearFeatureDisplay] fetchRegions regionTooLarge',
-                {
-                  bytes: stats.bytes,
-                  limit: self.fetchSizeLimit,
-                  generation,
-                },
-              )
-              self.setRegionTooLarge(
-                true,
-                `Requested too much data (${getDisplayStr(stats.bytes)})`,
-              )
-              return
-            }
-          }
-
-          const promises = regions.map(({ region, regionNumber }) =>
-            fetchFeaturesForRegion(region, regionNumber, bpPerPx, stopToken),
-          )
-          const results = await Promise.all(promises)
-          if (
-            isAlive(self) &&
-            self.fetchGeneration === generation &&
-            self.renderingStopToken === stopToken
-          ) {
-            applyFetchResults(results, bpPerPx)
-          }
-        } catch (e) {
-          if (!isAbortException(e)) {
-            console.error('Failed to fetch features:', e)
-            if (
-              isAlive(self) &&
-              self.fetchGeneration === generation &&
-              self.renderingStopToken === stopToken
-            ) {
-              self.setError(e instanceof Error ? e : new Error(String(e)))
-            }
-          }
-        } finally {
-          if (
-            isAlive(self) &&
-            self.fetchGeneration === generation &&
-            self.renderingStopToken === stopToken
-          ) {
-            self.setRenderingStopToken(undefined)
-            self.setLoading(false)
-            self.setStatusMessage(undefined)
-          }
-        }
-      }
-
       async function refetchForCurrentView() {
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized) {
@@ -663,16 +555,68 @@ export default function stateModelFactory(
           region: vr as Region,
           regionNumber: vr.regionNumber,
         }))
-        await fetchRegions(regions, bpPerPx)
+        // Trigger fetch via onFetchNeeded
+        self.onFetchNeeded(regions)
       }
 
       const superAfterAttach = self.afterAttach
 
       return {
         async reload() {
-          // refetch contains all its async behavior, so no need to await
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           refetchForCurrentView()
+        },
+
+        beforeFetchCheck() {
+          if (untracked(() => self.needsLayoutRefresh)) {
+            console.debug(
+              '[LinearFeatureDisplay] FetchVisibleRegions needsLayoutRefresh → clearAllRpcData',
+            )
+            self.clearAllRpcData()
+          }
+        },
+
+        onFetchNeeded(
+          needed: { region: Region; regionNumber: number }[],
+        ) {
+          const view = getContainingView(self) as LGV
+          const bpPerPx = view.bpPerPx
+          self.withFetchLifecycle(async (ctx: FetchContext) => {
+            const session = getSession(self)
+            const proceed = await checkByteEstimate(
+              session.rpcManager,
+              getRpcSessionId(self),
+              needed.map(r => r.region),
+              self.adapterConfigSnapshot,
+              self.fetchSizeLimit,
+              view.visibleBp,
+              ctx,
+              {
+                setFeatureDensityStats: stats => {
+                  self.setFeatureDensityStats(stats)
+                },
+                setRegionTooLarge: (val, reason) => {
+                  self.setRegionTooLarge(val, reason)
+                },
+              },
+            )
+            if (!proceed) {
+              return
+            }
+
+            const promises = needed.map(({ region, regionNumber }) =>
+              fetchFeaturesForRegion(
+                region,
+                regionNumber,
+                bpPerPx,
+                ctx.stopToken,
+              ),
+            )
+            const results = await Promise.all(promises)
+            if (!ctx.isStale()) {
+              applyFetchResults(results, bpPerPx)
+            }
+          })
         },
 
         afterAttach() {
@@ -687,124 +631,6 @@ export default function stateModelFactory(
             autorun(() => {
               void self.adapterConfigSnapshot
             }),
-          )
-          // Autorun: fetch data for all visible regions
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                const view = getContainingView(self) as LinearGenomeViewModel
-                // DO NOT REMOVE: observe fetchGeneration
-                // unconditionally (before any early returns) so MobX
-                // always tracks it. fetchGeneration re-fires after
-                // clearAllRpcData.
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                self.fetchGeneration
-                if (!view.initialized || self.regionTooLarge || self.error) {
-                  console.debug(
-                    '[LinearFeatureDisplay] FetchVisibleRegions early return',
-                    {
-                      initialized: view.initialized,
-                      regionTooLarge: self.regionTooLarge,
-                      error: !!self.error,
-                      fetchGeneration: self.fetchGeneration,
-                      t: performance.now(),
-                    },
-                  )
-                  return
-                }
-
-                const staticRegs = view.staticRegions
-                const bpPerPx = view.bpPerPx
-                console.debug(
-                  '[LinearFeatureDisplay] FetchVisibleRegions deps',
-                  {
-                    fetchGeneration: self.fetchGeneration,
-                    bpPerPx,
-                    numStaticRegs: staticRegs.length,
-                    viewWidth: view.width,
-                    t: performance.now(),
-                  },
-                )
-                if (untracked(() => self.needsLayoutRefresh)) {
-                  console.debug(
-                    '[LinearFeatureDisplay] FetchVisibleRegions needsLayoutRefresh → clearAllRpcData',
-                  )
-                  self.clearAllRpcData()
-                }
-
-                const needed: { region: Region; regionNumber: number }[] = []
-                for (const vr of staticRegs) {
-                  // Read loadedRegions inside untracked so that partial
-                  // Promise.all completions don't re-trigger this autorun
-                  // and cancel sibling fetches still in flight.
-                  const loaded = untracked(() =>
-                    self.loadedRegions.get(vr.regionNumber),
-                  )
-                  if (
-                    loaded?.refName === vr.refName &&
-                    vr.start >= loaded.start &&
-                    vr.end <= loaded.end
-                  ) {
-                    continue
-                  }
-                  needed.push({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  })
-                }
-                console.debug(
-                  '[LinearFeatureDisplay] FetchVisibleRegions',
-                  needed.length > 0
-                    ? `fetching ${needed.length} region(s)`
-                    : 'all cached',
-                  {
-                    needed: needed.map(
-                      r =>
-                        `r${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
-                    ),
-                    bpPerPx,
-                    fetchGeneration: self.fetchGeneration,
-                    regionTooLarge: untracked(() => self.regionTooLargeState),
-                    isLoading: untracked(() => self.isLoading),
-                    t: performance.now(),
-                  },
-                )
-                if (needed.length > 0 && !untracked(() => self.isLoading)) {
-                  await fetchRegions(needed, bpPerPx)
-                }
-              },
-              {
-                name: 'FetchVisibleRegions',
-                delay: 300,
-              },
-            ),
-          )
-
-          // Autorun: when zoom changes while regionTooLarge is set, clear
-          // the flag so the fetch autorun retries with the new (smaller) region
-          let prevBpPerPx: number | undefined
-          addDisposer(
-            self,
-            autorun(
-              () => {
-                const view = getContainingView(self) as LGV
-                const bpPerPx = view.bpPerPx
-                if (
-                  prevBpPerPx !== undefined &&
-                  bpPerPx !== prevBpPerPx &&
-                  self.regionTooLarge
-                ) {
-                  console.debug(
-                    '[LinearFeatureDisplay] ClearTooLargeOnZoom → clearAllRpcData',
-                    { prevBpPerPx, bpPerPx },
-                  )
-                  self.clearAllRpcData()
-                }
-                prevBpPerPx = bpPerPx
-              },
-              { name: 'ClearTooLargeOnZoom' },
-            ),
           )
 
           // Reaction: re-fetch when label/description/colorByCDS settings change
@@ -822,7 +648,6 @@ export default function stateModelFactory(
               }),
               () => {
                 if (self.loadedRegions.size > 0 || self.regionTooLarge) {
-                  // refetch contains all its async behavior, so no need to await
                   // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   refetchForCurrentView()
                 }

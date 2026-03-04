@@ -28,8 +28,10 @@ export {
 export {
   type MultiRegionDisplayMixinType,
   type Region as MultiRegionRegion,
+  type FetchContext,
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
+export { checkByteEstimate } from './models/fetchHelpers.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'
 export { default as TooLargeMessage } from './components/TooLargeMessage.tsx'

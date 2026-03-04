@@ -101,11 +101,13 @@ export {
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
+  checkByteEstimate,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
   getDisplayStr,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  FetchContext,
   MultiRegionDisplayMixinType,
   MultiRegionRegion,
   NonBlockCanvasDisplayMixinType,

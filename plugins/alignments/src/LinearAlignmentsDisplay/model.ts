@@ -8,12 +8,10 @@ import {
   getContainingView,
   getRpcSessionId,
   getSession,
-  isAbortException,
   isFeature,
   isSessionModelWithWidgets,
   max,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   addDisposer,
   getSnapshot,
@@ -21,16 +19,16 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
-  AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
+  checkByteEstimate,
 } from '@jbrowse/plugin-linear-genome-view'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
-import { autorun, observable, untracked } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import {
@@ -90,6 +88,7 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -165,16 +164,6 @@ export function getInsertionRectWidthPx(
 }
 
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
-
-function getDisplayStr(totalBytes: number) {
-  if (Math.floor(totalBytes / 1000000) > 0) {
-    return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
-  }
-  if (Math.floor(totalBytes / 1000) > 0) {
-    return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
-  }
-  return `${Math.floor(totalBytes)} bytes`
-}
 
 function getSequenceAdapter(session: any, region: Region) {
   const assembly = region.assemblyName
@@ -1197,8 +1186,6 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      const fetchGenerations = new Map<number, number>()
-
       async function fetchPileupData(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
@@ -1251,72 +1238,18 @@ export default function stateModelFactory(
         })
       }
 
-      // Estimate bytes for a region via adapter index (cheap, no feature
-      // fetch). Returns the stats without modifying model state — the caller
-      // applies state changes only after passing the generation staleness
-      // check.
-      async function fetchByteEstimate(
-        adapterConfig: Record<string, unknown>,
-        region: Region,
-      ) {
-        const session = getSession(self)
-        const sessionId = getRpcSessionId(self)
-        const stats = await session.rpcManager.call(
-          sessionId,
-          'CoreGetFeatureDensityStats',
-          {
-            regions: [region],
-            adapterConfig,
-          },
-        )
-        return stats
-      }
-
-      // Central chokepoint: ALL data fetches go through here.
       async function fetchFeaturesForRegion(
+        adapterConfig: unknown,
         region: Region,
         regionNumber: number,
         stopToken: string,
       ) {
         const session = getSession(self)
-        const track = getContainingTrack(self)
-        const adapterConfig = getConf(track, 'adapter')
-
-        if (!adapterConfig) {
-          return
-        }
-
-        const gen = (fetchGenerations.get(regionNumber) ?? 0) + 1
-        fetchGenerations.set(regionNumber, gen)
-
-        const stats = await fetchByteEstimate(adapterConfig, region)
-        if (fetchGenerations.get(regionNumber) !== gen) {
-          return
-        }
-        self.setFeatureDensityStats(stats)
-        const view = getContainingView(self) as LGV
-        if (view.visibleBp >= AUTO_FORCE_LOAD_BP) {
-          const fetchSizeLimit =
-            stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
-          const limit = self.userByteSizeLimit || fetchSizeLimit
-          if (stats.bytes && stats.bytes > limit) {
-            self.setRegionTooLarge(
-              true,
-              `Requested too much data (${getDisplayStr(stats.bytes)})`,
-            )
-            return
-          }
-        }
-        self.setRegionTooLarge(false)
-
         const sequenceAdapter = getSequenceAdapter(session, region)
 
         const result = await (self.renderingMode === 'linkedRead'
           ? fetchChainData(adapterConfig, sequenceAdapter, region, stopToken)
           : fetchPileupData(adapterConfig, sequenceAdapter, region, stopToken))
-        if (!isAlive(self) || fetchGenerations.get(regionNumber) !== gen) {
-          return
-        }
 
         return {
           regionNumber,
@@ -1443,7 +1376,7 @@ export default function stateModelFactory(
         data.maxY = max(layoutMap.values(), 0) + 1
       }
 
-      function computeAndAssignLayout(
+      function computeAndAssignLayoutForData(
         rpcDataMap: Map<number, PileupDataResult>,
         sortedBy?: SortedBy,
         showSoftClipping?: boolean,
@@ -1577,104 +1510,93 @@ export default function stateModelFactory(
         }
       }
 
-      async function fetchRegions(
-        regions: { region: Region; regionNumber: number }[],
-      ) {
-        const hadToken = !!self.renderingStopToken
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-        const stopToken = createStopToken()
-        const generation = self.fetchGeneration
-        self.setRenderingStopToken(stopToken)
-        self.setLoading(true)
-        self.setError(null)
-        console.debug(
-          '[LinearAlignmentsDisplay] fetchRegions',
-          regions.map(
-            r => `${r.region.refName}:${r.region.start}-${r.region.end}`,
-          ),
-          { generation, canceledStale: hadToken },
-        )
-        try {
-          const promises = regions.map(({ region, regionNumber }) =>
-            fetchFeaturesForRegion(region, regionNumber, stopToken),
-          )
-          const results = await Promise.all(promises)
-          if (
-            !isAlive(self) ||
-            self.fetchGeneration !== generation ||
-            self.renderingStopToken !== stopToken
-          ) {
-            return
-          }
-          const newDataMap = new Map<number, PileupDataResult>()
-          for (const r of results) {
-            if (!r) {
-              continue
-            }
-            if (r.result.newTagValues) {
-              self.updateColorTagMap(r.result.newTagValues)
-            }
-            self.setModificationsReady(true)
-            self.setSimplexModifications(r.result.simplexModifications)
-            self.setLoadedRegion(r.regionNumber, r.region)
-            newDataMap.set(r.regionNumber, r.result)
-          }
-          if (
-            self.renderingMode !== 'linkedRead' &&
-            self.sortedBy?.type !== 'tag'
-          ) {
-            computeAndAssignLayout(
-              newDataMap,
-              self.sortedBy,
-              self.showSoftClipping,
-            )
-          } else {
-            for (const [regionNumber, data] of newDataMap) {
-              self.setRpcData(regionNumber, data)
-            }
-          }
-          if (self.showArcs) {
-            computeAndSetArcs(regions)
-          }
-          console.debug('[LinearAlignmentsDisplay] fetchRegions complete', {
-            generation,
-          })
-        } catch (e) {
-          if (!isAbortException(e)) {
-            console.error('Failed to fetch features:', e)
-            if (
-              isAlive(self) &&
-              self.fetchGeneration === generation &&
-              self.renderingStopToken === stopToken
-            ) {
-              self.setError(e instanceof Error ? e : new Error(String(e)))
-            }
-          } else {
-            console.debug('[LinearAlignmentsDisplay] fetchRegions canceled', {
-              generation,
-            })
-          }
-        } finally {
-          if (
-            isAlive(self) &&
-            self.fetchGeneration === generation &&
-            self.renderingStopToken === stopToken
-          ) {
-            self.setRenderingStopToken(undefined)
-            self.setLoading(false)
-            self.setStatusMessage(undefined)
-          }
-        }
-      }
-
       let prevInvalidationKey: string | undefined
       const superAfterAttach = self.afterAttach
 
       return {
         async fetchFeatures(region: Region, regionNumber = 0) {
-          await fetchRegions([{ region, regionNumber }])
+          self.onFetchNeeded([{ region, regionNumber }])
+        },
+
+        onFetchNeeded(
+          needed: { region: Region; regionNumber: number }[],
+        ) {
+          const track = getContainingTrack(self)
+          const adapterConfig = getConf(track, 'adapter')
+          if (!adapterConfig) {
+            return
+          }
+          const view = getContainingView(self) as LGV
+          const fetchSizeLimit =
+            self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number)
+
+          self.withFetchLifecycle(async (ctx: FetchContext) => {
+            const session = getSession(self)
+            const proceed = await checkByteEstimate(
+              session.rpcManager,
+              getRpcSessionId(self),
+              needed.map(r => r.region),
+              adapterConfig,
+              fetchSizeLimit,
+              view.visibleBp,
+              ctx,
+              {
+                setFeatureDensityStats: stats => {
+                  self.setFeatureDensityStats(stats)
+                },
+                setRegionTooLarge: (val, reason) => {
+                  self.setRegionTooLarge(val, reason)
+                },
+              },
+            )
+            if (!proceed) {
+              return
+            }
+            self.setRegionTooLarge(false)
+
+            const promises = needed.map(({ region, regionNumber }) =>
+              fetchFeaturesForRegion(
+                adapterConfig,
+                region,
+                regionNumber,
+                ctx.stopToken,
+              ),
+            )
+            const results = await Promise.all(promises)
+            if (ctx.isStale()) {
+              return
+            }
+            const newDataMap = new Map<number, PileupDataResult>()
+            for (const r of results) {
+              if (!r) {
+                continue
+              }
+              if (r.result.newTagValues) {
+                self.updateColorTagMap(r.result.newTagValues)
+              }
+              self.setModificationsReady(true)
+              self.setSimplexModifications(r.result.simplexModifications)
+              self.setLoadedRegion(r.regionNumber, r.region)
+              newDataMap.set(r.regionNumber, r.result)
+            }
+            if (
+              self.renderingMode !== 'linkedRead' &&
+              self.sortedBy?.type !== 'tag'
+            ) {
+              computeAndAssignLayoutForData(
+                newDataMap,
+                self.sortedBy,
+                self.showSoftClipping,
+              )
+            } else {
+              for (const [regionNumber, data] of newDataMap) {
+                self.setRpcData(regionNumber, data)
+              }
+            }
+            if (self.showArcs) {
+              computeAndSetArcs(needed)
+            }
+          })
         },
 
         afterAttach() {
@@ -1745,8 +1667,6 @@ export default function stateModelFactory(
           )
 
           // Debounced autorun: compute visible max depth from only visible bins.
-          // Updates 500ms after pan/zoom settles so the scale adjusts to the
-          // current viewport without thrashing during continuous interaction.
           addDisposer(
             self,
             autorun(
@@ -1854,101 +1774,6 @@ export default function stateModelFactory(
             ),
           )
 
-          // See MultiRegionDisplayMixin for the fetch lifecycle contract.
-          let lastTooLargeKey: string | undefined
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                const view = getContainingView(self) as LGV
-                // DO NOT REMOVE: observe fetchGeneration unconditionally
-                // (before any early returns) so MobX always tracks it.
-                // fetchGeneration re-fires after clearAllRpcData.
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                self.fetchGeneration
-                if (!view.initialized || self.error) {
-                  return
-                }
-                const staticRegions = view.staticRegions
-                const needed: { region: Region; regionNumber: number }[] = []
-                const skipped: string[] = []
-                for (const vr of staticRegions) {
-                  // Read loadedRegions inside untracked so that partial
-                  // Promise.all completions don't re-trigger this autorun
-                  // and cancel sibling fetches still in flight.
-                  const loaded = untracked(() =>
-                    self.loadedRegions.get(vr.regionNumber),
-                  )
-                  if (
-                    loaded?.refName === vr.refName &&
-                    vr.start >= loaded.start &&
-                    vr.end <= loaded.end
-                  ) {
-                    skipped.push(
-                      `r${vr.regionNumber}:${vr.refName}:${vr.start}-${vr.end}`,
-                    )
-                    continue
-                  }
-                  needed.push({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  })
-                }
-                const currentlyLoading = untracked(() => self.isLoading)
-                const regionKey = needed
-                  .map(
-                    r =>
-                      `${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
-                  )
-                  .join(',')
-                console.debug(
-                  '[LinearAlignmentsDisplay] FetchVisibleRegions',
-                  needed.length > 0
-                    ? `fetching ${needed.length} region(s)`
-                    : 'all cached',
-                  {
-                    needed: needed.map(
-                      r =>
-                        `r${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
-                    ),
-                    skipped,
-                    bpPerPx: view.bpPerPx,
-                    isLoading: currentlyLoading,
-                  },
-                )
-                if (needed.length > 0 && !currentlyLoading) {
-                  if (
-                    untracked(() => self.regionTooLargeState) &&
-                    regionKey === lastTooLargeKey
-                  ) {
-                    // Already attempted this exact region set and it was too
-                    // large. Don't retry until the view changes or user
-                    // force-loads.
-                  } else {
-                    lastTooLargeKey = undefined
-                    await fetchRegions(needed)
-                    if (untracked(() => self.regionTooLargeState)) {
-                      lastTooLargeKey = regionKey
-                    }
-                  }
-                } else if (
-                  needed.length === 0 &&
-                  untracked(() => self.regionTooLargeState)
-                ) {
-                  // All regions are cached from a previous fetch but the
-                  // "too large" banner is stale (set at a different zoom).
-                  // Clear it without re-fetching data.
-                  self.setRegionTooLarge(false)
-                  lastTooLargeKey = undefined
-                }
-              },
-              {
-                name: 'LinearAlignmentsDisplay:fetchVisibleRegions',
-                delay: 300,
-              },
-            ),
-          )
-
           // Autorun: invalidate data when any setting that affects the
           // worker-side RPC result changes (displayedRegions handled by mixin)
           addDisposer(
@@ -2040,7 +1865,7 @@ export default function stateModelFactory(
                   return
                 }
 
-                computeAndAssignLayout(
+                computeAndAssignLayoutForData(
                   self.rpcDataMap,
                   sortedBy,
                   showSoftClipping,
