@@ -17,4 +17,5 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as BaseTooltip } from './BaseTooltip.tsx'
 export * from './Menu.tsx'
 export * from './MenuTypes.ts'
+export { default as PluggableComponent } from './PluggableComponent.tsx'
 export const VIEW_HEADER_HEIGHT = 28

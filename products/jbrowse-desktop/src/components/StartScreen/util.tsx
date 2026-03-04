@@ -18,6 +18,43 @@ import type { JBrowseConfig } from './types.ts'
 
 const { ipcRenderer } = window.require('electron')
 
+export async function createStartScreenPluginManager() {
+  const globalPlugins = await ipcRenderer
+    .invoke('getGlobalPlugins')
+    .catch(() => [] as PluginDefinition[])
+
+  const pluginLoader = new PluginLoader(globalPlugins, {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+    fetchCJS,
+  })
+  pluginLoader.installGlobalReExports(window)
+  const runtimePlugins = await pluginLoader.load(window.location.href)
+  const pluginManager = new PluginManager([
+    ...corePlugins.map(P => ({
+      plugin: new P(),
+      metadata: {
+        isCore: true,
+      },
+    })),
+    ...runtimePlugins.map(({ plugin: P, definition }) => ({
+      plugin: new P(),
+      definition,
+      metadata: {
+        // @ts-expect-error
+        url: definition.url,
+        // @ts-expect-error
+        esmUrl: definition.esmUrl,
+        // @ts-expect-error
+        umdUrl: definition.umdUrl,
+        // @ts-expect-error
+        cjsUrl: definition.cjsUrl,
+      },
+    })),
+  ])
+  pluginManager.createPluggableElements()
+  return pluginManager
+}
+
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
   const pm = await createPluginManager(snap)
