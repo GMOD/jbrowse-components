@@ -39,6 +39,26 @@ async function getGlobalPlugins() {
   }
 }
 
+// A config and the global list can describe the same plugin with differently
+// shaped definitions (a UMD name+url vs an esmUrl), so identity is not enough:
+// either a repeated name or a repeated url means the plugin is already in.
+function dedupePluginDefinitions(defs: PluginDefinition[]) {
+  const names = new Set<string>()
+  const urls = new Set<string>()
+  return defs.filter(def => {
+    const name = 'name' in def ? def.name : undefined
+    const url = pluginUrl(def)
+    const duplicate = (name !== undefined && names.has(name)) || urls.has(url)
+    if (!duplicate) {
+      if (name !== undefined) {
+        names.add(name)
+      }
+      urls.add(url)
+    }
+    return !duplicate
+  })
+}
+
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
   const pm = await createPluginManager(snap)
@@ -83,9 +103,8 @@ export async function createPluginManager(
   initialTimestamp = Date.now(),
 ) {
   // Global plugins load in every session, so they join the config's own list
-  // before the loader runs. Deduped because a config can name one the user has
-  // also installed globally.
-  const plugins = dedupe([
+  // before the loader runs
+  const plugins = dedupePluginDefinitions([
     ...(configSnapshot.plugins ?? []),
     ...(await getGlobalPlugins()),
   ])

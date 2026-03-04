@@ -1,7 +1,11 @@
+import { useState } from 'react'
+
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import MenuIcon from '@mui/icons-material/Menu'
 import { Paper, Typography } from '@mui/material'
 
-import GlobalPluginsPanel from './GlobalPluginsPanel.tsx'
+import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
@@ -29,6 +33,12 @@ const useStyles = makeStyles()({
     padding: 16,
     overflow: 'auto',
   },
+
+  menuButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+  },
 })
 
 export default function StartScreen({
@@ -37,9 +47,24 @@ export default function StartScreen({
   setPluginManager: (arg: PluginManager) => void
 }) {
   const { classes } = useStyles()
+  const [showGlobalPlugins, setShowGlobalPlugins] = useState(false)
 
   return (
     <div>
+      <div className={classes.menuButton}>
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: 'Global plugins...',
+              onClick: () => {
+                setShowGlobalPlugins(true)
+              },
+            },
+          ]}
+        >
+          <MenuIcon />
+        </CascadingMenuButton>
+      </div>
       <Logo />
       <div className={classes.root}>
         <Paper elevation={3} className={classes.panel}>
@@ -51,11 +76,13 @@ export default function StartScreen({
           <RecentSessionPanel setPluginManager={setPluginManager} />
         </Paper>
       </div>
-      <div className={classes.root}>
-        <Paper elevation={3} className={classes.panel}>
-          <GlobalPluginsPanel />
-        </Paper>
-      </div>
+      {showGlobalPlugins ? (
+        <GlobalPluginsDialog
+          onClose={() => {
+            setShowGlobalPlugins(false)
+          }}
+        />
+      ) : null}
     </div>
   )
 }
