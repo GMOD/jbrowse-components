@@ -1,13 +1,10 @@
 import { createElement } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import {
-  getContainingTrack,
   getContainingView,
   getRpcSessionId,
   getSession,
   isAbortException,
-  measureText,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -50,15 +47,6 @@ export default function MultiRegionDisplayMixin() {
       featureDensityStats: undefined as FeatureDensityStats | undefined,
     }))
     .views(self => ({
-      get scalebarOverlapLeft() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        if (view.trackLabelsSetting === 'overlapping') {
-          const track = getContainingTrack(self)
-          return measureText(getConf(track, 'name'), 12.8) + 100
-        }
-        return 0
-      },
-
       get regionTooLarge() {
         return self.regionTooLargeState
       },

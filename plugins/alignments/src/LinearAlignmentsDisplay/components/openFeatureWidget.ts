@@ -104,6 +104,27 @@ export function openCoverageWidget(
   showWidget(model, featureData)
 }
 
+export function openSashimiWidget(
+  model: IAnyStateTreeNode,
+  arc: {
+    start: number
+    end: number
+    refName: string
+    score: number
+    strand: number
+  },
+) {
+  showWidget(model, {
+    uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}`,
+    type: 'skip',
+    refName: arc.refName,
+    start: arc.start,
+    end: arc.end,
+    score: arc.score,
+    strand: arc.strand === 1 ? '+' : arc.strand === -1 ? '-' : '.',
+  })
+}
+
 export function openCigarWidget(
   model: IAnyStateTreeNode,
   cigarHit: CigarHitResult,

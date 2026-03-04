@@ -313,13 +313,9 @@ export function getContainingTrack(
   if (cached && isAlive(cached)) {
     return cached
   }
-  try {
-    const result = findParentThatIs(node, isTrackModel)
-    containingTrackCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing track found')
-  }
+  const result = findParentThatIs(node, isTrackModel)
+  containingTrackCache.set(node, result)
+  return result
 }
 
 /**

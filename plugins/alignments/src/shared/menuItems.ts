@@ -8,7 +8,7 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { modificationData } from './modificationData.ts'
 
-import type { ColorBy } from './types.ts'
+import type { ColorBy, FilterBy } from './types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
@@ -189,6 +189,8 @@ export function getModificationsSubMenu(
 }
 
 interface FiltersModel {
+  filterBy: FilterBy
+  setFilterBy: (arg: FilterBy) => void
   drawSingletons?: boolean
   drawProperPairs?: boolean
   setDrawSingletons?: (arg: boolean) => void
@@ -227,12 +229,14 @@ export function getFiltersMenuItem(
           ]
         : []),
       {
-        label: 'Filter by tag...',
+        label: 'Edit filters...',
         onClick: () => {
-          // @ts-expect-error getSession works on model
-          getSession(model).queueDialog((handleClose: () => void) => [
+          getSession(model).queueDialog(handleClose => [
             FilterByTagDialog,
-            { model, handleClose },
+            {
+              model,
+              handleClose,
+            },
           ])
         },
       },
