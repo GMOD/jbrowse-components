@@ -52,6 +52,10 @@ export default function MultiRegionDisplayMixin() {
         }
         return 0
       },
+
+      get regionTooLarge() {
+        return false
+      },
     }))
     .actions(self => ({
       setLoading(loading: boolean) {
@@ -240,15 +244,7 @@ export default function MultiRegionDisplayMixin() {
                 ) as LinearGenomeViewModel
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchGeneration
-                if (!view.initialized || self.error) {
-                  return
-                }
-                // Runtime check for optional RegionTooLargeMixin
-                if (
-                  'regionTooLarge' in self &&
-                  (self as unknown as { regionTooLarge: boolean })
-                    .regionTooLarge
-                ) {
+                if (!view.initialized || self.error || self.regionTooLarge) {
                   return
                 }
 
@@ -292,34 +288,31 @@ export default function MultiRegionDisplayMixin() {
 
           // Autorun: when zoom changes while regionTooLarge is set, clear
           // so the fetch autorun retries with the new (smaller) region
-          if ('regionTooLarge' in self) {
-            let prevBpPerPx: number | undefined
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  const view = getContainingView(
-                    self,
-                  ) as LinearGenomeViewModel
-                  const { bpPerPx } = view
-                  if (
-                    prevBpPerPx !== undefined &&
-                    bpPerPx !== prevBpPerPx &&
-                    (self as unknown as { regionTooLarge: boolean })
-                      .regionTooLarge
-                  ) {
-                    console.debug(
-                      '[MultiRegionDisplayMixin] ClearTooLargeOnZoom → clearAllRpcData',
-                      { prevBpPerPx, bpPerPx },
-                    )
-                    self.clearAllRpcData()
-                  }
-                  prevBpPerPx = bpPerPx
-                },
-                { name: 'ClearTooLargeOnZoom' },
-              ),
-            )
-          }
+          let prevBpPerPx: number | undefined
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(
+                  self,
+                ) as LinearGenomeViewModel
+                const { bpPerPx } = view
+                if (
+                  prevBpPerPx !== undefined &&
+                  bpPerPx !== prevBpPerPx &&
+                  self.regionTooLarge
+                ) {
+                  console.debug(
+                    '[MultiRegionDisplayMixin] ClearTooLargeOnZoom → clearAllRpcData',
+                    { prevBpPerPx, bpPerPx },
+                  )
+                  self.clearAllRpcData()
+                }
+                prevBpPerPx = bpPerPx
+              },
+              { name: 'ClearTooLargeOnZoom' },
+            ),
+          )
         },
       }
     })

@@ -172,10 +172,15 @@ function getSequenceAdapter(session: any, region: Region) {
   return sequenceAdapterConfig ? getSnapshot(sequenceAdapterConfig) : undefined
 }
 
-async function fetchFeatureDetails(self: any, featureId: string) {
+interface FetchFeatureDetailsSelf {
+  adapterConfigSnapshot: unknown
+  loadedRegions: Map<number, Region>
+  getFeatureInfoById: (id: string) => { refName: string; start: number; end: number } | undefined
+}
+
+async function fetchFeatureDetails(self: FetchFeatureDetailsSelf, featureId: string) {
   const session = getSession(self)
-  const track = getContainingTrack(self)
-  const adapterConfig = getConf(track, 'adapter')
+  const adapterConfig = self.adapterConfigSnapshot
   const info = self.getFeatureInfoById(featureId)
   if (!info) {
     return undefined
@@ -449,6 +454,16 @@ export default function stateModelFactory(
       visibleMaxDepth: 0,
     }))
     .views(self => ({
+      get adapterConfigSnapshot() {
+        return getConf(getContainingTrack(self), 'adapter')
+      },
+
+      get fetchSizeLimit() {
+        return (
+          self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number)
+        )
+      },
+
       get selectedFeatureId() {
         const { selection } = getSession(self)
         if (isFeature(selection)) {
@@ -1518,15 +1533,10 @@ export default function stateModelFactory(
         },
 
         getByteEstimateConfig() {
-          const track = getContainingTrack(self)
-          const adapterConfig = getConf(track, 'adapter')
-          if (!adapterConfig) {
-            return null
-          }
           const view = getContainingView(self) as LGV
           return {
-            adapterConfig,
-            fetchSizeLimit: self.userByteSizeLimit || (getConf(self, 'fetchSizeLimit') as number),
+            adapterConfig: self.adapterConfigSnapshot,
+            fetchSizeLimit: self.fetchSizeLimit,
             visibleBp: view.visibleBp,
           }
         },
@@ -1534,17 +1544,10 @@ export default function stateModelFactory(
         onFetchNeeded(
           needed: { region: Region; regionNumber: number }[],
         ) {
-          const track = getContainingTrack(self)
-          const adapterConfig = getConf(track, 'adapter')
-          if (!adapterConfig) {
-            return
-          }
-
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
-                adapterConfig,
+                self.adapterConfigSnapshot,
                 region,
                 regionNumber,
                 ctx.stopToken,

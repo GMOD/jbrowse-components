@@ -31,7 +31,6 @@ export {
   type FetchContext,
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
-export { checkByteEstimate } from './models/fetchHelpers.ts'
 export type { ByteEstimateConfig } from './models/fetchHelpers.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'

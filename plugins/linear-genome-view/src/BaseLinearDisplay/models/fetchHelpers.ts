@@ -1,6 +1,5 @@
+import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
 import { getDisplayStr } from './util.ts'
-
-export const AUTO_FORCE_LOAD_BP = 20_000
 
 export interface ByteEstimateConfig {
   adapterConfig: unknown

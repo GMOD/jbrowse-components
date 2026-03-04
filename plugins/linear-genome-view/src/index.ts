@@ -101,7 +101,6 @@ export {
   TrackHeightMixin,
   baseLinearDisplayConfigSchema,
   calculateSvgLegendWidth,
-  checkByteEstimate,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
   getDisplayStr,
