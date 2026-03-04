@@ -44,6 +44,7 @@ import {
   INSERTION_VERTEX_SHADER,
   LINE_FRAGMENT_SHADER,
   LINE_VERTEX_SHADER,
+  MAX_REGIONS,
   MISMATCH_FRAGMENT_SHADER,
   MISMATCH_VERTEX_SHADER,
   MODIFICATION_FRAGMENT_SHADER,
@@ -446,20 +447,23 @@ export class WebGLRenderer {
     )
 
     this.cacheUniforms(this.arcProgram, this.arcUniforms, [
-      'u_bpStartOffset',
-      'u_bpRegionLength',
       'u_canvasWidth',
       'u_canvasHeight',
       'u_coverageOffset',
       'u_lineWidthPx',
       'u_gradientHue',
-      'u_blockStartPx',
-      'u_blockWidth',
+      'u_numRegions',
     ])
     for (let i = 0; i < NUM_ARC_COLORS; i++) {
       this.arcUniforms[`u_arcColors[${i}]`] = gl.getUniformLocation(
         this.arcProgram,
         `u_arcColors[${i}]`,
+      )
+    }
+    for (let i = 0; i < MAX_REGIONS; i++) {
+      this.arcUniforms[`u_regions[${i}]`] = gl.getUniformLocation(
+        this.arcProgram,
+        `u_regions[${i}]`,
       )
     }
 
@@ -501,19 +505,22 @@ export class WebGLRenderer {
       SASHIMI_ARC_FRAGMENT_SHADER,
     )
     this.cacheUniforms(this.sashimiProgram, this.sashimiUniforms, [
-      'u_bpStartOffset',
-      'u_bpRegionLength',
       'u_canvasWidth',
       'u_canvasHeight',
       'u_coverageOffset',
       'u_coverageHeight',
-      'u_blockStartPx',
-      'u_blockWidth',
+      'u_numRegions',
     ])
     for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
       this.sashimiUniforms[`u_sashimiColors[${i}]`] = gl.getUniformLocation(
         this.sashimiProgram,
         `u_sashimiColors[${i}]`,
+      )
+    }
+    for (let i = 0; i < MAX_REGIONS; i++) {
+      this.sashimiUniforms[`u_regions[${i}]`] = gl.getUniformLocation(
+        this.sashimiProgram,
+        `u_regions[${i}]`,
       )
     }
 
@@ -2120,18 +2127,17 @@ export class WebGLRenderer {
     const colors = state.colors
     const mode = state.renderingMode ?? 'pileup'
 
+    // Phase 1: Per-block rendering (coverage, pileup, connecting lines, arc lines)
     for (const block of blocks) {
       const buffers = this.buffersMap.get(block.regionNumber)
       if (!buffers) {
         continue
       }
 
-      // Set this.buffers so sub-renderers can access it via parent
       this.buffers = buffers
 
       const regionStart = buffers.regionStart
 
-      // Scissor to this block's screen region, clipped to viewport
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX
@@ -2146,10 +2152,6 @@ export class WebGLRenderer {
         bufH,
       )
 
-      // Compute viewport-clipped domain: the genomic range corresponding to
-      // the visible portion of this block. Needed for shaders that map domain
-      // to [-1,1] clip space (pileup, coverage) since the per-block
-      // gl.viewport maps [-1,1] to the visible screen region.
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const bpPerPx =
         fullBlockWidth > 0
@@ -2164,9 +2166,6 @@ export class WebGLRenderer {
         clippedBpEnd - regionStart,
       ]
 
-      // Per-block viewport: maps shader's [-1,1] clip space to this block's
-      // screen region. Pass blockWidth as canvasWidth so pixel calculations
-      // (chevron width, min bar width) are correct for the block's scale.
       gl.viewport(
         Math.round(scissorX * dpr),
         0,
@@ -2179,29 +2178,13 @@ export class WebGLRenderer {
         canvasWidth: scissorW,
       }
 
-      // Draw coverage for this block (always uses viewport-clipped domain)
       this.coverageRenderer.render(blockState, clippedBpOffset, colors)
-
-      // Draw sashimi arcs overlaid on coverage (uses full-canvas viewport like arcs)
-      if (state.showSashimiArcs && state.showCoverage) {
-        gl.viewport(0, 0, bufW, bufH)
-        this.arcsRenderer.renderSashimiArcs(
-          { ...state, bpRangeX: block.bpRangeX },
-          block.screenStartPx,
-          fullBlockWidth,
-        )
-        gl.viewport(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          bufH,
-        )
-      }
 
       const arcsHeight =
         state.showArcs && state.arcsHeight ? state.arcsHeight : 0
       const covH = state.showCoverage ? state.coverageHeight : 0
 
+      // Arc lines still rendered per-block (they use HP precision, short vertical lines)
       if (arcsHeight > 0) {
         const covHPx = Math.round(covH * dpr)
         const effectiveArcsHPx = Math.min(
@@ -2217,7 +2200,7 @@ export class WebGLRenderer {
             Math.round(scissorW * dpr),
             effectiveArcsHPx,
           )
-          this.arcsRenderer.renderArcs(
+          this.arcsRenderer.renderArcLines(
             {
               ...state,
               bpRangeX: block.bpRangeX,
@@ -2260,9 +2243,60 @@ export class WebGLRenderer {
       this.pileupRenderer.render(blockState, clippedBpOffset, colors, scissorX)
     }
 
-    // Restore full viewport and disable scissor
+    // Phase 2: Cross-region rendering (arcs and sashimi arcs)
+    // Rendered without scissor clipping so arcs can span across region boundaries
     gl.viewport(0, 0, bufW, bufH)
     gl.disable(gl.SCISSOR_TEST)
+
+    // Build absolute region table from all blocks
+    const regionTableAbsolute = blocks.map(b => ({
+      startBp: b.bpRangeX[0],
+      endBp: b.bpRangeX[1],
+      startPx: b.screenStartPx,
+      endPx: b.screenEndPx,
+    }))
+
+    // Sashimi arcs are now rendered as SVG overlay (SashimiArcsOverlay.tsx)
+
+    // Regular arcs (in arcs area)
+    const arcsHeight =
+      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const covH = state.showCoverage ? state.coverageHeight : 0
+    if (arcsHeight > 0) {
+      const covHPx = Math.round(covH * dpr)
+      const effectiveArcsHPx = Math.min(
+        Math.round(arcsHeight * dpr),
+        Math.max(0, bufH - covHPx),
+      )
+      if (effectiveArcsHPx > 0) {
+        const arcsY = bufH - covHPx - effectiveArcsHPx
+        gl.viewport(0, arcsY, bufW, effectiveArcsHPx)
+
+        for (const [, buffers] of this.buffersMap) {
+          if (!buffers.arcVAO || buffers.arcCount === 0) {
+            continue
+          }
+          this.buffers = buffers
+          const table = regionTableAbsolute.map(r => ({
+            startBpOffset: r.startBp - buffers.regionStart,
+            endBpOffset: r.endBp - buffers.regionStart,
+            startPx: r.startPx,
+            endPx: r.endPx,
+          }))
+          this.arcsRenderer.renderArcs(
+            {
+              ...state,
+              showCoverage: false,
+              coverageHeight: 0,
+              canvasHeight: effectiveArcsHPx / dpr,
+            },
+            table,
+          )
+        }
+      }
+    }
+
+    gl.viewport(0, 0, bufW, bufH)
     this.buffers = null
   }
 

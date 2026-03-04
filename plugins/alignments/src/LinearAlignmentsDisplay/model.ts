@@ -1909,12 +1909,11 @@ export default function stateModelFactory(
                     isLoading: currentlyLoading,
                   },
                 )
-                if (currentlyLoading && needed.length > 0) {
-                  console.warn(
-                    '[LinearAlignmentsDisplay] FetchVisibleRegions re-fetching while already loading — previous fetch will be canceled',
-                  )
-                }
-                if (needed.length > 0) {
+                if (
+                  needed.length > 0 &&
+                  !untracked(() => self.regionTooLargeState) &&
+                  !currentlyLoading
+                ) {
                   await fetchRegions(needed)
                 } else if (untracked(() => self.regionTooLargeState)) {
                   // All regions are cached from a previous fetch but the

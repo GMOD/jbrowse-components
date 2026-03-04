@@ -2,6 +2,7 @@ import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -73,6 +74,8 @@ const ArcsComponent = observer(function ArcsComponent({
         onClick={handleClick}
         onContextMenu={handleContextMenu}
       />
+
+      <SashimiArcsOverlay model={model} />
 
       {model.coverageTicks ? (
         <svg

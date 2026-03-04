@@ -569,6 +569,37 @@ export function hitTestIndicator(
   return undefined
 }
 
+export interface RegionTableEntry {
+  startBpOffset: number
+  endBpOffset: number
+  startPx: number
+  endPx: number
+}
+
+// SYNC(shaders/arcShaders.ts): bpOffsetToPx region lookup
+function bpOffsetToPx(bpOffset: number, regionTable: RegionTableEntry[]) {
+  for (let i = 0; i < regionTable.length; i++) {
+    const r = regionTable[i]!
+    if (bpOffset >= r.startBpOffset && bpOffset <= r.endBpOffset) {
+      const t =
+        (bpOffset - r.startBpOffset) / (r.endBpOffset - r.startBpOffset)
+      return r.startPx + t * (r.endPx - r.startPx)
+    }
+    if (i + 1 < regionTable.length) {
+      const next = regionTable[i + 1]!
+      if (bpOffset > r.endBpOffset && bpOffset < next.startBpOffset) {
+        const gapT =
+          (bpOffset - r.endBpOffset) / (next.startBpOffset - r.endBpOffset)
+        return r.endPx + gapT * (next.startPx - r.endPx)
+      }
+    }
+  }
+  const last = regionTable[regionTable.length - 1]!
+  const pxPerBp =
+    (last.endPx - last.startPx) / (last.endBpOffset - last.startBpOffset)
+  return last.endPx + (bpOffset - last.endBpOffset) * pxPerBp
+}
+
 /**
  * Hit test for sashimi arcs (splice junctions overlaid on coverage)
  * Uses CPU-based Bezier curve sampling for fast hover detection
@@ -580,6 +611,7 @@ export function hitTestSashimiArc(
   showCoverage: boolean,
   showSashimiArcs: boolean,
   coverageHeight: number,
+  regionTable?: RegionTableEntry[],
 ): SashimiArcHitResult | undefined {
   if (
     !showCoverage ||
@@ -604,32 +636,32 @@ export function hitTestSashimiArc(
     return undefined
   }
 
-  // CPU-based Bezier curve picking (fast enough for hover)
-  const pxPerBp = blockWidth / (bpRange[1] - bpRange[0])
-  const bpStartOffset = bpRange[0] - regionStart
+  // Build region table if not provided (single-block fallback)
+  const table = regionTable ?? [
+    {
+      startBpOffset: bpRange[0] - regionStart,
+      endBpOffset: bpRange[1] - regionStart,
+      startPx: blockStartPx,
+      endPx: blockStartPx + blockWidth,
+    },
+  ]
 
   for (let i = 0; i < numSashimiArcs; i++) {
     const x1 = sashimiX1[i]!
     const x2 = sashimiX2[i]!
     const destY = coverageHeight * (0.8 / 0.75)
 
-    // Arc thickness from score: Math.log(count + 1)
-    // Adaptive hit tolerance: easier to hover over thin arcs
     const lineWidth = rpcData.sashimiScores[i]!
     const hitTolerance = Math.max(10, lineWidth * 2.5 + 2)
 
     // CRITICAL: This Bezier curve formula MUST match the GPU version in:
-    // shaders/arcShaders.ts:evalCurve (around line 178-190)
-    // If either implementation changes, the other MUST be updated to match,
-    // otherwise picking and rendering will be out of sync.
-    // Sample the bezier curve for hit detection
-    // Adaptive sampling based on arc width in bp
-    const arcWidthBp = Math.abs(x2 - x1)
-    const samplesPerBp = pxPerBp / 10 // Sample roughly every 10 pixels
-    const steps = Math.max(
-      16,
-      Math.min(256, Math.ceil(arcWidthBp * samplesPerBp)),
-    )
+    // shaders/arcShaders.ts:evalCurve
+    // Evaluate bezier in screen-pixel space (not bp space) to avoid kinks
+    // at collapsed intron boundaries.
+    const startPx = bpOffsetToPx(x1, table)
+    const endPx = bpOffsetToPx(x2, table)
+    const arcWidthPx = Math.abs(endPx - startPx)
+    const steps = Math.max(16, Math.min(256, Math.ceil(arcWidthPx / 10)))
     let hit = false
     for (let s = 0; s <= steps; s++) {
       const t = s / steps
@@ -638,9 +670,12 @@ export function hitTestSashimiArc(
       const mt3 = mt2 * mt
       const t2 = t * t
       const t3 = t2 * t
-      const xBp = mt3 * x1 + 3 * mt2 * t * x1 + 3 * mt * t2 * x2 + t3 * x2
+      const screenX =
+        mt3 * startPx +
+        3 * mt2 * t * startPx +
+        3 * mt * t2 * endPx +
+        t3 * endPx
       const yPx = 3 * mt2 * t * destY + 3 * mt * t2 * destY
-      const screenX = blockStartPx + (xBp - bpStartOffset) * pxPerBp
       const screenY = 0.9 * coverageHeight - yPx
       const dx = canvasX - screenX
       const dy = canvasY - screenY

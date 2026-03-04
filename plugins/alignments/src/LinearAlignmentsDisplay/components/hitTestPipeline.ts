@@ -12,6 +12,7 @@ import type {
   CigarHitResult,
   CoverageHitResult,
   IndicatorHitResult,
+  RegionTableEntry,
   ResolvedBlock,
   SashimiArcHitResult,
 } from './hitTesting.ts'
@@ -43,6 +44,7 @@ export interface HitTestOptions {
   featureSpacing: number
   rangeY: [number, number]
   isChainMode: boolean
+  sashimiRegionTable?: RegionTableEntry[]
 }
 
 export function performHitTest(
@@ -61,6 +63,7 @@ export function performHitTest(
     featureSpacing,
     rangeY,
     isChainMode,
+    sashimiRegionTable,
   } = options
 
   // 1. Indicator hits (triangles at top of coverage)
@@ -83,6 +86,7 @@ export function performHitTest(
     showCoverage,
     showSashimiArcs,
     coverageHeight,
+    sashimiRegionTable,
   )
   if (sashimiHit) {
     return { type: 'sashimi', hit: sashimiHit }

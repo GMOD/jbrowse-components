@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
+import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import {
   formatChainTooltip,
@@ -237,6 +238,8 @@ const PileupInner = observer(function PileupInner({
         onClick={handleClick}
         onContextMenu={handleContextMenu}
       />
+
+      <SashimiArcsOverlay model={model} />
 
       <VisibleLabelsOverlay
         labels={model.visibleLabels}

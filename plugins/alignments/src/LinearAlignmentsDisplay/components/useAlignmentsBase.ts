@@ -172,6 +172,19 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     return undefined
   }
 
+  function buildSashimiRegionTable(resolved: ResolvedBlock) {
+    if (!view.initialized) {
+      return undefined
+    }
+    const regions = view.visibleRegions
+    return regions.map(r => ({
+      startBpOffset: r.start - resolved.rpcData.regionStart,
+      endBpOffset: r.end - resolved.rpcData.regionStart,
+      startPx: r.screenStartPx,
+      endPx: r.screenEndPx,
+    }))
+  }
+
   // --- Shared event handlers ---
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -267,6 +280,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       featureSpacing,
       rangeY: model.currentRangeY,
       isChainMode,
+      sashimiRegionTable: resolved
+        ? buildSashimiRegionTable(resolved)
+        : undefined,
     })
 
     if (result.type === 'cigar') {
@@ -322,6 +338,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       featureSpacing,
       rangeY: model.currentRangeY,
       isChainMode,
+      sashimiRegionTable: resolved
+        ? buildSashimiRegionTable(resolved)
+        : undefined,
     })
 
     if (result.type === 'indicator') {
@@ -399,6 +418,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       featureSpacing,
       rangeY: model.currentRangeY,
       isChainMode,
+      sashimiRegionTable: resolved
+        ? buildSashimiRegionTable(resolved)
+        : undefined,
     })
 
     if (result.type === 'sashimi') {

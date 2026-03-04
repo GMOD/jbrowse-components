@@ -303,6 +303,9 @@ export default function stateModelFactory(
       },
 
       clearDisplaySpecificData() {
+        console.debug(
+          '[LinearFeatureDisplay] clearDisplaySpecificData (clears regionTooLarge)',
+        )
         self.rpcDataMap = new Map()
         self.layoutBpPerPxMap = new Map()
         self.setRegionTooLarge(false)
@@ -559,6 +562,7 @@ export default function stateModelFactory(
         regions: { region: Region; regionNumber: number }[],
         bpPerPx: number,
       ) {
+        const hadToken = !!self.renderingStopToken
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
         }
@@ -567,6 +571,13 @@ export default function stateModelFactory(
         self.setRenderingStopToken(stopToken)
         self.setLoading(true)
         self.setError(null)
+        console.debug(
+          '[LinearFeatureDisplay] fetchRegions',
+          regions.map(
+            r => `${r.region.refName}:${r.region.start}-${r.region.end}`,
+          ),
+          { generation, canceledStale: hadToken, t: performance.now() },
+        )
         try {
           // Byte estimate check. Uses the adapter index (e.g. tabix,
           // BAI) to estimate compressed bytes for the visible regions.
@@ -582,10 +593,22 @@ export default function stateModelFactory(
               self.fetchGeneration !== generation ||
               self.renderingStopToken !== stopToken
             ) {
+              console.debug(
+                '[LinearFeatureDisplay] fetchRegions stale after byte estimate',
+                { generation },
+              )
               return
             }
             self.setFeatureDensityStats(stats)
             if (stats.bytes && stats.bytes > self.fetchSizeLimit) {
+              console.debug(
+                '[LinearFeatureDisplay] fetchRegions regionTooLarge',
+                {
+                  bytes: stats.bytes,
+                  limit: self.fetchSizeLimit,
+                  generation,
+                },
+              )
               self.setRegionTooLarge(
                 true,
                 `Requested too much data (${getDisplayStr(stats.bytes)})`,
@@ -678,12 +701,35 @@ export default function stateModelFactory(
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchGeneration
                 if (!view.initialized || self.regionTooLarge || self.error) {
+                  console.debug(
+                    '[LinearFeatureDisplay] FetchVisibleRegions early return',
+                    {
+                      initialized: view.initialized,
+                      regionTooLarge: self.regionTooLarge,
+                      error: !!self.error,
+                      fetchGeneration: self.fetchGeneration,
+                      t: performance.now(),
+                    },
+                  )
                   return
                 }
 
                 const staticRegs = view.staticRegions
                 const bpPerPx = view.bpPerPx
+                console.debug(
+                  '[LinearFeatureDisplay] FetchVisibleRegions deps',
+                  {
+                    fetchGeneration: self.fetchGeneration,
+                    bpPerPx,
+                    numStaticRegs: staticRegs.length,
+                    viewWidth: view.width,
+                    t: performance.now(),
+                  },
+                )
                 if (untracked(() => self.needsLayoutRefresh)) {
+                  console.debug(
+                    '[LinearFeatureDisplay] FetchVisibleRegions needsLayoutRefresh → clearAllRpcData',
+                  )
                   self.clearAllRpcData()
                 }
 
@@ -707,7 +753,29 @@ export default function stateModelFactory(
                     regionNumber: vr.regionNumber,
                   })
                 }
-                if (needed.length > 0) {
+                console.debug(
+                  '[LinearFeatureDisplay] FetchVisibleRegions',
+                  needed.length > 0
+                    ? `fetching ${needed.length} region(s)`
+                    : 'all cached',
+                  {
+                    needed: needed.map(
+                      r =>
+                        `r${r.regionNumber}:${r.region.refName}:${r.region.start}-${r.region.end}`,
+                    ),
+                    bpPerPx,
+                    fetchGeneration: self.fetchGeneration,
+                    regionTooLarge: untracked(
+                      () => self.regionTooLargeState,
+                    ),
+                    isLoading: untracked(() => self.isLoading),
+                    t: performance.now(),
+                  },
+                )
+                if (
+                  needed.length > 0 &&
+                  !untracked(() => self.isLoading)
+                ) {
                   await fetchRegions(needed, bpPerPx)
                 }
               },
@@ -732,6 +800,10 @@ export default function stateModelFactory(
                   bpPerPx !== prevBpPerPx &&
                   self.regionTooLarge
                 ) {
+                  console.debug(
+                    '[LinearFeatureDisplay] ClearTooLargeOnZoom → clearAllRpcData',
+                    { prevBpPerPx, bpPerPx },
+                  )
                   self.clearAllRpcData()
                 }
                 prevBpPerPx = bpPerPx

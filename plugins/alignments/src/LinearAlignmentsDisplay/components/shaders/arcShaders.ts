@@ -33,6 +33,8 @@ export const arcLineColorPalette: RGBColor[] = [
 //   - vertex: halfWidth = lineWidth * 0.5 + 1.0  (geometry padding)
 //   - fragment: alpha = clamp((halfWidth - d) / aa + 0.5, 0, 1)  (AA formula)
 // If you change either, update the other file to match.
+export const MAX_REGIONS = 64
+
 export const ARC_VERTEX_SHADER = `#version 300 es
 precision highp float;
 // SYNC(wgsl/miscShaders.ts): ArcInst struct { x1, x2, color_type, is_arc }
@@ -43,22 +45,46 @@ in float a_x2;
 in float a_colorType;
 in float a_isArc;
 
-uniform float u_bpStartOffset;
-uniform float u_bpRegionLength;
 uniform float u_canvasWidth;
 uniform float u_canvasHeight;
-uniform float u_blockStartPx;
-uniform float u_blockWidth;
 uniform float u_coverageOffset;
 uniform float u_lineWidthPx;
 uniform float u_gradientHue;
 uniform vec3 u_arcColors[${NUM_ARC_COLORS}];
+uniform int u_numRegions;
+uniform vec4 u_regions[${MAX_REGIONS}];
 
 out vec4 v_color;
 out float v_dist;
 
 // SYNC(wgsl/miscShaders.ts): PI = 3.14159265359
 const float PI = 3.14159265359;
+
+// SYNC(wgsl/miscShaders.ts): bpOffsetToPx region lookup
+float bpOffsetToPx(float bpOffset) {
+  for (int i = 0; i < ${MAX_REGIONS}; i++) {
+    if (i >= u_numRegions) break;
+    float rStart = u_regions[i].x;
+    float rEnd = u_regions[i].y;
+    float rStartPx = u_regions[i].z;
+    float rEndPx = u_regions[i].w;
+    if (bpOffset >= rStart && bpOffset <= rEnd) {
+      float t = (bpOffset - rStart) / (rEnd - rStart);
+      return mix(rStartPx, rEndPx, t);
+    }
+    if (i + 1 < u_numRegions) {
+      float nextStart = u_regions[i + 1].x;
+      if (bpOffset > rEnd && bpOffset < nextStart) {
+        float gapT = (bpOffset - rEnd) / (nextStart - rEnd);
+        return mix(rEndPx, u_regions[i + 1].z, gapT);
+      }
+    }
+  }
+  int last = u_numRegions - 1;
+  float pxPerBp = (u_regions[last].w - u_regions[last].z) /
+                  (u_regions[last].y - u_regions[last].x);
+  return u_regions[last].w + (bpOffset - u_regions[last].y) * pxPerBp;
+}
 
 vec3 getArcColor(float colorType) {
   int idx = int(colorType + 0.5);
@@ -82,17 +108,19 @@ vec3 getArcColor(float colorType) {
 }
 
 vec2 evalCurve(float t) {
-  float radius = (a_x2 - a_x1) / 2.0;
-  float absrad = abs(radius);
-  float cx = a_x1 + radius;
-  float pxPerBp = u_blockWidth / u_bpRegionLength;
-  float absradPx = absrad * pxPerBp;
+  // Map endpoints to screen pixels, then evaluate bezier in pixel space.
+  // This avoids kinks when arcs span collapsed intron gaps.
+  float startPx = bpOffsetToPx(a_x1);
+  float endPx = bpOffsetToPx(a_x2);
+  float radiusPx = (endPx - startPx) / 2.0;
+  float absradPx = abs(radiusPx);
   float availableHeight = u_canvasHeight - u_coverageOffset - ${ARC_HEIGHT_MARGIN}.0;
   float destY = min(availableHeight, absradPx);
-  float x_bp, y_px;
+  float screenX, y_px;
   if (a_isArc > 0.5) {
     float angle = t * PI;
-    x_bp = cx + cos(angle) * radius;
+    float cxPx = (startPx + endPx) / 2.0;
+    screenX = cxPx + cos(angle) * radiusPx;
     float rawY = sin(angle) * absradPx;
     y_px = (absradPx > 0.0) ? rawY * (destY / absradPx) : 0.0;
   } else {
@@ -102,10 +130,9 @@ vec2 evalCurve(float t) {
     float mt3 = mt2 * mt;
     float t2 = t * t;
     float t3 = t2 * t;
-    x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
+    screenX = mt3 * startPx + 3.0 * mt2 * t * startPx + 3.0 * mt * t2 * endPx + t3 * endPx;
     y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
   }
-  float screenX = u_blockStartPx + (x_bp - u_bpStartOffset) * pxPerBp;
   return vec2(screenX, y_px);
 }
 
@@ -171,39 +198,62 @@ in float a_x2;
 in float a_colorType;
 in float a_lineWidth;
 
-uniform float u_bpStartOffset;
-uniform float u_bpRegionLength;
 uniform float u_canvasWidth;
 uniform float u_canvasHeight;
-uniform float u_blockStartPx;
-uniform float u_blockWidth;
 uniform float u_coverageOffset;
 uniform float u_coverageHeight;
 uniform vec3 u_sashimiColors[${NUM_SASHIMI_COLORS}];
+uniform int u_numRegions;
+uniform vec4 u_regions[${MAX_REGIONS}];
 
 out vec4 v_color;
 out float v_dist;
 out float v_lineWidth;
 
+// SYNC(wgsl/miscShaders.ts): bpOffsetToPx region lookup
+float bpOffsetToPx(float bpOffset) {
+  for (int i = 0; i < ${MAX_REGIONS}; i++) {
+    if (i >= u_numRegions) break;
+    float rStart = u_regions[i].x;
+    float rEnd = u_regions[i].y;
+    float rStartPx = u_regions[i].z;
+    float rEndPx = u_regions[i].w;
+    if (bpOffset >= rStart && bpOffset <= rEnd) {
+      float t = (bpOffset - rStart) / (rEnd - rStart);
+      return mix(rStartPx, rEndPx, t);
+    }
+    if (i + 1 < u_numRegions) {
+      float nextStart = u_regions[i + 1].x;
+      if (bpOffset > rEnd && bpOffset < nextStart) {
+        float gapT = (bpOffset - rEnd) / (nextStart - rEnd);
+        return mix(rEndPx, u_regions[i + 1].z, gapT);
+      }
+    }
+  }
+  int last = u_numRegions - 1;
+  float pxPerBp = (u_regions[last].w - u_regions[last].z) /
+                  (u_regions[last].y - u_regions[last].x);
+  return u_regions[last].w + (bpOffset - u_regions[last].y) * pxPerBp;
+}
+
 // CRITICAL: This Bezier curve formula MUST match the CPU version in:
-// WebGLAlignmentsComponent.tsx:hitTestSashimiArc (around line 1389)
+// hitTesting.ts:hitTestSashimiArc
 // If either implementation changes, the other MUST be updated to match,
 // otherwise picking and rendering will be out of sync.
 vec2 evalCurve(float t) {
+  // Map endpoints to screen pixels, then evaluate bezier in pixel space.
+  // This avoids kinks when arcs span collapsed intron gaps.
+  float startPx = bpOffsetToPx(a_x1);
+  float endPx = bpOffsetToPx(a_x2);
   float mt = 1.0 - t;
   float mt2 = mt * mt;
   float mt3 = mt2 * mt;
   float t2 = t * t;
   float t3 = t2 * t;
-  float x_bp = mt3 * a_x1 + 3.0 * mt2 * t * a_x1 + 3.0 * mt * t2 * a_x2 + t3 * a_x2;
-  // Quadratic Bezier peaks at 0.75 of destY. Scale destY so the peak reaches
-  // 0.8*coverageHeight amplitude (from 0.9 to 0.1 of coverage height)
+  float screenX = mt3 * startPx + 3.0 * mt2 * t * startPx + 3.0 * mt * t2 * endPx + t3 * endPx;
   // SYNC(wgsl/miscShaders.ts): destY = coverageHeight * (0.8/0.75), baseline at 0.9*covH
   float destY = u_coverageHeight * (0.8 / 0.75);
   float y_px = 3.0 * mt2 * t * destY + 3.0 * mt * t2 * destY;
-  float pxPerBp = u_blockWidth / u_bpRegionLength;
-  float screenX = u_blockStartPx + (x_bp - u_bpStartOffset) * pxPerBp;
-  // Arc baseline at 0.9*coverageHeight, peaks at 0.1*coverageHeight
   return vec2(screenX, 0.9 * u_coverageHeight - y_px);
 }
 

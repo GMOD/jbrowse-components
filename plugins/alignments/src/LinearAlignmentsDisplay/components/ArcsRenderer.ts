@@ -11,6 +11,7 @@
 
 import {
   ARC_CURVE_SEGMENTS,
+  MAX_REGIONS,
   NUM_ARC_COLORS,
   NUM_LINE_COLORS,
   NUM_SASHIMI_COLORS,
@@ -21,6 +22,13 @@ import {
 } from './shaders/index.ts'
 
 import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+
+export interface RegionTableEntry {
+  startBpOffset: number
+  endBpOffset: number
+  startPx: number
+  endPx: number
+}
 
 /**
  * ArcsRenderer orchestrates rendering of arc geometry including bezier curves,
@@ -34,11 +42,25 @@ import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 export class ArcsRenderer {
   constructor(private parent: WebGLRenderer) {}
 
-  renderArcs(
-    state: RenderState,
-    blockStartPx = 0,
-    blockWidth = state.canvasWidth,
+  private uploadRegionTable(
+    uniforms: Record<string, WebGLUniformLocation | null>,
+    regionTable: RegionTableEntry[],
   ) {
+    const gl = this.parent.gl
+    const count = Math.min(regionTable.length, MAX_REGIONS)
+    gl.uniform1i(uniforms.u_numRegions!, count)
+    for (let i = 0; i < count; i++) {
+      const r = regionTable[i]!
+      gl.uniform4fv(uniforms[`u_regions[${i}]`]!, [
+        r.startBpOffset,
+        r.endBpOffset,
+        r.startPx,
+        r.endPx,
+      ])
+    }
+  }
+
+  renderArcs(state: RenderState, regionTable: RegionTableEntry[]) {
     const gl = this.parent.gl
     if (
       !this.parent.buffers ||
@@ -51,23 +73,17 @@ export class ArcsRenderer {
     const { canvasWidth, canvasHeight } = state
     const lineWidth = state.arcLineWidth ?? 1
 
-    // Draw arcs using instanced triangle strip rendering
     if (this.parent.buffers.arcVAO && this.parent.buffers.arcCount > 0) {
       gl.useProgram(this.parent.arcProgram)
 
-      const bpStartOffset = state.bpRangeX[0] - this.parent.buffers.regionStart
-      const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
-
       const coverageOffset = state.showCoverage ? state.coverageHeight : 0
-      gl.uniform1f(this.parent.arcUniforms.u_bpStartOffset!, bpStartOffset)
-      gl.uniform1f(this.parent.arcUniforms.u_bpRegionLength!, regionLengthBp)
       gl.uniform1f(this.parent.arcUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform1f(this.parent.arcUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.arcUniforms.u_blockStartPx!, blockStartPx)
-      gl.uniform1f(this.parent.arcUniforms.u_blockWidth!, blockWidth)
       gl.uniform1f(this.parent.arcUniforms.u_coverageOffset!, coverageOffset)
       gl.uniform1f(this.parent.arcUniforms.u_lineWidthPx!, lineWidth)
       gl.uniform1f(this.parent.arcUniforms.u_gradientHue!, 0)
+
+      this.uploadRegionTable(this.parent.arcUniforms, regionTable)
 
       for (let i = 0; i < NUM_ARC_COLORS; i++) {
         const c = arcColorPalette[i]!
@@ -89,13 +105,31 @@ export class ArcsRenderer {
     }
 
     // Draw vertical lines for inter-chromosomal / long-range
+    // These use per-block rendering (kept with scissor clipping)
+    gl.bindVertexArray(null)
+  }
+
+  renderArcLines(
+    state: RenderState,
+    blockStartPx = 0,
+    blockWidth = state.canvasWidth,
+  ) {
+    const gl = this.parent.gl
+    if (
+      !this.parent.buffers ||
+      !this.parent.arcLineProgram
+    ) {
+      return
+    }
+
+    const { canvasWidth, canvasHeight } = state
+    const lineWidth = state.arcLineWidth ?? 1
+
     if (
       this.parent.buffers.arcLineVAO &&
       this.parent.buffers.arcLineCount > 0
     ) {
       gl.useProgram(this.parent.arcLineProgram)
-      // WARNING: u_zero must be 0.0 — used by HP shader functions to create a
-      // runtime infinity that prevents compiler from defeating precision guards.
       gl.uniform1f(this.parent.arcLineUniforms.u_zero!, 0)
 
       const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
@@ -140,8 +174,7 @@ export class ArcsRenderer {
 
   renderSashimiArcs(
     state: RenderState,
-    blockStartPx = 0,
-    blockWidth = state.canvasWidth,
+    regionTable: RegionTableEntry[],
   ) {
     const gl = this.parent.gl
     if (!this.parent.buffers || !this.parent.sashimiProgram) {
@@ -161,17 +194,12 @@ export class ArcsRenderer {
 
     gl.useProgram(this.parent.sashimiProgram)
 
-    const bpStartOffset = state.bpRangeX[0] - this.parent.buffers.regionStart
-    const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
-
-    gl.uniform1f(this.parent.sashimiUniforms.u_bpStartOffset!, bpStartOffset)
-    gl.uniform1f(this.parent.sashimiUniforms.u_bpRegionLength!, regionLengthBp)
     gl.uniform1f(this.parent.sashimiUniforms.u_canvasWidth!, canvasWidth)
     gl.uniform1f(this.parent.sashimiUniforms.u_canvasHeight!, canvasHeight)
-    gl.uniform1f(this.parent.sashimiUniforms.u_blockStartPx!, blockStartPx)
-    gl.uniform1f(this.parent.sashimiUniforms.u_blockWidth!, blockWidth)
     gl.uniform1f(this.parent.sashimiUniforms.u_coverageOffset!, coverageOffset)
     gl.uniform1f(this.parent.sashimiUniforms.u_coverageHeight!, coverageHeight)
+
+    this.uploadRegionTable(this.parent.sashimiUniforms, regionTable)
 
     for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
       const c = sashimiColorPalette[i]!
