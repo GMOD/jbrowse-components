@@ -606,14 +606,11 @@ export default function stateModelFactory(
             self.loadedBpPerPx.get(regionNumber),
           )
           return (
-            regionBpPerPx === undefined ||
-            view.bpPerPx >= regionBpPerPx / 2
+            regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
           )
         },
 
-        onFetchNeeded(
-          needed: { region: Region; regionNumber: number }[],
-        ) {
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           const view = getContainingView(self) as LGV
           const { bpPerPx } = view
           const { resolution } = self

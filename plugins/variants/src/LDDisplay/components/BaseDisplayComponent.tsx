@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 export interface LDDisplayModel {
   error?: unknown
   regionTooLarge: boolean
-  regionCannotBeRendered: (region?: unknown) => React.ReactElement | null
+  regionCannotBeRendered: () => React.ReactElement | null
   drawn: boolean
   loading: boolean
   statusMessage?: string

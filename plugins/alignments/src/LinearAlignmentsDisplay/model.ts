@@ -174,10 +174,15 @@ function getSequenceAdapter(session: any, region: Region) {
 interface FetchFeatureDetailsSelf {
   adapterConfigSnapshot: Record<string, unknown>
   loadedRegions: Map<number, Region>
-  getFeatureInfoById: (id: string) => { refName: string; start: number; end: number } | undefined
+  getFeatureInfoById: (
+    id: string,
+  ) => { refName: string; start: number; end: number } | undefined
 }
 
-async function fetchFeatureDetails(self: FetchFeatureDetailsSelf, featureId: string) {
+async function fetchFeatureDetails(
+  self: FetchFeatureDetailsSelf,
+  featureId: string,
+) {
   const session = getSession(self)
   const adapterConfig = self.adapterConfigSnapshot
   const info = self.getFeatureInfoById(featureId)
@@ -1542,9 +1547,7 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(
-          needed: { region: Region; regionNumber: number }[],
-        ) {
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
@@ -1560,9 +1563,6 @@ export default function stateModelFactory(
             }
             const newDataMap = new Map<number, PileupDataResult>()
             for (const r of results) {
-              if (!r) {
-                continue
-              }
               if (r.result.newTagValues) {
                 self.updateColorTagMap(r.result.newTagValues)
               }

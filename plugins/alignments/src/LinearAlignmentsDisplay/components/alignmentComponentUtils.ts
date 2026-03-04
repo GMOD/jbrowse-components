@@ -479,9 +479,6 @@ export function uploadRegionDataToGPU(
     }
     renderer.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
     renderer.uploadModCoverageFromTypedArraysForRegion(regionNumber, data)
-    if (data.numSashimiArcs > 0) {
-      renderer.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
-    }
   }
   return maxYVal
 }

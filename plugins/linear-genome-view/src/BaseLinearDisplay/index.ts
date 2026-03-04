@@ -1,5 +1,8 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
-export type { BlockModel } from './models/serverSideRenderedBlock.ts'
+export type {
+  BlockModel,
+  RenderedProps,
+} from './models/serverSideRenderedBlock.ts'
 export { BaseLinearDisplay } from './model.ts'
 export type {
   BaseLinearDisplayModel,
@@ -10,6 +13,7 @@ export type {
   ExportSvgDisplayOptions,
   FloatingLabelData,
   LayoutFeatureMetadata,
+  LayoutRecord,
 } from './types.ts'
 export { createSubfeatureLabelMetadata } from './types.ts'
 
@@ -25,11 +29,13 @@ export {
   default as NonBlockCanvasDisplayMixin,
 } from './models/NonBlockCanvasDisplayMixin.tsx'
 export {
+  type ByteEstimateConfig,
+  type FetchContext,
   type MultiRegionDisplayMixinType,
   type Region as MultiRegionRegion,
-  type FetchContext,
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
+export type { FeatureLabelData } from './components/util.ts'
 export { drawCanvasImageData } from './util.ts'
 export { getDisplayStr } from './models/util.ts'
 export { default as TooLargeMessage } from './components/TooLargeMessage.tsx'

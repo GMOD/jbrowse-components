@@ -24,7 +24,7 @@ import type {
  * extends
  * - [BaseDisplay](../basedisplay)
  * - [TrackHeightMixin](../trackheightmixin)
- * - [FeatureDensityMixin](../featuredensitymixin)
+ * - [MultiRegionDisplayMixin](../multiregiondisplaymixin)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 

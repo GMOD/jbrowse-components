@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -10,7 +10,8 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface ArcData {
-  path: string
+  startOffsetPx: number
+  endOffsetPx: number
   stroke: string
   strokeWidth: number
   start: number
@@ -30,20 +31,63 @@ function getArcColor(strand: number) {
   return 'rgba(200,200,200,0.7)'
 }
 
+function ArcPath({
+  arc,
+  offsetPx,
+  baseline,
+  peak,
+  model,
+}: {
+  arc: ArcData
+  offsetPx: number
+  baseline: number
+  peak: number
+  model: LinearAlignmentsDisplayModel
+}) {
+  const [hovered, setHovered] = useState(false)
+  const left = arc.startOffsetPx - offsetPx
+  const right = arc.endOffsetPx - offsetPx
+  return (
+    <path
+      d={`M ${left} ${baseline} C ${left} ${peak}, ${right} ${peak}, ${right} ${baseline}`}
+      stroke={arc.stroke}
+      strokeWidth={hovered ? arc.strokeWidth + 2 : arc.strokeWidth}
+      fill="none"
+      pointerEvents="stroke"
+      cursor="pointer"
+      onMouseEnter={() => {
+        setHovered(true)
+        model.setMouseoverExtraInformation(
+          formatSashimiTooltip({
+            start: arc.start,
+            end: arc.end,
+            score: arc.score,
+            strand: arc.strand,
+            refName: arc.refName,
+          }),
+        )
+      }}
+      onMouseLeave={() => {
+        setHovered(false)
+        model.clearMouseoverState()
+      }}
+    />
+  )
+}
+
 const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  const svgRef = useRef<SVGSVGElement>(null)
-
   const { showSashimiArcs, showCoverage, coverageHeight, rpcDataMap } = model
+  const { initialized, offsetPx, visibleRegions } = view
 
   const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   const arcs = useMemo(() => {
-    if (!showSashimiArcs || !showCoverage || !view.initialized) {
+    if (!showSashimiArcs || !showCoverage || !initialized) {
       return []
     }
 
@@ -62,7 +106,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
         continue
       }
 
-      const regions = view.visibleRegions
+      const regions = visibleRegions
       let refName = ''
       for (const r of regions) {
         const data = rpcDataMap.get(r.regionNumber)
@@ -81,26 +125,15 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
         const colorType = sashimiColorTypes[i]!
         const strand = colorType === 0 ? 1 : -1
 
-        const startPxResult = view.bpToPx({
-          refName,
-          coord: startBp,
-        })
-        const endPxResult = view.bpToPx({
-          refName,
-          coord: endBp,
-        })
+        const startPxResult = view.bpToPx({ refName, coord: startBp })
+        const endPxResult = view.bpToPx({ refName, coord: endBp })
         if (startPxResult === undefined || endPxResult === undefined) {
           continue
         }
 
-        const left = startPxResult.offsetPx - view.offsetPx
-        const right = endPxResult.offsetPx - view.offsetPx
-
-        const baseline = effectiveHeight * 0.9
-        const peak = effectiveHeight * 0.1
-
         result.push({
-          path: `M ${left} ${baseline} C ${left} ${peak}, ${right} ${peak}, ${right} ${baseline}`,
+          startOffsetPx: startPxResult.offsetPx,
+          endOffsetPx: endPxResult.offsetPx,
           stroke: getArcColor(strand),
           strokeWidth: Math.log(count + 1),
           start: startBp,
@@ -116,72 +149,42 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   }, [
     showSashimiArcs,
     showCoverage,
-    view.initialized,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    view.initialized ? view.bpPerPx : 0,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    view.initialized ? view.offsetPx : 0,
+    initialized,
+    view,
+    visibleRegions,
     rpcDataMap,
-    effectiveHeight,
   ])
 
-  useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) {
-      return
-    }
-    while (svg.firstChild) {
-      svg.firstChild.remove()
-    }
-    for (const arc of arcs) {
-      const path = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'path',
-      )
-      path.setAttribute('d', arc.path)
-      path.setAttribute('stroke', arc.stroke)
-      path.setAttribute('stroke-width', String(arc.strokeWidth))
-      path.setAttribute('fill', 'none')
-      path.setAttribute('pointer-events', 'stroke')
-      path.setAttribute('cursor', 'pointer')
-      const origWidth = arc.strokeWidth
-      path.addEventListener('mouseenter', () => {
-        path.setAttribute('stroke-width', String(origWidth + 2))
-        model.setMouseoverExtraInformation(
-          formatSashimiTooltip({
-            start: arc.start,
-            end: arc.end,
-            score: arc.score,
-            strand: arc.strand,
-            refName: arc.refName,
-          }),
-        )
-      })
-      path.addEventListener('mouseleave', () => {
-        path.setAttribute('stroke-width', String(origWidth))
-        model.clearMouseoverState()
-      })
-      svg.append(path)
-    }
-  }, [arcs, model])
-
-  if (!showSashimiArcs || !showCoverage || !view.initialized) {
+  if (!showSashimiArcs || !showCoverage || !initialized) {
     return null
   }
 
+  const baseline = effectiveHeight * 0.9
+  const peak = effectiveHeight * 0.1
+
   return (
     <svg
-      ref={svgRef}
       style={{
         position: 'absolute',
         top: YSCALEBAR_LABEL_OFFSET,
         left: 0,
-        pointerEvents: 'none',
+        pointerEvents: 'auto',
         height: effectiveHeight,
         width: view.width,
         overflow: 'visible',
       }}
-    />
+    >
+      {arcs.map((arc, i) => (
+        <ArcPath
+          key={i}
+          arc={arc}
+          offsetPx={offsetPx}
+          baseline={baseline}
+          peak={peak}
+          model={model}
+        />
+      ))}
+    </svg>
   )
 })
 

@@ -1393,26 +1393,6 @@ export class AlignmentsRenderer {
         device.queue.writeBuffer(this.uBuf!, 0, this.uData)
       }
 
-      if (state.showSashimiArcs && state.showCoverage) {
-        const { enc, p } = mkPass('load' as GPULoadOp)
-        p.setViewport(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          bufH,
-          0,
-          1,
-        )
-        p.setScissorRect(
-          Math.round(scissorX * dpr),
-          0,
-          Math.round(scissorW * dpr),
-          bufH,
-        )
-        this.drawSashimi(p, region, state, block, scissorX, scissorW)
-        submitPass(enc, p)
-      }
-
       isFirst = false
     }
 

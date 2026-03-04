@@ -1,5 +1,5 @@
-import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
 import { getDisplayStr } from './util.ts'
+import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -10,7 +10,7 @@ export interface ByteEstimateConfig {
   visibleBp: number
 }
 
-interface ByteEstimateResult {
+export interface ByteEstimateResult {
   stats: FeatureDensityStats
   tooLarge: boolean
   reason?: string
@@ -19,7 +19,12 @@ interface ByteEstimateResult {
 export async function checkByteEstimate(
   rpcManager: RpcManager,
   sessionId: string,
-  regions: { refName: string; start: number; end: number; assemblyName: string }[],
+  regions: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+  }[],
   config: ByteEstimateConfig,
   ctx: { isStale: () => boolean },
 ): Promise<ByteEstimateResult | null> {
@@ -27,21 +32,16 @@ export async function checkByteEstimate(
     return null
   }
 
-  const stats = await rpcManager.call(
-    sessionId,
-    'CoreGetFeatureDensityStats',
-    { regions, adapterConfig: config.adapterConfig },
-  )
+  const stats = await rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
+    regions,
+    adapterConfig: config.adapterConfig,
+  })
 
   if (ctx.isStale()) {
     return null
   }
 
   if (stats.bytes && stats.bytes > config.fetchSizeLimit) {
-    console.debug('[checkByteEstimate] regionTooLarge', {
-      bytes: stats.bytes,
-      limit: config.fetchSizeLimit,
-    })
     return {
       stats,
       tooLarge: true,

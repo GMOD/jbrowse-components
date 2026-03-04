@@ -9,19 +9,17 @@ import {
   isAbortException,
   measureText,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
-import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 import { checkByteEstimate } from './fetchHelpers.ts'
+import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+export type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 
 export interface Region {
   refName: string
@@ -74,7 +72,6 @@ export default function MultiRegionDisplayMixin() {
       },
 
       regionCannotBeRendered() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return self.regionTooLargeState
           ? createElement(TooLargeMessage, { model: self as any })
           : null
@@ -106,12 +103,6 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       clearAllRpcData() {
-        console.debug('[MultiRegionDisplayMixin] clearAllRpcData called', {
-          hadToken: !!self.renderingStopToken,
-          wasLoading: self.isLoading,
-          hadError: !!self.error,
-          fetchGeneration: self.fetchGeneration,
-        })
         if (self.renderingStopToken) {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
@@ -127,9 +118,7 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       // Overridable hooks — subclasses override these
-      onFetchNeeded(
-        _needed: { region: Region; regionNumber: number }[],
-      ) {
+      onFetchNeeded(_needed: { region: Region; regionNumber: number }[]) {
         // no-op base
       },
 
@@ -238,9 +227,7 @@ export default function MultiRegionDisplayMixin() {
             self,
             autorun(
               () => {
-                const view = getContainingView(
-                  self,
-                ) as LinearGenomeViewModel
+                const view = getContainingView(self) as LinearGenomeViewModel
                 if (!view.initialized) {
                   return
                 }
@@ -255,9 +242,6 @@ export default function MultiRegionDisplayMixin() {
                   prevDisplayedRegionsStr !== '' &&
                   regionStr !== prevDisplayedRegionsStr
                 ) {
-                  console.debug(
-                    '[MultiRegionDisplayMixin] DisplayedRegionsChange → clearAllRpcData',
-                  )
                   self.clearAllRpcData()
                 }
                 prevDisplayedRegionsStr = regionStr
@@ -271,9 +255,7 @@ export default function MultiRegionDisplayMixin() {
             self,
             autorun(
               () => {
-                const view = getContainingView(
-                  self,
-                ) as LinearGenomeViewModel
+                const view = getContainingView(self) as LinearGenomeViewModel
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 self.fetchGeneration
                 if (!view.initialized || self.error || self.regionTooLarge) {
@@ -283,8 +265,7 @@ export default function MultiRegionDisplayMixin() {
                 self.beforeFetchCheck()
 
                 const staticRegions = view.staticRegions
-                const needed: { region: Region; regionNumber: number }[] =
-                  []
+                const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of staticRegions) {
                   const loaded = untracked(() =>
                     self.loadedRegions.get(vr.regionNumber),
@@ -293,10 +274,7 @@ export default function MultiRegionDisplayMixin() {
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
-                  if (
-                    boundsValid &&
-                    untracked(() => self.isCacheValid(vr.regionNumber))
-                  ) {
+                  if (boundsValid) {
                     continue
                   }
                   needed.push({
@@ -304,10 +282,7 @@ export default function MultiRegionDisplayMixin() {
                     regionNumber: vr.regionNumber,
                   })
                 }
-                if (
-                  needed.length > 0 &&
-                  !untracked(() => self.isLoading)
-                ) {
+                if (needed.length > 0) {
                   self.onFetchNeeded(needed)
                 }
               },
@@ -325,19 +300,13 @@ export default function MultiRegionDisplayMixin() {
             self,
             autorun(
               () => {
-                const view = getContainingView(
-                  self,
-                ) as LinearGenomeViewModel
+                const view = getContainingView(self) as LinearGenomeViewModel
                 const { bpPerPx } = view
                 if (
                   prevBpPerPx !== undefined &&
                   bpPerPx !== prevBpPerPx &&
                   self.regionTooLarge
                 ) {
-                  console.debug(
-                    '[MultiRegionDisplayMixin] ClearTooLargeOnZoom → clearAllRpcData',
-                    { prevBpPerPx, bpPerPx },
-                  )
                   self.clearAllRpcData()
                 }
                 prevBpPerPx = bpPerPx

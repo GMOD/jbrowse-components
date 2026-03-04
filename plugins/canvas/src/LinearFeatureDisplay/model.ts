@@ -19,7 +19,6 @@ import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  getDisplayStr,
 } from '@jbrowse/plugin-linear-genome-view'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -299,9 +298,6 @@ export default function stateModelFactory(
       },
 
       clearDisplaySpecificData() {
-        console.debug(
-          '[LinearFeatureDisplay] clearDisplaySpecificData (clears regionTooLarge)',
-        )
         self.rpcDataMap = new Map()
         self.layoutBpPerPxMap = new Map()
         self.setRegionTooLarge(false)
@@ -546,7 +542,6 @@ export default function stateModelFactory(
           return
         }
         self.clearAllRpcData()
-        const bpPerPx = view.bpPerPx
         const regions = view.staticRegions.map(vr => ({
           region: vr as Region,
           regionNumber: vr.regionNumber,
@@ -565,9 +560,6 @@ export default function stateModelFactory(
 
         beforeFetchCheck() {
           if (untracked(() => self.needsLayoutRefresh)) {
-            console.debug(
-              '[LinearFeatureDisplay] FetchVisibleRegions needsLayoutRefresh → clearAllRpcData',
-            )
             self.clearAllRpcData()
           }
         },
@@ -581,9 +573,7 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(
-          needed: { region: Region; regionNumber: number }[],
-        ) {
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {

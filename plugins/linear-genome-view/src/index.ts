@@ -77,9 +77,12 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  FeatureLabelData,
   FloatingLabelData,
   LayoutFeatureMetadata,
+  LayoutRecord,
   LegendItem,
+  RenderedProps,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -105,6 +108,7 @@ export {
   getDisplayStr,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  ByteEstimateConfig,
   FetchContext,
   MultiRegionDisplayMixinType,
   MultiRegionRegion,
