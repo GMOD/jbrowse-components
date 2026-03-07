@@ -599,8 +599,8 @@ importers:
         specifier: ^7.1.19
         version: 7.1.19(buffer@6.0.3)
       '@gmod/cram':
-        specifier: ^8.0.4
-        version: 8.0.4(buffer@6.0.3)
+        specifier: ^8.0.5
+        version: 8.0.5(buffer@6.0.3)
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3423,8 +3423,8 @@ packages:
     resolution: {integrity: sha512-VTFaF6gVNZmGTTDpiQnPxiBEEV6Cw6yKFFbfoV3TyIamejLBHQq5kodjIhBbL/VJ6ooSOugFno7+eRURd6mGbQ==}
     engines: {node: '>=6'}
 
-  '@gmod/cram@8.0.4':
-    resolution: {integrity: sha512-26HX1TO+tVN+4B0A3z1UQ0fGVsIVFM6ynrt+bln717YuohVMxZT/0cVV5kflH8pI8yHFPYEvQqGhC1II5FLFyA==}
+  '@gmod/cram@8.0.5':
+    resolution: {integrity: sha512-H74qUQuV2T98AWyoIs02TwT6Ae8fF7jreeOcxbcnT+GqYmLqr1fcP+Q+2t1OQniRvQLiEZf6JI14l8jpxUvl2Q==}
     engines: {node: '>=6'}
 
   '@gmod/faidx@2.0.0':
@@ -10576,7 +10576,7 @@ snapshots:
       generic-filehandle2: 2.0.18
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.0.4(buffer@6.0.3)':
+  '@gmod/cram@8.0.5(buffer@6.0.3)':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2(buffer@6.0.3)
