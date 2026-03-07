@@ -464,6 +464,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "metadata": {
+        "description": "GC content track for <i>Volvox mythicus</i>. See <a href="https://en.wikipedia.org/wiki/GC-content">Wikipedia: GC content</a> for details.",
+        "source": "<b>Simulated</b> genome data",
+      },
       "name": "GCContent",
       "trackId": "volvox_gc",
       "type": "GCContentTrack",
@@ -696,6 +700,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearAlignmentsDisplay",
         },
       ],
+      "metadata": {
+        "description": "Paired-end <b>150bp</b> reads aligned to <i>Volvox mythicus</i>. Publication: <a href="https://doi.org/10.1093/bioinformatics/btab817">doi:10.1093/bioinformatics/btab817</a>",
+        "tissue": "<em>leaf</em> tissue",
+      },
       "name": "volvox-sorted.bam (ctgA, larger default height, colorBy mappingQual)",
       "trackId": "volvox_alignments",
       "type": "AlignmentsTrack",
