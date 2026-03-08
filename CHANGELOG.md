@@ -1,3 +1,20 @@
+## Changes since v4.1.13 (2026-02-20)
+
+### bug
+
+- Bump @gmod/jexl for multi-expression fix
+  ([#5494](https://github.com/GMOD/jbrowse-components/pull/5494)) @cmdcolin
+- Fix custom multi-sample variant label coloring loss after clustering
+  ([#5493](https://github.com/GMOD/jbrowse-components/pull/5493)) @cmdcolin
+- Fix displaying 'sanitized html' in faceted data grid
+  ([#5492](https://github.com/GMOD/jbrowse-components/pull/5492)) @cmdcolin
+
+### enhancement
+
+- Optionally disable gene heuristic manually via config for BED/BigBed type
+  files ([#5495](https://github.com/GMOD/jbrowse-components/pull/5495))
+  @cmdcolin
+
 ## Changes since v4.1.12 (2026-02-19)
 
 ## Changes since v4.1.11 (2026-02-19)
