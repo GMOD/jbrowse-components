@@ -10,6 +10,7 @@ import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
+import { loadPluginManager } from './util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -67,7 +68,7 @@ export default function StartScreen({
               ? (startScreenPluginManager.evaluateExtensionPoint(
                   'Desktop-StartScreenMenuItems',
                   [],
-                  { pluginManager: startScreenPluginManager },
+                  { pluginManager: startScreenPluginManager, setPluginManager, loadPluginManager },
                 ) as { label: string; onClick: () => void }[])
               : []),
           ]}
@@ -84,7 +85,7 @@ export default function StartScreen({
               pluginManager={startScreenPluginManager}
               name="Desktop-StartScreenLaunchPanel"
               component={LeftSidePanel}
-              props={{ setPluginManager }}
+              props={{ setPluginManager, loadPluginManager }}
             />
           ) : (
             <LeftSidePanel setPluginManager={setPluginManager} />
