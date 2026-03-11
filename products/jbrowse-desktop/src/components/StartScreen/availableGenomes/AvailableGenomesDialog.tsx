@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 import { Dialog } from '@jbrowse/core/ui'
+import { gtagEvent } from '@jbrowse/core/util/analytics'
 import { DialogContent } from '@mui/material'
 
 import GenomesDataTable from './GenomesDataTable.tsx'
@@ -16,6 +19,10 @@ export default function AllGenomesDialog({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
+  useEffect(() => {
+    gtagEvent('genome_dialog_open')
+  }, [])
+
   return (
     <Dialog maxWidth="xl" open title="Available genomes" onClose={onClose}>
       <DialogContent>

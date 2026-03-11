@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { CascadingMenuButton } from '@jbrowse/core/ui'
+import { gtagEvent } from '@jbrowse/core/util/analytics'
 import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
@@ -81,8 +82,15 @@ export function getColumnDefinitions({
           const isFavorite = favs.has(row.id)
           const websiteUrl = `https://genomes.jbrowse.org/ucsc/${row.id}/`
 
+          const eventParams = {
+            genome_id: row.id,
+            common_name: row.name || row.organism,
+            source: 'ucsc',
+          }
+
           const handleLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
+            gtagEvent('genome_launch', eventParams)
             launch([
               {
                 jbrowseConfig: row.jbrowseConfig,
@@ -95,6 +103,10 @@ export function getColumnDefinitions({
           const handleMinimalLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
             if (row.jbrowseMinimalConfig) {
+              gtagEvent('genome_launch', {
+                ...eventParams,
+                config_type: 'minimal',
+              })
               launch([
                 {
                   jbrowseConfig: row.jbrowseMinimalConfig,
@@ -122,6 +134,7 @@ export function getColumnDefinitions({
                     helpText:
                       'Launches external web browser (not in-app) with more info about this instance',
                     onClick: () => {
+                      gtagEvent('genome_info_click', eventParams)
                       window.open(websiteUrl, '_blank')
                     },
                   },
@@ -201,8 +214,15 @@ export function getColumnDefinitions({
           const isFavorite = favs.has(row.id)
           const websiteUrl = `https://genomes.jbrowse.org/accession/${row.accession}/`
 
+          const eventParams = {
+            genome_id: row.accession,
+            common_name: row.commonName,
+            source: 'genark',
+          }
+
           const handleLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
+            gtagEvent('genome_launch', eventParams)
             launch([
               {
                 jbrowseConfig: row.jbrowseConfig,
@@ -215,6 +235,10 @@ export function getColumnDefinitions({
           const handleMinimalLaunch = (event: React.MouseEvent) => {
             event.preventDefault()
             if (row.jbrowseMinimalConfig) {
+              gtagEvent('genome_launch', {
+                ...eventParams,
+                config_type: 'minimal',
+              })
               launch([
                 {
                   jbrowseConfig: row.jbrowseMinimalConfig,
@@ -261,6 +285,7 @@ export function getColumnDefinitions({
                   {
                     label: 'Info',
                     onClick: () => {
+                      gtagEvent('genome_info_click', eventParams)
                       window.open(websiteUrl, '_blank')
                     },
                   },

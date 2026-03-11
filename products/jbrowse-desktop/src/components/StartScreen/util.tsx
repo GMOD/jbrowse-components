@@ -3,8 +3,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
 import {
+  setupGA4,
   writeAWSAnalytics,
-  writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import deepmerge from 'deepmerge'
 
@@ -102,11 +102,9 @@ export async function createPluginManager(
   pluginManager.configure()
 
   if (!readConfObject(config, 'disableAnalytics')) {
-    // these are ok if they are uncaught promises
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeAWSAnalytics(rootModel, initialTimestamp)
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeGAAnalytics(rootModel, initialTimestamp)
+    setupGA4(['G-MB7C521GCN', 'G-LRPZF3LLVR'])
   }
 
   rootModel.setDefaultSession()
