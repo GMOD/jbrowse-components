@@ -38,7 +38,7 @@ const LinearGenomeViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames, assemblyManager } = session
-    const { error } = model
+    const { initialized, error } = model
     const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
     const [option, setOption] = useState<BaseResult>()
     const assembly = assemblyManager.get(selectedAsm)
@@ -66,104 +66,106 @@ const LinearGenomeViewImportForm = observer(
     return (
       <div className={classes.container}>
         {displayError ? <ErrorMessage error={displayError} /> : null}
-        <Container className={classes.importFormContainer}>
-          <form
-            onSubmit={async event => {
-              event.preventDefault()
-              model.setError(undefined)
-              if (value) {
-                // has it's own error handling
-                try {
-                  if (
-                    option?.getDisplayString() === value &&
-                    option.hasLocation()
-                  ) {
-                    await navToOption({
-                      option,
-                      model,
-                      assemblyName: selectedAsm,
-                    })
-                  } else if (option?.results?.length) {
-                    model.setSearchResults(
-                      option.results,
-                      option.getLabel(),
-                      selectedAsm,
-                    )
-                  } else if (assembly) {
-                    await handleSelectedRegion({
-                      input: value,
-                      assembly,
-                      model,
-                    })
+        {initialized ? (
+          <Container className={classes.importFormContainer}>
+            <form
+              onSubmit={async event => {
+                event.preventDefault()
+                model.setError(undefined)
+                if (value) {
+                  // has it's own error handling
+                  try {
+                    if (
+                      option?.getDisplayString() === value &&
+                      option.hasLocation()
+                    ) {
+                      await navToOption({
+                        option,
+                        model,
+                        assemblyName: selectedAsm,
+                      })
+                    } else if (option?.results?.length) {
+                      model.setSearchResults(
+                        option.results,
+                        option.getLabel(),
+                        selectedAsm,
+                      )
+                    } else if (assembly) {
+                      await handleSelectedRegion({
+                        input: value,
+                        assembly,
+                        model,
+                      })
+                    }
+                  } catch (e) {
+                    console.error(e)
+                    session.notify(`${e}`, 'warning')
                   }
-                } catch (e) {
-                  console.error(e)
-                  session.notify(`${e}`, 'warning')
                 }
-              }
-            }}
-          >
-            <Grid
-              container
-              spacing={1}
-              justifyContent="center"
-              alignItems="center"
+              }}
             >
-              <FormControl>
-                <AssemblySelector
-                  onChange={val => {
-                    setSelectedAsm(val)
-                  }}
-                  localStorageKey="lgv"
-                  session={session}
-                  selected={selectedAsm}
-                />
-              </FormControl>
-              {selectedAsm ? (
-                assemblyError ? (
-                  <CloseIcon style={{ color: 'red' }} />
-                ) : assemblyLoaded ? (
-                  <FormControl>
-                    <ImportFormRefNameAutocomplete
-                      value={value}
-                      setValue={setValue}
-                      selectedAsm={selectedAsm}
-                      setOption={setOption}
-                      model={model}
-                    />
-                  </FormControl>
-                ) : (
-                  <CircularProgress size={20} disableShrink />
-                )
-              ) : null}
-              <FormControl>
-                <Button
-                  type="submit"
-                  disabled={!value}
-                  className={classes.button}
-                  variant="contained"
-                  color="primary"
-                >
-                  Open
-                </Button>
-              </FormControl>
-              <FormControl>
-                <Button
-                  disabled={!value}
-                  className={classes.button}
-                  onClick={() => {
-                    model.setError(undefined)
-                    model.showAllRegionsInAssembly(selectedAsm)
-                  }}
-                  variant="contained"
-                  color="secondary"
-                >
-                  Show all regions in assembly
-                </Button>
-              </FormControl>
-            </Grid>
-          </form>
-        </Container>
+              <Grid
+                container
+                spacing={1}
+                justifyContent="center"
+                alignItems="center"
+              >
+                <FormControl>
+                  <AssemblySelector
+                    onChange={val => {
+                      setSelectedAsm(val)
+                    }}
+                    localStorageKey="lgv"
+                    session={session}
+                    selected={selectedAsm}
+                  />
+                </FormControl>
+                {selectedAsm ? (
+                  assemblyError ? (
+                    <CloseIcon style={{ color: 'red' }} />
+                  ) : assemblyLoaded ? (
+                    <FormControl>
+                      <ImportFormRefNameAutocomplete
+                        value={value}
+                        setValue={setValue}
+                        selectedAsm={selectedAsm}
+                        setOption={setOption}
+                        model={model}
+                      />
+                    </FormControl>
+                  ) : (
+                    <CircularProgress size={20} disableShrink />
+                  )
+                ) : null}
+                <FormControl>
+                  <Button
+                    type="submit"
+                    disabled={!value}
+                    className={classes.button}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Open
+                  </Button>
+                </FormControl>
+                <FormControl>
+                  <Button
+                    disabled={!value}
+                    className={classes.button}
+                    onClick={() => {
+                      model.setError(undefined)
+                      model.showAllRegionsInAssembly(selectedAsm)
+                    }}
+                    variant="contained"
+                    color="secondary"
+                  >
+                    Show all regions in assembly
+                  </Button>
+                </FormControl>
+              </Grid>
+            </form>
+          </Container>
+        ) : null}
       </div>
     )
   },
