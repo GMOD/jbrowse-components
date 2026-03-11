@@ -87,8 +87,21 @@ export async function cleanupLegacyQuickstarts(paths: AppPaths) {
 /**
  * Initializes the file system: creates directories and sets up initial files
  */
+export async function initializeGlobalPluginsFile(paths: AppPaths) {
+  try {
+    await fs.promises.access(paths.globalPluginsPath)
+  } catch {
+    await fs.promises.writeFile(
+      paths.globalPluginsPath,
+      stringify([]),
+      ENCODING,
+    )
+  }
+}
+
 export async function initializeFileSystem(paths: AppPaths) {
   await ensureDirectoriesExist(paths)
   await initializeRecentSessionsFile(paths)
+  await initializeGlobalPluginsFile(paths)
   await cleanupLegacyQuickstarts(paths)
 }

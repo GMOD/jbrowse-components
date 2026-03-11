@@ -1,4 +1,5 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { pluginUrl } from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
@@ -17,6 +18,43 @@ import type { JBrowseConfig } from './types.ts'
 
 const { ipcRenderer } = window.require('electron')
 
+export async function createStartScreenPluginManager() {
+  const globalPlugins = await ipcRenderer
+    .invoke('getGlobalPlugins')
+    .catch(() => [] as PluginDefinition[])
+
+  const pluginLoader = new PluginLoader(globalPlugins, {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+    fetchCJS,
+  })
+  pluginLoader.installGlobalReExports(window)
+  const runtimePlugins = await pluginLoader.load(window.location.href)
+  const pluginManager = new PluginManager([
+    ...corePlugins.map(P => ({
+      plugin: new P(),
+      metadata: {
+        isCore: true,
+      },
+    })),
+    ...runtimePlugins.map(({ plugin: P, definition }) => ({
+      plugin: new P(),
+      definition,
+      metadata: {
+        // @ts-expect-error
+        url: definition.url,
+        // @ts-expect-error
+        esmUrl: definition.esmUrl,
+        // @ts-expect-error
+        umdUrl: definition.umdUrl,
+        // @ts-expect-error
+        cjsUrl: definition.cjsUrl,
+      },
+    })),
+  ])
+  pluginManager.createPluggableElements()
+  return pluginManager
+}
+
 export async function loadPluginManager(configPath: string) {
   const snap = await ipcRenderer.invoke('loadSession', configPath)
   const pm = await createPluginManager(snap)
@@ -29,7 +67,26 @@ export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
-  const pluginLoader = new PluginLoader(configSnapshot.plugins, {
+  const globalPlugins = await ipcRenderer
+    .invoke('getGlobalPlugins')
+    .catch(() => [] as PluginDefinition[])
+  const sessionPlugins = configSnapshot.plugins ?? []
+  const seenNames = new Set<string>()
+  const seenUrls = new Set<string>()
+  const allPlugins: PluginDefinition[] = []
+  for (const plugin of [...sessionPlugins, ...globalPlugins]) {
+    const name = 'name' in plugin ? plugin.name : undefined
+    const url = pluginUrl(plugin)
+    if (!(name && seenNames.has(name)) && !seenUrls.has(url)) {
+      if (name) {
+        seenNames.add(name)
+      }
+      seenUrls.add(url)
+      allPlugins.push(plugin)
+    }
+  }
+
+  const pluginLoader = new PluginLoader(allPlugins, {
     fetchESM: url => import(/* webpackIgnore:true */ url),
     fetchCJS,
   })

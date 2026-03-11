@@ -6,6 +6,7 @@ import pkg from 'electron-updater'
 import { setupAutoUpdater } from './autoUpdater.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerFileHandlers } from './ipc/fileHandlers.ts'
+import { registerGlobalPluginHandlers } from './ipc/globalPluginHandlers.ts'
 import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
 import { initializePaths } from './paths.ts'
@@ -67,6 +68,7 @@ function registerIpcHandlers() {
   registerSessionHandlers(paths, getMainWindow)
   registerQuickstartHandlers(paths)
   registerFileHandlers(paths)
+  registerGlobalPluginHandlers(paths)
 
   ipcMain.handle(
     'openAuthWindow',

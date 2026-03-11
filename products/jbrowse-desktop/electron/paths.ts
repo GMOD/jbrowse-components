@@ -9,6 +9,7 @@ import { app } from 'electron'
 export interface AppPaths {
   userData: string
   recentSessionsPath: string
+  globalPluginsPath: string
   quickstartDir: string
   thumbnailDir: string
   faiDir: string
@@ -24,6 +25,7 @@ export function initializePaths(): AppPaths {
   return {
     userData,
     recentSessionsPath: path.join(userData, 'recent_sessions.json'),
+    globalPluginsPath: path.join(userData, 'globalPlugins.json'),
     quickstartDir: path.join(userData, 'quickstart'),
     thumbnailDir: path.join(userData, 'thumbnails'),
     faiDir: path.join(userData, 'fai'),
