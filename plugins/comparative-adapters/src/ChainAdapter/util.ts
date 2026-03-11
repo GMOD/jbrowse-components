@@ -64,7 +64,6 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let t_start = 0
   let t_end = 0
   let q_name = ''
-  let q_size = 0
   let q_strand = ''
   let q_start = 0
   let q_end = 0

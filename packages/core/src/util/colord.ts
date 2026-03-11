@@ -169,7 +169,7 @@ function rgbToHsl(
   const d = max - min
   const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
 
-  let h = 0
+  let h: number
   if (max === r) {
     h = ((g - b) / d + (g < b ? 6 : 0)) / 6
   } else if (max === g) {

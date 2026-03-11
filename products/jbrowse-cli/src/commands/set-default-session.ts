@@ -96,7 +96,7 @@ async function readDefaultSessionFile(defaultSessionFile: string) {
       encoding: 'utf8',
     })
   } catch (error) {
-    throw new Error('Could not read the provided file')
+    throw new Error('Could not read the provided file', { cause: error })
   }
 
   try {
@@ -105,6 +105,6 @@ async function readDefaultSessionFile(defaultSessionFile: string) {
     // "File -> Export session"
     return session.session || session
   } catch (error) {
-    throw new Error('Could not parse the given default session file')
+    throw new Error('Could not parse the given default session file', { cause: error })
   }
 }

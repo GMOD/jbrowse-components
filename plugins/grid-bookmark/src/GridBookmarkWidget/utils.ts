@@ -113,7 +113,7 @@ export async function downloadBookmarkFile(
  * @param b64 - unpadded b64 string
  */
 export function b64PadSuffix(b64: string): string {
-  let num = 0
+  let num: number
   const mo = b64.length % 4
   switch (mo) {
     case 3:

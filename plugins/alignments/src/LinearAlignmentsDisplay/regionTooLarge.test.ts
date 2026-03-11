@@ -63,13 +63,11 @@ describe('alignments byte estimate check', () => {
 describe('setRegionTooLarge + force load flow', () => {
   it('setFeatureDensityStatsLimit raises limit and clears state', () => {
     let userByteSizeLimit: number | undefined
-    let regionTooLargeState = true
     const stats = { bytes: 2_000_000, fetchSizeLimit: 1_000_000 }
 
     if (stats.bytes) {
       userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
     }
-    regionTooLargeState = false
 
     expect(userByteSizeLimit).toBe(3_000_000)
     expect(regionTooLargeState).toBe(false)

@@ -108,12 +108,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
       for (let i = 0; i < pafRecords.length; i++) {
         const r = pafRecords[i]!
-        let start = 0
-        let end = 0
-        let refName = ''
-        let mateName = ''
-        let mateStart = 0
-        let mateEnd = 0
+
+        let start: number
+        let end: number
+        let refName: string
+        let mateName: string
+        let mateStart: number
+        let mateEnd: number
 
         if (flip) {
           start = r.qstart

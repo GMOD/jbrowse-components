@@ -18,6 +18,14 @@ const useStyles = makeStyles()(theme => ({
     border: '1px solid black',
     margin: 20,
   },
+  message: {
+    background: theme.palette.action.hover,
+    border: `1px solid ${theme.palette.divider}`,
+    padding: '12px 16px',
+    margin: '16px 20px',
+    fontFamily: 'monospace',
+    fontSize: '0.9rem',
+  },
   iconFloat: {
     float: 'right',
     marginLeft: 100,
@@ -26,6 +34,7 @@ const useStyles = makeStyles()(theme => ({
 
 function parseError(str: string) {
   let snapshotError = ''
+  let message = ''
   const findStr = 'is not assignable'
   const idx = str.indexOf(findStr)
   if (idx !== -1) {
@@ -38,18 +47,18 @@ function parseError(str: string) {
       trim,
     )
     if (match) {
-      str = `Failed to load element at ${match[1]}...Failed element had snapshot`
       snapshotError = match[2]!
+      message = `Failed to load element at ${match[1]}...Failed element had snapshot`
     }
 
     // case 2. element has no path
     const match2 = /.*snapshot `(.*)` is not assignable/.exec(trim)
     if (match2) {
-      str = 'Failed to load element...Failed element had snapshot'
       snapshotError = match2[1]!
+      message = 'Failed to load element...Failed element had snapshot'
     }
   }
-  return snapshotError
+  return { snapshotError, message }
 }
 
 function ErrorButtons({
@@ -107,11 +116,12 @@ function ErrorMessage({
   const str = `${error}`
   const str2 = str.indexOf('expected an instance of')
   const str3 = str2 !== -1 ? str.slice(0, str2) : str
-  const snapshotError = parseError(str)
+  const { snapshotError, message } = parseError(str)
   return (
     <RedErrorMessageBox>
       {str3.slice(0, 10000)}
       <ErrorButtons error={error} onReset={onReset} />
+      {message ? <div className={classes.message}>{message}</div> : null}
       {snapshotError ? (
         <pre className={classes.bg}>
           {JSON.stringify(JSON.parse(snapshotError), null, 2)}
