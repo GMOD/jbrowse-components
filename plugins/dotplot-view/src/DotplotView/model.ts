@@ -683,6 +683,7 @@ export default function stateModelFactory(pm: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGDotplotView.tsx')
         const html = await renderToSvg(self as DotplotViewModel, opts)
+
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const { saveAs } = await import('file-saver-es')
 
@@ -700,7 +701,7 @@ export default function stateModelFactory(pm: PluginManager) {
               URL.revokeObjectURL(url)
               canvas.toBlob(blob => {
                 if (blob) {
-                  saveAs(blob, opts.filename || 'image.png')
+                  saveAs(blob, opts.filename || 'image.png', { autoBom: false })
                   resolve()
                 } else {
                   reject(
@@ -721,6 +722,7 @@ export default function stateModelFactory(pm: PluginManager) {
           saveAs(
             new Blob([html], { type: 'image/svg+xml' }),
             opts.filename || 'image.svg',
+            { autoBom: false },
           )
         }
       },

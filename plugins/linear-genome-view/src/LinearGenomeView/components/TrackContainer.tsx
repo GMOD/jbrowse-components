@@ -1,5 +1,3 @@
-import { useRef } from 'react'
-
 import { ErrorMessage, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
@@ -48,20 +46,11 @@ const TrackContainer = observer(function TrackContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { draggingTrackId, showTrackOutlines } = model
-  const ref = useRef<HTMLDivElement>(null)
-
   return (
     <Paper
-      ref={ref}
       className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
-      onClick={event => {
-        if (event.detail === 2 && !display.featureIdUnderMouse) {
-          const left = ref.current?.getBoundingClientRect().left || 0
-          model.zoomTo(model.bpPerPx / 2, event.clientX - left, true)
-        }
-      }}
       onDragOver={event => {
         if (
           isAlive(display) &&

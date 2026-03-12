@@ -4,6 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
 // lazies
@@ -16,15 +17,15 @@ function makeTrack({
   model: HierarchicalTrackSelectorModel
   arg: {
     name: string
+    tracks: AnyConfigurationModel[]
   }
 }) {
-  const tracks = model.selection
-  const trackIds = tracks.map(c => readConfObject(c, 'name'))
-  const subadapters = tracks
-    .map(c => readConfObject(c, 'adapter'))
-    .map((c, idx) => ({ ...c, source: trackIds[idx] }))
-  const now = Date.now()
-  const trackId = `multitrack-${now}-sessionTrack`
+  const { tracks } = arg
+  const subadapters = tracks.map(c => ({
+    ...readConfObject(c, 'adapter'),
+    source: readConfObject(c, 'name'),
+  }))
+  const trackId = `multitrack-${Date.now()}-sessionTrack`
 
   const session = getSession(model)
   if (isSessionWithAddTracks(session)) {
@@ -62,7 +63,13 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
                     ConfirmDialog,
                     {
                       tracks,
-                      onClose: (arg: boolean, arg1?: { name: string }) => {
+                      onClose: (
+                        arg: boolean,
+                        arg1?: {
+                          name: string
+                          tracks: AnyConfigurationModel[]
+                        },
+                      ) => {
                         if (arg && arg1) {
                           makeTrack({ model, arg: arg1 })
                         }

@@ -1,11 +1,9 @@
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import { parseCigar } from '@jbrowse/plugin-alignments'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 type LSV = LinearSyntenyViewModel
-
-const { parseCigar } = MismatchParser
 
 function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0

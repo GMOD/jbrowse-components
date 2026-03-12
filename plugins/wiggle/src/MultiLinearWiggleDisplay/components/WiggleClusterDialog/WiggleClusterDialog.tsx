@@ -66,7 +66,6 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
       title="Cluster by score"
       maxWidth="xl"
       onClose={(_, reason) => {
-        // don't close on backdrop click
         if (reason !== 'backdropClick') {
           handleClose()
         }

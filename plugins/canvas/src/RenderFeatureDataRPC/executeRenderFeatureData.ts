@@ -1,0 +1,924 @@
+/**
+ * WebGL Feature Data RPC Executor
+ *
+ * COORDINATE SYSTEM REQUIREMENT:
+ * All position data in this module uses integer coordinates. View region bounds
+ * (region.start, region.end) can be fractional from scrolling/zooming, so we
+ * convert to integers: regionStart = floor(region.start). All positions are then
+ * stored as integer offsets from regionStart. This ensures consistent alignment
+ * between feature rectangles, lines, and hit detection.
+ */
+
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { updateStatus } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
+import { darken, lighten } from '@mui/material'
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import {
+  createFeatureFloatingLabels,
+  createTranscriptFloatingLabel,
+} from './floatingLabels.ts'
+import { layoutFeature } from './layout/layoutFeature.ts'
+import { fetchPeptideData } from './peptides/peptideUtils.ts'
+import { prepareAminoAcidData } from './peptides/prepareAminoAcidData.ts'
+import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
+import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
+
+import type { AggregatedAminoAcid } from './peptides/aggregateAminoAcids.ts'
+import type { RenderConfigContext } from './renderConfig.ts'
+import type {
+  AminoAcidOverlayItem,
+  FeatureDataResult,
+  FlatbushItem,
+  FloatingLabelsDataMap,
+  RenderFeatureDataArgs,
+  RenderFeatureDataResult,
+  SubfeatureInfo,
+} from './rpcTypes.ts'
+import type { LayoutRecord, PeptideData } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
+
+interface RectData {
+  startOffset: number
+  endOffset: number
+  y: number
+  height: number
+  color: number
+  flatbushIdx: number
+}
+
+interface LineData {
+  startOffset: number
+  endOffset: number
+  y: number
+  color: number
+  direction: number // strand direction: -1, 0, or 1
+  flatbushIdx: number
+}
+
+interface ArrowData {
+  x: number
+  y: number
+  direction: number
+  height: number
+  color: number
+  flatbushIdx: number
+}
+
+const UTR_HEIGHT_FRACTION = 0.65
+
+function applyUTRSizing(
+  topPx: number,
+  height: number,
+  isUTR: boolean,
+): [topPx: number, height: number] {
+  if (!isUTR) {
+    return [topPx, height]
+  }
+  return [
+    topPx + ((1 - UTR_HEIGHT_FRACTION) / 2) * height,
+    height * UTR_HEIGHT_FRACTION,
+  ]
+}
+
+function colorToUint32(colorStr: string) {
+  const { r, g, b, a } = colord(colorStr).toRgb()
+  return (Math.round(a * 255) << 24) | (b << 16) | (g << 8) | r
+}
+
+function writeColorBytes(out: Uint8Array, index: number, color: number) {
+  const o = index * 4
+  out[o] = color & 0xff
+  out[o + 1] = (color >> 8) & 0xff
+  out[o + 2] = (color >> 16) & 0xff
+  out[o + 3] = (color >> 24) & 0xff
+}
+
+function emitCodonData(opts: {
+  rects: RectData[]
+  overlayItems: AminoAcidOverlayItem[]
+  aminoAcids: AggregatedAminoAcid[]
+  baseColor: string
+  featureStart: number
+  featureEnd: number
+  regionStart: number
+  y: number
+  height: number
+  strand: number
+  reversed: boolean
+  flatbushIdx: number
+}) {
+  const {
+    rects,
+    overlayItems,
+    aminoAcids,
+    baseColor,
+    featureStart,
+    featureEnd,
+    regionStart,
+    y,
+    height,
+    strand,
+    reversed,
+    flatbushIdx,
+  } = opts
+  const baseHex = colord(baseColor).toHex()
+  const color1 = lighten(baseHex, 0.2)
+  const color2 = darken(baseHex, 0.1)
+  const effectiveStrand = strand * (reversed ? -1 : 1)
+  const featureLen = featureEnd - featureStart
+
+  for (const [i, aminoAcid] of aminoAcids.entries()) {
+    const aa = aminoAcid
+    const bgColor = i % 2 === 1 ? color2 : color1
+
+    let startBp: number
+    let endBp: number
+    if (effectiveStrand === -1) {
+      startBp = featureStart + (featureLen - aa.endIndex - 1)
+      endBp = featureStart + (featureLen - aa.startIndex)
+    } else {
+      startBp = featureStart + aa.startIndex
+      endBp = featureStart + aa.endIndex + 1
+    }
+
+    rects.push({
+      startOffset: Math.max(0, startBp - regionStart),
+      endOffset: endBp - regionStart,
+      y,
+      height,
+      color: colorToUint32(bgColor),
+      flatbushIdx,
+    })
+
+    overlayItems.push({
+      startBp,
+      endBp,
+      aminoAcid: aa.aminoAcid,
+      proteinIndex: aa.proteinIndex,
+      topPx: y,
+      heightPx: height,
+      isStopOrNonTriplet: aa.aminoAcid === '*' || aa.length !== 3,
+      flatbushIdx,
+    })
+  }
+}
+
+function collectRenderData(
+  layoutRecords: LayoutRecord[],
+  regionStart: number,
+  config: unknown,
+  configContext: RenderConfigContext,
+  theme: unknown,
+  reversed: boolean,
+  colorByCDS: boolean,
+  peptideDataMap?: Map<string, PeptideData>,
+): {
+  rects: RectData[]
+  lines: LineData[]
+  arrows: ArrowData[]
+  floatingLabelsData: FloatingLabelsDataMap
+  flatbushItems: FlatbushItem[]
+  subfeatureInfos: SubfeatureInfo[]
+  aminoAcidOverlay: AminoAcidOverlayItem[]
+} {
+  const rects: RectData[] = []
+  const lines: LineData[] = []
+  const arrows: ArrowData[] = []
+  const floatingLabelsData: FloatingLabelsDataMap = {}
+  const flatbushItems: FlatbushItem[] = []
+  const subfeatureInfos: SubfeatureInfo[] = []
+  const aminoAcidOverlay: AminoAcidOverlayItem[] = []
+
+  for (const record of layoutRecords) {
+    const { feature, layout, layoutHeight } = record
+    const featureStart = feature.get('start')
+    const featureEnd = feature.get('end')
+    const strand = (feature.get('strand') as number) || 0
+
+    const fillColor = getBoxColor({
+      feature,
+      config: config as any,
+      configContext,
+      colorByCDS,
+      theme: theme as any,
+    })
+    const strokeColor = getStrokeColor({
+      feature,
+      config: config as any,
+      configContext,
+      theme: theme as any,
+    })
+    const colorUint = colorToUint32(fillColor)
+    const strokeUint = colorToUint32(strokeColor)
+
+    const name = String(feature.get('name') || feature.get('id') || '')
+    const description = String(
+      feature.get('note') || feature.get('description') || '',
+    )
+    const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
+      feature,
+      config: config as any,
+      configContext,
+      nameColor: 'black',
+      descriptionColor: 'blue',
+      name,
+      description,
+    })
+
+    if (nameLabel || descriptionLabel) {
+      floatingLabelsData[feature.id()] = {
+        featureId: feature.id(),
+        minX: featureStart - regionStart,
+        maxX: featureEnd - regionStart,
+        topY: 0,
+        featureHeight: layout.height,
+        nameLabel,
+        descriptionLabel,
+      }
+    }
+
+    // Build tooltip
+    const featureType = feature.get('type') || 'feature'
+    const tooltip = name
+      ? `${name}${description ? ` - ${description}` : ''}`
+      : `${featureType}: ${featureStart.toLocaleString()}-${featureEnd.toLocaleString()}`
+
+    flatbushItems.push({
+      featureId: feature.id(),
+      type: featureType,
+      startBp: featureStart,
+      endBp: featureEnd,
+      layoutEndBp: featureEnd,
+      topPx: 0,
+      bottomPx: layoutHeight,
+      tooltip,
+      name: name || undefined,
+      strand: strand || undefined,
+    })
+    const currentFlatbushIdx = flatbushItems.length - 1
+
+    // Helper to process a transcript-like layout (ProcessedTranscript or Segments)
+    const processTranscriptLayout = (
+      transcriptLayout: typeof layout,
+      transcriptTopPx: number,
+      parentFeature: typeof feature,
+      parentFlatbushIdx: number,
+    ) => {
+      const transcriptFeature = transcriptLayout.feature
+      const transcriptStart = transcriptFeature.get('start')
+      const transcriptEnd = transcriptFeature.get('end')
+      const transcriptStrand = (transcriptFeature.get('strand') as number) || 0
+
+      // Get parent/transcript names for tooltips
+      const parentName = String(
+        parentFeature.get('name') || parentFeature.get('id') || '',
+      )
+      const transcriptName = String(
+        transcriptFeature.get('name') || transcriptFeature.get('id') || '',
+      )
+      const transcriptStrokeColor = getStrokeColor({
+        feature: transcriptFeature,
+        config: config as any,
+        configContext,
+        theme: theme as any,
+      })
+      const transcriptStrokeUint = colorToUint32(transcriptStrokeColor)
+
+      // Draw connecting line for intron gaps only (not inside boxes)
+      const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
+      const lineY = transcriptTopPx + transcriptLayout.height / 2
+      const sortedChildren = transcriptLayout.children
+      if (sortedChildren.length === 0) {
+        lines.push({
+          startOffset: transcriptStart - regionStart,
+          endOffset: transcriptEnd - regionStart,
+          y: lineY,
+          color: transcriptStrokeUint,
+          direction: effectiveStrand,
+          flatbushIdx: parentFlatbushIdx,
+        })
+      } else {
+        let prevEnd = transcriptStart
+        for (const child of sortedChildren) {
+          const childStart = child.feature.get('start')
+          const childEnd = child.feature.get('end')
+          if (childStart > prevEnd) {
+            lines.push({
+              startOffset: prevEnd - regionStart,
+              endOffset: childStart - regionStart,
+              y: lineY,
+              color: transcriptStrokeUint,
+              direction: effectiveStrand,
+              flatbushIdx: parentFlatbushIdx,
+            })
+          }
+          if (childEnd > prevEnd) {
+            prevEnd = childEnd
+          }
+        }
+        if (prevEnd < transcriptEnd) {
+          lines.push({
+            startOffset: prevEnd - regionStart,
+            endOffset: transcriptEnd - regionStart,
+            y: lineY,
+            color: transcriptStrokeUint,
+            direction: effectiveStrand,
+            flatbushIdx: parentFlatbushIdx,
+          })
+        }
+      }
+
+      // Draw children (exons, CDS, UTRs)
+      const transcriptPeptide = peptideDataMap?.get(transcriptFeature.id())
+      for (const childLayout of sortedChildren) {
+        const childFeature = childLayout.feature
+        const childStart = childFeature.get('start')
+        const childEnd = childFeature.get('end')
+        const childIsUTR = isUTR(childFeature)
+        const childType = childFeature.get('type') as string
+
+        const childColor = getBoxColor({
+          feature: childFeature,
+          config: config as any,
+          configContext,
+          colorByCDS,
+          theme: theme as any,
+        })
+        const childColorUint = colorToUint32(childColor)
+
+        const [childTopPx, childHeight] = applyUTRSizing(
+          transcriptTopPx,
+          transcriptLayout.height,
+          childIsUTR,
+        )
+
+        // For CDS features with peptide data, emit per-codon rects
+        if (childType === 'CDS' && transcriptPeptide?.protein && !childIsUTR) {
+          const aminoAcids = prepareAminoAcidData(
+            transcriptFeature,
+            transcriptPeptide.protein,
+            childStart,
+            childEnd,
+            transcriptStrand,
+          )
+          if (aminoAcids.length > 0) {
+            emitCodonData({
+              rects,
+              overlayItems: aminoAcidOverlay,
+              aminoAcids,
+              baseColor: childColor,
+              featureStart: childStart,
+              featureEnd: childEnd,
+              regionStart,
+              y: childTopPx,
+              height: childHeight,
+              strand: transcriptStrand,
+              reversed,
+              flatbushIdx: parentFlatbushIdx,
+            })
+          } else {
+            rects.push({
+              startOffset: childStart - regionStart,
+              endOffset: childEnd - regionStart,
+              y: childTopPx,
+              height: childHeight,
+              color: childColorUint,
+              flatbushIdx: parentFlatbushIdx,
+            })
+          }
+        } else {
+          rects.push({
+            startOffset: childStart - regionStart,
+            endOffset: childEnd - regionStart,
+            y: childTopPx,
+            height: childHeight,
+            color: childColorUint,
+            flatbushIdx: parentFlatbushIdx,
+          })
+        }
+      }
+
+      // Add transcript-level hit detection entry (spans entire transcript area)
+      // Added after children so exon/CDS hits take priority
+      const transcriptTooltipParts: string[] = []
+      if (parentName) {
+        transcriptTooltipParts.push(`Gene: ${parentName}`)
+      }
+      if (transcriptName) {
+        transcriptTooltipParts.push(`Transcript: ${transcriptName}`)
+      }
+      transcriptTooltipParts.push(
+        `${transcriptFeature.get('type') || 'transcript'}: ${transcriptStart.toLocaleString()}-${transcriptEnd.toLocaleString()}`,
+      )
+
+      subfeatureInfos.push({
+        featureId: transcriptFeature.id(),
+        parentFeatureId: parentFeature.id(),
+        type: transcriptFeature.get('type') || 'transcript',
+        startBp: transcriptStart,
+        endBp: transcriptEnd,
+        topPx: transcriptTopPx,
+        bottomPx: transcriptTopPx + transcriptLayout.totalLayoutHeight,
+        displayLabel: transcriptName || 'transcript',
+        tooltip: transcriptTooltipParts.join('\n'),
+      })
+
+      if (
+        configContext.labelAllowed &&
+        configContext.subfeatureLabels !== 'none' &&
+        transcriptName
+      ) {
+        const result = createTranscriptFloatingLabel({
+          displayLabel: transcriptName,
+          featureHeight: transcriptLayout.height,
+          subfeatureLabels: configContext.subfeatureLabels,
+          color: 'black',
+          parentFeatureId: parentFeature.id(),
+          subfeatureId: transcriptFeature.id(),
+          tooltip: transcriptTooltipParts.join('\n'),
+        })
+        if (result) {
+          floatingLabelsData[transcriptFeature.id()] = {
+            featureId: transcriptFeature.id(),
+            minX: transcriptStart - regionStart,
+            maxX: transcriptEnd - regionStart,
+            topY: transcriptTopPx,
+            featureHeight: transcriptLayout.height,
+            parentFeatureId: result.parentFeatureId,
+            subfeatureLabel: result.subfeatureLabel,
+          }
+        }
+      }
+
+      // Add strand arrow for transcript
+      if (transcriptStrand !== 0) {
+        const arrowX = effectiveStrand === 1 ? transcriptEnd : transcriptStart
+        arrows.push({
+          x: arrowX - regionStart,
+          y: transcriptTopPx + transcriptLayout.height / 2,
+          direction: effectiveStrand,
+          height: transcriptLayout.height,
+          color: transcriptStrokeUint,
+          flatbushIdx: parentFlatbushIdx,
+        })
+      }
+    }
+
+    // Process layout based on glyph type
+    if (
+      layout.glyphType === 'ProcessedTranscript' ||
+      layout.glyphType === 'Segments'
+    ) {
+      processTranscriptLayout(layout, 0, feature, currentFlatbushIdx)
+    } else if (layout.glyphType === 'Subfeatures') {
+      // Gene-like feature with nested transcript children
+      // Process each child transcript
+      for (const childLayout of layout.children) {
+        if (
+          childLayout.glyphType === 'ProcessedTranscript' ||
+          childLayout.glyphType === 'Segments'
+        ) {
+          const childTopPx = childLayout.y
+          processTranscriptLayout(
+            childLayout,
+            childTopPx,
+            feature,
+            currentFlatbushIdx,
+          )
+        } else {
+          // Child is a simple feature - draw as box
+          const childFeature = childLayout.feature
+          const childStart = childFeature.get('start')
+          const childEnd = childFeature.get('end')
+          const childIsUTR = isUTR(childFeature)
+
+          const childColor = getBoxColor({
+            feature: childFeature,
+            config: config as any,
+            configContext,
+            colorByCDS,
+            theme: theme as any,
+          })
+          const childColorUint = colorToUint32(childColor)
+
+          const [childTopPx, childHeight] = applyUTRSizing(
+            childLayout.y,
+            childLayout.height,
+            childIsUTR,
+          )
+
+          rects.push({
+            startOffset: childStart - regionStart,
+            endOffset: childEnd - regionStart,
+            y: childTopPx,
+            height: childHeight,
+            color: childColorUint,
+            flatbushIdx: currentFlatbushIdx,
+          })
+        }
+      }
+    } else {
+      // Simple box feature
+      const [rectTopPx, rectHeight] = applyUTRSizing(
+        0,
+        layout.height,
+        isUTR(feature),
+      )
+
+      rects.push({
+        startOffset: featureStart - regionStart,
+        endOffset: featureEnd - regionStart,
+        y: rectTopPx,
+        height: rectHeight,
+        color: colorUint,
+        flatbushIdx: currentFlatbushIdx,
+      })
+
+      // Add strand arrow for top-level features
+      const isTopLevel = !feature.parent?.()
+      if (isTopLevel && strand !== 0) {
+        const effectiveStrand = reversed ? -strand : strand
+        const arrowX = effectiveStrand === 1 ? featureEnd : featureStart
+        arrows.push({
+          x: arrowX - regionStart,
+          y: layout.height / 2,
+          direction: effectiveStrand,
+          height: layout.height,
+          color: strokeUint,
+          flatbushIdx: currentFlatbushIdx,
+        })
+      }
+    }
+  }
+
+  return {
+    rects,
+    lines,
+    arrows,
+    floatingLabelsData,
+    flatbushItems,
+    subfeatureInfos,
+    aminoAcidOverlay,
+  }
+}
+
+export async function executeRenderFeatureData({
+  pluginManager,
+  args,
+}: {
+  pluginManager: PluginManager
+  args: RenderFeatureDataArgs
+}): Promise<RenderFeatureDataResult> {
+  const {
+    sessionId,
+    adapterConfig,
+    displayConfig,
+    region,
+    bpPerPx: requestedBpPerPx,
+    colorByCDS,
+    sequenceAdapter,
+    showOnlyGenes,
+    maxFeatureCount,
+    stopToken,
+    statusCallback = () => {},
+  } = args as RenderFeatureDataArgs & {
+    statusCallback?: (msg: string) => void
+  }
+
+  const stopTokenCheck = createStopTokenChecker(stopToken)
+
+  const dataAdapter = (
+    await getAdapter(pluginManager, sessionId, adapterConfig)
+  ).dataAdapter as BaseFeatureDataAdapter
+
+  const regionWithAssembly = {
+    ...region,
+    assemblyName: region.assemblyName ?? '',
+  }
+
+  let featuresArray = await updateStatus(
+    'Fetching features',
+    statusCallback,
+    () =>
+      firstValueFrom(
+        dataAdapter.getFeatures(regionWithAssembly).pipe(toArray()),
+      ),
+  )
+  checkStopToken2(stopTokenCheck)
+
+  if (showOnlyGenes) {
+    featuresArray = featuresArray.filter(f => f.get('type') === 'gene')
+  }
+
+  if (maxFeatureCount !== undefined && featuresArray.length > maxFeatureCount) {
+    return {
+      regionTooLarge: true,
+      featureCount: featuresArray.length,
+    }
+  }
+
+  // Genomic positions are integers, but region bounds from the view can be fractional.
+  // Use floor to get integer reference point for storing position offsets.
+  const regionStart = Math.floor(region.start)
+  const bpPerPx = requestedBpPerPx || 1 // Use actual zoom level for layout
+
+  // Create a mock theme for color calculations
+  const mockTheme = {
+    palette: {
+      text: { secondary: '#666666' },
+      framesCDS: [
+        null,
+        { main: '#FF8080' },
+        { main: '#80FF80' },
+        { main: '#8080FF' },
+        { main: '#8080FF' },
+        { main: '#80FF80' },
+        { main: '#FF8080' },
+      ],
+    },
+  }
+
+  // Create a mock config object with all default values that readConfObject can read
+  // This is needed because the serialized config loses its MST model methods
+  const mockConfig = {
+    color1: 'goldenrod',
+    color2: '#f0f',
+    color3: '#357089',
+    outline: '',
+    height: 10,
+    displayMode: 'normal',
+    maxHeight: 5000,
+    subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
+    impliedUTRs: false,
+    transcriptTypes: ['mRNA', 'transcript', 'primary_transcript'],
+    containerTypes: ['proteoform_orf'],
+    displayDirectionalChevrons: true,
+    labels: {
+      name: '',
+      nameColor: '#f0f',
+      description: '',
+      descriptionColor: 'blue',
+      fontSize: 12,
+    },
+    ...displayConfig,
+    subfeatureLabels: displayConfig.subfeatureLabels,
+  }
+
+  // Create default config context for WebGL rendering
+  const configContext: RenderConfigContext = {
+    config: mockConfig as any,
+    displayMode: mockConfig.displayMode,
+    showLabels: mockConfig.showLabels,
+    showDescriptions: mockConfig.showDescriptions,
+    subfeatureLabels: mockConfig.subfeatureLabels,
+    transcriptTypes: mockConfig.transcriptTypes,
+    containerTypes: mockConfig.containerTypes,
+    geneGlyphMode: mockConfig.geneGlyphMode,
+    displayDirectionalChevrons: mockConfig.displayDirectionalChevrons,
+    color1: { value: mockConfig.color1, isCallback: false },
+    color2: { value: mockConfig.color2, isCallback: false },
+    color3: { value: mockConfig.color3, isCallback: false },
+    outline: { value: mockConfig.outline, isCallback: false },
+    featureHeight: { value: mockConfig.height, isCallback: false },
+    fontHeight: { value: mockConfig.labels.fontSize, isCallback: false },
+    nameColor: { value: mockConfig.labels.nameColor, isCallback: false },
+    descriptionColor: {
+      value: mockConfig.labels.descriptionColor,
+      isCallback: false,
+    },
+    labelAllowed: mockConfig.displayMode !== 'collapse',
+    heightMultiplier: mockConfig.displayMode === 'compact' ? 0.6 : 1,
+  }
+
+  const features = new Map<string, Feature>()
+  for (const f of featuresArray) {
+    const id = f.id()
+    if (!features.has(id)) {
+      features.set(id, f)
+    }
+  }
+
+  const layoutRecords = await updateStatus(
+    'Computing layout',
+    statusCallback,
+    async () => {
+      const reversed = region.reversed ?? false
+      const yPadding = 5
+
+      const records: LayoutRecord[] = []
+
+      for (const feature of features.values()) {
+        const featureLayout = layoutFeature({
+          feature,
+          bpPerPx,
+          reversed,
+          configContext,
+        })
+
+        const fontSize = mockConfig.labels.fontSize
+        let labelHeight = 0
+        const featureName = String(
+          feature.get('name') || feature.get('id') || '',
+        )
+        const featureDescription = String(
+          feature.get('note') || feature.get('description') || '',
+        )
+        if (featureName && mockConfig.showLabels) {
+          labelHeight += fontSize
+        }
+        if (featureDescription && mockConfig.showDescriptions) {
+          labelHeight += fontSize
+        }
+
+        const layoutHeight = featureLayout.height + labelHeight + yPadding
+
+        records.push({
+          feature,
+          layout: featureLayout,
+          layoutHeight,
+        })
+      }
+
+      return records
+    },
+  )
+  checkStopToken2(stopTokenCheck)
+
+  // Fetch peptide data when colorByCDS is enabled and zoomed in enough
+  let peptideDataMap: Map<string, PeptideData> | undefined
+  if (colorByCDS && sequenceAdapter && shouldRenderPeptideBackground(bpPerPx)) {
+    const mockRenderProps = {
+      sessionId,
+      sequenceAdapter,
+      colorByCDS: true,
+      bpPerPx,
+      regions: [
+        {
+          ...region,
+          assemblyName: region.assemblyName ?? '',
+        },
+      ],
+    }
+    peptideDataMap = await updateStatus(
+      'Fetching peptide data',
+      statusCallback,
+      async () =>
+        fetchPeptideData(pluginManager, mockRenderProps as any, features),
+    )
+  }
+
+  checkStopToken2(stopTokenCheck)
+
+  const {
+    rects,
+    lines,
+    arrows,
+    floatingLabelsData,
+    flatbushItems,
+    subfeatureInfos,
+    aminoAcidOverlay,
+  } = await updateStatus('Collecting render data', statusCallback, () =>
+    collectRenderData(
+      layoutRecords,
+      regionStart,
+      mockConfig,
+      configContext,
+      mockTheme,
+      region.reversed ?? false,
+      !!colorByCDS,
+      peptideDataMap,
+    ),
+  )
+
+  checkStopToken2(stopTokenCheck)
+
+  // Filter out elements completely outside the region before converting
+  // to typed arrays. This prevents slivers in collapsed intron views where
+  // a gene spans multiple regions and its children from other regions get
+  // clamped to position 0.
+  const regionWidth = Math.ceil(region.end - region.start)
+
+  const visibleRects = rects.filter(
+    r => r.endOffset > 0 && r.startOffset < regionWidth,
+  )
+  const visibleLines = lines.filter(
+    l => l.endOffset > 0 && l.startOffset < regionWidth,
+  )
+  const visibleArrows = arrows.filter(a => a.x >= 0 && a.x < regionWidth)
+
+  // Convert to TypedArrays
+  const rectPositions = new Uint32Array(visibleRects.length * 2)
+  const rectYs = new Float32Array(visibleRects.length)
+  const rectHeights = new Float32Array(visibleRects.length)
+  const rectColors = new Uint8Array(visibleRects.length * 4)
+  const rectFeatureIndices = new Uint32Array(visibleRects.length)
+
+  for (const [i, rect] of visibleRects.entries()) {
+    rectPositions[i * 2] = Math.max(0, rect.startOffset)
+    rectPositions[i * 2 + 1] = Math.max(0, rect.endOffset)
+    rectYs[i] = rect.y
+    rectHeights[i] = rect.height
+    writeColorBytes(rectColors, i, rect.color)
+    rectFeatureIndices[i] = rect.flatbushIdx
+  }
+
+  const linePositions = new Uint32Array(visibleLines.length * 2)
+  const lineYs = new Float32Array(visibleLines.length)
+  const lineColors = new Uint8Array(visibleLines.length * 4)
+  const lineDirections = new Int8Array(visibleLines.length)
+  const lineFeatureIndices = new Uint32Array(visibleLines.length)
+
+  for (const [i, line] of visibleLines.entries()) {
+    linePositions[i * 2] = Math.max(0, line.startOffset)
+    linePositions[i * 2 + 1] = Math.max(0, line.endOffset)
+    lineYs[i] = line.y
+    writeColorBytes(lineColors, i, line.color)
+    lineDirections[i] = line.direction
+    lineFeatureIndices[i] = line.flatbushIdx
+  }
+
+  const arrowXs = new Uint32Array(visibleArrows.length)
+  const arrowYs = new Float32Array(visibleArrows.length)
+  const arrowDirections = new Int8Array(visibleArrows.length)
+  const arrowHeights = new Float32Array(visibleArrows.length)
+  const arrowColors = new Uint8Array(visibleArrows.length * 4)
+  const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
+
+  for (const [i, arrow] of visibleArrows.entries()) {
+    arrowXs[i] = Math.max(0, arrow.x)
+    arrowYs[i] = arrow.y
+    arrowDirections[i] = arrow.direction
+    arrowHeights[i] = arrow.height
+    writeColorBytes(arrowColors, i, arrow.color)
+    arrowFeatureIndices[i] = arrow.flatbushIdx
+  }
+
+  const result: FeatureDataResult = {
+    regionStart,
+
+    rectPositions,
+    rectYs,
+    rectHeights,
+    rectColors,
+    numRects: visibleRects.length,
+
+    linePositions,
+    lineYs,
+    lineColors,
+    lineDirections,
+    numLines: visibleLines.length,
+
+    arrowXs,
+    arrowYs,
+    arrowDirections,
+    arrowHeights,
+    arrowColors,
+    numArrows: visibleArrows.length,
+
+    flatbushItems,
+    subfeatureInfos,
+
+    rectFeatureIndices,
+    lineFeatureIndices,
+    arrowFeatureIndices,
+
+    floatingLabelsData,
+
+    aminoAcidOverlay:
+      aminoAcidOverlay.length > 0 ? aminoAcidOverlay : undefined,
+
+    featureCount: features.size,
+    maxY: 0,
+  }
+
+  const transferables = [
+    result.rectPositions.buffer,
+    result.rectYs.buffer,
+    result.rectHeights.buffer,
+    result.rectColors.buffer,
+    result.rectFeatureIndices.buffer,
+    result.linePositions.buffer,
+    result.lineYs.buffer,
+    result.lineColors.buffer,
+    result.lineDirections.buffer,
+    result.lineFeatureIndices.buffer,
+    result.arrowXs.buffer,
+    result.arrowYs.buffer,
+    result.arrowDirections.buffer,
+    result.arrowHeights.buffer,
+    result.arrowColors.buffer,
+    result.arrowFeatureIndices.buffer,
+  ] as ArrayBuffer[]
+
+  return rpcResult(result, transferables) as any
+}

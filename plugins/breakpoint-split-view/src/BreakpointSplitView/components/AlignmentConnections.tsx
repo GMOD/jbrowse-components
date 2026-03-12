@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import { getSession, getStrokeProps } from '@jbrowse/core/util'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -11,35 +10,29 @@ import {
   getPairedOrientationColor,
   isAbnormalOrientation,
 } from './getOrientationColor.tsx'
-import { LEFT, RIGHT, getTestId, getYOffset } from './overlayUtils.tsx'
+import { LEFT, RIGHT, getCanonicalRefs, getTestId } from './overlayUtils.tsx'
 import {
   getBadlyPairedAlignments,
   getMatchedAlignmentFeatures,
   hasPairedReads,
 } from './util.ts'
-import {
-  getPxFromCoordinate,
-  heightFromSpecificLevel,
-  useNextFrame,
-  yPos,
-} from '../util.ts'
+import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 
 const AlignmentConnections = observer(function AlignmentConnections({
   model,
   trackId,
-  parentRef,
   getTrackYPosOverride,
+  cachedTrackTops,
+  cachedYOffset,
 }: OverlayProps) {
   const { interactiveOverlay, views, showIntraviewLinks } = model
   const theme = useTheme()
   const session = getSession(model)
-  const snap = getSnapshot(model)
   const { assemblyManager } = session
   const v0 = views[0]
   const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
-  useNextFrame(snap)
   const allFeatures = model.getTrackFeatures(trackId)
   const hasPaired = useMemo(() => hasPairedReads(allFeatures), [allFeatures])
 
@@ -57,9 +50,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
   }, [allFeatures, trackId, hasPaired, model])
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const yOffset = getYOffset(parentRef)
+  const yOffset = cachedYOffset ?? 0
 
   const tracks = views.map(v => v.getTrack(trackId))
+  const hasOverride = !!getTrackYPosOverride
+  const cachedHeights =
+    cachedTrackTops ??
+    getTrackHeightsCache(views, trackId, getTrackYPosOverride)
 
   if (!assembly) {
     return null
@@ -76,12 +73,11 @@ const AlignmentConnections = observer(function AlignmentConnections({
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
-          const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
-          const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
-
-          if (!f1ref || !f2ref) {
-            throw new Error(`unable to find ref for ${f1ref || f2ref}`)
-          }
+          const { f1ref, f2ref } = getCanonicalRefs(
+            assembly,
+            f1.get('refName'),
+            f2.get('refName'),
+          )
           const r = {
             pair_orientation: f1.get('pair_orientation'),
           }
@@ -89,10 +85,9 @@ const AlignmentConnections = observer(function AlignmentConnections({
           const s1 = f1.get('strand')
           const s2 = f2.get('strand')
           const sameRef = f1ref === f2ref
-          const checkOrientation = sameRef
           let orientationColor = ''
           let isAbnormal = false
-          if (checkOrientation) {
+          if (sameRef) {
             if (hasPaired) {
               orientationColor = getPairedOrientationColor(r)
               isAbnormal = isAbnormalOrientation(r)
@@ -111,23 +106,16 @@ const AlignmentConnections = observer(function AlignmentConnections({
           const rf1 = reversed1 ? -1 : 1
           const rf2 = reversed2 ? -1 : 1
           const y1 =
-            yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
-            yOffset
+            yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
           const y2 =
-            yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
-            yOffset
+            yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
           const sameLevel = level1 === level2
           const abnormalSpecialRenderFlag = sameLevel && isAbnormal
           const trackHeight = abnormalSpecialRenderFlag
             ? tracks[level1].displays[0].height
             : 0
           const pf1 = hasPaired ? -1 : 1
-          const y0 = heightFromSpecificLevel(
-            views,
-            trackId,
-            level1,
-            getTrackYPosOverride,
-          )
+          const y0 = cachedHeights[level1]!
 
           const path = [
             'M',

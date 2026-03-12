@@ -1,95 +1,181 @@
 import { forwardRef } from 'react'
 
 import { toLocale } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Portal, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Tooltip from '../../Tooltip.tsx'
 import { toP } from '../../util.ts'
 
-import type { TooltipContentsComponent } from '../../Tooltip.tsx'
-import type { Source } from '../../util.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
 
-interface Props {
-  model: { sources: Source[] }
-  feature: Feature
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
 }
-const TooltipContents = forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ model, feature }, ref) {
-    const start = feature.get('start')
-    const end = feature.get('end')
-    const refName = feature.get('refName')
-    const coord =
-      start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
-    const sources = feature.get('sources') as
-      | Record<string, { score: number }>
-      | undefined
-    const source = feature.get('source')
-    const summary = feature.get('summary')
-    const obj = Object.fromEntries(model.sources.map(ent => [ent.name, ent]))
-    const obj2 = obj[source]
 
-    return (
-      <div ref={ref}>
-        {[refName, coord].filter(f => !!f).join(':')}
-        <br />
-        {sources ? (
-          <table>
-            <thead>
-              <tr>
-                <th>color</th>
-                <th>source</th>
-                <th>score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(sources).map(([source, data]) => {
-                const sourceInfo = obj[source]
-                return (
-                  <tr key={source}>
-                    <td>
-                      {sourceInfo && (
-                        <div
-                          style={{
-                            width: 16,
-                            height: 16,
-                            background: sourceInfo.color,
-                          }}
-                        ></div>
-                      )}
-                    </td>
-                    <td>{sourceInfo?.name || source}</td>
-                    <td>{toP(data.score)}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        ) : (
-          <span>
-            {obj2?.name || source}{' '}
-            {summary && feature.get('minScore') != null
-              ? `min:${toP(feature.get('minScore'))} avg:${toP(
-                  feature.get('score'),
-                )} max:${toP(feature.get('maxScore'))}`
-              : toP(feature.get('score'))}
-          </span>
-        )}
-      </div>
-    )
+const useStyles = makeStyles()(theme => ({
+  tooltip: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    pointerEvents: 'none',
+    zIndex: 100000,
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.fontSize,
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
   },
-)
+}))
 
-type Coord = [number, number]
-
-const WiggleTooltip = observer(function WiggleTooltip(props: {
-  model: { featureUnderMouse: Feature; sources: Source[]; rowHeight: number }
-  height: number
-  offsetMouseCoord: Coord
-  clientMouseCoord: Coord
-  TooltipContents?: TooltipContentsComponent
+function SourceRow({
+  src,
+  score,
+  summary,
+  minScore,
+  maxScore,
+  sourceObj,
+}: {
+  src: string
+  score: number
+  summary?: boolean
+  minScore?: number
+  maxScore?: number
+  sourceObj?: { color?: string }
 }) {
-  return <Tooltip TooltipContents={TooltipContents} {...props} />
+  return (
+    <div>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        {sourceObj?.color ? (
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              background: sourceObj.color,
+              display: 'inline-block',
+            }}
+          />
+        ) : null}
+        {src}
+        {': '}
+        {summary && minScore != null && maxScore != null ? (
+          <span>
+            min:{toP(minScore)} avg:{toP(score)} max:{toP(maxScore)}
+          </span>
+        ) : (
+          <span>{toP(score)}</span>
+        )}
+      </span>
+    </div>
+  )
+}
+
+const TooltipContents = observer(function TooltipContents({
+  model,
+}: {
+  model: MultiWiggleDisplayModel
+}) {
+  const { featureUnderMouse } = model
+  if (!featureUnderMouse) {
+    return null
+  }
+  const {
+    refName,
+    start,
+    end,
+    score,
+    minScore,
+    maxScore,
+    source,
+    summary,
+    allSources,
+  } = featureUnderMouse
+  const coord =
+    start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
+
+  return (
+    <div>
+      {[refName, coord].filter(f => !!f).join(':')}
+      <br />
+      {allSources ? (
+        <>
+          {allSources.slice(0, 8).map(s => (
+            <SourceRow
+              key={s.source}
+              src={s.source}
+              score={s.score}
+              summary={s.summary}
+              minScore={s.minScore}
+              maxScore={s.maxScore}
+              sourceObj={model.sources.find(ms => ms.name === s.source)}
+            />
+          ))}
+          {allSources.length > 8 ? (
+            <div style={{ fontStyle: 'italic', marginTop: 4 }}>
+              +{allSources.length - 8} more
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <SourceRow
+          src={source}
+          score={score}
+          summary={summary}
+          minScore={minScore}
+          maxScore={maxScore}
+          sourceObj={model.sources.find(s => s.name === source)}
+        />
+      )}
+    </div>
+  )
 })
 
-export default WiggleTooltip
+const MultiWiggleTooltip = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      model: MultiWiggleDisplayModel
+      height: number
+      crosshairRef: React.RefObject<HTMLDivElement | null>
+    }
+  >(function MultiWiggleTooltip({ model, height, crosshairRef }, ref) {
+    const { classes } = useStyles()
+    const theme = useTheme()
+    // needed for webcomponent embedding where the portal container is customized
+    const popperTheme = theme.components?.MuiPopper
+    const { featureUnderMouse } = model
+
+    return (
+      <>
+        {featureUnderMouse ? (
+          <Portal container={popperTheme?.defaultProps?.container}>
+            <div ref={ref} className={classes.tooltip}>
+              <TooltipContents model={model} />
+            </div>
+          </Portal>
+        ) : null}
+        <div
+          ref={crosshairRef}
+          style={{
+            background: 'black',
+            border: 'none',
+            width: 1,
+            height,
+            top: 0,
+            cursor: 'default',
+            position: 'absolute',
+            pointerEvents: 'none',
+            left: 0,
+            display: featureUnderMouse ? undefined : 'none',
+          }}
+        />
+      </>
+    )
+  }),
+)
+
+export default MultiWiggleTooltip

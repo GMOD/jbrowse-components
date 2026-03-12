@@ -72,6 +72,7 @@ export default function calculateDynamicBlocks(
 
     const regionWidthPx = (regionEnd - regionStart) * invBpPerPx
     const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
+    let paddingAddedInLoop = false
 
     const [leftPx, rightPx] = intersection2(
       windowLeftPx,
@@ -146,7 +147,6 @@ export default function calculateDynamicBlocks(
       }
 
       if (padding) {
-        // insert a inter-region padding block if we are crossing a displayed region
         if (
           regionWidthPx >= minimumBlockWidth &&
           blockData.isRightEndOfDisplayedRegion &&
@@ -160,6 +160,7 @@ export default function calculateDynamicBlocks(
             }),
           )
           displayedRegionLeftPx += interRegionPaddingWidth
+          paddingAddedInLoop = true
         }
 
         if (
@@ -177,6 +178,14 @@ export default function calculateDynamicBlocks(
           )
         }
       }
+    }
+    if (
+      padding &&
+      !paddingAddedInLoop &&
+      regionWidthPx >= minimumBlockWidth &&
+      regionNumber < displayedRegions.length - 1
+    ) {
+      displayedRegionLeftPx += interRegionPaddingWidth
     }
     displayedRegionLeftPx += (regionEnd - regionStart) * invBpPerPx
   }

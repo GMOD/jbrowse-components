@@ -1,423 +1,337 @@
 import { lazy } from 'react'
 
 import { fromNewick } from '@gmod/hclust'
-import { getConf } from '@jbrowse/core/configuration'
-import { set1 as colors } from '@jbrowse/core/ui/colors'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import {
+  SimpleFeature,
+  getContainingTrack,
   getContainingView,
+  getEnv,
   getSession,
-  max,
+  isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
+import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ascending } from '@mui/x-charts-vendor/d3-array'
-import deepEqual from 'fast-deep-equal'
+import { autorun, untracked } from 'mobx'
 
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
-import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
+import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
+import {
+  MULTI_WIGGLE_RENDERING_TYPES,
+  computeAutoscaleDomain,
+  getNiceDomain,
+  getScale,
+} from '../util.ts'
 
-import type { Source } from '../util.ts'
+import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
+import type { Source, SourceInfo } from '../util.ts'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from './components/treeTypes.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnyReactComponentType, Feature } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  FetchContext,
   LinearGenomeViewModel,
+  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
-const randomColor = () =>
-  '#000000'.replaceAll('0', () => (~~(Math.random() * 16)).toString(16))
+type LGV = LinearGenomeViewModel
 
-// lazies
-const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+const MultiWiggleComponent = lazy(
+  () => import('./components/MultiWiggleComponent.tsx'),
+)
+const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
 )
 
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['xyplot', 'MultiXYPlotRenderer'],
-  ['multirowxy', 'MultiRowXYPlotRenderer'],
-  ['multirowdensity', 'MultiDensityRenderer'],
-  ['multiline', 'MultiLineRenderer'],
-  ['multirowline', 'MultiRowLineRenderer'],
-])
+function resolveOverlayColor(
+  index: number,
+  adapterColor?: string,
+  layoutColor?: string,
+) {
+  return (
+    layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
+  )
+}
 
-/**
- * #stateModel MultiLinearWiggleDisplay
- * extends
- * - [SharedWiggleMixin](../sharedwigglemixin)
- */
-export function stateModelFactory(
-  _pluginManager: PluginManager,
+export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
       'MultiLinearWiggleDisplay',
-      SharedWiggleMixin(configSchema),
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
-        /**
-         * #property
-         */
         type: types.literal('MultiLinearWiggleDisplay'),
-
-        /**
-         * #property
-         */
-        layout: types.optional(types.frozen<Source[]>(), []),
-        /**
-         * #property
-         */
-        showSidebar: true,
-        /**
-         * #property
-         */
+        configuration: ConfigurationReference(configSchema),
+        resolution: types.optional(types.number, 1),
+        layout: types.frozen([] as Source[]),
         clusterTree: types.maybe(types.string),
-        /**
-         * #property
-         */
         treeAreaWidth: types.optional(types.number, 80),
-        /**
-         * #property
-         * When undefined, defaults to true
-         */
         showTreeSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * Filter to show only a subtree of samples
-         */
+        showRowSeparatorsSetting: types.maybe(types.boolean),
         subtreeFilter: types.maybe(types.array(types.string)),
+        scaleTypeSetting: types.maybe(types.string),
+        minScoreSetting: types.maybe(types.number),
+        maxScoreSetting: types.maybe(types.number),
+        renderingTypeSetting: types.maybe(
+          types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
+        ),
+        summaryScoreModeSetting: types.maybe(types.string),
+        autoscaleSetting: types.maybe(types.string),
       }),
     )
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
+      }
+
+      // Strip properties from old BaseLinearDisplay snapshots
+      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      snap = cleaned
+
+      // Rewrite "height" from older snapshots to "heightPreConfig"
+      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
+        const { height, ...rest } = snap
+        snap = { ...rest, heightPreConfig: height }
+      }
+
+      return snap
+    })
     .volatile(() => ({
-      /**
-       * #volatile
-       */
-      sourcesLoadingStopToken: undefined as StopToken | undefined,
-      /**
-       * #volatile
-       */
-      featureUnderMouseVolatile: undefined as Feature | undefined,
-      /**
-       * #volatile
-       */
-      sourcesVolatile: undefined as Source[] | undefined,
-      /**
-       * #volatile
-       */
+      rpcDataMap: new Map<number, MultiWiggleDataResult>(),
+      sourcesVolatile: [] as SourceInfo[],
+      visibleScoreRange: undefined as [number, number] | undefined,
+      loadedBpPerPx: new Map<number, number>(),
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
-      /**
-       * #volatile
-       */
       treeCanvas: undefined as HTMLCanvasElement | undefined,
-      /**
-       * #volatile
-       */
       mouseoverCanvas: undefined as HTMLCanvasElement | undefined,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setShowSidebar(arg: boolean) {
-        self.showSidebar = arg
-      },
-      /**
-       * #action
-       */
-      setSourcesLoading(str: StopToken) {
-        if (self.sourcesLoadingStopToken) {
-          stopStopToken(self.sourcesLoadingStopToken)
-        }
-        self.sourcesLoadingStopToken = str
-      },
-      /**
-       * #action
-       */
-      setLayout(layout: Source[], clearTree = true) {
-        const orderChanged =
-          clearTree &&
-          self.clusterTree &&
-          self.layout.length === layout.length &&
-          self.layout.some(
-            (source: Source, idx: number) => source.name !== layout[idx]?.name,
-          )
-
-        self.layout = layout
-        if (orderChanged) {
-          self.clusterTree = undefined
-        }
-      },
-      /**
-       * #action
-       */
-      clearLayout() {
-        self.layout = []
-        self.clusterTree = undefined
-      },
-      /**
-       * #action
-       */
-      setClusterTree(tree?: string) {
-        self.clusterTree = tree
-      },
-      /**
-       * #action
-       */
-      setTreeAreaWidth(width: number) {
-        self.treeAreaWidth = width
-      },
-      /**
-       * #action
-       */
-      setShowTree(arg: boolean) {
-        self.showTreeSetting = arg
-      },
-      /**
-       * #action
-       */
-      setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = names ? cast(names) : undefined
-      },
-      /**
-       * #action
-       */
-      setHoveredTreeNode(node?: HoveredTreeNode) {
-        self.hoveredTreeNode = node
-      },
-      /**
-       * #action
-       */
-      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref || undefined
-      },
-      /**
-       * #action
-       */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref || undefined
-      },
-
-      /**
-       * #action
-       */
-      setSources(sources: Source[]) {
-        if (!deepEqual(sources, self.sourcesVolatile)) {
-          self.sourcesVolatile = sources
-        }
-      },
-
-      /**
-       * #action
-       */
-      setFeatureUnderMouse(f?: Feature) {
-        self.featureUnderMouseVolatile = f
-      },
+      featureUnderMouse: undefined as
+        | {
+            refName: string
+            start: number
+            end: number
+            score: number
+            minScore?: number
+            maxScore?: number
+            source: string
+            summary?: boolean
+            allSources?: {
+              source: string
+              score: number
+              minScore?: number
+              maxScore?: number
+              summary?: boolean
+            }[]
+          }
+        | undefined,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get featureUnderMouse() {
-        return self.featureUnderMouseVolatile
-      },
-      /**
-       * #getter
-       */
-      get TooltipComponent() {
-        return Tooltip as AnyReactComponentType
-      },
-
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        const name = self.rendererTypeNameSimple
-        const rendererType = rendererTypes.get(name)
-        if (!rendererType) {
-          throw new Error(`unknown renderer ${name}`)
+      get scalebarOverlapLeft() {
+        const view = getContainingView(self) as { trackLabelsSetting?: string }
+        if (view.trackLabelsSetting === 'overlapping') {
+          const track = getContainingTrack(self)
+          return measureText(getConf(track, 'name'), 12.8) + 100
         }
-        return rendererType
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get graphType() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiLineRenderer' ||
-          self.rendererTypeName === 'MultiRowLineRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
-      get needsFullHeightScalebar() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiLineRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
-      get isMultiRow() {
-        return (
-          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowLineRenderer' ||
-          self.rendererTypeName === 'MultiDensityRenderer'
-        )
+        return 0
       },
 
-      /**
-       * #getter
-       */
-      get canHaveFill() {
-        return (
-          self.rendererTypeName === 'MultiXYPlotRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer'
-        )
-      },
-      /**
-       * #getter
-       * can be used to give it a "color scale" like a R heatmap, not
-       * implemented like this yet but flag can be used for this
-       */
-      get needsCustomLegend() {
-        return self.rendererTypeName === 'MultiDensityRenderer'
+      get DisplayMessageComponent() {
+        return MultiWiggleComponent
       },
 
-      /**
-       * #getter
-       * the multirowxy and multiline don't need to use colors on the legend
-       * boxes since their track is drawn with the color. sort of a stylistic
-       * choice
-       */
-      get renderColorBoxes() {
-        return !(
-          self.rendererTypeName === 'MultiRowLineRenderer' ||
-          self.rendererTypeName === 'MultiRowXYPlotRenderer'
-        )
-      },
-      /**
-       * #getter
-       * positions multi-row below the tracklabel even if using overlap
-       * tracklabels for everything else
-       */
-      get prefersOffset() {
-        return this.isMultiRow
+      renderProps() {
+        return { notReady: true }
       },
 
-      /**
-       * #getter
-       */
       get sourcesWithoutLayout() {
-        const sources = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
-        )
-        const iter = self.sourcesVolatile
-        return iter
-          ?.map(s => ({
-            ...sources[s.name],
-            ...s,
-          }))
-          .map((s, i) => ({
-            ...s,
-            color:
-              s.color ||
-              (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
-          }))
+        return self.sourcesVolatile.map((s, i) => ({
+          source: s.name,
+          ...s,
+          ...(this.isOverlay ? { color: resolveOverlayColor(i, s.color) } : {}),
+        }))
       },
 
-      /**
-       * #getter
-       */
-      get sources() {
-        const sources = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+      get sources(): Source[] {
+        const sourceMap = Object.fromEntries(
+          self.sourcesVolatile.map(s => [s.name, s]),
+        )
+        const layoutColors = Object.fromEntries(
+          (self.layout as Source[])
+            .filter(s => s.color)
+            .map(s => [s.name, s.color]),
         )
         const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        let result = iter
-          ?.map(s => ({
-            ...sources[s.name],
-            ...s,
-          }))
-          .map((s, i) => ({
-            ...s,
-            color:
-              s.color ||
-              (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
-          }))
+        let result = iter.map((s, i) => ({
+          source: s.name,
+          ...sourceMap[s.name],
+          ...s,
+          ...(this.isOverlay
+            ? {
+                color: resolveOverlayColor(
+                  i,
+                  sourceMap[s.name]?.color,
+                  layoutColors[s.name],
+                ),
+              }
+            : {}),
+        }))
 
-        // Filter to subtree if filter is active
-        if (result && self.subtreeFilter?.length) {
+        if (self.subtreeFilter?.length) {
           const filterSet = new Set(self.subtreeFilter)
           result = result.filter(s => filterSet.has(s.name))
         }
         return result
       },
-      /**
-       * #getter
-       */
-      get quantitativeStatsReady() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+
+      get adapterConfig() {
+        const track = getContainingTrack(self)
+        return getConf(track, 'adapter')
+      },
+
+      get hasResolution() {
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter') as { type: string }
+        const { pluginManager } = getEnv(self)
         return (
-          view.initialized &&
-          self.featureDensityStatsReadyAndRegionNotTooLarge &&
-          !self.error
+          pluginManager
+            .getAdapterType(adapterConfig.type)
+            ?.adapterCapabilities.includes('hasResolution') ?? false
         )
       },
-    }))
 
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get showTree() {
-        return self.showTreeSetting ?? true
+      get posColor() {
+        return getConf(self, 'posColor') as string
       },
-      /**
-       * #getter
-       */
+
+      get negColor() {
+        return getConf(self, 'negColor') as string
+      },
+
+      get bicolorPivot() {
+        return getConf(self, 'bicolorPivot') as number
+      },
+
+      get scaleType() {
+        return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+      },
+
+      get autoscaleType() {
+        return self.autoscaleSetting ?? getConf(self, 'autoscale')
+      },
+
+      get summaryScoreMode() {
+        return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
+      },
+
+      get renderingType() {
+        return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
+      },
+
+      get isDensityMode() {
+        return this.renderingType === 'multirowdensity'
+      },
+
+      get isOverlay() {
+        return isOverlayMode(this.renderingType)
+      },
+
+      get minScore() {
+        return self.minScoreSetting ?? getConf(self, 'minScore')
+      },
+
+      get maxScore() {
+        return self.maxScoreSetting ?? getConf(self, 'maxScore')
+      },
+
+      get minScoreConfig() {
+        const val = this.minScore
+        return val === Number.MIN_VALUE ? undefined : val
+      },
+
+      get maxScoreConfig() {
+        const val = this.maxScore
+        return val === Number.MAX_VALUE ? undefined : val
+      },
+
+      get domain(): [number, number] | undefined {
+        if (self.rpcDataMap.size === 0) {
+          return undefined
+        }
+        const range = self.visibleScoreRange
+        if (!range) {
+          return undefined
+        }
+        return getNiceDomain({
+          domain: range,
+          bounds: [this.minScoreConfig, this.maxScoreConfig],
+          scaleType: this.scaleType,
+        })
+      },
+
+      get numSources() {
+        return this.sources.length
+      },
+
       get rowHeight() {
-        const { sources, height, isMultiRow } = self
-        return isMultiRow ? height / (sources?.length || 1) : height
+        return this.isOverlay
+          ? self.height
+          : getRowHeight(self.height, this.numSources)
       },
-      /**
-       * #getter
-       */
+
       get rowHeightTooSmallForScalebar() {
         return this.rowHeight < 70
       },
 
-      /**
-       * #getter
-       */
-      get useMinimalTicks() {
-        return (
-          (getConf(self, 'minimalTicks') as boolean) ||
-          this.rowHeightTooSmallForScalebar
+      get ticks() {
+        const scaleType = this.scaleType
+        const domain = this.domain
+        const rowHeight = this.rowHeight
+        if (!domain) {
+          return undefined
+        }
+        const minimalTicks = getConf(self, 'minimalTicks')
+        const ticks = axisPropsFromTickScale(
+          getScale({
+            scaleType,
+            domain,
+            range: [rowHeight, 0],
+            inverted: false,
+          }),
+          4,
         )
+        return rowHeight < 100 || minimalTicks
+          ? { ...ticks, values: domain }
+          : ticks
       },
-      /**
-       * #getter
-       */
+    }))
+    .views(self => ({
+      get showTree() {
+        return self.showTreeSetting ?? true
+      },
+
+      get showRowSeparators() {
+        return self.showRowSeparatorsSetting ?? false
+      },
+
       get root() {
         const newick = self.clusterTree
         if (!newick) {
@@ -426,11 +340,11 @@ export function stateModelFactory(
         const tree = fromNewick(newick)
         let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
           .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
-          .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
-            ascending(a.data.height || 1, b.data.height || 1),
+          .sort(
+            (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
+              (a.data.height || 1) - (b.data.height || 1),
           )
 
-        // If subtree filter is active, find the matching subtree
         if (self.subtreeFilter?.length) {
           const filterSet = new Set(self.subtreeFilter)
           const getLeafNames = (node: ClusterHierarchyNode): string[] => {
@@ -468,344 +382,538 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get totalHeight() {
-        return self.rowHeight * (self.sources?.length || 1)
-      },
-      /**
-       * #getter
-       */
       get hierarchy() {
         const r = self.root
-        if (!r || !self.sources?.length) {
+        if (!r || !self.sources.length) {
           return undefined
         }
         const clust = cluster()
-        clust.size([self.rowHeight * self.sources.length, self.treeAreaWidth])
+        clust.size([self.height, self.treeAreaWidth])
         clust.separation(() => 1)
         clust(r)
         return r
       },
     }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        adapterProps() {
-          const superProps = superRenderProps()
-          return {
-            ...superProps,
-            config: self.rendererConfig,
-            filters: self.filters,
-            resolution: self.resolution,
-            sources: self.sources,
-          }
-        },
-        /**
-         * #getter
-         */
-        get ticks() {
-          const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
-            self
+    .actions(self => ({
+      setRpcDataForRegion(regionNumber: number, data: MultiWiggleDataResult) {
+        const next = new Map(self.rpcDataMap)
+        next.set(regionNumber, data)
+        self.rpcDataMap = next
+        if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
+          self.sourcesVolatile = data.sources.map(s => ({
+            name: s.name,
+            color: s.color,
+          }))
+        }
+      },
 
-          if (!domain) {
-            return undefined
-          }
+      setVisibleScoreRange(range: [number, number]) {
+        self.visibleScoreRange = range
+      },
 
-          const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-          const ticks = axisPropsFromTickScale(
-            getScale({
-              scaleType,
-              domain,
-              range: [rowHeight - offset, offset],
-              inverted: getConf(self, 'inverted') as boolean,
-            }),
-            4,
+      setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
+        const next = new Map(self.loadedBpPerPx)
+        next.set(regionNumber, bpPerPx)
+        self.loadedBpPerPx = next
+      },
+
+      clearDisplaySpecificData() {
+        self.rpcDataMap = new Map()
+        self.visibleScoreRange = undefined
+        self.loadedBpPerPx = new Map()
+      },
+
+      reload() {
+        self.setError(null)
+        self.clearAllRpcData()
+      },
+
+      setSources(sources: SourceInfo[]) {
+        self.sourcesVolatile = sources
+      },
+
+      setLayout(layout: Source[], clearTree = true) {
+        const orderChanged =
+          clearTree &&
+          self.clusterTree &&
+          self.layout.length === layout.length &&
+          (self.layout as Source[]).some(
+            (source: Source, idx: number) => source.name !== layout[idx]?.name,
           )
-          return useMinimalTicks ? { ...ticks, values: domain } : ticks
+
+        self.layout = layout
+        if (orderChanged) {
+          self.clusterTree = undefined
+        }
+      },
+
+      clearLayout() {
+        self.layout = []
+        self.clusterTree = undefined
+      },
+
+      setClusterTree(tree?: string) {
+        self.clusterTree = tree
+      },
+
+      setTreeAreaWidth(width: number) {
+        self.treeAreaWidth = width
+      },
+
+      setShowTree(arg: boolean) {
+        self.showTreeSetting = arg
+      },
+
+      setShowRowSeparators(arg: boolean) {
+        self.showRowSeparatorsSetting = arg
+      },
+
+      setSubtreeFilter(names?: string[]) {
+        self.subtreeFilter = names ? cast(names) : undefined
+      },
+
+      setHoveredTreeNode(node?: HoveredTreeNode) {
+        self.hoveredTreeNode = node
+      },
+
+      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
+        self.treeCanvas = ref || undefined
+      },
+
+      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverCanvas = ref || undefined
+      },
+
+      setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
+        const prev = self.featureUnderMouse
+        if (!feat && !prev) {
+          return
+        }
+        if (
+          feat &&
+          feat.start === prev?.start &&
+          feat.end === prev.end &&
+          feat.source === prev.source &&
+          feat.score === prev.score
+        ) {
+          return
+        }
+        self.featureUnderMouse = feat
+      },
+
+      selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
+        const session = getSession(self)
+        if (!isSessionModelWithWidgets(session)) {
+          return
+        }
+        const track = getContainingTrack(self)
+        const view = getContainingView(self)
+        const sources = feat.allSources
+          ? Object.fromEntries(feat.allSources.map(s => [s.source, s.score]))
+          : { [feat.source]: feat.score }
+        const feature = new SimpleFeature({
+          uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
+          refName: feat.refName,
+          start: feat.start,
+          end: feat.end,
+          sources,
+        })
+        session.showWidget(
+          session.addWidget('BaseFeatureWidget', 'baseFeature', {
+            featureData: feature.toJSON(),
+            view,
+            track,
+          }),
+        )
+      },
+
+      setAutoscale(val?: string) {
+        self.autoscaleSetting = val
+      },
+
+      setScaleType(scaleType: string) {
+        self.scaleTypeSetting = scaleType
+      },
+
+      setMinScore(val?: number) {
+        self.minScoreSetting = val
+      },
+
+      setMaxScore(val?: number) {
+        self.maxScoreSetting = val
+      },
+
+      setRenderingType(type: string) {
+        self.renderingTypeSetting = type as typeof self.renderingTypeSetting
+      },
+
+      setSummaryScoreMode(val: string) {
+        self.summaryScoreModeSetting = val
+      },
+
+      setResolution(res: number) {
+        self.resolution = res
+      },
+    }))
+    .actions(self => {
+      async function fetchFeaturesForRegion(
+        region: Region,
+        regionNumber: number,
+        stopToken: string,
+        bpPerPx: number,
+        resolution: number,
+        generation: number,
+      ) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter')
+
+        if (!adapterConfig) {
+          return
+        }
+
+        const result = await rpcManager.call(
+          getRpcSessionId(self),
+          'RenderMultiWiggleData',
+          {
+            adapterConfig,
+            region,
+            sources: self.sources,
+            bicolorPivot: self.bicolorPivot,
+            stopToken,
+            bpPerPx,
+            resolution,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
+            },
+          },
+        )
+
+        if (isAlive(self) && generation === self.fetchGeneration) {
+          self.setRpcDataForRegion(regionNumber, result)
+          self.setLoadedRegionForRegion(regionNumber, {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+            assemblyName: region.assemblyName,
+          })
+          self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
+        }
+      }
+
+      const superAfterAttach = self.afterAttach
+
+      let prevPivot: number | undefined
+      let prevResolution: number | undefined
+
+      return {
+        isCacheValid(regionNumber: number) {
+          const view = getContainingView(self) as LGV
+          const regionBpPerPx = untracked(() =>
+            self.loadedBpPerPx.get(regionNumber),
+          )
+          return (
+            regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
+          )
         },
 
-        /**
-         * #getter
-         */
-        get colors() {
-          return [
-            'red',
-            'blue',
-            'green',
-            'orange',
-            'purple',
-            'cyan',
-            'pink',
-            'darkblue',
-            'darkred',
-            'pink',
-          ]
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+          const view = getContainingView(self) as LGV
+          const { bpPerPx } = view
+          const { resolution } = self
+          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+            const promises = needed.map(({ region, regionNumber }) =>
+              fetchFeaturesForRegion(
+                region,
+                regionNumber,
+                ctx.stopToken,
+                bpPerPx,
+                resolution,
+                ctx.generation,
+              ),
+            )
+            await Promise.all(promises)
+          })
         },
-        /**
-         * #getter
-         * unused currently
-         */
-        get quantitativeStatsRelevantToCurrentZoom() {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          return self.stats?.currStatsBpPerPx === view.bpPerPx
+
+        async afterAttach() {
+          superAfterAttach()
+
+          try {
+            const { setupTreeDrawingAutorun } =
+              await import('./treeDrawingAutorun.ts')
+            if (isAlive(self)) {
+              setupTreeDrawingAutorun(self)
+            }
+          } catch (e) {
+            console.error(e)
+          }
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const pivot = self.bicolorPivot
+                if (prevPivot !== undefined && pivot !== prevPivot) {
+                  self.clearAllRpcData()
+                }
+                prevPivot = pivot
+              },
+              { name: 'BicolorPivotChange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const { resolution } = self
+                if (
+                  prevResolution !== undefined &&
+                  resolution !== prevResolution
+                ) {
+                  self.clearAllRpcData()
+                }
+                prevResolution = resolution
+              },
+              { name: 'ResolutionChange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const numStdDev = getConf(self, 'numStdDev') || 3
+                const visibleEntries = view.dynamicBlocks.contentBlocks
+                  .filter(block => block.regionNumber !== undefined)
+                  .flatMap(block => {
+                    const regionData = self.rpcDataMap.get(block.regionNumber!)
+                    if (!regionData) {
+                      return []
+                    }
+                    const visStart = block.start - regionData.regionStart
+                    const visEnd = block.end - regionData.regionStart
+                    return regionData.sources.map(source => ({
+                      visStart,
+                      visEnd,
+                      data: source,
+                    }))
+                  })
+                const allEntries = [...self.rpcDataMap.values()].flatMap(
+                  regionData =>
+                    regionData.sources.map(source => ({ data: source })),
+                )
+                const range = computeAutoscaleDomain(
+                  self.autoscaleType,
+                  self.summaryScoreMode,
+                  numStdDev,
+                  visibleEntries,
+                  allEntries,
+                )
+                if (
+                  range &&
+                  (range[0] !== self.visibleScoreRange?.[0] ||
+                    range[1] !== self.visibleScoreRange[1])
+                ) {
+                  self.setVisibleScoreRange(range)
+                }
+              },
+              { delay: 400, name: 'VisibleScoreRange' },
+            ),
+          )
         },
       }
     })
     .views(self => ({
-      get legendFontSize() {
-        return Math.min(self.rowHeight, 8)
-      },
-
-      get canDisplayLegendLabels() {
-        return self.rowHeight > 7
-      },
-
-      get labelWidth() {
-        const minWidth = 20
-        return max(
-          self.sources
-            ?.map(s => measureText(s.name, this.legendFontSize))
-            .map(width => (this.canDisplayLegendLabels ? width : minWidth)) ||
-            [],
-        )
-      },
-      /**
-       * #method
-       */
-      renderProps() {
-        const superProps = self.adapterProps()
-        return {
-          ...superProps,
-          notReady: superProps.notReady || !self.sources || !self.stats,
-          displayCrossHatches: self.displayCrossHatches,
-          height: self.height,
-          ticks: self.ticks,
-          stats: self.stats,
-          scaleOpts: self.scaleOpts,
-          offset: self.isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET,
-        }
-      },
-      /**
-       * #method
-       */
-      renderingProps() {
-        return {
-          displayModel: self,
-        }
-      },
-
-      /**
-       * #getter
-       */
-      get hasResolution() {
-        return self.adapterCapabilities.includes('hasResolution')
-      },
-
-      /**
-       * #getter
-       */
-      get hasGlobalStats() {
-        return self.adapterCapabilities.includes('hasGlobalStats')
-      },
-
-      /**
-       * #getter
-       */
-      get fillSetting() {
-        if (self.filled) {
-          return 0
-        } else if (self.minSize === 1) {
-          return 1
-        } else {
-          return 2
-        }
-      },
-    }))
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      const hasRenderings = getConf(self, 'defaultRendering')
-      return {
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Show...',
-              icon: VisibilityIcon,
-              subMenu: [
-                {
-                  label: 'Show tooltips',
-                  type: 'checkbox',
-                  checked: self.showTooltipsEnabled,
-                  onClick: () => {
-                    self.setShowTooltips(!self.showTooltipsEnabled)
-                  },
+      trackMenuItems() {
+        return [
+          {
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              {
+                label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
+                type: 'checkbox',
+                checked: self.showTree,
+                disabled: !self.clusterTree,
+                onClick: () => {
+                  self.setShowTree(!self.showTree)
                 },
-                {
-                  label: 'Show sidebar',
-                  type: 'checkbox',
-                  checked: self.showSidebar,
-                  onClick: () => {
-                    self.setShowSidebar(!self.showSidebar)
-                  },
+              },
+              {
+                label: 'Show row separators',
+                type: 'checkbox',
+                checked: self.showRowSeparators,
+                onClick: () => {
+                  self.setShowRowSeparators(!self.showRowSeparators)
                 },
-                ...(self.isMultiRow
-                  ? [
-                      {
-                        label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
-                        type: 'checkbox',
-                        checked: self.showTree,
-                        disabled: !self.clusterTree,
-                        onClick: () => {
-                          self.setShowTree(!self.showTree)
-                        },
-                      },
-                      ...(self.subtreeFilter?.length
-                        ? [
-                            {
-                              label: 'Clear subtree filter',
-                              onClick: () => {
-                                self.setSubtreeFilter(undefined)
-                              },
-                            },
-                          ]
-                        : []),
-                    ]
-                  : []),
-                ...(self.graphType
-                  ? [
-                      {
-                        type: 'checkbox',
-                        label: 'Show cross hatches',
-                        checked: self.displayCrossHatchesSetting,
-                        onClick: () => {
-                          self.toggleCrossHatches()
-                        },
-                      },
-                    ]
-                  : []),
-              ],
-            },
-            {
-              label: 'Score',
-              icon: EqualizerIcon,
-              subMenu: self.scoreTrackMenuItems(),
-            },
-
-            ...(self.canHaveFill
-              ? [
-                  {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
-                  },
-                ]
-              : []),
-            ...(hasRenderings
-              ? [
-                  {
-                    label: 'Renderer type',
-                    subMenu: [
-                      'xyplot',
-                      'multirowxy',
-                      'multirowdensity',
-                      'multiline',
-                      'multirowline',
-                    ].map(key => ({
-                      label: key,
-                      type: 'radio',
-                      checked: self.rendererTypeNameSimple === key,
+              },
+              ...(self.subtreeFilter?.length
+                ? [
+                    {
+                      label: 'Clear subtree filter',
                       onClick: () => {
-                        self.setRendererType(key)
+                        self.setSubtreeFilter(undefined)
                       },
-                    })),
-                  },
-                ]
-              : []),
-            ...(self.isMultiRow
-              ? [
-                  {
-                    label: 'Cluster rows by score',
-                    onClick: () => {
-                      getSession(self).queueDialog(handleClose => [
-                        WiggleClusterDialog,
+                    },
+                  ]
+                : []),
+            ],
+          },
+          {
+            label: 'Score',
+            icon: EqualizerIcon,
+            subMenu: [
+              ...(self.hasResolution
+                ? [
+                    {
+                      label: 'Resolution',
+                      subMenu: [
                         {
-                          model: self,
-                          handleClose,
+                          label: 'Finer resolution',
+                          onClick: () => {
+                            self.setResolution(self.resolution * 5)
+                          },
                         },
-                      ])
+                        {
+                          label: 'Coarser resolution',
+                          onClick: () => {
+                            self.setResolution(self.resolution / 5)
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      label: 'Summary score mode',
+                      subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
+                        elt => ({
+                          label: elt,
+                          type: 'radio' as const,
+                          checked: self.summaryScoreMode === elt,
+                          onClick: () => {
+                            self.setSummaryScoreMode(elt)
+                          },
+                        }),
+                      ),
+                    },
+                  ]
+                : []),
+              {
+                label: 'Scale type',
+                subMenu: [
+                  {
+                    label: 'Linear scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'linear',
+                    onClick: () => {
+                      self.setScaleType('linear')
                     },
                   },
-                ]
-              : []),
-            {
-              label: 'Edit colors/arrangement...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetColorDialog,
                   {
-                    model: self,
-                    handleClose,
+                    label: 'Log scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'log',
+                    onClick: () => {
+                      self.setScaleType('log')
+                    },
                   },
-                ])
+                ],
               },
-            },
-          ]
-        },
-      }
-    })
-    .actions(self => {
-      const { renderSvg: superRenderSvg } = self
-      return {
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            try {
-              const [
-                { getMultiWiggleSourcesAutorun },
-                { getQuantitativeStatsAutorun },
-                { setupTreeDrawingAutorun },
-              ] = await Promise.all([
-                import('../getMultiWiggleSourcesAutorun.ts'),
-                import('../getQuantitativeStatsAutorun.ts'),
-                import('./treeDrawingAutorun.ts'),
+              {
+                label: 'Autoscale type',
+                subMenu: (
+                  [
+                    ['local', 'Local'],
+                    ['global', 'Global'],
+                    ['globalsd', 'Global ± 3σ'],
+                    ['localsd', 'Local ± 3σ'],
+                  ] as const
+                ).map(([val, label]) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: self.autoscaleType === val,
+                  onClick: () => {
+                    self.setAutoscale(val)
+                  },
+                })),
+              },
+              {
+                label: 'Set min/max score',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    SetMinMaxDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
+            ],
+          },
+          {
+            label: 'Rendering type',
+            subMenu: (
+              [
+                ['multirowxy', 'Multi-row XY plot'],
+                ['multirowdensity', 'Multi-row density'],
+                ['multirowline', 'Multi-row line'],
+                ['multirowscatter', 'Multi-row scatter'],
+                ['multixyplot', 'Overlapping XY plot'],
+                ['multiline', 'Overlapping lines'],
+                ['multiscatter', 'Overlapping scatter'],
+              ] as const
+            ).map(([value, label]) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.renderingType === value,
+              onClick: () => {
+                self.setRenderingType(value)
+              },
+            })),
+          },
+          {
+            label: 'Cluster rows by score',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                WiggleClusterDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
               ])
-              getQuantitativeStatsAutorun(self)
-              getMultiWiggleSourcesAutorun(self)
-              setupTreeDrawingAutorun(self)
-            } catch (e) {
-              if (isAlive(self)) {
-                console.error(e)
-                getSession(self).notifyError(`${e}`, e)
-              }
-            }
-          })()
-        },
-
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts, superRenderSvg)
-        },
-      }
-    })
+            },
+          },
+          {
+            label: 'Edit colors/arrangement...',
+            icon: PaletteIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
+        ]
+      },
+    }))
+    .actions(self => ({
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self as MultiLinearWiggleDisplayModel, opts)
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
@@ -813,28 +921,43 @@ export function stateModelFactory(
       }
       const {
         layout,
-        showSidebar,
         clusterTree,
         treeAreaWidth,
         showTreeSetting,
+        showRowSeparatorsSetting,
         subtreeFilter,
+        scaleTypeSetting,
+        minScoreSetting,
+        maxScoreSetting,
+        renderingTypeSetting,
+        summaryScoreModeSetting,
+        autoscaleSetting,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(layout?.length ? { layout } : {}),
-        ...(!showSidebar ? { showSidebar } : {}),
+        ...(layout.length > 0 ? { layout } : {}),
         ...(clusterTree !== undefined ? { clusterTree } : {}),
         ...(treeAreaWidth !== 80 ? { treeAreaWidth } : {}),
         ...(showTreeSetting !== undefined ? { showTreeSetting } : {}),
+        ...(showRowSeparatorsSetting !== undefined
+          ? { showRowSeparatorsSetting }
+          : {}),
         ...(subtreeFilter?.length ? { subtreeFilter } : {}),
+        ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
+        ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
+        ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
+        ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
+        ...(summaryScoreModeSetting !== undefined
+          ? { summaryScoreModeSetting }
+          : {}),
+        ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })
 }
 
-export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>
-
-export default stateModelFactory
+export type MultiLinearWiggleDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type MultiLinearWiggleDisplayModel =
+  Instance<MultiLinearWiggleDisplayStateModel>

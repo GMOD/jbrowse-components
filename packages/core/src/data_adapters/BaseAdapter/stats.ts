@@ -60,9 +60,12 @@ export async function calculateFeatureDensityStats(
   let interval = DENSITY_SAMPLE_INITIAL_INTERVAL
   let expansionTime = 0
   let lastTime = performance.now()
+  const t0 = lastTime
+  let rounds = 0
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
+    rounds++
     const features = await sampleFeaturesForInterval(
       region,
       interval,
@@ -77,7 +80,11 @@ export async function calculateFeatureDensityStats(
 
     if (expansionTime > DENSITY_SAMPLE_TIMEOUT_MS) {
       console.warn(
-        "Stats estimation reached timeout, or didn't get enough features",
+        "[calculateFeatureDensityStats] timeout, or didn't get enough features",
+        {
+          totalRounds: rounds,
+          totalElapsed: `${(performance.now() - t0).toFixed(0)}ms`,
+        },
       )
       return { featureDensity: Number.POSITIVE_INFINITY }
     }

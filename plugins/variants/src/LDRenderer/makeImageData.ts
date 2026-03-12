@@ -8,7 +8,7 @@ import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
 import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
 
 export interface MakeImageDataResult {
-  flatbush: ArrayBufferLike
+  flatbush: ArrayBuffer
   items: LDFlatbushItem[]
   maxScore: number
   w: number

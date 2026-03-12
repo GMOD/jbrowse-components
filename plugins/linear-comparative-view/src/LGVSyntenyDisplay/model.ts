@@ -8,9 +8,17 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
+import {
+  getColorByMenuItem,
+  getFeatureHeightMenuItem,
+  getFiltersMenuItem,
+  linearAlignmentsDisplayStateModelFactory,
+} from '@jbrowse/plugin-alignments'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -26,13 +34,14 @@ const LaunchSyntenyViewDialog = lazy(
  * to external synteny views
  *
  * extends
- * - [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
+ * - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
+  const baseModel = linearAlignmentsDisplayStateModelFactory(schema)
   return types
     .compose(
       'LGVSyntenyDisplay',
-      SharedLinearPileupDisplayMixin(schema),
+      baseModel,
       types.model({
         /**
          * #property
@@ -44,59 +53,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         configuration: ConfigurationReference(schema),
       }),
     )
-    .views(self => {
-      const superContextMenuItems = self.contextMenuItems
-      return {
-        /**
-         * #method
-         */
-        contextMenuItems() {
-          const feature = self.contextMenuFeature
-          return [
-            ...superContextMenuItems(),
-            ...(feature
-              ? [
-                  {
-                    label: 'Launch synteny view for this position',
-                    onClick: () => {
-                      getSession(self).queueDialog(handleClose => [
-                        LaunchSyntenyViewDialog,
-                        {
-                          view: getContainingView(self) as LGV,
-                          trackId: getConf(getContainingTrack(self), 'trackId'),
-                          handleClose,
-                          session: getSession(self),
-                          feature,
-                        },
-                      ])
-                    },
-                  },
-                ]
-              : []),
-          ]
-        },
-      }
-    })
-    .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
-      } = self
-      return {
-        /**
-         * #method
-         */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Color scheme',
-              subMenu: [...superColorSchemeSubMenuItems()],
-            },
-          ]
-        },
-      }
-    })
+    .preProcessSnapshot(snap => ({
+      showCoverage: false,
+      ...snap,
+    }))
     .actions(self => ({
       /**
        * #action
@@ -123,11 +83,73 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         session.setSelection(feature)
       },
       afterCreate() {
-        // use color by strand to help indicate inversions better on first load,
-        // otherwise use selected orientation
         if (!self.colorBySetting && self.colorBy.type === 'normal') {
           self.setColorScheme({ type: 'strand' })
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      contextMenuItems() {
+        const feature = self.contextMenuFeature
+        return feature
+          ? [
+              {
+                label: 'Open feature details',
+                icon: MenuOpenIcon,
+                onClick: () => {
+                  self.selectFeature(feature)
+                },
+              },
+              {
+                label: 'Launch synteny view for this position',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    LaunchSyntenyViewDialog,
+                    {
+                      view: getContainingView(self) as LGV,
+                      trackId: getConf(getContainingTrack(self), 'trackId'),
+                      handleClose,
+                      session: getSession(self),
+                      feature,
+                    },
+                  ])
+                },
+              },
+              {
+                label: 'Copy info to clipboard',
+                icon: ContentCopyIcon,
+                onClick: async () => {
+                  const { uniqueId, ...rest } = feature.toJSON()
+                  const session = getSession(self)
+                  const { default: copy } = await import('copy-to-clipboard')
+                  copy(JSON.stringify(rest, null, 4))
+                  session.notify('Copied to clipboard', 'success')
+                },
+              },
+            ]
+          : []
+      },
+      /**
+       * #method
+       */
+      trackMenuItems() {
+        const items: MenuItem[] = [
+          getFeatureHeightMenuItem(self),
+          getColorByMenuItem(self, {
+            colorOptions: [
+              { label: 'Normal', type: 'normal' },
+              { label: 'Strand', type: 'strand' },
+              { label: 'Mapping quality', type: 'mappingQuality' },
+              // TODO: implement
+              { label: 'Query name', type: 'query' },
+            ],
+          }),
+          getFiltersMenuItem(self),
+        ]
+        return items
       },
     }))
 }

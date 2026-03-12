@@ -48,9 +48,10 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
-    return dataAdapter.getMultiRegionFeatureDensityStats(
+    const result = await dataAdapter.getMultiRegionFeatureDensityStats(
       regions,
       deserializedArgs,
     )
+    return result
   }
 }

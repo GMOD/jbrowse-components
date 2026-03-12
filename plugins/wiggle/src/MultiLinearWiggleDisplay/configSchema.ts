@@ -1,76 +1,63 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema.ts'
+import {
+  MULTI_WIGGLE_RENDERING_TYPES,
+  WIGGLE_POS_COLOR_DEFAULT,
+} from '../util.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-/**
- * #config MultiLinearWiggleDisplay
- * extends
- * - [SharedWiggleDisplay](../sharedwiggledisplay)
- */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
-export default function WiggleConfigFactory(pluginManager: PluginManager) {
-  const MultiXYPlotRendererConfigSchema = pluginManager.getRendererType(
-    'MultiXYPlotRenderer',
-  )!.configSchema
-  const MultiDensityRendererConfigSchema = pluginManager.getRendererType(
-    'MultiDensityRenderer',
-  )!.configSchema
-  const MultiRowXYPlotRendererConfigSchema = pluginManager.getRendererType(
-    'MultiRowXYPlotRenderer',
-  )!.configSchema
-  const MultiLineRendererConfigSchema =
-    pluginManager.getRendererType('MultiLineRenderer')!.configSchema
-  const MultiRowLineRendererConfigSchema = pluginManager.getRendererType(
-    'MultiRowLineRenderer',
-  )!.configSchema
-
-  return ConfigurationSchema(
-    'MultiLinearWiggleDisplay',
-    {
-      /**
-       * #slot
-       */
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', [
-          'multirowxy',
-          'xyplot',
-          'multirowdensity',
-          'multiline',
-          'multirowline',
-        ]),
-        defaultValue: 'multirowxy',
-      },
-
-      /**
-       * #slot
-       */
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
-        MultiDensityRenderer: MultiDensityRendererConfigSchema,
-        MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
-        MultiLineRenderer: MultiLineRendererConfigSchema,
-        MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
-      }),
-
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 200,
-      },
+export default ConfigurationSchema(
+  'MultiLinearWiggleDisplay',
+  {
+    posColor: {
+      type: 'color',
+      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+      description: 'Color for positive scores (when using bicolor)',
     },
-    {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: sharedWiggleConfigFactory(),
-      explicitlyTyped: true,
+    negColor: {
+      type: 'color',
+      defaultValue: '#f0636b',
+      description: 'Color for negative scores (when using bicolor)',
     },
-  )
-}
+    bicolorPivot: {
+      type: 'number',
+      defaultValue: 0,
+      description: 'Pivot value for bicolor mode',
+    },
+    height: {
+      type: 'number',
+      defaultValue: 200,
+      description: 'Default height of the track',
+    },
+    minScore: {
+      type: 'number',
+      defaultValue: Number.MIN_VALUE,
+      description: 'Minimum score bound',
+    },
+    maxScore: {
+      type: 'number',
+      defaultValue: Number.MAX_VALUE,
+      description: 'Maximum score bound',
+    },
+    scaleType: {
+      type: 'stringEnum',
+      model: types.enumeration('Scale type', ['linear', 'log']),
+      defaultValue: 'linear',
+      description: 'Scale type (linear or log)',
+    },
+    summaryScoreMode: {
+      type: 'stringEnum',
+      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+      description:
+        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+      defaultValue: 'avg',
+    },
+    defaultRendering: {
+      type: 'stringEnum',
+      model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
+      defaultValue: 'multirowxy',
+      description: 'Default rendering type',
+    },
+  },
+  { explicitlyTyped: true },
+)

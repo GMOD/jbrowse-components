@@ -22,6 +22,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
+  private summaryRefsPromise?: Promise<Set<string>>
+  private splitThresholdPromise?: Promise<number | undefined>
 
   public constructor(
     config: AnyConfigurationModel,
@@ -58,6 +60,30 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       : assemblyNames
   }
 
+  private getSummaryRefNames() {
+    if (!this.summaryRefsPromise) {
+      this.summaryRefsPromise = this.pif
+        .getReferenceSequenceNames()
+        .then(
+          names =>
+            new Set(
+              names.filter(n => n.startsWith('sq') || n.startsWith('st')),
+            ),
+        )
+    }
+    return this.summaryRefsPromise
+  }
+
+  private getSplitThreshold() {
+    if (!this.splitThresholdPromise) {
+      this.splitThresholdPromise = this.pif.getHeader().then(header => {
+        const match = /splitThreshold=(\d+)/.exec(header)
+        return match ? +match[1]! : undefined
+      })
+    }
+    return this.splitThresholdPromise
+  }
+
   public async hasDataForRefName() {
     return true
   }
@@ -65,22 +91,29 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   async getRefNames(opts: BaseOptions & { regions?: Region[] } = {}) {
     const r1 = opts.regions?.[0]?.assemblyName
     if (!r1) {
-      throw new Error('no assembly name provided')
+      // Called without assembly context (e.g. from CoreGetRefNames RPC via
+      // assembly manager). Return empty — hasDataForRefName returns true
+      // unconditionally so the ref name map isn't needed for this adapter.
+      return []
     }
 
     const idx = this.getAssemblyNames().indexOf(r1)
     const names = await this.pif.getReferenceSequenceNames(opts)
     if (idx === 0) {
-      return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
+      return names
+        .filter(n => n.startsWith('q') && !n.startsWith('sq'))
+        .map(n => n.slice(1))
     } else if (idx === 1) {
-      return names.filter(n => n.startsWith('t')).map(n => n.slice(1))
+      return names
+        .filter(n => n.startsWith('t') && !n.startsWith('st'))
+        .map(n => n.slice(1))
     } else {
       return []
     }
   }
 
   getFeatures(query: Region, opts: PAFOptions = {}) {
-    const { statusCallback = () => {} } = opts
+    const { statusCallback = () => {}, bpPerPx } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
@@ -97,11 +130,33 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // - 't' prefix lines are indexed by target coordinates
       const letter = flip ? 'q' : 't'
 
+      // LOD: switch to CIGAR-free summary lines when zoomed out past the
+      // split threshold T. make-pif guarantees every indel < T after
+      // splitting, and the renderer already skips CIGARs whose largest
+      // indel is smaller than one pixel. At bpPerPx >= T those two
+      // conditions overlap perfectly: every indel is sub-pixel, so every
+      // CIGAR would be downloaded then thrown away. Summary lines skip
+      // the download with no visual difference.
+      const splitThreshold = await this.getSplitThreshold()
+      const useSummary =
+        splitThreshold !== undefined &&
+        bpPerPx !== undefined &&
+        bpPerPx > splitThreshold
+      let prefix = useSummary ? `s${letter}` : letter
+
+      // Fallback: if summary refs don't exist (old PIF file), use full prefix
+      if (useSummary) {
+        const summaryRefs = await this.getSummaryRefNames()
+        if (!summaryRefs.has(prefix + query.refName)) {
+          prefix = letter
+        }
+      }
+
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]
 
       await updateStatus('Downloading features', statusCallback, () =>
-        this.pif.getLines(letter + query.refName, query.start, query.end, {
+        this.pif.getLines(prefix + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
             const { extra, strand } = r
@@ -118,7 +173,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             // represent the mate coords
             const start = r.qstart
             const end = r.qend
-            const refName = r.qname.slice(1) // Strip 'q'/'t' prefix
+            const prefixLen = prefix.length
+            const refName = r.qname.slice(prefixLen)
             const mateName = r.tname
             const mateStart = r.tstart
             const mateEnd = r.tend

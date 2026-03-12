@@ -5,7 +5,7 @@ import {
   CIGAR_N,
   CIGAR_P,
   CIGAR_S,
-} from '../PileupRenderer/renderers/cigarUtil.ts'
+} from '../shared/cigarUtil.ts'
 
 import type { Mismatch } from '../shared/types.ts'
 
@@ -14,7 +14,7 @@ import type { Mismatch } from '../shared/types.ts'
 // opIndex is 0-8: M=0, I=1, D=2, N=3, S=4, H=5, P=6, ==7, X=8
 export function mdToMismatches2(
   mdstring: string,
-  ops: Uint32Array | undefined,
+  ops: ArrayLike<number> | undefined,
   cigarMismatches: Mismatch[],
   seq: string,
   qual?: Uint8Array,

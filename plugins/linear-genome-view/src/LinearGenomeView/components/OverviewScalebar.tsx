@@ -48,10 +48,14 @@ const useStyles = makeStyles()(theme => ({
 
   scalebarRefName: {
     position: 'absolute',
-    left: 0,
+    top: 0,
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    maxWidth: 'calc(100% - 6px)',
   },
   scalebarVisibleRegion: {
     position: 'absolute',
@@ -96,49 +100,60 @@ const OverviewBox = observer(function OverviewBox({
   const canDisplayCytobands =
     showCytobands && getCytobands(assembly, block.refName).length
 
+  if (canDisplayCytobands) {
+    return (
+      <>
+        <Typography
+          style={{
+            color: theme.palette.text.primary,
+            transform: `translateX(${block.offsetPx + 3}px)`,
+          }}
+          className={classes.scalebarRefName}
+        >
+          {refName}
+        </Typography>
+        <div
+          className={classes.scalebarContig}
+          style={{
+            transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
+            width: block.widthPx,
+          }}
+        >
+          <svg style={{ width: '100%' }}>
+            <Cytobands overview={overview} assembly={assembly} block={block} />
+          </svg>
+        </div>
+      </>
+    )
+  }
+
   return (
-    <div>
-      {/* name of sequence */}
+    <div
+      className={cx(
+        classes.scalebarContig,
+        reversed
+          ? classes.scalebarContigReverse
+          : classes.scalebarContigForward,
+        classes.scalebarBorder,
+      )}
+      style={{
+        transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
+        width: block.widthPx,
+        borderColor: refNameColor,
+      }}
+    >
       <Typography
-        style={{
-          transform: `translateX(${block.offsetPx + 3}px)`,
-          color: canDisplayCytobands
-            ? theme.palette.text.primary
-            : refNameColor,
-        }}
+        style={{ color: refNameColor, left: 3 }}
         className={classes.scalebarRefName}
       >
         {refName}
       </Typography>
-      <div
-        className={cx(
-          classes.scalebarContig,
-          canDisplayCytobands
-            ? undefined
-            : reversed
-              ? classes.scalebarContigReverse
-              : classes.scalebarContigForward,
-          !canDisplayCytobands ? classes.scalebarBorder : undefined,
-        )}
-        style={{
-          transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
-          width: block.widthPx,
-          borderColor: refNameColor,
-        }}
-      >
-        {canDisplayCytobands ? (
-          <svg style={{ width: '100%' }}>
-            <Cytobands overview={overview} assembly={assembly} block={block} />
-          </svg>
-        ) : (
-          <OverviewScalebarTickLabels
-            model={model}
-            overview={overview}
-            scale={scale}
-            block={block}
-          />
-        )}
-      </div>
+      <OverviewScalebarTickLabels
+        model={model}
+        overview={overview}
+        scale={scale}
+        block={block}
+      />
     </div>
   )
 })

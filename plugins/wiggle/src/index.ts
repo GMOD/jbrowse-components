@@ -2,23 +2,15 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
-import DensityRendererF from './DensityRenderer/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
-import LinePlotRendererF from './LinePlotRenderer/index.ts'
-import LinearWiggleDisplayF, {
-  ReactComponent as LinearWiggleDisplayReactComponent,
-  modelFactory as linearWiggleDisplayModelFactory,
-} from './LinearWiggleDisplay/index.ts'
-import MultiDensityRendererF from './MultiDensityRenderer/index.ts'
-import MultiLineRendererF from './MultiLineRenderer/index.ts'
+import LinearWiggleDisplayF from './LinearWiggleDisplay/index.ts'
 import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
-import MultiRowLineRendererF from './MultiRowLineRenderer/index.ts'
-import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer/index.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
-import MultiXYPlotRendererF from './MultiXYPlotRenderer/index.ts'
 import QuantitativeTrackF from './QuantitativeTrack/index.ts'
+import RenderMultiWiggleDataRPCF from './RenderMultiWiggleDataRPC/index.ts'
+import RenderWiggleDataRPCF from './RenderWiggleDataRPC/index.ts'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
@@ -26,11 +18,6 @@ import {
   WiggleGetGlobalQuantitativeStats,
   WiggleGetMultiRegionQuantitativeStats,
 } from './WiggleRPC/rpcMethods.ts'
-import XYPlotRendererF, {
-  ReactComponent as XYPlotRendererReactComponent,
-  XYPlotRenderer,
-  configSchema as xyPlotRendererConfigSchema,
-} from './XYPlotRenderer/index.ts'
 import * as utils from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -45,17 +32,11 @@ export default class WigglePlugin extends Plugin {
     MultiQuantitativeTrackF(pm)
     LinearWiggleDisplayF(pm)
     MultiLinearWiggleDisplayF(pm)
-    LinePlotRendererF(pm)
-    XYPlotRendererF(pm)
-    DensityRendererF(pm)
-    MultiXYPlotRendererF(pm)
-    MultiRowXYPlotRendererF(pm)
-    MultiDensityRendererF(pm)
-    MultiLineRendererF(pm)
-    MultiRowLineRendererF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     GuessAdapterF(pm)
+    RenderWiggleDataRPCF(pm)
+    RenderMultiWiggleDataRPCF(pm)
 
     pm.addRpcMethod(() => new WiggleGetGlobalQuantitativeStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionQuantitativeStats(pm))
@@ -65,18 +46,12 @@ export default class WigglePlugin extends Plugin {
   }
 
   exports = {
-    LinearWiggleDisplayReactComponent,
-    XYPlotRendererReactComponent,
-    XYPlotRenderer,
-    linearWiggleDisplayModelFactory,
-    xyPlotRendererConfigSchema,
     utils,
   }
 }
 
 export * from './util.ts'
 
-export { default as WiggleRendering } from './WiggleRendering.tsx'
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   Tooltip,

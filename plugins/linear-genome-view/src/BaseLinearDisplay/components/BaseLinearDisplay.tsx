@@ -1,6 +1,5 @@
 import { Suspense, useRef, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -41,31 +40,41 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
     showTooltipsEnabled,
   } = model
   const theme = useTheme()
-  const legendItems = model.legendItems(theme)
+  const legendItems =
+    'legendItems' in model && typeof model.legendItems === 'function'
+      ? model.legendItems(theme)
+      : []
   return (
     <div
       ref={ref}
-      data-testid={`display-${getConf(model, 'displayId')}`}
+      data-testid={`display-${model.configuration.displayId}`}
       className={classes.display}
-      onContextMenu={event => {
-        event.preventDefault()
-        if (contextCoord) {
-          // There's already a context menu open, so close it
-          setContextCoord(undefined)
-        } else if (ref.current) {
-          setContextCoord([event.clientX, event.clientY])
-        }
-      }}
-      onMouseMove={event => {
-        if (!ref.current) {
-          return
-        }
-        const rect = ref.current.getBoundingClientRect()
-        const { left, top } = rect
-        setOffsetMouseCoord([event.clientX - left, event.clientY - top])
-        setClientMouseCoord([event.clientX, event.clientY])
-        setClientRect(rect)
-      }}
+      onContextMenu={
+        DisplayMessageComponent
+          ? undefined
+          : event => {
+              event.preventDefault()
+              if (contextCoord) {
+                setContextCoord(undefined)
+              } else if (ref.current) {
+                setContextCoord([event.clientX, event.clientY])
+              }
+            }
+      }
+      onMouseMove={
+        DisplayMessageComponent
+          ? undefined
+          : event => {
+              if (!ref.current) {
+                return
+              }
+              const rect = ref.current.getBoundingClientRect()
+              const { left, top } = rect
+              setOffsetMouseCoord([event.clientX - left, event.clientY - top])
+              setClientMouseCoord([event.clientX, event.clientY])
+              setClientRect(rect)
+            }
+      }
     >
       {DisplayMessageComponent ? (
         <DisplayMessageComponent model={model} />
@@ -90,7 +99,7 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
           />
         </Suspense>
       ) : null}
-      {contextCoord ? (
+      {contextCoord && !DisplayMessageComponent ? (
         <MenuPage
           contextCoord={contextCoord}
           model={model}

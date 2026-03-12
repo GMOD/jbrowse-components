@@ -1,103 +1,149 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
 
-import { sum } from '@jbrowse/core/util'
+interface GenomeViewModel {
+  bpPerPx: number
+  scrollZoom?: boolean
+  zoomTo: (bpPerPx: number, clientX?: number) => void
+  horizontalScroll: (delta: number) => void
+}
 
-type Timer = ReturnType<typeof setTimeout>
+const SCROLL_ZOOM_FACTOR_DIVISOR = 500
+// max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
+const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
+
+// NOTE: The getNormalizer function and zoom logic below are also implemented in
+// plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx
+// If you modify the normalizer logic or zoom calculations here, you must also update
+// the corresponding code in BreakpointSplitViewOverlay.tsx to keep wheel zoom behavior
+// consistent across all genome views.
+
+function getNormalizer(deltaY: number) {
+  const abs = Math.abs(deltaY)
+  if (abs < 6) {
+    return 25
+  }
+  if (abs > 150) {
+    return 500
+  }
+  if (abs > 30) {
+    return 150
+  }
+  return 75
+}
+
+function normalizeWheel(delta: number, mode: number) {
+  if (mode === 1) {
+    return delta * 16
+  }
+  if (mode === 2) {
+    return delta * 100
+  }
+  return delta
+}
 
 export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement | null>,
-  model: {
-    bpPerPx: number
-    zoomTo: (arg: number, arg2?: number) => void
-    setScaleFactor: (arg: number) => void
-    horizontalScroll: (arg: number) => void
-  },
+  model: GenomeViewModel,
 ) {
-  const zoomDelta = useRef(0)
   const scrollDelta = useRef(0)
-  const timeout = useRef<Timer>(null)
-  const rafId = useRef(0)
-  const scheduled = useRef(false)
+  const zoomDelta = useRef(0)
+  const zoomDivisor = useRef(0)
+  const lastClientX = useRef(0)
+  const rectLeft = useRef(0)
+  const rafId = useRef<number | null>(null)
+  const lastRafTime = useRef<number | null>(null)
 
   useEffect(() => {
-    let samples = [] as number[]
     const curr = ref.current
+    if (!curr) {
+      return () => {}
+    }
 
-    // if ctrl is held down, zoom in with y-scroll, else scroll horizontally
-    // with x-scroll
+    // cache the element's left position via ResizeObserver to avoid calling
+    // getBoundingClientRect() inside the wheel handler, which forces a
+    // synchronous layout reflow and causes "[Violation] 'wheel' handler took
+    // Nms" warnings. event.offsetX would be simpler but is unreliable here
+    // since wheel events bubble from child elements
+    rectLeft.current = curr.getBoundingClientRect().left
+    const observer = new ResizeObserver(() => {
+      rectLeft.current = curr.getBoundingClientRect().left
+    })
+    observer.observe(curr)
+
+    // the handler must be non-passive (passive: false) so we can
+    // preventDefault to suppress native scroll during zoom. to compensate,
+    // the handler only accumulates deltas — all heavy work (model.zoomTo,
+    // model.horizontalScroll) is deferred to a single requestAnimationFrame
     function onWheel(event: WheelEvent) {
-      if (event.ctrlKey) {
+      if (event.shiftKey && model.scrollZoom) {
+        return
+      }
+
+      const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+      const isCtrlZoom = event.ctrlKey || event.metaKey
+      const isScrollZoom =
+        model.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX)
+
+      if (isCtrlZoom || isScrollZoom) {
         event.preventDefault()
-        // there is no way to truly detect this, but it attempts to dynamically
-        // toggle between normalization scheme depending on strength of deltaY,
-        // particular due to the fact that this code path is triggered for both
-        // normal ctrl+wheel scroll and pinch to zoom. for these two cases
-        // - true wheel scroll has larger deltaY
-        // - pinch-to-zoom has much smaller deltaY
-        // though there is variation depending on platform
-        samples.push(event.deltaY)
-        const averageDeltaY = Math.abs(sum(samples)) / samples.length
-        const normalizer =
-          averageDeltaY < 6
-            ? 25
-            : averageDeltaY > 30
-              ? averageDeltaY > 150
-                ? 500
-                : 150
-              : 75
-        zoomDelta.current += event.deltaY / normalizer
-        model.setScaleFactor(
-          zoomDelta.current < 0
-            ? 1 - zoomDelta.current
-            : 1 / (1 + zoomDelta.current),
-        )
-        if (timeout.current) {
-          clearTimeout(timeout.current)
-        }
-        timeout.current = setTimeout(() => {
-          model.setScaleFactor(1)
-          model.zoomTo(
-            zoomDelta.current > 0
-              ? model.bpPerPx * (1 + zoomDelta.current)
-              : model.bpPerPx / (1 - zoomDelta.current),
-            event.clientX - (curr?.getBoundingClientRect().left || 0),
-          )
-          zoomDelta.current = 0
-          samples = []
-        }, 300)
+        zoomDelta.current += deltaY
+        zoomDivisor.current = isCtrlZoom
+          ? getNormalizer(deltaY)
+          : SCROLL_ZOOM_FACTOR_DIVISOR
+        lastClientX.current = event.clientX
       } else {
-        // this is needed to stop the event from triggering "back button
-        // action" on MacOSX etc.  but is a heuristic to avoid preventing the
-        // inner-track scroll behavior
-        if (Math.abs(event.deltaX) > Math.abs(2 * event.deltaY)) {
+        if (Math.abs(deltaX) > Math.abs(2 * deltaY)) {
           event.preventDefault()
         }
-        scrollDelta.current += event.deltaX
-        if (!scheduled.current) {
-          // use rAF to make it so multiple event handlers aren't fired per-frame
-          // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-          scheduled.current = true
-          rafId.current = window.requestAnimationFrame(() => {
+        if (
+          scrollDelta.current !== 0 &&
+          Math.sign(deltaX) !== Math.sign(scrollDelta.current)
+        ) {
+          scrollDelta.current = 0
+        }
+        scrollDelta.current += deltaX
+      }
+
+      // coalesce all wheel events into one update per frame so that bursts
+      // of events (e.g. fast trackpad scrolling) don't each trigger expensive
+      // model updates
+      if (rafId.current === null) {
+        rafId.current = requestAnimationFrame(now => {
+          const elapsed = Math.min(
+            100,
+            lastRafTime.current !== null ? now - lastRafTime.current : 16.67,
+          )
+          lastRafTime.current = now
+          const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
+          if (zoomDelta.current !== 0) {
+            const d = Math.max(
+              -maxZoomDelta,
+              Math.min(maxZoomDelta, zoomDelta.current / zoomDivisor.current),
+            )
+            model.zoomTo(
+              d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
+              lastClientX.current - rectLeft.current,
+            )
+            zoomDelta.current = 0
+          }
+          if (scrollDelta.current !== 0) {
             model.horizontalScroll(scrollDelta.current)
             scrollDelta.current = 0
-            scheduled.current = false
-          })
-        }
+          }
+          rafId.current = null
+        })
       }
     }
-    if (curr) {
-      curr.addEventListener('wheel', onWheel, { passive: false })
-      return () => {
-        curr.removeEventListener('wheel', onWheel)
-        if (timeout.current) {
-          clearTimeout(timeout.current)
-        }
-        if (rafId.current) {
-          cancelAnimationFrame(rafId.current)
-        }
+
+    curr.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      curr.removeEventListener('wheel', onWheel)
+      observer.disconnect()
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current)
       }
     }
-    return () => {}
   }, [model, ref])
 }

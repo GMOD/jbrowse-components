@@ -1,0 +1,42 @@
+import {
+  PORT,
+  appendGpuParam,
+  waitForCanvasRendered,
+  waitForDataLoaded,
+} from '../helpers.ts'
+import { canvasSnapshot } from '../snapshot.ts'
+
+import type { TestSuite } from '../types.ts'
+
+const suite: TestSuite = {
+  name: 'Dotplot View',
+  tests: [
+    {
+      name: 'dotplot default session',
+      fn: async page => {
+        await page.goto(
+          appendGpuParam(
+            `http://localhost:${PORT}/?config=test_data/config_dotplot.json&sessionName=Test%20Session`,
+          ),
+          { waitUntil: 'networkidle0', timeout: 60000 },
+        )
+
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas"]', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="dotplot_webgl_canvas"]',
+        )
+        await canvasSnapshot(
+          page,
+          'dotplot-default-canvas',
+          '[data-testid="dotplot_webgl_canvas"]',
+        )
+      },
+    },
+  ],
+}
+
+export default suite

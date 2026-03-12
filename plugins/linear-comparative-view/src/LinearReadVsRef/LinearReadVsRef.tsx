@@ -9,7 +9,13 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+import {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+  getTag,
+} from '@jbrowse/plugin-alignments'
 import {
   Button,
   CircularProgress,
@@ -20,9 +26,6 @@ import {
 } from '@mui/material'
 
 import type { Feature } from '@jbrowse/core/util'
-
-const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
-  MismatchParser
 
 interface ReducedFeature {
   refName: string
@@ -82,17 +85,18 @@ export default function ReadVsRefDialog({
           const adapterConfig = getConf(track, 'adapter')
           const sessionId = getRpcSessionId(track)
 
-          const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          const [asm] = getConf(track, 'assemblyNames') as string[]
+          const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
-            sessionId,
             regions: [
               {
-                refName: saRef,
+                refName: saRef!,
                 start: +saStart! - 1,
                 end: +saStart!,
+                assemblyName: asm ?? '',
               },
             ],
-          })) as Feature[]
+          })
 
           const result = feats.find(
             f =>

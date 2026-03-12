@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { clamp, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -14,7 +12,7 @@ type LGV = LinearGenomeViewModel
 interface Display {
   height: number
   scrollTop: number
-  SNPCoverageDisplay?: { height: number }
+  coverageDisplayHeight?: number
   notReady?: () => boolean
   searchFeatureByID?: (str: string) => LayoutRecord
 }
@@ -30,46 +28,37 @@ function cheight(chunk: LayoutRecord) {
   return chunk[BOTTOM] - chunk[TOP]
 }
 
-export function heightFromSpecificLevel(
-  views: LGV[],
-  trackId: string,
-  level: number,
-  getYPosOverride?: (trackId: string, level: number) => number,
-) {
-  return getYPosOverride
-    ? getYPosOverride(trackId, level)
-    : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0
-}
-
 export function getPxFromCoordinate(view: LGV, refName: string, coord: number) {
   return (view.bpToPx({ refName, coord })?.offsetPx || 0) - view.offsetPx
 }
 
-// gets the y-position of a layout record in a track
-export function yPos(
-  trackId: string,
-  level: number,
+export function getTrackHeightsCache(
   views: LGV[],
-  tracks: Track[],
-  c: LayoutRecord,
+  trackId: string,
   getYPosOverride?: (trackId: string, level: number) => number,
 ) {
-  const display = tracks[level]!.displays[0]!
-  const max = display.height
-  const offset = display.SNPCoverageDisplay?.height ?? 0
-  const scrollTop = getYPosOverride ? 0 : display.scrollTop
-  return (
-    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
-    heightFromSpecificLevel(views, trackId, level, getYPosOverride)
+  return views.map((_, level) =>
+    getYPosOverride
+      ? getYPosOverride(trackId, level)
+      : views[level]!.trackRefs[trackId]?.getBoundingClientRect().top || 0,
   )
 }
 
-// forces a re-render on the next frame when the variable changes
-export const useNextFrame = (variable: unknown) => {
-  const [, setNextFrameState] = useState<unknown>()
-  useEffect(() => {
-    setNextFrameState(variable)
-  }, [variable])
+export function yPos(
+  level: number,
+  tracks: Track[],
+  c: LayoutRecord,
+  cachedHeights: number[],
+  hasYPosOverride?: boolean,
+) {
+  const display = tracks[level]!.displays[0]!
+  const max = display.height
+  const offset = display.coverageDisplayHeight ?? 0
+  const scrollTop = hasYPosOverride ? 0 : display.scrollTop
+  return (
+    clamp(c[TOP] - scrollTop + cheight(c) / 2 + offset, offset, max) +
+    cachedHeights[level]!
+  )
 }
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
@@ -99,13 +88,12 @@ export async function getBlockFeatures(
   const sessionId = getRpcSessionId(track)
 
   return Promise.all(
-    views.flatMap(
-      async view =>
-        (await rpcManager.call(sessionId, 'BreakpointGetFeatures', {
-          adapterConfig: getConf(track, ['adapter']),
-          sessionId,
-          regions: view.staticBlocks.contentBlocks,
-        })) as Feature[][],
+    views.flatMap(async view =>
+      rpcManager.call(sessionId, 'BreakpointGetFeatures', {
+        adapterConfig: getConf(track, ['adapter']),
+        sessionId,
+        regions: view.staticBlocks.contentBlocks,
+      }),
     ),
   )
 }

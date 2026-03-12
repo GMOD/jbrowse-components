@@ -9,6 +9,8 @@ import SetColorDialogBulkEditPanel from './SetColorDialogBulkEditPanel.tsx'
 import SetColorDialogHelpfulTips from './SetColorDialogHelpfulTips.tsx'
 import SetColorDialogRowPalettizer from './SetColorDialogRowPalettizer.tsx'
 
+import type { Source } from '../../../util.ts'
+
 const useStyles = makeStyles()({
   content: {
     minWidth: 800,
@@ -22,11 +24,8 @@ const useStyles = makeStyles()({
 
 interface SetColorDialogProps {
   model: {
-    sources?: {
-      name: string
-      [key: string]: unknown
-    }[]
-    setLayout: (s: { name: string; [key: string]: unknown }[]) => void
+    sources?: Source[]
+    setLayout: (s: Source[]) => void
     clearLayout: () => void
   }
   handleClose: () => void
@@ -35,8 +34,8 @@ interface SetColorDialogProps {
   enableRowPalettizer?: boolean
   showTipsStorageKey?: string
   SourcesGridComponent: React.ComponentType<{
-    rows: { name: string; [key: string]: unknown }[]
-    onChange: (rows: { name: string; [key: string]: unknown }[]) => void
+    rows: Source[]
+    onChange: (rows: Source[]) => void
     showTips: boolean
   }>
 }

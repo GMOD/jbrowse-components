@@ -18,13 +18,15 @@
     "prepack": "pnpm build",
     "test:browser": "node browser-tests/runner.ts",
     "test:browser:headed": "node browser-tests/runner.ts --headed",
-    "test:browser:update": "node browser-tests/runner.ts --update-snapshots"
+    "test:browser:update": "node browser-tests/runner.ts --update-snapshots",
+    "test:browser:webgl": "node browser-tests/runner.ts --backend=webgl",
+    "test:browser:compare": "node browser-tests/compare-backends.ts"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.10",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -56,8 +58,8 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/web-core": "workspace:^",
-    "@mui/icons-material": "^7.3.8",
-    "@mui/material": "^7.3.8",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
     "@node-oauth/oauth2-server": "^5.2.1",
     "@types/body-parser": "^1.19.6",
     "@types/file-saver-es": "^2.0.3",

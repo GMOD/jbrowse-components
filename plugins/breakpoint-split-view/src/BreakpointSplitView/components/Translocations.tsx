@@ -1,19 +1,17 @@
 import { useMemo, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import {
   LEFT,
   buildBreakpointPath,
-  createMouseHandlers,
+  createVariantMouseHandlers,
   getTestId,
-  getYOffset,
   strandToSign,
 } from './overlayUtils.tsx'
 import { getMatchedTranslocationFeatures } from './util.ts'
-import { getPxFromCoordinate, useNextFrame, yPos } from '../util.ts'
+import { getPxFromCoordinate, getTrackHeightsCache, yPos } from '../util.ts'
 
 import type { OverlayProps } from './overlayUtils.tsx'
 import type { LayoutRecord } from '../types.ts'
@@ -21,16 +19,15 @@ import type { LayoutRecord } from '../types.ts'
 const Translocations = observer(function Translocations({
   model,
   trackId,
-  parentRef,
   getTrackYPosOverride,
+  cachedTrackTops,
+  cachedYOffset,
 }: OverlayProps) {
   const { interactiveOverlay, views } = model
   const session = getSession(model)
   const { assemblyManager } = session
-  const snap = getSnapshot(model)
   const v0 = views[0]
   const assembly = v0 ? assemblyManager.get(v0.assemblyNames[0]!) : undefined
-  useNextFrame(snap)
   const totalFeatures = model.getTrackFeatures(trackId)
 
   const layoutMatches = useMemo(() => {
@@ -39,8 +36,12 @@ const Translocations = observer(function Translocations({
   }, [totalFeatures, trackId, model])
 
   const [mouseoverElt, setMouseoverElt] = useState<string>()
-  const yOffset = getYOffset(parentRef)
+  const yOffset = cachedYOffset ?? 0
   const tracks = views.map(v => v.getTrack(trackId))
+  const hasOverride = !!getTrackYPosOverride
+  const cachedHeights =
+    cachedTrackTops ??
+    getTrackHeightsCache(views, trackId, getTrackYPosOverride)
 
   if (!assembly) {
     return null
@@ -86,11 +87,9 @@ const Translocations = observer(function Translocations({
             const reversed2 = views[level2]!.pxToBp(x2).reversed
 
             const y1 =
-              yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
-              yOffset
+              yPos(level1, tracks, c1, cachedHeights, hasOverride) - yOffset
             const y2 =
-              yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
-              yOffset
+              yPos(level2, tracks, c2, cachedHeights, hasOverride) - yOffset
 
             const x1Tick =
               x1 - 20 * strandToSign(myDirection) * (reversed1 ? -1 : 1)
@@ -98,12 +97,10 @@ const Translocations = observer(function Translocations({
               x2 - 20 * strandToSign(mateDirection) * (reversed2 ? -1 : 1)
             const path = buildBreakpointPath(x1, y1, x2, y2, x1Tick, x2Tick)
 
-            const mouseHandlers = createMouseHandlers(
+            const mouseHandlers = createVariantMouseHandlers(
               id,
               setMouseoverElt,
               session,
-              'VariantFeatureWidget',
-              'variantFeature',
               totalFeatures.get(id)?.toJSON(),
             )
 

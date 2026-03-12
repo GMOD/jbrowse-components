@@ -13,7 +13,6 @@ import BasicTrackF from './BasicTrack/index.ts'
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import LinearBareDisplayF from './LinearBareDisplay/index.ts'
-import LinearBasicDisplayF from './LinearBasicDisplay/index.ts'
 import ZoomControls from './LinearGenomeView/components/HeaderZoomControls.tsx'
 import LinearGenomeViewF, {
   LinearGenomeView,
@@ -56,7 +55,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
     BasicTrackF(pluginManager)
-    LinearBasicDisplayF(pluginManager)
     LinearGenomeViewF(pluginManager)
     LinearBareDisplayF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
@@ -79,9 +77,12 @@ export type {
   BaseLinearDisplayModel,
   BlockModel,
   ExportSvgDisplayOptions,
+  FeatureLabelData,
   FloatingLabelData,
   LayoutFeatureMetadata,
+  LayoutRecord,
   LegendItem,
+  RenderedProps,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -94,6 +95,7 @@ export {
   BlockMsg,
   FeatureDensityMixin,
   FloatingLegend,
+  MultiRegionDisplayMixin,
   NonBlockCanvasDisplayComponent,
   NonBlockCanvasDisplayMixin,
   SVGLegend,
@@ -103,12 +105,18 @@ export {
   calculateSvgLegendWidth,
   createSubfeatureLabelMetadata,
   drawCanvasImageData,
+  getDisplayStr,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  ByteEstimateConfig,
+  FetchContext,
+  MultiRegionDisplayMixinType,
+  MultiRegionRegion,
   NonBlockCanvasDisplayMixinType,
   NonBlockCanvasDisplayModel,
 } from './BaseLinearDisplay/index.ts'
 export {
+  AUTO_FORCE_LOAD_BP,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
   RefNameAutocomplete,

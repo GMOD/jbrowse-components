@@ -1,100 +1,11 @@
-import type React from 'react'
+import { assembleLocString, toLocale } from '@jbrowse/core/util'
 
-import {
-  assembleLocString,
-  doesIntersect2,
-  getContainingTrack,
-  getContainingView,
-  getSession,
-  isSessionModelWithWidgets,
-  toLocale,
-} from '@jbrowse/core/util'
-
-import { MAX_COLOR_RANGE, getId } from '../drawSynteny.ts'
-
-import type { LinearSyntenyDisplayModel } from '../model.ts'
-import type { Feature } from '@jbrowse/core/util'
-
-interface Pos {
-  offsetPx: number
-}
+import type { FeatPos } from '../model.ts'
 
 export interface ClickCoord {
   clientX: number
   clientY: number
-  feature: { f: Feature }
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
-}
-
-export function drawMatchSimple({
-  feature,
-  ctx,
-  offsets,
-  level,
-  cb,
-  height,
-  drawCurves,
-  oobLimit,
-  viewWidth,
-  hideTiny,
-}: {
   feature: FeatPos
-  ctx: CanvasRenderingContext2D
-  offsets: number[]
-  level: number
-  oobLimit: number
-  viewWidth: number
-  cb: (ctx: CanvasRenderingContext2D) => void
-  height: number
-  drawCurves?: boolean
-  hideTiny?: boolean
-}) {
-  const { p11, p12, p21, p22 } = feature
-
-  const x11 = p11.offsetPx - offsets[level]!
-  const x12 = p12.offsetPx - offsets[level]!
-  const x21 = p21.offsetPx - offsets[level + 1]!
-  const x22 = p22.offsetPx - offsets[level + 1]!
-
-  const l1 = Math.abs(x12 - x11)
-  const l2 = Math.abs(x22 - x21)
-  const y1 = 0
-  const y2 = height
-  const mid = (y2 - y1) / 2
-  const minX = Math.min(x21, x22)
-  const maxX = Math.max(x21, x22)
-
-  if (!doesIntersect2(minX, maxX, -oobLimit, viewWidth + oobLimit)) {
-    return
-  }
-
-  // drawing a line if the results are thin: drawing a line results in much
-  // less pixellation than filling in a thin polygon
-  if (l1 <= 1 && l2 <= 1) {
-    // hideTiny can be used to avoid drawing mouseover for thin lines in this
-    // case
-    if (!hideTiny) {
-      ctx.beginPath()
-      ctx.moveTo(x11, y1)
-      if (drawCurves) {
-        ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-      } else {
-        ctx.lineTo(x21, y2)
-      }
-      ctx.stroke()
-    }
-  } else {
-    draw(ctx, x11, x12, y1, x22, x21, y2, mid, drawCurves)
-    cb(ctx)
-  }
 }
 
 export function draw(
@@ -223,110 +134,25 @@ export function drawBezierBox(
   ctx.closePath()
 }
 
-export function getFeatureAtClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
+export function getTooltip(
+  feat: FeatPos,
+  cigarOp?: string,
+  cigarOpLen?: string,
 ) {
-  const { clickMapCanvas, numFeats, featPositions } = model
-  if (!clickMapCanvas) {
-    return undefined
-  }
-  const ctx = clickMapCanvas.getContext('2d')
-  if (!ctx) {
-    return undefined
-  }
-  const rect = clickMapCanvas.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
-  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / numFeats)
-  const id = getId(r!, g!, b!, unitMultiplier)
-  return featPositions[id]
-}
-
-export function onSynClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-) {
-  const feat = getFeatureAtClick(event, model)
-  if (feat) {
-    const { f } = feat
-    model.setClickId(f.id())
-    const session = getSession(model)
-    if (isSessionModelWithWidgets(session)) {
-      const view = getContainingView(model)
-      const track = getContainingTrack(model)
-      session.showWidget(
-        session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-          view,
-          track,
-          featureData: f.toJSON(),
-          level: model.level,
-        }),
-      )
-    }
-  }
-  return feat
-}
-
-export function onSynContextClick(
-  event: React.MouseEvent,
-  model: LinearSyntenyDisplayModel,
-  setAnchorEl: (arg: ClickCoord) => void,
-) {
-  event.preventDefault()
-  const feat = getFeatureAtClick(event, model)
-  if (feat) {
-    model.setClickId(feat.f.id())
-    setAnchorEl({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      feature: feat,
-    })
-  }
-}
-
-export function getTooltip({
-  feature,
-  cigarOp,
-  cigarOpLen,
-}: {
-  feature: Feature
-  cigarOpLen?: string
-  cigarOp?: string
-}) {
-  // @ts-expect-error
-  const f1 = feature.toJSON() as {
-    refName: string
-    start: number
-    end: number
-    strand?: number
-    assemblyName: string
-    identity?: number
-    name?: string
-    mate: {
-      start: number
-      end: number
-      refName: string
-      name: string
-    }
-  }
-  const f2 = f1.mate
-  const l1 = f1.end - f1.start
-  const l2 = f2.end - f2.start
-  const identity = f1.identity
-  const n1 = f1.name
-  const n2 = f2.name
+  const l1 = feat.end - feat.start
+  const l2 = feat.mate.end - feat.mate.start
   return [
-    `Loc1: ${assembleLocString(f1)}`,
-    `Loc2: ${assembleLocString(f2)}`,
-    `Inverted: ${f1.strand === -1}`,
+    `Loc1: ${assembleLocString({ refName: feat.refName, start: feat.start, end: feat.end, assemblyName: feat.assemblyName })}`,
+    `Loc2: ${assembleLocString({ refName: feat.mate.refName, start: feat.mate.start, end: feat.mate.end, assemblyName: feat.mate.assemblyName })}`,
+    `Inverted: ${feat.strand === -1}`,
     `Query len: ${toLocale(l1)}`,
     `Target len: ${toLocale(l2)}`,
-    identity ? `Identity: ${identity.toPrecision(2)}` : '',
+    feat.identity !== undefined
+      ? `Identity: ${feat.identity.toPrecision(2)}`
+      : '',
     cigarOp ? `CIGAR operator: ${toLocale(+cigarOpLen!)}${cigarOp}` : '',
-    n1 ? `Name 1: ${n1}` : '',
-    n2 ? `Name 2: ${n2}` : '',
+    feat.name ? `Name 1: ${feat.name}` : '',
+    feat.mate.name ? `Name 2: ${feat.mate.name}` : '',
   ]
     .filter(f => !!f)
     .join('<br/>')

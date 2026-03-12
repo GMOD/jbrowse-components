@@ -1,11 +1,10 @@
+import React from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
-  ReactRendering,
-  getSerializedSvg,
   getSession,
   max,
   measureText,
-  renderToAbstractCanvas,
   renderToStaticMarkup,
   sum,
 } from '@jbrowse/core/util'
@@ -16,7 +15,7 @@ import { when } from 'mobx'
 
 import SVGBackground from './SVGBackground.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
-import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny.ts'
+import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
@@ -78,29 +77,7 @@ export async function renderToSvg(
         tracks.map(async (track: TrackEntry) => {
           const d = track.displays[0] as LinearSyntenyDisplayModel
           await when(() => d.ready)
-          const r = await renderToAbstractCanvas(
-            width,
-            level.height,
-            { exportSVG: opts },
-            ctx => {
-              drawRef(d, ctx)
-              return undefined
-            },
-          )
-
-          if ('imageData' in r) {
-            throw new Error('found a canvas in svg export, probably a bug')
-          } else if ('canvasRecordedData' in r) {
-            return {
-              html: await getSerializedSvg({
-                ...r,
-                width,
-                height: level.height,
-              }),
-            }
-          } else {
-            return r
-          }
+          return renderSyntenyDisplaySvg(d)
         }),
       )
     }),
@@ -142,7 +119,7 @@ export async function renderToSvg(
     const level = levels[i - 1]!
     const rendering = renderings[i - 1]
     const height = heights[i]!
-    const levelHeight = level.height || 0
+    const levelHeight = level.height
     RenderList.push(
       <g key={view.id} transform={`translate(0 ${currOffset})`}>
         {levelHeight ? (
@@ -157,7 +134,7 @@ export async function renderToSvg(
           clipPath={`url(#synclip-${i})`}
         >
           {rendering?.map((r, i) => (
-            <ReactRendering key={i} rendering={r} />
+            <React.Fragment key={i}>{r}</React.Fragment>
           ))}
         </g>
         <g transform={`translate(0 ${levelHeight})`}>

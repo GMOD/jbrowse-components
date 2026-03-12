@@ -1,4 +1,4 @@
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps, max } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 const YSCALEBAR_LABEL_OFFSET = 5
@@ -49,7 +49,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
   const topPadding = YSCALEBAR_LABEL_OFFSET
   const bottomPadding = YSCALEBAR_LABEL_OFFSET
   const plotHeight = trackHeight - topPadding - bottomPadding
-  const maxValue = Math.max(...recombination.values, 0.1)
+  const maxValue = max(recombination.values, 0.1)
 
   // Build SVG path for the recombination line
   const points: string[] = []

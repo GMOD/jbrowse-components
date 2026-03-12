@@ -10,6 +10,8 @@ import {
   Typography,
 } from '@mui/material'
 
+import type { Source } from '../../../util.ts'
+
 const useStyles = makeStyles()({
   textAreaFont: {
     fontFamily: 'Courier New',
@@ -20,8 +22,8 @@ export default function SetColorDialogBulkEditPanel({
   onClose,
   currLayout,
 }: {
-  currLayout: { name: string; [key: string]: unknown }[]
-  onClose: (arg?: { name: string; [key: string]: unknown }[]) => void
+  currLayout: Source[]
+  onClose: (arg?: Source[]) => void
 }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
@@ -136,7 +138,7 @@ export default function SetColorDialogBulkEditPanel({
               onClose(
                 currLayout.map(record => ({
                   ...newData[record.name],
-                })),
+                })) as Source[],
               )
             } else {
               setError(new Error('No "name" column found on line 1'))

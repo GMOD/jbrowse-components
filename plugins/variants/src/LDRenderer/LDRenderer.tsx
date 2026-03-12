@@ -154,7 +154,6 @@ export default class LDRenderer extends ServerSideRendererType {
       callRateFilter = 0,
       jexlFilters = [],
       signedLD = false,
-      stopTokenCheck,
     } = args
 
     try {
@@ -191,7 +190,6 @@ export default class LDRenderer extends ServerSideRendererType {
           callRateFilter,
           jexlFilters,
           signedLD,
-          stopTokenCheck,
         },
       })
     } catch (e) {

@@ -15,7 +15,7 @@ async function readQuickstart(quickstartPath: string): Promise<unknown> {
   try {
     return parseJson(await readFile(quickstartPath, ENCODING))
   } catch (e) {
-    throw new Error(`Failed to read quickstart file ${quickstartPath}: ${e}`)
+    throw new Error(`Failed to read quickstart file ${quickstartPath}: ${e}`, { cause: e })
   }
 }
 

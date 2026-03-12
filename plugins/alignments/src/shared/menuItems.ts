@@ -2,20 +2,37 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
-import PaletteIcon from '@mui/icons-material/Palette'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { modificationData } from './modificationData.ts'
 
-import type { ColorBy } from './types.ts'
+import type { ColorBy, FilterBy } from './types.ts'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+const SetFeatureHeightDialog = lazy(
+  () => import('./components/SetFeatureHeightDialog.tsx'),
+)
+const ColorByTagDialog = lazy(() => import('./components/ColorByTagDialog.tsx'))
 const FilterByTagDialog = lazy(
   () => import('./components/FilterByTagDialog.tsx'),
 )
 const SetModificationThresholdDialog = lazy(
   () => import('./components/SetModificationThresholdDialog.tsx'),
 )
+const SetMaxHeightDialog = lazy(
+  () => import('./components/SetMaxHeightDialog.tsx'),
+)
+const SortByTagDialog = lazy(
+  () => import('../LinearAlignmentsDisplay/components/SortByTagDialog.tsx'),
+)
+const GroupByDialog = lazy(
+  () => import('../LinearAlignmentsDisplay/components/GroupByDialog.tsx'),
+)
 
 interface LinearReadDisplayModel {
+  colorBy?: ColorBy
   setColorScheme: (colorBy: ColorBy) => void
 }
 
@@ -23,13 +40,16 @@ export interface ModificationsModel extends LinearReadDisplayModel {
   modificationsReady: boolean
   visibleModificationTypes: string[]
   modificationThreshold: number
-  colorBy?: ColorBy
 }
 
-export function hasModificationsSupport(
-  model: LinearReadDisplayModel,
-): model is ModificationsModel {
-  return 'modificationsReady' in model && 'visibleModificationTypes' in model
+function isModificationsModel(model: unknown): model is ModificationsModel {
+  return (
+    typeof model === 'object' &&
+    model !== null &&
+    'modificationsReady' in model &&
+    'visibleModificationTypes' in model &&
+    'modificationThreshold' in model
+  )
 }
 
 export interface ModificationsMenuOptions {
@@ -59,6 +79,11 @@ export function getModificationsSubMenu(
       ? [
           {
             label: `All modifications (>= ${modificationThreshold}% prob)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              !model.colorBy.modifications?.isolatedModification &&
+              !model.colorBy.modifications?.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -70,6 +95,11 @@ export function getModificationsSubMenu(
           },
           ...model.visibleModificationTypes.map(key => ({
             label: `Show only ${modificationData[key]?.name || key} (>= ${modificationThreshold}% prob)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              model.colorBy.modifications?.isolatedModification === key &&
+              !model.colorBy.modifications.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -83,6 +113,11 @@ export function getModificationsSubMenu(
           { type: 'divider' as const },
           {
             label: 'All modifications (<50% prob colored blue)',
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              !model.colorBy.modifications?.isolatedModification &&
+              !!model.colorBy.modifications?.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -95,6 +130,11 @@ export function getModificationsSubMenu(
           },
           ...model.visibleModificationTypes.map(key => ({
             label: `Show only ${modificationData[key]?.name || key} (<50% prob colored blue)`,
+            type: 'radio' as const,
+            checked:
+              model.colorBy?.type === 'modifications' &&
+              model.colorBy.modifications?.isolatedModification === key &&
+              !!model.colorBy.modifications.twoColor,
             onClick: () => {
               model.setColorScheme({
                 type: 'modifications',
@@ -111,6 +151,8 @@ export function getModificationsSubMenu(
                 { type: 'divider' as const },
                 {
                   label: 'All reference CpGs',
+                  type: 'radio' as const,
+                  checked: model.colorBy?.type === 'methylation',
                   onClick: () => {
                     model.setColorScheme({
                       type: 'methylation',
@@ -136,121 +178,65 @@ export function getModificationsSubMenu(
             },
           },
         ]
-      : [{ label: 'No modifications currently visible' }]
+      : [
+          {
+            label: 'No modifications currently visible',
+            disabled: true,
+            onClick: () => {},
+          },
+        ]
   }
 }
 
-export function getModificationsMenuItem(
-  model: ModificationsModel,
-  options: ModificationsMenuOptions = {},
+interface FiltersModel {
+  filterBy: FilterBy
+  setFilterBy: (arg: FilterBy) => void
+  drawSingletons?: boolean
+  drawProperPairs?: boolean
+  setDrawSingletons?: (arg: boolean) => void
+  setDrawProperPairs?: (arg: boolean) => void
+}
+
+export function getFiltersMenuItem(
+  model: FiltersModel,
+  opts?: { showPairFilters?: boolean },
 ) {
+  const showPairFilters = opts?.showPairFilters ?? false
   return {
-    label: 'Modifications',
-    type: 'subMenu' as const,
-    subMenu: getModificationsSubMenu(model, options),
-  }
-}
-
-/**
- * Shared color scheme menu items for all LinearRead displays
- */
-export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
-  const baseItems = [
-    {
-      label: 'Insert size ± 3σ and orientation',
-      onClick: () => {
-        model.setColorScheme({ type: 'insertSizeAndOrientation' })
-      },
-    },
-    {
-      label: 'Insert size ± 3σ',
-      onClick: () => {
-        model.setColorScheme({ type: 'insertSize' })
-      },
-    },
-    {
-      label: 'Orientation',
-      onClick: () => {
-        model.setColorScheme({ type: 'orientation' })
-      },
-    },
-    {
-      label: 'Insert size gradient',
-      onClick: () => {
-        model.setColorScheme({ type: 'gradient' })
-      },
-    },
-  ]
-
-  const modificationsItem =
-    hasModificationsSupport(model) && model.visibleModificationTypes.length > 0
-      ? [getModificationsMenuItem(model)]
-      : []
-
-  return {
-    label: 'Color scheme',
-    icon: PaletteIcon,
-    subMenu: [...baseItems, ...modificationsItem],
-  }
-}
-
-/**
- * Shared filter by menu item for all LinearRead displays
- */
-export function getFilterByMenuItem(model: unknown) {
-  return {
-    label: 'Filter by',
-    icon: ClearAllIcon,
-    onClick: () => {
-      // @ts-expect-error getSession works on model
-      getSession(model).queueDialog((handleClose: () => void) => [
-        FilterByTagDialog,
-        { model, handleClose },
-      ])
-    },
-  }
-}
-
-interface EditFiltersModel {
-  drawSingletons: boolean
-  drawProperPairs: boolean
-  setDrawSingletons: (arg: boolean) => void
-  setDrawProperPairs: (arg: boolean) => void
-}
-
-/**
- * Edit filters submenu for LinearReadCloudDisplay
- */
-export function getEditFiltersMenuItem(model: EditFiltersModel) {
-  return {
-    label: 'Edit filters',
+    label: 'Filters...',
     icon: ClearAllIcon,
     type: 'subMenu' as const,
     subMenu: [
-      {
-        label: 'Show singletons',
-        type: 'checkbox' as const,
-        checked: model.drawSingletons,
-        onClick: () => {
-          model.setDrawSingletons(!model.drawSingletons)
-        },
-      },
-      {
-        label: 'Show proper pairs',
-        type: 'checkbox' as const,
-        checked: model.drawProperPairs,
-        onClick: () => {
-          model.setDrawProperPairs(!model.drawProperPairs)
-        },
-      },
-      { type: 'divider' as const },
+      ...(showPairFilters
+        ? [
+            {
+              label: 'Show singletons',
+              type: 'checkbox' as const,
+              checked: model.drawSingletons ?? false,
+              onClick: () => {
+                model.setDrawSingletons?.(!model.drawSingletons)
+              },
+            },
+            {
+              label: 'Show proper pairs',
+              type: 'checkbox' as const,
+              checked: model.drawProperPairs ?? false,
+              onClick: () => {
+                model.setDrawProperPairs?.(!model.drawProperPairs)
+              },
+            },
+            { type: 'divider' as const },
+          ]
+        : []),
       {
         label: 'Edit filters...',
         onClick: () => {
-          // @ts-expect-error getSession works on model
-          getSession(model).queueDialog((handleClose: () => void) => [
+          getSession(model).queueDialog(handleClose => [
             FilterByTagDialog,
-            { model, handleClose },
+            {
+              model,
+              handleClose,
+            },
           ])
         },
       },
@@ -267,9 +253,372 @@ interface MismatchDisplayModel {
   setHideLargeIndels: (arg: boolean) => void
 }
 
-/**
- * Shared mismatch/indel display submenu for pileup and read cloud displays
- */
+interface FeatureHeightModel {
+  featureHeightSetting: number
+  noSpacing?: boolean
+  noSpacingSetting?: boolean
+  setFeatureHeight: (height?: number) => void
+  setNoSpacing: (noSpacing?: boolean) => void
+}
+
+export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
+  return {
+    label: 'Set feature height...',
+    type: 'subMenu' as const,
+    subMenu: [
+      {
+        label: 'Normal',
+        type: 'radio' as const,
+        checked: model.featureHeightSetting === 7 && model.noSpacing !== true,
+        onClick: () => {
+          model.setFeatureHeight(7)
+          model.setNoSpacing(false)
+        },
+      },
+      {
+        label: 'Compact',
+        type: 'radio' as const,
+        checked:
+          model.featureHeightSetting === 3 && model.noSpacingSetting === true,
+        onClick: () => {
+          model.setFeatureHeight(3)
+          model.setNoSpacing(true)
+        },
+      },
+      {
+        label: 'Super-compact',
+        type: 'radio' as const,
+        checked:
+          model.featureHeightSetting === 1 && model.noSpacingSetting === true,
+        onClick: () => {
+          model.setFeatureHeight(1)
+          model.setNoSpacing(true)
+        },
+      },
+      {
+        label: 'Custom',
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            SetFeatureHeightDialog,
+            {
+              model,
+              handleClose,
+            },
+          ])
+        },
+      },
+    ],
+  }
+}
+
+interface ColorByModel {
+  colorBy: ColorBy
+  setColorScheme: (colorBy: ColorBy) => void
+}
+
+interface ArcsState {
+  colorByType: string
+  setColorByType: (
+    type: 'insertSizeAndOrientation' | 'insertSize' | 'orientation',
+  ) => void
+}
+
+export interface ColorByMenuOptions {
+  showLinkedReads?: boolean
+  includeModifications?: boolean
+  includeTagOption?: boolean
+  colorOptions?: { label: string; type: string }[]
+  arcsState?: ArcsState
+}
+
+const defaultColorOptions = [
+  { label: 'Normal', type: 'normal' },
+  { label: 'Strand', type: 'strand' },
+  { label: 'Mapping quality', type: 'mappingQuality' },
+  { label: 'Insert size', type: 'insertSize' },
+  { label: 'First of pair strand', type: 'firstOfPairStrand' },
+  { label: 'Pair orientation', type: 'pairOrientation' },
+  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
+]
+
+const linkedReadsColorOptions = [
+  { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },
+  { label: 'Insert size', type: 'insertSize' },
+  { label: 'Pair orientation', type: 'pairOrientation' },
+]
+
+export function getColorByMenuItem(
+  model: ColorByModel,
+  options: ColorByMenuOptions = {},
+) {
+  const {
+    showLinkedReads = false,
+    includeModifications = false,
+    includeTagOption = false,
+    arcsState,
+  } = options
+
+  const colorRadio = (label: string, type: string) => ({
+    label,
+    type: 'radio' as const,
+    checked: model.colorBy.type === type,
+    onClick: () => {
+      model.setColorScheme({ type })
+    },
+  })
+
+  const modificationsItem =
+    includeModifications && isModificationsModel(model)
+      ? {
+          label: 'Modifications',
+          type: 'subMenu' as const,
+          subMenu: getModificationsSubMenu(model, {
+            includeMethylation: true,
+          }),
+        }
+      : undefined
+
+  const items =
+    options.colorOptions ||
+    (showLinkedReads ? linkedReadsColorOptions : defaultColorOptions)
+
+  const subMenu = [
+    ...items.map(({ label, type }) => colorRadio(label, type)),
+    ...(modificationsItem ? [modificationsItem] : []),
+    ...(includeTagOption
+      ? [
+          {
+            label: 'Color by tag...',
+            type: 'radio' as const,
+            checked: model.colorBy.type === 'tag',
+            onClick: () => {
+              getSession(model).queueDialog((onClose: () => void) => [
+                ColorByTagDialog,
+                { model, handleClose: onClose },
+              ])
+            },
+          },
+        ]
+      : []),
+    ...(arcsState
+      ? [
+          {
+            label: 'Arc color scheme',
+            type: 'subMenu' as const,
+            subMenu: (
+              [
+                ['Insert size and orientation', 'insertSizeAndOrientation'],
+                ['Insert size', 'insertSize'],
+                ['Orientation', 'orientation'],
+              ] as const
+            ).map(([label, type]) => ({
+              label,
+              type: 'radio' as const,
+              checked: arcsState.colorByType === type,
+              onClick: () => {
+                arcsState.setColorByType(type)
+              },
+            })),
+          },
+        ]
+      : []),
+  ]
+
+  return {
+    label: 'Color by...',
+    subMenu,
+  }
+}
+
+interface ShowMenuModel {
+  showSoftClipping: boolean
+  mismatchAlpha?: boolean
+  showCoverage: boolean
+  showArcs: boolean
+  showSashimiArcs: boolean
+  showMismatches: boolean
+  showInterbaseIndicators: boolean
+  showOutlineSetting: boolean
+  showLinkedReads: boolean
+  flipStrandLongReadChains: boolean
+  toggleSoftClipping: () => void
+  toggleMismatchAlpha: () => void
+  setShowCoverage: (show: boolean) => void
+  setShowArcs: (show: boolean) => void
+  setShowSashimiArcs: (show: boolean) => void
+  setShowMismatches: (show: boolean) => void
+  setShowInterbaseIndicators: (show: boolean) => void
+  setShowOutline: (show: boolean) => void
+  setShowLinkedReads: (show: boolean) => void
+  setFlipStrandLongReadChains: (flip: boolean) => void
+}
+
+export function getShowMenuItem(model: ShowMenuModel) {
+  return {
+    label: 'Show...',
+    icon: VisibilityIcon,
+    subMenu: [
+      {
+        label: 'Show soft clipping',
+        type: 'checkbox' as const,
+        checked: model.showSoftClipping,
+        onClick: () => {
+          model.toggleSoftClipping()
+        },
+      },
+      {
+        label: 'Show mismatches faded by quality',
+        type: 'checkbox' as const,
+        checked: !!model.mismatchAlpha,
+        onClick: () => {
+          model.toggleMismatchAlpha()
+        },
+      },
+      {
+        label: 'Show coverage',
+        type: 'checkbox' as const,
+        checked: model.showCoverage,
+        onClick: () => {
+          model.setShowCoverage(!model.showCoverage)
+        },
+      },
+      {
+        label: 'Show arcs',
+        type: 'checkbox' as const,
+        checked: model.showArcs,
+        onClick: () => {
+          model.setShowArcs(!model.showArcs)
+        },
+      },
+      {
+        label: 'Show sashimi arcs',
+        type: 'checkbox' as const,
+        checked: model.showSashimiArcs,
+        onClick: () => {
+          model.setShowSashimiArcs(!model.showSashimiArcs)
+        },
+      },
+      {
+        label: 'Show mismatches',
+        type: 'checkbox' as const,
+        checked: model.showMismatches,
+        onClick: () => {
+          model.setShowMismatches(!model.showMismatches)
+        },
+      },
+      {
+        label: 'Show interbase indicators',
+        type: 'checkbox' as const,
+        checked: model.showInterbaseIndicators,
+        onClick: () => {
+          model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+        },
+      },
+      {
+        label: 'Show outline on reads',
+        type: 'checkbox' as const,
+        checked: model.showOutlineSetting,
+        onClick: () => {
+          model.setShowOutline(!model.showOutlineSetting)
+        },
+      },
+      {
+        label: 'Link paired/supplementary reads',
+        type: 'checkbox' as const,
+        checked: model.showLinkedReads,
+        onClick: () => {
+          model.setShowLinkedReads(!model.showLinkedReads)
+        },
+      },
+      {
+        label: 'Flip strand on long read chains',
+        type: 'checkbox' as const,
+        checked: model.flipStrandLongReadChains,
+        onClick: () => {
+          model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
+        },
+      },
+    ],
+  }
+}
+
+interface MaxHeightModel {
+  maxHeight?: number
+  setMaxHeight: (arg?: number) => void
+}
+
+export function getSetMaxHeightMenuItem(model: MaxHeightModel) {
+  return {
+    label: 'Set max track height...',
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        SetMaxHeightDialog,
+        { model, handleClose },
+      ])
+    },
+  }
+}
+
+interface SortByModel {
+  setSortedBy: (type: string) => void
+  clearSelected: () => void
+}
+
+export function getSortByMenuItem(model: SortByModel) {
+  return {
+    label: 'Sort by...',
+    icon: SwapVertIcon,
+    subMenu: [
+      {
+        label: 'Start location',
+        onClick: () => {
+          model.setSortedBy('position')
+        },
+      },
+      {
+        label: 'Read strand',
+        onClick: () => {
+          model.setSortedBy('strand')
+        },
+      },
+      {
+        label: 'Base pair',
+        onClick: () => {
+          model.setSortedBy('basePair')
+        },
+      },
+      {
+        label: 'Sort by tag...',
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            SortByTagDialog,
+            { model, handleClose },
+          ])
+        },
+      },
+      {
+        label: 'Clear sort',
+        onClick: () => {
+          model.clearSelected()
+        },
+      },
+    ],
+  }
+}
+
+export function getGroupByMenuItem(model: IAnyStateTreeNode) {
+  return {
+    label: 'Group by...',
+    icon: WorkspacesIcon,
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        GroupByDialog,
+        { model, handleClose },
+      ])
+    },
+  }
+}
+
 export function getMismatchDisplayMenuItem(model: MismatchDisplayModel) {
   return {
     label: 'Mismatch/indel display',

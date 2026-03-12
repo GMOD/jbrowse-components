@@ -19,6 +19,7 @@ export interface TreeSidebarModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
+  lineZoneHeight?: number
   scrollTop: number
   showTree: boolean
   sources?: Source[]
@@ -41,6 +42,7 @@ export interface LegendBarModel {
   rowHeight: number
   sources?: Source[]
   showTree: boolean
+  showLegend: boolean
 }
 
 export interface MouseState {

@@ -1,49 +1,70 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema.ts'
+import { WIGGLE_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-/**
- * #config LinearWiggleDisplay
- * extends
- * - [SharedWiggleDisplay](../sharedwiggledisplay)
- */
-export default function WiggleConfigFactory(pluginManager: PluginManager) {
-  const XYPlotRendererConfigSchema =
-    pluginManager.getRendererType('XYPlotRenderer')!.configSchema
-  const DensityRendererConfigSchema =
-    pluginManager.getRendererType('DensityRenderer')!.configSchema
-  const LinePlotRendererConfigSchema =
-    pluginManager.getRendererType('LinePlotRenderer')!.configSchema
-
-  return ConfigurationSchema(
-    'LinearWiggleDisplay',
-    {
-      /**
-       * #slot
-       */
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
-        defaultValue: 'xyplot',
-      },
-      /**
-       * #slot
-       */
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        DensityRenderer: DensityRendererConfigSchema,
-        XYPlotRenderer: XYPlotRendererConfigSchema,
-        LinePlotRenderer: LinePlotRendererConfigSchema,
-      }),
+export default ConfigurationSchema(
+  'LinearWiggleDisplay',
+  {
+    defaultRendering: {
+      type: 'stringEnum',
+      model: types.enumeration('Rendering type', [
+        'xyplot',
+        'density',
+        'line',
+        'scatter',
+      ]),
+      defaultValue: 'xyplot',
+      description: 'Default rendering type',
     },
-    {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: sharedWiggleConfigFactory(),
-      explicitlyTyped: true,
+    height: {
+      type: 'number',
+      defaultValue: 100,
+      description: 'Default height of the track',
     },
-  )
-}
+    color: {
+      type: 'color',
+      defaultValue: WIGGLE_COLOR_DEFAULT,
+      description: 'Color for the wiggle bars',
+    },
+    posColor: {
+      type: 'color',
+      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+      description: 'Color for positive scores (when using bicolor)',
+    },
+    negColor: {
+      type: 'color',
+      defaultValue: '#f0636b',
+      description: 'Color for negative scores (when using bicolor)',
+    },
+    bicolorPivot: {
+      type: 'number',
+      defaultValue: 0,
+      description: 'Pivot value for bicolor mode',
+    },
+    minScore: {
+      type: 'number',
+      defaultValue: Number.MIN_VALUE,
+      description: 'Minimum score bound',
+    },
+    maxScore: {
+      type: 'number',
+      defaultValue: Number.MAX_VALUE,
+      description: 'Maximum score bound',
+    },
+    scaleType: {
+      type: 'stringEnum',
+      model: types.enumeration('Scale type', ['linear', 'log']),
+      defaultValue: 'linear',
+      description: 'Scale type (linear or log)',
+    },
+    summaryScoreMode: {
+      type: 'stringEnum',
+      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+      description:
+        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+      defaultValue: 'whiskers',
+    },
+  },
+  { explicitlyTyped: true },
+)

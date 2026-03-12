@@ -1,0 +1,157 @@
+/**
+ * WebGL Feature Data RPC Types
+ *
+ * COORDINATE SYSTEM REQUIREMENT:
+ * regionStart must be an integer (use Math.floor of view region start).
+ * All position arrays store integer offsets from regionStart.
+ * This is critical for alignment between features and hit detection.
+ */
+
+export interface LabelItem {
+  text: string
+  relativeY: number
+  color: string
+  textWidth: number
+}
+
+export interface RenderFeatureDataArgs {
+  sessionId: string
+  adapterConfig: Record<string, unknown>
+  displayConfig: {
+    showLabels: boolean
+    showDescriptions: boolean
+    subfeatureLabels: string
+    geneGlyphMode: string
+  }
+  region: {
+    refName: string
+    start: number
+    end: number
+    assemblyName?: string
+    reversed?: boolean
+    seqAdapterRefName?: string
+  }
+  bpPerPx: number
+  colorByCDS?: boolean
+  sequenceAdapter?: Record<string, unknown>
+  showOnlyGenes?: boolean
+  maxFeatureCount?: number
+  stopToken?: string
+}
+
+export interface FeatureDataResult {
+  // Integer reference point for all positions (floor of view region start).
+  // All position data in this result is stored as integer offsets from regionStart.
+  regionStart: number
+
+  // Feature rectangles (box, CDS, UTR, exons)
+  rectPositions: Uint32Array
+  rectYs: Float32Array
+  rectHeights: Float32Array
+  rectColors: Uint8Array
+  numRects: number
+
+  // Connecting lines (introns) with strand info for dynamic chevron generation
+  linePositions: Uint32Array
+  lineYs: Float32Array
+  lineColors: Uint8Array
+  lineDirections: Int8Array // strand direction: -1, 0, or 1
+  numLines: number
+
+  // Strand arrows (at feature ends)
+  arrowXs: Uint32Array
+  arrowYs: Float32Array
+  arrowDirections: Int8Array
+  arrowHeights: Float32Array
+  arrowColors: Uint8Array
+  numArrows: number
+
+  // Hit detection
+  flatbushItems: FlatbushItem[]
+  subfeatureInfos: SubfeatureInfo[]
+
+  // Maps each rect/line/arrow element → flatbushItem index (for main-thread layout)
+  rectFeatureIndices: Uint32Array
+  lineFeatureIndices: Uint32Array
+  arrowFeatureIndices: Uint32Array
+
+  // Floating labels metadata
+  floatingLabelsData: FloatingLabelsDataMap
+
+  // Precomputed amino acid overlay items (only when colorByCDS is true)
+  aminoAcidOverlay?: AminoAcidOverlayItem[]
+
+  // Number of top-level features in this region (used for density calculations)
+  featureCount: number
+
+  // Layout info (computed on main thread after layout pass)
+  maxY: number
+}
+
+export interface RegionTooLargeResult {
+  regionTooLarge: true
+  featureCount: number
+}
+
+export type RenderFeatureDataResult = FeatureDataResult | RegionTooLargeResult
+
+export interface AminoAcidOverlayItem {
+  startBp: number
+  endBp: number
+  aminoAcid: string
+  proteinIndex: number
+  topPx: number
+  heightPx: number
+  isStopOrNonTriplet: boolean
+  flatbushIdx: number
+}
+
+export interface FlatbushItem {
+  featureId: string
+  type: string
+  startBp: number
+  endBp: number
+  layoutEndBp: number
+  topPx: number
+  bottomPx: number
+  tooltip: string
+  name?: string
+  strand?: number
+}
+
+export interface SubfeatureInfo {
+  featureId: string
+  parentFeatureId: string
+  type: string
+  startBp: number
+  endBp: number
+  topPx: number
+  bottomPx: number
+  displayLabel?: string
+  tooltip?: string
+}
+
+export interface FeatureLabelData {
+  featureId: string
+  minX: number
+  maxX: number
+  topY: number
+  featureHeight: number
+  nameLabel?: LabelItem
+  descriptionLabel?: LabelItem
+  parentFeatureId?: string
+  subfeatureLabel?: LabelItem & { isOverlay: boolean; tooltip: string }
+}
+
+export function maxLabelTextWidth(
+  labelData: FeatureLabelData,
+  showDescriptions = true,
+) {
+  return Math.max(
+    labelData.nameLabel?.textWidth ?? 0,
+    showDescriptions ? (labelData.descriptionLabel?.textWidth ?? 0) : 0,
+    labelData.subfeatureLabel?.textWidth ?? 0,
+  )
+}
+
+export type FloatingLabelsDataMap = Record<string, FeatureLabelData>

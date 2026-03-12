@@ -354,9 +354,13 @@ export default function RootModel({
        */
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
+        const params = new URLSearchParams(window.location.search)
+        const sessionName = params.get('sessionName')
         this.setSession({
           ...defaultSession,
-          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
+          name:
+            sessionName ||
+            `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
         })
       },
       /**

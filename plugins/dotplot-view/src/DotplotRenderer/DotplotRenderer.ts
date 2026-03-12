@@ -138,7 +138,7 @@ export default class DotplotRenderer extends ServerSideRenderer {
       const { reactElement: _, ...rest } = results
       return {
         ...rest,
-        html: await getSerializedSvg(results),
+        html: getSerializedSvg(results),
       }
     }
     return results

@@ -1,1 +1,4 @@
 *.diff.png
+*.diff-visual.png
+__downloads__/
+__compare__/

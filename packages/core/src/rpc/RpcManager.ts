@@ -1,10 +1,11 @@
 import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
-import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
+import WebWorkerRpcDriver, { getNextCanvasId } from './WebWorkerRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 import { readConfObject } from '../configuration/index.ts'
 
 import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
+import type { RpcArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 
 type DriverClass = BaseRpcDriver
@@ -100,35 +101,57 @@ export default class RpcManager {
   async getDriverForCall(
     _sessionId: string,
     _functionName: string,
-    args: { rpcDriverName?: string },
+    args: Record<string, unknown>,
+    opts?: { rpcDriverName?: string },
   ) {
     const backendName =
-      args.rpcDriverName ||
+      (args.rpcDriverName as string | undefined) ||
+      opts?.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(backendName)
   }
 
-  async call(
+  async getGpuWorker() {
+    const backendName = readConfObject(
+      this.mainConfiguration,
+      'defaultDriver',
+    ) as string
+    const driver = this.getDriver(backendName)
+    if (driver instanceof WebWorkerRpcDriver) {
+      return driver.getGpuWorker()
+    }
+    return undefined
+  }
+
+  getNextCanvasId() {
+    return getNextCanvasId()
+  }
+
+  async call<M extends string>(
     sessionId: string,
-    functionName: string,
-    args: Record<string, unknown>,
-    opts = {},
-  ) {
+    functionName: M,
+    args: M extends RpcMethodName
+      ? RpcArgs<M & RpcMethodName>
+      : Record<string, unknown>,
+    opts?: Record<string, unknown>,
+  ): Promise<M extends RpcMethodName ? RpcReturn<M & RpcMethodName> : unknown> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
+    const a = { ...args, sessionId } as Record<string, unknown>
     const driverForCall = await this.getDriverForCall(
       sessionId,
       functionName,
-      args,
+      a,
+      opts as { rpcDriverName?: string } | undefined,
     )
     return driverForCall.call(
       this.pluginManager,
       sessionId,
       functionName,
-      args,
-      opts,
-    )
+      a,
+      opts ?? {},
+    ) as any
   }
 }

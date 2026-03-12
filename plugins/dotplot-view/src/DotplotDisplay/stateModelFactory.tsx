@@ -1,22 +1,15 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  ReactRendering,
-  getContainingView,
-  makeAbortableReaction,
-} from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent.tsx'
-import { renderBlockData, renderBlockEffect } from './renderDotplotBlock.ts'
+import { renderSvg } from './renderSvg.tsx'
 
-import type {
-  DotplotViewModel,
-  ExportSvgOptions,
-} from '../DotplotView/model.ts'
+import type { DotplotRenderer } from './DotplotRenderer.ts'
+import type { DotplotFeatPos } from './types.ts'
+import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
@@ -49,36 +42,19 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #volatile
            */
-          stopToken: undefined as StopToken | undefined,
+          features: undefined as Feature[] | undefined,
           /**
            * #volatile
            */
-          warnings: [] as { message: string; effect: string }[],
+          featPositions: [] as DotplotFeatPos[],
           /**
            * #volatile
            */
-          filled: false,
+          gpuRenderer: null as DotplotRenderer | null,
           /**
            * #volatile
            */
-          data: undefined as any,
-          /**
-           * #volatile
-           */
-          reactElement: undefined as React.ReactElement | undefined,
-          /**
-           * #volatile
-           */
-          message: undefined as string | undefined,
-          /**
-           * #volatile
-           */
-          renderingComponent: undefined as any,
-          /**
-           * #volatile
-           */
-          ReactComponent2:
-            ServerSideRenderedBlockContent as unknown as React.FC<any>,
+          gpuInitialized: false,
           /**
            * #volatile
            * alpha transparency value for synteny drawing (0-1)
@@ -89,16 +65,19 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * minimum alignment length to display (in bp)
            */
           minAlignmentLength: 0,
+          /**
+           * #volatile
+           * bpPerPx at which featPositions were computed (h-axis)
+           */
+          featPositionsBpPerPxH: 0,
+          /**
+           * #volatile
+           * bpPerPx at which featPositions were computed (v-axis)
+           */
+          featPositionsBpPerPxV: 0,
         })),
     )
     .views(self => ({
-      get shouldDisplay() {
-        const { vview, hview } = getContainingView(self) as DotplotViewModel
-        return (
-          vview.bpPerPx === self.data.bpPerPxY &&
-          hview.bpPerPx === self.data.bpPerPxX
-        )
-      },
       /**
        * #getter
        */
@@ -120,97 +99,57 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        const props = renderBlockData(self)
-        if (!props) {
-          return null
-        }
-
-        const { rendererType, rpcManager, renderProps, renderingProps } = props
-        const rendering = await rendererType.renderInClient(rpcManager, {
-          ...renderProps,
-          renderingProps,
-          exportSVG: opts,
-          theme: opts.theme || renderProps.theme,
-        })
-        const { hview, vview } = getContainingView(self) as DotplotViewModel
-        const offX = -hview.offsetPx + rendering.offsetX
-        const offY = -vview.offsetPx + rendering.offsetY
-        return (
-          <g transform={`translate(${offX} ${-offY})`}>
-            <ReactRendering rendering={rendering} />
-          </g>
-        )
+      renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
+        return renderSvg(self)
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        makeAbortableReaction(
-          self,
-          () => renderBlockData(self),
-          blockData => renderBlockEffect(blockData),
-          {
-            name: `${self.type} ${self.id} rendering`,
-            delay: 500,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
-      },
       /**
        * #action
        */
-      setLoading(stopToken?: StopToken) {
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.data = undefined
+      setLoading(_stopToken?: string) {
         self.error = undefined
-        self.renderingComponent = undefined
-        self.stopToken = stopToken
       },
       /**
        * #action
        */
-      setMessage(messageText: string) {
-        self.message = messageText
-      },
-      /**
-       * #action
-       */
-      setRendered(args?: {
-        data: any
-        reactElement: React.ReactElement
-        renderingComponent: React.Component
-      }) {
-        if (args === undefined) {
+      setFeatures(args?: { features: Feature[] }) {
+        if (!args) {
           return
         }
-        const { data, reactElement, renderingComponent } = args
-        self.warnings = data.warnings
-        self.filled = true
-        self.message = undefined
-        self.reactElement = reactElement
-        self.data = data
+        self.features = args.features
         self.error = undefined
-        self.renderingComponent = renderingComponent
-        self.stopToken = undefined
+      },
+      /**
+       * #action
+       */
+      setFeatPositions(
+        positions: DotplotFeatPos[],
+        bpPerPxH: number,
+        bpPerPxV: number,
+      ) {
+        self.featPositions = positions
+        self.featPositionsBpPerPxH = bpPerPxH
+        self.featPositionsBpPerPxV = bpPerPxV
+      },
+      /**
+       * #action
+       */
+      setGpuRenderer(renderer: DotplotRenderer | null) {
+        self.gpuRenderer = renderer
+      },
+      /**
+       * #action
+       */
+      setGpuInitialized(value: boolean) {
+        self.gpuInitialized = value
       },
       /**
        * #action
        */
       setError(error: unknown) {
         console.error(error)
-        // the rendering failed for some reason
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.data = undefined
         self.error = error
-        self.renderingComponent = undefined
-        self.stopToken = undefined
       },
       /**
        * #action
@@ -229,6 +168,20 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setColorBy(value: string) {
         self.colorBy = value
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach.ts')
+            doAfterAttach(self)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
       },
     }))
 }

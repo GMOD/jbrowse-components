@@ -1,0 +1,76 @@
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+
+import type { RenderChainDataArgs } from './executeRenderChainData.ts'
+import type { PileupDataResult } from '../RenderPileupDataRPC/types'
+
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    RenderChainData: {
+      args: Record<string, unknown>
+      return: PileupDataResult
+    }
+  }
+}
+
+export default class RenderChainData extends RpcMethodType {
+  name = 'RenderChainData'
+
+  async renameRegionsIfNeeded(
+    args: RenderChainDataArgs,
+  ): Promise<RenderChainDataArgs> {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    if (!assemblyManager) {
+      throw new Error('no assembly manager')
+    }
+
+    const { region, sessionId, adapterConfig } = args
+
+    const regionWithAssembly = {
+      ...region,
+      assemblyName: region.assemblyName ?? '',
+    }
+
+    const result = await renameRegionsIfNeeded(assemblyManager, {
+      sessionId,
+      adapterConfig,
+      regions: [regionWithAssembly],
+    })
+
+    const renamedRegion = result.regions[0]
+    if (!renamedRegion) {
+      return args
+    }
+
+    return {
+      ...args,
+      region: {
+        refName: renamedRegion.refName,
+        originalRefName: renamedRegion.originalRefName,
+        start: renamedRegion.start,
+        end: renamedRegion.end,
+        assemblyName: renamedRegion.assemblyName,
+      },
+    }
+  }
+
+  async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
+    const renamed = await this.renameRegionsIfNeeded(
+      args as unknown as RenderChainDataArgs,
+    )
+    return super.serializeArguments(
+      renamed as unknown as Record<string, unknown>,
+      rpcDriver,
+    )
+  }
+
+  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+    const { executeRenderChainData } =
+      await import('./executeRenderChainData.ts')
+    return executeRenderChainData({
+      pluginManager: this.pluginManager,
+      args: args as unknown as RenderChainDataArgs,
+    })
+  }
+}

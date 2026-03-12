@@ -278,7 +278,7 @@ export function getSession(node: IAnyStateTreeNode): AbstractSessionModel {
     sessionCache.set(node, result)
     return result
   } catch (e) {
-    throw new Error('no session model found!')
+    throw new Error('no session model found!', { cause: e })
   }
 }
 
@@ -297,7 +297,7 @@ export function getContainingView(node: IAnyStateTreeNode): AbstractViewModel {
     containingViewCache.set(node, result)
     return result
   } catch (e) {
-    throw new Error('no containing view found')
+    throw new Error('no containing view found', { cause: e })
   }
 }
 
@@ -313,13 +313,9 @@ export function getContainingTrack(
   if (cached && isAlive(cached)) {
     return cached
   }
-  try {
-    const result = findParentThatIs(node, isTrackModel)
-    containingTrackCache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error('no containing track found')
-  }
+  const result = findParentThatIs(node, isTrackModel)
+  containingTrackCache.set(node, result)
+  return result
 }
 
 /**
@@ -339,7 +335,7 @@ export function getContainingDisplay(
     containingDisplayCache.set(node, result)
     return result
   } catch (e) {
-    throw new Error('no containing display found')
+    throw new Error('no containing display found', { cause: e })
   }
 }
 
@@ -1272,7 +1268,6 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   }
 
   const stack = [] as T[]
-  let top = null
 
   // sort the intervals based on their start values
   intervals = intervals.sort((a, b) => a.start - b.start)
@@ -1283,7 +1278,7 @@ export function mergeIntervals<T extends { start: number; end: number }>(
   // start from the next interval and merge if needed
   for (let i = 1; i < intervals.length; i++) {
     // get the top element
-    top = stack.at(-1)!
+    const top = stack.at(-1)!
 
     // if the current interval doesn't overlap with the
     // stack top element, push it to the stack
@@ -1441,3 +1436,4 @@ export * from './stopToken.ts'
 export * from './tracks.ts'
 export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
+export { setupWebGLContextLossHandler } from './webglContextLoss.ts'

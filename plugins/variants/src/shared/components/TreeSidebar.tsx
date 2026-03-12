@@ -22,8 +22,6 @@ interface MenuAnchor {
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     position: 'absolute',
-    top: 0,
-    height: '100%',
     width: 4,
     zIndex: 101,
     background: 'transparent',
@@ -33,7 +31,6 @@ const useStyles = makeStyles()(theme => ({
   },
   treeBackground: {
     position: 'absolute',
-    top: 0,
     left: 0,
     background: alpha(
       theme.palette.background.paper,
@@ -71,8 +68,15 @@ const TreeSidebar = observer(function TreeSidebar({
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
-  const { hierarchy, treeAreaWidth, height, scrollTop, showTree, sources } =
-    model
+  const {
+    hierarchy,
+    treeAreaWidth,
+    height,
+    lineZoneHeight = 0,
+    scrollTop,
+    showTree,
+    sources,
+  } = model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -80,7 +84,7 @@ const TreeSidebar = observer(function TreeSidebar({
       model.setTreeCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, treeAreaWidth, height],
+    [model, treeAreaWidth, height, lineZoneHeight],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -89,7 +93,7 @@ const TreeSidebar = observer(function TreeSidebar({
       model.setMouseoverCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, viewWidth, height],
+    [model, viewWidth, height, lineZoneHeight],
   )
 
   // Build spatial index for tree branch nodes to enable hover detection
@@ -202,20 +206,21 @@ const TreeSidebar = observer(function TreeSidebar({
         <div
           className={classes.treeBackground}
           style={{
+            top: lineZoneHeight,
             width: treeAreaWidth,
-            height,
+            height: height - lineZoneHeight,
           }}
         />
         {/* Tree structure canvas - draws lines via treeDrawingAutorun */}
         <canvas
           ref={treeCanvasRef}
           width={treeAreaWidth * 2}
-          height={height * 2}
+          height={(height - lineZoneHeight) * 2}
           style={{
             width: treeAreaWidth,
-            height,
+            height: height - lineZoneHeight,
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             pointerEvents: 'none',
           }}
@@ -224,12 +229,12 @@ const TreeSidebar = observer(function TreeSidebar({
         <canvas
           ref={mouseoverCanvasRef}
           width={viewWidth}
-          height={height}
+          height={height - lineZoneHeight}
           style={{
             width: viewWidth,
-            height,
+            height: height - lineZoneHeight,
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             zIndex: 1,
             pointerEvents: 'none',
@@ -242,10 +247,10 @@ const TreeSidebar = observer(function TreeSidebar({
           onClick={handleClick}
           style={{
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             width: treeAreaWidth,
-            height,
+            height: height - lineZoneHeight,
             zIndex: 2,
             cursor: 'pointer',
           }}
@@ -258,7 +263,9 @@ const TreeSidebar = observer(function TreeSidebar({
         }}
         className={classes.resizeHandle}
         style={{
+          top: lineZoneHeight,
           left: treeAreaWidth,
+          height: `calc(100% - ${lineZoneHeight}px)`,
         }}
         vertical
       />

@@ -27,6 +27,12 @@ export async function run(args?: string[]) {
       type: 'boolean',
       description: 'Create a CSI index for the PIF file instead of TBI',
     },
+    'split-threshold': {
+      type: 'string',
+      description:
+        'Split alignments at indels larger than this threshold (in bp). Set to 0 to disable splitting.',
+      default: '10000',
+    },
   } as const
   const { values: flags, positionals } = parseArgs({
     args,
@@ -57,10 +63,11 @@ export async function run(args?: string[]) {
   validateRequiredCommands(['sh', 'sort', 'grep', 'tabix', 'bgzip'])
 
   const { out, csi = false } = flags
+  const splitThreshold = Number(flags['split-threshold'])
   const outputFile = getOutputFilename(file, out)
 
   const child = spawnSortProcess(outputFile, csi)
-  await createPIF(file, child.stdin)
+  await createPIF(file, child.stdin, splitThreshold)
   child.stdin.end()
   await waitForProcessClose(child)
 }

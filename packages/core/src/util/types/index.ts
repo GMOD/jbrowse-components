@@ -346,13 +346,12 @@ export interface AbstractDisplayModel {
   cannotBeRenderedReason?: string
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'configuration' in thing &&
+  if (typeof thing === 'object' && thing !== null && 'configuration' in thing) {
     // @ts-expect-error
-    thing.configuration.displayId
-  )
+    const { displayId } = thing.configuration
+    return !!displayId
+  }
+  return false
 }
 
 export interface TrackViewModel extends AbstractViewModel {

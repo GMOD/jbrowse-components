@@ -17,8 +17,6 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
 }
 
-export type GetSimplifiedFeaturesArgs = BaseVariantRpcArgs
-
 export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
   statusCallback: (arg: string) => void
   sources: Source[]
@@ -26,4 +24,14 @@ export interface ClusterGenotypeMatrixArgs extends BaseVariantRpcArgs {
 
 export interface GetLDMatrixArgs extends BaseVariantRpcArgs {
   ldMetric?: 'r2' | 'dprime'
+}
+
+export interface GetCellDataArgs extends BaseVariantRpcArgs {
+  sources: Source[]
+  renderingMode: string
+  referenceDrawingMode?: string
+  mode: 'regular' | 'matrix'
+  regionNumbers?: number[]
+  statusCallback: (arg: string) => void
+  byteSizeLimit?: number
 }

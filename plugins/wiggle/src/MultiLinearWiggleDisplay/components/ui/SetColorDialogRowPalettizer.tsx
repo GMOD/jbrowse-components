@@ -2,12 +2,14 @@ import { set1 } from '@jbrowse/core/ui/colors'
 import { randomColor } from '@jbrowse/core/util/color'
 import { Button } from '@mui/material'
 
+import type { Source } from '../../../util.ts'
+
 export default function SetColorDialogRowPalettizer({
   setCurrLayout,
   currLayout,
 }: {
-  currLayout: { name: string; [key: string]: unknown }[]
-  setCurrLayout: (arg: { name: string; [key: string]: unknown }[]) => void
+  currLayout: Source[]
+  setCurrLayout: (arg: Source[]) => void
 }) {
   if (!currLayout.length || !currLayout[0]) {
     return null
@@ -17,6 +19,7 @@ export default function SetColorDialogRowPalettizer({
     f =>
       f !== 'name' &&
       f !== 'color' &&
+      f !== 'labelColor' &&
       f !== 'source' &&
       f !== 'label' &&
       f !== 'id' &&
@@ -34,11 +37,11 @@ export default function SetColorDialogRowPalettizer({
           onClick={() => {
             const map = new Map<string, number>()
             for (const row of currLayout) {
-              const val = map.get(row[r] as string)
+              const val = map.get(row[r as keyof Source]!)
               if (!val) {
-                map.set(row[r] as string, 1)
+                map.set(row[r as keyof Source]!, 1)
               } else {
-                map.set(row[r] as string, val + 1)
+                map.set(row[r as keyof Source]!, val + 1)
               }
             }
             const ret = Object.fromEntries(
@@ -50,7 +53,7 @@ export default function SetColorDialogRowPalettizer({
             setCurrLayout(
               currLayout.map(row => ({
                 ...row,
-                color: ret[row[r] as string],
+                color: ret[row[r as keyof Source]!],
               })),
             )
           }}
@@ -68,7 +71,19 @@ export default function SetColorDialogRowPalettizer({
           )
         }}
       >
-        Clear colors
+        Clear track colors
+      </Button>
+      <Button
+        onClick={() => {
+          setCurrLayout(
+            currLayout.map(row => ({
+              ...row,
+              labelColor: undefined,
+            })),
+          )
+        }}
+      >
+        Clear label colors
       </Button>
     </div>
   )

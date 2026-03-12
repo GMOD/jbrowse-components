@@ -261,7 +261,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:1..800-1",
-      "offsetPx": 200,
+      "offsetPx": 202,
       "parentRegion": {
         "assemblyName": "test",
         "end": 1000,
@@ -281,7 +281,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgB:801..1000-1",
-      "offsetPx": 1000,
+      "offsetPx": 1002,
       "parentRegion": {
         "assemblyName": "test",
         "end": 1000,
@@ -299,7 +299,7 @@ BlockSet {
       "assemblyName": undefined,
       "end": undefined,
       "key": "{test}ctgB:801..1000-1-afterLastRegion",
-      "offsetPx": 1200,
+      "offsetPx": 1202,
       "refName": undefined,
       "start": undefined,
       "type": "InterRegionPaddingBlock",
@@ -319,7 +319,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:801..1600-1",
-      "offsetPx": 1000,
+      "offsetPx": 1002,
       "parentRegion": {
         "assemblyName": "test",
         "end": 10000000,
@@ -339,7 +339,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:1601..2400-1",
-      "offsetPx": 1800,
+      "offsetPx": 1802,
       "parentRegion": {
         "assemblyName": "test",
         "end": 10000000,

@@ -257,7 +257,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const syncActions = [
                 'horizontalScroll',
                 'zoomTo',
-                'setScaleFactor',
                 'showTrack',
                 'toggleTrack',
                 'hideTrack',
@@ -392,11 +391,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 if (!self.views.every(view => view.initialized)) {
                   return
                 }
-                // check that tracks are 'ready' (not notReady)
+                // check that tracks are 'ready' (not notReady or regionTooLarge)
                 if (
-                  self.matchedTracks.some(track =>
-                    track.displays[0].notReady?.(),
-                  )
+                  self.matchedTracks.some(track => {
+                    const display = track.displays[0]
+                    return display.notReady?.() || display.regionTooLarge
+                  })
                 ) {
                   return
                 }

@@ -7,16 +7,9 @@ import BamAdapterF from './CramAdapter/index.ts'
 import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
-import LinearPileupDisplayF from './LinearPileupDisplay/index.ts'
-import LinearReadArcsDisplayF from './LinearReadArcsDisplay/index.ts'
-import LinearReadCloudDisplayF from './LinearReadCloudDisplay/index.ts'
-import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay/index.ts'
-import PileupRPCMethodsF from './PileupRPC/index.ts'
-import PileupRendererF from './PileupRenderer/index.ts'
-import LinearReadArcsDisplayRPCMethodsF from './RenderLinearReadArcsDisplayRPC/index.ts'
-import LinearReadCloudDisplayRPCMethodsF from './RenderLinearReadCloudDisplayRPC/index.ts'
-import SNPCoverageAdapterF from './SNPCoverageAdapter/index.ts'
-import SNPCoverageRendererF from './SNPCoverageRenderer/index.ts'
+import ArcsDataRPCMethodsF from './RenderArcsDataRPC/index.ts'
+import ChainDataRPCMethodsF from './RenderChainDataRPC/index.ts'
+import PileupDataRPCMethodsF from './RenderPileupDataRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -27,18 +20,11 @@ export default class AlignmentsPlugin extends Plugin {
     ;[
       CramAdapterF,
       BamAdapterF,
-      LinearPileupDisplayF,
-      LinearSNPCoverageDisplayF,
       AlignmentsTrackF,
-      SNPCoverageAdapterF,
       HtsgetBamAdapterF,
-      PileupRendererF,
-      PileupRPCMethodsF,
-      LinearReadArcsDisplayRPCMethodsF,
-      LinearReadCloudDisplayRPCMethodsF,
-      SNPCoverageRendererF,
-      LinearReadArcsDisplayF,
-      LinearReadCloudDisplayF,
+      PileupDataRPCMethodsF,
+      ArcsDataRPCMethodsF,
+      ChainDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
@@ -49,9 +35,26 @@ export default class AlignmentsPlugin extends Plugin {
 }
 
 export {
-  SharedLinearPileupDisplayMixin,
-  linearPileupDisplayConfigSchemaFactory,
-  linearPileupDisplayStateModelFactory,
-} from './LinearPileupDisplay/index.ts'
-export { type LinearPileupDisplayModel } from './LinearPileupDisplay/model.ts'
-export * as MismatchParser from './MismatchParser/index.ts'
+  linearAlignmentsDisplayConfigSchemaFactory,
+  linearAlignmentsDisplayStateModelFactory,
+} from './LinearAlignmentsDisplay/index.ts'
+export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
+export {
+  getColorByMenuItem,
+  getFeatureHeightMenuItem,
+  getFiltersMenuItem,
+  getGroupByMenuItem,
+  getSetMaxHeightMenuItem,
+  getShowMenuItem,
+  getSortByMenuItem,
+} from './shared/menuItems.ts'
+export {
+  featurizeSA,
+  getClip,
+  getLength,
+  getLengthSansClipping,
+  getMismatches,
+  getTag,
+  parseCigar2,
+  parseCigar,
+} from './MismatchParser/index.ts'

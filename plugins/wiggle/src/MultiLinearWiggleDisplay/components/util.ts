@@ -1,12 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-  measureText,
-} from '@jbrowse/core/util'
-
-import type { WiggleDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { GridRowId } from '@mui/x-data-grid'
 
 export function moveUp<T extends { name: string }>(
@@ -47,16 +38,4 @@ export function moveDown<T extends { name: string }>(
   }
 
   return arr
-}
-
-const trackLabelFontSize = 12.8
-
-export function getOffset(model: WiggleDisplayModel) {
-  const { prefersOffset } = model
-  const { trackLabels } = getContainingView(model) as LinearGenomeViewModel
-  const track = getContainingTrack(model)
-  const trackName = getConf(track, 'name')
-  return trackLabels === 'overlapping' && !prefersOffset
-    ? measureText(trackName, trackLabelFontSize) + 100
-    : 10
 }

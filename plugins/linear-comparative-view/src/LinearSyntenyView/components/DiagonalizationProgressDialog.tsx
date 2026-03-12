@@ -46,6 +46,7 @@ const DiagonalizationProgressDialog = observer(
             return
           }
 
+          const referenceView = model.views[0]!
           const queryView = model.views[1]!
 
           setProgress(5)
@@ -57,30 +58,33 @@ const DiagonalizationProgressDialog = observer(
           for (const level of model.levels) {
             for (const track of level.tracks) {
               for (const display of track.displays) {
-                const { featPositions } = display as {
-                  featPositions: {
-                    f: {
-                      get: (key: string) => unknown
-                    }
-                  }[]
+                const { featureData } = display as {
+                  featureData?: {
+                    refNames: string[]
+                    starts: Float64Array
+                    ends: Float64Array
+                    strands: Int8Array
+                    mates: {
+                      refName: string
+                      start: number
+                      end: number
+                    }[]
+                  }
                 }
 
-                for (const { f } of featPositions) {
-                  const mate = f.get('mate') as {
-                    refName: string
-                    start: number
-                    end: number
+                if (featureData) {
+                  for (let i = 0; i < featureData.refNames.length; i++) {
+                    const mate = featureData.mates[i]!
+                    alignments.push({
+                      queryRefName: featureData.refNames[i]!,
+                      refRefName: mate.refName,
+                      queryStart: featureData.starts[i]!,
+                      queryEnd: featureData.ends[i]!,
+                      refStart: mate.start,
+                      refEnd: mate.end,
+                      strand: featureData.strands[i]! || 1,
+                    })
                   }
-
-                  alignments.push({
-                    queryRefName: f.get('refName') as string,
-                    refRefName: mate.refName,
-                    queryStart: f.get('start') as number,
-                    queryEnd: f.get('end') as number,
-                    refStart: mate.start,
-                    refEnd: mate.end,
-                    strand: (f.get('strand') as number) || 1,
-                  })
                 }
               }
             }
@@ -96,6 +100,7 @@ const DiagonalizationProgressDialog = observer(
           // Call the utility function with progress callback
           const result = await diagonalizeRegions(
             alignments,
+            referenceView.displayedRegions,
             queryView.displayedRegions,
             async (prog, msg) => {
               setProgress(prog)

@@ -109,7 +109,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
-                const ret = (await rpcManager.call(
+                const ret = await rpcManager.call(
                   sessionId,
                   'MultiWiggleClusterScoreMatrix',
                   {
@@ -123,10 +123,9 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                       setProgress(arg)
                     },
                   },
-                )) as { order: number[]; tree: string }
+                )
 
-                // Preserve color and other layout customizations
-                const currentLayout = model.layout?.length
+                const currentLayout = model.layout.length
                   ? model.layout
                   : sourcesWithoutLayout
                 const sourcesByName = Object.fromEntries(
@@ -139,7 +138,6 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                     if (!sourceItem) {
                       throw new Error(`out of bounds at ${idx}`)
                     }
-                    // Preserve customizations from current layout
                     return {
                       ...sourceItem,
                       ...sourcesByName[sourceItem.name],
@@ -158,7 +156,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
             } finally {
               setLoading(false)
               setProgress('')
-              setStopToken('')
+              setStopToken(undefined)
             }
           }}
         >

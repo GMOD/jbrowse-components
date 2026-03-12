@@ -1,5 +1,5 @@
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
-import { CHAR_FROM_CODE } from '../PileupRenderer/renderers/cigarUtil.ts'
+import { CHAR_FROM_CODE } from '../shared/cigarUtil.ts'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -69,7 +69,23 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get pair_orientation() {
-    return this.record.isPaired() ? this.record.getPairOrientation() : undefined
+    if (!this.record.isPaired()) {
+      return undefined
+    }
+    const { flags } = this.record
+    const isRead1 = !!(flags & 0x40)
+    const isSelfRev = !!(flags & 0x10)
+    const isMateRev = !!(flags & 0x20)
+    const selfStrand = isSelfRev ? 'R' : 'F'
+    const mateStrand = isMateRev ? 'R' : 'F'
+    const selfNum = isRead1 ? '1' : '2'
+    const mateNum = isRead1 ? '2' : '1'
+
+    return this.record.mate &&
+      (this.record.mate.sequenceId !== this.record.sequenceId ||
+        this.start <= this.record.mate.alignmentStart - 1)
+      ? selfStrand + selfNum + mateStrand + mateNum
+      : mateStrand + mateNum + selfStrand + selfNum
   }
 
   get template_length() {

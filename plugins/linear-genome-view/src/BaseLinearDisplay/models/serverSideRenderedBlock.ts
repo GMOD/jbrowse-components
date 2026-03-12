@@ -302,6 +302,7 @@ export function renderBlockData(
     const display = (optDisplay ||
       self.cachedDisplay ||
       getContainingDisplay(self)) as any
+
     const { assemblyManager, rpcManager } = getSession(display)
     const { adapterConfig, rendererType, error, parentTrack } = display
     const assemblyNames = getTrackAssemblyNames(parentTrack)

@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useEffect, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
@@ -35,7 +36,91 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     zIndex: 100,
   },
+  scrollContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    willChange: 'transform',
+  },
 }))
+
+// Inner component that only re-renders when staticBlocks change, NOT on
+// scroll. This avoids re-creating/diffing potentially hundreds of label
+// elements on every scroll frame. The observer memo prevents re-render
+// when the parent re-renders due to offsetPx changes, since the only prop
+// (model) is a stable reference and this component does not read offsetPx.
+const ScrollingLabels = observer(function ScrollingLabels({
+  model,
+  setMenuState,
+}: {
+  model: LGV
+  setMenuState: React.Dispatch<React.SetStateAction<MenuState | undefined>>
+}) {
+  const { classes } = useStyles()
+  const { staticBlocks } = model
+  const containerOffset = staticBlocks.offsetPx
+
+  const regionEndPx = new Map<number, number>()
+  for (const block of staticBlocks.blocks) {
+    if (block.type === 'ContentBlock' && block.regionNumber !== undefined) {
+      const endPx = block.offsetPx + block.widthPx
+      const current = regionEndPx.get(block.regionNumber)
+      if (current === undefined || endPx > current) {
+        regionEndPx.set(block.regionNumber, endPx)
+      }
+    }
+  }
+
+  const labels: React.ReactNode[] = []
+  // eslint-disable-next-line unicorn/no-array-for-each
+  staticBlocks.forEach((block, index) => {
+    const {
+      offsetPx: blockOffsetPx,
+      isLeftEndOfDisplayedRegion,
+      key,
+      type,
+      refName,
+      regionNumber,
+    } = block
+    if (type !== 'ContentBlock' || !isLeftEndOfDisplayedRegion) {
+      return
+    }
+    const regEndPx =
+      regionNumber !== undefined ? regionEndPx.get(regionNumber) : undefined
+    const maxWidth =
+      regEndPx !== undefined ? regEndPx - blockOffsetPx - 2 : undefined
+    if (maxWidth !== undefined && maxWidth <= 0) {
+      return
+    }
+    labels.push(
+      <span
+        key={`refLabel-${key}-${index}`}
+        style={{
+          left: blockOffsetPx - containerOffset - 1,
+          paddingLeft: 1,
+          maxWidth:
+            maxWidth !== undefined && maxWidth > 0 ? maxWidth : undefined,
+        }}
+        className={classes.refLabel}
+        data-testid={`refLabel-${refName}`}
+        onMouseDown={() => {
+          model.setScalebarRefNameClickPending(true)
+        }}
+        onClick={event => {
+          model.setScalebarRefNameClickPending(false)
+          setMenuState({
+            anchorEl: event.currentTarget,
+            refName,
+            regionNumber: regionNumber!,
+          })
+        }}
+      >
+        {refName}
+      </span>,
+    )
+  })
+  return <>{labels}</>
+})
 
 const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   model,
@@ -67,16 +152,57 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   })
   const val = scalebarDisplayPrefix()
   const b0 = staticBlocks.blocks[0]
+  const containerOffset = staticBlocks.offsetPx
+  const translateX = Math.round(containerOffset - offsetPx)
 
-  // Calculate the end position (in pixels) of each displayed region
-  const regionEndPx = new Map<number, number>()
-  for (const block of staticBlocks.blocks) {
-    if (block.type === 'ContentBlock' && block.regionNumber !== undefined) {
-      const endPx = block.offsetPx + block.widthPx
-      const current = regionEndPx.get(block.regionNumber)
-      if (current === undefined || endPx > current) {
-        regionEndPx.set(block.regionNumber, endPx)
+  // Build pinned label (only 1 element updates its left per scroll frame)
+  const pinnedBlock = staticBlocks.blocks[lastLeftBlock]
+  let pinnedLabel: React.ReactNode = null
+  if (pinnedBlock?.type === 'ContentBlock') {
+    let pinnedRegionEndPx: number | undefined
+    if (pinnedBlock.regionNumber !== undefined) {
+      for (const block of staticBlocks.blocks) {
+        if (
+          block.type === 'ContentBlock' &&
+          block.regionNumber === pinnedBlock.regionNumber
+        ) {
+          const endPx = block.offsetPx + block.widthPx
+          if (pinnedRegionEndPx === undefined || endPx > pinnedRegionEndPx) {
+            pinnedRegionEndPx = endPx
+          }
+        }
       }
+    }
+    const maxWidth =
+      pinnedRegionEndPx !== undefined
+        ? pinnedRegionEndPx - offsetPx - 2
+        : undefined
+    if (maxWidth === undefined || maxWidth > 0) {
+      pinnedLabel = (
+        <span
+          style={{
+            left: Math.max(0, -offsetPx),
+            maxWidth:
+              maxWidth !== undefined && maxWidth > 0 ? maxWidth : undefined,
+          }}
+          className={classes.refLabel}
+          data-testid={`refLabel-${pinnedBlock.refName}`}
+          onMouseDown={() => {
+            model.setScalebarRefNameClickPending(true)
+          }}
+          onClick={event => {
+            model.setScalebarRefNameClickPending(false)
+            setMenuState({
+              anchorEl: event.currentTarget,
+              refName: pinnedBlock.refName,
+              regionNumber: pinnedBlock.regionNumber!,
+            })
+          }}
+        >
+          {val ? `${val}:` : ''}
+          {pinnedBlock.refName}
+        </span>
+      )
     }
   }
 
@@ -85,58 +211,13 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
       {b0?.type !== 'ContentBlock' && val ? (
         <span className={cx(classes.b0, classes.refLabel)}>{val}</span>
       ) : null}
-      {staticBlocks.map((block, index) => {
-        const {
-          offsetPx: blockOffsetPx,
-          isLeftEndOfDisplayedRegion,
-          key,
-          type,
-          refName,
-          regionNumber,
-        } = block
-        const last = index === lastLeftBlock
-        // Calculate max width to clip label at the displayed region boundary
-        const regEndPx =
-          regionNumber !== undefined ? regionEndPx.get(regionNumber) : undefined
-        const labelStartPx = last ? offsetPx : blockOffsetPx
-        const maxWidth =
-          regEndPx !== undefined ? regEndPx - labelStartPx - 2 : undefined
-        // Don't render label if available width is too small (avoids overlap slivers)
-        const minLabelWidth = 20
-        const hasEnoughSpace =
-          maxWidth === undefined || maxWidth >= minLabelWidth
-        return type === 'ContentBlock' &&
-          (isLeftEndOfDisplayedRegion || last) &&
-          hasEnoughSpace ? (
-          <span
-            key={`refLabel-${key}-${index}`}
-            style={{
-              left: last
-                ? Math.max(0, -offsetPx)
-                : blockOffsetPx - offsetPx - 1,
-              paddingLeft: last ? 0 : 1,
-              maxWidth:
-                maxWidth !== undefined && maxWidth > 0 ? maxWidth : undefined,
-            }}
-            className={classes.refLabel}
-            data-testid={`refLabel-${refName}`}
-            onMouseDown={() => {
-              model.setScalebarRefNameClickPending(true)
-            }}
-            onClick={event => {
-              model.setScalebarRefNameClickPending(false)
-              setMenuState({
-                anchorEl: event.currentTarget,
-                refName,
-                regionNumber: regionNumber!,
-              })
-            }}
-          >
-            {last && val ? `${val}:` : ''}
-            {refName}
-          </span>
-        ) : null
-      })}
+      <div
+        className={classes.scrollContainer}
+        style={{ transform: `translateX(${translateX}px)` }}
+      >
+        <ScrollingLabels model={model} setMenuState={setMenuState} />
+      </div>
+      {pinnedLabel}
       {menuState ? (
         <RefNameMenu
           model={model}

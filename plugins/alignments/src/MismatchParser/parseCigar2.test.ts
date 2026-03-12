@@ -10,7 +10,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
-} from '../PileupRenderer/renderers/cigarUtil.ts'
+} from '../shared/cigarUtil.ts'
 
 const ml = (currLen: number, opIndex: number) => (currLen << 4) | opIndex
 const parseCigar3 = (args: string) => [...parseCigar2(args)]

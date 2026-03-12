@@ -162,6 +162,7 @@ function makeConfigurationSchemaModel<
       } catch (e) {
         throw new Error(
           `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
+          { cause: e },
         )
       }
     } else {
@@ -303,7 +304,10 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         throw new Error(`Could not resolve identifier "${id}"`)
       }
       // If it's a frozen/plain object, we need to instantiate it
-      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
+      if (!isStateTreeNode(ret)) {
+        return schemaType.create(ret, getEnv(parent))
+      }
+      return ret
     },
     set(value) {
       return value.trackId
@@ -352,17 +356,19 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   const displayRef = types.reference(schemaType, {
     get(id, parent) {
       const track = getContainingTrack(parent)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      const displays = track.configuration.displays || []
+      const displays = track.configuration.displays
       // Find in the track's displays array (may be frozen/plain objects)
       let ret = displays.find((d: { displayId: string }) => d.displayId === id)
 
-      // If not found in config, create a default configuration for this display type
-      // This handles the common case where displays are auto-generated from track types
+      // If not found by displayId, fall back to matching by display type.
+      // This handles cases where the display state model's type doesn't match
+      // any displayId in the track config (e.g. newly added display types).
       if (!ret) {
-        // Extract display type from the displayId (format: trackId-DisplayType)
-        const displayType = `${id}`.split('-').slice(1).join('-')
-        if (displayType) {
+        const displayType = (parent as { type?: string }).type
+        ret = displays.find(
+          (d: unknown) => (d as { type?: string }).type === displayType,
+        )
+        if (!ret && displayType) {
           // @ts-expect-error
           ret = { displayId: `${id}`, type: displayType }
         }

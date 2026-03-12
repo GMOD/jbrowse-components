@@ -56,6 +56,8 @@ export default defineConfig(
       'products/jbrowse-web/scripts',
       'products/jbrowse-img/src/bin.js',
 
+      'packages/core/src/util/p-limit.ts',
+
       // Worker polyfills (plain JS files)
       '**/workerPolyfill.js',
 
@@ -90,7 +92,7 @@ export default defineConfig(
 
     settings: {
       react: {
-        version: 'detect',
+        version: '19.2.4',
       },
       'import/ignore': ['dockview-react', '@tanstack/react-table'],
     },
@@ -151,6 +153,7 @@ export default defineConfig(
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
+      'unicorn/no-for-loop': 'off',
       'unicorn/prefer-response-static-json': 'off',
       'unicorn/text-encoding-identifier-case': 'off',
       'unicorn/prefer-global-this': 'off',

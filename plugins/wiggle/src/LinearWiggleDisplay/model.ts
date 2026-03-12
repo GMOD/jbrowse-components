@@ -1,365 +1,663 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import {
+  getContainingTrack,
+  getContainingView,
+  getEnv,
+  getSession,
+  measureText,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
+import { autorun, untracked } from 'mobx'
 
-import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
+import {
+  WIGGLE_COLOR_DEFAULT,
+  YSCALEBAR_LABEL_OFFSET,
+  computeAutoscaleDomain,
+  getNiceDomain,
+  getScale,
+} from '../util.ts'
 
+import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnyReactComponentType } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  FetchContext,
   LinearGenomeViewModel,
+  MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
 
-// lazies
-const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
+
+const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
+const SetMinMaxDialog = lazy(() => import('../shared/SetMinMaxDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['xyplot', 'XYPlotRenderer'],
-  ['density', 'DensityRenderer'],
-  ['line', 'LinePlotRenderer'],
-])
-
-/**
- * #stateModel LinearWiggleDisplay
- * extends
- * - [SharedWiggleMixin](../sharedwigglemixin)
- */
-function stateModelFactory(
-  pluginManager: PluginManager,
+export default function stateModelFactory(
+  _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
       'LinearWiggleDisplay',
-      SharedWiggleMixin(configSchema),
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
-        /**
-         * #property
-         */
         type: types.literal('LinearWiggleDisplay'),
-        /**
-         * #property
-         */
-        invertedSetting: types.maybe(types.boolean),
+        configuration: ConfigurationReference(configSchema),
+        resolution: types.optional(types.number, 1),
+        colorSetting: types.maybe(types.string),
+        posColorSetting: types.maybe(types.string),
+        negColorSetting: types.maybe(types.string),
+        scaleTypeSetting: types.maybe(types.string),
+        minScoreSetting: types.maybe(types.number),
+        maxScoreSetting: types.maybe(types.number),
+        renderingTypeSetting: types.maybe(types.string),
+        summaryScoreModeSetting: types.maybe(types.string),
+        autoscaleSetting: types.maybe(types.string),
       }),
     )
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setInverted(arg: boolean) {
-        self.invertedSetting = arg
-      },
-    }))
-
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get TooltipComponent() {
-        return Tooltip as AnyReactComponentType
-      },
-
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        const name = self.rendererTypeNameSimple
-        const rendererType = rendererTypes.get(name)
-        if (!rendererType) {
-          throw new Error(`unknown renderer ${name}`)
-        }
-        return rendererType
-      },
-      /**
-       * #getter
-       * unused currently
-       */
-      get quantitativeStatsRelevantToCurrentZoom() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return self.stats?.currStatsBpPerPx === view.bpPerPx
-      },
-
-      /**
-       * #getter
-       */
-      get graphType() {
-        return (
-          self.rendererTypeName === 'XYPlotRenderer' ||
-          self.rendererTypeName === 'LinePlotRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
-      get inverted() {
-        return self.invertedSetting ?? (getConf(self, 'inverted') as boolean)
-      },
-    }))
-
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        adapterProps() {
-          const superProps = superRenderProps()
-          const { filters, resolution, scaleOpts } = self
-          return {
-            ...superProps,
-            rpcDriverName: self.effectiveRpcDriverName,
-            config: self.rendererConfig,
-            displayCrossHatches: self.displayCrossHatchesSetting,
-            scaleOpts,
-            resolution,
-            filters,
-          }
-        },
-
-        /**
-         * #getter
-         */
-        get ticks() {
-          const { inverted, scaleType, domain, height } = self
-          const minimalTicks = getConf(self, 'minimalTicks')
-          if (domain) {
-            const ticks = axisPropsFromTickScale(
-              getScale({
-                scaleType,
-                domain,
-                range: [
-                  height - YSCALEBAR_LABEL_OFFSET,
-                  YSCALEBAR_LABEL_OFFSET,
-                ],
-                inverted,
-              }),
-              4,
-            )
-            return height < 100 || minimalTicks
-              ? { ...ticks, values: domain }
-              : ticks
-          } else {
-            return undefined
-          }
-        },
+    .preProcessSnapshot((snap: any) => {
+      if (!snap) {
+        return snap
       }
+
+      // Strip properties from old BaseLinearDisplay snapshots
+      const { blockState, showLegend, showTooltips, ...cleaned } = snap
+      snap = cleaned
+
+      // Rewrite "height" from older snapshots to "heightPreConfig"
+      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
+        const { height, ...rest } = snap
+        snap = { ...rest, heightPreConfig: height }
+      }
+
+      return snap
     })
+    .volatile(() => ({
+      rpcDataMap: new Map<number, WiggleDataResult>(),
+      visibleScoreRange: undefined as [number, number] | undefined,
+      loadedBpPerPx: new Map<number, number>(),
+      featureUnderMouse: undefined as
+        | {
+            refName: string
+            start: number
+            end: number
+            score: number
+            minScore?: number
+            maxScore?: number
+            summary?: boolean
+          }
+        | undefined,
+    }))
     .views(self => ({
-      /**
-       * #method
-       */
+      get scalebarOverlapLeft() {
+        const view = getContainingView(self) as { trackLabelsSetting?: string }
+        if (view.trackLabelsSetting === 'overlapping') {
+          const track = getContainingTrack(self)
+          return measureText(getConf(track, 'name'), 12.8) + 100
+        }
+        return 0
+      },
+
+      get DisplayMessageComponent() {
+        return WiggleComponent
+      },
+
       renderProps() {
-        const { inverted, ticks, height, domain } = self
-        const superProps = self.adapterProps()
-        const view = getContainingView(self) as LinearGenomeViewModel
-        const statsRegion = JSON.stringify(view.dynamicBlocks)
-        return {
-          ...self.adapterProps(),
-          notReady:
-            superProps.notReady ||
-            !domain ||
-            self.stats?.statsRegion !== statsRegion,
-          height,
-          ticks,
-          inverted,
-          offset: YSCALEBAR_LABEL_OFFSET,
-        }
+        return { notReady: true }
       },
 
-      /**
-       * #getter
-       */
-      get fillSetting() {
-        if (self.filled) {
-          return 0
-        } else if (self.minSize === 1) {
-          return 1
-        } else {
-          return 2
-        }
+      get color() {
+        return self.colorSetting ?? getConf(self, 'color')
       },
-      /**
-       * #getter
-       */
-      get quantitativeStatsReady() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+
+      get posColor() {
+        return self.posColorSetting ?? getConf(self, 'posColor')
+      },
+
+      get negColor() {
+        return self.negColorSetting ?? getConf(self, 'negColor')
+      },
+
+      get bicolorPivot() {
+        return getConf(self, 'bicolorPivot')
+      },
+
+      get effectiveBicolorPivot() {
+        const c = this.color
+        const useBicolor = c === WIGGLE_COLOR_DEFAULT || c === '#ff00ff'
+        return useBicolor ? this.bicolorPivot : -Infinity
+      },
+
+      get scaleType() {
+        return self.scaleTypeSetting ?? getConf(self, 'scaleType')
+      },
+
+      get autoscaleType() {
+        return self.autoscaleSetting ?? getConf(self, 'autoscale')
+      },
+
+      get hasResolution() {
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter') as { type: string }
+        const { pluginManager } = getEnv(self)
         return (
-          view.initialized &&
-          self.featureDensityStatsReadyAndRegionNotTooLarge &&
-          !self.error
+          pluginManager
+            .getAdapterType(adapterConfig.type)
+            ?.adapterCapabilities.includes('hasResolution') ?? false
         )
       },
+
+      adapterProps() {
+        const track = getContainingTrack(self)
+        return {
+          adapterConfig: getConf(track, 'adapter'),
+        }
+      },
+
+      get summaryScoreMode() {
+        return self.summaryScoreModeSetting ?? getConf(self, 'summaryScoreMode')
+      },
+
+      get renderingType() {
+        return self.renderingTypeSetting ?? getConf(self, 'defaultRendering')
+      },
+
+      get isDensityMode() {
+        return this.renderingType === 'density'
+      },
+
+      get minScore() {
+        return self.minScoreSetting ?? getConf(self, 'minScore')
+      },
+
+      get maxScore() {
+        return self.maxScoreSetting ?? getConf(self, 'maxScore')
+      },
+
+      get minScoreConfig() {
+        const val = this.minScore
+        return val === Number.MIN_VALUE ? undefined : val
+      },
+
+      get maxScoreConfig() {
+        const val = this.maxScore
+        return val === Number.MAX_VALUE ? undefined : val
+      },
+
+      get domain(): [number, number] | undefined {
+        if (self.rpcDataMap.size === 0) {
+          return undefined
+        }
+        const range = self.visibleScoreRange
+        if (!range) {
+          return undefined
+        }
+        return getNiceDomain({
+          domain: range,
+          bounds: [this.minScoreConfig, this.maxScoreConfig],
+          scaleType: this.scaleType,
+        })
+      },
+
+      get ticks() {
+        const scaleType = this.scaleType
+        const { height } = self
+        const domain = this.domain
+        if (!domain) {
+          return undefined
+        }
+        const minimalTicks = getConf(self, 'minimalTicks')
+        const ticks = axisPropsFromTickScale(
+          getScale({
+            scaleType,
+            domain,
+            range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+            inverted: false,
+          }),
+          4,
+        )
+        return height < 100 || minimalTicks
+          ? { ...ticks, values: domain }
+          : ticks
+      },
     }))
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      const hasRenderings = getConf(self, 'defaultRendering')
-      return {
-        /**
-         * #method
-         * Base track menu items shared by all wiggle displays (Score submenu)
-         */
-        wiggleBaseTrackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Score',
-              icon: EqualizerIcon,
-              subMenu: self.scoreTrackMenuItems(),
-            },
-          ]
-        },
+    .actions(self => ({
+      setRpcDataForRegion(regionNumber: number, data: WiggleDataResult) {
+        const next = new Map(self.rpcDataMap)
+        next.set(regionNumber, data)
+        self.rpcDataMap = next
+      },
 
-        /**
-         * #method
-         * Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.)
-         * Not used by SNPCoverageDisplay
-         */
-        wiggleOnlyTrackMenuItems() {
-          return [
-            ...(self.canHaveFill
-              ? [
-                  {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
-                  },
-                ]
-              : []),
+      setVisibleScoreRange(range: [number, number]) {
+        self.visibleScoreRange = range
+      },
 
-            ...(hasRenderings
-              ? [
-                  {
-                    label: 'Renderer type',
-                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
-                      label: key,
-                      type: 'radio',
-                      checked: self.rendererTypeNameSimple === key,
-                      onClick: () => {
-                        self.setRendererType(key)
-                      },
-                    })),
-                  },
-                ]
-              : []),
+      setLoadedBpPerPxForRegion(regionNumber: number, bpPerPx: number) {
+        const next = new Map(self.loadedBpPerPx)
+        next.set(regionNumber, bpPerPx)
+        self.loadedBpPerPx = next
+      },
 
-            {
-              label: 'Color',
-              icon: PaletteIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetColorDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-          ]
-        },
-      }
-    })
-    .views(self => ({
-      /**
-       * #method
-       */
-      trackMenuItems() {
-        return [
-          ...self.wiggleBaseTrackMenuItems(),
-          {
-            label: 'Show...',
-            icon: VisibilityIcon,
-            subMenu: [
-              {
-                label: 'Show tooltips',
-                type: 'checkbox',
-                checked: self.showTooltipsEnabled,
-                onClick: () => {
-                  self.setShowTooltips(!self.showTooltipsEnabled)
-                },
-              },
-              ...(self.graphType
-                ? [
-                    {
-                      label: 'Show inverted',
-                      type: 'checkbox',
-                      checked: self.inverted,
-                      onClick: () => {
-                        self.setInverted(!self.inverted)
-                      },
-                    },
-                    {
-                      label: 'Show cross hatches',
-                      type: 'checkbox',
-                      checked: self.displayCrossHatchesSetting,
-                      onClick: () => {
-                        self.toggleCrossHatches()
-                      },
-                    },
-                  ]
-                : []),
-            ],
-          },
-          ...self.wiggleOnlyTrackMenuItems(),
-        ]
+      clearDisplaySpecificData() {
+        self.rpcDataMap = new Map()
+        self.visibleScoreRange = undefined
+        self.loadedBpPerPx = new Map()
+      },
+
+      reload() {
+        self.setError(null)
+        self.clearAllRpcData()
+      },
+
+      setColor(color?: string) {
+        self.colorSetting = color
+      },
+
+      setPosColor(color?: string) {
+        self.posColorSetting = color
+      },
+
+      setNegColor(color?: string) {
+        self.negColorSetting = color
+      },
+
+      setScaleType(scaleType: string) {
+        self.scaleTypeSetting = scaleType
+      },
+
+      setMinScore(val?: number) {
+        self.minScoreSetting = val
+      },
+
+      setMaxScore(val?: number) {
+        self.maxScoreSetting = val
+      },
+
+      setRenderingType(type: string) {
+        self.renderingTypeSetting = type
+      },
+
+      setSummaryScoreMode(val: string) {
+        self.summaryScoreModeSetting = val
+      },
+
+      setResolution(res: number) {
+        self.resolution = res
+      },
+
+      setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
+        self.featureUnderMouse = feat
+      },
+
+      setAutoscale(val?: string) {
+        self.autoscaleSetting = val
       },
     }))
     .actions(self => {
-      const { renderSvg: superRenderSvg } = self
+      async function fetchFeaturesForRegion(
+        region: Region,
+        regionNumber: number,
+        stopToken: string,
+        bpPerPx: number,
+        resolution: number,
+        generation: number,
+      ) {
+        const session = getSession(self)
+        const { rpcManager } = session
+        const { adapterConfig } = self.adapterProps()
+
+        if (!adapterConfig) {
+          return
+        }
+
+        const result = await rpcManager.call(
+          getRpcSessionId(self),
+          'RenderWiggleData',
+          {
+            adapterConfig,
+            region,
+            bicolorPivot: self.effectiveBicolorPivot,
+            stopToken,
+            bpPerPx,
+            resolution,
+            statusCallback: (msg: string) => {
+              if (isAlive(self)) {
+                self.setStatusMessage(msg)
+              }
+            },
+          },
+        )
+
+        if (isAlive(self) && generation === self.fetchGeneration) {
+          self.setRpcDataForRegion(regionNumber, result)
+          self.setLoadedRegionForRegion(regionNumber, {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+            assemblyName: region.assemblyName,
+          })
+          self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
+        }
+      }
+
+      const superAfterAttach = self.afterAttach
+
+      let prevPivot: number | undefined
+      let prevResolution: number | undefined
 
       return {
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            const { getQuantitativeStatsAutorun } =
-              await import('../getQuantitativeStatsAutorun.ts')
-            getQuantitativeStatsAutorun(self)
-          })()
+        isCacheValid(regionNumber: number) {
+          const view = getContainingView(self) as LGV
+          const regionBpPerPx = untracked(() =>
+            self.loadedBpPerPx.get(regionNumber),
+          )
+          return (
+            regionBpPerPx === undefined || view.bpPerPx >= regionBpPerPx / 2
+          )
         },
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts, superRenderSvg)
+
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+          const view = getContainingView(self) as LGV
+          const { bpPerPx } = view
+          const { resolution } = self
+          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+            const promises = needed.map(({ region, regionNumber }) =>
+              fetchFeaturesForRegion(
+                region,
+                regionNumber,
+                ctx.stopToken,
+                bpPerPx,
+                resolution,
+                ctx.generation,
+              ),
+            )
+            await Promise.all(promises)
+          })
+        },
+
+        afterAttach() {
+          superAfterAttach()
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const pivot = self.effectiveBicolorPivot
+                if (prevPivot !== undefined && pivot !== prevPivot) {
+                  self.clearAllRpcData()
+                }
+                prevPivot = pivot
+              },
+              { name: 'BicolorPivotChange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const { resolution } = self
+                if (
+                  prevResolution !== undefined &&
+                  resolution !== prevResolution
+                ) {
+                  self.clearAllRpcData()
+                }
+                prevResolution = resolution
+              },
+              { name: 'ResolutionChange' },
+            ),
+          )
+
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const numStdDev = getConf(self, 'numStdDev') || 3
+                const visibleEntries = view.dynamicBlocks.contentBlocks
+                  .filter(block => block.regionNumber !== undefined)
+                  .map(block => {
+                    const data = self.rpcDataMap.get(block.regionNumber!)
+                    return data
+                      ? {
+                          visStart: block.start - data.regionStart,
+                          visEnd: block.end - data.regionStart,
+                          data,
+                        }
+                      : undefined
+                  })
+                  .filter((e): e is NonNullable<typeof e> => !!e)
+                const allEntries = [...self.rpcDataMap.values()].map(data => ({
+                  data,
+                }))
+                const range = computeAutoscaleDomain(
+                  self.autoscaleType,
+                  self.summaryScoreMode,
+                  numStdDev,
+                  visibleEntries,
+                  allEntries,
+                )
+                if (
+                  range &&
+                  (range[0] !== self.visibleScoreRange?.[0] ||
+                    range[1] !== self.visibleScoreRange[1])
+                ) {
+                  self.setVisibleScoreRange(range)
+                }
+              },
+              { delay: 400, name: 'VisibleScoreRange' },
+            ),
+          )
         },
       }
     })
+    .views(self => ({
+      trackMenuItems() {
+        return [
+          {
+            label: 'Rendering type',
+            subMenu: [
+              {
+                label: 'XY plot',
+                type: 'radio',
+                checked: self.renderingType === 'xyplot',
+                onClick: () => {
+                  self.setRenderingType('xyplot')
+                },
+              },
+              {
+                label: 'Density',
+                type: 'radio',
+                checked: self.renderingType === 'density',
+                onClick: () => {
+                  self.setRenderingType('density')
+                },
+              },
+              {
+                label: 'Line',
+                type: 'radio',
+                checked: self.renderingType === 'line',
+                onClick: () => {
+                  self.setRenderingType('line')
+                },
+              },
+              {
+                label: 'Scatter',
+                type: 'radio',
+                checked: self.renderingType === 'scatter',
+                onClick: () => {
+                  self.setRenderingType('scatter')
+                },
+              },
+            ],
+          },
+          ...(self.hasResolution
+            ? [
+                {
+                  label: 'Resolution',
+                  subMenu: [
+                    {
+                      label: 'Finer resolution',
+                      onClick: () => {
+                        self.setResolution(self.resolution * 5)
+                      },
+                    },
+                    {
+                      label: 'Coarser resolution',
+                      onClick: () => {
+                        self.setResolution(self.resolution / 5)
+                      },
+                    },
+                  ],
+                },
+                {
+                  label: 'Summary score mode',
+                  subMenu: (['min', 'max', 'avg', 'whiskers'] as const).map(
+                    elt => ({
+                      label: elt,
+                      type: 'radio' as const,
+                      checked: self.summaryScoreMode === elt,
+                      onClick: () => {
+                        self.setSummaryScoreMode(elt)
+                      },
+                    }),
+                  ),
+                },
+              ]
+            : []),
+          {
+            label: 'Score',
+            icon: EqualizerIcon,
+            subMenu: [
+              {
+                label: 'Scale type',
+                subMenu: [
+                  {
+                    label: 'Linear scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'linear',
+                    onClick: () => {
+                      self.setScaleType('linear')
+                    },
+                  },
+                  {
+                    label: 'Log scale',
+                    type: 'radio',
+                    checked: self.scaleType === 'log',
+                    onClick: () => {
+                      self.setScaleType('log')
+                    },
+                  },
+                ],
+              },
+              {
+                label: 'Autoscale type',
+                subMenu: (
+                  [
+                    ['local', 'Local'],
+                    ['global', 'Global'],
+                    ['globalsd', 'Global ± 3σ'],
+                    ['localsd', 'Local ± 3σ'],
+                  ] as const
+                ).map(([val, label]) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: self.autoscaleType === val,
+                  onClick: () => {
+                    self.setAutoscale(val)
+                  },
+                })),
+              },
+              {
+                label: 'Set min/max score',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    SetMinMaxDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
+            ],
+          },
+          {
+            label: 'Color',
+            icon: PaletteIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
+        ]
+      },
+    }))
+    .actions(self => ({
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self as LinearWiggleDisplayModel, opts)
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
+      const {
+        colorSetting,
+        posColorSetting,
+        negColorSetting,
+        scaleTypeSetting,
+        minScoreSetting,
+        maxScoreSetting,
+        renderingTypeSetting,
+        summaryScoreModeSetting,
+        autoscaleSetting,
+        ...rest
+      } = snap as Omit<typeof snap, symbol>
       return {
         ...rest,
-        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
+        ...(colorSetting !== undefined ? { colorSetting } : {}),
+        ...(posColorSetting !== undefined ? { posColorSetting } : {}),
+        ...(negColorSetting !== undefined ? { negColorSetting } : {}),
+        ...(scaleTypeSetting !== undefined ? { scaleTypeSetting } : {}),
+        ...(minScoreSetting !== undefined ? { minScoreSetting } : {}),
+        ...(maxScoreSetting !== undefined ? { maxScoreSetting } : {}),
+        ...(renderingTypeSetting !== undefined ? { renderingTypeSetting } : {}),
+        ...(summaryScoreModeSetting !== undefined
+          ? { summaryScoreModeSetting }
+          : {}),
+        ...(autoscaleSetting !== undefined ? { autoscaleSetting } : {}),
       } as typeof snap
     })
 }
 
-export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>
-
-export default stateModelFactory
+export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>

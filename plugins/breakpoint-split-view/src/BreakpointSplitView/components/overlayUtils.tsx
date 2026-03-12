@@ -7,28 +7,24 @@ export const [LEFT, , RIGHT] = [0, 1, 2, 3] as const
 export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
-  parentRef: React.RefObject<SVGSVGElement | null>
   getTrackYPosOverride?: (trackId: string, level: number) => number
+  cachedTrackTops?: number[]
+  cachedYOffset?: number
 }
 
-export function getYOffset(parentRef: React.RefObject<SVGSVGElement | null>) {
-  // Reading ref during render is intentional for synchronous positioning
-  return parentRef.current?.getBoundingClientRect().top ?? 0
-}
-
-export function createMouseHandlers(
+export function createVariantMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
   session: ReturnType<typeof getSession>,
-  widgetType: string,
-  widgetId: string,
   featureData: unknown,
 ) {
   return {
     onClick: () => {
-      const featureWidget = session.addWidget?.(widgetType, widgetId, {
-        featureData,
-      })
+      const featureWidget = session.addWidget?.(
+        'VariantFeatureWidget',
+        'variantFeature',
+        { featureData },
+      )
       session.showWidget?.(featureWidget)
     },
     onMouseOver: () => {

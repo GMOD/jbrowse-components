@@ -303,10 +303,6 @@ test('indexes with  single per-file arg', async () => {
 
 test('indexes single assembly volvox config', async () => {
   await runInTmpDir(async ctx => {
-    let preVolvoxIx = ''
-    let preVolvoxIxx = ''
-    let preVolvoxMeta = ''
-
     fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
     const volvoxConfig = readJSON(path.join(ctx.dir, 'config.json'))
     const assembly = volvoxConfig.assemblies[0]
@@ -316,9 +312,9 @@ test('indexes single assembly volvox config', async () => {
       JSON.stringify({ ...volvoxConfig, assembly }),
     )
 
-    preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
-    preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
-    preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
+    const preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
+    const preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
+    const preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
     await runCommand([
       'text-index',
       '--target=config.json',
@@ -338,15 +334,11 @@ test('indexes single assembly volvox config', async () => {
 
 test('indexes entire volvox config', async () => {
   await runInTmpDir(async ctx => {
-    let preVolvoxIx = ''
-    let preVolvoxIxx = ''
-    let preVolvoxMeta = ''
-
     fs.cpSync(volvoxDir, ctx.dir, { recursive: true, force: true })
 
-    preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
-    preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
-    preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
+    const preVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
+    const preVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
+    const preVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
     await runCommand([
       'text-index',
       '--target=config.json',

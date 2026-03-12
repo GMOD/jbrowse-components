@@ -3,6 +3,7 @@ import path from 'path'
 
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { createCanvas } from 'canvas'
 
 import { booleanize } from './util.ts'
 
@@ -489,6 +490,8 @@ export async function renderRegion(opts: Opts) {
 
   return renderToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
+    createCanvas: (w: number, h: number) =>
+      createCanvas(w, h) as unknown as HTMLCanvasElement,
     ...opts,
   })
 }

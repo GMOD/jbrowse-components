@@ -60,25 +60,27 @@ export function moveTo(
     len / (width - interRegionPaddingWidth * numBlocksWideEnough)
   const newBpPerPx = self.zoomTo(targetBpPerPx)
 
-  // If our target bpPerPx was smaller than the allowed minBpPerPx, adjust
-  // the scroll so the requested range is in the middle of the screen
   let extraBp = 0
   if (targetBpPerPx < newBpPerPx) {
     extraBp = ((newBpPerPx - targetBpPerPx) * self.width) / 2
   }
 
   let bpToStart = -extraBp
+  let paddingPx = 0
   for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const region = displayedRegions[i]!
     if (start.index === i) {
       bpToStart += start.offset
       break
-    } else {
-      bpToStart += region.end - region.start
+    }
+    bpToStart += region.end - region.start
+    const regionWidthPx = (region.end - region.start) / newBpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+      paddingPx += interRegionPaddingWidth
     }
   }
 
-  const scrollPos = Math.round(bpToStart / self.bpPerPx)
+  const scrollPos = Math.round(bpToStart / newBpPerPx + paddingPx)
   self.scrollTo(scrollPos)
 }
 
@@ -107,15 +109,13 @@ export function pxToBp(
     offsetPx,
     displayedRegions,
     interRegionPaddingWidth,
-    staticBlocks,
+    minimumBlockWidth,
   } = self
-  const blocks = staticBlocks.contentBlocks
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]!
     const snap = r
     return {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       ...(snap as Omit<typeof snap, symbol>),
       oob: true,
       coord: coord(r, bp),
@@ -125,7 +125,6 @@ export function pxToBp(
   }
 
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let currBlock = 0
 
   for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
@@ -134,7 +133,6 @@ export function pxToBp(
     if (len + bpSoFar > bp && bpSoFar <= bp) {
       const snap = r
       return {
-        // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
         ...(snap as Omit<typeof snap, symbol>),
         oob: false,
         offset,
@@ -143,21 +141,14 @@ export function pxToBp(
       }
     }
 
-    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
-    // a static block
-    if (blocks[currBlock]?.regionNumber === i) {
+    const regionWidthPx = len / bpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
       const paddingStart = bpSoFar + len
       const paddingEnd = paddingStart + interRegionPaddingBp
-      // If bp is in the inter-region padding, use the next region's info
-      if (
-        bp >= paddingStart &&
-        bp < paddingEnd &&
-        i + 1 < displayedRegions.length
-      ) {
+      if (bp >= paddingStart && bp < paddingEnd) {
         const nextR = displayedRegions[i + 1]!
         const snap = nextR
         return {
-          // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
           ...(snap as Omit<typeof snap, symbol>),
           oob: false,
           offset: 0,
@@ -166,7 +157,6 @@ export function pxToBp(
         }
       }
       bpSoFar += len + interRegionPaddingBp
-      currBlock++
     } else {
       bpSoFar += len
     }
@@ -213,11 +203,13 @@ export function bpToPx({
 }) {
   let bpSoFar = 0
 
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
-    self
-  const blocks = staticBlocks.contentBlocks
+  const {
+    interRegionPaddingWidth,
+    bpPerPx,
+    displayedRegions,
+    minimumBlockWidth,
+  } = self
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let currBlock = 0
 
   let i = 0
   for (let l = displayedRegions.length; i < l; i++) {
@@ -227,19 +219,16 @@ export function bpToPx({
       refName === r.refName &&
       coord >= r.start &&
       coord <= r.end &&
-      (regionNumber ? regionNumber === i : true)
+      (regionNumber !== undefined ? regionNumber === i : true)
     ) {
       bpSoFar += r.reversed ? r.end - coord : coord - r.start
       break
     }
 
-    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
-    // a static block
-    if (blocks[currBlock]?.regionNumber === i) {
-      bpSoFar += len + interRegionPaddingBp
-      currBlock++
-    } else {
-      bpSoFar += len
+    bpSoFar += len
+    const regionWidthPx = len / bpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+      bpSoFar += interRegionPaddingBp
     }
   }
   const found = displayedRegions[i]
@@ -251,58 +240,4 @@ export function bpToPx({
   }
 
   return undefined
-}
-
-export function bpToPxMap({
-  refName,
-  coord,
-  regionNumber,
-  self,
-}: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: ViewSnap
-}) {
-  let bpSoFar = 0
-
-  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
-    self
-  const blocks = staticBlocks.contentBlocks
-  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  const map = {}
-  let currBlock = 0
-
-  let i = 0
-  for (let l = displayedRegions.length; i < l; i++) {
-    const r = displayedRegions[i]!
-    const len = r.end - r.start
-    if (
-      refName === r.refName &&
-      coord >= r.start &&
-      coord <= r.end &&
-      (regionNumber === undefined ? true : regionNumber === i)
-    ) {
-      bpSoFar += r.reversed ? r.end - coord : coord - r.start
-      break
-    }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
-    // a static block
-    if (blocks[currBlock]?.regionNumber === i) {
-      bpSoFar += len + interRegionPaddingBp
-      currBlock++
-    } else {
-      bpSoFar += len
-    }
-  }
-  const found = displayedRegions[i]
-  if (found) {
-    return {
-      index: i,
-      offsetPx: Math.round(bpSoFar / bpPerPx),
-    }
-  }
-
-  return map
 }

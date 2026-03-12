@@ -15,6 +15,9 @@ const preservedExports = [
   '@jbrowse/core/util/fileHandleStore',
   '@jbrowse/core/util/tss-react/types',
   '@jbrowse/core/configuration/configurationSchema',
+  // Referenced as string literals in ReExports runtime module registry
+  '@jbrowse/core/pluggableElementTypes/renderers/RendererType',
+  '@jbrowse/core/util/layouts',
 ]
 
 // Scan the codebase for all @jbrowse/core imports

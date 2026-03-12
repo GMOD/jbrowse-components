@@ -19,7 +19,7 @@ async function resolveURL(location: string, check = true) {
   try {
     locationUrl = new URL(location)
   } catch (error) {
-    throw new Error(`The location ${location} provided is not a valid URL`)
+    throw new Error(`The location ${location} provided is not a valid URL`, { cause: error })
   }
   if (check) {
     const response = await fetch(`${locationUrl}`, { method: 'HEAD' })

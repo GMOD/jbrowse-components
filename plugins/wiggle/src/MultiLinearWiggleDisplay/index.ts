@@ -1,9 +1,8 @@
-import { lazy } from 'react'
-
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'
-import modelFactory from './model.ts'
+import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,17 +10,15 @@ export default function MultiLinearWiggleDisplayF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaFactory(pluginManager)
+    const configSchema = configSchemaFactory
     return new DisplayType({
       name: 'MultiLinearWiggleDisplay',
-      displayName: 'Multi-wiggle display',
+      displayName: 'Multi-Wiggle display',
       configSchema,
-      stateModel: modelFactory(pluginManager, configSchema),
+      stateModel: stateModelFactory(configSchema),
       trackType: 'MultiQuantitativeTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(
-        () => import('./components/WiggleDisplayComponent.tsx'),
-      ),
+      ReactComponent: BaseLinearDisplayComponent,
     })
   })
 }

@@ -36,19 +36,16 @@ export function zip(a: number[], b: number[]) {
 
 export function parsePAFLine(line: string) {
   const parts = line.split('\t')
-  const extraFields = parts.slice(12)
   const extra: Record<string, string | number> = {
     numMatches: +parts[9]!,
     blockLen: +parts[10]!,
     mappingQual: +parts[11]!,
   }
 
-  // Process extra fields only if they exist
-  if (extraFields.length) {
-    for (const field of extraFields) {
-      const colonIndex = field.indexOf(':')
-      extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
-    }
+  for (let i = 12; i < parts.length; i++) {
+    const field = parts[i]!
+    const colonIndex = field.indexOf(':')
+    extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
   }
 
   return {

@@ -1,7 +1,5 @@
 import { cigarToMismatches } from './cigarToMismatches.ts'
-import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches } from './mdToMismatches.ts'
-import { mdToMismatches2 } from './mdToMismatches2.ts'
 
 import type { Mismatch } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -39,13 +37,12 @@ const CIGAR_CODE_TO_INDEX: Record<number, number> = {
 
 // Parses CIGAR string to packed Uint32Array format
 // Returns Uint32Array where each value is (length << 4) | opIndex
-export function parseCigar2(s = ''): Uint32Array {
+export function parseCigar2(s = '') {
   let currLen = 0
   const ret: number[] = []
   for (let i = 0, l = s.length; i < l; i++) {
     const code = s.charCodeAt(i)
     if (code >= 48 && code <= 57) {
-      // '0' to '9'
       currLen = currLen * 10 + (code - 48)
     } else {
       const opIndex = CIGAR_CODE_TO_INDEX[code]!
@@ -53,7 +50,7 @@ export function parseCigar2(s = ''): Uint32Array {
       currLen = 0
     }
   }
-  return new Uint32Array(ret)
+  return ret
 }
 
 export function getMismatches(
@@ -78,53 +75,6 @@ export function getMismatches(
   }
 
   return mismatches
-}
-
-// Optimized version using packed NUMERIC_CIGAR from @gmod/bam
-export function getMismatches2(
-  cigar?: Uint32Array,
-  md?: string,
-  seq?: string,
-  ref?: string,
-  qual?: Uint8Array,
-) {
-  let mismatches: Mismatch[] = []
-  // parse the CIGAR tag if it has one
-  if (cigar && cigar.length > 0) {
-    mismatches = mismatches.concat(cigarToMismatches2(cigar, seq, ref, qual))
-  }
-
-  // now let's look for CRAM or MD mismatches
-  if (md && seq && cigar) {
-    mismatches = mismatches.concat(
-      mdToMismatches2(md, cigar, mismatches, seq, qual),
-    )
-  }
-
-  return mismatches
-}
-
-export function getOrientedCigar(flip: boolean, cigar: string[]) {
-  if (flip) {
-    const ret = []
-    for (let i = 0; i < cigar.length; i += 2) {
-      const len = cigar[i]!
-      let op = cigar[i + 1]!
-      if (op === 'D') {
-        op = 'I'
-      } else if (op === 'I') {
-        op = 'D'
-      }
-      ret.push(len, op)
-    }
-    return ret
-  }
-  return cigar
-}
-
-export function getOrientedMismatches(flip: boolean, cigar: string) {
-  const p = parseCigar(cigar)
-  return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p)
 }
 
 export function getLengthOnRef(cigar: string) {

@@ -154,7 +154,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           >
             {model.matchedTracks.map(track => (
               <Overlay
-                parentRef={{ current: null }}
                 key={track.configuration.trackId}
                 model={model}
                 trackId={track.configuration.trackId}

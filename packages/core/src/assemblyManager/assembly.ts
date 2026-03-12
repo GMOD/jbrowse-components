@@ -70,21 +70,23 @@ async function loadRefNameMap(
   stopToken?: string,
 ) {
   const { sessionId, sequenceAdapter } = options
+  if (!sessionId) {
+    throw new Error('sessionId is required for loadRefNameMap')
+  }
   await when(() => !!(assembly.regions && assembly.refNameAliases), {
     name: 'when assembly ready',
   })
 
-  const refNames = (await assembly.rpcManager.call(
-    sessionId || 'assemblyRpc',
+  const refNames = await assembly.rpcManager.call(
+    sessionId,
     'CoreGetRefNames',
     {
-      adapterConfig,
-      sequenceAdapter,
+      adapterConfig: adapterConfig as Record<string, unknown>,
+      sequenceAdapter: sequenceAdapter as Record<string, unknown> | undefined,
       stopToken,
-      ...options,
     },
     { timeout: 1000000 },
-  )) as string[]
+  )
 
   const { refNameAliases } = assembly
   if (!refNameAliases) {
