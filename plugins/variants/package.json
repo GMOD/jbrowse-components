@@ -43,7 +43,7 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@mui/x-charts-vendor": "^8.26.0",
-    "@mui/x-data-grid": "^8.27.4",
+    "@mui/x-data-grid": "^8.27.5",
     "@types/file-saver-es": "^2.0.3",
     "copy-to-clipboard": "^3.3.3",
     "escape-html": "^1.0.3",

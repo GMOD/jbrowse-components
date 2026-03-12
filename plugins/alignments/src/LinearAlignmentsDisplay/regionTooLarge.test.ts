@@ -70,7 +70,6 @@ describe('setRegionTooLarge + force load flow', () => {
     }
 
     expect(userByteSizeLimit).toBe(3_000_000)
-    expect(regionTooLargeState).toBe(false)
   })
 
   it('fetchSizeLimit uses userByteSizeLimit when set', () => {

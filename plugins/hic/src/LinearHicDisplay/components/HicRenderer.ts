@@ -197,7 +197,6 @@ export class HicRenderer {
     })
     device.queue.writeTexture(
       { texture: this.rampTexture },
-      // @ts-expect-error Uint8Array<ArrayBufferLike> vs GPUAllowSharedBufferSource mismatch
       colors,
       { bytesPerRow: 256 * 4 },
       { width: 256, height: 1 },
