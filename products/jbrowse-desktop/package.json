@@ -73,7 +73,7 @@
     "@jbrowse/text-indexing": "workspace:^",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
-    "@mui/x-data-grid": "^8.27.4",
+    "@mui/x-data-grid": "^8.27.5",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
@@ -94,9 +94,9 @@
     "@electron/packager": "^19.0.5",
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
-    "electron": "40.8.0",
-    "electron-chromedriver": "^40.7.0",
-    "esbuild": "^0.27.3",
+    "electron": "41.0.2",
+    "electron-chromedriver": "^41.0.2",
+    "esbuild": "^0.27.4",
     "selenium-webdriver": "^4.41.0"
   },
   "browserslist": [
