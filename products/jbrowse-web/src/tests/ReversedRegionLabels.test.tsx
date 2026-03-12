@@ -41,7 +41,11 @@ test('export svg of reversed region with gene labels', async () => {
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for the canvas to render first
-  await findByTestId(/prerendered_canvas.*done/, {}, { timeout: 30000 })
+  await findByTestId(
+    'prerendered_canvas_{volvox}ctgA:4138..11781[rev]-0-reversed_done',
+    {},
+    { timeout: 30000 },
+  )
 
   await exportAndVerifySvg({
     findByTestId,
