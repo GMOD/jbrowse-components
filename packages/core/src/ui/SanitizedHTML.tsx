@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
 
-import dompurify from 'dompurify'
 import escapeHTML from 'escape-html'
 
 import { linkify } from '../util/index.ts'
@@ -44,7 +43,9 @@ const htmlTags = [
   'ul',
 ]
 
-let added = false
+const DOMPurifySanitizedHTML = lazy(
+  () => import('./DOMPurifySanitizedHTML.tsx'),
+)
 
 // adapted from is-html
 // https://github.com/sindresorhus/is-html/blob/master/index.js
@@ -56,12 +57,26 @@ function isHTML(str: string) {
   return full.test(str)
 }
 
-// note this is mocked during testing, see
-// packages/__mocks__/@jbrowse/core/ui/SanitizedHTML something about dompurify
-// behavior causes errors during tests, was seen in
-// products/jbrowse-web/src/tests/Connection.test.tsx test (can delete mock to
-// see)
-//
+function SetHTML({ value, className }: { value: string; className?: string }) {
+  const spanRef = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = spanRef.current
+    if (el) {
+      try {
+        // @ts-expect-error
+        el.setHTML(value)
+        for (const a of el.querySelectorAll('a')) {
+          a.setAttribute('rel', 'noopener noreferrer')
+          a.setAttribute('target', '_blank')
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }, [value])
+  return <span ref={spanRef} className={className} />
+}
+
 export default function SanitizedHTML({
   html: pre,
   className,
@@ -69,30 +84,17 @@ export default function SanitizedHTML({
   className?: string
   html: unknown
 }) {
-  // try to add links to the text first
   const html = linkify(`${pre}`)
   const value = isHTML(html) ? html : escapeHTML(html)
-  useEffect(() => {
-    if (!added) {
-      added = true
-      // see https://github.com/cure53/DOMPurify/issues/317
-      // only have to add this once, and can't do it globally because dompurify
-      // not yet initialized at global scope
-      dompurify.addHook('afterSanitizeAttributes', node => {
-        if (node.tagName === 'A') {
-          node.setAttribute('rel', 'noopener noreferrer')
-          node.setAttribute('target', '_blank')
-        }
-      })
-    }
-  }, [])
+
+  // @ts-expect-error
+  if (typeof Element !== 'undefined' && Element.prototype.setHTML) {
+    return <SetHTML value={value} className={className} />
+  }
 
   return (
-    <span
-      className={className}
-      dangerouslySetInnerHTML={{
-        __html: dompurify.sanitize(value),
-      }}
-    />
+    <Suspense fallback={<span className={className} />}>
+      <DOMPurifySanitizedHTML value={value} className={className} />
+    </Suspense>
   )
 }
