@@ -9,53 +9,45 @@ import { PNG } from 'pngjs'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const snapshotsDir = path.resolve(__dirname, '__snapshots__')
 
-const webglDir = path.join(snapshotsDir, 'webgl')
-const webgpuDir = path.join(snapshotsDir, 'webgpu')
-const diffDir = path.join(snapshotsDir, 'backend-diffs')
+const BACKENDS = ['webgl', 'webgpu', 'canvas2d'] as const
 
-function run() {
-  if (!fs.existsSync(webglDir)) {
-    console.error(
-      'No webgl snapshots found. Run tests with --backend=webgl first.',
-    )
-    process.exit(1)
+function getBackendSnapshots(backend: string) {
+  const dir = path.join(snapshotsDir, backend)
+  if (!fs.existsSync(dir)) {
+    return null
   }
-  if (!fs.existsSync(webgpuDir)) {
-    console.error(
-      'No webgpu snapshots found. Run tests with --backend=webgpu first.',
-    )
-    process.exit(1)
+  return {
+    dir,
+    files: new Set(
+      fs
+        .readdirSync(dir)
+        .filter(f => f.endsWith('.png') && !f.includes('.diff')),
+    ),
   }
+}
 
-  if (!fs.existsSync(diffDir)) {
-    fs.mkdirSync(diffDir, { recursive: true })
-  }
-
-  const webglFiles = fs
-    .readdirSync(webglDir)
-    .filter(f => f.endsWith('.png') && !f.includes('.diff'))
-  const webgpuFiles = new Set(
-    fs
-      .readdirSync(webgpuDir)
-      .filter(f => f.endsWith('.png') && !f.includes('.diff')),
-  )
-
-  const common = webglFiles.filter(f => webgpuFiles.has(f))
-  const webglOnly = webglFiles.filter(f => !webgpuFiles.has(f))
-  const webgpuOnly = [...webgpuFiles].filter(f => !webglFiles.includes(f))
+function comparePair(
+  nameA: string,
+  dirA: string,
+  nameB: string,
+  dirB: string,
+  filesA: Set<string>,
+  filesB: Set<string>,
+  diffDir: string,
+) {
+  const common = [...filesA].filter(f => filesB.has(f))
+  const onlyA = [...filesA].filter(f => !filesB.has(f))
+  const onlyB = [...filesB].filter(f => !filesA.has(f))
 
   console.log(
-    `\nComparing ${common.length} snapshots between webgl and webgpu\n`,
+    `\n  Comparing ${common.length} snapshots: ${nameA} vs ${nameB}`,
   )
 
-  if (webglOnly.length > 0) {
-    console.log(`  WebGL only: ${webglOnly.join(', ')}`)
+  if (onlyA.length > 0) {
+    console.log(`    ${nameA} only: ${onlyA.join(', ')}`)
   }
-  if (webgpuOnly.length > 0) {
-    console.log(`  WebGPU only: ${webgpuOnly.join(', ')}`)
-  }
-  if (webglOnly.length > 0 || webgpuOnly.length > 0) {
-    console.log()
+  if (onlyB.length > 0) {
+    console.log(`    ${nameB} only: ${onlyB.join(', ')}`)
   }
 
   let identical = 0
@@ -63,28 +55,25 @@ function run() {
   let different = 0
 
   for (const file of common.sort()) {
-    const webglBuf = fs.readFileSync(path.join(webglDir, file))
-    const webgpuBuf = fs.readFileSync(path.join(webgpuDir, file))
+    const bufA = fs.readFileSync(path.join(dirA, file))
+    const bufB = fs.readFileSync(path.join(dirB, file))
 
-    const webglImg = PNG.sync.read(webglBuf)
-    const webgpuImg = PNG.sync.read(webgpuBuf)
+    const imgA = PNG.sync.read(bufA)
+    const imgB = PNG.sync.read(bufB)
 
-    if (
-      webglImg.width !== webgpuImg.width ||
-      webglImg.height !== webgpuImg.height
-    ) {
+    if (imgA.width !== imgB.width || imgA.height !== imgB.height) {
       console.log(
-        `  ⚠  ${file}: size differs (${webglImg.width}x${webglImg.height} vs ${webgpuImg.width}x${webgpuImg.height})`,
+        `    ⚠  ${file}: size differs (${imgA.width}x${imgA.height} vs ${imgB.width}x${imgB.height})`,
       )
       different++
       continue
     }
 
-    const { width, height } = webglImg
+    const { width, height } = imgA
     const diffImg = new PNG({ width, height })
     const numDiffPixels = pixelmatch(
-      webglImg.data,
-      webgpuImg.data,
+      imgA.data,
+      imgB.data,
       diffImg.data,
       width,
       height,
@@ -95,32 +84,83 @@ function run() {
     const diffPercent = (numDiffPixels / totalPixels) * 100
 
     if (diffPercent === 0) {
-      console.log(`  ✓  ${file}: identical`)
+      console.log(`    ✓  ${file}: identical`)
       identical++
     } else if (diffPercent < 5) {
-      console.log(`  ~  ${file}: ${diffPercent.toFixed(2)}% drift`)
+      console.log(`    ~  ${file}: ${diffPercent.toFixed(2)}% drift`)
       similar++
       fs.writeFileSync(
-        path.join(diffDir, file.replace('.png', '.diff.png')),
+        path.join(diffDir, `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`),
         PNG.sync.write(diffImg),
       )
     } else {
-      console.log(`  ✗  ${file}: ${diffPercent.toFixed(2)}% drift`)
+      console.log(`    ✗  ${file}: ${diffPercent.toFixed(2)}% drift`)
       different++
       fs.writeFileSync(
-        path.join(diffDir, file.replace('.png', '.diff.png')),
+        path.join(diffDir, `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`),
         PNG.sync.write(diffImg),
       )
     }
   }
 
+  return { identical, similar, different }
+}
+
+function run() {
+  const available = BACKENDS.map(b => ({
+    name: b,
+    data: getBackendSnapshots(b),
+  })).filter(b => b.data !== null)
+
+  if (available.length < 2) {
+    console.error(
+      `Need at least 2 backend snapshot directories. Found: ${available.map(b => b.name).join(', ') || 'none'}`,
+    )
+    console.error(
+      'Run tests with --backend=webgl, --backend=webgpu, and/or --backend=canvas2d first.',
+    )
+    process.exit(1)
+  }
+
+  const diffDir = path.join(snapshotsDir, 'backend-diffs')
+  if (!fs.existsSync(diffDir)) {
+    fs.mkdirSync(diffDir, { recursive: true })
+  }
+
+  console.log(
+    `\nBackend snapshot comparison (${available.map(b => b.name).join(', ')})`,
+  )
+
+  let totalIdentical = 0
+  let totalSimilar = 0
+  let totalDifferent = 0
+
+  for (let i = 0; i < available.length; i++) {
+    for (let j = i + 1; j < available.length; j++) {
+      const a = available[i]!
+      const b = available[j]!
+      const { identical, similar, different } = comparePair(
+        a.name,
+        a.data!.dir,
+        b.name,
+        b.data!.dir,
+        a.data!.files,
+        b.data!.files,
+        diffDir,
+      )
+      totalIdentical += identical
+      totalSimilar += similar
+      totalDifferent += different
+    }
+  }
+
   console.log(`\n${'─'.repeat(50)}`)
-  console.log(`  Identical: ${identical}`)
-  console.log(`  Similar (<5% drift): ${similar}`)
-  console.log(`  Different (>=5% drift): ${different}`)
+  console.log(`  Identical: ${totalIdentical}`)
+  console.log(`  Similar (<5% drift): ${totalSimilar}`)
+  console.log(`  Different (>=5% drift): ${totalDifferent}`)
   console.log(`${'─'.repeat(50)}\n`)
 
-  if (similar > 0 || different > 0) {
+  if (totalSimilar > 0 || totalDifferent > 0) {
     console.log(`Diff images saved to ${diffDir}`)
   }
 }

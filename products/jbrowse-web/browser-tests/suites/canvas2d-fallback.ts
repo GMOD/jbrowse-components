@@ -6,7 +6,7 @@ import {
   waitForCanvasRendered,
   waitForDataLoaded,
 } from '../helpers.ts'
-import { canvasSnapshot, getBackend } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -14,36 +14,8 @@ const suite: TestSuite = {
   name: 'Canvas2D Fallback',
   tests: [
     {
-      name: 'feature track renders with Canvas 2D',
+      name: 'feature track renders and snapshots',
       fn: async page => {
-        if (getBackend() !== 'canvas2d') {
-          return
-        }
-        await navigateWithSessionSpec(page, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'volvox',
-              loc: 'ctgA:1-10000',
-              tracks: ['volvox_filtered_vcf'],
-            },
-          ],
-        })
-
-        await findByText(page, 'ctgA')
-        await page.waitForSelector('[data-testid^="display-"]', {
-          timeout: 60000,
-        })
-        await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
-      },
-    },
-    {
-      name: 'feature track canvas snapshot',
-      fn: async page => {
-        if (getBackend() !== 'canvas2d') {
-          return
-        }
         await navigateWithSessionSpec(page, {
           views: [
             {
@@ -71,9 +43,6 @@ const suite: TestSuite = {
     {
       name: 'multiple tracks render together',
       fn: async page => {
-        if (getBackend() !== 'canvas2d') {
-          return
-        }
         await navigateWithSessionSpec(page, {
           views: [
             {
@@ -86,24 +55,17 @@ const suite: TestSuite = {
         })
 
         await findByText(page, 'ctgA')
-        const displays = await page.$$('[data-testid^="display-"]')
-        if (displays.length < 2) {
-          await page.waitForFunction(
-            () =>
-              document.querySelectorAll('[data-testid^="display-"]').length >=
-              2,
-            { timeout: 60000 },
-          )
-        }
+        await page.waitForFunction(
+          () =>
+            document.querySelectorAll('[data-testid^="display-"]').length >= 2,
+          { timeout: 60000 },
+        )
         await waitForDataLoaded(page)
       },
     },
     {
       name: 'zoom in/out does not crash',
       fn: async page => {
-        if (getBackend() !== 'canvas2d') {
-          return
-        }
         await navigateWithSessionSpec(page, {
           views: [
             {
