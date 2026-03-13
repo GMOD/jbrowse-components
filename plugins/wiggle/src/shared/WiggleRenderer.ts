@@ -1,8 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
 import { WebGLWiggleRenderer } from './WebGLWiggleRenderer.ts'
 import {
   computeNumRows,
@@ -64,6 +65,7 @@ export class WiggleRenderer {
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, GpuRegionData>()
   private glFallback: WebGLWiggleRenderer | null = null
+  private canvas2dFallback: Canvas2DWiggleRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -151,6 +153,11 @@ export class WiggleRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DWiggleRenderer(this.canvas)
+      return true
+    }
+
     const device = await WiggleRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas)
@@ -168,7 +175,8 @@ export class WiggleRenderer {
       return true
     } catch (e) {
       console.error('[WiggleRenderer] WebGL2 fallback also failed:', e)
-      return false
+      this.canvas2dFallback = new Canvas2DWiggleRenderer(this.canvas)
+      return true
     }
   }
 
@@ -179,6 +187,10 @@ export class WiggleRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadRegion(regionNumber, regionStart, sources)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadRegion(regionNumber, regionStart, sources)
       return
     }
 
@@ -230,6 +242,10 @@ export class WiggleRenderer {
       this.glFallback.pruneStaleRegions(new Set(activeRegions))
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.pruneStaleRegions(new Set(activeRegions))
+      return
+    }
 
     const active = new Set<number>(activeRegions)
     for (const [num, region] of this.regions) {
@@ -243,6 +259,10 @@ export class WiggleRenderer {
   renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
     if (this.glFallback) {
       this.glFallback.renderBlocks(blocks, renderState)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.renderBlocks(blocks, renderState)
       return
     }
 
@@ -344,6 +364,11 @@ export class WiggleRenderer {
     if (this.glFallback) {
       this.glFallback.destroy()
       this.glFallback = null
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.destroy()
+      this.canvas2dFallback = null
       return
     }
     for (const region of this.regions.values()) {
