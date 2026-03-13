@@ -8,7 +8,7 @@ import { render } from '@testing-library/react'
 import ReactComponent from './AlignmentsFeatureDetail.tsx'
 import { stateModelFactory } from './stateModelFactory.ts'
 
-test('open up a widget', () => {
+test('open up a widget', async () => {
   const pluginManager = new PluginManager([])
 
   const Session = types.model({
@@ -40,11 +40,11 @@ test('open up a widget', () => {
     refName: 'ctgA',
     type: 'match',
   })
-  const { container, getByText } = render(
+  const { container, findByText } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <ReactComponent model={session.widget} />,
     </ThemeProvider>,
   )
+  expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
   expect(container).toMatchSnapshot()
-  expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })

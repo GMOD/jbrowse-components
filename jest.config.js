@@ -2,8 +2,6 @@ const baseConfig = {
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
-    '^@jbrowse/core/ui/SanitizedHTML$':
-      '<rootDir>/packages/__mocks__/@jbrowse/core/ui/SanitizedHTML.tsx',
     '^@jbrowse/text-indexing-core$':
       '<rootDir>/packages/text-indexing-core/src/index.ts',
   },
@@ -29,6 +27,7 @@ const baseConfig = {
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/structuredClone.js',
+    '<rootDir>/config/jest/setHTML.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,

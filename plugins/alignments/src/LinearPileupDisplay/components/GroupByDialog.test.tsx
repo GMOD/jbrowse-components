@@ -94,10 +94,10 @@ describe('GroupByDialog', () => {
     await user.click(screen.getByRole('option', { name: optionName }))
   }
 
-  test('renders dialog with initial state', () => {
+  test('renders dialog with initial state', async () => {
     renderDialog()
 
-    expect(screen.getByText('Group by')).toBeInTheDocument()
+    expect(await screen.findByText('Group by')).toBeInTheDocument()
     expect(screen.getByLabelText('Group by...')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled()
