@@ -9,4 +9,5 @@ export interface TestSuite {
   name: string
   tests: TestCase[]
   requiresAuth?: boolean
+  requiresRemote?: boolean
 }

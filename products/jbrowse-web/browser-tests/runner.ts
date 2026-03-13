@@ -26,9 +26,10 @@ const updateSnapshots =
 const runAuthTests = args.includes('--auth')
 const filterArg = args.find(a => a.startsWith('--filter='))
 const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
+const includeRemote = args.includes('--include-remote')
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backend = backendArg
-  ? (backendArg.split('=')[1]! as 'webgl' | 'webgpu')
+  ? (backendArg.split('=')[1]! as 'webgl' | 'webgpu' | 'canvas2d')
   : undefined
 
 setUpdateSnapshots(updateSnapshots)
@@ -70,6 +71,9 @@ async function runTests(
 
   const suitesToRun = suites.filter(suite => {
     if (suite.requiresAuth && !includeAuth) {
+      return false
+    }
+    if (suite.requiresRemote && !includeRemote) {
       return false
     }
     if (filter && !suite.name.toLowerCase().includes(filter)) {
@@ -163,6 +167,8 @@ async function main() {
       chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
     } else if (backend === 'webgpu') {
       chromeArgs.push('--enable-unsafe-webgpu', '--enable-features=Vulkan')
+    } else if (backend === 'canvas2d') {
+      chromeArgs.push('--disable-gpu')
     }
     browser = await launch({
       headless: !headed,
