@@ -94,6 +94,15 @@ const localDemos: TestSuite = {
       },
     },
     {
+      name: 'Hi-C demo loads',
+      fn: async page => {
+        await loadDemoAndCheck(
+          page,
+          'extra_test_data/hic_integration_test.json',
+        )
+      },
+    },
+    {
       name: 'Volvox demo has rendered canvas',
       fn: async page => {
         const url = appendGpuParam(
@@ -123,20 +132,4 @@ const localDemos: TestSuite = {
   ],
 }
 
-const remoteDemos: TestSuite = {
-  name: 'Demo Inventory (Remote)',
-  requiresRemote: true,
-  tests: [
-    {
-      name: 'Hi-C demo loads',
-      fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'extra_test_data/hic_integration_test.json',
-        )
-      },
-    },
-  ],
-}
-
-export default [localDemos, remoteDemos]
+export default localDemos
