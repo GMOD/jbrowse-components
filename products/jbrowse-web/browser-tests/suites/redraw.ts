@@ -117,7 +117,7 @@ const suite: TestSuite = {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:1000-3000',
-              tracks: ['volvox_cram_coverage'],
+              tracks: ['volvox_cram_snpcoverage'],
             },
           ],
         })
