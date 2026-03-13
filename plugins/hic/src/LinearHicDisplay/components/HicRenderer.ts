@@ -1,8 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 import { WebGLHicRenderer } from './WebGLHicRenderer.ts'
 import { hicShader, interleaveHicInstances } from './hicShaders.ts'
 
@@ -33,6 +34,7 @@ export class HicRenderer {
   private rampTexture: GPUTexture | null = null
   private rampSampler: GPUSampler | null = null
   private glFallback: WebGLHicRenderer | null = null
+  private canvas2dFallback: Canvas2DHicRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -116,6 +118,11 @@ export class HicRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DHicRenderer(this.canvas)
+      return true
+    }
+
     const device = await HicRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas)
@@ -139,7 +146,8 @@ export class HicRenderer {
       return true
     } catch (e) {
       console.error('[HicRenderer] WebGL2 fallback also failed:', e)
-      return false
+      this.canvas2dFallback = new Canvas2DHicRenderer(this.canvas)
+      return true
     }
   }
 
@@ -150,6 +158,10 @@ export class HicRenderer {
   }) {
     if (this.glFallback) {
       this.glFallback.uploadData(data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadData(data)
       return
     }
 
@@ -178,6 +190,10 @@ export class HicRenderer {
   uploadColorRamp(colors: Uint8Array) {
     if (this.glFallback) {
       this.glFallback.uploadColorRamp(colors)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadColorRamp(colors)
       return
     }
 
@@ -237,6 +253,10 @@ export class HicRenderer {
   render(state: HicRenderState) {
     if (this.glFallback) {
       this.glFallback.render(state)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.render(state)
       return
     }
 
@@ -304,6 +324,12 @@ export class HicRenderer {
     if (this.glFallback) {
       this.glFallback.destroy()
       this.glFallback = null
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.destroy()
+      this.canvas2dFallback = null
+      return
     }
     this.gpuData?.instanceBuffer.destroy()
     this.gpuData = null

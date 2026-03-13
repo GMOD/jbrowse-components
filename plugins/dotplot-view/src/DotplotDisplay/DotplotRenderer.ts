@@ -1,7 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
+
+import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
 
 import {
   INSTANCE_BYTE_SIZE,
@@ -145,6 +147,7 @@ export class DotplotRenderer {
   private instanceCount = 0
 
   private glFallback: WebGLFallback | null = null
+  private canvas2dFallback: Canvas2DDotplotRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -218,6 +221,11 @@ export class DotplotRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DDotplotRenderer(this.canvas)
+      return true
+    }
+
     const device = await DotplotRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas)
@@ -235,13 +243,18 @@ export class DotplotRenderer {
       return true
     } catch (e) {
       console.error('[DotplotRenderer] WebGL2 fallback also failed:', e)
-      return false
+      this.canvas2dFallback = new Canvas2DDotplotRenderer(this.canvas)
+      return true
     }
   }
 
   resize(width: number, height: number) {
     if (this.glFallback) {
       this.glFallback.resize(width, height)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.resize(width, height)
       return
     }
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
@@ -263,6 +276,10 @@ export class DotplotRenderer {
   }) {
     if (this.glFallback) {
       this.glFallback.uploadGeometry(data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadGeometry(data)
       return
     }
 
@@ -323,6 +340,10 @@ export class DotplotRenderer {
       this.glFallback.render(offsetX, offsetY, lineWidth, scaleX, scaleY)
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.render(offsetX, offsetY, lineWidth, scaleX, scaleY)
+      return
+    }
 
     const device = DotplotRenderer.device
     if (!device || !DotplotRenderer.pipeline || !this.context) {
@@ -372,6 +393,11 @@ export class DotplotRenderer {
     if (this.glFallback) {
       this.glFallback.dispose()
       this.glFallback = null
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.dispose()
+      this.canvas2dFallback = null
       return
     }
     this.instanceBuffer?.destroy()
