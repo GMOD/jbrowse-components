@@ -369,9 +369,9 @@ export default function SharedWiggleMixin(
             displayCrossHatches ?? readConfObject(conf, 'displayCrossHatches'),
           summaryScoreMode:
             summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode'),
-          color: color ?? readConfObject(conf, 'color'),
-          negColor: negColor ?? readConfObject(conf, 'negColor'),
-          posColor: posColor ?? readConfObject(conf, 'posColor'),
+          color: color ?? conf?.color?.value,
+          negColor: negColor ?? conf?.negColor?.value,
+          posColor: posColor ?? conf?.posColor?.value,
           minSize: minSize ?? readConfObject(conf, 'minSize'),
         }
       },
