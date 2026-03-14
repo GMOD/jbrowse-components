@@ -22,7 +22,10 @@ struct VertexOutput {
 }
 
 // SYNC(shaders/readShaders.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
-fn normal_color() -> vec3f { return color3(41u); }
+fn normal_color(flags: u32) -> vec3f {
+  if (flags & 2048u) != 0u { return color3(95u); }
+  return color3(41u);
+}
 
 fn strand_color(s: i32) -> vec3f {
   if s > 0 { return color3(32u); }
@@ -93,7 +96,7 @@ fn get_read_color(inst: ReadInst) -> vec3f {
     let eff = select(inst.strand, inst.strand * primary_strand, flip == 1);
     return strand_color(eff);
   }
-  if cs == 0 { return normal_color(); }
+  if cs == 0 { return normal_color(inst.flags); }
   if cs == 1 { return strand_color(inst.strand); }
   if cs == 2 { return mapq_color(inst.mapq); }
   if cs == 3 { return insert_size_color(inst.insert_size); }
@@ -208,8 +211,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
       let dy = min(in.local_pos.y, 1.0 - in.local_pos.y) * in.feat_size_px.y;
       edge_dist = min(min(dx_ll, dx_r), dy);
     }
-    // SYNC(shaders/readShaders.ts): edge threshold 1.0px, darkening 0.7, size threshold 4.0px
-    if edge_dist < 1.0 && in.feat_size_px.x > 4.0 && in.feat_size_px.y > 4.0 {
+    // SYNC(shaders/readShaders.ts): edge threshold 1.0px, darkening 0.7, size threshold 2.0px
+    if edge_dist < 1.0 && in.feat_size_px.x > 2.0 && in.feat_size_px.y > 2.0 {
       return vec4f(in.color.rgb * 0.7, in.color.a);
     }
   }

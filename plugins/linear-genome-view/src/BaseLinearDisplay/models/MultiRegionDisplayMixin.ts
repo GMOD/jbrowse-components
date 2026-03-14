@@ -103,6 +103,15 @@ export default function MultiRegionDisplayMixin() {
         self.fetchGeneration++
         self.clearDisplaySpecificData()
       },
+
+      invalidateLoadedRegions() {
+        if (self.renderingStopToken) {
+          stopStopToken(self.renderingStopToken)
+          self.renderingStopToken = undefined
+        }
+        self.loadedRegions = new Map()
+        self.fetchGeneration++
+      },
     }))
     .actions(self => ({
       // Overridable hooks — subclasses override these

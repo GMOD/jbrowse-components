@@ -223,7 +223,8 @@ function CoverageTooltipContents({
               )
             </td>
             <td className={classes.td}>
-              {deletions.count}/{depth} ({pct(deletions.count, depth)})
+              {deletions.count}/{depth + deletions.count} (
+              {pct(deletions.count, depth + deletions.count)})
             </td>
             {hasModifications && <td />}
             <td />

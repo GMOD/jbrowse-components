@@ -97,6 +97,12 @@ export function getPileupLegendItems(
     return orientationLegendItems
   } else if (colorType === 'insertSizeAndPairOrientation') {
     return insertSizeAndOrientationLegendItems
+  } else if (colorType === 'mappingQuality') {
+    return [
+      { color: 'hsl(0, 50%, 50%)', label: 'MAPQ 0' },
+      { color: 'hsl(30, 50%, 50%)', label: 'MAPQ 30' },
+      { color: 'hsl(60, 50%, 50%)', label: 'MAPQ 60' },
+    ]
   } else {
     return getBaseItems(theme)
   }

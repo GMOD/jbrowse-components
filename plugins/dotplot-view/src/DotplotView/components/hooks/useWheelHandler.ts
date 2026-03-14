@@ -34,8 +34,8 @@ export function useWheelHandler(
         window.requestAnimationFrame(() => {
           transaction(() => {
             if (wheelMode === 'pan') {
-              hview.scroll(distanceX.current / 3)
-              vview.scroll(distanceY.current / 10)
+              hview.scroll(distanceX.current / 5)
+              vview.scroll(distanceY.current / 15)
             } else if (wheelMode === 'zoom') {
               if (
                 Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&

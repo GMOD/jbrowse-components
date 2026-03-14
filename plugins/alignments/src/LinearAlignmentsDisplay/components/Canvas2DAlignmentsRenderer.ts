@@ -592,6 +592,7 @@ export class Canvas2DAlignmentsRenderer {
     state: RenderState,
   ) {
     const colorScheme = state.colorScheme
+    const flags = region.readFlags[i]!
     const strand = region.readStrands[i]!
 
     // Color scheme 8 = tag-based coloring
@@ -602,6 +603,11 @@ export class Canvas2DAlignmentsRenderer {
       if (r !== 0 || g !== 0 || b !== 0) {
         return `rgb(${r},${g},${b})`
       }
+    }
+
+    // Normal color scheme: supplementary reads shown in orange
+    if (colorScheme === 0 && (flags & 2048) !== 0) {
+      return this.rgbStr(state.colors.colorSupplementary)
     }
 
     // Default: strand coloring
@@ -636,7 +642,7 @@ export class Canvas2DAlignmentsRenderer {
       ctx.fillStyle = this.getReadColor(i, region, state)
       ctx.fillRect(x1, y, w, fH)
 
-      if (state.showOutline && w > 3) {
+      if (state.showOutline && w > 2) {
         ctx.strokeStyle = 'rgba(0,0,0,0.3)'
         ctx.lineWidth = 0.5
         ctx.strokeRect(x1, y, w, fH)

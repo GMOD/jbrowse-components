@@ -56,8 +56,9 @@ out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=ch
 ${HP_GLSL_FUNCTIONS}
 
 // SYNC(wgsl/readShader.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
-// Color scheme 0: normal
-vec3 normalColor() {
+// Color scheme 0: normal (supplementary reads shown in orange)
+vec3 normalColor(float flags) {
+  if (mod(floor(flags / 2048.0), 2.0) > 0.5) return u_colorSupplementary;
   return u_colorPairLR;
 }
 
@@ -263,7 +264,7 @@ void main() {
       ? a_strand * primaryStrand
       : a_strand;
     color = strandColor(effectiveStrand);
-  } else if (u_colorScheme == 0) color = normalColor();
+  } else if (u_colorScheme == 0) color = normalColor(a_flags);
   else if (u_colorScheme == 1) color = strandColor(a_strand);
   else if (u_colorScheme == 2) color = mapqColor(a_mapq);
   else if (u_colorScheme == 3) color = insertSizeColor(a_insertSize);
@@ -303,8 +304,8 @@ void main() {
       edgeDist = min(min(dx_left, dx_right), dy);
     }
 
-    // SYNC(wgsl/readShader.ts): edge threshold 1.0px, darkening 0.7, size threshold 4.0px
-    if (edgeDist < 1.0 && v_featureSizePx.x > 4.0 && v_featureSizePx.y > 4.0) {
+    // SYNC(wgsl/readShader.ts): edge threshold 1.0px, darkening 0.7, size threshold 2.0px
+    if (edgeDist < 1.0 && v_featureSizePx.x > 2.0 && v_featureSizePx.y > 2.0) {
       fragColor = vec4(v_color.rgb * 0.7, v_color.a);
       return;
     }

@@ -37,8 +37,11 @@ export default function SyntenyContextMenu({
           onClick: () => {
             const { start, end, refName, mate } = feature
 
-            const l1 = view.views[model.level]!
-            const l2 = view.views[model.level + 1]!
+            const l1 = view.views[model.level]
+            const l2 = view.views[model.level + 1]
+            if (!l1 || !l2) {
+              return
+            }
 
             const center1 = (start + end) / 2
             const center2 = (mate.start + mate.end) / 2

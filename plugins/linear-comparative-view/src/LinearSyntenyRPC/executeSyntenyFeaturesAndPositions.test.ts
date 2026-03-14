@@ -7,7 +7,12 @@ import {
 } from './executeSyntenyFeaturesAndPositions.ts'
 
 function makeViewSnap(
-  regions: { refName: string; start: number; end: number }[],
+  regions: {
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[],
   bpPerPx = 1,
 ) {
   return {
@@ -225,5 +230,54 @@ describe('bpToPxFromIndex matches bpToPx', () => {
     const result = bpToPxFromIndex(idx, 'chr2', 5000)
     const expected = bpToPx({ self, refName: 'chr2', coord: 5000 })
     expect(result).toEqual(expected)
+  })
+
+  it('handles reversed region correctly', () => {
+    const self = makeViewSnap([
+      { refName: 'chr1', start: 0, end: 1000, reversed: true },
+    ])
+    const idx = buildBpToPxIndex(self)
+
+    const startResult = bpToPxFromIndex(idx, 'chr1', 0)
+    const startExpected = bpToPx({ self, refName: 'chr1', coord: 0 })
+    expect(startResult).toEqual(startExpected)
+    expect(startResult!.offsetPx).toBe(1000)
+
+    const endResult = bpToPxFromIndex(idx, 'chr1', 1000)
+    const endExpected = bpToPx({ self, refName: 'chr1', coord: 1000 })
+    expect(endResult).toEqual(endExpected)
+    expect(endResult!.offsetPx).toBe(0)
+
+    const midResult = bpToPxFromIndex(idx, 'chr1', 500)
+    const midExpected = bpToPx({ self, refName: 'chr1', coord: 500 })
+    expect(midResult).toEqual(midExpected)
+    expect(midResult!.offsetPx).toBe(500)
+  })
+
+  it('handles reversed region with preceding regions', () => {
+    const self = makeViewSnap([
+      { refName: 'chr1', start: 0, end: 1000 },
+      { refName: 'chr2', start: 0, end: 1000, reversed: true },
+    ])
+    const idx = buildBpToPxIndex(self)
+
+    const result = bpToPxFromIndex(idx, 'chr2', 0)
+    const expected = bpToPx({ self, refName: 'chr2', coord: 0 })
+    expect(result).toEqual(expected)
+
+    const result2 = bpToPxFromIndex(idx, 'chr2', 1000)
+    const expected2 = bpToPx({ self, refName: 'chr2', coord: 1000 })
+    expect(result2).toEqual(expected2)
+  })
+
+  it('reversed region inverts coordinate direction', () => {
+    const self = makeViewSnap([
+      { refName: 'chr1', start: 0, end: 1000, reversed: true },
+    ])
+    const idx = buildBpToPxIndex(self)
+
+    const left = bpToPxFromIndex(idx, 'chr1', 200)
+    const right = bpToPxFromIndex(idx, 'chr1', 800)
+    expect(left!.offsetPx).toBeGreaterThan(right!.offsetPx)
   })
 })

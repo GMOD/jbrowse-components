@@ -114,7 +114,9 @@ fn fs_main(in: ArcOut) -> @location(0) vec4f {
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
   let alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
-  return vec4f(in.color.rgb, in.color.a * alpha);
+  let a = in.color.a * alpha;
+  // premultiply RGB for WebGPU premultiplied alpha canvas
+  return vec4f(in.color.rgb * a, a);
 }
 `
 
@@ -218,7 +220,9 @@ fn fs_main(in: SashimiOut) -> @location(0) vec4f {
   let d = abs(in.dist);
   let aa = fwidth(in.dist);
   let alpha = clamp((hw - d) / aa + 0.5, 0.0, 1.0);
-  return vec4f(in.color.rgb, in.color.a * alpha);
+  let a = in.color.a * alpha;
+  // premultiply RGB for WebGPU premultiplied alpha canvas
+  return vec4f(in.color.rgb * a, a);
 }
 `
 

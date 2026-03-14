@@ -63,7 +63,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           self.gpuRenderer.uploadGeometry(gpuInstanceData)
         }
 
-        if (!featureData) {
+        if (!featureData || level + 1 >= view.views.length) {
           return
         }
 
@@ -141,6 +141,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             const view = getContainingView(self) as LSV
             if (
               !view.initialized ||
+              level + 1 >= view.views.length ||
               !view.views.every(
                 a => a.displayedRegions.length > 0 && a.initialized,
               )

@@ -20,3 +20,25 @@ When editing a shader:
 Mismatches between the GLSL and WGSL cause silent rendering bugs (wrong colors,
 misaligned geometry, invisible features) that are difficult to diagnose because
 the two backends may not be tested side-by-side.
+
+## Three-way sync: Canvas 2D, WebGL, and WebGPU
+
+The alignments display has three rendering backends that must stay synchronized:
+
+1. **WebGL** (GLSL shaders in this directory + `WebGLRenderer.ts`)
+2. **WebGPU** (WGSL shaders in `../wgsl/` + `AlignmentsRenderer.ts`)
+3. **Canvas 2D** (`Canvas2DAlignmentsRenderer.ts`)
+
+When changing rendering behavior (thresholds, colors, draw order, outline logic),
+apply the same change to all three backends. The Canvas 2D renderer has no
+shaders but implements the same logic in TypeScript.
+
+### WebGPU premultiplied alpha
+
+The WebGPU canvas uses `alphaMode: 'premultiplied'`. Any fragment shader that
+outputs alpha < 1.0 must premultiply the RGB channels (i.e. `rgb * a`). Opaque
+output (`a = 1.0`) does not need special handling. The WebGL backend also uses
+`premultipliedAlpha: true` but handles blending before canvas compositing, so
+the same straight-alpha fragment output works in both — except for arcs and other
+anti-aliased geometry where the AA produces sub-pixel alpha. When in doubt,
+premultiply in WGSL fragment shaders.

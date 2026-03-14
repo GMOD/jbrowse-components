@@ -97,6 +97,14 @@ function clearAllRpcData(model: LifecycleModel) {
   model.fetchGeneration++
 }
 
+function invalidateLoadedRegions(model: LifecycleModel) {
+  if (model.renderingStopToken) {
+    stopStopToken(model.renderingStopToken)
+    model.renderingStopToken = undefined
+  }
+  model.fetchGeneration++
+}
+
 function forceLoad(model: LifecycleModel) {
   model.regionTooLargeState = false
   model.regionTooLargeReasonState = ''
@@ -311,5 +319,55 @@ describe('withFetchLifecycle state management', () => {
     expect(model.isLoading).toBe(false)
     expect(model.regionTooLargeState).toBe(true)
     expect(model.renderingStopToken).toBeUndefined()
+  })
+
+  it('invalidateLoadedRegions marks current work stale without clearing error', async () => {
+    const model = createModel()
+    let workWasStale = false
+
+    const fetchPromise = withFetchLifecycle(model, null, async ctx => {
+      await new Promise(r => setTimeout(r, 10))
+      workWasStale = ctx.isStale()
+    })
+
+    invalidateLoadedRegions(model)
+
+    await fetchPromise
+
+    expect(workWasStale).toBe(true)
+    expect(model.error).toBeUndefined()
+    expect(model.regionTooLargeState).toBe(false)
+  })
+
+  it('invalidateLoadedRegions preserves error and tooLarge state', () => {
+    const model = createModel()
+    model.error = new Error('something')
+    model.regionTooLargeState = true
+
+    invalidateLoadedRegions(model)
+
+    expect(model.error).toBeTruthy()
+    expect(model.regionTooLargeState).toBe(true)
+  })
+
+  it('invalidateLoadedRegions inside work triggers re-fetch without data loss', async () => {
+    const model = createModel()
+    let firstWorkRan = false
+    let secondWorkRan = false
+
+    await withFetchLifecycle(model, null, async ctx => {
+      firstWorkRan = true
+      invalidateLoadedRegions(model)
+      expect(ctx.isStale()).toBe(true)
+    })
+
+    expect(firstWorkRan).toBe(true)
+
+    await withFetchLifecycle(model, null, async () => {
+      secondWorkRan = true
+    })
+
+    expect(secondWorkRan).toBe(true)
+    expect(model.isLoading).toBe(false)
   })
 })

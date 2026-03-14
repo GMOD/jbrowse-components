@@ -376,19 +376,27 @@ export default function stateModelFactory(
       // Migrate old renderingMode to new boolean toggles
       if (snap.renderingMode) {
         const { renderingMode, ...rest } = snap
+        const linked =
+          renderingMode === 'linkedRead' || renderingMode === 'cloud'
         snap = {
           ...rest,
-          showLinkedReads:
-            renderingMode === 'linkedRead' || renderingMode === 'cloud',
+          showLinkedReads: linked,
+          colorBySetting: linked
+            ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
+            : rest.colorBySetting,
         }
       }
 
       // Strip removed showReadCloud property from old snapshots
       if (snap.showReadCloud !== undefined) {
         const { showReadCloud, ...rest } = snap
+        const linked = snap.showLinkedReads || showReadCloud
         snap = {
           ...rest,
-          showLinkedReads: snap.showLinkedReads || showReadCloud,
+          showLinkedReads: linked,
+          colorBySetting: linked
+            ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
+            : rest.colorBySetting,
         }
       }
 
@@ -1122,6 +1130,12 @@ export default function stateModelFactory(
 
         setShowLinkedReads(flag: boolean) {
           self.showLinkedReads = flag
+          self.featureIdUnderMouse = undefined
+          self.mouseoverExtraInformation = undefined
+          self.overCigarItem = false
+          if (self.highlightedChainIds.length > 0) {
+            self.highlightedChainIds = []
+          }
           if (flag) {
             self.showOutline = undefined
             self.colorBySetting = { type: 'insertSizeAndOrientation' }
@@ -1611,7 +1625,7 @@ export default function stateModelFactory(
               computeAndSetArcs(needed)
             }
             if (newTagColorsAdded && self.colorBy.type === 'tag') {
-              self.clearAllRpcData()
+              self.invalidateLoadedRegions()
             }
           })
         },
