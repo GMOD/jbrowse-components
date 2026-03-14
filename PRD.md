@@ -16,15 +16,28 @@ JBrowse 2 is being migrated from its block-based HTML canvas rendering to a unif
 
 These issues block production readiness or affect the majority of users.
 
-### P1.1 Canvas Fallback Rendering Backend
+### P1.1 Canvas Fallback Rendering Backend — COMPLETE
 
-**Why:** Some users have no WebGL or WebGPU support (observed during demo day). Without a fallback, these users see nothing.
+**Status:** All track types now have Canvas 2D fallback renderers.
 
-**Requirements:**
-- Implement HTML5 Canvas 2D rendering backend as fallback when WebGL/WebGPU unavailable
-- The SvgCanvas.ts abstraction (`packages/core/src/util/SvgCanvas.ts`) already implements the CanvasRenderingContext2D API for SVG export — reuse this pattern
-- Detection: extend the existing `?gpu=off` URL param logic to auto-detect and fall back
-- End state: three parallel backends — WebGPU, WebGL 2.0, HTML5 Canvas (also used for SVG export)
+| Track Type | Canvas 2D File | Status |
+|---|---|---|
+| Alignments | `Canvas2DAlignmentsRenderer.ts` | Done |
+| Features | `Canvas2DFeatureRenderer.ts` | Done |
+| Wiggle / Multi-Wiggle | `Canvas2DWiggleRenderer.ts` | Done |
+| HiC | `Canvas2DHicRenderer.ts` | Done |
+| Dotplot | `Canvas2DDotplotRenderer.ts` | Done |
+| Variants | `Canvas2DVariantRenderer.ts` | Done |
+| Variant Matrix | `Canvas2DVariantMatrixRenderer.ts` | Done |
+| LD Display | `Canvas2DLDRenderer.ts` | Done |
+| Synteny | `Canvas2DSyntenyRenderer.ts` | Done |
+| Sequence | Inline in `WebGPUSequenceRenderer.ts` | Done |
+
+All renderers respect `?gpu=off` / `getGpuOverride() === 'canvas2d'` and auto-fall back: WebGPU → WebGL2 → Canvas 2D.
+
+**Remaining polish:**
+- Canvas 2D synteny picking (`pick()`) returns -1 — no feature picking in Canvas 2D mode yet
+- Canvas 2D LD renderer does nearest-neighbor color ramp sampling (no interpolation like GPU)
 
 ### P1.2 Data Fetching / Redraw Reliability
 
@@ -69,17 +82,17 @@ These affect significant user-visible functionality.
 |-----|-------|
 | Color by per-base quality | Not implemented |
 | Color by insert size (threshold vs gradient) | Not implemented |
-| Color by mapping quality — add legend | Not implemented |
-| Color by tag not working | Observed in GIAB heterozygous deletion demo |
-| Color orange for supplementary reads | Not implemented |
+| Color by mapping quality — add legend | **DONE** — HSL gradient legend items added |
+| Color by tag not working | Pipeline is complete (tag extraction → colorTagMap → GPU upload → shader). Likely timing issue: colorTagMap starts empty and needs two fetches (first discovers tags, second applies colors). Investigate re-fetch trigger in model.ts lines 1598-1629. |
+| Color orange for supplementary reads | Already implemented in normal color scheme (all 3 backends) — verify other color modes |
 | Force load stuck | Partially broken |
 | Wrong ratio shown over deletions in tooltip | |
 | Coverage interbase indicators conditional on total coverage | |
 | Non-intron rendered on sidescroll weirdly for iso-seq | |
 | volvox-long reads with SV not rendering when zoomed out | |
 | Insertion depth weird | |
-| Draw outline even when compact | |
-| Linked read mode not wired up | Observed in inversion linked reads demo |
+| Draw outline even when compact | **DONE** — size threshold lowered from 4px to 2px |
+| Linked read mode not wired up | Invalidation autorun watches showLinkedReads and should trigger clearAllRpcData(). Migration code now sets colorBySetting to insertSizeAndOrientation. Investigate if demo #15 snapshot still fails to load. |
 | Read vs ref synteny view not working | Observed in SKBR3 PacBio demo |
 | Sort modifications — last color by option | |
 | Put arc color scheme in color by | |
@@ -88,8 +101,8 @@ These affect significant user-visible functionality.
 | Click sashimi — make it look selected (selected color arc) | |
 | Unmapped mate coloring collides with other pink | |
 | Hide insertions in low coverage when region has high coverage | |
-| Reset mouseover after change link mode | |
-| WebGL arcs not vibrant | |
+| Reset mouseover after change link mode | **DONE** — clears featureIdUnderMouse/highlightedChainIds on toggle |
+| WebGL arcs not vibrant | **DONE** — premultiplied alpha fix in arc/sashimi WGSL shaders |
 | Clicking chain — get both feature info | |
 
 ### P2.2 Wiggle Track Bugs
@@ -97,7 +110,7 @@ These affect significant user-visible functionality.
 | Bug | Notes |
 |-----|-------|
 | Color change wiggle not working (sometimes) | |
-| Cross hatches | Not implemented? |
+| Cross hatches | **DONE** — `displayCrossHatches` toggle + SVG overlay |
 | Multi-wiggle color with overlapping modes | Unintended same color |
 | Overlapping line whiskers | Single color whiskers option? |
 | Y-scale bar offset per row | Unclear repro |
@@ -262,7 +275,7 @@ Status key: **Working**, **Partial** (loads with issues), **Broken** (fails to l
     ┌──────────┴──────────┐
     ▼                     ▼
 ┌────────┐  ┌────────┐  ┌────────────┐
-│ WebGPU │  │WebGL2  │  │ Canvas 2D  │ ← needs implementation (P1.1)
+│ WebGPU │  │WebGL2  │  │ Canvas 2D  │ ← COMPLETE (all track types)
 │ (WGSL) │  │(GLSL)  │  │ (fallback) │
 └────────┘  └────────┘  └────────────┘
                               │
@@ -284,10 +297,13 @@ Status key: **Working**, **Partial** (loads with issues), **Broken** (fails to l
 ### Test Infrastructure
 
 - Puppeteer-based browser tests in `products/jbrowse-web/browser-tests/`
-- 14 test suites covering: alignments, bigwig, variants, synteny, dotplot, HiC, etc.
+- 14+ test suites covering: alignments, bigwig, variants, synteny, dotplot, HiC, canvas2d-fallback, etc.
 - Screenshot comparison via pixelmatch (threshold 0.1)
-- Backend-specific golden snapshots in `__snapshots__/{webgl,webgpu}/`
-- `--backend=webgl|webgpu` flag, `--filter=` for running subsets
+- Backend-specific golden snapshots in `__snapshots__/{webgl,webgpu,canvas2d}/`
+- `--backend=webgl|webgpu|canvas2d` flag, `--filter=` for running subsets
+- `compare-backends.ts` for cross-backend visual regression (categories: identical, similar <5%, different ≥5%)
+- Unit tests co-located with source (`*.test.ts`) using Jest with jsdom
+- Canvas 2D renderer unit tests use mock canvas context pattern
 
 ---
 
@@ -299,8 +315,8 @@ These need investigation or clarification before they can be scoped:
 2. **"Don't colorize indels" not working in synteny** — needs verification
 3. **Y-scale bar offset per row in wiggle** — unclear how to reproduce
 4. **Brief tooltip flash in top left on wiggle-multi** — intermittent, needs repro steps
-5. **`staticBlocks` usage** — why does it exist? Is it still needed?
-6. **Force load "slightly stuck"** — intermittent? Needs specific repro
+5. **`staticBlocks` usage** — Used by MultiRegionDisplayMixin for pre-expanded fetch regions. The fetch autorun uses `view.staticRegions` which merges 800px chunks. A fast-path cache only recalculates when bpPerPx/width/displayedRegions change or offsetPx moves outside a coverage range. This can cause a mismatch with `visibleRegions` used by rendering — potential root cause of P1.2 wiggle fetch gaps.
+6. **Force load "slightly stuck"** — Root cause identified: in `MultiRegionDisplayMixin`, once `regionTooLarge=true`, the fetch autorun early-returns and only clears when zoom *changes*. If user is already zoomed out, no new zoom event fires so the state persists. Additionally, the canvas plugin uses a `maxFeatureCount=5000` threshold separate from the byte estimate check — the 1kg genes demo likely exceeds this count threshold even though rendering would be feasible.
 7. **Density track mismatch** — "sidebar turns into density in SVG export but is still xyplot in browser" — is this a labeling bug or rendering bug?
 8. **Issues toggling matrix/non-matrix variant modes** — "maybe related to phased being on or tree?" — needs investigation
 9. **Color change wiggle "sometimes" not working** — intermittent, needs repro
