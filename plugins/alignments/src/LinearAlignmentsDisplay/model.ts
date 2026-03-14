@@ -969,7 +969,12 @@ export default function stateModelFactory(
         },
 
         setColorScheme(colorBy: ColorBy) {
-          self.colorTagMap = {}
+          if (
+            colorBy.type !== 'tag' ||
+            colorBy.tag !== self.colorBySetting?.tag
+          ) {
+            self.colorTagMap = {}
+          }
           self.colorBySetting = colorBy
         },
 
@@ -987,13 +992,16 @@ export default function stateModelFactory(
             '#bcaaa4',
           ]
           const map = { ...self.colorTagMap }
+          let added = false
           for (const value of uniqueTag) {
             if (!map[value]) {
               const totalKeys = Object.keys(map).length
               map[value] = colorPalette[totalKeys % colorPalette.length]!
+              added = true
             }
           }
           self.colorTagMap = map
+          return added
         },
 
         setFilterBy(filterBy: FilterBy) {
@@ -1573,9 +1581,12 @@ export default function stateModelFactory(
               return
             }
             const newDataMap = new Map<number, PileupDataResult>()
+            let newTagColorsAdded = false
             for (const r of results) {
               if (r.result.newTagValues) {
-                self.updateColorTagMap(r.result.newTagValues)
+                if (self.updateColorTagMap(r.result.newTagValues)) {
+                  newTagColorsAdded = true
+                }
               }
               self.setModificationsReady(true)
               self.setSimplexModifications(r.result.simplexModifications)
@@ -1598,6 +1609,9 @@ export default function stateModelFactory(
             }
             if (self.showArcs) {
               computeAndSetArcs(needed)
+            }
+            if (newTagColorsAdded && self.colorBy.type === 'tag') {
+              self.clearAllRpcData()
             }
           })
         },

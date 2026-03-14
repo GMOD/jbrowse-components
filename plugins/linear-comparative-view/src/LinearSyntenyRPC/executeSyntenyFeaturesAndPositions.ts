@@ -74,6 +74,82 @@ export function bpToPx({
   return undefined
 }
 
+interface RegionIndexEntry {
+  index: number
+  region: { refName: string; start: number; end: number; reversed?: boolean }
+  bpBefore: number
+  paddingPxBefore: number
+}
+
+export interface BpToPxIndex {
+  entries: Map<string, RegionIndexEntry[]>
+  bpPerPx: number
+}
+
+export function buildBpToPxIndex(self: ViewSnap): BpToPxIndex {
+  const {
+    interRegionPaddingWidth,
+    bpPerPx,
+    displayedRegions,
+    minimumBlockWidth,
+  } = self
+  const entries = new Map<string, RegionIndexEntry[]>()
+  let bpSoFar = 0
+  let paddingPx = 0
+
+  for (let i = 0, l = displayedRegions.length; i < l; i++) {
+    const r = displayedRegions[i]!
+    const len = r.end - r.start
+    const entry: RegionIndexEntry = {
+      index: i,
+      region: r,
+      bpBefore: bpSoFar,
+      paddingPxBefore: paddingPx,
+    }
+    let list = entries.get(r.refName)
+    if (!list) {
+      list = []
+      entries.set(r.refName, list)
+    }
+    list.push(entry)
+
+    bpSoFar += len
+    const regionWidthPx = len / bpPerPx
+    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
+      paddingPx += interRegionPaddingWidth
+    }
+  }
+  return { entries, bpPerPx }
+}
+
+export function bpToPxFromIndex(
+  idx: BpToPxIndex,
+  refName: string,
+  coord: number,
+  regionNumber?: number,
+) {
+  const list = idx.entries.get(refName)
+  if (!list) {
+    return undefined
+  }
+  for (const entry of list) {
+    const r = entry.region
+    if (
+      coord >= r.start &&
+      coord <= r.end &&
+      (regionNumber !== undefined ? regionNumber === entry.index : true)
+    ) {
+      const bpOffset = r.reversed ? r.end - coord : coord - r.start
+      return {
+        index: entry.index,
+        offsetPx: (entry.bpBefore + bpOffset) / idx.bpPerPx + entry.paddingPxBefore,
+        paddingPx: entry.paddingPxBefore,
+      }
+    }
+  }
+  return undefined
+}
+
 export async function executeSyntenyFeaturesAndPositions({
   pluginManager,
   sessionId,
@@ -123,6 +199,8 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const v1 = viewSnaps[level]!
   const v2 = viewSnaps[level + 1]!
+  const v1Index = buildBpToPxIndex(v1)
+  const v2Index = buildBpToPxIndex(v2)
 
   const count = features.length
   const p11Array = new Float64Array(count)
@@ -171,10 +249,10 @@ export async function executeSyntenyFeaturesAndPositions({
       ;[f1e, f1s] = [f1s, f1e]
     }
 
-    const p11 = bpToPx({ self: v1, refName, coord: f1s })
-    const p12 = bpToPx({ self: v1, refName, coord: f1e })
-    const p21 = bpToPx({ self: v2, refName: mate.refName, coord: mate.start })
-    const p22 = bpToPx({ self: v2, refName: mate.refName, coord: mate.end })
+    const p11 = bpToPxFromIndex(v1Index, refName, f1s)
+    const p12 = bpToPxFromIndex(v1Index, refName, f1e)
+    const p21 = bpToPxFromIndex(v2Index, mate.refName, mate.start)
+    const p22 = bpToPxFromIndex(v2Index, mate.refName, mate.end)
 
     if (
       p11 === undefined ||

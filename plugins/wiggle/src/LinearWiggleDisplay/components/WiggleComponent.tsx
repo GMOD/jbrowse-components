@@ -58,7 +58,7 @@ export interface WiggleDisplayModel {
   reload: () => void
 }
 
-function buildSourceRenderData(
+export function buildSourceRenderData(
   data: WiggleDataResult,
   model: WiggleDisplayModel,
 ): SourceRenderData[] {

@@ -12,6 +12,8 @@ interface BasicTrack {
   displays?: {
     type: string
     displayId?: string
+    renderer?: { type: string; [key: string]: unknown }
+    [key: string]: unknown
   }[]
 }
 
@@ -199,14 +201,22 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         const knownDisplayTypes = new Set(
           pluginManager.getDisplayElements().map(d => d.name),
         )
+        const knownRendererTypes = new Set(
+          pluginManager.getRendererTypes().map(r => r.name),
+        )
         return {
           ...snap,
           displays: displays
             .filter(d => knownDisplayTypes.has(d.type))
-            .map(d => ({
-              ...d,
-              displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
-            })),
+            .map(d => {
+              const { renderer, ...rest } = d
+              return {
+                ...(renderer?.type && knownRendererTypes.has(renderer.type)
+                  ? d
+                  : rest),
+                displayId: d.displayId ?? `${snap.trackId}-${d.type}`,
+              }
+            }),
         }
       },
       /**

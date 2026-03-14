@@ -320,7 +320,7 @@ export function computeArcsFromPileupData(
 
     const radius = (p2Bp - p1Bp) / 2
     const absrad = Math.abs(radius)
-    const longRange = absrad > longRangeThreshold
+    const longRange = absrad >= longRangeThreshold
     const drawArcInsteadOfBezier = absrad > ARC_VS_BEZIER_THRESHOLD
 
     // console.log('processArc', { p1Ref, p1Bp, p2Ref, p2Bp, longRange, absrad, longRangeThreshold, drawArcInsteadOfBezier, pairOrientationNum, tlen, hasPaired, colorByType })

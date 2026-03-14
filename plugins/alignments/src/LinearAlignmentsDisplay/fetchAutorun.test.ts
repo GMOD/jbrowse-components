@@ -439,6 +439,93 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
   })
 
+  it('isLoading is false after regionTooLarge is set', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    const { display, view } = createDisplay()
+
+    view.setDisplayedRegions([
+      {
+        assemblyName: 'volvox',
+        start: 0,
+        end: 500_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.zoomTo(50)
+
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({
+          bytes: 50_000_000,
+          fetchSizeLimit: 1_000_000,
+        })
+      }
+      return Promise.resolve(makeEmptyPileupData(0))
+    })
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+      expect(display.isLoading).toBe(false)
+    })
+  })
+
+  it('isLoading is false after force load resolves tooLarge', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    const { display, view } = createDisplay()
+
+    view.setDisplayedRegions([
+      {
+        assemblyName: 'volvox',
+        start: 0,
+        end: 500_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.zoomTo(50)
+
+    let callCount = 0
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        callCount++
+        if (callCount <= 1) {
+          return Promise.resolve({
+            bytes: 50_000_000,
+            fetchSizeLimit: 1_000_000,
+          })
+        }
+        return Promise.resolve({
+          bytes: 50_000_000,
+          fetchSizeLimit: 100_000_000,
+        })
+      }
+      return Promise.resolve(makeEmptyPileupData(0))
+    })
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+      expect(display.isLoading).toBe(false)
+    })
+
+    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    display.reload()
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.isLoading).toBe(false)
+    })
+  })
+
   it('fetch error sets display error and stops retrying', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 

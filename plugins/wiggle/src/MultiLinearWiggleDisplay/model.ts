@@ -179,8 +179,14 @@ export default function stateModelFactory(
             .filter(s => s.color)
             .map(s => [s.name, s.color]),
         )
-        const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        let result = iter.map((s, i) => ({
+        let iter = self.layout.length ? self.layout : self.sourcesVolatile
+
+        if (self.subtreeFilter?.length) {
+          const filterSet = new Set(self.subtreeFilter)
+          iter = iter.filter(s => filterSet.has(s.name))
+        }
+
+        return iter.map((s, i) => ({
           source: s.name,
           ...sourceMap[s.name],
           ...s,
@@ -194,12 +200,6 @@ export default function stateModelFactory(
               }
             : {}),
         }))
-
-        if (self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          result = result.filter(s => filterSet.has(s.name))
-        }
-        return result
       },
 
       get adapterConfig() {

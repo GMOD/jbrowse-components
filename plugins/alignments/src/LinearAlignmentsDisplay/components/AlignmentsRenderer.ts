@@ -1,8 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
@@ -213,6 +214,7 @@ export class AlignmentsRenderer {
   private uI32 = new Int32Array(this.uData)
   private regions = new Map<number, GpuRegion>()
   glFallback: WebGLRenderer | null = null
+  canvas2dFallback: Canvas2DAlignmentsRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -337,6 +339,11 @@ export class AlignmentsRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DAlignmentsRenderer(this.canvas)
+      return true
+    }
+
     const device = await AlignmentsRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas)
@@ -354,7 +361,8 @@ export class AlignmentsRenderer {
       return true
     } catch (e) {
       console.error('[AlignmentsRenderer] WebGL2 fallback also failed:', e)
-      return false
+      this.canvas2dFallback = new Canvas2DAlignmentsRenderer(this.canvas)
+      return true
     }
   }
 
@@ -475,6 +483,10 @@ export class AlignmentsRenderer {
       this.glFallback.clearLegacyBuffers()
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.clearLegacyBuffers()
+      return
+    }
     for (const r of this.regions.values()) {
       this.destroyRegion(r)
     }
@@ -486,6 +498,10 @@ export class AlignmentsRenderer {
       this.glFallback.ensureBuffers(regionStart)
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.ensureBuffers(regionStart)
+      return
+    }
   }
 
   uploadFromTypedArraysForRegion(
@@ -494,6 +510,10 @@ export class AlignmentsRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadFromTypedArraysForRegion(regionNumber, data)
       return
     }
     const device = AlignmentsRenderer.device
@@ -553,6 +573,13 @@ export class AlignmentsRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadCigarFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadCigarFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
       return
     }
     const device = AlignmentsRenderer.device
@@ -693,6 +720,13 @@ export class AlignmentsRenderer {
       )
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadModificationsFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
+      return
+    }
     const device = AlignmentsRenderer.device
     if (!device) {
       return
@@ -732,6 +766,13 @@ export class AlignmentsRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadCoverageFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadCoverageFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
       return
     }
     const device = AlignmentsRenderer.device
@@ -829,6 +870,13 @@ export class AlignmentsRenderer {
       )
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadModCoverageFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
+      return
+    }
     const device = AlignmentsRenderer.device
     if (!device) {
       return
@@ -871,6 +919,13 @@ export class AlignmentsRenderer {
       this.glFallback.uploadSashimiFromTypedArraysForRegion(regionNumber, data)
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadSashimiFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
+      return
+    }
     const device = AlignmentsRenderer.device
     if (!device) {
       return
@@ -905,6 +960,13 @@ export class AlignmentsRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadArcsFromTypedArraysForRegion(regionNumber, data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadArcsFromTypedArraysForRegion(
+        regionNumber,
+        data,
+      )
       return
     }
     const device = AlignmentsRenderer.device
@@ -962,6 +1024,10 @@ export class AlignmentsRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadConnectingLinesForRegion(regionNumber, data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadConnectingLinesForRegion(regionNumber, data)
       return
     }
     const device = AlignmentsRenderer.device
@@ -1096,6 +1162,10 @@ export class AlignmentsRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.renderBlocks(blocks, state)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.renderBlocks(blocks, state)
       return
     }
     const device = AlignmentsRenderer.device
@@ -1706,6 +1776,11 @@ export class AlignmentsRenderer {
     if (this.glFallback) {
       this.glFallback.destroy()
       this.glFallback = null
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.destroy()
+      this.canvas2dFallback = null
       return
     }
     for (const r of this.regions.values()) {

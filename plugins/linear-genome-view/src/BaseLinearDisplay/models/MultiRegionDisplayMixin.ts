@@ -143,70 +143,77 @@ export default function MultiRegionDisplayMixin() {
         return null
       },
     }))
-    .actions(self => ({
-      withFetchLifecycle(
-        needed: { region: Region; regionNumber: number }[],
-        work: (ctx: FetchContext) => Promise<void>,
-      ) {
-        if (self.renderingStopToken) {
-          stopStopToken(self.renderingStopToken)
-        }
-        const stopToken = createStopToken()
-        const generation = self.fetchGeneration
-        self.setRenderingStopToken(stopToken)
-        self.setLoading(true)
-        self.setError(undefined)
+    .actions(self => {
+      function finishLoading() {
+        self.setRenderingStopToken(undefined)
+        self.setLoading(false)
+        self.setStatusMessage(undefined)
+      }
 
-        const isStale = () =>
-          !isAlive(self) ||
-          self.fetchGeneration !== generation ||
-          self.renderingStopToken !== stopToken
+      return {
+        withFetchLifecycle(
+          needed: { region: Region; regionNumber: number }[],
+          work: (ctx: FetchContext) => Promise<void>,
+        ) {
+          if (self.renderingStopToken) {
+            stopStopToken(self.renderingStopToken)
+          }
+          const stopToken = createStopToken()
+          const generation = self.fetchGeneration
+          self.setRenderingStopToken(stopToken)
+          self.setLoading(true)
+          self.setError(undefined)
 
-        const ctx: FetchContext = { stopToken, generation, isStale }
+          const isStale = () =>
+            !isAlive(self) ||
+            self.fetchGeneration !== generation ||
+            self.renderingStopToken !== stopToken
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const byteEstimateConfig = self.getByteEstimateConfig()
-            if (byteEstimateConfig) {
-              const session = getSession(self)
-              const result = await checkByteEstimate(
-                session.rpcManager,
-                getRpcSessionId(self),
-                needed.map(r => r.region),
-                byteEstimateConfig,
-                ctx,
-              )
-              if (isStale()) {
-                return
-              }
-              if (result) {
-                self.setFeatureDensityStats(result.stats)
-                if (result.tooLarge) {
-                  self.setRegionTooLarge(true, result.reason)
+          const ctx: FetchContext = { stopToken, generation, isStale }
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const byteEstimateConfig = self.getByteEstimateConfig()
+              if (byteEstimateConfig) {
+                const session = getSession(self)
+                const result = await checkByteEstimate(
+                  session.rpcManager,
+                  getRpcSessionId(self),
+                  needed.map(r => r.region),
+                  byteEstimateConfig,
+                  ctx,
+                )
+                if (isStale()) {
                   return
                 }
+                if (result) {
+                  self.setFeatureDensityStats(result.stats)
+                  if (result.tooLarge) {
+                    self.setRegionTooLarge(true, result.reason)
+                    finishLoading()
+                    return
+                  }
+                }
               }
-            }
-            self.setRegionTooLarge(false)
-            await work(ctx)
-          } catch (e) {
-            if (!isAbortException(e)) {
-              console.warn('Fetch failed:', e)
+              self.setRegionTooLarge(false)
+              await work(ctx)
+            } catch (e) {
+              if (!isAbortException(e)) {
+                console.warn('Fetch failed:', e)
+                if (!isStale()) {
+                  self.setError(e)
+                }
+              }
+            } finally {
               if (!isStale()) {
-                self.setError(e)
+                finishLoading()
               }
             }
-          } finally {
-            if (!isStale()) {
-              self.setRenderingStopToken(undefined)
-              self.setLoading(false)
-              self.setStatusMessage(undefined)
-            }
-          }
-        })()
-      },
-    }))
+          })()
+        },
+      }
+    })
     .actions(self => {
       let prevDisplayedRegionsStr = ''
       return {
