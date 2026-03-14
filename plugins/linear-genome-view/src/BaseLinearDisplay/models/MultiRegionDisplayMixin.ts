@@ -270,8 +270,7 @@ export default function MultiRegionDisplayMixin() {
                     regionNumber: vr.regionNumber,
                   })
                 }
-                const isLoading = untracked(() => self.isLoading)
-                if (needed.length > 0 && !isLoading) {
+                if (needed.length > 0) {
                   self.onFetchNeeded(needed)
                 }
               },
