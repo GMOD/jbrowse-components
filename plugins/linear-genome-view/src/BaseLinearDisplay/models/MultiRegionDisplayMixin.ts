@@ -254,7 +254,11 @@ export default function MultiRegionDisplayMixin() {
             ),
           )
 
-          // Autorun: fetch data for all visible regions
+          // Autorun: fetch data when the visible viewport isn't covered
+          // by loaded data. Uses mergedVisibleRegions (exact viewport) for
+          // the coverage check, and adds an explicit buffer when fetching
+          // so the loaded data extends beyond the viewport for smooth
+          // scrolling without blank gaps.
           addDisposer(
             self,
             autorun(
@@ -268,9 +272,10 @@ export default function MultiRegionDisplayMixin() {
 
                 self.beforeFetchCheck()
 
-                const staticRegions = view.staticRegions
+                const visibleMerged = view.mergedVisibleRegions
+                const bufferBp = view.width * view.bpPerPx * 0.5
                 const needed: { region: Region; regionNumber: number }[] = []
-                for (const vr of staticRegions) {
+                for (const vr of visibleMerged) {
                   const loaded = untracked(() =>
                     self.loadedRegions.get(vr.regionNumber),
                   )
@@ -281,10 +286,18 @@ export default function MultiRegionDisplayMixin() {
                   if (boundsValid && self.isCacheValid(vr.regionNumber)) {
                     continue
                   }
-                  needed.push({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  })
+                  const dr = view.displayedRegions[vr.regionNumber]
+                  if (dr) {
+                    needed.push({
+                      region: {
+                        refName: vr.refName,
+                        start: Math.max(dr.start, vr.start - bufferBp),
+                        end: Math.min(dr.end, vr.end + bufferBp),
+                        assemblyName: vr.assemblyName,
+                      },
+                      regionNumber: vr.regionNumber,
+                    })
+                  }
                 }
                 if (needed.length > 0) {
                   self.onFetchNeeded(needed)

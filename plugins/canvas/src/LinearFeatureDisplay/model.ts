@@ -605,10 +605,19 @@ export default function stateModelFactory(
 
       function fetchAllRegions() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        const regions = view.staticRegions.map(vr => ({
-          region: vr as Region,
-          regionNumber: vr.regionNumber,
-        }))
+        const bufferBp = view.width * view.bpPerPx * 0.5
+        const regions = view.mergedVisibleRegions.map(vr => {
+          const dr = view.displayedRegions[vr.regionNumber]
+          return {
+            region: {
+              refName: vr.refName,
+              start: Math.max(dr?.start ?? 0, vr.start - bufferBp),
+              end: Math.min(dr?.end ?? vr.end, vr.end + bufferBp),
+              assemblyName: vr.assemblyName,
+            } as Region,
+            regionNumber: vr.regionNumber,
+          }
+        })
         self.onFetchNeeded(regions)
       }
       return {

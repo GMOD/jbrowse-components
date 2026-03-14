@@ -44,9 +44,9 @@ All renderers respect `?gpu=off` / `getGpuOverride() === 'canvas2d'` and auto-fa
 **Why:** Core usability — users zoom out on alignments tracks and the view doesn't redraw. This makes the app appear broken.
 
 **Requirements:**
-- Debug re-requests to ensure data is fetched for the entire visible region
-- Audit wiggle tracks: "not fetching data in entire visible region sometimes"
-- Investigate `staticBlocks` usage and whether it's still needed
+- ~~Debug re-requests to ensure data is fetched for the entire visible region~~ **DONE** — replaced `staticRegions` (legacy 800px-block-based) with viewport-based `mergedVisibleRegions` + explicit 50% buffer
+- ~~Audit wiggle tracks: "not fetching data in entire visible region sometimes"~~ **DONE** — integrated `isCacheValid()` for resolution-aware re-fetching on zoom-in; removed stale-region-based fetch
+- ~~Investigate `staticBlocks` usage and whether it's still needed~~ **DONE** — `staticBlocks` kept for UI (scalebar/gridlines), but `staticRegions` removed from data fetching; replaced with direct viewport-based approach
 - Fix: "1kg Human demo: the genes track triggers force load too soon"
 
 ### P1.3 Expand Browser Test Suite

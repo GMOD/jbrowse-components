@@ -1453,12 +1453,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * Merges staticBlocks back into one region per regionNumber. This
-         * undoes the 800px chunking that staticBlocks performs, but reuses
-         * its caching/stability so the result doesn't change on small pans.
-         * Used by WebGL displays as pre-expanded fetch regions.
+         * Merges visibleRegions (exact viewport content) by regionNumber.
+         * Used by the fetch autorun to decide WHEN data needs re-fetching.
+         * The actual fetch region is expanded with an explicit buffer.
          */
-        get staticRegions() {
+        get mergedVisibleRegions() {
           const regionMap = new Map<
             number,
             {
@@ -1469,7 +1468,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               regionNumber: number
             }
           >()
-          for (const block of this.staticBlocks.contentBlocks) {
+          for (const block of this.dynamicBlocks.contentBlocks) {
             const regionNumber = block.regionNumber!
             const existing = regionMap.get(regionNumber)
             if (existing) {

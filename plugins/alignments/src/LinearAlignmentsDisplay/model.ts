@@ -1855,7 +1855,7 @@ export default function stateModelFactory(
                 prevArcColorByType = colorByType
                 if (self.showArcs && self.rpcDataMap.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const regions = view.staticRegions.map(vr => ({
+                  const regions = view.mergedVisibleRegions.map(vr => ({
                     region: vr as Region,
                     regionNumber: vr.regionNumber,
                   }))

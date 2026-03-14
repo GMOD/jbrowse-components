@@ -203,9 +203,18 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             if (!view.initialized || view.bpPerPx > 10) {
               return undefined
             }
+            const bufferBp = view.width * view.bpPerPx * 0.5
+            const regions = view.mergedVisibleRegions.map(vr => {
+              const dr = view.displayedRegions[vr.regionNumber]
+              return {
+                ...vr,
+                start: Math.max(dr?.start ?? 0, vr.start - bufferBp),
+                end: Math.min(dr?.end ?? vr.end, vr.end + bufferBp),
+              }
+            })
             return {
               adapterConfig: self.adapterConfig,
-              regions: view.staticRegions,
+              regions,
               sessionId: getRpcSessionId(self),
             }
           },
