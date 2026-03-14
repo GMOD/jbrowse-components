@@ -278,7 +278,7 @@ export default function MultiRegionDisplayMixin() {
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
-                  if (boundsValid) {
+                  if (boundsValid && self.isCacheValid(vr.regionNumber)) {
                     continue
                   }
                   needed.push({
@@ -297,8 +297,10 @@ export default function MultiRegionDisplayMixin() {
             ),
           )
 
-          // Autorun: when zoom changes while regionTooLarge is set, clear
-          // so the fetch autorun retries with the new (smaller) region
+          // Autorun: when zoom changes while regionTooLarge or error is
+          // set, clear so the fetch autorun retries at the new scale.
+          // This handles both "region too large" (zoom in to fix) and
+          // transient errors (zoom change as implicit retry).
           let prevBpPerPx: number | undefined
           addDisposer(
             self,
@@ -309,13 +311,13 @@ export default function MultiRegionDisplayMixin() {
                 if (
                   prevBpPerPx !== undefined &&
                   bpPerPx !== prevBpPerPx &&
-                  self.regionTooLarge
+                  (self.regionTooLarge || self.error)
                 ) {
                   self.clearAllRpcData()
                 }
                 prevBpPerPx = bpPerPx
               },
-              { name: 'ClearTooLargeOnZoom' },
+              { name: 'ClearBlockingStateOnZoom' },
             ),
           )
         },
