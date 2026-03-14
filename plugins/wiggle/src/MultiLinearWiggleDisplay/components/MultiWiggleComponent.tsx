@@ -58,6 +58,7 @@ export interface MultiWiggleDisplayModel {
   error: Error | null
   isLoading: boolean
   statusMessage?: string
+  displayCrossHatches: boolean
   reload: () => void
   scalebarOverlapLeft: number
   hierarchy?: ClusterHierarchyNode
@@ -580,6 +581,51 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
                 />
               )
             })
+          : null}
+
+        {model.displayCrossHatches && model.ticks
+          ? model.isOverlay
+            ? model.ticks.values.map((v, idx) => {
+                const pos = model.ticks!.position(v)
+                if (!Number.isFinite(pos)) {
+                  return null
+                }
+                return (
+                  <line
+                    key={`ch-${idx}`}
+                    x1={0}
+                    x2={totalWidth}
+                    y1={pos}
+                    y2={pos}
+                    stroke="rgba(200,200,200,0.8)"
+                    strokeWidth={1}
+                  />
+                )
+              })
+            : Array.from({ length: numSources }).map((_, rowIdx) => {
+                const top = getRowTop(rowIdx, rowHeight)
+                return model.ticks!.values.map((v, idx) => {
+                  const pos = model.ticks!.position(v)
+                  if (!Number.isFinite(pos)) {
+                    return null
+                  }
+                  const y = top + pos
+                  if (y < top || y > top + rowHeight) {
+                    return null
+                  }
+                  return (
+                    <line
+                      key={`ch-${rowIdx}-${idx}`}
+                      x1={0}
+                      x2={totalWidth}
+                      y1={y}
+                      y2={y}
+                      stroke="rgba(200,200,200,0.8)"
+                      strokeWidth={1}
+                    />
+                  )
+                })
+              })
           : null}
       </svg>
 

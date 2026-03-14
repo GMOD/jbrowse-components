@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import {
@@ -110,6 +110,10 @@ export class WebGPUSequenceRenderer {
   private glContext: WebGL2RenderingContext | null = null
   private glHandles: GLHandles | null = null
   private useWebGL = false
+  private useCanvas2D = false
+  private ctx2d: CanvasRenderingContext2D | null = null
+  private rectBuf: Float32Array | null = null
+  private colorBuf: Uint8Array | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -170,6 +174,10 @@ export class WebGPUSequenceRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      return this.initCanvas2D()
+    }
+
     const device = await WebGPUSequenceRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
@@ -184,12 +192,23 @@ export class WebGPUSequenceRenderer {
     }
     const gl = this.canvas.getContext('webgl2')
     if (!gl) {
-      console.error('[WebGPUSequenceRenderer] WebGL2 fallback also failed')
-      return false
+      console.error('[WebGPUSequenceRenderer] WebGL2 fallback failed')
+      return this.initCanvas2D()
     }
     this.glContext = gl
     this.glHandles = initGL(gl)
     this.useWebGL = true
+    return true
+  }
+
+  private initCanvas2D() {
+    const ctx = this.canvas.getContext('2d')
+    if (!ctx) {
+      console.error('[WebGPUSequenceRenderer] Canvas 2D fallback also failed')
+      return false
+    }
+    this.ctx2d = ctx
+    this.useCanvas2D = true
     return true
   }
 
@@ -198,6 +217,11 @@ export class WebGPUSequenceRenderer {
     colorBuf: Uint8Array,
     instanceCount: number,
   ) {
+    if (this.useCanvas2D) {
+      this.rectBuf = rectBuf
+      this.colorBuf = colorBuf
+      return
+    }
     if (this.useWebGL) {
       if (this.glContext && this.glHandles) {
         uploadGeometryGL(this.glContext, this.glHandles, rectBuf, colorBuf)
@@ -258,6 +282,10 @@ export class WebGPUSequenceRenderer {
     cssWidth: number,
     cssHeight: number,
   ) {
+    if (this.useCanvas2D) {
+      this.renderCanvas2D(instanceCount, basePx, bpPerPx, cssWidth, cssHeight)
+      return
+    }
     if (this.useWebGL) {
       if (this.glContext && this.glHandles) {
         renderGL(
@@ -326,13 +354,79 @@ export class WebGPUSequenceRenderer {
     device.queue.submit([encoder.finish()])
   }
 
+  private renderCanvas2D(
+    instanceCount: number,
+    basePx: number,
+    bpPerPx: number,
+    cssWidth: number,
+    cssHeight: number,
+  ) {
+    const ctx = this.ctx2d
+    if (!ctx || !this.rectBuf || !this.colorBuf) {
+      return
+    }
+
+    const dpr = window.devicePixelRatio || 1
+    const bufW = Math.round(cssWidth * dpr)
+    const bufH = Math.round(cssHeight * dpr)
+    if (this.canvas.width !== bufW || this.canvas.height !== bufH) {
+      this.canvas.width = bufW
+      this.canvas.height = bufH
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, cssWidth, cssHeight)
+
+    const showBorders = 1 / bpPerPx >= 12
+    const rects = this.rectBuf
+    const colors = this.colorBuf
+
+    for (let i = 0; i < instanceCount; i++) {
+      const ri = i * 4
+      const xBp = rects[ri]!
+      const yPx = rects[ri + 1]!
+      const widthBp = rects[ri + 2]!
+      const heightPx = rects[ri + 3]!
+
+      const widthPx = Math.max(widthBp / bpPerPx, 1)
+      const xPx = xBp / bpPerPx + basePx
+
+      if (xPx + widthPx < 0 || xPx > cssWidth) {
+        continue
+      }
+
+      const r = colors[ri]!
+      const g = colors[ri + 1]!
+      const b = colors[ri + 2]!
+      const hasBorder = colors[ri + 3]! > 254
+
+      ctx.fillStyle = `rgb(${r},${g},${b})`
+      ctx.fillRect(xPx, yPx, widthPx, heightPx)
+
+      if (showBorders && hasBorder) {
+        ctx.strokeStyle = 'rgb(85,85,85)'
+        ctx.lineWidth = 1
+        ctx.strokeRect(xPx, yPx, widthPx, heightPx)
+      }
+    }
+  }
+
   dispose() {
+    if (this.useCanvas2D) {
+      this.ctx2d = null
+      this.rectBuf = null
+      this.colorBuf = null
+      rendererCache.delete(this.canvas)
+      return
+    }
     if (this.useWebGL) {
       if (this.glContext && this.glHandles) {
         disposeGL(this.glContext, this.glHandles)
       }
       this.glContext = null
       this.glHandles = null
+      rendererCache.delete(this.canvas)
       return
     }
 

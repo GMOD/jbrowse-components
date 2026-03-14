@@ -39,6 +39,7 @@ function makeModel(
     error: null,
     isLoading: false,
     statusMessage: undefined,
+    displayCrossHatches: false,
     scalebarOverlapLeft: 0,
     featureUnderMouse: undefined,
     setFeatureUnderMouse: () => {},

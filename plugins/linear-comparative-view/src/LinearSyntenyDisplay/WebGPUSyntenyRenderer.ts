@@ -1,8 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 import { WebGLSyntenyRenderer } from './WebGLSyntenyRenderer.ts'
 import {
   EDGE_SEGMENTS,
@@ -29,6 +30,7 @@ export class SyntenyRenderer {
 
   private canvas: HTMLCanvasElement
   private glFallback: WebGLSyntenyRenderer | null = null
+  private canvas2dFallback: Canvas2DSyntenyRenderer | null = null
   private context: GPUCanvasContext | null = null
   private uniformBuffer: GPUBuffer | null = null
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
@@ -169,6 +171,11 @@ export class SyntenyRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
+      return true
+    }
+
     const device = await SyntenyRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
@@ -189,14 +196,24 @@ export class SyntenyRenderer {
       this.glFallback = new WebGLSyntenyRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[SyntenyRenderer] WebGL2 fallback also failed:', e)
-      return false
+      console.error('[SyntenyRenderer] WebGL2 fallback failed:', e)
+      try {
+        this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
+        return true
+      } catch (e2) {
+        console.error('[SyntenyRenderer] Canvas 2D fallback also failed:', e2)
+        return false
+      }
     }
   }
 
   resize(width: number, height: number) {
     if (this.glFallback) {
       this.glFallback.resize(width, height)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.resize(width, height)
       return
     }
     const dpr = this.dpr
@@ -225,6 +242,10 @@ export class SyntenyRenderer {
   uploadGeometry(data: SyntenyInstanceData) {
     if (this.glFallback) {
       this.glFallback.uploadGeometry(data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadGeometry(data)
       return
     }
     const device = SyntenyRenderer.device
@@ -272,6 +293,21 @@ export class SyntenyRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.render(
+        offset0,
+        offset1,
+        height,
+        curBpPerPx0,
+        curBpPerPx1,
+        maxOffScreenPx,
+        minAlignmentLength,
+        alpha,
+        hoveredFeatureId,
+        clickedFeatureId,
+      )
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.render(
         offset0,
         offset1,
         height,
@@ -368,6 +404,9 @@ export class SyntenyRenderer {
   ): number | undefined {
     if (this.glFallback) {
       return this.glFallback.pick(x, y, onResult)
+    }
+    if (this.canvas2dFallback) {
+      return this.canvas2dFallback.pick(x, y, onResult)
     }
     this.pickCallback = onResult
     if (this.pendingPick) {

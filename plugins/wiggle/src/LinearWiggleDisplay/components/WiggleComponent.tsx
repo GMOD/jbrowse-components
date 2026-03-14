@@ -44,6 +44,7 @@ export interface WiggleDisplayModel {
   error: Error | null
   isLoading: boolean
   statusMessage?: string
+  displayCrossHatches: boolean
   scalebarOverlapLeft: number
   featureUnderMouse?: {
     refName: string
@@ -406,6 +407,36 @@ const WiggleComponent = observer(function WiggleComponent({
           }}
         >
           <YScaleBar model={model} />
+        </svg>
+      ) : null}
+      {model.displayCrossHatches && model.ticks ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            height,
+            width,
+          }}
+        >
+          {model.ticks.values.map((v, idx) => {
+            const pos = model.ticks!.position(v)
+            if (!Number.isFinite(pos)) {
+              return null
+            }
+            return (
+              <line
+                key={idx}
+                x1={0}
+                x2={width}
+                y1={pos}
+                y2={pos}
+                stroke="rgba(200,200,200,0.8)"
+                strokeWidth={1}
+              />
+            )
+          })}
         </svg>
       ) : null}
       <WiggleTooltip

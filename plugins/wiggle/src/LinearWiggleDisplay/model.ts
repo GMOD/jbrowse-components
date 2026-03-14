@@ -70,6 +70,7 @@ export default function stateModelFactory(
         renderingTypeSetting: types.maybe(types.string),
         summaryScoreModeSetting: types.maybe(types.string),
         autoscaleSetting: types.maybe(types.string),
+        displayCrossHatches: types.optional(types.boolean, false),
       }),
     )
     .preProcessSnapshot((snap: any) => {
@@ -308,6 +309,10 @@ export default function stateModelFactory(
 
       setAutoscale(val?: string) {
         self.autoscaleSetting = val
+      },
+
+      toggleCrossHatches() {
+        self.displayCrossHatches = !self.displayCrossHatches
       },
     }))
     .actions(self => {
@@ -614,6 +619,14 @@ export default function stateModelFactory(
                   handleClose,
                 },
               ])
+            },
+          },
+          {
+            label: 'Draw cross hatches',
+            type: 'checkbox',
+            checked: self.displayCrossHatches,
+            onClick: () => {
+              self.toggleCrossHatches()
             },
           },
         ]

@@ -1,8 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 import { WebGLVariantRenderer } from './WebGLVariantRenderer.ts'
 import { interleaveVariantInstances, variantShader } from './variantShaders.ts'
 import { splitPositionWithFrac } from '../../shared/variantWebglUtils.ts'
@@ -33,6 +34,7 @@ export class VariantRenderer {
   private uniformU32 = new Uint32Array(this.uniformData)
   private regionDataMap = new Map<number, RegionGpuData>()
   private glFallback: WebGLVariantRenderer | null = null
+  private canvas2dFallback: Canvas2DVariantRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -106,6 +108,11 @@ export class VariantRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DVariantRenderer(this.canvas)
+      return true
+    }
+
     const device = await VariantRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas)
@@ -122,8 +129,14 @@ export class VariantRenderer {
       this.glFallback = new WebGLVariantRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[VariantRenderer] WebGL2 fallback also failed:', e)
-      return false
+      console.error('[VariantRenderer] WebGL2 fallback failed:', e)
+      try {
+        this.canvas2dFallback = new Canvas2DVariantRenderer(this.canvas)
+        return true
+      } catch (e2) {
+        console.error('[VariantRenderer] Canvas 2D fallback also failed:', e2)
+        return false
+      }
     }
   }
 
@@ -140,6 +153,10 @@ export class VariantRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.uploadRegion(regionNumber, data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadRegion(regionNumber, data)
       return
     }
 
@@ -186,6 +203,10 @@ export class VariantRenderer {
       this.glFallback.pruneStaleRegions(activeRegionNumbers)
       return
     }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.pruneStaleRegions(activeRegionNumbers)
+      return
+    }
     const active = new Set(activeRegionNumbers)
     for (const [regionNumber, data] of this.regionDataMap) {
       if (!active.has(regionNumber)) {
@@ -206,6 +227,10 @@ export class VariantRenderer {
   ) {
     if (this.glFallback) {
       this.glFallback.renderBlocks(blocks, state)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.renderBlocks(blocks, state)
       return
     }
 

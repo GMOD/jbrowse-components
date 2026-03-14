@@ -1,8 +1,9 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import { Canvas2DVariantMatrixRenderer } from './Canvas2DVariantMatrixRenderer.ts'
 import { WebGLVariantMatrixRenderer } from './WebGLVariantMatrixRenderer.ts'
 import {
   interleaveMatrixInstances,
@@ -33,6 +34,7 @@ export class VariantMatrixRenderer {
   private uniformF32 = new Float32Array(this.uniformData)
   private gpuData: GpuData | null = null
   private glFallback: WebGLVariantMatrixRenderer | null = null
+  private canvas2dFallback: Canvas2DVariantMatrixRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -108,6 +110,11 @@ export class VariantMatrixRenderer {
   }
 
   async init() {
+    if (getGpuOverride() === 'canvas2d') {
+      this.canvas2dFallback = new Canvas2DVariantMatrixRenderer(this.canvas)
+      return true
+    }
+
     const device = await VariantMatrixRenderer.ensureDevice()
     if (device) {
       const result = await initGpuContext(this.canvas)
@@ -124,8 +131,14 @@ export class VariantMatrixRenderer {
       this.glFallback = new WebGLVariantMatrixRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[VariantMatrixRenderer] WebGL2 fallback also failed:', e)
-      return false
+      console.error('[VariantMatrixRenderer] WebGL2 fallback failed:', e)
+      try {
+        this.canvas2dFallback = new Canvas2DVariantMatrixRenderer(this.canvas)
+        return true
+      } catch (e2) {
+        console.error('[VariantMatrixRenderer] Canvas 2D fallback also failed:', e2)
+        return false
+      }
     }
   }
 
@@ -137,6 +150,10 @@ export class VariantMatrixRenderer {
   }) {
     if (this.glFallback) {
       this.glFallback.uploadCellData(data)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.uploadCellData(data)
       return
     }
 
@@ -177,6 +194,10 @@ export class VariantMatrixRenderer {
   render(state: MatrixRenderState) {
     if (this.glFallback) {
       this.glFallback.render(state)
+      return
+    }
+    if (this.canvas2dFallback) {
+      this.canvas2dFallback.render(state)
       return
     }
 
