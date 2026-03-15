@@ -35,7 +35,7 @@ export interface RenderFeatureDataArgs {
   colorByCDS?: boolean
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
-  maxFeatureCount?: number
+  maxFeatureDensity?: number
   stopToken?: string
 }
 

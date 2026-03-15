@@ -588,7 +588,7 @@ export async function executeRenderFeatureData({
     colorByCDS,
     sequenceAdapter,
     showOnlyGenes,
-    maxFeatureCount,
+    maxFeatureDensity,
     stopToken,
     statusCallback = () => {},
   } = args as RenderFeatureDataArgs & {
@@ -620,10 +620,14 @@ export async function executeRenderFeatureData({
     featuresArray = featuresArray.filter(f => f.get('type') === 'gene')
   }
 
-  if (maxFeatureCount !== undefined && featuresArray.length > maxFeatureCount) {
-    return {
-      regionTooLarge: true,
-      featureCount: featuresArray.length,
+  if (maxFeatureDensity !== undefined && requestedBpPerPx) {
+    const regionWidthPx = (region.end - region.start) / requestedBpPerPx
+    const featureDensity = featuresArray.length / regionWidthPx
+    if (featureDensity > maxFeatureDensity) {
+      return {
+        regionTooLarge: true,
+        featureCount: featuresArray.length,
+      }
     }
   }
 

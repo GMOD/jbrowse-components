@@ -390,6 +390,33 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
+  it('reload after error clears error and re-fetches successfully', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    const { display } = createDisplay()
+
+    // First fetch fails
+    mockRpcCall.mockRejectedValue(new Error('network failure'))
+
+    jest.advanceTimersByTime(400)
+
+    await waitFor(() => {
+      expect(display.error).toBeTruthy()
+    })
+
+    // Now fix the issue and retry (simulating user clicking "Retry")
+    mockRpcCall.mockResolvedValue(makeEmptyFeatureData(0))
+    display.reload()
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.error).toBeFalsy()
+      expect(display.loadedRegions.size).toBe(1)
+    })
+  })
+
   it('clearAllRpcData resets state and triggers a new fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 

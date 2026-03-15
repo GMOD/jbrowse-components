@@ -1,7 +1,7 @@
 import type React from 'react'
 import { lazy, useCallback, useEffect, useRef, useState } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
@@ -291,8 +291,10 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     }
   }
 
+  const drawn = model.gpuInitialized && !!model.featureData
+
   return (
-    <div className={classes.rel}>
+    <div className={classes.rel} data-testid={`drawn-${drawn}`}>
       <canvas
         ref={gpuCanvasCallbackRef}
         onMouseMove={handleMouseMove}
@@ -312,6 +314,11 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
       {gpuStatus === 'failed' ? (
         <div className={classes.gpuLoadingOverlay}>
           GPU initialization failed: {gpuError}
+        </div>
+      ) : null}
+      {model.error ? (
+        <div className={classes.gpuLoadingOverlay}>
+          <ErrorMessage error={model.error} />
         </div>
       ) : null}
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}

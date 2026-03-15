@@ -10,6 +10,15 @@ export class Canvas2DSyntenyRenderer {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private data: SyntenyInstanceData | null = null
+  private lastRenderParams: {
+    offset0: number
+    offset1: number
+    height: number
+    curBpPerPx0: number
+    curBpPerPx1: number
+    maxOffScreenPx: number
+    minAlignmentLength: number
+  } | null = null
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -46,6 +55,16 @@ export class Canvas2DSyntenyRenderer {
     hoveredFeatureId: number,
     clickedFeatureId: number,
   ) {
+    this.lastRenderParams = {
+      offset0,
+      offset1,
+      height,
+      curBpPerPx0,
+      curBpPerPx1,
+      maxOffScreenPx,
+      minAlignmentLength,
+    }
+
     const data = this.data
     if (!data || data.instanceCount === 0) {
       return
@@ -142,7 +161,64 @@ export class Canvas2DSyntenyRenderer {
     ctx.globalAlpha = 1
   }
 
-  pick(_x: number, _y: number, _onResult?: (result: number) => void) {
+  pick(x: number, y: number, onResult?: (result: number) => void) {
+    const data = this.data
+    const params = this.lastRenderParams
+    if (!data || !params || data.instanceCount === 0) {
+      onResult?.(-1)
+      return -1
+    }
+
+    const { offset0, offset1, height, curBpPerPx0, curBpPerPx1, minAlignmentLength } = params
+    const scale0 = data.geometryBpPerPx0 / curBpPerPx0
+    const scale1 = data.geometryBpPerPx1 / curBpPerPx1
+    const adjOff0 = offset0 / scale0 - data.refOffset0
+    const adjOff1 = offset1 / scale1 - data.refOffset1
+    const ctx = this.ctx
+
+    // iterate in reverse so top-most (last-drawn) features are picked first
+    for (let i = data.instanceCount - 1; i >= 0; i--) {
+      if (data.queryTotalLengths[i]! < minAlignmentLength) {
+        continue
+      }
+      const ci = i * 4
+      if (data.colors[ci + 3]! < 0.01) {
+        continue
+      }
+
+      const padTop = data.padTops[i]!
+      const padBottom = data.padBottoms[i]!
+      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
+      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
+      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
+      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
+
+      ctx.beginPath()
+      if (data.isCurves[i]! > 0.5) {
+        ctx.moveTo(sx1, 0)
+        for (let s = 1; s <= CURVE_SEGMENTS; s++) {
+          const t = s / CURVE_SEGMENTS
+          ctx.lineTo(sx1 + (sx4 - sx1) * t, hermiteY(t, height))
+        }
+        for (let s = CURVE_SEGMENTS; s >= 0; s--) {
+          const t = s / CURVE_SEGMENTS
+          ctx.lineTo(sx2 + (sx3 - sx2) * t, hermiteY(t, height))
+        }
+      } else {
+        ctx.moveTo(sx1, 0)
+        ctx.lineTo(sx4, height)
+        ctx.lineTo(sx3, height)
+        ctx.lineTo(sx2, 0)
+      }
+      ctx.closePath()
+
+      if (ctx.isPointInPath(x, y)) {
+        onResult?.(i)
+        return i
+      }
+    }
+
+    onResult?.(-1)
     return -1
   }
 

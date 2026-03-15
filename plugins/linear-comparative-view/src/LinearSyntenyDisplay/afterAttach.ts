@@ -51,43 +51,50 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
 
-        if (self.gpuRenderer !== lastRenderer) {
-          lastInstanceData = undefined
-          lastRenderer = self.gpuRenderer
+        try {
+          if (self.gpuRenderer !== lastRenderer) {
+            lastInstanceData = undefined
+            lastRenderer = self.gpuRenderer
+          }
+
+          self.gpuRenderer.resize(width, height)
+
+          if (gpuInstanceData && gpuInstanceData !== lastInstanceData) {
+            lastInstanceData = gpuInstanceData
+            self.gpuRenderer.uploadGeometry(gpuInstanceData)
+          }
+
+          if (!featureData || level + 1 >= view.views.length) {
+            return
+          }
+
+          const v0 = view.views[level]!
+          const v1 = view.views[level + 1]!
+          const maxOffScreenPx = view.maxOffScreenDrawPx
+
+          const hoveredFeatureId =
+            hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0
+          const clickedFeatureId =
+            clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0
+
+          self.gpuRenderer.render(
+            v0.offsetPx,
+            v1.offsetPx,
+            height,
+            v0.bpPerPx,
+            v1.bpPerPx,
+            maxOffScreenPx,
+            minAlignmentLength,
+            alpha,
+            hoveredFeatureId,
+            clickedFeatureId,
+          )
+        } catch (e) {
+          console.error('[synteny] render error:', e)
+          if (isAlive(self)) {
+            self.setError(e)
+          }
         }
-
-        self.gpuRenderer.resize(width, height)
-
-        if (gpuInstanceData && gpuInstanceData !== lastInstanceData) {
-          lastInstanceData = gpuInstanceData
-          self.gpuRenderer.uploadGeometry(gpuInstanceData)
-        }
-
-        if (!featureData || level + 1 >= view.views.length) {
-          return
-        }
-
-        const v0 = view.views[level]!
-        const v1 = view.views[level + 1]!
-        const maxOffScreenPx = view.maxOffScreenDrawPx
-
-        const hoveredFeatureId =
-          hoveredFeatureIdx >= 0 ? hoveredFeatureIdx + 1 : 0
-        const clickedFeatureId =
-          clickedFeatureIdx >= 0 ? clickedFeatureIdx + 1 : 0
-
-        self.gpuRenderer.render(
-          v0.offsetPx,
-          v1.offsetPx,
-          height,
-          v0.bpPerPx,
-          v1.bpPerPx,
-          maxOffScreenPx,
-          minAlignmentLength,
-          alpha,
-          hoveredFeatureId,
-          clickedFeatureId,
-        )
       },
       {
         name: 'SyntenyDraw',

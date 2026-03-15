@@ -140,7 +140,7 @@ export default function stateModelFactory(
       featureIdUnderMouse: null as string | null,
       mouseoverExtraInformation: undefined as string | undefined,
       contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
-      userFeatureCountLimit: undefined as number | undefined,
+      userFeatureDensityLimit: undefined as number | undefined,
       featureDensityPerPx: 0,
     }))
     .views(self => ({
@@ -235,8 +235,8 @@ export default function stateModelFactory(
         return undefined
       },
 
-      get maxFeatureCount() {
-        return self.userFeatureCountLimit ?? 5000
+      get maxFeatureDensity() {
+        return self.userFeatureDensityLimit ?? 20
       },
 
       get colorByCDS() {
@@ -328,7 +328,7 @@ export default function stateModelFactory(
       },
 
       setFeatureDensityStatsLimit() {
-        self.userFeatureCountLimit = Math.ceil(self.maxFeatureCount * 3)
+        self.userFeatureDensityLimit = Math.ceil(self.maxFeatureDensity * 3)
         self.setRegionTooLarge(false)
       },
 
@@ -538,7 +538,7 @@ export default function stateModelFactory(
             },
             region,
             bpPerPx,
-            maxFeatureCount: self.maxFeatureCount,
+            maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
             sequenceAdapter: self.sequenceAdapter,
             showOnlyGenes: self.showOnlyGenes,

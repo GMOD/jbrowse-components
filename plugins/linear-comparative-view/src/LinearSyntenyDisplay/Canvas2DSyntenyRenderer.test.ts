@@ -13,6 +13,7 @@ function createMockCanvas() {
     closePath: jest.fn(() => pathOps.push('closePath')),
     fill: jest.fn(() => pathOps.push('fill')),
     stroke: jest.fn(),
+    isPointInPath: jest.fn(() => false),
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
@@ -157,10 +158,147 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(ctx.stroke).toHaveBeenCalled()
   })
 
-  test('pick returns -1 (not implemented for canvas2d)', () => {
+  test('pick returns -1 with no data', () => {
     const { canvas } = createMockCanvas()
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     expect(renderer.pick(100, 50)).toBe(-1)
+  })
+
+  test('pick returns -1 before render is called', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.uploadGeometry(makeInstanceData(1))
+    expect(renderer.pick(50, 50)).toBe(-1)
+  })
+
+  test('pick returns feature index when isPointInPath matches', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    expect(renderer.pick(50, 50)).toBe(0)
+  })
+
+  test('pick returns -1 when isPointInPath does not match', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => false)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    expect(renderer.pick(50, 50)).toBe(-1)
+  })
+
+  test('pick invokes callback with result', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    const cb = jest.fn()
+    renderer.pick(50, 50, cb)
+    expect(cb).toHaveBeenCalledWith(0)
+  })
+
+  test('pick returns last feature when multiple overlap (top-most wins)', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(3))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    // last drawn (index 2) should be picked first
+    expect(renderer.pick(50, 50)).toBe(2)
+  })
+
+  test('pick skips features below minAlignmentLength', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1, {
+      queryTotalLengths: new Float32Array([100]),
+    }))
+    // render with minAlignmentLength=500, which excludes the feature
+    renderer.render(0, 0, 100, 1, 1, 300, 500, 1, 0, 0)
+    expect(renderer.pick(50, 50)).toBe(-1)
+    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+  })
+
+  test('pick skips features with zero alpha', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1, {
+      colors: new Float32Array([0.5, 0.5, 0.5, 0]),
+    }))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    expect(renderer.pick(50, 50)).toBe(-1)
+    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+  })
+
+  test('pick builds curve path for curved features', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1, {
+      isCurves: new Float32Array([1]),
+    }))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    expect(renderer.pick(50, 50)).toBe(0)
+    // curve path uses lineTo for segments, not just 4 corners
+    expect(ctx.lineTo.mock.calls.length).toBeGreaterThan(4)
+  })
+
+  test('pick returns -1 after destroy', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(1))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    renderer.destroy()
+    expect(renderer.pick(50, 50)).toBe(-1)
+  })
+
+  test('pick handles selective matching across multiple features', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    // only the second feature (index 1) matches
+    let callCount = 0
+    ctx.isPointInPath = jest.fn(() => {
+      callCount++
+      // reverse iteration: feature 2 checked first, then 1, then 0
+      return callCount === 2
+    })
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(makeInstanceData(3))
+    renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
+    // reverse order: checks index 2 (miss), index 1 (hit)
+    expect(renderer.pick(50, 50)).toBe(1)
   })
 
   test('destroy cleans up data', () => {

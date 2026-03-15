@@ -586,35 +586,133 @@ export class Canvas2DAlignmentsRenderer {
     return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
   }
 
+  private hslToRgb(h: number, s: number, l: number) {
+    const c = (1 - Math.abs(2 * l - 1)) * s
+    const hp = h * 6
+    const x = c * (1 - Math.abs((hp % 2) - 1))
+    const m = l - c / 2
+    let r: number, g: number, b: number
+    if (hp < 1) { r = c; g = x; b = 0 }
+    else if (hp < 2) { r = x; g = c; b = 0 }
+    else if (hp < 3) { r = 0; g = c; b = x }
+    else if (hp < 4) { r = 0; g = x; b = c }
+    else if (hp < 5) { r = x; g = 0; b = c }
+    else { r = c; g = 0; b = x }
+    return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
+  }
+
   private getReadColor(
     i: number,
     region: Canvas2DRegionData,
     state: RenderState,
   ) {
-    const colorScheme = state.colorScheme
+    const { colorScheme } = state
+    const { colors } = state
     const flags = region.readFlags[i]!
     const strand = region.readStrands[i]!
 
-    // Color scheme 8 = tag-based coloring
-    if (colorScheme === 8 && region.readTagColors.length > 0) {
-      const r = region.readTagColors[i * 3]!
-      const g = region.readTagColors[i * 3 + 1]!
-      const b = region.readTagColors[i * 3 + 2]!
-      if (r !== 0 || g !== 0 || b !== 0) {
-        return `rgb(${r},${g},${b})`
+    switch (colorScheme) {
+      // Normal: supplementary in orange, else strand
+      case 0: {
+        if ((flags & 2048) !== 0) {
+          return this.rgbStr(colors.colorSupplementary)
+        }
+        return strand >= 0
+          ? this.rgbStr(colors.colorFwdStrand)
+          : this.rgbStr(colors.colorRevStrand)
+      }
+      // Strand
+      case 1: {
+        if (strand > 0) {
+          return this.rgbStr(colors.colorFwdStrand)
+        }
+        if (strand < 0) {
+          return this.rgbStr(colors.colorRevStrand)
+        }
+        return this.rgbStr(colors.colorNostrand)
+      }
+      // Mapping quality: hsl(mapq, 50%, 50%)
+      case 2: {
+        const mapq = region.readMapqs[i]!
+        return this.hslToRgb(mapq / 360, 0.5, 0.5)
+      }
+      // Insert size (threshold)
+      case 3: {
+        const insertSize = region.readInsertSizes[i]!
+        const stats = region.insertSizeStats
+        if (stats && insertSize > stats.upper) {
+          return this.rgbStr(colors.colorLongInsert)
+        }
+        if (stats && insertSize < stats.lower) {
+          return this.rgbStr(colors.colorShortInsert)
+        }
+        return this.rgbStr(colors.colorPairLR)
+      }
+      // First-of-pair strand
+      case 4: {
+        const isFirst = (flags & 64) !== 0
+        const effectiveStrand = isFirst ? strand : -strand
+        if (effectiveStrand > 0) {
+          return this.rgbStr(colors.colorFwdStrand)
+        }
+        if (effectiveStrand < 0) {
+          return this.rgbStr(colors.colorRevStrand)
+        }
+        return this.rgbStr(colors.colorNostrand)
+      }
+      // Pair orientation
+      case 5: {
+        const po = region.readPairOrientations[i]!
+        if (po === 1) { return this.rgbStr(colors.colorPairLR) }
+        if (po === 2) { return this.rgbStr(colors.colorPairRL) }
+        if (po === 3) { return this.rgbStr(colors.colorPairRR) }
+        if (po === 4) { return this.rgbStr(colors.colorPairLL) }
+        return this.rgbStr(colors.colorNostrand)
+      }
+      // Insert size + orientation
+      case 6: {
+        const po6 = region.readPairOrientations[i]!
+        if (po6 === 2) { return this.rgbStr(colors.colorPairRL) }
+        if (po6 === 3) { return this.rgbStr(colors.colorPairRR) }
+        if (po6 === 4) { return this.rgbStr(colors.colorPairLL) }
+        const insertSize6 = region.readInsertSizes[i]!
+        const stats6 = region.insertSizeStats
+        if (stats6 && insertSize6 > stats6.upper) {
+          return this.rgbStr(colors.colorLongInsert)
+        }
+        if (stats6 && insertSize6 < stats6.lower) {
+          return this.rgbStr(colors.colorShortInsert)
+        }
+        return this.rgbStr(colors.colorPairLR)
+      }
+      // Modifications: fwd/rev strand tint
+      case 7: {
+        const isReverse = (flags & 16) !== 0
+        return isReverse
+          ? this.rgbStr(colors.colorModificationRev)
+          : this.rgbStr(colors.colorModificationFwd)
+      }
+      // Tag-based coloring
+      case 8: {
+        if (region.readTagColors.length > 0) {
+          const r = region.readTagColors[i * 3]!
+          const g = region.readTagColors[i * 3 + 1]!
+          const b = region.readTagColors[i * 3 + 2]!
+          if (r !== 0 || g !== 0 || b !== 0) {
+            return `rgb(${r},${g},${b})`
+          }
+        }
+        return strand >= 0
+          ? this.rgbStr(colors.colorFwdStrand)
+          : this.rgbStr(colors.colorRevStrand)
+      }
+      // Fallback: strand coloring
+      default: {
+        return strand >= 0
+          ? this.rgbStr(colors.colorFwdStrand)
+          : this.rgbStr(colors.colorRevStrand)
       }
     }
-
-    // Normal color scheme: supplementary reads shown in orange
-    if (colorScheme === 0 && (flags & 2048) !== 0) {
-      return this.rgbStr(state.colors.colorSupplementary)
-    }
-
-    // Default: strand coloring
-    if (strand >= 0) {
-      return this.rgbStr(state.colors.colorFwdStrand)
-    }
-    return this.rgbStr(state.colors.colorRevStrand)
   }
 
   private drawReads(

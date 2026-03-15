@@ -21,7 +21,7 @@ export function renameIds(
           if (!idMap.has(val)) {
             idMap.set(val, createElementId())
           }
-          result[key] = `${val}-${idMap.get(val)}`
+          result[key] = idMap.get(val)
         } else {
           result[key] = transformIds(val)
         }
