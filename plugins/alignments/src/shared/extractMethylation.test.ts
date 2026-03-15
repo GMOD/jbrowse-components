@@ -1,13 +1,14 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { extractMethylation } from './processFeatureAlignments.ts'
-import { ModificationEntry } from './webglRpcTypes.ts'
+import type { ModificationEntry } from './webglRpcTypes.ts'
 
 // Sequence AACGATCGAA: C's at read positions 2 and 6
 // CpG dinucleotides at read positions 2-3 (genomic 102-103) and 6-7 (genomic 106-107)
 function makeMethFeature(tags: Record<string, unknown> = {}) {
   return new SimpleFeature({
     uniqueId: 'read1',
+    refName: 'ctgA',
     start: 100,
     end: 110,
     strand: 1,
@@ -79,6 +80,7 @@ describe('extractMethylation', () => {
     // Read has no MM/ML tags → getMethBins returns empty bins
     const feature = new SimpleFeature({
       uniqueId: 'nomod',
+      refName: 'ctgA',
       start: 100,
       end: 110,
       strand: 1,
@@ -128,6 +130,7 @@ describe('extractMethylation', () => {
   test('strand is set correctly for reverse strand reads', () => {
     const feature = new SimpleFeature({
       uniqueId: 'rev1',
+      refName: 'ctgA',
       start: 100,
       end: 110,
       strand: -1,
@@ -156,6 +159,7 @@ describe('extractMethylation', () => {
   test('no entries when feature has no CIGAR', () => {
     const feature = new SimpleFeature({
       uniqueId: 'nocigar',
+      refName: 'ctgA',
       start: 100,
       end: 110,
       strand: 1,

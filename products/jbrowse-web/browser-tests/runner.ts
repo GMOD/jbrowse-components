@@ -160,7 +160,7 @@ async function runWithBackend(
     const type = msg.type()
     if (type === 'error') {
       console.error('  Browser:', text)
-    } else if (type === 'warning') {
+    } else if (type === 'warn') {
       console.warn('  Browser:', text)
     } else {
       console.log('  Browser:', text)

@@ -17,6 +17,7 @@ function makePileupData(
     readYs: new Uint16Array(n),
     readFlags: new Uint16Array(n),
     readMapqs: new Uint8Array(n),
+    readAvgBaseQualities: new Uint8Array(n),
     readInsertSizes: new Float32Array(n),
     readPairOrientations: new Uint8Array(n),
     readStrands: new Int8Array(n),

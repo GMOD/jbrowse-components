@@ -611,6 +611,7 @@ export class WebGLRenderer {
     readYs: Uint16Array
     readFlags: Uint16Array
     readMapqs: Uint8Array
+    readAvgBaseQualities: Uint8Array
     readInsertSizes: Float32Array
     readPairOrientations: Uint8Array
     readStrands: Int8Array

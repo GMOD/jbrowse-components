@@ -6,6 +6,7 @@ describe('buildBaseFeatureData', () => {
   test('computes avgBaseQuality from NUMERIC_QUAL', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r1',
+      refName: 'ctgA',
       start: 100,
       end: 110,
       strand: 1,
@@ -21,6 +22,7 @@ describe('buildBaseFeatureData', () => {
   test('computes avgBaseQuality with mixed quality scores', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r2',
+      refName: 'ctgA',
       start: 100,
       end: 105,
       strand: -1,
@@ -36,6 +38,7 @@ describe('buildBaseFeatureData', () => {
   test('defaults avgBaseQuality to 30 when NUMERIC_QUAL is undefined', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r3',
+      refName: 'ctgA',
       start: 200,
       end: 300,
       strand: 1,
@@ -50,6 +53,7 @@ describe('buildBaseFeatureData', () => {
   test('defaults avgBaseQuality to 30 when NUMERIC_QUAL is empty', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r4',
+      refName: 'ctgA',
       start: 200,
       end: 300,
       strand: 1,
@@ -65,6 +69,7 @@ describe('buildBaseFeatureData', () => {
   test('handles high quality scores', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r5',
+      refName: 'ctgA',
       start: 100,
       end: 104,
       strand: 1,
@@ -80,6 +85,7 @@ describe('buildBaseFeatureData', () => {
   test('handles single-base read', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r6',
+      refName: 'ctgA',
       start: 100,
       end: 101,
       strand: 1,
@@ -95,6 +101,7 @@ describe('buildBaseFeatureData', () => {
   test('rounds avgBaseQuality to nearest integer', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r7',
+      refName: 'ctgA',
       start: 100,
       end: 103,
       strand: 1,
@@ -110,6 +117,7 @@ describe('buildBaseFeatureData', () => {
   test('works with number array instead of Uint8Array', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r8',
+      refName: 'ctgA',
       start: 100,
       end: 103,
       strand: 1,
@@ -125,6 +133,7 @@ describe('buildBaseFeatureData', () => {
   test('preserves all other FeatureData fields', () => {
     const feature = new SimpleFeature({
       uniqueId: 'r9',
+      refName: 'ctgA',
       start: 500,
       end: 600,
       strand: -1,
