@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
   getBpDisplayStr,
   getContainingView,
+  useGpuRenderer,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
@@ -74,15 +75,17 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 }: {
   model: VariantMatrixDisplayModel
 }) {
-  const [error, setError] = useState<unknown>(null)
-  const [ready, setReady] = useState(false)
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
-  const rendererRef = useRef<VariantMatrixRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { classes } = useStyles()
+
+  const { error, ready, rendererRef, retry } = useGpuRenderer(
+    canvasRef,
+    VariantMatrixRenderer,
+  )
 
   const view = getContainingView(model) as LGV
 
@@ -98,30 +101,6 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
-
-  const canvasRefCallback = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      if (!canvas) {
-        return
-      }
-      canvasRef.current = canvas
-      const renderer = VariantMatrixRenderer.getOrCreate(canvas)
-      rendererRef.current = renderer
-      renderer
-        .init()
-        .then(ok => {
-          if (!ok) {
-            setError(new Error('GPU initialization failed'))
-          } else {
-            setReady(true)
-          }
-        })
-        .catch((e: unknown) => {
-          setError(e)
-        })
-    },
-    [],
-  )
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -234,9 +213,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         <ErrorBar
           error={error}
           onRetry={() => {
-            rendererRef.current = null
-            setError(null)
-            setReady(false)
+            retry()
           }}
         />
       </div>
@@ -246,7 +223,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvasRefCallback}
+        ref={canvasRef}
         style={{
           width,
           height,

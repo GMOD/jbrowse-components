@@ -1145,6 +1145,7 @@ export default function stateModelFactory(
           } else {
             self.colorBySetting = { type: 'normal' }
           }
+          self.invalidateLoadedRegions()
         },
 
         updateVisibleModifications(uniqueModifications: string[]) {

@@ -168,7 +168,7 @@ export async function executeRenderChainData({
       featuresArray,
       regionStart,
     })
-    regionSequence = result.regionSequence
+    regionSequence = result.regionSequence?.toLowerCase()
     regionSequenceStart = result.regionSequenceStart
   }
 

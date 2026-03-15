@@ -1,18 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { ErrorBar } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
   reducePrecision,
-  setupWebGLContextLossHandler,
+  useGpuRenderer,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { observer } from 'mobx-react'
@@ -110,7 +103,6 @@ const HicCanvas = observer(function HicCanvas({
   } = model
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<HicRenderer | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredItem, setHoveredItem] = useState<HicFlatbushItem>()
   const [mousePosition, setMousePosition] = useState<{
@@ -121,18 +113,11 @@ const HicCanvas = observer(function HicCanvas({
     x: number
     y: number
   }>()
-  const [glError, setGlError] = useState<string>()
-  const [contextVersion, setContextVersion] = useState(0)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      return setupWebGLContextLossHandler(canvas, () => {
-        setContextVersion(v => v + 1)
-      })
-    }
-    return undefined
-  }, [])
+  const { error, ready, rendererRef, retry } = useGpuRenderer(
+    canvasRef,
+    HicRenderer,
+  )
 
   // Compute view transform for smooth zoom/scroll
   const viewScale =
@@ -147,43 +132,6 @@ const HicCanvas = observer(function HicCanvas({
     [flatbush],
   )
 
-  const [ready, setReady] = useState(false)
-
-  useLayoutEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-
-    let cancelled = false
-    const renderer = HicRenderer.getOrCreate(canvas)
-    rendererRef.current = renderer
-    renderer
-      .init()
-      .then(ok => {
-        if (!cancelled) {
-          if (!ok) {
-            setGlError('GPU initialization failed')
-          }
-          setReady(true)
-        }
-      })
-      .catch((e: unknown) => {
-        if (!cancelled) {
-          setGlError(
-            e instanceof Error ? e.message : 'GPU initialization failed',
-          )
-        }
-      })
-
-    return () => {
-      cancelled = true
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-      setReady(false)
-    }
-  }, [contextVersion])
-
   useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData || !ready) {
@@ -195,7 +143,7 @@ const HicCanvas = observer(function HicCanvas({
       counts: rpcData.counts,
       numContacts: rpcData.numContacts,
     })
-  }, [rpcData, contextVersion, ready])
+  }, [rpcData, ready])
 
   useLayoutEffect(() => {
     const renderer = rendererRef.current
@@ -204,7 +152,7 @@ const HicCanvas = observer(function HicCanvas({
     }
 
     renderer.uploadColorRamp(generateColorRamp(colorScheme))
-  }, [rpcData, colorScheme, contextVersion, ready])
+  }, [rpcData, colorScheme, ready])
 
   useLayoutEffect(() => {
     const renderer = rendererRef.current
@@ -222,16 +170,7 @@ const HicCanvas = observer(function HicCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [
-    rpcData,
-    width,
-    height,
-    useLogScale,
-    viewScale,
-    viewOffsetX,
-    contextVersion,
-    ready,
-  ])
+  }, [rpcData, width, height, useLogScale, viewScale, viewOffsetX, ready])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -272,14 +211,13 @@ const HicCanvas = observer(function HicCanvas({
     setLocalMousePos(undefined)
   }, [])
 
-  if (glError) {
+  if (error) {
     return (
       <div style={{ position: 'relative', width, height }}>
         <ErrorBar
-          error={glError}
+          error={error}
           onRetry={() => {
-            setGlError(undefined)
-            setContextVersion(v => v + 1)
+            retry()
           }}
         />
       </div>

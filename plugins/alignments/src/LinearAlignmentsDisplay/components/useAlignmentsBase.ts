@@ -425,6 +425,14 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const rendererRef = useRef<AlignmentsRenderer | null>(null)
   const [contextVersion, setContextVersion] = useState(0)
 
+  // Alignments stores the renderer in the MST model instead of using the
+  // shared useGpuRenderer hook. This is because alignments has 3 separate
+  // model autoruns that need the renderer (upload pileup, upload arcs,
+  // render), and the render autorun depends on 20+ model observables
+  // (rangeY, colorScheme, featureHeight, showCoverage, etc.). Storing the
+  // renderer as a MobX observable lets autoruns automatically track and
+  // re-run when it changes. Wiggle/variants/hic are simpler (1-2 effects,
+  // few model deps) so they use useGpuRenderer instead.
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas) {

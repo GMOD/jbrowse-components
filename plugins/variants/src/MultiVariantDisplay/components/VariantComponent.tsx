@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
   getBpDisplayStr,
   getContainingView,
+  useGpuRenderer,
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -135,8 +136,6 @@ const VariantComponent = observer(function VariantComponent({
 }: {
   model: VariantDisplayModel
 }) {
-  const [error, setError] = useState<unknown>(null)
-  const [ready, setReady] = useState(false)
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
@@ -149,10 +148,14 @@ const VariantComponent = observer(function VariantComponent({
       }
     | undefined
   >()
-  const rendererRef = useRef<VariantRenderer | null>(null)
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { classes } = useStyles()
+
+  const { error, ready, rendererRef, retry } = useGpuRenderer(
+    canvasRef,
+    VariantRenderer,
+  )
 
   const view = getContainingView(model) as LGV
 
@@ -168,30 +171,6 @@ const VariantComponent = observer(function VariantComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
-
-  const canvasRefCallback = useCallback(
-    (canvas: HTMLCanvasElement | null) => {
-      if (!canvas) {
-        return
-      }
-      canvasRef.current = canvas
-      const renderer = VariantRenderer.getOrCreate(canvas)
-      rendererRef.current = renderer
-      renderer
-        .init()
-        .then(ok => {
-          if (!ok) {
-            setError(new Error('GPU initialization failed'))
-          } else {
-            setReady(true)
-          }
-        })
-        .catch((e: unknown) => {
-          setError(e)
-        })
-    },
-    [],
-  )
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -375,9 +354,7 @@ const VariantComponent = observer(function VariantComponent({
         <ErrorBar
           error={error}
           onRetry={() => {
-            rendererRef.current = null
-            setError(null)
-            setReady(false)
+            retry()
           }}
         />
       </div>
@@ -387,7 +364,7 @@ const VariantComponent = observer(function VariantComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvasRefCallback}
+        ref={canvasRef}
         style={{
           width,
           height,

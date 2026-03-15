@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ErrorBar } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, useGpuRenderer } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -105,33 +105,14 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model: MultiWiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [error, setError] = useState<unknown>(null)
-  const rendererRef = useRef<WiggleRenderer | null>(null)
-  const [ready, setReady] = useState(false)
   const [drawn, setDrawn] = useState(false)
 
-  const view = getContainingView(model) as LGV
+  const { error, ready, rendererRef, retry } = useGpuRenderer(
+    canvasRef,
+    WiggleRenderer,
+  )
 
-  const canvasRefCallback = useCallback((canvas: HTMLCanvasElement | null) => {
-    if (!canvas) {
-      return
-    }
-    canvasRef.current = canvas
-    const renderer = WiggleRenderer.getOrCreate(canvas)
-    rendererRef.current = renderer
-    renderer
-      .init()
-      .then(ok => {
-        if (!ok) {
-          setError(new Error('GPU initialization failed'))
-        } else {
-          setReady(true)
-        }
-      })
-      .catch((e: unknown) => {
-        setError(e)
-      })
-  }, [])
+  const view = getContainingView(model) as LGV
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -471,8 +452,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         <ErrorBar
           error={error ?? model.error}
           onRetry={() => {
-            setError(null)
-            setReady(false)
+            retry()
             setDrawn(false)
             model.reload()
           }}
@@ -503,7 +483,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     >
       <div data-testid={`drawn-${drawn}`}>
         <canvas
-          ref={canvasRefCallback}
+          ref={canvasRef}
           style={{
             width: totalWidth,
             height,

@@ -202,18 +202,18 @@ export function extractModifications(
   // eslint-disable-next-line unicorn/no-array-for-each
   mods.forEach(({ prob, type, base }, refPos) => {
     detectedModifications.add(type)
-    if (simplexSet.has(type)) {
+    const isSimplex = simplexSet.has(type)
+    if (isSimplex) {
       detectedSimplexModifications.add(type)
     }
     if (colorBy?.type === 'modifications' && prob >= modThreshold) {
-      const color = getColorForModification(type)
-      const [r, g, b] = parseCssColor(color)
+      const [r, g, b] = parseCssColor(getColorForModification(type))
       modificationsData.push({
         featureId,
         position: featureStart + refPos,
         base: base.toUpperCase(),
         modType: type,
-        isSimplex: simplexSet.has(type),
+        isSimplex,
         strand: strand === -1 ? -1 : 1,
         r,
         g,
@@ -224,35 +224,12 @@ export function extractModifications(
   })
 }
 
-function pushMethEntry(
-  modificationsData: ModificationEntry[],
-  featureId: string,
-  position: number,
-  modType: string,
-  strand: number,
-  color: [number, number, number],
-  prob: number,
-) {
-  modificationsData.push({
-    featureId,
-    position,
-    base: 'C',
-    modType,
-    isSimplex: false,
-    strand,
-    r: color[0],
-    g: color[1],
-    b: color[2],
-    prob,
-  })
-}
-
 export function extractMethylation(
   feature: Feature,
   featureId: string,
   featureStart: number,
   strand: number,
-  regionSequence: string,
+  regionSequenceLower: string,
   regionSequenceStart: number,
   regionStart: number,
   regionEnd: number,
@@ -266,44 +243,55 @@ export function extractMethylation(
   const { methBins, methProbs, hydroxyMethBins, hydroxyMethProbs } =
     getMethBins(feature, cigarOps)
 
-  const featureEnd = feature.get('end')
-  const rSeq = regionSequence.toLowerCase()
   const methStrand = strand === -1 ? -1 : 1
+  const iStart = Math.max(0, regionStart - featureStart)
+  const iEnd = Math.min(feature.get('end'), regionEnd) - featureStart
 
-  for (
-    let i = Math.max(0, regionStart - featureStart);
-    i < Math.min(featureEnd - featureStart, regionEnd - featureStart);
-    i++
-  ) {
-    const j = i + featureStart
-    const l1 = rSeq[j - regionSequenceStart + 1]
-    const l2 = rSeq[j - regionSequenceStart + 2]
-
-    if (l1 !== 'c' || l2 !== 'g') {
+  for (let i = iStart; i < iEnd; i++) {
+    if (!methBins[i] && !hydroxyMethBins[i]) {
       continue
     }
 
-    const methP = methBins[i] ? methProbs[i] || 0 : 0
-    pushMethEntry(
-      modificationsData,
-      featureId,
-      j,
-      'm',
-      methStrand,
-      methP > 0.5 ? [255, 0, 0] : [0, 0, 255],
-      methP,
-    )
+    const refIdx = i + featureStart - regionSequenceStart
+    if (
+      regionSequenceLower[refIdx] !== 'c' ||
+      regionSequenceLower[refIdx + 1] !== 'g'
+    ) {
+      continue
+    }
 
-    const hydroxyP = hydroxyMethBins[i + 1] ? hydroxyMethProbs[i + 1] || 0 : 0
-    pushMethEntry(
-      modificationsData,
-      featureId,
-      j + 1,
-      'h',
-      methStrand,
-      hydroxyP > 0.5 ? [255, 192, 203] : [128, 0, 128],
-      hydroxyP,
-    )
+    const genomicPos = i + featureStart
+    if (methBins[i]) {
+      const methP = methProbs[i] || 0
+      modificationsData.push({
+        featureId,
+        position: genomicPos,
+        base: 'C',
+        modType: 'm',
+        isSimplex: false,
+        strand: methStrand,
+        r: methP > 0.5 ? 255 : 0,
+        g: 0,
+        b: methP > 0.5 ? 0 : 255,
+        prob: methP,
+      })
+    }
+
+    if (hydroxyMethBins[i]) {
+      const hydroxyP = hydroxyMethProbs[i] || 0
+      modificationsData.push({
+        featureId,
+        position: genomicPos,
+        base: 'C',
+        modType: 'h',
+        isSimplex: false,
+        strand: methStrand,
+        r: hydroxyP > 0.5 ? 255 : 128,
+        g: hydroxyP > 0.5 ? 192 : 0,
+        b: hydroxyP > 0.5 ? 203 : 128,
+        prob: hydroxyP,
+      })
+    }
   }
 }
 
