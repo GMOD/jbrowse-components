@@ -10,7 +10,7 @@ import type DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 const ReadVsRefDialog = lazy(() => import('./LinearReadVsRef.tsx'))
 
 function isDisplay(elt: { name: string }): elt is DisplayType {
-  return elt.name === 'LinearPileupDisplay'
+  return elt.name === 'LinearAlignmentsDisplay'
 }
 
 export default function LinearReadVsRefMenuItemF(pm: PluginManager) {

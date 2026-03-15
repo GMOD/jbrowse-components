@@ -337,6 +337,7 @@ const defaultColorOptions = [
   { label: 'Mapping quality', type: 'mappingQuality' },
   { label: 'Base quality', type: 'baseQuality' },
   { label: 'Insert size', type: 'insertSize' },
+  { label: 'Insert size (gradient)', type: 'insertSizeGradient' },
   { label: 'First of pair strand', type: 'firstOfPairStrand' },
   { label: 'Pair orientation', type: 'pairOrientation' },
   { label: 'Insert size and orientation', type: 'insertSizeAndOrientation' },

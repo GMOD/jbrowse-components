@@ -94,10 +94,24 @@ vec3 mapqColor(float mapq) {
   return rgb + m;
 }
 
-// Color scheme 3: insert size
+// Color scheme 3: insert size (threshold)
 vec3 insertSizeColor(float insertSize) {
   if (insertSize > u_insertSizeUpper) return u_colorLongInsert;
   if (insertSize < u_insertSizeLower) return u_colorShortInsert;
+  return u_colorPairLR;
+}
+
+// Color scheme 10: insert size (gradient)
+// Maps deviation from normal range to a blue→grey→red gradient
+vec3 insertSizeGradientColor(float insertSize) {
+  if (insertSize > u_insertSizeUpper) {
+    float t = clamp((insertSize - u_insertSizeUpper) / u_insertSizeUpper, 0.0, 1.0);
+    return mix(u_colorPairLR, u_colorLongInsert, t);
+  }
+  if (insertSize < u_insertSizeLower) {
+    float t = clamp((u_insertSizeLower - insertSize) / u_insertSizeLower, 0.0, 1.0);
+    return mix(u_colorPairLR, u_colorShortInsert, t);
+  }
   return u_colorPairLR;
 }
 
@@ -271,7 +285,7 @@ void main() {
       ? a_strand * primaryStrand
       : a_strand;
     color = strandColor(effectiveStrand);
-  } else if (mod(floor(a_flags / 8.0), 2.0) > 0.5 && (u_colorScheme == 0 || u_colorScheme == 3 || u_colorScheme == 5 || u_colorScheme == 6)) {
+  } else if (mod(floor(a_flags / 8.0), 2.0) > 0.5 && (u_colorScheme == 0 || u_colorScheme == 3 || u_colorScheme == 5 || u_colorScheme == 6 || u_colorScheme == 10)) {
     color = u_colorUnmappedMate;
   } else if (u_colorScheme == 0) color = normalColor(a_flags);
   else if (u_colorScheme == 1) color = strandColor(a_strand);
@@ -289,6 +303,7 @@ void main() {
     }
   }
   else if (u_colorScheme == 9) color = mapqColor(a_baseQuality);
+  else if (u_colorScheme == 10) color = insertSizeGradientColor(a_insertSize);
   else color = u_colorPairLR;
 
   v_color = vec4(color, 1.0);

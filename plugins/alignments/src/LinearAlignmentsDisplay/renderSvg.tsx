@@ -34,6 +34,13 @@ function rgb255(c: RGBColor) {
   return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
 }
 
+function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
+  const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
+  const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
+  const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
+  return `rgb(${r},${g},${bl})`
+}
+
 function hslToRgbString(h: number, s: number, l: number) {
   const c = (1 - Math.abs(2 * l - 1)) * s
   const hp = (h / 360) * 6
@@ -179,6 +186,25 @@ function getReadColor(
 
     case ColorScheme.baseQuality:
       return hslToRgbString(data.readAvgBaseQualities[i]!, 0.5, 0.5)
+
+    case ColorScheme.insertSizeGradient:
+      if (insertSizeStats) {
+        if (insertSize > insertSizeStats.upper) {
+          const t = Math.min(
+            (insertSize - insertSizeStats.upper) / insertSizeStats.upper,
+            1,
+          )
+          return lerpRgb255(palette.colorPairLR, palette.colorLongInsert, t)
+        }
+        if (insertSize < insertSizeStats.lower) {
+          const t = Math.min(
+            (insertSizeStats.lower - insertSize) / insertSizeStats.lower,
+            1,
+          )
+          return lerpRgb255(palette.colorPairLR, palette.colorShortInsert, t)
+        }
+      }
+      return rgb255(palette.colorPairLR)
 
     default:
       return rgb255(palette.colorPairLR)

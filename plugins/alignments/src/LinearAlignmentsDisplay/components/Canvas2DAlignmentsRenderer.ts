@@ -610,6 +610,17 @@ export class Canvas2DAlignmentsRenderer {
     return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
   }
 
+  private lerpRgbStr(
+    a: [number, number, number],
+    b: [number, number, number],
+    t: number,
+  ) {
+    const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
+    const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
+    const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
+    return `rgb(${r},${g},${bl})`
+  }
+
   private hslToRgb(h: number, s: number, l: number) {
     const c = (1 - Math.abs(2 * l - 1)) * s
     const hp = h * 6
@@ -661,7 +672,8 @@ export class Canvas2DAlignmentsRenderer {
       (colorScheme === 0 ||
         colorScheme === 3 ||
         colorScheme === 5 ||
-        colorScheme === 6)
+        colorScheme === 6 ||
+        colorScheme === 10)
     ) {
       return this.rgbStr(colors.colorUnmappedMate)
     }
@@ -775,6 +787,20 @@ export class Canvas2DAlignmentsRenderer {
       case 9: {
         const bq = region.readAvgBaseQualities[i]!
         return this.hslToRgb(bq / 360, 0.5, 0.5)
+      }
+      // Insert size (gradient)
+      case 10: {
+        const insertSize = region.readInsertSizes[i]!
+        const stats = region.insertSizeStats
+        if (stats && insertSize > stats.upper) {
+          const t = Math.min((insertSize - stats.upper) / stats.upper, 1)
+          return this.lerpRgbStr(colors.colorPairLR, colors.colorLongInsert, t)
+        }
+        if (stats && insertSize < stats.lower) {
+          const t = Math.min((stats.lower - insertSize) / stats.lower, 1)
+          return this.lerpRgbStr(colors.colorPairLR, colors.colorShortInsert, t)
+        }
+        return this.rgbStr(colors.colorPairLR)
       }
       // Fallback: grey
       default: {

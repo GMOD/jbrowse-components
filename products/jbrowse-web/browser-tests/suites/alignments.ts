@@ -1,5 +1,7 @@
 import {
+  delay,
   findByTestId,
+  findByText,
   navigateToApp,
   navigateWithSessionSpec,
   openTrack,
@@ -126,6 +128,57 @@ const suite: TestSuite = {
           'alignments-pileup-coverage-canvas',
           '[data-testid="pileup-display"] canvas',
         )
+      },
+    },
+    {
+      name: 'read vs ref context menu appears',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:500-700',
+              tracks: ['volvox_alignments_pileup_coverage'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
+        await delay(1000)
+
+        const canvas = await page.$('[data-testid="pileup-display"] canvas')
+        if (!canvas) {
+          throw new Error('Pileup canvas not found')
+        }
+        const box = await canvas.boundingBox()
+        if (!box) {
+          throw new Error('Canvas bounding box not found')
+        }
+
+        // Right-click at 30% height (in the dense pileup area, below coverage)
+        // At ctgA:500-700 zoomed in, this reliably hits a read
+        const clickX = box.x + box.width * 0.5
+        const clickY = box.y + box.height * 0.3
+        await page.mouse.click(clickX, clickY, { button: 'right' })
+        await delay(500)
+
+        // Verify "Linear read vs ref" appears in the context menu
+        const items = await page.evaluate(() =>
+          Array.from(document.querySelectorAll('[role="menuitem"]')).map(
+            m => m.textContent,
+          ),
+        )
+        if (!items.includes('Linear read vs ref')) {
+          throw new Error(
+            `"Linear read vs ref" not in context menu. Got: ${items.join(', ')}`,
+          )
+        }
       },
     },
     {

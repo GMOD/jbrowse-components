@@ -233,6 +233,7 @@ export const ColorScheme = {
   modifications: 7,
   tag: 8,
   baseQuality: 9,
+  insertSizeGradient: 10,
 } as const
 
 /**
@@ -601,6 +602,8 @@ export default function stateModelFactory(
             return ColorScheme.mappingQuality
           case 'insertSize':
             return ColorScheme.insertSize
+          case 'insertSizeGradient':
+            return ColorScheme.insertSizeGradient
           case 'firstOfPairStrand':
           case 'stranded':
             return ColorScheme.firstOfPairStrand

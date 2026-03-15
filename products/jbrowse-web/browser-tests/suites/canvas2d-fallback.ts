@@ -91,6 +91,112 @@ const suite: TestSuite = {
         await waitForDataLoaded(page)
       },
     },
+    {
+      name: 'alignments coverage + pileup in canvas2d',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-4000',
+              tracks: ['volvox_cram_alignments'],
+            },
+          ],
+        })
+
+        await page.waitForSelector('[data-testid^="display-"]', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
+        await canvasSnapshot(
+          page,
+          'canvas2d-alignments-combined',
+          '[data-testid^="display-"] canvas',
+        )
+      },
+    },
+    {
+      name: 'SNP coverage in canvas2d',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:13010..13610',
+              tracks: ['volvox_cram_snpcoverage'],
+            },
+          ],
+        })
+
+        await page.waitForSelector('[data-testid^="display-"]', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
+        await canvasSnapshot(
+          page,
+          'canvas2d-snpcoverage',
+          '[data-testid^="display-"] canvas',
+        )
+      },
+    },
+    {
+      name: 'sequence track in canvas2d',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1..200',
+              tracks: ['volvox_refseq'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'sequence-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="sequence-display"] canvas',
+        )
+        await canvasSnapshot(
+          page,
+          'canvas2d-sequence',
+          '[data-testid="sequence-display"] canvas',
+        )
+      },
+    },
+    {
+      name: 'wiggle track in canvas2d',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:39433..39804',
+              tracks: ['volvox_gc'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'wiggle-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="wiggle-display"] canvas',
+        )
+        await canvasSnapshot(
+          page,
+          'canvas2d-wiggle-gc',
+          '[data-testid="wiggle-display"] canvas',
+        )
+      },
+    },
   ],
 }
 

@@ -1,4 +1,6 @@
 import {
+  PORT,
+  appendGpuParam,
   findByTestId,
   findByText,
   navigateWithSessionSpec,
@@ -252,6 +254,140 @@ const suite: TestSuite = {
           page,
           'xbackend-jexl-vcf',
           '[data-testid^="display-"] canvas',
+        )
+      },
+    },
+    {
+      name: 'sequence track',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1..200',
+              tracks: ['volvox_refseq'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'sequence-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="sequence-display"] canvas',
+        )
+        await canvasSnapshot(
+          page,
+          'xbackend-sequence',
+          '[data-testid="sequence-display"] canvas',
+        )
+      },
+    },
+    {
+      name: 'alignments with coverage + pileup combined',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-4000',
+              tracks: ['volvox_cram_alignments'],
+            },
+          ],
+        })
+
+        await page.waitForSelector('[data-testid^="display-"]', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
+        await canvasSnapshot(
+          page,
+          'xbackend-alignments-combined',
+          '[data-testid^="display-"] canvas',
+        )
+      },
+    },
+    {
+      name: 'synteny LGV track (PAF)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:30,222..33,669',
+              tracks: ['volvox_ins.paf'],
+            },
+          ],
+        })
+
+        await page.waitForSelector('[data-testid^="display-"] canvas', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
+        await canvasSnapshot(
+          page,
+          'xbackend-synteny-lgv-paf',
+          '[data-testid^="display-"] canvas',
+        )
+      },
+    },
+    {
+      name: 'synteny linear view',
+      fn: async page => {
+        await navigateWithSessionSpec(
+          page,
+          {
+            views: [
+              {
+                type: 'LinearSyntenyView',
+                tracks: ['subset'],
+                views: [
+                  { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+                  { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+                ],
+              },
+            ],
+          },
+          'test_data/grape_peach_synteny/config.json',
+        )
+
+        await findByTestId(page, 'synteny_canvas', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(page, '[data-testid="synteny_canvas"]')
+        await canvasSnapshot(
+          page,
+          'xbackend-synteny-linear',
+          '[data-testid="synteny_canvas"]',
+        )
+      },
+    },
+    {
+      name: 'dotplot view',
+      fn: async page => {
+        await page.goto(
+          appendGpuParam(
+            `http://localhost:${PORT}/?config=test_data/config_dotplot.json&sessionName=Test%20Session`,
+          ),
+          { waitUntil: 'networkidle0', timeout: 60000 },
+        )
+
+        await page.waitForSelector('[data-testid="dotplot_webgl_canvas"]', {
+          timeout: 60000,
+        })
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="dotplot_webgl_canvas"]',
+        )
+        await canvasSnapshot(
+          page,
+          'xbackend-dotplot',
+          '[data-testid="dotplot_webgl_canvas"]',
         )
       },
     },

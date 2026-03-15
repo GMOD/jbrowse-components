@@ -137,7 +137,15 @@ describe('extractMethylation', () => {
     })
     const mods: ModificationEntry[] = []
     extractMethylation(
-      feature, 'rev1', 100, -1, 'aacgatcgaa', 100, 100, 110, mods,
+      feature,
+      'rev1',
+      100,
+      -1,
+      'aacgatcgaa',
+      100,
+      100,
+      110,
+      mods,
     )
     const methEntries = mods.filter(m => m.modType === 'm')
     for (const entry of methEntries) {
@@ -156,7 +164,15 @@ describe('extractMethylation', () => {
     })
     const mods: ModificationEntry[] = []
     extractMethylation(
-      feature, 'nocigar', 100, 1, 'aacgatcgaa', 100, 100, 110, mods,
+      feature,
+      'nocigar',
+      100,
+      1,
+      'aacgatcgaa',
+      100,
+      100,
+      110,
+      mods,
     )
     expect(mods.length).toBe(0)
   })

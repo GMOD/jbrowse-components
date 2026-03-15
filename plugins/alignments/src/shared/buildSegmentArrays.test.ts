@@ -119,7 +119,7 @@ describe('buildSegmentArrays', () => {
   })
 
   describe('collapsed intron mode (read extends beyond region)', () => {
-    test('segments are clipped to region window', () => {
+    test('segments extend to full feature end (GPU handles clipping)', () => {
       // Read spans 1000-50000 with skip 1200-49800, region is first exon area
       const result = segments(
         [feat('r1', 1000, 50000)],
@@ -127,8 +127,11 @@ describe('buildSegmentArrays', () => {
         1000,
         1300,
       )
-      // Only the first exon [0, 200] is within the 300bp window
-      expect(result).toEqual([{ start: 0, end: 200, readIdx: 0, edge: 0b01 }])
+      // Both exons are emitted — GPU rasterizer clips off-screen segments
+      expect(result).toEqual([
+        { start: 0, end: 200, readIdx: 0, edge: 0b01 },
+        { start: 48800, end: 49000, readIdx: 0, edge: 0 },
+      ])
     })
 
     test('read starting before region has no first-edge flag', () => {
@@ -143,36 +146,47 @@ describe('buildSegmentArrays', () => {
       expect(result).toEqual([{ start: 100, end: 300, readIdx: 0, edge: 0b10 }])
     })
 
-    test('read entirely intronic in region produces no segments', () => {
-      // Region is fully within the intron
+    test('read entirely intronic produces off-screen exon segments', () => {
+      // Region is fully within the intron — exon segments still emitted
+      // but will be off-screen (GPU clips them)
       const result = segments(
         [feat('r1', 1000, 50000)],
         [skip('r1', 1200, 49800)],
         5000,
         5300,
       )
-      expect(result).toEqual([])
+      // Exon at offset [0-200] from feature start = [-4000, -3800] from regionStart → clamped
+      // Second exon at [44800, 45000] relative to regionStart=5000
+      expect(result).toEqual([
+        { start: 44800, end: 45000, readIdx: 0, edge: 0 },
+      ])
     })
 
-    test('skip gap entirely before region is ignored', () => {
+    test('skip gap entirely before region — segment extends to full read end', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
         [skip('r1', 1200, 1800)],
         2000,
         2300,
       )
-      // Read extends from 0 to windowEnd (300), no skip within window
-      expect(result).toEqual([{ start: 0, end: 300, readIdx: 0, edge: 0 }])
+      // Skip gap offsets from regionStart=2000: start=max(0,-800)=0, end=max(0,-200)=0
+      // Both clamped to 0, so single segment [0, 48000]
+      expect(result).toEqual([{ start: 0, end: 48000, readIdx: 0, edge: 0 }])
     })
 
-    test('skip gap entirely after region is ignored', () => {
+    test('skip gap entirely after region — full segments emitted', () => {
       const result = segments(
         [feat('r1', 1000, 50000)],
         [skip('r1', 49000, 49800)],
         1000,
         1300,
       )
-      expect(result).toEqual([{ start: 0, end: 300, readIdx: 0, edge: 0b01 }])
+      // Skip gap offsets: start=48000, end=48800
+      // Segments: [0, 48000] and [48800, 49000]
+      expect(result).toEqual([
+        { start: 0, end: 48000, readIdx: 0, edge: 0b01 },
+        { start: 48800, end: 49000, readIdx: 0, edge: 0 },
+      ])
     })
   })
 

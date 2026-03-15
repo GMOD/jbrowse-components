@@ -58,6 +58,20 @@ fn insert_size_color(is: f32) -> vec3f {
   return color3(41u);
 }
 
+fn insert_size_gradient_color(is: f32) -> vec3f {
+  let upper = uf(21u);
+  let lower = uf(22u);
+  if is > upper {
+    let t = clamp((is - upper) / upper, 0.0, 1.0);
+    return mix(color3(41u), color3(89u), t);
+  }
+  if is < lower {
+    let t = clamp((lower - is) / lower, 0.0, 1.0);
+    return mix(color3(41u), color3(92u), t);
+  }
+  return color3(41u);
+}
+
 fn first_of_pair_color(flags: u32, s: i32) -> vec3f {
   let is_first = (flags & 64u) != 0u;
   let eff = select(s, -s, !is_first);
@@ -100,7 +114,7 @@ fn get_read_color(inst: ReadInst) -> vec3f {
   }
   // Check for unmapped mate (flag 8) — show brown for color schemes that would
   // otherwise miscolor it (e.g. insert size shows pink because tlen=0)
-  if (inst.flags & 8u) != 0u && (cs == 0 || cs == 3 || cs == 5 || cs == 6) {
+  if (inst.flags & 8u) != 0u && (cs == 0 || cs == 3 || cs == 5 || cs == 6 || cs == 10) {
     return color3(134u);
   }
   if cs == 0 { return normal_color(inst.flags); }
@@ -118,6 +132,7 @@ fn get_read_color(inst: ReadInst) -> vec3f {
     return color3(41u);
   }
   if cs == 9 { return mapq_color(inst.base_quality); }
+  if cs == 10 { return insert_size_gradient_color(inst.insert_size); }
   return color3(41u);
 }
 

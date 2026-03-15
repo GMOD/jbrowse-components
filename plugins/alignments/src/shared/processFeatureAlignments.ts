@@ -572,8 +572,11 @@ export function buildModificationArrays(
 }
 
 // Splits each read into per-exon segments at CIGAR skip (N) gaps.
-// Reads without skips produce one segment. Segments are clipped to
-// [0, regionEnd-regionStart] so only the visible portion is emitted.
+// Reads without skips produce one segment. Segment starts are clamped
+// to 0 (features starting before regionStart), but ends are NOT clipped
+// to regionEnd — the GPU rasterizer handles viewport clipping. This
+// ensures segments match the full read extent used by readPositions,
+// preventing mismatches from rendering without backing read rectangles.
 // Edge flags encode whether the read's true start/end falls within
 // this region (bit 0 = first, bit 1 = last) — used for chevron drawing.
 export function buildSegmentArrays(
@@ -583,8 +586,6 @@ export function buildSegmentArrays(
   regionEnd: number,
   getReadIndex: (featureId: string) => number,
 ) {
-  const windowEnd = regionEnd - regionStart
-
   const skipsByFeature = new Map<string, GapData[]>()
   for (const g of gaps) {
     if (g.type === 'skip') {
@@ -611,7 +612,7 @@ export function buildSegmentArrays(
   for (const f of features) {
     const readIdx = getReadIndex(f.id)
     const readStart = Math.max(0, f.start - regionStart)
-    const readEnd = Math.min(f.end - regionStart, windowEnd)
+    const readEnd = f.end - regionStart
     const skips = skipsByFeature.get(f.id)
 
     // Chevron only at the true read start/end, not at region-clipped edges
