@@ -488,11 +488,10 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    let callCount = 0
+    let forceLoaded = false
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetFeatureDensityStats') {
-        callCount++
-        if (callCount <= 1) {
+        if (!forceLoaded) {
           return Promise.resolve({
             bytes: 50_000_000,
             fetchSizeLimit: 1_000_000,
@@ -514,6 +513,7 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.isLoading).toBe(false)
     })
 
+    forceLoaded = true
     display.setFeatureDensityStatsLimit(display.featureDensityStats)
     display.reload()
 
@@ -524,6 +524,45 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.regionTooLarge).toBe(false)
       expect(display.isLoading).toBe(false)
     })
+  })
+
+  it('does not make duplicate byte estimate RPC calls', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    const { display, view } = createDisplay()
+
+    view.setDisplayedRegions([
+      {
+        assemblyName: 'volvox',
+        start: 0,
+        end: 500_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.zoomTo(50)
+
+    let densityCallCount = 0
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        densityCallCount++
+        return Promise.resolve({
+          bytes: 50_000_000,
+          fetchSizeLimit: 1_000_000,
+        })
+      }
+      return Promise.resolve(makeEmptyPileupData(0))
+    })
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    // Only one CoreGetFeatureDensityStats call should have been made
+    // (isLoading guard prevents the autorun from firing concurrently)
+    expect(densityCallCount).toBe(1)
   })
 
   it('fetch error sets display error and stops retrying', async () => {
@@ -543,5 +582,119 @@ describe('FetchVisibleRegions autorun', () => {
 
     jest.advanceTimersByTime(2000)
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
+  })
+
+  it('autorun does not loop when isLoading transitions', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    let rpcCallCount = 0
+    mockRpcCall.mockImplementation(() => {
+      rpcCallCount++
+      return Promise.resolve(makeEmptyPileupData(0))
+    })
+
+    const { display } = createDisplay()
+
+    // First fetch cycle
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.isLoading).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsAfterFirstFetch = rpcCallCount
+
+    // Wait several autorun cycles — no new fetches should happen
+    // since the loaded region covers the viewport
+    jest.advanceTimersByTime(3000)
+    await jest.runAllTimersAsync()
+
+    expect(rpcCallCount).toBe(callsAfterFirstFetch)
+  })
+
+  it('re-fetches after loading finishes if viewport changed during fetch', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    let resolveRpc: ((v: unknown) => void) | undefined
+    mockRpcCall.mockImplementation(() => {
+      return new Promise(resolve => {
+        resolveRpc = resolve
+      })
+    })
+
+    const { display, view } = createDisplay()
+
+    // Start first fetch
+    jest.advanceTimersByTime(400)
+
+    await waitFor(() => {
+      expect(display.isLoading).toBe(true)
+    })
+
+    // Change viewport while loading (should not trigger concurrent fetch)
+    view.setDisplayedRegions([
+      {
+        assemblyName: 'volvox',
+        start: 5_000,
+        end: 15_000,
+        refName: 'ctgA',
+      },
+    ])
+
+    jest.advanceTimersByTime(400)
+
+    // Only one RPC should be in flight (the cleared one was invalidated)
+    const callCount = mockRpcCall.mock.calls.length
+
+    // Resolve the pending RPC
+    resolveRpc!(makeEmptyPileupData(0))
+    await jest.runAllTimersAsync()
+
+    // After the first fetch resolves, isLoading becomes false, and the
+    // autorun should detect the new viewport needs data and re-fetch
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    // A new fetch should have been triggered for the new viewport
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
+  })
+
+  it('adapter fetchSizeLimit is respected over display default', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+
+    const { display, view } = createDisplay()
+
+    view.setDisplayedRegions([
+      {
+        assemblyName: 'volvox',
+        start: 0,
+        end: 500_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.zoomTo(50)
+
+    // Adapter returns fetchSizeLimit=5MB, bytes=3MB.
+    // Display config default is 1MB.
+    // With adapter limit respected, 3MB < 5MB → should NOT be regionTooLarge
+    mockRpcCall.mockImplementation((_sid: string, method: string) => {
+      if (method === 'CoreGetFeatureDensityStats') {
+        return Promise.resolve({
+          bytes: 3_000_000,
+          fetchSizeLimit: 5_000_000,
+        })
+      }
+      return Promise.resolve(makeEmptyPileupData(0))
+    })
+
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.isLoading).toBe(false)
+    })
   })
 })

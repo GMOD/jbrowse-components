@@ -281,3 +281,218 @@ describe('bpToPxFromIndex matches bpToPx', () => {
     expect(left!.offsetPx).toBeGreaterThan(right!.offsetPx)
   })
 })
+
+describe('viewport culling', () => {
+  function makeViewSnapWithOffset(
+    regions: { refName: string; start: number; end: number }[],
+    offsetPx: number,
+    bpPerPx = 1,
+  ) {
+    return {
+      bpPerPx,
+      offsetPx,
+      displayedRegions: regions.map(r => ({
+        assemblyName: 'test',
+        ...r,
+      })),
+      interRegionPaddingWidth: 2,
+      minimumBlockWidth: 3,
+      width: 800,
+      staticBlocks: { contentBlocks: [], blocks: [] },
+    } as Parameters<typeof bpToPx>[0]['self']
+  }
+
+  it('culls features entirely left of both viewports', () => {
+    // View 1 viewport: [1000, 1800] (offsetPx=1000, width=800)
+    // View 2 viewport: [1000, 1800]
+    // Feature at chr1:100-200 → pixels ~100-200 → entirely left of both
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      1000,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      1000,
+    )
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const p11 = bpToPxFromIndex(v1Idx, 'chr1', 100)!
+    const p12 = bpToPxFromIndex(v1Idx, 'chr1', 200)!
+    const p21 = bpToPxFromIndex(v2Idx, 'chr1', 100)!
+    const p22 = bpToPxFromIndex(v2Idx, 'chr1', 200)!
+
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const topMinX = Math.min(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const topMaxX = Math.max(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+    const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    expect(topOffScreen).toBe(true)
+    expect(botOffScreen).toBe(true)
+  })
+
+  it('keeps features visible in view 1 even if off-screen in view 2', () => {
+    // View 1 viewport: [0, 800] — feature at pixels 400-600 is visible
+    // View 2 viewport: [5000, 5800] — feature at pixels 400-600 is off-screen
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 10000 }],
+      0,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 10000 }],
+      5000,
+    )
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const p11 = bpToPxFromIndex(v1Idx, 'chr1', 400)!
+    const p12 = bpToPxFromIndex(v1Idx, 'chr1', 600)!
+    const p21 = bpToPxFromIndex(v2Idx, 'chr1', 400)!
+    const p22 = bpToPxFromIndex(v2Idx, 'chr1', 600)!
+
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const topMinX = Math.min(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const topMaxX = Math.max(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+    const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    expect(topOffScreen).toBe(false)
+    expect(botOffScreen).toBe(true)
+    // Feature is NOT culled because top edge is visible
+    expect(topOffScreen && botOffScreen).toBe(false)
+  })
+
+  it('keeps features visible in both viewports', () => {
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const p11 = bpToPxFromIndex(v1Idx, 'chr1', 400)!
+    const p12 = bpToPxFromIndex(v1Idx, 'chr1', 600)!
+    const p21 = bpToPxFromIndex(v2Idx, 'chr1', 400)!
+    const p22 = bpToPxFromIndex(v2Idx, 'chr1', 600)!
+
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const topMinX = Math.min(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const topMaxX = Math.max(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+    const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    expect(topOffScreen).toBe(false)
+    expect(botOffScreen).toBe(false)
+    expect(topOffScreen && botOffScreen).toBe(false)
+  })
+
+  it('culls features entirely right of both viewports', () => {
+    // Both viewports at [0, 800], feature at pixels 2000-3000
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const p11 = bpToPxFromIndex(v1Idx, 'chr1', 2000)!
+    const p12 = bpToPxFromIndex(v1Idx, 'chr1', 3000)!
+    const p21 = bpToPxFromIndex(v2Idx, 'chr1', 2000)!
+    const p22 = bpToPxFromIndex(v2Idx, 'chr1', 3000)!
+
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const topMinX = Math.min(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const topMaxX = Math.max(p11.offsetPx, p12.offsetPx) - v1.offsetPx
+    const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+    const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    expect(topOffScreen).toBe(true)
+    expect(botOffScreen).toBe(true)
+  })
+})
+
+describe('strand swap with reversed regions', () => {
+  // The strand swap at lines 248-250 swaps feature start/end for strand=-1,
+  // making the parallelogram cross. In a reversed region, bpToPxFromIndex
+  // already flips coordinates, so strand=-1 + reversed = two flips that
+  // cancel, producing parallel lines. This is biologically correct: if you
+  // reverse one genome view, an inversion appears as same-orientation.
+
+  function computePositions(
+    strand: number,
+    featureStart: number,
+    featureEnd: number,
+    regionReversed: boolean,
+  ) {
+    const self = makeViewSnap([
+      { refName: 'chr1', start: 0, end: 1000, reversed: regionReversed },
+    ])
+    const idx = buildBpToPxIndex(self)
+
+    let f1s = featureStart
+    let f1e = featureEnd
+    if (strand === -1) {
+      ;[f1e, f1s] = [f1s, f1e]
+    }
+    const p11 = bpToPxFromIndex(idx, 'chr1', f1s)
+    const p12 = bpToPxFromIndex(idx, 'chr1', f1e)
+    return { p11: p11!.offsetPx, p12: p12!.offsetPx }
+  }
+
+  it('strand=+1 non-reversed: parallel (p11 < p12)', () => {
+    const { p11, p12 } = computePositions(1, 200, 800, false)
+    expect(p11).toBeLessThan(p12)
+  })
+
+  it('strand=-1 non-reversed: crossed (p11 > p12)', () => {
+    const { p11, p12 } = computePositions(-1, 200, 800, false)
+    expect(p11).toBeGreaterThan(p12)
+  })
+
+  it('strand=+1 reversed: crossed due to region flip (p11 > p12)', () => {
+    const { p11, p12 } = computePositions(1, 200, 800, true)
+    expect(p11).toBeGreaterThan(p12)
+  })
+
+  it('strand=-1 reversed: parallel — two flips cancel (p11 < p12)', () => {
+    const { p11, p12 } = computePositions(-1, 200, 800, true)
+    expect(p11).toBeLessThan(p12)
+  })
+})

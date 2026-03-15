@@ -227,8 +227,17 @@ export async function executeSyntenyFeaturesAndPositions({
     assemblyName: string
   }[] = []
 
+  // Viewport culling: skip features entirely outside the visible area in
+  // both views. A synteny parallelogram is visible when at least one of its
+  // edges (top=view1, bottom=view2) overlaps the viewport.
+  const viewWidth = v1.width
+  const v1Offset = v1.offsetPx
+  const v2Offset = v2.offsetPx
+  const bufferPx = viewWidth * 0.5
+
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
+  let culledCount = 0
   for (const f of features) {
     checkStopToken2(stopTokenChecker)
     const strand = f.get('strand') as number
@@ -263,6 +272,23 @@ export async function executeSyntenyFeaturesAndPositions({
       continue
     }
 
+    // Cull features where BOTH view projections are entirely off-screen.
+    // A feature is visible if its top OR bottom edge overlaps the viewport.
+    const topMinX = Math.min(p11.offsetPx, p12.offsetPx) - v1Offset
+    const topMaxX = Math.max(p11.offsetPx, p12.offsetPx) - v1Offset
+    const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2Offset
+    const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2Offset
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    if (topOffScreen && botOffScreen) {
+      culledCount++
+      continue
+    }
+
     p11Array[validCount] = p11.offsetPx
     p12Array[validCount] = p12.offsetPx
     p21Array[validCount] = p21.offsetPx
@@ -285,6 +311,10 @@ export async function executeSyntenyFeaturesAndPositions({
 
     validCount++
   }
+
+  console.debug(
+    `[synteny] features: ${features.length} total, ${validCount} visible, ${culledCount} culled by viewport`,
+  )
 
   const positionData = {
     p11_offsetPx: p11Array.subarray(0, validCount),

@@ -270,6 +270,14 @@ export default function MultiRegionDisplayMixin() {
                   return
                 }
 
+                // Check isLoading without tracking it as a MobX dependency
+                // to prevent a reaction cycle (isLoading changes -> autorun
+                // re-fires -> checks isLoading again). We only need this as
+                // a guard against concurrent fetches, not as a trigger.
+                if (untracked(() => self.isLoading)) {
+                  return
+                }
+
                 self.beforeFetchCheck()
 
                 const visibleMerged = view.mergedVisibleRegions
@@ -310,27 +318,35 @@ export default function MultiRegionDisplayMixin() {
             ),
           )
 
-          // Autorun: when zoom changes while regionTooLarge or error is
-          // set, clear so the fetch autorun retries at the new scale.
-          // This handles both "region too large" (zoom in to fix) and
-          // transient errors (zoom change as implicit retry).
+          // Autorun: when zoom or viewport position changes while
+          // regionTooLarge or error is set, clear so the fetch autorun
+          // retries. This handles "region too large" (zoom in or pan to
+          // a smaller region) and transient errors.
           let prevBpPerPx: number | undefined
+          let prevVisibleRegionKey: string | undefined
           addDisposer(
             self,
             autorun(
               () => {
                 const view = getContainingView(self) as LinearGenomeViewModel
+                if (!view.initialized) {
+                  return
+                }
                 const { bpPerPx } = view
-                if (
-                  prevBpPerPx !== undefined &&
-                  bpPerPx !== prevBpPerPx &&
-                  (self.regionTooLarge || self.error)
-                ) {
+                const visibleKey = JSON.stringify(
+                  view.mergedVisibleRegions.map(r => `${r.refName}:${r.regionNumber}`),
+                )
+                const changed =
+                  (prevBpPerPx !== undefined && bpPerPx !== prevBpPerPx) ||
+                  (prevVisibleRegionKey !== undefined &&
+                    visibleKey !== prevVisibleRegionKey)
+                if (changed && (self.regionTooLarge || self.error)) {
                   self.clearAllRpcData()
                 }
                 prevBpPerPx = bpPerPx
+                prevVisibleRegionKey = visibleKey
               },
-              { name: 'ClearBlockingStateOnZoom' },
+              { name: 'ClearBlockingStateOnViewportChange' },
             ),
           )
         },

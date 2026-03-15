@@ -75,6 +75,33 @@ const suite: TestSuite = {
       },
     },
     {
+      name: 'volvox long reads with SV (zoomed out)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1..50,001',
+              tracks: ['volvox-long-reads-sv-bam'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
+        await canvasSnapshot(
+          page,
+          'alignments-long-reads-sv-zoomed-out-canvas',
+          '[data-testid="pileup-display"] canvas',
+        )
+      },
+    },
+    {
       name: 'pileup + coverage track',
       fn: async page => {
         await navigateWithSessionSpec(page, {
