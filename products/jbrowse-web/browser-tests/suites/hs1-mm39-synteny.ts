@@ -17,6 +17,7 @@ const suite: TestSuite = {
     {
       name: 'renders synteny view for chr7 region (indexed PAF)',
       fn: async page => {
+        // hs1:chr7:25-30M synteny features cluster at mm39:chr6:49-56M
         await navigateWithSessionSpec(
           page,
           {
@@ -30,7 +31,7 @@ const suite: TestSuite = {
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr6',
+                    loc: 'chr6:45,000,000..60,000,000',
                     assembly: 'mm39',
                   },
                 ],
@@ -57,6 +58,7 @@ const suite: TestSuite = {
     {
       name: 'renders synteny view for chr1 region (large dataset, viewport culling)',
       fn: async page => {
+        // hs1:chr1:50-100M maps to scattered positions across all of mm39:chr1
         await navigateWithSessionSpec(
           page,
           {
@@ -110,7 +112,7 @@ const suite: TestSuite = {
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr6',
+                    loc: 'chr6:45,000,000..60,000,000',
                     assembly: 'mm39',
                   },
                 ],

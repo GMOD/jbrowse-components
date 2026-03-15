@@ -8,7 +8,7 @@ import { launch } from 'puppeteer'
 import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
-import { setBackend, setUpdateSnapshots } from './snapshot.ts'
+import { snapshotConfig } from './snapshot.ts'
 
 import type { TestSuite } from './types.ts'
 import type { Server } from 'http'
@@ -28,13 +28,27 @@ const filterArg = args.find(a => a.startsWith('--filter='))
 const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
 const includeRemote = args.includes('--include-remote')
 const backendArg = args.find(a => a.startsWith('--backend='))
-const backend = backendArg
-  ? (backendArg.split('=')[1]! as 'webgl' | 'webgpu' | 'canvas2d')
-  : undefined
+const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 
-setUpdateSnapshots(updateSnapshots)
-if (backend) {
-  setBackend(backend)
+snapshotConfig.updateSnapshots = updateSnapshots
+
+type Backend = 'webgl' | 'webgpu' | 'canvas2d'
+
+function chromeArgsForBackend(backend?: Backend) {
+  const chromeArgs = [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-web-security',
+    '--disable-popup-blocking',
+  ]
+  if (backend === 'webgl') {
+    chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
+  } else if (backend === 'webgpu') {
+    chromeArgs.push('--enable-unsafe-webgpu', '--enable-features=Vulkan')
+  } else if (backend === 'canvas2d') {
+    chromeArgs.push('--disable-gpu')
+  }
+  return chromeArgs
 }
 
 async function discoverSuites(): Promise<TestSuite[]> {
@@ -123,6 +137,43 @@ async function runTests(
   return { passed, failed }
 }
 
+async function runWithBackend(
+  suites: TestSuite[],
+  backend: Backend | undefined,
+) {
+  snapshotConfig.backend = backend ?? ''
+
+  const chromeArgs = chromeArgsForBackend(backend)
+  const browser = await launch({
+    headless: !headed,
+    slowMo,
+    args: chromeArgs,
+    defaultViewport: { width: 1280, height: 800 },
+  })
+
+  const page = await browser.newPage()
+  page.on('console', msg => {
+    const text = msg.text()
+    if (text.includes('favicon')) {
+      return
+    }
+    const type = msg.type()
+    if (type === 'error') {
+      console.error('  Browser:', text)
+    } else if (type === 'warning') {
+      console.warn('  Browser:', text)
+    } else {
+      console.log('  Browser:', text)
+    }
+  })
+
+  try {
+    return await runTests(page, browser, suites, runAuthTests)
+  } finally {
+    await browser.close()
+  }
+}
+
 async function main() {
   if (!fs.existsSync(buildPath)) {
     console.error(
@@ -134,7 +185,6 @@ async function main() {
   console.log('Starting test server...')
   const server = await startServer(PORT)
 
-  let browser: Browser | undefined
   let oauthServer: Server | undefined
   let basicAuthServer: Server | undefined
 
@@ -156,70 +206,41 @@ async function main() {
     const suites = await discoverSuites()
     console.log(`Found ${suites.length} test suites`)
 
-    console.log(`Launching browser (headed: ${headed})...`)
-    const chromeArgs = [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-web-security',
-      '--disable-popup-blocking',
-    ]
-    if (backend === 'webgl') {
-      chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
-    } else if (backend === 'webgpu') {
-      chromeArgs.push('--enable-unsafe-webgpu', '--enable-features=Vulkan')
-    } else if (backend === 'canvas2d') {
-      chromeArgs.push('--disable-gpu')
-    }
-    browser = await launch({
-      headless: !headed,
-      slowMo,
-      args: chromeArgs,
-      defaultViewport: { width: 1280, height: 800 },
-    })
+    const backends: (Backend | undefined)[] =
+      backendValue === 'all'
+        ? ['canvas2d', 'webgl']
+        : [backendValue as Backend | undefined]
 
-    const page = await browser.newPage()
-    page.on('console', msg => {
-      const text = msg.text()
-      if (text.includes('favicon')) {
-        return
-      }
-      const type = msg.type()
-      if (type === 'error') {
-        console.error('  Browser:', text)
-      } else if (type === 'warning') {
-        console.warn('  Browser:', text)
-      } else {
-        console.log('  Browser:', text)
-      }
-    })
+    let totalPassed = 0
+    let totalFailed = 0
 
-    console.log('\nRunning browser tests...')
-    if (runAuthTests) {
-      console.log('(including auth tests)')
+    for (const backend of backends) {
+      console.log(`\nLaunching browser (headed: ${headed})...`)
+      if (runAuthTests) {
+        console.log('(including auth tests)')
+      }
+      if (filter) {
+        console.log(`(filtering by: ${filter})`)
+      }
+      console.log(`(backend: ${backend ?? 'default'})`)
+
+      const { passed, failed } = await runWithBackend(suites, backend)
+      totalPassed += passed
+      totalFailed += failed
     }
-    if (filter) {
-      console.log(`(filtering by: ${filter})`)
-    }
-    if (backend) {
-      console.log(`(backend: ${backend})`)
-    }
-    const { passed, failed } = await runTests(
-      page,
-      browser,
-      suites,
-      runAuthTests,
-    )
 
     console.log(`\n${'─'.repeat(50)}`)
-    console.log(`  Tests: ${passed} passed, ${failed} failed`)
+    console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
+    if (backends.length > 1) {
+      console.log(`  Backends tested: ${backends.join(', ')}`)
+    }
     console.log(`${'─'.repeat(50)}\n`)
 
-    process.exit(failed > 0 ? 1 : 0)
+    process.exit(totalFailed > 0 ? 1 : 0)
   } catch (e) {
     console.error('Fatal error:', e)
     process.exit(1)
   } finally {
-    await browser?.close()
     server.close()
     oauthServer?.close()
     basicAuthServer?.close()

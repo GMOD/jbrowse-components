@@ -11,25 +11,14 @@ import type { Page } from 'puppeteer'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const baseSnapshotsDir = path.resolve(__dirname, '__snapshots__')
 
-let activeBackend: string | undefined
-let updateSnapshots = false
-
-export function setBackend(b: string) {
-  activeBackend = b
-}
-
-export function getBackend() {
-  return activeBackend
-}
-
-export function setUpdateSnapshots(val: boolean) {
-  updateSnapshots = val
-}
-
-export function getSnapshotsDir() {
-  return activeBackend
-    ? path.join(baseSnapshotsDir, activeBackend)
-    : baseSnapshotsDir
+export const snapshotConfig = {
+  backend: '' as string,
+  updateSnapshots: false,
+  get snapshotsDir() {
+    return this.backend
+      ? path.join(baseSnapshotsDir, this.backend)
+      : baseSnapshotsDir
+  },
 }
 
 function compareImages(
@@ -37,7 +26,7 @@ function compareImages(
   actualBuffer: Buffer | Uint8Array,
   threshold = 0.1,
 ) {
-  const snapshotsDir = getSnapshotsDir()
+  const { snapshotsDir, updateSnapshots } = snapshotConfig
   if (!fs.existsSync(snapshotsDir)) {
     fs.mkdirSync(snapshotsDir, { recursive: true })
   }
