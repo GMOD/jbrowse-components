@@ -148,6 +148,18 @@ export async function snapshot(page: Page, name: string, threshold = 0.1) {
   }
 }
 
+export async function pageSnapshot(
+  page: Page,
+  name: string,
+  threshold = 0.1,
+) {
+  const screenshot = await page.screenshot({ fullPage: true })
+  const result = compareImages(name, screenshot, threshold)
+  if (!result.passed) {
+    throw new Error(result.message)
+  }
+}
+
 // Extract a canvas element's pixel data as PNG and compare it.
 // More reliable than full-page screenshots since it only captures
 // the rendered canvas content, avoiding UI/loading state variability.

@@ -446,6 +446,128 @@ describe('viewport culling', () => {
     expect(topOffScreen).toBe(true)
     expect(botOffScreen).toBe(true)
   })
+
+  it('keeps diagonal features (on-screen in one view, off-screen in other)', () => {
+    // View 1 at [0, 800]: feature at 400-600 → on-screen
+    // View 2 at [5000, 5800]: feature at 400-600 → off-screen
+    // Diagonal feature should NOT be culled (visible in view 1)
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 10000 }],
+      0,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 10000 }],
+      5000,
+    )
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const topMinX =
+      Math.min(
+        bpToPxFromIndex(v1Idx, 'chr1', 400)!.offsetPx,
+        bpToPxFromIndex(v1Idx, 'chr1', 600)!.offsetPx,
+      ) - v1.offsetPx
+    const topMaxX =
+      Math.max(
+        bpToPxFromIndex(v1Idx, 'chr1', 400)!.offsetPx,
+        bpToPxFromIndex(v1Idx, 'chr1', 600)!.offsetPx,
+      ) - v1.offsetPx
+    const botMinX =
+      Math.min(
+        bpToPxFromIndex(v2Idx, 'chr1', 400)!.offsetPx,
+        bpToPxFromIndex(v2Idx, 'chr1', 600)!.offsetPx,
+      ) - v2.offsetPx
+    const botMaxX =
+      Math.max(
+        bpToPxFromIndex(v2Idx, 'chr1', 400)!.offsetPx,
+        bpToPxFromIndex(v2Idx, 'chr1', 600)!.offsetPx,
+      ) - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    expect(topOffScreen).toBe(false)
+    expect(botOffScreen).toBe(true)
+    expect(topOffScreen && botOffScreen).toBe(false)
+  })
+
+  it('keeps features within the 50% buffer zone', () => {
+    // Viewport at [0, 800], buffer = 400px
+    // Feature at 900-1000 → just outside viewport but within buffer (< 1200)
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const topMinX =
+      bpToPxFromIndex(v1Idx, 'chr1', 900)!.offsetPx - v1.offsetPx
+    const topMaxX =
+      bpToPxFromIndex(v1Idx, 'chr1', 1000)!.offsetPx - v1.offsetPx
+    const botMinX =
+      bpToPxFromIndex(v2Idx, 'chr1', 900)!.offsetPx - v2.offsetPx
+    const botMaxX =
+      bpToPxFromIndex(v2Idx, 'chr1', 1000)!.offsetPx - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    // Feature at 900-1000 relative to viewport: topMinX=900, topMaxX=1000
+    // viewWidth + bufferPx = 1200, so 900 < 1200 → NOT off-screen
+    expect(topOffScreen).toBe(false)
+    expect(topOffScreen && botOffScreen).toBe(false)
+  })
+
+  it('culls features outside the 50% buffer zone', () => {
+    // Viewport at [0, 800], buffer = 400px
+    // Feature at 1300-1400 → outside buffer (> 1200)
+    const v1 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const v2 = makeViewSnapWithOffset(
+      [{ refName: 'chr1', start: 0, end: 5000 }],
+      0,
+    )
+    const viewWidth = 800
+    const bufferPx = viewWidth * 0.5
+
+    const v1Idx = buildBpToPxIndex(v1)
+    const v2Idx = buildBpToPxIndex(v2)
+
+    const topMinX =
+      bpToPxFromIndex(v1Idx, 'chr1', 1300)!.offsetPx - v1.offsetPx
+    const topMaxX =
+      bpToPxFromIndex(v1Idx, 'chr1', 1400)!.offsetPx - v1.offsetPx
+    const botMinX =
+      bpToPxFromIndex(v2Idx, 'chr1', 1300)!.offsetPx - v2.offsetPx
+    const botMaxX =
+      bpToPxFromIndex(v2Idx, 'chr1', 1400)!.offsetPx - v2.offsetPx
+
+    const topOffScreen =
+      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen =
+      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+
+    // Feature at 1300-1400 > 1200 (viewWidth + bufferPx) → off-screen
+    expect(topOffScreen).toBe(true)
+    expect(botOffScreen).toBe(true)
+  })
 })
 
 describe('strand swap with reversed regions', () => {
