@@ -167,7 +167,7 @@ export default function stateModelFactory(
         return self.sourcesVolatile.map((s, i) => ({
           source: s.name,
           ...s,
-          ...(this.isOverlay ? { color: resolveOverlayColor(i, s.color) } : {}),
+          color: resolveOverlayColor(i, s.color),
         }))
       },
 
@@ -191,15 +191,11 @@ export default function stateModelFactory(
           source: s.name,
           ...sourceMap[s.name],
           ...s,
-          ...(this.isOverlay
-            ? {
-                color: resolveOverlayColor(
-                  i,
-                  sourceMap[s.name]?.color,
-                  layoutColors[s.name],
-                ),
-              }
-            : {}),
+          color: resolveOverlayColor(
+            i,
+            sourceMap[s.name]?.color,
+            layoutColors[s.name],
+          ),
         }))
       },
 

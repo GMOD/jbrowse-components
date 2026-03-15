@@ -74,6 +74,7 @@ import {
   U_COLOR_SKIP,
   U_COLOR_SOFTCLIP,
   U_COLOR_SUPPLEMENTARY,
+  U_COLOR_UNMAPPED_MATE,
   U_COV_HEIGHT,
   U_COV_OFFSET,
   U_COV_Y_OFFSET,
@@ -1137,6 +1138,7 @@ export class AlignmentsRenderer {
     this.writeColor(U_COLOR_LONG_INSERT, c.colorLongInsert)
     this.writeColor(U_COLOR_SHORT_INSERT, c.colorShortInsert)
     this.writeColor(U_COLOR_SUPPLEMENTARY, c.colorSupplementary)
+    this.writeColor(U_COLOR_UNMAPPED_MATE, c.colorUnmappedMate)
 
     for (const [i, element] of arcColorPalette.entries()) {
       this.writeColor(U_ARC_COLORS + i * 3, element)

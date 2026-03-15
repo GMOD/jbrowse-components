@@ -7,7 +7,7 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { WIGGLE_POS_COLOR_DEFAULT, processFeatures } from '../util.ts'
+import { processFeatures } from '../util.ts'
 
 import type { MultiWiggleDataResult } from './types.ts'
 import type { SourceInfo } from '../util.ts'
@@ -95,7 +95,7 @@ export async function executeRenderMultiWiggleData({
     sources: sourceNames.map(sourceName => {
       const features = featuresBySource.get(sourceName) || []
       const sourceInfo = sourcesList.find(s => s.name === sourceName)
-      const color = sourceInfo?.color || WIGGLE_POS_COLOR_DEFAULT
+      const color = sourceInfo?.color
       return {
         name: sourceName,
         color,

@@ -170,6 +170,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           const posColor = orderedSource.color
             ? parseColor(orderedSource.color)
             : defaultPosColor
+          console.log(
+            `[multi-wiggle] source="${orderedSource.name}" row=${rowCounter} color=${orderedSource.color} posColor=[${posColor}]`,
+          )
           const negColor = overlay ? posColor : defaultNegColor
           const row = overlay ? 0 : rowCounter
           rowCounter++

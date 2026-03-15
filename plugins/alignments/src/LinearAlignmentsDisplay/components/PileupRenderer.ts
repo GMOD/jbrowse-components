@@ -158,6 +158,10 @@ export class PileupRenderer {
       this.parent.readUniforms.u_colorSupplementary!,
       ...colors.colorSupplementary,
     )
+    gl.uniform3f(
+      this.parent.readUniforms.u_colorUnmappedMate!,
+      ...colors.colorUnmappedMate,
+    )
 
     const stats = buffers.insertSizeStats
     gl.uniform1f(

@@ -62,6 +62,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorLongInsert: toRgb(fillColor.color_longinsert),
     colorShortInsert: toRgb(fillColor.color_shortinsert),
     colorSupplementary: toRgb(fillColor.color_supplementary),
+    colorUnmappedMate: toRgb(fillColor.color_unmapped_mate),
   }
 }
 

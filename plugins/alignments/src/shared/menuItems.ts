@@ -384,7 +384,6 @@ export function getColorByMenuItem(
 
   const subMenu = [
     ...items.map(({ label, type }) => colorRadio(label, type)),
-    ...(modificationsItem ? [modificationsItem] : []),
     ...(includeTagOption
       ? [
           {
@@ -422,6 +421,7 @@ export function getColorByMenuItem(
           },
         ]
       : []),
+    ...(modificationsItem ? [modificationsItem] : []),
   ]
 
   return {

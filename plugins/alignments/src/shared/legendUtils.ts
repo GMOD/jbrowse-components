@@ -104,7 +104,12 @@ export function getPileupLegendItems(
       { color: 'hsl(60, 50%, 50%)', label: 'MAPQ 60' },
     ]
   } else {
-    return getBaseItems(theme)
+    return [
+      ...getBaseItems(theme),
+      { color: fillColor.color_pair_lr, label: 'Normal' },
+      unmappedMateItem,
+      supplementaryItem,
+    ]
   }
 }
 

@@ -21,14 +21,8 @@ export function applyLabelDimensions(
   },
 ): void {
   const { feature, configContext, isNested, isTranscriptChild } = args
-  const {
-    config,
-    showLabels,
-    showDescriptions,
-    subfeatureLabels,
-    fontHeight,
-    labelAllowed,
-  } = configContext
+  const { config, showLabels, subfeatureLabels, fontHeight, labelAllowed } =
+    configContext
 
   const showSubfeatureLabels = subfeatureLabels !== 'none'
   const shouldCalculateLabels =
@@ -39,7 +33,7 @@ export function applyLabelDimensions(
   }
 
   const effectiveShowLabels = isTranscriptChild ? true : showLabels
-  const effectiveShowDescriptions = isTranscriptChild ? false : showDescriptions
+  const effectiveShowDescriptions = !isTranscriptChild
 
   const name = truncateLabel(
     String(readConfObject(config, ['labels', 'name'], { feature }) || ''),

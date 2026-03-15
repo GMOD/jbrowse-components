@@ -96,6 +96,11 @@ fn get_read_color(inst: ReadInst) -> vec3f {
     let eff = select(inst.strand, inst.strand * primary_strand, flip == 1);
     return strand_color(eff);
   }
+  // Check for unmapped mate (flag 8) — show brown for color schemes that would
+  // otherwise miscolor it (e.g. insert size shows pink because tlen=0)
+  if (inst.flags & 8u) != 0u && (cs == 0 || cs == 3 || cs == 5 || cs == 6) {
+    return color3(134u);
+  }
   if cs == 0 { return normal_color(inst.flags); }
   if cs == 1 { return strand_color(inst.strand); }
   if cs == 2 { return mapq_color(inst.mapq); }
@@ -104,8 +109,13 @@ fn get_read_color(inst: ReadInst) -> vec3f {
   if cs == 5 { return pair_orient_color(inst.pair_orient); }
   if cs == 6 { return is_and_orient_color(inst.insert_size, inst.pair_orient); }
   if cs == 7 { return modifications_color(inst.flags); }
-  if cs == 8 { return vec3f(inst.tag_r, inst.tag_g, inst.tag_b); }
-  return vec3f(0.6);
+  if cs == 8 {
+    if inst.tag_r != 0.0 || inst.tag_g != 0.0 || inst.tag_b != 0.0 {
+      return vec3f(inst.tag_r, inst.tag_g, inst.tag_b);
+    }
+    return color3(41u);
+  }
+  return color3(41u);
 }
 
 @vertex

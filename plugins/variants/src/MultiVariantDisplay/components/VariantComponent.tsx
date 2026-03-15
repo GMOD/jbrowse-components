@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
-import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  getBpDisplayStr,
+  getContainingView,
+} from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
@@ -27,7 +31,7 @@ export interface VariantDisplayModel {
   totalHeight: number
   nrow: number
   sources: { name: string; baseName?: string }[] | undefined
-  featuresVolatile: { id(): string }[] | undefined
+  featuresVolatile: { id(): string; toJSON(): Record<string, unknown> }[] | undefined
   referenceDrawingMode: string
   regionTooLarge: boolean
   featuresReady: boolean
@@ -301,6 +305,41 @@ const VariantComponent = observer(function VariantComponent({
     return undefined
   }
 
+  function enrichFeatureFromClick(
+    result: NonNullable<ReturnType<typeof getFeatureUnderMouse>>,
+    model: VariantDisplayModel,
+  ) {
+    const baseFeature = model.featuresVolatile?.find(
+      f => f.id() === result.featureId,
+    )
+    if (!baseFeature) {
+      return undefined
+    }
+    const cellData = model.cellData
+    const info = cellData
+      ? Object.values(cellData.perRegionCellData).find(
+          r => r.featureGenotypeMap[result.featureId],
+        )?.featureGenotypeMap[result.featureId]
+      : undefined
+    return new SimpleFeature({
+      id: baseFeature.id(),
+      data: {
+        ...baseFeature.toJSON(),
+        ...(info
+          ? {
+              REF: info.ref,
+              ALT: info.alt,
+              description: info.description,
+              genotypes: info.genotypes,
+            }
+          : {}),
+        clickedSample: result.name,
+        clickedGenotype: result.genotype,
+        clickedAlleles: result.alleles,
+      },
+    })
+  }
+
   const width = view.trackWidthPx
   const height = model.availableHeight
 
@@ -382,22 +421,22 @@ const VariantComponent = observer(function VariantComponent({
         onClick={e => {
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const feature = result
-            ? model.featuresVolatile?.find(f => f.id() === result.featureId)
+          const enriched = result
+            ? enrichFeatureFromClick(result, model)
             : undefined
-          if (feature) {
-            model.selectFeature(feature)
+          if (enriched) {
+            model.selectFeature(enriched)
           }
         }}
         onContextMenu={e => {
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const feature = result
-            ? model.featuresVolatile?.find(f => f.id() === result.featureId)
+          const enriched = result
+            ? enrichFeatureFromClick(result, model)
             : undefined
-          if (feature) {
+          if (enriched) {
             e.preventDefault()
-            model.setContextMenuFeature(feature)
+            model.setContextMenuFeature(enriched)
             setContextMenuCoord([e.clientX, e.clientY])
           }
         }}

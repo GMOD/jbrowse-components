@@ -43,6 +43,7 @@ uniform vec3 u_colorModificationRev;
 uniform vec3 u_colorLongInsert;
 uniform vec3 u_colorShortInsert;
 uniform vec3 u_colorSupplementary;
+uniform vec3 u_colorUnmappedMate;
 
 uniform float u_insertSizeUpper;
 uniform float u_insertSizeLower;
@@ -56,17 +57,17 @@ out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=ch
 ${HP_GLSL_FUNCTIONS}
 
 // SYNC(wgsl/readShader.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
-// Color scheme 0: normal (supplementary reads shown in orange)
-vec3 normalColor(float flags) {
-  if (mod(floor(flags / 2048.0), 2.0) > 0.5) return u_colorSupplementary;
-  return u_colorPairLR;
-}
-
 // Color scheme 1: strand
 vec3 strandColor(float strand) {
   if (strand > 0.5) return u_colorFwdStrand;
   if (strand < -0.5) return u_colorRevStrand;
   return u_colorNostrand;
+}
+
+// Color scheme 0: normal (supplementary reads shown in orange, else grey)
+vec3 normalColor(float flags) {
+  if (mod(floor(flags / 2048.0), 2.0) > 0.5) return u_colorSupplementary;
+  return u_colorPairLR;
 }
 
 // SYNC(wgsl/readShader.ts): MAPQ HSL formula h=mapq/360, s=0.5, l=0.5 with HSL->RGB conversion
@@ -264,6 +265,8 @@ void main() {
       ? a_strand * primaryStrand
       : a_strand;
     color = strandColor(effectiveStrand);
+  } else if (mod(floor(a_flags / 8.0), 2.0) > 0.5 && (u_colorScheme == 0 || u_colorScheme == 3 || u_colorScheme == 5 || u_colorScheme == 6)) {
+    color = u_colorUnmappedMate;
   } else if (u_colorScheme == 0) color = normalColor(a_flags);
   else if (u_colorScheme == 1) color = strandColor(a_strand);
   else if (u_colorScheme == 2) color = mapqColor(a_mapq);
@@ -272,8 +275,14 @@ void main() {
   else if (u_colorScheme == 5) color = pairOrientationColor(a_pairOrientation);
   else if (u_colorScheme == 6) color = insertSizeAndOrientationColor(a_insertSize, a_pairOrientation);
   else if (u_colorScheme == 7) color = modificationsColor(a_flags);
-  else if (u_colorScheme == 8) color = a_tagColor;
-  else color = vec3(0.6);
+  else if (u_colorScheme == 8) {
+    if (a_tagColor.r != 0.0 || a_tagColor.g != 0.0 || a_tagColor.b != 0.0) {
+      color = a_tagColor;
+    } else {
+      color = u_colorPairLR;
+    }
+  }
+  else color = u_colorPairLR;
 
   v_color = vec4(color, 1.0);
 }

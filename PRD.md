@@ -88,20 +88,20 @@ These affect significant user-visible functionality.
 | Color orange for supplementary reads | Already implemented in normal color scheme (all 3 backends) — verify other color modes |
 | Force load stuck | **DONE** — `ClearBlockingStateOnViewportChange` clears on zoom or region change |
 | Wrong ratio shown over deletions in tooltip | **DONE** |
-| Coverage interbase indicators conditional on total coverage | |
+| Coverage interbase indicators conditional on total coverage | **DONE** — `computeNoncovCoverage` uses per-position local depth (max of left/right neighbors) for indicator threshold; `MINIMUM_INDICATOR_READ_DEPTH` raised from 7→8 so no indicators at low coverage; `computePositionFrequencies` + `applyDepthDependentThreshold` filter pileup interbase features by depth-dependent frequency; 27 unit tests |
 | Non-intron rendered on sidescroll weirdly for iso-seq | |
 | volvox-long reads with SV not rendering when zoomed out | **FIXED** — `checkByteEstimate` now uses the adapter's `fetchSizeLimit` (BAM=5MB, CRAM=3MB) via `Math.max(adapterLimit, displayLimit)`, matching `FeatureDensityMixin.maxAllowableBytes` chain. Previously only used display config default (1MB). Also added `isLoading` guard (via `untracked`) to prevent duplicate byte-estimate RPC calls from concurrent autorun firings. |
 | Insertion depth weird | **DONE** |
 | Draw outline even when compact | **DONE** — size threshold lowered from 4px to 2px |
 | Linked read mode not wired up | Investigated — wiring is correct (invalidation autorun, RPC dispatch, migration). Demo #15 uses encrypted share link so can't inspect snapshot directly. Need to test in browser. |
 | Read vs ref synteny view not working | Observed in SKBR3 PacBio demo |
-| Sort modifications — last color by option | |
-| Put arc color scheme in color by | |
+| Sort modifications — last color by option | **DONE** — moved to end of color-by submenu |
+| Put arc color scheme in color by | **DONE** — already present as submenu in color-by menu |
 | Bad triangle interbase indicators | **FIXED** — added barycentric-coordinate anti-aliasing to both WebGL (GLSL) and WebGPU (WGSL) indicator triangle shaders; enabled alpha blending for WebGL indicator draw pass |
 | Outline on alignments shift+scroll | |
 | Click sashimi — make it look selected (selected color arc) | **DONE** — selected arc renders with dark stroke (#333) and thicker width; click toggles selection |
 | Unmapped mate coloring collides with other pink | |
-| Hide insertions in low coverage when region has high coverage | |
+| Hide insertions in low coverage when region has high coverage | **DONE** — `computePositionFrequencies` uses interbase depth (max of neighbors); `applyDepthDependentThreshold` with `featureFrequencyThreshold()` zeroes low-frequency insertions; shader fades zeroed-frequency features via sub-pixel alpha |
 | Reset mouseover after change link mode | **DONE** — clears featureIdUnderMouse/highlightedChainIds on toggle |
 | WebGL arcs not vibrant | **DONE** — premultiplied alpha fix in arc/sashimi WGSL shaders |
 | Clicking chain — get both feature info | |
@@ -141,7 +141,7 @@ These affect significant user-visible functionality.
 
 | Bug | Notes |
 |-----|-------|
-| Y scale bars wrong in multi-wiggle (no scalebar label offset) | Also check in main app |
+| ~~Y scale bars wrong in multi-wiggle (no scalebar label offset)~~ | **REMOVED** — offset not desired for multi-row mode |
 | Monospace font on sequence track | **FIXED** — added `font-family="monospace"` to both `renderBaseLetters()` and `renderTranslationLetters()` in sequence SVG export |
 | Monospace font on peptides | **FIXED** — added `font-family="monospace"` to `renderPeptideLettersForRegion()` in feature SVG export |
 | Alignments SVG: indels too visible in SKBR3 output | |
@@ -151,7 +151,7 @@ These affect significant user-visible functionality.
 | Bug | Notes |
 |-----|-------|
 | Toggling between matrix and non-matrix modes | Investigated — two separate display types (`MultiLinearVariantDisplay` vs `LinearVariantMatrixDisplay`) share `MultiSampleVariantBaseModel`. The `cellDataMode` getter drives different RPC modes. Issue may be that display type switch doesn't properly re-trigger `getVariantCellDataAutorun`, or phased layout/clusterTree state persists incompatibly across mode switches. |
-| Clicking multisample variant — not enough detail | |
+| Clicking multisample variant — not enough detail | **FIXED** — click handler now enriches simplified feature with REF, ALT, description, genotypes, and clicked sample info from featureGenotypeMap/featureData |
 | Tetraploid potato — maybe failed to load matrix | |
 | Human trio phased VCF rendering | Needs verification |
 
@@ -162,7 +162,7 @@ These affect significant user-visible functionality.
 ### P3.1 Canvas/Interaction Bugs
 
 - ~~After zoom, features reposition but mouseover shading stuck~~ **FIXED** — hover state (hoveredFeature, hoveredSubfeature, featureIdUnderMouse) now cleared when new RPC data is uploaded in FeatureComponent
-- Labels disappear during zoom
+- ~~Labels disappear during zoom~~ **FIXED** — description labels now always included in RPC response (not gated by `showDescriptions`); layout always reserves space; visibility filtered client-side by `effectiveShowDescriptions`
 - Hot module reload breaks canvas features
 - Per-track scrolling — verify working
 - After fatal error: `Uncaught Error: no containing view found` in `getContainingView`
@@ -309,6 +309,11 @@ Status key: **Working**, **Partial** (loads with issues), **Broken** (fails to l
 - Strand swap coordinate tests (4 tests covering all strand×reversed combinations)
 - `copyView.renameIds()` unit tests (8 tests verifying ID uniqueness)
 - Fetch autorun tests include error recovery via `reload()` flow
+- Interbase indicator tests (7 tests for `computeNoncovCoverage` threshold logic, depth boundaries, dominant type selection)
+- Interbase frequency tests (6 tests for `computePositionFrequencies` edge/cliff/offset cases)
+- Depth-dependent threshold tests (2 tests for `applyDepthDependentThreshold` interbase mode)
+- `featureFrequencyThreshold` tests (5 tests covering step boundaries, interpolation, monotonicity)
+- Floating label regression test verifying description data stability across zoom levels
 - Browser test runner forwards `[alignments]` and `[webgl-wiggle]` console logs for debugging
 
 ---
@@ -330,6 +335,21 @@ These need investigation or clarification before they can be scoped:
 11. **"Distinguish initialized concepts in linear genome view"** — what does this mean concretely?
 12. **Custom Google Analytics** — unclear scope/purpose
 13. **Refactor Apollo client-side code** — out of scope for this branch?
+
+---
+
+## Recent Changes (2026-03-15)
+
+### Interbase Indicator Depth Threshold Fix
+- `MINIMUM_INDICATOR_READ_DEPTH` raised from 7→8 so no indicators appear at low coverage (<8 reads)
+- Fixed inconsistency: `localDepth > 7` (hardcoded) → `localDepth >= MINIMUM_INDICATOR_READ_DEPTH` (uses constant)
+- Added 20 unit tests for `computeNoncovCoverage` indicators, `computePositionFrequencies`, `applyDepthDependentThreshold`, and `featureFrequencyThreshold`
+
+### Labels Disappear During Zoom Fix
+- `createFeatureFloatingLabels()` no longer gates description label on `showDescriptions` config — descriptions always included in RPC response
+- `applyLabelDimensions()` always reserves layout height for descriptions (not gated by `showDescriptions`)
+- Client-side filtering in `FeatureComponent.tsx` (`model.effectiveShowDescriptions`) unchanged — controls visibility at render time
+- Added regression test verifying label data stability across simulated zoom levels
 
 ---
 
@@ -412,26 +432,26 @@ All track types must work across 4 rendering backends. Key: W=WebGPU, G=WebGL, C
 ### Next Steps — Remaining Bugs
 
 **P2 (High) — Still Open:**
-- Coverage interbase indicators conditional on total coverage — indicators should only show when the insertion/clip count is significant relative to total coverage at that position
+- ~~Coverage interbase indicators conditional on total coverage~~ **DONE** — per-position local depth thresholding with min depth 8
 - Non-intron rendered on sidescroll weirdly for iso-seq — GAP_VERTEX_SHADER uses `u_bpRangeX` (clipped viewport offsets) but gap positions in VAO are absolute to region; coordinate mismatch on scroll
 - Color by per-base quality — requires new RPC data extraction to send per-base quality scores
 - Color by insert size gradient mode — threshold done, gradient not yet implemented for reads
 - Linked read mode (demo #15) — wiring investigated and looks correct but demo uses encrypted share link; needs browser verification
 - Read vs ref synteny not working — observed in SKBR3 PacBio demo (#23)
-- Sort modifications — should be last color-by option in menu
-- Put arc color scheme in color by menu
+- ~~Sort modifications — should be last color-by option in menu~~ **DONE** — moved modifications submenu to end of color-by menu
+- ~~Put arc color scheme in color by menu~~ **DONE** — arc color scheme already present as submenu in color-by menu
 - Unmapped mate coloring collides with other pink — need distinct color
-- Hide insertions in low coverage when region has high coverage
+- ~~Hide insertions in low coverage when region has high coverage~~ **DONE** — depth-dependent frequency thresholding
 - Clicking chain — should get both features' info in widget
 - Outline on alignments shift+scroll — needs investigation
-- Y scale bars wrong in multi-wiggle SVG (no scalebar label offset per row)
+- ~~Y scale bars wrong in multi-wiggle SVG (no scalebar label offset per row)~~ **REMOVED** — offset not desired for multi-row mode
 - Alignments SVG indels too visible in SKBR3 — alpha/visibility thresholds may need tuning
 - Variant matrix/non-matrix toggle — display type switch may not re-trigger `getVariantCellDataAutorun`
 - Tetraploid potato matrix — may fail to load
 - Hs1 vs mm39 synteny still slow — viewport culling helps but further LOD needed
 
 **P3 (Medium) — Still Open:**
-- Labels disappear during zoom — `floatingLabelsData` baked at fetch time, not reconstructed on zoom. Fix: include labels unconditionally in RPC response, filter visibility client-side based on current `effectiveShowDescriptions`
+- ~~Labels disappear during zoom~~ **FIXED** — description labels always included in RPC response; visibility filtered client-side
 - Infinite loop after error in multi-wiggle — dual error state (React `useState` + `model.error`) may desync. Check if `ErrorBoundary` catches render errors but doesn't clear model error
 - Hot module reload breaks canvas features — likely stale ref to destroyed WebGL context
 - After fatal error: `getContainingView` throws — model may be detached from tree

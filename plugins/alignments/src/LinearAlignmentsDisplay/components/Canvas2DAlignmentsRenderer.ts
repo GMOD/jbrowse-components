@@ -611,15 +611,19 @@ export class Canvas2DAlignmentsRenderer {
     const flags = region.readFlags[i]!
     const strand = region.readStrands[i]!
 
+    // Unmapped mate (flag 8) — brown for color schemes where insert size/orientation
+    // would otherwise miscolor it (tlen=0 shows as "short insert" pink)
+    if ((flags & 8) !== 0 && (colorScheme === 0 || colorScheme === 3 || colorScheme === 5 || colorScheme === 6)) {
+      return this.rgbStr(colors.colorUnmappedMate)
+    }
+
     switch (colorScheme) {
-      // Normal: supplementary in orange, else strand
+      // Normal: supplementary in orange, else grey
       case 0: {
         if ((flags & 2048) !== 0) {
           return this.rgbStr(colors.colorSupplementary)
         }
-        return strand >= 0
-          ? this.rgbStr(colors.colorFwdStrand)
-          : this.rgbStr(colors.colorRevStrand)
+        return this.rgbStr(colors.colorPairLR)
       }
       // Strand
       case 1: {
@@ -702,15 +706,11 @@ export class Canvas2DAlignmentsRenderer {
             return `rgb(${r},${g},${b})`
           }
         }
-        return strand >= 0
-          ? this.rgbStr(colors.colorFwdStrand)
-          : this.rgbStr(colors.colorRevStrand)
+        return this.rgbStr(colors.colorPairLR)
       }
-      // Fallback: strand coloring
+      // Fallback: grey
       default: {
-        return strand >= 0
-          ? this.rgbStr(colors.colorFwdStrand)
-          : this.rgbStr(colors.colorRevStrand)
+        return this.rgbStr(colors.colorPairLR)
       }
     }
   }

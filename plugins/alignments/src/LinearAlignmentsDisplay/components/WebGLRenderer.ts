@@ -334,6 +334,7 @@ export class WebGLRenderer {
       'u_colorLongInsert',
       'u_colorShortInsert',
       'u_colorSupplementary',
+      'u_colorUnmappedMate',
       'u_insertSizeUpper',
       'u_insertSizeLower',
       'u_chainMode',

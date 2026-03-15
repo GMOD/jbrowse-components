@@ -27,6 +27,7 @@ export interface ColorPalette {
   colorLongInsert: RGBColor
   colorShortInsert: RGBColor
   colorSupplementary: RGBColor
+  colorUnmappedMate: RGBColor
 }
 
 export function toRgb(color: string): RGBColor {

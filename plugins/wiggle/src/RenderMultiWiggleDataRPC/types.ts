@@ -8,7 +8,7 @@
 
 export interface MultiWiggleSourceData {
   name: string
-  color: string
+  color?: string
   featurePositions: Uint32Array
   featureScores: Float32Array
   featureMinScores: Float32Array

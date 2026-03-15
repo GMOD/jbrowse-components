@@ -44,7 +44,7 @@ function createMockConfigContext(
 
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
-    it('returns no labels when both showLabels and showDescriptions are false', () => {
+    it('returns only description when showLabels is false', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: mockConfig,
@@ -58,7 +58,7 @@ describe('floatingLabels', () => {
         description: 'A gene',
       })
       expect(result.nameLabel).toBeUndefined()
-      expect(result.descriptionLabel).toBeUndefined()
+      expect(result.descriptionLabel).toBeDefined()
     })
 
     it('returns no labels when name and description are whitespace-only', () => {
@@ -75,7 +75,7 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel).toBeUndefined()
     })
 
-    it('returns only name label when showDescriptions is false', () => {
+    it('always includes description label regardless of showDescriptions config', () => {
       const result = createFeatureFloatingLabels({
         feature: mockFeature,
         config: mockConfig,
@@ -87,9 +87,8 @@ describe('floatingLabels', () => {
       })
       expect(result.nameLabel).toBeDefined()
       expect(result.nameLabel!.text).toBe('Gene1')
-      expect(result.nameLabel!.color).toBe('black')
-      expect(result.nameLabel!.relativeY).toBe(0)
-      expect(result.descriptionLabel).toBeUndefined()
+      expect(result.descriptionLabel).toBeDefined()
+      expect(result.descriptionLabel!.text).toBe('A gene')
     })
 
     it('returns only description label when showLabels is false', () => {
@@ -125,6 +124,30 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel).toBeDefined()
       expect(result.descriptionLabel!.text).toBe('A gene')
       expect(result.descriptionLabel!.relativeY).toBe(12) // fontHeight value from mock
+    })
+
+    it('description label data is stable across zoom levels (regression: labels disappear during zoom)', () => {
+      const baseArgs = {
+        feature: mockFeature,
+        config: mockConfig,
+        nameColor: 'black',
+        descriptionColor: 'blue',
+        name: 'Gene1',
+        description: 'A gene',
+      }
+      const zoomedOut = createFeatureFloatingLabels({
+        ...baseArgs,
+        configContext: createMockConfigContext({ showDescriptions: false }),
+      })
+      const zoomedIn = createFeatureFloatingLabels({
+        ...baseArgs,
+        configContext: createMockConfigContext({ showDescriptions: true }),
+      })
+      expect(zoomedOut.descriptionLabel).toBeDefined()
+      expect(zoomedIn.descriptionLabel).toBeDefined()
+      expect(zoomedOut.descriptionLabel!.text).toBe(
+        zoomedIn.descriptionLabel!.text,
+      )
     })
 
     it('includes textWidth for each label', () => {

@@ -33,13 +33,13 @@ export function createFeatureFloatingLabels({
   name: string
   description: string
 }) {
-  const { showLabels, showDescriptions, fontHeight } = configContext
+  const { showLabels, fontHeight } = configContext
 
   const name = truncateLabel(rawName)
   const description = truncateLabel(rawDescription)
 
   const shouldShowLabel = /\S/.test(name) && showLabels
-  const shouldShowDescription = /\S/.test(description) && showDescriptions
+  const shouldShowDescription = /\S/.test(description)
 
   let nameLabel: LabelItem | undefined
   let descriptionLabel: LabelItem | undefined

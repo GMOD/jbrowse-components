@@ -151,6 +151,7 @@ export const U_COLOR_SUPPLEMENTARY = 95
 export const U_ARC_COLORS = 98
 export const U_ARC_LINE_COLORS = 122
 export const U_SASHIMI_COLORS = 128
+export const U_COLOR_UNMAPPED_MATE = 134
 
 // SYNC(shaders/*): Stride constants must match GLSL instance attribute layouts.
 // See individual shader files for field-by-field struct documentation.
