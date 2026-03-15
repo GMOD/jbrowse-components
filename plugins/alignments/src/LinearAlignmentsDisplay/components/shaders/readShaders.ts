@@ -4,13 +4,8 @@ export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-// SYNC(wgsl/readShader.ts): ReadInst struct field order (16 fields):
-// start_off(u32), end_off(u32), y(u32), flags(u32), mapq(u32), insert_size(f32),
-// pair_orient(u32), strand(i32), tag_r(f32), tag_g(f32), tag_b(f32), chain_supp(u32),
-// read_index(u32), edge_flags(u32), read_start_off(u32), read_end_off(u32)
-// chain_supp values: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
-// edge_flags: bit 0=first segment, bit 1=last segment
-in uvec2 a_position;  // [start, end] as uint offsets from regionStart (per segment)
+// SYNC(wgsl/readShader.ts): field order must match ReadInst struct (16 fields)
+in uvec2 a_position;  // segment [start, end] as uint offsets from regionStart
 in float a_y;
 in float a_flags;
 in float a_mapq;

@@ -4,10 +4,8 @@ import {
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
 
-// Gap (deletion/skip) vertex shader - colored rectangles over reads
-// Deletions are dark grey (#404040), skips are teal/blue (#97b8c9)
-// Uses simple domain-offset coordinate system (no HP needed since reads
-// use per-segment rendering and no stencil alignment is required).
+// Gap (deletion/skip) vertex shader
+// Deletions render as colored rectangles, skips as 1px centerlines
 export const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;

@@ -374,7 +374,7 @@ export class PileupRenderer {
       }
     } else if (state.selectedFeatureId) {
       const idx = buffers.readIdToIndex.get(state.selectedFeatureId) ?? -1
-      if (idx >= 0 && idx < buffers.segmentCount) {
+      if (idx >= 0) {
         const startOffset = buffers.readPositions[idx * 2]
         const endOffset = buffers.readPositions[idx * 2 + 1]
         const y = buffers.readYs[idx]

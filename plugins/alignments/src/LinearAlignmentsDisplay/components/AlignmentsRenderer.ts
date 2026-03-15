@@ -506,6 +506,7 @@ export class AlignmentsRenderer {
     }
     if (data.numSegments > 0) {
       const n = data.numSegments
+      const hasTagColors = data.readTagColors.length > 0
       const buf = new ArrayBuffer(n * READ_STRIDE * 4)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
@@ -521,18 +522,9 @@ export class AlignmentsRenderer {
         f32[o + 5] = data.readInsertSizes[ri]!
         u32[o + 6] = data.readPairOrientations[ri]!
         i32[o + 7] = data.readStrands[ri]!
-        f32[o + 8] =
-          data.readTagColors.length > 0
-            ? data.readTagColors[ri * 3]! / 255
-            : 0
-        f32[o + 9] =
-          data.readTagColors.length > 0
-            ? data.readTagColors[ri * 3 + 1]! / 255
-            : 0
-        f32[o + 10] =
-          data.readTagColors.length > 0
-            ? data.readTagColors[ri * 3 + 2]! / 255
-            : 0
+        f32[o + 8] = hasTagColors ? data.readTagColors[ri * 3]! / 255 : 0
+        f32[o + 9] = hasTagColors ? data.readTagColors[ri * 3 + 1]! / 255 : 0
+        f32[o + 10] = hasTagColors ? data.readTagColors[ri * 3 + 2]! / 255 : 0
         u32[o + 11] = data.readChainHasSupp?.[ri] ?? 0
         u32[o + 12] = ri
         u32[o + 13] = data.segmentEdgeFlags[j]!
@@ -1294,9 +1286,7 @@ export class AlignmentsRenderer {
       const needsFeatureHighlight =
         state.highlightedChainIds.length === 0 && regionHighlightIdx >= 0
       const needsFeatureSelection =
-        state.selectedChainIds.length === 0 &&
-        regionSelectIdx >= 0 &&
-        regionSelectIdx < region.segmentCount
+        state.selectedChainIds.length === 0 && regionSelectIdx >= 0
 
       if (
         (needsFeatureHighlight || needsFeatureSelection) &&

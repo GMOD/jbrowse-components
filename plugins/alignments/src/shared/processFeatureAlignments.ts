@@ -570,6 +570,11 @@ export function buildModificationArrays(
   }
 }
 
+// Splits each read into per-exon segments at CIGAR skip (N) gaps.
+// Reads without skips produce one segment. Segments are clipped to
+// [0, regionEnd-regionStart] so only the visible portion is emitted.
+// Edge flags encode whether the read's true start/end falls within
+// this region (bit 0 = first, bit 1 = last) — used for chevron drawing.
 export function buildSegmentArrays(
   features: FeatureData[],
   gaps: GapData[],
@@ -577,10 +582,8 @@ export function buildSegmentArrays(
   regionEnd: number,
   getReadIndex: (featureId: string) => number,
 ) {
-  // The visible window in region-relative coordinates
   const windowEnd = regionEnd - regionStart
 
-  // Group skip gaps by featureId
   const skipsByFeature = new Map<string, GapData[]>()
   for (const g of gaps) {
     if (g.type === 'skip') {
@@ -593,7 +596,6 @@ export function buildSegmentArrays(
     }
   }
 
-  // Upper bound on segments: reads with N skips produce at most N+1 segments
   let maxSegments = 0
   for (const f of features) {
     const skips = skipsByFeature.get(f.id)
@@ -609,64 +611,52 @@ export function buildSegmentArrays(
     const readIdx = getReadIndex(f.id)
     const readStart = Math.max(0, f.start - regionStart)
     const readEnd = Math.min(f.end - regionStart, windowEnd)
-    const isFirstOfRead = f.start >= regionStart
-    const isLastOfRead = f.end <= regionEnd
     const skips = skipsByFeature.get(f.id)
+
+    // Chevron only at the true read start/end, not at region-clipped edges
+    const edgeFlags =
+      (f.start >= regionStart ? 0b01 : 0) | (f.end <= regionEnd ? 0b10 : 0)
 
     if (!skips || skips.length === 0) {
       segmentPositions[segIdx * 2] = readStart
       segmentPositions[segIdx * 2 + 1] = readEnd
       segmentReadIndices[segIdx] = readIdx
-      segmentEdgeFlags[segIdx] =
-        (isFirstOfRead ? 0b01 : 0) | (isLastOfRead ? 0b10 : 0)
+      segmentEdgeFlags[segIdx] = edgeFlags
       segIdx++
     } else {
       skips.sort((a, b) => a.start - b.start)
 
-      // Walk through sorted skips, splitting the read into exon segments.
-      // Clamp everything to [readStart, readEnd] and skip zero-width results.
       const firstSegIdx = segIdx
-      let currentStart = readStart
+      let cur = readStart
       for (const skip of skips) {
-        const skipStart = Math.max(readStart, skip.start - regionStart)
-        const skipEnd = Math.max(readStart, skip.end - regionStart)
+        const gapStart = Math.min(readEnd, Math.max(readStart, skip.start - regionStart))
+        const gapEnd = Math.min(readEnd, Math.max(readStart, skip.end - regionStart))
 
-        if (skipStart > currentStart && currentStart < readEnd) {
-          segmentPositions[segIdx * 2] = currentStart
-          segmentPositions[segIdx * 2 + 1] = Math.min(skipStart, readEnd)
+        // Exon segment before this gap
+        if (gapStart > cur) {
+          segmentPositions[segIdx * 2] = cur
+          segmentPositions[segIdx * 2 + 1] = gapStart
           segmentReadIndices[segIdx] = readIdx
           segIdx++
         }
-        if (skipEnd > currentStart) {
-          currentStart = skipEnd
+        if (gapEnd > cur) {
+          cur = gapEnd
         }
       }
 
-      // Final segment after last skip
-      if (currentStart < readEnd) {
-        segmentPositions[segIdx * 2] = currentStart
+      // Exon segment after last gap
+      if (cur < readEnd) {
+        segmentPositions[segIdx * 2] = cur
         segmentPositions[segIdx * 2 + 1] = readEnd
         segmentReadIndices[segIdx] = readIdx
         segIdx++
       }
 
-      // If no segments were emitted (all skips covered the read), emit the
-      // full read as a single segment so it's still visible
-      if (segIdx === firstSegIdx) {
-        segmentPositions[segIdx * 2] = readStart
-        segmentPositions[segIdx * 2 + 1] = Math.min(readEnd, windowEnd)
-        segmentReadIndices[segIdx] = readIdx
-        segmentEdgeFlags[segIdx] =
-          (isFirstOfRead ? 0b01 : 0) | (isLastOfRead ? 0b10 : 0)
-        segIdx++
-      } else {
-        // Edge flags: chevron on first segment only if this region contains
-        // the actual read start; on last segment only if it contains the
-        // actual read end.
-        segmentEdgeFlags[firstSegIdx] =
-          (segmentEdgeFlags[firstSegIdx] ?? 0) | (isFirstOfRead ? 0b01 : 0)
-        segmentEdgeFlags[segIdx - 1] =
-          (segmentEdgeFlags[segIdx - 1] ?? 0) | (isLastOfRead ? 0b10 : 0)
+      // Reads entirely intronic in this region produce no segments.
+      // Apply edge flags to the outermost segments.
+      if (segIdx > firstSegIdx) {
+        segmentEdgeFlags[firstSegIdx] = segmentEdgeFlags[firstSegIdx]! | (edgeFlags & 0b01)
+        segmentEdgeFlags[segIdx - 1] = segmentEdgeFlags[segIdx - 1]! | (edgeFlags & 0b10)
       }
     }
   }

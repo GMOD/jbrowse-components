@@ -114,7 +114,7 @@ export const U_BIN_SIZE = 19
 export const U_NONCOV_HEIGHT = 20
 export const U_INSERT_UPPER = 21
 export const U_INSERT_LOWER = 22
-export const U_ERASE_MODE = 23
+// slot 23 unused (was U_ERASE_MODE, removed with stencil pass)
 export const U_BLOCK_START_PX = 24
 export const U_BLOCK_WIDTH = 25
 export const U_LINE_WIDTH_PX = 26
