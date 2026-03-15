@@ -688,43 +688,57 @@ export default function stateModelFactory(
             self,
             autorun(
               () => {
-                const view = getContainingView(self) as LGV
-                if (!view.initialized) {
-                  return
-                }
-                const numStdDev = getConf(self, 'numStdDev') || 3
-                const visibleEntries = view.dynamicBlocks.contentBlocks
-                  .filter(block => block.regionNumber !== undefined)
-                  .flatMap(block => {
-                    const regionData = self.rpcDataMap.get(block.regionNumber!)
-                    if (!regionData) {
-                      return []
-                    }
-                    const visStart = block.start - regionData.regionStart
-                    const visEnd = block.end - regionData.regionStart
-                    return regionData.sources.map(source => ({
-                      visStart,
-                      visEnd,
-                      data: source,
-                    }))
-                  })
-                const allEntries = [...self.rpcDataMap.values()].flatMap(
-                  regionData =>
-                    regionData.sources.map(source => ({ data: source })),
-                )
-                const range = computeAutoscaleDomain(
-                  self.autoscaleType,
-                  self.summaryScoreMode,
-                  numStdDev,
-                  visibleEntries,
-                  allEntries,
-                )
-                if (
-                  range &&
-                  (range[0] !== self.visibleScoreRange?.[0] ||
-                    range[1] !== self.visibleScoreRange[1])
-                ) {
-                  self.setVisibleScoreRange(range)
+                try {
+                  if (!isAlive(self)) {
+                    return
+                  }
+                  const view = getContainingView(self) as LGV
+                  if (!view.initialized) {
+                    return
+                  }
+                  const numStdDev = getConf(self, 'numStdDev') || 3
+                  const visibleEntries = view.dynamicBlocks.contentBlocks
+                    .filter(block => block.regionNumber !== undefined)
+                    .flatMap(block => {
+                      const regionData = self.rpcDataMap.get(
+                        block.regionNumber!,
+                      )
+                      if (!regionData) {
+                        return []
+                      }
+                      const visStart = block.start - regionData.regionStart
+                      const visEnd = block.end - regionData.regionStart
+                      return regionData.sources.map(source => ({
+                        visStart,
+                        visEnd,
+                        data: source,
+                      }))
+                    })
+                  const allEntries = [...self.rpcDataMap.values()].flatMap(
+                    regionData =>
+                      regionData.sources.map(source => ({ data: source })),
+                  )
+                  const range = computeAutoscaleDomain(
+                    self.autoscaleType,
+                    self.summaryScoreMode,
+                    numStdDev,
+                    visibleEntries,
+                    allEntries,
+                  )
+                  if (
+                    range &&
+                    (range[0] !== self.visibleScoreRange?.[0] ||
+                      range[1] !== self.visibleScoreRange[1])
+                  ) {
+                    self.setVisibleScoreRange(range)
+                  }
+                } catch (e) {
+                  if (isAlive(self)) {
+                    console.error(
+                      '[MultiWiggle] VisibleScoreRange autorun error',
+                      e,
+                    )
+                  }
                 }
               },
               { delay: 400, name: 'VisibleScoreRange' },

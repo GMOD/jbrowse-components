@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react'
 
+import { ErrorBar } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import {
   getContainingView,
@@ -273,7 +274,15 @@ const HicCanvas = observer(function HicCanvas({
 
   if (glError) {
     return (
-      <div style={{ color: 'red', padding: 10 }}>WebGL Error: {glError}</div>
+      <div style={{ position: 'relative', width, height }}>
+        <ErrorBar
+          error={glError}
+          onRetry={() => {
+            setGlError(undefined)
+            setContextVersion(v => v + 1)
+          }}
+        />
+      </div>
     )
   }
 

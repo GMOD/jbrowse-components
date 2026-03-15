@@ -145,7 +145,7 @@ const WiggleComponent = observer(function WiggleComponent({
   model: WiggleDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const rendererRef = useRef<WiggleRenderer | null>(null)
   const [ready, setReady] = useState(false)
   const [drawn, setDrawn] = useState(false)
@@ -163,13 +163,13 @@ const WiggleComponent = observer(function WiggleComponent({
       .init()
       .then(ok => {
         if (!ok) {
-          setError('GPU initialization failed')
+          setError(new Error('GPU initialization failed'))
         } else {
           setReady(true)
         }
       })
       .catch((e: unknown) => {
-        setError(`GPU initialization error: ${e}`)
+        setError(e)
       })
   }, [])
 
@@ -335,20 +335,15 @@ const WiggleComponent = observer(function WiggleComponent({
   const height = model.height
   const scalebarLeft = model.scalebarOverlapLeft
 
-  if (error) {
-    return (
-      <div style={{ width, height, color: 'red', padding: 10 }}>
-        Error: {error}
-      </div>
-    )
-  }
-
-  if (model.error) {
+  if (error || model.error) {
     return (
       <div style={{ position: 'relative', width, height }}>
         <ErrorBar
-          error={`${model.error}`}
+          error={error ?? model.error}
           onRetry={() => {
+            setError(null)
+            setReady(false)
+            setDrawn(false)
             model.reload()
           }}
         />

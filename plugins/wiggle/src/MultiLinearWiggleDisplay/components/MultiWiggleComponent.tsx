@@ -469,9 +469,11 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     return (
       <div style={{ position: 'relative', width: totalWidth, height }}>
         <ErrorBar
-          error={`${error ?? model.error}`}
+          error={error ?? model.error}
           onRetry={() => {
             setError(null)
+            setReady(false)
+            setDrawn(false)
             model.reload()
           }}
         />

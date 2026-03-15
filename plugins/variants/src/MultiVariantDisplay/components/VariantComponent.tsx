@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import {
@@ -168,6 +168,30 @@ const VariantComponent = observer(function VariantComponent({
       nrow: model.nrow,
       setRowHeight: model.setRowHeight,
     })
+
+  const canvasRefCallback = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      if (!canvas) {
+        return
+      }
+      canvasRef.current = canvas
+      const renderer = VariantRenderer.getOrCreate(canvas)
+      rendererRef.current = renderer
+      renderer
+        .init()
+        .then(ok => {
+          if (!ok) {
+            setError(new Error('GPU initialization failed'))
+          } else {
+            setReady(true)
+          }
+        })
+        .catch((e: unknown) => {
+          setError(e)
+        })
+    },
+    [],
+  )
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -353,6 +377,7 @@ const VariantComponent = observer(function VariantComponent({
           onRetry={() => {
             rendererRef.current = null
             setError(null)
+            setReady(false)
           }}
         />
       </div>
@@ -362,28 +387,7 @@ const VariantComponent = observer(function VariantComponent({
   return (
     <div style={{ position: 'relative', width, height }}>
       <canvas
-        ref={canvas => {
-          canvasRef.current = canvas
-          if (!canvas) {
-            return
-          }
-          if (!rendererRef.current) {
-            const renderer = VariantRenderer.getOrCreate(canvas)
-            rendererRef.current = renderer
-            renderer
-              .init()
-              .then(ok => {
-                if (!ok) {
-                  setError(new Error('GPU initialization failed'))
-                } else {
-                  setReady(true)
-                }
-              })
-              .catch((e: unknown) => {
-                setError(e)
-              })
-          }
-        }}
+        ref={canvasRefCallback}
         style={{
           width,
           height,
