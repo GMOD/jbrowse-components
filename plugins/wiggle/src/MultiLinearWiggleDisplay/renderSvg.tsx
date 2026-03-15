@@ -185,7 +185,10 @@ function renderToCtx(
     for (let sourceIdx = 0; sourceIdx < data.sources.length; sourceIdx++) {
       const source = data.sources[sourceIdx]!
       const modelSource = modelSources.find(s => s.name === source.name)
-      const color = modelSource?.color ?? source.color
+      if (!modelSource) {
+        continue
+      }
+      const { color } = modelSource
       const rowY = overlay ? 0 : getRowTop(sourceIdx, rowHeight)
 
       const slices = getFeatureSlices(source, color, negColor, overlay)

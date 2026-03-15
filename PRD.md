@@ -433,7 +433,7 @@ All track types must work across 4 rendering backends. Key: W=WebGPU, G=WebGL, C
 
 **P2 (High) — Still Open:**
 - ~~Coverage interbase indicators conditional on total coverage~~ **DONE** — per-position local depth thresholding with min depth 8
-- Non-intron rendered on sidescroll weirdly for iso-seq — GAP_VERTEX_SHADER uses `u_bpRangeX` (clipped viewport offsets) but gap positions in VAO are absolute to region; coordinate mismatch on scroll
+- Non-intron rendered on sidescroll weirdly for iso-seq — **NEEDS VERIFICATION**: Hypothesized cause is that cigar shaders (gap, mismatch, insertion, softclip, hardclip, modification) use simple float `vec2 u_bpRangeX` while read shader uses HP (High Precision) `vec3 u_bpRangeX` with split encoding. Both use offsets from `regionStart`, which should be small enough for float32 in typical viewing scenarios. Proposed fix: convert all cigar shaders to HP coordinates (matching read/connecting-line shaders). **Must reproduce in browser first** — load ISO-seq data, zoom in on intron-containing region, sidescroll and check if intron/skip lines drift relative to reads.
 - Color by per-base quality — requires new RPC data extraction to send per-base quality scores
 - Color by insert size gradient mode — threshold done, gradient not yet implemented for reads
 - Linked read mode (demo #15) — wiring investigated and looks correct but demo uses encrypted share link; needs browser verification
