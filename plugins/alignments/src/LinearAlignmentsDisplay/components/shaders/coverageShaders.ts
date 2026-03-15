@@ -293,6 +293,7 @@ uniform vec3 u_colorSoftclip;
 uniform vec3 u_colorHardclip;
 
 out vec4 v_color;
+out vec3 v_bary;
 
 void main() {
   // Triangle: 3 vertices per indicator
@@ -308,17 +309,20 @@ void main() {
 
   float sx, sy;
   if (vid == 0) {
-    // Top left
+    // Top left — opposite edge is right diagonal
     sx = cx - triangleWidth * 0.5;
     sy = 1.0;
+    v_bary = vec3(1.0, 0.0, 0.0);
   } else if (vid == 1) {
-    // Top right
+    // Top right — opposite edge is left diagonal
     sx = cx + triangleWidth * 0.5;
     sy = 1.0;
+    v_bary = vec3(0.0, 1.0, 0.0);
   } else {
-    // Bottom center (point)
+    // Bottom center (point) — opposite edge is top (flat, no AA needed)
     sx = cx;
     sy = 1.0 - triangleHeight;
+    v_bary = vec3(0.0, 0.0, 1.0);
   }
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
@@ -338,9 +342,18 @@ void main() {
 export const INDICATOR_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
+in vec3 v_bary;
 out vec4 fragColor;
 void main() {
-  fragColor = v_color;
+  // Anti-alias diagonal edges using barycentric coordinates.
+  // For a 7x4.5px triangle, the altitude from each top vertex to the
+  // opposite diagonal edge is ~3.7px. Multiplying bary coord by this
+  // gives approximate pixel distance to that edge.
+  float altPx = 3.7;
+  float dLeft = v_bary.y * altPx;
+  float dRight = v_bary.x * altPx;
+  float aa = smoothstep(0.0, 1.0, min(dLeft, dRight));
+  fragColor = vec4(v_color.rgb, v_color.a * aa);
 }
 `
 

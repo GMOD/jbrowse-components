@@ -256,6 +256,13 @@ export class CoverageRenderer {
         ...colors.colorHardclip,
       )
 
+      gl.enable(gl.BLEND)
+      gl.blendFuncSeparate(
+        gl.SRC_ALPHA,
+        gl.ONE_MINUS_SRC_ALPHA,
+        gl.ONE,
+        gl.ONE_MINUS_SRC_ALPHA,
+      )
       gl.bindVertexArray(this.parent.buffers.indicatorVAO)
       gl.drawArraysInstanced(
         gl.TRIANGLES,
@@ -263,6 +270,7 @@ export class CoverageRenderer {
         3,
         this.parent.buffers.indicatorCount,
       )
+      gl.disable(gl.BLEND)
     }
   }
 }

@@ -344,7 +344,7 @@ function renderPeptideLettersForRegion(
     const label = `${item.aminoAcid}${item.proteinIndex + 1}`
     const y = item.topPx + item.heightPx / 2 + fontSize / 3
 
-    content += `<text x="${centerPx}" y="${y}" font-size="${fontSize}" fill="${color}" text-anchor="middle" style="pointer-events:none">${label}</text>`
+    content += `<text x="${centerPx}" y="${y}" font-size="${fontSize}" font-family="monospace" fill="${color}" text-anchor="middle" style="pointer-events:none">${label}</text>`
   }
   return content
 }

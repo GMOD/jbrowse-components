@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -23,6 +25,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
+  const [selectedArcIdx, setSelectedArcIdx] = useState(-1)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { showSashimiArcs, showCoverage, coverageHeight, rpcDataMap } = model
   const { initialized, offsetPx, visibleRegions } = view
@@ -108,41 +111,47 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
         overflow: 'visible',
       }}
     >
-      {paths.map((p, i) => (
-        <path
-          key={i}
-          d={p.d}
-          stroke={p.stroke}
-          strokeWidth={p.strokeWidth}
-          fill="none"
-          style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-          onMouseEnter={e => {
-            ;(e.currentTarget as SVGPathElement).setAttribute(
-              'stroke-width',
-              String(p.strokeWidth + 2),
-            )
-            model.setMouseoverExtraInformation(
-              formatSashimiTooltip({
-                start: p.start,
-                end: p.end,
-                score: p.score,
-                strand: p.strand,
-                refName: p.refName,
-              }),
-            )
-          }}
-          onMouseLeave={e => {
-            ;(e.currentTarget as SVGPathElement).setAttribute(
-              'stroke-width',
-              String(p.strokeWidth),
-            )
-            model.clearMouseoverState()
-          }}
-          onClick={() => {
-            openSashimiWidget(model, p)
-          }}
-        />
-      ))}
+      {paths.map((p, i) => {
+        const isSelected = i === selectedArcIdx
+        return (
+          <path
+            key={i}
+            d={p.d}
+            stroke={isSelected ? '#333' : p.stroke}
+            strokeWidth={isSelected ? p.strokeWidth + 2 : p.strokeWidth}
+            fill="none"
+            style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+            onMouseEnter={e => {
+              ;(e.currentTarget as SVGPathElement).setAttribute(
+                'stroke-width',
+                String(p.strokeWidth + 2),
+              )
+              model.setMouseoverExtraInformation(
+                formatSashimiTooltip({
+                  start: p.start,
+                  end: p.end,
+                  score: p.score,
+                  strand: p.strand,
+                  refName: p.refName,
+                }),
+              )
+            }}
+            onMouseLeave={e => {
+              if (!isSelected) {
+                ;(e.currentTarget as SVGPathElement).setAttribute(
+                  'stroke-width',
+                  String(p.strokeWidth),
+                )
+              }
+              model.clearMouseoverState()
+            }}
+            onClick={() => {
+              setSelectedArcIdx(isSelected ? -1 : i)
+              openSashimiWidget(model, p)
+            }}
+          />
+        )
+      })}
     </svg>
   )
 })

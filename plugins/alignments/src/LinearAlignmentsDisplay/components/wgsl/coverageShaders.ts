@@ -166,7 +166,13 @@ ${SIMPLE_FS}
 `
 
 export const INDICATOR_WGSL = `
-${COV_PREAMBLE}
+${PREAMBLE}
+
+struct IndicatorOutput {
+  @builtin(position) position: vec4f,
+  @location(0) color: vec4f,
+  @location(1) bary: vec3f,
+}
 
 fn vis_range() -> vec2f { return vec2f(uf(30u), uf(31u)); }
 fn vis_range_len() -> f32 { return uf(31u) - uf(30u); }
@@ -176,8 +182,8 @@ struct IndicatorInst { position: f32, color_type: f32 }
 @group(0) @binding(0) var<storage, read> instances: array<IndicatorInst>;
 
 @vertex
-fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> VertexOutput {
-  var out: VertexOutput;
+fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> IndicatorOutput {
+  var out: IndicatorOutput;
   let inst = instances[iid];
   let v = vid % 3u;
 
@@ -188,9 +194,9 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let th = 4.5 / canvas_height() * 2.0;
 
   var sx: f32; var sy: f32;
-  if v == 0u { sx = cx - tw * 0.5; sy = 1.0; }
-  else if v == 1u { sx = cx + tw * 0.5; sy = 1.0; }
-  else { sx = cx; sy = 1.0 - th; }
+  if v == 0u { sx = cx - tw * 0.5; sy = 1.0; out.bary = vec3f(1.0, 0.0, 0.0); }
+  else if v == 1u { sx = cx + tw * 0.5; sy = 1.0; out.bary = vec3f(0.0, 1.0, 0.0); }
+  else { sx = cx; sy = 1.0 - th; out.bary = vec3f(0.0, 0.0, 1.0); }
 
   out.position = vec4f(sx, sy, 0.0, 1.0);
   let ci = i32(inst.color_type);
@@ -202,7 +208,15 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   return out;
 }
 
-${SIMPLE_FS}
+@fragment
+fn fs_main(@location(0) color: vec4f, @location(1) bary: vec3f) -> @location(0) vec4f {
+  // Anti-alias diagonal edges. For 7x4.5px triangle, altitude ~3.7px.
+  let alt_px = 3.7;
+  let d_left = bary.y * alt_px;
+  let d_right = bary.x * alt_px;
+  let aa = smoothstep(0.0, 1.0, min(d_left, d_right));
+  return vec4f(color.rgb, color.a * aa);
+}
 `
 
 export const SEPARATOR_LINE_WGSL = `

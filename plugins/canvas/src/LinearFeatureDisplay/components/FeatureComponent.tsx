@@ -425,12 +425,14 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
+    let dataChanged = false
     const activeRegions = new Set<number>()
     for (const [regionNumber, data] of rpcDataMap) {
       activeRegions.add(regionNumber)
       if (uploadedDataRef.current.get(regionNumber) === data) {
         continue
       }
+      dataChanged = true
       uploadedDataRef.current.set(regionNumber, data)
       renderer.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
@@ -458,6 +460,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
     }
     renderer.pruneStaleRegions([...activeRegions])
+
+    if (dataChanged) {
+      setHoveredFeature(null)
+      setHoveredSubfeature(null)
+      model.setFeatureIdUnderMouse(null)
+    }
 
     renderWithBlocksRef.current()
   }, [rpcDataMap, rendererReady])

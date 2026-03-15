@@ -97,9 +97,9 @@ These affect significant user-visible functionality.
 | Read vs ref synteny view not working | Observed in SKBR3 PacBio demo |
 | Sort modifications — last color by option | |
 | Put arc color scheme in color by | |
-| Bad triangle interbase indicators | |
+| Bad triangle interbase indicators | **FIXED** — added barycentric-coordinate anti-aliasing to both WebGL (GLSL) and WebGPU (WGSL) indicator triangle shaders; enabled alpha blending for WebGL indicator draw pass |
 | Outline on alignments shift+scroll | |
-| Click sashimi — make it look selected (selected color arc) | |
+| Click sashimi — make it look selected (selected color arc) | **DONE** — selected arc renders with dark stroke (#333) and thicker width; click toggles selection |
 | Unmapped mate coloring collides with other pink | |
 | Hide insertions in low coverage when region has high coverage | |
 | Reset mouseover after change link mode | **DONE** — clears featureIdUnderMouse/highlightedChainIds on toggle |
@@ -126,7 +126,7 @@ These affect significant user-visible functionality.
 |-----|-------|
 | Hs1 vs mm39 synteny — excessively slow, causes freeze | **IMPROVED** — added viewport culling in `executeSyntenyFeaturesAndPositions.ts`: features where BOTH view projections are entirely off-screen (with 50% buffer) are skipped before instance generation and GPU upload. Debug log shows cull ratio. For genomes with many chromosomes, this can eliminate 50-90% of features. Further LOD improvements possible. |
 | Yeast synteny — error when splitting | **FIXED** — `renameIds()` in `copyView.ts` was concatenating old+new IDs (`${val}-${newId}`), which could break MST `types.identifier` uniqueness. Now uses the new ID directly. |
-| Multi-way synteny (grape/peach/cacao) — synteny tracks fail to load | |
+| Multi-way synteny (grape/peach/cacao) — synteny tracks fail to load | **FIXED** — `init.tracks` now supports 2D array `string[][]` for explicit per-level track assignment. `LaunchLinearSyntenyView` passes through the structure. Backwards compatible with flat `string[]` (all go to level 0). |
 | Zoom to full not working? | **UNCLEAR** — needs verification |
 | Don't colorize indels not working? | **UNCLEAR** — needs verification |
 | Split indels code | Refactoring task |
@@ -142,8 +142,8 @@ These affect significant user-visible functionality.
 | Bug | Notes |
 |-----|-------|
 | Y scale bars wrong in multi-wiggle (no scalebar label offset) | Also check in main app |
-| Monospace font on sequence track | |
-| Monospace font on peptides | |
+| Monospace font on sequence track | **FIXED** — added `font-family="monospace"` to both `renderBaseLetters()` and `renderTranslationLetters()` in sequence SVG export |
+| Monospace font on peptides | **FIXED** — added `font-family="monospace"` to `renderPeptideLettersForRegion()` in feature SVG export |
 | Alignments SVG: indels too visible in SKBR3 output | |
 
 ### P2.5 Variant Track Issues
@@ -161,7 +161,7 @@ These affect significant user-visible functionality.
 
 ### P3.1 Canvas/Interaction Bugs
 
-- After zoom, features reposition but mouseover shading stuck
+- ~~After zoom, features reposition but mouseover shading stuck~~ **FIXED** — hover state (hoveredFeature, hoveredSubfeature, featureIdUnderMouse) now cleared when new RPC data is uploaded in FeatureComponent
 - Labels disappear during zoom
 - Hot module reload breaks canvas features
 - Per-track scrolling — verify working
@@ -248,7 +248,7 @@ Status key: **Working**, **Partial** (loads with issues), **Broken** (fails to l
 | 13 | COLO829 melanoma multi-bigwig | Working | |
 | 14 | Inversion (single row BSV) | Working | Track move bug noted |
 | 15 | Inversion (linked reads) | Broken | Snapshot fails, wrong visualization |
-| 16 | Multi-way synteny (grape/peach/cacao) | Broken | Synteny tracks fail to load |
+| 16 | Multi-way synteny (grape/peach/cacao) | Partial | Session-spec init fixed (per-level tracks). Shared session link may need level migration. |
 | 17 | Tetraploid potato multi-sample VCF | Partial | Matrix may fail to load |
 | 18 | Human trio phased VCF | Working | |
 | 19 | Hi-C contact matrix | Working | |

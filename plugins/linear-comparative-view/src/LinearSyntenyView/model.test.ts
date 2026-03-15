@@ -29,7 +29,7 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.views[0]?.tracks).toEqual(['genes', 'repeats'])
   })
 
-  test('init type accepts synteny tracks at top level', () => {
+  test('init type accepts flat synteny tracks (backwards compat)', () => {
     const init: LinearSyntenyViewInit = {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
       tracks: ['hg38_vs_mm39_synteny'],
@@ -37,15 +37,41 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.tracks).toEqual(['hg38_vs_mm39_synteny'])
   })
 
-  test('init type accepts full configuration', () => {
+  test('init type accepts per-level synteny tracks (2D array)', () => {
     const init: LinearSyntenyViewInit = {
       views: [
-        { loc: 'chr1:1-10000000', assembly: 'hg38', tracks: ['genes'] },
-        { loc: 'chr1:1-10000000', assembly: 'mm39', tracks: ['genes'] },
+        { assembly: 'grape' },
+        { assembly: 'peach' },
+        { assembly: 'cacao' },
       ],
-      tracks: ['synteny_track_1', 'synteny_track_2'],
+      tracks: [['grape_vs_peach'], ['peach_vs_cacao']],
     }
-    expect(init.views.length).toBe(2)
-    expect(init.tracks?.length).toBe(2)
+    expect(init.tracks).toEqual([['grape_vs_peach'], ['peach_vs_cacao']])
+    expect((init.tracks as string[][])[0]).toEqual(['grape_vs_peach'])
+    expect((init.tracks as string[][])[1]).toEqual(['peach_vs_cacao'])
+  })
+
+  test('per-level tracks can have multiple tracks per level', () => {
+    const init: LinearSyntenyViewInit = {
+      views: [{ assembly: 'volvox-ins' }, { assembly: 'volvox' }],
+      tracks: [['volvox_ins.paf', 'volvox_del.paf']],
+    }
+    expect((init.tracks as string[][])[0]).toEqual([
+      'volvox_ins.paf',
+      'volvox_del.paf',
+    ])
+  })
+
+  test('3-way with multiple tracks per level', () => {
+    const init: LinearSyntenyViewInit = {
+      views: [
+        { assembly: 'volvox-ins' },
+        { assembly: 'volvox' },
+        { assembly: 'volvox-del' },
+      ],
+      tracks: [['volvox_ins.paf'], ['volvox_del.paf']],
+    }
+    expect(init.views.length).toBe(3)
+    expect((init.tracks as string[][]).length).toBe(2)
   })
 })

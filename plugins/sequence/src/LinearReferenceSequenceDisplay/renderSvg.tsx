@@ -85,7 +85,7 @@ function renderBaseLetters(
     const lum = rgb ? (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 : 255
     const fill = lum < 128 ? '#fff' : '#000'
 
-    content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`
+    content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" font-family="monospace" fill="${fill}">${letter}</text>`
   }
   return content
 }
@@ -132,7 +132,7 @@ function renderTranslationLetters(
         ? stopCodonContrastColor
         : '#000'
 
-    content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" fill="${fill}">${letter}</text>`
+    content += `<text x="${cx}" y="${cy}" dominant-baseline="middle" text-anchor="middle" font-size="${fontSize}" font-family="monospace" fill="${fill}">${letter}</text>`
   }
   return content
 }
