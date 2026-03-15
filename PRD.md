@@ -87,11 +87,11 @@ These affect significant user-visible functionality.
 | Color by tag not working | **DONE** — e2e test confirms two-phase fetch works (discover tags → re-fetch with colors). Canvas2D renderer now handles all 9 color schemes (normal, strand, mapq, insert-size, first-of-pair, pair-orientation, insert+orientation, modifications, tag). |
 | Color orange for supplementary reads | Already implemented in normal color scheme (all 3 backends) — verify other color modes |
 | Force load stuck | **DONE** — `ClearBlockingStateOnViewportChange` clears on zoom or region change |
-| Wrong ratio shown over deletions in tooltip | |
+| Wrong ratio shown over deletions in tooltip | **DONE** |
 | Coverage interbase indicators conditional on total coverage | |
 | Non-intron rendered on sidescroll weirdly for iso-seq | |
 | volvox-long reads with SV not rendering when zoomed out | **FIXED** — `checkByteEstimate` now uses the adapter's `fetchSizeLimit` (BAM=5MB, CRAM=3MB) via `Math.max(adapterLimit, displayLimit)`, matching `FeatureDensityMixin.maxAllowableBytes` chain. Previously only used display config default (1MB). Also added `isLoading` guard (via `untracked`) to prevent duplicate byte-estimate RPC calls from concurrent autorun firings. |
-| Insertion depth weird | |
+| Insertion depth weird | **DONE** |
 | Draw outline even when compact | **DONE** — size threshold lowered from 4px to 2px |
 | Linked read mode not wired up | Investigated — wiring is correct (invalidation autorun, RPC dispatch, migration). Demo #15 uses encrypted share link so can't inspect snapshot directly. Need to test in browser. |
 | Read vs ref synteny view not working | Observed in SKBR3 PacBio demo |
@@ -131,7 +131,7 @@ These affect significant user-visible functionality.
 | Don't colorize indels not working? | **UNCLEAR** — needs verification |
 | Split indels code | Refactoring task |
 | Horizontally flipped stuff is inaccurate | Investigated — strand swap + reversed region double-flip is actually correct behavior (two flips cancel for inversions). The real issue was blank synteny browser test snapshots due to missing `drawn-` signal (**now fixed**). Need to re-run browser tests with the `drawn-` fix to verify actual rendering. Added unit tests confirming coordinate math for all 4 strand×reversed combinations. |
-| Color dotplot red vs black | |
+| Color dotplot red vs black | **DONE** |
 | Make scrolling dotplot a little slower | **DONE** — doubled scroll divisors in `useWheelHandler.ts` (horizontal `/5`→`/10`, vertical `/15`→`/30`) |
 | Linked dotplot and synteny view | Idea / future feature |
 | Swap axes dotplot | Idea / future feature |
@@ -405,22 +405,43 @@ All track types must work across 4 rendering backends. Key: W=WebGPU, G=WebGL, C
 
 1. **Add browser tests per backend**: Run SVG export tests with `--backend=canvas2d` to ensure Canvas2D fallback produces valid output for all track types
 2. **Cross-backend visual regression**: Use `compare-backends.ts` to flag rendering differences between WebGL and Canvas2D for each track type
-3. **Coverage sub-renderers in Canvas2D**: Coverage histogram, SNP coverage, noncov histogram, and modification coverage currently only render via GPU — add Canvas2D fallback for these if needed for `?gpu=off` mode
-4. **Multi-wiggle error recovery**: GPU renderer init happens once in `useEffect`; if context is lost during error, retry doesn't re-init. Need to track renderer validity and re-create on error recovery.
+3. **Coverage sub-renderers in Canvas2D**: Coverage histogram, SNP coverage, noncov histogram, and modification coverage currently only render via GPU — add Canvas2D fallback for these if needed for `?gpu=off` mode. Files to create: `Canvas2DCoverageRenderer.ts` in `plugins/alignments/src/LinearAlignmentsDisplay/components/`
+4. **Multi-wiggle error recovery**: GPU renderer init happens once in `canvasRefCallback` (`MultiWiggleComponent.tsx:115-134`); if context is lost during error, retry doesn't re-init. Need to track renderer validity and re-create on error recovery. Same pattern may affect `WiggleComponent.tsx` and `FeatureComponent.tsx`.
+5. **Shader transpilation**: Naga (archived Jan 2025) converts WGSL→GLSL but outputs UBO-style bindings instead of vertex attributes, which is undesirable. No viable WGSL→GLSL transpiler exists that preserves vertex buffer layout. Current approach of maintaining parallel WGSL+GLSL shaders is the pragmatic path. sokol-shdc goes GLSL→WGSL (reverse direction) via Tint.
 
 ### Next Steps — Remaining Bugs
 
-**P2 (High):**
-- Dotplot: color should be red (positive strand) vs blue (negative strand) — verify `dotplotWebGLColors.ts` strand mapping
-- ~~Dotplot: scroll speed too fast~~ **DONE**
-- ~~Multi-wiggle overlay color misalignment~~ **DONE**
-- Wrong ratio over deletions tooltip — verify fix is complete
-- Insertion depth calculation — `Math.max(leftDepth, rightDepth)` may use wrong indices
-
-**P3 (Medium):**
-- Labels disappear during zoom — `floatingLabelsData` baked at fetch time, not reconstructed on zoom
-- Infinite loop after error in multi-wiggle — dual error state (React + model) may desync
+**P2 (High) — Still Open:**
+- Coverage interbase indicators conditional on total coverage — indicators should only show when the insertion/clip count is significant relative to total coverage at that position
+- Non-intron rendered on sidescroll weirdly for iso-seq — GAP_VERTEX_SHADER uses `u_bpRangeX` (clipped viewport offsets) but gap positions in VAO are absolute to region; coordinate mismatch on scroll
+- Color by per-base quality — requires new RPC data extraction to send per-base quality scores
+- Color by insert size gradient mode — threshold done, gradient not yet implemented for reads
+- Linked read mode (demo #15) — wiring investigated and looks correct but demo uses encrypted share link; needs browser verification
+- Read vs ref synteny not working — observed in SKBR3 PacBio demo (#23)
+- Sort modifications — should be last color-by option in menu
+- Put arc color scheme in color by menu
+- Unmapped mate coloring collides with other pink — need distinct color
+- Hide insertions in low coverage when region has high coverage
+- Clicking chain — should get both features' info in widget
 - Outline on alignments shift+scroll — needs investigation
+- Y scale bars wrong in multi-wiggle SVG (no scalebar label offset per row)
+- Alignments SVG indels too visible in SKBR3 — alpha/visibility thresholds may need tuning
+- Variant matrix/non-matrix toggle — display type switch may not re-trigger `getVariantCellDataAutorun`
+- Tetraploid potato matrix — may fail to load
+- Hs1 vs mm39 synteny still slow — viewport culling helps but further LOD needed
+
+**P3 (Medium) — Still Open:**
+- Labels disappear during zoom — `floatingLabelsData` baked at fetch time, not reconstructed on zoom. Fix: include labels unconditionally in RPC response, filter visibility client-side based on current `effectiveShowDescriptions`
+- Infinite loop after error in multi-wiggle — dual error state (React `useState` + `model.error`) may desync. Check if `ErrorBoundary` catches render errors but doesn't clear model error
+- Hot module reload breaks canvas features — likely stale ref to destroyed WebGL context
+- After fatal error: `getContainingView` throws — model may be detached from tree
+- Closing track errors — non-webgl bug, needs investigation
+- Dockview move to right side not working — non-webgl bug
+- Color by reference CpG not working — methylation display issue
+- ENCODE/COLO829 multi-bigwig settings not loaded from snapshot — snapshot migration issue
+
+**Completed:**
+- ~~Dotplot color~~ ~~Dotplot scroll~~ ~~Multi-wiggle overlay color~~ ~~Wrong ratio deletions~~ ~~Insertion depth~~ — all DONE
 
 ## Blog Post Ideas (Non-blocking)
 
