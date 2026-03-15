@@ -8,8 +8,12 @@ function createMockCanvas() {
     setTransform: jest.fn(),
     fillRect: jest.fn(),
     beginPath: jest.fn(() => pathOps.push('beginPath')),
-    moveTo: jest.fn((x: number, y: number) => pathOps.push(`moveTo(${x.toFixed(1)},${y.toFixed(1)})`)),
-    lineTo: jest.fn((x: number, y: number) => pathOps.push(`lineTo(${x.toFixed(1)},${y.toFixed(1)})`)),
+    moveTo: jest.fn((x: number, y: number) =>
+      pathOps.push(`moveTo(${x.toFixed(1)},${y.toFixed(1)})`),
+    ),
+    lineTo: jest.fn((x: number, y: number) =>
+      pathOps.push(`lineTo(${x.toFixed(1)},${y.toFixed(1)})`),
+    ),
     closePath: jest.fn(() => pathOps.push('closePath')),
     fill: jest.fn(() => pathOps.push('fill')),
     stroke: jest.fn(),
@@ -27,7 +31,10 @@ function createMockCanvas() {
   return { canvas, ctx, pathOps }
 }
 
-function makeInstanceData(count: number, overrides?: Partial<SyntenyInstanceData>): SyntenyInstanceData {
+function makeInstanceData(
+  count: number,
+  overrides?: Partial<SyntenyInstanceData>,
+): SyntenyInstanceData {
   return {
     x1: new Float32Array(count).fill(10),
     x2: new Float32Array(count).fill(100),
@@ -51,7 +58,10 @@ function makeInstanceData(count: number, overrides?: Partial<SyntenyInstanceData
 
 describe('Canvas2DSyntenyRenderer', () => {
   beforeEach(() => {
-    Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
   })
 
   test('constructor throws if 2d context unavailable', () => {
@@ -108,9 +118,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1, {
-      queryTotalLengths: new Float32Array([100]),
-    }))
+    renderer.uploadGeometry(
+      makeInstanceData(1, {
+        queryTotalLengths: new Float32Array([100]),
+      }),
+    )
     renderer.render(0, 0, 100, 1, 1, 300, 500, 1, 0, 0)
 
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
@@ -135,12 +147,14 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1, {
-      x1: new Float32Array([5000]),
-      x2: new Float32Array([6000]),
-      x3: new Float32Array([6000]),
-      x4: new Float32Array([5000]),
-    }))
+    renderer.uploadGeometry(
+      makeInstanceData(1, {
+        x1: new Float32Array([5000]),
+        x2: new Float32Array([6000]),
+        x3: new Float32Array([6000]),
+        x4: new Float32Array([5000]),
+      }),
+    )
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
 
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
@@ -229,9 +243,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1, {
-      queryTotalLengths: new Float32Array([100]),
-    }))
+    renderer.uploadGeometry(
+      makeInstanceData(1, {
+        queryTotalLengths: new Float32Array([100]),
+      }),
+    )
     // render with minAlignmentLength=500, which excludes the feature
     renderer.render(0, 0, 100, 1, 1, 300, 500, 1, 0, 0)
     expect(renderer.pick(50, 50)).toBe(-1)
@@ -245,9 +261,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1, {
-      colors: new Float32Array([0.5, 0.5, 0.5, 0]),
-    }))
+    renderer.uploadGeometry(
+      makeInstanceData(1, {
+        colors: new Float32Array([0.5, 0.5, 0.5, 0]),
+      }),
+    )
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
     expect(renderer.pick(50, 50)).toBe(-1)
     expect(ctx.isPointInPath).not.toHaveBeenCalled()
@@ -260,9 +278,11 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(makeInstanceData(1, {
-      isCurves: new Float32Array([1]),
-    }))
+    renderer.uploadGeometry(
+      makeInstanceData(1, {
+        isCurves: new Float32Array([1]),
+      }),
+    )
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
     expect(renderer.pick(50, 50)).toBe(0)
     // curve path uses lineTo for segments, not just 4 corners

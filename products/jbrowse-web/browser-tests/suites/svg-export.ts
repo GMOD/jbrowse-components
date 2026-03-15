@@ -225,10 +225,7 @@ const suite: TestSuite = {
           timeout: 60000,
         })
         await waitForLoadingToComplete(page)
-        await waitForCanvasRendered(
-          page,
-          '[data-testid^="display-"] canvas',
-        )
+        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
 
         const svg = await exportSvgAndSave(page, 'svg-export-genes-peptides')
         const textCount = (svg.match(/<text/g) || []).length

@@ -26,10 +26,7 @@ async function selectColorByOption(page: Page, optionText: string) {
   await option?.click()
   await delay(1000)
   await waitForDataLoaded(page, 60000)
-  await waitForCanvasRendered(
-    page,
-    '[data-testid="pileup-display"] canvas',
-  )
+  await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
 }
 
 async function loadAlignments(page: Page, loc = 'ctgA:1000-2000') {
@@ -46,10 +43,7 @@ async function loadAlignments(page: Page, loc = 'ctgA:1000-2000') {
   await findByText(page, 'ctgA')
   await findByTestId(page, 'pileup-display', 60000)
   await waitForDataLoaded(page)
-  await waitForCanvasRendered(
-    page,
-    '[data-testid="pileup-display"] canvas',
-  )
+  await waitForCanvasRendered(page, '[data-testid="pileup-display"] canvas')
 }
 
 const suite: TestSuite = {

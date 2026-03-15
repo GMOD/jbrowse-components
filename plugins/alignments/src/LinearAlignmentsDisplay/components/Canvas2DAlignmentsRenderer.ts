@@ -127,7 +127,7 @@ const BASE_COLORS: Record<number, string> = {
   0: '#00BF00', // A
   1: '#4747ff', // C
   2: '#d5bb04', // G  (amber/gold)
-  3: '#f00',    // T
+  3: '#f00', // T
 }
 
 function emptyRegion(regionStart: number): Canvas2DRegionData {
@@ -304,7 +304,9 @@ export class Canvas2DAlignmentsRenderer {
       positions: new Uint32Array(indices.map(i => data.interbasePositions[i]!)),
       ys: new Uint16Array(indices.map(i => data.interbaseYs[i]!)),
       lengths: new Uint16Array(indices.map(i => data.interbaseLengths[i]!)),
-      frequencies: new Uint8Array(indices.map(i => data.interbaseFrequencies[i]!)),
+      frequencies: new Uint8Array(
+        indices.map(i => data.interbaseFrequencies[i]!),
+      ),
     })
 
     const ins = extractInterbases(insIdx)
@@ -476,8 +478,7 @@ export class Canvas2DAlignmentsRenderer {
       return
     }
 
-    const arcsHeight =
-      state.showArcs && state.arcsHeight ? state.arcsHeight : 0
+    const arcsHeight = state.showArcs && state.arcsHeight ? state.arcsHeight : 0
     const covH = state.showCoverage ? state.coverageHeight : 0
     const pileupTop = covH + arcsHeight
     const mode = state.renderingMode ?? 'pileup'
@@ -509,7 +510,12 @@ export class Canvas2DAlignmentsRenderer {
 
       if (state.showSashimiArcs) {
         this.drawSashimiArcs(
-          ctx, region, block, bpLength, fullBlockWidth, state,
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
         )
       }
 
@@ -521,7 +527,12 @@ export class Canvas2DAlignmentsRenderer {
 
       if (mode === 'linkedRead') {
         this.drawConnectingLines(
-          ctx, region, block, bpLength, fullBlockWidth, state,
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
         )
       }
 
@@ -538,13 +549,23 @@ export class Canvas2DAlignmentsRenderer {
 
       if (state.showSoftClipping) {
         this.drawSoftclipBases(
-          ctx, region, block, bpLength, fullBlockWidth, state,
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
         )
       }
 
       if (state.showModifications) {
         this.drawModifications(
-          ctx, region, block, bpLength, fullBlockWidth, state,
+          ctx,
+          region,
+          block,
+          bpLength,
+          fullBlockWidth,
+          state,
         )
       }
 
@@ -592,12 +613,31 @@ export class Canvas2DAlignmentsRenderer {
     const x = c * (1 - Math.abs((hp % 2) - 1))
     const m = l - c / 2
     let r: number, g: number, b: number
-    if (hp < 1) { r = c; g = x; b = 0 }
-    else if (hp < 2) { r = x; g = c; b = 0 }
-    else if (hp < 3) { r = 0; g = c; b = x }
-    else if (hp < 4) { r = 0; g = x; b = c }
-    else if (hp < 5) { r = x; g = 0; b = c }
-    else { r = c; g = 0; b = x }
+    if (hp < 1) {
+      r = c
+      g = x
+      b = 0
+    } else if (hp < 2) {
+      r = x
+      g = c
+      b = 0
+    } else if (hp < 3) {
+      r = 0
+      g = c
+      b = x
+    } else if (hp < 4) {
+      r = 0
+      g = x
+      b = c
+    } else if (hp < 5) {
+      r = x
+      g = 0
+      b = c
+    } else {
+      r = c
+      g = 0
+      b = x
+    }
     return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
   }
 
@@ -613,7 +653,13 @@ export class Canvas2DAlignmentsRenderer {
 
     // Unmapped mate (flag 8) — brown for color schemes where insert size/orientation
     // would otherwise miscolor it (tlen=0 shows as "short insert" pink)
-    if ((flags & 8) !== 0 && (colorScheme === 0 || colorScheme === 3 || colorScheme === 5 || colorScheme === 6)) {
+    if (
+      (flags & 8) !== 0 &&
+      (colorScheme === 0 ||
+        colorScheme === 3 ||
+        colorScheme === 5 ||
+        colorScheme === 6)
+    ) {
       return this.rgbStr(colors.colorUnmappedMate)
     }
 
@@ -667,18 +713,32 @@ export class Canvas2DAlignmentsRenderer {
       // Pair orientation
       case 5: {
         const po = region.readPairOrientations[i]!
-        if (po === 1) { return this.rgbStr(colors.colorPairLR) }
-        if (po === 2) { return this.rgbStr(colors.colorPairRL) }
-        if (po === 3) { return this.rgbStr(colors.colorPairRR) }
-        if (po === 4) { return this.rgbStr(colors.colorPairLL) }
+        if (po === 1) {
+          return this.rgbStr(colors.colorPairLR)
+        }
+        if (po === 2) {
+          return this.rgbStr(colors.colorPairRL)
+        }
+        if (po === 3) {
+          return this.rgbStr(colors.colorPairRR)
+        }
+        if (po === 4) {
+          return this.rgbStr(colors.colorPairLL)
+        }
         return this.rgbStr(colors.colorNostrand)
       }
       // Insert size + orientation
       case 6: {
         const po6 = region.readPairOrientations[i]!
-        if (po6 === 2) { return this.rgbStr(colors.colorPairRL) }
-        if (po6 === 3) { return this.rgbStr(colors.colorPairRR) }
-        if (po6 === 4) { return this.rgbStr(colors.colorPairLL) }
+        if (po6 === 2) {
+          return this.rgbStr(colors.colorPairRL)
+        }
+        if (po6 === 3) {
+          return this.rgbStr(colors.colorPairRR)
+        }
+        if (po6 === 4) {
+          return this.rgbStr(colors.colorPairLL)
+        }
         const insertSize6 = region.readInsertSizes[i]!
         const stats6 = region.insertSizeStats
         if (stats6 && insertSize6 > stats6.upper) {
@@ -734,7 +794,8 @@ export class Canvas2DAlignmentsRenderer {
       const endBp = region.readPositions[i * 2 + 1]! + region.regionStart
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const y = region.readYs[i]! * (fH + fSpacing) + covOffset - state.rangeY[0]
+      const y =
+        region.readYs[i]! * (fH + fSpacing) + covOffset - state.rangeY[0]
       const w = Math.max(1, x2 - x1)
 
       ctx.fillStyle = this.getReadColor(i, region, state)
@@ -1243,10 +1304,7 @@ export class Canvas2DAlignmentsRenderer {
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
     const fullBlockWidth = block.screenEndPx - block.screenStartPx
 
-    if (
-      state.highlightedChainIds.length === 0 &&
-      state.highlightedFeatureId
-    ) {
+    if (state.highlightedChainIds.length === 0 && state.highlightedFeatureId) {
       const idx = region.readIdToIndex.get(state.highlightedFeatureId)
       if (idx !== undefined && idx < region.numReads) {
         const startBp = region.readPositions[idx * 2]! + region.regionStart
@@ -1260,10 +1318,7 @@ export class Canvas2DAlignmentsRenderer {
       }
     }
 
-    if (
-      state.selectedChainIds.length === 0 &&
-      state.selectedFeatureId
-    ) {
+    if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
       const idx = region.readIdToIndex.get(state.selectedFeatureId)
       if (idx !== undefined && idx < region.numReads) {
         const startBp = region.readPositions[idx * 2]! + region.regionStart
@@ -1309,8 +1364,7 @@ export class Canvas2DAlignmentsRenderer {
         const endBp = bounds.maxEnd + region.regionStart
         const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y =
-          bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
+        const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
         ctx.fillStyle = 'rgba(0,0,0,0.4)'
         ctx.fillRect(x1, y, x2 - x1, fH)
       }
@@ -1328,8 +1382,7 @@ export class Canvas2DAlignmentsRenderer {
         const endBp = bounds.maxEnd + region.regionStart
         const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
         const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-        const y =
-          bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
+        const y = bounds.y * (fH + fSpacing) + covOffset - state.rangeY[0]
         ctx.strokeStyle = 'rgba(0,0,0,1)'
         ctx.lineWidth = 2
         ctx.strokeRect(x1, y, x2 - x1, fH)

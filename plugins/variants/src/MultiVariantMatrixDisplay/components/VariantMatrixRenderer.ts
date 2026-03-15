@@ -136,7 +136,10 @@ export class VariantMatrixRenderer {
         this.canvas2dFallback = new Canvas2DVariantMatrixRenderer(this.canvas)
         return true
       } catch (e2) {
-        console.error('[VariantMatrixRenderer] Canvas 2D fallback also failed:', e2)
+        console.error(
+          '[VariantMatrixRenderer] Canvas 2D fallback also failed:',
+          e2,
+        )
         return false
       }
     }

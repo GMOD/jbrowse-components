@@ -60,10 +60,9 @@ const suite: TestSuite = {
         await delay(1500)
 
         // Click Submit button to close dialog
-        const submitBtn = await page.waitForSelector(
-          'button[type="submit"]',
-          { timeout: 10000 },
-        )
+        const submitBtn = await page.waitForSelector('button[type="submit"]', {
+          timeout: 10000,
+        })
         await submitBtn?.click()
         await delay(1000)
 

@@ -30,10 +30,12 @@ function createModel(): LifecycleModel {
 
 function withFetchLifecycle(
   model: LifecycleModel,
-  byteEstimate: (() => Promise<{
-    tooLarge: boolean
-    reason?: string
-  } | null>) | null,
+  byteEstimate:
+    | (() => Promise<{
+        tooLarge: boolean
+        reason?: string
+      } | null>)
+    | null,
   work: (ctx: FetchContext) => Promise<void>,
 ) {
   if (model.renderingStopToken) {

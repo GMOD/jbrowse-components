@@ -1,4 +1,7 @@
-import type { FeatureRenderBlock, FeatureRenderState } from './WebGLFeatureRenderer.ts'
+import type {
+  FeatureRenderBlock,
+  FeatureRenderState,
+} from './WebGLFeatureRenderer.ts'
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -241,7 +244,7 @@ export class Canvas2DFeatureRenderer {
 
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
 
-      const stemEndX = cx + (STEM_LENGTH * 0.5 * dir)
+      const stemEndX = cx + STEM_LENGTH * 0.5 * dir
       ctx.fillRect(
         Math.min(cx, stemEndX),
         y - STEM_HALF_H,

@@ -45,12 +45,8 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
 
   const regions: StaticRegion[] = []
   for (const [idx, dr] of view.displayedRegions.entries()) {
-    const blockStart = Math.floor(
-      (windowLeftBp - 0) / blockSizeBp,
-    )
-    const blockEnd = Math.floor(
-      (windowRightBp - 0) / blockSizeBp,
-    )
+    const blockStart = Math.floor((windowLeftBp - 0) / blockSizeBp)
+    const blockEnd = Math.floor((windowRightBp - 0) / blockSizeBp)
     const start = Math.max(dr.start, blockStart * blockSizeBp)
     const end = Math.min(dr.end, (blockEnd + 1) * blockSizeBp)
     if (end > start) {
@@ -81,32 +77,30 @@ describe('fetch autorun integration with MobX observables', () => {
     const view = createMockView()
     const fetches: { regionNumber: number; region: Region }[][] = []
 
-    const dispose = autorun(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        model.fetchGeneration
-        if (!view.initialized || model.error || model.regionTooLargeState) {
-          return
-        }
+    const dispose = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.fetchGeneration
+      if (!view.initialized || model.error || model.regionTooLargeState) {
+        return
+      }
 
-        const staticRegions = computeStaticRegions(view)
-        const needed: { region: Region; regionNumber: number }[] = []
-        for (const vr of staticRegions) {
-          const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
-          const boundsValid =
-            loaded?.refName === vr.refName &&
-            vr.start >= loaded.start &&
-            vr.end <= loaded.end
-          if (boundsValid) {
-            continue
-          }
-          needed.push({ region: vr, regionNumber: vr.regionNumber })
+      const staticRegions = computeStaticRegions(view)
+      const needed: { region: Region; regionNumber: number }[] = []
+      for (const vr of staticRegions) {
+        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const boundsValid =
+          loaded?.refName === vr.refName &&
+          vr.start >= loaded.start &&
+          vr.end <= loaded.end
+        if (boundsValid) {
+          continue
         }
-        if (needed.length > 0) {
-          fetches.push(needed)
-        }
-      },
-    )
+        needed.push({ region: vr, regionNumber: vr.regionNumber })
+      }
+      if (needed.length > 0) {
+        fetches.push(needed)
+      }
+    })
 
     expect(fetches).toHaveLength(1)
     expect(fetches[0]!.length).toBeGreaterThan(0)
@@ -119,32 +113,30 @@ describe('fetch autorun integration with MobX observables', () => {
     const view = createMockView()
     const fetches: number[] = []
 
-    const dispose = autorun(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        model.fetchGeneration
-        if (!view.initialized || model.error || model.regionTooLargeState) {
-          return
-        }
+    const dispose = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.fetchGeneration
+      if (!view.initialized || model.error || model.regionTooLargeState) {
+        return
+      }
 
-        const staticRegions = computeStaticRegions(view)
-        const needed: { region: Region; regionNumber: number }[] = []
-        for (const vr of staticRegions) {
-          const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
-          const boundsValid =
-            loaded?.refName === vr.refName &&
-            vr.start >= loaded.start &&
-            vr.end <= loaded.end
-          if (boundsValid) {
-            continue
-          }
-          needed.push({ region: vr, regionNumber: vr.regionNumber })
+      const staticRegions = computeStaticRegions(view)
+      const needed: { region: Region; regionNumber: number }[] = []
+      for (const vr of staticRegions) {
+        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const boundsValid =
+          loaded?.refName === vr.refName &&
+          vr.start >= loaded.start &&
+          vr.end <= loaded.end
+        if (boundsValid) {
+          continue
         }
-        if (needed.length > 0) {
-          fetches.push(needed.length)
-        }
-      },
-    )
+        needed.push({ region: vr, regionNumber: vr.regionNumber })
+      }
+      if (needed.length > 0) {
+        fetches.push(needed.length)
+      }
+    })
 
     expect(fetches).toHaveLength(1)
 
@@ -173,39 +165,33 @@ describe('fetch autorun integration with MobX observables', () => {
     const view = createMockView()
     const fetches: number[] = []
 
-    const dispose = autorun(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        model.fetchGeneration
-        if (!view.initialized || model.error || model.regionTooLargeState) {
-          return
-        }
+    const dispose = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.fetchGeneration
+      if (!view.initialized || model.error || model.regionTooLargeState) {
+        return
+      }
 
-        const staticRegions = computeStaticRegions(view)
-        const needed: { region: Region; regionNumber: number }[] = []
-        for (const vr of staticRegions) {
-          const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
-          const boundsValid =
-            loaded?.refName === vr.refName &&
-            vr.start >= loaded.start &&
-            vr.end <= loaded.end
-          if (
-            boundsValid &&
-            wiggleIsCacheValid(
-              vr.regionNumber,
-              model.loadedBpPerPx,
-              view.bpPerPx,
-            )
-          ) {
-            continue
-          }
-          needed.push({ region: vr, regionNumber: vr.regionNumber })
+      const staticRegions = computeStaticRegions(view)
+      const needed: { region: Region; regionNumber: number }[] = []
+      for (const vr of staticRegions) {
+        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const boundsValid =
+          loaded?.refName === vr.refName &&
+          vr.start >= loaded.start &&
+          vr.end <= loaded.end
+        if (
+          boundsValid &&
+          wiggleIsCacheValid(vr.regionNumber, model.loadedBpPerPx, view.bpPerPx)
+        ) {
+          continue
         }
-        if (needed.length > 0) {
-          fetches.push(needed.length)
-        }
-      },
-    )
+        needed.push({ region: vr, regionNumber: vr.regionNumber })
+      }
+      if (needed.length > 0) {
+        fetches.push(needed.length)
+      }
+    })
 
     expect(fetches).toHaveLength(1)
 
@@ -242,39 +228,33 @@ describe('fetch autorun integration with MobX observables', () => {
     const view = createMockView()
     const fetches: number[] = []
 
-    const dispose = autorun(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        model.fetchGeneration
-        if (!view.initialized || model.error || model.regionTooLargeState) {
-          return
-        }
+    const dispose = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.fetchGeneration
+      if (!view.initialized || model.error || model.regionTooLargeState) {
+        return
+      }
 
-        const staticRegions = computeStaticRegions(view)
-        const needed: { region: Region; regionNumber: number }[] = []
-        for (const vr of staticRegions) {
-          const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
-          const boundsValid =
-            loaded?.refName === vr.refName &&
-            vr.start >= loaded.start &&
-            vr.end <= loaded.end
-          if (
-            boundsValid &&
-            wiggleIsCacheValid(
-              vr.regionNumber,
-              model.loadedBpPerPx,
-              view.bpPerPx,
-            )
-          ) {
-            continue
-          }
-          needed.push({ region: vr, regionNumber: vr.regionNumber })
+      const staticRegions = computeStaticRegions(view)
+      const needed: { region: Region; regionNumber: number }[] = []
+      for (const vr of staticRegions) {
+        const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
+        const boundsValid =
+          loaded?.refName === vr.refName &&
+          vr.start >= loaded.start &&
+          vr.end <= loaded.end
+        if (
+          boundsValid &&
+          wiggleIsCacheValid(vr.regionNumber, model.loadedBpPerPx, view.bpPerPx)
+        ) {
+          continue
         }
-        if (needed.length > 0) {
-          fetches.push(needed.length)
-        }
-      },
-    )
+        needed.push({ region: vr, regionNumber: vr.regionNumber })
+      }
+      if (needed.length > 0) {
+        fetches.push(needed.length)
+      }
+    })
 
     expect(fetches).toHaveLength(1)
 
@@ -311,16 +291,14 @@ describe('fetch autorun integration with MobX observables', () => {
     let fetchCount = 0
     let prevBpPerPx: number | undefined
 
-    const disposeFetch = autorun(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        model.fetchGeneration
-        if (!view.initialized || model.error || model.regionTooLargeState) {
-          return
-        }
-        fetchCount++
-      },
-    )
+    const disposeFetch = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.fetchGeneration
+      if (!view.initialized || model.error || model.regionTooLargeState) {
+        return
+      }
+      fetchCount++
+    })
 
     const disposeClear = autorun(() => {
       const { bpPerPx } = view
@@ -371,16 +349,14 @@ describe('fetch autorun integration with MobX observables', () => {
     let fetchCount = 0
     let prevBpPerPx: number | undefined
 
-    const disposeFetch = autorun(
-      () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        model.fetchGeneration
-        if (!view.initialized || model.error || model.regionTooLargeState) {
-          return
-        }
-        fetchCount++
-      },
-    )
+    const disposeFetch = autorun(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.fetchGeneration
+      if (!view.initialized || model.error || model.regionTooLargeState) {
+        return
+      }
+      fetchCount++
+    })
 
     const disposeClear = autorun(() => {
       const { bpPerPx } = view

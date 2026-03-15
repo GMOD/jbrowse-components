@@ -55,10 +55,7 @@ describe('synteny view bounds checking', () => {
   })
 
   it('returns assembly names for valid level', () => {
-    const views = [
-      { assemblyNames: ['hg38'] },
-      { assemblyNames: ['mm39'] },
-    ]
+    const views = [{ assemblyNames: ['hg38'] }, { assemblyNames: ['mm39'] }]
     expect(getAssemblyNames(views, 0)).toEqual(['hg38', 'mm39'])
   })
 

@@ -171,7 +171,10 @@ export class SyntenyRenderer {
   }
 
   async init() {
-    console.log('[SyntenyRenderer.init] starting, gpuOverride:', getGpuOverride())
+    console.log(
+      '[SyntenyRenderer.init] starting, gpuOverride:',
+      getGpuOverride(),
+    )
     if (getGpuOverride() === 'canvas2d') {
       console.log('[SyntenyRenderer.init] using canvas2d override')
       this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
@@ -248,12 +251,15 @@ export class SyntenyRenderer {
   }
 
   uploadGeometry(data: SyntenyInstanceData) {
-    console.log('[SyntenyRenderer.uploadGeometry]', JSON.stringify({
-      instanceCount: data.instanceCount,
-      nonCigarInstanceCount: data.nonCigarInstanceCount,
-      hasGlFallback: !!this.glFallback,
-      hasCanvas2dFallback: !!this.canvas2dFallback,
-    }))
+    console.log(
+      '[SyntenyRenderer.uploadGeometry]',
+      JSON.stringify({
+        instanceCount: data.instanceCount,
+        nonCigarInstanceCount: data.nonCigarInstanceCount,
+        hasGlFallback: !!this.glFallback,
+        hasCanvas2dFallback: !!this.canvas2dFallback,
+      }),
+    )
     if (this.glFallback) {
       this.glFallback.uploadGeometry(data)
       return
@@ -344,23 +350,29 @@ export class SyntenyRenderer {
       !SyntenyRenderer.fillPipeline ||
       !this.context
     ) {
-      console.log('[SyntenyRenderer.render] early return', JSON.stringify({
-        hasDevice: !!device,
-        hasInstanceBuffer: !!this.instanceBuffer,
-        instanceCount: this.instanceCount,
-        hasBindGroup: !!this.bindGroup,
-        hasFillPipeline: !!SyntenyRenderer.fillPipeline,
-        hasContext: !!this.context,
-        hasGlFallback: !!this.glFallback,
-        hasCanvas2dFallback: !!this.canvas2dFallback,
-      }))
+      console.log(
+        '[SyntenyRenderer.render] early return',
+        JSON.stringify({
+          hasDevice: !!device,
+          hasInstanceBuffer: !!this.instanceBuffer,
+          instanceCount: this.instanceCount,
+          hasBindGroup: !!this.bindGroup,
+          hasFillPipeline: !!SyntenyRenderer.fillPipeline,
+          hasContext: !!this.context,
+          hasGlFallback: !!this.glFallback,
+          hasCanvas2dFallback: !!this.canvas2dFallback,
+        }),
+      )
       return
     }
-    console.log('[SyntenyRenderer.render] rendering', JSON.stringify({
-      instanceCount: this.instanceCount,
-      canvasWidth: this.canvas.width,
-      canvasHeight: this.canvas.height,
-    }))
+    console.log(
+      '[SyntenyRenderer.render] rendering',
+      JSON.stringify({
+        instanceCount: this.instanceCount,
+        canvasWidth: this.canvas.width,
+        canvasHeight: this.canvas.height,
+      }),
+    )
 
     const scale0 = this.geometryBpPerPx0 / curBpPerPx0
     const scale1 = this.geometryBpPerPx1 / curBpPerPx1

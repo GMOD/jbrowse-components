@@ -20,9 +20,7 @@ function buildSources(
   layout: Source[],
   subtreeFilter: string[] | undefined,
 ) {
-  const sourceMap = Object.fromEntries(
-    sourcesVolatile.map(s => [s.name, s]),
-  )
+  const sourceMap = Object.fromEntries(sourcesVolatile.map(s => [s.name, s]))
   const layoutColors = Object.fromEntries(
     layout.filter(s => s.color).map(s => [s.name, s.color]),
   )
@@ -54,7 +52,9 @@ describe('multi-wiggle overlay color assignment', () => {
     const result = buildSources(sources, [], undefined)
     const colors = result.map(s => s.color)
     const uniqueColors = new Set(colors)
-    expect(uniqueColors.size).toBe(Math.min(sources.length, overlayColors.length))
+    expect(uniqueColors.size).toBe(
+      Math.min(sources.length, overlayColors.length),
+    )
   })
 
   it('assigns distinct colors after subtreeFilter', () => {
@@ -86,14 +86,8 @@ describe('multi-wiggle overlay color assignment', () => {
   })
 
   it('preserves explicit layout colors over adapter colors', () => {
-    const vol: Source[] = [
-      { name: 'a', color: '#ff0000' },
-      { name: 'b' },
-    ]
-    const layout: Source[] = [
-      { name: 'a', color: '#0000ff' },
-      { name: 'b' },
-    ]
+    const vol: Source[] = [{ name: 'a', color: '#ff0000' }, { name: 'b' }]
+    const layout: Source[] = [{ name: 'a', color: '#0000ff' }, { name: 'b' }]
     const result = buildSources(vol, layout, undefined)
     expect(result[0]!.color).toBe('#0000ff')
   })

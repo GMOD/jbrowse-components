@@ -193,9 +193,7 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         numFeatures: 4,
       })
 
-      expect(ctx.fillStyle).toBe(
-        `rgba(128,64,32,${127 / 255})`,
-      )
+      expect(ctx.fillStyle).toBe(`rgba(128,64,32,${127 / 255})`)
     })
   })
 

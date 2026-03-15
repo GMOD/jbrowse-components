@@ -142,7 +142,8 @@ export function bpToPxFromIndex(
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
       return {
         index: entry.index,
-        offsetPx: (entry.bpBefore + bpOffset) / idx.bpPerPx + entry.paddingPxBefore,
+        offsetPx:
+          (entry.bpBefore + bpOffset) / idx.bpPerPx + entry.paddingPxBefore,
         paddingPx: entry.paddingPxBefore,
       }
     }
@@ -279,10 +280,8 @@ export async function executeSyntenyFeaturesAndPositions({
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2Offset
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2Offset
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     if (topOffScreen && botOffScreen) {
       culledCount++

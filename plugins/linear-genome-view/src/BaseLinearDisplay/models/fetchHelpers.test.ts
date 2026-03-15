@@ -2,7 +2,9 @@ import { checkByteEstimate } from './fetchHelpers.ts'
 
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 
-function makeConfig(overrides: Partial<ByteEstimateConfig> = {}): ByteEstimateConfig {
+function makeConfig(
+  overrides: Partial<ByteEstimateConfig> = {},
+): ByteEstimateConfig {
   return {
     adapterConfig: { type: 'BamAdapter' },
     fetchSizeLimit: 1_000_000,
@@ -18,7 +20,9 @@ function makeRpcManager(stats: Record<string, unknown>) {
 }
 
 const notStale = { isStale: () => false }
-const regions = [{ refName: 'chr1', start: 0, end: 50000, assemblyName: 'hg38' }]
+const regions = [
+  { refName: 'chr1', start: 0, end: 50000, assemblyName: 'hg38' },
+]
 
 describe('checkByteEstimate', () => {
   it('skips check when visibleBp < AUTO_FORCE_LOAD_BP (20kbp)', async () => {

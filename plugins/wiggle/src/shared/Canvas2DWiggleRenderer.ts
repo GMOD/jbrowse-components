@@ -5,7 +5,11 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleShader.ts'
 
-import type { SourceRenderData, WiggleGPURenderState, WiggleRenderBlock } from './WiggleRenderer.ts'
+import type {
+  SourceRenderData,
+  WiggleGPURenderState,
+  WiggleRenderBlock,
+} from './WiggleRenderer.ts'
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -83,10 +87,7 @@ export class Canvas2DWiggleRenderer {
     this.regions.set(regionNumber, { regionStart, sources, numRows })
   }
 
-  renderBlocks(
-    blocks: WiggleRenderBlock[],
-    renderState: WiggleGPURenderState,
-  ) {
+  renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
     const { canvasWidth, canvasHeight, renderingType, scaleType, domainY } =
       renderState
     const dpr = window.devicePixelRatio || 1
@@ -278,10 +279,7 @@ export class Canvas2DWiggleRenderer {
       const w = Math.max(1.5, x2 - x1)
 
       const norm = normalizeScore(source.featureScores[i]!, domainY, scaleType)
-      const t =
-        maxDist > 0.0001
-          ? Math.abs(norm - zeroNorm) / maxDist
-          : 0
+      const t = maxDist > 0.0001 ? Math.abs(norm - zeroNorm) / maxDist : 0
 
       const cr = Math.round(255 + (r - 255) * t)
       const cg = Math.round(255 + (g - 255) * t)
@@ -324,8 +322,7 @@ export class Canvas2DWiggleRenderer {
         rowTop
       const prevScore =
         i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
-      const prevY =
-        scoreToY(prevScore, domainY, rowHeight, scaleType) + rowTop
+      const prevY = scoreToY(prevScore, domainY, rowHeight, scaleType) + rowTop
 
       ctx.moveTo(x1, prevY)
       ctx.lineTo(x1, scoreY)

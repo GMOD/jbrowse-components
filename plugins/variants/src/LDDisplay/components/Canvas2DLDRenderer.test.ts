@@ -50,14 +50,16 @@ function makeColorRamp() {
   return ramp
 }
 
-function makeRenderState(overrides?: Partial<{
-  canvasWidth: number
-  canvasHeight: number
-  yScalar: number
-  signedLD: boolean
-  viewScale: number
-  viewOffsetX: number
-}>) {
+function makeRenderState(
+  overrides?: Partial<{
+    canvasWidth: number
+    canvasHeight: number
+    yScalar: number
+    signedLD: boolean
+    viewScale: number
+    viewOffsetX: number
+  }>,
+) {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
@@ -136,7 +138,11 @@ describe('Canvas2DLDRenderer', () => {
       })
       renderer.uploadColorRamp(makeColorRamp())
 
-      const state = makeRenderState({ viewScale: 1, viewOffsetX: 0, yScalar: 1 })
+      const state = makeRenderState({
+        viewScale: 1,
+        viewOffsetX: 0,
+        yScalar: 1,
+      })
       renderer.render(state)
 
       // Verify the four corners are rotated by 45 degrees

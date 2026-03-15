@@ -109,21 +109,16 @@ export class Canvas2DSyntenyRenderer {
       const padTop = data.padTops[i]!
       const padBottom = data.padBottoms[i]!
 
-      const sx1 =
-        (data.x1[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
-      const sx2 =
-        (data.x2[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
-      const sx3 =
-        (data.x3[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
-      const sx4 =
-        (data.x4[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
+      const sx1 = (data.x1[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
+      const sx2 = (data.x2[i]! - adjOff0) * scale0 - padTop * (scale0 - 1)
+      const sx3 = (data.x3[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
+      const sx4 = (data.x4[i]! - adjOff1) * scale1 - padBottom * (scale1 - 1)
 
       const minX = Math.min(sx1, sx2, sx3, sx4)
       const maxX = Math.max(sx1, sx2, sx3, sx4)
       if (maxX < -maxOffScreenPx || minX > logicalW + maxOffScreenPx) {
         continue
       }
-
 
       const isHovered = data.featureIds[i] === hoveredFeatureId
       const isClicked = data.featureIds[i] === clickedFeatureId
@@ -194,7 +189,14 @@ export class Canvas2DSyntenyRenderer {
       return -1
     }
 
-    const { offset0, offset1, height, curBpPerPx0, curBpPerPx1, minAlignmentLength } = params
+    const {
+      offset0,
+      offset1,
+      height,
+      curBpPerPx0,
+      curBpPerPx1,
+      minAlignmentLength,
+    } = params
     const scale0 = data.geometryBpPerPx0 / curBpPerPx0
     const scale1 = data.geometryBpPerPx1 / curBpPerPx1
     const adjOff0 = offset0 / scale0 - data.refOffset0

@@ -39,9 +39,7 @@ function comparePair(
   const onlyA = [...filesA].filter(f => !filesB.has(f))
   const onlyB = [...filesB].filter(f => !filesA.has(f))
 
-  console.log(
-    `\n  Comparing ${common.length} snapshots: ${nameA} vs ${nameB}`,
-  )
+  console.log(`\n  Comparing ${common.length} snapshots: ${nameA} vs ${nameB}`)
 
   if (onlyA.length > 0) {
     console.log(`    ${nameA} only: ${onlyA.join(', ')}`)
@@ -90,14 +88,20 @@ function comparePair(
       console.log(`    ~  ${file}: ${diffPercent.toFixed(2)}% drift`)
       similar++
       fs.writeFileSync(
-        path.join(diffDir, `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`),
+        path.join(
+          diffDir,
+          `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`,
+        ),
         PNG.sync.write(diffImg),
       )
     } else {
       console.log(`    ✗  ${file}: ${diffPercent.toFixed(2)}% drift`)
       different++
       fs.writeFileSync(
-        path.join(diffDir, `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`),
+        path.join(
+          diffDir,
+          `${nameA}-vs-${nameB}-${file.replace('.png', '.diff.png')}`,
+        ),
         PNG.sync.write(diffImg),
       )
     }

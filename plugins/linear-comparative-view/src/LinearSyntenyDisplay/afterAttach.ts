@@ -32,10 +32,13 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           !view.initialized ||
           !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
         ) {
-          console.log('[syntenyDrawAutorun] waiting for views to initialize', JSON.stringify({
-            viewInitialized: view.initialized,
-            viewCount: view.views.length,
-          }))
+          console.log(
+            '[syntenyDrawAutorun] waiting for views to initialize',
+            JSON.stringify({
+              viewInitialized: view.initialized,
+              viewCount: view.views.length,
+            }),
+          )
           return
         }
 
@@ -52,21 +55,27 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const width = view.width
 
         if (!self.gpuRenderer || !self.gpuInitialized) {
-          console.log('[syntenyDrawAutorun] GPU not ready', JSON.stringify({
-            hasRenderer: !!self.gpuRenderer,
-            gpuInitialized: self.gpuInitialized,
-          }))
+          console.log(
+            '[syntenyDrawAutorun] GPU not ready',
+            JSON.stringify({
+              hasRenderer: !!self.gpuRenderer,
+              gpuInitialized: self.gpuInitialized,
+            }),
+          )
           return
         }
 
-        console.log('[syntenyDrawAutorun] drawing', JSON.stringify({
-          hasFeatureData: !!featureData,
-          numFeats: featureData?.featureIds?.length ?? 0,
-          hasGpuInstanceData: !!gpuInstanceData,
-          level,
-          width,
-          height,
-        }))
+        console.log(
+          '[syntenyDrawAutorun] drawing',
+          JSON.stringify({
+            hasFeatureData: !!featureData,
+            numFeats: featureData?.featureIds?.length ?? 0,
+            hasGpuInstanceData: !!gpuInstanceData,
+            level,
+            width,
+            height,
+          }),
+        )
 
         try {
           if (self.gpuRenderer !== lastRenderer) {
@@ -189,12 +198,17 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
             const regions = view.views[level]!.staticBlocks.contentBlocks
 
-            console.log('[syntenyFetchAutorun] calling RPC', JSON.stringify({
-              level,
-              regionCount: regions.length,
-              regions: regions.map(r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`),
-              adapterConfig: JSON.stringify(adapterConfig).slice(0, 200),
-            }))
+            console.log(
+              '[syntenyFetchAutorun] calling RPC',
+              JSON.stringify({
+                level,
+                regionCount: regions.length,
+                regions: regions.map(
+                  r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`,
+                ),
+                adapterConfig: JSON.stringify(adapterConfig).slice(0, 200),
+              }),
+            )
 
             const result = await rpcManager.call(
               sessionId,
@@ -219,11 +233,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             }
 
             const { instanceData, ...featureData } = result
-            console.log('[syntenyFetchAutorun] RPC result', JSON.stringify({
-              numFeatures: featureData.featureIds?.length ?? 0,
-              hasInstanceData: !!instanceData,
-              instanceCount: instanceData?.instanceCount ?? 0,
-            }))
+            console.log(
+              '[syntenyFetchAutorun] RPC result',
+              JSON.stringify({
+                numFeatures: featureData.featureIds?.length ?? 0,
+                hasInstanceData: !!instanceData,
+                instanceCount: instanceData?.instanceCount ?? 0,
+              }),
+            )
             self.setFeatureData(featureData)
             self.setGpuInstanceData(instanceData)
           } catch (e) {

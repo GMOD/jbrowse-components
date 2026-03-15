@@ -758,8 +758,12 @@ export class WebGLRenderer {
     const segInsertSizes = new Float32Array(n)
     const segPairOrientations = new Float32Array(n)
     const segStrands = new Float32Array(n)
-    const segTagColors = data.readTagColors.length > 0 ? new Uint8Array(n * 3) : null
-    const segChainHasSupp = data.readChainHasSupp && data.readChainHasSupp.length > 0 ? new Float32Array(n) : null
+    const segTagColors =
+      data.readTagColors.length > 0 ? new Uint8Array(n * 3) : null
+    const segChainHasSupp =
+      data.readChainHasSupp && data.readChainHasSupp.length > 0
+        ? new Float32Array(n)
+        : null
     const segReadIndices = new Uint32Array(n)
     const segEdgeFlags = new Uint32Array(n)
     const segReadSpans = new Uint32Array(n * 2)
@@ -791,10 +795,20 @@ export class WebGLRenderer {
     this.uploadBuffer(this.readProgram, 'a_flags', segFlags, 1)
     this.uploadBuffer(this.readProgram, 'a_mapq', segMapqs, 1)
     this.uploadBuffer(this.readProgram, 'a_insertSize', segInsertSizes, 1)
-    this.uploadBuffer(this.readProgram, 'a_pairOrientation', segPairOrientations, 1)
+    this.uploadBuffer(
+      this.readProgram,
+      'a_pairOrientation',
+      segPairOrientations,
+      1,
+    )
     this.uploadBuffer(this.readProgram, 'a_strand', segStrands, 1)
     if (segTagColors) {
-      this.uploadNormalizedByteBuffer(this.readProgram, 'a_tagColor', segTagColors, 3)
+      this.uploadNormalizedByteBuffer(
+        this.readProgram,
+        'a_tagColor',
+        segTagColors,
+        3,
+      )
     } else {
       const loc = gl.getAttribLocation(this.readProgram, 'a_tagColor')
       if (loc >= 0) {

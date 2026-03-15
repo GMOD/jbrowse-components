@@ -93,7 +93,9 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('returns modification items when provided', () => {
-    const mods = new Map([['5mC', { type: '5mC', base: 'C', strand: '+', color: 'red' }]])
+    const mods = new Map([
+      ['5mC', { type: '5mC', base: 'C', strand: '+', color: 'red' }],
+    ])
     const items = getReadDisplayLegendItems({ type: 'modifications' }, mods)
     expect(items.some(i => i.label === '5mC')).toBe(true)
     expect(items.some(i => i.label === 'Supplementary/split')).toBe(true)
@@ -101,7 +103,10 @@ describe('getReadDisplayLegendItems', () => {
 })
 
 describe('getSNPCoverageLegendItems', () => {
-  const emptyMods = new Map<string, { type: string; base: string; strand: string; color: string }>()
+  const emptyMods = new Map<
+    string,
+    { type: string; base: string; strand: string; color: string }
+  >()
 
   test('returns methylation items', () => {
     const items = getSNPCoverageLegendItems(

@@ -29,9 +29,9 @@ The alignments display has three rendering backends that must stay synchronized:
 2. **WebGPU** (WGSL shaders in `../wgsl/` + `AlignmentsRenderer.ts`)
 3. **Canvas 2D** (`Canvas2DAlignmentsRenderer.ts`)
 
-When changing rendering behavior (thresholds, colors, draw order, outline logic),
-apply the same change to all three backends. The Canvas 2D renderer has no
-shaders but implements the same logic in TypeScript.
+When changing rendering behavior (thresholds, colors, draw order, outline
+logic), apply the same change to all three backends. The Canvas 2D renderer has
+no shaders but implements the same logic in TypeScript.
 
 ### WebGPU premultiplied alpha
 
@@ -39,6 +39,6 @@ The WebGPU canvas uses `alphaMode: 'premultiplied'`. Any fragment shader that
 outputs alpha < 1.0 must premultiply the RGB channels (i.e. `rgb * a`). Opaque
 output (`a = 1.0`) does not need special handling. The WebGL backend also uses
 `premultipliedAlpha: true` but handles blending before canvas compositing, so
-the same straight-alpha fragment output works in both — except for arcs and other
-anti-aliased geometry where the AA produces sub-pixel alpha. When in doubt,
-premultiply in WGSL fragment shaders.
+the same straight-alpha fragment output works in both — except for arcs and
+other anti-aliased geometry where the AA produces sub-pixel alpha. When in
+doubt, premultiply in WGSL fragment shaders.

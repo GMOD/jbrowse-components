@@ -182,11 +182,21 @@ describe('bpToPxFromIndex matches bpToPx', () => {
     const idx = buildBpToPxIndex(self)
 
     const r0 = bpToPxFromIndex(idx, 'chr1', 500, 0)
-    const r0Expected = bpToPx({ self, refName: 'chr1', coord: 500, regionNumber: 0 })
+    const r0Expected = bpToPx({
+      self,
+      refName: 'chr1',
+      coord: 500,
+      regionNumber: 0,
+    })
     expect(r0).toEqual(r0Expected)
 
     const r1 = bpToPxFromIndex(idx, 'chr1', 2500, 1)
-    const r1Expected = bpToPx({ self, refName: 'chr1', coord: 2500, regionNumber: 1 })
+    const r1Expected = bpToPx({
+      self,
+      refName: 'chr1',
+      coord: 2500,
+      regionNumber: 1,
+    })
     expect(r1).toEqual(r1Expected)
   })
 
@@ -330,10 +340,8 @@ describe('viewport culling', () => {
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     expect(topOffScreen).toBe(true)
     expect(botOffScreen).toBe(true)
@@ -366,10 +374,8 @@ describe('viewport culling', () => {
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     expect(topOffScreen).toBe(false)
     expect(botOffScreen).toBe(true)
@@ -402,10 +408,8 @@ describe('viewport culling', () => {
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     expect(topOffScreen).toBe(false)
     expect(botOffScreen).toBe(false)
@@ -438,10 +442,8 @@ describe('viewport culling', () => {
     const botMinX = Math.min(p21.offsetPx, p22.offsetPx) - v2.offsetPx
     const botMaxX = Math.max(p21.offsetPx, p22.offsetPx) - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     expect(topOffScreen).toBe(true)
     expect(botOffScreen).toBe(true)
@@ -486,10 +488,8 @@ describe('viewport culling', () => {
         bpToPxFromIndex(v2Idx, 'chr1', 600)!.offsetPx,
       ) - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     expect(topOffScreen).toBe(false)
     expect(botOffScreen).toBe(true)
@@ -513,19 +513,13 @@ describe('viewport culling', () => {
     const v1Idx = buildBpToPxIndex(v1)
     const v2Idx = buildBpToPxIndex(v2)
 
-    const topMinX =
-      bpToPxFromIndex(v1Idx, 'chr1', 900)!.offsetPx - v1.offsetPx
-    const topMaxX =
-      bpToPxFromIndex(v1Idx, 'chr1', 1000)!.offsetPx - v1.offsetPx
-    const botMinX =
-      bpToPxFromIndex(v2Idx, 'chr1', 900)!.offsetPx - v2.offsetPx
-    const botMaxX =
-      bpToPxFromIndex(v2Idx, 'chr1', 1000)!.offsetPx - v2.offsetPx
+    const topMinX = bpToPxFromIndex(v1Idx, 'chr1', 900)!.offsetPx - v1.offsetPx
+    const topMaxX = bpToPxFromIndex(v1Idx, 'chr1', 1000)!.offsetPx - v1.offsetPx
+    const botMinX = bpToPxFromIndex(v2Idx, 'chr1', 900)!.offsetPx - v2.offsetPx
+    const botMaxX = bpToPxFromIndex(v2Idx, 'chr1', 1000)!.offsetPx - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     // Feature at 900-1000 relative to viewport: topMinX=900, topMaxX=1000
     // viewWidth + bufferPx = 1200, so 900 < 1200 → NOT off-screen
@@ -550,19 +544,13 @@ describe('viewport culling', () => {
     const v1Idx = buildBpToPxIndex(v1)
     const v2Idx = buildBpToPxIndex(v2)
 
-    const topMinX =
-      bpToPxFromIndex(v1Idx, 'chr1', 1300)!.offsetPx - v1.offsetPx
-    const topMaxX =
-      bpToPxFromIndex(v1Idx, 'chr1', 1400)!.offsetPx - v1.offsetPx
-    const botMinX =
-      bpToPxFromIndex(v2Idx, 'chr1', 1300)!.offsetPx - v2.offsetPx
-    const botMaxX =
-      bpToPxFromIndex(v2Idx, 'chr1', 1400)!.offsetPx - v2.offsetPx
+    const topMinX = bpToPxFromIndex(v1Idx, 'chr1', 1300)!.offsetPx - v1.offsetPx
+    const topMaxX = bpToPxFromIndex(v1Idx, 'chr1', 1400)!.offsetPx - v1.offsetPx
+    const botMinX = bpToPxFromIndex(v2Idx, 'chr1', 1300)!.offsetPx - v2.offsetPx
+    const botMaxX = bpToPxFromIndex(v2Idx, 'chr1', 1400)!.offsetPx - v2.offsetPx
 
-    const topOffScreen =
-      topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
-    const botOffScreen =
-      botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
+    const topOffScreen = topMaxX < -bufferPx || topMinX > viewWidth + bufferPx
+    const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     // Feature at 1300-1400 > 1200 (viewWidth + bufferPx) → off-screen
     expect(topOffScreen).toBe(true)

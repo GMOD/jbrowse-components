@@ -334,7 +334,9 @@ export default function MultiRegionDisplayMixin() {
                 }
                 const { bpPerPx } = view
                 const visibleKey = JSON.stringify(
-                  view.mergedVisibleRegions.map(r => `${r.refName}:${r.regionNumber}`),
+                  view.mergedVisibleRegions.map(
+                    r => `${r.refName}:${r.regionNumber}`,
+                  ),
                 )
                 const changed =
                   (prevBpPerPx !== undefined && bpPerPx !== prevBpPerPx) ||

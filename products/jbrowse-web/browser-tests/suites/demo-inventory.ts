@@ -59,11 +59,7 @@ const localDemos: TestSuite = {
     {
       name: 'Volvox demo loads',
       fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'test_data/volvox/config.json',
-          'ctgA',
-        )
+        await loadDemoAndCheck(page, 'test_data/volvox/config.json', 'ctgA')
       },
     },
     {
@@ -87,10 +83,7 @@ const localDemos: TestSuite = {
     {
       name: 'Yeast synteny demo loads',
       fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'test_data/yeast_synteny/config.json',
-        )
+        await loadDemoAndCheck(page, 'test_data/yeast_synteny/config.json')
       },
     },
     {

@@ -49,7 +49,9 @@ export interface VariantMatrixDisplayModel {
   totalHeight: number
   nrow: number
   sources: { name: string; baseName?: string }[] | undefined
-  featuresVolatile: { id(): string; toJSON(): Record<string, unknown> }[] | undefined
+  featuresVolatile:
+    | { id(): string; toJSON(): Record<string, unknown> }[]
+    | undefined
   referenceDrawingMode: string
   regionTooLarge: boolean
   featuresReady: boolean

@@ -36,7 +36,9 @@ function createMockCanvas() {
   return { canvas, ctx, fillRectCalls, pathOps }
 }
 
-function makeBlock(overrides?: Partial<VariantRenderBlock>): VariantRenderBlock {
+function makeBlock(
+  overrides?: Partial<VariantRenderBlock>,
+): VariantRenderBlock {
   return {
     regionNumber: 0,
     bpRangeX: [0, 1000],
@@ -60,8 +62,7 @@ function makeRegionData(overrides?: {
   const cellRowIndices =
     overrides?.cellRowIndices ?? Array.from({ length: numCells }, () => 0)
   const cellColors =
-    overrides?.cellColors ??
-    Array.from({ length: numCells * 4 }, () => 255)
+    overrides?.cellColors ?? Array.from({ length: numCells * 4 }, () => 255)
   const cellShapeTypes =
     overrides?.cellShapeTypes ?? Array.from({ length: numCells }, () => 0)
 

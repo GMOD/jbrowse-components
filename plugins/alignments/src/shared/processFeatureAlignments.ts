@@ -629,8 +629,14 @@ export function buildSegmentArrays(
       const firstSegIdx = segIdx
       let cur = readStart
       for (const skip of skips) {
-        const gapStart = Math.min(readEnd, Math.max(readStart, skip.start - regionStart))
-        const gapEnd = Math.min(readEnd, Math.max(readStart, skip.end - regionStart))
+        const gapStart = Math.min(
+          readEnd,
+          Math.max(readStart, skip.start - regionStart),
+        )
+        const gapEnd = Math.min(
+          readEnd,
+          Math.max(readStart, skip.end - regionStart),
+        )
 
         // Exon segment before this gap
         if (gapStart > cur) {
@@ -655,8 +661,10 @@ export function buildSegmentArrays(
       // Reads entirely intronic in this region produce no segments.
       // Apply edge flags to the outermost segments.
       if (segIdx > firstSegIdx) {
-        segmentEdgeFlags[firstSegIdx] = segmentEdgeFlags[firstSegIdx]! | (edgeFlags & 0b01)
-        segmentEdgeFlags[segIdx - 1] = segmentEdgeFlags[segIdx - 1]! | (edgeFlags & 0b10)
+        segmentEdgeFlags[firstSegIdx] =
+          segmentEdgeFlags[firstSegIdx]! | (edgeFlags & 0b01)
+        segmentEdgeFlags[segIdx - 1] =
+          segmentEdgeFlags[segIdx - 1]! | (edgeFlags & 0b10)
       }
     }
   }

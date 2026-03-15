@@ -53,10 +53,9 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector(
-          '[data-testid^="display-gff3tabix_genes"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector('[data-testid^="display-gff3tabix_genes"]', {
+          timeout: 60000,
+        })
         await waitForDataLoaded(page)
         await waitForCanvasRendered(
           page,
