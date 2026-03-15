@@ -13,7 +13,6 @@ import {
 } from './shaders/arcShaders.ts'
 import { splitPositionWithFrac } from './shaders/utils.ts'
 import {
-  GAP_ERASE_WGSL,
   GAP_WGSL,
   HARDCLIP_WGSL,
   INSERTION_WGSL,
@@ -81,7 +80,7 @@ import {
   U_DEPTH_SCALE,
   U_DOMAIN_END,
   U_DOMAIN_START,
-  U_ERASE_MODE,
+
   U_FEAT_H,
   U_FEAT_SPACING,
   U_FLIP_STRAND_LONG_READ,
@@ -123,7 +122,7 @@ interface GpuRegion {
   regionStart: number
   readIdToIndex: Map<string, number>
   readBuffer: GPUBuffer | null
-  readCount: number
+  segmentCount: number
   readBG: GPUBindGroup | null
   readPositions: Uint32Array
   readYs: Uint16Array
@@ -189,7 +188,7 @@ export class AlignmentsRenderer {
   private static layout: GPUBindGroupLayout | null = null
   private static readPL: GPURenderPipeline | null = null
   private static gapPL: GPURenderPipeline | null = null
-  private static gapErasePL: GPURenderPipeline | null = null
+
   private static mismatchPL: GPURenderPipeline | null = null
   private static insertionPL: GPURenderPipeline | null = null
   private static softclipPL: GPURenderPipeline | null = null
@@ -294,34 +293,6 @@ export class AlignmentsRenderer {
 
     AlignmentsRenderer.readPL = mkPL(READ_WGSL)
     AlignmentsRenderer.gapPL = mkPL(GAP_WGSL)
-    {
-      const replaceTarget: GPUColorTargetState = {
-        format: 'bgra8unorm',
-        blend: {
-          color: {
-            srcFactor: 'one',
-            dstFactor: 'zero',
-            operation: 'add',
-          },
-          alpha: {
-            srcFactor: 'one',
-            dstFactor: 'zero',
-            operation: 'add',
-          },
-        },
-      }
-      const mod = device.createShaderModule({ code: GAP_ERASE_WGSL })
-      AlignmentsRenderer.gapErasePL = device.createRenderPipeline({
-        layout: pLayout,
-        vertex: { module: mod, entryPoint: 'vs_main' },
-        fragment: {
-          module: mod,
-          entryPoint: 'fs_main',
-          targets: [replaceTarget],
-        },
-        primitive: { topology: 'triangle-list' },
-      })
-    }
     AlignmentsRenderer.mismatchPL = mkPL(MISMATCH_WGSL)
     AlignmentsRenderer.insertionPL = mkPL(INSERTION_WGSL)
     AlignmentsRenderer.softclipPL = mkPL(SOFTCLIP_WGSL)
@@ -411,7 +382,7 @@ export class AlignmentsRenderer {
       regionStart,
       readIdToIndex: new Map(),
       readBuffer: null,
-      readCount: 0,
+      segmentCount: 0,
       readBG: null,
       readPositions: new Uint32Array(0),
       readYs: new Uint16Array(0),
@@ -533,37 +504,44 @@ export class AlignmentsRenderer {
     for (let i = 0; i < data.numReads; i++) {
       r.readIdToIndex.set(data.readIds[i]!, i)
     }
-    if (data.numReads > 0) {
-      const n = data.numReads
+    if (data.numSegments > 0) {
+      const n = data.numSegments
       const buf = new ArrayBuffer(n * READ_STRIDE * 4)
       const u32 = new Uint32Array(buf)
       const f32 = new Float32Array(buf)
       const i32 = new Int32Array(buf)
-      for (let i = 0; i < n; i++) {
-        const o = i * READ_STRIDE
-        u32[o] = data.readPositions[i * 2]!
-        u32[o + 1] = data.readPositions[i * 2 + 1]!
-        u32[o + 2] = data.readYs[i]!
-        u32[o + 3] = data.readFlags[i]!
-        u32[o + 4] = data.readMapqs[i]!
-        f32[o + 5] = data.readInsertSizes[i]!
-        u32[o + 6] = data.readPairOrientations[i]!
-        i32[o + 7] = data.readStrands[i]!
+      for (let j = 0; j < n; j++) {
+        const ri = data.segmentReadIndices[j]!
+        const o = j * READ_STRIDE
+        u32[o] = data.segmentPositions[j * 2]!
+        u32[o + 1] = data.segmentPositions[j * 2 + 1]!
+        u32[o + 2] = data.readYs[ri]!
+        u32[o + 3] = data.readFlags[ri]!
+        u32[o + 4] = data.readMapqs[ri]!
+        f32[o + 5] = data.readInsertSizes[ri]!
+        u32[o + 6] = data.readPairOrientations[ri]!
+        i32[o + 7] = data.readStrands[ri]!
         f32[o + 8] =
-          data.readTagColors.length > 0 ? data.readTagColors[i * 3]! / 255 : 0
+          data.readTagColors.length > 0
+            ? data.readTagColors[ri * 3]! / 255
+            : 0
         f32[o + 9] =
           data.readTagColors.length > 0
-            ? data.readTagColors[i * 3 + 1]! / 255
+            ? data.readTagColors[ri * 3 + 1]! / 255
             : 0
         f32[o + 10] =
           data.readTagColors.length > 0
-            ? data.readTagColors[i * 3 + 2]! / 255
+            ? data.readTagColors[ri * 3 + 2]! / 255
             : 0
-        u32[o + 11] = data.readChainHasSupp?.[i] ?? 0
+        u32[o + 11] = data.readChainHasSupp?.[ri] ?? 0
+        u32[o + 12] = ri
+        u32[o + 13] = data.segmentEdgeFlags[j]!
+        u32[o + 14] = data.readPositions[ri * 2]!
+        u32[o + 15] = data.readPositions[ri * 2 + 1]!
       }
       r.readBuffer = this.mkBuf(device, buf)
       r.readBG = this.mkBG(device, r.readBuffer)
-      r.readCount = n
+      r.segmentCount = n
     }
     this.regions.set(regionNumber, r)
   }
@@ -1113,7 +1091,6 @@ export class AlignmentsRenderer {
       region.noncovMaxCount > 0 ? Math.min(region.noncovMaxCount * 2, 20) : 0
     f[U_INSERT_UPPER] = region.insertSizeStats?.upper ?? 999999
     f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
-    ii[U_ERASE_MODE] = 0
     f[U_SCROLL_TOP] = state.rangeY[0]
     const c = state.colors
     this.writeColor(U_COLOR_FWD, c.colorFwdStrand)
@@ -1319,12 +1296,12 @@ export class AlignmentsRenderer {
       const needsFeatureSelection =
         state.selectedChainIds.length === 0 &&
         regionSelectIdx >= 0 &&
-        regionSelectIdx < region.readCount
+        regionSelectIdx < region.segmentCount
 
       if (
         (needsFeatureHighlight || needsFeatureSelection) &&
         region.readBG &&
-        region.readCount > 0
+        region.segmentCount > 0
       ) {
         if (needsFeatureHighlight) {
           this.uI32[U_HIGHLIGHT_ONLY] = 1
@@ -1348,7 +1325,7 @@ export class AlignmentsRenderer {
           )
           p.setPipeline(AlignmentsRenderer.readPL!)
           p.setBindGroup(0, region.readBG)
-          p.draw(9, region.readCount)
+          p.draw(9, region.segmentCount)
           submitPass(enc, p)
         }
 
@@ -1514,16 +1491,10 @@ export class AlignmentsRenderer {
     r: GpuRegion,
     state: RenderState,
   ) {
-    if (r.readBG && r.readCount > 0) {
+    if (r.readBG && r.segmentCount > 0) {
       pass.setPipeline(AlignmentsRenderer.readPL!)
       pass.setBindGroup(0, r.readBG)
-      pass.draw(9, r.readCount)
-    }
-
-    if (state.showMismatches && r.gapBG && r.gapCount > 0) {
-      pass.setPipeline(AlignmentsRenderer.gapErasePL!)
-      pass.setBindGroup(0, r.gapBG)
-      pass.draw(6, r.gapCount)
+      pass.draw(9, r.segmentCount)
     }
 
     if (state.showMismatches) {

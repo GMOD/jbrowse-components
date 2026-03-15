@@ -25,6 +25,7 @@ import {
   buildInterbaseArrays,
   buildMismatchArrays,
   buildModificationArrays,
+  buildSegmentArrays,
   buildTagColors,
   computeFrequenciesAndThresholds,
   extractFeatureTagValue,
@@ -377,6 +378,7 @@ export async function executeRenderChainData({
     mismatchArrays,
     interbaseArrays,
     modificationArrays,
+    segmentArrays,
     connectingLineArrays,
     chainFlatbushData,
     chainFirstReadIndices,
@@ -551,6 +553,13 @@ export async function executeRenderChainData({
         getY,
         getReadIndex,
       ),
+      segmentArrays: buildSegmentArrays(
+        features,
+        gaps,
+        regionStart,
+        Math.ceil(region.end),
+        getReadIndex,
+      ),
       connectingLineArrays: {
         connectingLinePositions,
         connectingLineYs,
@@ -606,6 +615,7 @@ export async function executeRenderChainData({
     regionStart,
 
     ...readArrays,
+    ...segmentArrays,
     ...gapArrays,
     gapFrequencies,
     ...mismatchArrays,
@@ -679,6 +689,9 @@ export async function executeRenderChainData({
   const transferables = [
     result.readPositions.buffer,
     result.readYs.buffer,
+    result.segmentPositions.buffer,
+    result.segmentReadIndices.buffer,
+    result.segmentEdgeFlags.buffer,
     result.readFlags.buffer,
     result.readMapqs.buffer,
     result.readInsertSizes.buffer,

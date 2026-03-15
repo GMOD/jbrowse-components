@@ -24,6 +24,7 @@ import {
   buildInterbaseArrays,
   buildMismatchArrays,
   buildModificationArrays,
+  buildSegmentArrays,
   buildSoftclipBaseArrays,
   buildTagColors,
   computeFrequenciesAndThresholds,
@@ -453,6 +454,7 @@ export async function executeRenderPileupData({
     softclipBaseArrays,
     interbaseArrays,
     modificationArrays,
+    segmentArrays,
   } = await updateStatus('Building arrays', statusCallback, async () => {
     let layoutMaxY = 0
     let getY: (id: string) => number = () => 0
@@ -541,6 +543,13 @@ export async function executeRenderPileupData({
         getY,
         getReadIndex,
       ),
+      segmentArrays: buildSegmentArrays(
+        features,
+        gaps,
+        regionStart,
+        regionEnd,
+        getReadIndex,
+      ),
     }
   })
 
@@ -610,6 +619,7 @@ export async function executeRenderPileupData({
     regionStart,
 
     ...readArrays,
+    ...segmentArrays,
     ...gapArrays,
     gapFrequencies,
     ...mismatchArrays,
@@ -676,6 +686,9 @@ export async function executeRenderPileupData({
   const transferables = [
     result.readPositions.buffer,
     result.readYs.buffer,
+    result.segmentPositions.buffer,
+    result.segmentReadIndices.buffer,
+    result.segmentEdgeFlags.buffer,
     result.readFlags.buffer,
     result.readMapqs.buffer,
     result.readInsertSizes.buffer,

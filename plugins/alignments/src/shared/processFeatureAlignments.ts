@@ -515,7 +515,7 @@ export function buildGapArrays(
   getY: (featureId: string) => number,
   getReadIndex?: (featureId: string) => number,
 ) {
-  const filtered = gaps.filter(g => g.start >= regionStart)
+  const filtered = gaps.filter(g => g.end > regionStart)
   const gapPositions = new Uint32Array(filtered.length * 2)
   const gapYs = new Uint16Array(filtered.length)
   const gapLengths = new Uint16Array(filtered.length)
@@ -525,7 +525,7 @@ export function buildGapArrays(
     : undefined
   for (const [i, g] of filtered.entries()) {
     const y = getY(g.featureId)
-    gapPositions[i * 2] = g.start - regionStart
+    gapPositions[i * 2] = Math.max(0, g.start - regionStart)
     gapPositions[i * 2 + 1] = g.end - regionStart
     gapYs[i] = y
     gapLengths[i] = Math.min(65535, g.end - g.start)
@@ -567,6 +567,116 @@ export function buildModificationArrays(
     modificationYs,
     modificationColors,
     modificationReadIndices,
+  }
+}
+
+export function buildSegmentArrays(
+  features: FeatureData[],
+  gaps: GapData[],
+  regionStart: number,
+  regionEnd: number,
+  getReadIndex: (featureId: string) => number,
+) {
+  // The visible window in region-relative coordinates
+  const windowEnd = regionEnd - regionStart
+
+  // Group skip gaps by featureId
+  const skipsByFeature = new Map<string, GapData[]>()
+  for (const g of gaps) {
+    if (g.type === 'skip') {
+      let list = skipsByFeature.get(g.featureId)
+      if (!list) {
+        list = []
+        skipsByFeature.set(g.featureId, list)
+      }
+      list.push(g)
+    }
+  }
+
+  // Upper bound on segments: reads with N skips produce at most N+1 segments
+  let maxSegments = 0
+  for (const f of features) {
+    const skips = skipsByFeature.get(f.id)
+    maxSegments += skips ? skips.length + 1 : 1
+  }
+
+  const segmentPositions = new Uint32Array(maxSegments * 2)
+  const segmentReadIndices = new Uint32Array(maxSegments)
+  const segmentEdgeFlags = new Uint8Array(maxSegments)
+
+  let segIdx = 0
+  for (const f of features) {
+    const readIdx = getReadIndex(f.id)
+    const readStart = Math.max(0, f.start - regionStart)
+    const readEnd = Math.min(f.end - regionStart, windowEnd)
+    const isFirstOfRead = f.start >= regionStart
+    const isLastOfRead = f.end <= regionEnd
+    const skips = skipsByFeature.get(f.id)
+
+    if (!skips || skips.length === 0) {
+      segmentPositions[segIdx * 2] = readStart
+      segmentPositions[segIdx * 2 + 1] = readEnd
+      segmentReadIndices[segIdx] = readIdx
+      segmentEdgeFlags[segIdx] =
+        (isFirstOfRead ? 0b01 : 0) | (isLastOfRead ? 0b10 : 0)
+      segIdx++
+    } else {
+      skips.sort((a, b) => a.start - b.start)
+
+      // Walk through sorted skips, splitting the read into exon segments.
+      // Clamp everything to [readStart, readEnd] and skip zero-width results.
+      const firstSegIdx = segIdx
+      let currentStart = readStart
+      for (const skip of skips) {
+        const skipStart = Math.max(readStart, skip.start - regionStart)
+        const skipEnd = Math.max(readStart, skip.end - regionStart)
+
+        if (skipStart > currentStart && currentStart < readEnd) {
+          segmentPositions[segIdx * 2] = currentStart
+          segmentPositions[segIdx * 2 + 1] = Math.min(skipStart, readEnd)
+          segmentReadIndices[segIdx] = readIdx
+          segIdx++
+        }
+        if (skipEnd > currentStart) {
+          currentStart = skipEnd
+        }
+      }
+
+      // Final segment after last skip
+      if (currentStart < readEnd) {
+        segmentPositions[segIdx * 2] = currentStart
+        segmentPositions[segIdx * 2 + 1] = readEnd
+        segmentReadIndices[segIdx] = readIdx
+        segIdx++
+      }
+
+      // If no segments were emitted (all skips covered the read), emit the
+      // full read as a single segment so it's still visible
+      if (segIdx === firstSegIdx) {
+        segmentPositions[segIdx * 2] = readStart
+        segmentPositions[segIdx * 2 + 1] = Math.min(readEnd, windowEnd)
+        segmentReadIndices[segIdx] = readIdx
+        segmentEdgeFlags[segIdx] =
+          (isFirstOfRead ? 0b01 : 0) | (isLastOfRead ? 0b10 : 0)
+        segIdx++
+      } else {
+        // Edge flags: chevron on first segment only if this region contains
+        // the actual read start; on last segment only if it contains the
+        // actual read end.
+        segmentEdgeFlags[firstSegIdx] =
+          (segmentEdgeFlags[firstSegIdx] ?? 0) | (isFirstOfRead ? 0b01 : 0)
+        segmentEdgeFlags[segIdx - 1] =
+          (segmentEdgeFlags[segIdx - 1] ?? 0) | (isLastOfRead ? 0b10 : 0)
+      }
+    }
+  }
+
+  const numSegments = segIdx
+  return {
+    segmentPositions: segmentPositions.slice(0, numSegments * 2),
+    segmentReadIndices: segmentReadIndices.slice(0, numSegments),
+    segmentEdgeFlags: segmentEdgeFlags.slice(0, numSegments),
+    numSegments,
   }
 }
 

@@ -4,11 +4,13 @@ export const READ_WGSL = `
 ${PREAMBLE}
 ${PILEUP_Y}
 
-// SYNC(shaders/readShaders.ts): ReadInst field order must match GLSL in attributes (12 fields)
+// SYNC(shaders/readShaders.ts): ReadInst field order must match GLSL in attributes (16 fields)
 struct ReadInst {
   start_off: u32, end_off: u32, y: u32, flags: u32,
   mapq: u32, insert_size: f32, pair_orient: u32, strand: i32,
   tag_r: f32, tag_g: f32, tag_b: f32, chain_supp: u32,
+  read_index: u32, edge_flags: u32,
+  read_start_off: u32, read_end_off: u32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<ReadInst>;
@@ -128,7 +130,7 @@ fn vs_main(
   let highlight_only = ui(13u);
   let highlight_idx = ui(12u);
 
-  if highlight_only == 1 && (highlight_idx < 0 || u32(highlight_idx) != iid) {
+  if highlight_only == 1 && (highlight_idx < 0 || u32(highlight_idx) != inst.read_index) {
     out.position = vec4f(0.0);
     out.color = vec4f(0.0);
     return out;
@@ -161,28 +163,39 @@ fn vs_main(
   var ef: f32 = 0.0;
 
   if highlight_only == 1 {
+    // Highlight overlay uses full read span (not segment span) to cover introns
+    let hl_abs_start = inst.read_start_off + region_start();
+    let hl_abs_end = inst.read_end_off + region_start();
+    let hl_sx1 = hp_to_clip_x(hp_split_uint(hl_abs_start), bp_range());
+    let hl_sx2 = hp_to_clip_x(hp_split_uint(hl_abs_end), bp_range());
     lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
     ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
-    sx = mix(sx1, sx2, lx);
+    sx = mix(hl_sx1, hl_sx2, lx);
     sy = mix(sy_bot, sy_top, ly);
-    if v >= 6u { sx = sx1; sy = sy_top; lx = 0.5; ly = 0.5; }
+    if v >= 6u { sx = hl_sx1; sy = sy_top; lx = 0.5; ly = 0.5; }
   } else if v < 6u {
     lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
     ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
     sx = mix(sx1, sx2, lx);
     sy = mix(sy_bot, sy_top, ly);
-    if show_chev && inst.strand > 0 { ef = 1.0; }
-    else if show_chev && inst.strand < 0 { ef = -1.0; }
+    let is_last = (inst.edge_flags & 2u) != 0u;
+    let is_first = (inst.edge_flags & 1u) != 0u;
+    if show_chev && inst.strand > 0 && is_last { ef = 1.0; }
+    else if show_chev && inst.strand < 0 && is_first { ef = -1.0; }
   } else if show_chev {
+    let is_last = (inst.edge_flags & 2u) != 0u;
+    let is_first = (inst.edge_flags & 1u) != 0u;
+    let draw_fwd = inst.strand > 0 && is_last;
+    let draw_rev = inst.strand < 0 && is_first;
     ef = 2.0;
     let chev_w = 8.0;
     let half_h = feature_height() * 0.5;
     let alt = chev_w * feature_height() / sqrt(half_h * half_h + chev_w * chev_w);
-    if inst.strand > 0 {
+    if draw_fwd {
       if v == 6u { sx = sx2; sy = sy_top; lx = 0.0; ly = alt; }
       else if v == 7u { sx = sx2; sy = sy_bot; lx = alt; ly = 0.0; }
       else { sx = sx2 + chevron_clip; sy = sy_mid; lx = 0.0; ly = 0.0; }
-    } else if inst.strand < 0 {
+    } else if draw_rev {
       if v == 6u { sx = sx1; sy = sy_top; lx = 0.0; ly = alt; }
       else if v == 7u { sx = sx1 - chevron_clip; sy = sy_mid; lx = 0.0; ly = 0.0; }
       else { sx = sx1; sy = sy_bot; lx = alt; ly = 0.0; }

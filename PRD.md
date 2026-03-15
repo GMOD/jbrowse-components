@@ -89,7 +89,8 @@ These affect significant user-visible functionality.
 | Force load stuck | **DONE** — `ClearBlockingStateOnViewportChange` clears on zoom or region change |
 | Wrong ratio shown over deletions in tooltip | **DONE** |
 | Coverage interbase indicators conditional on total coverage | **DONE** — `computeNoncovCoverage` uses per-position local depth (max of left/right neighbors) for indicator threshold; `MINIMUM_INDICATOR_READ_DEPTH` raised from 7→8 so no indicators at low coverage; `computePositionFrequencies` + `applyDepthDependentThreshold` filter pileup interbase features by depth-dependent frequency; 27 unit tests |
-| Non-intron rendered on sidescroll weirdly for iso-seq | |
+| Non-intron rendered on sidescroll weirdly for iso-seq | Occurs in collapsed intron view (many short displayedRegions focused on exons): introns render as grey boxes instead of blue skip lines. Likely stencil buffer issue with multi-region rendering. |
+| WebGL 2.0 mismatch colors when zoomed out | **FIXED** — `CoverageRenderer` disabled `gl.BLEND` after drawing indicators; pileup then drew reads+mismatches without blending, so low-alpha mismatches replaced read pixels with near-transparent values (white spots). Fix: re-enable `gl.BLEND` at start of `PileupRenderer.render()`. |
 | volvox-long reads with SV not rendering when zoomed out | **FIXED** — `checkByteEstimate` now uses the adapter's `fetchSizeLimit` (BAM=5MB, CRAM=3MB) via `Math.max(adapterLimit, displayLimit)`, matching `FeatureDensityMixin.maxAllowableBytes` chain. Previously only used display config default (1MB). Also added `isLoading` guard (via `untracked`) to prevent duplicate byte-estimate RPC calls from concurrent autorun firings. |
 | Insertion depth weird | **DONE** |
 | Draw outline even when compact | **DONE** — size threshold lowered from 4px to 2px |
@@ -163,6 +164,7 @@ These affect significant user-visible functionality.
 
 - ~~After zoom, features reposition but mouseover shading stuck~~ **FIXED** — hover state (hoveredFeature, hoveredSubfeature, featureIdUnderMouse) now cleared when new RPC data is uploaded in FeatureComponent
 - ~~Labels disappear during zoom~~ **FIXED** — description labels now always included in RPC response (not gated by `showDescriptions`); layout always reserves space; visibility filtered client-side by `effectiveShowDescriptions`
+- Vertical scroll sometimes scrolls page instead of zooming on linear genome view — wheel event not always captured by the view
 - Hot module reload breaks canvas features
 - Per-track scrolling — verify working
 - After fatal error: `Uncaught Error: no containing view found` in `getContainingView`
@@ -433,7 +435,7 @@ All track types must work across 4 rendering backends. Key: W=WebGPU, G=WebGL, C
 
 **P2 (High) — Still Open:**
 - ~~Coverage interbase indicators conditional on total coverage~~ **DONE** — per-position local depth thresholding with min depth 8
-- Non-intron rendered on sidescroll weirdly for iso-seq — **NEEDS VERIFICATION**: Hypothesized cause is that cigar shaders (gap, mismatch, insertion, softclip, hardclip, modification) use simple float `vec2 u_bpRangeX` while read shader uses HP (High Precision) `vec3 u_bpRangeX` with split encoding. Both use offsets from `regionStart`, which should be small enough for float32 in typical viewing scenarios. Proposed fix: convert all cigar shaders to HP coordinates (matching read/connecting-line shaders). **Must reproduce in browser first** — load ISO-seq data, zoom in on intron-containing region, sidescroll and check if intron/skip lines drift relative to reads.
+- Non-intron rendered in collapsed intron view for iso-seq — in collapsed intron view (many short displayedRegions focused on exons), introns render as grey boxes instead of blue skip lines. Likely stencil buffer or multi-region scissor issue: the gap shader's stencil pass may not be correctly scoped per-region, causing skip gaps to be stenciled out and drawn as grey deletions instead of blue skip lines.
 - Color by per-base quality — requires new RPC data extraction to send per-base quality scores
 - Color by insert size gradient mode — threshold done, gradient not yet implemented for reads
 - Linked read mode (demo #15) — wiring investigated and looks correct but demo uses encrypted share link; needs browser verification

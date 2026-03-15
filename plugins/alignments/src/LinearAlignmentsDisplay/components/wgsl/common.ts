@@ -155,7 +155,7 @@ export const U_COLOR_UNMAPPED_MATE = 134
 
 // SYNC(shaders/*): Stride constants must match GLSL instance attribute layouts.
 // See individual shader files for field-by-field struct documentation.
-export const READ_STRIDE = 12
+export const READ_STRIDE = 16
 export const GAP_STRIDE = 5
 export const MISMATCH_STRIDE = 4
 export const INSERTION_STRIDE = 4

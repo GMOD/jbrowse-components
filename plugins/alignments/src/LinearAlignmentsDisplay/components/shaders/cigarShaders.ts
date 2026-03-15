@@ -6,7 +6,8 @@ import {
 
 // Gap (deletion/skip) vertex shader - colored rectangles over reads
 // Deletions are dark grey (#404040), skips are teal/blue (#97b8c9)
-// Uses integer attributes for compact representation
+// Uses simple domain-offset coordinate system (no HP needed since reads
+// use per-segment rendering and no stencil alignment is required).
 export const GAP_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
@@ -18,7 +19,7 @@ in uint a_y;          // pileup row
 in uint a_type;       // 0=deletion, 1=skip
 in float a_frequency; // normalized 0-1, fraction of reads with this gap at this position
 
-uniform vec2 u_bpRangeX;  // [bpStart, bpEnd] as offsets
+uniform vec2 u_bpRangeX;     // [domainStart, domainEnd] as offsets from regionStart
 uniform vec2 u_rangeY;
 uniform float u_featureHeight;
 uniform float u_featureSpacing;
@@ -27,26 +28,17 @@ uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 uniform vec3 u_colorDeletion;
 uniform vec3 u_colorSkip;
-uniform int u_eraseMode;  // 0=normal draw, 1=stencil pass (skip gaps at full height)
 
 out vec4 v_color;
 
 void main() {
-  // In erase mode, collapse non-skip gaps to zero area
-  if (u_eraseMode == 1 && a_type == 0u) {
-    gl_Position = vec4(0.0);
-    v_color = vec4(0.0);
-    return;
-  }
-
   int vid = gl_VertexID % 6;
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float regionLengthBp = u_bpRangeX.y - u_bpRangeX.x;
-
-  float sx1 = (float(a_position.x) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
-  float sx2 = (float(a_position.y) - u_bpRangeX.x) / regionLengthBp * 2.0 - 1.0;
+  float domainLen = u_bpRangeX.y - u_bpRangeX.x;
+  float sx1 = (float(a_position.x) - u_bpRangeX.x) / domainLen * 2.0 - 1.0;
+  float sx2 = (float(a_position.y) - u_bpRangeX.x) / domainLen * 2.0 - 1.0;
   float sx = mix(sx1, sx2, localX);
 
   float y = float(a_y);
@@ -54,9 +46,8 @@ void main() {
   float yTopPx = y * rowHeight - u_rangeY.x;
   float yBotPx = yTopPx + u_featureHeight;
 
-  // In normal mode, skips render as a 1px line centered in the row
-  // In erase mode, skips render at full feature height (for stencil mask)
-  if (u_eraseMode == 0 && a_type == 1u) {
+  // Skips render as a 1px line centered in the row
+  if (a_type == 1u) {
     float midPx = (yTopPx + yBotPx) * 0.5;
     yTopPx = midPx;
     yBotPx = midPx + 1.0;
@@ -73,7 +64,7 @@ void main() {
   // SYNC(wgsl/cigarShaders.ts): deletion sub-pixel alpha = widthPx^2
   float alpha = 1.0;
   if (a_type == 0u) {
-    float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / regionLengthBp;
+    float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / domainLen;
     if (widthPx < 1.0 && a_frequency == 0.0) {
       alpha = widthPx * widthPx;
     }

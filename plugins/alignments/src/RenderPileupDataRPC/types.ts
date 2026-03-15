@@ -111,6 +111,12 @@ export interface PileupDataResult {
   readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
   readChainIndices?: Uint32Array // chain index per read (only in chain mode)
 
+  // Segment data - per-exon segments for GPU instancing (reads split at skip gaps)
+  segmentPositions: Uint32Array // [startOffset, endOffset] pairs per segment
+  segmentReadIndices: Uint32Array // parent read index per segment
+  segmentEdgeFlags: Uint8Array // bit 0=first segment, bit 1=last segment
+  numSegments: number
+
   // Gap data (deletions/skips) - offsets from regionStart
   gapPositions: Uint32Array // [startOffset, endOffset] pairs
   gapYs: Uint16Array

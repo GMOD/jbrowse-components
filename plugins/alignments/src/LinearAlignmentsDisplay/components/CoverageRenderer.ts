@@ -1,35 +1,10 @@
-/**
- * CoverageRenderer - Handles rendering of coverage visualizations
- *
- * This renderer draws:
- * - Grey coverage bars (main coverage visualization)
- * - SNP/modification coverage segments (colored by base or modification type)
- * - Non-coverage (interbase) histogram bars
- * - Interbase indicator triangles at the top of the coverage area
- *
- * Extracted from WebGLRenderer to improve code organization.
- */
-
 import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 import type { ColorPalette } from './shaders/index.ts'
 
-/**
- * CoverageRenderer orchestrates rendering of coverage data including coverage bars,
- * SNP/modification overlays, and interbase visualizations.
- *
- * The renderer receives a parent WebGLRenderer instance to access:
- * - WebGL context (gl)
- * - Shader programs and their uniform locations
- * - Buffers and VAOs for geometry
- */
 export class CoverageRenderer {
   constructor(private parent: WebGLRenderer) {}
 
-  render(
-    state: RenderState,
-    domainOffset: [number, number],
-    colors: ColorPalette,
-  ) {
+  render(state: RenderState, colors: ColorPalette) {
     const gl = this.parent.gl
     if (!this.parent.buffers) {
       return
@@ -44,6 +19,12 @@ export class CoverageRenderer {
     if (!willDrawCoverage) {
       return
     }
+
+    const regionStart = this.parent.buffers.regionStart
+    const domainOffset: [number, number] = [
+      state.bpRangeX[0] - regionStart,
+      state.bpRangeX[1] - regionStart,
+    ]
 
     // depthScale corrects for nice() domain expansion and multi-region max differences
     // Bars are normalized per-region to perRegionMax, but the scalebar uses nicedMax
@@ -256,13 +237,6 @@ export class CoverageRenderer {
         ...colors.colorHardclip,
       )
 
-      gl.enable(gl.BLEND)
-      gl.blendFuncSeparate(
-        gl.SRC_ALPHA,
-        gl.ONE_MINUS_SRC_ALPHA,
-        gl.ONE,
-        gl.ONE_MINUS_SRC_ALPHA,
-      )
       gl.bindVertexArray(this.parent.buffers.indicatorVAO)
       gl.drawArraysInstanced(
         gl.TRIANGLES,
@@ -270,7 +244,6 @@ export class CoverageRenderer {
         3,
         this.parent.buffers.indicatorCount,
       )
-      gl.disable(gl.BLEND)
     }
   }
 }

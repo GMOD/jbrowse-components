@@ -4,11 +4,13 @@ export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-// SYNC(wgsl/readShader.ts): ReadInst struct field order (12 fields):
+// SYNC(wgsl/readShader.ts): ReadInst struct field order (16 fields):
 // start_off(u32), end_off(u32), y(u32), flags(u32), mapq(u32), insert_size(f32),
-// pair_orient(u32), strand(i32), tag_r(f32), tag_g(f32), tag_b(f32), chain_supp(u32)
+// pair_orient(u32), strand(i32), tag_r(f32), tag_g(f32), tag_b(f32), chain_supp(u32),
+// read_index(u32), edge_flags(u32), read_start_off(u32), read_end_off(u32)
 // chain_supp values: 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
-in uvec2 a_position;  // [start, end] as uint offsets from regionStart
+// edge_flags: bit 0=first segment, bit 1=last segment
+in uvec2 a_position;  // [start, end] as uint offsets from regionStart (per segment)
 in float a_y;
 in float a_flags;
 in float a_mapq;
@@ -17,6 +19,9 @@ in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
 in vec3 a_tagColor;
 in float a_chainHasSupp;     // 0=no supp, 1=has supp + primary fwd, 2=has supp + primary rev
+in uint a_readIndex;         // parent read index for highlight matching
+in uint a_edgeFlags;         // bit 0=first segment, bit 1=last segment
+in uvec2 a_readSpan;         // full read [start, end] offsets for highlight overlay
 
 uniform vec3 u_bpRangeX;
 uniform uint u_regionStart;
@@ -146,7 +151,7 @@ vec3 modificationsColor(float flags) {
 void main() {
   // In highlight-only mode, discard all non-highlighted instances
   if (u_highlightOnlyMode == 1) {
-    if (u_highlightedIndex < 0 || gl_InstanceID != u_highlightedIndex) {
+    if (u_highlightedIndex < 0 || int(a_readIndex) != u_highlightedIndex) {
       gl_Position = vec4(0.0);
       v_color = vec4(0.0);
       return;
@@ -191,13 +196,16 @@ void main() {
   float localY;
   float edgeFlags = 0.0;
   if (u_highlightOnlyMode == 1) {
-    // Highlight overlay: simple rectangle, no chevrons
+    // Highlight overlay uses full read span (not segment span) to cover introns
+    uint hlAbsStart = a_readSpan.x + u_regionStart;
+    uint hlAbsEnd = a_readSpan.y + u_regionStart;
+    float hlSx1 = hpToClipX(hpSplitUint(hlAbsStart), u_bpRangeX);
+    float hlSx2 = hpToClipX(hpSplitUint(hlAbsEnd), u_bpRangeX);
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
-    sx = mix(sx1, sx2, localX);
+    sx = mix(hlSx1, hlSx2, localX);
     sy = mix(syBot, syTop, localY);
-    // Collapse chevron vertices to rectangle corner
-    if (vid >= 6) { sx = sx1; sy = syTop; localX = 0.5; localY = 0.5; }
+    if (vid >= 6) { sx = hlSx1; sy = syTop; localX = 0.5; localY = 0.5; }
   } else if (vid < 6) {
     // Vertices 0-5: rectangle body
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
@@ -205,28 +213,30 @@ void main() {
     sx = mix(sx1, sx2, localX);
     sy = mix(syBot, syTop, localY);
     // Suppress stroke on the edge shared with the chevron
-    if (showChevron && a_strand > 0.5) {
+    // Only show chevron at segment endpoints: forward chevron on last segment, reverse on first
+    bool isLastSeg = (a_edgeFlags & 2u) != 0u;
+    bool isFirstSeg = (a_edgeFlags & 1u) != 0u;
+    if (showChevron && a_strand > 0.5 && isLastSeg) {
       edgeFlags = 1.0;   // suppress right edge
-    } else if (showChevron && a_strand < -0.5) {
+    } else if (showChevron && a_strand < -0.5 && isFirstSeg) {
       edgeFlags = -1.0;  // suppress left edge
     }
   } else if (showChevron) {
     // Vertices 6-8: chevron triangle
-    // Compute perpendicular distance from each vertex to the outer edges
-    // so the fragment shader can stroke the slanted edges
+    // Only draw chevron at read endpoints: forward on last segment, reverse on first
+    bool isLastSeg = (a_edgeFlags & 2u) != 0u;
+    bool isFirstSeg = (a_edgeFlags & 1u) != 0u;
+    bool drawFwdChevron = a_strand > 0.5 && isLastSeg;
+    bool drawRevChevron = a_strand < -0.5 && isFirstSeg;
     edgeFlags = 2.0;
     float chevronWidthPx = 8.0;
     float halfH = u_featureHeight * 0.5;
     float altPx = chevronWidthPx * u_featureHeight / sqrt(halfH * halfH + chevronWidthPx * chevronWidthPx);
-    if (a_strand > 0.5) {
-      // Forward: vid6=top-right, vid7=bottom-right, vid8=tip
-      // Edge A = vid6→vid8 (top outer), Edge B = vid7→vid8 (bottom outer)
+    if (drawFwdChevron) {
       if (vid == 6) { sx = sx2; sy = syTop; localX = 0.0; localY = altPx; }
       else if (vid == 7) { sx = sx2; sy = syBot; localX = altPx; localY = 0.0; }
       else { sx = sx2 + chevronClip; sy = syMid; localX = 0.0; localY = 0.0; }
-    } else if (a_strand < -0.5) {
-      // Reverse: vid6=top-left, vid7=tip, vid8=bottom-left
-      // Edge A = vid6→vid7 (top outer), Edge B = vid7→vid8 (bottom outer)
+    } else if (drawRevChevron) {
       if (vid == 6) { sx = sx1; sy = syTop; localX = 0.0; localY = altPx; }
       else if (vid == 7) { sx = sx1 - chevronClip; sy = syMid; localX = 0.0; localY = 0.0; }
       else { sx = sx1; sy = syBot; localX = altPx; localY = 0.0; }

@@ -8,21 +8,36 @@ import type { ColorPalette } from './shaders/index.ts'
 export class PileupRenderer {
   constructor(private parent: WebGLRenderer) {}
 
-  render(
-    state: RenderState,
+  private setCigarUniforms(
+    uniforms: Record<string, WebGLUniformLocation | null>,
+    gl: WebGL2RenderingContext,
     domainOffset: [number, number],
-    colors: ColorPalette,
-    scissorX = 0,
+    state: RenderState,
+    coverageOffset: number,
   ) {
+    gl.uniform2f(uniforms.u_bpRangeX!, domainOffset[0], domainOffset[1])
+    gl.uniform2f(uniforms.u_rangeY!, state.rangeY[0], state.rangeY[1])
+    gl.uniform1f(uniforms.u_featureHeight!, state.featureHeight)
+    gl.uniform1f(uniforms.u_featureSpacing!, state.featureSpacing)
+    gl.uniform1f(uniforms.u_coverageOffset!, coverageOffset)
+    gl.uniform1f(uniforms.u_canvasHeight!, state.canvasHeight)
+    gl.uniform1f(uniforms.u_canvasWidth!, state.canvasWidth)
+  }
+
+  render(state: RenderState, colors: ColorPalette, scissorX = 0) {
     const gl = this.parent.gl
     const buffers = this.parent.buffers
 
-    if (!buffers || buffers.readCount === 0) {
+    if (!buffers || buffers.segmentCount === 0) {
       return
     }
 
     const { canvasWidth, canvasHeight } = state
     const regionStart = buffers.regionStart
+    const domainOffset: [number, number] = [
+      state.bpRangeX[0] - regionStart,
+      state.bpRangeX[1] - regionStart,
+    ]
 
     const [bpStartHi, bpStartLo] = splitPositionWithFrac(state.bpRangeX[0])
     const regionLengthBp = state.bpRangeX[1] - state.bpRangeX[0]
@@ -39,47 +54,6 @@ export class PileupRenderer {
       Math.round(canvasWidth * dpr),
       Math.round((canvasHeight - coverageOffset) * dpr),
     )
-
-    // Stencil pass: mark skip (intron) regions so reads don't draw there
-    if (buffers.gapVAO && buffers.gapCount > 0) {
-      gl.enable(gl.STENCIL_TEST)
-      gl.stencilMask(0xff)
-      gl.clear(gl.STENCIL_BUFFER_BIT)
-      gl.stencilFunc(gl.ALWAYS, 1, 0xff)
-      gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE)
-      gl.colorMask(false, false, false, false)
-
-      gl.useProgram(this.parent.gapProgram)
-      gl.uniform2f(
-        this.parent.gapUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform2f(
-        this.parent.gapUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.gapUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.gapUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
-      gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.gapUniforms.u_canvasWidth!, canvasWidth)
-      gl.uniform1i(this.parent.gapUniforms.u_eraseMode!, 1)
-
-      gl.bindVertexArray(buffers.gapVAO)
-      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.gapCount)
-
-      gl.colorMask(true, true, true, true)
-      gl.stencilFunc(gl.EQUAL, 0, 0xff)
-      gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP)
-    }
 
     gl.useProgram(this.parent.readProgram)
     // WARNING: u_zero must be 0.0 — HP shader precision guard. See utils.ts.
@@ -173,33 +147,17 @@ export class PileupRenderer {
     gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
 
     gl.bindVertexArray(buffers.readVAO)
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.readCount)
-
-    gl.disable(gl.STENCIL_TEST)
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.segmentCount)
 
     if (state.showMismatches && buffers.gapVAO && buffers.gapCount > 0) {
       gl.useProgram(this.parent.gapProgram)
-      gl.uniform2f(
-        this.parent.gapUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
+      this.setCigarUniforms(
+        this.parent.gapUniforms,
+        gl,
+        domainOffset,
+        state,
+        coverageOffset,
       )
-      gl.uniform2f(
-        this.parent.gapUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.gapUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.gapUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(this.parent.gapUniforms.u_coverageOffset!, coverageOffset)
-      gl.uniform1f(this.parent.gapUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.gapUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform3f(
         this.parent.gapUniforms.u_colorDeletion!,
         colors.colorDeletion[0],
@@ -212,7 +170,6 @@ export class PileupRenderer {
         colors.colorSkip[1],
         colors.colorSkip[2],
       )
-      gl.uniform1i(this.parent.gapUniforms.u_eraseMode!, 0)
 
       gl.bindVertexArray(buffers.gapVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.gapCount)
@@ -221,30 +178,13 @@ export class PileupRenderer {
     if (state.showMismatches && !state.showModifications) {
       if (buffers.mismatchVAO && buffers.mismatchCount > 0) {
         gl.useProgram(this.parent.mismatchProgram)
-        gl.uniform2f(
-          this.parent.mismatchUniforms.u_bpRangeX!,
-          domainOffset[0],
-          domainOffset[1],
-        )
-        gl.uniform2f(
-          this.parent.mismatchUniforms.u_rangeY!,
-          state.rangeY[0],
-          state.rangeY[1],
-        )
-        gl.uniform1f(
-          this.parent.mismatchUniforms.u_featureHeight!,
-          state.featureHeight,
-        )
-        gl.uniform1f(
-          this.parent.mismatchUniforms.u_featureSpacing!,
-          state.featureSpacing,
-        )
-        gl.uniform1f(
-          this.parent.mismatchUniforms.u_coverageOffset!,
+        this.setCigarUniforms(
+          this.parent.mismatchUniforms,
+          gl,
+          domainOffset,
+          state,
           coverageOffset,
         )
-        gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
-        gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
         gl.uniform3f(
           this.parent.mismatchUniforms.u_colorBaseA!,
           ...colors.colorBaseA,
@@ -273,30 +213,13 @@ export class PileupRenderer {
       buffers.insertionCount > 0
     ) {
       gl.useProgram(this.parent.insertionProgram)
-      gl.uniform2f(
-        this.parent.insertionUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform2f(
-        this.parent.insertionUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.insertionUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.insertionUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(
-        this.parent.insertionUniforms.u_coverageOffset!,
+      this.setCigarUniforms(
+        this.parent.insertionUniforms,
+        gl,
+        domainOffset,
+        state,
         coverageOffset,
       )
-      gl.uniform1f(this.parent.insertionUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.insertionUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform3f(
         this.parent.insertionUniforms.u_colorInsertion!,
         ...colors.colorInsertion,
@@ -308,30 +231,13 @@ export class PileupRenderer {
 
     if (buffers.softclipVAO && buffers.softclipCount > 0) {
       gl.useProgram(this.parent.softclipProgram)
-      gl.uniform2f(
-        this.parent.softclipUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform2f(
-        this.parent.softclipUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.softclipUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.softclipUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(
-        this.parent.softclipUniforms.u_coverageOffset!,
+      this.setCigarUniforms(
+        this.parent.softclipUniforms,
+        gl,
+        domainOffset,
+        state,
         coverageOffset,
       )
-      gl.uniform1f(this.parent.softclipUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.softclipUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform3f(
         this.parent.softclipUniforms.u_colorSoftclip!,
         ...colors.colorSoftclip,
@@ -343,30 +249,13 @@ export class PileupRenderer {
 
     if (buffers.hardclipVAO && buffers.hardclipCount > 0) {
       gl.useProgram(this.parent.hardclipProgram)
-      gl.uniform2f(
-        this.parent.hardclipUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform2f(
-        this.parent.hardclipUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.hardclipUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.hardclipUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(
-        this.parent.hardclipUniforms.u_coverageOffset!,
+      this.setCigarUniforms(
+        this.parent.hardclipUniforms,
+        gl,
+        domainOffset,
+        state,
         coverageOffset,
       )
-      gl.uniform1f(this.parent.hardclipUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.hardclipUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform3f(
         this.parent.hardclipUniforms.u_colorHardclip!,
         ...colors.colorHardclip,
@@ -382,30 +271,13 @@ export class PileupRenderer {
       buffers.softclipBaseCount > 0
     ) {
       gl.useProgram(this.parent.mismatchProgram)
-      gl.uniform2f(
-        this.parent.mismatchUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform2f(
-        this.parent.mismatchUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.mismatchUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.mismatchUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(
-        this.parent.mismatchUniforms.u_coverageOffset!,
+      this.setCigarUniforms(
+        this.parent.mismatchUniforms,
+        gl,
+        domainOffset,
+        state,
         coverageOffset,
       )
-      gl.uniform1f(this.parent.mismatchUniforms.u_canvasHeight!, canvasHeight)
-      gl.uniform1f(this.parent.mismatchUniforms.u_canvasWidth!, canvasWidth)
       gl.uniform3f(
         this.parent.mismatchUniforms.u_colorBaseA!,
         ...colors.colorBaseA,
@@ -432,33 +304,13 @@ export class PileupRenderer {
       buffers.modificationCount > 0
     ) {
       gl.useProgram(this.parent.modificationProgram)
-      gl.uniform2f(
-        this.parent.modificationUniforms.u_bpRangeX!,
-        domainOffset[0],
-        domainOffset[1],
-      )
-      gl.uniform2f(
-        this.parent.modificationUniforms.u_rangeY!,
-        state.rangeY[0],
-        state.rangeY[1],
-      )
-      gl.uniform1f(
-        this.parent.modificationUniforms.u_featureHeight!,
-        state.featureHeight,
-      )
-      gl.uniform1f(
-        this.parent.modificationUniforms.u_featureSpacing!,
-        state.featureSpacing,
-      )
-      gl.uniform1f(
-        this.parent.modificationUniforms.u_coverageOffset!,
+      this.setCigarUniforms(
+        this.parent.modificationUniforms,
+        gl,
+        domainOffset,
+        state,
         coverageOffset,
       )
-      gl.uniform1f(
-        this.parent.modificationUniforms.u_canvasHeight!,
-        canvasHeight,
-      )
-      gl.uniform1f(this.parent.modificationUniforms.u_canvasWidth!, canvasWidth)
 
       gl.bindVertexArray(buffers.modificationVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.modificationCount)
@@ -492,7 +344,7 @@ export class PileupRenderer {
         gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 1)
         gl.uniform1i(this.parent.readUniforms.u_highlightedIndex!, hlIdx)
         gl.bindVertexArray(buffers.readVAO)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.readCount)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.segmentCount)
         gl.uniform1i(this.parent.readUniforms.u_highlightOnlyMode!, 0)
       }
     }
@@ -522,7 +374,7 @@ export class PileupRenderer {
       }
     } else if (state.selectedFeatureId) {
       const idx = buffers.readIdToIndex.get(state.selectedFeatureId) ?? -1
-      if (idx >= 0 && idx < buffers.readCount) {
+      if (idx >= 0 && idx < buffers.segmentCount) {
         const startOffset = buffers.readPositions[idx * 2]
         const endOffset = buffers.readPositions[idx * 2 + 1]
         const y = buffers.readYs[idx]
@@ -559,13 +411,6 @@ export class PileupRenderer {
 
   private drawFilledRect(gl: WebGL2RenderingContext, clip: ClipRect) {
     const { sx1, sx2, syTop, syBot } = clip
-    gl.enable(gl.BLEND)
-    gl.blendFuncSeparate(
-      gl.SRC_ALPHA,
-      gl.ONE_MINUS_SRC_ALPHA,
-      gl.ONE,
-      gl.ONE_MINUS_SRC_ALPHA,
-    )
     gl.useProgram(this.parent.lineProgram)
     gl.uniform4f(this.parent.lineUniforms.u_color!, 0, 0, 0, 0.4)
     const quadData = new Float32Array([

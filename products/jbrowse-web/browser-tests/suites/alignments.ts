@@ -128,6 +128,37 @@ const suite: TestSuite = {
         )
       },
     },
+    {
+      name: 'sub-pixel mismatch blending with coverage (zoomed out)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1..10,000',
+              tracks: ['volvox_alignments_pileup_coverage'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'pileup-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
+        // Verify no white spots from disabled blending: coverage renderer
+        // disables gl.BLEND after indicator draw; pileup renderer must
+        // re-enable it so sub-pixel mismatches alpha-blend with reads
+        // rather than replacing them with near-transparent pixels
+        await canvasSnapshot(
+          page,
+          'alignments-subpixel-mismatch-blend-canvas',
+          '[data-testid="pileup-display"] canvas',
+        )
+      },
+    },
   ],
 }
 

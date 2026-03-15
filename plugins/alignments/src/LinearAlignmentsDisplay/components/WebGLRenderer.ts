@@ -109,7 +109,7 @@ export interface GPUBuffers {
   regionStart: number
   readIdToIndex: Map<string, number>
   readVAO: WebGLVertexArrayObject
-  readCount: number
+  segmentCount: number
   // CPU-side copies for selection outline drawing
   readPositions: Uint32Array
   readYs: Uint16Array
@@ -234,7 +234,6 @@ export class WebGLRenderer {
       antialias: false,
       premultipliedAlpha: true,
       preserveDrawingBuffer: true,
-      stencil: true,
     })
 
     if (!gl) {
@@ -404,32 +403,31 @@ export class WebGLRenderer {
       'u_featureSpacing',
       'u_coverageOffset',
       'u_canvasHeight',
+      'u_canvasWidth',
     ]
-    const cigarUniformsWithWidth = [...cigarUniforms, 'u_canvasWidth']
     this.cacheUniforms(this.gapProgram, this.gapUniforms, [
-      ...cigarUniformsWithWidth,
+      ...cigarUniforms,
       'u_colorDeletion',
       'u_colorSkip',
-      'u_eraseMode',
     ])
     this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
-      ...cigarUniformsWithWidth,
+      ...cigarUniforms,
       ...baseColorUniforms,
     ])
     this.cacheUniforms(this.insertionProgram, this.insertionUniforms, [
-      ...cigarUniformsWithWidth,
+      ...cigarUniforms,
       'u_colorInsertion',
     ])
     this.cacheUniforms(this.softclipProgram, this.softclipUniforms, [
-      ...cigarUniformsWithWidth,
+      ...cigarUniforms,
       'u_colorSoftclip',
     ])
     this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, [
-      ...cigarUniformsWithWidth,
+      ...cigarUniforms,
       'u_colorHardclip',
     ])
     this.cacheUniforms(this.modificationProgram, this.modificationUniforms, [
-      ...cigarUniformsWithWidth,
+      ...cigarUniforms,
     ])
     this.cacheUniforms(this.modCoverageProgram, this.modCoverageUniforms, [
       'u_visibleRange',
@@ -622,6 +620,10 @@ export class WebGLRenderer {
     numReads: number
     maxY: number
     insertSizeStats?: { upper: number; lower: number }
+    segmentPositions: Uint32Array
+    segmentReadIndices: Uint32Array
+    segmentEdgeFlags: Uint8Array
+    numSegments: number
   }) {
     const gl = this.gl
     // Save old buffers reference, then null out to prevent render() from
@@ -699,7 +701,7 @@ export class WebGLRenderer {
         regionStart: data.regionStart,
         readIdToIndex: new Map(),
         readVAO: emptyVAO,
-        readCount: 0,
+        segmentCount: 0,
         readPositions: data.readPositions,
         readYs: data.readYs,
         readStrands: data.readStrands,
@@ -743,46 +745,56 @@ export class WebGLRenderer {
       return
     }
 
-    // Read VAO - use integer positions for high-precision rendering
+    // Read VAO - uses per-segment instances (reads split at skip/intron gaps)
     const readVAO = gl.createVertexArray()
     gl.bindVertexArray(readVAO)
-    // Upload positions as unsigned integers for high-precision (12-bit split in shader)
-    this.uploadUintBuffer(this.readProgram, 'a_position', data.readPositions, 2)
-    this.uploadBuffer(this.readProgram, 'a_y', new Float32Array(data.readYs), 1)
-    this.uploadBuffer(
-      this.readProgram,
-      'a_flags',
-      new Float32Array(data.readFlags),
-      1,
-    )
-    this.uploadBuffer(
-      this.readProgram,
-      'a_mapq',
-      new Float32Array(data.readMapqs),
-      1,
-    )
-    this.uploadBuffer(this.readProgram, 'a_insertSize', data.readInsertSizes, 1)
-    this.uploadBuffer(
-      this.readProgram,
-      'a_pairOrientation',
-      new Float32Array(data.readPairOrientations),
-      1,
-    )
-    this.uploadBuffer(
-      this.readProgram,
-      'a_strand',
-      new Float32Array(data.readStrands),
-      1,
-    )
-    // Only upload tag colors if data is available; otherwise set a constant
-    // attribute value to avoid "attribs only supply 0" WebGL warning
-    if (data.readTagColors.length > 0) {
-      this.uploadNormalizedByteBuffer(
-        this.readProgram,
-        'a_tagColor',
-        data.readTagColors,
-        3,
-      )
+
+    const n = data.numSegments
+    // Build per-segment attribute arrays by looking up parent read data
+    const segPositions = data.segmentPositions
+    const segYs = new Float32Array(n)
+    const segFlags = new Float32Array(n)
+    const segMapqs = new Float32Array(n)
+    const segInsertSizes = new Float32Array(n)
+    const segPairOrientations = new Float32Array(n)
+    const segStrands = new Float32Array(n)
+    const segTagColors = data.readTagColors.length > 0 ? new Uint8Array(n * 3) : null
+    const segChainHasSupp = data.readChainHasSupp && data.readChainHasSupp.length > 0 ? new Float32Array(n) : null
+    const segReadIndices = new Uint32Array(n)
+    const segEdgeFlags = new Uint32Array(n)
+    const segReadSpans = new Uint32Array(n * 2)
+
+    for (let j = 0; j < n; j++) {
+      const ri = data.segmentReadIndices[j]!
+      segYs[j] = data.readYs[ri]!
+      segFlags[j] = data.readFlags[ri]!
+      segMapqs[j] = data.readMapqs[ri]!
+      segInsertSizes[j] = data.readInsertSizes[ri]!
+      segPairOrientations[j] = data.readPairOrientations[ri]!
+      segStrands[j] = data.readStrands[ri]!
+      if (segTagColors) {
+        segTagColors[j * 3] = data.readTagColors[ri * 3]!
+        segTagColors[j * 3 + 1] = data.readTagColors[ri * 3 + 1]!
+        segTagColors[j * 3 + 2] = data.readTagColors[ri * 3 + 2]!
+      }
+      if (segChainHasSupp) {
+        segChainHasSupp[j] = data.readChainHasSupp![ri]!
+      }
+      segReadIndices[j] = ri
+      segEdgeFlags[j] = data.segmentEdgeFlags[j]!
+      segReadSpans[j * 2] = data.readPositions[ri * 2]!
+      segReadSpans[j * 2 + 1] = data.readPositions[ri * 2 + 1]!
+    }
+
+    this.uploadUintBuffer(this.readProgram, 'a_position', segPositions, 2)
+    this.uploadBuffer(this.readProgram, 'a_y', segYs, 1)
+    this.uploadBuffer(this.readProgram, 'a_flags', segFlags, 1)
+    this.uploadBuffer(this.readProgram, 'a_mapq', segMapqs, 1)
+    this.uploadBuffer(this.readProgram, 'a_insertSize', segInsertSizes, 1)
+    this.uploadBuffer(this.readProgram, 'a_pairOrientation', segPairOrientations, 1)
+    this.uploadBuffer(this.readProgram, 'a_strand', segStrands, 1)
+    if (segTagColors) {
+      this.uploadNormalizedByteBuffer(this.readProgram, 'a_tagColor', segTagColors, 3)
     } else {
       const loc = gl.getAttribLocation(this.readProgram, 'a_tagColor')
       if (loc >= 0) {
@@ -790,14 +802,8 @@ export class WebGLRenderer {
         gl.vertexAttrib3f(loc, 0, 0, 0)
       }
     }
-    // Upload chain supplementary flag (only present in chain modes)
-    if (data.readChainHasSupp && data.readChainHasSupp.length > 0) {
-      this.uploadBuffer(
-        this.readProgram,
-        'a_chainHasSupp',
-        new Float32Array(data.readChainHasSupp),
-        1,
-      )
+    if (segChainHasSupp) {
+      this.uploadBuffer(this.readProgram, 'a_chainHasSupp', segChainHasSupp, 1)
     } else {
       const loc = gl.getAttribLocation(this.readProgram, 'a_chainHasSupp')
       if (loc >= 0) {
@@ -805,6 +811,9 @@ export class WebGLRenderer {
         gl.vertexAttrib1f(loc, 0)
       }
     }
+    this.uploadUintBuffer(this.readProgram, 'a_readIndex', segReadIndices, 1)
+    this.uploadUintBuffer(this.readProgram, 'a_edgeFlags', segEdgeFlags, 1)
+    this.uploadUintBuffer(this.readProgram, 'a_readSpan', segReadSpans, 2)
     gl.bindVertexArray(null)
 
     const readIdToIndex = new Map<string, number>()
@@ -815,7 +824,7 @@ export class WebGLRenderer {
       regionStart: data.regionStart,
       readIdToIndex,
       readVAO,
-      readCount: data.numReads,
+      segmentCount: n,
       readPositions: data.readPositions,
       readYs: data.readYs,
       readStrands: data.readStrands,
@@ -1573,7 +1582,7 @@ export class WebGLRenderer {
       regionStart,
       readIdToIndex: new Map(),
       readVAO: emptyVAO,
-      readCount: 0,
+      segmentCount: 0,
       readPositions: new Uint32Array(0),
       readYs: new Uint16Array(0),
       readStrands: new Int8Array(0),
@@ -2122,8 +2131,7 @@ export class WebGLRenderer {
 
     gl.viewport(0, 0, bufW, bufH)
     gl.clearColor(0, 0, 0, 0)
-    gl.stencilMask(0xff)
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
+    gl.clear(gl.COLOR_BUFFER_BIT)
 
     const colors = state.colors
     const mode = state.renderingMode ?? 'pileup'
@@ -2162,10 +2170,6 @@ export class WebGLRenderer {
         block.bpRangeX[0] + (scissorX - block.screenStartPx) * bpPerPx
       const clippedBpEnd =
         block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx
-      const clippedBpOffset: [number, number] = [
-        clippedBpStart - regionStart,
-        clippedBpEnd - regionStart,
-      ]
 
       gl.viewport(
         Math.round(scissorX * dpr),
@@ -2179,7 +2183,7 @@ export class WebGLRenderer {
         canvasWidth: scissorW,
       }
 
-      this.coverageRenderer.render(blockState, clippedBpOffset, colors)
+      this.coverageRenderer.render(blockState, colors)
 
       const arcsHeight =
         state.showArcs && state.arcsHeight ? state.arcsHeight : 0
@@ -2241,7 +2245,7 @@ export class WebGLRenderer {
         this.connectingLineRenderer.render(blockState)
       }
 
-      this.pileupRenderer.render(blockState, clippedBpOffset, colors, scissorX)
+      this.pileupRenderer.render(blockState, colors, scissorX)
     }
 
     // Phase 2: Cross-region rendering (arcs and sashimi arcs)
