@@ -112,7 +112,7 @@ These affect significant user-visible functionality.
 |-----|-------|
 | Color change wiggle not working (sometimes) | Investigated — e2e test proves reactivity works; autorun correctly re-fires on color change |
 | Cross hatches | **DONE** — `displayCrossHatches` toggle + SVG overlay |
-| Multi-wiggle color with overlapping modes | Investigated — color re-indexing happens in the `sources` getter (model-level), but the renderer (`MultiWiggleComponent`) conditionally skips sources lacking data in the current region, causing index misalignment. Colors are pre-assigned by `resolveOverlayColor(i, ...)` but `i` reflects post-filter/post-layout ordering, which may not match RPC data availability. |
+| Multi-wiggle color with overlapping modes | **FIXED** — row index used `idx` from `orderedSources.entries()` which skipped values when sources had no RPC data; replaced with separate `rowCounter` that increments only for sources with data |
 | Overlapping line whiskers | Single color whiskers option? |
 | Y-scale bar offset per row | Unclear repro |
 | Refresh after multi-wiggle fails also fails | Investigated — error state clearing in `reload()` looks correct (calls `setError(null)` + `clearAllRpcData()` which also clears error). The `MultiWiggleComponent` has dual error state (React `useState` + `model.error`), both cleared on retry. May be a GPU renderer state issue — renderer initialized in a `useEffect` that only runs once, so if GPU context is lost during an error, retry might not re-init the renderer. Needs browser testing. |
@@ -132,7 +132,7 @@ These affect significant user-visible functionality.
 | Split indels code | Refactoring task |
 | Horizontally flipped stuff is inaccurate | Investigated — strand swap + reversed region double-flip is actually correct behavior (two flips cancel for inversions). The real issue was blank synteny browser test snapshots due to missing `drawn-` signal (**now fixed**). Need to re-run browser tests with the `drawn-` fix to verify actual rendering. Added unit tests confirming coordinate math for all 4 strand×reversed combinations. |
 | Color dotplot red vs black | |
-| Make scrolling dotplot a little slower | |
+| Make scrolling dotplot a little slower | **DONE** — doubled scroll divisors in `useWheelHandler.ts` (horizontal `/5`→`/10`, vertical `/15`→`/30`) |
 | Linked dotplot and synteny view | Idea / future feature |
 | Swap axes dotplot | Idea / future feature |
 | Swap axes linear synteny view | Idea / future feature |
@@ -377,6 +377,50 @@ Added 4 unit tests verifying synteny parallelogram crossing behavior for all str
 - Browser test runner: forwards `[alignments]` console messages alongside existing `[webgl-wiggle]` messages
 
 ---
+
+## Cross-Backend Verification Matrix
+
+All track types must work across 4 rendering backends. Key: W=WebGPU, G=WebGL, C=Canvas2D, S=SVG export. ✓=done, ~=partial, ✗=missing, -=N/A
+
+| Display Type | W | G | C | S | Notes |
+|---|---|---|---|---|---|
+| Alignments (pileup) | ✓ | ✓ | ✓ | ✓ | All 9 color schemes in Canvas2D |
+| Alignments (coverage) | ✓ | ✓ | - | ✓ | Coverage rendered by GPU only + SVG |
+| Alignments (SNP coverage) | ✓ | ✓ | - | ✓ | |
+| Alignments (arcs/sashimi) | ✓ | ✓ | - | ✓ | Sashimi arcs in SVG via path elements |
+| Alignments (CIGAR gaps) | ✓ | ✓ | ✓ | ✓ | |
+| Alignments (modifications) | ✓ | ✓ | - | ✓ | |
+| Features (genes, etc.) | ✓ | ✓ | ✓ | ✓ | Peptide monospace font fixed |
+| Wiggle (single) | ✓ | ✓ | ✓ | ✓ | |
+| Wiggle (multi) | ✓ | ✓ | ✓ | ✓ | |
+| Variants (multi-sample) | ✓ | ✓ | ✓ | ✓ | |
+| Variants (matrix) | ✓ | ✓ | ✓ | ✓ | |
+| Variants (LD) | ✓ | ✓ | ✓ | ✓ | GPU compute for LD calculation |
+| Sequence | ✓ | ✓ | - | ✓ | Monospace font fixed in SVG |
+| Synteny | ✓ | ✓ | ✓ | ✓ | Picking works in Canvas2D |
+| Dotplot | ✓ | ✓ | ✓ | ✓ | |
+| HiC | ✓ | ✓ | ✓ | ✓ | |
+
+### Next Steps — Cross-Backend Testing
+
+1. **Add browser tests per backend**: Run SVG export tests with `--backend=canvas2d` to ensure Canvas2D fallback produces valid output for all track types
+2. **Cross-backend visual regression**: Use `compare-backends.ts` to flag rendering differences between WebGL and Canvas2D for each track type
+3. **Coverage sub-renderers in Canvas2D**: Coverage histogram, SNP coverage, noncov histogram, and modification coverage currently only render via GPU — add Canvas2D fallback for these if needed for `?gpu=off` mode
+4. **Multi-wiggle error recovery**: GPU renderer init happens once in `useEffect`; if context is lost during error, retry doesn't re-init. Need to track renderer validity and re-create on error recovery.
+
+### Next Steps — Remaining Bugs
+
+**P2 (High):**
+- Dotplot: color should be red (positive strand) vs blue (negative strand) — verify `dotplotWebGLColors.ts` strand mapping
+- ~~Dotplot: scroll speed too fast~~ **DONE**
+- ~~Multi-wiggle overlay color misalignment~~ **DONE**
+- Wrong ratio over deletions tooltip — verify fix is complete
+- Insertion depth calculation — `Math.max(leftDepth, rightDepth)` may use wrong indices
+
+**P3 (Medium):**
+- Labels disappear during zoom — `floatingLabelsData` baked at fetch time, not reconstructed on zoom
+- Infinite loop after error in multi-wiggle — dual error state (React + model) may desync
+- Outline on alignments shift+scroll — needs investigation
 
 ## Blog Post Ideas (Non-blocking)
 

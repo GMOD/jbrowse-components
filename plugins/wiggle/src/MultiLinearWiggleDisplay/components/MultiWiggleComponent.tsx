@@ -160,7 +160,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         const orderedSources =
           modelSources.length > 0 ? modelSources : data.sources
         const sourcesData: SourceRenderData[] = []
-        for (const [idx, orderedSource] of orderedSources.entries()) {
+        let rowCounter = 0
+        for (const orderedSource of orderedSources) {
           const rpcSource = sourcesByName[orderedSource.name]
           if (!rpcSource) {
             continue
@@ -170,7 +171,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
             ? parseColor(orderedSource.color)
             : defaultPosColor
           const negColor = overlay ? posColor : defaultNegColor
-          const row = overlay ? 0 : idx
+          const row = overlay ? 0 : rowCounter
+          rowCounter++
 
           if (summaryScoreMode === 'whiskers') {
             for (const s of makeWhiskersSourceData(
