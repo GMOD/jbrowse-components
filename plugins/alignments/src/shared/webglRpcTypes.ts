@@ -5,6 +5,7 @@ export interface FeatureData {
   end: number
   flags: number
   mapq: number
+  avgBaseQuality: number
   insertSize: number
   pairOrientation: number // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   strand: number // -1=reverse, 0=unknown, 1=forward

@@ -232,6 +232,7 @@ export const ColorScheme = {
   insertSizeAndOrientation: 6,
   modifications: 7,
   tag: 8,
+  baseQuality: 9,
 } as const
 
 /**
@@ -612,6 +613,8 @@ export default function stateModelFactory(
             return ColorScheme.modifications
           case 'tag':
             return ColorScheme.tag
+          case 'baseQuality':
+            return ColorScheme.baseQuality
           default:
             return ColorScheme.normal
         }

@@ -92,6 +92,32 @@ describe('getReadDisplayLegendItems', () => {
     expect(items[0]!.label).toBe('Supplementary/split')
   })
 
+  test('returns mapping quality gradient items', () => {
+    const items = getReadDisplayLegendItems({ type: 'mappingQuality' })
+    expect(items).toHaveLength(3)
+    expect(items[0]!.label).toBe('MAPQ 0')
+    expect(items[0]!.color).toBe('hsl(0, 50%, 50%)')
+    expect(items[2]!.label).toBe('MAPQ 60')
+  })
+
+  test('returns base quality gradient items', () => {
+    const items = getReadDisplayLegendItems({ type: 'baseQuality' })
+    expect(items).toHaveLength(4)
+    expect(items[0]!.label).toBe('BQ 0')
+    expect(items[0]!.color).toBe('hsl(0, 50%, 50%)')
+    expect(items[1]!.label).toBe('BQ 10')
+    expect(items[2]!.label).toBe('BQ 20')
+    expect(items[3]!.label).toBe('BQ 30')
+  })
+
+  test('returns strand items', () => {
+    const items = getReadDisplayLegendItems({ type: 'strand' })
+    expect(items).toHaveLength(3)
+    expect(items[0]!.label).toBe('Forward strand')
+    expect(items[1]!.label).toBe('Reverse strand')
+    expect(items[2]!.label).toBe('Supplementary/split')
+  })
+
   test('returns modification items when provided', () => {
     const mods = new Map([
       ['5mC', { type: '5mC', base: 'C', strand: '+', color: 'red' }],

@@ -177,6 +177,9 @@ function getReadColor(
       }
       return rgb255(palette.colorPairLR)
 
+    case ColorScheme.baseQuality:
+      return hslToRgbString(data.readAvgBaseQualities[i]!, 0.5, 0.5)
+
     default:
       return rgb255(palette.colorPairLR)
   }

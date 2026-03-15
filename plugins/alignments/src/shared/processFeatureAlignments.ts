@@ -357,6 +357,18 @@ export function extractFeatureTagValue(feature: Feature, tag: string) {
 
 export function buildBaseFeatureData(feature: Feature): FeatureData {
   const strand = feature.get('strand')
+  const qualArray = feature.get('NUMERIC_QUAL') as
+    | Uint8Array
+    | number[]
+    | undefined
+  let avgBaseQuality = 30
+  if (qualArray && qualArray.length > 0) {
+    let sum = 0
+    for (let i = 0; i < qualArray.length; i++) {
+      sum += qualArray[i]!
+    }
+    avgBaseQuality = Math.round(sum / qualArray.length)
+  }
   return {
     id: feature.id(),
     name: feature.get('name') ?? '',
@@ -364,6 +376,7 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     end: feature.get('end'),
     flags: feature.get('flags') ?? 0,
     mapq: feature.get('score') ?? feature.get('qual') ?? 60,
+    avgBaseQuality,
     insertSize: Math.abs(feature.get('template_length') ?? 400),
     pairOrientation: pairOrientationToNum(feature.get('pair_orientation')),
     strand: strand === -1 ? -1 : strand === 1 ? 1 : 0,

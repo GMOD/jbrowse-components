@@ -4,11 +4,12 @@ export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-// SYNC(wgsl/readShader.ts): field order must match ReadInst struct (16 fields)
+// SYNC(wgsl/readShader.ts): field order must match ReadInst struct (17 fields)
 in uvec2 a_position;  // segment [start, end] as uint offsets from regionStart
 in float a_y;
 in float a_flags;
 in float a_mapq;
+in float a_baseQuality;
 in float a_insertSize;
 in float a_pairOrientation;  // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
 in float a_strand;           // -1=reverse, 0=unknown, 1=forward
@@ -56,7 +57,7 @@ out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=ch
 
 ${HP_GLSL_FUNCTIONS}
 
-// SYNC(wgsl/readShader.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
+// SYNC(wgsl/readShader.ts): color schemes 0-9, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
 // Color scheme 1: strand
 vec3 strandColor(float strand) {
   if (strand > 0.5) return u_colorFwdStrand;
@@ -287,6 +288,7 @@ void main() {
       color = u_colorPairLR;
     }
   }
+  else if (u_colorScheme == 9) color = mapqColor(a_baseQuality);
   else color = u_colorPairLR;
 
   v_color = vec4(color, 1.0);

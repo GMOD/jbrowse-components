@@ -335,6 +335,7 @@ const defaultColorOptions = [
   { label: 'Normal', type: 'normal' },
   { label: 'Strand', type: 'strand' },
   { label: 'Mapping quality', type: 'mappingQuality' },
+  { label: 'Base quality', type: 'baseQuality' },
   { label: 'Insert size', type: 'insertSize' },
   { label: 'First of pair strand', type: 'firstOfPairStrand' },
   { label: 'Pair orientation', type: 'pairOrientation' },

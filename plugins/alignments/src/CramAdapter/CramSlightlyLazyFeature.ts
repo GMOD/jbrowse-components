@@ -157,6 +157,8 @@ export default class CramSlightlyLazyFeature implements Feature {
         return this.mismatches
       case 'qual':
         return this.qual
+      case 'NUMERIC_QUAL':
+        return this.qualRaw
       case 'CIGAR':
         return this.CIGAR
       case 'NUMERIC_CIGAR':

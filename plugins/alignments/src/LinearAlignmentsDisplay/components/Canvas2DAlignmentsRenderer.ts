@@ -21,6 +21,7 @@ interface Canvas2DRegionData {
   readYs: Uint16Array
   readFlags: Uint16Array
   readMapqs: Uint8Array
+  readAvgBaseQualities: Uint8Array
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
   readStrands: Int8Array
@@ -142,6 +143,7 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
     readYs: empty16,
     readFlags: empty16,
     readMapqs: empty8,
+    readAvgBaseQualities: empty8,
     readInsertSizes: emptyF32,
     readPairOrientations: empty8,
     readStrands: new Int8Array(0),
@@ -253,6 +255,7 @@ export class Canvas2DAlignmentsRenderer {
     r.readYs = data.readYs
     r.readFlags = data.readFlags
     r.readMapqs = data.readMapqs
+    r.readAvgBaseQualities = data.readAvgBaseQualities
     r.readInsertSizes = data.readInsertSizes
     r.readPairOrientations = data.readPairOrientations
     r.readStrands = data.readStrands
@@ -767,6 +770,11 @@ export class Canvas2DAlignmentsRenderer {
           }
         }
         return this.rgbStr(colors.colorPairLR)
+      }
+      // Base quality: hsl(avgBaseQuality, 50%, 50%) — same formula as mapping quality
+      case 9: {
+        const bq = region.readAvgBaseQualities[i]!
+        return this.hslToRgb(bq / 360, 0.5, 0.5)
       }
       // Fallback: grey
       default: {

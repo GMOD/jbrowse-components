@@ -3,7 +3,7 @@ import { buildSegmentArrays } from './processFeatureAlignments.ts'
 import type { FeatureData, GapData } from './webglRpcTypes.ts'
 
 function feat(id: string, start: number, end: number): FeatureData {
-  return { id, name: id, start, end, flags: 0, mapq: 60, insertSize: 0, pairOrientation: 0, strand: 1 }
+  return { id, name: id, start, end, flags: 0, mapq: 60, avgBaseQuality: 30, insertSize: 0, pairOrientation: 0, strand: 1 }
 }
 
 function skip(featureId: string, start: number, end: number): GapData {

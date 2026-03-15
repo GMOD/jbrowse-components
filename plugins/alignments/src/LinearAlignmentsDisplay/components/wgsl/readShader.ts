@@ -4,10 +4,10 @@ export const READ_WGSL = `
 ${PREAMBLE}
 ${PILEUP_Y}
 
-// SYNC(shaders/readShaders.ts): ReadInst field order must match GLSL in attributes (16 fields)
+// SYNC(shaders/readShaders.ts): ReadInst field order must match GLSL in attributes (17 fields)
 struct ReadInst {
   start_off: u32, end_off: u32, y: u32, flags: u32,
-  mapq: u32, insert_size: f32, pair_orient: u32, strand: i32,
+  mapq: u32, base_quality: u32, insert_size: f32, pair_orient: u32, strand: i32,
   tag_r: f32, tag_g: f32, tag_b: f32, chain_supp: u32,
   read_index: u32, edge_flags: u32,
   read_start_off: u32, read_end_off: u32,
@@ -23,7 +23,7 @@ struct VertexOutput {
   @location(3) edge_flags: f32,
 }
 
-// SYNC(shaders/readShaders.ts): color schemes 0-8, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
+// SYNC(shaders/readShaders.ts): color schemes 0-9, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
 fn normal_color(flags: u32) -> vec3f {
   if (flags & 2048u) != 0u { return color3(95u); }
   return color3(41u);
@@ -117,6 +117,7 @@ fn get_read_color(inst: ReadInst) -> vec3f {
     }
     return color3(41u);
   }
+  if cs == 9 { return mapq_color(inst.base_quality); }
   return color3(41u);
 }
 

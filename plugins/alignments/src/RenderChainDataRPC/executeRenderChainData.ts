@@ -429,6 +429,7 @@ export async function executeRenderChainData({
     const readYs = new Uint16Array(features.length)
     const readFlags = new Uint16Array(features.length)
     const readMapqs = new Uint8Array(features.length)
+    const readAvgBaseQualities = new Uint8Array(features.length)
     const readInsertSizes = new Float32Array(features.length)
     const readPairOrientations = new Uint8Array(features.length)
     const readStrands = new Int8Array(features.length)
@@ -445,6 +446,7 @@ export async function executeRenderChainData({
       readYs[i] = y
       readFlags[i] = f.flags
       readMapqs[i] = Math.min(255, f.mapq)
+      readAvgBaseQualities[i] = Math.min(255, f.avgBaseQuality)
       readInsertSizes[i] = f.insertSize
       readPairOrientations[i] = f.pairOrientation
       readStrands[i] = f.strand
@@ -523,6 +525,7 @@ export async function executeRenderChainData({
         readYs,
         readFlags,
         readMapqs,
+        readAvgBaseQualities,
         readInsertSizes,
         readPairOrientations,
         readStrands,
@@ -694,6 +697,7 @@ export async function executeRenderChainData({
     result.segmentEdgeFlags.buffer,
     result.readFlags.buffer,
     result.readMapqs.buffer,
+    result.readAvgBaseQualities.buffer,
     result.readInsertSizes.buffer,
     result.readChainHasSupp!.buffer,
     result.readPairOrientations.buffer,

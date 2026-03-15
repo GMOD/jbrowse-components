@@ -755,6 +755,7 @@ export class WebGLRenderer {
     const segYs = new Float32Array(n)
     const segFlags = new Float32Array(n)
     const segMapqs = new Float32Array(n)
+    const segBaseQualities = new Float32Array(n)
     const segInsertSizes = new Float32Array(n)
     const segPairOrientations = new Float32Array(n)
     const segStrands = new Float32Array(n)
@@ -773,6 +774,7 @@ export class WebGLRenderer {
       segYs[j] = data.readYs[ri]!
       segFlags[j] = data.readFlags[ri]!
       segMapqs[j] = data.readMapqs[ri]!
+      segBaseQualities[j] = data.readAvgBaseQualities[ri]!
       segInsertSizes[j] = data.readInsertSizes[ri]!
       segPairOrientations[j] = data.readPairOrientations[ri]!
       segStrands[j] = data.readStrands[ri]!
@@ -794,6 +796,7 @@ export class WebGLRenderer {
     this.uploadBuffer(this.readProgram, 'a_y', segYs, 1)
     this.uploadBuffer(this.readProgram, 'a_flags', segFlags, 1)
     this.uploadBuffer(this.readProgram, 'a_mapq', segMapqs, 1)
+    this.uploadBuffer(this.readProgram, 'a_baseQuality', segBaseQualities, 1)
     this.uploadBuffer(this.readProgram, 'a_insertSize', segInsertSizes, 1)
     this.uploadBuffer(
       this.readProgram,

@@ -102,6 +102,7 @@ export interface PileupDataResult {
   readYs: Uint16Array // pileup row (0-65535 sufficient)
   readFlags: Uint16Array // BAM flags are 16-bit
   readMapqs: Uint8Array // 0-255
+  readAvgBaseQualities: Uint8Array // 0-255 average per-base quality
   readInsertSizes: Float32Array // keep float (can be large/negative)
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward

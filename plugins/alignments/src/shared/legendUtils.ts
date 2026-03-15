@@ -164,6 +164,28 @@ export function getReadDisplayLegendItems(
   if (colorType === 'orientation') {
     return orientationLegendItems
   }
+  if (colorType === 'mappingQuality') {
+    return [
+      { color: 'hsl(0, 50%, 50%)', label: 'MAPQ 0' },
+      { color: 'hsl(30, 50%, 50%)', label: 'MAPQ 30' },
+      { color: 'hsl(60, 50%, 50%)', label: 'MAPQ 60' },
+    ]
+  }
+  if (colorType === 'baseQuality') {
+    return [
+      { color: 'hsl(0, 50%, 50%)', label: 'BQ 0' },
+      { color: 'hsl(10, 50%, 50%)', label: 'BQ 10' },
+      { color: 'hsl(20, 50%, 50%)', label: 'BQ 20' },
+      { color: 'hsl(30, 50%, 50%)', label: 'BQ 30' },
+    ]
+  }
+  if (colorType === 'strand') {
+    return [
+      { color: fillColor.color_fwd_strand, label: 'Forward strand' },
+      { color: fillColor.color_rev_strand, label: 'Reverse strand' },
+      supplementaryItem,
+    ]
+  }
 
   return [supplementaryItem]
 }
