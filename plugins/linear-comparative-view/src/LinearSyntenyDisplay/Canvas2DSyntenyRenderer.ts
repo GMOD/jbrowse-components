@@ -6,6 +6,10 @@ function hermiteY(t: number, height: number) {
   return height * (1.5 * t * (1 - t) + t * t * t)
 }
 
+function smoothstep(t: number) {
+  return t * t * (3 - 2 * t)
+}
+
 export class Canvas2DSyntenyRenderer {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
@@ -20,6 +24,10 @@ export class Canvas2DSyntenyRenderer {
     minAlignmentLength: number
   } | null = null
 
+  private get dpr() {
+    return typeof window !== 'undefined' ? window.devicePixelRatio : 2
+  }
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     const ctx = canvas.getContext('2d')
@@ -30,7 +38,7 @@ export class Canvas2DSyntenyRenderer {
   }
 
   resize(width: number, height: number) {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = this.dpr
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
     if (this.canvas.width !== pw || this.canvas.height !== ph) {
@@ -70,7 +78,7 @@ export class Canvas2DSyntenyRenderer {
       return
     }
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = this.dpr
     const ctx = this.ctx
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
@@ -84,17 +92,15 @@ export class Canvas2DSyntenyRenderer {
     const adjOff0 = offset0 / scale0 - data.refOffset0
     const adjOff1 = offset1 / scale1 - data.refOffset1
 
-    ctx.globalAlpha = alpha
-
     for (let i = 0; i < data.instanceCount; i++) {
       if (data.queryTotalLengths[i]! < minAlignmentLength) {
         continue
       }
 
       const ci = i * 4
-      const r = Math.round(data.colors[ci]! * 255)
-      const g = Math.round(data.colors[ci + 1]! * 255)
-      const b = Math.round(data.colors[ci + 2]! * 255)
+      let r = data.colors[ci]!
+      let g = data.colors[ci + 1]!
+      let b = data.colors[ci + 2]!
       const a = data.colors[ci + 3]!
       if (a < 0.01) {
         continue
@@ -118,25 +124,44 @@ export class Canvas2DSyntenyRenderer {
         continue
       }
 
+
       const isHovered = data.featureIds[i] === hoveredFeatureId
       const isClicked = data.featureIds[i] === clickedFeatureId
-      const effectiveAlpha = isHovered ? Math.min(1, a * 1.5) : a
 
-      ctx.fillStyle = `rgba(${r},${g},${b},${effectiveAlpha})`
+      // Match GPU renderer hover behavior: dim RGB and cap alpha
+      let effectiveAlpha: number
+      if (isHovered) {
+        r *= 0.7
+        g *= 0.7
+        b *= 0.7
+        effectiveAlpha = Math.min(a * alpha * 5, 0.35)
+      } else {
+        effectiveAlpha = a * alpha
+      }
+
+      const ri = Math.round(r * 255)
+      const gi = Math.round(g * 255)
+      const bi = Math.round(b * 255)
+
+      ctx.globalAlpha = 1
+      ctx.fillStyle = `rgba(${ri},${gi},${bi},${effectiveAlpha})`
 
       if (data.isCurves[i]! > 0.5) {
+        // Use smoothstep for X interpolation to match GPU shaders
         ctx.beginPath()
         ctx.moveTo(sx1, 0)
         for (let s = 1; s <= CURVE_SEGMENTS; s++) {
           const t = s / CURVE_SEGMENTS
+          const st = smoothstep(t)
           const y = hermiteY(t, height)
-          const x = sx1 + (sx4 - sx1) * t
+          const x = sx1 + (sx4 - sx1) * st
           ctx.lineTo(x, y)
         }
         for (let s = CURVE_SEGMENTS; s >= 0; s--) {
           const t = s / CURVE_SEGMENTS
+          const st = smoothstep(t)
           const y = hermiteY(t, height)
-          const x = sx2 + (sx3 - sx2) * t
+          const x = sx2 + (sx3 - sx2) * st
           ctx.lineTo(x, y)
         }
         ctx.closePath()
@@ -198,11 +223,13 @@ export class Canvas2DSyntenyRenderer {
         ctx.moveTo(sx1, 0)
         for (let s = 1; s <= CURVE_SEGMENTS; s++) {
           const t = s / CURVE_SEGMENTS
-          ctx.lineTo(sx1 + (sx4 - sx1) * t, hermiteY(t, height))
+          const st = smoothstep(t)
+          ctx.lineTo(sx1 + (sx4 - sx1) * st, hermiteY(t, height))
         }
         for (let s = CURVE_SEGMENTS; s >= 0; s--) {
           const t = s / CURVE_SEGMENTS
-          ctx.lineTo(sx2 + (sx3 - sx2) * t, hermiteY(t, height))
+          const st = smoothstep(t)
+          ctx.lineTo(sx2 + (sx3 - sx2) * st, hermiteY(t, height))
         }
       } else {
         ctx.moveTo(sx1, 0)

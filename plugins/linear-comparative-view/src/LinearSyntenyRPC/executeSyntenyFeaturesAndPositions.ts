@@ -315,6 +315,11 @@ export async function executeSyntenyFeaturesAndPositions({
   console.debug(
     `[synteny] features: ${features.length} total, ${validCount} visible, ${culledCount} culled by viewport`,
   )
+  if (validCount > 0 && validCount <= 100) {
+    for (let i = 0; i < validCount; i++) {
+      console.log(`[synteny] feat ${i}: ref=${refNames[i]}:${startsArray[i]}-${endsArray[i]} mate=${mates[i]?.refName}:${mates[i]?.start}-${mates[i]?.end} strand=${strandsArray[i]}`)
+    }
+  }
 
   const positionData = {
     p11_offsetPx: p11Array.subarray(0, validCount),

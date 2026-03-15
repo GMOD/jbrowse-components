@@ -180,13 +180,16 @@ async function main() {
     const page = await browser.newPage()
     page.on('console', msg => {
       const text = msg.text()
-      if (
-        text.includes('[webgl-wiggle]') ||
-        text.includes('[alignments]')
-      ) {
-        console.log('  Browser:', text)
-      } else if (msg.type() === 'error' && !text.includes('favicon')) {
+      if (text.includes('favicon')) {
+        return
+      }
+      const type = msg.type()
+      if (type === 'error') {
         console.error('  Browser:', text)
+      } else if (type === 'warning') {
+        console.warn('  Browser:', text)
+      } else {
+        console.log('  Browser:', text)
       }
     })
 

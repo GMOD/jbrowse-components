@@ -461,9 +461,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
                 // Show synteny tracks
                 if (init.tracks) {
+                  console.log('[LSV init] showing synteny tracks:', init.tracks)
                   for (const trackId of init.tracks) {
+                    console.log('[LSV init] calling showTrack for:', trackId)
                     self.showTrack(trackId)
                   }
+                  console.log('[LSV init] levels after showTrack:', self.levels.length, 'tracks per level:', self.levels.map(l => l.tracks.length))
                 }
 
                 // Clear init state

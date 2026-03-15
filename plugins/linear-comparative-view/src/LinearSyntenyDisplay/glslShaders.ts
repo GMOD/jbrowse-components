@@ -159,6 +159,7 @@ void main() {
 
 export const FILL_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
+precision highp int;
 
 layout(std140) uniform Uniforms {
   vec2 resolution;

@@ -15,7 +15,7 @@ const suite: TestSuite = {
   requiresRemote: true,
   tests: [
     {
-      name: 'renders synteny view for chr22 region (indexed PAF)',
+      name: 'renders synteny view for chr7 region (indexed PAF)',
       fn: async page => {
         await navigateWithSessionSpec(
           page,
@@ -26,11 +26,11 @@ const suite: TestSuite = {
                 tracks: ['hs1ToMm39.over.chain.pif'],
                 views: [
                   {
-                    loc: 'chr22:15,000,000..25,000,000',
+                    loc: 'chr7:25,000,000..30,000,000',
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr15:60,000,000..70,000,000',
+                    loc: 'chr6',
                     assembly: 'mm39',
                   },
                 ],
@@ -49,7 +49,7 @@ const suite: TestSuite = {
         )
         await canvasSnapshot(
           page,
-          'hs1-mm39-synteny-chr22-canvas',
+          'hs1-mm39-synteny-chr7-canvas',
           '[data-testid="synteny_canvas"]',
         )
       },
@@ -70,7 +70,7 @@ const suite: TestSuite = {
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr1:50,000,000..100,000,000',
+                    loc: 'chr1',
                     assembly: 'mm39',
                   },
                 ],
@@ -106,11 +106,11 @@ const suite: TestSuite = {
                 tracks: ['hs1ToMm39.over.chain.pif'],
                 views: [
                   {
-                    loc: 'chr22:15,000,000..25,000,000',
+                    loc: 'chr7:25,000,000..30,000,000',
                     assembly: 'hs1',
                   },
                   {
-                    loc: 'chr15:60,000,000..70,000,000',
+                    loc: 'chr6',
                     assembly: 'mm39',
                   },
                 ],
