@@ -712,8 +712,9 @@ export class Canvas2DAlignmentsRenderer {
         return this.rgbStr(colors.colorSupplementary)
       }
       const primaryStrand = chainSupp > 1 ? -1 : 1
-      const effectiveStrand =
-        state.flipStrandLongReadChains ? strand * primaryStrand : strand
+      const effectiveStrand = state.flipStrandLongReadChains
+        ? strand * primaryStrand
+        : strand
       return this.strandColor(effectiveStrand, colors)
     }
 

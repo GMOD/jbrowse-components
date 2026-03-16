@@ -191,7 +191,12 @@ function renderToCtx(
       const { color } = modelSource
       const rowY = overlay ? 0 : getRowTop(sourceIdx, rowHeight)
 
-      const slices = getFeatureSlices(source, color ?? 'blue', negColor ?? color ?? 'red', overlay)
+      const slices = getFeatureSlices(
+        source,
+        color ?? 'blue',
+        negColor ?? color ?? 'red',
+        overlay,
+      )
       for (const slice of slices) {
         renderFeatureSlice(
           ctx,

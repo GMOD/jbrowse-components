@@ -1,8 +1,9 @@
 import { Suspense, lazy } from 'react'
 
 import { parseBreakend } from '@gmod/vcf'
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
-import { Paper } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AltFormatter from './AltFormatter.tsx'
@@ -99,7 +100,14 @@ const FeatDefined = observer(function FeatDefined(props: {
 }) {
   const { feat, model } = props
   const { descriptions } = model
-  const { samples, ...rest } = feat
+  const {
+    samples,
+    genotypes,
+    clickedSample,
+    clickedGenotype,
+    clickedAlleles,
+    ...rest
+  } = feat
   const { REF } = rest
 
   return (
@@ -136,6 +144,12 @@ const FeatDefined = observer(function FeatDefined(props: {
         />
         <LaunchBreakendWidgetArea model={model} />
       </Suspense>
+      {clickedSample ? (
+        <BaseCard title={`Sample: ${clickedSample}`}>
+          <Typography>Genotype: {`${clickedGenotype}`}</Typography>
+          <Typography>Alleles: {`${clickedAlleles}`}</Typography>
+        </BaseCard>
+      ) : null}
       <VariantSampleGrid
         feature={feat}
         {...props}

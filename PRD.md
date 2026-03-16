@@ -175,11 +175,11 @@ These affect significant user-visible functionality.
 
 ### P2.4 SVG Export Issues
 
-| Bug                                                               | Notes                                                                                                                             |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| ~~Y scale bars wrong in multi-wiggle (no scalebar label offset)~~ | **REMOVED** — offset not desired for multi-row mode                                                                               |
-| Monospace font on sequence track                                  | **FIXED** — added `font-family="monospace"` to both `renderBaseLetters()` and `renderTranslationLetters()` in sequence SVG export |
-| Monospace font on peptides                                        | **FIXED** — added `font-family="monospace"` to `renderPeptideLettersForRegion()` in feature SVG export                            |
+| Bug                                                               | Notes                                                                                                                                                                                                        |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ~~Y scale bars wrong in multi-wiggle (no scalebar label offset)~~ | **REMOVED** — offset not desired for multi-row mode                                                                                                                                                          |
+| Monospace font on sequence track                                  | **FIXED** — added `font-family="monospace"` to both `renderBaseLetters()` and `renderTranslationLetters()` in sequence SVG export                                                                            |
+| Monospace font on peptides                                        | **FIXED** — added `font-family="monospace"` to `renderPeptideLettersForRegion()` in feature SVG export                                                                                                       |
 | ~~Alignments SVG: indels too visible in SKBR3 output~~            | **LIKELY FIXED** — depth-dependent frequency thresholds and sub-pixel alpha fading now applied consistently across SVG, Canvas2D, and GPU renderers. Audited: insertion length text now uses monospace font. |
 
 ### P2.5 Variant Track Issues

@@ -68,9 +68,7 @@ function resolveOverlayColor(
 ) {
   if (isOverlay) {
     return (
-      layoutColor ??
-      adapterColor ??
-      overlayColors[index % overlayColors.length]
+      layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
     )
   }
   return layoutColor ?? adapterColor
