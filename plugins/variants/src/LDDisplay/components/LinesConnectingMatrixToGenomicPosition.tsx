@@ -254,7 +254,9 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 y1={0}
                 y2={tickHeight}
               />
-              <BaseTooltip>{hovered.snp.id}</BaseTooltip>
+              {hovered.snp.id ? (
+                <BaseTooltip>{hovered.snp.id}</BaseTooltip>
+              ) : null}
             </>
           ) : null}
         </Wrapper>

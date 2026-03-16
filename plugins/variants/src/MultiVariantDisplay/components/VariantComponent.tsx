@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import {
-  SimpleFeature,
   getBpDisplayStr,
   getContainingView,
   useGpuRenderer,
@@ -15,6 +14,7 @@ import { observer } from 'mobx-react'
 import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
+import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
@@ -59,6 +59,7 @@ export interface VariantDisplayModel {
   setContextMenuFeature: (feature?: { id(): string }) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
   retryLoadingData: () => void
+  regionCannotBeRendered: () => React.ReactElement | null
 }
 
 type LGV = LinearGenomeViewModel
@@ -290,6 +291,7 @@ const VariantComponent = observer(function VariantComponent({
       const item = regionCellData.flatbushItems[bestIdx]!
       const info = regionCellData.featureGenotypeMap[item.featureId]!
       const genotype = info.genotypes[item.sourceName]!
+      const source = model.sources?.find(s => s.name === item.sourceName)
       return {
         genotype,
         alleles: makeSimpleAltString(genotype, info.ref, info.alt),
@@ -297,6 +299,7 @@ const VariantComponent = observer(function VariantComponent({
         description:
           info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
         length: getBpDisplayStr(info.length),
+        sampleName: source?.baseName ?? item.sourceName,
         name: item.sourceName,
         featureId: item.featureId,
         cell: {
@@ -310,7 +313,7 @@ const VariantComponent = observer(function VariantComponent({
     return undefined
   }
 
-  function enrichFeatureFromClick(
+  function getEnrichedFeature(
     result: NonNullable<ReturnType<typeof getFeatureUnderMouse>>,
     model: VariantDisplayModel,
   ) {
@@ -326,23 +329,7 @@ const VariantComponent = observer(function VariantComponent({
           r => r.featureGenotypeMap[result.featureId],
         )?.featureGenotypeMap[result.featureId]
       : undefined
-    return new SimpleFeature({
-      id: baseFeature.id(),
-      data: {
-        ...baseFeature.toJSON(),
-        ...(info
-          ? {
-              REF: info.ref,
-              ALT: info.alt,
-              description: info.description,
-              genotypes: info.genotypes,
-            }
-          : {}),
-        clickedSample: result.name,
-        clickedGenotype: result.genotype,
-        clickedAlleles: result.alleles,
-      },
-    })
+    return enrichFeatureFromClick(baseFeature, info, result)
   }
 
   const width = view.trackWidthPx
@@ -363,6 +350,8 @@ const VariantComponent = observer(function VariantComponent({
 
   return (
     <div style={{ position: 'relative', width, height }}>
+      {/* See VariantMatrixComponent.tsx for why the canvas must stay mounted
+          and use visibility:'hidden' instead of conditional rendering */}
       <canvas
         ref={canvasRef}
         style={{
@@ -371,6 +360,7 @@ const VariantComponent = observer(function VariantComponent({
           position: 'absolute',
           left: 0,
           top: 0,
+          visibility: model.regionTooLarge ? 'hidden' : undefined,
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
         }}
@@ -385,7 +375,7 @@ const VariantComponent = observer(function VariantComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, cell, ...tooltip } = result
+              const { featureId, cell, sampleName, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
               setHoveredCell(cell)
             } else {
@@ -405,7 +395,7 @@ const VariantComponent = observer(function VariantComponent({
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
           const enriched = result
-            ? enrichFeatureFromClick(result, model)
+            ? getEnrichedFeature(result, model)
             : undefined
           if (enriched) {
             model.selectFeature(enriched)
@@ -415,7 +405,7 @@ const VariantComponent = observer(function VariantComponent({
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
           const enriched = result
-            ? enrichFeatureFromClick(result, model)
+            ? getEnrichedFeature(result, model)
             : undefined
           if (enriched) {
             e.preventDefault()
@@ -454,6 +444,7 @@ const VariantComponent = observer(function VariantComponent({
           (!model.cellData || model.cellDataLoading)
         }
       />
+      {model.regionTooLarge ? model.regionCannotBeRendered() : null}
       {model.displayError ? (
         <ErrorBar
           error={model.displayError}

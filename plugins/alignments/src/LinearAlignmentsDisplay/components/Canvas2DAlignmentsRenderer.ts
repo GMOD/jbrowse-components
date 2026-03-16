@@ -655,15 +655,67 @@ export class Canvas2DAlignmentsRenderer {
     return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
   }
 
+  private pairOrientationColor(po: number, colors: RenderState['colors']) {
+    if (po === 1) {
+      return this.rgbStr(colors.colorPairLR)
+    }
+    if (po === 2) {
+      return this.rgbStr(colors.colorPairRL)
+    }
+    if (po === 3) {
+      return this.rgbStr(colors.colorPairRR)
+    }
+    if (po === 4) {
+      return this.rgbStr(colors.colorPairLL)
+    }
+    return this.rgbStr(colors.colorNostrand)
+  }
+
+  private insertSizeColor(
+    insertSize: number,
+    stats: { upper: number; lower: number } | undefined,
+    colors: RenderState['colors'],
+  ) {
+    if (stats && insertSize > stats.upper) {
+      return this.rgbStr(colors.colorLongInsert)
+    }
+    if (stats && insertSize < stats.lower) {
+      return this.rgbStr(colors.colorShortInsert)
+    }
+    return this.rgbStr(colors.colorPairLR)
+  }
+
+  private strandColor(strand: number, colors: RenderState['colors']) {
+    if (strand > 0) {
+      return this.rgbStr(colors.colorFwdStrand)
+    }
+    if (strand < 0) {
+      return this.rgbStr(colors.colorRevStrand)
+    }
+    return this.rgbStr(colors.colorNostrand)
+  }
+
   private getReadColor(
     i: number,
     region: Canvas2DRegionData,
     state: RenderState,
   ) {
-    const { colorScheme } = state
-    const { colors } = state
+    const { colorScheme, renderingMode, colors } = state
     const flags = region.readFlags[i]!
     const strand = region.readStrands[i]!
+
+    // In chain/linked-read mode, supplementary chains use orange for paired-end reads
+    const chainSupp = region.readChainHasSupp?.[i] ?? 0
+    if (renderingMode === 'linkedRead' && chainSupp > 0) {
+      const isPaired = (flags & 1) !== 0
+      if (isPaired) {
+        return this.rgbStr(colors.colorSupplementary)
+      }
+      const primaryStrand = chainSupp > 1 ? -1 : 1
+      const effectiveStrand =
+        state.flipStrandLongReadChains ? strand * primaryStrand : strand
+      return this.strandColor(effectiveStrand, colors)
+    }
 
     // Unmapped mate (flag 8) — brown for color schemes where insert size/orientation
     // would otherwise miscolor it (tlen=0 shows as "short insert" pink)
@@ -679,22 +731,13 @@ export class Canvas2DAlignmentsRenderer {
     }
 
     switch (colorScheme) {
-      // Normal: supplementary in orange, else grey
+      // Normal
       case 0: {
-        if ((flags & 2048) !== 0) {
-          return this.rgbStr(colors.colorSupplementary)
-        }
         return this.rgbStr(colors.colorPairLR)
       }
       // Strand
       case 1: {
-        if (strand > 0) {
-          return this.rgbStr(colors.colorFwdStrand)
-        }
-        if (strand < 0) {
-          return this.rgbStr(colors.colorRevStrand)
-        }
-        return this.rgbStr(colors.colorNostrand)
+        return this.strandColor(strand, colors)
       }
       // Mapping quality: hsl(mapq, 50%, 50%)
       case 2: {
@@ -703,66 +746,36 @@ export class Canvas2DAlignmentsRenderer {
       }
       // Insert size (threshold)
       case 3: {
-        const insertSize = region.readInsertSizes[i]!
-        const stats = region.insertSizeStats
-        if (stats && insertSize > stats.upper) {
-          return this.rgbStr(colors.colorLongInsert)
-        }
-        if (stats && insertSize < stats.lower) {
-          return this.rgbStr(colors.colorShortInsert)
-        }
-        return this.rgbStr(colors.colorPairLR)
+        return this.insertSizeColor(
+          region.readInsertSizes[i]!,
+          region.insertSizeStats,
+          colors,
+        )
       }
       // First-of-pair strand
       case 4: {
         const isFirst = (flags & 64) !== 0
         const effectiveStrand = isFirst ? strand : -strand
-        if (effectiveStrand > 0) {
-          return this.rgbStr(colors.colorFwdStrand)
-        }
-        if (effectiveStrand < 0) {
-          return this.rgbStr(colors.colorRevStrand)
-        }
-        return this.rgbStr(colors.colorNostrand)
+        return this.strandColor(effectiveStrand, colors)
       }
       // Pair orientation
       case 5: {
-        const po = region.readPairOrientations[i]!
-        if (po === 1) {
-          return this.rgbStr(colors.colorPairLR)
-        }
-        if (po === 2) {
-          return this.rgbStr(colors.colorPairRL)
-        }
-        if (po === 3) {
-          return this.rgbStr(colors.colorPairRR)
-        }
-        if (po === 4) {
-          return this.rgbStr(colors.colorPairLL)
-        }
-        return this.rgbStr(colors.colorNostrand)
+        return this.pairOrientationColor(
+          region.readPairOrientations[i]!,
+          colors,
+        )
       }
-      // Insert size + orientation
+      // Insert size + orientation (non-LR orientation wins, then insert size threshold)
       case 6: {
         const po6 = region.readPairOrientations[i]!
-        if (po6 === 2) {
-          return this.rgbStr(colors.colorPairRL)
+        if (po6 === 2 || po6 === 3 || po6 === 4) {
+          return this.pairOrientationColor(po6, colors)
         }
-        if (po6 === 3) {
-          return this.rgbStr(colors.colorPairRR)
-        }
-        if (po6 === 4) {
-          return this.rgbStr(colors.colorPairLL)
-        }
-        const insertSize6 = region.readInsertSizes[i]!
-        const stats6 = region.insertSizeStats
-        if (stats6 && insertSize6 > stats6.upper) {
-          return this.rgbStr(colors.colorLongInsert)
-        }
-        if (stats6 && insertSize6 < stats6.lower) {
-          return this.rgbStr(colors.colorShortInsert)
-        }
-        return this.rgbStr(colors.colorPairLR)
+        return this.insertSizeColor(
+          region.readInsertSizes[i]!,
+          region.insertSizeStats,
+          colors,
+        )
       }
       // Modifications: fwd/rev strand tint
       case 7: {

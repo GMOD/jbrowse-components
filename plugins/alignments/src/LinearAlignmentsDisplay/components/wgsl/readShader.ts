@@ -24,11 +24,6 @@ struct VertexOutput {
 }
 
 // SYNC(shaders/readShaders.ts): color schemes 0-9, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
-fn normal_color(flags: u32) -> vec3f {
-  if (flags & 2048u) != 0u { return color3(95u); }
-  return color3(41u);
-}
-
 fn strand_color(s: i32) -> vec3f {
   if s > 0 { return color3(32u); }
   if s < 0 { return color3(35u); }
@@ -117,7 +112,7 @@ fn get_read_color(inst: ReadInst) -> vec3f {
   if (inst.flags & 8u) != 0u && (cs == 0 || cs == 3 || cs == 5 || cs == 6 || cs == 10) {
     return color3(134u);
   }
-  if cs == 0 { return normal_color(inst.flags); }
+  if cs == 0 { return color3(41u); }
   if cs == 1 { return strand_color(inst.strand); }
   if cs == 2 { return mapq_color(inst.mapq); }
   if cs == 3 { return insert_size_color(inst.insert_size); }

@@ -349,8 +349,6 @@ export class PileupRenderer {
       }
     }
 
-    gl.disable(gl.SCISSOR_TEST)
-
     if (state.selectedChainIds.length > 0) {
       const bounds = getChainBounds(
         state.selectedChainIds,
@@ -406,6 +404,7 @@ export class PileupRenderer {
       }
     }
 
+    gl.disable(gl.SCISSOR_TEST)
     gl.bindVertexArray(null)
   }
 

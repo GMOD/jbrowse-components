@@ -59,12 +59,13 @@ void main() {
 
   gl_Position = vec4(sx, sy, 0.0, 1.0);
 
-  // SYNC(wgsl/cigarShaders.ts): deletion sub-pixel alpha = widthPx^2
+  // SYNC(wgsl/cigarShaders.ts): deletion sub-pixel alpha
   float alpha = 1.0;
   if (a_type == 0u) {
     float widthPx = (float(a_position.y) - float(a_position.x)) * u_canvasWidth / domainLen;
-    if (widthPx < 1.0 && a_frequency == 0.0) {
-      alpha = widthPx * widthPx;
+    if (widthPx < 1.0) {
+      float base = widthPx * widthPx;
+      alpha = base + a_frequency * (1.0 - base);
     }
   }
   if (alpha <= 0.0) {
@@ -131,10 +132,10 @@ void main() {
   float sx1 = px1 / u_canvasWidth * 2.0 - 1.0;
   float sx2 = px2 / u_canvasWidth * 2.0 - 1.0;
 
-  // SYNC(wgsl/cigarShaders.ts): mismatch sub-pixel alpha = pxPerBp
+  // SYNC(wgsl/cigarShaders.ts): mismatch sub-pixel alpha
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = pxPerBp;
+  if (pxPerBp < 1.0) {
+    alpha = pxPerBp + a_frequency * (1.0 - pxPerBp);
   }
 
   // Collapse to zero size when fully faded
@@ -322,8 +323,9 @@ void main() {
   float sy = mix(y1, y2, localY);
 
   float alpha = 1.0;
-  if (!isLongInsertion && pxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = pxPerBp * pxPerBp;
+  if (!isLongInsertion && pxPerBp < 1.0) {
+    float base = pxPerBp * pxPerBp;
+    alpha = base + a_frequency * (1.0 - base);
   }
 
   if (alpha <= 0.0) {
@@ -380,8 +382,8 @@ void main() {
   float pxPerBp = u_canvasWidth / regionLengthBp;
 
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = pxPerBp;
+  if (pxPerBp < 1.0) {
+    alpha = pxPerBp + a_frequency * (1.0 - pxPerBp);
   }
   if (alpha <= 0.0) {
     gl_Position = vec4(0.0);
@@ -467,8 +469,8 @@ void main() {
   float pxPerBp = u_canvasWidth / regionLengthBp;
 
   float alpha = 1.0;
-  if (pxPerBp < 1.0 && a_frequency == 0.0) {
-    alpha = pxPerBp;
+  if (pxPerBp < 1.0) {
+    alpha = pxPerBp + a_frequency * (1.0 - pxPerBp);
   }
   if (alpha <= 0.0) {
     gl_Position = vec4(0.0);

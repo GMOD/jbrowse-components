@@ -151,9 +151,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
           const posColor = orderedSource.color
             ? parseColor(orderedSource.color)
             : defaultPosColor
-          console.log(
-            `[multi-wiggle] source="${orderedSource.name}" row=${rowCounter} color=${orderedSource.color} posColor=[${posColor}]`,
-          )
           const negColor = overlay ? posColor : defaultNegColor
           const row = overlay ? 0 : rowCounter
           rowCounter++
@@ -264,8 +261,12 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   }, [model, view, ready, drawn])
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const tooltipRef = useRef<HTMLDivElement>(null)
-  const crosshairRef = useRef<HTMLDivElement>(null)
+  const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
+    0, 0,
+  ])
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
+    0, 0,
+  ])
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {
@@ -277,12 +278,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       const offsetX = event.clientX - rect.left
       const offsetY = event.clientY - rect.top
 
-      if (tooltipRef.current) {
-        tooltipRef.current.style.transform = `translate(${event.clientX + 10}px, ${event.clientY}px)`
-      }
-      if (crosshairRef.current) {
-        crosshairRef.current.style.left = `${offsetX}px`
-      }
+      setClientMouseCoord([event.clientX, event.clientY])
+      setOffsetMouseCoord([offsetX, offsetY])
 
       const { rowHeight, sources, rpcDataMap, summaryScoreMode, domain } = model
       if (sources.length === 0 || rpcDataMap.size === 0) {
@@ -619,10 +616,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       <TreeSidebar model={model} />
 
       <MultiWiggleTooltip
-        ref={tooltipRef}
         model={model}
         height={height}
-        crosshairRef={crosshairRef}
+        clientMouseCoord={clientMouseCoord}
+        offsetMouseCoord={offsetMouseCoord}
       />
 
       <LoadingOverlay

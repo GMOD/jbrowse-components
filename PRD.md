@@ -180,7 +180,7 @@ These affect significant user-visible functionality.
 | ~~Y scale bars wrong in multi-wiggle (no scalebar label offset)~~ | **REMOVED** — offset not desired for multi-row mode                                                                               |
 | Monospace font on sequence track                                  | **FIXED** — added `font-family="monospace"` to both `renderBaseLetters()` and `renderTranslationLetters()` in sequence SVG export |
 | Monospace font on peptides                                        | **FIXED** — added `font-family="monospace"` to `renderPeptideLettersForRegion()` in feature SVG export                            |
-| Alignments SVG: indels too visible in SKBR3 output                |                                                                                                                                   |
+| ~~Alignments SVG: indels too visible in SKBR3 output~~            | **LIKELY FIXED** — depth-dependent frequency thresholds and sub-pixel alpha fading now applied consistently across SVG, Canvas2D, and GPU renderers. Audited: insertion length text now uses monospace font. |
 
 ### P2.5 Variant Track Issues
 
@@ -262,7 +262,26 @@ These affect significant user-visible functionality.
 - Add tests for `types.refinement` usage
 - Ensure all old renderer concepts mapped to new display model settings
 
-### P4.4 UI/UX Ideas (Unscoped)
+### P4.4 Automatic Noisiness Scaling for Feature Frequency Thresholds
+
+Compute a per-track noise estimate (e.g., mean insertion rate across sampled
+positions) during coverage computation and use it to automatically scale the
+`featureFrequencyThreshold` curve. Noisy long-read tracks (PacBio CLR) would get
+stricter thresholds while clean short-read tracks stay unchanged. The data is
+already available in `computePositionFrequencies`; main work is threading the
+stat through the RPC boundary and choosing a good baseline expected noise rate.
+
+### P4.5 Option to Disable Sub-Pixel Feature Fade
+
+Add a per-track option to disable the sub-pixel alpha fade that hides
+low-frequency features when zoomed out. High-quality reads (e.g., Illumina,
+PacBio HiFi) have very few sequencing errors, so most mismatches and insertions
+are real variants that users may want to see at all zoom levels regardless of
+frequency. When enabled, features would render at full opacity whenever they are
+present, bypassing both the zoom-based alpha and the frequency-based importance
+scaling.
+
+### P4.6 UI/UX Ideas (Unscoped)
 
 - Should not shrink size on linked read resize height
 - Add ability where resize height does actual resize
@@ -308,9 +327,9 @@ load or unusable)
 | 22  | GIAB heterozygous deletion                       | Working | Color by tag now working (all 10 color schemes in Canvas2D)                                               |
 | 23  | SKBR3 PacBio read vs ref                         | Working | Read vs ref fixed (display name mismatch)                                                                 |
 | 24  | CpG methylation nanopore                         | Partial | CpG off-by-one fixed — needs browser verification                                                         |
-| 25  | 1000 genomes SV large inversion                  | Broken  | Not yet working                                                                                           |
+| 25  | 1000 genomes SV large inversion                  | Working |                                                                                                           |
 
-**Working: 14 | Partial: 4 | Broken: 5 | Untested: 2**
+**Working: 15 | Partial: 4 | Broken: 4 | Untested: 2**
 
 ---
 

@@ -267,6 +267,17 @@ export function computePositionFrequencies(
   return frequencies
 }
 
+// Rescales raw frequencies into a continuous 0-255 "importance" value based on
+// a depth-dependent threshold. Instead of a binary cutoff (which causes visible
+// spatial boundaries where depth changes), we compute importance = freq /
+// threshold, clamped to [0,1]. Features at or above the threshold get full
+// importance (255); features below are proportionally faded. The renderer uses
+// this importance to blend between zoom-based sub-pixel alpha (for unimportant
+// features) and full alpha (for important ones):
+//   alpha = baseAlpha + importance * (1 - baseAlpha)
+// This is especially important for noisy long-read data (e.g. PacBio CLR)
+// where many low-frequency insertions would otherwise pop in at full opacity
+// wherever coverage peaks cross a hard threshold.
 export function applyDepthDependentThreshold(
   frequencies: Uint8Array,
   positions: Uint32Array,
@@ -282,9 +293,9 @@ export function applyDepthDependentThreshold(
       ? getInterbaseDepth(coverageDepths, depthIdx, 0)
       : getDepthAt(coverageDepths, depthIdx, 0)
     const freq = frequencies[i]! / 255
-    if (freq < thresholdFn(depth)) {
-      frequencies[i] = 0
-    }
+    const threshold = thresholdFn(depth)
+    const scaled = Math.min(1, freq / threshold)
+    frequencies[i] = Math.round(scaled * 255)
   }
 }
 

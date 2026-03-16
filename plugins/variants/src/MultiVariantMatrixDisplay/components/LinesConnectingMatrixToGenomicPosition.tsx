@@ -302,7 +302,9 @@ const LinesConnectingMatrixToGenomicPosition = observer(
                 y1={0}
                 y2={6}
               />
-              <BaseTooltip>{hovered.feature.get('name')}</BaseTooltip>
+              {hovered.feature.get('name') ? (
+                <BaseTooltip>{hovered.feature.get('name')}</BaseTooltip>
+              ) : null}
             </>
           ) : null}
           {crosshairX !== undefined && !hovered ? (

@@ -798,8 +798,10 @@ export async function renderSvg(
           const w = Math.max(1 / bpPerPx, 1)
           const y = mismatchYs[i]! * rowHeight
           let mismatchAlpha = 1
-          if (pxPerBp < 1 && data.mismatchFrequencies[i] === 0) {
-            mismatchAlpha = pxPerBp
+          if (pxPerBp < 1) {
+            const freq = data.mismatchFrequencies[i]! / 255
+            const base = pxPerBp
+            mismatchAlpha = base + freq * (1 - base)
           }
           if (mismatchAlpha > 0) {
             const base = String.fromCharCode(mismatchBases[i]!)
@@ -830,10 +832,12 @@ export async function renderSvg(
 
           if (gapType === 0) {
             const widthPx = (endBp - startBp) * pxPerBp
-            const alpha =
-              widthPx < 1 && data.gapFrequencies[i] === 0
-                ? widthPx * widthPx
-                : 1
+            let alpha = 1
+            if (widthPx < 1) {
+              const freq = data.gapFrequencies[i]! / 255
+              const base = widthPx * widthPx
+              alpha = base + freq * (1 - base)
+            }
             if (alpha > 0) {
               pileupCtx.globalAlpha = alpha
               pileupCtx.fillStyle = deletionColor
@@ -872,8 +876,10 @@ export async function renderSvg(
             const barW = insertionBarWidth(len, pxPerBp)
             const isLarge = barW > 5
             let insertionAlpha = 1
-            if (!isLong && pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
-              insertionAlpha = pxPerBp * pxPerBp
+            if (!isLong && pxPerBp < 1) {
+              const freq = data.interbaseFrequencies[i]! / 255
+              const base = pxPerBp * pxPerBp
+              insertionAlpha = base + freq * (1 - base)
             }
             if (insertionAlpha > 0) {
               pileupCtx.globalAlpha = insertionAlpha
@@ -904,8 +910,10 @@ export async function renderSvg(
             const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
             const bw = Math.max(barWidthBp / bpPerPx, 1)
             let clipAlpha = 1
-            if (pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
-              clipAlpha = pxPerBp
+            if (pxPerBp < 1) {
+              const freq = data.interbaseFrequencies[i]! / 255
+              const base = pxPerBp
+              clipAlpha = base + freq * (1 - base)
             }
             if (clipAlpha > 0) {
               pileupCtx.globalAlpha = clipAlpha
@@ -990,8 +998,10 @@ export async function renderSvg(
           const w = Math.max(1 / bpPerPx, 1)
           const y = pileupTopOffset + mismatchYs[i]! * rowHeight
           let mismatchAlpha = 1
-          if (pxPerBp < 1 && data.mismatchFrequencies[i] === 0) {
-            mismatchAlpha = pxPerBp
+          if (pxPerBp < 1) {
+            const freq = data.mismatchFrequencies[i]! / 255
+            const base = pxPerBp
+            mismatchAlpha = base + freq * (1 - base)
           }
           if (mismatchAlpha > 0) {
             const base = String.fromCharCode(mismatchBases[i]!)
@@ -1020,10 +1030,12 @@ export async function renderSvg(
 
           if (gapType === 0) {
             const widthPx = (endBp - startBp) * pxPerBp
-            const alpha =
-              widthPx < 1 && data.gapFrequencies[i] === 0
-                ? widthPx * widthPx
-                : 1
+            let alpha = 1
+            if (widthPx < 1) {
+              const freq = data.gapFrequencies[i]! / 255
+              const base = widthPx * widthPx
+              alpha = base + freq * (1 - base)
+            }
             if (alpha > 0) {
               content += `<rect x="${gx}" y="${gy}" width="${gw}" height="${featureHeightSetting}" fill="${deletionColor}" fill-opacity="${alpha}"/>`
             }
@@ -1054,8 +1066,10 @@ export async function renderSvg(
             const barW = insertionBarWidth(len, pxPerBp)
             const isLarge = barW > 5
             let insertionAlpha = 1
-            if (!isLong && pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
-              insertionAlpha = pxPerBp * pxPerBp
+            if (!isLong && pxPerBp < 1) {
+              const freq = data.interbaseFrequencies[i]! / 255
+              const base = pxPerBp * pxPerBp
+              insertionAlpha = base + freq * (1 - base)
             }
             if (insertionAlpha > 0) {
               content += `<rect x="${cx - barW / 2}" y="${ibY}" width="${barW}" height="${featureHeightSetting}" fill="${insertionColor}" fill-opacity="${insertionAlpha}"/>`
@@ -1066,7 +1080,7 @@ export async function renderSvg(
               }
               if (isLarge) {
                 const textY = ibY + featureHeightSetting / 2
-                content += `<text x="${cx}" y="${textY}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="white">${len}</text>`
+                content += `<text x="${cx}" y="${textY}" text-anchor="middle" dominant-baseline="central" font-family="monospace" font-size="9" fill="white">${len}</text>`
               }
             }
           } else {
@@ -1076,8 +1090,10 @@ export async function renderSvg(
             const barWidthBp = Math.max(bpPerPx, Math.min(2 * bpPerPx, 1))
             const bw = Math.max(barWidthBp / bpPerPx, 1)
             let clipAlpha = 1
-            if (pxPerBp < 1 && data.interbaseFrequencies[i] === 0) {
-              clipAlpha = pxPerBp
+            if (pxPerBp < 1) {
+              const freq = data.interbaseFrequencies[i]! / 255
+              const base = pxPerBp
+              clipAlpha = base + freq * (1 - base)
             }
             if (clipAlpha > 0) {
               const color = ibType === 2 ? softclipColor : hardclipColor

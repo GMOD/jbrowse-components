@@ -53,11 +53,11 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy = mix(y_bot, y_top, ly);
   out.position = vec4f(sx, sy, 0.0, 1.0);
 
-  // SYNC(shaders/cigarShaders.ts): deletion sub-pixel alpha = widthPx^2
+  // SYNC(shaders/cigarShaders.ts): deletion sub-pixel alpha
   var alpha = 1.0;
   if inst.gap_type == 0u {
     let width_px = f32(inst.end_off - inst.start_off) * canvas_width() / domain_len;
-    if width_px < 1.0 && inst.frequency == 0.0 { alpha = width_px * width_px; }
+    if width_px < 1.0 { let base = width_px * width_px; alpha = base + inst.frequency * (1.0 - base); }
   }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
   let c = select(color3(71u), color3(68u), inst.gap_type == 0u);
@@ -89,9 +89,9 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let pos = f32(inst.position);
   let px_per_bp = canvas_width() / domain_len;
 
-  // SYNC(shaders/cigarShaders.ts): mismatch sub-pixel alpha = pxPerBp
+  // SYNC(shaders/cigarShaders.ts): mismatch sub-pixel alpha
   var alpha = 1.0;
-  if px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp; }
+  if px_per_bp < 1.0 { alpha = px_per_bp + inst.frequency * (1.0 - px_per_bp); }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   var px1 = (pos - domain.x) / domain_len * canvas_width();
@@ -197,7 +197,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy = mix(y1, y2, ly);
 
   var alpha = 1.0;
-  if !is_long && px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp * px_per_bp; }
+  if !is_long && px_per_bp < 1.0 { let base = px_per_bp * px_per_bp; alpha = base + inst.frequency * (1.0 - base); }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   out.position = vec4f(sx, sy, 0.0, 1.0);
@@ -230,7 +230,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let px_per_bp = canvas_width() / domain_len;
 
   var alpha = 1.0;
-  if px_per_bp < 1.0 && inst.frequency == 0.0 { alpha = px_per_bp; }
+  if px_per_bp < 1.0 { alpha = px_per_bp + inst.frequency * (1.0 - px_per_bp); }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
   let bp_per_px = 1.0 / px_per_bp;

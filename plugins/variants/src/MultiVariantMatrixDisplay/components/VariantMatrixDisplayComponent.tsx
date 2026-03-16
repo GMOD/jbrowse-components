@@ -1,5 +1,6 @@
 import { Suspense, useRef } from 'react'
 
+import { LoadingOverlay } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
@@ -46,7 +47,13 @@ const VariantMatrixDisplayComponent = observer(
           model={model}
           crosshairX={inMatrix ? mouseState.x : undefined}
         />
-        <div style={{ position: 'absolute', top: lineZoneHeight, left }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: model.regionTooLarge ? 0 : lineZoneHeight,
+            left,
+          }}
+        >
           <Suspense fallback={null}>
             <DisplayMessageComponent model={model} />
           </Suspense>
@@ -70,6 +77,14 @@ const VariantMatrixDisplayComponent = observer(
             <LegendBar model={model} />
           </g>
         </svg>
+        <LoadingOverlay
+          statusMessage={model.statusMessage || 'Computing display data'}
+          isVisible={
+            !model.displayError &&
+            !model.regionTooLarge &&
+            (!model.cellData || model.cellDataLoading)
+          }
+        />
         {showLegend ? <FloatingLegend items={model.legendItems()} /> : null}
         {inMatrix ? (
           <Crosshair

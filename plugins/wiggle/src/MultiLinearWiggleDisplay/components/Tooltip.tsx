@@ -1,36 +1,12 @@
-import { forwardRef } from 'react'
-
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Portal, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { toP } from '../../util.ts'
 
 import type { MultiWiggleDisplayModel } from './MultiWiggleComponent.tsx'
 
-function round(value: number) {
-  return Math.round(value * 1e5) / 1e5
-}
-
-const useStyles = makeStyles()(theme => ({
-  tooltip: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    pointerEvents: 'none',
-    zIndex: 100000,
-    backgroundColor: alpha(theme.palette.grey[700], 0.9),
-    borderRadius: theme.shape.borderRadius,
-    color: theme.palette.common.white,
-    fontFamily: theme.typography.fontFamily,
-    padding: '4px 8px',
-    fontSize: theme.typography.fontSize,
-    lineHeight: `${round(14 / 10)}em`,
-    maxWidth: 300,
-    wordWrap: 'break-word',
-  },
-}))
+type Coord = [number, number]
 
 function SourceRow({
   src,
@@ -134,48 +110,43 @@ const TooltipContents = observer(function TooltipContents({
   )
 })
 
-const MultiWiggleTooltip = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      model: MultiWiggleDisplayModel
-      height: number
-      crosshairRef: React.RefObject<HTMLDivElement | null>
-    }
-  >(function MultiWiggleTooltip({ model, height, crosshairRef }, ref) {
-    const { classes } = useStyles()
-    const theme = useTheme()
-    // needed for webcomponent embedding where the portal container is customized
-    const popperTheme = theme.components?.MuiPopper
-    const { featureUnderMouse } = model
-
-    return (
-      <>
-        {featureUnderMouse ? (
-          <Portal container={popperTheme?.defaultProps?.container}>
-            <div ref={ref} className={classes.tooltip}>
-              <TooltipContents model={model} />
-            </div>
-          </Portal>
-        ) : null}
-        <div
-          ref={crosshairRef}
-          style={{
-            background: 'black',
-            border: 'none',
-            width: 1,
-            height,
-            top: 0,
-            cursor: 'default',
-            position: 'absolute',
-            pointerEvents: 'none',
-            left: 0,
-            display: featureUnderMouse ? undefined : 'none',
-          }}
-        />
-      </>
-    )
-  }),
-)
+const MultiWiggleTooltip = observer(function MultiWiggleTooltip({
+  model,
+  height,
+  clientMouseCoord,
+  offsetMouseCoord,
+}: {
+  model: MultiWiggleDisplayModel
+  height: number
+  clientMouseCoord: Coord
+  offsetMouseCoord: Coord
+}) {
+  const { featureUnderMouse } = model
+  return featureUnderMouse ? (
+    <>
+      <BaseTooltip
+        clientPoint={{
+          x: clientMouseCoord[0] + 5,
+          y: clientMouseCoord[1],
+        }}
+      >
+        <TooltipContents model={model} />
+      </BaseTooltip>
+      <div
+        style={{
+          background: 'black',
+          border: 'none',
+          width: 1,
+          height,
+          top: 0,
+          cursor: 'default',
+          position: 'absolute',
+          pointerEvents: 'none',
+          left: offsetMouseCoord[0],
+        }}
+      />
+    </>
+  ) : null
+})
 
 export default MultiWiggleTooltip

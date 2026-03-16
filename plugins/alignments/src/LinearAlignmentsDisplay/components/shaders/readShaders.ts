@@ -65,12 +65,6 @@ vec3 strandColor(float strand) {
   return u_colorNostrand;
 }
 
-// Color scheme 0: normal (supplementary reads shown in orange, else grey)
-vec3 normalColor(float flags) {
-  if (mod(floor(flags / 2048.0), 2.0) > 0.5) return u_colorSupplementary;
-  return u_colorPairLR;
-}
-
 // SYNC(wgsl/readShader.ts): MAPQ HSL formula h=mapq/360, s=0.5, l=0.5 with HSL->RGB conversion
 // Color scheme 2: mapping quality - hsl(mapq, 50%, 50%)
 vec3 mapqColor(float mapq) {
@@ -287,7 +281,7 @@ void main() {
     color = strandColor(effectiveStrand);
   } else if (mod(floor(a_flags / 8.0), 2.0) > 0.5 && (u_colorScheme == 0 || u_colorScheme == 3 || u_colorScheme == 5 || u_colorScheme == 6 || u_colorScheme == 10)) {
     color = u_colorUnmappedMate;
-  } else if (u_colorScheme == 0) color = normalColor(a_flags);
+  } else if (u_colorScheme == 0) color = u_colorPairLR;
   else if (u_colorScheme == 1) color = strandColor(a_strand);
   else if (u_colorScheme == 2) color = mapqColor(a_mapq);
   else if (u_colorScheme == 3) color = insertSizeColor(a_insertSize);

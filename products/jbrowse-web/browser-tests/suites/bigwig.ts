@@ -150,7 +150,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'MultiBigWig multirowxy has distinct colors per row',
+      name: 'MultiBigWig multirowxy uses uniform default color',
       fn: async page => {
         await navigateWithSessionSpec(page, {
           views: [
@@ -223,11 +223,76 @@ const suite: TestSuite = {
         const rowColors = Array.from({ length: numRows }, (_, i) =>
           getDominantColorForRow(i),
         )
-        console.log('[multi-row color test] Row colors:', rowColors)
         const uniqueColors = new Set(rowColors)
-        if (uniqueColors.size < 2) {
+        if (uniqueColors.size !== 1) {
           throw new Error(
-            `Expected distinct colors per row but got: ${rowColors.join(' | ')}`,
+            `Expected uniform color across rows but got: ${rowColors.join(' | ')}`,
+          )
+        }
+      },
+    },
+    {
+      name: 'MultiBigWig overlay xyplot uses distinct colors per source',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-4000',
+              tracks: ['volvox_microarray_multi'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'multi-wiggle-display', 60000)
+        await waitForDataLoaded(page)
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="multi-wiggle-display"] canvas',
+        )
+        await delay(500)
+
+        const el = await page.waitForSelector(
+          '[data-testid="multi-wiggle-display"] canvas',
+          { timeout: 10000 },
+        )
+        if (!el) {
+          throw new Error('Canvas not found')
+        }
+        const screenshot = await el.screenshot({ type: 'png' })
+        // @ts-expect-error Uint8Array works at runtime
+        const img = PNG.sync.read(screenshot)
+        const { width, height, data } = img
+
+        const colorCounts = new Map<string, number>()
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4
+            const r = data[idx]!
+            const g = data[idx + 1]!
+            const b = data[idx + 2]!
+            const a = data[idx + 3]!
+            if (a < 128) {
+              continue
+            }
+            const max = Math.max(r, g, b)
+            const min = Math.min(r, g, b)
+            const sat = max === 0 ? 0 : (max - min) / max
+            if (sat > 0.3) {
+              const key = `${r},${g},${b}`
+              colorCounts.set(key, (colorCounts.get(key) ?? 0) + 1)
+            }
+          }
+        }
+
+        const significantColors = [...colorCounts.entries()]
+          .filter(([, count]) => count > 20)
+          .map(([color]) => color)
+
+        if (significantColors.length < 2) {
+          throw new Error(
+            `Expected multiple distinct colors in overlay mode but found: ${significantColors.join(' | ')}`,
           )
         }
       },

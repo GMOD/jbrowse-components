@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { ErrorBar, Menu } from '@jbrowse/core/ui'
 import {
-  SimpleFeature,
   getBpDisplayStr,
   getContainingView,
   useGpuRenderer,
@@ -13,7 +12,7 @@ import { observer } from 'mobx-react'
 
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
-import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
+import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
@@ -56,8 +55,6 @@ export interface VariantMatrixDisplayModel {
   referenceDrawingMode: string
   regionTooLarge: boolean
   featuresReady: boolean
-  cellDataLoading: boolean
-  statusMessage?: string
   displayError: unknown
   reload: () => void
   setFeatureDensityStatsLimit: (s?: unknown) => void
@@ -68,6 +65,7 @@ export interface VariantMatrixDisplayModel {
   setContextMenuFeature: (feature?: { id(): string }) => void
   contextMenuItems: () => { label: string; onClick: () => void }[]
   retryLoadingData: () => void
+  regionCannotBeRendered: () => React.ReactElement | null
 }
 
 const VariantMatrixComponent = observer(function VariantMatrixComponent({
@@ -165,6 +163,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
               ? 'multiple ALT alleles'
               : feature.description,
           length: getBpDisplayStr(feature.length),
+          sampleName,
           name: source.name,
           featureId: feature.featureId,
         }
@@ -173,7 +172,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     return undefined
   }
 
-  function enrichFeatureFromClick(
+  function getEnrichedFeature(
     result: NonNullable<ReturnType<typeof getFeatureUnderMouse>>,
   ) {
     const baseFeature = model.featuresVolatile?.find(
@@ -185,23 +184,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     const feature = model.cellData?.featureData.find(
       f => f.featureId === result.featureId,
     )
-    return new SimpleFeature({
-      id: baseFeature.id(),
-      data: {
-        ...baseFeature.toJSON(),
-        ...(feature
-          ? {
-              REF: feature.ref,
-              ALT: feature.alt,
-              description: feature.description,
-              genotypes: feature.genotypes,
-            }
-          : {}),
-        clickedSample: result.name,
-        clickedGenotype: result.genotype,
-        clickedAlleles: result.alleles,
-      },
-    })
+    return enrichFeatureFromClick(baseFeature, feature, result)
   }
 
   const width = Math.round(view.dynamicBlocks.totalWidthPxWithoutBorders)
@@ -222,6 +205,14 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
 
   return (
     <div style={{ position: 'relative', width, height }}>
+      {/* The canvas must remain mounted even when regionTooLarge is true.
+          useGpuRenderer binds the WebGL/WebGPU context to this specific
+          canvas element during init(). If the canvas were conditionally
+          unmounted (e.g. replaced by TooLargeMessage), a new canvas would
+          mount after force-load but the renderer would still reference the
+          old unmounted one, causing all draw calls to go to a detached
+          canvas. We use visibility:'hidden' instead so the canvas stays
+          in the DOM and the renderer connection is preserved. */}
       <canvas
         ref={canvasRef}
         style={{
@@ -230,6 +221,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           position: 'absolute',
           left: 0,
           top: 0,
+          visibility: model.regionTooLarge ? 'hidden' : undefined,
           backgroundColor:
             model.referenceDrawingMode === 'skip' ? '#ccc' : undefined,
         }}
@@ -244,7 +236,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           if (key !== lastHoveredRef.current) {
             lastHoveredRef.current = key
             if (result) {
-              const { featureId, ...tooltip } = result
+              const { featureId, sampleName, ...tooltip } = result
               model.setHoveredGenotype(tooltip)
             } else {
               model.setHoveredGenotype(undefined)
@@ -260,7 +252,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         onClick={e => {
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const enriched = result ? enrichFeatureFromClick(result) : undefined
+          const enriched = result ? getEnrichedFeature(result) : undefined
           if (enriched) {
             model.selectFeature(enriched)
           }
@@ -268,7 +260,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         onContextMenu={e => {
           const rect = e.currentTarget.getBoundingClientRect()
           const result = getFeatureUnderMouse(rect, e.clientX, e.clientY)
-          const enriched = result ? enrichFeatureFromClick(result) : undefined
+          const enriched = result ? getEnrichedFeature(result) : undefined
           if (enriched) {
             e.preventDefault()
             model.setContextMenuFeature(enriched)
@@ -288,14 +280,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
           />
         </div>
       ) : null}
-      <LoadingOverlay
-        statusMessage={model.statusMessage || 'Computing display data'}
-        isVisible={
-          !model.displayError &&
-          !model.regionTooLarge &&
-          (!model.cellData || model.cellDataLoading)
-        }
-      />
+      {model.regionTooLarge ? model.regionCannotBeRendered() : null}
       {model.displayError ? (
         <ErrorBar
           error={model.displayError}

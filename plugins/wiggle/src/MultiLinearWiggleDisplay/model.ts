@@ -62,12 +62,18 @@ const WiggleClusterDialog = lazy(
 
 function resolveOverlayColor(
   index: number,
+  isOverlay: boolean,
   adapterColor?: string,
   layoutColor?: string,
 ) {
-  return (
-    layoutColor ?? adapterColor ?? overlayColors[index % overlayColors.length]
-  )
+  if (isOverlay) {
+    return (
+      layoutColor ??
+      adapterColor ??
+      overlayColors[index % overlayColors.length]
+    )
+  }
+  return layoutColor ?? adapterColor
 }
 
 export default function stateModelFactory(
@@ -167,7 +173,7 @@ export default function stateModelFactory(
         return self.sourcesVolatile.map((s, i) => ({
           source: s.name,
           ...s,
-          color: resolveOverlayColor(i, s.color),
+          color: resolveOverlayColor(i, this.isOverlay, s.color),
         }))
       },
 
@@ -193,6 +199,7 @@ export default function stateModelFactory(
           ...s,
           color: resolveOverlayColor(
             i,
+            this.isOverlay,
             sourceMap[s.name]?.color,
             layoutColors[s.name],
           ),

@@ -34,10 +34,17 @@ export default function VariantSampleGrid(props: {
   const [showFilters, setShowFilters] = useState(false)
   const [showFrequencyTable, setShowFrequencyTable] = useState(true)
   const [showToolbar, setShowToolbar] = useState(false)
+  const [showAllSamples, setShowAllSamples] = useState(false)
   const [useCounts, setUseCounts] = useState(false)
   const [selectedGenotypes, setSelectedGenotypes] =
     useState<Set<string> | null>(null)
-  const samples = (feature.samples || {}) as Record<string, InfoFields>
+
+  const clickedSample = feature.clickedSample as string | undefined
+  const allSamples = (feature.samples || {}) as Record<string, InfoFields>
+  const samples =
+    clickedSample && allSamples[clickedSample] && !showAllSamples
+      ? { [clickedSample]: allSamples[clickedSample] }
+      : allSamples
   const ALT = feature.ALT as string[]
   const REF = feature.REF as string
 
@@ -73,7 +80,14 @@ export default function VariantSampleGrid(props: {
   }, [rows, filteredRows, descriptions])
 
   return !rows.length ? null : (
-    <BaseCard {...props} title="Samples">
+    <BaseCard
+      {...props}
+      title={
+        clickedSample && !showAllSamples
+          ? `Sample: ${clickedSample}`
+          : 'Samples'
+      }
+    >
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <CascadingMenuButton
@@ -89,6 +103,18 @@ export default function VariantSampleGrid(props: {
                 setSelectedGenotypes(null)
               },
             },
+            ...(clickedSample
+              ? [
+                  {
+                    label: 'Show all samples',
+                    type: 'checkbox' as const,
+                    checked: showAllSamples,
+                    onClick: () => {
+                      setShowAllSamples(!showAllSamples)
+                    },
+                  },
+                ]
+              : []),
             {
               label: 'Show frequency table',
               type: 'checkbox',
