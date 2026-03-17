@@ -1893,6 +1893,47 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "arc_track_custom_height",
+      "name": "Arc track (custom JEXL height)",
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "adapterId": "arc_custom_height_adapter",
+        "features": [
+          {
+            "uniqueId": "arc-custom-one",
+            "refName": "ctgA",
+            "start": 190,
+            "end": 400,
+            "type": "foo",
+            "score": 2,
+            "name": "SE_001"
+          },
+          {
+            "uniqueId": "arc-custom-two",
+            "refName": "ctgA",
+            "start": 191,
+            "end": 300,
+            "type": "bar",
+            "score": 5,
+            "name": "SE_002"
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearArcDisplay",
+          "displayId": "arc_track_custom_height_linear",
+          "renderer": {
+            "type": "ArcRenderer",
+            "height": "jexl:log10(get(feature,'end')-get(feature,'start'))*20"
+          }
+        }
+      ]
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "spliced",
       "name": "volvox-rnaseq demo",
