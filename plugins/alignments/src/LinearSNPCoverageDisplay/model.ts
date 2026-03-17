@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { cast, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -155,12 +155,10 @@ function stateModelFactory(
           const conf = self.configuration.renderers?.[self.rendererTypeName]
           return {
             showInterbaseCounts:
-              showInterbaseCounts ??
-              readConfObject(conf, 'showInterbaseCounts'),
+              showInterbaseCounts ?? conf?.showInterbaseCounts?.value,
             showInterbaseIndicators:
-              showInterbaseIndicators ??
-              readConfObject(conf, 'showInterbaseIndicators'),
-            showArcs: showArcs ?? readConfObject(conf, 'showArcs'),
+              showInterbaseIndicators ?? conf?.showInterbaseIndicators?.value,
+            showArcs: showArcs ?? conf?.showArcs?.value,
           }
         },
         /**

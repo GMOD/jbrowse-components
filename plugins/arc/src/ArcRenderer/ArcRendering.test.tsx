@@ -3,15 +3,21 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Jexl } from '@jbrowse/jexl'
 import { render } from '@testing-library/react'
 
-import ArcRendererConfigSchema from './configSchema.ts'
 import Rendering from './ArcRendering.tsx'
+import ArcRendererConfigSchema from './configSchema.ts'
 
 function createJexl() {
   const j = new Jexl()
-  j.addFunction('get', (feature: { get: (k: string) => unknown }, data: string) => feature.get(data))
+  j.addFunction(
+    'get',
+    (feature: { get: (k: string) => unknown }, data: string) =>
+      feature.get(data),
+  )
   j.addFunction('log10', Math.log10)
-  j.addFunction('logThickness', (feature: { get: (k: string) => unknown }, attr: string) =>
-    Math.log((feature.get(attr) as number) + 1),
+  j.addFunction(
+    'logThickness',
+    (feature: { get: (k: string) => unknown }, attr: string) =>
+      Math.log((feature.get(attr) as number) + 1),
   )
   return j
 }

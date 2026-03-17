@@ -840,6 +840,121 @@ const testSuites: TestSuite[] = [
     ],
   },
   {
+    name: 'Arc Renderer',
+    tests: [
+      {
+        name: 'renders arc track with custom JEXL height expression without NaN (issue #5500)',
+        fn: async page => {
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-500',
+                tracks: ['arc_track_custom_height'],
+              },
+            ],
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          await findByTestId(
+            page,
+            'display-arc_track_custom_height_linear',
+            60000,
+          )
+          await waitForLoadingToComplete(page)
+          await delay(2000)
+
+          const hasNaN = await page.evaluate(() => {
+            const paths = document.querySelectorAll(
+              '[data-testid="display-arc_track_custom_height_linear"] path',
+            )
+            for (const p of paths) {
+              if (p.getAttribute('d')?.includes('NaN')) {
+                return true
+              }
+            }
+            return false
+          })
+
+          if (hasNaN) {
+            throw new Error(
+              'Arc path contains NaN — JEXL height expression not evaluated',
+            )
+          }
+
+          const pathCount = await page.evaluate(() => {
+            return document.querySelectorAll(
+              '[data-testid="display-arc_track_custom_height_linear"] path',
+            ).length
+          })
+
+          if (pathCount === 0) {
+            throw new Error('No arc paths rendered')
+          }
+
+          await snapshot(page, 'arc-custom-jexl-height')
+        },
+      },
+      {
+        name: 'renders default arc track with JEXL height expression',
+        fn: async page => {
+          const sessionSpec = {
+            views: [
+              {
+                type: 'LinearGenomeView',
+                assembly: 'volvox',
+                loc: 'ctgA:1-500',
+                tracks: ['arc_track'],
+              },
+            ],
+          }
+
+          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
+          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
+
+          await findByTestId(page, 'display-arc_track_linear', 60000)
+          await waitForLoadingToComplete(page)
+          await delay(2000)
+
+          const hasNaN = await page.evaluate(() => {
+            const paths = document.querySelectorAll(
+              '[data-testid="display-arc_track_linear"] path',
+            )
+            for (const p of paths) {
+              if (p.getAttribute('d')?.includes('NaN')) {
+                return true
+              }
+            }
+            return false
+          })
+
+          if (hasNaN) {
+            throw new Error(
+              'Arc path contains NaN — default JEXL height not evaluated',
+            )
+          }
+
+          const pathCount = await page.evaluate(() => {
+            return document.querySelectorAll(
+              '[data-testid="display-arc_track_linear"] path',
+            ).length
+          })
+
+          if (pathCount === 0) {
+            throw new Error('No arc paths rendered')
+          }
+
+          await snapshot(page, 'arc-default-jexl-height')
+        },
+      },
+    ],
+  },
+  {
     name: 'Custom URL Loading',
     tests: [
       {

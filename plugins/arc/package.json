@@ -40,6 +40,9 @@
     "mobx-react": "^9.2.1",
     "rxjs": "^7.8.2"
   },
+  "devDependencies": {
+    "@jbrowse/jexl": "^3.0.2"
+  },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"

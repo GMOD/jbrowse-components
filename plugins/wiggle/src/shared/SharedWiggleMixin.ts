@@ -1,10 +1,6 @@
 import { lazy } from 'react'
 
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getEnv, getSession, isSelectionContainer } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -356,23 +352,21 @@ export default function SharedWiggleMixin(
           negColor,
           posColor,
           summaryScoreMode,
-          scaleType,
+          scale,
           rendererTypeName,
         } = self
         // @ts-ignore
         const conf = self.configuration.renderers?.[rendererTypeName]
         return {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          scaleType: scaleType ?? readConfObject(conf, 'scaleType'),
-          filled: fill ?? readConfObject(conf, 'filled'),
+          scaleType: scale ?? conf?.scaleType?.value,
+          filled: fill ?? conf?.filled?.value,
           displayCrossHatches:
-            displayCrossHatches ?? readConfObject(conf, 'displayCrossHatches'),
-          summaryScoreMode:
-            summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode'),
-          color: color ?? readConfObject(conf, 'color'),
-          negColor: negColor ?? readConfObject(conf, 'negColor'),
-          posColor: posColor ?? readConfObject(conf, 'posColor'),
-          minSize: minSize ?? readConfObject(conf, 'minSize'),
+            displayCrossHatches ?? conf?.displayCrossHatches?.value,
+          summaryScoreMode: summaryScoreMode ?? conf?.summaryScoreMode?.value,
+          color: color ?? conf?.color?.value,
+          negColor: negColor ?? conf?.negColor?.value,
+          posColor: posColor ?? conf?.posColor?.value,
+          minSize: minSize ?? conf?.minSize?.value,
         }
       },
 

@@ -1,10 +1,6 @@
 import { lazy } from 'react'
 
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   SimpleFeature,
@@ -348,15 +344,12 @@ export function SharedLinearPileupDisplayMixin(
         // @ts-ignore
         const conf = self.configuration.renderers?.[rendererTypeName]
         return {
-          height: featureHeight ?? readConfObject(conf, 'height'),
-          noSpacing: noSpacing ?? readConfObject(conf, 'noSpacing'),
-          maxHeight: trackMaxHeight ?? readConfObject(conf, 'maxHeight'),
-          hideSmallIndels:
-            hideSmallIndels ?? readConfObject(conf, 'hideSmallIndels'),
-          hideMismatches:
-            hideMismatches ?? readConfObject(conf, 'hideMismatches'),
-          hideLargeIndels:
-            hideLargeIndels ?? readConfObject(conf, 'hideLargeIndels'),
+          height: featureHeight ?? conf?.height?.value,
+          noSpacing: noSpacing ?? conf?.noSpacing?.value,
+          maxHeight: trackMaxHeight ?? conf?.maxHeight?.value,
+          hideSmallIndels: hideSmallIndels ?? conf?.hideSmallIndels?.value,
+          hideMismatches: hideMismatches ?? conf?.hideMismatches?.value,
+          hideLargeIndels: hideLargeIndels ?? conf?.hideLargeIndels?.value,
         }
       },
     }))

@@ -1,9 +1,6 @@
 import { lazy } from 'react'
 
-import {
-  ConfigurationReference,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import ColorLensIcon from '@mui/icons-material/ColorLens'
@@ -192,16 +189,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // @ts-ignore
         const conf = self.configuration.renderers?.PileupRenderer
         return {
-          height: featureHeight ?? readConfObject(conf, 'height'),
-          noSpacing: noSpacing ?? readConfObject(conf, 'noSpacing'),
-          maxHeight: trackMaxHeight ?? readConfObject(conf, 'maxHeight'),
-          mismatchAlpha: mismatchAlpha ?? readConfObject(conf, 'mismatchAlpha'),
-          hideSmallIndels:
-            hideSmallIndels ?? readConfObject(conf, 'hideSmallIndels'),
-          hideMismatches:
-            hideMismatches ?? readConfObject(conf, 'hideMismatches'),
-          hideLargeIndels:
-            hideLargeIndels ?? readConfObject(conf, 'hideLargeIndels'),
+          height: featureHeight ?? conf?.height?.value,
+          noSpacing: noSpacing ?? conf?.noSpacing?.value,
+          maxHeight: trackMaxHeight ?? conf?.maxHeight?.value,
+          mismatchAlpha: mismatchAlpha ?? conf?.mismatchAlpha?.value,
+          hideSmallIndels: hideSmallIndels ?? conf?.hideSmallIndels?.value,
+          hideMismatches: hideMismatches ?? conf?.hideMismatches?.value,
+          hideLargeIndels: hideLargeIndels ?? conf?.hideLargeIndels?.value,
         }
       },
     }))
