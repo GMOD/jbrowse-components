@@ -56,7 +56,10 @@ export default function LoadingOverlay({
   const { classes } = useStyles()
   const isLoading = !!statusMessage
   return (
-    <div className={classes.container} style={height ? { height } : undefined}>
+    <div
+      className={classes.container}
+      style={height ? { minHeight: height } : undefined}
+    >
       {children}
       <span
         className={cx(classes.overlay, isLoading && classes.visible)}
