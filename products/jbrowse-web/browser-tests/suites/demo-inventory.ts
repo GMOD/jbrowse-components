@@ -207,9 +207,9 @@ const localDemos: TestSuite = {
             views: [
               {
                 type: 'LinearGenomeView',
-                assembly: 'SARS-CoV-2',
+                assembly: 'Wuhan-Hu-1',
                 loc: 'NC_045512.2:1-29903',
-                tracks: ['ncbi_gff_hg38'],
+                tracks: ['sequence'],
               },
             ],
           },
@@ -262,9 +262,9 @@ const localDemos: TestSuite = {
             views: [
               {
                 type: 'LinearSyntenyView',
-                tracks: ['yeastR64_vs_YJM1447.paf'],
+                tracks: ['dotplot_track'],
                 views: [
-                  { loc: 'chrI', assembly: 'R64' },
+                  { loc: 'NC_001133.9', assembly: 'R64' },
                   { loc: 'CM026499.1', assembly: 'YJM1447' },
                 ],
               },

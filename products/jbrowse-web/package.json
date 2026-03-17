@@ -21,7 +21,9 @@
     "test:browser:update": "node browser-tests/runner.ts --update-snapshots",
     "test:browser:webgl": "node browser-tests/runner.ts --backend=webgl",
     "test:browser:canvas2d": "node browser-tests/runner.ts --backend=canvas2d",
-    "test:browser:all-backends": "node browser-tests/runner.ts --backend=all -u",
+    "test:browser:webgpu": "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run --auto-servernum node browser-tests/runner.ts --backend=webgpu",
+    "test:browser:webgpu:firefox": "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run --auto-servernum node browser-tests/runner.ts --backend=webgpu --firefox",
+    "test:browser:all-backends": "VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run --auto-servernum node browser-tests/runner.ts --backend=all -u",
     "test:browser:all-backends:ci": "node browser-tests/runner.ts --backend=all --skip-webgpu -u",
     "test:browser:compare": "node browser-tests/compare-backends.ts"
   },

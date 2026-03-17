@@ -30,6 +30,12 @@ const includeRemote = args.includes('--include-remote')
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
 const skipWebGPU = args.includes('--skip-webgpu')
+const useFirefoxArg = args.find(a => a.startsWith('--firefox='))
+const firefoxPath = useFirefoxArg
+  ? useFirefoxArg.split('=')[1]!
+  : args.includes('--firefox')
+    ? (process.env.FIREFOX_NIGHTLY_PATH ?? '/usr/bin/firefox-nightly')
+    : undefined
 
 snapshotConfig.updateSnapshots = updateSnapshots
 
@@ -45,7 +51,16 @@ function chromeArgsForBackend(backend?: Backend) {
   if (backend === 'webgl') {
     chromeArgs.push('--use-gl=angle', '--use-angle=swiftshader')
   } else if (backend === 'webgpu') {
-    chromeArgs.push('--enable-unsafe-webgpu', '--enable-features=Vulkan')
+    // WebGPU requires Vulkan. Use lavapipe (software Vulkan) via:
+    //   VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
+    // and run under xvfb-run (headless: false + virtual framebuffer):
+    //   xvfb-run --auto-servernum node browser-tests/runner.ts --backend=webgpu
+    chromeArgs.push(
+      '--enable-unsafe-webgpu',
+      '--enable-features=Vulkan,UseSkiaRenderer',
+      '--use-angle=vulkan',
+      '--disable-vulkan-surface',
+    )
   } else if (backend === 'canvas2d') {
     chromeArgs.push('--disable-gpu')
   }
@@ -144,13 +159,37 @@ async function runWithBackend(
 ) {
   snapshotConfig.backend = backend ?? ''
 
-  const chromeArgs = chromeArgsForBackend(backend)
-  const browser = await launch({
-    headless: !headed,
-    slowMo,
-    args: chromeArgs,
-    defaultViewport: { width: 1280, height: 800 },
-  })
+  // WebGPU needs a real display (xvfb-run) — force headless: false
+  // For Firefox, also force headless: false since WebGPU needs GPU context
+  const needsDisplay = backend === 'webgpu'
+  const useHeadless = needsDisplay ? false : !headed
+
+  const useFirefox = backend === 'webgpu' && firefoxPath
+  let browser: Browser
+
+  if (useFirefox) {
+    console.log(`  Using Firefox Nightly: ${firefoxPath}`)
+    browser = await launch({
+      browser: 'firefox',
+      executablePath: firefoxPath,
+      headless: useHeadless,
+      slowMo,
+      extraPrefsFirefox: {
+        'dom.webgpu.enabled': true,
+        'gfx.webrender.all': true,
+        'gfx.webgpu.ignore-blocklist': true,
+      },
+      defaultViewport: { width: 1280, height: 800 },
+    })
+  } else {
+    const chromeArgs = chromeArgsForBackend(backend)
+    browser = await launch({
+      headless: useHeadless,
+      slowMo,
+      args: chromeArgs,
+      defaultViewport: { width: 1280, height: 800 },
+    })
+  }
 
   const page = await browser.newPage()
   page.on('console', msg => {
