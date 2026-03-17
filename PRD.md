@@ -1,7 +1,9 @@
 # JBrowse 2 WebGL/WebGPU Migration — Project Requirements Document
 
-**Branch:** `webgl-poc` **Last updated:** 2026-03-14 **Status:** Active
+**Branch:** `webgl-poc` **Last updated:** 2026-03-17 **Status:** Active
 development — many features working, significant polish and testing needed
+
+> **Note:** When items are completed, move them to `COMPLETED.md`.
 
 ---
 
@@ -18,60 +20,6 @@ documented below.
 ## Priority 1 — Critical / Blocking
 
 These issues block production readiness or affect the majority of users.
-
-### P1.1 Canvas Fallback Rendering Backend — COMPLETE
-
-**Status:** All track types now have Canvas 2D fallback renderers.
-
-| Track Type            | Canvas 2D File                        | Status |
-| --------------------- | ------------------------------------- | ------ |
-| Alignments            | `Canvas2DAlignmentsRenderer.ts`       | Done   |
-| Features              | `Canvas2DFeatureRenderer.ts`          | Done   |
-| Wiggle / Multi-Wiggle | `Canvas2DWiggleRenderer.ts`           | Done   |
-| HiC                   | `Canvas2DHicRenderer.ts`              | Done   |
-| Dotplot               | `Canvas2DDotplotRenderer.ts`          | Done   |
-| Variants              | `Canvas2DVariantRenderer.ts`          | Done   |
-| Variant Matrix        | `Canvas2DVariantMatrixRenderer.ts`    | Done   |
-| LD Display            | `Canvas2DLDRenderer.ts`               | Done   |
-| Synteny               | `Canvas2DSyntenyRenderer.ts`          | Done   |
-| Sequence              | Inline in `WebGPUSequenceRenderer.ts` | Done   |
-
-All renderers respect `?gpu=off` / `getGpuOverride() === 'canvas2d'` and
-auto-fall back: WebGPU → WebGL2 → Canvas 2D.
-
-**Remaining polish:**
-
-- ~~Canvas 2D synteny picking (`pick()`) returns -1~~ **DONE** — implemented
-  using `isPointInPath()`, iterates features in reverse draw order (top-most
-  picked first), stores last render params for coordinate reconstruction
-- Canvas 2D LD renderer does nearest-neighbor color ramp sampling (no
-  interpolation like GPU)
-- Canvas 2D alignments renderer now supports all 10 color schemes (normal,
-  strand, mapping quality, insert size threshold, first-of-pair strand, pair
-  orientation, insert size + orientation, modifications, tag-based)
-
-### P1.2 Data Fetching / Redraw Reliability
-
-**Why:** Core usability — users zoom out on alignments tracks and the view
-doesn't redraw. This makes the app appear broken.
-
-**Requirements:**
-
-- ~~Debug re-requests to ensure data is fetched for the entire visible region~~
-  **DONE** — replaced `staticRegions` (legacy 800px-block-based) with
-  viewport-based `mergedVisibleRegions` + explicit 50% buffer
-- ~~Audit wiggle tracks: "not fetching data in entire visible region
-  sometimes"~~ **DONE** — integrated `isCacheValid()` for resolution-aware
-  re-fetching on zoom-in; removed stale-region-based fetch
-- ~~Investigate `staticBlocks` usage and whether it's still needed~~ **DONE** —
-  `staticBlocks` kept for UI (scalebar/gridlines), but `staticRegions` removed
-  from data fetching; replaced with direct viewport-based approach
-- ~~Fix: "1kg Human demo: the genes track triggers force load too soon"~~
-  **DONE** — replaced `maxFeatureCount=5000` with density-based
-  `maxFeatureDensity=20` (features/pixel) throughout the stack (`rpcTypes.ts`,
-  `executeRenderFeatureData.ts`, `LinearFeatureDisplay/model.ts`); also extended
-  `ClearBlockingStateOnViewportChange` to clear `regionTooLarge` on viewport
-  region change (not just zoom) by tracking `mergedVisibleRegions` key
 
 ### P1.3 Expand Browser Test Suite
 
@@ -113,83 +61,39 @@ These affect significant user-visible functionality.
 
 ### P2.1 Alignments Track Bugs
 
-| Bug                                                           | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Color by per-base quality                                     | **DONE** — Colors reads by average base quality using HSL formula (same as MAPQ). Computed in `buildBaseFeatureData`, sent as `readAvgBaseQualities` Uint8Array. All 3 backends (WebGPU/WebGL/Canvas2D) + SVG export. Menu item "Base quality" added to color-by submenu. Legend shows BQ 0/10/20/30 gradient.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Color by insert size (threshold vs gradient)                  | **DONE** — Both threshold (scheme 3) and gradient (scheme 10) implemented across all 3 backends + Canvas2D + SVG export. Gradient maps deviation from upper/lower thresholds to continuous blue→grey→red ramp. Menu item "Insert size (gradient)" added.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Color by mapping quality — add legend                         | **DONE** — HSL gradient legend items added                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Color by tag not working                                      | **DONE** — e2e test confirms two-phase fetch works (discover tags → re-fetch with colors). Canvas2D renderer now handles all 10 color schemes (normal, strand, mapq, insert-size, first-of-pair, pair-orientation, insert+orientation, modifications, tag).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Color orange for supplementary reads                          | Already implemented in normal color scheme (all 3 backends) — verify other color modes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Force load stuck                                              | **DONE** — `ClearBlockingStateOnViewportChange` clears on zoom or region change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Wrong ratio shown over deletions in tooltip                   | **DONE**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Coverage interbase indicators conditional on total coverage   | **DONE** — `computeNoncovCoverage` uses per-position local depth (max of left/right neighbors) for indicator threshold; `MINIMUM_INDICATOR_READ_DEPTH` raised from 7→8 so no indicators at low coverage; `computePositionFrequencies` + `applyDepthDependentThreshold` filter pileup interbase features by depth-dependent frequency; 27 unit tests                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Non-intron rendered on sidescroll weirdly for iso-seq         | **LIKELY FIXED** — Root cause was stencil buffer state leaking between displayedRegions. Stencil pass was completely removed (commits 88d7e42b, d299f989). Gaps now rendered directly with proper skip/deletion coloring without stencil. Needs browser verification.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| WebGL 2.0 mismatch colors when zoomed out                     | **FIXED** — `CoverageRenderer` disabled `gl.BLEND` after drawing indicators; pileup then drew reads+mismatches without blending, so low-alpha mismatches replaced read pixels with near-transparent values (white spots). Fix: re-enable `gl.BLEND` at start of `PileupRenderer.render()`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| volvox-long reads with SV not rendering when zoomed out       | **FIXED** — `checkByteEstimate` now uses the adapter's `fetchSizeLimit` (BAM=5MB, CRAM=3MB) via `Math.max(adapterLimit, displayLimit)`, matching `FeatureDensityMixin.maxAllowableBytes` chain. Previously only used display config default (1MB). Also added `isLoading` guard (via `untracked`) to prevent duplicate byte-estimate RPC calls from concurrent autorun firings.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Insertion depth weird                                         | **DONE**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Draw outline even when compact                                | **DONE** — size threshold lowered from 4px to 2px                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Linked read mode not wired up                                 | **FIXED** — `setShowLinkedReads()` was missing `invalidateLoadedRegions()` call, so toggling linked reads didn't trigger re-fetch with `fetchChainData` RPC. Added invalidation at end of toggle action. Needs browser verification.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Read vs ref synteny view not working                          | **FIXED** — `LinearReadVsRef` menu registration was checking for `'LinearPileupDisplay'` (old name) instead of `'LinearAlignmentsDisplay'`. Menu item never appeared. Dotplot version (`DotplotReadVsRef`) already used the correct name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Sort modifications — last color by option                     | **DONE** — moved to end of color-by submenu                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Put arc color scheme in color by                              | **DONE** — already present as submenu in color-by menu                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Bad triangle interbase indicators                             | **FIXED** — added barycentric-coordinate anti-aliasing to both WebGL (GLSL) and WebGPU (WGSL) indicator triangle shaders; enabled alpha blending for WebGL indicator draw pass                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Outline on alignments shift+scroll                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Click sashimi — make it look selected (selected color arc)    | **DONE** — selected arc renders with dark stroke (#333) and thicker width; click toggles selection                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Unmapped mate coloring collides with other pink               | **DONE** — Flag 8 check for unmapped mate precedes insert size / pair orientation coloring in all 3 backends + Canvas2D. Brown (#8B4513) is visually distinct from short-insert pink.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Hide insertions in low coverage when region has high coverage | **DONE** — `computePositionFrequencies` uses interbase depth (max of neighbors); `applyDepthDependentThreshold` with `featureFrequencyThreshold()` zeroes low-frequency insertions; shader fades zeroed-frequency features via sub-pixel alpha                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Reset mouseover after change link mode                        | **DONE** — clears featureIdUnderMouse/highlightedChainIds on toggle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| WebGL arcs not vibrant                                        | **DONE** — premultiplied alpha fix in arc/sashimi WGSL shaders                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Clicking chain — get both feature info                        | Already partially covered: SA tag parsed and shown by `SupplementaryAlignments` component; paired-end mate info shown by `LinkedPairedAlignments`. Could enhance by fetching full partner feature data via RPC on demand.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| GPU mismatches render without backing read rectangles         | **FIXED** — `buildSegmentArrays` clipped segment end positions at `windowEnd` (`Math.min(f.end - regionStart, windowEnd)`) but `buildMismatchArrays` had no upper bound (only filtered `mm.position >= regionStart`). When features extended beyond `regionEnd`, their segments were truncated at the data region boundary while mismatches at positions beyond that boundary were still emitted. This caused colored mismatch bars to render without grey read rectangles underneath in WebGL/WebGPU mode. The Canvas2D renderer was unaffected because it draws reads using `readPositions` (not upper-bounded) rather than `segmentPositions`. Fix: removed the `windowEnd` clipping from `buildSegmentArrays` so segments extend to the full feature end, matching `readPositions`. The GPU rasterizer handles viewport clipping naturally. Updated 4 unit tests in `buildSegmentArrays.test.ts`. |
+| Bug                                                           | Notes                                                                                                                                               |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Color orange for supplementary reads                          | Already implemented in normal color scheme (all 3 backends) — verify other color modes                                                             |
+| Clicking chain — get both feature info                        | Already partially covered: SA tag parsed and shown by `SupplementaryAlignments` component; paired-end mate info shown by `LinkedPairedAlignments`. Could enhance by fetching full partner feature data via RPC on demand. |
 
 ### P2.2 Wiggle Track Bugs
 
-| Bug                                                          | Notes                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Color change wiggle not working (sometimes)                  | Investigated — e2e test proves reactivity works; autorun correctly re-fires on color change                                                                                                                                                                                                                                                                                                    |
-| Cross hatches                                                | **DONE** — `displayCrossHatches` toggle + SVG overlay                                                                                                                                                                                                                                                                                                                                          |
-| Multi-wiggle color with overlapping modes                    | **FIXED** — row index used `idx` from `orderedSources.entries()` which skipped values when sources had no RPC data; replaced with separate `rowCounter` that increments only for sources with data                                                                                                                                                                                             |
-| Overlapping line whiskers                                    | Single color whiskers option?                                                                                                                                                                                                                                                                                                                                                                  |
-| Y-scale bar offset per row                                   | Unclear repro                                                                                                                                                                                                                                                                                                                                                                                  |
-| Refresh after multi-wiggle fails also fails                  | **FIXED** — Root cause: `ready` state wasn't reset on retry. Canvas is unmounted during error, recreated on retry with new DOM element and new renderer. But useEffect deps `[model, ready]` didn't change (ready stayed `true`), so data upload autoruns never re-attached to the new renderer. Fix: reset `ready`/`drawn`/`error` state on retry in both single and multi-wiggle components. |
-| Density vs XYPlot mismatch between sidebar and SVG export    | Investigated — code analysis shows sidebar, main display, and SVG export all read from same `model.renderingType` getter. Cannot reproduce from code.                                                                                                                                                                                                                                          |
-| Sidebar legend toggle distinct from tree sidebar             |                                                                                                                                                                                                                                                                                                                                                                                                |
-| **UNCLEAR:** Brief tooltip flash in top left on wiggle-multi | Needs investigation                                                                                                                                                                                                                                                                                                                                                                            |
+| Bug                                                          | Notes                                                                              |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| Overlapping line whiskers                                    | Single color whiskers option?                                                      |
+| Y-scale bar offset per row                                   | Unclear repro                                                                      |
+| Sidebar legend toggle distinct from tree sidebar             |                                                                                    |
+| **UNCLEAR:** Brief tooltip flash in top left on wiggle-multi | Needs investigation                                                                |
+| Density vs XYPlot mismatch between sidebar and SVG export    | Investigated — code analysis shows sidebar, main display, and SVG export all read from same `model.renderingType` getter. Cannot reproduce from code. |
 
 ### P2.3 Synteny / Comparative Views
 
-| Bug                                                                 | Notes                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hs1 vs mm39 synteny — excessively slow, causes freeze               | **IMPROVED** — added viewport culling in `executeSyntenyFeaturesAndPositions.ts`: features where BOTH view projections are entirely off-screen (with 50% buffer) are skipped before instance generation and GPU upload. Debug log shows cull ratio. For genomes with many chromosomes, this can eliminate 50-90% of features. Further LOD improvements possible. |
-| Yeast synteny — error when splitting                                | **FIXED** — `renameIds()` in `copyView.ts` was concatenating old+new IDs (`${val}-${newId}`), which could break MST `types.identifier` uniqueness. Now uses the new ID directly.                                                                                                                                                                                 |
-| Multi-way synteny (grape/peach/cacao) — synteny tracks fail to load | **FIXED** — `init.tracks` now supports 2D array `string[][]` for explicit per-level track assignment. `LaunchLinearSyntenyView` passes through the structure. Backwards compatible with flat `string[]` (all go to level 0).                                                                                                                                     |
-| Zoom to full not working?                                           | **UNCLEAR** — needs verification                                                                                                                                                                                                                                                                                                                                 |
-| Don't colorize indels not working?                                  | **UNCLEAR** — needs verification                                                                                                                                                                                                                                                                                                                                 |
-| Split indels code                                                   | Refactoring task                                                                                                                                                                                                                                                                                                                                                 |
-| Horizontally flipped stuff is inaccurate                            | **LIKELY NOT A BUG** — strand swap + reversed region double-flip is correct behavior (unit tests confirm all 4 strand×reversed combinations). Blank snapshots were due to missing `drawn-` signal (now fixed). Needs browser re-verification to close out.                                                                                                       |
-| Color dotplot red vs black                                          | **DONE**                                                                                                                                                                                                                                                                                                                                                         |
-| Make scrolling dotplot a little slower                              | **DONE** — doubled scroll divisors in `useWheelHandler.ts` (horizontal `/5`→`/10`, vertical `/15`→`/30`)                                                                                                                                                                                                                                                         |
-| Linked dotplot and synteny view                                     | Idea / future feature                                                                                                                                                                                                                                                                                                                                            |
-| Swap axes dotplot                                                   | Idea / future feature                                                                                                                                                                                                                                                                                                                                            |
-| Swap axes linear synteny view                                       | Idea / future feature                                                                                                                                                                                                                                                                                                                                            |
-
-### P2.4 SVG Export Issues
-
-| Bug                                                               | Notes                                                                                                                                                                                                        |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ~~Y scale bars wrong in multi-wiggle (no scalebar label offset)~~ | **REMOVED** — offset not desired for multi-row mode                                                                                                                                                          |
-| Monospace font on sequence track                                  | **FIXED** — added `font-family="monospace"` to both `renderBaseLetters()` and `renderTranslationLetters()` in sequence SVG export                                                                            |
-| Monospace font on peptides                                        | **FIXED** — added `font-family="monospace"` to `renderPeptideLettersForRegion()` in feature SVG export                                                                                                       |
-| ~~Alignments SVG: indels too visible in SKBR3 output~~            | **LIKELY FIXED** — depth-dependent frequency thresholds and sub-pixel alpha fading now applied consistently across SVG, Canvas2D, and GPU renderers. Audited: insertion length text now uses monospace font. |
+| Bug                                                          | Notes                                                                                                                                                                                         |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hs1 vs mm39 synteny — excessively slow, causes freeze        | Improved (viewport culling added) — further LOD improvements needed                                                                                                                          |
+| Zoom to full not working?                                    | **UNCLEAR** — needs verification                                                                                                                                                             |
+| Don't colorize indels not working?                           | **UNCLEAR** — needs verification                                                                                                                                                             |
+| Split indels code                                            | Refactoring task                                                                                                                                                                              |
+| Linked dotplot and synteny view                              | Idea / future feature                                                                                                                                                                        |
+| Swap axes dotplot                                            | Idea / future feature                                                                                                                                                                        |
+| Swap axes linear synteny view                                | Idea / future feature                                                                                                                                                                        |
 
 ### P2.5 Variant Track Issues
 
-| Bug                                              | Notes                                                                                                                                                        |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Toggling between matrix and non-matrix modes     | **NOT A BUG** — works as expected                                                                                                                            |
-| Clicking multisample variant — not enough detail | **FIXED** — click handler now enriches simplified feature with REF, ALT, description, genotypes, and clicked sample info from featureGenotypeMap/featureData |
-| Tetraploid potato — maybe failed to load matrix  |                                                                                                                                                              |
-| Human trio phased VCF rendering                  | Needs verification                                                                                                                                           |
+| Bug                                              | Notes                                                            |
+| ------------------------------------------------ | ---------------------------------------------------------------- |
+| Tetraploid potato — maybe failed to load matrix  |                                                                  |
+| Human trio phased VCF rendering                  | Needs verification                                               |
 
 ---
 
@@ -197,21 +101,12 @@ These affect significant user-visible functionality.
 
 ### P3.1 Canvas/Interaction Bugs
 
-- ~~After zoom, features reposition but mouseover shading stuck~~ **FIXED** —
-  hover state (hoveredFeature, hoveredSubfeature, featureIdUnderMouse) now
-  cleared when new RPC data is uploaded in FeatureComponent
-- ~~Labels disappear during zoom~~ **FIXED** — description labels now always
-  included in RPC response (not gated by `showDescriptions`); layout always
-  reserves space; visibility filtered client-side by `effectiveShowDescriptions`
 - Vertical scroll sometimes scrolls page instead of zooming on linear genome
   view — wheel event not always captured by the view
 - Hot module reload breaks canvas features
 - Per-track scrolling — verify working
 - After fatal error: `Uncaught Error: no containing view found` in
   `getContainingView`
-- ~~Infinite loop after error in multi-wiggle~~ **FIXED** — Added try/catch +
-  `isAlive` guard to `VisibleScoreRange` autorun in multi-wiggle `afterAttach`;
-  prevents `getContainingView` crash from causing infinite autorun re-trigger
 - Closing track errors (non-webgl bug)
 - Dockview move to right side of screen not working (non-webgl bug)
 
@@ -231,10 +126,6 @@ These affect significant user-visible functionality.
 
 ### P3.4 Methylation / Modifications
 
-- ~~Color by reference CpG not working~~ **FIXED** — off-by-one in
-  `extractMethylation()`: CpG detection was checking `rSeq[j - refStart + 1]`
-  instead of `rSeq[j - refStart]`, missing all real CpG sites. Added 4 unit
-  tests.
 - ENCODE multi-bigwig example: settings from snapshot not properly loaded
 - COLO829 melanoma multi-bigwig: settings not properly loaded
 
@@ -308,8 +199,8 @@ load or unusable)
 | 3   | Breakpoint split view                            | Working | Nice scroll zoom                                                                                          |
 | 4   | Dotplot (grape vs peach)                         | Working | Smooth scroll zoom                                                                                        |
 | 5   | Synteny (grape vs peach)                         | Working |                                                                                                           |
-| 6   | Hs1 vs mm39 synteny                              | Broken  | Excessively slow, freezes                                                                                 |
-| 7   | Yeast synteny                                    | Working | Error when splitting fixed (renameIds concatenation bug)                                                  |
+| 6   | Hs1 vs mm39 synteny                              | Broken  | Excessively slow, freezes; viewport culling added but further LOD needed                                  |
+| 7   | Yeast synteny                                    | Working | Error when splitting fixed                                                                                |
 | 8   | Human HG002 insertion                            | Working |                                                                                                           |
 | 9   | SKBR3 breakpoint split view                      | Working |                                                                                                           |
 | 10  | Nanopore methylation/modifications               | Working |                                                                                                           |
@@ -317,19 +208,19 @@ load or unusable)
 | 12  | ENCODE multi-bigwig                              | Working |                                                                                                           |
 | 13  | COLO829 melanoma multi-bigwig                    | Working |                                                                                                           |
 | 14  | Inversion (single row BSV)                       | Working | Track move bug noted                                                                                      |
-| 15  | Inversion (linked reads)                         | Partial | Missing `invalidateLoadedRegions()` in `setShowLinkedReads()` fixed — needs browser verification          |
+| 15  | Inversion (linked reads)                         | Partial | `invalidateLoadedRegions()` fix applied — needs browser verification                                      |
 | 16  | Multi-way synteny (grape/peach/cacao)            | Partial | Session-spec init fixed (per-level tracks). Shared session link may need level migration.                 |
 | 17  | Tetraploid potato multi-sample VCF               | Partial | Matrix may fail to load                                                                                   |
 | 18  | Human trio phased VCF                            | Working |                                                                                                           |
 | 19  | Hi-C contact matrix                              | Working |                                                                                                           |
-| 20  | Horizontally flip demo                           | Partial | Coordinate math verified correct; blank snapshots fixed (`drawn-` signal) — needs browser re-verification |
+| 20  | Horizontally flip demo                           | Partial | Coordinate math verified correct; blank snapshots fixed — needs browser re-verification                   |
 | 21  | COLO829 melanoma coverage                        | Partial | Settings not loaded from snapshot                                                                         |
 | 22  | GIAB heterozygous deletion                       | Working | Color by tag now working (all 10 color schemes in Canvas2D)                                               |
 | 23  | SKBR3 PacBio read vs ref                         | Working | Read vs ref fixed (display name mismatch)                                                                 |
 | 24  | CpG methylation nanopore                         | Partial | CpG off-by-one fixed — needs browser verification                                                         |
 | 25  | 1000 genomes SV large inversion                  | Working |                                                                                                           |
 
-**Working: 15 | Partial: 4 | Broken: 4 | Untested: 2**
+**Working: 15 | Partial: 6 | Broken: 1 | Untested: 2**
 
 ---
 
@@ -362,7 +253,7 @@ load or unusable)
 
 - `?gpu=webgpu` — force WebGPU
 - `?gpu=webgl` — force WebGL2
-- `?gpu=off` — disable GPU (will use Canvas 2D fallback when P1.1 complete)
+- `?gpu=off` — disable GPU (uses Canvas 2D fallback)
 - Default: auto-detect (WebGPU → WebGL2 → Canvas 2D)
 
 ### Test Infrastructure
@@ -406,146 +297,6 @@ load or unusable)
 
 ---
 
-## Items Flagged as Unclear
-
-These need investigation or clarification before they can be scoped:
-
-1. **"Zoom to full" not working in synteny** — needs verification of what's
-   broken
-2. **"Don't colorize indels" not working in synteny** — needs verification
-3. **Y-scale bar offset per row in wiggle** — unclear how to reproduce
-4. **Brief tooltip flash in top left on wiggle-multi** — intermittent, needs
-   repro steps
-5. **`staticBlocks` usage** — Used by MultiRegionDisplayMixin for pre-expanded
-   fetch regions. The fetch autorun uses `view.staticRegions` which merges 800px
-   chunks. A fast-path cache only recalculates when
-   bpPerPx/width/displayedRegions change or offsetPx moves outside a coverage
-   range. This can cause a mismatch with `visibleRegions` used by rendering —
-   potential root cause of P1.2 wiggle fetch gaps.
-6. ~~**Force load "slightly stuck"**~~ **FIXED** —
-   `ClearBlockingStateOnViewportChange` now clears on zoom OR region change
-   (tracks `mergedVisibleRegions` key); density-based threshold
-   (`maxFeatureDensity=20` features/px) replaces absolute
-   `maxFeatureCount=5000`; "force load" button triples the density limit.
-7. **Density track mismatch** — "sidebar turns into density in SVG export but is
-   still xyplot in browser" — is this a labeling bug or rendering bug?
-8. **Issues toggling matrix/non-matrix variant modes** — "maybe related to
-   phased being on or tree?" — needs investigation
-9. ~~**Color change wiggle "sometimes" not working**~~ **INVESTIGATED** — e2e
-   test (`wiggle-color.ts`) proves autorun correctly re-fires on color change.
-   If issue recurs, debug logging can be re-added.
-10. **Unmapped mate** — "get more info??" — unclear what info is needed
-11. **"Distinguish initialized concepts in linear genome view"** — what does
-    this mean concretely?
-12. **Custom Google Analytics** — unclear scope/purpose
-13. **Refactor Apollo client-side code** — out of scope for this branch?
-
----
-
-## Recent Changes (2026-03-15)
-
-### Interbase Indicator Depth Threshold Fix
-
-- `MINIMUM_INDICATOR_READ_DEPTH` raised from 7→8 so no indicators appear at low
-  coverage (<8 reads)
-- Fixed inconsistency: `localDepth > 7` (hardcoded) →
-  `localDepth >= MINIMUM_INDICATOR_READ_DEPTH` (uses constant)
-- Added 20 unit tests for `computeNoncovCoverage` indicators,
-  `computePositionFrequencies`, `applyDepthDependentThreshold`, and
-  `featureFrequencyThreshold`
-
-### Labels Disappear During Zoom Fix
-
-- `createFeatureFloatingLabels()` no longer gates description label on
-  `showDescriptions` config — descriptions always included in RPC response
-- `applyLabelDimensions()` always reserves layout height for descriptions (not
-  gated by `showDescriptions`)
-- Client-side filtering in `FeatureComponent.tsx`
-  (`model.effectiveShowDescriptions`) unchanged — controls visibility at render
-  time
-- Added regression test verifying label data stability across simulated zoom
-  levels
-
----
-
-## Recent Changes (2026-03-14)
-
-### Canvas2D Alignments: Full Color Scheme Support
-
-The `Canvas2DAlignmentsRenderer` now implements all 10 color schemes via a
-`switch` on `colorScheme`:
-
-- 0: Normal (supplementary in orange, else strand)
-- 1: Strand (fwd/rev/nostrand)
-- 2: Mapping quality (HSL hue from mapq)
-- 3: Insert size (threshold-based: long/short/normal)
-- 4: First-of-pair strand
-- 5: Pair orientation (LR/RL/RR/LL)
-- 6: Insert size + orientation (combined)
-- 7: Modifications (fwd/rev tint)
-- 8: Tag-based (RGB from `readTagColors`)
-
-Added `hslToRgb()` helper for mapping quality rendering.
-
-### Density-Based Feature Limits
-
-Replaced absolute `maxFeatureCount=5000` with `maxFeatureDensity=20` (features
-per pixel). The RPC handler now computes
-`featureDensity = featuresArray.length / regionWidthPx` and only triggers
-"region too large" when density exceeds the limit. This means the 1000 Genomes
-human genes track no longer triggers force-load prematurely at reasonable zoom
-levels.
-
-### Viewport-Aware Error Recovery
-
-`ClearBlockingStateOnViewportChange` autorun now tracks both `bpPerPx` and a
-`mergedVisibleRegions` key. Panning to a new chromosome or region clears
-`regionTooLarge`/`error` state, not just zooming.
-
-### Canvas2D Synteny Picking
-
-Implemented `pick()` in `Canvas2DSyntenyRenderer` using `isPointInPath()`.
-Stores last render parameters (offsets, scales, bpPerPx) and iterates features
-in reverse draw order so top-most features are picked first. Handles both
-straight parallelograms and curved features. Added 7 new unit tests for picking.
-
-### Synteny Browser Test Fix
-
-Added `drawn-${drawn}` data-testid to the synteny rendering component wrapper
-div. Previously, synteny browser tests captured blank white snapshots because
-`waitForCanvasRendered` had no way to detect when synteny data was loaded and
-rendered (no loading overlay, no drawn signal). The `drawn` state is derived
-from `model.gpuInitialized && !!model.featureData`.
-
-### Error Handling Improvements
-
-- Synteny draw autorun: added try/catch around rendering operations that sets
-  `model.error` on failure
-- Synteny rendering component: added `ErrorMessage` display when `model.error`
-  is set
-- Previously errors were `setError()`'d but never rendered in the synteny UI
-
-### Yeast Synteny Split Fix
-
-Fixed `renameIds()` in `copyView.ts` — was concatenating `${oldId}-${newId}`
-which could break MST `types.identifier` uniqueness in synteny's nested `levels`
-array. Now uses the generated ID directly.
-
-### Strand Swap Coordinate Tests
-
-Added 4 unit tests verifying synteny parallelogram crossing behavior for all
-strand×reversed combinations. Confirmed that the double-flip (strand=-1 +
-reversed region) producing parallel lines is the correct biological behavior.
-
-### Debug Logging
-
-- Alignments model: logs tag color discovery and re-fetch triggers
-  (`[alignments]` prefix)
-- Browser test runner: forwards `[alignments]` console messages alongside
-  existing `[webgl-wiggle]` messages
-
----
-
 ## Cross-Backend Verification Matrix
 
 All track types must work across 4 rendering backends. Key: W=WebGPU, G=WebGL,
@@ -570,7 +321,11 @@ C=Canvas2D, S=SVG export. ✓=done, ~=partial, ✗=missing, -=N/A
 | Dotplot                    | ✓   | ✓   | ✓   | ✓   |                                                                  |
 | HiC                        | ✓   | ✓   | ✓   | ✓   |                                                                  |
 
-### Next Steps — Cross-Backend Testing
+---
+
+## Next Steps
+
+### Cross-Backend Testing
 
 1. **Add browser tests per backend**: Run SVG export tests with
    `--backend=canvas2d` to ensure Canvas2D fallback produces valid output for
@@ -588,7 +343,7 @@ C=Canvas2D, S=SVG export. ✓=done, ~=partial, ✗=missing, -=N/A
    buffer layout. Current approach of maintaining parallel WGSL+GLSL shaders is
    the pragmatic path. sokol-shdc goes GLSL→WGSL (reverse direction) via Tint.
 
-### Next Steps — Remaining Bugs
+### Remaining Bugs
 
 **P2 (High) — Still Open:**
 
@@ -597,17 +352,11 @@ C=Canvas2D, S=SVG export. ✓=done, ~=partial, ✗=missing, -=N/A
 - Linked read mode (demo #15) — **FIXED** (`invalidateLoadedRegions` added),
   needs browser verification
 - Clicking chain — should get both features' info in widget
-- Outline on alignments shift+scroll — needs investigation
-- Alignments SVG indels too visible in SKBR3 — alpha/visibility thresholds may
-  need tuning
 - Tetraploid potato matrix — may fail to load
 - Hs1 vs mm39 synteny still slow — viewport culling helps but further LOD needed
 
 **P3 (Medium) — Still Open:**
 
-- Infinite loop after error in multi-wiggle — dual error state (React
-  `useState` + `model.error`) may desync. Check if `ErrorBoundary` catches
-  render errors but doesn't clear model error
 - Hot module reload breaks canvas features — likely stale ref to destroyed WebGL
   context
 - After fatal error: `getContainingView` throws — model may be detached from
@@ -617,15 +366,35 @@ C=Canvas2D, S=SVG export. ✓=done, ~=partial, ✗=missing, -=N/A
 - ENCODE/COLO829 multi-bigwig settings not loaded from snapshot — snapshot
   migration issue
 
-**Completed:**
+---
 
-- ~~Dotplot color~~ ~~Dotplot scroll~~ ~~Multi-wiggle overlay color~~ ~~Wrong
-  ratio deletions~~ ~~Insertion depth~~ ~~Coverage interbase indicators~~
-  ~~Color by per-base quality~~ ~~Sort modifications~~ ~~Put arc color scheme in
-  color by~~ ~~Hide insertions in low coverage~~ ~~Y scale bars wrong in
-  multi-wiggle SVG~~ ~~Labels disappear during zoom~~ ~~Unmapped mate coloring~~
-  ~~Color by reference CpG~~ ~~Color by insert size gradient~~ ~~Read vs ref
-  synteny~~ — all DONE
+## Items Flagged as Unclear
+
+These need investigation or clarification before they can be scoped:
+
+1. **"Zoom to full" not working in synteny** — needs verification of what's
+   broken
+2. **"Don't colorize indels" not working in synteny** — needs verification
+3. **Y-scale bar offset per row in wiggle** — unclear how to reproduce
+4. **Brief tooltip flash in top left on wiggle-multi** — intermittent, needs
+   repro steps
+5. **`staticBlocks` usage** — Used by MultiRegionDisplayMixin for pre-expanded
+   fetch regions. The fetch autorun uses `view.staticRegions` which merges 800px
+   chunks. A fast-path cache only recalculates when
+   bpPerPx/width/displayedRegions change or offsetPx moves outside a coverage
+   range. This can cause a mismatch with `visibleRegions` used by rendering —
+   potential root cause of P1.2 wiggle fetch gaps.
+6. **Density track mismatch** — "sidebar turns into density in SVG export but is
+   still xyplot in browser" — is this a labeling bug or rendering bug?
+7. **Issues toggling matrix/non-matrix variant modes** — "maybe related to
+   phased being on or tree?" — needs investigation
+8. **Unmapped mate** — "get more info??" — unclear what info is needed
+9. **"Distinguish initialized concepts in linear genome view"** — what does
+   this mean concretely?
+10. **Custom Google Analytics** — unclear scope/purpose
+11. **Refactor Apollo client-side code** — out of scope for this branch?
+
+---
 
 ## Blog Post Ideas (Non-blocking)
 

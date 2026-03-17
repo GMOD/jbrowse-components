@@ -110,7 +110,7 @@ function comparePair(
   return { identical, similar, different }
 }
 
-function run() {
+export function runComparison() {
   const available = BACKENDS.map(b => ({
     name: b,
     data: getBackendSnapshots(b),
@@ -123,7 +123,7 @@ function run() {
     console.error(
       'Run tests with --backend=webgl, --backend=webgpu, and/or --backend=canvas2d first.',
     )
-    process.exit(1)
+    return
   }
 
   const diffDir = path.join(snapshotsDir, 'backend-diffs')
@@ -169,4 +169,10 @@ function run() {
   }
 }
 
-run()
+// Run directly when invoked as a script
+const isDirectRun =
+  process.argv[1] &&
+  path.resolve(process.argv[1]).includes('compare-backends')
+if (isDirectRun) {
+  runComparison()
+}

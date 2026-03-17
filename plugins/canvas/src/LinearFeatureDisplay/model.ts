@@ -33,7 +33,7 @@ import {
   getTranscripts,
   hasIntrons,
 } from './components/CollapseIntronsDialog/util.ts'
-import { computeAndAssignLayout } from './layout.ts'
+import { computeAndAssignLayout, relayoutAllRegions } from './layout.ts'
 
 const CollapseIntronsDialog = lazy(
   () => import('./components/CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -256,21 +256,17 @@ export default function stateModelFactory(
       },
 
       get needsLayoutRefresh() {
-        try {
-          const view = getContainingView(self) as LGV
-          if (!view.initialized || self.layoutBpPerPxMap.size === 0) {
-            return false
-          }
-          for (const layoutBpPerPx of self.layoutBpPerPxMap.values()) {
-            const ratio = view.bpPerPx / layoutBpPerPx
-            if (ratio > 2 || ratio < 0.5) {
-              return true
-            }
-          }
-          return false
-        } catch {
+        const view = getContainingView(self) as LGV
+        if (!view.initialized || self.layoutBpPerPxMap.size === 0) {
           return false
         }
+        for (const layoutBpPerPx of self.layoutBpPerPxMap.values()) {
+          const ratio = view.bpPerPx / layoutBpPerPx
+          if (ratio > 2 || ratio < 0.5) {
+            return true
+          }
+        }
+        return false
       },
 
       getFeatureById(featureId: string): FlatbushItem | undefined {
@@ -679,6 +675,26 @@ export default function stateModelFactory(
         },
       }
     })
+    .actions(self => ({
+      relayoutForCurrentZoom() {
+        const view = getContainingView(self) as LGV
+        if (!view.initialized || self.rpcDataMap.size === 0) {
+          return
+        }
+        const regionKeys = new Map<number, string>()
+        for (const [num, region] of self.loadedRegions) {
+          regionKeys.set(num, `${region.assemblyName}:${region.refName}`)
+        }
+        const dataMap = new Map(self.rpcDataMap)
+        relayoutAllRegions(
+          dataMap,
+          view.bpPerPx,
+          regionKeys,
+          self.effectiveShowDescriptions,
+        )
+        self.setRpcDataMap(dataMap)
+      },
+    }))
     .actions(self => {
       const superAfterAttach = self.afterAttach
       return {
@@ -694,6 +710,30 @@ export default function stateModelFactory(
             autorun(() => {
               void self.adapterConfigSnapshot
             }),
+          )
+
+          // Reaction: re-layout existing data when zoom changes to avoid
+          // label collisions, without requiring a full data refetch.
+          // Does NOT update layoutBpPerPxMap so needsLayoutRefresh
+          // still triggers a full refetch at the 2x threshold.
+          addDisposer(
+            self,
+            reaction(
+              () => {
+                const view = getContainingView(self) as LGV
+                return view.initialized ? view.bpPerPx : undefined
+              },
+              () => {
+                if (self.rpcDataMap.size > 0) {
+                  self.relayoutForCurrentZoom()
+                }
+              },
+              {
+                name: 'ZoomRelayout',
+                delay: 50,
+                fireImmediately: false,
+              },
+            ),
           )
 
           // Reaction: re-fetch when settings that require new RPC data change

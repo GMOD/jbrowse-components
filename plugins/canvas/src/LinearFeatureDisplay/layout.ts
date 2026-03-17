@@ -116,6 +116,83 @@ export function computeAndAssignLayout(
   }
 }
 
+function undoFillYArrays(
+  data: FeatureDataResult,
+  globalOffsets: Map<string, number>,
+) {
+  const featureOffsets = new Float32Array(data.flatbushItems.length)
+  for (const [i, item] of data.flatbushItems.entries()) {
+    featureOffsets[i] = item.topPx
+  }
+
+  for (let i = 0; i < data.numRects; i++) {
+    data.rectYs[i] =
+      data.rectYs[i]! - featureOffsets[data.rectFeatureIndices[i]!]!
+  }
+  for (let i = 0; i < data.numLines; i++) {
+    data.lineYs[i] =
+      data.lineYs[i]! - featureOffsets[data.lineFeatureIndices[i]!]!
+  }
+  for (let i = 0; i < data.numArrows; i++) {
+    data.arrowYs[i] =
+      data.arrowYs[i]! - featureOffsets[data.arrowFeatureIndices[i]!]!
+  }
+
+  for (const item of data.flatbushItems) {
+    item.bottomPx -= item.topPx
+    item.topPx = 0
+  }
+
+  for (const info of data.subfeatureInfos) {
+    const offset = globalOffsets.get(info.parentFeatureId) ?? 0
+    info.topPx -= offset
+    info.bottomPx -= offset
+  }
+
+  for (const labelData of Object.values(data.floatingLabelsData)) {
+    const offsetKey = labelData.parentFeatureId ?? labelData.featureId
+    labelData.topY -= globalOffsets.get(offsetKey) ?? 0
+  }
+
+  if (data.aminoAcidOverlay) {
+    for (const aaItem of data.aminoAcidOverlay) {
+      aaItem.topPx -= featureOffsets[aaItem.flatbushIdx]!
+    }
+  }
+}
+
+export function relayoutAllRegions(
+  rpcDataMap: Map<number, FeatureDataResult>,
+  bpPerPx: number,
+  regionKeys: Map<number, string>,
+  showDescriptions = true,
+  descriptionFontSize = 12,
+) {
+  const globalOffsets = new Map<string, number>()
+  for (const data of rpcDataMap.values()) {
+    for (const item of data.flatbushItems) {
+      if (!globalOffsets.has(item.featureId)) {
+        globalOffsets.set(item.featureId, item.topPx)
+      }
+    }
+  }
+
+  for (const data of rpcDataMap.values()) {
+    if (data.flatbushItems.length > 0) {
+      undoFillYArrays(data, globalOffsets)
+    }
+  }
+  const allRegionNumbers = new Set(rpcDataMap.keys())
+  computeAndAssignLayout(
+    rpcDataMap,
+    bpPerPx,
+    regionKeys,
+    allRegionNumbers,
+    showDescriptions,
+    descriptionFontSize,
+  )
+}
+
 export function fillYArrays(
   data: FeatureDataResult,
   layoutMap: Map<string, number>,

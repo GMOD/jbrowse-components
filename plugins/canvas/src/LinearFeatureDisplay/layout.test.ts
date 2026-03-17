@@ -1,4 +1,4 @@
-import { computeAndAssignLayout } from './layout.ts'
+import { computeAndAssignLayout, relayoutAllRegions } from './layout.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -276,4 +276,287 @@ test('incremental loading does not double-process old data', () => {
 
   // ctgB should be processed correctly
   expect(ctgBData.flatbushItems[0]!.topPx).toBe(0)
+})
+
+test('relayoutAllRegions at same bpPerPx reproduces original layout', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 25 },
+    ],
+  })
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+
+  const f1Top = data.flatbushItems[0]!.topPx
+  const f2Top = data.flatbushItems[1]!.topPx
+  expect(f2Top).toBeGreaterThan(0)
+
+  // Re-layout at same bpPerPx should produce identical result
+  relayoutAllRegions(rpcDataMap, 1, regionKeys)
+
+  expect(data.flatbushItems[0]!.topPx).toBe(f1Top)
+  expect(data.flatbushItems[1]!.topPx).toBe(f2Top)
+  expect(data.flatbushItems[0]!.bottomPx).toBe(f1Top + 20)
+  expect(data.flatbushItems[1]!.bottomPx).toBe(f2Top + 25)
+})
+
+test('relayoutAllRegions re-lays out features for new bpPerPx', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 200, height: 20 },
+      { featureId: 'f2', startBp: 300, endBp: 400, height: 20 },
+    ],
+  })
+
+  // Add labels that are wide enough to cause collision at higher bpPerPx
+  data.floatingLabelsData = {
+    f1: {
+      featureId: 'f1',
+      minX: 100,
+      maxX: 200,
+      topY: 0,
+      featureHeight: 20,
+      nameLabel: {
+        text: 'Feature One with a long label',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 300,
+      },
+    },
+    f2: {
+      featureId: 'f2',
+      minX: 300,
+      maxX: 400,
+      topY: 0,
+      featureHeight: 20,
+      nameLabel: {
+        text: 'Feature Two with a long label',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 300,
+      },
+    },
+  }
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  // At bpPerPx=1, features are 100bp apart, labels are 300px = 300bp wide
+  // so they overlap and should be on different rows
+  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+
+  const f1Top = data.flatbushItems[0]!.topPx
+  const f2Top = data.flatbushItems[1]!.topPx
+  expect(f1Top).not.toBe(f2Top)
+
+  // At bpPerPx=0.1, labels are 300px = 30bp wide, features are 100bp apart
+  // so they no longer overlap and should share a row
+  relayoutAllRegions(rpcDataMap, 0.1, regionKeys)
+
+  expect(data.flatbushItems[0]!.topPx).toBe(0)
+  expect(data.flatbushItems[1]!.topPx).toBe(0)
+})
+
+test('repeated relayouts do not drift', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+
+  const f1Top = data.flatbushItems[0]!.topPx
+  const f2Top = data.flatbushItems[1]!.topPx
+  const rectY0 = data.rectYs[0]!
+  const rectY1 = data.rectYs[1]!
+
+  for (let i = 0; i < 10; i++) {
+    relayoutAllRegions(rpcDataMap, 1, regionKeys)
+  }
+
+  expect(data.flatbushItems[0]!.topPx).toBe(f1Top)
+  expect(data.flatbushItems[1]!.topPx).toBe(f2Top)
+  expect(data.rectYs[0]).toBe(rectY0)
+  expect(data.rectYs[1]).toBe(rectY1)
+})
+
+test('relayout preserves spanning feature Y across discontiguous regions', () => {
+  const region1 = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'spanning', startBp: 50, endBp: 250, height: 20 },
+      { featureId: 'local1', startBp: 10, endBp: 90, height: 20 },
+    ],
+  })
+  const region2 = makeFeatureData({
+    regionStart: 200,
+    features: [
+      { featureId: 'spanning', startBp: 50, endBp: 250, height: 20 },
+      { featureId: 'local2', startBp: 210, endBp: 290, height: 20 },
+    ],
+  })
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([
+    [0, region1],
+    [1, region2],
+  ])
+  const regionKeys = new Map([
+    [0, 'hg38:chr1'],
+    [1, 'hg38:chr1'],
+  ])
+
+  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+
+  const spanR1 = region1.flatbushItems.find(f => f.featureId === 'spanning')!
+  const spanR2 = region2.flatbushItems.find(f => f.featureId === 'spanning')!
+  expect(spanR1.topPx).toBe(spanR2.topPx)
+
+  relayoutAllRegions(rpcDataMap, 2, regionKeys)
+
+  const spanR1After = region1.flatbushItems.find(
+    f => f.featureId === 'spanning',
+  )!
+  const spanR2After = region2.flatbushItems.find(
+    f => f.featureId === 'spanning',
+  )!
+  expect(spanR1After.topPx).toBe(spanR2After.topPx)
+})
+
+test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'gene1', startBp: 100, endBp: 500, height: 30 },
+      { featureId: 'gene2', startBp: 200, endBp: 600, height: 30 },
+    ],
+  })
+
+  data.subfeatureInfos = [
+    {
+      featureId: 'exon1',
+      parentFeatureId: 'gene1',
+      type: 'exon',
+      startBp: 150,
+      endBp: 200,
+      topPx: 5,
+      bottomPx: 15,
+    },
+    {
+      featureId: 'exon2',
+      parentFeatureId: 'gene2',
+      type: 'exon',
+      startBp: 300,
+      endBp: 350,
+      topPx: 5,
+      bottomPx: 15,
+    },
+  ]
+
+  data.floatingLabelsData = {
+    gene1: {
+      featureId: 'gene1',
+      minX: 100,
+      maxX: 500,
+      topY: 0,
+      featureHeight: 30,
+      nameLabel: {
+        text: 'Gene 1',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 50,
+      },
+    },
+    gene2: {
+      featureId: 'gene2',
+      minX: 200,
+      maxX: 600,
+      topY: 0,
+      featureHeight: 30,
+      nameLabel: {
+        text: 'Gene 2',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 50,
+      },
+    },
+  }
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+
+  const gene2Top = data.flatbushItems[1]!.topPx
+  expect(gene2Top).toBeGreaterThan(0)
+
+  // Subfeature of gene2 should be offset by gene2's layout Y
+  expect(data.subfeatureInfos[1]!.topPx).toBe(5 + gene2Top)
+  expect(data.subfeatureInfos[1]!.bottomPx).toBe(15 + gene2Top)
+
+  // Label of gene2 should be offset
+  expect(data.floatingLabelsData['gene2']!.topY).toBe(gene2Top)
+
+  // After relayout at same bpPerPx, everything should be identical
+  relayoutAllRegions(rpcDataMap, 1, regionKeys)
+
+  const gene2TopAfter = data.flatbushItems[1]!.topPx
+  expect(gene2TopAfter).toBe(gene2Top)
+  expect(data.subfeatureInfos[1]!.topPx).toBe(5 + gene2TopAfter)
+  expect(data.subfeatureInfos[1]!.bottomPx).toBe(15 + gene2TopAfter)
+  expect(data.floatingLabelsData['gene2']!.topY).toBe(gene2TopAfter)
+})
+
+test('relayout handles lines and arrows', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+
+  // Add a line and arrow belonging to f2
+  data.linePositions = new Uint32Array([200, 400])
+  data.lineYs = new Float32Array([10])
+  data.lineColors = new Uint8Array([0, 0, 0, 255])
+  data.lineDirections = new Int8Array([1])
+  data.numLines = 1
+  data.lineFeatureIndices = new Uint32Array([1])
+
+  data.arrowXs = new Uint32Array([600])
+  data.arrowYs = new Float32Array([10])
+  data.arrowDirections = new Int8Array([1])
+  data.arrowHeights = new Float32Array([20])
+  data.arrowColors = new Uint8Array([0, 0, 0, 255])
+  data.numArrows = 1
+  data.arrowFeatureIndices = new Uint32Array([1])
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+
+  const f2Top = data.flatbushItems[1]!.topPx
+  expect(f2Top).toBeGreaterThan(0)
+  expect(data.lineYs[0]).toBe(10 + f2Top)
+  expect(data.arrowYs[0]).toBe(10 + f2Top)
+
+  relayoutAllRegions(rpcDataMap, 1, regionKeys)
+
+  const f2TopAfter = data.flatbushItems[1]!.topPx
+  expect(f2TopAfter).toBe(f2Top)
+  expect(data.lineYs[0]).toBe(10 + f2TopAfter)
+  expect(data.arrowYs[0]).toBe(10 + f2TopAfter)
 })

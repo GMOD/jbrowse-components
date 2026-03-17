@@ -29,6 +29,7 @@ const filter = filterArg ? filterArg.split('=')[1]!.toLowerCase() : ''
 const includeRemote = args.includes('--include-remote')
 const backendArg = args.find(a => a.startsWith('--backend='))
 const backendValue = backendArg ? backendArg.split('=')[1]! : undefined
+const skipWebGPU = args.includes('--skip-webgpu')
 
 snapshotConfig.updateSnapshots = updateSnapshots
 
@@ -206,10 +207,14 @@ async function main() {
     const suites = await discoverSuites()
     console.log(`Found ${suites.length} test suites`)
 
-    const backends: (Backend | undefined)[] =
-      backendValue === 'all'
+    let backends: (Backend | undefined)[]
+    if (backendValue === 'all') {
+      backends = skipWebGPU
         ? ['canvas2d', 'webgl']
-        : [backendValue as Backend | undefined]
+        : ['canvas2d', 'webgl', 'webgpu']
+    } else {
+      backends = [backendValue as Backend | undefined]
+    }
 
     let totalPassed = 0
     let totalFailed = 0
@@ -235,6 +240,13 @@ async function main() {
       console.log(`  Backends tested: ${backends.join(', ')}`)
     }
     console.log(`${'─'.repeat(50)}\n`)
+
+    // Auto-run cross-backend comparison when multiple backends were tested
+    if (backends.length > 1) {
+      console.log('Running cross-backend comparison...\n')
+      const { runComparison } = await import('./compare-backends.ts')
+      runComparison()
+    }
 
     process.exit(totalFailed > 0 ? 1 : 0)
   } catch (e) {
