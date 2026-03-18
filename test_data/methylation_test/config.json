@@ -95,7 +95,12 @@
           }
         }
       },
-      "assemblyNames": ["hg38_clip"]
+      "assemblyNames": [
+        "hg38_clip"
+      ]
     }
-  ]
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  }
 }

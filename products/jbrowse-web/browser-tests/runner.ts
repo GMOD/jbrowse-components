@@ -117,6 +117,7 @@ async function runTests(
 
     for (const test of suite.tests) {
       const start = performance.now()
+      testStartTime = start
       process.stdout.write(`    ⏳ ${test.name}...`)
 
       try {
@@ -177,21 +178,22 @@ async function runTestsWithRestart(
     return true
   })
 
-  // Use a single browser but create a fresh tab for each test.
-  // This avoids the ~2s Firefox launch overhead per test while
-  // still giving each test a clean WebGPU context (no leaked state).
-  const browser = await launchBrowser()
-
+  // Launch a fresh browser for each test to avoid Firefox's
+  // WebWorker/GPU resource accumulation across tabs. The ~2s browser
+  // launch overhead is far less than the 15-30s penalty from resource
+  // buildup when reusing a single browser with multiple tabs.
   for (const suite of suitesToRun) {
     console.log(`\n  ${suite.name}`)
 
     for (const test of suite.tests) {
       const start = performance.now()
+      testStartTime = start
       process.stdout.write(`    ⏳ ${test.name}...`)
 
-      let page: Page | undefined
+      let browser: Browser | undefined
       try {
-        page = await setupPage(browser)
+        browser = await launchBrowser()
+        const page = await setupPage(browser)
         await test.fn(page, browser)
 
         const duration = performance.now() - start
@@ -213,35 +215,36 @@ async function runTestsWithRestart(
         console.log(`    ✗ ${test.name}`)
         console.log(`      Error: ${error}`)
       } finally {
-        if (page) {
-          await page.close().catch(e => {
-            console.warn(`    (page close error: ${e.message})`)
+        if (browser) {
+          await browser.close().catch(e => {
+            console.warn(`    (browser close error: ${e.message})`)
           })
         }
       }
     }
   }
-
-  await browser.close().catch(e => {
-    console.warn(`  (browser close error: ${e.message})`)
-  })
   return { passed, failed }
 }
 
+let testStartTime = 0
+
 async function setupPage(browser: Browser) {
   const page = await browser.newPage()
+
   page.on('console', msg => {
     const text = msg.text()
     if (text.includes('favicon')) {
       return
     }
+    const elapsed = testStartTime > 0 ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s` : ''
+    const prefix = elapsed ? `  [${elapsed}] Browser:` : '  Browser:'
     const type = msg.type()
     if (type === 'error') {
-      console.error('  Browser:', text)
+      console.error(prefix, text)
     } else if (type === 'warn') {
-      console.warn('  Browser:', text)
+      console.warn(prefix, text)
     } else {
-      console.log('  Browser:', text)
+      console.log(prefix, text)
     }
   })
   return page

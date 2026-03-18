@@ -23,7 +23,9 @@
       }
     }
   ],
-  "configuration": {},
+  "configuration": {
+    "disableAnalytics": true
+  },
   "connections": [],
   "tracks": [
     {
@@ -37,7 +39,9 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["Wuhan-Hu-1"]
+      "assemblyNames": [
+        "Wuhan-Hu-1"
+      ]
     }
   ],
   "defaultSession": {
@@ -92,7 +96,9 @@
                 "type": "LinearBasicDisplay",
                 "heightPreConfig": 280,
                 "configuration": "sequence-LinearBasicDisplay",
-                "jexlFilters": ["jexl:get(feature,'type')=='gene'"]
+                "jexlFilters": [
+                  "jexl:get(feature,'type')=='gene'"
+                ]
               }
             ]
           }

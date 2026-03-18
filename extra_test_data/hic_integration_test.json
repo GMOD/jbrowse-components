@@ -2,7 +2,9 @@
   "assemblies": [
     {
       "name": "hg19",
-      "aliases": ["GRCh37"],
+      "aliases": [
+        "GRCh37"
+      ],
       "sequence": {
         "trackId": "hg19_seq",
         "type": "ReferenceSequenceTrack",
@@ -21,7 +23,9 @@
       "type": "HicTrack",
       "trackId": "hic_test",
       "name": "Hi-C test file",
-      "assemblyNames": ["hg19"],
+      "assemblyNames": [
+        "hg19"
+      ],
       "adapter": {
         "type": "HicAdapter",
         "hicLocation": {
@@ -60,5 +64,8 @@
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
+  },
+  "configuration": {
+    "disableAnalytics": true
   }
 }

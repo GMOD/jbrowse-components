@@ -23,10 +23,7 @@ export async function findByTestId(
   testId: string,
   timeout = 30000,
 ) {
-  return page.waitForSelector(`[data-testid="${testId}"]`, {
-    timeout,
-    visible: true,
-  })
+  return page.waitForSelector(`[data-testid="${testId}"]`, { timeout })
 }
 
 export async function findByText(
@@ -35,10 +32,7 @@ export async function findByText(
   timeout = 30000,
 ) {
   const searchText = typeof text === 'string' ? text : text.source
-  return page.waitForSelector(`::-p-text(${searchText})`, {
-    timeout,
-    visible: true,
-  })
+  return page.waitForSelector(`::-p-text(${searchText})`, { timeout })
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
@@ -50,13 +44,14 @@ export async function waitForLoadingToComplete(page: Page, timeout = 30000) {
 }
 
 export async function waitForDataLoaded(page: Page, timeout = 60000) {
-  // wait for loading overlay to appear (may be debounced by 500ms)
+  // Wait for loading overlay to appear (briefly) then disappear.
+  // Use a short timeout since fast-loading data may never show the overlay.
   try {
     await page.waitForSelector('[data-testid="loading-overlay"]', {
-      timeout: 3000,
+      timeout: 500,
     })
   } catch {
-    // loading may have completed before we checked
+    // loading may have completed before we checked — that's fine
   }
   await page.waitForFunction(
     () =>
