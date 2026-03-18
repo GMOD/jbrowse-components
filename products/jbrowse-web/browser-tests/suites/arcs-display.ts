@@ -1,4 +1,5 @@
 import {
+  findByTestId,
   findByText,
   navigateWithSessionSpec,
   waitForCanvasRendered,
@@ -39,34 +40,34 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'BEDPE arc track renders',
+      name: 'RNA-seq sashimi arcs (spliced alignments)',
       fn: async page => {
         await navigateWithSessionSpec(page, {
           views: [
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
-              loc: 'ctgA:1-50000',
-              tracks: ['volvox_bedpe'],
+              loc: 'ctgA:1-10000',
+              tracks: ['spliced'],
             },
           ],
         })
 
-        await findByText(page, 'ctgA')
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
-          timeout: 60000,
-        })
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
-          'arcs-bedpe-canvas',
-          '[data-testid^="display-"] canvas',
+          'arcs-rnaseq-sashimi-canvas',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },
     {
-      name: 'paired-end stranded RNA-seq arcs',
+      name: 'paired-end stranded RNA-seq',
       fn: async page => {
         await navigateWithSessionSpec(page, {
           views: [
@@ -79,15 +80,16 @@ const suite: TestSuite = {
           ],
         })
 
-        await page.waitForSelector('[data-testid^="display-"] canvas', {
-          timeout: 60000,
-        })
+        await findByTestId(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
-        await waitForCanvasRendered(page, '[data-testid^="display-"] canvas')
+        await waitForCanvasRendered(
+          page,
+          '[data-testid="pileup-display"] canvas',
+        )
         await canvasSnapshot(
           page,
           'arcs-paired-end-rnaseq-canvas',
-          '[data-testid^="display-"] canvas',
+          '[data-testid="pileup-display"] canvas',
         )
       },
     },

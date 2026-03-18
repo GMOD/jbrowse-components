@@ -171,8 +171,7 @@ export function runComparison() {
 
 // Run directly when invoked as a script
 const isDirectRun =
-  process.argv[1] &&
-  path.resolve(process.argv[1]).includes('compare-backends')
+  process.argv[1] && path.resolve(process.argv[1]).includes('compare-backends')
 if (isDirectRun) {
   runComparison()
 }

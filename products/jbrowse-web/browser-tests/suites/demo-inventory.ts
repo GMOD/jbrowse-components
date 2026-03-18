@@ -103,19 +103,13 @@ const localDemos: TestSuite = {
     {
       name: 'Methylation test demo loads',
       fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'test_data/methylation_test/config.json',
-        )
+        await loadDemoAndCheck(page, 'test_data/methylation_test/config.json')
       },
     },
     {
       name: 'Modifications test demo loads',
       fn: async page => {
-        await loadDemoAndCheck(
-          page,
-          'test_data/modifications_test/config.json',
-        )
+        await loadDemoAndCheck(page, 'test_data/modifications_test/config.json')
       },
     },
     {

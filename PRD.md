@@ -61,39 +61,39 @@ These affect significant user-visible functionality.
 
 ### P2.1 Alignments Track Bugs
 
-| Bug                                                           | Notes                                                                                                                                               |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Color orange for supplementary reads                          | Already implemented in normal color scheme (all 3 backends) — verify other color modes                                                             |
-| Clicking chain — get both feature info                        | Already partially covered: SA tag parsed and shown by `SupplementaryAlignments` component; paired-end mate info shown by `LinkedPairedAlignments`. Could enhance by fetching full partner feature data via RPC on demand. |
+| Bug                                    | Notes                                                                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Color orange for supplementary reads   | Already implemented in normal color scheme (all 3 backends) — verify other color modes                                                                                                                                    |
+| Clicking chain — get both feature info | Already partially covered: SA tag parsed and shown by `SupplementaryAlignments` component; paired-end mate info shown by `LinkedPairedAlignments`. Could enhance by fetching full partner feature data via RPC on demand. |
 
 ### P2.2 Wiggle Track Bugs
 
-| Bug                                                          | Notes                                                                              |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Overlapping line whiskers                                    | Single color whiskers option?                                                      |
-| Y-scale bar offset per row                                   | Unclear repro                                                                      |
-| Sidebar legend toggle distinct from tree sidebar             |                                                                                    |
-| **UNCLEAR:** Brief tooltip flash in top left on wiggle-multi | Needs investigation                                                                |
+| Bug                                                          | Notes                                                                                                                                                 |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overlapping line whiskers                                    | Single color whiskers option?                                                                                                                         |
+| Y-scale bar offset per row                                   | Unclear repro                                                                                                                                         |
+| Sidebar legend toggle distinct from tree sidebar             |                                                                                                                                                       |
+| **UNCLEAR:** Brief tooltip flash in top left on wiggle-multi | Needs investigation                                                                                                                                   |
 | Density vs XYPlot mismatch between sidebar and SVG export    | Investigated — code analysis shows sidebar, main display, and SVG export all read from same `model.renderingType` getter. Cannot reproduce from code. |
 
 ### P2.3 Synteny / Comparative Views
 
-| Bug                                                          | Notes                                                                                                                                                                                         |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hs1 vs mm39 synteny — excessively slow, causes freeze        | Improved (viewport culling added) — further LOD improvements needed                                                                                                                          |
-| Zoom to full not working?                                    | **UNCLEAR** — needs verification                                                                                                                                                             |
-| Don't colorize indels not working?                           | **UNCLEAR** — needs verification                                                                                                                                                             |
-| Split indels code                                            | Refactoring task                                                                                                                                                                              |
-| Linked dotplot and synteny view                              | Idea / future feature                                                                                                                                                                        |
-| Swap axes dotplot                                            | Idea / future feature                                                                                                                                                                        |
-| Swap axes linear synteny view                                | Idea / future feature                                                                                                                                                                        |
+| Bug                                                   | Notes                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------- |
+| Hs1 vs mm39 synteny — excessively slow, causes freeze | Improved (viewport culling added) — further LOD improvements needed |
+| Zoom to full not working?                             | **UNCLEAR** — needs verification                                    |
+| Don't colorize indels not working?                    | **UNCLEAR** — needs verification                                    |
+| Split indels code                                     | Refactoring task                                                    |
+| Linked dotplot and synteny view                       | Idea / future feature                                               |
+| Swap axes dotplot                                     | Idea / future feature                                               |
+| Swap axes linear synteny view                         | Idea / future feature                                               |
 
 ### P2.5 Variant Track Issues
 
-| Bug                                              | Notes                                                            |
-| ------------------------------------------------ | ---------------------------------------------------------------- |
-| Tetraploid potato — maybe failed to load matrix  |                                                                  |
-| Human trio phased VCF rendering                  | Needs verification                                               |
+| Bug                                             | Notes              |
+| ----------------------------------------------- | ------------------ |
+| Tetraploid potato — maybe failed to load matrix |                    |
+| Human trio phased VCF rendering                 | Needs verification |
 
 ---
 
@@ -192,33 +192,33 @@ scaling.
 Status key: **Working**, **Partial** (loads with issues), **Broken** (fails to
 load or unusable)
 
-| #   | Demo                                             | Status  | Notes                                                                                                     |
-| --- | ------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------- |
-| 1   | Volvox (genes, sequence, variants, multi-wiggle) | Working |                                                                                                           |
-| 2   | SARS-CoV2                                        | Working | Occasional label collision                                                                                |
-| 3   | Breakpoint split view                            | Working | Nice scroll zoom                                                                                          |
-| 4   | Dotplot (grape vs peach)                         | Working | Smooth scroll zoom                                                                                        |
-| 5   | Synteny (grape vs peach)                         | Working |                                                                                                           |
-| 6   | Hs1 vs mm39 synteny                              | Broken  | Excessively slow, freezes; viewport culling added but further LOD needed                                  |
-| 7   | Yeast synteny                                    | Working | Error when splitting fixed                                                                                |
-| 8   | Human HG002 insertion                            | Working |                                                                                                           |
-| 9   | SKBR3 breakpoint split view                      | Working |                                                                                                           |
-| 10  | Nanopore methylation/modifications               | Working |                                                                                                           |
-| 11  | 1000 genomes extended trio                       | Working |                                                                                                           |
-| 12  | ENCODE multi-bigwig                              | Working |                                                                                                           |
-| 13  | COLO829 melanoma multi-bigwig                    | Working |                                                                                                           |
-| 14  | Inversion (single row BSV)                       | Working | Track move bug noted                                                                                      |
-| 15  | Inversion (linked reads)                         | Partial | `invalidateLoadedRegions()` fix applied — needs browser verification                                      |
-| 16  | Multi-way synteny (grape/peach/cacao)            | Partial | Session-spec init fixed (per-level tracks). Shared session link may need level migration.                 |
-| 17  | Tetraploid potato multi-sample VCF               | Partial | Matrix may fail to load                                                                                   |
-| 18  | Human trio phased VCF                            | Working |                                                                                                           |
-| 19  | Hi-C contact matrix                              | Working |                                                                                                           |
-| 20  | Horizontally flip demo                           | Partial | Coordinate math verified correct; blank snapshots fixed — needs browser re-verification                   |
-| 21  | COLO829 melanoma coverage                        | Partial | Settings not loaded from snapshot                                                                         |
-| 22  | GIAB heterozygous deletion                       | Working | Color by tag now working (all 10 color schemes in Canvas2D)                                               |
-| 23  | SKBR3 PacBio read vs ref                         | Working | Read vs ref fixed (display name mismatch)                                                                 |
-| 24  | CpG methylation nanopore                         | Partial | CpG off-by-one fixed — needs browser verification                                                         |
-| 25  | 1000 genomes SV large inversion                  | Working |                                                                                                           |
+| #   | Demo                                             | Status  | Notes                                                                                     |
+| --- | ------------------------------------------------ | ------- | ----------------------------------------------------------------------------------------- |
+| 1   | Volvox (genes, sequence, variants, multi-wiggle) | Working |                                                                                           |
+| 2   | SARS-CoV2                                        | Working | Occasional label collision                                                                |
+| 3   | Breakpoint split view                            | Working | Nice scroll zoom                                                                          |
+| 4   | Dotplot (grape vs peach)                         | Working | Smooth scroll zoom                                                                        |
+| 5   | Synteny (grape vs peach)                         | Working |                                                                                           |
+| 6   | Hs1 vs mm39 synteny                              | Broken  | Excessively slow, freezes; viewport culling added but further LOD needed                  |
+| 7   | Yeast synteny                                    | Working | Error when splitting fixed                                                                |
+| 8   | Human HG002 insertion                            | Working |                                                                                           |
+| 9   | SKBR3 breakpoint split view                      | Working |                                                                                           |
+| 10  | Nanopore methylation/modifications               | Working |                                                                                           |
+| 11  | 1000 genomes extended trio                       | Working |                                                                                           |
+| 12  | ENCODE multi-bigwig                              | Working |                                                                                           |
+| 13  | COLO829 melanoma multi-bigwig                    | Working |                                                                                           |
+| 14  | Inversion (single row BSV)                       | Working | Track move bug noted                                                                      |
+| 15  | Inversion (linked reads)                         | Partial | `invalidateLoadedRegions()` fix applied — needs browser verification                      |
+| 16  | Multi-way synteny (grape/peach/cacao)            | Partial | Session-spec init fixed (per-level tracks). Shared session link may need level migration. |
+| 17  | Tetraploid potato multi-sample VCF               | Partial | Matrix may fail to load                                                                   |
+| 18  | Human trio phased VCF                            | Working |                                                                                           |
+| 19  | Hi-C contact matrix                              | Working |                                                                                           |
+| 20  | Horizontally flip demo                           | Partial | Coordinate math verified correct; blank snapshots fixed — needs browser re-verification   |
+| 21  | COLO829 melanoma coverage                        | Partial | Settings not loaded from snapshot                                                         |
+| 22  | GIAB heterozygous deletion                       | Working | Color by tag now working (all 10 color schemes in Canvas2D)                               |
+| 23  | SKBR3 PacBio read vs ref                         | Working | Read vs ref fixed (display name mismatch)                                                 |
+| 24  | CpG methylation nanopore                         | Partial | CpG off-by-one fixed — needs browser verification                                         |
+| 25  | 1000 genomes SV large inversion                  | Working |                                                                                           |
 
 **Working: 15 | Partial: 6 | Broken: 1 | Untested: 2**
 
@@ -389,8 +389,8 @@ These need investigation or clarification before they can be scoped:
 7. **Issues toggling matrix/non-matrix variant modes** — "maybe related to
    phased being on or tree?" — needs investigation
 8. **Unmapped mate** — "get more info??" — unclear what info is needed
-9. **"Distinguish initialized concepts in linear genome view"** — what does
-   this mean concretely?
+9. **"Distinguish initialized concepts in linear genome view"** — what does this
+   mean concretely?
 10. **Custom Google Analytics** — unclear scope/purpose
 11. **Refactor Apollo client-side code** — out of scope for this branch?
 

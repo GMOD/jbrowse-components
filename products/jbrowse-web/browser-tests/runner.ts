@@ -153,44 +153,82 @@ async function runTests(
   return { passed, failed }
 }
 
-async function runWithBackend(
+// Firefox leaks WebGPU device resources across navigations, causing
+// cascading timeouts after ~50-60 tests. This variant restarts the
+// browser between suites to prevent resource exhaustion.
+async function runTestsWithRestart(
+  launchBrowser: () => Promise<Browser>,
   suites: TestSuite[],
-  backend: Backend | undefined,
+  includeAuth: boolean,
 ) {
-  snapshotConfig.backend = backend ?? ''
+  let passed = 0
+  let failed = 0
 
-  // WebGPU needs a real display (xvfb-run) — force headless: false
-  // For Firefox, also force headless: false since WebGPU needs GPU context
-  const needsDisplay = backend === 'webgpu'
-  const useHeadless = needsDisplay ? false : !headed
+  const suitesToRun = suites.filter(suite => {
+    if (suite.requiresAuth && !includeAuth) {
+      return false
+    }
+    if (suite.requiresRemote && !includeRemote) {
+      return false
+    }
+    if (filter && !suite.name.toLowerCase().includes(filter)) {
+      return false
+    }
+    return true
+  })
 
-  const useFirefox = backend === 'webgpu' && firefoxPath
-  let browser: Browser
+  // Use a single browser but create a fresh tab for each test.
+  // This avoids the ~2s Firefox launch overhead per test while
+  // still giving each test a clean WebGPU context (no leaked state).
+  const browser = await launchBrowser()
 
-  if (useFirefox) {
-    console.log(`  Using Firefox Nightly: ${firefoxPath}`)
-    browser = await launch({
-      browser: 'firefox',
-      executablePath: firefoxPath,
-      headless: useHeadless,
-      slowMo,
-      extraPrefsFirefox: {
-        'dom.webgpu.enabled': true,
-        'gfx.webrender.all': true,
-        'gfx.webgpu.ignore-blocklist': true,
-      },
-      defaultViewport: { width: 1280, height: 800 },
-    })
-  } else {
-    const chromeArgs = chromeArgsForBackend(backend)
-    browser = await launch({
-      headless: useHeadless,
-      slowMo,
-      args: chromeArgs,
-      defaultViewport: { width: 1280, height: 800 },
-    })
+  for (const suite of suitesToRun) {
+    console.log(`\n  ${suite.name}`)
+
+    for (const test of suite.tests) {
+      const start = performance.now()
+      process.stdout.write(`    ⏳ ${test.name}...`)
+
+      let page: Page | undefined
+      try {
+        page = await setupPage(browser)
+        await test.fn(page, browser)
+
+        const duration = performance.now() - start
+        passed++
+
+        if (process.stdout.isTTY) {
+          process.stdout.clearLine(0)
+          process.stdout.cursorTo(0)
+        }
+        console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
+      } catch (e) {
+        failed++
+        const error = e instanceof Error ? e.message : String(e)
+
+        if (process.stdout.isTTY) {
+          process.stdout.clearLine(0)
+          process.stdout.cursorTo(0)
+        }
+        console.log(`    ✗ ${test.name}`)
+        console.log(`      Error: ${error}`)
+      } finally {
+        if (page) {
+          await page.close().catch(e => {
+            console.warn(`    (page close error: ${e.message})`)
+          })
+        }
+      }
+    }
   }
 
+  await browser.close().catch(e => {
+    console.warn(`  (browser close error: ${e.message})`)
+  })
+  return { passed, failed }
+}
+
+async function setupPage(browser: Browser) {
   const page = await browser.newPage()
   page.on('console', msg => {
     const text = msg.text()
@@ -206,6 +244,55 @@ async function runWithBackend(
       console.log('  Browser:', text)
     }
   })
+  return page
+}
+
+async function runWithBackend(
+  suites: TestSuite[],
+  backend: Backend | undefined,
+) {
+  snapshotConfig.backend = backend ?? ''
+
+  // WebGPU needs a real display (xvfb-run) — force headless: false
+  // Chrome + lavapipe doesn't render WebGPU canvases, so always use Firefox for WebGPU
+  const needsDisplay = backend === 'webgpu'
+  const useHeadless = needsDisplay ? false : !headed
+
+  // Always use Firefox for WebGPU — Chrome + lavapipe produces blank canvases
+  const resolvedFirefoxPath =
+    firefoxPath ??
+    process.env.FIREFOX_NIGHTLY_PATH ??
+    '/usr/bin/firefox-nightly'
+  const useFirefox = backend === 'webgpu'
+
+  if (useFirefox) {
+    console.log(`  Using Firefox Nightly: ${resolvedFirefoxPath}`)
+    const launchFirefox = () =>
+      launch({
+        browser: 'firefox',
+        executablePath: resolvedFirefoxPath,
+        headless: useHeadless,
+        slowMo,
+        timeout: 60000,
+        extraPrefsFirefox: {
+          'dom.webgpu.enabled': true,
+          'gfx.webrender.all': true,
+          'gfx.webgpu.ignore-blocklist': true,
+        },
+        defaultViewport: { width: 1280, height: 800 },
+      })
+    return runTestsWithRestart(launchFirefox, suites, runAuthTests)
+  }
+
+  const chromeArgs = chromeArgsForBackend(backend)
+  const browser = await launch({
+    headless: useHeadless,
+    slowMo,
+    args: chromeArgs,
+    defaultViewport: { width: 1280, height: 800 },
+  })
+
+  const page = await setupPage(browser)
 
   try {
     return await runTests(page, browser, suites, runAuthTests)

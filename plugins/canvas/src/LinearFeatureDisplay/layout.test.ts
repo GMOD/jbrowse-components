@@ -290,7 +290,12 @@ test('relayoutAllRegions at same bpPerPx reproduces original layout', () => {
   const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
   const regionKeys = new Map([[0, 'volvox:ctgA']])
 
-  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+  )
 
   const f1Top = data.flatbushItems[0]!.topPx
   const f2Top = data.flatbushItems[1]!.topPx
@@ -349,7 +354,12 @@ test('relayoutAllRegions re-lays out features for new bpPerPx', () => {
 
   // At bpPerPx=1, features are 100bp apart, labels are 300px = 300bp wide
   // so they overlap and should be on different rows
-  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+  )
 
   const f1Top = data.flatbushItems[0]!.topPx
   const f2Top = data.flatbushItems[1]!.topPx
@@ -375,7 +385,12 @@ test('repeated relayouts do not drift', () => {
   const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
   const regionKeys = new Map([[0, 'volvox:ctgA']])
 
-  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+  )
 
   const f1Top = data.flatbushItems[0]!.topPx
   const f2Top = data.flatbushItems[1]!.topPx
@@ -417,7 +432,12 @@ test('relayout preserves spanning feature Y across discontiguous regions', () =>
     [1, 'hg38:chr1'],
   ])
 
-  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+  )
 
   const spanR1 = region1.flatbushItems.find(f => f.featureId === 'spanning')!
   const spanR2 = region2.flatbushItems.find(f => f.featureId === 'spanning')!
@@ -496,7 +516,12 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
   const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
   const regionKeys = new Map([[0, 'volvox:ctgA']])
 
-  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+  )
 
   const gene2Top = data.flatbushItems[1]!.topPx
   expect(gene2Top).toBeGreaterThan(0)
@@ -546,7 +571,12 @@ test('relayout handles lines and arrows', () => {
   const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
   const regionKeys = new Map([[0, 'volvox:ctgA']])
 
-  computeAndAssignLayout(rpcDataMap, 1, regionKeys, allRegionNumbers(rpcDataMap))
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+  )
 
   const f2Top = data.flatbushItems[1]!.topPx
   expect(f2Top).toBeGreaterThan(0)
