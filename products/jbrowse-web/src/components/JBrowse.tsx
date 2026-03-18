@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { App } from '@jbrowse/app-core'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
@@ -11,6 +11,32 @@ import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 
 import type { WebSessionModel } from '../sessionModel/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+interface User {
+  id: string
+  name: string
+}
+
+function useFetchUsers(params: { role: string; active: boolean }) {
+  const [users, setUsers] = useState<User[]>([])
+  useEffect(() => {
+    fetch(`/api/users?role=${params.role}&active=${params.active}`)
+      .then(r => r.json())
+      .then(setUsers)
+  }, [params])
+  return users
+}
+
+function UserList() {
+  const users = useFetchUsers({ role: 'admin', active: true })
+  return (
+    <ul>
+      {users.map(u => (
+        <li key={u.id}>{u.name}</li>
+      ))}
+    </ul>
+  )
+}
 
 const JBrowse = observer(function JBrowse({
   pluginManager,

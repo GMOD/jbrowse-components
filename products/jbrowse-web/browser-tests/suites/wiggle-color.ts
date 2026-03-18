@@ -33,24 +33,15 @@ const suite: TestSuite = {
           page,
           '[data-testid="wiggle-display"] canvas',
         )
-        await canvasSnapshot(
-          page,
-          'wiggle-color-before',
-          '[data-testid="wiggle-display"] canvas',
-        )
 
-        // Open track menu
         const menuIcon = await findByTestId(page, 'track_menu_icon', 10000)
         await menuIcon?.click()
         await delay(300)
 
-        // Click "Color" menu item
         const colorItem = await findByText(page, 'Color', 10000)
         await colorItem?.click()
         await delay(500)
 
-        // Type a new color into the manual color text field
-        // The dialog has a TextField with helperText about manual color entry
         const colorInput = await page.waitForSelector(
           'input[aria-describedby]',
           { timeout: 10000 },
@@ -59,7 +50,6 @@ const suite: TestSuite = {
         await colorInput?.type('red')
         await delay(1500)
 
-        // Click Submit button to close dialog
         const submitBtn = await page.waitForSelector('button[type="submit"]', {
           timeout: 10000,
         })
