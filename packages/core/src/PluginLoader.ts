@@ -336,25 +336,20 @@ export default class PluginLoader {
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
     // @ts-expect-error
-    target.JBrowseExports = ReExports
+    target.JBrowseExports = Object.fromEntries(
+      Object.entries(ReExports).map(([moduleName, module]) => {
+        return [moduleName, module]
+      }),
+    )
     return this
   }
 
   async load(baseUri?: string) {
-    const results = await Promise.allSettled(
+    return Promise.all(
       this.definitions.map(async definition => ({
         plugin: await this.loadPlugin(definition, baseUri),
         definition,
       })),
     )
-    const loaded = []
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        loaded.push(result.value)
-      } else {
-        console.error('Failed to load plugin:', result.reason)
-      }
-    }
-    return loaded
   }
 }

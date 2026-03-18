@@ -230,10 +230,7 @@ describe('dedupePlugins', () => {
   })
 
   it('does not false-dedupe unknown url plugins', () => {
-    const plugins = [
-      {} as PluginDefinition,
-      {} as PluginDefinition,
-    ]
+    const plugins = [{} as PluginDefinition, {} as PluginDefinition]
     expect(dedupePlugins(plugins)).toHaveLength(2)
   })
 })
@@ -337,9 +334,7 @@ describe('PluginLoader.load with allSettled', () => {
 
     const results = await loader.load()
     expect(results).toHaveLength(1)
-    expect(results[0]!.definition.esmUrl).toBe(
-      'https://example.com/plugin.js',
-    )
+    expect(results[0]!.definition.esmUrl).toBe('https://example.com/plugin.js')
   })
 
   it('deep clones definitions so mutations do not affect originals', async () => {

@@ -36,17 +36,19 @@ async function getPluginManager(
   corePlugins: PluginConstructor[],
   opts: { fetchESM?: (url: string) => Promise<LoadedPlugin> },
 ) {
-  // Load runtime plugins
   const config = await receiveConfiguration()
-  const pluginLoader = new PluginLoader(
-    config.plugins,
-    opts,
-  ).installGlobalReExports(self)
+  const hasRuntimePlugins = config.plugins.length > 0
+  const pluginLoader = new PluginLoader(config.plugins, opts)
+  if (hasRuntimePlugins) {
+    pluginLoader.installGlobalReExports(self)
+  }
+  const runtimePlugins = hasRuntimePlugins
+    ? await pluginLoader.load(config.windowHref)
+    : []
   return new PluginManager(
-    [
-      ...corePlugins.map(p => ({ plugin: p })),
-      ...(await pluginLoader.load(config.windowHref)),
-    ].map(P => new P.plugin()),
+    [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins].map(
+      P => new P.plugin(),
+    ),
   )
     .createPluggableElements()
     .configure()
