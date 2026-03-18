@@ -146,14 +146,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
             ],
           },
           {
-            label: 'Show all subtracks',
-            type: 'checkbox',
-            checked: model.showSubtracks,
-            onClick: () => {
-              model.setShowSubtracks(!model.showSubtracks)
-            },
-          },
-          {
             label: 'Sort...',
             type: 'subMenu',
             subMenu: [

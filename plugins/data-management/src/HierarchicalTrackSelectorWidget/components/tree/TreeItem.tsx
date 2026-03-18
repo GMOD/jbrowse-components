@@ -1,8 +1,8 @@
 import { memo, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
-import SuperTrackLabel from './SuperTrackLabel.tsx'
 import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import { getItemHeight } from '../../model.ts'
@@ -54,8 +54,7 @@ const NestingMarkers = memo(function NestingMarkers({
   return <>{markers}</>
 })
 
-// Memoized to prevent re-renders when parent re-renders but props haven't changed
-const TreeItem = memo(function TreeItem({
+const TreeItem = observer(function TreeItem({
   item,
   model,
   top,
@@ -68,12 +67,11 @@ const TreeItem = memo(function TreeItem({
 }) {
   const { classes } = useStyles()
   const isCategory = item.type === 'category'
-  const isSuperTrack = item.type === 'supertrack'
-  const isAccordionStyle = isCategory || isSuperTrack
+  const isFolder = isCategory && model.folderCategories.has(item.id)
+  const useAccordionStyle = isCategory && !isFolder
   const { nestingLevel } = item
-  const height = getItemHeight(item)
-  const marginLeft =
-    nestingLevel * levelWidth + (isAccordionStyle ? 0 : levelWidth)
+  const height = getItemHeight(item, isFolder ? new Set([item.id]) : undefined)
+  const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
 
   return (
     <div
@@ -92,17 +90,15 @@ const TreeItem = memo(function TreeItem({
         className={classes.nestingLevelMarker}
       />
       <div
-        className={isAccordionStyle ? classes.accordionCard : undefined}
+        className={useAccordionStyle ? classes.accordionCard : undefined}
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
           flex: 1,
         }}
       >
-        <div className={isAccordionStyle ? classes.accordionColor : undefined}>
-          {isSuperTrack ? (
-            <SuperTrackLabel model={model} item={item} />
-          ) : isCategory ? (
+        <div className={useAccordionStyle ? classes.accordionColor : undefined}>
+          {isCategory ? (
             <TrackCategory model={model} item={item} />
           ) : (
             <TrackLabel model={model} item={item} checked={checked!} />

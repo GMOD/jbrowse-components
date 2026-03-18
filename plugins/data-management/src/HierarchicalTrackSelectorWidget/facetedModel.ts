@@ -1,25 +1,20 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
-  getSession,
   localStorageGetBoolean,
   localStorageGetNumber,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
 import { getRowStr } from './components/faceted/util.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const nonMetadataKeys = [
-  'category',
-  'superTrackId',
-  'adapter',
-  'description',
-] as const
+const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
 /**
  * #stateModel FacetedModel
@@ -71,8 +66,26 @@ export function facetedStateTreeF() {
        * #volatile
        */
       filters: observable.map<string, string[]>(),
+      /**
+       * #volatile
+       */
+      trackConfigurations: [] as AnyConfigurationModel[],
+      /**
+       * #volatile
+       */
+      session: undefined as AbstractSessionModel | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setTrackConfigurations(
+        tracks: AnyConfigurationModel[],
+        session: AbstractSessionModel,
+      ) {
+        self.trackConfigurations = tracks
+        self.session = session
+      },
       /**
        * #action
        */
@@ -128,9 +141,7 @@ export function facetedStateTreeF() {
        * #getter
        */
       get allTrackConfigurations() {
-        return getParent<{ allTrackConfigurations: AnyConfigurationModel[] }>(
-          self,
-        ).allTrackConfigurations
+        return self.trackConfigurations
       },
     }))
     .views(self => ({
@@ -140,7 +151,10 @@ export function facetedStateTreeF() {
        * track configurations change, not on every filterText keystroke.
        */
       get allRows() {
-        const session = getSession(self)
+        const session = self.session
+        if (!session) {
+          return []
+        }
         return self.allTrackConfigurations.map(
           track =>
             ({
@@ -148,8 +162,6 @@ export function facetedStateTreeF() {
               conf: track,
               name: getTrackName(track, session),
               category: readConfObject(track, 'category')?.join(', '),
-              superTrackId: (readConfObject(track, 'superTrackId') ||
-                '') as string,
               adapter: readConfObject(track, 'adapter')?.type as string,
               description: readConfObject(track, 'description') as
                 | string

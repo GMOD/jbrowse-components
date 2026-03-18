@@ -8,14 +8,16 @@ import { observer } from 'mobx-react'
 import ClearableSearchField from '../ClearableSearchField.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 
+import type { FacetedModel } from '../../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 
 const FacetedHeader = observer(function FacetedHeader({
   model,
+  faceted,
 }: {
   model: HierarchicalTrackSelectorModel
+  faceted: FacetedModel
 }) {
-  const { faceted } = model
   const { filterText, showOptions, showFilters, showSparse, useShoppingCart } =
     faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)

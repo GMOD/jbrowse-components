@@ -181,6 +181,136 @@
             : DefaultWidget
         },
       )
+      // Example: custom folder dialog for "Wiggle Rendering Styles" category.
+      // This demonstrates how plugins can provide a custom UI for a specific
+      // folder category using the 'TrackSelector-folderDialog' extension point.
+      // Instead of the default faceted data grid, it shows styled toggle cards.
+      pluginManager.addToExtensionPoint(
+        'TrackSelector-folderDialog',
+        (DefaultComponent, { categoryId }) => {
+          if (
+            categoryId !==
+            'Tracks-Integration test,Wiggle,Wiggle Rendering Styles'
+          ) {
+            return DefaultComponent
+          }
+
+          const { readConfObject } = pluginManager.jbrequire(
+            '@jbrowse/core/configuration',
+          )
+          const { observer } = pluginManager.jbrequire('mobx-react')
+          const {
+            Dialog,
+            DialogTitle,
+            DialogContent,
+            DialogActions,
+            Button,
+            Typography,
+          } = pluginManager.jbrequire('@mui/material')
+
+          return observer(function WiggleRenderingStylesDialog({
+            model,
+            title,
+            subtracks,
+            handleClose,
+          }) {
+            const { shownTrackIds, view } = model
+            const tracks = subtracks.filter(s => s.type === 'track')
+
+            const renderingDescriptions = {
+              xyplot: 'Bar chart showing signal intensity at each position',
+              lineplot: 'Connected line graph for smooth signal visualization',
+              density: 'Heatmap-style density rendering for compact display',
+            }
+
+            return React.createElement(
+              Dialog,
+              {
+                open: true,
+                onClose: handleClose,
+                maxWidth: 'sm',
+                fullWidth: true,
+              },
+              React.createElement(DialogTitle, null, title),
+              React.createElement(
+                DialogContent,
+                null,
+                React.createElement(
+                  Typography,
+                  {
+                    variant: 'body2',
+                    color: 'textSecondary',
+                    style: { marginBottom: 8 },
+                  },
+                  'This is a custom folder dialog demo from umd_plugin.js. ',
+                  'It uses the TrackSelector-folderDialog extension point to ',
+                  'replace the default faceted selector with a custom UI.',
+                ),
+                React.createElement(
+                  Typography,
+                  {
+                    variant: 'body2',
+                    style: { marginBottom: 16 },
+                  },
+                  'Choose which rendering styles to display. Each shows the same data with a different visualization.',
+                ),
+                ...tracks.map(track => {
+                  const { trackId, name, conf } = track
+                  const checked = shownTrackIds.has(trackId)
+                  const description = readConfObject(conf, 'description')
+                  const renderingType = name.toLowerCase().includes('lineplot')
+                    ? 'lineplot'
+                    : name.toLowerCase().includes('density')
+                      ? 'density'
+                      : 'xyplot'
+
+                  return React.createElement(
+                    'div',
+                    {
+                      key: trackId,
+                      onClick: () => view.toggleTrack(trackId),
+                      style: {
+                        padding: '12px 16px',
+                        marginBottom: 8,
+                        borderRadius: 6,
+                        border: checked
+                          ? '2px solid #1976d2'
+                          : '2px solid #ddd',
+                        background: checked ? '#e3f2fd' : '#fafafa',
+                        cursor: 'pointer',
+                      },
+                    },
+                    React.createElement(
+                      Typography,
+                      {
+                        variant: 'subtitle2',
+                        style: { marginBottom: 4 },
+                      },
+                      checked ? '✓ ' : '',
+                      name,
+                    ),
+                    React.createElement(
+                      Typography,
+                      { variant: 'body2', color: 'textSecondary' },
+                      description || renderingDescriptions[renderingType] || '',
+                    ),
+                  )
+                }),
+              ),
+              React.createElement(
+                DialogActions,
+                null,
+                React.createElement(
+                  Button,
+                  { onClick: handleClose, variant: 'contained' },
+                  'Close',
+                ),
+              ),
+            )
+          })
+        },
+      )
+
       pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
         snap.metadata = {
           ...snap.metadata,

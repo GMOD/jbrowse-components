@@ -10,7 +10,6 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
-import { facetedStateTreeF } from './facetedModel.ts'
 import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { findSubCategories, findTopLevelCategories } from './util.ts'
@@ -43,10 +42,13 @@ function keyConfigPostFix() {
     : 'empty'
 }
 
-export function getItemHeight(item: TreeNode) {
-  return item.type === 'category' || item.type === 'supertrack'
-    ? categoryItemHeight
-    : defaultItemHeight
+export function getItemHeight(item: TreeNode, folderCategories?: Set<string>) {
+  if (item.type === 'category') {
+    return folderCategories?.has(item.id)
+      ? defaultItemHeight
+      : categoryItemHeight
+  }
+  return defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -59,6 +61,15 @@ function recentlyUsedK(assemblyNames: string[]) {
 // released
 function favoritesK() {
   return `favoriteTracks-${keyConfigPostFix()}}`
+}
+
+function folderCategoriesK(assemblyNames: string[], viewType: string) {
+  return [
+    'folderCategories',
+    keyConfigPostFix(),
+    assemblyNames.join(','),
+    viewType,
+  ].join('-')
 }
 
 function collapsedK(assemblyNames: string[], viewType: string) {
@@ -114,10 +125,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
-      /**
-       * #property
-       */
-      faceted: types.optional(facetedStateTreeF(), {}),
     })
     .volatile(() => ({
       /**
@@ -153,7 +160,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      showSubtracks: false,
+      folderCategories: observable.set<string>(),
       /**
        * #volatile
        */
@@ -341,8 +348,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setShowSubtracks(val: boolean) {
-        self.showSubtracks = val
+      toggleFolderCategory(categoryId: string) {
+        if (self.folderCategories.has(categoryId)) {
+          self.folderCategories.delete(categoryId)
+        } else {
+          self.folderCategories.add(categoryId)
+        }
+      },
+      /**
+       * #action
+       */
+      setFolderCategories(ids: string[]) {
+        self.folderCategories.replace(ids)
       },
       /**
        * #action
@@ -513,14 +530,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
-        const { showSubtracks } = self
+        const { folderCategories } = self
         const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
           for (const item of items) {
             result.push(item)
+            const isFolderCategory =
+              item.type === 'category' && folderCategories.has(item.id)
             if (
               item.children.length > 0 &&
               !self.collapsed.get(item.id) &&
-              (item.type !== 'supertrack' || showSubtracks)
+              !isFolderCategory
             ) {
               flatten(item.children, result)
             }
@@ -533,10 +552,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get flattenedItemOffsets() {
         const offsets: number[] = []
         let cumulativeHeight = 0
+        const fc = new Set(self.folderCategories)
 
         for (let i = 0, l = this.flattenedItems.length; i < l; i++) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(this.flattenedItems[i]!)
+          cumulativeHeight += getItemHeight(this.flattenedItems[i]!, fc)
         }
         return { cumulativeHeight, offsets }
       },
@@ -660,6 +680,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 } else {
                   self.setCollapsedCategories(lc)
                 }
+
+                const stc = localStorageGetJSON<string[] | undefined>(
+                  folderCategoriesK(assemblyNames, view.type),
+                  undefined,
+                )
+                if (stc) {
+                  self.setFolderCategories(stc)
+                } else {
+                  for (const elt of getConf(session, [
+                    'hierarchical',
+                    'defaultFolderCategories',
+                  ])) {
+                    self.toggleFolderCategory(`Tracks-${elt}`)
+                  }
+                }
               }
             },
             { name: 'TrackSelectorInit' },
@@ -677,6 +712,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 recentlyUsed,
                 assemblyNames,
                 collapsed,
+                folderCategories,
                 view,
               } = self
               localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
@@ -687,6 +723,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 localStorageSetJSON(
                   collapsedK(assemblyNames, view.type),
                   collapsed,
+                )
+                localStorageSetJSON(
+                  folderCategoriesK(assemblyNames, view.type),
+                  [...folderCategories],
                 )
               }
             },

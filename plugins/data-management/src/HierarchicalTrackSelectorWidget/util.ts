@@ -26,12 +26,10 @@ export function matches(
   session: AbstractSessionModel,
 ) {
   const categories = (readConfObject(conf, 'category') || []) as string[]
-  const superTrackId = (readConfObject(conf, 'superTrackId') || '') as string
   const queryLower = query.toLowerCase()
   return (
     getTrackName(conf, session).toLowerCase().includes(queryLower) ||
-    categories.some(c => c.toLowerCase().includes(queryLower)) ||
-    superTrackId.toLowerCase().includes(queryLower)
+    categories.some(c => c.toLowerCase().includes(queryLower))
   )
 }
 

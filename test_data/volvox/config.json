@@ -193,7 +193,10 @@
     "hierarchical": {
       "defaultCollapsed": {
         "categoryNames": ["Methylation"]
-      }
+      },
+      "defaultFolderCategories": [
+        "Integration test,Wiggle,Wiggle Rendering Styles"
+      ]
     },
     "extraThemes": {
       "darkForest": {
@@ -917,7 +920,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
-      "category": ["Integration test", "Wiggle"],
+      "category": ["Integration test", "Wiggle", "Wiggle Rendering Styles"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -931,7 +934,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
-      "category": ["Integration test", "Wiggle"],
+      "category": ["Integration test", "Wiggle", "Wiggle Rendering Styles"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -952,7 +955,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_density",
       "name": "wiggle_track density",
-      "category": ["Integration test", "Wiggle"],
+      "category": ["Integration test", "Wiggle", "Wiggle Rendering Styles"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",

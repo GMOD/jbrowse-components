@@ -7,22 +7,25 @@ import { observer } from 'mobx-react'
 
 import { computeInitialWidths } from './computeInitialWidths.ts'
 
+import type { FacetedModel } from '../../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { GridColDef, GridRowId } from '@mui/x-data-grid'
 
 const FacetedDataGrid = observer(function FacetedDataGrid({
   model,
+  faceted,
   columns,
   shownTrackIds,
   selection,
 }: {
   model: HierarchicalTrackSelectorModel
+  faceted: FacetedModel
   columns: GridColDef[]
   shownTrackIds: Set<GridRowId>
   selection: AnyConfigurationModel[]
 }) {
-  const { view, faceted } = model
+  const { view } = model
   const {
     rows,
     useShoppingCart,
@@ -94,7 +97,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         }))
       }}
       onColumnVisibilityModelChange={n => {
-        model.faceted.setVisible(n)
+        faceted.setVisible(n)
       }}
       onRowSelectionModelChange={userSelectedIds => {
         startTransition(() => {

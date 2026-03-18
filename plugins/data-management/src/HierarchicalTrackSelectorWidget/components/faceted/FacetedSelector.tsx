@@ -8,7 +8,7 @@ import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
 import TrackSelectorTrackMenu from '../tree/TrackSelectorTrackMenu.tsx'
 
-import type { FacetedRow } from '../../facetedModel.ts'
+import type { FacetedModel, FacetedRow } from '../../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 
@@ -82,11 +82,13 @@ function HighlightCell({
 
 const FacetedSelector = observer(function FacetedSelector({
   model,
+  faceted,
 }: {
   model: HierarchicalTrackSelectorModel
+  faceted: FacetedModel
 }) {
   const { classes } = useStyles()
-  const { selection, shownTrackIds, faceted } = model
+  const { selection, shownTrackIds } = model
   const {
     rows,
     panelWidth,
@@ -143,7 +145,7 @@ const FacetedSelector = observer(function FacetedSelector({
 
   return (
     <>
-      <FacetedHeader model={model} />
+      <FacetedHeader model={model} faceted={faceted} />
       <div
         style={{
           display: 'flex',
@@ -160,6 +162,7 @@ const FacetedSelector = observer(function FacetedSelector({
         >
           <FacetedDataGrid
             model={model}
+            faceted={faceted}
             columns={columns}
             shownTrackIds={shownTrackIds}
             selection={selection}
@@ -174,7 +177,7 @@ const FacetedSelector = observer(function FacetedSelector({
               className={classes.resizeHandle}
             />
             <div style={{ width: panelWidth, overflow: 'auto' }}>
-              <FacetFilters model={model} rows={rows} columns={columns} />
+              <FacetFilters faceted={faceted} rows={rows} columns={columns} />
             </div>
           </>
         ) : null}
