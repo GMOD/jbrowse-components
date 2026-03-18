@@ -1266,6 +1266,160 @@ test('faceted model fields include metadata columns with prefix', () => {
   expect(metadataFields).toContain('metadata.species')
 })
 
+// -------------------------- supertrack tests -
+
+test('supertrack groups tracks under a single entry', async () => {
+  const session = addTestDataWithSuperTracks(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const { findAllByTestId, queryAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  const superTracks = await findAllByTestId(/htsSuperTrack/)
+  expect(superTracks.length).toBe(1)
+  expect(superTracks[0]!.textContent).toBe('Histone Marks')
+
+  // subtracks should NOT be visible in the tree by default
+  const trackLabels = queryAllByTestId(/htsTrackLabel/)
+  const subtrackNames = trackLabels.map(e => e.textContent)
+  expect(subtrackNames).not.toContain('H3K4me3')
+  expect(subtrackNames).not.toContain('H3K27ac')
+
+  // the regular track should still be visible
+  expect(subtrackNames).toContain('Regular Track')
+})
+
+test('supertrack subtracks visible when showSubtracks enabled', async () => {
+  const session = addTestDataWithSuperTracks(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setShowSubtracks(true)
+
+  const { findAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  const trackLabels = await findAllByTestId(/htsTrackLabel/)
+  const names = trackLabels.map(e => e.textContent)
+  expect(names).toContain('H3K4me3')
+  expect(names).toContain('H3K27ac')
+  expect(names).toContain('Regular Track')
+})
+
+test('supertrack hierarchy model groups correctly', () => {
+  const session = addTestDataWithSuperTracks(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const tracksGroup = model.hierarchy.children[0]!
+  const epigenomicsCategory = tracksGroup.children.find(
+    c => c.name === 'Epigenomics',
+  )!
+  expect(epigenomicsCategory).toBeDefined()
+
+  const superTrackNode = epigenomicsCategory.children.find(
+    c => c.type === 'supertrack',
+  )
+  expect(superTrackNode).toBeDefined()
+  expect(superTrackNode!.name).toBe('Histone Marks')
+  expect(superTrackNode!.children.length).toBe(2)
+})
+
+test('supertrack filter text matches superTrackId', async () => {
+  const session = addTestDataWithSuperTracks(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setFilterText('Histone')
+
+  const { findAllByTestId, queryAllByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  const superTracks = await findAllByTestId(/htsSuperTrack/)
+  expect(superTracks.length).toBe(1)
+
+  // regular track should be filtered out
+  const trackLabels = queryAllByTestId(/htsTrackLabel/)
+  expect(trackLabels.length).toBe(0)
+})
+
+test('faceted model includes superTrackId column', () => {
+  const session = addTestDataWithSuperTracks(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      {
+        assemblyName: 'volMyt1',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+      },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { faceted } = model
+
+  faceted.setShowSparse(true)
+
+  const row = faceted.allRows.find(r => r.id === 'h3k4me3')
+  expect(row).toBeDefined()
+  expect(row!.superTrackId).toBe('Histone Marks')
+
+  const regularRow = faceted.allRows.find(r => r.id === 'regularTrack')
+  expect(regularRow).toBeDefined()
+  expect(regularRow!.superTrackId).toBe('')
+})
+
 // -------------------------- test utils -
 
 function addTestDataWithMetadata(
@@ -1400,6 +1554,58 @@ function addTestDataWithCategories(
     assemblyNames: ['volMyt1'],
     type: 'FeatureTrack',
     category: ['Variants'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  return session
+}
+
+function addTestDataWithSuperTracks(
+  session: ReturnType<typeof createTestSession>,
+) {
+  session.addAssemblyConf({
+    name: 'volMyt1',
+    sequence: {
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'firstId',
+            start: 0,
+            end: 10,
+            seq: 'cattgttgcg',
+          },
+        ],
+      },
+    },
+  })
+
+  session.addTrackConf({
+    trackId: 'h3k4me3',
+    name: 'H3K4me3',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Epigenomics'],
+    superTrackId: 'Histone Marks',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  session.addTrackConf({
+    trackId: 'h3k27ac',
+    name: 'H3K27ac',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Epigenomics'],
+    superTrackId: 'Histone Marks',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  session.addTrackConf({
+    trackId: 'regularTrack',
+    name: 'Regular Track',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Epigenomics'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
   return session

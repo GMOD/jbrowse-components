@@ -57,6 +57,15 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      superTrackId: {
+        description:
+          'if set, groups this track under a supertrack with this id in the track selector',
+        type: 'string',
+        defaultValue: '',
+      },
+      /**
+       * #slot
+       */
       metadata: {
         type: 'frozen',
         description: 'anything to add about this track',

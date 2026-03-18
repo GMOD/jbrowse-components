@@ -9,6 +9,48 @@ import type { MinimalModel, TreeNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
+function groupSuperTracks(children: TreeNode[], extra?: string) {
+  const superTrackMap = new Map<string, TreeNode[]>()
+  const result: TreeNode[] = []
+  const superTrackIndices = new Map<string, number>()
+
+  for (const child of children) {
+    if (child.type === 'category') {
+      child.children = groupSuperTracks(child.children, extra)
+      result.push(child)
+    } else if (child.type === 'track' && child.superTrackId) {
+      const { superTrackId } = child
+      let group = superTrackMap.get(superTrackId)
+      if (!group) {
+        group = []
+        superTrackMap.set(superTrackId, group)
+        superTrackIndices.set(superTrackId, result.length)
+        result.push(undefined!)
+      }
+      group.push(child)
+    } else {
+      result.push(child)
+    }
+  }
+
+  for (const [superTrackId, tracks] of superTrackMap) {
+    const idx = superTrackIndices.get(superTrackId)!
+    const id = extra
+      ? `${extra}-supertrack-${superTrackId}`
+      : `supertrack-${superTrackId}`
+    result[idx] = {
+      name: superTrackId,
+      id,
+      superTrackId,
+      children: tracks,
+      nestingLevel: tracks[0]!.nestingLevel,
+      type: 'supertrack' as const,
+    }
+  }
+
+  return result
+}
+
 export function generateHierarchy({
   model,
   trackConfs,
@@ -74,10 +116,12 @@ export function generateHierarchy({
       }
     }
 
+    const superTrackId = readConfObject(conf, 'superTrackId') || ''
     const leafCount = leafCounts.get(currLevel) ?? 0
     currLevel.children.splice(leafCount, 0, {
       id: extra ? `${extra},${conf.trackId}` : conf.trackId,
       trackId: conf.trackId,
+      superTrackId,
       name: getTrackName(conf, session),
       conf,
       children: [],
@@ -87,5 +131,5 @@ export function generateHierarchy({
     leafCounts.set(currLevel, leafCount + 1)
   }
 
-  return hierarchy.children
+  return groupSuperTracks(hierarchy.children, extra)
 }

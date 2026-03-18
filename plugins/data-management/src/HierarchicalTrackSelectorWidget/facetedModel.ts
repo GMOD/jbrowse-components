@@ -14,7 +14,12 @@ import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const nonMetadataKeys = ['category', 'adapter', 'description'] as const
+const nonMetadataKeys = [
+  'category',
+  'superTrackId',
+  'adapter',
+  'description',
+] as const
 
 /**
  * #stateModel FacetedModel
@@ -143,6 +148,8 @@ export function facetedStateTreeF() {
               conf: track,
               name: getTrackName(track, session),
               category: readConfObject(track, 'category')?.join(', '),
+              superTrackId: (readConfObject(track, 'superTrackId') ||
+                '') as string,
               adapter: readConfObject(track, 'adapter')?.type as string,
               description: readConfObject(track, 'description') as
                 | string

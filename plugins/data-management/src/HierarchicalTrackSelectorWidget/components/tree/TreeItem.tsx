@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
+import SuperTrackLabel from './SuperTrackLabel.tsx'
 import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import { getItemHeight } from '../../model.ts'
@@ -67,9 +68,12 @@ const TreeItem = memo(function TreeItem({
 }) {
   const { classes } = useStyles()
   const isCategory = item.type === 'category'
+  const isSuperTrack = item.type === 'supertrack'
+  const isAccordionStyle = isCategory || isSuperTrack
   const { nestingLevel } = item
   const height = getItemHeight(item)
-  const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
+  const marginLeft =
+    nestingLevel * levelWidth + (isAccordionStyle ? 0 : levelWidth)
 
   return (
     <div
@@ -88,15 +92,17 @@ const TreeItem = memo(function TreeItem({
         className={classes.nestingLevelMarker}
       />
       <div
-        className={isCategory ? classes.accordionCard : undefined}
+        className={isAccordionStyle ? classes.accordionCard : undefined}
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
           flex: 1,
         }}
       >
-        <div className={isCategory ? classes.accordionColor : undefined}>
-          {isCategory ? (
+        <div className={isAccordionStyle ? classes.accordionColor : undefined}>
+          {isSuperTrack ? (
+            <SuperTrackLabel model={model} item={item} />
+          ) : isCategory ? (
             <TrackCategory model={model} item={item} />
           ) : (
             <TrackLabel model={model} item={item} checked={checked!} />

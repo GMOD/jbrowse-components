@@ -44,7 +44,9 @@ function keyConfigPostFix() {
 }
 
 export function getItemHeight(item: TreeNode) {
-  return item.type === 'category' ? categoryItemHeight : defaultItemHeight
+  return item.type === 'category' || item.type === 'supertrack'
+    ? categoryItemHeight
+    : defaultItemHeight
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -148,6 +150,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #volatile
        */
       collapsed: observable.map<string, boolean>(),
+      /**
+       * #volatile
+       */
+      showSubtracks: false,
       /**
        * #volatile
        */
@@ -335,6 +341,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowSubtracks(val: boolean) {
+        self.showSubtracks = val
+      },
+      /**
+       * #action
+       */
       clearFilterText() {
         self.filterText = ''
       },
@@ -501,10 +513,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
+        const { showSubtracks } = self
         const flatten = (items: TreeNode[], result = [] as TreeNode[]) => {
           for (const item of items) {
             result.push(item)
-            if (item.children.length > 0 && !self.collapsed.get(item.id)) {
+            if (
+              item.children.length > 0 &&
+              !self.collapsed.get(item.id) &&
+              (item.type !== 'supertrack' || showSubtracks)
+            ) {
               flatten(item.children, result)
             }
           }
