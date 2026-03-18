@@ -45,8 +45,7 @@ export interface ESMUrlPluginDefinition {
 }
 
 export type ESMPluginDefinition =
-  | ESMLocPluginDefinition
-  | ESMUrlPluginDefinition
+  ESMLocPluginDefinition | ESMUrlPluginDefinition
 
 export function isESMPluginDefinition(
   def: PluginDefinition,
@@ -212,6 +211,47 @@ function assertSingleKind(def: PluginDefinition) {
   }
 }
 
+export function pluginDefinitionMetadata(definition: PluginDefinition) {
+  return {
+    name: 'name' in definition ? definition.name : undefined,
+    url: pluginUrl(definition),
+  }
+}
+
+export function pluginLabel(definition: PluginDefinition) {
+  const name = 'name' in definition ? definition.name : undefined
+  return name ? `${name} (${pluginUrl(definition)})` : pluginUrl(definition)
+}
+
+/**
+ * Two definitions can describe the same plugin without being identical — a UMD
+ * name+url in a config, an esmUrl in the global list — so a repeat of either
+ * the name or the url means the plugin is already in.
+ */
+export function dedupePlugins(plugins: PluginDefinition[]) {
+  const seenNames = new Set<string>()
+  const seenUrls = new Set<string>()
+  return plugins.filter(plugin => {
+    const name = 'name' in plugin ? plugin.name : undefined
+    const url = pluginUrl(plugin)
+    // a definition naming no loader has no url to compare, so only its name
+    // can mark it a duplicate
+    const knownUrl = url === 'unknown url' ? undefined : url
+    const duplicate =
+      (name !== undefined && seenNames.has(name)) ||
+      (knownUrl !== undefined && seenUrls.has(knownUrl))
+    if (!duplicate) {
+      if (name !== undefined) {
+        seenNames.add(name)
+      }
+      if (knownUrl !== undefined) {
+        seenUrls.add(knownUrl)
+      }
+    }
+    return !duplicate
+  })
+}
+
 function isInWebWorker() {
   return 'WorkerGlobalScope' in globalThis
 }
@@ -298,8 +338,7 @@ export default class PluginLoader {
     )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
-      | { default: PluginConstructor }
-      | undefined
+      { default: PluginConstructor } | undefined
     if (!plugin) {
       throw new Error(
         `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,

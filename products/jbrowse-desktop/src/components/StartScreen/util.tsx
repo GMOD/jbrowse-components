@@ -1,5 +1,7 @@
 import PluginLoader, {
+  dedupePlugins,
   dropVendoredPlugins,
+  pluginDefinitionMetadata,
   pluginDescriptionString,
   pluginUrl,
 } from '@jbrowse/core/PluginLoader'
@@ -39,26 +41,6 @@ async function getGlobalPlugins() {
   }
 }
 
-// A config and the global list can describe the same plugin with differently
-// shaped definitions (a UMD name+url vs an esmUrl), so identity is not enough:
-// either a repeated name or a repeated url means the plugin is already in.
-function dedupePluginDefinitions(defs: PluginDefinition[]) {
-  const names = new Set<string>()
-  const urls = new Set<string>()
-  return defs.filter(def => {
-    const name = 'name' in def ? def.name : undefined
-    const url = pluginUrl(def)
-    const duplicate = (name !== undefined && names.has(name)) || urls.has(url)
-    if (!duplicate) {
-      if (name !== undefined) {
-        names.add(name)
-      }
-      urls.add(url)
-    }
-    return !duplicate
-  })
-}
-
 function pluginRecords(runtimePlugins: PluginRecord[]) {
   return [
     ...corePlugins.map(P => ({
@@ -70,12 +52,7 @@ function pluginRecords(runtimePlugins: PluginRecord[]) {
     ...runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        url: 'url' in definition ? definition.url : undefined,
-        esmUrl: 'esmUrl' in definition ? definition.esmUrl : undefined,
-        umdUrl: 'umdUrl' in definition ? definition.umdUrl : undefined,
-        cjsUrl: 'cjsUrl' in definition ? definition.cjsUrl : undefined,
-      },
+      metadata: pluginDefinitionMetadata(definition),
     })),
   ]
 }
@@ -157,7 +134,7 @@ export async function createPluginManager(
 ) {
   // Global plugins load in every session, so they join the config's own list
   // before the loader runs
-  const plugins = dedupePluginDefinitions([
+  const plugins = dedupePlugins([
     ...(configSnapshot.plugins ?? []),
     ...(await getGlobalPlugins()),
   ])
