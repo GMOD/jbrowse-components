@@ -18,12 +18,11 @@ import {
 import Checkbox2 from '../Checkbox2.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsList from './RecentSessionsDataGrid.tsx'
+import { navigateToSession } from '../../../navigation.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
-import { loadPluginManager } from '../util.tsx'
 
 import type { RecentSessionData } from '../types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ToggleButtonProps } from '@mui/material'
 
 const { ipcRenderer } = window.require('electron')
@@ -40,7 +39,6 @@ const useStyles = makeStyles()({
 
 type RecentSessions = RecentSessionData[]
 
-// uses span to allow disabled button to have a tooltip
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { title = '', children, ...rest } = props
   return (
@@ -54,10 +52,8 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
 
 export default function RecentSessionPanel({
   setError,
-  setPluginManager,
 }: {
   setError: (e: unknown) => void
-  setPluginManager: (pm: PluginManager) => void
 }) {
   const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
@@ -192,22 +188,17 @@ export default function RecentSessionPanel({
         />
 
         <div className={classes.verticalCenter}>
-          <Button variant="contained" component="label" onClick={() => {}}>
+          <Button variant="contained" component="label">
             Open saved session (.jbrowse) file
             <input
               type="file"
               hidden
-              onChange={async event => {
-                try {
-                  const file = event.target.files?.[0]
-                  if (file) {
-                    const { webUtils } = window.require('electron')
-                    const path = webUtils.getPathForFile(file)
-                    setPluginManager(await loadPluginManager(path))
-                  }
-                } catch (e) {
-                  console.error(e)
-                  setError(e)
+              onChange={event => {
+                const file = event.target.files?.[0]
+                if (file) {
+                  const { webUtils } = window.require('electron')
+                  const path = webUtils.getPathForFile(file)
+                  navigateToSession(path)
                 }
               }}
             />
@@ -222,9 +213,7 @@ export default function RecentSessionPanel({
       {sortedSessions.length > 0 && displayMode === 'grid' ? (
         <RecentSessionsCards
           addToQuickstartList={entry => addToQuickstartList([entry])}
-          setPluginManager={setPluginManager}
           sessions={filteredSessions}
-          setError={setError}
           setSessionsToDelete={setSessionsToDelete}
           setSessionToRename={setSessionToRename}
         />
@@ -232,8 +221,6 @@ export default function RecentSessionPanel({
 
       {sortedSessions.length > 0 && displayMode === 'list' ? (
         <RecentSessionsList
-          setPluginManager={setPluginManager}
-          setError={setError}
           setSelectedSessions={setSelectedSessions}
           setSessionToRename={setSessionToRename}
           sessions={filteredSessions}

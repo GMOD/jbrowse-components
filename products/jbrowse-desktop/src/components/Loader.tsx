@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { localStorageGetItem } from '@jbrowse/core/util'
-import { Alert, CssBaseline, Snackbar, ThemeProvider } from '@mui/material'
+import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JBrowse from './JBrowse.tsx'
-import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import {
   createStartScreenPluginManager,
@@ -16,53 +15,84 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const Loader = observer(function Loader() {
+function getHash() {
+  return window.location.hash
+}
+
+function subscribeHash(callback: () => void) {
+  window.addEventListener('hashchange', callback)
+  return () => {
+    window.removeEventListener('hashchange', callback)
+  }
+}
+
+function parseHash(hash: string) {
+  if (hash.startsWith('#/session?')) {
+    const params = new URLSearchParams(hash.slice('#/session?'.length))
+    return { page: 'session' as const, config: params.get('config') ?? '' }
+  }
+  return { page: 'start' as const, config: '' }
+}
+
+const SessionPage = observer(function SessionPage({
+  configPath,
+}: {
+  configPath: string
+}) {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
-  const [startScreenPluginManager, setStartScreenPluginManager] =
-    useState<PluginManager>()
-  const [globalPluginError, setGlobalPluginError] = useState<string>()
-  const [config, setConfig] = useQueryParam('config')
   const [error, setError] = useState<unknown>()
-
-  const handleSetPluginManager = useCallback(
-    (pm: PluginManager) => {
-      // @ts-expect-error
-      pm.rootModel?.setOpenNewSessionCallback(async (path: string) => {
-        handleSetPluginManager(await loadPluginManager(path))
-      })
-
-      setPluginManager(pm)
-      setError(undefined)
-      setConfig('')
-    },
-    [setConfig],
-  )
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    createStartScreenPluginManager()
-      .then(pm => {
-        setStartScreenPluginManager(pm)
-      })
-      .catch(e => {
-        console.error('Failed to create start screen plugin manager', e)
-        setGlobalPluginError(`Global plugins failed to load: ${e}`)
-      })
-  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      if (config) {
-        try {
-          handleSetPluginManager(await loadPluginManager(config))
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        }
+      try {
+        setPluginManager(await loadPluginManager(configPath))
+      } catch (e: unknown) {
+        console.error(e)
+        setError(e)
       }
     })()
-  }, [config, handleSetPluginManager])
+  }, [configPath])
+
+  if (error) {
+    return <ErrorMessage error={error} />
+  }
+  if (pluginManager?.rootModel?.session) {
+    return <JBrowse pluginManager={pluginManager} />
+  }
+  return <LoadingEllipses />
+})
+
+const StartPage = observer(function StartPage() {
+  const [startScreenPluginManager, setStartScreenPluginManager] =
+    useState<PluginManager>()
+  const [error, setError] = useState<unknown>()
+
+  useEffect(() => {
+    createStartScreenPluginManager()
+      .then(pm => {
+        setStartScreenPluginManager(pm)
+      })
+      .catch((e: unknown) => {
+        console.error('Failed to create start screen plugin manager', e)
+      })
+  }, [])
+
+  return (
+    <>
+      {error ? <ErrorMessage error={error} /> : null}
+      <StartScreen
+        setError={setError}
+        startScreenPluginManager={startScreenPluginManager}
+      />
+    </>
+  )
+})
+
+const Loader = observer(function Loader() {
+  const hash = useSyncExternalStore(subscribeHash, getHash, () => '')
+  const { page, config } = parseHash(hash)
+
   return (
     <ThemeProvider
       theme={createJBrowseTheme(
@@ -72,28 +102,11 @@ const Loader = observer(function Loader() {
       )}
     >
       <CssBaseline />
-      {error ? <ErrorMessage error={error} /> : null}
-      {pluginManager?.rootModel?.session ? (
-        <JBrowse pluginManager={pluginManager} />
-      ) : !config || error ? (
-        <StartScreen
-          setError={setError}
-          setPluginManager={handleSetPluginManager}
-          startScreenPluginManager={startScreenPluginManager}
-        />
-      ) : null}
-      <Snackbar
-        open={!!globalPluginError}
-        autoHideDuration={10_000}
-        onClose={() => setGlobalPluginError(undefined)}
-      >
-        <Alert
-          severity="error"
-          onClose={() => setGlobalPluginError(undefined)}
-        >
-          {globalPluginError}
-        </Alert>
-      </Snackbar>
+      {page === 'session' && config ? (
+        <SessionPage key={config} configPath={config} />
+      ) : (
+        <StartPage />
+      )}
     </ThemeProvider>
   )
 })

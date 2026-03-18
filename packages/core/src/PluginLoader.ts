@@ -140,17 +140,63 @@ export function pluginDescriptionString(d: PluginDefinition) {
 }
 export function pluginUrl(d: PluginDefinition) {
   if (isUMDPluginDefinition(d)) {
-    // @ts-expect-error
-    return d.url ?? d.umdLoc?.uri ?? d.umdUrl
+    if ('url' in d) {
+      return d.url
+    }
+    if ('umdUrl' in d) {
+      return d.umdUrl
+    }
+    return d.umdLoc.uri
   } else if (isESMPluginDefinition(d)) {
-    // @ts-expect-error
-    return d.esmUrl ?? d.esmUri ?? d.esmLoc?.uri
+    if ('esmUrl' in d) {
+      return d.esmUrl
+    }
+    return d.esmLoc.uri
   } else if (isCJSPluginDefinition(d)) {
-    // @ts-expect-error
-    return d.cjsUrl || d.cjsLoc.uri
+    return d.cjsUrl
   } else {
     return 'unknown url'
   }
+}
+
+export function pluginDefinitionMetadata(definition: PluginDefinition) {
+  return {
+    name: 'name' in definition ? definition.name : undefined,
+    url: pluginUrl(definition),
+  }
+}
+
+export function pluginLabel(definition: PluginDefinition) {
+  const name = 'name' in definition ? definition.name : undefined
+  const url = pluginUrl(definition)
+  if (name) {
+    return `${name} (${url})`
+  }
+  return url
+}
+
+export function dedupePlugins(plugins: PluginDefinition[]) {
+  const seenNames = new Set<string>()
+  const seenUrls = new Set<string>()
+  const result: PluginDefinition[] = []
+  for (const plugin of plugins) {
+    const name = 'name' in plugin ? plugin.name : undefined
+    const url = pluginUrl(plugin)
+    if (name && seenNames.has(name)) {
+      continue
+    }
+    if (url !== 'unknown url' && seenUrls.has(url)) {
+      continue
+    }
+    if (name) {
+      seenNames.add(name)
+    }
+    if (url !== 'unknown url') {
+      seenUrls.add(url)
+    }
+    result.push(plugin)
+  }
+  return result
 }
 
 function isInWebWorker() {
@@ -290,20 +336,25 @@ export default class PluginLoader {
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
     // @ts-expect-error
-    target.JBrowseExports = Object.fromEntries(
-      Object.entries(ReExports).map(([moduleName, module]) => {
-        return [moduleName, module]
-      }),
-    )
+    target.JBrowseExports = ReExports
     return this
   }
 
   async load(baseUri?: string) {
-    return Promise.all(
+    const results = await Promise.allSettled(
       this.definitions.map(async definition => ({
         plugin: await this.loadPlugin(definition, baseUri),
         definition,
       })),
     )
+    const loaded = []
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        loaded.push(result.value)
+      } else {
+        console.error('Failed to load plugin:', result.reason)
+      }
+    }
+    return loaded
   }
 }

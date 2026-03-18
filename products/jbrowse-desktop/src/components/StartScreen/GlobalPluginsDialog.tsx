@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { pluginLabel, pluginUrl } from '@jbrowse/core/PluginLoader'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
@@ -96,28 +97,32 @@ function useFetchPlugins() {
   return { plugins, error }
 }
 
-function getPluginName(plugin: PluginDefinition) {
-  if ('name' in plugin) {
-    return plugin.name
-  }
-  return undefined
-}
-
 function isPluginInstalled(
   storePlugin: JBrowsePlugin,
   globalPlugins: PluginDefinition[],
 ) {
-  return globalPlugins.some(
-    gp => getPluginName(gp) === storePlugin.name,
-  )
+  return globalPlugins.some(gp => {
+    if ('name' in gp && gp.name === storePlugin.name) {
+      return true
+    }
+    const url = pluginUrl(gp)
+    return (
+      (storePlugin.url && url === storePlugin.url) ||
+      (storePlugin.umdUrl && url === storePlugin.umdUrl) ||
+      (storePlugin.esmUrl && url === storePlugin.esmUrl) ||
+      (storePlugin.cjsUrl && url === storePlugin.cjsUrl)
+    )
+  })
 }
 
-function pluginToDefinition(plugin: JBrowsePlugin): PluginDefinition {
-  if (plugin.url) {
-    return { url: plugin.url, name: plugin.name }
-  }
+function convertPluginStoreEntryToPluginDefinition(
+  plugin: JBrowsePlugin,
+): PluginDefinition {
   if (plugin.umdUrl) {
     return { umdUrl: plugin.umdUrl, name: plugin.name }
+  }
+  if (plugin.url) {
+    return { url: plugin.url, name: plugin.name }
   }
   if (plugin.esmUrl) {
     return { esmUrl: plugin.esmUrl }
@@ -125,29 +130,7 @@ function pluginToDefinition(plugin: JBrowsePlugin): PluginDefinition {
   if (plugin.cjsUrl) {
     return { cjsUrl: plugin.cjsUrl }
   }
-  return { url: '', name: plugin.name }
-}
-
-function getPluginLabel(plugin: PluginDefinition) {
-  if ('esmUrl' in plugin) {
-    return plugin.esmUrl
-  }
-  if ('cjsUrl' in plugin) {
-    return plugin.cjsUrl
-  }
-  if ('umdUrl' in plugin) {
-    return `${plugin.name} (${plugin.umdUrl})`
-  }
-  if ('url' in plugin) {
-    return `${plugin.name} (${plugin.url})`
-  }
-  if ('esmLoc' in plugin) {
-    return plugin.esmLoc.uri
-  }
-  if ('umdLoc' in plugin) {
-    return `${plugin.name} (${plugin.umdLoc.uri})`
-  }
-  return JSON.stringify(plugin)
+  return { url: plugin.location, name: plugin.name }
 }
 
 function AddCustomGlobalPluginDialog({
@@ -167,21 +150,22 @@ function AddCustomGlobalPluginDialog({
     (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,
   )
 
-  function handleSubmit() {
-    if (umdPluginName && umdPluginUrl) {
-      onAdd({ name: umdPluginName, umdUrl: umdPluginUrl })
-    } else if (esmPluginUrl) {
-      onAdd({ esmUrl: esmPluginUrl })
-    } else if (cjsPluginUrl) {
-      onAdd({ cjsUrl: cjsPluginUrl })
-    }
-    onClose()
-  }
-
   return (
     <Dialog open onClose={onClose} title="Add custom plugin">
       <DialogTitle>Add custom plugin</DialogTitle>
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={e => {
+          e.preventDefault()
+          if (umdPluginName && umdPluginUrl) {
+            onAdd({ name: umdPluginName, umdUrl: umdPluginUrl })
+          } else if (esmPluginUrl) {
+            onAdd({ esmUrl: esmPluginUrl })
+          } else if (cjsPluginUrl) {
+            onAdd({ cjsUrl: cjsPluginUrl })
+          }
+          onClose()
+        }}
+      >
         <DialogContent className={classes.dialogContent}>
           <DialogContentText>
             Enter the name of the plugin and its URL. The name should match what
@@ -191,16 +175,22 @@ function AddCustomGlobalPluginDialog({
             label="Plugin name"
             variant="outlined"
             value={umdPluginName}
-            onChange={e => setUMDPluginName(e.target.value)}
+            onChange={e => {
+              setUMDPluginName(e.target.value)
+            }}
           />
           <TextField
             label="Plugin URL"
             variant="outlined"
             value={umdPluginUrl}
-            onChange={e => setUMDPluginUrl(e.target.value)}
+            onChange={e => {
+              setUMDPluginUrl(e.target.value)
+            }}
           />
           <DialogContentText
-            onClick={() => setAdvancedOptionsOpen(!advancedOptionsOpen)}
+            onClick={() => {
+              setAdvancedOptionsOpen(!advancedOptionsOpen)
+            }}
             style={{ cursor: 'pointer' }}
           >
             <IconButton
@@ -226,13 +216,17 @@ function AddCustomGlobalPluginDialog({
                 label="ESM build URL"
                 variant="outlined"
                 value={esmPluginUrl}
-                onChange={e => setESMPluginUrl(e.target.value)}
+                onChange={e => {
+                  setESMPluginUrl(e.target.value)
+                }}
               />
               <TextField
                 label="CJS build URL"
                 variant="outlined"
                 value={cjsPluginUrl}
-                onChange={e => setCJSPluginUrl(e.target.value)}
+                onChange={e => {
+                  setCJSPluginUrl(e.target.value)
+                }}
               />
             </div>
           </Collapse>
@@ -244,7 +238,7 @@ function AddCustomGlobalPluginDialog({
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSubmit}
+            type="submit"
             disabled={!ready}
           >
             Submit
@@ -278,31 +272,7 @@ export default function GlobalPluginsDialog({
       })
   }, [])
 
-  async function handleInstall(plugin: JBrowsePlugin) {
-    const def = pluginToDefinition(plugin)
-    const updated = [...globalPlugins, def]
-    try {
-      await ipcRenderer.invoke('setGlobalPlugins', updated)
-      setGlobalPlugins(updated)
-      setSaveError(undefined)
-    } catch (e) {
-      setSaveError(String(e))
-    }
-  }
-
-  async function handleAddCustom(plugin: PluginDefinition) {
-    const updated = [...globalPlugins, plugin]
-    try {
-      await ipcRenderer.invoke('setGlobalPlugins', updated)
-      setGlobalPlugins(updated)
-      setSaveError(undefined)
-    } catch (e) {
-      setSaveError(String(e))
-    }
-  }
-
-  async function handleRemove(index: number) {
-    const updated = globalPlugins.filter((_, i) => i !== index)
+  async function savePlugins(updated: PluginDefinition[]) {
     try {
       await ipcRenderer.invoke('setGlobalPlugins', updated)
       setGlobalPlugins(updated)
@@ -322,17 +292,19 @@ export default function GlobalPluginsDialog({
         <Button
           className={classes.customPluginButton}
           variant="contained"
-          onClick={() => setShowCustomDialog(true)}
+          onClick={() => {
+            setShowCustomDialog(true)
+          }}
         >
           Add custom plugin
         </Button>
-        {saveError ? (
-          <Typography color="error">{saveError}</Typography>
-        ) : null}
+        {saveError ? <Typography color="error">{saveError}</Typography> : null}
         <TextField
           label="Filter plugins"
           value={filterText}
-          onChange={e => setFilterText(e.target.value)}
+          onChange={e => {
+            setFilterText(e.target.value)
+          }}
           fullWidth
           size="small"
           style={{ marginBottom: 8 }}
@@ -340,7 +312,12 @@ export default function GlobalPluginsDialog({
             input: {
               endAdornment: filterText ? (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setFilterText('')} size="small">
+                  <IconButton
+                    onClick={() => {
+                      setFilterText('')
+                    }}
+                    size="small"
+                  >
                     <ClearIcon />
                   </IconButton>
                 </InputAdornment>
@@ -350,15 +327,13 @@ export default function GlobalPluginsDialog({
         />
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">
-              Installed global plugins
-            </Typography>
+            <Typography variant="h6">Installed global plugins</Typography>
           </AccordionSummary>
           <div className={classes.m}>
             {globalPlugins.length > 0 ? (
               <List dense>
                 {globalPlugins.map((plugin, idx) => {
-                  const label = getPluginLabel(plugin)
+                  const label = pluginLabel(plugin)
                   if (
                     filterText &&
                     !label.toLowerCase().includes(filterText.toLowerCase())
@@ -370,7 +345,11 @@ export default function GlobalPluginsDialog({
                       <Tooltip title="Remove global plugin">
                         <IconButton
                           className={classes.mr}
-                          onClick={() => handleRemove(idx)}
+                          onClick={() =>
+                            savePlugins(
+                              globalPlugins.filter((_, i) => i !== idx),
+                            )
+                          }
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -410,9 +389,7 @@ export default function GlobalPluginsDialog({
                       <Typography variant="h6">{plugin.name}</Typography>
                       <div className={classes.dataField}>
                         <PersonIcon className={classes.mr} />
-                        <Typography>
-                          {plugin.authors.join(', ')}
-                        </Typography>
+                        <Typography>{plugin.authors.join(', ')}</Typography>
                       </div>
                       <Typography className={classes.bold}>
                         Description:
@@ -424,7 +401,12 @@ export default function GlobalPluginsDialog({
                         variant="contained"
                         disabled={installed}
                         startIcon={installed ? <CheckIcon /> : <AddIcon />}
-                        onClick={() => handleInstall(plugin)}
+                        onClick={() =>
+                          savePlugins([
+                            ...globalPlugins,
+                            convertPluginStoreEntryToPluginDefinition(plugin),
+                          ])
+                        }
                       >
                         {installed ? 'Installed' : 'Install'}
                       </Button>
@@ -439,8 +421,10 @@ export default function GlobalPluginsDialog({
       </DialogContent>
       {showCustomDialog ? (
         <AddCustomGlobalPluginDialog
-          onClose={() => setShowCustomDialog(false)}
-          onAdd={handleAddCustom}
+          onClose={() => {
+            setShowCustomDialog(false)
+          }}
+          onAdd={plugin => savePlugins([...globalPlugins, plugin])}
         />
       ) : null}
     </Dialog>

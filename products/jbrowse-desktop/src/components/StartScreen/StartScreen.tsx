@@ -10,7 +10,6 @@ import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import LeftSidePanel from './leftSidePanel/LeftSidePanel.tsx'
 import RecentSessionPanel from './recentSessions/RecentSessionsPanel.tsx'
-import { loadPluginManager } from './util.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -44,11 +43,9 @@ const useStyles = makeStyles()({
 })
 
 export default function StartScreen({
-  setPluginManager,
   setError,
   startScreenPluginManager,
 }: {
-  setPluginManager: (arg: PluginManager) => void
   setError: (arg: unknown) => void
   startScreenPluginManager?: PluginManager
 }) {
@@ -62,13 +59,15 @@ export default function StartScreen({
           menuItems={() => [
             {
               label: 'Global plugins...',
-              onClick: () => setShowGlobalPlugins(true),
+              onClick: () => {
+                setShowGlobalPlugins(true)
+              },
             },
             ...(startScreenPluginManager
               ? (startScreenPluginManager.evaluateExtensionPoint(
                   'Desktop-StartScreenMenuItems',
                   [],
-                  { pluginManager: startScreenPluginManager, setPluginManager, loadPluginManager },
+                  { pluginManager: startScreenPluginManager },
                 ) as { label: string; onClick: () => void }[])
               : []),
           ]}
@@ -85,10 +84,10 @@ export default function StartScreen({
               pluginManager={startScreenPluginManager}
               name="Desktop-StartScreenLaunchPanel"
               component={LeftSidePanel}
-              props={{ setPluginManager, loadPluginManager }}
+              props={{}}
             />
           ) : (
-            <LeftSidePanel setPluginManager={setPluginManager} />
+            <LeftSidePanel />
           )}
         </Paper>
         <Paper elevation={3} className={classes.recentPanel}>
@@ -98,18 +97,19 @@ export default function StartScreen({
               pluginManager={startScreenPluginManager}
               name="Desktop-StartScreenRecentSessionsPanel"
               component={RecentSessionPanel}
-              props={{ setPluginManager, setError }}
+              props={{ setError }}
             />
           ) : (
-            <RecentSessionPanel
-              setPluginManager={setPluginManager}
-              setError={setError}
-            />
+            <RecentSessionPanel setError={setError} />
           )}
         </Paper>
       </div>
       {showGlobalPlugins ? (
-        <GlobalPluginsDialog onClose={() => setShowGlobalPlugins(false)} />
+        <GlobalPluginsDialog
+          onClose={() => {
+            setShowGlobalPlugins(false)
+          }}
+        />
       ) : null}
     </div>
   )

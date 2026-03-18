@@ -1,9 +1,8 @@
-import type PluginManager from '../PluginManager'
 import type React from 'react'
 
-export default function PluggableComponent<
-  P extends Record<string, unknown>,
->({
+import type PluginManager from '../PluginManager'
+
+export default function PluggableComponent<P extends Record<string, unknown>>({
   pluginManager,
   name,
   component: DefaultComponent,

@@ -1,3 +1,4 @@
+import { pluginDefinitionMetadata } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 import {
@@ -32,18 +33,12 @@ export function createPluginManager(
     ...(model.runtimePlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
+      metadata: pluginDefinitionMetadata(definition),
     })),
     ...(model.sessionPlugins ?? []).map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: {
-        // @ts-expect-error
-        url: definition.url,
-      },
+      metadata: pluginDefinitionMetadata(definition),
     })),
   ]).createPluggableElements()
 

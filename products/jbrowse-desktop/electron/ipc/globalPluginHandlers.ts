@@ -8,11 +8,13 @@ const ENCODING = 'utf8'
 
 export function registerGlobalPluginHandlers(paths: AppPaths) {
   ipcMain.handle('getGlobalPlugins', async () => {
-    const data = await fs.promises.readFile(
-      paths.globalPluginsPath,
-      ENCODING,
-    )
-    return JSON.parse(data)
+    try {
+      const data = await fs.promises.readFile(paths.globalPluginsPath, ENCODING)
+      return JSON.parse(data)
+    } catch (e) {
+      console.error('Failed to read global plugins file', e)
+      return []
+    }
   })
 
   ipcMain.handle(
