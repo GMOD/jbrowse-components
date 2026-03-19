@@ -392,14 +392,11 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     doInit()
   }, [])
 
-  const labelContainerRef = useRef<HTMLDivElement>(null)
-  const renderOffsetPxRef = useRef(0)
-
   useEffect(() => {
     const dispose = autorun(() => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { offsetPx, bpPerPx: _bpp, initialized, width: _w } = view
+        const { offsetPx: _op, bpPerPx: _bpp, initialized, width: _w } = view
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _h = model.height
 
@@ -408,20 +405,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         }
 
         renderWithBlocksRef.current()
-
-        // Keep the DOM label overlay in sync with the WebGL canvas.
-        //
-        // Labels are positioned during React render (which may lag behind
-        // this autorun by several frames during fast scrolling). We
-        // compensate by translating the label container by the scroll
-        // delta since the last React render. Both the WebGL canvas and
-        // this transform update in the same synchronous autorun tick,
-        // so they always reflect the same viewport state.
-        if (labelContainerRef.current) {
-          const scrollDeltaPx = renderOffsetPxRef.current - offsetPx
-          labelContainerRef.current.style.transform =
-            `translate(${scrollDeltaPx}px, -${scrollYRef.current}px)`
-        }
       } catch {
         // Model may have been detached from state tree
       }
@@ -500,19 +483,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       setDrawn(true)
     }
   }, [rpcDataMap, rendererReady, drawn])
-
-  // Re-apply the label container transform after every React render.
-  // The autorun sets the transform imperatively, but React's style
-  // reconciliation clears it when re-rendering the container div
-  // (since transform is not in the JSX style). This useLayoutEffect
-  // runs synchronously before paint, restoring the correct transform.
-  useLayoutEffect(() => {
-    if (labelContainerRef.current) {
-      const scrollDeltaPx = renderOffsetPxRef.current - view.offsetPx
-      labelContainerRef.current.style.transform =
-        `translate(${scrollDeltaPx}px, -${scrollYRef.current}px)`
-    }
-  })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -722,13 +692,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     ) {
       return null
     }
-
-    // Snapshot the viewport offset at label computation time. The
-    // autorun uses this to compute how far the viewport has scrolled
-    // since labels were last positioned, and shifts the label container
-    // to compensate (see the "Keep the DOM label overlay in sync"
-    // comment in the autorun above).
-    renderOffsetPxRef.current = view.offsetPx
 
     const elements: React.ReactElement[] = []
     const renderedLabels = new Set<string>()
@@ -1088,40 +1051,26 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         }}
       />
 
-      {[highlightOverlays, aminoAcidOverlayElements].map((elements, i) =>
-        elements ? (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-              transform: `translateY(-${scrollY}px)`,
-            }}
-          >
-            {elements}
-          </div>
-        ) : null,
+      {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
+        (elements, i) =>
+          elements ? (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                overflow: 'hidden',
+                transform: `translateY(-${scrollY}px)`,
+              }}
+            >
+              {elements}
+            </div>
+          ) : null,
       )}
-      {floatingLabelElements ? (
-        <div
-          ref={labelContainerRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            overflow: 'hidden',
-          }}
-        >
-          {floatingLabelElements}
-        </div>
-      ) : null}
 
       {model.maxY > height ? (
         <div

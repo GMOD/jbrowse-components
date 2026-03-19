@@ -9,10 +9,7 @@ import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
-function alignmentsSpec(
-  loc: string,
-  colorBySetting: Record<string, unknown>,
-) {
+function alignmentsSpec(loc: string, colorBySetting: Record<string, unknown>) {
   return {
     views: [
       {

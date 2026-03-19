@@ -236,7 +236,10 @@ async function setupPage(browser: Browser) {
     if (text.includes('favicon')) {
       return
     }
-    const elapsed = testStartTime > 0 ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s` : ''
+    const elapsed =
+      testStartTime > 0
+        ? `+${((performance.now() - testStartTime) / 1000).toFixed(1)}s`
+        : ''
     const prefix = elapsed ? `  [${elapsed}] Browser:` : '  Browser:'
     const type = msg.type()
     if (type === 'error') {

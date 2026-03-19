@@ -214,143 +214,146 @@ const PileupInner = observer(function PileupInner({
   const pileupDrawn = model.rpcDataMap.size > 0 && !model.isLoading
 
   return (
-    <div
-      data-testid={`drawn-${pileupDrawn}`}
-    >
-    <div
-      data-testid="pileup-display"
-      style={{ position: 'relative', width: '100%', height }}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{
-          display: 'block',
-          width,
-          height,
-          cursor:
-            model.featureIdUnderMouse || model.overCigarItem
-              ? 'pointer'
-              : 'default',
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
-        onContextMenu={handleContextMenu}
-      />
-
-      <SashimiArcsOverlay model={model} />
-
-      <VisibleLabelsOverlay
-        labels={model.visibleLabels}
-        width={width}
-        height={height}
-        contrastMap={contrastMap}
-      />
-
-      {model.coverageTicks ? (
-        <svg
+    <div data-testid={`drawn-${pileupDrawn}`}>
+      <div
+        data-testid="pileup-display"
+        style={{ position: 'relative', width: '100%', height }}
+      >
+        <canvas
+          ref={canvasRef}
           style={{
-            position: 'absolute',
-            top: 0,
-            left: model.scalebarOverlapLeft,
-            pointerEvents: 'none',
-            height: model.coverageTicks.height,
-            width: 50,
+            display: 'block',
+            width,
+            height,
+            cursor:
+              model.featureIdUnderMouse || model.overCigarItem
+                ? 'pointer'
+                : 'default',
           }}
-        >
-          <g transform="translate(45, 0)">
-            <CoverageYScaleBar model={model} orientation="left" />
-          </g>
-        </svg>
-      ) : null}
-
-      {model.showLegend ? <FloatingLegend items={model.legendItems} /> : null}
-
-      {showCoverage ? (
-        <div
-          onMouseDown={handleResizeMouseDown}
-          onMouseEnter={() => {
-            setResizeHandleHovered(true)
-          }}
-          onMouseLeave={() => {
-            setResizeHandleHovered(false)
-          }}
-          style={{
-            position: 'absolute',
-            top: coverageHeight - YSCALEBAR_LABEL_OFFSET,
-            left: 0,
-            right: 0,
-            height: YSCALEBAR_LABEL_OFFSET,
-            cursor: 'row-resize',
-            background: resizeHandleHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
-            zIndex: 10,
-          }}
-          title="Drag to resize coverage track"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleClick}
+          onContextMenu={handleContextMenu}
         />
-      ) : null}
 
-      {showArcs ? (
-        <div
-          onMouseDown={handleArcsResizeMouseDown}
-          onMouseEnter={() => {
-            setArcsResizeHovered(true)
-          }}
-          onMouseLeave={() => {
-            setArcsResizeHovered(false)
-          }}
-          style={{
-            position: 'absolute',
-            top: topOffset - YSCALEBAR_LABEL_OFFSET,
-            left: 0,
-            right: 0,
-            height: YSCALEBAR_LABEL_OFFSET,
-            cursor: 'row-resize',
-            background: arcsResizeHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
-            zIndex: 10,
-          }}
-          title="Drag to resize arcs area"
+        <SashimiArcsOverlay model={model} />
+
+        <VisibleLabelsOverlay
+          labels={model.visibleLabels}
+          width={width}
+          height={height}
+          contrastMap={contrastMap}
         />
-      ) : null}
 
-      {hasOverflow ? (
-        <div
-          className={classes.scrollbarTrack}
-          style={{ top: topOffset, height: trackHeight }}
-          onMouseDown={e => {
-            e.preventDefault()
-            e.stopPropagation()
-            const startY = e.clientY
-            const startScroll = model.currentRangeY[0]
-            const scrollRange = model.scrollableHeight
-            const usableTrack = trackHeight - thumbHeight
+        {model.coverageTicks ? (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: model.scalebarOverlapLeft,
+              pointerEvents: 'none',
+              height: model.coverageTicks.height,
+              width: 50,
+            }}
+          >
+            <g transform="translate(45, 0)">
+              <CoverageYScaleBar model={model} orientation="left" />
+            </g>
+          </svg>
+        ) : null}
 
-            const onMouseMove = (me: MouseEvent) => {
-              const dy = me.clientY - startY
-              const scrollDelta =
-                usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
-              const next = Math.max(
-                0,
-                Math.min(scrollRange, startScroll + scrollDelta),
-              )
-              model.setCurrentRangeY([next, next + model.pileupViewportHeight])
-            }
-            const onMouseUp = () => {
-              document.removeEventListener('mousemove', onMouseMove)
-              document.removeEventListener('mouseup', onMouseUp)
-            }
-            document.addEventListener('mousemove', onMouseMove)
-            document.addEventListener('mouseup', onMouseUp)
-          }}
-        >
+        {model.showLegend ? <FloatingLegend items={model.legendItems} /> : null}
+
+        {showCoverage ? (
           <div
-            className={classes.scrollbarThumb}
-            style={{ top: thumbTop - topOffset, height: thumbHeight }}
+            onMouseDown={handleResizeMouseDown}
+            onMouseEnter={() => {
+              setResizeHandleHovered(true)
+            }}
+            onMouseLeave={() => {
+              setResizeHandleHovered(false)
+            }}
+            style={{
+              position: 'absolute',
+              top: coverageHeight - YSCALEBAR_LABEL_OFFSET,
+              left: 0,
+              right: 0,
+              height: YSCALEBAR_LABEL_OFFSET,
+              cursor: 'row-resize',
+              background: resizeHandleHovered
+                ? 'rgba(0,0,0,0.1)'
+                : 'transparent',
+              zIndex: 10,
+            }}
+            title="Drag to resize coverage track"
           />
-        </div>
-      ) : null}
-    </div>
+        ) : null}
+
+        {showArcs ? (
+          <div
+            onMouseDown={handleArcsResizeMouseDown}
+            onMouseEnter={() => {
+              setArcsResizeHovered(true)
+            }}
+            onMouseLeave={() => {
+              setArcsResizeHovered(false)
+            }}
+            style={{
+              position: 'absolute',
+              top: topOffset - YSCALEBAR_LABEL_OFFSET,
+              left: 0,
+              right: 0,
+              height: YSCALEBAR_LABEL_OFFSET,
+              cursor: 'row-resize',
+              background: arcsResizeHovered ? 'rgba(0,0,0,0.1)' : 'transparent',
+              zIndex: 10,
+            }}
+            title="Drag to resize arcs area"
+          />
+        ) : null}
+
+        {hasOverflow ? (
+          <div
+            className={classes.scrollbarTrack}
+            style={{ top: topOffset, height: trackHeight }}
+            onMouseDown={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              const startY = e.clientY
+              const startScroll = model.currentRangeY[0]
+              const scrollRange = model.scrollableHeight
+              const usableTrack = trackHeight - thumbHeight
+
+              const onMouseMove = (me: MouseEvent) => {
+                const dy = me.clientY - startY
+                const scrollDelta =
+                  usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
+                const next = Math.max(
+                  0,
+                  Math.min(scrollRange, startScroll + scrollDelta),
+                )
+                model.setCurrentRangeY([
+                  next,
+                  next + model.pileupViewportHeight,
+                ])
+              }
+              const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove)
+                document.removeEventListener('mouseup', onMouseUp)
+              }
+              document.addEventListener('mousemove', onMouseMove)
+              document.addEventListener('mouseup', onMouseUp)
+            }}
+          >
+            <div
+              className={classes.scrollbarThumb}
+              style={{ top: thumbTop - topOffset, height: thumbHeight }}
+            />
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 })

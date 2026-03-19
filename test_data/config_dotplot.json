@@ -50,13 +50,8 @@
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_mcscan",
       "name": "Grape peach synteny (MCScan, anchors)",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["peach", "grape"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
@@ -68,23 +63,15 @@
         "bed2Location": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
         },
-        "assemblyNames": [
-          "grape",
-          "peach"
-        ]
+        "assemblyNames": ["grape", "peach"]
       }
     },
     {
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_mcscan_simple",
       "name": "Grape peach synteny (MCScan, simple anchors)",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
-      "category": [
-        "Annotation"
-      ],
+      "assemblyNames": ["peach", "grape"],
+      "category": ["Annotation"],
       "adapter": {
         "type": "MCScanSimpleAnchorsAdapter",
         "mcscanSimpleAnchorsLocation": {
@@ -96,40 +83,28 @@
         "bed2Location": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
         },
-        "assemblyNames": [
-          "grape",
-          "peach"
-        ]
+        "assemblyNames": ["grape", "peach"]
       }
     },
     {
       "trackId": "grape_peach_nucmer",
       "type": "SyntenyTrack",
       "name": "Grape vs Peach (nucmer)",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
+      "assemblyNames": ["peach", "grape"],
       "adapter": {
         "type": "DeltaAdapter",
         "deltaLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/out1.delta.gz",
           "locationType": "UriLocation"
         },
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ]
+        "assemblyNames": ["peach", "grape"]
       }
     },
     {
       "trackId": "grape_peach_paf",
       "type": "SyntenyTrack",
       "name": "Grape vs Peach (PAF)",
-      "assemblyNames": [
-        "peach",
-        "grape"
-      ],
+      "assemblyNames": ["peach", "grape"],
       "metadata": {
         "command": "minimap2 -c Vvinifera_145_Genoscope.12X.fa Ppersica_298_v2.0.fa > out.paf",
         "version": "2.24-r1122"
@@ -140,50 +115,35 @@
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz",
           "locationType": "UriLocation"
         },
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ]
+        "assemblyNames": ["peach", "grape"]
       }
     },
     {
       "type": "SyntenyTrack",
       "trackId": "dotplot_track_small",
       "name": "Grape vs peach small (PAF)",
-      "assemblyNames": [
-        "grape",
-        "peach"
-      ],
+      "assemblyNames": ["grape", "peach"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "peach_grape_small.paf.gz",
           "locationType": "UriLocation"
         },
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ]
+        "assemblyNames": ["peach", "grape"]
       }
     },
     {
       "type": "SyntenyTrack",
       "trackId": "dotplot_track_small_cigar",
       "name": "Grape vs peach small (PAF w/ CIGAR)",
-      "assemblyNames": [
-        "grape",
-        "peach"
-      ],
+      "assemblyNames": ["grape", "peach"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "peach_grape_small_cigar.paf.gz",
           "locationType": "UriLocation"
         },
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ]
+        "assemblyNames": ["peach", "grape"]
       }
     },
     {
@@ -201,9 +161,7 @@
           }
         }
       },
-      "assemblyNames": [
-        "grape"
-      ]
+      "assemblyNames": ["grape"]
     },
     {
       "type": "FeatureTrack",
@@ -220,9 +178,7 @@
           }
         }
       },
-      "assemblyNames": [
-        "peach"
-      ]
+      "assemblyNames": ["peach"]
     }
   ],
   "defaultSession": {
@@ -231,10 +187,7 @@
       {
         "id": "MiDMyyWpp",
         "type": "DotplotView",
-        "assemblyNames": [
-          "peach",
-          "grape"
-        ],
+        "assemblyNames": ["peach", "grape"],
         "hview": {
           "displayedRegions": [],
           "bpPerPx": 100000,
