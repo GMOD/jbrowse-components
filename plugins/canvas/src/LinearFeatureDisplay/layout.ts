@@ -7,11 +7,14 @@ import type {
   FeatureLabelData,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
+const LABEL_PADDING_PX = 8
+
 function effectiveLabelWidthPx(
   labelData: FeatureLabelData,
   showDescriptions: boolean,
 ) {
-  return maxLabelTextWidth(labelData, showDescriptions)
+  const width = maxLabelTextWidth(labelData, showDescriptions)
+  return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
 export function computeAndAssignLayout(
