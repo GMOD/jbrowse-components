@@ -192,7 +192,7 @@ export class WebGPUSequenceRenderer {
     }
     const gl = this.canvas.getContext('webgl2')
     if (!gl) {
-      console.error('[WebGPUSequenceRenderer] WebGL2 fallback failed')
+      console.warn('[WebGPUSequenceRenderer] WebGL2 fallback failed')
       return this.initCanvas2D()
     }
     this.glContext = gl
@@ -204,7 +204,7 @@ export class WebGPUSequenceRenderer {
   private initCanvas2D() {
     const ctx = this.canvas.getContext('2d')
     if (!ctx) {
-      console.error('[WebGPUSequenceRenderer] Canvas 2D fallback also failed')
+      console.warn('[WebGPUSequenceRenderer] Canvas 2D fallback also failed')
       return false
     }
     this.ctx2d = ctx

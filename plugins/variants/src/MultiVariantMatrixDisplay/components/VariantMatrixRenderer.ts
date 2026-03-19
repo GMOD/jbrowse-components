@@ -131,12 +131,12 @@ export class VariantMatrixRenderer {
       this.glFallback = new WebGLVariantMatrixRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[VariantMatrixRenderer] WebGL2 fallback failed:', e)
+      console.warn('[VariantMatrixRenderer] WebGL2 fallback failed:', e)
       try {
         this.canvas2dFallback = new Canvas2DVariantMatrixRenderer(this.canvas)
         return true
       } catch (e2) {
-        console.error(
+        console.warn(
           '[VariantMatrixRenderer] Canvas 2D fallback also failed:',
           e2,
         )

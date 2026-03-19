@@ -1,3 +1,8 @@
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   arcColorPalette,
@@ -293,12 +298,12 @@ export class Canvas2DAlignmentsRenderer {
     const scIdx: number[] = []
     const hcIdx: number[] = []
     for (let i = 0; i < data.numInterbases; i++) {
-      const t = data.interbaseTypes[i]
-      if (t === 1) {
+      const interbaseType = data.interbaseTypes[i]
+      if (interbaseType === INTERBASE_INSERTION) {
         insIdx.push(i)
-      } else if (t === 2) {
+      } else if (interbaseType === INTERBASE_SOFTCLIP) {
         scIdx.push(i)
-      } else if (t === 3) {
+      } else if (interbaseType === INTERBASE_HARDCLIP) {
         hcIdx.push(i)
       }
     }

@@ -4,7 +4,11 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken,
+  createStopTokenChecker,
+  checkStopToken2,
+} from '@jbrowse/core/util/stopToken'
 
 import { featureData } from '../util.ts'
 
@@ -107,15 +111,12 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       const colEnd = columnNumbers.end - 1
       const names = await this.getNames()
       const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
-      let start = performance.now()
+      const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
       await updateStatus('Downloading features', statusCallback, () =>
         this.bed.getLines(query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
-            if (performance.now() - start > 500) {
-              checkStopToken(stopToken)
-              start = performance.now()
-            }
+            checkStopToken2(stopTokenCheck)
             observer.next(
               new SimpleFeature(
                 featureData({

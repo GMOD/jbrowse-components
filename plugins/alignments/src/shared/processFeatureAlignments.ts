@@ -21,6 +21,11 @@ import { getMethBins } from '../ModificationParser/getMethBins.ts'
 import { getModPositions } from '../ModificationParser/getModPositions.ts'
 import { getColorForModification, getTagAlt } from '../util.ts'
 
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from './types'
 import type { Mismatch } from './types'
 import type {
   FeatureData,
@@ -422,9 +427,9 @@ export function buildInterbaseArrays(
     }
   }
 
-  addItems(filteredInsertions, 1)
-  addItems(filteredSoftclips, 2)
-  addItems(filteredHardclips, 3)
+  addItems(filteredInsertions, INTERBASE_INSERTION)
+  addItems(filteredSoftclips, INTERBASE_SOFTCLIP)
+  addItems(filteredHardclips, INTERBASE_HARDCLIP)
 
   return {
     interbasePositions,

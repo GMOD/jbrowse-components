@@ -14,6 +14,7 @@ import type { SourceInfo } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface ExecuteParams {
   pluginManager: PluginManager
@@ -23,7 +24,7 @@ interface ExecuteParams {
     region: Region
     sources?: SourceInfo[]
     bicolorPivot?: number
-    stopToken?: string
+    stopToken?: StopToken
     bpPerPx?: number
     resolution?: number
     statusCallback?: (msg: string) => void

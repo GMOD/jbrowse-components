@@ -434,7 +434,7 @@ export function computeAutoscaleDomain(
 }
 
 // Shared constants for wiggle drawing
-export const WIGGLE_FUDGE_FACTOR = 0.3
+export const WIGGLE_FUDGE_FACTOR = 0.8
 export const WIGGLE_CLIP_HEIGHT = 2
 
 // Precomputed scale values for fast rendering

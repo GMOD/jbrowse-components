@@ -1,5 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { indexTracks } from '@jbrowse/text-indexing'
 
 import type { Track, indexType } from '@jbrowse/text-indexing'
@@ -10,7 +12,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      stopToken?: string
+      stopToken?: StopToken
       outLocation?: string
       attributes?: string[]
       exclude?: string[]

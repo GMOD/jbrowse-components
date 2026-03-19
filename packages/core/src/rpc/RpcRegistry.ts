@@ -1,6 +1,7 @@
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
 import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type { Region } from '../util/types/index.ts'
+import type { StopToken } from '../util/stopToken.ts'
 
 export interface RegionLike {
   refName: string
@@ -15,7 +16,7 @@ export interface RpcRegistry {
       adapterConfig: Record<string, unknown>
       sequenceAdapter?: Record<string, unknown>
       regions?: { assemblyName: string }[]
-      stopToken?: string
+      stopToken?: StopToken
     }
     return: string[]
   }
@@ -29,7 +30,7 @@ export interface RpcRegistry {
     args: {
       region: RegionLike
       adapterConfig: Record<string, unknown>
-      stopToken?: string
+      stopToken?: StopToken
     }
     return: string | undefined
   }
@@ -38,7 +39,7 @@ export interface RpcRegistry {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
       statusCallback?: (arg: string) => void
-      stopToken?: string
+      stopToken?: StopToken
       opts?: unknown
     }
     return: Feature[]
@@ -47,7 +48,7 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       regions: RegionLike[]
-      stopToken?: string
+      stopToken?: StopToken
       headers?: Record<string, string>
     }
     return: FeatureDensityStats
@@ -55,14 +56,14 @@ export interface RpcRegistry {
   CoreGetInfo: {
     args: {
       adapterConfig: Record<string, unknown>
-      stopToken?: string
+      stopToken?: StopToken
     }
     return: Record<string, unknown> | null
   }
   CoreGetMetadata: {
     args: {
       adapterConfig: Record<string, unknown>
-      stopToken?: string
+      stopToken?: StopToken
     }
     return: Record<string, unknown> | null
   }

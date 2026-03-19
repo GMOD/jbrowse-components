@@ -1,5 +1,10 @@
 import { measureText } from '@jbrowse/core/util'
 
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { getInsertionType } from '../model.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
@@ -122,7 +127,7 @@ export function computeVisibleLabels(
       const posOffset = interbasePositions[i]!
       const length = interbaseLengths[i]!
       const y = interbaseYs[i]!
-      const type = interbaseTypes[i]! // 1=insertion, 2=softclip, 3=hardclip
+      const type = interbaseTypes[i]!
 
       const pos = regionStart + posOffset
 
@@ -138,8 +143,7 @@ export function computeVisibleLabels(
         continue
       }
 
-      // Type 1 = insertion
-      if (type === 1) {
+      if (type === INTERBASE_INSERTION) {
         const insertionType = getInsertionType(length, pxPerBp)
 
         if (
@@ -164,8 +168,7 @@ export function computeVisibleLabels(
         }
       }
 
-      // Type 2 = softclip
-      if (type === 2 && canRenderText) {
+      if (type === INTERBASE_SOFTCLIP && canRenderText) {
         labels.push({
           type: 'softclip',
           x: xPx,
@@ -175,8 +178,7 @@ export function computeVisibleLabels(
         })
       }
 
-      // Type 3 = hardclip
-      if (type === 3 && canRenderText) {
+      if (type === INTERBASE_HARDCLIP && canRenderText) {
         labels.push({
           type: 'hardclip',
           x: xPx,

@@ -196,7 +196,7 @@ export class CanvasFeatureRenderer {
       this.glFallback = new WebGLFeatureRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[CanvasFeatureRenderer] WebGL2 fallback also failed:', e)
+      console.warn('[CanvasFeatureRenderer] WebGL2 fallback also failed:', e)
       this.canvas2dFallback = new Canvas2DFeatureRenderer(this.canvas)
       return true
     }

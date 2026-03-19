@@ -2,13 +2,15 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
+import type { StopToken } from '../../util/stopToken.ts'
+
 export default class CoreGetMetadata extends RpcMethodType {
   name = 'CoreGetMetadata'
 
   async execute(
     args: {
       sessionId: string
-      stopToken?: string
+      stopToken?: StopToken
       adapterConfig: Record<string, unknown>
     },
     rpcDriver: string,

@@ -7,6 +7,8 @@
  * This is critical for alignment between features and hit detection.
  */
 
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
 export interface LabelItem {
   text: string
   relativeY: number
@@ -36,7 +38,7 @@ export interface RenderFeatureDataArgs {
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
-  stopToken?: string
+  stopToken?: StopToken
 }
 
 export interface FeatureDataResult {

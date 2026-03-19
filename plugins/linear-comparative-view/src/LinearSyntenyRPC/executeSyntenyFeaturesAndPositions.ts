@@ -4,6 +4,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -171,7 +172,7 @@ export async function executeSyntenyFeaturesAndPositions({
   regions: Region[]
   viewSnaps: ViewSnap[]
   level: number
-  stopToken?: string
+  stopToken?: StopToken
   colorBy?: string
   drawCurves?: boolean
   drawCIGAR?: boolean

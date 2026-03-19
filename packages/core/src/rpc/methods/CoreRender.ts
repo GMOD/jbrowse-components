@@ -11,6 +11,7 @@ import type {
   RenderResults,
   ResultsSerialized,
 } from './util.ts'
+import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreRender extends RpcMethodType {
   name = 'CoreRender'
@@ -59,7 +60,7 @@ export default class CoreRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { stopToken?: string },
+    args: RenderArgsSerialized & { stopToken?: StopToken },
     rpcDriver: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)

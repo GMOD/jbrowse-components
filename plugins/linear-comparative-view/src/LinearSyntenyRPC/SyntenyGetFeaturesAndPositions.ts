@@ -2,6 +2,7 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { SyntenyRpcResult } from './executeSyntenyFeaturesAndPositions.ts'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
   adapterConfig: Record<string, unknown>
@@ -9,7 +10,7 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   viewSnaps: ViewSnap[]
   level: number
   sessionId: string
-  stopToken?: string
+  stopToken?: StopToken
   colorBy?: string
   drawCurves?: boolean
   drawCIGAR?: boolean

@@ -29,6 +29,7 @@ import type { ChainStats, ColorBy } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface ExecuteParams {
   pluginManager: PluginManager
@@ -42,7 +43,7 @@ interface ExecuteParams {
     height: number
     drawInter: boolean
     drawLongRange: boolean
-    stopToken?: string
+    stopToken?: StopToken
     statusCallback?: (msg: string) => void
   }
 }

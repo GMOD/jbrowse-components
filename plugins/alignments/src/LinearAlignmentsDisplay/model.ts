@@ -12,6 +12,7 @@ import {
   isSessionModelWithWidgets,
   max,
 } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import {
   addDisposer,
   getSnapshot,
@@ -71,6 +72,11 @@ import type {
 } from './components/hitTesting.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../shared/types'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
 import type {
   FeatureData,
@@ -1250,7 +1256,7 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
-        stopToken: string,
+        stopToken: StopToken,
       ) {
         const sessionId = getRpcSessionId(self)
         return getSession(self).rpcManager.call(sessionId, 'RenderPileupData', {
@@ -1276,7 +1282,7 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         sequenceAdapter: unknown,
         region: Region,
-        stopToken: string,
+        stopToken: StopToken,
       ) {
         const sessionId = getRpcSessionId(self)
         return getSession(self).rpcManager.call(sessionId, 'RenderChainData', {
@@ -1302,7 +1308,7 @@ export default function stateModelFactory(
         adapterConfig: unknown,
         region: Region,
         regionNumber: number,
-        stopToken: string,
+        stopToken: StopToken,
       ) {
         const session = getSession(self)
         const sequenceAdapter = getSequenceAdapter(session, region)
@@ -1375,21 +1381,21 @@ export default function stateModelFactory(
             const featureId = data.readIds[readIdx]!
             const position = data.regionStart + data.interbasePositions[i]!
             const length = data.interbaseLengths[i]!
-            const t = data.interbaseTypes[i]!
-            if (t === 1) {
+            const interbaseType = data.interbaseTypes[i]!
+            if (interbaseType === INTERBASE_INSERTION) {
               insertions.push({
                 featureId,
                 position,
                 length,
                 sequence: data.interbaseSequences[i],
               })
-            } else if (t === 2) {
+            } else if (interbaseType === INTERBASE_SOFTCLIP) {
               const readStartOffset = data.readPositions[readIdx * 2]!
               const ibPosOffset = data.interbasePositions[i]!
               const isLeftClip = ibPosOffset === readStartOffset
               const clipStart = isLeftClip ? position - length : position
               softclips.push({ featureId, position, clipStart, length })
-            } else {
+            } else if (interbaseType === INTERBASE_HARDCLIP) {
               hardclips.push({ featureId, position, length })
             }
           }

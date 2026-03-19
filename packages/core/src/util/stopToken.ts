@@ -1,83 +1,35 @@
 import { isWebWorker } from './isWebWorker.ts'
 
 /**
- * source https://github.com/panstromek/zebra-rs/blob/82d616225930b3ad423a2c6d883c79b94ee08ba6/webzebra/src/stopToken.ts#L34C1-L57C16
+ * Stop tokens allow the main thread to cancel long-running synchronous work
+ * in web workers.
  *
- * blogpost https://yoyo-code.com/how-to-stop-synchronous-web-worker/
+ * Two strategies are supported:
  *
- * license "I explicitly added MIT license to the stopToken file to make it more
- * permissive"
+ * 1. SharedArrayBuffer (preferred) — The main thread sets an atomic flag that
+ *    workers read via Atomics.load. Requires cross-origin isolation headers.
  *
- * Copyright (c) 2022 Matyáš Racek
+ * 2. Blob URL (fallback) — The main thread revokes a blob URL; workers detect
+ *    this via a synchronous XHR that fails. Expensive, so heavily throttled.
  *
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
+ * Based on https://yoyo-code.com/how-to-stop-synchronous-web-worker/
+ * Original code copyright (c) 2022 Matyáš Racek, MIT license.
  */
 
-// export type StopToken = string | SharedArrayBuffer
-export type StopToken = string
+export type StopToken = string | SharedArrayBuffer
 
-// Check if SharedArrayBuffer is available (requires cross-origin isolation)
-// function isSharedArrayBufferAvailable() {
-//   try {
-//     // Need to actually try to use it, not just check typeof
-//     return (
-//       typeof SharedArrayBuffer !== 'undefined' &&
-//       new SharedArrayBuffer(4).byteLength === 4
-//     )
-//   } catch {
-//     return false
-//   }
-// }
+// Atomic flag values stored in the Int32Array view of the SharedArrayBuffer
+const ABORT_FLAG_CLEAR = 0
+const ABORT_FLAG_SET = 1
 
-// const useSharedArrayBuffer = isSharedArrayBufferAvailable()
+// How often checkStopToken2 actually performs the underlying check.
+// SAB is a cheap atomic read; XHR is an expensive synchronous request.
+const SAB_CHECK_EVERY_N_ITERS = 10
+const XHR_CHECK_EVERY_N_ITERS = 100
 
-export function createStopTokenChecker(stopToken: StopToken | undefined) {
-  return {
-    time: Date.now(),
-    iters: 0,
-    stopToken,
-  }
-}
+// Minimum ms between XHR checks (also the linear backoff step)
+const XHR_CHECK_INTERVAL_MS = 50
 
-export function createStopToken(): StopToken {
-  // URL not available in jest and can't properly mock it
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
-}
-
-// unused SharedArrayBuffer
-// export function createStopToken(): StopToken {
-//   // Prefer SharedArrayBuffer when available (faster, just memory access)
-//   if (useSharedArrayBuffer) {
-//     const buffer = new SharedArrayBuffer(4)
-//     new Int32Array(buffer)[0] = 0 // Initialize to not-aborted
-//     return buffer
-//   } else {
-//     // Fallback to blob URL approach
-//     // URL not available in jest and can't properly mock it
-//     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-//     return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
-//   }
-// }
-
-// Safely check if a value is a SharedArrayBuffer
 function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
   try {
     return (
@@ -89,32 +41,57 @@ function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
   }
 }
 
+const useSharedArrayBuffer = (() => {
+  try {
+    return isSharedArrayBuffer(new SharedArrayBuffer(4))
+  } catch {
+    return false
+  }
+})()
+
+if (useSharedArrayBuffer) {
+  console.log('[stopToken] SharedArrayBuffer available, using fast atomic abort')
+}
+
+// ---------------------------------------------------------------------------
+// Create / stop
+// ---------------------------------------------------------------------------
+
+export function createStopToken(): StopToken {
+  if (useSharedArrayBuffer) {
+    const buffer = new SharedArrayBuffer(4)
+    new Int32Array(buffer)[0] = ABORT_FLAG_CLEAR
+    return buffer
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return URL.createObjectURL?.(new Blob()) || `${Math.random()}`
+}
+
 export function stopStopToken(stopToken?: StopToken) {
-  if (stopToken !== undefined) {
-    if (isSharedArrayBuffer(stopToken)) {
-      // Set abort flag
-      Atomics.store(new Int32Array(stopToken), 0, 1)
-    } else {
-      // Revoke blob URL
-      // URL not available in jest and can't properly mock it
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      URL.revokeObjectURL?.(stopToken)
-    }
+  if (stopToken === undefined) {
+    return
+  }
+  if (isSharedArrayBuffer(stopToken)) {
+    Atomics.store(new Int32Array(stopToken), 0, ABORT_FLAG_SET)
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    URL.revokeObjectURL?.(stopToken)
   }
 }
+
+// ---------------------------------------------------------------------------
+// One-shot check (use at async boundaries)
+// ---------------------------------------------------------------------------
 
 export function checkStopToken(stopToken: StopToken | undefined) {
   if (stopToken === undefined) {
     return
   }
-
   if (isSharedArrayBuffer(stopToken)) {
-    // Fast path: just check memory
-    if (Atomics.load(new Int32Array(stopToken), 0) === 1) {
+    if (Atomics.load(new Int32Array(stopToken), 0) === ABORT_FLAG_SET) {
       throw new Error('aborted')
     }
   } else if (typeof jest === 'undefined' && isWebWorker()) {
-    // Slow path: synchronous XHR (avoid on main thread)
     const xhr = new XMLHttpRequest()
     xhr.open('GET', stopToken, false)
     try {
@@ -125,70 +102,65 @@ export function checkStopToken(stopToken: StopToken | undefined) {
   }
 }
 
-export interface LastStopTokenCheck {
-  time: number
-  iters: number
-  backoff?: boolean
-  checkInterval?: number
-  checkIters?: number
+// ---------------------------------------------------------------------------
+// Throttled check (use inside tight loops)
+// ---------------------------------------------------------------------------
+
+export interface StopTokenChecker {
   stopToken?: StopToken
+  sabView?: Int32Array
+  iters: number
+  time: number
+  checkIters: number
+  checkInterval: number
+  backoff: boolean
 }
-export function checkStopToken2(lastCheck?: LastStopTokenCheck) {
-  if (!lastCheck) {
-    return
-  }
-  const {
+
+export function createStopTokenChecker(
+  stopToken: StopToken | undefined,
+): StopTokenChecker {
+  const sabView =
+    stopToken !== undefined && isSharedArrayBuffer(stopToken)
+      ? new Int32Array(stopToken)
+      : undefined
+  return {
     stopToken,
-    backoff = true,
-    checkInterval = 50,
-    checkIters = 100,
-  } = lastCheck
-  lastCheck.iters++
-  if (stopToken === undefined) {
+    sabView,
+    iters: 0,
+    time: Date.now(),
+    checkIters: sabView ? SAB_CHECK_EVERY_N_ITERS : XHR_CHECK_EVERY_N_ITERS,
+    checkInterval: XHR_CHECK_INTERVAL_MS,
+    backoff: true,
+  }
+}
+
+export function checkStopToken2(checker?: StopTokenChecker) {
+  if (!checker || checker.stopToken === undefined) {
     return
   }
-  if (lastCheck.iters % checkIters !== 0) {
+  checker.iters++
+  if (checker.iters % checker.checkIters !== 0) {
     return
   }
 
-  // SharedArrayBuffer is cheap, always check
-  if (isSharedArrayBuffer(stopToken)) {
-    checkStopToken(stopToken)
+  // SAB: single atomic read
+  if (checker.sabView) {
+    if (Atomics.load(checker.sabView, 0) === ABORT_FLAG_SET) {
+      throw new Error('aborted')
+    }
+    return
   }
 
-  // Sync XHR is expensive, throttle to every 10ms
+  // XHR: gate on wall-clock time with linear backoff
   const now = Date.now()
-  if (now - lastCheck.time > checkInterval) {
-    lastCheck.time = now
-    checkStopToken(stopToken)
-    if (backoff) {
-      // initialize if not exist
-      lastCheck.checkInterval ??= checkInterval
-      // add backoff
-      lastCheck.checkInterval += checkInterval
+  if (now - checker.time > checker.checkInterval) {
+    checker.time = now
+    checkStopToken(checker.stopToken)
+    if (checker.backoff) {
+      checker.checkInterval += XHR_CHECK_INTERVAL_MS
     }
   }
 }
 
-export function forEachWithStopTokenCheck<T>(
-  iter: Iterable<T>,
-  stopToken: StopToken | undefined,
-  arg: (arg: T, idx: number) => void,
-  durationMs = 400,
-  checkIters = 100,
-  backoff = true,
-) {
-  const lastCheck = {
-    time: Date.now(),
-    iters: 0,
-    checkInterval: durationMs,
-    backoff,
-    checkIters,
-    stopToken,
-  }
-  let iters = 0
-  for (const t of iter) {
-    arg(t, iters++)
-    checkStopToken2(lastCheck)
-  }
-}
+// Keep old name as alias for backwards compatibility in external consumers
+export type LastStopTokenCheck = StopTokenChecker

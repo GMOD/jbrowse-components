@@ -4,6 +4,8 @@ import { Readable } from 'stream'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import {
   generateMeta,
   indexGff3,
@@ -18,7 +20,7 @@ import type { Track } from '@jbrowse/text-indexing-core'
 export async function indexTracks(args: {
   tracks: Track[]
   outDir?: string
-  stopToken?: string
+  stopToken?: StopToken
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
@@ -72,7 +74,7 @@ async function perTrackIndex({
   outDir?: string
   attributesToIndex?: string[]
   featureTypesToExclude?: string[]
-  stopToken?: string
+  stopToken?: StopToken
 }) {
   const outFlag = paramOutDir || '.'
 
@@ -120,7 +122,7 @@ async function aggregateIndex({
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
-  stopToken?: string
+  stopToken?: StopToken
 }) {
   const outFlag = paramOutDir || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
@@ -171,7 +173,7 @@ async function indexDriver({
   featureTypesToExclude: string[]
   assemblyNames: string[]
   statusCallback: (message: string) => void
-  stopToken?: string
+  stopToken?: StopToken
 }) {
   const readable = Readable.from(
     indexFiles({
@@ -209,7 +211,7 @@ async function* indexFiles({
   outDir: string
   featureTypesToExclude: string[]
   statusCallback: (message: string) => void
-  stopToken?: string
+  stopToken?: StopToken
 }) {
   for (const track of tracks) {
     const { adapter, textSearching } = track

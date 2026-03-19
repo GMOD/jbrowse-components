@@ -16,6 +16,7 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -493,7 +494,6 @@ export default function stateModelFactory(
             stopStopToken(self.renderingStopToken)
             self.renderingStopToken = undefined
           }
-          self.isLoading = false
           self.error = undefined
           self.loadedRegions = new Map()
           self.layoutBpPerPxMap = new Map()
@@ -514,7 +514,7 @@ export default function stateModelFactory(
         region: Region,
         regionNumber: number,
         bpPerPx: number,
-        stopToken: string,
+        stopToken: StopToken,
       ): Promise<FetchResult | 'regionTooLarge'> {
         const session = getSession(self)
         const { rpcManager } = session

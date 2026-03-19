@@ -64,7 +64,6 @@ export function doAfterAttach(self: SharedLDModel) {
 
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
-      self.setLoading(true)
 
       const stats = await fetchByteEstimate([...regions])
       if (fetchGeneration !== gen) {
@@ -136,7 +135,6 @@ export function doAfterAttach(self: SharedLDModel) {
     } finally {
       if (isAlive(self)) {
         self.setRenderingStopToken(undefined)
-        self.setLoading(false)
         self.setStatusMessage(undefined)
       }
     }

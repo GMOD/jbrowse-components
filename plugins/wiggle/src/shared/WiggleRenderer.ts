@@ -174,7 +174,7 @@ export class WiggleRenderer {
       this.glFallback = new WebGLWiggleRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[WiggleRenderer] WebGL2 fallback also failed:', e)
+      console.warn('[WiggleRenderer] WebGL2 fallback also failed:', e)
       this.canvas2dFallback = new Canvas2DWiggleRenderer(this.canvas)
       return true
     }

@@ -22,6 +22,10 @@ export function onDeviceLost(listener: () => void) {
 
 async function createDevice(): Promise<GPUDevice | null> {
   try {
+    if (!navigator.gpu) {
+      console.warn('WebGPU unsupported in this browser, trying fallback')
+      return null
+    }
     const adapter = await navigator.gpu.requestAdapter()
     if (!adapter) {
       return null
@@ -48,7 +52,7 @@ async function createDevice(): Promise<GPUDevice | null> {
     device = d
     return d
   } catch (e) {
-    console.error('WebGPU device creation failed:', e)
+    console.warn('WebGPU device creation failed:', e)
     return null
   }
 }

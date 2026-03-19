@@ -143,12 +143,12 @@ export class LDRenderer {
       this.glFallback = new WebGLLDRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[LDRenderer] WebGL2 fallback failed:', e)
+      console.warn('[LDRenderer] WebGL2 fallback failed:', e)
       try {
         this.canvas2dFallback = new Canvas2DLDRenderer(this.canvas)
         return true
       } catch (e2) {
-        console.error('[LDRenderer] Canvas 2D fallback also failed:', e2)
+        console.warn('[LDRenderer] Canvas 2D fallback also failed:', e2)
         return false
       }
     }

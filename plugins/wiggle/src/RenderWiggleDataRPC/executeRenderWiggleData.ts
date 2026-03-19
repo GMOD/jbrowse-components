@@ -13,6 +13,7 @@ import type { WiggleDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface ExecuteParams {
   pluginManager: PluginManager
@@ -21,7 +22,7 @@ interface ExecuteParams {
     adapterConfig: Record<string, unknown>
     region: Region
     bicolorPivot?: number
-    stopToken?: string
+    stopToken?: StopToken
     bpPerPx?: number
     resolution?: number
     statusCallback?: (msg: string) => void

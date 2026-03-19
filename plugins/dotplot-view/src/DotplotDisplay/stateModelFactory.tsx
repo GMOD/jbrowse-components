@@ -1,4 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -107,7 +108,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setLoading(_stopToken?: string) {
+      setLoading(_stopToken?: StopToken) {
         self.error = undefined
       },
       /**

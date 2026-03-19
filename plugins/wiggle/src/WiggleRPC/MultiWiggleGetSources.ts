@@ -3,6 +3,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export class MultiWiggleGetSources extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'MultiWiggleGetSources'
@@ -10,7 +11,7 @@ export class MultiWiggleGetSources extends RpcMethodTypeWithFiltersAndRenameRegi
   async execute(
     args: {
       adapterConfig: AnyConfigurationModel
-      stopToken?: string
+      stopToken?: StopToken
       sessionId: string
       headers?: Record<string, string>
       regions: Region[]

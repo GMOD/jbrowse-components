@@ -18,11 +18,11 @@ export async function initGpuContext(
         })
         return { device, context }
       }
-      console.error(
+      console.warn(
         '[initGpuContext] WebGPU device available but canvas context failed',
       )
     } catch (e) {
-      console.error('[initGpuContext] WebGPU context setup failed:', e)
+      console.warn('[initGpuContext] WebGPU context setup failed:', e)
     }
   }
   return undefined

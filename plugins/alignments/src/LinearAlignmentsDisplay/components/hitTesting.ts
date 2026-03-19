@@ -14,6 +14,11 @@
 
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { getInsertionRectWidthPx, getInsertionType } from '../model.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
@@ -257,9 +262,8 @@ export function hitTestCigarItem(
   const pxPerBp = 1 / bpPerPx
 
   // Check large insertions first (they render as wide boxes that overlap SNPs)
-  // Type 1 = insertion
   for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== 1) {
+    if (interbaseTypes[i] !== INTERBASE_INSERTION) {
       continue
     }
     const y = interbaseYs[i]
@@ -306,9 +310,8 @@ export function hitTestCigarItem(
   }
 
   // Check small insertions (thin bars that don't overlap SNPs)
-  // Type 1 = insertion
   for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== 1) {
+    if (interbaseTypes[i] !== INTERBASE_INSERTION) {
       continue
     }
     const y = interbaseYs[i]
@@ -361,9 +364,9 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check softclips - type 2
+  // Check softclips
   for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== 2) {
+    if (interbaseTypes[i] !== INTERBASE_SOFTCLIP) {
       continue
     }
     const y = interbaseYs[i]
@@ -386,9 +389,9 @@ export function hitTestCigarItem(
     }
   }
 
-  // Check hardclips - type 3
+  // Check hardclips
   for (let i = 0; i < numInterbases; i++) {
-    if (interbaseTypes[i] !== 3) {
+    if (interbaseTypes[i] !== INTERBASE_HARDCLIP) {
       continue
     }
     const y = interbaseYs[i]

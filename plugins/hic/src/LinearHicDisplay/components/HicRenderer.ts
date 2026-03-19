@@ -145,7 +145,7 @@ export class HicRenderer {
       this.glFallback = new WebGLHicRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[HicRenderer] WebGL2 fallback also failed:', e)
+      console.warn('[HicRenderer] WebGL2 fallback also failed:', e)
       this.canvas2dFallback = new Canvas2DHicRenderer(this.canvas)
       return true
     }

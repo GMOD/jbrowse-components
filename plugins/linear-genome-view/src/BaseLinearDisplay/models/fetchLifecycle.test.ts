@@ -1,9 +1,10 @@
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface LifecycleModel {
-  isLoading: boolean
+  readonly isLoading: boolean
   error: unknown
-  renderingStopToken: string | undefined
+  renderingStopToken: StopToken | undefined
   fetchGeneration: number
   regionTooLargeState: boolean
   regionTooLargeReasonState: string
@@ -11,14 +12,16 @@ interface LifecycleModel {
 }
 
 interface FetchContext {
-  stopToken: string
+  stopToken: StopToken
   generation: number
   isStale: () => boolean
 }
 
 function createModel(): LifecycleModel {
   return {
-    isLoading: false,
+    get isLoading() {
+      return this.renderingStopToken !== undefined
+    },
     error: undefined,
     renderingStopToken: undefined,
     fetchGeneration: 0,
@@ -44,7 +47,6 @@ function withFetchLifecycle(
   const stopToken = createStopToken()
   const generation = model.fetchGeneration
   model.renderingStopToken = stopToken
-  model.isLoading = true
   model.error = undefined
 
   const isStale = () =>
@@ -65,7 +67,6 @@ function withFetchLifecycle(
             model.regionTooLargeState = true
             model.regionTooLargeReasonState = result.reason ?? ''
             model.renderingStopToken = undefined
-            model.isLoading = false
             model.statusMessage = undefined
             return
           }
@@ -80,7 +81,6 @@ function withFetchLifecycle(
     } finally {
       if (!isStale()) {
         model.renderingStopToken = undefined
-        model.isLoading = false
         model.statusMessage = undefined
       }
     }
@@ -92,7 +92,6 @@ function clearAllRpcData(model: LifecycleModel) {
     stopStopToken(model.renderingStopToken)
     model.renderingStopToken = undefined
   }
-  model.isLoading = false
   model.error = undefined
   model.regionTooLargeState = false
   model.regionTooLargeReasonState = ''

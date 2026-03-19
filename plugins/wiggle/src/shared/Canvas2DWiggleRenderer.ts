@@ -1,3 +1,4 @@
+import { WIGGLE_FUDGE_FACTOR, fillRectCtx } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -15,6 +16,22 @@ interface Canvas2DRegionData {
   regionStart: number
   sources: SourceRenderData[]
   numRows: number
+}
+
+interface DrawParams {
+  ctx: CanvasRenderingContext2D
+  source: SourceRenderData
+  regionStart: number
+  block: WiggleRenderBlock
+  bpLength: number
+  fullBlockWidth: number
+  rowHeight: number
+  rowTop: number
+  domainY: [number, number]
+  scaleType: number
+  r: number
+  g: number
+  b: number
 }
 
 function normalizeScore(
@@ -129,76 +146,31 @@ export class Canvas2DWiggleRenderer {
 
       for (const [idx, source] of region.sources.entries()) {
         const row = source.rowIndex ?? idx
-        const rowTop = row * rowHeight
         const [r, g, b] = source.color
-        const r8 = Math.round(r * 255)
-        const g8 = Math.round(g * 255)
-        const b8 = Math.round(b * 255)
+        const params: DrawParams = {
+          ctx,
+          source,
+          regionStart: region.regionStart,
+          block,
+          bpLength,
+          fullBlockWidth,
+          rowHeight,
+          rowTop: row * rowHeight,
+          domainY,
+          scaleType,
+          r: Math.round(r * 255),
+          g: Math.round(g * 255),
+          b: Math.round(b * 255),
+        }
 
         if (renderingType === RENDERING_TYPE_LINE) {
-          this.drawLine(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            bpLength,
-            fullBlockWidth,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            r8,
-            g8,
-            b8,
-          )
+          this.drawLine(params)
         } else if (renderingType === RENDERING_TYPE_DENSITY) {
-          this.drawDensity(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            bpLength,
-            fullBlockWidth,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            r8,
-            g8,
-            b8,
-          )
+          this.drawDensity(params)
         } else if (renderingType === RENDERING_TYPE_SCATTER) {
-          this.drawScatter(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            bpLength,
-            fullBlockWidth,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            r8,
-            g8,
-            b8,
-          )
+          this.drawScatter(params)
         } else {
-          this.drawXYPlot(
-            ctx,
-            source,
-            region.regionStart,
-            block,
-            bpLength,
-            fullBlockWidth,
-            rowHeight,
-            rowTop,
-            domainY,
-            scaleType,
-            r8,
-            g8,
-            b8,
-          )
+          this.drawXYPlot(params)
         }
       }
 
@@ -218,22 +190,10 @@ export class Canvas2DWiggleRenderer {
     )
   }
 
-  private drawXYPlot(
-    ctx: CanvasRenderingContext2D,
-    source: SourceRenderData,
-    regionStart: number,
-    block: WiggleRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    rowHeight: number,
-    rowTop: number,
-    domainY: [number, number],
-    scaleType: number,
-    r: number,
-    g: number,
-    b: number,
-  ) {
-    ctx.fillStyle = `rgb(${r},${g},${b})`
+  private drawXYPlot(p: DrawParams) {
+    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
+    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
+    const color = `rgb(${r},${g},${b})`
     const originY = scoreToY(0, domainY, rowHeight, scaleType) + rowTop
 
     for (let i = 0; i < source.numFeatures; i++) {
@@ -244,30 +204,15 @@ export class Canvas2DWiggleRenderer {
       const scoreY =
         scoreToY(source.featureScores[i]!, domainY, rowHeight, scaleType) +
         rowTop
+      const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
 
-      const yTop = Math.min(scoreY, originY)
-      const yBot = Math.max(scoreY, originY)
-      const w = Math.max(1.5, x2 - x1)
-
-      ctx.fillRect(x1, yTop, w, yBot - yTop)
+      fillRectCtx(x1, scoreY, w, originY - scoreY, ctx, color)
     }
   }
 
-  private drawDensity(
-    ctx: CanvasRenderingContext2D,
-    source: SourceRenderData,
-    regionStart: number,
-    block: WiggleRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    rowHeight: number,
-    rowTop: number,
-    domainY: [number, number],
-    scaleType: number,
-    r: number,
-    g: number,
-    b: number,
-  ) {
+  private drawDensity(p: DrawParams) {
+    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
+    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
     const zeroNorm = normalizeScore(0, domainY, scaleType)
     const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
 
@@ -276,7 +221,7 @@ export class Canvas2DWiggleRenderer {
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const w = Math.max(1.5, x2 - x1)
+      const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
 
       const norm = normalizeScore(source.featureScores[i]!, domainY, scaleType)
       const t = maxDist > 0.0001 ? Math.abs(norm - zeroNorm) / maxDist : 0
@@ -284,26 +229,13 @@ export class Canvas2DWiggleRenderer {
       const cr = Math.round(255 + (r - 255) * t)
       const cg = Math.round(255 + (g - 255) * t)
       const cb = Math.round(255 + (b - 255) * t)
-      ctx.fillStyle = `rgb(${cr},${cg},${cb})`
-      ctx.fillRect(x1, rowTop, w, rowHeight)
+      fillRectCtx(x1, rowTop, w, rowHeight, ctx, `rgb(${cr},${cg},${cb})`)
     }
   }
 
-  private drawLine(
-    ctx: CanvasRenderingContext2D,
-    source: SourceRenderData,
-    regionStart: number,
-    block: WiggleRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    rowHeight: number,
-    rowTop: number,
-    domainY: [number, number],
-    scaleType: number,
-    r: number,
-    g: number,
-    b: number,
-  ) {
+  private drawLine(p: DrawParams) {
+    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
+    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
     if (source.numFeatures === 0) {
       return
     }
@@ -333,21 +265,9 @@ export class Canvas2DWiggleRenderer {
     ctx.stroke()
   }
 
-  private drawScatter(
-    ctx: CanvasRenderingContext2D,
-    source: SourceRenderData,
-    regionStart: number,
-    block: WiggleRenderBlock,
-    bpLength: number,
-    fullBlockWidth: number,
-    rowHeight: number,
-    rowTop: number,
-    domainY: [number, number],
-    scaleType: number,
-    r: number,
-    g: number,
-    b: number,
-  ) {
+  private drawScatter(p: DrawParams) {
+    const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
+    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
     ctx.fillStyle = `rgb(${r},${g},${b})`
 
     for (let i = 0; i < source.numFeatures; i++) {

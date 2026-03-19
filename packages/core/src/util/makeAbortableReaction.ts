@@ -93,6 +93,7 @@ export function makeAbortableReaction<T, U, V>(
   addDisposer(self, () => {
     if (inProgress) {
       stopStopToken(inProgress)
+      inProgress = undefined
     }
   })
 }

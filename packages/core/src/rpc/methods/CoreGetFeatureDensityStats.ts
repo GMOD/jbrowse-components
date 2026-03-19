@@ -5,13 +5,14 @@ import { renameRegionsIfNeeded } from '../../util/index.ts'
 
 import type { RenderArgs } from './util.ts'
 import type { Region } from '../../util/index.ts'
+import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetFeatureDensityStats extends RpcMethodType {
   name = 'CoreGetFeatureDensityStats'
 
   async serializeArguments(
     args: RenderArgs & {
-      stopToken?: string
+      stopToken?: StopToken
       statusCallback?: (arg: string) => void
     },
     rpcDriver: string,
@@ -31,7 +32,7 @@ export default class CoreGetFeatureDensityStats extends RpcMethodType {
     args: {
       adapterConfig: Record<string, unknown>
       regions: Region[]
-      stopToken?: string
+      stopToken?: StopToken
       headers?: Record<string, string>
       sessionId: string
     },

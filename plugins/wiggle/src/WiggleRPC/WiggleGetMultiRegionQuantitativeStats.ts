@@ -4,6 +4,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 
 import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetMultiRegionQuantitativeStats'
@@ -11,7 +12,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
   async serializeArguments(
     args: RenderArgs & {
       staticBlocks?: Region[]
-      stopToken?: string
+      stopToken?: StopToken
       statusCallback?: (arg: string) => void
     },
     rpcDriverClassName: string,
@@ -42,7 +43,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
   async execute(
     args: {
       adapterConfig: Record<string, unknown>
-      stopToken?: string
+      stopToken?: StopToken
       sessionId: string
       trackInstanceId: string
       headers?: Record<string, string>

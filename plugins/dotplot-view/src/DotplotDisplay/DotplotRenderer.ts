@@ -242,7 +242,7 @@ export class DotplotRenderer {
       this.glFallback = new WebGLFallback(this.canvas)
       return true
     } catch (e) {
-      console.error('[DotplotRenderer] WebGL2 fallback also failed:', e)
+      console.warn('[DotplotRenderer] WebGL2 fallback also failed:', e)
       this.canvas2dFallback = new Canvas2DDotplotRenderer(this.canvas)
       return true
     }

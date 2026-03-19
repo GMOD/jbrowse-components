@@ -3,6 +3,11 @@
 import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
@@ -11,6 +16,7 @@ import {
   arcLineColorPalette,
   sashimiColorPalette,
 } from './shaders/arcShaders.ts'
+
 import { splitPositionWithFrac } from './shaders/utils.ts'
 import {
   GAP_WGSL,
@@ -331,7 +337,7 @@ export class AlignmentsRenderer {
       this.glFallback = new WebGLRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[AlignmentsRenderer] WebGL2 fallback also failed:', e)
+      console.warn('[AlignmentsRenderer] WebGL2 fallback also failed:', e)
       this.canvas2dFallback = new Canvas2DAlignmentsRenderer(this.canvas)
       return true
     }
@@ -618,12 +624,12 @@ export class AlignmentsRenderer {
     const scIdx: number[] = []
     const hcIdx: number[] = []
     for (let i = 0; i < data.numInterbases; i++) {
-      const t = data.interbaseTypes[i]
-      if (t === 1) {
+      const interbaseType = data.interbaseTypes[i]
+      if (interbaseType === INTERBASE_INSERTION) {
         insIdx.push(i)
-      } else if (t === 2) {
+      } else if (interbaseType === INTERBASE_SOFTCLIP) {
         scIdx.push(i)
-      } else if (t === 3) {
+      } else if (interbaseType === INTERBASE_HARDCLIP) {
         hcIdx.push(i)
       }
     }

@@ -60,7 +60,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
 
       const stopToken = createStopToken()
       self.setRenderingStopToken(stopToken)
-      self.setLoading(true)
 
       const result = await rpcManager.call(
         rpcSessionId,
@@ -103,7 +102,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
     } finally {
       if (isAlive(self)) {
         self.setRenderingStopToken(undefined)
-        self.setLoading(false)
       }
     }
   }

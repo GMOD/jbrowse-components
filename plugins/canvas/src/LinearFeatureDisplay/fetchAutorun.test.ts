@@ -227,9 +227,8 @@ describe('FetchVisibleRegions autorun', () => {
 
     const callCount = mockRpcCall.mock.calls.length
 
-    // Advance more time — the autorun may re-fire (e.g. due to
-    // observable changes from setLoading), but the isLoading guard
-    // should prevent additional fetchRegions calls
+    // Advance more time — the autorun may re-fire, but the isLoading
+    // guard should prevent additional fetchRegions calls
     jest.advanceTimersByTime(2000)
 
     // Should not have made additional RPC calls

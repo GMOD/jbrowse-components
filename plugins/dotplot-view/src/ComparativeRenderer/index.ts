@@ -1,6 +1,8 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
 import type {
   DotplotRenderArgs,
   RenderArgsSerialized,
@@ -40,7 +42,7 @@ export default class ComparativeRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerializedWithRenderer & { stopToken?: string },
+    args: RenderArgsSerializedWithRenderer & { stopToken?: StopToken },
     rpcDriver: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)

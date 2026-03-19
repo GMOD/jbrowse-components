@@ -8,6 +8,7 @@ import { toArray } from 'rxjs/operators'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RenderArgs } from '@jbrowse/core/rpc/methods/util'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -89,7 +90,7 @@ export default class BreakpointGetFeatures extends RpcMethodType {
       regions: Region[]
       adapterConfig: Record<string, unknown>
       statusCallback: (arg: string) => void
-      stopToken?: string
+      stopToken?: StopToken
       opts?: Record<string, unknown>
     },
     rpcDriver: string,

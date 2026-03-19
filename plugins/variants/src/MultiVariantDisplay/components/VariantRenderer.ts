@@ -129,12 +129,12 @@ export class VariantRenderer {
       this.glFallback = new WebGLVariantRenderer(this.canvas)
       return true
     } catch (e) {
-      console.error('[VariantRenderer] WebGL2 fallback failed:', e)
+      console.warn('[VariantRenderer] WebGL2 fallback failed:', e)
       try {
         this.canvas2dFallback = new Canvas2DVariantRenderer(this.canvas)
         return true
       } catch (e2) {
-        console.error('[VariantRenderer] Canvas 2D fallback also failed:', e2)
+        console.warn('[VariantRenderer] Canvas 2D fallback also failed:', e2)
         return false
       }
     }

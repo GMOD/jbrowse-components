@@ -10,6 +10,7 @@ import type { RenderArgs } from './util.ts'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
+import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
@@ -43,7 +44,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       regions: Region[]
       adapterConfig: Record<string, unknown>
       statusCallback: (arg: string) => void
-      stopToken?: string
+      stopToken?: StopToken
       opts?: any
     },
     rpcDriver: string,

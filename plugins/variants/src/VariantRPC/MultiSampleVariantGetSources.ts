@@ -5,6 +5,7 @@ import type { CellDataResult } from './executeVariantCellData.ts'
 import type { Source } from '../shared/types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -33,7 +34,7 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
   async execute(
     args: {
       adapterConfig: AnyConfigurationModel
-      stopToken?: string
+      stopToken?: StopToken
       sessionId: string
       headers?: Record<string, string>
       regions: Region[]

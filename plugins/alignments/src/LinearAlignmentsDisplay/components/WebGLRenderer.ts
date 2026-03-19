@@ -20,6 +20,11 @@
  * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { ArcsRenderer } from './ArcsRenderer.ts'
 import { ConnectingLineRenderer } from './ConnectingLineRenderer.ts'
 import { CoverageRenderer } from './CoverageRenderer.ts'
@@ -995,19 +1000,17 @@ export class WebGLRenderer {
       this.buffers.mismatchCount = 0
     }
 
-    // Filter combined interbase arrays by type and upload to separate programs
-    // Type 1=insertion, 2=softclip, 3=hardclip
     const insertionIndices: number[] = []
     const softclipIndices: number[] = []
     const hardclipIndices: number[] = []
 
     for (let i = 0; i < data.numInterbases; i++) {
-      const type = data.interbaseTypes[i]
-      if (type === 1) {
+      const interbaseType = data.interbaseTypes[i]
+      if (interbaseType === INTERBASE_INSERTION) {
         insertionIndices.push(i)
-      } else if (type === 2) {
+      } else if (interbaseType === INTERBASE_SOFTCLIP) {
         softclipIndices.push(i)
-      } else if (type === 3) {
+      } else if (interbaseType === INTERBASE_HARDCLIP) {
         hardclipIndices.push(i)
       }
     }

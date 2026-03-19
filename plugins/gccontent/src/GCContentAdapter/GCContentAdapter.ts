@@ -1,7 +1,10 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  createStopTokenChecker,
+  checkStopToken2,
+} from '@jbrowse/core/util/stopToken'
 
 import type {
   BaseOptions,
@@ -67,7 +70,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
       let nc = 0
       let ng = 0
       let len = 0
-      let start = performance.now()
+      const stopTokenCheck = createStopTokenChecker(stopToken)
 
       // Calculate initial window
       const startIdx = halfWindowSize
@@ -92,10 +95,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter {
         i < residues.length - halfWindowSize;
         i += windowDelta
       ) {
-        if (performance.now() - start > 400) {
-          checkStopToken(stopToken)
-          start = performance.now()
-        }
+        checkStopToken2(stopTokenCheck)
 
         // For windowSize === 1, just get the single character
         if (isWindowSizeOneBp) {

@@ -7,6 +7,7 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
@@ -26,7 +27,7 @@ export interface Region {
 }
 
 export interface FetchContext {
-  stopToken: string
+  stopToken: StopToken
   generation: number
   isStale: () => boolean
 }
@@ -36,9 +37,8 @@ export default function MultiRegionDisplayMixin() {
     .model('MultiRegionDisplayMixin', {})
     .volatile(() => ({
       loadedRegions: new Map<number, Region>(),
-      isLoading: false,
       error: undefined as unknown,
-      renderingStopToken: undefined as string | undefined,
+      renderingStopToken: undefined as StopToken | undefined,
       fetchGeneration: 0,
       dataVersion: 0,
       userByteSizeLimit: undefined as number | undefined,
@@ -47,6 +47,10 @@ export default function MultiRegionDisplayMixin() {
       featureDensityStats: undefined as FeatureDensityStats | undefined,
     }))
     .views(self => ({
+      get isLoading() {
+        return self.renderingStopToken !== undefined
+      },
+
       get regionTooLarge() {
         return self.regionTooLargeState
       },
@@ -66,15 +70,11 @@ export default function MultiRegionDisplayMixin() {
       },
     }))
     .actions(self => ({
-      setLoading(loading: boolean) {
-        self.isLoading = loading
-      },
-
       setError(error?: unknown) {
         self.error = error
       },
 
-      setRenderingStopToken(token: string | undefined) {
+      setRenderingStopToken(token: StopToken | undefined) {
         self.renderingStopToken = token
       },
 
@@ -95,7 +95,6 @@ export default function MultiRegionDisplayMixin() {
           stopStopToken(self.renderingStopToken)
           self.renderingStopToken = undefined
         }
-        self.isLoading = false
         self.error = undefined
         self.regionTooLargeState = false
         self.regionTooLargeReasonState = ''
@@ -159,7 +158,6 @@ export default function MultiRegionDisplayMixin() {
     .actions(self => {
       function finishLoading() {
         self.setRenderingStopToken(undefined)
-        self.setLoading(false)
         self.setStatusMessage(undefined)
       }
 
@@ -174,7 +172,6 @@ export default function MultiRegionDisplayMixin() {
           const stopToken = createStopToken()
           const generation = self.fetchGeneration
           self.setRenderingStopToken(stopToken)
-          self.setLoading(true)
           self.setError(undefined)
 
           const isStale = () =>

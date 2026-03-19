@@ -205,14 +205,14 @@ export class SyntenyRenderer {
       console.log('[SyntenyRenderer.init] WebGL2 fallback succeeded')
       return true
     } catch (e) {
-      console.error('[SyntenyRenderer] WebGL2 fallback failed:', e)
+      console.warn('[SyntenyRenderer] WebGL2 fallback failed:', e)
       try {
         console.log('[SyntenyRenderer.init] trying Canvas2D fallback')
         this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
         console.log('[SyntenyRenderer.init] Canvas2D fallback succeeded')
         return true
       } catch (e2) {
-        console.error('[SyntenyRenderer] Canvas 2D fallback also failed:', e2)
+        console.warn('[SyntenyRenderer] Canvas 2D fallback also failed:', e2)
         return false
       }
     }

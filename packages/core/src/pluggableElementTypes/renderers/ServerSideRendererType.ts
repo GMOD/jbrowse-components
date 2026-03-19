@@ -15,14 +15,14 @@ import type { RenderProps, RenderResults } from './RendererType.tsx'
 import type { SerializedFilterChain } from './util/serializableFilterChain.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { LastStopTokenCheck } from '../../util/stopToken.ts'
+import type { LastStopTokenCheck, StopToken } from '../../util/stopToken.ts'
 import type { SnapshotIn, SnapshotOrInstance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
   trackInstanceId: string
-  stopToken?: string
+  stopToken?: StopToken
   theme: ThemeOptions
   exportSVG?: {
     rasterizeLayers?: boolean

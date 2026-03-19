@@ -9,6 +9,7 @@
 
 import type { SortedBy } from '../shared/types'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderPileupDataArgs {
   sessionId: string
@@ -31,7 +32,7 @@ export interface RenderPileupDataArgs {
   sortedBy?: SortedBy
   showSoftClipping?: boolean
   statusCallback?: (status: string) => void
-  stopToken?: string
+  stopToken?: StopToken
 }
 
 export interface CoverageTooltipBin {

@@ -249,6 +249,12 @@ export interface ModificationItem {
 
 export type ClickMapItem = InterbaseIndicatorItem | SNPItem | ModificationItem
 
+// Numeric interbase type codes stored in Uint8Array interbaseTypes.
+// Must match the order used in processFeatureAlignments addItems calls.
+export const INTERBASE_INSERTION = 1
+export const INTERBASE_SOFTCLIP = 2
+export const INTERBASE_HARDCLIP = 3
+
 const typeLabels: Record<string, string> = {
   insertion: 'Insertion',
   softclip: 'Soft clip',

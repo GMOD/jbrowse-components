@@ -10,6 +10,7 @@ import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util/types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderLDDataArgs {
   sessionId: string
@@ -26,7 +27,7 @@ interface RenderLDDataArgs {
   useGenomicPositions: boolean
   fitToHeight: boolean
   displayHeight?: number
-  stopToken?: string
+  stopToken?: StopToken
   statusCallback?: (msg: string) => void
 }
 

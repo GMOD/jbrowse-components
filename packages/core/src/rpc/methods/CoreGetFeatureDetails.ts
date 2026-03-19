@@ -3,6 +3,7 @@ import { renameRegionsIfNeeded } from '../../util/index.ts'
 
 import type { RenderArgs, RenderArgsSerialized } from './util.ts'
 import type { BoxRendererType } from '../../pluggableElementTypes/index.ts'
+import type { StopToken } from '../../util/stopToken.ts'
 
 /**
  * fetches feature details from the layout cache (uses WeakRef)
@@ -25,7 +26,7 @@ export default class CoreGetFeatureDetails extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgsSerialized & { stopToken?: string },
+    args: RenderArgsSerialized & { stopToken?: StopToken },
     rpcDriver: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)

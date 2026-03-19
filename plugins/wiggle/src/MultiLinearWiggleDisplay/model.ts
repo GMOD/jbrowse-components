@@ -13,6 +13,7 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -565,7 +566,7 @@ export default function stateModelFactory(
       async function fetchFeaturesForRegion(
         region: Region,
         regionNumber: number,
-        stopToken: string,
+        stopToken: StopToken,
         bpPerPx: number,
         resolution: number,
         generation: number,

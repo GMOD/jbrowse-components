@@ -2,6 +2,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // copied from plugins/linear-comparative-view/src/LinearSyntenyView/util/diagonalize.ts
 interface AlignmentData {
@@ -172,7 +173,7 @@ interface DiagonalizeDotplotArgs {
     vview: { displayedRegions: Region[] }
   }
   adapterConfig: Record<string, unknown>
-  stopToken?: string
+  stopToken?: StopToken
   statusCallback?: (message: string) => void
 }
 

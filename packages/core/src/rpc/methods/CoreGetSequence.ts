@@ -5,6 +5,7 @@ import { renameRegionsIfNeeded } from '../../util/index.ts'
 import type { RenderArgs } from './util.ts'
 import type { BaseSequenceAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
+import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetSequence extends RpcMethodType {
   name = 'CoreGetSequence'
@@ -24,7 +25,7 @@ export default class CoreGetSequence extends RpcMethodType {
       sessionId: string
       region: Region
       adapterConfig: Record<string, unknown>
-      stopToken?: string
+      stopToken?: StopToken
     },
     rpcDriver: string,
   ) {

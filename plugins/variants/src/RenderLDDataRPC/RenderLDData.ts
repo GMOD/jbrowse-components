@@ -5,6 +5,7 @@ import type { LDDataResult } from './types.ts'
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -30,7 +31,7 @@ interface RenderLDDataArgs {
   useGenomicPositions: boolean
   fitToHeight: boolean
   displayHeight?: number
-  stopToken?: string
+  stopToken?: StopToken
 }
 
 export default class RenderLDData extends RpcMethodType {

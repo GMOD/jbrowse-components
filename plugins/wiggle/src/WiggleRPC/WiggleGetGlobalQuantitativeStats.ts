@@ -3,6 +3,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { QuantitativeStats } from '@jbrowse/core/util/stats'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'WiggleGetGlobalQuantitativeStats'
@@ -10,7 +11,7 @@ export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAn
   async execute(
     args: {
       adapterConfig: AnyConfigurationModel
-      stopToken?: string
+      stopToken?: StopToken
       headers?: Record<string, string>
       sessionId: string
     },

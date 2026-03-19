@@ -22,6 +22,7 @@ import type {
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { StopToken } from '../util/stopToken.ts'
 
 type AdapterConf = Record<string, unknown>
 
@@ -67,7 +68,7 @@ async function loadRefNameMap(
   assembly: Assembly,
   adapterConfig: unknown,
   options: BaseOptions & { sequenceAdapter?: unknown },
-  stopToken?: string,
+  stopToken?: StopToken,
 ) {
   const { sessionId, sequenceAdapter } = options
   if (!sessionId) {
@@ -153,7 +154,7 @@ export default function assemblyFactory(
     // TODO:ABORT (possible? desirable??)
     async fill(
       args: CacheData,
-      _stopToken?: string,
+      _stopToken?: StopToken,
       statusCallback?: (arg: string) => void,
     ) {
       const { adapterConf, self, options } = args
@@ -616,7 +617,7 @@ async function getRefNameAliases({
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  stopToken?: string
+  stopToken?: StopToken
 }) {
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()
@@ -650,7 +651,7 @@ async function getAssemblyRegions({
 }: {
   config: AnyConfigurationModel
   pluginManager: PluginManager
-  stopToken?: string
+  stopToken?: StopToken
 }) {
   const type = pluginManager.getAdapterType(config.type)!
   const CLASS = await type.getAdapterClass()

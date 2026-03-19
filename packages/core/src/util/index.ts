@@ -652,7 +652,7 @@ export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
     regions?: Region[]
-    stopToken?: string
+    stopToken?: StopToken
     adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: (arg: string) => void

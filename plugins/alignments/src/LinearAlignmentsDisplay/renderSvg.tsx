@@ -13,6 +13,10 @@ import {
   sashimiColorPalette,
 } from './components/shaders/arcShaders.ts'
 import {
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../shared/types.ts'
+import {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
   insertionBarWidth,
@@ -870,7 +874,7 @@ export async function renderSvg(
           const ibY = data.interbaseYs[i]! * rowHeight
           const cx = (pos - block.start) / bpPerPx + blockScreenX
 
-          if (ibType === 1) {
+          if (ibType === INTERBASE_INSERTION) {
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const barW = insertionBarWidth(len, pxPerBp)
@@ -917,7 +921,7 @@ export async function renderSvg(
             }
             if (clipAlpha > 0) {
               pileupCtx.globalAlpha = clipAlpha
-              pileupCtx.fillStyle = ibType === 2 ? softclipColor : hardclipColor
+              pileupCtx.fillStyle = ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
               pileupCtx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
               pileupCtx.globalAlpha = 1
             }
@@ -1060,7 +1064,7 @@ export async function renderSvg(
           const ibY = pileupTopOffset + data.interbaseYs[i]! * rowHeight
           const cx = (pos - block.start) / bpPerPx + blockScreenX
 
-          if (ibType === 1) {
+          if (ibType === INTERBASE_INSERTION) {
             const len = data.interbaseLengths[i]!
             const isLong = len >= LONG_INSERTION_MIN_LENGTH
             const barW = insertionBarWidth(len, pxPerBp)
@@ -1096,7 +1100,7 @@ export async function renderSvg(
               clipAlpha = base + freq * (1 - base)
             }
             if (clipAlpha > 0) {
-              const color = ibType === 2 ? softclipColor : hardclipColor
+              const color = ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
               content += `<rect x="${cx - bw / 2}" y="${ibY}" width="${bw}" height="${featureHeightSetting}" fill="${color}" fill-opacity="${clipAlpha}"/>`
             }
           }
