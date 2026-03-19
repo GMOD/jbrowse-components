@@ -1,13 +1,7 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
 import { notEmpty } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Checkbox from '@mui/material/Checkbox'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { transaction } from 'mobx'
@@ -22,7 +16,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 const ROW_HEIGHT = 25
 const HEADER_HEIGHT = 35
 const CHECKBOX_WIDTH = 48
-const BORDER_COLOR = '#e0e0e0'
 
 export interface FacetedColumn {
   id: string
@@ -30,53 +23,86 @@ export interface FacetedColumn {
   cell: (row: FacetedRow) => React.ReactNode
 }
 
-function useColumnResize(
-  initialWidths: Record<string, number>,
-  deps: unknown[],
-) {
-  const [widths, setWidths] = useState(initialWidths)
-
-  useEffect(() => {
-    setWidths(prev => ({ ...initialWidths, ...prev }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
-
-  const resizeRef = useRef<{
-    colId: string
-    startX: number
-    startWidth: number
-  } | null>(null)
-
-  const onResizeStart = useCallback(
-    (colId: string, e: React.MouseEvent) => {
-      e.preventDefault()
-      const startX = e.clientX
-      const startWidth = widths[colId] ?? 100
-
-      resizeRef.current = { colId, startX, startWidth }
-
-      const onMouseMove = (ev: MouseEvent) => {
-        if (resizeRef.current) {
-          const { colId: id, startX: sx, startWidth: sw } = resizeRef.current
-          const newWidth = Math.max(50, sw + ev.clientX - sx)
-          setWidths(prev => ({ ...prev, [id]: newWidth }))
-        }
-      }
-
-      const onMouseUp = () => {
-        resizeRef.current = null
-        document.removeEventListener('mousemove', onMouseMove)
-        document.removeEventListener('mouseup', onMouseUp)
-      }
-
-      document.addEventListener('mousemove', onMouseMove)
-      document.addEventListener('mouseup', onMouseUp)
+const useStyles = makeStyles()(theme => {
+  const border = `1px solid ${theme.palette.divider}`
+  return {
+    root: {
+      height: '100%',
+      width: '100%',
+      overflow: 'auto',
+      border,
+      borderRadius: theme.shape.borderRadius,
+      background: theme.palette.background.paper,
+      fontFamily: theme.typography.fontFamily,
+      fontSize: theme.typography.body2.fontSize,
+      lineHeight: theme.typography.body2.lineHeight,
+      color: theme.palette.text.primary,
     },
-    [widths],
-  )
-
-  return { widths, onResizeStart }
-}
+    table: {
+      minWidth: '100%',
+      borderCollapse: 'collapse',
+      tableLayout: 'fixed',
+    },
+    thead: {
+      position: 'sticky',
+      top: 0,
+      zIndex: 1,
+      background: theme.palette.background.paper,
+    },
+    checkboxCell: {
+      padding: 0,
+      textAlign: 'center',
+      verticalAlign: 'middle',
+      lineHeight: 0,
+      borderBottom: border,
+      boxSizing: 'border-box',
+    },
+    headerCell: {
+      height: HEADER_HEIGHT,
+      position: 'relative',
+      textAlign: 'left',
+      fontWeight: theme.typography.fontWeightMedium,
+      padding: '0 10px',
+      borderBottom: border,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      userSelect: 'none',
+      lineHeight: `${HEADER_HEIGHT}px`,
+      verticalAlign: 'middle',
+      boxSizing: 'border-box',
+    },
+    bodyCell: {
+      height: ROW_HEIGHT,
+      padding: '0 10px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      borderBottom: border,
+      lineHeight: `${ROW_HEIGHT - 1}px`,
+      boxSizing: 'border-box',
+    },
+    resizeHandle: {
+      position: 'absolute',
+      right: 0,
+      top: '25%',
+      height: '50%',
+      width: 10,
+      display: 'flex',
+      justifyContent: 'center',
+      cursor: 'col-resize',
+    },
+    resizeLine: {
+      width: 1,
+      height: '100%',
+      background: theme.palette.divider,
+    },
+    fillerCell: {
+      borderBottom: border,
+      padding: 0,
+    },
+  }
+})
 
 const checkboxSx = {
   padding: 0,
@@ -96,6 +122,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   shownTrackIds: Set<string>
   selection: AnyConfigurationModel[]
 }) {
+  const { classes } = useStyles()
   const { view } = model
   const {
     rows,
@@ -124,36 +151,49 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   )
 
   const initialWidths = useMemo(
-    () => ({
-      __checkbox: CHECKBOX_WIDTH,
-      ...computeInitialWidths(
+    () =>
+      computeInitialWidths(
         rows,
         filteredNonMetadataKeys,
         filteredMetadataKeys,
         visible,
       ),
-    }),
     [rows, filteredNonMetadataKeys, filteredMetadataKeys, visible],
   )
 
-  const { widths: colWidths, onResizeStart } = useColumnResize(
-    initialWidths,
-    [rows, filteredNonMetadataKeys, filteredMetadataKeys, visible],
-  )
+  const [colWidths, setColWidths] =
+    useState<Record<string, number>>(initialWidths)
+  useEffect(() => {
+    setColWidths(prev => ({ ...initialWidths, ...prev }))
+  }, [initialWidths])
 
-  const allSelected = useMemo(
-    () =>
-      filteredRows.length > 0 &&
-      filteredRows.every(row => selectedIds.has(row.id)),
-    [filteredRows, selectedIds],
-  )
-  const someSelected = useMemo(
-    () =>
-      !allSelected && filteredRows.some(row => selectedIds.has(row.id)),
-    [filteredRows, selectedIds, allSelected],
-  )
+  const onResizeStart = (colId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = colWidths[colId] ?? 100
 
-  const handleSelectAll = useCallback(() => {
+    const onMouseMove = (ev: MouseEvent) => {
+      const newWidth = Math.max(50, startWidth + ev.clientX - startX)
+      setColWidths(prev => ({ ...prev, [colId]: newWidth }))
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
+  const allSelected =
+    filteredRows.length > 0 &&
+    filteredRows.every(row => selectedIds.has(row.id))
+
+  const someSelected =
+    !allSelected && filteredRows.some(row => selectedIds.has(row.id))
+
+  const handleSelectAll = () => {
     startTransition(() => {
       if (!useShoppingCart) {
         transaction(() => {
@@ -188,51 +228,31 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         }
       }
     })
-  }, [
-    allSelected,
-    filteredRows,
-    selectedIds,
-    useShoppingCart,
-    view,
-    model,
-    selection,
-    startTransition,
-  ])
+  }
 
-  const handleRowToggle = useCallback(
-    (rowId: string) => {
-      startTransition(() => {
-        const wasSelected = selectedIds.has(rowId)
-        if (!useShoppingCart) {
-          if (wasSelected) {
-            view.hideTrack(rowId)
-          } else {
-            view.showTrack(rowId)
-            model.addToRecentlyUsed(rowId)
-          }
+  const handleRowToggle = (rowId: string) => {
+    startTransition(() => {
+      if (!useShoppingCart) {
+        if (selectedIds.has(rowId)) {
+          view.hideTrack(rowId)
         } else {
-          if (wasSelected) {
-            model.setSelection(
-              selection.filter(s => `${s.trackId}` !== rowId),
-            )
-          } else {
-            const conf =
-              model.allTrackConfigurationTrackIdSet.get(rowId)
-            if (conf) {
-              model.setSelection([...selection, conf])
-            }
+          view.showTrack(rowId)
+          model.addToRecentlyUsed(rowId)
+        }
+      } else {
+        if (selectedIds.has(rowId)) {
+          model.setSelection(
+            selection.filter(s => `${s.trackId}` !== rowId),
+          )
+        } else {
+          const conf = model.allTrackConfigurationTrackIdSet.get(rowId)
+          if (conf) {
+            model.setSelection([...selection, conf])
           }
         }
-      })
-    },
-    [selectedIds, useShoppingCart, view, model, selection, startTransition],
-  )
-
-  const totalWidth = CHECKBOX_WIDTH +
-    visibleColumns.reduce(
-      (sum, col) => sum + (colWidths[col.id] ?? 100),
-      0,
-    )
+      }
+    })
+  }
 
   const lastColId = visibleColumns.at(-1)?.id
 
@@ -247,51 +267,18 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const virtualItems = virtualizer.getVirtualItems()
 
   return (
-    <div
-      ref={parentRef}
-      style={{
-        height: '100%',
-        width: '100%',
-        overflow: 'auto',
-        border: `1px solid ${BORDER_COLOR}`,
-        borderRadius: 4,
-        background: '#fff',
-      }}
-    >
-      <table
-        style={{
-          minWidth: '100%',
-          width: totalWidth,
-          borderCollapse: 'collapse',
-          tableLayout: 'fixed',
-        }}
-      >
+    <div ref={parentRef} className={classes.root}>
+      <table className={classes.table}>
         <colgroup>
           <col style={{ width: CHECKBOX_WIDTH }} />
           {visibleColumns.map(col => (
             <col key={col.id} style={{ width: colWidths[col.id] ?? 100 }} />
           ))}
+          <col />
         </colgroup>
-        <thead
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 1,
-            background: '#fff',
-          }}
-        >
+        <thead className={classes.thead}>
           <tr>
-            <th
-              style={{
-                height: HEADER_HEIGHT,
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                lineHeight: 0,
-                padding: 0,
-                borderBottom: `1px solid ${BORDER_COLOR}`,
-                boxSizing: 'border-box',
-              }}
-            >
+            <th className={classes.checkboxCell}>
               <Checkbox
                 size="small"
                 checked={allSelected}
@@ -300,55 +287,20 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
                 sx={checkboxSx}
               />
             </th>
-            {visibleColumns.map(col => {
-              const isLast = col.id === lastColId
-              return (
-                <th
-                  key={col.id}
-                  style={{
-                    height: HEADER_HEIGHT,
-                    position: 'relative',
-                    textAlign: 'left',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    padding: '0 10px',
-                    borderBottom: `1px solid ${BORDER_COLOR}`,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    userSelect: 'none',
-                    lineHeight: `${HEADER_HEIGHT}px`,
-                    verticalAlign: 'middle',
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  {col.header}
-                  {!isLast ? (
-                    <div
-                      onMouseDown={e => onResizeStart(col.id, e)}
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: '25%',
-                        height: '50%',
-                        width: 10,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        cursor: 'col-resize',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 1,
-                          height: '100%',
-                          background: BORDER_COLOR,
-                        }}
-                      />
-                    </div>
-                  ) : null}
-                </th>
-              )
-            })}
+            {visibleColumns.map(col => (
+              <th key={col.id} className={classes.headerCell}>
+                {col.header}
+                {col.id !== lastColId ? (
+                  <div
+                    className={classes.resizeHandle}
+                    onMouseDown={e => onResizeStart(col.id, e)}
+                  >
+                    <div className={classes.resizeLine} />
+                  </div>
+                ) : null}
+              </th>
+            ))}
+            <th className={classes.fillerCell} />
           </tr>
         </thead>
         <tbody>
@@ -359,45 +311,22 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           ) : null}
           {virtualItems.map(virtualRow => {
             const row = filteredRows[virtualRow.index]!
-            const isSelected = selectedIds.has(row.id)
             return (
-              <tr key={row.id} style={{ height: ROW_HEIGHT }}>
-                <td
-                  style={{
-                    height: ROW_HEIGHT,
-                    padding: 0,
-                    textAlign: 'center',
-                    verticalAlign: 'middle',
-                    lineHeight: 0,
-                    borderBottom: `1px solid ${BORDER_COLOR}`,
-                    boxSizing: 'border-box',
-                  }}
-                >
+              <tr key={row.id}>
+                <td className={classes.checkboxCell}>
                   <Checkbox
                     size="small"
-                    checked={isSelected}
+                    checked={selectedIds.has(row.id)}
                     onChange={() => handleRowToggle(row.id)}
                     sx={checkboxSx}
                   />
                 </td>
                 {visibleColumns.map(col => (
-                  <td
-                    key={col.id}
-                    style={{
-                      height: ROW_HEIGHT,
-                      padding: '0 10px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      fontSize: '0.8125rem',
-                      borderBottom: `1px solid ${BORDER_COLOR}`,
-                      lineHeight: `${ROW_HEIGHT - 1}px`,
-                      boxSizing: 'border-box',
-                    }}
-                  >
+                  <td key={col.id} className={classes.bodyCell}>
                     {col.cell(row)}
                   </td>
                 ))}
+                <td className={classes.fillerCell} />
               </tr>
             )
           })}
@@ -405,7 +334,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
             <tr
               style={{
                 height:
-                  virtualizer.getTotalSize() - (virtualItems.at(-1)!.end),
+                  virtualizer.getTotalSize() - virtualItems.at(-1)!.end,
               }}
             >
               <td />
