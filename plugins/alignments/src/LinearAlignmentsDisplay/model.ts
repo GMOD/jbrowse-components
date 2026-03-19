@@ -30,6 +30,7 @@ import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
+import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   computeLayout,
   computeSortedLayout,
@@ -368,90 +369,7 @@ export default function stateModelFactory(
       if (!snap) {
         return snap
       }
-
-      // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
-
-      const { blockState, showTooltips, userByteSizeLimit, ...cleaned } = snap
-      snap = cleaned
-
-      // Rewrite "height" from older snapshots to "heightPreConfig"
-      // (previously handled by BaseLinearDisplayNoFeatureDensity)
-      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
-        const { height, ...rest } = snap
-        snap = { ...rest, heightPreConfig: height }
-      }
-
-      // Migrate old renderingMode to new boolean toggles
-      if (snap.renderingMode) {
-        const { renderingMode, ...rest } = snap
-        const linked =
-          renderingMode === 'linkedRead' || renderingMode === 'cloud'
-        snap = {
-          ...rest,
-          showLinkedReads: linked,
-          colorBySetting: linked
-            ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
-            : rest.colorBySetting,
-        }
-      }
-
-      // Strip removed showReadCloud property from old snapshots
-      if (snap.showReadCloud !== undefined) {
-        const { showReadCloud, ...rest } = snap
-        const linked = snap.showLinkedReads || showReadCloud
-        snap = {
-          ...rest,
-          showLinkedReads: linked,
-          colorBySetting: linked
-            ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
-            : rest.colorBySetting,
-        }
-      }
-
-      // Migrate old nested PileupDisplay/SNPCoverageDisplay sub-display format
-      // from v1.x LinearAlignmentsDisplay sessions
-      if (snap.PileupDisplay || snap.SNPCoverageDisplay) {
-        const { PileupDisplay, SNPCoverageDisplay, snpCovHeight, ...rest } =
-          snap
-        const pileup = PileupDisplay ?? {}
-        snap = {
-          ...rest,
-          showSoftClipping: pileup.showSoftClipping ?? false,
-          colorBySetting: pileup.colorBy,
-          filterBySetting: pileup.filterBy,
-          coverageHeight: snpCovHeight ?? 45,
-        }
-      }
-
-      // Migrate LinearSNPCoverageDisplay snapshots to LinearAlignmentsDisplay
-      if (snap.type === 'LinearSNPCoverageDisplay') {
-        const {
-          type,
-          showArcs,
-          minArcScore,
-          showInterbaseCounts,
-          showInterbaseIndicators,
-          colorBySetting,
-          filterBySetting,
-          jexlFilters,
-          ...rest
-        } = snap
-
-        return {
-          ...rest,
-          type: 'LinearAlignmentsDisplay',
-          showSashimiArcs: showArcs ?? true,
-          showInterbaseIndicators: showInterbaseIndicators ?? true,
-          showCoverage: true,
-          coverageHeight: 45,
-          showMismatches: true,
-          colorBySetting,
-          filterBySetting,
-          jexlFilters: jexlFilters ?? [],
-        }
-      }
-
-      return snap
+      return migrateAlignmentsSnapshot(snap)
     })
     .volatile(() => ({
       featureIdUnderMouse: undefined as undefined | string,

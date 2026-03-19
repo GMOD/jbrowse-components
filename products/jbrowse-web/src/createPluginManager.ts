@@ -7,6 +7,7 @@ import {
 
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
+import { migrateSessionSnapshot } from './migrateSessionSnapshot.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
@@ -110,7 +111,7 @@ export function createPluginManager(
               err,
             )
           })
-        rootModel.setSession(sessionSnapshot)
+        rootModel.setSession(migrateSessionSnapshot(sessionSnapshot))
       } else if (hubSpec) {
         afterInitializedCb = () =>
           // @ts-expect-error

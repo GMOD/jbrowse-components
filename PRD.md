@@ -101,8 +101,6 @@ These affect significant user-visible functionality.
 
 ### P3.1 Canvas/Interaction Bugs
 
-- Vertical scroll sometimes scrolls page instead of zooming on linear genome
-  view — wheel event not always captured by the view
 - Hot module reload breaks canvas features
 - Per-track scrolling — verify working
 - After fatal error: `Uncaught Error: no containing view found` in

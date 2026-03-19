@@ -493,30 +493,31 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     const handleWheel = (e: WheelEvent) => {
       const absX = Math.abs(e.deltaX)
       const absY = Math.abs(e.deltaY)
+      const hasVerticalOverflow = model.maxY > model.height
 
-      if (
-        absY < 1 ||
-        view.scrollZoom ||
-        e.ctrlKey ||
-        e.metaKey ||
-        absX > absY * 2
-      ) {
+      if (absY < 1 || e.ctrlKey || e.metaKey || absX > absY * 2) {
         return
       }
 
-      e.preventDefault()
-      e.stopPropagation()
-      const maxScrollY = Math.max(0, model.maxY - model.height)
-      const newScrollY = Math.max(
-        0,
-        Math.min(scrollYRef.current + e.deltaY * 0.5, maxScrollY),
-      )
-      scrollYRef.current = newScrollY
-      setScrollY(newScrollY)
-      if (scrollbarHostRef.current) {
-        scrollbarHostRef.current.scrollTop = newScrollY
+      if (view.scrollZoom && !hasVerticalOverflow) {
+        return
       }
-      renderWithBlocksRef.current()
+
+      if (hasVerticalOverflow) {
+        e.preventDefault()
+        e.stopPropagation()
+        const maxScrollY = Math.max(0, model.maxY - model.height)
+        const newScrollY = Math.max(
+          0,
+          Math.min(scrollYRef.current + e.deltaY * 0.5, maxScrollY),
+        )
+        scrollYRef.current = newScrollY
+        setScrollY(newScrollY)
+        if (scrollbarHostRef.current) {
+          scrollbarHostRef.current.scrollTop = newScrollY
+        }
+        renderWithBlocksRef.current()
+      }
     }
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })
@@ -1061,9 +1062,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
                 top: 0,
                 left: 0,
                 width: '100%',
-                height: '100%',
+                height: model.maxY || '100%',
                 pointerEvents: 'none',
-                overflow: 'hidden',
                 transform: `translateY(-${scrollY}px)`,
               }}
             >
@@ -1079,9 +1079,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             position: 'absolute',
             top: 0,
             right: 0,
-            width: 14,
+            width: 20,
             height: '100%',
             overflowY: 'scroll',
+            overflowX: 'hidden',
           }}
           onScroll={e => {
             const st = e.currentTarget.scrollTop
@@ -1090,7 +1091,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
             renderWithBlocksRef.current()
           }}
         >
-          <div style={{ height: model.maxY }} />
+          <div style={{ height: model.maxY, width: 1 }} />
         </div>
       ) : null}
 

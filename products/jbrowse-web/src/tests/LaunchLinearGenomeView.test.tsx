@@ -36,7 +36,7 @@ test('can use a spec url for lgv', async () => {
   await waitFor(() => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
-  await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
+  await findByText('volvox-sorted.bam (contigA LinearAlignmentsDisplay)')
 }, 60000)
 
 test('nonexist', async () => {
@@ -49,7 +49,7 @@ test('nonexist', async () => {
   await waitFor(() => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
-  await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
+  await findByText('volvox-sorted.bam (contigA LinearAlignmentsDisplay)')
   await findByText(/Could not resolve identifiers: nonexist/)
 }, 60000)
 

@@ -94,7 +94,13 @@ export function useWheelScroll(
           : SCROLL_ZOOM_FACTOR_DIVISOR
         lastClientX.current = event.clientX
       } else {
-        if (Math.abs(deltaX) > Math.abs(2 * deltaY)) {
+        // when scrollZoom is on, always preventDefault to stop the page
+        // from scrolling on diagonal trackpad gestures that fall outside
+        // the zoom threshold (shift+scroll is the escape hatch for native
+        // scroll). without this, events where |deltaX| slightly exceeds
+        // |deltaY| slip through the isScrollZoom check and cause the
+        // browser to scroll the page instead of zooming.
+        if (model.scrollZoom || Math.abs(deltaX) > Math.abs(2 * deltaY)) {
           event.preventDefault()
         }
         if (

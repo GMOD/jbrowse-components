@@ -27,6 +27,7 @@ import { autorun, untracked } from 'mobx'
 
 import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
 import {
   MULTI_WIGGLE_RENDERING_TYPES,
@@ -120,7 +121,7 @@ export default function stateModelFactory(
         snap = { ...rest, heightPreConfig: height }
       }
 
-      return snap
+      return migrateWiggleSnapshot(snap, { multiWiggle: true })
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, MultiWiggleDataResult>(),

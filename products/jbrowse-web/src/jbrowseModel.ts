@@ -1,6 +1,7 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
 import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
 
+import { migrateConfigSnapshot } from './migrateSessionSnapshot.ts'
 import { removeAttr } from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -33,6 +34,9 @@ export default function JBrowseWeb({
       adminMode,
     }),
     {
+      preProcessor(snapshot: Record<string, unknown>) {
+        return migrateConfigSnapshot(snapshot)
+      },
       postProcessor(snapshot: Record<string, any>) {
         return removeAttr(structuredClone(snapshot), 'baseUri')
       },

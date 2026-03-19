@@ -21,6 +21,8 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { autorun, untracked } from 'mobx'
 
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
+import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
+import { getEffectiveTrackConfig } from '@jbrowse/core/util/getConfigOverrides'
 import {
   WIGGLE_COLOR_DEFAULT,
   YSCALEBAR_LABEL_OFFSET,
@@ -89,7 +91,7 @@ export default function stateModelFactory(
         snap = { ...rest, heightPreConfig: height }
       }
 
-      return snap
+      return migrateWiggleSnapshot(snap)
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, WiggleDataResult>(),
@@ -238,6 +240,11 @@ export default function stateModelFactory(
         return height < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
+      },
+
+      getEffectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getEffectiveTrackConfig(track.configuration, self)
       },
     }))
     .actions(self => ({
