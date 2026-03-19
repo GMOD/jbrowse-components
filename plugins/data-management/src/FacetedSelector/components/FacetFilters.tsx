@@ -4,7 +4,7 @@ import FacetFilter from './FacetFilter.tsx'
 import { getRowStr } from './util.ts'
 
 import type { Row } from './util.ts'
-import type { FacetedModel } from '../../facetedModel.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 const FacetFilters = observer(function FacetFilters({
   rows,

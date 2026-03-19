@@ -6,10 +6,10 @@ import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FacetedSelector from './FacetedSelector.tsx'
-import { facetedStateTreeF } from '../../facetedModel.ts'
+import { facetedStateTreeF } from '../facetedModel.ts'
 
-import type { FacetedModel } from '../../facetedModel.ts'
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
+import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 
 function createFacetedModel(model: HierarchicalTrackSelectorModel) {
   const faceted = facetedStateTreeF().create({})

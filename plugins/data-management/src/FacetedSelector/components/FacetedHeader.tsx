@@ -5,11 +5,11 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ClearableSearchField from '../ClearableSearchField.tsx'
-import ShoppingCart from '../ShoppingCart.tsx'
+import ClearableSearchField from '../../HierarchicalTrackSelectorWidget/components/ClearableSearchField.tsx'
+import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
 
-import type { FacetedModel } from '../../facetedModel.ts'
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
+import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 
 const FacetedHeader = observer(function FacetedHeader({
   model,

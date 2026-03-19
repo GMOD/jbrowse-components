@@ -1,6 +1,6 @@
 import { measureGridWidth } from '@jbrowse/core/util'
 
-import { measureNameColumnWidth } from '../shared/trackGridUtils.ts'
+import { measureNameColumnWidth } from '../../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
 
 export function computeInitialWidths(
   rows: { name: string; metadata: Record<string, unknown> }[],

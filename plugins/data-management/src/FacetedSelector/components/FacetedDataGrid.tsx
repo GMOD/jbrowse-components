@@ -9,8 +9,8 @@ import { observer } from 'mobx-react'
 
 import { computeInitialWidths } from './computeInitialWidths.ts'
 
-import type { FacetedModel, FacetedRow } from '../../facetedModel.ts'
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
+import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ROW_HEIGHT = 25

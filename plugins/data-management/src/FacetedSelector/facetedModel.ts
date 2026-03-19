@@ -7,7 +7,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
-import { getRowStr } from './components/faceted/util.ts'
+import { getRowStr } from './components/util.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

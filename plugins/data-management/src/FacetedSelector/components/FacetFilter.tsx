@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { FacetedModel } from '../../facetedModel.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
