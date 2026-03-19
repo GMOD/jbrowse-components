@@ -18,7 +18,6 @@ import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { GridRowId } from '@mui/x-data-grid'
 
 type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
 
@@ -134,7 +133,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      recentlyUsed: [] as GridRowId[],
+      recentlyUsed: [] as string[],
       /**
        * #volatile
        */
@@ -297,7 +296,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      addToRecentlyUsed(id: GridRowId) {
+      addToRecentlyUsed(id: string) {
         if (!self.recentlyUsed.includes(id)) {
           self.recentlyUsedCounter = Math.min(
             self.recentlyUsedCounter + 1,
