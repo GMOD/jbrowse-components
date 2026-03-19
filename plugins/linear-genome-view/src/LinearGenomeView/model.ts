@@ -1472,13 +1472,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const regionNumber = block.regionNumber!
             const existing = regionMap.get(regionNumber)
             if (existing) {
-              existing.start = Math.min(existing.start, block.start)
-              existing.end = Math.max(existing.end, block.end)
+              existing.start = Math.min(existing.start, Math.floor(block.start))
+              existing.end = Math.max(existing.end, Math.ceil(block.end))
             } else {
               regionMap.set(regionNumber, {
                 refName: block.refName,
-                start: block.start,
-                end: block.end,
+                start: Math.floor(block.start),
+                end: Math.ceil(block.end),
                 assemblyName: block.assemblyName,
                 regionNumber,
               })

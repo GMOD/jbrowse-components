@@ -78,7 +78,7 @@
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
     "dockview": "^5.1.0",
-    "electron-context-menu": "^4.1.1",
+    "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
     "json-parse-even-better-errors": "^5.0.0",

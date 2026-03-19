@@ -86,7 +86,12 @@ export default function webpackBuilder(): webpack.Configuration {
               include: [appSrc, getWorkspaces()],
               loader: 'babel-loader',
               options: {
-                plugins: ['babel-plugin-react-compiler'],
+                plugins: [
+                  'babel-plugin-react-compiler',
+                  isEnvDevelopment &&
+                    shouldUseReactRefresh &&
+                    'react-refresh/babel',
+                ].filter(Boolean),
                 presets: [
                   ['@babel/preset-react', { runtime: 'automatic' }],
                   '@babel/preset-typescript',
