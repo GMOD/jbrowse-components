@@ -32,7 +32,21 @@ export async function findByText(
   timeout = 30000,
 ) {
   const searchText = typeof text === 'string' ? text : text.source
-  return page.waitForSelector(`::-p-text(${searchText})`, { timeout })
+  // ::-p-text() is unreliable in Firefox BiDi with per-browser restarts.
+  // Fall back to DOM-based text search if the Puppeteer selector fails.
+  try {
+    return await page.waitForSelector(`::-p-text(${searchText})`, {
+      timeout: Math.min(timeout, 3000),
+    })
+  } catch {
+    await page.waitForFunction(
+      (t: string) =>
+        document.body?.innerText?.includes(t) ?? false,
+      { timeout },
+      searchText,
+    )
+    return null
+  }
 }
 
 export async function waitForLoadingToComplete(page: Page, timeout = 30000) {

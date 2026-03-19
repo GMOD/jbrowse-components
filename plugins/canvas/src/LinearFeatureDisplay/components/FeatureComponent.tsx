@@ -291,6 +291,7 @@ const ContextMenu = observer(function ContextMenu({
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [rendererReady, setRendererReady] = useState(false)
+  const [drawn, setDrawn] = useState(false)
   const [hoveredFeature, setHoveredFeature] = useState<FlatbushItem | null>(
     null,
   )
@@ -377,6 +378,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
     renderer.onDeviceLost = () => {
       setRendererReady(false)
+      setDrawn(false)
       uploadedDataRef.current.clear()
       doInit()
     }
@@ -468,7 +470,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     renderWithBlocksRef.current()
-  }, [rpcDataMap, rendererReady])
+    if (!drawn) {
+      setDrawn(true)
+    }
+  }, [rpcDataMap, rendererReady, drawn])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -1019,6 +1024,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   return (
     <div
+      data-testid={`drawn-${drawn}`}
       style={{
         position: 'relative',
         width: '100%',
