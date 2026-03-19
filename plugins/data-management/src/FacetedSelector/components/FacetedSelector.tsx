@@ -9,8 +9,8 @@ import FacetedHeader from './FacetedHeader.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
-import type { FacetedModel } from '../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()({
   cell: {
@@ -105,11 +105,7 @@ const FacetedSelector = observer(function FacetedSelector({
       cell: row => (
         <div className={classes.cell}>
           <HighlightText text={row.name} query={filterText} />
-          <TrackSelectorTrackMenu
-            id={row.id}
-            conf={row.conf}
-            model={model}
-          />
+          <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
         </div>
       ),
     },

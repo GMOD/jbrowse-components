@@ -5,10 +5,13 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
-import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
-import { findNonSparseKeys, getRootKeys } from '../../FacetedSelector/facetedUtil.ts'
-import { getRowStr } from '../../FacetedSelector/components/util.ts'
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
+import { getRowStr } from '../../FacetedSelector/components/util.ts'
+import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
+import {
+  findNonSparseKeys,
+  getRootKeys,
+} from '../../FacetedSelector/facetedUtil.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 

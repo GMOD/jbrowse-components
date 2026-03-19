@@ -5,8 +5,8 @@ import { getSession } from '@jbrowse/core/util'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
 import FacetedSelector from '../../FacetedSelector/components/FacetedSelector.tsx'
+import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
 
 import type { FacetedModel } from '../../FacetedSelector/facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../model.ts'

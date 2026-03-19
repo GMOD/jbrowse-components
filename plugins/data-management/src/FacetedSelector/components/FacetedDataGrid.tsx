@@ -3,15 +3,57 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { notEmpty } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Checkbox from '@mui/material/Checkbox'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { alpha, darken, lighten } from '@mui/material/styles'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { computeInitialWidths } from './computeInitialWidths.ts'
 
-import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
+import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+function useVirtualRows(
+  parentRef: React.RefObject<HTMLDivElement | null>,
+  count: number,
+  rowHeight: number,
+  overscan = 20,
+) {
+  const [scrollState, setScrollState] = useState({
+    scrollTop: 0,
+    clientHeight: 0,
+  })
+
+  useEffect(() => {
+    const el = parentRef.current
+    if (!el) {
+      return
+    }
+    setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
+    const onScroll = () => {
+      setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      el.removeEventListener('scroll', onScroll)
+    }
+  }, [parentRef])
+
+  const { scrollTop, clientHeight } = scrollState
+  const totalSize = count * rowHeight
+  const startIdx = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
+  const endIdx = Math.min(
+    count,
+    Math.ceil((scrollTop + clientHeight) / rowHeight) + overscan,
+  )
+
+  const items = []
+  for (let i = startIdx; i < endIdx; i++) {
+    items.push({ index: i, start: i * rowHeight })
+  }
+
+  return { items, totalSize }
+}
 
 const ROW_HEIGHT = 25
 const HEADER_HEIGHT = 35
@@ -24,7 +66,11 @@ export interface FacetedColumn {
 }
 
 const useStyles = makeStyles()(theme => {
-  const border = `1px solid ${theme.palette.divider}`
+  const borderColor =
+    theme.palette.mode === 'light'
+      ? lighten(alpha(theme.palette.divider, 1), 0.88)
+      : darken(alpha(theme.palette.divider, 1), 0.68)
+  const border = `1px solid ${borderColor}`
   return {
     root: {
       height: '100%',
@@ -72,6 +118,24 @@ const useStyles = makeStyles()(theme => {
       verticalAlign: 'middle',
       boxSizing: 'border-box',
     },
+    bodyRow: {
+      '&:hover': {
+        background: theme.palette.action.hover,
+      },
+    },
+    selectedRow: {
+      background: alpha(
+        theme.palette.primary.main,
+        theme.palette.action.selectedOpacity,
+      ),
+      '&:hover': {
+        background: alpha(
+          theme.palette.primary.main,
+          theme.palette.action.selectedOpacity +
+            theme.palette.action.hoverOpacity,
+        ),
+      },
+    },
     bodyCell: {
       height: ROW_HEIGHT,
       padding: '0 10px',
@@ -95,7 +159,7 @@ const useStyles = makeStyles()(theme => {
     resizeLine: {
       width: 1,
       height: '100%',
-      background: theme.palette.divider,
+      background: borderColor,
     },
     fillerCell: {
       borderBottom: border,
@@ -241,9 +305,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         }
       } else {
         if (selectedIds.has(rowId)) {
-          model.setSelection(
-            selection.filter(s => `${s.trackId}` !== rowId),
-          )
+          model.setSelection(selection.filter(s => `${s.trackId}` !== rowId))
         } else {
           const conf = model.allTrackConfigurationTrackIdSet.get(rowId)
           if (conf) {
@@ -257,14 +319,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const lastColId = visibleColumns.at(-1)?.id
 
   const parentRef = useRef<HTMLDivElement>(null)
-  const virtualizer = useVirtualizer({
-    count: filteredRows.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 20,
-  })
-
-  const virtualItems = virtualizer.getVirtualItems()
+  const { items: virtualItems, totalSize } = useVirtualRows(
+    parentRef,
+    filteredRows.length,
+    ROW_HEIGHT,
+  )
 
   return (
     <div ref={parentRef} className={classes.root}>
@@ -293,7 +352,9 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
                 {col.id !== lastColId ? (
                   <div
                     className={classes.resizeHandle}
-                    onMouseDown={e => onResizeStart(col.id, e)}
+                    onMouseDown={e => {
+                      onResizeStart(col.id, e)
+                    }}
                   >
                     <div className={classes.resizeLine} />
                   </div>
@@ -311,13 +372,23 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           ) : null}
           {virtualItems.map(virtualRow => {
             const row = filteredRows[virtualRow.index]!
+            const isSelected = selectedIds.has(row.id)
             return (
-              <tr key={row.id}>
+              <tr
+                key={row.id}
+                className={
+                  isSelected
+                    ? `${classes.bodyRow} ${classes.selectedRow}`
+                    : classes.bodyRow
+                }
+              >
                 <td className={classes.checkboxCell}>
                   <Checkbox
                     size="small"
-                    checked={selectedIds.has(row.id)}
-                    onChange={() => handleRowToggle(row.id)}
+                    checked={isSelected}
+                    onChange={() => {
+                      handleRowToggle(row.id)
+                    }}
                     sx={checkboxSx}
                   />
                 </td>
@@ -333,8 +404,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           {virtualItems.length > 0 ? (
             <tr
               style={{
-                height:
-                  virtualizer.getTotalSize() - virtualItems.at(-1)!.end,
+                height: totalSize - virtualItems.at(-1)!.start - ROW_HEIGHT,
               }}
             >
               <td />

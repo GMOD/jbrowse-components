@@ -8,8 +8,8 @@ import { observer } from 'mobx-react'
 import FacetedSelector from './FacetedSelector.tsx'
 import { facetedStateTreeF } from '../facetedModel.ts'
 
-import type { FacetedModel } from '../facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 function createFacetedModel(model: HierarchicalTrackSelectorModel) {
   const faceted = facetedStateTreeF().create({})
