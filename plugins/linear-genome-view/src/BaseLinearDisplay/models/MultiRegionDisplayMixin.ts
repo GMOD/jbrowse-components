@@ -112,6 +112,10 @@ export default function MultiRegionDisplayMixin() {
         self.loadedRegions = new Map()
         self.fetchGeneration++
       },
+
+      bumpFetchGeneration() {
+        self.fetchGeneration++
+      },
     }))
     .actions(self => ({
       // Overridable hooks — subclasses override these
@@ -217,6 +221,12 @@ export default function MultiRegionDisplayMixin() {
             } finally {
               if (!isStale()) {
                 finishLoading()
+                // Re-trigger fetch autorun in case the viewport moved
+                // while the fetch was in progress. isLoading is read
+                // with untracked() to avoid coupling fetch lifecycle to
+                // the autorun, so we use fetchGeneration (which IS
+                // tracked) to force re-evaluation instead.
+                self.bumpFetchGeneration()
               }
             }
           })()
@@ -281,7 +291,9 @@ export default function MultiRegionDisplayMixin() {
                 self.beforeFetchCheck()
 
                 const visibleMerged = view.mergedVisibleRegions
-                const bufferBp = view.width * view.bpPerPx * 0.5
+                const bufferedByRegion = new Map(
+                  view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
+                )
                 const needed: { region: Region; regionNumber: number }[] = []
                 for (const vr of visibleMerged) {
                   const loaded = untracked(() =>
@@ -294,17 +306,9 @@ export default function MultiRegionDisplayMixin() {
                   if (boundsValid && self.isCacheValid(vr.regionNumber)) {
                     continue
                   }
-                  const dr = view.displayedRegions[vr.regionNumber]
-                  if (dr) {
-                    needed.push({
-                      region: {
-                        refName: vr.refName,
-                        start: Math.max(dr.start, vr.start - bufferBp),
-                        end: Math.min(dr.end, vr.end + bufferBp),
-                        assemblyName: vr.assemblyName,
-                      },
-                      regionNumber: vr.regionNumber,
-                    })
+                  const buffered = bufferedByRegion.get(vr.regionNumber)
+                  if (buffered) {
+                    needed.push(buffered)
                   }
                 }
                 if (needed.length > 0) {

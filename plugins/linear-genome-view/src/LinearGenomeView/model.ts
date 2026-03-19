@@ -1489,6 +1489,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
+         * mergedVisibleRegions expanded by a half-screen buffer on each side,
+         * clamped to displayedRegion bounds, with integer-rounded coordinates.
+         * Use this when fetching data that should extend slightly beyond the
+         * viewport for smooth scrolling.
+         */
+        get bufferedVisibleRegions() {
+          const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
+          return this.mergedVisibleRegions.map(vr => {
+            const dr = self.displayedRegions[vr.regionNumber]
+            return {
+              region: {
+                refName: vr.refName,
+                start: Math.max(dr?.start ?? 0, vr.start - bufferBp),
+                end: Math.min(dr?.end ?? vr.end, vr.end + bufferBp),
+                assemblyName: vr.assemblyName,
+              },
+              regionNumber: vr.regionNumber,
+            }
+          })
+        },
+
+        /**
+         * #getter
          * a single "combo-locstring" representing all the regions visible on
          * the screen
          */
