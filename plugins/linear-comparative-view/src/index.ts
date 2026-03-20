@@ -3,6 +3,7 @@ import { isAbstractMenuManager } from '@jbrowse/core/util'
 import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay/index.ts'
+import MultiLGVSyntenyDisplayF from './MultiLGVSyntenyDisplay/index.ts'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView.ts'
 import LinearComparativeViewF from './LinearComparativeView/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
@@ -29,6 +30,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LinearSyntenyDisplayF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
+    MultiLGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)

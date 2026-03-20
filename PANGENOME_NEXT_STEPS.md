@@ -18,6 +18,7 @@
 - Color legend component in header
 - Quick Import panel (single-file import with format auto-detection)
 - Bulk assembly addition in import form
+- `MultiLGVSyntenyDisplay`: stacked multi-genome synteny overview in LinearGenomeView (WIP)
 
 **Test data**
 - Plotsr Arabidopsis 4-way (Col-0/Ler/Cvi/Eri) — SyRI output, PAF, BEDPE, genomes.txt
@@ -274,6 +275,23 @@ bash test/data/synteny-demo/scripts/build-pif-files.sh
 | 10 | D2-D3 | Shared adapter + path highlighting | Large | Deep integration with graph viewer |
 
 ---
+
+## Unified Adapter Architecture
+
+All synteny data sources — PIF files, GFA servers, runtime GFA parsing — must produce the same `SyntenyFeature` objects. This means the adapter is the abstraction boundary:
+
+```
+Data Sources              Adapters                         Consumers
+─────────────    ────────────────────────    ──────────────────────────────
+PIF files    →   PairwiseIndexedPAFAdapter   →  LinearSyntenyDisplay
+PAF files    →   PAFAdapter                  →  LGVSyntenyDisplay
+GFA server   →   GfaSyntenyAdapter (new)     →  MultiLGVSyntenyDisplay
+GFA file     →   GfaFileSyntenyAdapter (new) →  (any future display)
+```
+
+All adapters implement `getFeatures(region)` returning `Observable<SyntenyFeature>`. Each feature has: `start`, `end`, `refName`, `strand`, `mate`, `identity`, `syriType`, `CIGAR` (optional).
+
+A **GFA server** that serves extracted GFA contents should act as an adapter backend for both the graph viewer (serving segments + links) and the synteny views (serving projected pairwise features). The server performs path walking and synteny extraction on demand, returning results in the same shape as PIF adapter queries.
 
 ## Key Design Decisions Still Open
 
