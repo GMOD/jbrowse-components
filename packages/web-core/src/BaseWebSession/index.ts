@@ -456,6 +456,7 @@ export function BaseWebSession({
       getTrackActionMenuItems(
         config: BaseTrackConfig,
         extraTrackActions?: MenuItem[],
+        effectiveConfig?: Record<string, unknown>,
       ): MenuItem[] {
         return [
           {
@@ -465,7 +466,7 @@ export function BaseWebSession({
               self.queueDialog(handleClose => [
                 AboutDialog,
                 {
-                  config,
+                  config: effectiveConfig ?? config,
                   handleClose,
                   session: self,
                 },

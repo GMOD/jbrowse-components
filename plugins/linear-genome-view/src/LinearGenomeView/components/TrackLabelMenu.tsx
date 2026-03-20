@@ -36,10 +36,13 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
       item => !('label' in item) || item.label !== 'Save track data',
     )
 
+    const effectiveConfig = track.activeDisplay?.effectiveTrackConfig
+
     const sessionItems =
       session.getTrackActionMenuItems?.(
         trackConf,
         saveTrackData ? [saveTrackData] : [],
+        effectiveConfig,
       ) || []
 
     return [

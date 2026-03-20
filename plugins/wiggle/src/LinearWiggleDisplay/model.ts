@@ -242,7 +242,7 @@ export default function stateModelFactory(
           : ticks
       },
 
-      getEffectiveTrackConfig() {
+      get effectiveTrackConfig() {
         const track = getContainingTrack(self)
         return getEffectiveTrackConfig(track.configuration, self)
       },

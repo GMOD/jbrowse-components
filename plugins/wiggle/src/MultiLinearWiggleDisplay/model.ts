@@ -29,6 +29,7 @@ import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
+import { getEffectiveTrackConfig } from '@jbrowse/core/util/getConfigOverrides'
 import {
   MULTI_WIGGLE_RENDERING_TYPES,
   computeAutoscaleDomain,
@@ -325,6 +326,11 @@ export default function stateModelFactory(
         return rowHeight < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
+      },
+
+      get effectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getEffectiveTrackConfig(track.configuration, self)
       },
     }))
     .views(self => ({

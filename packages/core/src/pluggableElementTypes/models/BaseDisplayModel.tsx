@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
 import {
@@ -200,6 +200,11 @@ function stateModelFactory() {
        */
       regionCannotBeRendered(/* region */) {
         return null
+      },
+
+      get effectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getSnapshot(track.configuration) as Record<string, unknown>
       },
     }))
     .actions(self => ({

@@ -104,6 +104,7 @@
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
+    "./util/getConfigOverrides": "./src/util/getConfigOverrides.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",

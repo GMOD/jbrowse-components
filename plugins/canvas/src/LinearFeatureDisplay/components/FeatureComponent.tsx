@@ -312,7 +312,6 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
 
   const scrollYRef = useRef(0)
-  const scrollbarHostRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
 

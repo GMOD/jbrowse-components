@@ -29,6 +29,8 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
+import { getEffectiveTrackConfig } from '@jbrowse/core/util/getConfigOverrides'
+
 import { ArcsSubModel } from './ArcsSubModel.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
@@ -462,6 +464,11 @@ export default function stateModelFactory(
 
       get filterBy(): FilterBy {
         return self.filterBySetting ?? getConf(self, 'filterBy')
+      },
+
+      get effectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getEffectiveTrackConfig(track.configuration, self)
       },
 
       get featureHeightSetting(): number {

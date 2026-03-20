@@ -259,3 +259,50 @@ reversed region) producing parallel lines is the correct biological behavior.
   (`[alignments]` prefix)
 - Browser test runner: forwards `[alignments]` console messages alongside
   existing `[webgl-wiggle]` messages
+
+---
+
+## P1.4 Demo Session Loading — Snapshot Migration
+
+Added testable migration utilities for loading old sessions and configs:
+
+- **`migrateWiggleSnapshot`** (17 tests) — migrates old `SharedWiggleMixin`
+  property names (`scale` → `scaleTypeSetting`, `autoscale` → `autoscaleSetting`,
+  `rendererTypeNameState` → `renderingTypeSetting`, `constraints.{min,max}` →
+  `minScoreSetting`/`maxScoreSetting`, color properties, `showSidebar` →
+  `showTreeSetting`). Strips removed properties (`fill`, `minSize`). Handles
+  `xyplot` → `multixyplot` remap for multi-wiggle.
+- **`migrateAlignmentsSnapshot`** (15 tests) — remaps old display types
+  (`LinearPileupDisplay`, `LinearReadArcsDisplay`, `LinearReadCloudDisplay`,
+  `LinearSNPCoverageDisplay` → `LinearAlignmentsDisplay`), migrates
+  `renderingMode` → `showLinkedReads`, nested `PileupDisplay`/`SNPCoverageDisplay`
+  sub-display format, `height` → `heightPreConfig`.
+- **`migrateSessionSnapshot` / `migrateConfigSnapshot`** (17 tests) — recursively
+  walks session snapshots (views → tracks → displays) and config snapshots
+  (tracks → displays) to remap old display types.
+- Wired into `createPluginManager.ts` (sessions), `jbrowseModel.ts` (configs),
+  and display `preProcessSnapshot` hooks.
+- Test configs updated: `LinearPileupDisplay`/`LinearSNPCoverageDisplay` →
+  `LinearAlignmentsDisplay` in all `test_data/volvox/` files.
+
+---
+
+## Effective Track Config / Copy Config Enhancement
+
+Added `effectiveTrackConfig` getter to display models so "Copy config" in the
+About track dialog includes user-modified display settings:
+
+- **`getEffectiveTrackConfig()`** utility (8 tests) — iterates display config
+  slots, compares stored config values against display model getters, produces a
+  track config snapshot with overrides baked in. No mutation.
+- **`BaseDisplay.effectiveTrackConfig`** — default getter returns raw track
+  config snapshot.
+- **`LinearWiggleDisplay`**, **`MultiLinearWiggleDisplay`**,
+  **`LinearAlignmentsDisplay`** — override getter using the utility to include
+  session overrides (color, scale type, autoscale, rendering type, etc.).
+- **`BaseTrackModel.activeDisplay`** — formalizes `displays[0]` as the active
+  display.
+- **`TrackLabelMenu`** — passes `effectiveTrackConfig` to
+  `getTrackActionMenuItems` which forwards it to the About dialog.
+- Integration tests (6 tests) verify override inclusion, track property
+  preservation, and cross-display-type behavior.
