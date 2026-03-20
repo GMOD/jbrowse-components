@@ -31,8 +31,7 @@ export class LDRenderer {
   private gpuData: GpuData | null = null
   private rampTexture: GPUTexture | null = null
   private rampSampler: GPUSampler | null = null
-  private glFallback: WebGLLDRenderer | null = null
-  private canvas2dFallback: Canvas2DLDRenderer | null = null
+  private fallback: WebGLLDRenderer | Canvas2DLDRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -117,7 +116,7 @@ export class LDRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DLDRenderer(this.canvas)
+      this.fallback = new Canvas2DLDRenderer(this.canvas)
       return true
     }
 
@@ -140,12 +139,12 @@ export class LDRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLLDRenderer(this.canvas)
+      this.fallback = new WebGLLDRenderer(this.canvas)
       return true
     } catch (e) {
       console.warn('[LDRenderer] WebGL2 fallback failed:', e)
       try {
-        this.canvas2dFallback = new Canvas2DLDRenderer(this.canvas)
+        this.fallback = new Canvas2DLDRenderer(this.canvas)
         return true
       } catch (e2) {
         console.warn('[LDRenderer] Canvas 2D fallback also failed:', e2)
@@ -160,12 +159,8 @@ export class LDRenderer {
     ldValues: Float32Array
     numCells: number
   }) {
-    if (this.glFallback) {
-      this.glFallback.uploadData(data)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadData(data)
+    if (this.fallback) {
+      this.fallback.uploadData(data)
       return
     }
 
@@ -192,12 +187,8 @@ export class LDRenderer {
   }
 
   uploadColorRamp(colors: Uint8Array) {
-    if (this.glFallback) {
-      this.glFallback.uploadColorRamp(colors)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadColorRamp(colors)
+    if (this.fallback) {
+      this.fallback.uploadColorRamp(colors)
       return
     }
 
@@ -255,12 +246,8 @@ export class LDRenderer {
   }
 
   render(state: LDRenderState) {
-    if (this.glFallback) {
-      this.glFallback.render(state)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.render(state)
+    if (this.fallback) {
+      this.fallback.render(state)
       return
     }
 
@@ -321,13 +308,9 @@ export class LDRenderer {
   }
 
   destroy() {
-    if (this.glFallback) {
-      this.glFallback.destroy()
-      this.glFallback = null
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.destroy()
-      this.canvas2dFallback = null
+    if (this.fallback) {
+      this.fallback.destroy()
+      this.fallback = null
     }
     this.gpuData?.instanceBuffer.destroy()
     this.gpuData = null

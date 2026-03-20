@@ -145,8 +145,7 @@ export class DotplotRenderer {
   private bindGroup: GPUBindGroup | null = null
   private instanceCount = 0
 
-  private glFallback: WebGLFallback | null = null
-  private canvas2dFallback: Canvas2DDotplotRenderer | null = null
+  private fallback: WebGLFallback | Canvas2DDotplotRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -221,7 +220,7 @@ export class DotplotRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DDotplotRenderer(this.canvas)
+      this.fallback = new Canvas2DDotplotRenderer(this.canvas)
       return true
     }
 
@@ -238,22 +237,18 @@ export class DotplotRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLFallback(this.canvas)
+      this.fallback = new WebGLFallback(this.canvas)
       return true
     } catch (e) {
       console.warn('[DotplotRenderer] WebGL2 fallback also failed:', e)
-      this.canvas2dFallback = new Canvas2DDotplotRenderer(this.canvas)
+      this.fallback = new Canvas2DDotplotRenderer(this.canvas)
       return true
     }
   }
 
   resize(width: number, height: number) {
-    if (this.glFallback) {
-      this.glFallback.resize(width, height)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.resize(width, height)
+    if (this.fallback) {
+      this.fallback.resize(width, height)
       return
     }
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
@@ -273,12 +268,8 @@ export class DotplotRenderer {
     colors: Float32Array
     instanceCount: number
   }) {
-    if (this.glFallback) {
-      this.glFallback.uploadGeometry(data)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadGeometry(data)
+    if (this.fallback) {
+      this.fallback.uploadGeometry(data)
       return
     }
 
@@ -335,12 +326,8 @@ export class DotplotRenderer {
     scaleX: number,
     scaleY: number,
   ) {
-    if (this.glFallback) {
-      this.glFallback.render(offsetX, offsetY, lineWidth, scaleX, scaleY)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.render(offsetX, offsetY, lineWidth, scaleX, scaleY)
+    if (this.fallback) {
+      this.fallback.render(offsetX, offsetY, lineWidth, scaleX, scaleY)
       return
     }
 
@@ -389,14 +376,9 @@ export class DotplotRenderer {
   }
 
   dispose() {
-    if (this.glFallback) {
-      this.glFallback.dispose()
-      this.glFallback = null
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.dispose()
-      this.canvas2dFallback = null
+    if (this.fallback) {
+      this.fallback.dispose()
+      this.fallback = null
       return
     }
     this.instanceBuffer?.destroy()

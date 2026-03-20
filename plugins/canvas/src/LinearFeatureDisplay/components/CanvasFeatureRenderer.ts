@@ -64,8 +64,7 @@ export class CanvasFeatureRenderer {
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, GpuRegionData>()
-  private glFallback: WebGLFeatureRenderer | null = null
-  private canvas2dFallback: Canvas2DFeatureRenderer | null = null
+  private fallback: WebGLFeatureRenderer | Canvas2DFeatureRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -152,7 +151,7 @@ export class CanvasFeatureRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DFeatureRenderer(this.canvas)
+      this.fallback = new Canvas2DFeatureRenderer(this.canvas)
       return true
     }
 
@@ -193,11 +192,11 @@ export class CanvasFeatureRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLFeatureRenderer(this.canvas)
+      this.fallback = new WebGLFeatureRenderer(this.canvas)
       return true
     } catch (e) {
       console.warn('[CanvasFeatureRenderer] WebGL2 fallback also failed:', e)
-      this.canvas2dFallback = new Canvas2DFeatureRenderer(this.canvas)
+      this.fallback = new Canvas2DFeatureRenderer(this.canvas)
       return true
     }
   }
@@ -224,12 +223,8 @@ export class CanvasFeatureRenderer {
       numArrows: number
     },
   ) {
-    if (this.glFallback) {
-      this.glFallback.uploadForRegion(regionNumber, data)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadForRegion(regionNumber, data)
+    if (this.fallback) {
+      this.fallback.uploadForRegion(regionNumber, data)
       return
     }
     const device = CanvasFeatureRenderer.device
@@ -303,12 +298,8 @@ export class CanvasFeatureRenderer {
     blocks: FeatureRenderBlock[],
     state: { scrollY: number; canvasWidth: number; canvasHeight: number },
   ) {
-    if (this.glFallback) {
-      this.glFallback.renderBlocks(blocks, state)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.renderBlocks(blocks, state)
+    if (this.fallback) {
+      this.fallback.renderBlocks(blocks, state)
       return
     }
     const device = CanvasFeatureRenderer.device
@@ -474,12 +465,8 @@ export class CanvasFeatureRenderer {
   }
 
   pruneStaleRegions(activeRegions: number[]) {
-    if (this.glFallback) {
-      this.glFallback.pruneStaleRegions(new Set(activeRegions))
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.pruneStaleRegions(new Set(activeRegions))
+    if (this.fallback) {
+      this.fallback.pruneStaleRegions(new Set(activeRegions))
       return
     }
     const active = new Set<number>(activeRegions)
@@ -492,14 +479,9 @@ export class CanvasFeatureRenderer {
   }
 
   dispose() {
-    if (this.glFallback) {
-      this.glFallback.destroy()
-      this.glFallback = null
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.destroy()
-      this.canvas2dFallback = null
+    if (this.fallback) {
+      this.fallback.destroy()
+      this.fallback = null
       return
     }
     for (const region of this.regions.values()) {

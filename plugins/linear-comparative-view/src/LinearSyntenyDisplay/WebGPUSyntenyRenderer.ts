@@ -29,8 +29,7 @@ export class SyntenyRenderer {
   private static pipelinesReady: Promise<void> | null = null
 
   private canvas: HTMLCanvasElement
-  private glFallback: WebGLSyntenyRenderer | null = null
-  private canvas2dFallback: Canvas2DSyntenyRenderer | null = null
+  private fallback: WebGLSyntenyRenderer | Canvas2DSyntenyRenderer | null = null
   private context: GPUCanvasContext | null = null
   private uniformBuffer: GPUBuffer | null = null
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
@@ -172,7 +171,7 @@ export class SyntenyRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
+      this.fallback = new Canvas2DSyntenyRenderer(this.canvas)
       return true
     }
 
@@ -193,12 +192,12 @@ export class SyntenyRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLSyntenyRenderer(this.canvas)
+      this.fallback = new WebGLSyntenyRenderer(this.canvas)
       return true
     } catch (e) {
       console.warn('[SyntenyRenderer] WebGL2 fallback failed:', e)
       try {
-        this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
+        this.fallback = new Canvas2DSyntenyRenderer(this.canvas)
         return true
       } catch (e2) {
         console.warn('[SyntenyRenderer] Canvas 2D fallback also failed:', e2)
@@ -208,12 +207,8 @@ export class SyntenyRenderer {
   }
 
   resize(width: number, height: number) {
-    if (this.glFallback) {
-      this.glFallback.resize(width, height)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.resize(width, height)
+    if (this.fallback) {
+      this.fallback.resize(width, height)
       return
     }
     const dpr = this.dpr
@@ -240,12 +235,8 @@ export class SyntenyRenderer {
   }
 
   uploadGeometry(data: SyntenyInstanceData) {
-    if (this.glFallback) {
-      this.glFallback.uploadGeometry(data)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadGeometry(data)
+    if (this.fallback) {
+      this.fallback.uploadGeometry(data)
       return
     }
     const device = SyntenyRenderer.device
@@ -291,23 +282,8 @@ export class SyntenyRenderer {
     hoveredFeatureId: number,
     clickedFeatureId: number,
   ) {
-    if (this.glFallback) {
-      this.glFallback.render(
-        offset0,
-        offset1,
-        height,
-        curBpPerPx0,
-        curBpPerPx1,
-        maxOffScreenPx,
-        minAlignmentLength,
-        alpha,
-        hoveredFeatureId,
-        clickedFeatureId,
-      )
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.render(
+    if (this.fallback) {
+      this.fallback.render(
         offset0,
         offset1,
         height,
@@ -402,11 +378,8 @@ export class SyntenyRenderer {
     y: number,
     onResult?: (result: number) => void,
   ): number | undefined {
-    if (this.glFallback) {
-      return this.glFallback.pick(x, y, onResult)
-    }
-    if (this.canvas2dFallback) {
-      return this.canvas2dFallback.pick(x, y, onResult)
+    if (this.fallback) {
+      return this.fallback.pick(x, y, onResult)
     }
     this.pickCallback = onResult
     if (this.pendingPick) {
@@ -541,9 +514,11 @@ export class SyntenyRenderer {
   }
 
   dispose() {
-    if (this.glFallback) {
-      this.glFallback.dispose()
-      this.glFallback = null
+    if (this.fallback) {
+      if ('dispose' in this.fallback) {
+        this.fallback.dispose()
+      }
+      this.fallback = null
       return
     }
     this.instanceBuffer?.destroy()

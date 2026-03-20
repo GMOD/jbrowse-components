@@ -64,8 +64,7 @@ export class WiggleRenderer {
   private uniformI32 = new Int32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regions = new Map<number, GpuRegionData>()
-  private glFallback: WebGLWiggleRenderer | null = null
-  private canvas2dFallback: Canvas2DWiggleRenderer | null = null
+  private fallback: WebGLWiggleRenderer | Canvas2DWiggleRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -154,7 +153,7 @@ export class WiggleRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DWiggleRenderer(this.canvas)
+      this.fallback = new Canvas2DWiggleRenderer(this.canvas)
       return true
     }
 
@@ -171,11 +170,11 @@ export class WiggleRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLWiggleRenderer(this.canvas)
+      this.fallback = new WebGLWiggleRenderer(this.canvas)
       return true
     } catch (e) {
       console.warn('[WiggleRenderer] WebGL2 fallback also failed:', e)
-      this.canvas2dFallback = new Canvas2DWiggleRenderer(this.canvas)
+      this.fallback = new Canvas2DWiggleRenderer(this.canvas)
       return true
     }
   }
@@ -185,12 +184,8 @@ export class WiggleRenderer {
     regionStart: number,
     sources: SourceRenderData[],
   ) {
-    if (this.glFallback) {
-      this.glFallback.uploadRegion(regionNumber, regionStart, sources)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadRegion(regionNumber, regionStart, sources)
+    if (this.fallback) {
+      this.fallback.uploadRegion(regionNumber, regionStart, sources)
       return
     }
 
@@ -238,12 +233,8 @@ export class WiggleRenderer {
   }
 
   pruneRegions(activeRegions: number[]) {
-    if (this.glFallback) {
-      this.glFallback.pruneStaleRegions(new Set(activeRegions))
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.pruneStaleRegions(new Set(activeRegions))
+    if (this.fallback) {
+      this.fallback.pruneStaleRegions(new Set(activeRegions))
       return
     }
 
@@ -257,12 +248,8 @@ export class WiggleRenderer {
   }
 
   renderBlocks(blocks: WiggleRenderBlock[], renderState: WiggleGPURenderState) {
-    if (this.glFallback) {
-      this.glFallback.renderBlocks(blocks, renderState)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.renderBlocks(blocks, renderState)
+    if (this.fallback) {
+      this.fallback.renderBlocks(blocks, renderState)
       return
     }
 
@@ -361,14 +348,9 @@ export class WiggleRenderer {
   }
 
   dispose() {
-    if (this.glFallback) {
-      this.glFallback.destroy()
-      this.glFallback = null
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.destroy()
-      this.canvas2dFallback = null
+    if (this.fallback) {
+      this.fallback.destroy()
+      this.fallback = null
       return
     }
     for (const region of this.regions.values()) {

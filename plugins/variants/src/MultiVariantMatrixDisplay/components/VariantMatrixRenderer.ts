@@ -33,8 +33,7 @@ export class VariantMatrixRenderer {
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private gpuData: GpuData | null = null
-  private glFallback: WebGLVariantMatrixRenderer | null = null
-  private canvas2dFallback: Canvas2DVariantMatrixRenderer | null = null
+  private fallback: WebGLVariantMatrixRenderer | Canvas2DVariantMatrixRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -111,7 +110,7 @@ export class VariantMatrixRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DVariantMatrixRenderer(this.canvas)
+      this.fallback = new Canvas2DVariantMatrixRenderer(this.canvas)
       return true
     }
 
@@ -128,12 +127,12 @@ export class VariantMatrixRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLVariantMatrixRenderer(this.canvas)
+      this.fallback = new WebGLVariantMatrixRenderer(this.canvas)
       return true
     } catch (e) {
       console.warn('[VariantMatrixRenderer] WebGL2 fallback failed:', e)
       try {
-        this.canvas2dFallback = new Canvas2DVariantMatrixRenderer(this.canvas)
+        this.fallback = new Canvas2DVariantMatrixRenderer(this.canvas)
         return true
       } catch (e2) {
         console.warn(
@@ -151,12 +150,8 @@ export class VariantMatrixRenderer {
     cellColors: Uint8Array
     numCells: number
   }) {
-    if (this.glFallback) {
-      this.glFallback.uploadCellData(data)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadCellData(data)
+    if (this.fallback) {
+      this.fallback.uploadCellData(data)
       return
     }
 
@@ -195,12 +190,8 @@ export class VariantMatrixRenderer {
   }
 
   render(state: MatrixRenderState) {
-    if (this.glFallback) {
-      this.glFallback.render(state)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.render(state)
+    if (this.fallback) {
+      this.fallback.render(state)
       return
     }
 

@@ -33,8 +33,7 @@ export class VariantRenderer {
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
   private regionDataMap = new Map<number, RegionGpuData>()
-  private glFallback: WebGLVariantRenderer | null = null
-  private canvas2dFallback: Canvas2DVariantRenderer | null = null
+  private fallback: WebGLVariantRenderer | Canvas2DVariantRenderer | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -109,7 +108,7 @@ export class VariantRenderer {
 
   async init() {
     if (getGpuOverride() === 'canvas2d') {
-      this.canvas2dFallback = new Canvas2DVariantRenderer(this.canvas)
+      this.fallback = new Canvas2DVariantRenderer(this.canvas)
       return true
     }
 
@@ -126,12 +125,12 @@ export class VariantRenderer {
       }
     }
     try {
-      this.glFallback = new WebGLVariantRenderer(this.canvas)
+      this.fallback = new WebGLVariantRenderer(this.canvas)
       return true
     } catch (e) {
       console.warn('[VariantRenderer] WebGL2 fallback failed:', e)
       try {
-        this.canvas2dFallback = new Canvas2DVariantRenderer(this.canvas)
+        this.fallback = new Canvas2DVariantRenderer(this.canvas)
         return true
       } catch (e2) {
         console.warn('[VariantRenderer] Canvas 2D fallback also failed:', e2)
@@ -151,12 +150,8 @@ export class VariantRenderer {
       numCells: number
     },
   ) {
-    if (this.glFallback) {
-      this.glFallback.uploadRegion(regionNumber, data)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.uploadRegion(regionNumber, data)
+    if (this.fallback) {
+      this.fallback.uploadRegion(regionNumber, data)
       return
     }
 
@@ -199,12 +194,8 @@ export class VariantRenderer {
   }
 
   pruneStaleRegions(activeRegionNumbers: number[]) {
-    if (this.glFallback) {
-      this.glFallback.pruneStaleRegions(activeRegionNumbers)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.pruneStaleRegions(activeRegionNumbers)
+    if (this.fallback) {
+      this.fallback.pruneStaleRegions(activeRegionNumbers)
       return
     }
     const active = new Set(activeRegionNumbers)
@@ -225,12 +216,8 @@ export class VariantRenderer {
       scrollTop: number
     },
   ) {
-    if (this.glFallback) {
-      this.glFallback.renderBlocks(blocks, state)
-      return
-    }
-    if (this.canvas2dFallback) {
-      this.canvas2dFallback.renderBlocks(blocks, state)
+    if (this.fallback) {
+      this.fallback.renderBlocks(blocks, state)
       return
     }
 
