@@ -216,8 +216,10 @@ async function runTestsWithRestart(
         console.log(`      Error: ${error}`)
       } finally {
         if (browser) {
-          await browser.close().catch(e => {
-            console.warn(`    (browser close error: ${e.message})`)
+          await browser.close().catch((e: unknown) => {
+            console.warn(
+              `    (browser close error: ${e instanceof Error ? e.message : e})`,
+            )
           })
         }
       }
@@ -391,4 +393,5 @@ async function main() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 main()

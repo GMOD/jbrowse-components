@@ -135,6 +135,7 @@ const DiagonalizationProgressDialog = observer(
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       runDiagonalization()
     }, [model, handleClose])
 

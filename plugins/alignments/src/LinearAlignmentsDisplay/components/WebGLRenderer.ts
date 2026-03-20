@@ -1936,8 +1936,6 @@ export class WebGLRenderer {
 
       this.buffers = buffers
 
-      const regionStart = buffers.regionStart
-
       const scissorX = Math.max(0, Math.floor(block.screenStartPx))
       const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
       const scissorW = scissorEnd - scissorX

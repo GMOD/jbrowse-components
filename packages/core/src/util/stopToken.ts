@@ -50,6 +50,7 @@ const useSharedArrayBuffer = (() => {
 })()
 
 if (useSharedArrayBuffer) {
+  // eslint-disable-next-line no-console
   console.log(
     '[stopToken] SharedArrayBuffer available, using fast atomic abort',
   )

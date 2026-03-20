@@ -228,6 +228,7 @@ const blockState = types
         self.cachedDisplay = display
       },
       beforeDestroy() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
             stopCurrentToken()

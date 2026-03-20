@@ -14,6 +14,7 @@
  *   - Strips removed properties: blockState, showTooltips, userByteSizeLimit
  */
 export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!snap) {
     return snap
   }

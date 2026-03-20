@@ -181,6 +181,7 @@ export default function MultiRegionDisplayMixin() {
 
           const ctx: FetchContext = { stopToken, generation, isStale }
 
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {
               const byteEstimateConfig = self.getByteEstimateConfig()
@@ -305,6 +306,7 @@ export default function MultiRegionDisplayMixin() {
                     loaded?.refName === vr.refName &&
                     vr.start >= loaded.start &&
                     vr.end <= loaded.end
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   if (boundsValid && self.isCacheValid(vr.regionNumber)) {
                     continue
                   }

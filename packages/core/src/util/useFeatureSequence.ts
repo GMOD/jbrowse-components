@@ -59,6 +59,7 @@ export function useFeatureSequence({
       return
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         setLoading(true)

@@ -24,9 +24,9 @@ import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
-} from './types'
+} from './types.ts'
 
-import type { Mismatch } from './types'
+import type { Mismatch } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -357,8 +357,8 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
   let avgBaseQuality = 30
   if (qualArray && qualArray.length > 0) {
     let sum = 0
-    for (let i = 0; i < qualArray.length; i++) {
-      sum += qualArray[i]!
+    for (const q of qualArray) {
+      sum += q
     }
     avgBaseQuality = Math.round(sum / qualArray.length)
   }

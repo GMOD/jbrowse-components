@@ -1,6 +1,6 @@
-import { buildSourceRenderData } from './WiggleComponent.tsx'
+import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
-import type { WiggleDisplayModel } from './WiggleComponent.tsx'
+import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 
 function makeData(numFeatures = 2): WiggleDataResult {

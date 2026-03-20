@@ -48,6 +48,7 @@ export async function checkByteEstimate(
     ? Math.max(stats.fetchSizeLimit, config.fetchSizeLimit)
     : config.fetchSizeLimit
 
+  // eslint-disable-next-line no-console
   console.debug(
     `[byte-estimate] bytes=${stats.bytes ?? 'n/a'} effectiveLimit=${effectiveLimit} (adapter=${stats.fetchSizeLimit ?? 'n/a'}, display=${config.fetchSizeLimit}) visibleBp=${config.visibleBp}`,
   )

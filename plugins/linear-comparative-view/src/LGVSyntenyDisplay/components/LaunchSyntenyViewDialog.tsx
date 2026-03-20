@@ -87,6 +87,7 @@ export default function LaunchSyntenyViewDialog({
         <Button
           variant="contained"
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             ;(async () => {
               try {
                 await navToSynteny({

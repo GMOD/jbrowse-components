@@ -239,7 +239,6 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const stopTokenChecker = createStopTokenChecker(stopToken)
   let validCount = 0
-  let culledCount = 0
   for (const f of features) {
     checkStopToken2(stopTokenChecker)
     const strand = f.get('strand') as number
@@ -285,7 +284,6 @@ export async function executeSyntenyFeaturesAndPositions({
     const botOffScreen = botMaxX < -bufferPx || botMinX > viewWidth + bufferPx
 
     if (topOffScreen && botOffScreen) {
-      culledCount++
       continue
     }
 
@@ -311,10 +309,6 @@ export async function executeSyntenyFeaturesAndPositions({
 
     validCount++
   }
-
-  console.debug(
-    `[synteny] features: ${features.length} total, ${validCount} visible, ${culledCount} culled by viewport`,
-  )
 
   const positionData = {
     p11_offsetPx: p11Array.subarray(0, validCount),

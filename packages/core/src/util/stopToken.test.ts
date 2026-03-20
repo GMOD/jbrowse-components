@@ -4,7 +4,7 @@ import {
   createStopToken,
   createStopTokenChecker,
   stopStopToken,
-} from './stopToken'
+} from './stopToken.ts'
 
 // SAB is available in Node.js, so we can test the full atomic path.
 // The XHR path requires a web worker and is not testable in Jest.

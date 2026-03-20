@@ -40,7 +40,8 @@ export async function findByText(
     })
   } catch {
     await page.waitForFunction(
-      (t: string) => document.body?.innerText?.includes(t) ?? false,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      (t: string) => document.body?.textContent?.includes(t) ?? false,
       { timeout },
       searchText,
     )

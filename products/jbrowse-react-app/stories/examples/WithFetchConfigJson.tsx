@@ -10,6 +10,7 @@ type ViewState = ReturnType<typeof createViewState>
 export const WithFetchConfigJson = () => {
   const [state, setState] = useState<ViewState>()
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       const url = 'test_data/volvox/config.json'
       const response = await fetch(url)

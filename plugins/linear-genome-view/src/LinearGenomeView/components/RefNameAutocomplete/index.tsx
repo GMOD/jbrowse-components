@@ -52,6 +52,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   useEffect(() => {
     const isCurrent = { cancelled: false }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (debouncedSearch === '' || !assemblyName) {

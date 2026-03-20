@@ -72,6 +72,7 @@ const suite: TestSuite = {
             const el = document.querySelector('[data-testid="drawn-false"]')
             return el !== null
           })
+          // eslint-disable-next-line no-console
           console.log(
             `      [diagnostic] drawn-true: ${drawnTrue}, drawn-false: ${drawnFalse}, beforePixels: ${beforePixels}`,
           )

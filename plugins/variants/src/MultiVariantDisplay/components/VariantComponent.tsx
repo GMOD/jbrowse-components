@@ -142,6 +142,7 @@ const VariantComponent = observer(function VariantComponent({
       setRowHeight: model.setRowHeight,
     })
 
+   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -192,7 +193,7 @@ const VariantComponent = observer(function VariantComponent({
         scrollTop: model.scrollTop,
       })
     })
-  }, [model, view, ready])
+  }, [model, view, ready, rendererRef])
 
   function getFeatureUnderMouse(
     rect: DOMRect,

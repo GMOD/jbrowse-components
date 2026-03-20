@@ -73,6 +73,7 @@ export default function ReadVsRefDialog({
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       setError(undefined)
       try {

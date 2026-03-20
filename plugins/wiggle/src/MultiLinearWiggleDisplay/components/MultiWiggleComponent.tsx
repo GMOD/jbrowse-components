@@ -114,6 +114,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const view = getContainingView(model) as LGV
 
+   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -203,7 +204,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       }
       renderer.pruneRegions(activeRegions)
     })
-  }, [model, ready])
+  }, [model, ready, rendererRef])
+
 
   useEffect(() => {
     const renderer = rendererRef.current
@@ -258,7 +260,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         setDrawn(true)
       }
     })
-  }, [model, view, ready, drawn])
+  }, [model, view, ready, drawn, rendererRef])
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([

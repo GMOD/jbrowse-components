@@ -1,7 +1,6 @@
 import {
   delay,
   findByTestId,
-  findByText,
   navigateToApp,
   navigateWithSessionSpec,
   openTrack,

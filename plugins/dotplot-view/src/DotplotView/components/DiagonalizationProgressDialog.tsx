@@ -224,6 +224,7 @@ const DiagonalizationProgressDialog = observer(
               </Button>
               <Button
                 onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   handleStart()
                 }}
                 color="primary"

@@ -86,7 +86,7 @@ describe('Canvas2DVariantRenderer', () => {
       renderer.uploadRegion(0, data)
 
       // Verify data was stored by rendering a block that references it
-      const { fillRectCalls } = createMockCanvas()
+      createMockCanvas()
       // The region is stored internally; we verify by rendering
       renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
         canvasWidth: 800,

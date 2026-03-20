@@ -59,7 +59,7 @@ import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
-} from '../shared/types'
+} from '../shared/types.ts'
 
 import type {
   AlignmentsRenderer,
@@ -1471,12 +1471,6 @@ export default function stateModelFactory(
               if (r.result.newTagValues) {
                 if (self.updateColorTagMap(r.result.newTagValues)) {
                   newTagColorsAdded = true
-                  console.log(
-                    '[alignments] new tag colors discovered:',
-                    r.result.newTagValues,
-                    'colorTagMap now:',
-                    { ...self.colorTagMap },
-                  )
                 }
               }
               self.setModificationsReady(true)
@@ -1502,10 +1496,6 @@ export default function stateModelFactory(
               computeAndSetArcs(needed)
             }
             if (newTagColorsAdded && self.colorBy.type === 'tag') {
-              console.log(
-                '[alignments] re-fetching with populated colorTagMap:',
-                { ...self.colorTagMap },
-              )
               self.invalidateLoadedRegions()
             }
           })

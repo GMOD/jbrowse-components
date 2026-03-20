@@ -824,6 +824,7 @@ export default function stateModelFactory(
             label: 'Open feature details',
             icon: MenuOpenIcon,
             onClick: () => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               self.selectFullFeature(featureId, regionNumber)
             },
           },
@@ -845,6 +846,7 @@ export default function stateModelFactory(
             label: 'Copy info to clipboard',
             icon: ContentCopyIcon,
             onClick: () => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               ;(async () => {
                 const fullFeature = await self.fetchFullFeature(
                   featureId,
@@ -867,6 +869,7 @@ export default function stateModelFactory(
                   label: 'Collapse introns',
                   icon: CloseFullscreenIcon,
                   onClick: () => {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     ;(async () => {
                       const fullFeature = await self.fetchFullFeature(
                         featureId,

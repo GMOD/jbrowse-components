@@ -188,6 +188,7 @@ describe('withFetchLifecycle state management', () => {
       }
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     withFetchLifecycle(model, null, async () => {
       secondWorkRan = true
     })

@@ -46,6 +46,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   const [samplesPerPixel, setSamplesPerPixel] = useState('1')
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         setError(undefined)

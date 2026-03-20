@@ -1,6 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 
-import { fillColor } from './color.ts'
 import {
   getPileupLegendItems,
   getReadDisplayLegendItems,

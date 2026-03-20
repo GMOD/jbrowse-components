@@ -312,4 +312,16 @@ export default defineConfig(
       },
     },
   },
+  {
+    files: ['products/jbrowse-web/webgpu-debug.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
 )

@@ -90,6 +90,7 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       const { session } = stateTree
       const { isValidRefName } = session.assemblyManager

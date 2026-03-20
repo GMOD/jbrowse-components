@@ -148,6 +148,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const [type, setType] = useState('')
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       const isValidTag = TAG_REGEX.test(debouncedTag)
       if (type === 'tag' && isValidTag) {

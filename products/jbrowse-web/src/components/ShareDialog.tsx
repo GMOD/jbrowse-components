@@ -49,6 +49,7 @@ const ShareDialog = observer(function ShareDialog({
   const snap = getSnapshot(session)
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       // checking !error allows retry when error state is cleared
       if (error) {

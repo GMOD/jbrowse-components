@@ -4,7 +4,7 @@ interface StaticRegion extends Region {
   regionNumber: number
 }
 
-interface LoadedRegion extends Region {}
+type LoadedRegion = Region
 
 function shouldFetchRegion(
   vr: StaticRegion,

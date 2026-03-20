@@ -50,7 +50,8 @@ export function migrateWiggleSnapshot(
   } = snap
 
   const oldRendering =
-    (rendererTypeNameState as string) ?? (selectedRendering as string)
+    (rendererTypeNameState as string | undefined) ??
+    (selectedRendering as string | undefined)
   const cons = constraints as { min?: number; max?: number } | undefined
 
   let renderingTypeSetting: string | undefined

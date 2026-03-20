@@ -171,21 +171,14 @@ export class SyntenyRenderer {
   }
 
   async init() {
-    console.log(
-      '[SyntenyRenderer.init] starting, gpuOverride:',
-      getGpuOverride(),
-    )
     if (getGpuOverride() === 'canvas2d') {
-      console.log('[SyntenyRenderer.init] using canvas2d override')
       this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
       return true
     }
 
     const device = await SyntenyRenderer.ensureDevice()
-    console.log('[SyntenyRenderer.init] device:', !!device)
     if (device) {
       const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
-      console.log('[SyntenyRenderer.init] gpuContext result:', !!result)
       if (result) {
         this.context = result.context
         this.uniformBuffer = device.createBuffer({
@@ -200,16 +193,12 @@ export class SyntenyRenderer {
       }
     }
     try {
-      console.log('[SyntenyRenderer.init] trying WebGL2 fallback')
       this.glFallback = new WebGLSyntenyRenderer(this.canvas)
-      console.log('[SyntenyRenderer.init] WebGL2 fallback succeeded')
       return true
     } catch (e) {
       console.warn('[SyntenyRenderer] WebGL2 fallback failed:', e)
       try {
-        console.log('[SyntenyRenderer.init] trying Canvas2D fallback')
         this.canvas2dFallback = new Canvas2DSyntenyRenderer(this.canvas)
-        console.log('[SyntenyRenderer.init] Canvas2D fallback succeeded')
         return true
       } catch (e2) {
         console.warn('[SyntenyRenderer] Canvas 2D fallback also failed:', e2)
@@ -251,15 +240,6 @@ export class SyntenyRenderer {
   }
 
   uploadGeometry(data: SyntenyInstanceData) {
-    console.log(
-      '[SyntenyRenderer.uploadGeometry]',
-      JSON.stringify({
-        instanceCount: data.instanceCount,
-        nonCigarInstanceCount: data.nonCigarInstanceCount,
-        hasGlFallback: !!this.glFallback,
-        hasCanvas2dFallback: !!this.canvas2dFallback,
-      }),
-    )
     if (this.glFallback) {
       this.glFallback.uploadGeometry(data)
       return
@@ -350,29 +330,8 @@ export class SyntenyRenderer {
       !SyntenyRenderer.fillPipeline ||
       !this.context
     ) {
-      console.log(
-        '[SyntenyRenderer.render] early return',
-        JSON.stringify({
-          hasDevice: !!device,
-          hasInstanceBuffer: !!this.instanceBuffer,
-          instanceCount: this.instanceCount,
-          hasBindGroup: !!this.bindGroup,
-          hasFillPipeline: !!SyntenyRenderer.fillPipeline,
-          hasContext: !!this.context,
-          hasGlFallback: !!this.glFallback,
-          hasCanvas2dFallback: !!this.canvas2dFallback,
-        }),
-      )
       return
     }
-    console.log(
-      '[SyntenyRenderer.render] rendering',
-      JSON.stringify({
-        instanceCount: this.instanceCount,
-        canvasWidth: this.canvas.width,
-        canvasHeight: this.canvas.height,
-      }),
-    )
 
     const scale0 = this.geometryBpPerPx0 / curBpPerPx0
     const scale1 = this.geometryBpPerPx1 / curBpPerPx1

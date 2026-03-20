@@ -84,6 +84,7 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
           color="primary"
           startIcon={<GetAppIcon />}
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             downloadBookmarkFile(fileType, model)
             onClose()
           }}

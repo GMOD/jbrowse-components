@@ -26,6 +26,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
   // "coarseDynamicBlocks" is the currently visible regions, with a little
   // debounce so that it doesn't update too fast
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       if (!view.initialized) {
         return

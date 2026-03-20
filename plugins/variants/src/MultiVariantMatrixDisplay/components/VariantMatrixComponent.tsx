@@ -60,6 +60,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       setRowHeight: model.setRowHeight,
     })
 
+   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -90,7 +91,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
         numFeatures: cellData.numFeatures,
       })
     })
-  }, [model, view, ready])
+  }, [model, view, ready, rendererRef])
 
   function getFeatureUnderMouse(
     rect: DOMRect,

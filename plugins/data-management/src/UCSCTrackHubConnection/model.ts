@@ -33,6 +33,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
       async connect() {
         const { doConnect } = await import('./doConnect.ts')
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         doConnect(self)
       },
     }))

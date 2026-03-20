@@ -179,6 +179,7 @@ export function doAfterAttach(self: SharedLDModel) {
           return
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         performRender()
       },
       {

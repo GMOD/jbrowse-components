@@ -81,7 +81,7 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('render draws linear parallelogram for straight features', () => {
-    const { canvas, ctx, pathOps } = createMockCanvas()
+    const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)

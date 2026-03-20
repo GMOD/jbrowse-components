@@ -22,6 +22,7 @@ export function onDeviceLost(listener: () => void) {
 
 async function createDevice(): Promise<GPUDevice | null> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!navigator.gpu) {
       console.warn('WebGPU unsupported in this browser, trying fallback')
       return null
