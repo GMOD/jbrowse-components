@@ -24,6 +24,51 @@ export function swapIndelCigar(cigar: string): string {
   return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }
 
+// Extracts large indels from a CIGAR string and encodes them as absolute
+// positions. This avoids the need to sequentially decode the full CIGAR to
+// find where structural events are. Format:
+// "id:Z:<op><refPos>,<queryPos>,<len>;..."
+// e.g. "id:Z:D1500,2000,500;I5000,4800,300"
+export function extractLargeIndels(
+  cigarStr: string,
+  minIndelSize: number,
+  refStart: number,
+  queryStart: number,
+): string {
+  const ops = parseCigar(cigarStr)
+  if (ops.length === 0) {
+    return ''
+  }
+
+  const indels: string[] = []
+  let refPos = refStart
+  let queryPos = queryStart
+
+  for (let i = 0; i < ops.length; i += 2) {
+    const len = +ops[i]!
+    const op = ops[i + 1]!
+    if (op === 'M' || op === '=' || op === 'X') {
+      refPos += len
+      queryPos += len
+    } else if (op === 'D' || op === 'N') {
+      if (len >= minIndelSize) {
+        indels.push(`${op}${refPos},${queryPos},${len}`)
+      }
+      refPos += len
+    } else if (op === 'I') {
+      if (len >= minIndelSize) {
+        indels.push(`I${refPos},${queryPos},${len}`)
+      }
+      queryPos += len
+    }
+  }
+
+  if (indels.length === 0) {
+    return ''
+  }
+  return `id:Z:${indels.join(';')}`
+}
+
 // Splits a PAF alignment into multiple sub-alignments at large indels.
 // columns: [qname, qlen, qstart, qend, strand, tname, tlen, tstart, tend, ...rest]
 // Returns array of column arrays (one per sub-alignment).

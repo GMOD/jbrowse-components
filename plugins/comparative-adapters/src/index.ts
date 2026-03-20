@@ -12,6 +12,9 @@ import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
 
+export { computeSyriTypes } from './syriUtils.ts'
+export type { SyriType } from './syriUtils.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class ComparativeAdaptersPlugin extends Plugin {

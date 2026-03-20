@@ -1,7 +1,12 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colord } from '@jbrowse/core/util/colord'
 
-import { colorSchemes } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+import {
+  colorSchemes,
+  syriColors,
+} from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+
+import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
 
 const OP_M = 0
 const OP_I = 1
@@ -48,9 +53,22 @@ const STRAND_POS: RGBA = [1, 0, 0, 1]
 const STRAND_NEG: RGBA = [0, 0, 1, 1]
 const DEFAULT_COLOR: RGBA = [1, 0, 0, 1]
 
+const syriColorMap: Record<SyriType, RGBA> = {
+  SYN: cssColorToNormalized(syriColors.SYN),
+  INV: cssColorToNormalized(syriColors.INV),
+  TRANS: cssColorToNormalized(syriColors.TRANS),
+  DUP: cssColorToNormalized(syriColors.DUP),
+}
+
 function createColorFunction(
   colorBy: string,
+  syriTypes?: SyriType[],
 ): (strand: number, refName: string, index: number) => RGBA {
+  if (colorBy === 'syri' && syriTypes) {
+    return (_strand: number, _refName: string, index: number) =>
+      syriColorMap[syriTypes[index]!] ?? DEFAULT_COLOR
+  }
+
   if (colorBy === 'strand') {
     return (strand: number) => (strand === -1 ? STRAND_NEG : STRAND_POS)
   }
@@ -187,6 +205,7 @@ export function executeSyntenyInstanceData({
   starts: Float64Array
   ends: Float64Array
   colorBy: string
+  syriTypes?: SyriType[]
   drawCurves: boolean
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
@@ -196,7 +215,7 @@ export function executeSyntenyInstanceData({
   viewOffsets: number[]
   viewWidth: number
 }): SyntenyInstanceData {
-  const colorFn = createColorFunction(colorBy)
+  const colorFn = createColorFunction(colorBy, syriTypes)
   const indelColors = buildIndelColors(colorBy)
   const featureCount = p11_offsetPx.length
 

@@ -1,9 +1,20 @@
+import { useState } from 'react'
+
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
-import { Button, IconButton, Tooltip } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Tooltip,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -111,6 +122,82 @@ const AssemblyRows = observer(function AssemblyRows({
   ))
 })
 
+function BulkAddButton({
+  selectedAssemblyNames,
+  setSelectedAssemblyNames,
+}: {
+  selectedAssemblyNames: string[]
+  setSelectedAssemblyNames: (names: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState('')
+
+  return (
+    <>
+      <Button
+        variant="outlined"
+        color="secondary"
+        size="small"
+        sx={{ mx: 1 }}
+        onClick={() => {
+          setOpen(true)
+        }}
+      >
+        Add multiple
+      </Button>
+      <Dialog
+        open={open}
+        onClose={() => {
+          setOpen(false)
+        }}
+      >
+        <DialogTitle>Add multiple assemblies</DialogTitle>
+        <DialogContent>
+          <TextField
+            multiline
+            rows={6}
+            fullWidth
+            placeholder="Paste assembly names, one per line"
+            value={text}
+            onChange={e => {
+              setText(e.target.value)
+            }}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpen(false)
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              const newNames = text
+                .split(/\n/)
+                .map(s => s.trim())
+                .filter(s => s.length > 0)
+              if (newNames.length > 0) {
+                setSelectedAssemblyNames([
+                  ...selectedAssemblyNames,
+                  ...newNames,
+                ])
+              }
+              setOpen(false)
+              setText('')
+            }}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+
 const LeftPanel = observer(function LeftPanel({
   model,
   selectedAssemblyNames,
@@ -161,6 +248,10 @@ const LeftPanel = observer(function LeftPanel({
         >
           Add row
         </Button>
+        <BulkAddButton
+          selectedAssemblyNames={selectedAssemblyNames}
+          setSelectedAssemblyNames={setSelectedAssemblyNames}
+        />
         <Button
           className={classes.button}
           disabled={!canLaunch}
