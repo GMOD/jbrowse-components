@@ -142,7 +142,6 @@ const VariantComponent = observer(function VariantComponent({
       setRowHeight: model.setRowHeight,
     })
 
-   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {

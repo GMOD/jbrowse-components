@@ -259,10 +259,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     this.ctx = ctx
   }
 
-  uploadFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ReadUploadData,
-  ) {
+  uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
     let r = this.regions.get(regionNumber)
     if (!r) {
       r = emptyRegion(data.regionStart)
@@ -472,10 +469,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     this.regions.clear()
   }
 
-  renderBlocks(
-    blocks: RenderBlock[],
-    state: RenderState,
-  ) {
+  renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const { canvasWidth, canvasHeight } = state
     const dpr = window.devicePixelRatio || 1
     const bufW = Math.round(canvasWidth * dpr)

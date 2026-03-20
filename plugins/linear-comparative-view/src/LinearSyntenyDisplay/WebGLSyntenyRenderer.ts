@@ -1,3 +1,5 @@
+import { createProgram } from '@jbrowse/core/gpu/webglUtils'
+
 import {
   EDGE_FRAGMENT_SHADER,
   EDGE_VERTEX_SHADER,
@@ -16,45 +18,6 @@ import {
 } from './wgslShaders.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
-
-function compileShader(
-  gl: WebGL2RenderingContext,
-  type: number,
-  source: string,
-) {
-  const shader = gl.createShader(type)!
-  gl.shaderSource(shader, source)
-  gl.compileShader(shader)
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    const info = gl.getShaderInfoLog(shader)
-    gl.deleteShader(shader)
-    throw new Error(`Shader compile error: ${info}`)
-  }
-  return shader
-}
-
-function linkProgram(
-  gl: WebGL2RenderingContext,
-  vsSource: string,
-  fsSource: string,
-) {
-  const vs = compileShader(gl, gl.VERTEX_SHADER, vsSource)
-  const fs = compileShader(gl, gl.FRAGMENT_SHADER, fsSource)
-  const program = gl.createProgram()
-  gl.attachShader(program, vs)
-  gl.attachShader(program, fs)
-  gl.linkProgram(program)
-  gl.detachShader(program, vs)
-  gl.detachShader(program, fs)
-  gl.deleteShader(vs)
-  gl.deleteShader(fs)
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    const info = gl.getProgramInfoLog(program)
-    gl.deleteProgram(program)
-    throw new Error(`Program link error: ${info}`)
-  }
-  return program
-}
 
 const INST_ATTRIB_NAMES = ['a_inst0', 'a_inst1', 'a_inst2', 'a_inst3']
 
@@ -127,13 +90,21 @@ export class WebGLSyntenyRenderer {
     }
     this.gl = gl
 
-    this.fillProgram = linkProgram(gl, FILL_VERTEX_SHADER, FILL_FRAGMENT_SHADER)
-    this.pickingProgram = linkProgram(
+    this.fillProgram = createProgram(
+      gl,
+      FILL_VERTEX_SHADER,
+      FILL_FRAGMENT_SHADER,
+    )
+    this.pickingProgram = createProgram(
       gl,
       FILL_VERTEX_SHADER,
       FILL_FRAGMENT_SHADER_PICKING,
     )
-    this.edgeProgram = linkProgram(gl, EDGE_VERTEX_SHADER, EDGE_FRAGMENT_SHADER)
+    this.edgeProgram = createProgram(
+      gl,
+      EDGE_VERTEX_SHADER,
+      EDGE_FRAGMENT_SHADER,
+    )
 
     this.ubo = gl.createBuffer()!
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)

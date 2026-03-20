@@ -114,7 +114,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 
   const view = getContainingView(model) as LGV
 
-   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -205,7 +204,6 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
       renderer.pruneRegions(activeRegions)
     })
   }, [model, ready, rendererRef])
-
 
   useEffect(() => {
     const renderer = rendererRef.current

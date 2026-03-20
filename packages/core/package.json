@@ -36,6 +36,7 @@
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
+    "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -165,7 +166,7 @@
     "@mui/material": "^7.3.9",
     "@mui/system": "^7.3.9",
     "@mui/types": "^7.4.12",
-    "@mui/x-data-grid": "^8.27.5",
+    "@mui/x-data-grid": "^8.28.0",
     "@types/file-saver-es": "^2.0.3",
     "canvas-sequencer-ts": "^3.1.3",
     "copy-to-clipboard": "^3.3.3",
@@ -253,6 +254,10 @@
       "./gpu/initGpuContext": {
         "types": "./esm/gpu/initGpuContext.d.ts",
         "import": "./esm/gpu/initGpuContext.js"
+      },
+      "./gpu/webglUtils": {
+        "types": "./esm/gpu/webglUtils.d.ts",
+        "import": "./esm/gpu/webglUtils.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -692,6 +697,9 @@
         ],
         "gpu/initGpuContext": [
           "esm/gpu/initGpuContext.d.ts"
+        ],
+        "gpu/webglUtils": [
+          "esm/gpu/webglUtils.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"

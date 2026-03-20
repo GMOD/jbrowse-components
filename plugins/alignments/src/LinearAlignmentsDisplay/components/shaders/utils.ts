@@ -1,11 +1,4 @@
-export function splitPositionWithFrac(value: number): [number, number] {
-  const intValue = Math.floor(value)
-  const frac = value - intValue
-  const loInt = intValue & 0xfff
-  const hi = intValue - loInt
-  const lo = loInt + frac
-  return [hi, lo]
-}
+export { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
 export const HP_GLSL_FUNCTIONS = `
 // SYNC(wgsl/common.ts): HP_LOW_MASK=0xFFF, hpSplitUint/hpToClipX/hpScaleLinear must match hp_split_uint/hp_to_clip_x/hp_scale_linear

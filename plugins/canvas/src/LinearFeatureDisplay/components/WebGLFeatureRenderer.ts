@@ -1,11 +1,7 @@
-function splitPositionWithFrac(value: number): [number, number] {
-  const intValue = Math.floor(value)
-  const frac = value - intValue
-  const loInt = intValue & 0xfff
-  const hi = intValue - loInt
-  const lo = loInt + frac
-  return [hi, lo]
-}
+import {
+  createProgram as createGLProgram,
+  splitPositionWithFrac,
+} from '@jbrowse/core/gpu/webglUtils'
 
 const HP_GLSL_FUNCTIONS = `
 const uint HP_LOW_MASK = 0xFFFu;
@@ -376,37 +372,8 @@ export class WebGLFeatureRenderer {
     )
   }
 
-  private createShader(type: number, source: string) {
-    const gl = this.gl
-    const shader = gl.createShader(type)!
-    gl.shaderSource(shader, source)
-    gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      const info = gl.getShaderInfoLog(shader)
-      gl.deleteShader(shader)
-      throw new Error(`Shader compile error: ${info}`)
-    }
-    return shader
-  }
-
   private createProgram(vsSource: string, fsSource: string) {
-    const gl = this.gl
-    const vs = this.createShader(gl.VERTEX_SHADER, vsSource)
-    const fs = this.createShader(gl.FRAGMENT_SHADER, fsSource)
-    const program = gl.createProgram()
-    gl.attachShader(program, vs)
-    gl.attachShader(program, fs)
-    gl.linkProgram(program)
-    gl.detachShader(program, vs)
-    gl.detachShader(program, fs)
-    gl.deleteShader(vs)
-    gl.deleteShader(fs)
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      const info = gl.getProgramInfoLog(program)
-      gl.deleteProgram(program)
-      throw new Error(`Program link error: ${info}`)
-    }
-    return program
+    return createGLProgram(this.gl, vsSource, fsSource)
   }
 
   private cacheUniforms(

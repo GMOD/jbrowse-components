@@ -229,7 +229,7 @@ export default function stateModelFactory(
         const mode = self.trackGeneGlyphMode ?? 'auto'
         if (mode === 'auto') {
           const view = getContainingView(self) as LGV
-          return view.bpPerPx > 100 ? 'longest' : 'all'
+          return view.bpPerPx > 100 ? 'longestCoding' : 'all'
         }
         return mode
       },

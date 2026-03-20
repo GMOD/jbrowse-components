@@ -85,7 +85,6 @@ import type {
   SashimiUploadData,
 } from './rendererTypes.ts'
 
-
 export interface GPUBuffers {
   // Reference point for all position offsets
   regionStart: number
@@ -1742,10 +1741,7 @@ export class WebGLRenderer implements AlignmentsBackend {
     this.deactivateRegion(regionNumber)
   }
 
-  uploadFromTypedArraysForRegion(
-    regionNumber: number,
-    data: ReadUploadData,
-  ) {
+  uploadFromTypedArraysForRegion(regionNumber: number, data: ReadUploadData) {
     this.withRegion(regionNumber, this.uploadFromTypedArrays, data)
   }
 
@@ -1874,10 +1870,7 @@ export class WebGLRenderer implements AlignmentsBackend {
   /**
    * Render multiple blocks with scissor rects, each from a different refName's GPU buffers.
    */
-  renderBlocks(
-    blocks: RenderBlock[],
-    state: RenderState,
-  ) {
+  renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight } = state

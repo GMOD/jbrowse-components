@@ -38,7 +38,6 @@ const WiggleComponent = observer(function WiggleComponent({
 
   const view = getContainingView(model) as LGV
 
-   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
@@ -62,7 +61,6 @@ const WiggleComponent = observer(function WiggleComponent({
     })
   }, [model, ready, rendererRef])
 
-   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {

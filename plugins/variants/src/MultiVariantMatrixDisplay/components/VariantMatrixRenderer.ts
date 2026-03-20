@@ -33,7 +33,10 @@ export class VariantMatrixRenderer {
   private uniformData = new ArrayBuffer(UNIFORM_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private gpuData: GpuData | null = null
-  private fallback: WebGLVariantMatrixRenderer | Canvas2DVariantMatrixRenderer | null = null
+  private fallback:
+    | WebGLVariantMatrixRenderer
+    | Canvas2DVariantMatrixRenderer
+    | null = null
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas

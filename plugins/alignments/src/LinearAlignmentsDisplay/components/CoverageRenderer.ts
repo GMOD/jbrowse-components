@@ -1,5 +1,5 @@
-import type { RenderState } from './rendererTypes.ts'
 import type { WebGLRenderer } from './WebGLRenderer.ts'
+import type { RenderState } from './rendererTypes.ts'
 import type { ColorPalette } from './shaders/index.ts'
 
 export function renderCoverage(

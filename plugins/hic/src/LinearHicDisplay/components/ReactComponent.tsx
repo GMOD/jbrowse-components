@@ -132,7 +132,6 @@ const HicCanvas = observer(function HicCanvas({
     [flatbush],
   )
 
-   
   useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData || !ready) {
@@ -146,7 +145,6 @@ const HicCanvas = observer(function HicCanvas({
     })
   }, [rpcData, ready, rendererRef])
 
-   
   useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData || !ready) {
@@ -156,7 +154,6 @@ const HicCanvas = observer(function HicCanvas({
     renderer.uploadColorRamp(generateColorRamp(colorScheme))
   }, [rpcData, colorScheme, ready, rendererRef])
 
-   
   useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rpcData || !ready) {
@@ -173,7 +170,16 @@ const HicCanvas = observer(function HicCanvas({
       viewScale,
       viewOffsetX,
     })
-  }, [rpcData, width, height, useLogScale, viewScale, viewOffsetX, ready, rendererRef])
+  }, [
+    rpcData,
+    width,
+    height,
+    useLogScale,
+    viewScale,
+    viewOffsetX,
+    ready,
+    rendererRef,
+  ])
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent) => {

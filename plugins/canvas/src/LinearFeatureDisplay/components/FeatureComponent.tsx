@@ -422,7 +422,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   // WebGL features in sync with the DOM label overlay (which is computed
   // during the same render via useMemo). useEffect would run after paint,
   // causing a frame where labels show new data but WebGL shows old data.
-   
+
   useLayoutEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !rendererReady) {

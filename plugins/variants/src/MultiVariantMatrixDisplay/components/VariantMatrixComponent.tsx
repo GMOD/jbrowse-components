@@ -60,7 +60,6 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
       setRowHeight: model.setRowHeight,
     })
 
-   
   useEffect(() => {
     const renderer = rendererRef.current
     if (!renderer || !ready) {
