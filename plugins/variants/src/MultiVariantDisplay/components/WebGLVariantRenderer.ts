@@ -7,12 +7,10 @@ import {
   splitPositionWithFrac,
 } from '../../shared/variantWebglUtils.ts'
 
-export interface VariantRenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-}
+import type {
+  VariantBackend,
+  VariantRenderBlock,
+} from './variantBackendTypes.ts'
 
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in variantShaders.ts (used by WebGPU).
@@ -196,7 +194,7 @@ interface RegionGLData {
   cellCount: number
 }
 
-export class WebGLVariantRenderer {
+export class WebGLVariantRenderer implements VariantBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
@@ -422,7 +420,7 @@ export class WebGLVariantRenderer {
     gl.uniform1f(this.uniforms.u_zero!, 0)
   }
 
-  destroy() {
+  dispose() {
     const gl = this.gl
     for (const [, data] of this.regionDataMap) {
       gl.deleteBuffer(data.instanceBuffer)

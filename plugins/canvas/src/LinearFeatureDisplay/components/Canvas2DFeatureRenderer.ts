@@ -1,7 +1,7 @@
 import type {
+  CanvasFeatureBackend,
   FeatureRenderBlock,
-  FeatureRenderState,
-} from './WebGLFeatureRenderer.ts'
+} from './canvasFeatureBackendTypes.ts'
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -31,7 +31,7 @@ const STEM_LENGTH = 7
 const STEM_HALF_H = 0.5
 const HEAD_HALF_H = 2.5
 
-export class Canvas2DFeatureRenderer {
+export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private regions = new Map<number, Canvas2DRegionData>()
@@ -45,7 +45,7 @@ export class Canvas2DFeatureRenderer {
     this.ctx = ctx
   }
 
-  uploadForRegion(
+  uploadRegion(
     regionNumber: number,
     data: {
       regionStart: number
@@ -88,7 +88,10 @@ export class Canvas2DFeatureRenderer {
     })
   }
 
-  renderBlocks(blocks: FeatureRenderBlock[], state: FeatureRenderState) {
+  renderBlocks(
+    blocks: FeatureRenderBlock[],
+    state: { scrollY: number; canvasWidth: number; canvasHeight: number },
+  ) {
     const { canvasWidth, canvasHeight, scrollY } = state
     const dpr = window.devicePixelRatio || 1
     const bufW = Math.round(canvasWidth * dpr)
@@ -262,15 +265,16 @@ export class Canvas2DFeatureRenderer {
     }
   }
 
-  pruneStaleRegions(activeRegionNumbers: Set<number>) {
+  pruneStaleRegions(activeRegions: number[]) {
+    const activeSet = new Set(activeRegions)
     for (const regionNumber of this.regions.keys()) {
-      if (!activeRegionNumbers.has(regionNumber)) {
+      if (!activeSet.has(regionNumber)) {
         this.regions.delete(regionNumber)
       }
     }
   }
 
-  destroy() {
+  dispose() {
     this.regions.clear()
   }
 }

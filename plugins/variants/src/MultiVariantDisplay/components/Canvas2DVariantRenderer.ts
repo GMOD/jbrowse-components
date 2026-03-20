@@ -1,4 +1,7 @@
-import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
+import type {
+  VariantBackend,
+  VariantRenderBlock,
+} from './variantBackendTypes.ts'
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -9,7 +12,7 @@ interface Canvas2DRegionData {
   numCells: number
 }
 
-export class Canvas2DVariantRenderer {
+export class Canvas2DVariantRenderer implements VariantBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private regions = new Map<number, Canvas2DRegionData>()
@@ -157,7 +160,7 @@ export class Canvas2DVariantRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.regions.clear()
   }
 }

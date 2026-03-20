@@ -379,7 +379,7 @@ const LDCanvas = observer(function LDCanvas({
 
     return () => {
       cancelled = true
-      rendererRef.current?.destroy()
+      rendererRef.current?.dispose()
       rendererRef.current = null
       setReady(false)
     }

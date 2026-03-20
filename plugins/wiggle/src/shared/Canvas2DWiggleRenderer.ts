@@ -8,9 +8,10 @@ import {
 
 import type {
   SourceRenderData,
+  WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './WiggleRenderer.ts'
+} from './wiggleBackendTypes.ts'
 
 interface Canvas2DRegionData {
   regionStart: number
@@ -34,7 +35,7 @@ interface DrawParams {
   b: number
 }
 
-export class Canvas2DWiggleRenderer {
+export class Canvas2DWiggleRenderer implements WiggleBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private regions = new Map<number, Canvas2DRegionData>()
@@ -296,15 +297,16 @@ export class Canvas2DWiggleRenderer {
     }
   }
 
-  pruneStaleRegions(activeRegionNumbers: Set<number>) {
+  pruneRegions(activeRegions: number[]) {
+    const active = new Set(activeRegions)
     for (const regionNumber of this.regions.keys()) {
-      if (!activeRegionNumbers.has(regionNumber)) {
+      if (!active.has(regionNumber)) {
         this.regions.delete(regionNumber)
       }
     }
   }
 
-  destroy() {
+  dispose() {
     this.regions.clear()
   }
 }

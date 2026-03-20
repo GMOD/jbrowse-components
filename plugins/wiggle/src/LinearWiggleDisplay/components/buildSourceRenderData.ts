@@ -3,8 +3,8 @@ import { makeWhiskersSourceData } from '../../shared/wiggleComponentUtils.ts'
 import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
-import type { SourceRenderData } from '../../shared/WiggleRenderer.ts'
 import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
+import type { SourceRenderData } from '../../shared/wiggleBackendTypes.ts'
 
 export interface WiggleDisplayModel {
   rpcDataMap: Map<number, WiggleDataResult>

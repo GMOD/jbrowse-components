@@ -1,6 +1,6 @@
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
 
-import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
+import type { VariantRenderBlock } from './variantBackendTypes.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
 
@@ -325,7 +325,7 @@ describe('Canvas2DVariantRenderer', () => {
       const { canvas, ctx } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)
       renderer.uploadRegion(0, makeRegionData())
-      renderer.destroy()
+      renderer.dispose()
 
       renderer.renderBlocks([makeBlock({ regionNumber: 0 })], {
         canvasWidth: 800,

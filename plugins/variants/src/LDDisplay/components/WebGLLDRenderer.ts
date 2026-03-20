@@ -1,6 +1,8 @@
 import { INSTANCE_STRIDE, interleaveLDInstances } from './ldShaders.ts'
 import { cacheUniforms, createProgram } from '../../shared/variantWebglUtils.ts'
 
+import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
+
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in ldShaders.ts (used by WebGPU).
 // When updating rendering logic, update BOTH this file and ldShaders.ts.
@@ -173,16 +175,7 @@ export function generateLDColorRamp(
     : interpolateStops(R2_STOPS)
 }
 
-export interface LDRenderState {
-  yScalar: number
-  canvasWidth: number
-  canvasHeight: number
-  signedLD: boolean
-  viewScale: number
-  viewOffsetX: number
-}
-
-export class WebGLLDRenderer {
+export class WebGLLDRenderer implements LDBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
@@ -346,7 +339,7 @@ export class WebGLLDRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.deleteBuffers()
     const gl = this.gl
     if (this.colorRampTexture) {

@@ -6,7 +6,7 @@ import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { getTooltip } from './components/util.ts'
 import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
 
-import type { SyntenyRenderer } from './WebGPUSyntenyRenderer.ts'
+import type { SyntenyRenderer } from './SyntenyRenderer.ts'
 import type { ColorScheme } from './drawSyntenyUtils.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

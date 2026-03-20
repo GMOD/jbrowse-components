@@ -17,9 +17,10 @@ import {
 
 import type {
   SourceRenderData,
+  WiggleBackend,
   WiggleGPURenderState,
   WiggleRenderBlock,
-} from './WiggleRenderer.ts'
+} from './wiggleBackendTypes.ts'
 
 const INSTANCE_BYTES = INSTANCE_STRIDE * 4
 
@@ -31,7 +32,7 @@ interface RegionData {
   vbo: WebGLBuffer
 }
 
-export class WebGLWiggleRenderer {
+export class WebGLWiggleRenderer implements WiggleBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
@@ -302,9 +303,10 @@ export class WebGLWiggleRenderer {
     gl.bindVertexArray(null)
   }
 
-  pruneStaleRegions(activeRegionNumbers: Set<number>) {
+  pruneRegions(activeRegions: number[]) {
+    const active = new Set(activeRegions)
     for (const regionNumber of this.regions.keys()) {
-      if (!activeRegionNumbers.has(regionNumber)) {
+      if (!active.has(regionNumber)) {
         const region = this.regions.get(regionNumber)
         if (region) {
           this.gl.deleteVertexArray(region.vao)
@@ -315,7 +317,7 @@ export class WebGLWiggleRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     for (const region of this.regions.values()) {
       this.gl.deleteVertexArray(region.vao)
       this.gl.deleteBuffer(region.vbo)

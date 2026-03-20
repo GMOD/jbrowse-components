@@ -289,7 +289,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(ctx.lineTo.mock.calls.length).toBeGreaterThan(4)
   })
 
-  test('pick returns -1 after destroy', () => {
+  test('pick returns -1 after dispose', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
@@ -298,7 +298,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(makeInstanceData(1))
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
-    renderer.destroy()
+    renderer.dispose()
     expect(renderer.pick(50, 50)).toBe(-1)
   })
 
@@ -321,13 +321,13 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(renderer.pick(50, 50)).toBe(1)
   })
 
-  test('destroy cleans up data', () => {
+  test('dispose cleans up data', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.uploadGeometry(makeInstanceData(1))
-    renderer.destroy()
+    renderer.dispose()
     renderer.render(0, 0, 100, 1, 1, 300, 0, 1, 0, 0)
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })

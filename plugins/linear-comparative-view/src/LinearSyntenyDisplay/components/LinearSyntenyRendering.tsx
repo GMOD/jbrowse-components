@@ -12,7 +12,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { SyntenyRenderer } from '../WebGPUSyntenyRenderer.ts'
+import { SyntenyRenderer } from '../SyntenyRenderer.ts'
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
 
 import type { ClickCoord } from './util.ts'

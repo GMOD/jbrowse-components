@@ -1,4 +1,6 @@
-export class Canvas2DDotplotRenderer {
+import type { DotplotBackend } from './dotplotBackendTypes.ts'
+
+export class Canvas2DDotplotRenderer implements DotplotBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private x1s: Float32Array | null = null

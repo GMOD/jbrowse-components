@@ -253,7 +253,7 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(fillRectCalls.length).toBe(1)
   })
 
-  test('pruneStaleRegions removes inactive regions', () => {
+  test('pruneRegions removes inactive regions', () => {
     const { canvas, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
@@ -264,7 +264,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.uploadRegion(0, 0, [makeSource([5], [0], [1000])])
     renderer.uploadRegion(1, 1000, [makeSource([8], [0], [1000])])
 
-    renderer.pruneStaleRegions(new Set([0]))
+    renderer.pruneRegions([0])
 
     renderer.renderBlocks(
       [
@@ -294,12 +294,12 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(fillRectCalls.length).toBe(1)
   })
 
-  test('destroy clears all regions', () => {
+  test('dispose clears all regions', () => {
     const { canvas } = createMockCanvas()
     const renderer = new Canvas2DWiggleRenderer(canvas)
     renderer.uploadRegion(0, 0, [makeSource([5], [0], [1000])])
-    renderer.destroy()
-    // After destroy, rendering should produce no output
+    renderer.dispose()
+    // After dispose, rendering should produce no output
   })
 
   test('multi-row sources render at correct vertical offsets', () => {

@@ -1,10 +1,8 @@
 /// <reference types="@webgpu/types" />
 
-import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
+import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
-import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
-import { WebGLSyntenyRenderer } from './WebGLSyntenyRenderer.ts'
 import {
   EDGE_SEGMENTS,
   EDGE_VERTS_PER_INSTANCE,
@@ -16,11 +14,10 @@ import {
   interleaveInstances,
 } from './wgslShaders.ts'
 
+import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
-const rendererCache = new WeakMap<HTMLCanvasElement, SyntenyRenderer>()
-
-export class SyntenyRenderer {
+export class WebGPUSyntenyRenderer implements SyntenyBackend {
   private static device: GPUDevice | null = null
   private static fillPipeline: GPURenderPipeline | null = null
   private static fillPickingPipeline: GPURenderPipeline | null = null
@@ -29,9 +26,8 @@ export class SyntenyRenderer {
   private static pipelinesReady: Promise<void> | null = null
 
   private canvas: HTMLCanvasElement
-  private fallback: WebGLSyntenyRenderer | Canvas2DSyntenyRenderer | null = null
-  private context: GPUCanvasContext | null = null
-  private uniformBuffer: GPUBuffer | null = null
+  private context: GPUCanvasContext
+  private uniformBuffer: GPUBuffer
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
   private uniformU32 = new Uint32Array(this.uniformData)
@@ -69,17 +65,33 @@ export class SyntenyRenderer {
     return typeof window !== 'undefined' ? window.devicePixelRatio : 2
   }
 
-  private constructor(canvas: HTMLCanvasElement) {
+  private constructor(
+    canvas: HTMLCanvasElement,
+    context: GPUCanvasContext,
+    device: GPUDevice,
+  ) {
     this.canvas = canvas
+    this.context = context
+    this.uniformBuffer = device.createBuffer({
+      size: UNIFORM_BYTE_SIZE,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    })
+    this.pickingStagingBuffer = device.createBuffer({
+      size: 256,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+    })
   }
 
-  static getOrCreate(canvas: HTMLCanvasElement) {
-    let renderer = rendererCache.get(canvas)
-    if (!renderer) {
-      renderer = new SyntenyRenderer(canvas)
-      rendererCache.set(canvas, renderer)
+  static async create(canvas: HTMLCanvasElement) {
+    const device = await WebGPUSyntenyRenderer.ensureDevice()
+    if (!device) {
+      return null
     }
-    return renderer
+    const result = await initGpuContext(canvas, { alphaMode: 'opaque' })
+    if (!result) {
+      return null
+    }
+    return new WebGPUSyntenyRenderer(canvas, result.context, device)
   }
 
   private static async ensureDevice() {
@@ -87,16 +99,17 @@ export class SyntenyRenderer {
     if (!device) {
       return null
     }
-    if (SyntenyRenderer.device !== device) {
-      SyntenyRenderer.device = device
-      SyntenyRenderer.pipelinesReady = SyntenyRenderer.initPipelines(device)
+    if (WebGPUSyntenyRenderer.device !== device) {
+      WebGPUSyntenyRenderer.device = device
+      WebGPUSyntenyRenderer.pipelinesReady =
+        WebGPUSyntenyRenderer.initPipelines(device)
     }
-    await SyntenyRenderer.pipelinesReady
+    await WebGPUSyntenyRenderer.pipelinesReady
     return device
   }
 
   private static async initPipelines(device: GPUDevice) {
-    SyntenyRenderer.bindGroupLayout = device.createBindGroupLayout({
+    WebGPUSyntenyRenderer.bindGroupLayout = device.createBindGroupLayout({
       entries: [
         {
           binding: 0,
@@ -112,7 +125,7 @@ export class SyntenyRenderer {
     })
 
     const layout = device.createPipelineLayout({
-      bindGroupLayouts: [SyntenyRenderer.bindGroupLayout],
+      bindGroupLayouts: [WebGPUSyntenyRenderer.bindGroupLayout],
     })
 
     const blendState: GPUBlendState = {
@@ -132,9 +145,9 @@ export class SyntenyRenderer {
     const edgeModule = device.createShaderModule({ code: edgeVertexShader })
 
     ;[
-      SyntenyRenderer.fillPipeline,
-      SyntenyRenderer.fillPickingPipeline,
-      SyntenyRenderer.edgePipeline,
+      WebGPUSyntenyRenderer.fillPipeline,
+      WebGPUSyntenyRenderer.fillPickingPipeline,
+      WebGPUSyntenyRenderer.edgePipeline,
     ] = await Promise.all([
       device.createRenderPipelineAsync({
         layout,
@@ -169,48 +182,7 @@ export class SyntenyRenderer {
     ])
   }
 
-  async init() {
-    if (getGpuOverride() === 'canvas2d') {
-      this.fallback = new Canvas2DSyntenyRenderer(this.canvas)
-      return true
-    }
-
-    const device = await SyntenyRenderer.ensureDevice()
-    if (device) {
-      const result = await initGpuContext(this.canvas, { alphaMode: 'opaque' })
-      if (result) {
-        this.context = result.context
-        this.uniformBuffer = device.createBuffer({
-          size: UNIFORM_BYTE_SIZE,
-          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        })
-        this.pickingStagingBuffer = device.createBuffer({
-          size: 256,
-          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-        })
-        return true
-      }
-    }
-    try {
-      this.fallback = new WebGLSyntenyRenderer(this.canvas)
-      return true
-    } catch (e) {
-      console.warn('[SyntenyRenderer] WebGL2 fallback failed:', e)
-      try {
-        this.fallback = new Canvas2DSyntenyRenderer(this.canvas)
-        return true
-      } catch (e2) {
-        console.warn('[SyntenyRenderer] Canvas 2D fallback also failed:', e2)
-        return false
-      }
-    }
-  }
-
   resize(width: number, height: number) {
-    if (this.fallback) {
-      this.fallback.resize(width, height)
-      return
-    }
     const dpr = this.dpr
     const pw = Math.round(width * dpr)
     const ph = Math.round(height * dpr)
@@ -222,7 +194,7 @@ export class SyntenyRenderer {
   }
 
   private createPickingTexture(w: number, h: number) {
-    const device = SyntenyRenderer.device
+    const device = WebGPUSyntenyRenderer.device
     if (!device || w === 0 || h === 0) {
       return
     }
@@ -235,12 +207,8 @@ export class SyntenyRenderer {
   }
 
   uploadGeometry(data: SyntenyInstanceData) {
-    if (this.fallback) {
-      this.fallback.uploadGeometry(data)
-      return
-    }
-    const device = SyntenyRenderer.device
-    if (!device || !SyntenyRenderer.bindGroupLayout || !this.uniformBuffer) {
+    const device = WebGPUSyntenyRenderer.device
+    if (!device || !WebGPUSyntenyRenderer.bindGroupLayout) {
       return
     }
 
@@ -261,7 +229,7 @@ export class SyntenyRenderer {
     device.queue.writeBuffer(this.instanceBuffer, 0, interleaved)
 
     this.bindGroup = device.createBindGroup({
-      layout: SyntenyRenderer.bindGroupLayout,
+      layout: WebGPUSyntenyRenderer.bindGroupLayout,
       entries: [
         { binding: 0, resource: { buffer: this.instanceBuffer } },
         { binding: 1, resource: { buffer: this.uniformBuffer } },
@@ -282,29 +250,13 @@ export class SyntenyRenderer {
     hoveredFeatureId: number,
     clickedFeatureId: number,
   ) {
-    if (this.fallback) {
-      this.fallback.render(
-        offset0,
-        offset1,
-        height,
-        curBpPerPx0,
-        curBpPerPx1,
-        maxOffScreenPx,
-        minAlignmentLength,
-        alpha,
-        hoveredFeatureId,
-        clickedFeatureId,
-      )
-      return
-    }
-    const device = SyntenyRenderer.device
+    const device = WebGPUSyntenyRenderer.device
     if (
       !device ||
       !this.instanceBuffer ||
       this.instanceCount === 0 ||
       !this.bindGroup ||
-      !SyntenyRenderer.fillPipeline ||
-      !this.context
+      !WebGPUSyntenyRenderer.fillPipeline
     ) {
       return
     }
@@ -354,16 +306,16 @@ export class SyntenyRenderer {
     this.encodeDrawPass(
       encoder,
       tv,
-      SyntenyRenderer.fillPipeline,
+      WebGPUSyntenyRenderer.fillPipeline,
       FILL_VERTS_PER_INSTANCE,
       'clear',
       white,
     )
-    if (SyntenyRenderer.edgePipeline && clickedFeatureId > 0) {
+    if (WebGPUSyntenyRenderer.edgePipeline && clickedFeatureId > 0) {
       this.encodeDrawPass(
         encoder,
         tv,
-        SyntenyRenderer.edgePipeline,
+        WebGPUSyntenyRenderer.edgePipeline,
         EDGE_VERTS_PER_INSTANCE,
         'load',
         undefined,
@@ -378,9 +330,6 @@ export class SyntenyRenderer {
     y: number,
     onResult?: (result: number) => void,
   ): number | undefined {
-    if (this.fallback) {
-      return this.fallback.pick(x, y, onResult)
-    }
     this.pickCallback = onResult
     if (this.pendingPick) {
       return undefined
@@ -400,14 +349,14 @@ export class SyntenyRenderer {
   }
 
   private async doPick(x: number, y: number) {
-    const device = SyntenyRenderer.device
+    const device = WebGPUSyntenyRenderer.device
     if (
       !device ||
       !this.instanceBuffer ||
       this.instanceCount === 0 ||
       !this.pickingTexture ||
       !this.pickingStagingBuffer ||
-      !SyntenyRenderer.fillPickingPipeline ||
+      !WebGPUSyntenyRenderer.fillPickingPipeline ||
       !this.bindGroup
     ) {
       return -1
@@ -438,7 +387,7 @@ export class SyntenyRenderer {
       this.encodeDrawPass(
         encoder,
         pv,
-        SyntenyRenderer.fillPickingPipeline,
+        WebGPUSyntenyRenderer.fillPickingPipeline,
         FILL_VERTS_PER_INSTANCE,
         'clear',
         transparent,
@@ -500,7 +449,7 @@ export class SyntenyRenderer {
   }
 
   private resetStagingBuffer() {
-    const device = SyntenyRenderer.device
+    const device = WebGPUSyntenyRenderer.device
     if (!device) {
       return
     }
@@ -514,23 +463,14 @@ export class SyntenyRenderer {
   }
 
   dispose() {
-    if (this.fallback) {
-      if ('dispose' in this.fallback) {
-        this.fallback.dispose()
-      }
-      this.fallback = null
-      return
-    }
     this.instanceBuffer?.destroy()
     this.instanceBuffer = null
     this.bindGroup = null
-    this.uniformBuffer?.destroy()
-    this.uniformBuffer = null
+    this.uniformBuffer.destroy()
     this.pickingTexture?.destroy()
     this.pickingTexture = null
     this.pickingStagingBuffer?.destroy()
     this.pickingStagingBuffer = null
-    this.context = null
   }
 
   private writeUniforms(
@@ -547,8 +487,8 @@ export class SyntenyRenderer {
     hoveredFeatureId: number,
     clickedFeatureId: number,
   ) {
-    const device = SyntenyRenderer.device
-    if (!device || !this.uniformBuffer) {
+    const device = WebGPUSyntenyRenderer.device
+    if (!device) {
       return
     }
     this.uniformF32[0] = logicalW

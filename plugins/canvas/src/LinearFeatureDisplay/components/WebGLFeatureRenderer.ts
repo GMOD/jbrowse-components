@@ -3,6 +3,11 @@ import {
   splitPositionWithFrac,
 } from '@jbrowse/core/gpu/webglUtils'
 
+import type {
+  CanvasFeatureBackend,
+  FeatureRenderBlock,
+} from './canvasFeatureBackendTypes.ts'
+
 const HP_GLSL_FUNCTIONS = `
 const uint HP_LOW_MASK = 0xFFFu;
 
@@ -271,19 +276,6 @@ void main() {
 }
 `
 
-export interface FeatureRenderState {
-  scrollY: number
-  canvasWidth: number
-  canvasHeight: number
-}
-
-export interface FeatureRenderBlock {
-  regionNumber: number
-  bpRangeX: [number, number]
-  screenStartPx: number
-  screenEndPx: number
-}
-
 interface RegionGPUData {
   regionStart: number
   glBuffers: WebGLBuffer[]
@@ -297,7 +289,7 @@ interface RegionGPUData {
   arrowCount: number
 }
 
-export class WebGLFeatureRenderer {
+export class WebGLFeatureRenderer implements CanvasFeatureBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private rectProgram: WebGLProgram
@@ -386,7 +378,7 @@ export class WebGLFeatureRenderer {
     }
   }
 
-  uploadForRegion(
+  uploadRegion(
     regionNumber: number,
     data: {
       regionStart: number
@@ -592,7 +584,10 @@ export class WebGLFeatureRenderer {
     return buffer
   }
 
-  renderBlocks(blocks: FeatureRenderBlock[], state: FeatureRenderState) {
+  renderBlocks(
+    blocks: FeatureRenderBlock[],
+    state: { scrollY: number; canvasWidth: number; canvasHeight: number },
+  ) {
     const gl = this.gl
     const canvas = this.canvas
     const { canvasWidth, canvasHeight, scrollY } = state
@@ -747,9 +742,10 @@ export class WebGLFeatureRenderer {
     gl.viewport(0, 0, bufW, bufH)
   }
 
-  pruneStaleRegions(activeRegionNumbers: Set<number>) {
+  pruneStaleRegions(activeRegions: number[]) {
+    const activeSet = new Set(activeRegions)
     for (const regionNumber of this.regionDataMap.keys()) {
-      if (!activeRegionNumbers.has(regionNumber)) {
+      if (!activeSet.has(regionNumber)) {
         this.deleteRegion(regionNumber)
       }
     }
@@ -780,7 +776,7 @@ export class WebGLFeatureRenderer {
     this.regionDataMap.delete(regionNumber)
   }
 
-  destroy() {
+  dispose() {
     for (const regionNumber of this.regionDataMap.keys()) {
       this.deleteRegion(regionNumber)
     }

@@ -1,8 +1,8 @@
-import type { HicRenderState } from './WebGLHicRenderer.ts'
+import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
 
 const SQRT_HALF = 0.7071067811865476
 
-export class Canvas2DHicRenderer {
+export class Canvas2DHicRenderer implements HicBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private positions: Float32Array | null = null
@@ -116,7 +116,7 @@ export class Canvas2DHicRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.positions = null
     this.counts = null
     this.colorRamp = null

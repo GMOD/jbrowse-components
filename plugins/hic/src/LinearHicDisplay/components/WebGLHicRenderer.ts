@@ -1,6 +1,8 @@
 import { INSTANCE_STRIDE, interleaveHicInstances } from './hicShaders.ts'
 import { cacheUniforms, createProgram } from './webglUtils.ts'
 
+import type { HicBackend, HicRenderState } from './hicBackendTypes.ts'
+
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in hicShaders.ts (used by WebGPU).
 // When updating rendering logic, update BOTH this file and hicShaders.ts.
@@ -152,18 +154,7 @@ export function generateColorRamp(colorScheme?: string): Uint8Array {
   }
 }
 
-export interface HicRenderState {
-  binWidth: number
-  yScalar: number
-  canvasWidth: number
-  canvasHeight: number
-  maxScore: number
-  useLogScale: boolean
-  viewScale: number
-  viewOffsetX: number
-}
-
-export class WebGLHicRenderer {
+export class WebGLHicRenderer implements HicBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
@@ -331,7 +322,7 @@ export class WebGLHicRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.deleteBuffers()
     const gl = this.gl
     if (this.colorRampTexture) {

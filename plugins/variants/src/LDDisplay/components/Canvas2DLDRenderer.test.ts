@@ -268,7 +268,7 @@ describe('Canvas2DLDRenderer', () => {
     })
   })
 
-  describe('destroy', () => {
+  describe('dispose', () => {
     test('clears stored data', () => {
       const { canvas, pathOps } = createMockCanvas()
       const renderer = new Canvas2DLDRenderer(canvas)
@@ -281,7 +281,7 @@ describe('Canvas2DLDRenderer', () => {
       })
       renderer.uploadColorRamp(makeColorRamp())
 
-      renderer.destroy()
+      renderer.dispose()
 
       renderer.render(makeRenderState())
       expect(pathOps.length).toBe(0)

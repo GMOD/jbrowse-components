@@ -2,7 +2,7 @@ import { colord } from '@jbrowse/core/util/colord'
 
 import { INSTANCE_STRIDE } from './wiggleShader.ts'
 
-import type { SourceRenderData } from './WiggleRenderer.ts'
+import type { SourceRenderData } from './wiggleBackendTypes.ts'
 
 export {
   createProgram,

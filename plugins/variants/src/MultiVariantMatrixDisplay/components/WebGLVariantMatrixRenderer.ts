@@ -4,6 +4,11 @@ import {
 } from './variantMatrixShaders.ts'
 import { createProgram } from '../../shared/variantWebglUtils.ts'
 
+import type {
+  MatrixRenderState,
+  VariantMatrixBackend,
+} from './variantMatrixBackendTypes.ts'
+
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in variantMatrixShaders.ts (used by WebGPU).
 // When updating rendering logic, update BOTH this file and variantMatrixShaders.ts.
@@ -84,15 +89,9 @@ void main() {
 }
 `
 
-export interface MatrixRenderState {
-  canvasWidth: number
-  canvasHeight: number
-  rowHeight: number
-  scrollTop: number
-  numFeatures: number
-}
+export type { MatrixRenderState } from './variantMatrixBackendTypes.ts'
 
-export class WebGLVariantMatrixRenderer {
+export class WebGLVariantMatrixRenderer implements VariantMatrixBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private program: WebGLProgram
@@ -228,7 +227,7 @@ export class WebGLVariantMatrixRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.deleteBuffers()
     this.gl.deleteProgram(this.program)
   }

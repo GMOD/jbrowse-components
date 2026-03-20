@@ -16,7 +16,7 @@ import {
   makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
-import type { WiggleRenderBlock } from '../../shared/WiggleRenderer.ts'
+import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export type { WiggleDisplayModel } from './buildSourceRenderData.ts'

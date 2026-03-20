@@ -12,7 +12,7 @@ import type { FeatureArrays } from '../util.ts'
 import type {
   SourceRenderData,
   WiggleGPURenderState,
-} from './WiggleRenderer.ts'
+} from './wiggleBackendTypes.ts'
 
 export function getRowHeight(canvasHeight: number, numRows: number) {
   return numRows > 0 ? canvasHeight / numRows : canvasHeight

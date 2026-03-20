@@ -29,11 +29,11 @@ import type {
   MultiWiggleDataResult,
   MultiWiggleSourceData,
 } from '../../RenderMultiWiggleDataRPC/types.ts'
+import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
 import type {
   SourceRenderData,
   WiggleRenderBlock,
-} from '../../shared/WiggleRenderer.ts'
-import type axisPropsFromTickScale from '../../shared/axisPropsFromTickScale.ts'
+} from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel

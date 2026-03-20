@@ -197,7 +197,7 @@ describe('Canvas2DVariantMatrixRenderer', () => {
     })
   })
 
-  describe('destroy', () => {
+  describe('dispose', () => {
     test('clears stored data', () => {
       const { canvas, fillRectCalls } = createMockCanvas()
       const renderer = new Canvas2DVariantMatrixRenderer(canvas)
@@ -209,7 +209,7 @@ describe('Canvas2DVariantMatrixRenderer', () => {
         numCells: 1,
       })
 
-      renderer.destroy()
+      renderer.dispose()
 
       renderer.render({
         canvasWidth: 400,

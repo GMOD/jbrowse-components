@@ -1,3 +1,4 @@
+import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 const CURVE_SEGMENTS = 16
@@ -10,7 +11,7 @@ function smoothstep(t: number) {
   return t * t * (3 - 2 * t)
 }
 
-export class Canvas2DSyntenyRenderer {
+export class Canvas2DSyntenyRenderer implements SyntenyBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private data: SyntenyInstanceData | null = null
@@ -251,7 +252,7 @@ export class Canvas2DSyntenyRenderer {
     return -1
   }
 
-  destroy() {
+  dispose() {
     this.data = null
     this.ctx = null!
   }

@@ -17,6 +17,7 @@ import {
   interleaveInstances,
 } from './wgslShaders.ts'
 
+import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 const INST_ATTRIB_NAMES = ['a_inst0', 'a_inst1', 'a_inst2', 'a_inst3']
@@ -33,7 +34,7 @@ function bindUniformBlock(
   }
 }
 
-export class WebGLSyntenyRenderer {
+export class WebGLSyntenyRenderer implements SyntenyBackend {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   private fillProgram: WebGLProgram

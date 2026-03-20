@@ -1,6 +1,9 @@
-import type { MatrixRenderState } from './WebGLVariantMatrixRenderer.ts'
+import type {
+  MatrixRenderState,
+  VariantMatrixBackend,
+} from './variantMatrixBackendTypes.ts'
 
-export class Canvas2DVariantMatrixRenderer {
+export class Canvas2DVariantMatrixRenderer implements VariantMatrixBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private cellFeatureIndices: Float32Array | null = null
@@ -79,7 +82,7 @@ export class Canvas2DVariantMatrixRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.cellFeatureIndices = null
     this.cellRowIndices = null
     this.cellColors = null

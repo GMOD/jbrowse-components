@@ -1,8 +1,8 @@
-import type { LDRenderState } from './WebGLLDRenderer.ts'
+import type { LDBackend, LDRenderState } from './ldBackendTypes.ts'
 
 const COS45 = 0.7071067811865476
 
-export class Canvas2DLDRenderer {
+export class Canvas2DLDRenderer implements LDBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private positions: Float32Array | null = null
@@ -115,7 +115,7 @@ export class Canvas2DLDRenderer {
     }
   }
 
-  destroy() {
+  dispose() {
     this.positions = null
     this.cellSizes = null
     this.ldValues = null
