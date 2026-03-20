@@ -1,0 +1,7 @@
+old_name	new_name
+GCA_000001405.15_GRCh38_genomic.chr-only.nums.fa	Homo_sapiens
+GCF_002880755.1_Clint_PTRv2_genomic.chr-only.rename.fa	Pan_troglodytes
+GCF_013052645.1_Mhudiblu_PPA_v0_genomic.chr-only.rename.fa	Pan_paniscus
+GCF_008122165.1_Kamilah_GGO_v0_genomic.chr-only.rename.fa	Gorilla_gorilla
+GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri_genomic.chr.renamed.fa	Pongo_pygmaeus
+GCA_021498465.1_ASM2149846v1_genomic.renamed.chr.fa	Hylobates_pileatus
