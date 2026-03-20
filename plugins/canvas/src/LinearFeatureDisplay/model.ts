@@ -115,24 +115,23 @@ export default function stateModelFactory(
         return snap
       }
 
-      // Strip properties from old BaseLinearDisplay/FeatureDensityMixin snapshots
       const {
+        // Strip properties from old BaseLinearDisplay/FeatureDensityMixin snapshots
         blockState,
         showLegend,
         showTooltips,
         userBpPerPxLimit,
         userByteSizeLimit,
-        ...cleaned
+        // Rewrite "height" from older snapshots to "heightPreConfig"
+        height,
+        ...rest
       } = snap
-      snap = cleaned
-
-      // Rewrite "height" from older snapshots to "heightPreConfig"
-      if (snap.height !== undefined && snap.heightPreConfig === undefined) {
-        const { height, ...rest } = snap
-        snap = { ...rest, heightPreConfig: height }
+      return {
+        ...rest,
+        ...(height !== undefined && rest.heightPreConfig === undefined
+          ? { heightPreConfig: height }
+          : undefined),
       }
-
-      return snap
     })
     .volatile(() => ({
       rpcDataMap: new Map<number, FeatureDataResult>(),
@@ -207,10 +206,10 @@ export default function stateModelFactory(
       },
 
       get effectiveShowDescriptions(): boolean {
-        if (self.trackShowDescriptions === false) {
-          return false
-        }
-        return self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
+        return (
+          self.showDescriptions &&
+          self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
+        )
       },
 
       get subfeatureLabels(): string {
@@ -226,7 +225,7 @@ export default function stateModelFactory(
       },
 
       get effectiveGeneGlyphMode(): string {
-        const mode = self.trackGeneGlyphMode ?? 'auto'
+        const mode = self.geneGlyphMode
         if (mode === 'auto') {
           const view = getContainingView(self) as LGV
           return view.bpPerPx > 100 ? 'longestCoding' : 'all'
@@ -250,7 +249,7 @@ export default function stateModelFactory(
 
       get colorByCDS() {
         const view = getContainingView(self) as LGV
-        return (view as unknown as { colorByCDS?: boolean }).colorByCDS ?? false
+        return view.colorByCDS
       },
 
       get sequenceAdapter() {
@@ -262,6 +261,14 @@ export default function stateModelFactory(
         ) as string[]
         const assembly = assemblyManager.get(assemblyNames[0]!)
         return assembly ? getConf(assembly, ['sequence', 'adapter']) : undefined
+      },
+
+      get regionKeys() {
+        const map = new Map<number, string>()
+        for (const [num, region] of self.loadedRegions) {
+          map.set(num, `${region.assemblyName}:${region.refName}`)
+        }
+        return map
       },
 
       get needsLayoutRefresh() {
@@ -485,19 +492,11 @@ export default function stateModelFactory(
         )
 
         if (parentFeature) {
-          if (subfeatureInfo) {
-            const subfeature = findSubfeatureById(
-              parentFeature,
-              subfeatureInfo.featureId,
-            )
-            if (subfeature) {
-              self.selectFeature(subfeature)
-            } else {
-              self.selectFeature(parentFeature)
-            }
-          } else {
-            self.selectFeature(parentFeature)
-          }
+          const target = subfeatureInfo
+            ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
+              parentFeature)
+            : parentFeature
+          self.selectFeature(target)
         }
       }),
     }))
@@ -577,11 +576,8 @@ export default function stateModelFactory(
         bpPerPx: number,
       ) {
         const dataMap = new Map(self.rpcDataMap)
-        const regionKeys = new Map<number, string>()
+        const regionKeys = new Map(self.regionKeys)
         const newRegionNumbers = new Set<number>()
-        for (const [num, region] of self.loadedRegions) {
-          regionKeys.set(num, `${region.assemblyName}:${region.refName}`)
-        }
         for (const r of results) {
           if (r) {
             dataMap.set(r.regionNumber, r.data)
@@ -688,15 +684,11 @@ export default function stateModelFactory(
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return
         }
-        const regionKeys = new Map<number, string>()
-        for (const [num, region] of self.loadedRegions) {
-          regionKeys.set(num, `${region.assemblyName}:${region.refName}`)
-        }
         const dataMap = new Map(self.rpcDataMap)
         relayoutAllRegions(
           dataMap,
           view.bpPerPx,
-          regionKeys,
+          self.regionKeys,
           self.showLabels,
           self.effectiveShowDescriptions,
         )

@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -22,7 +23,7 @@ import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 
-import type { FeatureRenderBlock } from './CanvasFeatureRenderer.ts'
+import type { FeatureRenderBlock } from './canvasFeatureBackendTypes.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -327,7 +328,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
   const rendererRef = useRef<CanvasFeatureRenderer | null>(null)
 
-  const renderWithBlocks = useCallback(() => {
+  const renderWithBlocks = useEffectEvent(() => {
     const renderer = rendererRef.current
     if (!renderer || !view.initialized || width === undefined) {
       return
@@ -353,10 +354,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       canvasWidth: view.trackWidthPx,
       canvasHeight: model.height,
     })
-  }, [view, width, model])
-
-  const renderWithBlocksRef = useRef(renderWithBlocks)
-  renderWithBlocksRef.current = renderWithBlocks
+  })
 
   const canvasCallbackRef = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!canvas) {
@@ -407,7 +405,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           return
         }
 
-        renderWithBlocksRef.current()
+        renderWithBlocks()
       } catch {
         // Model may have been detached from state tree
       }
@@ -452,9 +450,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     // This effect only fires when rpcDataMap changes reference (on
     // fetch completion or relayout), not on every scroll tick, so
     // always re-uploading is safe and correct.
-    const activeRegionNumbers = new Set<number>()
     for (const [regionNumber, data] of rpcDataMap) {
-      activeRegionNumbers.add(regionNumber)
       renderer.uploadRegion(regionNumber, {
         regionStart: data.regionStart,
         rectPositions: data.rectPositions,
@@ -475,13 +471,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         numArrows: data.numArrows,
       })
     }
-    renderer.pruneStaleRegions([...activeRegionNumbers])
+    renderer.pruneStaleRegions([...rpcDataMap.keys()])
 
     setHoveredFeature(null)
     setHoveredSubfeature(null)
     model.setFeatureIdUnderMouse(null)
 
-    renderWithBlocksRef.current()
+    renderWithBlocks()
     if (!drawn) {
       setDrawn(true)
     }
@@ -494,7 +490,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     const handleScroll = () => {
-      renderWithBlocksRef.current()
+      renderWithBlocks()
     }
 
     const handleWheel = (e: WheelEvent) => {
@@ -521,12 +517,26 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
-    const getMouseInfo = (e: MouseEvent) => {
+    const hitTestAtEvent = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
       const yPos = mouseY + (scrollContainerRef.current?.scrollTop ?? 0)
-      return { mouseX, mouseY, yPos }
+      return performMultiRegionHitDetection(
+        flatbushCacheMapRef.current,
+        model.rpcDataMap,
+        view.visibleRegions,
+        mouseX,
+        yPos,
+        model.effectiveShowDescriptions,
+      )
+    }
+
+    const clearHoverState = () => {
+      model.setMouseoverExtraInformation(undefined)
+      setHoveredFeature(null)
+      setHoveredSubfeature(null)
+      model.setFeatureIdUnderMouse(null)
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -534,24 +544,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         return
       }
       setClientXY([e.clientX, e.clientY])
-      const rpcDataMap = model.rpcDataMap
-      if (rpcDataMap.size === 0) {
-        model.setMouseoverExtraInformation(undefined)
-        setHoveredFeature(null)
-        setHoveredSubfeature(null)
+      if (model.rpcDataMap.size === 0) {
+        clearHoverState()
         return
       }
 
-      const { mouseX, yPos } = getMouseInfo(e)
-
-      const result = performMultiRegionHitDetection(
-        flatbushCacheMapRef.current,
-        rpcDataMap,
-        view.visibleRegions,
-        mouseX,
-        yPos,
-        model.effectiveShowDescriptions,
-      )
+      const result = hitTestAtEvent(e)
 
       if (result.feature) {
         if (result.subfeature) {
@@ -566,39 +564,15 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         setHoveredFeature(result.feature)
         model.setFeatureIdUnderMouse(result.feature.featureId)
       } else {
-        model.setMouseoverExtraInformation(undefined)
-        setHoveredFeature(null)
-        setHoveredSubfeature(null)
-        model.setFeatureIdUnderMouse(null)
+        clearHoverState()
       }
-    }
-
-    const handleMouseLeave = () => {
-      if (contextMenuCoord) {
-        return
-      }
-      model.setMouseoverExtraInformation(undefined)
-      setHoveredFeature(null)
-      setHoveredSubfeature(null)
-      model.setFeatureIdUnderMouse(null)
     }
 
     const handleClick = (e: MouseEvent) => {
       if (model.rpcDataMap.size === 0) {
         return
       }
-
-      const { mouseX, yPos } = getMouseInfo(e)
-
-      const result = performMultiRegionHitDetection(
-        flatbushCacheMapRef.current,
-        model.rpcDataMap,
-        view.visibleRegions,
-        mouseX,
-        yPos,
-        model.effectiveShowDescriptions,
-      )
-
+      const result = hitTestAtEvent(e)
       if (result.feature) {
         model.selectFeatureById(
           result.feature,
@@ -613,22 +587,17 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       if (model.rpcDataMap.size === 0) {
         return
       }
-
-      const { mouseX, yPos } = getMouseInfo(e)
-
-      const result = performMultiRegionHitDetection(
-        flatbushCacheMapRef.current,
-        model.rpcDataMap,
-        view.visibleRegions,
-        mouseX,
-        yPos,
-        model.effectiveShowDescriptions,
-      )
-
+      const result = hitTestAtEvent(e)
       if (result.feature) {
         model.showContextMenuForFeature(result.feature, result.regionNumber)
         model.setMouseoverExtraInformation(undefined)
         setContextMenuCoord([e.clientX, e.clientY])
+      }
+    }
+
+    const handleMouseLeave = () => {
+      if (!contextMenuCoord) {
+        clearHoverState()
       }
     }
 
