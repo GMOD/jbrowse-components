@@ -35,7 +35,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/0',
       sample3: '0/0',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 6 })
   })
 
@@ -45,7 +45,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/1',
       sample3: '0/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 3, '1': 3 })
   })
 
@@ -55,7 +55,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '1/1',
       sample3: '1/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '1': 6 })
   })
 
@@ -65,7 +65,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/1',
       sample3: '1/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 3, '1': 3 })
   })
 
@@ -75,7 +75,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0|1',
       sample3: '1|1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 3, '1': 3 })
   })
 
@@ -85,7 +85,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/1',
       sample3: '1/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '.': 2, '0': 1, '1': 3 })
   })
 
@@ -95,7 +95,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/2',
       sample3: '1/2',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 2, '1': 2, '2': 2 })
   })
 })
@@ -166,7 +166,7 @@ describe('MAF filter integration', () => {
       sample4: '0/0',
       sample5: '0/1', // Only one het = 1 alt allele out of 10 total
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     const maf = calculateMinorAlleleFrequency(alleleCounts)
     expect(maf).toBe(0.1)
     expect(maf >= 0.2).toBe(false) // Should be filtered out
@@ -184,7 +184,7 @@ describe('MAF filter integration', () => {
       sample4: '0/1',
       sample5: '1/1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     const maf = calculateMinorAlleleFrequency(alleleCounts)
     expect(maf).toBe(0.4)
     expect(maf >= 0.2).toBe(true) // Should pass
@@ -221,7 +221,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
       sample3: '1',
       sample4: '1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     expect(alleleCounts).toEqual({ '0': 2, '1': 2 })
     const maf = calculateMinorAlleleFrequency(alleleCounts)
     expect(maf).toBe(0.5)
@@ -233,7 +233,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
       sample2: '0/0/0/1',
       sample3: '0/0/1/1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     // 4 + 3 + 2 = 9 ref, 0 + 1 + 2 = 3 alt
     expect(alleleCounts).toEqual({ '0': 9, '1': 3 })
     const maf = calculateMinorAlleleFrequency(alleleCounts)
@@ -246,7 +246,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
       sample2: './1',
       sample3: '0/1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     expect(alleleCounts).toEqual({ '0': 2, '.': 2, '1': 2 })
   })
 })

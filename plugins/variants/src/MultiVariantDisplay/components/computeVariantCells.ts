@@ -117,7 +117,6 @@ export function computeVariantCells({
 }): VariantCellData {
   const getCachedRGBA = createCachedRGBA()
 
-  const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
   const drawRef = referenceDrawingMode === 'draw'
 
@@ -273,8 +272,9 @@ export function computeVariantCells({
             const isPhasedGt = genotype.includes('|')
             if (isPhasedGt) {
               const alleles =
-                splitCache[genotype] ??
-                (splitCache[genotype] = genotype.split('|'))
+                genotype.length === 3
+                  ? [genotype[0]!, genotype[2]!]
+                  : genotype.split('|')
               const c = getPhasedColor(
                 alleles,
                 HP!,
@@ -432,7 +432,6 @@ export function computeVariantCells({
               genotype,
               mostFrequentAlt,
               alleleColorCache,
-              splitCache,
               drawRef,
             )
             if (c) {

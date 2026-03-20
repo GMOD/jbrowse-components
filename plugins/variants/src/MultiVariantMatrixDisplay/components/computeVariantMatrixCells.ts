@@ -81,7 +81,6 @@ export function computeVariantMatrixCells({
 }): MatrixCellData {
   const getCachedRGBA = createCachedRGBA()
 
-  const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
 
   const numFeatures = mafs.length
@@ -153,8 +152,9 @@ export function computeVariantMatrixCells({
               if (isPhased) {
                 const PS = s.PS?.[0]
                 const alleles =
-                  splitCache[genotype] ??
-                  (splitCache[genotype] = genotype.split('|'))
+                  genotype.length === 3
+                    ? [genotype[0]!, genotype[2]!]
+                    : genotype.split('|')
                 const c = getPhasedColor(alleles, HP!, mostFrequentAlt, PS)
                 if (c) {
                   addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
@@ -221,8 +221,9 @@ export function computeVariantMatrixCells({
               const isPhased = genotype.includes('|')
               if (isPhased) {
                 const alleles =
-                  splitCache[genotype] ??
-                  (splitCache[genotype] = genotype.split('|'))
+                  genotype.length === 3
+                    ? [genotype[0]!, genotype[2]!]
+                    : genotype.split('|')
                 const c = getPhasedColor(alleles, HP!, mostFrequentAlt)
                 if (c) {
                   addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
@@ -269,7 +270,6 @@ export function computeVariantMatrixCells({
                 genotype,
                 mostFrequentAlt,
                 alleleColorCache,
-                splitCache,
                 true,
               )
               if (c) {
@@ -359,7 +359,6 @@ export function computeVariantMatrixCells({
                 genotype,
                 mostFrequentAlt,
                 alleleColorCache,
-                splitCache,
                 true,
               )
               if (c) {

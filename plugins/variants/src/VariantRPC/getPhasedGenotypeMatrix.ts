@@ -46,7 +46,6 @@ export async function getPhasedGenotypeMatrix({
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
   const rows = {} as Record<string, number[]>
-  const splitCache = {} as Record<string, string[]>
 
   for (const { name } of sources) {
     const info = sampleInfo[name]
@@ -60,7 +59,6 @@ export async function getPhasedGenotypeMatrix({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
     stopTokenCheck,
-    splitCache,
     features: await updateStatus('Loading features', statusCallback, () =>
       firstValueFrom(
         dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
@@ -101,7 +99,7 @@ export async function getPhasedGenotypeMatrix({
         const isPhased = val.includes('|')
 
         if (isPhased) {
-          const alleles = splitCache[val] ?? (splitCache[val] = val.split('|'))
+          const alleles = val.split('|')
           for (let hp = 0; hp < ploidy; hp++) {
             const allele = alleles[hp]
             const value = allele === '.' || allele === undefined ? -1 : +allele

@@ -704,8 +704,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       '@gmod/bbi':
-        specifier: ^8.1.1
-        version: 8.1.1
+        specifier: ^8.1.2
+        version: 8.1.2
       '@gmod/bed':
         specifier: ^2.1.10
         version: 2.1.10
@@ -1568,8 +1568,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^8.1.1
-        version: 8.1.1
+        specifier: ^8.1.2
+        version: 8.1.2
       '@gmod/hclust':
         specifier: ^2.0.1
         version: 2.0.1
@@ -3351,8 +3351,8 @@ packages:
     resolution: {integrity: sha512-e6Jp2tFYzx5qZMt0JtGq3WyipKrgdwFy5Y530EYUfZr2PZLRg4mP9/bshZklQkkIdZlk1BHWrUqt/StsZqBKUg==}
     engines: {node: '>=6'}
 
-  '@gmod/bbi@8.1.1':
-    resolution: {integrity: sha512-Vpz/ezTAUslIsKCEvsA0zPHkobrwMCUw7E+hvAwsBP8H1BiD67Scak5hX8cJI7Sv4NRgKB/Zjvq0XfVa/wZ6KQ==}
+  '@gmod/bbi@8.1.2':
+    resolution: {integrity: sha512-QZX0BuNmSr0A49SCSoqvCOnlgbrrjtaiv4VOYcXlq3Zjb5d64Md9Fa/txLYnCBnMUQJMBNp3hFkLA4KXUM0SoQ==}
     engines: {node: '>=6'}
 
   '@gmod/bed@2.1.10':
@@ -10315,7 +10315,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@8.1.1':
+  '@gmod/bbi@8.1.2':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5

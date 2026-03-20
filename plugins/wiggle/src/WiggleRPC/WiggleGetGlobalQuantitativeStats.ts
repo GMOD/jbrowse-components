@@ -2,7 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { QuantitativeStats } from '@jbrowse/core/util/stats'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAndRenameRegions {
@@ -16,7 +16,7 @@ export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAn
       sessionId: string
     },
     rpcDriverClassName: string,
-  ): Promise<QuantitativeStats> {
+  ) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
@@ -24,8 +24,7 @@ export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAn
     )
     const { adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    // getGlobalStats is defined on wiggle-specific adapters (BigWigAdapter, etc.)
-    // @ts-expect-error
-    return dataAdapter.getGlobalStats(deserializedArgs)
+    const featureAdapter = dataAdapter as BaseFeatureDataAdapter
+    return featureAdapter.getGlobalStats(deserializedArgs)
   }
 }

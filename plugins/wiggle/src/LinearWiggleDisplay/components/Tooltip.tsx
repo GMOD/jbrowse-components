@@ -68,5 +68,3 @@ const WiggleTooltip = observer(function WiggleTooltip(props: {
   return <Tooltip TooltipContents={TooltipContents} {...props} />
 })
 export default WiggleTooltip
-
-export { default as Tooltip } from '../../Tooltip.tsx'

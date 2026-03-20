@@ -65,7 +65,6 @@ export default class VariantsPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     const { jexl } = pluginManager
-    const splitCache = {} as Record<string, string[]>
 
     // Add jexl function to calculate MAF for a feature
     jexl.addFunction('maf', (feature: Feature) => {
@@ -75,7 +74,7 @@ export default class VariantsPlugin extends Plugin {
       if (!genotypes) {
         return 0
       }
-      const alleleCounts = calculateAlleleCounts(genotypes, splitCache)
+      const alleleCounts = calculateAlleleCounts(genotypes)
       return calculateMinorAlleleFrequency(alleleCounts)
     })
   }

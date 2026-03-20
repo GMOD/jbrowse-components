@@ -133,10 +133,7 @@ export function calculateAlleleCountsFast(
 /**
  * Count alleles from a genotypes object (fallback for non-VCF features)
  */
-export function calculateAlleleCounts(
-  genotypes: Record<string, string>,
-  cacheSplit: Record<string, string[]>,
-) {
+export function calculateAlleleCounts(genotypes: Record<string, string>) {
   let count0 = 0
   let count1 = 0
   let count2 = 0
@@ -202,12 +199,8 @@ export function calculateAlleleCounts(
       continue
     }
 
-    // General case: polyploid or multi-digit alleles - use cache
-    let alleles = cacheSplit[genotype]
-    if (!alleles) {
-      alleles = genotype.split(GENOTYPE_SPLIT_REGEX)
-      cacheSplit[genotype] = alleles
-    }
+    // General case: polyploid or multi-digit alleles
+    const alleles = genotype.split(GENOTYPE_SPLIT_REGEX)
     for (const allele of alleles) {
       if (allele === '0') {
         count0++
@@ -291,14 +284,12 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   lengthCutoffFilter,
   stopTokenCheck,
   genotypesCache,
-  splitCache = {},
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number
   stopTokenCheck?: LastStopTokenCheck
   genotypesCache?: Map<string, Record<string, string>>
-  splitCache?: Record<string, string[]>
 }) {
   const results: MAFFilteredFeature[] = []
 
@@ -319,7 +310,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
             genotypes = feature.get('genotypes') as Record<string, string>
             genotypesCache?.set(featureId, genotypes)
           }
-          alleleCounts = calculateAlleleCounts(genotypes, splitCache)
+          alleleCounts = calculateAlleleCounts(genotypes)
         }
       }
 

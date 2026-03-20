@@ -164,7 +164,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         const uniqueId = view.id(i)
         const idx = i
         observer.next({
-          get: (str: string) => view.get(idx, str) as any,
+          get: (str: string) => view.get(idx, str),
           id: () => uniqueId,
           toJSON: () => ({
             start: view.start(idx),

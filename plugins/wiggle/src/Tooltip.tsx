@@ -23,10 +23,11 @@ const useStyles = makeStyles()(theme => ({
 
 type Coord = [number, number]
 
-// forwardRef component for the tooltip, the ref is used for measuring
-// the size of the tooltip
 export type TooltipContentsComponent = React.ForwardRefExoticComponent<
-  { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
+  {
+    feature: Feature
+    model: { featureUnderMouse?: Feature }
+  } & React.RefAttributes<HTMLDivElement>
 >
 
 const Tooltip = observer(function Tooltip({

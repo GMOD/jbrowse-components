@@ -11,7 +11,6 @@ export function getAlleleColor(
   genotype: string,
   mostFrequentAlt: string,
   colorCache: Record<string, string | undefined>,
-  splitCache: Record<string, string[]>,
   drawRef: boolean,
 ) {
   const cacheKey = `${genotype}:${mostFrequentAlt}`
@@ -21,8 +20,12 @@ export function getAlleleColor(
     let uncalled = 0
     let alt2 = 0
     let ref = 0
+
     const alleles =
-      splitCache[genotype] ?? (splitCache[genotype] = genotype.split(/[/|]/))
+      genotype.length === 3 &&
+      (genotype[1] === '/' || genotype[1] === '|')
+        ? [genotype[0]!, genotype[2]!]
+        : genotype.split(/[/|]/)
     const total = alleles.length
 
     for (let i = 0; i < total; i++) {

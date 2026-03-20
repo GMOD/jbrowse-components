@@ -1,4 +1,4 @@
-import { WIGGLE_FUDGE_FACTOR } from '../util.ts'
+import { WIGGLE_FUDGE_FACTOR, normalizeScore } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -34,35 +34,14 @@ interface DrawParams {
   b: number
 }
 
-function normalizeScore(
-  score: number,
-  domainY: [number, number],
-  scaleType: number,
-) {
-  if (scaleType === SCALE_TYPE_LOG) {
-    const logMin = Math.log2(Math.max(domainY[0], 1))
-    const logMax = Math.log2(Math.max(domainY[1], 1))
-    const logScore = Math.log2(Math.max(score, 1))
-    const range = logMax - logMin
-    if (range === 0) {
-      return 0
-    }
-    return Math.max(0, Math.min(1, (logScore - logMin) / range))
-  }
-  const range = domainY[1] - domainY[0]
-  if (range === 0) {
-    return 0
-  }
-  return Math.max(0, Math.min(1, (score - domainY[0]) / range))
-}
-
 function scoreToY(
   score: number,
   domainY: [number, number],
   height: number,
   scaleType: number,
 ) {
-  return (1 - normalizeScore(score, domainY, scaleType)) * height
+  const isLog = scaleType === SCALE_TYPE_LOG
+  return (1 - normalizeScore(score, domainY[0], domainY[1], isLog)) * height
 }
 
 export class Canvas2DWiggleRenderer {
@@ -217,7 +196,8 @@ export class Canvas2DWiggleRenderer {
   private drawDensity(p: DrawParams) {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
     const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
-    const zeroNorm = normalizeScore(0, domainY, scaleType)
+    const isLog = scaleType === SCALE_TYPE_LOG
+    const zeroNorm = normalizeScore(0, domainY[0], domainY[1], isLog)
     const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
 
     for (let i = 0; i < source.numFeatures; i++) {
@@ -227,7 +207,7 @@ export class Canvas2DWiggleRenderer {
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
 
-      const norm = normalizeScore(source.featureScores[i]!, domainY, scaleType)
+      const norm = normalizeScore(source.featureScores[i]!, domainY[0], domainY[1], isLog)
       const t = maxDist > 0.0001 ? Math.abs(norm - zeroNorm) / maxDist : 0
 
       const cr = Math.round(255 + (r - 255) * t)

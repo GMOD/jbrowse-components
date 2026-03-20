@@ -336,3 +336,26 @@ export function computeAutoscaleDomain(
 }
 
 export const WIGGLE_FUDGE_FACTOR = 0.8
+
+export function normalizeScore(
+  score: number,
+  min: number,
+  max: number,
+  isLog: boolean,
+) {
+  if (isLog) {
+    const logMin = Math.log2(Math.max(min, 1))
+    const logMax = Math.log2(Math.max(max, 1))
+    const logScore = Math.log2(Math.max(score, 1))
+    const range = logMax - logMin
+    if (range === 0) {
+      return 0
+    }
+    return Math.max(0, Math.min(1, (logScore - logMin) / range))
+  }
+  const range = max - min
+  if (range === 0) {
+    return 0
+  }
+  return Math.max(0, Math.min(1, (score - min) / range))
+}

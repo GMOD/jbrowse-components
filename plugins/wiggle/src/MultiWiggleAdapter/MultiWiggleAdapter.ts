@@ -17,7 +17,6 @@ import type {
 } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends WiggleAdapterOptions {
-  staticBlocks?: Region[]
   sources?: { name: string }[]
 }
 
@@ -129,9 +128,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const adapters = await this.getAdapters()
     const stats = (
       (await Promise.all(
-        // getGlobalStats is a wiggle-specific adapter method, not on BaseFeatureDataAdapter
-        // @ts-expect-error
-        adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
+        adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
       )) as MaybeStats[]
     ).filter(f => !!f)
     return {
@@ -192,9 +189,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  /**
-   * Override to pass staticBlocks through to sub-adapters for caching.
-   */
   async getMultiRegionQuantitativeStats(
     regions: Region[] = [],
     opts: WiggleOptions = {},
@@ -205,7 +199,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
     const adapters = await this.getAdapters()
 
-    // Delegate to sub-adapters, passing staticBlocks through
     const allStats = await Promise.all(
       adapters.map(async adp => {
         const { dataAdapter } = adp

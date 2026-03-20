@@ -50,13 +50,11 @@ export async function getGenotypeMatrix({
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
   const rows = Object.fromEntries(sources.map(s => [s.name, [] as number[]]))
-  const splitCache = {} as Record<string, string[]>
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
     stopTokenCheck,
-    splitCache,
     features: await updateStatus('Loading features', statusCallback, () =>
       firstValueFrom(
         dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
@@ -78,8 +76,7 @@ export async function getGenotypeMatrix({
       const genotypes = feature.get('genotypes') as Record<string, string>
       for (const { name } of sources) {
         const val = genotypes[name]!
-        const alleles =
-          splitCache[val] ?? (splitCache[val] = val.split(SPLITTER))
+        const alleles = val.split(SPLITTER)
 
         let nonRefCount = 0
         let uncalledCount = 0
