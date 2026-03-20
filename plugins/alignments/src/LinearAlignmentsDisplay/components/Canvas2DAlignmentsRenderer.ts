@@ -11,7 +11,19 @@ import {
   sashimiColorPalette,
 } from './shaders/arcShaders.ts'
 
-import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type {
+  AlignmentsBackend,
+  ArcsUploadData,
+  CigarUploadData,
+  ConnectingLinesUploadData,
+  CoverageUploadData,
+  ModCoverageUploadData,
+  ModificationUploadData,
+  ReadUploadData,
+  RenderBlock,
+  RenderState,
+  SashimiUploadData,
+} from './rendererTypes.ts'
 
 // base color indices used by SNP coverage
 const SNP_COLOR_A = 0
@@ -233,7 +245,7 @@ function emptyRegion(regionStart: number): Canvas2DRegionData {
   }
 }
 
-export class Canvas2DAlignmentsRenderer {
+export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private regions = new Map<number, Canvas2DRegionData>()
@@ -249,7 +261,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadFromTypedArrays']>[0],
+    data: ReadUploadData,
   ) {
     let r = this.regions.get(regionNumber)
     if (!r) {
@@ -277,7 +289,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadCigarFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadCigarFromTypedArrays']>[0],
+    data: CigarUploadData,
   ) {
     const r = this.regions.get(regionNumber)
     if (!r) {
@@ -347,7 +359,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadModificationsFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadModificationsFromTypedArrays']>[0],
+    data: ModificationUploadData,
   ) {
     const r = this.regions.get(regionNumber)
     if (!r) {
@@ -361,7 +373,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadCoverageFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadCoverageFromTypedArrays']>[0],
+    data: CoverageUploadData,
   ) {
     const r = this.regions.get(regionNumber)
     if (!r) {
@@ -389,7 +401,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadModCoverageFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadModCoverageFromTypedArrays']>[0],
+    data: ModCoverageUploadData,
   ) {
     const r = this.regions.get(regionNumber)
     if (!r) {
@@ -404,7 +416,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadSashimiFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadSashimiFromTypedArrays']>[0],
+    data: SashimiUploadData,
   ) {
     const r = this.regions.get(regionNumber)
     if (!r) {
@@ -419,7 +431,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadArcsFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadArcsFromTypedArrays']>[0],
+    data: ArcsUploadData,
   ) {
     let r = this.regions.get(regionNumber)
     if (!r) {
@@ -439,7 +451,7 @@ export class Canvas2DAlignmentsRenderer {
 
   uploadConnectingLinesForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadConnectingLinesFromTypedArrays']>[0],
+    data: ConnectingLinesUploadData,
   ) {
     let r = this.regions.get(regionNumber)
     if (!r) {
@@ -461,12 +473,7 @@ export class Canvas2DAlignmentsRenderer {
   }
 
   renderBlocks(
-    blocks: {
-      regionNumber: number
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    }[],
+    blocks: RenderBlock[],
     state: RenderState,
   ) {
     const { canvasWidth, canvasHeight } = state

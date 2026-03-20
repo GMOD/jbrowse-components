@@ -1,4 +1,4 @@
-import type { RenderState } from './WebGLRenderer.ts'
+import type { RenderState } from './rendererTypes.ts'
 
 export interface ClipRect {
   sx1: number

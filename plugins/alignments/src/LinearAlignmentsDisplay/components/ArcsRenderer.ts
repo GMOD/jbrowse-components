@@ -10,7 +10,8 @@ import {
   splitPositionWithFrac,
 } from './shaders/index.ts'
 
-import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { RenderState } from './rendererTypes.ts'
+import type { WebGLRenderer } from './WebGLRenderer.ts'
 
 export interface RegionTableEntry {
   startBpOffset: number

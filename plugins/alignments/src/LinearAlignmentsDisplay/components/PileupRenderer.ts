@@ -1,7 +1,8 @@
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import { splitPositionWithFrac } from './shaders/index.ts'
 
-import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
+import type { RenderState } from './rendererTypes.ts'
+import type { WebGLRenderer } from './WebGLRenderer.ts'
 import type { ClipRect } from './chainOverlayUtils.ts'
 import type { ColorPalette } from './shaders/index.ts'
 

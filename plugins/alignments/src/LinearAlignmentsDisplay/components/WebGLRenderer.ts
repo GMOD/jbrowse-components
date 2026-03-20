@@ -71,43 +71,20 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
 
-import type { ColorPalette } from './shaders/index.ts'
+import type {
+  AlignmentsBackend,
+  ArcsUploadData,
+  CigarUploadData,
+  ConnectingLinesUploadData,
+  CoverageUploadData,
+  ModCoverageUploadData,
+  ModificationUploadData,
+  ReadUploadData,
+  RenderBlock,
+  RenderState,
+  SashimiUploadData,
+} from './rendererTypes.ts'
 
-export type { ColorPalette, RGBColor } from './shaders/index.ts'
-
-export interface RenderState {
-  bpRangeX: [number, number] // absolute genomic positions
-  rangeY: [number, number]
-  colorScheme: number
-  featureHeight: number
-  featureSpacing: number
-  showCoverage: boolean
-  coverageHeight: number
-  coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
-  coverageNicedMax: number | undefined // niced domain max from D3 scale (matches Y scalebar labels)
-  showMismatches: boolean
-  showSoftClipping: boolean
-  showInterbaseIndicators: boolean
-  showModifications: boolean
-  // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
-  canvasWidth: number
-  canvasHeight: number
-  highlightedFeatureId?: string
-  selectedFeatureId?: string
-  highlightedChainIds: string[]
-  selectedChainIds: string[]
-  // Color palette from theme
-  colors: ColorPalette
-  renderingMode?: 'pileup' | 'linkedRead'
-  flipStrandLongReadChains?: boolean
-  arcLineWidth?: number
-  // Sashimi arcs (splice junctions overlaid on coverage)
-  showSashimiArcs?: boolean
-  // Show arcs alongside pileup (between coverage and reads)
-  showArcs?: boolean
-  arcsHeight?: number
-  showOutline?: boolean
-}
 
 export interface GPUBuffers {
   // Reference point for all position offsets
@@ -167,7 +144,7 @@ export interface GPUBuffers {
   }
 }
 
-export class WebGLRenderer {
+export class WebGLRenderer implements AlignmentsBackend {
   gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
   dpr = window.devicePixelRatio || 1
@@ -1683,7 +1660,7 @@ export class WebGLRenderer {
    */
   uploadSashimiFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadSashimiFromTypedArrays']>[0],
+    data: SashimiUploadData,
   ) {
     this.activateRegion(regionNumber)
     this.uploadSashimiFromTypedArrays(data)
@@ -1767,42 +1744,42 @@ export class WebGLRenderer {
 
   uploadFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadFromTypedArrays']>[0],
+    data: ReadUploadData,
   ) {
     this.withRegion(regionNumber, this.uploadFromTypedArrays, data)
   }
 
   uploadCigarFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadCigarFromTypedArrays']>[0],
+    data: CigarUploadData,
   ) {
     this.withRegion(regionNumber, this.uploadCigarFromTypedArrays, data)
   }
 
   uploadCoverageFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadCoverageFromTypedArrays']>[0],
+    data: CoverageUploadData,
   ) {
     this.withRegion(regionNumber, this.uploadCoverageFromTypedArrays, data)
   }
 
   uploadModificationsFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadModificationsFromTypedArrays']>[0],
+    data: ModificationUploadData,
   ) {
     this.withRegion(regionNumber, this.uploadModificationsFromTypedArrays, data)
   }
 
   uploadModCoverageFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadModCoverageFromTypedArrays']>[0],
+    data: ModCoverageUploadData,
   ) {
     this.withRegion(regionNumber, this.uploadModCoverageFromTypedArrays, data)
   }
 
   uploadArcsFromTypedArraysForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadArcsFromTypedArrays']>[0],
+    data: ArcsUploadData,
   ) {
     this.withRegion(regionNumber, this.uploadArcsFromTypedArrays, data)
   }
@@ -1887,7 +1864,7 @@ export class WebGLRenderer {
 
   uploadConnectingLinesForRegion(
     regionNumber: number,
-    data: Parameters<WebGLRenderer['uploadConnectingLinesFromTypedArrays']>[0],
+    data: ConnectingLinesUploadData,
   ) {
     this.activateRegion(regionNumber)
     this.uploadConnectingLinesFromTypedArrays(data)
@@ -1898,12 +1875,7 @@ export class WebGLRenderer {
    * Render multiple blocks with scissor rects, each from a different refName's GPU buffers.
    */
   renderBlocks(
-    blocks: {
-      regionNumber: number
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    }[],
+    blocks: RenderBlock[],
     state: RenderState,
   ) {
     const gl = this.gl
