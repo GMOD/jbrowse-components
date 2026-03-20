@@ -43,10 +43,12 @@ test('effective config includes display overrides for wiggle', () => {
   }
 })
 
-test('effective config does not modify unchanged slots', () => {
+test('effective config strips default values for unchanged slots', () => {
   const { display } = getTrackAndDisplay('volvox_gc')
   const displays = display.effectiveTrackConfig.displays as Record<string, unknown>[]
   const displayEntry = displays[0]!
+  expect(displayEntry.type).toBeDefined()
+  expect(displayEntry.displayId).toBeDefined()
   expect(displayEntry.scaleType).toBeUndefined()
 })
 

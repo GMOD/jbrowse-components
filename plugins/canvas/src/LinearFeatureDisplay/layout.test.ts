@@ -9,6 +9,7 @@ function makeFeatureData(opts: {
     startBp: number
     endBp: number
     height: number
+    strand?: number
   }[]
 }): FeatureDataResult {
   const { regionStart, features } = opts
@@ -23,7 +24,9 @@ function makeFeatureData(opts: {
       layoutEndBp: f.endBp,
       topPx: 0,
       bottomPx: f.height,
+      featureHeightPx: f.height,
       tooltip: f.featureId,
+      strand: f.strand,
     })),
     subfeatureInfos: [],
     floatingLabelsData: {},
@@ -87,6 +90,8 @@ test('different chromosomes get independent layouts starting at Y=0', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   // ctgA: f1 and f2 overlap, so they get different Y values
@@ -136,6 +141,8 @@ test('same chromosome discontiguous regions share layout', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   // The spanning feature must get the same Y in both regions
@@ -173,6 +180,8 @@ test('non-overlapping features on same chromosome share Y row', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   expect(data.flatbushItems[0]!.topPx).toBe(0)
@@ -196,6 +205,8 @@ test('rectYs are updated to match flatbushItem layout positions', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   for (let i = 0; i < data.numRects; i++) {
@@ -231,6 +242,8 @@ test('different assemblies with same refName get independent layouts', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   expect(hg38Data.flatbushItems[1]!.topPx).toBeGreaterThan(0)
@@ -250,7 +263,7 @@ test('incremental loading does not double-process old data', () => {
   const dataMap = new Map<number, FeatureDataResult>([[0, ctgAData]])
   const regionKeys = new Map([[0, 'volvox:ctgA']])
 
-  computeAndAssignLayout(dataMap, 1, regionKeys, new Set([0]))
+  computeAndAssignLayout(dataMap, 1, regionKeys, new Set([0]), true, true)
 
   const f1TopAfterFirst = ctgAData.flatbushItems[0]!.topPx
   const f2TopAfterFirst = ctgAData.flatbushItems[1]!.topPx
@@ -267,7 +280,7 @@ test('incremental loading does not double-process old data', () => {
   regionKeys.set(1, 'volvox:ctgB')
 
   // Only ctgB is new
-  computeAndAssignLayout(dataMap, 1, regionKeys, new Set([1]))
+  computeAndAssignLayout(dataMap, 1, regionKeys, new Set([1]), true, true)
 
   // ctgA data must NOT have been re-processed (Y values unchanged)
   expect(ctgAData.flatbushItems[0]!.topPx).toBe(f1TopAfterFirst)
@@ -295,6 +308,8 @@ test('relayoutAllRegions at same bpPerPx reproduces original layout', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   const f1Top = data.flatbushItems[0]!.topPx
@@ -302,12 +317,10 @@ test('relayoutAllRegions at same bpPerPx reproduces original layout', () => {
   expect(f2Top).toBeGreaterThan(0)
 
   // Re-layout at same bpPerPx should produce identical result
-  relayoutAllRegions(rpcDataMap, 1, regionKeys)
+  relayoutAllRegions(rpcDataMap, 1, regionKeys, true, true)
 
   expect(data.flatbushItems[0]!.topPx).toBe(f1Top)
   expect(data.flatbushItems[1]!.topPx).toBe(f2Top)
-  expect(data.flatbushItems[0]!.bottomPx).toBe(f1Top + 20)
-  expect(data.flatbushItems[1]!.bottomPx).toBe(f2Top + 25)
 })
 
 test('relayoutAllRegions re-lays out features for new bpPerPx', () => {
@@ -359,6 +372,8 @@ test('relayoutAllRegions re-lays out features for new bpPerPx', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   const f1Top = data.flatbushItems[0]!.topPx
@@ -367,7 +382,7 @@ test('relayoutAllRegions re-lays out features for new bpPerPx', () => {
 
   // At bpPerPx=0.1, labels are 300px = 30bp wide, features are 100bp apart
   // so they no longer overlap and should share a row
-  relayoutAllRegions(rpcDataMap, 0.1, regionKeys)
+  relayoutAllRegions(rpcDataMap, 0.1, regionKeys, true, true)
 
   expect(data.flatbushItems[0]!.topPx).toBe(0)
   expect(data.flatbushItems[1]!.topPx).toBe(0)
@@ -390,6 +405,8 @@ test('repeated relayouts do not drift', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   const f1Top = data.flatbushItems[0]!.topPx
@@ -398,7 +415,7 @@ test('repeated relayouts do not drift', () => {
   const rectY1 = data.rectYs[1]!
 
   for (let i = 0; i < 10; i++) {
-    relayoutAllRegions(rpcDataMap, 1, regionKeys)
+    relayoutAllRegions(rpcDataMap, 1, regionKeys, true, true)
   }
 
   expect(data.flatbushItems[0]!.topPx).toBe(f1Top)
@@ -437,13 +454,15 @@ test('relayout preserves spanning feature Y across discontiguous regions', () =>
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   const spanR1 = region1.flatbushItems.find(f => f.featureId === 'spanning')!
   const spanR2 = region2.flatbushItems.find(f => f.featureId === 'spanning')!
   expect(spanR1.topPx).toBe(spanR2.topPx)
 
-  relayoutAllRegions(rpcDataMap, 2, regionKeys)
+  relayoutAllRegions(rpcDataMap, 2, regionKeys, true, true)
 
   const spanR1After = region1.flatbushItems.find(
     f => f.featureId === 'spanning',
@@ -521,6 +540,8 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   const gene2Top = data.flatbushItems[1]!.topPx
@@ -534,7 +555,7 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
   expect(data.floatingLabelsData['gene2']!.topY).toBe(gene2Top)
 
   // After relayout at same bpPerPx, everything should be identical
-  relayoutAllRegions(rpcDataMap, 1, regionKeys)
+  relayoutAllRegions(rpcDataMap, 1, regionKeys, true, true)
 
   const gene2TopAfter = data.flatbushItems[1]!.topPx
   expect(gene2TopAfter).toBe(gene2Top)
@@ -576,6 +597,8 @@ test('relayout handles lines and arrows', () => {
     1,
     regionKeys,
     allRegionNumbers(rpcDataMap),
+    true,
+    true,
   )
 
   const f2Top = data.flatbushItems[1]!.topPx
@@ -583,10 +606,118 @@ test('relayout handles lines and arrows', () => {
   expect(data.lineYs[0]).toBe(10 + f2Top)
   expect(data.arrowYs[0]).toBe(10 + f2Top)
 
-  relayoutAllRegions(rpcDataMap, 1, regionKeys)
+  relayoutAllRegions(rpcDataMap, 1, regionKeys, true, true)
 
   const f2TopAfter = data.flatbushItems[1]!.topPx
   expect(f2TopAfter).toBe(f2Top)
   expect(data.lineYs[0]).toBe(10 + f2TopAfter)
   expect(data.arrowYs[0]).toBe(10 + f2TopAfter)
+})
+
+test('layout adds label height when showLabels is true', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 10 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 10 },
+    ],
+  })
+
+  data.floatingLabelsData = {
+    f1: {
+      featureId: 'f1',
+      minX: 100,
+      maxX: 500,
+      topY: 0,
+      featureHeight: 10,
+      nameLabel: {
+        text: 'Gene 1',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 50,
+      },
+      descriptionLabel: {
+        text: 'A description',
+        relativeY: 12,
+        color: 'blue',
+        textWidth: 80,
+      },
+    },
+  }
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  // With labels and descriptions on
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+    true,
+    true,
+  )
+  // f1 has height 10 + 5 (padding) + 12 (name) + 12 (desc) = 39
+  const f1Bottom = data.flatbushItems[0]!.bottomPx
+  expect(f1Bottom).toBe(39)
+
+  // Relayout with labels off
+  relayoutAllRegions(rpcDataMap, 1, regionKeys, false, false)
+  // f1 has height 10 + 5 (padding) = 15
+  const f1BottomNoLabels = data.flatbushItems[0]!.bottomPx
+  expect(f1BottomNoLabels).toBe(15)
+
+  // Relayout with labels on again - should return to original
+  relayoutAllRegions(rpcDataMap, 1, regionKeys, true, true)
+  expect(data.flatbushItems[0]!.bottomPx).toBe(39)
+})
+
+test('strand arrow padding prevents adjacent stranded features from sharing a row', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 200, height: 20, strand: 1 },
+      { featureId: 'f2', startBp: 208, endBp: 300, height: 20, strand: 1 },
+    ],
+  })
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+    true,
+    true,
+  )
+
+  expect(data.flatbushItems[1]!.topPx).toBeGreaterThan(0)
+})
+
+test('unstranded features that are close together can still share a row', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 200, height: 20 },
+      { featureId: 'f2', startBp: 220, endBp: 300, height: 20 },
+    ],
+  })
+
+  const rpcDataMap = new Map<number, FeatureDataResult>([[0, data]])
+  const regionKeys = new Map([[0, 'volvox:ctgA']])
+
+  computeAndAssignLayout(
+    rpcDataMap,
+    1,
+    regionKeys,
+    allRegionNumbers(rpcDataMap),
+    true,
+    true,
+  )
+
+  // Without strand, no arrow padding, so these don't overlap
+  expect(data.flatbushItems[0]!.topPx).toBe(0)
+  expect(data.flatbushItems[1]!.topPx).toBe(0)
 })

@@ -15,6 +15,7 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
+import { getEffectiveTrackConfig } from '@jbrowse/core/util/getConfigOverrides'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -143,8 +144,13 @@ export default function stateModelFactory(
       contextMenuInfo: undefined as ContextMenuFeatureInfo | undefined,
       userFeatureDensityLimit: undefined as number | undefined,
       featureDensityPerPx: 0,
+      heightBeforeExpand: undefined as number | undefined,
     }))
     .views(self => ({
+      get hasOverflow() {
+        return self.maxY > self.height
+      },
+
       get scalebarOverlapLeft() {
         const view = getContainingView(self) as { trackLabelsSetting?: string }
         if (view.trackLabelsSetting === 'overlapping') {
@@ -191,11 +197,11 @@ export default function stateModelFactory(
       },
 
       get showLabels(): boolean {
-        return self.trackShowLabels ?? true
+        return self.trackShowLabels ?? (getConf(self, 'showLabels') as boolean)
       },
 
       get showDescriptions(): boolean {
-        return self.trackShowDescriptions ?? true
+        return self.trackShowDescriptions ?? (getConf(self, 'showDescriptions') as boolean)
       },
 
       get effectiveShowDescriptions(): boolean {
@@ -296,6 +302,18 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
+      expandToFit() {
+        self.heightBeforeExpand = self.height
+        self.setHeight(Math.min(self.maxY, self.maxHeight))
+      },
+
+      collapseFromExpand() {
+        if (self.heightBeforeExpand !== undefined) {
+          self.setHeight(self.heightBeforeExpand)
+          self.heightBeforeExpand = undefined
+        }
+      },
+
       setRpcDataMap(dataMap: Map<number, FeatureDataResult>) {
         self.rpcDataMap = dataMap
         let globalMaxY = 0
@@ -303,6 +321,7 @@ export default function stateModelFactory(
           globalMaxY = Math.max(globalMaxY, d.maxY)
         }
         self.maxY = globalMaxY
+        self.setScrollTop(0)
         if (self.autoHeight) {
           self.setHeight(Math.min(Math.max(globalMaxY, 50), self.maxHeight))
         }
@@ -526,8 +545,6 @@ export default function stateModelFactory(
           {
             adapterConfig,
             displayConfig: {
-              showLabels: self.showLabels,
-              showDescriptions: self.showDescriptions,
               subfeatureLabels: self.subfeatureLabels,
               geneGlyphMode: self.effectiveGeneGlyphMode,
               displayMode: self.displayMode,
@@ -594,6 +611,7 @@ export default function stateModelFactory(
           bpPerPx,
           regionKeys,
           newRegionNumbers,
+          self.showLabels,
           self.effectiveShowDescriptions,
         )
         self.setRpcDataMap(dataMap)
@@ -677,6 +695,7 @@ export default function stateModelFactory(
           dataMap,
           view.bpPerPx,
           regionKeys,
+          self.showLabels,
           self.effectiveShowDescriptions,
         )
         self.setRpcDataMap(dataMap)
@@ -723,13 +742,35 @@ export default function stateModelFactory(
             ),
           )
 
-          // Reaction: re-fetch when settings that require new RPC data change
+          // Reaction: relayout when label visibility changes (no refetch needed)
           addDisposer(
             self,
             reaction(
               () => ({
                 showLabels: self.showLabels,
                 showDescriptions: self.showDescriptions,
+              }),
+              () => {
+                if (self.rpcDataMap.size > 0) {
+                  self.relayoutForCurrentZoom()
+                }
+              },
+              {
+                name: 'LabelVisibilityRelayout',
+                delay: 50,
+                fireImmediately: false,
+                equals: (a, b) =>
+                  a.showLabels === b.showLabels &&
+                  a.showDescriptions === b.showDescriptions,
+              },
+            ),
+          )
+
+          // Reaction: re-fetch when settings that require new RPC data change
+          addDisposer(
+            self,
+            reaction(
+              () => ({
                 subfeatureLabels: self.subfeatureLabels,
                 colorByCDS: self.colorByCDS,
                 geneGlyphMode: self.effectiveGeneGlyphMode,
@@ -746,8 +787,6 @@ export default function stateModelFactory(
                 delay: 100,
                 fireImmediately: false,
                 equals: (a, b) =>
-                  a.showLabels === b.showLabels &&
-                  a.showDescriptions === b.showDescriptions &&
                   a.subfeatureLabels === b.subfeatureLabels &&
                   a.colorByCDS === b.colorByCDS &&
                   a.geneGlyphMode === b.geneGlyphMode &&
@@ -760,6 +799,15 @@ export default function stateModelFactory(
       }
     })
 
+    .views(self => ({
+      get effectiveTrackConfig() {
+        const track = getContainingTrack(self)
+        return getEffectiveTrackConfig(
+          track.configuration,
+          self as unknown as { configuration: Record<string, unknown>;[key: string]: unknown },
+        )
+      },
+    }))
     .views(self => ({
       get isGeneLike() {
         const type = (self.contextMenuInfo?.type ?? '').toLowerCase()

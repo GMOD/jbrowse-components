@@ -16,6 +16,7 @@ import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
+import OverflowIndicator from './OverflowIndicator.tsx'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -48,6 +49,9 @@ interface LinearFeatureDisplayModel {
   isLoading: boolean
   error: Error | null
   maxY: number
+  hasOverflow: boolean
+  heightBeforeExpand: number | undefined
+  showLabels: boolean
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
   effectiveShowDescriptions: boolean
@@ -57,6 +61,8 @@ interface LinearFeatureDisplayModel {
   statusMessage: string | undefined
   setFeatureDensityStatsLimit: (s?: { bytes?: number }) => void
   reload: () => void
+  expandToFit: () => void
+  collapseFromExpand: () => void
   setFeatureIdUnderMouse: (featureId: string | null) => void
   mouseoverExtraInformation: string | undefined
   setMouseoverExtraInformation: (info: string | undefined) => void
@@ -304,14 +310,12 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   )
   const [hoveredSubfeature, setHoveredSubfeature] =
     useState<SubfeatureInfo | null>(null)
-  const [scrollY, setScrollY] = useState(0)
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
   const flatbushCacheMapRef = useRef(new Map<number, FlatbushRegionCache>())
-
-  const scrollYRef = useRef(0)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
 
@@ -345,7 +349,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     }
 
     renderer.renderBlocks(blocks, {
-      scrollY: scrollYRef.current,
+      scrollY: scrollContainerRef.current?.scrollTop ?? 0,
       canvasWidth: view.trackWidthPx,
       canvasHeight: model.height,
     })
@@ -424,14 +428,13 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       return
     }
 
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0
+    }
+
     if (rpcDataMap.size === 0) {
       renderer.pruneStaleRegions([])
       flatbushCacheMapRef.current.clear()
-      scrollYRef.current = 0
-      setScrollY(0)
-      if (scrollbarHostRef.current) {
-        scrollbarHostRef.current.scrollTop = 0
-      }
       return
     }
 
@@ -484,46 +487,32 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   }, [rpcDataMap, rendererReady, drawn])
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
+    const container = scrollContainerRef.current
+    if (!container) {
       return
     }
 
+    const handleScroll = () => {
+      renderWithBlocksRef.current()
+    }
+
     const handleWheel = (e: WheelEvent) => {
-      const absX = Math.abs(e.deltaX)
-      const absY = Math.abs(e.deltaY)
-      const hasVerticalOverflow = model.maxY > model.height
-
-      if (absY < 1 || e.ctrlKey || e.metaKey || absX > absY * 2) {
-        return
-      }
-
-      if (view.scrollZoom && !hasVerticalOverflow) {
-        return
-      }
-
-      if (hasVerticalOverflow) {
-        e.preventDefault()
-        e.stopPropagation()
-        const maxScrollY = Math.max(0, model.maxY - model.height)
-        const newScrollY = Math.max(
-          0,
-          Math.min(scrollYRef.current + e.deltaY * 0.5, maxScrollY),
-        )
-        scrollYRef.current = newScrollY
-        setScrollY(newScrollY)
-        if (scrollbarHostRef.current) {
-          scrollbarHostRef.current.scrollTop = newScrollY
+      if (model.hasOverflow) {
+        if (view.scrollZoom && !e.shiftKey) {
+          e.preventDefault()
+        } else {
+          e.stopPropagation()
         }
-        renderWithBlocksRef.current()
       }
     }
 
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    container.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      canvas.removeEventListener('wheel', handleWheel)
+      container.removeEventListener('scroll', handleScroll)
+      container.removeEventListener('wheel', handleWheel)
     }
-  }, [model.height, model.maxY, view.scrollZoom])
+  }, [model, view])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -535,7 +524,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       const rect = canvas.getBoundingClientRect()
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
-      const yPos = mouseY + scrollYRef.current
+      const yPos = mouseY + (scrollContainerRef.current?.scrollTop ?? 0)
       return { mouseX, mouseY, yPos }
     }
 
@@ -772,7 +761,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           )
         }
 
-        if (labelData.nameLabel) {
+        if (labelData.nameLabel && model.showLabels) {
           emitLabel(labelData.nameLabel, 2, 'name')
         }
         if (labelData.descriptionLabel && model.effectiveShowDescriptions) {
@@ -791,6 +780,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
     width,
     bpPerPx,
     visibleRegions,
+    model.showLabels,
     model.effectiveShowDescriptions,
   ])
 
@@ -1038,60 +1028,71 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         position: 'relative',
         width: '100%',
         height,
-        overflow: 'hidden',
       }}
     >
-      <canvas
-        ref={canvasCallbackRef}
+      <div
+        ref={scrollContainerRef}
         style={{
-          display: 'block',
-          width,
-          height,
-          cursor: hoveredFeature ? 'pointer' : 'default',
+          position: 'absolute',
+          inset: 0,
+          overflowY: model.hasOverflow ? 'auto' : 'hidden',
+          overflowX: 'hidden',
         }}
-      />
-
-      {[highlightOverlays, floatingLabelElements, aminoAcidOverlayElements].map(
-        (elements, i) =>
-          elements ? (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: model.maxY || '100%',
-                pointerEvents: 'none',
-                transform: `translateY(-${scrollY}px)`,
-              }}
-            >
-              {elements}
-            </div>
-          ) : null,
-      )}
-
-      {model.maxY > height ? (
+      >
         <div
-          ref={scrollbarHostRef}
           style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: 20,
-            height: '100%',
-            overflowY: 'scroll',
-            overflowX: 'hidden',
-          }}
-          onScroll={e => {
-            const st = e.currentTarget.scrollTop
-            scrollYRef.current = st
-            setScrollY(st)
-            renderWithBlocksRef.current()
+            position: 'relative',
+            height: model.hasOverflow ? model.maxY : '100%',
+            minHeight: '100%',
           }}
         >
-          <div style={{ height: model.maxY, width: 1 }} />
+          <canvas
+            ref={canvasCallbackRef}
+            style={{
+              display: 'block',
+              width,
+              height,
+              position: 'sticky',
+              top: 0,
+              cursor: hoveredFeature ? 'pointer' : 'default',
+            }}
+          />
+
+          {[
+            highlightOverlays,
+            floatingLabelElements,
+            aminoAcidOverlayElements,
+          ].map((elements, i) =>
+            elements ? (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                }}
+              >
+                {elements}
+              </div>
+            ) : null,
+          )}
         </div>
+      </div>
+
+      {model.hasOverflow || model.heightBeforeExpand !== undefined ? (
+        <OverflowIndicator
+          expanded={model.heightBeforeExpand !== undefined}
+          showScrollHint={view.scrollZoom && model.hasOverflow}
+          onExpand={() => {
+            model.expandToFit()
+          }}
+          onRestore={() => {
+            model.collapseFromExpand()
+          }}
+        />
       ) : null}
 
       <LoadingOverlay

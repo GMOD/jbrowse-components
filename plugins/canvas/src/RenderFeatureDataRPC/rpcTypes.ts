@@ -20,8 +20,6 @@ export interface RenderFeatureDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   displayConfig: {
-    showLabels: boolean
-    showDescriptions: boolean
     subfeatureLabels: string
     geneGlyphMode: string
   }
@@ -116,6 +114,7 @@ export interface FlatbushItem {
   layoutEndBp: number
   topPx: number
   bottomPx: number
+  featureHeightPx: number
   tooltip: string
   name?: string
   strand?: number

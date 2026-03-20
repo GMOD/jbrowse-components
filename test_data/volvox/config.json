@@ -2495,6 +2495,50 @@
       "assemblyNames": ["volvox"]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes2",
+      "name": "GFF3Tabix genes2",
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "metadata from plugin": "added by umd_plugin.js using Core-preProcessTrackConfig"
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.sort.gff3.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "gff3tabix_genes2-LinearFeatureDisplay",
+          "type": "LinearFeatureDisplay",
+          "height": 263,
+          "trackShowLabels": false,
+          "trackShowDescriptions": false
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes2-LinearBasicDisplay"
+        },
+        {
+          "type": "LinearArcDisplay",
+          "displayId": "gff3tabix_genes2-LinearArcDisplay"
+        }
+      ],
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>Subfeature: '+(!feature.name?'No name':feature.name)+'</a>'}"
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "volvox multi-sample sv",
       "name": "volvox multi-sample sv",

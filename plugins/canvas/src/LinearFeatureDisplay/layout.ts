@@ -1,6 +1,6 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import { STRAND_ARROW_WIDTH } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 
 import type {
   FeatureDataResult,
@@ -8,13 +8,24 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 const LABEL_PADDING_PX = 8
+const LAYOUT_Y_PADDING = 5
 
 function effectiveLabelWidthPx(
   labelData: FeatureLabelData,
+  showLabels: boolean,
   showDescriptions: boolean,
 ) {
-  const width = maxLabelTextWidth(labelData, showDescriptions)
-  return width > 0 ? width + LABEL_PADDING_PX : 0
+  let maxWidth = 0
+  if (showLabels && labelData.nameLabel) {
+    maxWidth = Math.max(maxWidth, labelData.nameLabel.textWidth)
+  }
+  if (showDescriptions && labelData.descriptionLabel) {
+    maxWidth = Math.max(maxWidth, labelData.descriptionLabel.textWidth)
+  }
+  if (labelData.subfeatureLabel) {
+    maxWidth = Math.max(maxWidth, labelData.subfeatureLabel.textWidth)
+  }
+  return maxWidth > 0 ? maxWidth + LABEL_PADDING_PX : 0
 }
 
 export function computeAndAssignLayout(
@@ -22,8 +33,9 @@ export function computeAndAssignLayout(
   bpPerPx: number,
   regionKeys: Map<number, string>,
   newRegionNumbers: Set<number>,
-  showDescriptions = true,
-  descriptionFontSize = 12,
+  showLabels: boolean,
+  showDescriptions: boolean,
+  labelFontSize = 12,
 ) {
   const refGroups = new Map<string, [number, FeatureDataResult][]>()
   for (const [regionNumber, data] of rpcDataMap) {
@@ -46,17 +58,23 @@ export function computeAndAssignLayout(
 
     const layout = new GranularRectLayout({ displayMode: 'normal' })
     const layoutMap = new Map<string, number>()
+    const layoutHeights = new Map<string, number>()
 
     const labelInfoByFeatureId = new Map<
       string,
-      { hasDescription: boolean; maxLabelWidthPx: number }
+      { hasName: boolean; hasDescription: boolean; maxLabelWidthPx: number }
     >()
     for (const [, data] of regions) {
       for (const labelData of Object.values(data.floatingLabelsData)) {
         const targetId = labelData.parentFeatureId ?? labelData.featureId
-        const widthPx = effectiveLabelWidthPx(labelData, showDescriptions)
+        const widthPx = effectiveLabelWidthPx(
+          labelData,
+          showLabels,
+          showDescriptions,
+        )
         const existing = labelInfoByFeatureId.get(targetId)
         if (existing) {
+          existing.hasName = existing.hasName || !!labelData.nameLabel
           existing.hasDescription =
             existing.hasDescription || !!labelData.descriptionLabel
           if (widthPx > existing.maxLabelWidthPx) {
@@ -64,6 +82,7 @@ export function computeAndAssignLayout(
           }
         } else {
           labelInfoByFeatureId.set(targetId, {
+            hasName: !!labelData.nameLabel,
             hasDescription: !!labelData.descriptionLabel,
             maxLabelWidthPx: widthPx,
           })
@@ -73,15 +92,23 @@ export function computeAndAssignLayout(
 
     const allFeatures = new Map<
       string,
-      { startBp: number; layoutEndBp: number; height: number }
+      {
+        startBp: number
+        layoutEndBp: number
+        height: number
+        strand: number
+      }
     >()
     for (const [, data] of regions) {
       for (const item of data.flatbushItems) {
         if (!allFeatures.has(item.featureId)) {
-          let height = item.bottomPx
+          let height = item.featureHeightPx + LAYOUT_Y_PADDING
           const labelInfo = labelInfoByFeatureId.get(item.featureId)
-          if (!showDescriptions && labelInfo?.hasDescription) {
-            height -= descriptionFontSize
+          if (showLabels && labelInfo?.hasName) {
+            height += labelFontSize
+          }
+          if (showDescriptions && labelInfo?.hasDescription) {
+            height += labelFontSize
           }
 
           let layoutEndBp = item.endBp
@@ -97,6 +124,7 @@ export function computeAndAssignLayout(
             startBp: item.startBp,
             layoutEndBp,
             height,
+            strand: item.strand ?? 0,
           })
         }
       }
@@ -106,15 +134,17 @@ export function computeAndAssignLayout(
       ([, a], [, b]) => a.startBp - b.startBp,
     )
 
-    for (const [id, { startBp, layoutEndBp, height }] of sorted) {
-      const leftPx = startBp / bpPerPx
-      const rightPx = layoutEndBp / bpPerPx
+    for (const [id, { startBp, layoutEndBp, height, strand }] of sorted) {
+      const arrowPadding = strand ? STRAND_ARROW_WIDTH : 0
+      const leftPx = startBp / bpPerPx - arrowPadding
+      const rightPx = layoutEndBp / bpPerPx + arrowPadding
       const top = layout.addRect(id, leftPx, rightPx, height)
       layoutMap.set(id, top ?? 0)
+      layoutHeights.set(id, height)
     }
 
     for (const [, data] of regions) {
-      fillYArrays(data, layoutMap)
+      fillYArrays(data, layoutMap, layoutHeights)
     }
   }
 }
@@ -142,7 +172,7 @@ function undoFillYArrays(
   }
 
   for (const item of data.flatbushItems) {
-    item.bottomPx -= item.topPx
+    item.bottomPx = item.featureHeightPx
     item.topPx = 0
   }
 
@@ -168,8 +198,9 @@ export function relayoutAllRegions(
   rpcDataMap: Map<number, FeatureDataResult>,
   bpPerPx: number,
   regionKeys: Map<number, string>,
-  showDescriptions = true,
-  descriptionFontSize = 12,
+  showLabels: boolean,
+  showDescriptions: boolean,
+  labelFontSize = 12,
 ) {
   const globalOffsets = new Map<string, number>()
   for (const data of rpcDataMap.values()) {
@@ -191,14 +222,16 @@ export function relayoutAllRegions(
     bpPerPx,
     regionKeys,
     allRegionNumbers,
+    showLabels,
     showDescriptions,
-    descriptionFontSize,
+    labelFontSize,
   )
 }
 
 export function fillYArrays(
   data: FeatureDataResult,
   layoutMap: Map<string, number>,
+  layoutHeights?: Map<string, number>,
 ) {
   const featureYOffsets = new Float32Array(data.flatbushItems.length)
   for (const [i, item] of data.flatbushItems.entries()) {
@@ -220,8 +253,9 @@ export function fillYArrays(
 
   for (const [i, item] of data.flatbushItems.entries()) {
     const offset = featureYOffsets[i]!
+    const layoutHeight = layoutHeights?.get(item.featureId)
     item.topPx = offset
-    item.bottomPx = item.bottomPx + offset
+    item.bottomPx = offset + (layoutHeight ?? item.bottomPx)
   }
 
   for (const info of data.subfeatureInfos) {

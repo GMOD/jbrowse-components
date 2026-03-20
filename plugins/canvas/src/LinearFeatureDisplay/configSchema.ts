@@ -18,6 +18,16 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         description:
           'Automatically resize the track height to fit all features',
       },
+      showLabels: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Show feature labels',
+      },
+      showDescriptions: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Show feature descriptions',
+      },
     },
     {
       baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),

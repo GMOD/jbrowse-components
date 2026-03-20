@@ -261,6 +261,7 @@ function collectRenderData(
       layoutEndBp: featureEnd,
       topPx: 0,
       bottomPx: layoutHeight,
+      featureHeightPx: layoutHeight,
       tooltip,
       name: name || undefined,
       strand: strand || undefined,
@@ -682,8 +683,6 @@ export async function executeRenderFeatureData({
   const configContext: RenderConfigContext = {
     config: mockConfig as any,
     displayMode: mockConfig.displayMode,
-    showLabels: mockConfig.showLabels,
-    showDescriptions: mockConfig.showDescriptions,
     subfeatureLabels: mockConfig.subfeatureLabels,
     transcriptTypes: mockConfig.transcriptTypes,
     containerTypes: mockConfig.containerTypes,
@@ -717,7 +716,6 @@ export async function executeRenderFeatureData({
     statusCallback,
     async () => {
       const reversed = region.reversed ?? false
-      const yPadding = 5
 
       const records: LayoutRecord[] = []
 
@@ -729,22 +727,7 @@ export async function executeRenderFeatureData({
           configContext,
         })
 
-        const fontSize = mockConfig.labels.fontSize
-        let labelHeight = 0
-        const featureName = String(
-          feature.get('name') || feature.get('id') || '',
-        )
-        const featureDescription = String(
-          feature.get('note') || feature.get('description') || '',
-        )
-        if (featureName && mockConfig.showLabels) {
-          labelHeight += fontSize
-        }
-        if (featureDescription && mockConfig.showDescriptions) {
-          labelHeight += fontSize
-        }
-
-        const layoutHeight = featureLayout.height + labelHeight + yPadding
+        const layoutHeight = featureLayout.height
 
         records.push({
           feature,
