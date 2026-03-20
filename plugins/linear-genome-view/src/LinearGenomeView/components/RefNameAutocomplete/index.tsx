@@ -51,7 +51,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   // this callback runs an async search. the typescript code claims that
   useEffect(() => {
     const isCurrent = { cancelled: false }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
     ;(async () => {
       try {
         if (debouncedSearch === '' || !assemblyName) {

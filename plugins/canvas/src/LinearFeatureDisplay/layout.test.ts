@@ -552,7 +552,7 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
   expect(data.subfeatureInfos[1]!.bottomPx).toBe(15 + gene2Top)
 
   // Label of gene2 should be offset
-  expect(data.floatingLabelsData['gene2']!.topY).toBe(gene2Top)
+  expect(data.floatingLabelsData.gene2!.topY).toBe(gene2Top)
 
   // After relayout at same bpPerPx, everything should be identical
   relayoutAllRegions(rpcDataMap, 1, regionKeys, true, true)
@@ -561,7 +561,7 @@ test('relayout correctly handles subfeatureInfos and floatingLabelsData', () => 
   expect(gene2TopAfter).toBe(gene2Top)
   expect(data.subfeatureInfos[1]!.topPx).toBe(5 + gene2TopAfter)
   expect(data.subfeatureInfos[1]!.bottomPx).toBe(15 + gene2TopAfter)
-  expect(data.floatingLabelsData['gene2']!.topY).toBe(gene2TopAfter)
+  expect(data.floatingLabelsData.gene2!.topY).toBe(gene2TopAfter)
 })
 
 test('relayout handles lines and arrows', () => {

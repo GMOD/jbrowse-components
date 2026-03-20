@@ -3,11 +3,6 @@
 import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
 import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 import { WebGLRenderer } from './WebGLRenderer.ts'
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
@@ -16,7 +11,6 @@ import {
   arcLineColorPalette,
   sashimiColorPalette,
 } from './shaders/arcShaders.ts'
-
 import { splitPositionWithFrac } from './shaders/utils.ts'
 import {
   GAP_WGSL,
@@ -118,6 +112,11 @@ import {
   SASHIMI_WGSL,
 } from './wgsl/miscShaders.ts'
 import { READ_WGSL } from './wgsl/readShader.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 
 import type { RenderState } from './WebGLRenderer.ts'
 export type { ColorPalette, RGBColor } from './WebGLRenderer.ts'

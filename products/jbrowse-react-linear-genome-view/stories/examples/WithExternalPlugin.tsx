@@ -48,7 +48,6 @@ export const WithExternalPlugin = () => {
   const [viewState, setViewState] = useState<ViewState>()
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const plugins = await loadPlugins([

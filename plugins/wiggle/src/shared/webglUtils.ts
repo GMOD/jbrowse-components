@@ -43,11 +43,7 @@ export function darkenColor(
   rgb: [number, number, number],
   amount: number,
 ): [number, number, number] {
-  return [
-    rgb[0] * (1 - amount),
-    rgb[1] * (1 - amount),
-    rgb[2] * (1 - amount),
-  ]
+  return [rgb[0] * (1 - amount), rgb[1] * (1 - amount), rgb[2] * (1 - amount)]
 }
 
 export function interleaveInstances(
@@ -58,21 +54,27 @@ export function interleaveInstances(
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let offset = 0
-  for (const [idx, source] of sources.entries()) {
+  for (let idx = 0; idx < sources.length; idx++) {
+    const source = sources[idx]!
     const row = source.rowIndex ?? idx
-    for (let i = 0; i < source.numFeatures; i++) {
+    const cr = source.color[0]
+    const cg = source.color[1]
+    const cb = source.color[2]
+    const positions = source.featurePositions
+    const scores = source.featureScores
+    const n = source.numFeatures
+    for (let i = 0; i < n; i++) {
       const off = (offset + i) * INSTANCE_STRIDE
-      u32[off] = source.featurePositions[i * 2]!
-      u32[off + 1] = source.featurePositions[i * 2 + 1]!
-      f32[off + 2] = source.featureScores[i]!
-      f32[off + 3] =
-        i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
+      u32[off] = positions[i * 2]!
+      u32[off + 1] = positions[i * 2 + 1]!
+      f32[off + 2] = scores[i]!
+      f32[off + 3] = i === 0 ? scores[i]! : scores[i - 1]!
       f32[off + 4] = row
-      f32[off + 5] = source.color[0]
-      f32[off + 6] = source.color[1]
-      f32[off + 7] = source.color[2]
+      f32[off + 5] = cr
+      f32[off + 6] = cg
+      f32[off + 7] = cb
     }
-    offset += source.numFeatures
+    offset += n
   }
   return buf
 }

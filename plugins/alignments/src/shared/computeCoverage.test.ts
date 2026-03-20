@@ -1,8 +1,8 @@
 import {
+  applyDepthDependentThreshold,
   computeCoverage,
   computeNoncovCoverage,
   computePositionFrequencies,
-  applyDepthDependentThreshold,
 } from './computeCoverage.ts'
 import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 

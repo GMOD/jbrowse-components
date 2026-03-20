@@ -111,7 +111,7 @@ const VariantMatrixComponent = observer(function VariantMatrixComponent({
     const source = sources[rowIdx]
     const feature = cellData.featureData[featureIdx]
     if (source && feature) {
-      const sampleName = source.baseName ?? source.name
+      const sampleName = source.sampleName ?? source.name
       const genotype = feature.genotypes[sampleName]
       if (genotype) {
         return {

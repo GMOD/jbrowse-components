@@ -16,7 +16,6 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -47,6 +46,7 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -824,7 +824,6 @@ export default function stateModelFactory(
             label: 'Open feature details',
             icon: MenuOpenIcon,
             onClick: () => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               self.selectFullFeature(featureId, regionNumber)
             },
           },
@@ -846,7 +845,6 @@ export default function stateModelFactory(
             label: 'Copy info to clipboard',
             icon: ContentCopyIcon,
             onClick: () => {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               ;(async () => {
                 const fullFeature = await self.fetchFullFeature(
                   featureId,
@@ -869,7 +867,6 @@ export default function stateModelFactory(
                   label: 'Collapse introns',
                   icon: CloseFullscreenIcon,
                   onClick: () => {
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     ;(async () => {
                       const fullFeature = await self.fetchFullFeature(
                         featureId,

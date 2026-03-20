@@ -1,9 +1,9 @@
 import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
 import {
-  RENDERING_TYPE_XYPLOT,
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
 } from './wiggleShader.ts'
 

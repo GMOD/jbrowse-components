@@ -9,7 +9,6 @@ import { fetchCJS } from './util.tsx'
 // worker
 enableStaticRendering(true)
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 initializeWorker(corePlugins, {
   fetchESM: url => import(/* webpackIgnore:true */ url),
   fetchCJS,

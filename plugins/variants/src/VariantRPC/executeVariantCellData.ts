@@ -201,10 +201,7 @@ export async function executeVariantCellData({
       () => {
         if (regionLookup) {
           const grouped = new Map<number, MAFFilteredFeature[]>()
-          const regionsByRefName = new Map<
-            string,
-            typeof regionLookup
-          >()
+          const regionsByRefName = new Map<string, typeof regionLookup>()
           for (const r of regionLookup) {
             let list = regionsByRefName.get(r.refName)
             if (!list) {
@@ -214,8 +211,8 @@ export async function executeVariantCellData({
             list.push(r)
           }
           for (const maf of mafs) {
-            const refName = maf.feature.get('refName') as string
-            const featureStart = maf.feature.get('start') as number
+            const refName = maf.feature.get('refName')
+            const featureStart = maf.feature.get('start')
             const candidates = regionsByRefName.get(refName)
             if (!candidates) {
               continue

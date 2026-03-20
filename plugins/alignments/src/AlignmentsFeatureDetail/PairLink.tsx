@@ -15,7 +15,7 @@ export default function PairLink({
     <Link
       onClick={event => {
         event.preventDefault()
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
         navToLoc(locString, model)
       }}
       href="#"

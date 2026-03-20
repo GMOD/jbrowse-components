@@ -1,7 +1,7 @@
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
 import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
-import type { Region } from '../util/types/index.ts'
 import type { StopToken } from '../util/stopToken.ts'
+import type { Region } from '../util/types/index.ts'
 
 export interface RegionLike {
   refName: string

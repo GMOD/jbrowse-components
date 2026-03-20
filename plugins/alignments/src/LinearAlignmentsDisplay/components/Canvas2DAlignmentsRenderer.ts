@@ -3,10 +3,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import {
-  getReadColor,
-  rgb255,
-} from '../colorUtils.ts'
+import { getReadColor, rgb255 } from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   arcColorPalette,
@@ -14,7 +11,7 @@ import {
   sashimiColorPalette,
 } from './shaders/arcShaders.ts'
 
-import type { WebGLRenderer, RenderState } from './WebGLRenderer.ts'
+import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
 // base color indices used by SNP coverage
 const SNP_COLOR_A = 0
@@ -557,14 +554,30 @@ export class Canvas2DAlignmentsRenderer {
       }
 
       this.drawClips(
-        ctx, region.softclipPositions, region.softclipYs,
-        region.softclipLengths, region.numSoftclips, region.regionStart,
-        rgb255(state.colors.colorSoftclip), block, bpLength, fullBlockWidth, state,
+        ctx,
+        region.softclipPositions,
+        region.softclipYs,
+        region.softclipLengths,
+        region.numSoftclips,
+        region.regionStart,
+        rgb255(state.colors.colorSoftclip),
+        block,
+        bpLength,
+        fullBlockWidth,
+        state,
       )
       this.drawClips(
-        ctx, region.hardclipPositions, region.hardclipYs,
-        region.hardclipLengths, region.numHardclips, region.regionStart,
-        rgb255(state.colors.colorHardclip), block, bpLength, fullBlockWidth, state,
+        ctx,
+        region.hardclipPositions,
+        region.hardclipYs,
+        region.hardclipLengths,
+        region.numHardclips,
+        region.regionStart,
+        rgb255(state.colors.colorHardclip),
+        block,
+        bpLength,
+        fullBlockWidth,
+        state,
       )
 
       if (state.showSoftClipping) {
@@ -629,7 +642,6 @@ export class Canvas2DAlignmentsRenderer {
       ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
     )
   }
-
 
   private drawReads(
     ctx: CanvasRenderingContext2D,
@@ -801,7 +813,6 @@ export class Canvas2DAlignmentsRenderer {
       ctx.fillRect(x, y, w, fH)
     }
   }
-
 
   private drawSoftclipBases(
     ctx: CanvasRenderingContext2D,

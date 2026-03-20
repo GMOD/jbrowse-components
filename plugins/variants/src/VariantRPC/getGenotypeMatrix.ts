@@ -66,16 +66,16 @@ export async function getGenotypeMatrix({
     const callGt = getRawCallGenotype(feature)
     if (callGt && raw) {
       const ploidy = feature.get('ploidy') as number
-      for (const { name } of sources) {
-        const si = raw.sampleIndexMap.get(name)
+      for (const { name, sampleName } of sources) {
+        const si = raw.sampleIndexMap.get(sampleName ?? name)
         rows[name]!.push(
           si !== undefined ? encodeGenotypeFromRaw(callGt, si, ploidy) : -1,
         )
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
-      for (const { name } of sources) {
-        const val = genotypes[name]!
+      for (const { name, sampleName } of sources) {
+        const val = genotypes[sampleName ?? name]!
         const alleles = val.split(SPLITTER)
 
         let nonRefCount = 0

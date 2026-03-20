@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { extractMethylation } from './processFeatureAlignments.ts'
+
 import type { ModificationEntry } from './webglRpcTypes.ts'
 
 // Sequence AACGATCGAA: C's at read positions 2 and 6

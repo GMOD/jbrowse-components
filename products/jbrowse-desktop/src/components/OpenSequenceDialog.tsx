@@ -371,7 +371,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       open
       onClose={() => {
         if (!loading) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           onClose()
         }
       }}

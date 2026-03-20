@@ -317,7 +317,7 @@ export default function stateModelFactory() {
     .actions(self => ({
       afterAttach() {
         // just a one-time thing on load
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
         ;(async () => {
           try {
             if (self.cachedFileLocation && self.selectedAssemblyName) {

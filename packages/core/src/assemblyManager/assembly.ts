@@ -21,8 +21,8 @@ import type {
 } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { StopToken } from '../util/stopToken.ts'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 

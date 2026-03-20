@@ -2,8 +2,8 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
-  createStopTokenChecker,
   checkStopToken2,
+  createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
 import type {

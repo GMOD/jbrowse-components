@@ -10,6 +10,7 @@ import { toArray } from 'rxjs/operators'
 import { processFeatures } from '../util.ts'
 
 import type { WiggleDataResult } from './types.ts'
+import type { WiggleFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -27,6 +28,17 @@ interface ExecuteParams {
     resolution?: number
     statusCallback?: (msg: string) => void
   }
+}
+
+function hasFeatureArrays(
+  adapter: BaseFeatureDataAdapter,
+): adapter is BaseFeatureDataAdapter & {
+  getFeatureArrays(
+    region: Region,
+    opts: { bpPerPx: number; resolution: number; bicolorPivot: number },
+  ): Promise<WiggleFeatureArrays>
+} {
+  return 'getFeatureArrays' in adapter
 }
 
 export async function executeRenderWiggleData({
@@ -50,6 +62,23 @@ export async function executeRenderWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
+  const regionStart = Math.floor(region.start)
+
+  if (hasFeatureArrays(dataAdapter)) {
+    const featureArrays = await updateStatus(
+      'Loading wiggle data',
+      statusCallback,
+      () =>
+        dataAdapter.getFeatureArrays(region, {
+          bpPerPx,
+          resolution,
+          bicolorPivot,
+        }),
+    )
+    checkStopToken2(stopTokenCheck)
+    return { regionStart, ...featureArrays }
+  }
+
   const fetchOpts = { bpPerPx, resolution }
   const featuresArray = await updateStatus(
     'Loading wiggle data',
@@ -61,8 +90,6 @@ export async function executeRenderWiggleData({
   )
 
   checkStopToken2(stopTokenCheck)
-
-  const regionStart = Math.floor(region.start)
 
   return {
     regionStart,

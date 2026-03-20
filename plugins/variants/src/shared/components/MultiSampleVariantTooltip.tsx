@@ -45,7 +45,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const EXCLUDE_KEYS = new Set(['color', 'HP', 'name', 'baseName', 'id'])
+const EXCLUDE_KEYS = new Set(['color', 'HP', 'name', 'sampleName', 'id'])
 
 const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   source,

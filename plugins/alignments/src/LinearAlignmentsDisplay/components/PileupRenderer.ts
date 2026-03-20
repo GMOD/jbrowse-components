@@ -165,10 +165,7 @@ export function renderPileup(
     bpStartLo,
     regionLengthBp,
   )
-  gl.uniform1ui(
-    renderer.readUniforms.u_regionStart!,
-    Math.floor(regionStart),
-  )
+  gl.uniform1ui(renderer.readUniforms.u_regionStart!, Math.floor(regionStart))
   gl.uniform2f(
     renderer.readUniforms.u_rangeY!,
     state.rangeY[0],
@@ -176,10 +173,7 @@ export function renderPileup(
   )
   gl.uniform1i(renderer.readUniforms.u_colorScheme!, state.colorScheme)
   gl.uniform1f(renderer.readUniforms.u_featureHeight!, state.featureHeight)
-  gl.uniform1f(
-    renderer.readUniforms.u_featureSpacing!,
-    state.featureSpacing,
-  )
+  gl.uniform1f(renderer.readUniforms.u_featureSpacing!, state.featureSpacing)
   gl.uniform1f(renderer.readUniforms.u_coverageOffset!, coverageOffset)
   gl.uniform1f(renderer.readUniforms.u_canvasHeight!, canvasHeight)
   gl.uniform1f(renderer.readUniforms.u_canvasWidth!, canvasWidth)
@@ -205,10 +199,7 @@ export function renderPileup(
     renderer.readUniforms.u_colorRevStrand!,
     ...colors.colorRevStrand,
   )
-  gl.uniform3f(
-    renderer.readUniforms.u_colorNostrand!,
-    ...colors.colorNostrand,
-  )
+  gl.uniform3f(renderer.readUniforms.u_colorNostrand!, ...colors.colorNostrand)
   gl.uniform3f(renderer.readUniforms.u_colorPairLR!, ...colors.colorPairLR)
   gl.uniform3f(renderer.readUniforms.u_colorPairRL!, ...colors.colorPairRL)
   gl.uniform3f(renderer.readUniforms.u_colorPairRR!, ...colors.colorPairRR)
@@ -239,10 +230,7 @@ export function renderPileup(
   )
 
   const stats = buffers.insertSizeStats
-  gl.uniform1f(
-    renderer.readUniforms.u_insertSizeUpper!,
-    stats?.upper ?? 1e9,
-  )
+  gl.uniform1f(renderer.readUniforms.u_insertSizeUpper!, stats?.upper ?? 1e9)
   gl.uniform1f(renderer.readUniforms.u_insertSizeLower!, stats?.lower ?? 0)
 
   gl.uniform1i(renderer.readUniforms.u_highlightOnlyMode!, 0)
@@ -386,22 +374,10 @@ export function renderPileup(
       state,
       coverageOffset,
     )
-    gl.uniform3f(
-      renderer.mismatchUniforms.u_colorBaseA!,
-      ...colors.colorBaseA,
-    )
-    gl.uniform3f(
-      renderer.mismatchUniforms.u_colorBaseC!,
-      ...colors.colorBaseC,
-    )
-    gl.uniform3f(
-      renderer.mismatchUniforms.u_colorBaseG!,
-      ...colors.colorBaseG,
-    )
-    gl.uniform3f(
-      renderer.mismatchUniforms.u_colorBaseT!,
-      ...colors.colorBaseT,
-    )
+    gl.uniform3f(renderer.mismatchUniforms.u_colorBaseA!, ...colors.colorBaseA)
+    gl.uniform3f(renderer.mismatchUniforms.u_colorBaseC!, ...colors.colorBaseC)
+    gl.uniform3f(renderer.mismatchUniforms.u_colorBaseG!, ...colors.colorBaseG)
+    gl.uniform3f(renderer.mismatchUniforms.u_colorBaseT!, ...colors.colorBaseT)
     gl.bindVertexArray(buffers.softclipBaseVAO)
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, buffers.softclipBaseCount)
   }

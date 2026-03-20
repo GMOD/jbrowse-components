@@ -115,12 +115,8 @@ describe('buildSourceRenderData', () => {
     const model2 = makeModel({ color: '#f0f', negColor: '#00ff00' })
     const sources2 = buildSourceRenderData(data, model2)
 
-    const negSource1 = sources1.find(
-      s => s.color[0]! > 0.5 && s.color[1]! < 0.5,
-    )
-    const negSource2 = sources2.find(
-      s => s.color[1]! > 0.5 && s.color[0]! < 0.5,
-    )
+    const negSource1 = sources1.find(s => s.color[0] > 0.5 && s.color[1] < 0.5)
+    const negSource2 = sources2.find(s => s.color[1] > 0.5 && s.color[0] < 0.5)
     expect(negSource1).toBeDefined()
     expect(negSource2).toBeDefined()
     expect(negSource1!.color).not.toEqual(negSource2!.color)

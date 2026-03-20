@@ -12,7 +12,6 @@ export function useFetchPlugins() {
   const [plugins, setPlugins] = useState<JBrowsePlugin[]>()
   const [error, setError] = useState<unknown>()
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const res = await fetch('https://jbrowse.org/plugin-store/plugins.json')

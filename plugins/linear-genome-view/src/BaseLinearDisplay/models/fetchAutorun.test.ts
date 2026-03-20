@@ -57,13 +57,17 @@ describe('fetch autorun region determination', () => {
     })
 
     test('skips when loaded data fully covers static region', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 20000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 20000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       const needed = computeNeededRegions(
         [makeRegion(0, 1000, 15000)],
@@ -74,13 +78,17 @@ describe('fetch autorun region determination', () => {
     })
 
     test('fetches when static region extends beyond loaded end', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 10000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 10000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       const needed = computeNeededRegions(
         [makeRegion(0, 0, 15000)],
@@ -91,13 +99,17 @@ describe('fetch autorun region determination', () => {
     })
 
     test('fetches when static region extends beyond loaded start', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 5000,
-        end: 20000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 5000,
+            end: 20000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       const needed = computeNeededRegions(
         [makeRegion(0, 0, 15000)],
@@ -108,13 +120,17 @@ describe('fetch autorun region determination', () => {
     })
 
     test('fetches when refName differs', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 20000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 20000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       const needed = computeNeededRegions(
         [makeRegion(0, 0, 10000, 'chr2')],
@@ -125,13 +141,17 @@ describe('fetch autorun region determination', () => {
     })
 
     test('handles multiple regions independently', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 20000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 20000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
       // region 1 not loaded
 
       const needed = computeNeededRegions(
@@ -146,13 +166,17 @@ describe('fetch autorun region determination', () => {
 
   describe('isCacheValid integration', () => {
     test('re-fetches when bounds valid but cache invalid (zoom-in)', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 20000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 20000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       const needed = computeNeededRegions(
         [makeRegion(0, 0, 10000)],
@@ -163,13 +187,17 @@ describe('fetch autorun region determination', () => {
     })
 
     test('skips when both bounds valid and cache valid', () => {
-      const loaded = new Map<number, LoadedRegion>()
-      loaded.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 20000,
-        assemblyName: 'test',
-      })
+      const loaded = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 20000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       const needed = computeNeededRegions(
         [makeRegion(0, 0, 10000)],
@@ -238,13 +266,17 @@ describe('fetch autorun region determination', () => {
 
     test('scenario: zoom from 10 to 2.5 bpPerPx triggers re-fetch', () => {
       const loaded = new Map([[0, 10]])
-      const loadedRegions = new Map<number, LoadedRegion>()
-      loadedRegions.set(0, {
-        refName: 'chr1',
-        start: 0,
-        end: 100000,
-        assemblyName: 'test',
-      })
+      const loadedRegions = new Map<number, LoadedRegion>([
+        [
+          0,
+          {
+            refName: 'chr1',
+            start: 0,
+            end: 100000,
+            assemblyName: 'test',
+          },
+        ],
+      ])
 
       // At 10 bpPerPx (original): cache valid
       const needed1 = computeNeededRegions(

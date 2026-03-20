@@ -43,7 +43,6 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const assemblyNames = readConf(config, 'assemblyNames') as string[]
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const map = await Promise.all(

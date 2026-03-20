@@ -137,7 +137,7 @@ export function createStopTokenChecker(
 }
 
 export function checkStopToken2(checker?: StopTokenChecker) {
-  if (!checker || checker.stopToken === undefined) {
+  if (checker?.stopToken === undefined) {
     return
   }
   checker.iters++

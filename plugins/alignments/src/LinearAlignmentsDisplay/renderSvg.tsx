@@ -5,26 +5,26 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { when } from 'mobx'
 
-import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
-import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
-import {
-  ARC_HEIGHT_MARGIN,
-  arcColorPalette,
-  arcLineColorPalette,
-  sashimiColorPalette,
-} from './components/shaders/arcShaders.ts'
-import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../shared/types.ts'
-import {
-  INSERTION_SERIF_MIN_PX_PER_BP,
-  LONG_INSERTION_MIN_LENGTH,
-  insertionBarWidth,
-} from './constants.ts'
 import {
   getBaseColorString,
   getReadColor,
   makeBasePalette,
   rgb255,
 } from './colorUtils.ts'
+import CoverageYScaleBar from './components/CoverageYScaleBar.tsx'
+import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
+import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../shared/types.ts'
+import {
+  ARC_HEIGHT_MARGIN,
+  arcColorPalette,
+  arcLineColorPalette,
+  sashimiColorPalette,
+} from './components/shaders/arcShaders.ts'
+import {
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  LONG_INSERTION_MIN_LENGTH,
+  insertionBarWidth,
+} from './constants.ts'
 import { YSCALEBAR_LABEL_OFFSET } from './model.ts'
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
@@ -129,7 +129,14 @@ function drawPairedArcs(
     for (let s = 0; s <= ARC_SEGMENTS; s++) {
       const t = s / ARC_SEGMENTS
       const pt = evalBezierCurve(
-        t, x1, x2, availableHeight, blockStartPx, bpStartOffset, pxPerBp, isArc,
+        t,
+        x1,
+        x2,
+        availableHeight,
+        blockStartPx,
+        bpStartOffset,
+        pxPerBp,
+        isArc,
       )
       if (s === 0) {
         ctx.moveTo(pt.x, pt.y)
@@ -189,7 +196,13 @@ function drawSashimiArcs(
     for (let s = 0; s <= ARC_SEGMENTS; s++) {
       const t = s / ARC_SEGMENTS
       const pt = evalSashimiCurve(
-        t, x1, x2, coverageHeight, blockStartPx, bpStartOffset, pxPerBp,
+        t,
+        x1,
+        x2,
+        coverageHeight,
+        blockStartPx,
+        bpStartOffset,
+        pxPerBp,
       )
       if (s === 0) {
         ctx.moveTo(pt.x, pt.y + coverageOffset)

@@ -133,7 +133,7 @@ describe('Canvas2DLDRenderer', () => {
       renderer.uploadData({
         positions: new Float32Array([px, py]),
         cellSizes: new Float32Array([cw, ch]),
-        ldValues: new Float32Array([1.0]),
+        ldValues: new Float32Array([1]),
         numCells: 1,
       })
       renderer.uploadColorRamp(makeColorRamp())

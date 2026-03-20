@@ -1,6 +1,6 @@
 import {
-  checkStopToken,
   checkStopToken2,
+  checkStopToken,
   createStopToken,
   createStopTokenChecker,
   stopStopToken,
@@ -19,27 +19,37 @@ describe('stopToken', () => {
 
     it('checkStopToken does not throw for an active token', () => {
       const token = createSABToken()
-      expect(() => checkStopToken(token)).not.toThrow()
+      expect(() => {
+        checkStopToken(token)
+      }).not.toThrow()
     })
 
     it('checkStopToken throws after stopStopToken', () => {
       const token = createSABToken()
       stopStopToken(token)
-      expect(() => checkStopToken(token)).toThrow('aborted')
+      expect(() => {
+        checkStopToken(token)
+      }).toThrow('aborted')
     })
 
     it('checkStopToken is a no-op for undefined', () => {
-      expect(() => checkStopToken(undefined)).not.toThrow()
+      expect(() => {
+        checkStopToken(undefined)
+      }).not.toThrow()
     })
 
     it('stopStopToken is a no-op for undefined', () => {
-      expect(() => stopStopToken(undefined)).not.toThrow()
+      expect(() => {
+        stopStopToken(undefined)
+      }).not.toThrow()
     })
   })
 
   describe('string fallback path', () => {
     it('checkStopToken does not throw in non-worker env', () => {
-      expect(() => checkStopToken('some-string-token')).not.toThrow()
+      expect(() => {
+        checkStopToken('some-string-token')
+      }).not.toThrow()
     })
   })
 
@@ -74,7 +84,9 @@ describe('stopToken', () => {
 
   describe('checkStopToken2', () => {
     it('is a no-op when checker is undefined', () => {
-      expect(() => checkStopToken2(undefined)).not.toThrow()
+      expect(() => {
+        checkStopToken2(undefined)
+      }).not.toThrow()
     })
 
     it('is a no-op when stopToken is undefined', () => {
@@ -108,10 +120,14 @@ describe('stopToken', () => {
         Atomics.store(view, 0, 1)
 
         for (let i = 0; i < 9; i++) {
-          expect(() => checkStopToken2(checker)).not.toThrow()
+          expect(() => {
+            checkStopToken2(checker)
+          }).not.toThrow()
         }
         // 10th call hits the check
-        expect(() => checkStopToken2(checker)).toThrow('aborted')
+        expect(() => {
+          checkStopToken2(checker)
+        }).toThrow('aborted')
       })
 
       it('does not throw when token is active at check boundary', () => {
@@ -120,7 +136,9 @@ describe('stopToken', () => {
         const checker = createStopTokenChecker(buffer)
 
         for (let i = 0; i < 30; i++) {
-          expect(() => checkStopToken2(checker)).not.toThrow()
+          expect(() => {
+            checkStopToken2(checker)
+          }).not.toThrow()
         }
       })
 
@@ -140,10 +158,14 @@ describe('stopToken', () => {
 
         // Run until the next check boundary (iter 20)
         for (let i = 0; i < 4; i++) {
-          expect(() => checkStopToken2(checker)).not.toThrow()
+          expect(() => {
+            checkStopToken2(checker)
+          }).not.toThrow()
         }
         // iter 20 should throw
-        expect(() => checkStopToken2(checker)).toThrow('aborted')
+        expect(() => {
+          checkStopToken2(checker)
+        }).toThrow('aborted')
       })
     })
 

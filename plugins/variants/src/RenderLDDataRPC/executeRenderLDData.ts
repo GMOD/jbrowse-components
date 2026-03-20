@@ -9,8 +9,8 @@ import type { LDFlatbushItem } from '../LDRenderer/types.ts'
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util/types'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Region } from '@jbrowse/core/util/types'
 
 interface RenderLDDataArgs {
   sessionId: string

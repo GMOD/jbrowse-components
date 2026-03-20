@@ -2,8 +2,8 @@ import RpcMethodType from './RpcMethodType.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
-import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import type { StopToken } from '../util/stopToken.ts'
+import type { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 
 export default abstract class RpcMethodTypeWithFiltersAndRenameRegions extends RpcMethodType {
   async deserializeArguments<T>(

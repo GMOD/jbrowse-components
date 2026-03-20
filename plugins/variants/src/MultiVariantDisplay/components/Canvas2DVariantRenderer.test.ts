@@ -1,4 +1,5 @@
 import { Canvas2DVariantRenderer } from './Canvas2DVariantRenderer.ts'
+
 import type { VariantRenderBlock } from './WebGLVariantRenderer.ts'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })

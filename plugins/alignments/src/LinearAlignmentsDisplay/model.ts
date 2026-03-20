@@ -12,7 +12,6 @@ import {
   isSessionModelWithWidgets,
   max,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import {
   addDisposer,
   getSnapshot,
@@ -56,6 +55,12 @@ import {
   uploadRegionDataToGPU,
 } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../shared/types'
+
 import type {
   AlignmentsRenderer,
   ColorPalette,
@@ -68,11 +73,6 @@ import type {
 } from './components/hitTesting.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types'
 import type { LegendItem } from '../shared/legendUtils.ts'
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../shared/types'
 import type { ColorBy, FilterBy, SortedBy } from '../shared/types'
 import type {
   FeatureData,
@@ -85,6 +85,7 @@ import type {
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -99,9 +100,9 @@ type LGV = LinearGenomeViewModel
 export const YSCALEBAR_LABEL_OFFSET = 5
 
 export {
-  textWidthForNumber,
   getInsertionType,
   insertionBarWidth as getInsertionRectWidthPx,
+  textWidthForNumber,
 } from './constants.ts'
 export type { InsertionType } from './constants.ts'
 

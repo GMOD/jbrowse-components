@@ -2,8 +2,8 @@ import calculateBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 
 import {
   bpToPx,
-  buildBpToPxIndex,
   bpToPxFromIndex,
+  buildBpToPxIndex,
 } from './executeSyntenyFeaturesAndPositions.ts'
 
 function makeViewSnap(

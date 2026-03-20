@@ -7,8 +7,8 @@ import {
 
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
-import { migrateSessionSnapshot } from './migrateSessionSnapshot.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
+import { migrateSessionSnapshot } from './migrateSessionSnapshot.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 

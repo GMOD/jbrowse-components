@@ -156,10 +156,7 @@ export async function renderSvg(
   } else if (ticks) {
     legendEl = (
       <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <YScaleBar
-          model={model as unknown as { ticks: typeof ticks }}
-          orientation="left"
-        />
+        <YScaleBar model={model} orientation="left" />
       </g>
     )
   }

@@ -25,7 +25,10 @@ export function textWidthForNumber(num: number) {
 
 export type InsertionType = 'large' | 'long' | 'small'
 
-export function getInsertionType(length: number, pxPerBp: number): InsertionType {
+export function getInsertionType(
+  length: number,
+  pxPerBp: number,
+): InsertionType {
   if (length >= LONG_INSERTION_MIN_LENGTH) {
     if (length * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
       return 'large'
@@ -43,7 +46,7 @@ export function insertionBarWidth(len: number, pxPerBp: number) {
     return textWidthForNumber(len)
   }
   if (type === 'long') {
-    return Math.min(5, len * pxPerBp / 3)
+    return Math.min(5, (len * pxPerBp) / 3)
   }
   return Math.min(pxPerBp, 1)
 }

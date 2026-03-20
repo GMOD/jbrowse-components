@@ -219,7 +219,10 @@ const VariantComponent = observer(function VariantComponent({
       return undefined
     }
 
-    const flatbushIndex = buildFlatbushIndex(regionCellData, flatbushCacheRef.current)
+    const flatbushIndex = buildFlatbushIndex(
+      regionCellData,
+      flatbushCacheRef.current,
+    )
 
     const blockWidth = region.screenEndPx - region.screenStartPx
     const regionLengthBp = region.end - region.start
@@ -268,7 +271,7 @@ const VariantComponent = observer(function VariantComponent({
         description:
           info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
         length: getBpDisplayStr(info.length),
-        sampleName: source?.baseName ?? item.sourceName,
+        sampleName: source?.sampleName ?? item.sourceName,
         name: item.sourceName,
         featureId: item.featureId,
         cell: {

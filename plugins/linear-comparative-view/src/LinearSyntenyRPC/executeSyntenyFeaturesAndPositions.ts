@@ -4,7 +4,6 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -16,6 +15,7 @@ import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, ViewSnap } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyInstanceData

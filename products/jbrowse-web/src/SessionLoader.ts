@@ -551,7 +551,6 @@ const SessionLoader = types
      * #aftercreate
      */
     afterCreate() {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
           await (self.configSnapshot ? this.setUpConfig() : this.fetchConfig())

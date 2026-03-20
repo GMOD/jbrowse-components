@@ -1,8 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-
 import type {
   DotplotRenderArgs,
   RenderArgsSerialized,
@@ -10,6 +8,7 @@ import type {
 } from '../DotplotRenderer/DotplotRenderer.ts'
 import type DotplotRenderer from '../DotplotRenderer/DotplotRenderer.ts'
 import type { RenderResults } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface RenderArgs extends DotplotRenderArgs {
   rendererType: string

@@ -13,7 +13,6 @@ export const WithLaunchLinearGenomeView = () => {
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const state = createViewState({

@@ -5,9 +5,9 @@ import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
+  checkStopToken2,
   checkStopToken,
   createStopTokenChecker,
-  checkStopToken2,
 } from '@jbrowse/core/util/stopToken'
 
 import { featureData } from '../util.ts'

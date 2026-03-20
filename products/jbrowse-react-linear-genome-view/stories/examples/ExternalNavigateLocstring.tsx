@@ -29,7 +29,7 @@ export const ExternalNavigateLocstring = () => {
 
   useEffect(() => {
     // we can ignore this 'floating promise' because we fully handle it's error lifecycle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
     ;(async () => {
       // try to clear error if any
       setError(undefined)

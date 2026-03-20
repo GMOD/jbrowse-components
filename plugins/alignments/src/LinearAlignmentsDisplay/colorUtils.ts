@@ -109,9 +109,7 @@ export function getReadColor(
     }
     const primaryStrand = chainSupp > 1 ? -1 : 1
     const effectiveStrand =
-      opts.flipStrandLongReadChains !== false
-        ? strand * primaryStrand
-        : strand
+      opts.flipStrandLongReadChains !== false ? strand * primaryStrand : strand
     return strandColor(effectiveStrand, palette)
   }
 

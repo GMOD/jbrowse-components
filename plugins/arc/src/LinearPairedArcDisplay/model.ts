@@ -112,7 +112,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.tsx')

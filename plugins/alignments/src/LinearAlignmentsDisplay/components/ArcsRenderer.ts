@@ -64,12 +64,7 @@ export function renderArcs(
 
     for (let i = 0; i < NUM_ARC_COLORS; i++) {
       const c = arcColorPalette[i]!
-      gl.uniform3f(
-        renderer.arcUniforms[`u_arcColors[${i}]`]!,
-        c[0],
-        c[1],
-        c[2],
-      )
+      gl.uniform3f(renderer.arcUniforms[`u_arcColors[${i}]`]!, c[0], c[1], c[2])
     }
 
     gl.bindVertexArray(renderer.buffers.arcVAO)

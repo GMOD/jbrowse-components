@@ -34,16 +34,6 @@ interface DrawParams {
   b: number
 }
 
-function scoreToY(
-  score: number,
-  domainY: [number, number],
-  height: number,
-  scaleType: number,
-) {
-  const isLog = scaleType === SCALE_TYPE_LOG
-  return (1 - normalizeScore(score, domainY[0], domainY[1], isLog)) * height
-}
-
 export class Canvas2DWiggleRenderer {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
@@ -169,20 +159,46 @@ export class Canvas2DWiggleRenderer {
     )
   }
 
+  private makeScoreToY(p: DrawParams) {
+    const { rowHeight, domainY, scaleType } = p
+    const isLog = scaleType === SCALE_TYPE_LOG
+    if (isLog) {
+      const logMin = Math.log2(Math.max(domainY[0], 1))
+      const logRange = Math.log2(Math.max(domainY[1], 1)) - logMin
+      if (logRange === 0) {
+        return () => 0
+      }
+      return (score: number) => {
+        const logScore = Math.log2(Math.max(score, 1))
+        const norm = Math.max(0, Math.min(1, (logScore - logMin) / logRange))
+        return (1 - norm) * rowHeight
+      }
+    }
+    const domMin = domainY[0]
+    const domRange = domainY[1] - domMin
+    if (domRange === 0) {
+      return () => 0
+    }
+    const invRange = 1 / domRange
+    return (score: number) => {
+      const norm = Math.max(0, Math.min(1, (score - domMin) * invRange))
+      return (1 - norm) * rowHeight
+    }
+  }
+
   private drawXYPlot(p: DrawParams) {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
+    const { rowTop, r, g, b } = p
     ctx.fillStyle = `rgb(${r},${g},${b})`
-    const originY = scoreToY(0, domainY, rowHeight, scaleType) + rowTop
+    const scoreToY = this.makeScoreToY(p)
+    const originY = scoreToY(0) + rowTop
 
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const scoreY =
-        scoreToY(source.featureScores[i]!, domainY, rowHeight, scaleType) +
-        rowTop
+      const scoreY = scoreToY(source.featureScores[i]!) + rowTop
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
       const h = originY - scoreY
       if (h >= 0) {
@@ -197,8 +213,14 @@ export class Canvas2DWiggleRenderer {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
     const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
     const isLog = scaleType === SCALE_TYPE_LOG
-    const zeroNorm = normalizeScore(0, domainY[0], domainY[1], isLog)
+    const domMin = domainY[0]
+    const domMax = domainY[1]
+    const zeroNorm = normalizeScore(0, domMin, domMax, isLog)
     const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
+    const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
+    const rDelta = r - 255
+    const gDelta = g - 255
+    const bDelta = b - 255
 
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
@@ -207,12 +229,17 @@ export class Canvas2DWiggleRenderer {
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
 
-      const norm = normalizeScore(source.featureScores[i]!, domainY[0], domainY[1], isLog)
-      const t = maxDist > 0.0001 ? Math.abs(norm - zeroNorm) / maxDist : 0
+      const norm = normalizeScore(
+        source.featureScores[i]!,
+        domMin,
+        domMax,
+        isLog,
+      )
+      const t = Math.abs(norm - zeroNorm) * invMaxDist
 
-      const cr = Math.round(255 + (r - 255) * t)
-      const cg = Math.round(255 + (g - 255) * t)
-      const cb = Math.round(255 + (b - 255) * t)
+      const cr = (255 + rDelta * t) | 0
+      const cg = (255 + gDelta * t) | 0
+      const cb = (255 + bDelta * t) | 0
       ctx.fillStyle = `rgb(${cr},${cg},${cb})`
       ctx.fillRect(x1, rowTop, w, rowHeight)
     }
@@ -220,7 +247,7 @@ export class Canvas2DWiggleRenderer {
 
   private drawLine(p: DrawParams) {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
+    const { rowTop, r, g, b } = p
     if (source.numFeatures === 0) {
       return
     }
@@ -229,17 +256,17 @@ export class Canvas2DWiggleRenderer {
     ctx.lineWidth = 1
     ctx.beginPath()
 
+    const scoreToY = this.makeScoreToY(p)
+
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const scoreY =
-        scoreToY(source.featureScores[i]!, domainY, rowHeight, scaleType) +
-        rowTop
+      const scoreY = scoreToY(source.featureScores[i]!) + rowTop
       const prevScore =
         i === 0 ? source.featureScores[i]! : source.featureScores[i - 1]!
-      const prevY = scoreToY(prevScore, domainY, rowHeight, scaleType) + rowTop
+      const prevY = scoreToY(prevScore) + rowTop
 
       ctx.moveTo(x1, prevY)
       ctx.lineTo(x1, scoreY)
@@ -252,17 +279,17 @@ export class Canvas2DWiggleRenderer {
 
   private drawScatter(p: DrawParams) {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
-    const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
+    const { rowTop, r, g, b } = p
     ctx.fillStyle = `rgb(${r},${g},${b})`
+
+    const scoreToY = this.makeScoreToY(p)
 
     for (let i = 0; i < source.numFeatures; i++) {
       const startBp = source.featurePositions[i * 2]! + regionStart
       const endBp = source.featurePositions[i * 2 + 1]! + regionStart
       const x1 = this.bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = this.bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const scoreY =
-        scoreToY(source.featureScores[i]!, domainY, rowHeight, scaleType) +
-        rowTop
+      const scoreY = scoreToY(source.featureScores[i]!) + rowTop
       const w = Math.max(1.5, x2 - x1)
 
       ctx.fillRect(x1, scoreY - 1, w, 2)

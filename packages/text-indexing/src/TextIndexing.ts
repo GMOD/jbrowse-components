@@ -4,8 +4,6 @@ import { Readable } from 'stream'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
-
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import {
   generateMeta,
   indexGff3,
@@ -15,6 +13,7 @@ import {
 import { ixIxxStream } from 'ixixx'
 
 import type { indexType } from './util.ts'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 export async function indexTracks(args: {

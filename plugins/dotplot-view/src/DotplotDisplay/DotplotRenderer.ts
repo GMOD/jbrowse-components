@@ -4,7 +4,6 @@ import getGpuDevice, { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
-
 import {
   INSTANCE_BYTE_SIZE,
   VERTS_PER_INSTANCE,

@@ -1,4 +1,4 @@
-import { observable, autorun, untracked, runInAction } from 'mobx'
+import { autorun, observable, runInAction, untracked } from 'mobx'
 
 interface Region {
   refName: string

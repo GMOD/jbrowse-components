@@ -51,7 +51,6 @@ const ShareBookmarksDialog = observer(function ShareBookmarksDialog({
       : model.sharedBookmarksModel
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (!isSessionWithShareURL(session)) {

@@ -82,6 +82,7 @@ export function computeVariantMatrixCells({
   const getCachedRGBA = createCachedRGBA()
 
   const alleleColorCache = {} as Record<string, string | undefined>
+  const rawColorCache = {} as Record<string, string>
 
   const numFeatures = mafs.length
   const numSources = sources.length
@@ -119,35 +120,34 @@ export function computeVariantMatrixCells({
     ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
     : undefined
 
-  if (renderingMode === 'phased') {
-    for (let idx = 0; idx < numFeatures; idx++) {
-      const { feature, mostFrequentAlt } = mafs[idx]!
-      const featureId = feature.id()
-      const hasPhaseSet = (
-        feature.get('FORMAT') as string | undefined
-      )?.includes('PS')
+  for (let idx = 0; idx < numFeatures; idx++) {
+    const { feature, mostFrequentAlt } = mafs[idx]!
+    const featureId = feature.id()
+    const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
+      'PS',
+    )
 
-      if (hasPhaseSet) {
-        const samp = feature.get('samples') as Record<
-          string,
-          Record<string, string[]>
-        >
-        const genotypes = {} as Record<string, string>
-        for (const sampleName in samp) {
-          const gt = samp[sampleName]!.GT?.[0]
-          if (gt) {
-            genotypes[sampleName] = gt
-          }
+    if (hasPhaseSet) {
+      const samp = feature.get('samples') as Record<
+        string,
+        Record<string, string[]>
+      >
+      const genotypes = {} as Record<string, string>
+      for (const sampleName in samp) {
+        const gt = samp[sampleName]!.GT?.[0]
+        if (gt) {
+          genotypes[sampleName] = gt
         }
-        featureData.push(makeFeatureData(feature, featureId, genotypes))
+      }
+      featureData.push(makeFeatureData(feature, featureId, genotypes))
 
-        for (let j = 0; j < numSources; j++) {
-          const { name, HP, baseName } = sources[j]!
-          const sampleName = baseName ?? name
-          const s = samp[sampleName]
-          if (s) {
-            const genotype = s.GT?.[0]
-            if (genotype) {
+      for (let j = 0; j < numSources; j++) {
+        const { name, HP, sampleName } = sources[j]!
+        const s = samp[sampleName ?? name]
+        if (s) {
+          const genotype = s.GT?.[0]
+          if (genotype) {
+            if (renderingMode === 'phased') {
               const isPhased = genotype.includes('|')
               if (isPhased) {
                 const PS = s.PS?.[0]
@@ -162,26 +162,37 @@ export function computeVariantMatrixCells({
               } else {
                 addCell(idx, j, BLACK_OPAQUE, false)
               }
+            } else {
+              const c = getAlleleColor(
+                genotype,
+                mostFrequentAlt,
+                alleleColorCache,
+                true,
+              )
+              if (c) {
+                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+              }
             }
           }
         }
-      } else {
-        const callGt = getRawCallGenotype(feature)
-        if (callGt && sampleIndexMap) {
-          const callGtPhased = feature.get('callGenotypePhased') as
-            | Uint8Array
-            | undefined
-          const ploidy = feature.get('ploidy') as number
-          const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
-          const genotypes = {} as Record<string, string>
+      }
+    } else {
+      const callGt = getRawCallGenotype(feature)
+      if (callGt && sampleIndexMap) {
+        const callGtPhased = feature.get('callGenotypePhased') as
+          | Uint8Array
+          | undefined
+        const ploidy = feature.get('ploidy') as number
+        const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
+        const genotypes = {} as Record<string, string>
 
-          for (let j = 0; j < numSources; j++) {
-            const { name, HP, baseName } = sources[j]!
-            const sampleName = baseName ?? name
-            const si = sampleIndexMap.get(sampleName)
-            if (si === undefined) {
-              continue
-            }
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, sampleName } = sources[j]!
+          const si = sampleIndexMap.get(sampleName ?? name)
+          if (si === undefined) {
+            continue
+          }
+          if (renderingMode === 'phased') {
             const isPhased = callGtPhased ? Boolean(callGtPhased[si]) : false
             if (isPhased) {
               const allele = callGt[si * ploidy + HP!]!
@@ -204,96 +215,7 @@ export function computeVariantMatrixCells({
                 callGtPhased,
               )
             }
-          }
-          featureData.push(makeFeatureData(feature, featureId, genotypes))
-        } else {
-          let samp = genotypesCache.get(featureId)
-          if (!samp) {
-            samp = feature.get('genotypes') as Record<string, string>
-            genotypesCache.set(featureId, samp)
-          }
-          featureData.push(makeFeatureData(feature, featureId, samp))
-          for (let j = 0; j < numSources; j++) {
-            const { name, HP, baseName } = sources[j]!
-            const sampleName = baseName ?? name
-            const genotype = samp[sampleName]
-            if (genotype) {
-              const isPhased = genotype.includes('|')
-              if (isPhased) {
-                const alleles =
-                  genotype.length === 3
-                    ? [genotype[0]!, genotype[2]!]
-                    : genotype.split('|')
-                const c = getPhasedColor(alleles, HP!, mostFrequentAlt)
-                if (c) {
-                  addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
-                }
-              } else {
-                addCell(idx, j, BLACK_OPAQUE, false)
-              }
-            }
-          }
-        }
-      }
-    }
-  } else {
-    const rawColorCache = {} as Record<string, string>
-
-    for (let idx = 0; idx < numFeatures; idx++) {
-      const { feature, mostFrequentAlt } = mafs[idx]!
-      const featureId = feature.id()
-      const hasPhaseSet = (
-        feature.get('FORMAT') as string | undefined
-      )?.includes('PS')
-
-      if (hasPhaseSet) {
-        const samp = feature.get('samples') as Record<
-          string,
-          Record<string, string[]>
-        >
-        const genotypes = {} as Record<string, string>
-        for (const sampleName in samp) {
-          const gt = samp[sampleName]!.GT?.[0]
-          if (gt) {
-            genotypes[sampleName] = gt
-          }
-        }
-        featureData.push(makeFeatureData(feature, featureId, genotypes))
-
-        for (let j = 0; j < numSources; j++) {
-          const sampleName = sources[j]!.baseName ?? sources[j]!.name
-          const s = samp[sampleName]
-          if (s) {
-            const genotype = s.GT?.[0]
-            if (genotype) {
-              const c = getAlleleColor(
-                genotype,
-                mostFrequentAlt,
-                alleleColorCache,
-                true,
-              )
-              if (c) {
-                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
-              }
-            }
-          }
-        }
-      } else {
-        const callGt = getRawCallGenotype(feature)
-        if (callGt && sampleIndexMap) {
-          const callGtPhased = feature.get('callGenotypePhased') as
-            | Uint8Array
-            | undefined
-          const ploidy = feature.get('ploidy') as number
-          const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
-          const genotypes = {} as Record<string, string>
-
-          for (let j = 0; j < numSources; j++) {
-            const sampleName = sources[j]!.baseName ?? sources[j]!.name
-            const si = sampleIndexMap.get(sampleName)
-            if (si === undefined) {
-              continue
-            }
+          } else {
             const offset = si * ploidy
             let refCount = 0
             let altCount = 0
@@ -335,7 +257,7 @@ export function computeVariantMatrixCells({
             }
             if (c) {
               addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
-              genotypes[sampleName] = genotypeStringFromRaw(
+              genotypes[sampleName ?? name] = genotypeStringFromRaw(
                 callGt,
                 si,
                 ploidy,
@@ -343,18 +265,34 @@ export function computeVariantMatrixCells({
               )
             }
           }
-          featureData.push(makeFeatureData(feature, featureId, genotypes))
-        } else {
-          let samp = genotypesCache.get(featureId)
-          if (!samp) {
-            samp = feature.get('genotypes') as Record<string, string>
-            genotypesCache.set(featureId, samp)
-          }
-          featureData.push(makeFeatureData(feature, featureId, samp))
-          for (let j = 0; j < numSources; j++) {
-            const sampleName = sources[j]!.baseName ?? sources[j]!.name
-            const genotype = samp[sampleName]
-            if (genotype) {
+        }
+        featureData.push(makeFeatureData(feature, featureId, genotypes))
+      } else {
+        let samp = genotypesCache.get(featureId)
+        if (!samp) {
+          samp = feature.get('genotypes') as Record<string, string>
+          genotypesCache.set(featureId, samp)
+        }
+        featureData.push(makeFeatureData(feature, featureId, samp))
+        for (let j = 0; j < numSources; j++) {
+          const { name, HP, sampleName } = sources[j]!
+          const genotype = samp[sampleName ?? name]
+          if (genotype) {
+            if (renderingMode === 'phased') {
+              const isPhased = genotype.includes('|')
+              if (isPhased) {
+                const alleles =
+                  genotype.length === 3
+                    ? [genotype[0]!, genotype[2]!]
+                    : genotype.split('|')
+                const c = getPhasedColor(alleles, HP!, mostFrequentAlt)
+                if (c) {
+                  addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
+                }
+              } else {
+                addCell(idx, j, BLACK_OPAQUE, false)
+              }
+            } else {
               const c = getAlleleColor(
                 genotype,
                 mostFrequentAlt,

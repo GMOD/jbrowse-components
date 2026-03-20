@@ -56,7 +56,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   useEffect(() => {
     const controller = new AbortController()
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         // random note: the current selected region can't be a computed because

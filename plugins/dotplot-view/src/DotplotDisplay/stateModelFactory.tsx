@@ -1,5 +1,4 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -11,6 +10,7 @@ import type { DotplotFeatPos } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
@@ -173,7 +173,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .actions(self => ({
       afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')

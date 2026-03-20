@@ -19,8 +19,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
   }
 
   // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots
-  const { blockState, showTooltips, userByteSizeLimit, ...cleaned } =
-    snap as Record<string, unknown>
+  const { blockState, showTooltips, userByteSizeLimit, ...cleaned } = snap
   let result = cleaned
 
   // Rewrite "height" from older snapshots to "heightPreConfig"
@@ -46,7 +45,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest,
       showLinkedReads: linked,
       colorBySetting: linked
-        ? ((rest.colorBySetting as unknown) ?? {
+        ? (rest.colorBySetting ?? {
             type: 'insertSizeAndOrientation',
           })
         : rest.colorBySetting,
@@ -61,7 +60,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest,
       showLinkedReads: linked,
       colorBySetting: linked
-        ? ((rest.colorBySetting as unknown) ?? {
+        ? (rest.colorBySetting ?? {
             type: 'insertSizeAndOrientation',
           })
         : rest.colorBySetting,

@@ -1,10 +1,10 @@
 import {
+  PORT,
   appendGpuParam,
   delay,
   findByTestId,
   findByText,
   navigateWithSessionSpec,
-  PORT,
   waitForCanvasRendered,
   waitForDataLoaded,
 } from '../helpers.ts'

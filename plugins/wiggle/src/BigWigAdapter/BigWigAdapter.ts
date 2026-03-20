@@ -9,6 +9,9 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
 
+import { processFeaturesFromArrays } from '../util.ts'
+
+import type { WiggleFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -205,6 +208,24 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     )
 
     return new ArrayFeatureView(arrays, source, refName)
+  }
+
+  public async getFeatureArrays(
+    region: Region,
+    opts: WiggleOptions & { bicolorPivot?: number } = {},
+  ): Promise<WiggleFeatureArrays> {
+    const view = await this.getArrayFeatureView(region, opts)
+    const regionStart = Math.floor(region.start)
+    return processFeaturesFromArrays(
+      view.starts,
+      view.ends,
+      view.scores,
+      view.minScores,
+      view.maxScores,
+      view.length,
+      regionStart,
+      opts.bicolorPivot ?? 0,
+    )
   }
 
   public async getRegionQuantitativeStats(

@@ -1,4 +1,5 @@
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface LifecycleModel {

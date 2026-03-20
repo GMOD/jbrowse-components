@@ -75,7 +75,6 @@ const LinearSyntenyViewImportForm = observer(
               setSelectedRow={setSelectedRow}
               defaultAssemblyName={defaultAssemblyName}
               onLaunch={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 handleLaunch()
               }}
             />

@@ -24,7 +24,6 @@ export default function FileInfoPanel({
   const trackId = readConf(config, 'trackId') as string
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const adapterConfig = readConf(config, 'adapter')

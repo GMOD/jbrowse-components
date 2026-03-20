@@ -96,7 +96,6 @@ const DotplotImportForm = observer(function DotplotImportForm({
           <FormControl>
             <Button
               onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 ;(async () => {
                   try {
                     setError(undefined)

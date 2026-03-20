@@ -6,7 +6,7 @@ export interface VariantDisplayModelBase {
   scrollTop: number
   totalHeight: number
   nrow: number
-  sources: { name: string; baseName?: string }[] | undefined
+  sources: { name: string; sampleName?: string }[] | undefined
   featuresVolatile:
     | { id(): string; toJSON(): Record<string, unknown> }[]
     | undefined

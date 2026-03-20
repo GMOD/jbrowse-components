@@ -3,8 +3,13 @@ import type { SampleInfo, Source } from './types.ts'
 function makeHaplotypeSources(source: Source, ploidy: number): Source[] {
   const results: Source[] = []
   for (let i = 0; i < ploidy; i++) {
-    const name = `${source.name} HP${i}`
-    results.push({ ...source, name, baseName: source.name, HP: i })
+    const name = `${source.sampleName ?? source.name} HP${i}`
+    results.push({
+      ...source,
+      name,
+      sampleName: source.sampleName ?? source.name,
+      HP: i,
+    })
   }
   return results
 }
@@ -36,7 +41,7 @@ export function getSources({
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
 
   return layout.flatMap(row => {
-    const sampleName = row.baseName ?? row.name
+    const sampleName = row.sampleName ?? row.name
     const baseSource = sourceMap[sampleName]
 
     if (!baseSource) {
@@ -48,7 +53,7 @@ export function getSources({
     if (renderingMode === 'phased') {
       if (row.HP !== undefined) {
         // already a haplotype entry (from haplotype clustering)
-        return [{ ...merged, baseName: sampleName }]
+        return [{ ...merged, sampleName }]
       }
       // expand sample to haplotypes
       const ploidy = sampleInfo?.[row.name]?.maxPloidy
@@ -58,6 +63,6 @@ export function getSources({
       return []
     }
     // non-phased mode
-    return [merged]
+    return [{ ...merged, sampleName }]
   })
 }

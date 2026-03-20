@@ -26,7 +26,6 @@ export default function LaunchBreakpointSplitViewPanel({
   const [res, setRes] = useState<ReducedFeature[]>()
   const [error, setError] = useState<unknown>()
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const feats = await getSAFeatures({

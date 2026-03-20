@@ -263,10 +263,7 @@ export async function renderSvg(
     } else if (isOverlay) {
       legendEl = (
         <g transform={`translate(${Math.max(-offsetPx, 0)} 0)`}>
-          <YScaleBar
-            model={model as unknown as { ticks: typeof ticks }}
-            orientation="left"
-          />
+          <YScaleBar model={model} orientation="left" />
         </g>
       )
     } else {
@@ -277,10 +274,7 @@ export async function renderSvg(
               transform={`translate(0 ${getRowTop(idx, rowHeight)})`}
               key={`scalebar-${idx}`}
             >
-              <YScaleBar
-                model={model as unknown as { ticks: typeof ticks }}
-                orientation="left"
-              />
+              <YScaleBar model={model} orientation="left" />
             </g>
           ))}
         </g>

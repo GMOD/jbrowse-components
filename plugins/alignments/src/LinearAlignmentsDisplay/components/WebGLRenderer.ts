@@ -20,11 +20,6 @@
  * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
-import {
-  INTERBASE_HARDCLIP,
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../../shared/types.ts'
 import { renderArcLines, renderArcs } from './ArcsRenderer.ts'
 import { renderConnectingLine } from './ConnectingLineRenderer.ts'
 import { renderCoverage } from './CoverageRenderer.ts'
@@ -70,6 +65,11 @@ import {
   SOFTCLIP_FRAGMENT_SHADER,
   SOFTCLIP_VERTEX_SHADER,
 } from './shaders/index.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 
 import type { ColorPalette } from './shaders/index.ts'
 
@@ -792,8 +792,12 @@ export class WebGLRenderer {
 
     // Clean up old CIGAR VAOs
     const cigarVaoKeys = [
-      'gapVAO', 'mismatchVAO', 'insertionVAO',
-      'softclipVAO', 'softclipBaseVAO', 'hardclipVAO',
+      'gapVAO',
+      'mismatchVAO',
+      'insertionVAO',
+      'softclipVAO',
+      'softclipBaseVAO',
+      'hardclipVAO',
     ] as const
     for (const key of cigarVaoKeys) {
       if (this.buffers[key]) {
@@ -869,10 +873,7 @@ export class WebGLRenderer {
       }
     }
 
-    const uploadInterbaseType = (
-      indices: number[],
-      program: WebGLProgram,
-    ) => {
+    const uploadInterbaseType = (indices: number[], program: WebGLProgram) => {
       if (indices.length === 0) {
         return { vao: null as WebGLVertexArrayObject | null, count: 0 }
       }

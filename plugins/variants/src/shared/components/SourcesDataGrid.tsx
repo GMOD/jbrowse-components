@@ -36,7 +36,7 @@ export default function SourcesDataGrid({
     name: _name,
     color: _color,
     baseUri: _baseUri,
-    baseName: _baseName,
+    sampleName: _sampleName,
     HP: _HP,
     ...rest
   } = rows[0]!

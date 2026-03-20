@@ -1,4 +1,5 @@
 import { launch } from 'puppeteer'
+
 import { startServer } from './browser-tests/server.ts'
 
 const server = await startServer(3334)
@@ -17,8 +18,9 @@ const browser = await launch({
 
 const page = await browser.newPage()
 const t0 = performance.now()
-const ts = l =>
-  console.log('[+' + ((performance.now() - t0) / 1000).toFixed(1) + 's] ' + l)
+const ts = l => {
+  console.log(`[+${((performance.now() - t0) / 1000).toFixed(1)}s] ${l}`)
+}
 
 page.on('console', msg => {
   const text = msg.text()
@@ -31,8 +33,9 @@ page.on('console', msg => {
     text.includes('error') ||
     text.includes('Error') ||
     text.includes('fallback')
-  )
-    ts('  Browser: ' + text)
+  ) {
+    ts(`  Browser: ${text}`)
+  }
 })
 
 const spec = JSON.stringify({
@@ -45,12 +48,11 @@ const spec = JSON.stringify({
     },
   ],
 })
-const url =
-  'http://localhost:3334/?config=test_data/volvox/config.json&session=spec-' +
-  encodeURIComponent(spec) +
-  '&gpu=webgpu'
+const url = `http://localhost:3334/?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(
+  spec,
+)}&gpu=webgpu`
 
-ts('navigating to: ' + url.slice(0, 80) + '...')
+ts(`navigating to: ${url.slice(0, 80)}...`)
 await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
 ts('networkidle0')
 
@@ -65,7 +67,7 @@ const displayExists = await page.evaluate(() => {
     ).map(e => e.dataset.testid),
   }
 })
-ts('DOM state: ' + JSON.stringify(displayExists))
+ts(`DOM state: ${JSON.stringify(displayExists)}`)
 
 // Wait for canvas
 try {
@@ -82,7 +84,7 @@ try {
   await page.waitForFunction(
     () => {
       const el = document.querySelector('[data-testid^="drawn-"]')
-      return el && el.dataset.testid === 'drawn-true'
+      return el?.dataset.testid === 'drawn-true'
     },
     { timeout: 15000, polling: 200 },
   )
@@ -92,67 +94,67 @@ try {
     const el = document.querySelector('[data-testid^="drawn-"]')
     return el ? el.dataset.testid : 'no drawn element found'
   })
-  ts('drawn-true NOT reached. Current: ' + state)
+  ts(`drawn-true NOT reached. Current: ${state}`)
 }
 
 // Check canvas content
 const check = await page.evaluate(() => {
   const c = document.querySelector('[data-testid^="display-"] canvas')
-  if (!c) return 'no canvas'
+  if (!c) {
+    return 'no canvas'
+  }
   try {
     const ctx = c.getContext('2d')
-    if (!ctx)
-      return (
-        'getContext(2d) returned null - canvas is ' +
-        (c.getContext('webgpu') ? 'webgpu' : 'unknown')
-      )
+    if (!ctx) {
+      return `getContext(2d) returned null - canvas is ${
+        c.getContext('webgpu') ? 'webgpu' : 'unknown'
+      }`
+    }
     const d = ctx.getImageData(0, 0, c.width, c.height).data
     let nonBlank = 0
     for (let i = 3; i < d.length; i += 4) {
-      if (d[i] > 0) nonBlank++
+      if (d[i] > 0) {
+        nonBlank++
+      }
     }
-    return (
-      'pixels: ' +
-      nonBlank +
-      '/' +
-      c.width * c.height +
-      ' (' +
-      ((nonBlank / (c.width * c.height)) * 100).toFixed(1) +
-      '% filled)'
-    )
+    return `pixels: ${nonBlank}/${c.width * c.height} (${(
+      (nonBlank / (c.width * c.height)) *
+      100
+    ).toFixed(1)}% filled)`
   } catch (e) {
-    return 'error: ' + e.message
+    return `error: ${e.message}`
   }
 })
-ts('canvas check: ' + check)
+ts(`canvas check: ${check}`)
 
 // Wait 5 more seconds and recheck
 await new Promise(r => setTimeout(r, 5000))
 const check2 = await page.evaluate(() => {
   const c = document.querySelector('[data-testid^="display-"] canvas')
-  if (!c) return 'no canvas'
+  if (!c) {
+    return 'no canvas'
+  }
   try {
     const ctx = c.getContext('2d')
-    if (!ctx) return 'no 2d context'
+    if (!ctx) {
+      return 'no 2d context'
+    }
     const d = ctx.getImageData(0, 0, c.width, c.height).data
     let nonBlank = 0
     for (let i = 3; i < d.length; i += 4) {
-      if (d[i] > 0) nonBlank++
+      if (d[i] > 0) {
+        nonBlank++
+      }
     }
-    return (
-      'pixels: ' +
-      nonBlank +
-      '/' +
-      c.width * c.height +
-      ' (' +
-      ((nonBlank / (c.width * c.height)) * 100).toFixed(1) +
-      '% filled)'
-    )
+    return `pixels: ${nonBlank}/${c.width * c.height} (${(
+      (nonBlank / (c.width * c.height)) *
+      100
+    ).toFixed(1)}% filled)`
   } catch (e) {
-    return 'error: ' + e.message
+    return `error: ${e.message}`
   }
 })
-ts('canvas check +5s: ' + check2)
+ts(`canvas check +5s: ${check2}`)
 
 await page.close()
 await browser.close()

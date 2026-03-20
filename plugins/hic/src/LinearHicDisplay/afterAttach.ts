@@ -15,7 +15,7 @@ type LGV = LinearGenomeViewModel
 
 export function doAfterAttach(self: LinearHicDisplayModel) {
   // Fetch available normalizations
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
   ;(async () => {
     try {
       const { rpcManager } = getSession(self)
@@ -131,7 +131,6 @@ export function doAfterAttach(self: LinearHicDisplayModel) {
           return
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         performRender()
       },
       {

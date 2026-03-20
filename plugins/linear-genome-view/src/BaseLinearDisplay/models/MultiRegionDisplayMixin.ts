@@ -7,7 +7,6 @@ import {
   isAbortException,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
@@ -18,6 +17,7 @@ export type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface Region {
   refName: string
@@ -181,7 +181,6 @@ export default function MultiRegionDisplayMixin() {
 
           const ctx: FetchContext = { stopToken, generation, isStale }
 
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {
               const byteEstimateConfig = self.getByteEstimateConfig()

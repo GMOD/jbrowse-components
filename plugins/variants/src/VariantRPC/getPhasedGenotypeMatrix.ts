@@ -74,8 +74,8 @@ export async function getPhasedGenotypeMatrix({
         | Uint8Array
         | undefined
       const gtPloidy = feature.get('ploidy') as number
-      for (const { name } of sources) {
-        const si = raw.sampleIndexMap.get(name)
+      for (const { name, sampleName } of sources) {
+        const si = raw.sampleIndexMap.get(sampleName ?? name)
         const info = sampleInfo[name]
         const maxPloidy = info?.maxPloidy ?? 2
         const phased = si !== undefined && callGtPhased?.[si]
@@ -92,12 +92,11 @@ export async function getPhasedGenotypeMatrix({
       }
     } else {
       const genotypes = feature.get('genotypes') as Record<string, string>
-      for (const { name } of sources) {
-        const val = genotypes[name]!
+      for (const { name, sampleName } of sources) {
+        const val = genotypes[sampleName ?? name]!
         const info = sampleInfo[name]
         const ploidy = info?.maxPloidy ?? 2
         const isPhased = val.includes('|')
-
         if (isPhased) {
           const alleles = val.split('|')
           for (let hp = 0; hp < ploidy; hp++) {

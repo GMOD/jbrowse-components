@@ -88,7 +88,12 @@ interface CellArrays {
   flatbushItems: FlatbushItem[]
 }
 
-function writeCellArrays(dst: CellArrays, w: number, src: CellArrays, i: number) {
+function writeCellArrays(
+  dst: CellArrays,
+  w: number,
+  src: CellArrays,
+  i: number,
+) {
   dst.positions[w * 2] = src.positions[i * 2]!
   dst.positions[w * 2 + 1] = src.positions[i * 2 + 1]!
   dst.rowIndices[w] = src.rowIndices[i]!
@@ -118,6 +123,7 @@ export function computeVariantCells({
   const getCachedRGBA = createCachedRGBA()
 
   const alleleColorCache = {} as Record<string, string | undefined>
+  const rawColorCache = {} as Record<string, string>
   const drawRef = referenceDrawingMode === 'draw'
 
   const numSources = sources.length
@@ -173,26 +179,26 @@ export function computeVariantCells({
     ? buildSampleIndexMap(mafs[0]!.feature.get('sampleNames') as string[])
     : undefined
 
-  if (renderingMode === 'phased') {
-    for (const { feature, mostFrequentAlt } of mafs) {
-      const featureId = feature.id()
-      const start = feature.get('start')
-      const end = feature.get('end')
-      const featureType = (feature.get('type') as string) || ''
-      const featureStrand = feature.get('strand') as number | undefined
-      const bpLen = end - start
-      const shape = getShapeType(featureType, featureStrand)
-      const alt = feature.get('ALT') as string[]
-      const ref = feature.get('REF') as string
-      const featureName = feature.get('name') as string
-      const description = feature.get('description') as string
-      const renderedGenotypes = {} as Record<string, string>
-      const renderEnd =
-        shape === SHAPE_TRI_DOWN
-          ? getInsertionRenderEnd(start, end, alt, feature)
-          : end
+  for (const { feature, mostFrequentAlt } of mafs) {
+    const featureId = feature.id()
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const featureType = (feature.get('type') as string) || ''
+    const featureStrand = feature.get('strand') as number | undefined
+    const bpLen = end - start
+    const shape = getShapeType(featureType, featureStrand)
+    const alt = feature.get('ALT') as string[]
+    const ref = feature.get('REF') as string
+    const featureName = feature.get('name') as string
+    const description = feature.get('description') as string
+    const renderedGenotypes = {} as Record<string, string>
+    const renderEnd =
+      shape === SHAPE_TRI_DOWN
+        ? getInsertionRenderEnd(start, end, alt, feature)
+        : end
 
-      const callGt = getRawCallGenotype(feature)
+    const callGt = getRawCallGenotype(feature)
+    if (renderingMode === 'phased') {
       if (callGt && sampleIndexMap) {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
@@ -201,9 +207,8 @@ export function computeVariantCells({
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
 
         for (let j = 0; j < numSources; j++) {
-          const { name, HP, baseName } = sources[j]!
-          const sampleName = baseName ?? name
-          const si = sampleIndexMap.get(sampleName)
+          const { name, HP, sampleName } = sources[j]!
+          const si = sampleIndexMap.get(sampleName ?? name)
           if (si === undefined) {
             continue
           }
@@ -265,9 +270,8 @@ export function computeVariantCells({
         }
 
         for (let j = 0; j < numSources; j++) {
-          const { name, HP, baseName } = sources[j]!
-          const sampleName = baseName ?? name
-          const genotype = samp[sampleName]
+          const { name, HP, sampleName } = sources[j]!
+          const genotype = samp[sampleName ?? name]
           if (genotype) {
             const isPhasedGt = genotype.includes('|')
             if (isPhasedGt) {
@@ -313,38 +317,7 @@ export function computeVariantCells({
           }
         }
       }
-
-      featureGenotypeMap[featureId] = {
-        alt,
-        ref,
-        name: featureName,
-        description,
-        length: bpLen,
-        genotypes: renderedGenotypes,
-      }
-    }
-  } else {
-    const rawColorCache = {} as Record<string, string>
-
-    for (const { mostFrequentAlt, feature } of mafs) {
-      const featureId = feature.id()
-      const start = feature.get('start')
-      const end = feature.get('end')
-      const featureType = (feature.get('type') as string) || ''
-      const featureStrand = feature.get('strand') as number | undefined
-      const bpLen = end - start
-      const shape = getShapeType(featureType, featureStrand)
-      const alt = feature.get('ALT') as string[]
-      const ref = feature.get('REF') as string
-      const featureName = feature.get('name') as string
-      const description = feature.get('description') as string
-      const renderedGenotypes = {} as Record<string, string>
-      const renderEnd =
-        shape === SHAPE_TRI_DOWN
-          ? getInsertionRenderEnd(start, end, alt, feature)
-          : end
-
-      const callGt = getRawCallGenotype(feature)
+    } else {
       if (callGt && sampleIndexMap) {
         const callGtPhased = feature.get('callGenotypePhased') as
           | Uint8Array
@@ -353,8 +326,8 @@ export function computeVariantCells({
         const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
 
         for (let j = 0; j < numSources; j++) {
-          const { name } = sources[j]!
-          const si = sampleIndexMap.get(name)
+          const { name, sampleName } = sources[j]!
+          const si = sampleIndexMap.get(sampleName ?? name)
           if (si === undefined) {
             continue
           }
@@ -425,8 +398,8 @@ export function computeVariantCells({
         }
 
         for (let j = 0; j < numSources; j++) {
-          const { name } = sources[j]!
-          const genotype = samp[name]
+          const { name, sampleName } = sources[j]!
+          const genotype = samp[sampleName ?? name]
           if (genotype) {
             const c = getAlleleColor(
               genotype,
@@ -451,15 +424,15 @@ export function computeVariantCells({
           }
         }
       }
+    }
 
-      featureGenotypeMap[featureId] = {
-        alt,
-        ref,
-        name: featureName,
-        description,
-        length: bpLen,
-        genotypes: renderedGenotypes,
-      }
+    featureGenotypeMap[featureId] = {
+      alt,
+      ref,
+      name: featureName,
+      description,
+      length: bpLen,
+      genotypes: renderedGenotypes,
     }
   }
 

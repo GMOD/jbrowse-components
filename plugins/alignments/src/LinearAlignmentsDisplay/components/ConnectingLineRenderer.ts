@@ -2,7 +2,10 @@ import { splitPositionWithFrac } from './shaders/index.ts'
 
 import type { RenderState, WebGLRenderer } from './WebGLRenderer.ts'
 
-export function renderConnectingLine(renderer: WebGLRenderer, state: RenderState) {
+export function renderConnectingLine(
+  renderer: WebGLRenderer,
+  state: RenderState,
+) {
   const gl = renderer.gl
   if (
     !renderer.buffers ||
@@ -43,14 +46,8 @@ export function renderConnectingLine(renderer: WebGLRenderer, state: RenderState
     renderer.connectingLineUniforms.u_featureSpacing!,
     state.featureSpacing,
   )
-  gl.uniform1f(
-    renderer.connectingLineUniforms.u_canvasHeight!,
-    canvasHeight,
-  )
-  gl.uniform1f(
-    renderer.connectingLineUniforms.u_scrollTop!,
-    state.rangeY[0],
-  )
+  gl.uniform1f(renderer.connectingLineUniforms.u_canvasHeight!, canvasHeight)
+  gl.uniform1f(renderer.connectingLineUniforms.u_scrollTop!, state.rangeY[0])
   gl.uniform1f(
     renderer.connectingLineUniforms.u_coverageOffset!,
     coverageOffset,

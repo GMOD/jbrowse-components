@@ -22,8 +22,7 @@ export function getAlleleColor(
     let ref = 0
 
     const alleles =
-      genotype.length === 3 &&
-      (genotype[1] === '/' || genotype[1] === '|')
+      genotype.length === 3 && (genotype[1] === '/' || genotype[1] === '|')
         ? [genotype[0]!, genotype[2]!]
         : genotype.split(/[/|]/)
     const total = alleles.length
@@ -79,4 +78,3 @@ export function getColorAlleleCount(
   }
   return a1?.toHex() || 'black'
 }
-

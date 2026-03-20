@@ -1,4 +1,4 @@
-import { getSnapshot, type IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { type IAnyStateTreeNode, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { toJS } from 'mobx'
 
 interface ConfigSlot {
@@ -47,7 +47,7 @@ export function getEffectiveTrackConfig(
     [key: string]: unknown
   },
 ) {
-  const conf = getSnapshot(trackConfig) as Record<string, unknown>
+  const conf = getSnapshot(trackConfig)
 
   const trackDisplays = (trackConfig as Record<string, unknown>).displays as
     | Record<string, unknown>[]
@@ -56,16 +56,14 @@ export function getEffectiveTrackConfig(
     return conf
   }
 
-  const displaySnap = getSnapshot(
-    display as unknown as IAnyStateTreeNode,
-  ) as Record<string, unknown>
+  const displaySnap = getSnapshot(display as unknown as IAnyStateTreeNode)
   const displayConfId = displaySnap.configuration as string | undefined
   const displayType = display.configuration.type as string | undefined
 
   return {
     ...conf,
     displays: trackDisplays.map(d => {
-      const dConf = d as Record<string, unknown>
+      const dConf = d
       if (dConf.type === displayType) {
         return buildDisplayEntry(displayConfId, dConf, display)
       }

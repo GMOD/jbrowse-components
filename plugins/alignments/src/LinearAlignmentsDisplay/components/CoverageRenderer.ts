@@ -46,10 +46,7 @@ export function renderCoverage(
     state.coverageYOffset,
   )
   gl.uniform1f(renderer.coverageUniforms.u_depthScale!, depthScale)
-  gl.uniform1f(
-    renderer.coverageUniforms.u_binSize!,
-    renderer.buffers.binSize,
-  )
+  gl.uniform1f(renderer.coverageUniforms.u_binSize!, renderer.buffers.binSize)
   gl.uniform1f(renderer.coverageUniforms.u_canvasHeight!, canvasHeight)
   gl.uniform1f(renderer.coverageUniforms.u_canvasWidth!, canvasWidth)
   gl.uniform3f(
@@ -58,12 +55,7 @@ export function renderCoverage(
   )
 
   gl.bindVertexArray(renderer.buffers.coverageVAO)
-  gl.drawArraysInstanced(
-    gl.TRIANGLES,
-    0,
-    6,
-    renderer.buffers.coverageCount,
-  )
+  gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, renderer.buffers.coverageCount)
 
   if (
     state.showModifications &&
@@ -85,10 +77,7 @@ export function renderCoverage(
       state.coverageYOffset,
     )
     gl.uniform1f(renderer.modCoverageUniforms.u_depthScale!, depthScale)
-    gl.uniform1f(
-      renderer.modCoverageUniforms.u_canvasHeight!,
-      canvasHeight,
-    )
+    gl.uniform1f(renderer.modCoverageUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(renderer.modCoverageUniforms.u_canvasWidth!, canvasWidth)
 
     // Scissor clips modification bars to the coverage area
@@ -130,10 +119,7 @@ export function renderCoverage(
       state.coverageYOffset,
     )
     gl.uniform1f(renderer.snpCoverageUniforms.u_depthScale!, depthScale)
-    gl.uniform1f(
-      renderer.snpCoverageUniforms.u_canvasHeight!,
-      canvasHeight,
-    )
+    gl.uniform1f(renderer.snpCoverageUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(renderer.snpCoverageUniforms.u_canvasWidth!, canvasWidth)
     gl.uniform3f(
       renderer.snpCoverageUniforms.u_colorBaseA!,
@@ -173,18 +159,9 @@ export function renderCoverage(
       domainOffset[0],
       domainOffset[1],
     )
-    gl.uniform1f(
-      renderer.noncovHistogramUniforms.u_noncovHeight!,
-      noncovHeight,
-    )
-    gl.uniform1f(
-      renderer.noncovHistogramUniforms.u_canvasHeight!,
-      canvasHeight,
-    )
-    gl.uniform1f(
-      renderer.noncovHistogramUniforms.u_canvasWidth!,
-      canvasWidth,
-    )
+    gl.uniform1f(renderer.noncovHistogramUniforms.u_noncovHeight!, noncovHeight)
+    gl.uniform1f(renderer.noncovHistogramUniforms.u_canvasHeight!, canvasHeight)
+    gl.uniform1f(renderer.noncovHistogramUniforms.u_canvasWidth!, canvasWidth)
     gl.uniform3f(
       renderer.noncovHistogramUniforms.u_colorInsertion!,
       ...colors.colorInsertion,
@@ -234,11 +211,6 @@ export function renderCoverage(
     )
 
     gl.bindVertexArray(renderer.buffers.indicatorVAO)
-    gl.drawArraysInstanced(
-      gl.TRIANGLES,
-      0,
-      3,
-      renderer.buffers.indicatorCount,
-    )
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, renderer.buffers.indicatorCount)
   }
 }
