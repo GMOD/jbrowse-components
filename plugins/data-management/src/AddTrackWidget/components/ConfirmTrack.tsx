@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react'
+import { Suspense } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import {
@@ -55,12 +55,6 @@ const ConfirmTrack = observer(function ConfirmTrack({
     textIndexTrack,
     adapterHintNotConfigurable,
   } = model
-
-  useEffect(() => {
-    if (adapterHint === '' && trackAdapter && trackAdapter.type !== UNKNOWN) {
-      model.setAdapterHint(trackAdapter.type)
-    }
-  }, [adapterHint, trackAdapter, model])
 
   if (unsupported) {
     return <Unsupported />

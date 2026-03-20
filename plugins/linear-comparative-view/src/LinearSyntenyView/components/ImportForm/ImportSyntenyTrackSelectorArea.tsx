@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
@@ -41,11 +41,6 @@ export default function ImportSyntenyTrackSelectorArea({
 
   const selectedCustomOption = customOptions.find(opt => opt.value === choice)
 
-  useEffect(() => {
-    if (choice === 'none' || choice === 'custom') {
-      model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
-    }
-  }, [choice, model, selectedRow])
   return (
     <div>
       <FormControl>
@@ -54,7 +49,11 @@ export default function ImportSyntenyTrackSelectorArea({
           value={choice}
           aria-labelledby="group-label"
           onChange={event => {
-            setChoice(event.target.value)
+            const val = event.target.value
+            setChoice(val)
+            if (val === 'none' || val === 'custom') {
+              model.setImportFormSyntenyTrack(selectedRow, { type: 'none' })
+            }
           }}
         >
           <FormControlLabel value="none" control={<Radio />} label="None" />
@@ -88,6 +87,7 @@ export default function ImportSyntenyTrackSelectorArea({
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
+          key={`${assembly1}-${assembly2}`}
           model={model}
           selectedRow={selectedRow}
           assembly1={assembly1}

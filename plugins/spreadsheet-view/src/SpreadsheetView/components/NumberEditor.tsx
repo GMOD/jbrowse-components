@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TextField } from '@mui/material'
@@ -27,24 +27,25 @@ const NumberEditor = observer(function NumberEditor({
   // @ts-expect-error
   const [val, setVal] = useState(model[modelPropName])
   const { classes } = useStyles()
-  useEffect(() => {
-    const num = Number.parseInt(val, 10)
-    if (!Number.isNaN(num)) {
-      if (num > 0) {
-        // @ts-expect-error
-        model[modelSetterName](num)
-      } else {
-        setVal(1)
-      }
-    }
-  }, [model, modelSetterName, val])
   return (
     <TextField
       value={val}
       disabled={disabled}
       type="number"
       onChange={evt => {
-        setVal(evt.target.value)
+        const v = evt.target.value
+        const num = Number.parseInt(v, 10)
+        if (!Number.isNaN(num) && num > 0) {
+          // @ts-expect-error
+          model[modelSetterName](num)
+          setVal(v)
+        } else if (!Number.isNaN(num) && num <= 0) {
+          // @ts-expect-error
+          model[modelSetterName](1)
+          setVal(1)
+        } else {
+          setVal(v)
+        }
       }}
       className={classes.textField}
     />

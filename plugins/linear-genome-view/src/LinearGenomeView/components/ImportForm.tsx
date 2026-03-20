@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -46,20 +46,16 @@ const LinearGenomeViewImportForm = observer(
       ? assembly?.error
       : 'No configured assemblies'
     const displayError = assemblyError || error
-    const [value, setValue] = useState('')
+    // userValue is null until the user types or selects something,
+    // at which point it overrides the default first-region value
+    const [userValue, setUserValue] = useState<string | null>(null)
     const regions = assembly?.regions
     const assemblyLoaded = !!regions
     const r0 = regions ? regions[0]?.refName || '' : ''
-
-    // useEffect resets to an "initial state" of displaying first region from
-    // assembly after assembly change. needs to react to selectedAsm as well as
-    // r0 because changing assembly will run setValue('') and then r0 may not
-    // change if assembly names are the same across assemblies, but it still
-    // needs to be reset
-    /* biome-ignore lint/correctness/useExhaustiveDependencies: */
-    useEffect(() => {
-      setValue(r0)
-    }, [r0, selectedAsm])
+    const value = userValue ?? r0
+    const setValue = (v: string) => {
+      setUserValue(v)
+    }
 
     // implementation notes:
     // having this wrapped in a form allows intuitive use of enter key to submit
@@ -113,6 +109,8 @@ const LinearGenomeViewImportForm = observer(
                 <AssemblySelector
                   onChange={val => {
                     setSelectedAsm(val)
+                    setUserValue(null)
+                    setOption(undefined)
                   }}
                   localStorageKey="lgv"
                   session={session}
