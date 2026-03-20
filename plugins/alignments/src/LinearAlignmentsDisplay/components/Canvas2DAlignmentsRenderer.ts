@@ -3,6 +3,10 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
+import {
+  getReadColor,
+  rgb255,
+} from '../colorUtils.ts'
 import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   arcColorPalette,
@@ -552,8 +556,16 @@ export class Canvas2DAlignmentsRenderer {
         this.drawInsertions(ctx, region, block, bpLength, fullBlockWidth, state)
       }
 
-      this.drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, state)
-      this.drawHardclips(ctx, region, block, bpLength, fullBlockWidth, state)
+      this.drawClips(
+        ctx, region.softclipPositions, region.softclipYs,
+        region.softclipLengths, region.numSoftclips, region.regionStart,
+        rgb255(state.colors.colorSoftclip), block, bpLength, fullBlockWidth, state,
+      )
+      this.drawClips(
+        ctx, region.hardclipPositions, region.hardclipYs,
+        region.hardclipLengths, region.numHardclips, region.regionStart,
+        rgb255(state.colors.colorHardclip), block, bpLength, fullBlockWidth, state,
+      )
 
       if (state.showSoftClipping) {
         this.drawSoftclipBases(
@@ -599,6 +611,13 @@ export class Canvas2DAlignmentsRenderer {
     }
   }
 
+  private covOffset(state: RenderState) {
+    return (
+      (state.showCoverage ? state.coverageHeight : 0) +
+      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    )
+  }
+
   private bpToScreenX(
     absBp: number,
     block: { bpRangeX: [number, number]; screenStartPx: number },
@@ -611,222 +630,6 @@ export class Canvas2DAlignmentsRenderer {
     )
   }
 
-  private rgbStr(c: [number, number, number]) {
-    return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
-  }
-
-  private lerpRgbStr(
-    a: [number, number, number],
-    b: [number, number, number],
-    t: number,
-  ) {
-    const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
-    const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
-    const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
-    return `rgb(${r},${g},${bl})`
-  }
-
-  private hslToRgb(h: number, s: number, l: number) {
-    const c = (1 - Math.abs(2 * l - 1)) * s
-    const hp = h * 6
-    const x = c * (1 - Math.abs((hp % 2) - 1))
-    const m = l - c / 2
-    let r: number, g: number, b: number
-    if (hp < 1) {
-      r = c
-      g = x
-      b = 0
-    } else if (hp < 2) {
-      r = x
-      g = c
-      b = 0
-    } else if (hp < 3) {
-      r = 0
-      g = c
-      b = x
-    } else if (hp < 4) {
-      r = 0
-      g = x
-      b = c
-    } else if (hp < 5) {
-      r = x
-      g = 0
-      b = c
-    } else {
-      r = c
-      g = 0
-      b = x
-    }
-    return `rgb(${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)})`
-  }
-
-  private pairOrientationColor(po: number, colors: RenderState['colors']) {
-    if (po === 1) {
-      return this.rgbStr(colors.colorPairLR)
-    }
-    if (po === 2) {
-      return this.rgbStr(colors.colorPairRL)
-    }
-    if (po === 3) {
-      return this.rgbStr(colors.colorPairRR)
-    }
-    if (po === 4) {
-      return this.rgbStr(colors.colorPairLL)
-    }
-    return this.rgbStr(colors.colorNostrand)
-  }
-
-  private insertSizeColor(
-    insertSize: number,
-    stats: { upper: number; lower: number } | undefined,
-    colors: RenderState['colors'],
-  ) {
-    if (stats && insertSize > stats.upper) {
-      return this.rgbStr(colors.colorLongInsert)
-    }
-    if (stats && insertSize < stats.lower) {
-      return this.rgbStr(colors.colorShortInsert)
-    }
-    return this.rgbStr(colors.colorPairLR)
-  }
-
-  private strandColor(strand: number, colors: RenderState['colors']) {
-    if (strand > 0) {
-      return this.rgbStr(colors.colorFwdStrand)
-    }
-    if (strand < 0) {
-      return this.rgbStr(colors.colorRevStrand)
-    }
-    return this.rgbStr(colors.colorNostrand)
-  }
-
-  private getReadColor(
-    i: number,
-    region: Canvas2DRegionData,
-    state: RenderState,
-  ) {
-    const { colorScheme, renderingMode, colors } = state
-    const flags = region.readFlags[i]!
-    const strand = region.readStrands[i]!
-
-    // In chain/linked-read mode, supplementary chains use orange for paired-end reads
-    const chainSupp = region.readChainHasSupp?.[i] ?? 0
-    if (renderingMode === 'linkedRead' && chainSupp > 0) {
-      const isPaired = (flags & 1) !== 0
-      if (isPaired) {
-        return this.rgbStr(colors.colorSupplementary)
-      }
-      const primaryStrand = chainSupp > 1 ? -1 : 1
-      const effectiveStrand = state.flipStrandLongReadChains
-        ? strand * primaryStrand
-        : strand
-      return this.strandColor(effectiveStrand, colors)
-    }
-
-    // Unmapped mate (flag 8) — brown for color schemes where insert size/orientation
-    // would otherwise miscolor it (tlen=0 shows as "short insert" pink)
-    if (
-      (flags & 8) !== 0 &&
-      (colorScheme === 0 ||
-        colorScheme === 3 ||
-        colorScheme === 5 ||
-        colorScheme === 6 ||
-        colorScheme === 10)
-    ) {
-      return this.rgbStr(colors.colorUnmappedMate)
-    }
-
-    switch (colorScheme) {
-      // Normal
-      case 0: {
-        return this.rgbStr(colors.colorPairLR)
-      }
-      // Strand
-      case 1: {
-        return this.strandColor(strand, colors)
-      }
-      // Mapping quality: hsl(mapq, 50%, 50%)
-      case 2: {
-        const mapq = region.readMapqs[i]!
-        return this.hslToRgb(mapq / 360, 0.5, 0.5)
-      }
-      // Insert size (threshold)
-      case 3: {
-        return this.insertSizeColor(
-          region.readInsertSizes[i]!,
-          region.insertSizeStats,
-          colors,
-        )
-      }
-      // First-of-pair strand
-      case 4: {
-        const isFirst = (flags & 64) !== 0
-        const effectiveStrand = isFirst ? strand : -strand
-        return this.strandColor(effectiveStrand, colors)
-      }
-      // Pair orientation
-      case 5: {
-        return this.pairOrientationColor(
-          region.readPairOrientations[i]!,
-          colors,
-        )
-      }
-      // Insert size + orientation (non-LR orientation wins, then insert size threshold)
-      case 6: {
-        const po6 = region.readPairOrientations[i]!
-        if (po6 === 2 || po6 === 3 || po6 === 4) {
-          return this.pairOrientationColor(po6, colors)
-        }
-        return this.insertSizeColor(
-          region.readInsertSizes[i]!,
-          region.insertSizeStats,
-          colors,
-        )
-      }
-      // Modifications: fwd/rev strand tint
-      case 7: {
-        const isReverse = (flags & 16) !== 0
-        return isReverse
-          ? this.rgbStr(colors.colorModificationRev)
-          : this.rgbStr(colors.colorModificationFwd)
-      }
-      // Tag-based coloring
-      case 8: {
-        if (region.readTagColors.length > 0) {
-          const r = region.readTagColors[i * 3]!
-          const g = region.readTagColors[i * 3 + 1]!
-          const b = region.readTagColors[i * 3 + 2]!
-          if (r !== 0 || g !== 0 || b !== 0) {
-            return `rgb(${r},${g},${b})`
-          }
-        }
-        return this.rgbStr(colors.colorPairLR)
-      }
-      // Base quality: hsl(avgBaseQuality, 50%, 50%) — same formula as mapping quality
-      case 9: {
-        const bq = region.readAvgBaseQualities[i]!
-        return this.hslToRgb(bq / 360, 0.5, 0.5)
-      }
-      // Insert size (gradient)
-      case 10: {
-        const insertSize = region.readInsertSizes[i]!
-        const stats = region.insertSizeStats
-        if (stats && insertSize > stats.upper) {
-          const t = Math.min((insertSize - stats.upper) / stats.upper, 1)
-          return this.lerpRgbStr(colors.colorPairLR, colors.colorLongInsert, t)
-        }
-        if (stats && insertSize < stats.lower) {
-          const t = Math.min((stats.lower - insertSize) / stats.lower, 1)
-          return this.lerpRgbStr(colors.colorPairLR, colors.colorShortInsert, t)
-        }
-        return this.rgbStr(colors.colorPairLR)
-      }
-      // Fallback: grey
-      default: {
-        return this.rgbStr(colors.colorPairLR)
-      }
-    }
-  }
 
   private drawReads(
     ctx: CanvasRenderingContext2D,
@@ -836,9 +639,7 @@ export class Canvas2DAlignmentsRenderer {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
 
@@ -851,7 +652,10 @@ export class Canvas2DAlignmentsRenderer {
         region.readYs[i]! * (fH + fSpacing) + covOffset - state.rangeY[0]
       const w = Math.max(1, x2 - x1)
 
-      ctx.fillStyle = this.getReadColor(i, region, state)
+      ctx.fillStyle = getReadColor(i, region, state.colorScheme, state.colors, {
+        renderingMode: state.renderingMode,
+        flipStrandLongReadChains: state.flipStrandLongReadChains,
+      })
       ctx.fillRect(x1, y, w, fH)
 
       if (state.showOutline && w > 2) {
@@ -870,9 +674,7 @@ export class Canvas2DAlignmentsRenderer {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
 
@@ -889,11 +691,11 @@ export class Canvas2DAlignmentsRenderer {
       if (gapType === GAP_DELETION) {
         // Deletion: dark line through read
         const midY = y + fH / 2
-        ctx.fillStyle = `rgb(${Math.round(state.colors.colorDeletion[0] * 255)},${Math.round(state.colors.colorDeletion[1] * 255)},${Math.round(state.colors.colorDeletion[2] * 255)})`
+        ctx.fillStyle = rgb255(state.colors.colorDeletion)
         ctx.fillRect(x1, midY - 0.5, w, 1)
       } else if (gapType === GAP_SKIP) {
         // Skip/intron: thin line with lighter color
-        ctx.fillStyle = `rgb(${Math.round(state.colors.colorSkip[0] * 255)},${Math.round(state.colors.colorSkip[1] * 255)},${Math.round(state.colors.colorSkip[2] * 255)})`
+        ctx.fillStyle = rgb255(state.colors.colorSkip)
         // Erase the read body first
         ctx.clearRect(x1, y, w, fH)
         const midY = y + fH / 2
@@ -910,9 +712,7 @@ export class Canvas2DAlignmentsRenderer {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -938,12 +738,10 @@ export class Canvas2DAlignmentsRenderer {
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
-    const insColor = `rgb(${Math.round(state.colors.colorInsertion[0] * 255)},${Math.round(state.colors.colorInsertion[1] * 255)},${Math.round(state.colors.colorInsertion[2] * 255)})`
+    const insColor = rgb255(state.colors.colorInsertion)
 
     for (let i = 0; i < region.numInsertions; i++) {
       const bp = region.insertionPositions[i]! + region.regionStart
@@ -971,69 +769,39 @@ export class Canvas2DAlignmentsRenderer {
     }
   }
 
-  private drawSoftclips(
+  private drawClips(
     ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
+    positions: Uint32Array,
+    ys: Uint16Array,
+    lengths: Uint16Array,
+    count: number,
+    regionStart: number,
+    color: string,
     block: { bpRangeX: [number, number]; screenStartPx: number },
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
   ) {
-    if (region.numSoftclips === 0) {
+    if (count === 0) {
       return
     }
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
-    const scColor = `rgb(${Math.round(state.colors.colorSoftclip[0] * 255)},${Math.round(state.colors.colorSoftclip[1] * 255)},${Math.round(state.colors.colorSoftclip[2] * 255)})`
     const bpPerPx = bpLength / fullBlockWidth
 
-    for (let i = 0; i < region.numSoftclips; i++) {
-      const bp = region.softclipPositions[i]! + region.regionStart
+    ctx.fillStyle = color
+    for (let i = 0; i < count; i++) {
+      const bp = positions[i]! + regionStart
       const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const yRow = region.softclipYs[i]!
+      const yRow = ys[i]!
       const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const len = region.softclipLengths[i]!
+      const len = lengths[i]!
       const w = Math.max(1, len / bpPerPx)
-
-      ctx.fillStyle = scColor
       ctx.fillRect(x, y, w, fH)
     }
   }
 
-  private drawHardclips(
-    ctx: CanvasRenderingContext2D,
-    region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
-    bpLength: number,
-    fullBlockWidth: number,
-    state: RenderState,
-  ) {
-    if (region.numHardclips === 0) {
-      return
-    }
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
-    const fH = state.featureHeight
-    const fSpacing = state.featureSpacing
-    const hcColor = `rgb(${Math.round(state.colors.colorHardclip[0] * 255)},${Math.round(state.colors.colorHardclip[1] * 255)},${Math.round(state.colors.colorHardclip[2] * 255)})`
-    const bpPerPx = bpLength / fullBlockWidth
-
-    for (let i = 0; i < region.numHardclips; i++) {
-      const bp = region.hardclipPositions[i]! + region.regionStart
-      const x = this.bpToScreenX(bp, block, bpLength, fullBlockWidth)
-      const yRow = region.hardclipYs[i]!
-      const y = yRow * (fH + fSpacing) + covOffset - state.rangeY[0]
-      const len = region.hardclipLengths[i]!
-      const w = Math.max(1, len / bpPerPx)
-
-      ctx.fillStyle = hcColor
-      ctx.fillRect(x, y, w, fH)
-    }
-  }
 
   private drawSoftclipBases(
     ctx: CanvasRenderingContext2D,
@@ -1046,9 +814,7 @@ export class Canvas2DAlignmentsRenderer {
     if (region.numSoftclipBases === 0) {
       return
     }
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -1077,9 +843,7 @@ export class Canvas2DAlignmentsRenderer {
     if (region.numModifications === 0) {
       return
     }
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpPerPx = bpLength / fullBlockWidth
@@ -1115,7 +879,7 @@ export class Canvas2DAlignmentsRenderer {
     const covYOffset = state.coverageYOffset
 
     // Draw coverage histogram
-    const covColor = `rgb(${Math.round(state.colors.colorCoverage[0] * 255)},${Math.round(state.colors.colorCoverage[1] * 255)},${Math.round(state.colors.colorCoverage[2] * 255)})`
+    const covColor = rgb255(state.colors.colorCoverage)
     ctx.fillStyle = covColor
 
     for (let i = 0; i < region.numCoverageBins; i++) {
@@ -1138,15 +902,15 @@ export class Canvas2DAlignmentsRenderer {
   private getSnpColor(colorType: number, state: RenderState) {
     switch (colorType) {
       case SNP_COLOR_A:
-        return `rgb(${Math.round(state.colors.colorBaseA[0] * 255)},${Math.round(state.colors.colorBaseA[1] * 255)},${Math.round(state.colors.colorBaseA[2] * 255)})`
+        return rgb255(state.colors.colorBaseA)
       case SNP_COLOR_C:
-        return `rgb(${Math.round(state.colors.colorBaseC[0] * 255)},${Math.round(state.colors.colorBaseC[1] * 255)},${Math.round(state.colors.colorBaseC[2] * 255)})`
+        return rgb255(state.colors.colorBaseC)
       case SNP_COLOR_G:
-        return `rgb(${Math.round(state.colors.colorBaseG[0] * 255)},${Math.round(state.colors.colorBaseG[1] * 255)},${Math.round(state.colors.colorBaseG[2] * 255)})`
+        return rgb255(state.colors.colorBaseG)
       case SNP_COLOR_T:
-        return `rgb(${Math.round(state.colors.colorBaseT[0] * 255)},${Math.round(state.colors.colorBaseT[1] * 255)},${Math.round(state.colors.colorBaseT[2] * 255)})`
+        return rgb255(state.colors.colorBaseT)
       case SNP_COLOR_DEL:
-        return `rgb(${Math.round(state.colors.colorDeletion[0] * 255)},${Math.round(state.colors.colorDeletion[1] * 255)},${Math.round(state.colors.colorDeletion[2] * 255)})`
+        return rgb255(state.colors.colorDeletion)
       default:
         return 'rgb(200,200,200)' // reference
     }
@@ -1217,8 +981,7 @@ export class Canvas2DAlignmentsRenderer {
   }
 
   private paletteColor(palette: [number, number, number][], idx: number) {
-    const c = palette[idx % palette.length]!
-    return `rgb(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)})`
+    return rgb255(palette[idx % palette.length]!)
   }
 
   private drawArcs(
@@ -1313,9 +1076,7 @@ export class Canvas2DAlignmentsRenderer {
     if (region.numConnectingLines === 0) {
       return
     }
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
 
@@ -1349,9 +1110,7 @@ export class Canvas2DAlignmentsRenderer {
     },
     state: RenderState,
   ) {
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]
@@ -1397,9 +1156,7 @@ export class Canvas2DAlignmentsRenderer {
     },
     state: RenderState,
   ) {
-    const covOffset =
-      (state.showCoverage ? state.coverageHeight : 0) +
-      (state.showArcs && state.arcsHeight ? state.arcsHeight : 0)
+    const covOffset = this.covOffset(state)
     const fH = state.featureHeight
     const fSpacing = state.featureSpacing
     const bpLength = block.bpRangeX[1] - block.bpRangeX[0]

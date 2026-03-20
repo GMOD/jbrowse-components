@@ -23,11 +23,11 @@ import { autorun, untracked } from 'mobx'
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import {
-  WIGGLE_COLOR_DEFAULT,
   YSCALEBAR_LABEL_OFFSET,
   computeAutoscaleDomain,
   getNiceDomain,
   getScale,
+  isDefaultBicolor,
 } from '../util.ts'
 
 import type { WiggleDataResult } from '../RenderWiggleDataRPC/types.ts'
@@ -143,9 +143,7 @@ export default function stateModelFactory(
       },
 
       get effectiveBicolorPivot() {
-        const c = this.color
-        const useBicolor = c === WIGGLE_COLOR_DEFAULT || c === '#ff00ff'
-        return useBicolor ? this.bicolorPivot : -Infinity
+        return isDefaultBicolor(this.color) ? this.bicolorPivot : -Infinity
       },
 
       get scaleType() {

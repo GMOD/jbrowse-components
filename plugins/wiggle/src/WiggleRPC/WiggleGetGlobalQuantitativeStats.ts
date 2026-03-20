@@ -24,7 +24,7 @@ export class WiggleGetGlobalQuantitativeStats extends RpcMethodTypeWithFiltersAn
     )
     const { adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
+    // getGlobalStats is defined on wiggle-specific adapters (BigWigAdapter, etc.)
     // @ts-expect-error
     return dataAdapter.getGlobalStats(deserializedArgs)
   }

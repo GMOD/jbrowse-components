@@ -20,22 +20,7 @@ function computeStatsFromView(
   targetStart: number,
   targetEnd: number,
 ) {
-  const len = view.length
-
-  if (len === 0) {
-    return {
-      scoreMin: 0,
-      scoreMax: 0,
-      scoreSum: 0,
-      scoreSumSquares: 0,
-      scoreMean: 0,
-      scoreStdDev: 0,
-      featureCount: 0,
-      basesCovered: targetEnd - targetStart,
-      featureDensity: 0,
-    }
-  }
-
+  const basesCovered = targetEnd - targetStart
   let scoreMin = Number.MAX_VALUE
   let scoreMax = Number.MIN_VALUE
   let scoreMeanMin = Number.MAX_VALUE
@@ -44,12 +29,8 @@ function computeStatsFromView(
   let scoreSumSquares = 0
   let featureCount = 0
 
-  for (let i = 0; i < len; i++) {
-    const featureStart = view.start(i)
-    const featureEnd = view.end(i)
-
-    // Skip features outside target range
-    if (featureEnd <= targetStart || featureStart >= targetEnd) {
+  for (let i = 0; i < view.length; i++) {
+    if (view.end(i) <= targetStart || view.start(i) >= targetEnd) {
       continue
     }
 
@@ -75,7 +56,7 @@ function computeStatsFromView(
       scoreMean: 0,
       scoreStdDev: 0,
       featureCount: 0,
-      basesCovered: targetEnd - targetStart,
+      basesCovered,
       featureDensity: 0,
     }
   }
@@ -95,8 +76,8 @@ function computeStatsFromView(
     scoreMean,
     scoreStdDev,
     featureCount,
-    basesCovered: targetEnd - targetStart,
-    featureDensity: featureCount / (targetEnd - targetStart),
+    basesCovered,
+    featureDensity: featureCount / basesCovered,
   }
 }
 

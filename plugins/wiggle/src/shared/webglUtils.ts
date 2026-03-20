@@ -1,4 +1,3 @@
-import { clamp } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { INSTANCE_STRIDE } from './wiggleShader.ts'
@@ -29,39 +28,26 @@ export function parseColor(color: string): [number, number, number] {
   return result
 }
 
-function rgbToHex(rgb: [number, number, number]) {
-  const r = Math.round(rgb[0] * 255)
-    .toString(16)
-    .padStart(2, '0')
-  const g = Math.round(rgb[1] * 255)
-    .toString(16)
-    .padStart(2, '0')
-  const b = Math.round(rgb[2] * 255)
-    .toString(16)
-    .padStart(2, '0')
-  return `#${r}${g}${b}`
-}
-
 export function lightenColor(
   rgb: [number, number, number],
   amount: number,
 ): [number, number, number] {
-  const c = colord(rgbToHex(rgb))
-  const hsl = c.toHsl()
-  const l = clamp(hsl.l * (1 + amount), 0, 100)
-  const result = colord({ ...hsl, l }).toRgb()
-  return [result.r / 255, result.g / 255, result.b / 255]
+  return [
+    Math.min(1, rgb[0] + (1 - rgb[0]) * amount),
+    Math.min(1, rgb[1] + (1 - rgb[1]) * amount),
+    Math.min(1, rgb[2] + (1 - rgb[2]) * amount),
+  ]
 }
 
 export function darkenColor(
   rgb: [number, number, number],
   amount: number,
 ): [number, number, number] {
-  const c = colord(rgbToHex(rgb))
-  const hsl = c.toHsl()
-  const l = clamp(hsl.l * (1 - amount), 0, 100)
-  const result = colord({ ...hsl, l }).toRgb()
-  return [result.r / 255, result.g / 255, result.b / 255]
+  return [
+    rgb[0] * (1 - amount),
+    rgb[1] * (1 - amount),
+    rgb[2] * (1 - amount),
+  ]
 }
 
 export function interleaveInstances(

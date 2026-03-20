@@ -25,10 +25,10 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import { ArcsRenderer } from './ArcsRenderer.ts'
-import { ConnectingLineRenderer } from './ConnectingLineRenderer.ts'
-import { CoverageRenderer } from './CoverageRenderer.ts'
-import { PileupRenderer } from './PileupRenderer.ts'
+import { renderArcLines, renderArcs } from './ArcsRenderer.ts'
+import { renderConnectingLine } from './ConnectingLineRenderer.ts'
+import { renderCoverage } from './CoverageRenderer.ts'
+import { renderPileup } from './PileupRenderer.ts'
 import {
   ARC_CURVE_SEGMENTS,
   ARC_FRAGMENT_SHADER,
@@ -228,10 +228,6 @@ export class WebGLRenderer {
   connectingLineUniforms: Record<string, WebGLUniformLocation | null> = {}
 
   // Sub-renderers
-  private pileupRenderer!: PileupRenderer
-  private coverageRenderer!: CoverageRenderer
-  private arcsRenderer!: ArcsRenderer
-  private connectingLineRenderer!: ConnectingLineRenderer
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -548,12 +544,6 @@ export class WebGLRenderer {
       ],
     )
 
-    // Initialize sub-renderers
-    this.pileupRenderer = new PileupRenderer(this)
-    this.coverageRenderer = new CoverageRenderer(this)
-    this.arcsRenderer = new ArcsRenderer(this)
-    this.connectingLineRenderer = new ConnectingLineRenderer(this)
-
     gl.enable(gl.BLEND)
     gl.blendFuncSeparate(
       gl.SRC_ALPHA,
@@ -641,51 +631,8 @@ export class WebGLRenderer {
       gl.deleteBuffer(buf)
     }
     this.glBuffers = []
-    // Clean up old VAOs
     if (oldBuffers) {
-      gl.deleteVertexArray(oldBuffers.readVAO)
-      if (oldBuffers.coverageVAO) {
-        gl.deleteVertexArray(oldBuffers.coverageVAO)
-      }
-      if (oldBuffers.snpCoverageVAO) {
-        gl.deleteVertexArray(oldBuffers.snpCoverageVAO)
-      }
-      if (oldBuffers.noncovHistogramVAO) {
-        gl.deleteVertexArray(oldBuffers.noncovHistogramVAO)
-      }
-      if (oldBuffers.indicatorVAO) {
-        gl.deleteVertexArray(oldBuffers.indicatorVAO)
-      }
-      if (oldBuffers.gapVAO) {
-        gl.deleteVertexArray(oldBuffers.gapVAO)
-      }
-      if (oldBuffers.mismatchVAO) {
-        gl.deleteVertexArray(oldBuffers.mismatchVAO)
-      }
-      if (oldBuffers.insertionVAO) {
-        gl.deleteVertexArray(oldBuffers.insertionVAO)
-      }
-      if (oldBuffers.softclipVAO) {
-        gl.deleteVertexArray(oldBuffers.softclipVAO)
-      }
-      if (oldBuffers.hardclipVAO) {
-        gl.deleteVertexArray(oldBuffers.hardclipVAO)
-      }
-      if (oldBuffers.modificationVAO) {
-        gl.deleteVertexArray(oldBuffers.modificationVAO)
-      }
-      if (oldBuffers.modCoverageVAO) {
-        gl.deleteVertexArray(oldBuffers.modCoverageVAO)
-      }
-      if (oldBuffers.arcVAO) {
-        gl.deleteVertexArray(oldBuffers.arcVAO)
-      }
-      if (oldBuffers.arcLineVAO) {
-        gl.deleteVertexArray(oldBuffers.arcLineVAO)
-      }
-      if (oldBuffers.connectingLineVAO) {
-        gl.deleteVertexArray(oldBuffers.connectingLineVAO)
-      }
+      this.deleteBuffersVAOs(oldBuffers)
     }
     // Clean up arc instance buffers
     for (const buf of this.arcInstanceBuffers) {
@@ -699,55 +646,12 @@ export class WebGLRenderer {
     this.connectingLineGLBuffers = []
 
     if (data.numReads === 0) {
-      // Create a minimal buffers object so arcs/linkedRead modes can attach their data
-      const emptyVAO = gl.createVertexArray()
-      gl.bindVertexArray(emptyVAO)
-      gl.bindVertexArray(null)
-      this.buffers = {
-        regionStart: data.regionStart,
-        readIdToIndex: new Map(),
-        readVAO: emptyVAO,
-        segmentCount: 0,
-        readPositions: data.readPositions,
-        readYs: data.readYs,
-        readStrands: data.readStrands,
-        coverageVAO: null,
-        coverageCount: 0,
-        maxDepth: 0,
-        binSize: 1,
-        snpCoverageVAO: null,
-        snpCoverageCount: 0,
-        noncovHistogramVAO: null,
-        noncovHistogramCount: 0,
-        noncovMaxCount: 0,
-        indicatorVAO: null,
-        indicatorCount: 0,
-        gapVAO: null,
-        gapCount: 0,
-        mismatchVAO: null,
-        mismatchCount: 0,
-        insertionVAO: null,
-        insertionCount: 0,
-        softclipVAO: null,
-        softclipCount: 0,
-        softclipBaseVAO: null,
-        softclipBaseCount: 0,
-        hardclipVAO: null,
-        hardclipCount: 0,
-        modificationVAO: null,
-        modificationCount: 0,
-        modCoverageVAO: null,
-        modCoverageCount: 0,
-        arcVAO: null,
-        arcCount: 0,
-        arcLineVAO: null,
-        arcLineCount: 0,
-        connectingLineVAO: null,
-        connectingLineCount: 0,
-        sashimiVAO: null,
-        sashimiCount: 0,
-        insertSizeStats: data.insertSizeStats,
-      }
+      const buffers = this.createEmptyBuffers(data.regionStart)
+      buffers.readPositions = data.readPositions
+      buffers.readYs = data.readYs
+      buffers.readStrands = data.readStrands
+      buffers.insertSizeStats = data.insertSizeStats
+      this.buffers = buffers
       return
     }
 
@@ -843,51 +747,15 @@ export class WebGLRenderer {
     for (let i = 0; i < data.numReads; i++) {
       readIdToIndex.set(data.readIds[i]!, i)
     }
-    this.buffers = {
-      regionStart: data.regionStart,
-      readIdToIndex,
-      readVAO,
-      segmentCount: n,
-      readPositions: data.readPositions,
-      readYs: data.readYs,
-      readStrands: data.readStrands,
-      coverageVAO: null,
-      coverageCount: 0,
-      maxDepth: 0,
-      binSize: 1,
-      snpCoverageVAO: null,
-      snpCoverageCount: 0,
-      noncovHistogramVAO: null,
-      noncovHistogramCount: 0,
-      noncovMaxCount: 0,
-      indicatorVAO: null,
-      indicatorCount: 0,
-      gapVAO: null,
-      gapCount: 0,
-      mismatchVAO: null,
-      mismatchCount: 0,
-      insertionVAO: null,
-      insertionCount: 0,
-      softclipVAO: null,
-      softclipCount: 0,
-      softclipBaseVAO: null,
-      softclipBaseCount: 0,
-      hardclipVAO: null,
-      hardclipCount: 0,
-      modificationVAO: null,
-      modificationCount: 0,
-      modCoverageVAO: null,
-      modCoverageCount: 0,
-      arcVAO: null,
-      arcCount: 0,
-      arcLineVAO: null,
-      arcLineCount: 0,
-      connectingLineVAO: null,
-      connectingLineCount: 0,
-      sashimiVAO: null,
-      sashimiCount: 0,
-      insertSizeStats: data.insertSizeStats,
-    }
+    const buffers = this.createEmptyBuffers(data.regionStart)
+    buffers.readIdToIndex = readIdToIndex
+    buffers.readVAO = readVAO
+    buffers.segmentCount = n
+    buffers.readPositions = data.readPositions
+    buffers.readYs = data.readYs
+    buffers.readStrands = data.readStrands
+    buffers.insertSizeStats = data.insertSizeStats
+    this.buffers = buffers
   }
 
   /**
@@ -923,29 +791,15 @@ export class WebGLRenderer {
     }
 
     // Clean up old CIGAR VAOs
-    if (this.buffers.gapVAO) {
-      gl.deleteVertexArray(this.buffers.gapVAO)
-      this.buffers.gapVAO = null
-    }
-    if (this.buffers.mismatchVAO) {
-      gl.deleteVertexArray(this.buffers.mismatchVAO)
-      this.buffers.mismatchVAO = null
-    }
-    if (this.buffers.insertionVAO) {
-      gl.deleteVertexArray(this.buffers.insertionVAO)
-      this.buffers.insertionVAO = null
-    }
-    if (this.buffers.softclipVAO) {
-      gl.deleteVertexArray(this.buffers.softclipVAO)
-      this.buffers.softclipVAO = null
-    }
-    if (this.buffers.softclipBaseVAO) {
-      gl.deleteVertexArray(this.buffers.softclipBaseVAO)
-      this.buffers.softclipBaseVAO = null
-    }
-    if (this.buffers.hardclipVAO) {
-      gl.deleteVertexArray(this.buffers.hardclipVAO)
-      this.buffers.hardclipVAO = null
+    const cigarVaoKeys = [
+      'gapVAO', 'mismatchVAO', 'insertionVAO',
+      'softclipVAO', 'softclipBaseVAO', 'hardclipVAO',
+    ] as const
+    for (const key of cigarVaoKeys) {
+      if (this.buffers[key]) {
+        gl.deleteVertexArray(this.buffers[key])
+        this.buffers[key] = null
+      }
     }
 
     // Upload gaps - use integer buffers directly (no Float32 conversion)
@@ -1015,75 +869,45 @@ export class WebGLRenderer {
       }
     }
 
-    // Upload insertions - use integer buffers directly
-    if (insertionIndices.length > 0) {
-      const insertionVAO = gl.createVertexArray()
-      gl.bindVertexArray(insertionVAO)
+    const uploadInterbaseType = (
+      indices: number[],
+      program: WebGLProgram,
+    ) => {
+      if (indices.length === 0) {
+        return { vao: null as WebGLVertexArrayObject | null, count: 0 }
+      }
+      const vao = gl.createVertexArray()
+      gl.bindVertexArray(vao)
 
-      const positions = new Uint32Array(insertionIndices.length)
-      const ys = new Uint16Array(insertionIndices.length)
-      const lengths = new Uint16Array(insertionIndices.length)
-      const frequencies = new Uint8Array(insertionIndices.length)
+      const positions = new Uint32Array(indices.length)
+      const ys = new Uint16Array(indices.length)
+      const lengths = new Uint16Array(indices.length)
+      const frequencies = new Uint8Array(indices.length)
 
-      for (const [j, insertionIndex] of insertionIndices.entries()) {
-        const i = insertionIndex
+      for (let j = 0; j < indices.length; j++) {
+        const i = indices[j]!
         positions[j] = data.interbasePositions[i]!
         ys[j] = data.interbaseYs[i]!
         lengths[j] = data.interbaseLengths[i]!
         frequencies[j] = data.interbaseFrequencies[i]!
       }
 
-      this.uploadUintBuffer(this.insertionProgram, 'a_position', positions, 1)
-      this.uploadUint16Buffer(this.insertionProgram, 'a_y', ys, 1)
-      this.uploadUint16Buffer(this.insertionProgram, 'a_length', lengths, 1)
-      this.uploadNormalizedUint8Buffer(
-        this.insertionProgram,
-        'a_frequency',
-        frequencies,
-        1,
-      )
+      this.uploadUintBuffer(program, 'a_position', positions, 1)
+      this.uploadUint16Buffer(program, 'a_y', ys, 1)
+      this.uploadUint16Buffer(program, 'a_length', lengths, 1)
+      this.uploadNormalizedUint8Buffer(program, 'a_frequency', frequencies, 1)
       gl.bindVertexArray(null)
 
-      this.buffers.insertionVAO = insertionVAO
-      this.buffers.insertionCount = insertionIndices.length
-    } else {
-      this.buffers.insertionCount = 0
+      return { vao, count: indices.length }
     }
 
-    // Upload soft clips - use integer buffers directly
-    if (softclipIndices.length > 0) {
-      const softclipVAO = gl.createVertexArray()
-      gl.bindVertexArray(softclipVAO)
+    const ins = uploadInterbaseType(insertionIndices, this.insertionProgram)
+    this.buffers.insertionVAO = ins.vao
+    this.buffers.insertionCount = ins.count
 
-      const positions = new Uint32Array(softclipIndices.length)
-      const ys = new Uint16Array(softclipIndices.length)
-      const lengths = new Uint16Array(softclipIndices.length)
-      const frequencies = new Uint8Array(softclipIndices.length)
-
-      for (const [j, softclipIndex] of softclipIndices.entries()) {
-        const i = softclipIndex
-        positions[j] = data.interbasePositions[i]!
-        ys[j] = data.interbaseYs[i]!
-        lengths[j] = data.interbaseLengths[i]!
-        frequencies[j] = data.interbaseFrequencies[i]!
-      }
-
-      this.uploadUintBuffer(this.softclipProgram, 'a_position', positions, 1)
-      this.uploadUint16Buffer(this.softclipProgram, 'a_y', ys, 1)
-      this.uploadUint16Buffer(this.softclipProgram, 'a_length', lengths, 1)
-      this.uploadNormalizedUint8Buffer(
-        this.softclipProgram,
-        'a_frequency',
-        frequencies,
-        1,
-      )
-      gl.bindVertexArray(null)
-
-      this.buffers.softclipVAO = softclipVAO
-      this.buffers.softclipCount = softclipIndices.length
-    } else {
-      this.buffers.softclipCount = 0
-    }
+    const sc = uploadInterbaseType(softclipIndices, this.softclipProgram)
+    this.buffers.softclipVAO = sc.vao
+    this.buffers.softclipCount = sc.count
 
     // Upload soft clip bases (per-base colored rectangles for showSoftClipping)
     if (data.numSoftclipBases > 0) {
@@ -1122,40 +946,9 @@ export class WebGLRenderer {
       this.buffers.softclipBaseCount = 0
     }
 
-    // Upload hard clips - use integer buffers directly
-    if (hardclipIndices.length > 0) {
-      const hardclipVAO = gl.createVertexArray()
-      gl.bindVertexArray(hardclipVAO)
-
-      const positions = new Uint32Array(hardclipIndices.length)
-      const ys = new Uint16Array(hardclipIndices.length)
-      const lengths = new Uint16Array(hardclipIndices.length)
-      const frequencies = new Uint8Array(hardclipIndices.length)
-
-      for (const [j, hardclipIndex] of hardclipIndices.entries()) {
-        const i = hardclipIndex
-        positions[j] = data.interbasePositions[i]!
-        ys[j] = data.interbaseYs[i]!
-        lengths[j] = data.interbaseLengths[i]!
-        frequencies[j] = data.interbaseFrequencies[i]!
-      }
-
-      this.uploadUintBuffer(this.hardclipProgram, 'a_position', positions, 1)
-      this.uploadUint16Buffer(this.hardclipProgram, 'a_y', ys, 1)
-      this.uploadUint16Buffer(this.hardclipProgram, 'a_length', lengths, 1)
-      this.uploadNormalizedUint8Buffer(
-        this.hardclipProgram,
-        'a_frequency',
-        frequencies,
-        1,
-      )
-      gl.bindVertexArray(null)
-
-      this.buffers.hardclipVAO = hardclipVAO
-      this.buffers.hardclipCount = hardclipIndices.length
-    } else {
-      this.buffers.hardclipCount = 0
-    }
+    const hc = uploadInterbaseType(hardclipIndices, this.hardclipProgram)
+    this.buffers.hardclipVAO = hc.vao
+    this.buffers.hardclipCount = hc.count
   }
 
   /**
@@ -1588,18 +1381,12 @@ export class WebGLRenderer {
     gl.vertexAttribDivisor(loc, 1)
   }
 
-  /**
-   * Ensure a buffers object exists (needed for arcs/linkedRead modes that don't have pileup data)
-   */
-  ensureBuffers(regionStart: number) {
-    if (this.buffers) {
-      return
-    }
+  private createEmptyBuffers(regionStart: number): GPUBuffers {
     const gl = this.gl
     const emptyVAO = gl.createVertexArray()
     gl.bindVertexArray(emptyVAO)
     gl.bindVertexArray(null)
-    this.buffers = {
+    return {
       regionStart,
       readIdToIndex: new Map(),
       readVAO: emptyVAO,
@@ -1643,6 +1430,12 @@ export class WebGLRenderer {
       sashimiVAO: null,
       sashimiCount: 0,
       insertSizeStats: undefined,
+    }
+  }
+
+  ensureBuffers(regionStart: number) {
+    if (!this.buffers) {
+      this.buffers = this.createEmptyBuffers(regionStart)
     }
   }
 
@@ -1965,76 +1758,52 @@ export class WebGLRenderer {
     this.connectingLineGLBuffers = []
   }
 
-  /**
-   * Upload read data for a specific region
-   */
+  private withRegion<T>(regionNumber: number, fn: (data: T) => void, data: T) {
+    this.activateRegion(regionNumber)
+    fn.call(this, data)
+    this.deactivateRegion(regionNumber)
+  }
+
   uploadFromTypedArraysForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadFromTypedArrays']>[0],
   ) {
-    this.activateRegion(regionNumber)
-    this.uploadFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
+    this.withRegion(regionNumber, this.uploadFromTypedArrays, data)
   }
 
-  /**
-   * Upload CIGAR data for a specific region
-   */
   uploadCigarFromTypedArraysForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadCigarFromTypedArrays']>[0],
   ) {
-    this.activateRegion(regionNumber)
-    this.uploadCigarFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
+    this.withRegion(regionNumber, this.uploadCigarFromTypedArrays, data)
   }
 
-  /**
-   * Upload coverage data for a specific region
-   */
   uploadCoverageFromTypedArraysForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadCoverageFromTypedArrays']>[0],
   ) {
-    this.activateRegion(regionNumber)
-    this.uploadCoverageFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
+    this.withRegion(regionNumber, this.uploadCoverageFromTypedArrays, data)
   }
 
-  /**
-   * Upload modification data for a specific region
-   */
   uploadModificationsFromTypedArraysForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadModificationsFromTypedArrays']>[0],
   ) {
-    this.activateRegion(regionNumber)
-    this.uploadModificationsFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
+    this.withRegion(regionNumber, this.uploadModificationsFromTypedArrays, data)
   }
 
-  /**
-   * Upload modification coverage data for a specific region
-   */
   uploadModCoverageFromTypedArraysForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadModCoverageFromTypedArrays']>[0],
   ) {
-    this.activateRegion(regionNumber)
-    this.uploadModCoverageFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
+    this.withRegion(regionNumber, this.uploadModCoverageFromTypedArrays, data)
   }
 
-  /**
-   * Upload arcs data for a specific region
-   */
   uploadArcsFromTypedArraysForRegion(
     regionNumber: number,
     data: Parameters<WebGLRenderer['uploadArcsFromTypedArrays']>[0],
   ) {
-    this.activateRegion(regionNumber)
-    this.uploadArcsFromTypedArrays(data)
-    this.deactivateRegion(regionNumber)
+    this.withRegion(regionNumber, this.uploadArcsFromTypedArrays, data)
   }
 
   /**
@@ -2204,7 +1973,7 @@ export class WebGLRenderer {
         canvasWidth: scissorW,
       }
 
-      this.coverageRenderer.render(blockState, colors)
+      renderCoverage(this, blockState, colors)
 
       const arcsHeight =
         state.showArcs && state.arcsHeight ? state.arcsHeight : 0
@@ -2226,7 +1995,8 @@ export class WebGLRenderer {
             Math.round(scissorW * dpr),
             effectiveArcsHPx,
           )
-          this.arcsRenderer.renderArcLines(
+          renderArcLines(
+            this,
             {
               ...state,
               bpRangeX: block.bpRangeX,
@@ -2263,10 +2033,10 @@ export class WebGLRenderer {
       }
 
       if (mode === 'linkedRead') {
-        this.connectingLineRenderer.render(blockState)
+        renderConnectingLine(this, blockState)
       }
 
-      this.pileupRenderer.render(blockState, colors, scissorX)
+      renderPileup(this, blockState, colors, scissorX)
     }
 
     // Phase 2: Cross-region rendering (arcs and sashimi arcs)
@@ -2308,7 +2078,8 @@ export class WebGLRenderer {
             startPx: r.startPx,
             endPx: r.endPx,
           }))
-          this.arcsRenderer.renderArcs(
+          renderArcs(
+            this,
             {
               ...state,
               showCoverage: false,
@@ -2327,51 +2098,29 @@ export class WebGLRenderer {
 
   private deleteBuffersVAOs(buffers: GPUBuffers) {
     const gl = this.gl
-    gl.deleteVertexArray(buffers.readVAO)
-    if (buffers.coverageVAO) {
-      gl.deleteVertexArray(buffers.coverageVAO)
-    }
-    if (buffers.snpCoverageVAO) {
-      gl.deleteVertexArray(buffers.snpCoverageVAO)
-    }
-    if (buffers.noncovHistogramVAO) {
-      gl.deleteVertexArray(buffers.noncovHistogramVAO)
-    }
-    if (buffers.indicatorVAO) {
-      gl.deleteVertexArray(buffers.indicatorVAO)
-    }
-    if (buffers.gapVAO) {
-      gl.deleteVertexArray(buffers.gapVAO)
-    }
-    if (buffers.mismatchVAO) {
-      gl.deleteVertexArray(buffers.mismatchVAO)
-    }
-    if (buffers.insertionVAO) {
-      gl.deleteVertexArray(buffers.insertionVAO)
-    }
-    if (buffers.softclipVAO) {
-      gl.deleteVertexArray(buffers.softclipVAO)
-    }
-    if (buffers.hardclipVAO) {
-      gl.deleteVertexArray(buffers.hardclipVAO)
-    }
-    if (buffers.modificationVAO) {
-      gl.deleteVertexArray(buffers.modificationVAO)
-    }
-    if (buffers.modCoverageVAO) {
-      gl.deleteVertexArray(buffers.modCoverageVAO)
-    }
-    if (buffers.arcVAO) {
-      gl.deleteVertexArray(buffers.arcVAO)
-    }
-    if (buffers.arcLineVAO) {
-      gl.deleteVertexArray(buffers.arcLineVAO)
-    }
-    if (buffers.connectingLineVAO) {
-      gl.deleteVertexArray(buffers.connectingLineVAO)
-    }
-    if (buffers.sashimiVAO) {
-      gl.deleteVertexArray(buffers.sashimiVAO)
+    const vaos = [
+      buffers.readVAO,
+      buffers.coverageVAO,
+      buffers.snpCoverageVAO,
+      buffers.noncovHistogramVAO,
+      buffers.indicatorVAO,
+      buffers.gapVAO,
+      buffers.mismatchVAO,
+      buffers.insertionVAO,
+      buffers.softclipVAO,
+      buffers.softclipBaseVAO,
+      buffers.hardclipVAO,
+      buffers.modificationVAO,
+      buffers.modCoverageVAO,
+      buffers.arcVAO,
+      buffers.arcLineVAO,
+      buffers.connectingLineVAO,
+      buffers.sashimiVAO,
+    ]
+    for (const vao of vaos) {
+      if (vao) {
+        gl.deleteVertexArray(vao)
+      }
     }
   }
 
@@ -2383,30 +2132,20 @@ export class WebGLRenderer {
       this.deleteBuffersVAOs(buffers)
     }
     this.buffersMap.clear()
-    for (const bufs of this.glBuffersMap.values()) {
-      for (const buf of bufs) {
-        gl.deleteBuffer(buf)
+    const bufferMaps = [
+      this.glBuffersMap,
+      this.arcInstanceBuffersMap,
+      this.sashimiInstanceBuffersMap,
+      this.connectingLineGLBuffersMap,
+    ]
+    for (const map of bufferMaps) {
+      for (const bufs of map.values()) {
+        for (const buf of bufs) {
+          gl.deleteBuffer(buf)
+        }
       }
+      map.clear()
     }
-    this.glBuffersMap.clear()
-    for (const bufs of this.arcInstanceBuffersMap.values()) {
-      for (const buf of bufs) {
-        gl.deleteBuffer(buf)
-      }
-    }
-    this.arcInstanceBuffersMap.clear()
-    for (const bufs of this.sashimiInstanceBuffersMap.values()) {
-      for (const buf of bufs) {
-        gl.deleteBuffer(buf)
-      }
-    }
-    this.sashimiInstanceBuffersMap.clear()
-    for (const bufs of this.connectingLineGLBuffersMap.values()) {
-      for (const buf of bufs) {
-        gl.deleteBuffer(buf)
-      }
-    }
-    this.connectingLineGLBuffersMap.clear()
 
     // Clean up legacy single-entry state
     for (const buf of this.glBuffers) {

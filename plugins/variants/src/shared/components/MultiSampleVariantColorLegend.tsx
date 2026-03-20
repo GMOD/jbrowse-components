@@ -8,6 +8,8 @@ import RectBg from './RectBg.tsx'
 
 import type { Source } from '../types.ts'
 
+const COLOR_BOX_WIDTH = 15
+
 const LegendItem = function ({
   source,
   idx,
@@ -18,12 +20,11 @@ const LegendItem = function ({
   rowHeight: number
 }) {
   const { color } = source
-  const colorBoxWidth = 15
   return color ? (
     <RectBg
       y={idx * rowHeight}
       x={0}
-      width={colorBoxWidth + 0.5}
+      width={COLOR_BOX_WIDTH + 0.5}
       height={rowHeight + 0.5}
       color={color}
     />
@@ -43,11 +44,10 @@ const LegendItemText = function ({
 }) {
   const { color, name } = source
   const svgFontSize = Math.min(rowHeight, 12)
-  const colorBoxWidth = 15
   return (
     <text
       y={(idx + 0.5) * rowHeight}
-      x={color ? colorBoxWidth + 2 : 0}
+      x={color ? COLOR_BOX_WIDTH + 2 : 0}
       fontSize={svgFontSize}
       dominantBaseline="central"
       {...textFillProps}
@@ -74,14 +74,13 @@ const MultiSampleVariantColorLegend = observer(
     endIdx: number
   }) {
     const { canDisplayLabels, rowHeight, sources } = model
-    const colorBoxWidth = 15
     const theme = useTheme()
 
     const hasColors = useMemo(
       () => sources?.some(s => s.color) ?? false,
       [sources],
     )
-    const legendWidth = labelWidth + (hasColors ? colorBoxWidth + 5 : 0)
+    const legendWidth = labelWidth + (hasColors ? COLOR_BOX_WIDTH + 5 : 0)
 
     const textFillProps = useMemo(
       () => getFillProps(theme.palette.text.primary),

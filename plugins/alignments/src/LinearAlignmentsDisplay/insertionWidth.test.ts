@@ -1,8 +1,9 @@
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
+  insertionBarWidth,
+  textWidthForNumber,
 } from './constants.ts'
-import { getInsertionRectWidthPx, textWidthForNumber } from './model.ts'
 
 // Replicates the shader's rectWidthPx calculation exactly.
 // If the shader logic changes, this must be updated in lockstep,
@@ -29,7 +30,7 @@ describe('insertion width: shader vs CPU parity', () => {
   for (const length of lengths) {
     for (const pxPerBp of pxPerBps) {
       test(`length=${length} pxPerBp=${pxPerBp}`, () => {
-        expect(getInsertionRectWidthPx(length, pxPerBp)).toBeCloseTo(
+        expect(insertionBarWidth(length, pxPerBp)).toBeCloseTo(
           shaderRectWidthPx(length, pxPerBp),
           4,
         )

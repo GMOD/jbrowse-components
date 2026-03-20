@@ -2,6 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -26,8 +27,7 @@ export class MultiWiggleGetSources extends RpcMethodTypeWithFiltersAndRenameRegi
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
-    // @ts-expect-error
-    return dataAdapter.getSources(regions, deserializedArgs)
+    const featureAdapter = dataAdapter as BaseFeatureDataAdapter
+    return featureAdapter.getSources(regions)
   }
 }

@@ -10,10 +10,11 @@ import {
   getPhasedColorFromRaw,
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
-import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
+import { createCachedRGBA } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 interface CellArrays {
   featureIndices: Float32Array
@@ -42,6 +43,22 @@ interface FeatureData {
   genotypes: Record<string, string>
 }
 
+function makeFeatureData(
+  feature: Feature,
+  featureId: string,
+  genotypes: Record<string, string>,
+): FeatureData {
+  return {
+    alt: feature.get('ALT') as string[],
+    ref: feature.get('REF') as string,
+    name: feature.get('name') as string,
+    description: feature.get('description') as string,
+    length: feature.get('end') - feature.get('start'),
+    featureId,
+    genotypes,
+  }
+}
+
 export interface MatrixCellData {
   cellFeatureIndices: Float32Array
   cellRowIndices: Uint32Array
@@ -62,15 +79,7 @@ export function computeVariantMatrixCells({
   renderingMode: string
   genotypesCache: Map<string, Record<string, string>>
 }): MatrixCellData {
-  const colorCache = new Map<string, [number, number, number, number]>()
-  function getCachedRGBA(color: string) {
-    let rgba = colorCache.get(color)
-    if (!rgba) {
-      rgba = colorToRGBA(color)
-      colorCache.set(color, rgba)
-    }
-    return rgba
-  }
+  const getCachedRGBA = createCachedRGBA()
 
   const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
@@ -84,6 +93,25 @@ export function computeVariantMatrixCells({
   const isRef = new Uint8Array(maxCells)
 
   let cellCount = 0
+
+  function addCell(
+    featureIdx: number,
+    rowIdx: number,
+    rgba: [number, number, number, number],
+    isReference: boolean,
+  ) {
+    const ci = cellCount
+    featureIndices[ci] = featureIdx
+    rowIndices[ci] = rowIdx
+    colors[ci * 4] = rgba[0]
+    colors[ci * 4 + 1] = rgba[1]
+    colors[ci * 4 + 2] = rgba[2]
+    colors[ci * 4 + 3] = rgba[3]
+    isRef[ci] = isReference ? 1 : 0
+    cellCount++
+  }
+
+  const BLACK_OPAQUE: [number, number, number, number] = [0, 0, 0, 255]
 
   const featureData: FeatureData[] = []
 
@@ -112,15 +140,7 @@ export function computeVariantMatrixCells({
             genotypes[sampleName] = gt
           }
         }
-        featureData.push({
-          alt: feature.get('ALT') as string[],
-          ref: feature.get('REF') as string,
-          name: feature.get('name') as string,
-          description: feature.get('description') as string,
-          length: feature.get('end') - feature.get('start'),
-          featureId,
-          genotypes,
-        })
+        featureData.push(makeFeatureData(feature, featureId, genotypes))
 
         for (let j = 0; j < numSources; j++) {
           const { name, HP, baseName } = sources[j]!
@@ -137,27 +157,10 @@ export function computeVariantMatrixCells({
                   (splitCache[genotype] = genotype.split('|'))
                 const c = getPhasedColor(alleles, HP!, mostFrequentAlt, PS)
                 if (c) {
-                  const rgba = getCachedRGBA(c)
-                  const ci = cellCount
-                  featureIndices[ci] = idx
-                  rowIndices[ci] = j
-                  colors[ci * 4] = rgba[0]
-                  colors[ci * 4 + 1] = rgba[1]
-                  colors[ci * 4 + 2] = rgba[2]
-                  colors[ci * 4 + 3] = rgba[3]
-                  isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
-                  cellCount++
+                  addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
                 }
               } else {
-                const ci = cellCount
-                featureIndices[ci] = idx
-                rowIndices[ci] = j
-                colors[ci * 4] = 0
-                colors[ci * 4 + 1] = 0
-                colors[ci * 4 + 2] = 0
-                colors[ci * 4 + 3] = 255
-                isRef[ci] = 0
-                cellCount++
+                addCell(idx, j, BLACK_OPAQUE, false)
               }
             }
           }
@@ -184,16 +187,7 @@ export function computeVariantMatrixCells({
               const allele = callGt[si * ploidy + HP!]!
               const c = getPhasedColorFromRaw(allele, mostFreqAltInt)
               if (c) {
-                const rgba = getCachedRGBA(c)
-                const ci = cellCount
-                featureIndices[ci] = idx
-                rowIndices[ci] = j
-                colors[ci * 4] = rgba[0]
-                colors[ci * 4 + 1] = rgba[1]
-                colors[ci * 4 + 2] = rgba[2]
-                colors[ci * 4 + 3] = rgba[3]
-                isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
-                cellCount++
+                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
                 genotypes[name] = genotypeStringFromRaw(
                   callGt,
                   si,
@@ -202,15 +196,7 @@ export function computeVariantMatrixCells({
                 )
               }
             } else {
-              const ci = cellCount
-              featureIndices[ci] = idx
-              rowIndices[ci] = j
-              colors[ci * 4] = 0
-              colors[ci * 4 + 1] = 0
-              colors[ci * 4 + 2] = 0
-              colors[ci * 4 + 3] = 255
-              isRef[ci] = 0
-              cellCount++
+              addCell(idx, j, BLACK_OPAQUE, false)
               genotypes[name] = genotypeStringFromRaw(
                 callGt,
                 si,
@@ -219,30 +205,14 @@ export function computeVariantMatrixCells({
               )
             }
           }
-          featureData.push({
-            alt: feature.get('ALT') as string[],
-            ref: feature.get('REF') as string,
-            name: feature.get('name') as string,
-            description: feature.get('description') as string,
-            length: feature.get('end') - feature.get('start'),
-            featureId,
-            genotypes,
-          })
+          featureData.push(makeFeatureData(feature, featureId, genotypes))
         } else {
           let samp = genotypesCache.get(featureId)
           if (!samp) {
             samp = feature.get('genotypes') as Record<string, string>
             genotypesCache.set(featureId, samp)
           }
-          featureData.push({
-            alt: feature.get('ALT') as string[],
-            ref: feature.get('REF') as string,
-            name: feature.get('name') as string,
-            description: feature.get('description') as string,
-            length: feature.get('end') - feature.get('start'),
-            featureId,
-            genotypes: samp,
-          })
+          featureData.push(makeFeatureData(feature, featureId, samp))
           for (let j = 0; j < numSources; j++) {
             const { name, HP, baseName } = sources[j]!
             const sampleName = baseName ?? name
@@ -255,27 +225,10 @@ export function computeVariantMatrixCells({
                   (splitCache[genotype] = genotype.split('|'))
                 const c = getPhasedColor(alleles, HP!, mostFrequentAlt)
                 if (c) {
-                  const rgba = getCachedRGBA(c)
-                  const ci = cellCount
-                  featureIndices[ci] = idx
-                  rowIndices[ci] = j
-                  colors[ci * 4] = rgba[0]
-                  colors[ci * 4 + 1] = rgba[1]
-                  colors[ci * 4 + 2] = rgba[2]
-                  colors[ci * 4 + 3] = rgba[3]
-                  isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
-                  cellCount++
+                  addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
                 }
               } else {
-                const ci = cellCount
-                featureIndices[ci] = idx
-                rowIndices[ci] = j
-                colors[ci * 4] = 0
-                colors[ci * 4 + 1] = 0
-                colors[ci * 4 + 2] = 0
-                colors[ci * 4 + 3] = 255
-                isRef[ci] = 0
-                cellCount++
+                addCell(idx, j, BLACK_OPAQUE, false)
               }
             }
           }
@@ -304,15 +257,7 @@ export function computeVariantMatrixCells({
             genotypes[sampleName] = gt
           }
         }
-        featureData.push({
-          alt: feature.get('ALT') as string[],
-          ref: feature.get('REF') as string,
-          name: feature.get('name') as string,
-          description: feature.get('description') as string,
-          length: feature.get('end') - feature.get('start'),
-          featureId,
-          genotypes,
-        })
+        featureData.push(makeFeatureData(feature, featureId, genotypes))
 
         for (let j = 0; j < numSources; j++) {
           const sampleName = sources[j]!.baseName ?? sources[j]!.name
@@ -328,16 +273,7 @@ export function computeVariantMatrixCells({
                 true,
               )
               if (c) {
-                const rgba = getCachedRGBA(c)
-                const ci = cellCount
-                featureIndices[ci] = idx
-                rowIndices[ci] = j
-                colors[ci * 4] = rgba[0]
-                colors[ci * 4 + 1] = rgba[1]
-                colors[ci * 4 + 2] = rgba[2]
-                colors[ci * 4 + 3] = rgba[3]
-                isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
-                cellCount++
+                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
               }
             }
           }
@@ -398,16 +334,7 @@ export function computeVariantMatrixCells({
               rawColorCache[cacheKey] = c
             }
             if (c) {
-              const rgba = getCachedRGBA(c)
-              const ci = cellCount
-              featureIndices[ci] = idx
-              rowIndices[ci] = j
-              colors[ci * 4] = rgba[0]
-              colors[ci * 4 + 1] = rgba[1]
-              colors[ci * 4 + 2] = rgba[2]
-              colors[ci * 4 + 3] = rgba[3]
-              isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
-              cellCount++
+              addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
               genotypes[sampleName] = genotypeStringFromRaw(
                 callGt,
                 si,
@@ -416,30 +343,14 @@ export function computeVariantMatrixCells({
               )
             }
           }
-          featureData.push({
-            alt: feature.get('ALT') as string[],
-            ref: feature.get('REF') as string,
-            name: feature.get('name') as string,
-            description: feature.get('description') as string,
-            length: feature.get('end') - feature.get('start'),
-            featureId,
-            genotypes,
-          })
+          featureData.push(makeFeatureData(feature, featureId, genotypes))
         } else {
           let samp = genotypesCache.get(featureId)
           if (!samp) {
             samp = feature.get('genotypes') as Record<string, string>
             genotypesCache.set(featureId, samp)
           }
-          featureData.push({
-            alt: feature.get('ALT') as string[],
-            ref: feature.get('REF') as string,
-            name: feature.get('name') as string,
-            description: feature.get('description') as string,
-            length: feature.get('end') - feature.get('start'),
-            featureId,
-            genotypes: samp,
-          })
+          featureData.push(makeFeatureData(feature, featureId, samp))
           for (let j = 0; j < numSources; j++) {
             const sampleName = sources[j]!.baseName ?? sources[j]!.name
             const genotype = samp[sampleName]
@@ -452,16 +363,7 @@ export function computeVariantMatrixCells({
                 true,
               )
               if (c) {
-                const rgba = getCachedRGBA(c)
-                const ci = cellCount
-                featureIndices[ci] = idx
-                rowIndices[ci] = j
-                colors[ci * 4] = rgba[0]
-                colors[ci * 4 + 1] = rgba[1]
-                colors[ci * 4 + 2] = rgba[2]
-                colors[ci * 4 + 3] = rgba[3]
-                isRef[ci] = c === REFERENCE_COLOR ? 1 : 0
-                cellCount++
+                addCell(idx, j, getCachedRGBA(c), c === REFERENCE_COLOR)
               }
             }
           }

@@ -295,10 +295,6 @@ export class WebGLWiggleRenderer {
         VERTICES_PER_INSTANCE,
         region.featureCount,
       )
-      const glErr = gl.getError()
-      if (glErr !== gl.NO_ERROR) {
-        // GL error occurred
-      }
     }
 
     gl.disable(gl.SCISSOR_TEST)

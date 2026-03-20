@@ -25,9 +25,10 @@ export function detectRawMode(features: { feature: Feature }[]) {
   if (!callGenotype) {
     return undefined
   }
+  const sampleNames = first.get('sampleNames') as string[]
   return {
-    sampleNames: first.get('sampleNames') as string[],
-    sampleIndexMap: buildSampleIndexMap(first.get('sampleNames') as string[]),
+    sampleNames,
+    sampleIndexMap: buildSampleIndexMap(sampleNames),
   }
 }
 
@@ -39,8 +40,7 @@ export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
   let countDot = 0
   const otherCounts = {} as Record<string, number>
 
-  for (const element of callGenotype) {
-    const a = element
+  for (const a of callGenotype) {
     if (a === -2) {
       continue
     }

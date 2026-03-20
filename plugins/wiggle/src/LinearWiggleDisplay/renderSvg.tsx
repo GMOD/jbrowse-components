@@ -4,7 +4,7 @@ import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import DensityLegend from '../shared/DensityLegend.tsx'
 import YScaleBar from '../shared/YScaleBar.tsx'
 import { getDensityColor } from '../shared/getDensityColor.ts'
-import { YSCALEBAR_LABEL_OFFSET, getScale } from '../util.ts'
+import { YSCALEBAR_LABEL_OFFSET, getScale, isDefaultBicolor } from '../util.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type {
@@ -29,7 +29,7 @@ function renderToCtx(
     color,
     posColor,
     negColor,
-    bicolorPivot,
+    effectiveBicolorPivot,
   } = model
 
   if (!domain) {
@@ -39,7 +39,7 @@ function renderToCtx(
   const [minScore, maxScore] = domain
   const offset = YSCALEBAR_LABEL_OFFSET
   const effectiveHeight = height - offset * 2
-  const useBicolor = color === '#f0f' || color === '#ff00ff'
+  const useBicolor = isDefaultBicolor(color)
 
   const scale = getScale({
     scaleType,
@@ -99,11 +99,11 @@ function renderToCtx(
 
         if (renderingType === 'xyplot') {
           const y = scale(score) + offset
-          const originY = scale(bicolorPivot) + offset
+          const originY = scale(effectiveBicolorPivot) + offset
           const rectY = Math.min(y, originY)
           const rectHeight = Math.abs(originY - y) || 1
           ctx.fillStyle = useBicolor
-            ? score >= bicolorPivot
+            ? score >= effectiveBicolorPivot
               ? posColor
               : negColor
             : color
@@ -111,7 +111,7 @@ function renderToCtx(
         } else if (renderingType === 'scatter') {
           const y = scale(score) + offset
           ctx.fillStyle = useBicolor
-            ? score >= bicolorPivot
+            ? score >= effectiveBicolorPivot
               ? posColor
               : negColor
             : color

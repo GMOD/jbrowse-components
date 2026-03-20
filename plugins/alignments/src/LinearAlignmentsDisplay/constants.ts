@@ -23,19 +23,29 @@ export function textWidthForNumber(num: number) {
   return charWidth * 5 + padding
 }
 
+export type InsertionType = 'large' | 'long' | 'small'
+
+export function getInsertionType(length: number, pxPerBp: number): InsertionType {
+  if (length >= LONG_INSERTION_MIN_LENGTH) {
+    if (length * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+      return 'large'
+    }
+    return 'long'
+  }
+  return 'small'
+}
+
 // SYNC: mirrors width logic in shaders/cigarShaders.ts INSERTION_VERTEX_SHADER
 // and wgsl/cigarShaders.ts INSERTION_WGSL
 export function insertionBarWidth(len: number, pxPerBp: number) {
-  const isLong = len >= LONG_INSERTION_MIN_LENGTH
-  const insertionWidthPx = len * pxPerBp
-  const isLarge = isLong && insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
-  if (isLarge) {
+  const type = getInsertionType(len, pxPerBp)
+  if (type === 'large') {
     return textWidthForNumber(len)
   }
-  if (isLong) {
-    return Math.min(5, insertionWidthPx / 3)
+  if (type === 'long') {
+    return Math.min(5, len * pxPerBp / 3)
   }
-  return 1
+  return Math.min(pxPerBp, 1)
 }
 
 // Returns the frequency at which a feature (mismatch, insertion, etc.) reaches

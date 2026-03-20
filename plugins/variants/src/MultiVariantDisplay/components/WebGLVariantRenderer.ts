@@ -110,9 +110,15 @@ void main() {
   float lx = (vid == 0u || vid == 2u || vid == 3u) ? 0.0 : 1.0;
   float ly = (vid == 0u || vid == 1u || vid == 4u) ? 0.0 : 1.0;
 
+  float natural_w_px = (cx2 - cx1) * u_canvas_width * 0.5;
+  uint effective_shape = a_shape_type;
+  if (a_shape_type == 3u && natural_w_px < 1.0) {
+    effective_shape = 0u;
+  }
+
   float x_left = cx1;
   float x_right = cx2;
-  if (a_shape_type == 3u) {
+  if (effective_shape == 3u) {
     float width_extend = 6.0 / u_canvas_width;
     x_left -= width_extend;
     x_right += width_extend;
@@ -124,7 +130,7 @@ void main() {
   float h_px = (cy_top - cy_bot) * u_canvas_height * 0.5;
   v_local_px = vec2(lx * w_px, (1.0 - ly) * h_px);
   v_size_px = vec2(w_px, h_px);
-  v_shape_type_f = a_shape_type;
+  v_shape_type_f = effective_shape;
   v_color = a_color;
 }
 `

@@ -4,7 +4,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import type { WiggleDataResult } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 
-interface RenderWiggleDataArgs {
+interface RenderWiggleDataArgs extends Record<string, unknown> {
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
@@ -24,7 +24,7 @@ export default class RenderWiggleData extends RpcMethodType {
   name = 'RenderWiggleData'
 
   async serializeArguments(args: Record<string, unknown>, rpcDriver: string) {
-    const typedArgs = args as unknown as RenderWiggleDataArgs
+    const typedArgs = args as RenderWiggleDataArgs
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
@@ -36,10 +36,7 @@ export default class RenderWiggleData extends RpcMethodType {
       })
 
       return super.serializeArguments(
-        {
-          ...typedArgs,
-          region: result.regions[0],
-        } as unknown as Record<string, unknown>,
+        { ...typedArgs, region: result.regions[0] },
         rpcDriver,
       )
     }
@@ -47,12 +44,12 @@ export default class RenderWiggleData extends RpcMethodType {
     return super.serializeArguments(args, rpcDriver)
   }
 
-  async execute(args: Record<string, unknown>, _rpcDriver: string) {
+  async execute(args: unknown, _rpcDriver: string) {
     const { executeRenderWiggleData } =
       await import('./executeRenderWiggleData.ts')
     return executeRenderWiggleData({
       pluginManager: this.pluginManager,
-      args: args as unknown as RenderWiggleDataArgs,
+      args: args as RenderWiggleDataArgs,
     })
   }
 }

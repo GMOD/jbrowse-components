@@ -26,32 +26,29 @@ function getFilename(uri: string) {
   return filename.slice(0, filename.lastIndexOf('.'))
 }
 
-/**
- * Extract filename from a config, only works for BigWigAdapter
- * Could try to generalize across more adapter types potentially
- */
-function getFilenameFromAdapterConfig(config: any) {
-  try {
-    // Handle BigWigAdapter specifically
-    if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
-      const location = config.bigWigLocation as FileLocation
-      if ('uri' in location && location.uri) {
-        return getFilename(location.uri)
-      }
-      if ('localPath' in location && location.localPath) {
-        return getFilename(location.localPath)
-      }
-      if ('blob' in location && location.blob) {
-        const blob = location.blob as File
-        return blob.name ? getFilename(blob.name) : undefined
-      }
-    }
+interface AdapterConfig {
+  type?: string
+  source?: string
+  name?: string
+  bigWigLocation?: FileLocation
+  [key: string]: unknown
+}
 
-    // Fallback for other adapter types or locations
-    return undefined
-  } catch (e) {
-    return undefined
+function getFilenameFromAdapterConfig(config: AdapterConfig) {
+  if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
+    const location = config.bigWigLocation
+    if ('uri' in location && location.uri) {
+      return getFilename(location.uri)
+    }
+    if ('localPath' in location && location.localPath) {
+      return getFilename(location.localPath)
+    }
+    if ('blob' in location && location.blob) {
+      const blob = location.blob as File
+      return blob.name ? getFilename(blob.name) : undefined
+    }
   }
+  return undefined
 }
 
 interface AdapterEntry {
@@ -102,7 +99,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     // field though, while the word 'name' still allowed in the config too. To
     // solve, we made name===source
     return Promise.all(
-      subConfs.map(async (conf: any) => {
+      subConfs.map(async (conf: AdapterConfig) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
         const source =
@@ -132,6 +129,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const adapters = await this.getAdapters()
     const stats = (
       (await Promise.all(
+        // getGlobalStats is a wiggle-specific adapter method, not on BaseFeatureDataAdapter
         // @ts-expect-error
         adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
       )) as MaybeStats[]

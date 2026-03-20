@@ -54,10 +54,8 @@ export async function executeRenderMultiWiggleData({
   ).dataAdapter as BaseFeatureDataAdapter
 
   let sourcesList: SourceInfo[] = sourcesArg || []
-  if (sourcesList.length === 0 && 'getSources' in dataAdapter) {
-    const adapterSources = await (
-      dataAdapter as unknown as { getSources: () => Promise<SourceInfo[]> }
-    ).getSources()
+  if (sourcesList.length === 0) {
+    const adapterSources = await dataAdapter.getSources([region])
     sourcesList = adapterSources
   }
 

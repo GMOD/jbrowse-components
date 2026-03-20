@@ -1,12 +1,8 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import {
   scaleLinear,
   scaleLog,
   scaleQuantize,
 } from '@mui/x-charts-vendor/d3-scale'
-
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 
 export const YSCALEBAR_LABEL_OFFSET = 5
 
@@ -27,38 +23,8 @@ export type MultiWiggleRenderingType =
 export const WIGGLE_COLOR_DEFAULT = '#f0f'
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
 
-/**
- * Determines the appropriate color callback for wiggle plots.
- *
- * Priority:
- * 1. If color is a jexl callback expression, evaluate per feature
- * 2. If color is explicitly set (not default), use static color
- * 3. If defaultColor provided (e.g. 'grey' for line plots), use it
- * 4. Otherwise use bicolor pivot logic (posColor/negColor based on score)
- */
-export function getColorCallback(
-  config: AnyConfigurationModel,
-  opts?: { defaultColor?: string },
-) {
-  const color = readConfObject(config, 'color')
-  const colorIsCallback = config.color?.isCallback
-  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
-
-  if (colorIsCallback) {
-    return (feature: Feature) => readConfObject(config, 'color', { feature })
-  }
-  if (!colorIsDefault) {
-    return () => color
-  }
-  if (opts?.defaultColor) {
-    return () => opts.defaultColor!
-  }
-  // Bicolor pivot logic
-  const pivotValue = readConfObject(config, 'bicolorPivotValue')
-  const negColor = readConfObject(config, 'negColor')
-  const posColor = readConfObject(config, 'posColor')
-  return (_feature: Feature, score: number) =>
-    score < pivotValue ? negColor : posColor
+export function isDefaultBicolor(color: string) {
+  return color === WIGGLE_COLOR_DEFAULT || color === '#ff00ff'
 }
 
 export interface ScaleOpts {
@@ -82,17 +48,19 @@ export interface Source {
   group?: string
 }
 
-/**
- * produces a d3-scale from arguments. applies a "nice domain" adjustment
- *
- * @param object - containing attributes
- *   - domain [min,max]
- *   - range [min,max]
- *   - bounds [min,max]
- *   - scaleType (linear or log)
- *   - pivotValue (number)
- *   - inverted (boolean)
- */
+function createScaleForType(scaleType: string) {
+  if (scaleType === 'linear') {
+    return scaleLinear()
+  }
+  if (scaleType === 'log') {
+    return scaleLog().base(2)
+  }
+  if (scaleType === 'quantize') {
+    return scaleQuantize()
+  }
+  throw new Error(`undefined scaleType: ${scaleType}`)
+}
+
 export function getScale({
   domain,
   range,
@@ -100,30 +68,17 @@ export function getScale({
   pivotValue,
   inverted,
 }: ScaleOpts) {
-  let scale:
-    | ReturnType<typeof scaleLinear<number>>
-    | ReturnType<typeof scaleLog<number>>
-    | ReturnType<typeof scaleQuantize<number>>
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
   }
-  if (scaleType === 'linear') {
-    scale = scaleLinear()
-  } else if (scaleType === 'log') {
-    scale = scaleLog().base(2)
-  } else if (scaleType === 'quantize') {
-    scale = scaleQuantize()
-  } else {
-    throw new Error('undefined scaleType')
-  }
-  scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
-  scale.nice()
-
   const [rangeMin, rangeMax] = range
   if (rangeMin === undefined || rangeMax === undefined) {
     throw new Error('invalid range')
   }
+  const scale = createScaleForType(scaleType)
+  scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
+  scale.nice()
   scale.range(inverted ? range.slice().reverse() : range)
   return scale
 }
@@ -133,19 +88,7 @@ export function getScale({
  *
  * @param scaleType -
  */
-export function getOrigin(scaleType: string /* , pivot, stats */) {
-  // if (pivot) {
-  //   if (pivot === 'mean') {
-  //     return stats.scoreMean || 0
-  //   }
-  //   if (pivot === 'zero') {
-  //     return 0
-  //   }
-  //   return parseFloat()
-  // }
-  // if (scaleType === 'z_score') {
-  //   return stats.scoreMean || 0
-  // }
+export function getOrigin(scaleType: string) {
   if (scaleType === 'log') {
     return 1
   }
@@ -198,22 +141,7 @@ export function getNiceDomain({
   if (maxScore !== undefined && maxScore !== Number.MAX_VALUE) {
     max = maxScore
   }
-  const getScaleType = (type: string) => {
-    if (type === 'linear') {
-      return scaleLinear()
-    }
-    if (type === 'log') {
-      const scale = scaleLog()
-      scale.base(2)
-      return scale
-    }
-    if (type === 'quantize') {
-      return scaleQuantize()
-    }
-    throw new Error(`undefined scaleType ${type}`)
-  }
-  const scale = getScaleType(scaleType)
-
+  const scale = createScaleForType(scaleType)
   scale.domain([min, max])
   scale.nice()
   return scale.domain() as [number, number]
@@ -221,32 +149,6 @@ export function getNiceDomain({
 
 export function toP(s = 0) {
   return +s.toPrecision(6)
-}
-
-/**
- * Lightweight feature serialization for wiggle features.
- * Only serializes properties needed for mouse interaction,
- * avoiding the overhead of full toJSON() serialization.
- */
-export function serializeWiggleFeature(f: {
-  get: (key: string) => unknown
-  id: () => string
-}) {
-  return {
-    uniqueId: f.id(),
-    start: f.get('start'),
-    end: f.get('end'),
-    score: f.get('score'),
-    source: f.get('source'),
-    refName: f.get('refName'),
-    maxScore: f.get('maxScore'),
-    minScore: f.get('minScore'),
-    summary: f.get('summary'),
-  }
-}
-
-export function round(value: number) {
-  return Math.round(value * 1e5) / 1e5
 }
 
 export interface SourceInfo {
@@ -310,10 +212,10 @@ export function processFeatures(
   }
 
   return {
-    featurePositions: featurePositions.slice(0, features.length * 2),
-    featureScores: featureScores.slice(0, features.length),
-    featureMinScores: featureMinScores.slice(0, features.length),
-    featureMaxScores: featureMaxScores.slice(0, features.length),
+    featurePositions,
+    featureScores,
+    featureMinScores,
+    featureMaxScores,
     numFeatures: features.length,
     posFeaturePositions: new Uint32Array(posPositions),
     posFeatureScores: new Float32Array(posScores),
@@ -341,7 +243,7 @@ export function getEffectiveScores(
   return data.featureScores
 }
 
-interface FeatureArrays {
+export interface FeatureArrays {
   featurePositions: Uint32Array
   featureScores: Float32Array
   featureMinScores: Float32Array
@@ -433,73 +335,4 @@ export function computeAutoscaleDomain(
   return [stats.scoreMin, stats.scoreMax]
 }
 
-// Shared constants for wiggle drawing
 export const WIGGLE_FUDGE_FACTOR = 0.8
-export const WIGGLE_CLIP_HEIGHT = 2
-
-// Precomputed scale values for fast rendering
-export interface ScaleValues {
-  niceMin: number
-  niceMax: number
-  height: number
-  linearRatio: number
-  log2: number
-  logMin: number
-  logRatio: number
-  isLog: boolean
-}
-
-// Precompute scale values once for use in hot loops
-export function getScaleValues(
-  scaleOpts: ScaleOpts,
-  height: number,
-): ScaleValues {
-  const scale = getScale({ ...scaleOpts, range: [0, height] })
-  const domain = scale.domain() as [number, number]
-  const niceMin = domain[0]
-  const niceMax = domain[1]
-  const domainSpan = niceMax - niceMin
-  const isLog = scaleOpts.scaleType === 'log'
-
-  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
-  const log2 = Math.log(2)
-  const logMin = Math.log(niceMin) / log2
-  const logMax = Math.log(niceMax) / log2
-  const logSpan = logMax - logMin
-  const logRatio = logSpan !== 0 ? height / logSpan : 0
-
-  return {
-    niceMin,
-    niceMax,
-    height,
-    linearRatio,
-    log2,
-    logMin,
-    logRatio,
-    isLog,
-  }
-}
-
-// avoid drawing negative width features for SVG exports
-export function fillRectCtx(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  ctx: CanvasRenderingContext2D,
-  color?: string,
-) {
-  if (width < 0) {
-    x += width
-    width = -width
-  }
-  if (height < 0) {
-    y += height
-    height = -height
-  }
-
-  if (color) {
-    ctx.fillStyle = color
-  }
-  ctx.fillRect(x, y, width, height)
-}

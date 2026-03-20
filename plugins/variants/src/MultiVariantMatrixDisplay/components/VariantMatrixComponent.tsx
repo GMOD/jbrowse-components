@@ -13,59 +13,19 @@ import { observer } from 'mobx-react'
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { MatrixCellData } from './computeVariantMatrixCells.ts'
+import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()({
-  scrollbarTrack: {
-    position: 'absolute' as const,
-    right: 0,
-    width: 12,
-    cursor: 'default',
-    zIndex: 10,
-    '&:hover > *': {
-      background: 'rgba(0,0,0,0.55)',
-    },
-  },
-  scrollbarThumb: {
-    position: 'absolute' as const,
-    right: 2,
-    width: 6,
-    borderRadius: 3,
-    background: 'rgba(0,0,0,0.3)',
-    pointerEvents: 'none' as const,
-  },
-})
+const useStyles = makeStyles()(scrollbarStyles)
 
-export interface VariantMatrixDisplayModel {
+export interface VariantMatrixDisplayModel extends VariantDisplayModelBase {
   cellData: MatrixCellData | undefined
-  availableHeight: number
-  rowHeight: number
-  scrollTop: number
-  totalHeight: number
-  nrow: number
-  sources: { name: string; baseName?: string }[] | undefined
-  featuresVolatile:
-    | { id(): string; toJSON(): Record<string, unknown> }[]
-    | undefined
-  referenceDrawingMode: string
-  regionTooLarge: boolean
-  featuresReady: boolean
-  displayError: unknown
-  reload: () => void
-  setFeatureDensityStatsLimit: (s?: unknown) => void
-  setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
-  setScrollTop: (n: number) => void
-  setRowHeight: (n: number) => void
-  selectFeature: (feature: { id(): string }) => void
-  setContextMenuFeature: (feature?: { id(): string }) => void
-  contextMenuItems: () => { label: string; onClick: () => void }[]
-  retryLoadingData: () => void
-  regionCannotBeRendered: () => React.ReactElement | null
 }
 
 const VariantMatrixComponent = observer(function VariantMatrixComponent({

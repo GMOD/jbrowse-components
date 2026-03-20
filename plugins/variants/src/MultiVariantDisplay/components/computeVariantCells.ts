@@ -12,10 +12,11 @@ import {
   getPhasedColorFromRaw,
   getRawCallGenotype,
 } from '../../shared/rawGenotypes.ts'
-import { colorToRGBA } from '../../shared/variantWebglUtils.ts'
+import { createCachedRGBA } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { Source } from '../../shared/types.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 const SHAPE_RECT = 0
 const SHAPE_TRI_RIGHT = 1
@@ -53,6 +54,25 @@ function getShapeType(featureType: string, featureStrand?: number) {
   return SHAPE_RECT
 }
 
+function getInsertionRenderEnd(
+  start: number,
+  end: number,
+  alt: string[],
+  feature: Feature,
+) {
+  let maxLen = end - start
+  for (const a of alt) {
+    maxLen = Math.max(maxLen, a.length)
+  }
+  const info = feature.get('INFO') as Record<string, string[]> | undefined
+  if (info?.SVLEN) {
+    for (const sv of info.SVLEN) {
+      maxLen = Math.max(maxLen, Math.abs(+sv))
+    }
+  }
+  return start + maxLen
+}
+
 export interface FlatbushItem {
   featureId: string
   sourceName: string
@@ -60,15 +80,26 @@ export interface FlatbushItem {
   genomicEnd: number
 }
 
-interface TempCell {
-  genomicStart: number
-  genomicEnd: number
-  rowIndex: number
-  color: [number, number, number, number]
-  shapeType: number
-  isReference: boolean
-  featureId: string
-  sourceName: string
+interface CellArrays {
+  positions: Uint32Array
+  rowIndices: Uint32Array
+  colors: Uint8Array
+  shapeTypes: Uint8Array
+  flatbushItems: FlatbushItem[]
+}
+
+function writeCellArrays(dst: CellArrays, w: number, src: CellArrays, i: number) {
+  dst.positions[w * 2] = src.positions[i * 2]!
+  dst.positions[w * 2 + 1] = src.positions[i * 2 + 1]!
+  dst.rowIndices[w] = src.rowIndices[i]!
+  const sOff = i * 4
+  const dOff = w * 4
+  dst.colors[dOff] = src.colors[sOff]!
+  dst.colors[dOff + 1] = src.colors[sOff + 1]!
+  dst.colors[dOff + 2] = src.colors[sOff + 2]!
+  dst.colors[dOff + 3] = src.colors[sOff + 3]!
+  dst.shapeTypes[w] = src.shapeTypes[i]!
+  dst.flatbushItems[w] = src.flatbushItems[i]!
 }
 
 export function computeVariantCells({
@@ -84,15 +115,7 @@ export function computeVariantCells({
   referenceDrawingMode: string
   genotypesCache: Map<string, Record<string, string>>
 }): VariantCellData {
-  const colorCache = new Map<string, [number, number, number, number]>()
-  function getCachedRGBA(color: string) {
-    let rgba = colorCache.get(color)
-    if (!rgba) {
-      rgba = colorToRGBA(color)
-      colorCache.set(color, rgba)
-    }
-    return rgba
-  }
+  const getCachedRGBA = createCachedRGBA()
 
   const splitCache = {} as Record<string, string[]>
   const alleleColorCache = {} as Record<string, string | undefined>
@@ -104,6 +127,8 @@ export function computeVariantCells({
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint8Array(maxCells * 4)
   const shapeTypes = new Uint8Array(maxCells)
+  const isRef = new Uint8Array(maxCells)
+  const flatbushItemsSrc: FlatbushItem[] = []
 
   let regionStart = Number.MAX_SAFE_INTEGER
   for (const { feature } of mafs) {
@@ -117,7 +142,32 @@ export function computeVariantCells({
   }
 
   const featureGenotypeMap = {} as Record<string, FeatureGenotypeInfo>
-  const allCells: TempCell[] = []
+  let cellCount = 0
+
+  function addCell(
+    genomicStart: number,
+    genomicEnd: number,
+    renderEnd: number,
+    rowIndex: number,
+    rgba: [number, number, number, number],
+    shape: number,
+    isReference: boolean,
+    featureId: string,
+    sourceName: string,
+  ) {
+    const ci = cellCount
+    positions[ci * 2] = genomicStart - regionStart
+    positions[ci * 2 + 1] = renderEnd - regionStart
+    rowIndices[ci] = rowIndex
+    colors[ci * 4] = rgba[0]
+    colors[ci * 4 + 1] = rgba[1]
+    colors[ci * 4 + 2] = rgba[2]
+    colors[ci * 4 + 3] = rgba[3]
+    shapeTypes[ci] = shape
+    isRef[ci] = isReference ? 1 : 0
+    flatbushItemsSrc[ci] = { featureId, sourceName, genomicStart, genomicEnd }
+    cellCount++
+  }
 
   const firstRaw = mafs[0] ? getRawCallGenotype(mafs[0].feature) : undefined
   const sampleIndexMap = firstRaw
@@ -138,6 +188,10 @@ export function computeVariantCells({
       const featureName = feature.get('name') as string
       const description = feature.get('description') as string
       const renderedGenotypes = {} as Record<string, string>
+      const renderEnd =
+        shape === SHAPE_TRI_DOWN
+          ? getInsertionRenderEnd(start, end, alt, feature)
+          : end
 
       const callGt = getRawCallGenotype(feature)
       if (callGt && sampleIndexMap) {
@@ -154,8 +208,10 @@ export function computeVariantCells({
           if (si === undefined) {
             continue
           }
-          const isPhased = callGtPhased ? Boolean(callGtPhased[si]) : false
-          if (isPhased) {
+          const isPhasedSample = callGtPhased
+            ? Boolean(callGtPhased[si])
+            : false
+          if (isPhasedSample) {
             const allele = callGt[si * ploidy + HP!]!
             const c = getPhasedColorFromRaw(
               allele,
@@ -164,17 +220,17 @@ export function computeVariantCells({
               drawRef,
             )
             if (c) {
-              const rgba = getCachedRGBA(c)
-              allCells.push({
-                genomicStart: start,
-                genomicEnd: end,
-                rowIndex: j,
-                color: [rgba[0], rgba[1], rgba[2], rgba[3]],
-                shapeType: shape,
-                isReference: c === REFERENCE_COLOR,
+              addCell(
+                start,
+                end,
+                renderEnd,
+                j,
+                getCachedRGBA(c),
+                shape,
+                c === REFERENCE_COLOR,
                 featureId,
-                sourceName: name,
-              })
+                name,
+              )
               renderedGenotypes[name] = genotypeStringFromRaw(
                 callGt,
                 si,
@@ -183,16 +239,17 @@ export function computeVariantCells({
               )
             }
           } else {
-            allCells.push({
-              genomicStart: start,
-              genomicEnd: end,
-              rowIndex: j,
-              color: [0, 0, 0, 255],
-              shapeType: shape,
-              isReference: false,
+            addCell(
+              start,
+              end,
+              renderEnd,
+              j,
+              [0, 0, 0, 255],
+              shape,
+              false,
               featureId,
-              sourceName: name,
-            })
+              name,
+            )
             renderedGenotypes[name] = genotypeStringFromRaw(
               callGt,
               si,
@@ -213,8 +270,8 @@ export function computeVariantCells({
           const sampleName = baseName ?? name
           const genotype = samp[sampleName]
           if (genotype) {
-            const isPhased = genotype.includes('|')
-            if (isPhased) {
+            const isPhasedGt = genotype.includes('|')
+            if (isPhasedGt) {
               const alleles =
                 splitCache[genotype] ??
                 (splitCache[genotype] = genotype.split('|'))
@@ -226,32 +283,31 @@ export function computeVariantCells({
                 drawRef,
               )
               if (c) {
-                const rgba = getCachedRGBA(c)
-                allCells.push({
-                  genomicStart: start,
-                  genomicEnd: end,
-                  rowIndex: j,
-                  color: [rgba[0], rgba[1], rgba[2], rgba[3]],
-                  shapeType: shape,
-
-                  isReference: c === REFERENCE_COLOR,
+                addCell(
+                  start,
+                  end,
+                  renderEnd,
+                  j,
+                  getCachedRGBA(c),
+                  shape,
+                  c === REFERENCE_COLOR,
                   featureId,
-                  sourceName: name,
-                })
+                  name,
+                )
                 renderedGenotypes[name] = genotype
               }
             } else {
-              allCells.push({
-                genomicStart: start,
-                genomicEnd: end,
-                rowIndex: j,
-                color: [0, 0, 0, 255],
-                shapeType: shape,
-
-                isReference: false,
+              addCell(
+                start,
+                end,
+                renderEnd,
+                j,
+                [0, 0, 0, 255],
+                shape,
+                false,
                 featureId,
-                sourceName: name,
-              })
+                name,
+              )
               renderedGenotypes[name] = genotype
             }
           }
@@ -283,6 +339,10 @@ export function computeVariantCells({
       const featureName = feature.get('name') as string
       const description = feature.get('description') as string
       const renderedGenotypes = {} as Record<string, string>
+      const renderEnd =
+        shape === SHAPE_TRI_DOWN
+          ? getInsertionRenderEnd(start, end, alt, feature)
+          : end
 
       const callGt = getRawCallGenotype(feature)
       if (callGt && sampleIndexMap) {
@@ -338,17 +398,17 @@ export function computeVariantCells({
             rawColorCache[cacheKey] = c
           }
           if (c) {
-            const rgba = getCachedRGBA(c)
-            allCells.push({
-              genomicStart: start,
-              genomicEnd: end,
-              rowIndex: j,
-              color: [rgba[0], rgba[1], rgba[2], rgba[3]],
-              shapeType: shape,
-              isReference: c === REFERENCE_COLOR,
+            addCell(
+              start,
+              end,
+              renderEnd,
+              j,
+              getCachedRGBA(c),
+              shape,
+              c === REFERENCE_COLOR,
               featureId,
-              sourceName: name,
-            })
+              name,
+            )
             renderedGenotypes[name] = genotypeStringFromRaw(
               callGt,
               si,
@@ -376,17 +436,17 @@ export function computeVariantCells({
               drawRef,
             )
             if (c) {
-              const rgba = getCachedRGBA(c)
-              allCells.push({
-                genomicStart: start,
-                genomicEnd: end,
-                rowIndex: j,
-                color: [rgba[0], rgba[1], rgba[2], rgba[3]],
-                shapeType: shape,
-                isReference: c === REFERENCE_COLOR,
+              addCell(
+                start,
+                end,
+                renderEnd,
+                j,
+                getCachedRGBA(c),
+                shape,
+                c === REFERENCE_COLOR,
                 featureId,
-                sourceName: name,
-              })
+                name,
+              )
               renderedGenotypes[name] = genotype
             }
           }
@@ -404,47 +464,48 @@ export function computeVariantCells({
     }
   }
 
-  let cellCount = 0
-  const flatbushItems: FlatbushItem[] = []
-  function writeCell(cell: TempCell) {
-    positions[cellCount * 2] = cell.genomicStart - regionStart
-    positions[cellCount * 2 + 1] = cell.genomicEnd - regionStart
-    rowIndices[cellCount] = cell.rowIndex
-    colors[cellCount * 4] = cell.color[0]
-    colors[cellCount * 4 + 1] = cell.color[1]
-    colors[cellCount * 4 + 2] = cell.color[2]
-    colors[cellCount * 4 + 3] = cell.color[3]
-    shapeTypes[cellCount] = cell.shapeType
-    flatbushItems.push({
-      featureId: cell.featureId,
-      sourceName: cell.sourceName,
-      genomicStart: cell.genomicStart,
-      genomicEnd: cell.genomicEnd,
-    })
-    cellCount++
+  const src = {
+    positions,
+    rowIndices,
+    colors,
+    shapeTypes,
+    flatbushItems: flatbushItemsSrc,
   }
+  const outPositions = new Uint32Array(cellCount * 2)
+  const outRowIndices = new Uint32Array(cellCount)
+  const outColors = new Uint8Array(cellCount * 4)
+  const outShapeTypes = new Uint8Array(cellCount)
+  const outFlatbushItems: FlatbushItem[] = new Array(cellCount)
+  const dst = {
+    positions: outPositions,
+    rowIndices: outRowIndices,
+    colors: outColors,
+    shapeTypes: outShapeTypes,
+    flatbushItems: outFlatbushItems,
+  }
+  let w = 0
   if (drawRef) {
-    for (const cell of allCells) {
-      if (cell.isReference) {
-        writeCell(cell)
+    for (let i = 0; i < cellCount; i++) {
+      if (isRef[i]) {
+        writeCellArrays(dst, w++, src, i)
       }
     }
   }
-  for (const cell of allCells) {
-    if (!cell.isReference) {
-      writeCell(cell)
+  for (let i = 0; i < cellCount; i++) {
+    if (!isRef[i]) {
+      writeCellArrays(dst, w++, src, i)
     }
   }
 
-  const flatbush = new Flatbush(Math.max(cellCount, 1))
-  if (cellCount > 0) {
-    for (let i = 0; i < cellCount; i++) {
-      const item = flatbushItems[i]!
+  const flatbush = new Flatbush(Math.max(w, 1))
+  if (w > 0) {
+    for (let i = 0; i < w; i++) {
+      const item = outFlatbushItems[i]!
       flatbush.add(
         item.genomicStart,
-        rowIndices[i]!,
+        outRowIndices[i]!,
         item.genomicEnd,
-        rowIndices[i]! + 1,
+        outRowIndices[i]! + 1,
       )
     }
   } else {
@@ -454,13 +515,13 @@ export function computeVariantCells({
 
   return {
     regionStart,
-    cellPositions: positions.subarray(0, cellCount * 2),
-    cellRowIndices: rowIndices.subarray(0, cellCount),
-    cellColors: colors.subarray(0, cellCount * 4),
-    cellShapeTypes: shapeTypes.subarray(0, cellCount),
-    numCells: cellCount,
+    cellPositions: outPositions,
+    cellRowIndices: outRowIndices,
+    cellColors: outColors,
+    cellShapeTypes: outShapeTypes,
+    numCells: w,
     featureGenotypeMap,
     flatbushData: flatbush.data,
-    flatbushItems,
+    flatbushItems: outFlatbushItems,
   }
 }

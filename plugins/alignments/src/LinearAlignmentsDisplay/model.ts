@@ -56,11 +56,6 @@ import {
   uploadRegionDataToGPU,
 } from './components/alignmentComponentUtils.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
-import {
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
-} from './constants.ts'
-
 import type {
   AlignmentsRenderer,
   ColorPalette,
@@ -103,70 +98,12 @@ type LGV = LinearGenomeViewModel
 // Offset for Y scalebar labels (same as wiggle plugin)
 export const YSCALEBAR_LABEL_OFFSET = 5
 
-// Insertion type classification - must match shader logic in WebGLRenderer.ts
-export type InsertionType = 'large' | 'long' | 'small'
-
-/**
- * Classify an insertion based on its length and current zoom level.
- * - 'large': length >= 10bp AND wide enough to show text (>= 15px)
- * - 'long': length >= 10bp but too zoomed out for text
- * - 'small': length < 10bp
- */
-export function getInsertionType(
-  length: number,
-  pxPerBp: number,
-): InsertionType {
-  const isLongInsertion = length >= LONG_INSERTION_MIN_LENGTH
-  if (isLongInsertion) {
-    const insertionWidthPx = length * pxPerBp
-    if (insertionWidthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
-      return 'large'
-    }
-    return 'long'
-  }
-  return 'small'
-}
-
-/**
- * Calculate the pixel width needed to display a number as text.
- * Must match the textWidthForNumber function in the insertion vertex shader.
- */
-export function textWidthForNumber(num: number): number {
-  const charWidth = 6
-  const padding = 10
-  if (num < 10) {
-    return charWidth + padding
-  }
-  if (num < 100) {
-    return charWidth * 2 + padding
-  }
-  if (num < 1000) {
-    return charWidth * 3 + padding
-  }
-  if (num < 10000) {
-    return charWidth * 4 + padding
-  }
-  return charWidth * 5 + padding
-}
-
-/**
- * Get the rectangle width in pixels for an insertion marker.
- * Must match the shader logic in WebGLRenderer.ts.
- */
-export function getInsertionRectWidthPx(
-  length: number,
-  pxPerBp: number,
-): number {
-  const type = getInsertionType(length, pxPerBp)
-  if (type === 'large') {
-    return textWidthForNumber(length)
-  }
-  if (type === 'long') {
-    const insertionWidthPx = length * pxPerBp
-    return Math.min(5, insertionWidthPx / 3)
-  }
-  return Math.min(pxPerBp, 1) // thin bar, subpixel when zoomed out
-}
+export {
+  textWidthForNumber,
+  getInsertionType,
+  insertionBarWidth as getInsertionRectWidthPx,
+} from './constants.ts'
+export type { InsertionType } from './constants.ts'
 
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
 

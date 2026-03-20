@@ -106,9 +106,15 @@ fn vs_main(
   let lx = select(1.0, 0.0, vid == 0u || vid == 2u || vid == 3u);
   let ly = select(1.0, 0.0, vid == 0u || vid == 1u || vid == 4u);
 
+  let natural_w_px = (cx2 - cx1) * u.canvas_width * 0.5;
+  var effective_shape = inst.shape_type;
+  if inst.shape_type == 3u && natural_w_px < 1.0 {
+    effective_shape = 0u;
+  }
+
   var x_left = cx1;
   var x_right = cx2;
-  if inst.shape_type == 3u {
+  if effective_shape == 3u {
     let width_extend = 6.0 / u.canvas_width;
     x_left -= width_extend;
     x_right += width_extend;
@@ -122,7 +128,7 @@ fn vs_main(
   out.color = inst.color;
   out.local_px = vec2f(lx * w_px, (1.0 - ly) * h_px);
   out.size_px = vec2f(w_px, h_px);
-  out.shape_type_f = inst.shape_type;
+  out.shape_type_f = effective_shape;
   return out;
 }
 

@@ -128,21 +128,23 @@ export class Canvas2DVariantRenderer {
 
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`
 
-        if (shapeType === 0) {
+        const effectiveShape = shapeType === 3 && w < 1 ? 0 : shapeType
+
+        if (effectiveShape === 0) {
           ctx.fillRect(x1, y, w, rowHeight)
-        } else if (shapeType === 1) {
+        } else if (effectiveShape === 1) {
           ctx.beginPath()
           ctx.moveTo(x1, y)
           ctx.lineTo(x1 + w, y + rowHeight / 2)
           ctx.lineTo(x1, y + rowHeight)
           ctx.fill()
-        } else if (shapeType === 2) {
+        } else if (effectiveShape === 2) {
           ctx.beginPath()
           ctx.moveTo(x1 + w, y)
           ctx.lineTo(x1, y + rowHeight / 2)
           ctx.lineTo(x1 + w, y + rowHeight)
           ctx.fill()
-        } else if (shapeType === 3) {
+        } else if (effectiveShape === 3) {
           ctx.beginPath()
           ctx.moveTo(x1, y)
           ctx.lineTo(x1 + w, y)

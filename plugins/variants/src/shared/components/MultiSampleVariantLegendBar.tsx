@@ -8,12 +8,7 @@ import ColorLegend from './MultiSampleVariantColorLegend.tsx'
 import type { LegendBarModel } from './types.ts'
 
 const MultiSampleVariantLegendBar = observer(
-  function MultiSampleVariantLegendBar(props: {
-    model: LegendBarModel
-    orientation?: string
-    exportSVG?: boolean
-  }) {
-    const { model } = props
+  function MultiSampleVariantLegendBar({ model }: { model: LegendBarModel }) {
     const {
       id,
       scrollTop,

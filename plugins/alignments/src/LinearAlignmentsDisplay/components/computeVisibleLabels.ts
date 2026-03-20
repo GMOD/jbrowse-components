@@ -5,7 +5,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import { getInsertionType } from '../model.ts'
+import { getInsertionType } from '../constants.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 

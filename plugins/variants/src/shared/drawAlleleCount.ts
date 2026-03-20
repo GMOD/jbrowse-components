@@ -5,7 +5,6 @@ import {
   ALT_COLOR_SATURATION,
   NO_CALL_COLOR,
   REFERENCE_COLOR,
-  f2,
 } from './constants.ts'
 
 export function getAlleleColor(
@@ -78,43 +77,3 @@ export function getColorAlleleCount(
   return a1?.toHex() || 'black'
 }
 
-export function drawColorAlleleCount(
-  c: string,
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  featureType = '',
-  featureStrand?: number,
-  alpha = 1,
-) {
-  ctx.fillStyle = alpha !== 1 ? colord(c).alpha(alpha).toHex() : c
-  if (featureType === 'inversion') {
-    if (featureStrand === 1) {
-      ctx.beginPath()
-      ctx.moveTo(x - f2, y - f2)
-      ctx.lineTo(x - f2, y + h + f2)
-      ctx.lineTo(x + w + f2, y + h / 2)
-      ctx.closePath()
-      ctx.fill()
-    } else {
-      ctx.beginPath()
-      ctx.moveTo(x + w + f2, y - f2)
-      ctx.lineTo(x + w + f2, y + h + f2)
-      ctx.lineTo(x - f2, y + h / 2)
-      ctx.closePath()
-      ctx.fill()
-    }
-  } else if (featureType === 'insertion') {
-    const widthExtension = 3
-    ctx.beginPath()
-    ctx.moveTo(x - f2 - widthExtension, y - f2)
-    ctx.lineTo(x + w + f2 + widthExtension, y - f2)
-    ctx.lineTo(x + w / 2, y + h + f2)
-    ctx.closePath()
-    ctx.fill()
-  } else {
-    ctx.fillRect(x - f2, y - f2, w + f2, h + f2)
-  }
-}

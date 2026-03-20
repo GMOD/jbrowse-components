@@ -19,7 +19,10 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import { getInsertionRectWidthPx, getInsertionType } from '../model.ts'
+import {
+  getInsertionType,
+  insertionBarWidth as getInsertionRectWidthPx,
+} from '../constants.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types'
 

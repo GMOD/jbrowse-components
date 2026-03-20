@@ -61,19 +61,18 @@ function computeSampleInfo(
         | Uint8Array
         | undefined
       for (const [si, sampleName] of sampleNames.entries()) {
-        const name = sampleName
         const isPhased = callGenotypePhased
           ? Boolean(callGenotypePhased[si])
           : false
         hasPhased ||= isPhased
-        const existing = sampleInfo[name]
+        const existing = sampleInfo[sampleName]
         if (existing) {
           if (ploidy > existing.maxPloidy) {
             existing.maxPloidy = ploidy
           }
           existing.isPhased ||= isPhased
         } else {
-          sampleInfo[name] = { maxPloidy: ploidy, isPhased }
+          sampleInfo[sampleName] = { maxPloidy: ploidy, isPhased }
         }
       }
     } else {
@@ -89,11 +88,9 @@ function computeSampleInfo(
         const isPhased = val.includes('|')
         hasPhased ||= isPhased
         let ploidy = 1
-        if (isPhased) {
-          for (const char of val) {
-            if (char === '|') {
-              ploidy++
-            }
+        for (const char of val) {
+          if (char === '|' || char === '/') {
+            ploidy++
           }
         }
         const existing = sampleInfo[key]
@@ -204,16 +201,27 @@ export async function executeVariantCellData({
       () => {
         if (regionLookup) {
           const grouped = new Map<number, MAFFilteredFeature[]>()
-          // TODO: consider using an interval tree or sorted lookup for large
-          // region counts instead of linear find per feature
+          const regionsByRefName = new Map<
+            string,
+            typeof regionLookup
+          >()
+          for (const r of regionLookup) {
+            let list = regionsByRefName.get(r.refName)
+            if (!list) {
+              list = []
+              regionsByRefName.set(r.refName, list)
+            }
+            list.push(r)
+          }
           for (const maf of mafs) {
-            const refName = maf.feature.get('refName')
-            const featureStart = maf.feature.get('start')
-            const entry = regionLookup.find(
-              r =>
-                r.refName === refName &&
-                featureStart >= r.start &&
-                featureStart < r.end,
+            const refName = maf.feature.get('refName') as string
+            const featureStart = maf.feature.get('start') as number
+            const candidates = regionsByRefName.get(refName)
+            if (!candidates) {
+              continue
+            }
+            const entry = candidates.find(
+              r => featureStart >= r.start && featureStart < r.end,
             )
             if (!entry) {
               continue

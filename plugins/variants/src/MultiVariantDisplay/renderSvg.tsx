@@ -76,9 +76,11 @@ function renderCellsForRegion(
 
     setFillFromCellColor(ctx, cellColors, i)
 
-    if (shapeType === 0) {
+    const effectiveShape = shapeType === 3 && w < 1 ? 0 : shapeType
+
+    if (effectiveShape === 0) {
       ctx.fillRect(x, y, w, h)
-    } else if (shapeType === 1) {
+    } else if (effectiveShape === 1) {
       const midY = y + h / 2
       ctx.beginPath()
       ctx.moveTo(x, y)
@@ -86,7 +88,7 @@ function renderCellsForRegion(
       ctx.lineTo(x, yEnd)
       ctx.closePath()
       ctx.fill()
-    } else if (shapeType === 2) {
+    } else if (effectiveShape === 2) {
       const midY = y + h / 2
       ctx.beginPath()
       ctx.moveTo(x + w, y)
@@ -94,7 +96,7 @@ function renderCellsForRegion(
       ctx.lineTo(x + w, yEnd)
       ctx.closePath()
       ctx.fill()
-    } else if (shapeType === 3) {
+    } else if (effectiveShape === 3) {
       const midX = x + w / 2
       ctx.beginPath()
       ctx.moveTo(x, y)

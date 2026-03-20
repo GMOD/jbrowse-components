@@ -8,6 +8,7 @@ import {
   SCALE_TYPE_LOG,
 } from './wiggleShader.ts'
 
+import type { FeatureArrays } from '../util.ts'
 import type {
   SourceRenderData,
   WiggleGPURenderState,
@@ -43,14 +44,6 @@ const renderingTypeMap: Record<string, number> = {
 
 export function renderingTypeToInt(type: string) {
   return renderingTypeMap[type] ?? RENDERING_TYPE_XYPLOT
-}
-
-interface FeatureArrays {
-  featurePositions: Uint32Array
-  featureScores: Float32Array
-  featureMinScores: Float32Array
-  featureMaxScores: Float32Array
-  numFeatures: number
 }
 
 function hasSummaryFeatures(data: FeatureArrays) {

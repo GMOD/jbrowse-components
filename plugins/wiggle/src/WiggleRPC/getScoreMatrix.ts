@@ -25,7 +25,7 @@ export async function getScoreMatrix({
   )
 
   const groups = groupBy(feats, f => f.get('source'))
-  const rows = {} as Record<string, number[]>
+  const rows: Record<string, number[]> = {}
 
   // pre-compute values used in inner loop
   const r0Start = r0.start

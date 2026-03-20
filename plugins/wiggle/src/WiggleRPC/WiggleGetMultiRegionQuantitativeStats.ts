@@ -60,7 +60,7 @@ export class WiggleGetMultiRegionQuantitativeStats extends RpcMethodTypeWithFilt
     )
     const { regions, staticBlocks, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-
+    // Wiggle adapters accept staticBlocks in opts, which extends beyond BaseOptions
     // @ts-expect-error
     return dataAdapter.getMultiRegionQuantitativeStats(regions, {
       ...deserializedArgs,

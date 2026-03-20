@@ -1,4 +1,4 @@
-import { WIGGLE_FUDGE_FACTOR, fillRectCtx } from '../util.ts'
+import { WIGGLE_FUDGE_FACTOR } from '../util.ts'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -193,7 +193,7 @@ export class Canvas2DWiggleRenderer {
   private drawXYPlot(p: DrawParams) {
     const { ctx, source, regionStart, block, bpLength, fullBlockWidth } = p
     const { rowHeight, rowTop, domainY, scaleType, r, g, b } = p
-    const color = `rgb(${r},${g},${b})`
+    ctx.fillStyle = `rgb(${r},${g},${b})`
     const originY = scoreToY(0, domainY, rowHeight, scaleType) + rowTop
 
     for (let i = 0; i < source.numFeatures; i++) {
@@ -205,8 +205,12 @@ export class Canvas2DWiggleRenderer {
         scoreToY(source.featureScores[i]!, domainY, rowHeight, scaleType) +
         rowTop
       const w = Math.max(1.5, x2 - x1 + WIGGLE_FUDGE_FACTOR)
-
-      fillRectCtx(x1, scoreY, w, originY - scoreY, ctx, color)
+      const h = originY - scoreY
+      if (h >= 0) {
+        ctx.fillRect(x1, scoreY, w, h)
+      } else {
+        ctx.fillRect(x1, originY, w, -h)
+      }
     }
   }
 
@@ -229,7 +233,8 @@ export class Canvas2DWiggleRenderer {
       const cr = Math.round(255 + (r - 255) * t)
       const cg = Math.round(255 + (g - 255) * t)
       const cb = Math.round(255 + (b - 255) * t)
-      fillRectCtx(x1, rowTop, w, rowHeight, ctx, `rgb(${cr},${cg},${cb})`)
+      ctx.fillStyle = `rgb(${cr},${cg},${cb})`
+      ctx.fillRect(x1, rowTop, w, rowHeight)
     }
   }
 

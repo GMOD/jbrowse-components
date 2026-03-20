@@ -15,29 +15,19 @@ import { VariantRenderer } from './VariantRenderer.ts'
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import LoadingOverlay from '../../shared/components/LoadingOverlay.tsx'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantCellData } from './computeVariantCells.ts'
+import type { VariantDisplayModelBase } from '../../shared/VariantDisplayModelInterface.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface PerRegionCellData {
   perRegionCellData: Record<number, VariantCellData>
 }
 
-export interface VariantDisplayModel {
+export interface VariantDisplayModel extends VariantDisplayModelBase {
   cellData: PerRegionCellData | undefined
-  availableHeight: number
-  rowHeight: number
-  scrollTop: number
-  totalHeight: number
-  nrow: number
-  sources: { name: string; baseName?: string }[] | undefined
-  featuresVolatile:
-    | { id(): string; toJSON(): Record<string, unknown> }[]
-    | undefined
-  referenceDrawingMode: string
-  regionTooLarge: boolean
-  featuresReady: boolean
   cellDataLoading: boolean
   statusMessage?: string
   visibleRegions: {
@@ -49,44 +39,22 @@ export interface VariantDisplayModel {
     screenStartPx: number
     screenEndPx: number
   }[]
-  displayError: unknown
-  reload: () => void
-  setFeatureDensityStatsLimit: (s?: unknown) => void
-  setHoveredGenotype: (tooltip: Record<string, string> | undefined) => void
-  setScrollTop: (n: number) => void
-  setRowHeight: (n: number) => void
-  selectFeature: (feature: { id(): string }) => void
-  setContextMenuFeature: (feature?: { id(): string }) => void
-  contextMenuItems: () => { label: string; onClick: () => void }[]
-  retryLoadingData: () => void
-  regionCannotBeRendered: () => React.ReactElement | null
 }
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()({
-  scrollbarTrack: {
-    position: 'absolute' as const,
-    right: 0,
-    width: 12,
-    cursor: 'default',
-    zIndex: 10,
-    '&:hover > *': {
-      background: 'rgba(0,0,0,0.55)',
-    },
-  },
-  scrollbarThumb: {
-    position: 'absolute' as const,
-    right: 2,
-    width: 6,
-    borderRadius: 3,
-    background: 'rgba(0,0,0,0.3)',
-    pointerEvents: 'none' as const,
-  },
-})
+const useStyles = makeStyles()(scrollbarStyles)
 
-function buildFlatbushIndex(cellData: VariantCellData) {
-  return Flatbush.from(cellData.flatbushData)
+function buildFlatbushIndex(
+  cellData: VariantCellData,
+  cache: WeakMap<ArrayBuffer, Flatbush>,
+) {
+  let index = cache.get(cellData.flatbushData)
+  if (!index) {
+    index = Flatbush.from(cellData.flatbushData)
+    cache.set(cellData.flatbushData, index)
+  }
+  return index
 }
 
 const HoveredCellHighlight = observer(function HoveredCellHighlight({
@@ -151,6 +119,7 @@ const VariantComponent = observer(function VariantComponent({
   >()
   const lastHoveredRef = useRef<string | undefined>(undefined)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const flatbushCacheRef = useRef(new WeakMap<ArrayBuffer, Flatbush>())
   const { classes } = useStyles()
 
   const { error, ready, rendererRef, retry } = useGpuRenderer(
@@ -250,7 +219,7 @@ const VariantComponent = observer(function VariantComponent({
       return undefined
     }
 
-    const flatbushIndex = buildFlatbushIndex(regionCellData)
+    const flatbushIndex = buildFlatbushIndex(regionCellData, flatbushCacheRef.current)
 
     const blockWidth = region.screenEndPx - region.screenStartPx
     const regionLengthBp = region.end - region.start

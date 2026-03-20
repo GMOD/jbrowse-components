@@ -16,7 +16,7 @@ import {
   makeRenderState,
   makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
-import { WIGGLE_COLOR_DEFAULT, getEffectiveScores } from '../../util.ts'
+import { getEffectiveScores, isDefaultBicolor } from '../../util.ts'
 
 import type { WiggleDataResult } from '../../RenderWiggleDataRPC/types.ts'
 import type {
@@ -63,8 +63,7 @@ export function buildSourceRenderData(
   data: WiggleDataResult,
   model: WiggleDisplayModel,
 ): SourceRenderData[] {
-  const useBicolor =
-    model.color === WIGGLE_COLOR_DEFAULT || model.color === '#ff00ff'
+  const useBicolor = isDefaultBicolor(model.color)
   const baseColor = parseColor(model.color)
   const posColor = parseColor(model.posColor)
   const negColor = parseColor(model.negColor)
