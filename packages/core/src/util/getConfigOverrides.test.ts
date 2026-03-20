@@ -85,7 +85,11 @@ describe('getEffectiveTrackConfig', () => {
   test('preserves non-display track config properties', () => {
     const dc = mockDisplayConf({})
     const trackConfig = mockTrackConfig(
-      { trackId: 'track-1', name: 'My Track', adapter: { type: 'BigWigAdapter' } },
+      {
+        trackId: 'track-1',
+        name: 'My Track',
+        adapter: { type: 'BigWigAdapter' },
+      },
       [dc],
     )
     const display = mockDisplay(dc, 'd1')
@@ -109,7 +113,11 @@ describe('getEffectiveTrackConfig', () => {
   })
 
   test('handles multiple overridden slots', () => {
-    const dc = mockDisplayConf({ color: '#f0f', scaleType: 'linear', minScore: 0 })
+    const dc = mockDisplayConf({
+      color: '#f0f',
+      scaleType: 'linear',
+      minScore: 0,
+    })
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
     const display = mockDisplay(dc, 'd1', {
       color: '#ff0000',
@@ -178,7 +186,10 @@ describe('getEffectiveTrackConfig', () => {
   test('includes displayId and type even when all slots match defaults', () => {
     const dc = mockDisplayConf({ color: '#f0f', scaleType: 'linear' })
     const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
-    const display = mockDisplay(dc, 'd1', { color: '#f0f', scaleType: 'linear' })
+    const display = mockDisplay(dc, 'd1', {
+      color: '#f0f',
+      scaleType: 'linear',
+    })
 
     const result = getEffectiveTrackConfig(trackConfig as any, display as any)
     const d = (result.displays as any)[0]
@@ -186,5 +197,36 @@ describe('getEffectiveTrackConfig', () => {
     expect(d.type).toBe('LinearWiggleDisplay')
     expect(d.color).toBeUndefined()
     expect(d.scaleType).toBeUndefined()
+  })
+
+  test('detects boolean override (e.g. showLabels toggled to false)', () => {
+    const dc = mockDisplayConf({ showLabels: true })
+    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
+    const display = mockDisplay(dc, 'd1', { showLabels: false })
+
+    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    expect((result.displays as any)[0].showLabels).toBe(false)
+  })
+
+  test('detects numeric override when value changes from default', () => {
+    const dc = mockDisplayConf({ minScore: 0, maxScore: 100 })
+    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc])
+    const display = mockDisplay(dc, 'd1', { minScore: 5, maxScore: 100 })
+
+    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const d = (result.displays as any)[0]
+    expect(d.minScore).toBe(5)
+    expect(d.maxScore).toBeUndefined()
+  })
+
+  test('non-matching display gets type but no slot values', () => {
+    const dc1 = mockDisplayConf({ color: '#f0f' }, 'LinearWiggleDisplay')
+    const dc2 = mockDisplayConf({ color: '#000' }, 'LinearBasicDisplay')
+    const trackConfig = mockTrackConfig({ trackId: 'track-1' }, [dc1, dc2])
+    const display = mockDisplay(dc1, 'd1', { color: '#ff0000' })
+
+    const result = getEffectiveTrackConfig(trackConfig as any, display as any)
+    const displays = result.displays as any[]
+    expect(displays[1]).toEqual({ type: 'LinearBasicDisplay' })
   })
 })

@@ -287,9 +287,7 @@ describe('migrateConfigSnapshot', () => {
         {
           type: 'FeatureTrack',
           trackId: 'track2',
-          displays: [
-            { type: 'LinearBasicDisplay', displayId: 'd3' },
-          ],
+          displays: [{ type: 'LinearBasicDisplay', displayId: 'd3' }],
         },
       ],
     }

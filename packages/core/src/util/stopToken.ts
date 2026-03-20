@@ -50,7 +50,9 @@ const useSharedArrayBuffer = (() => {
 })()
 
 if (useSharedArrayBuffer) {
-  console.log('[stopToken] SharedArrayBuffer available, using fast atomic abort')
+  console.log(
+    '[stopToken] SharedArrayBuffer available, using fast atomic abort',
+  )
 }
 
 // ---------------------------------------------------------------------------

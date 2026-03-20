@@ -119,6 +119,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTrackActionMenuItems?: (
     config: AnyConfigurationModel,
     extraTrackActions?: MenuItem[],
+    effectiveConfig?: Record<string, unknown>,
   ) => MenuItem[]
   getTrackActions?: (arg: AnyConfigurationModel) => MenuItem[]
   getTrackListMenuItems?: (arg: AnyConfigurationModel) => MenuItem[]

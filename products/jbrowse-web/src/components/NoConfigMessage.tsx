@@ -8,7 +8,6 @@ export default function NoConfigMessage() {
     ['test_data/breakpoint/config.json', 'Breakpoint'],
     ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
     ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
-    ['test_data/hs1_vs_mm39/config.json', 'Hs1 vs mm39 synteny'],
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/many_contigs/config.json', 'Many contigs'],
     ['test_data/honeybee/config.json', 'Honeybee'],
@@ -143,6 +142,12 @@ export default function NoConfigMessage() {
         <li>
           <a href="?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt">
             {'Linear synteny view of grape vs peach genome'}
+          </a>
+        </li>
+
+        <li>
+          <a href="test_data/hs1_vs_mm39/config.json?config=test_data%2Fhs1_vs_mm39%2Fconfig.json&session=share-sYw9py4ItD&password=fAVJa">
+            Hs1 vs mm39 synteny
           </a>
         </li>
         <li>

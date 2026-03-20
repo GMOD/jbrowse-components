@@ -16,17 +16,29 @@ function isConfigSlot(slot: unknown): slot is ConfigSlot {
   )
 }
 
+// For non-callback slots, getValue() resolves the value (same as
+// readConfObject internally). For callback slots we return the raw
+// jexl expression string since it can't be evaluated without a feature.
 function readSlotValue(slot: ConfigSlot) {
   return slot.isCallback ? slot.value : slot.getValue()
 }
 
 /**
- * Produces a track config snapshot where the given display's session overrides
- * are baked into the matching display config entry. For each non-callback
- * config slot on the display, compares the config value against the display
- * model's getter. When they differ, the getter value is used.
+ * Produces a track config snapshot suitable for "Copy config". For each
+ * non-callback config slot on the active display, compares the config default
+ * against the display model's current value. Only values that differ from
+ * defaults are included (matching readConfObject's behavior).
  *
- * Display types use this from their `effectiveTrackConfig` getter.
+ * Key design decisions:
+ * - We read live display config models (trackConfig.displays) rather than
+ *   getSnapshot(trackConfig).displays, because MST's postProcessSnapshot
+ *   strips display configs to {} when all values are defaults.
+ * - displayId is a types.identifier that postProcessSnapshot also strips,
+ *   so we recover it from getSnapshot(display).configuration which stores
+ *   the reference as a plain string.
+ * - Matching is by display type string since the live config model accessed
+ *   via trackConfig.displays is a different MST proxy than
+ *   display.configuration (identity check fails).
  */
 export function getEffectiveTrackConfig(
   trackConfig: IAnyStateTreeNode,
@@ -37,20 +49,17 @@ export function getEffectiveTrackConfig(
 ) {
   const conf = getSnapshot(trackConfig) as Record<string, unknown>
 
-  const trackDisplays = (trackConfig as Record<string, unknown>)
-    .displays as Record<string, unknown>[] | undefined
+  const trackDisplays = (trackConfig as Record<string, unknown>).displays as
+    | Record<string, unknown>[]
+    | undefined
   if (!Array.isArray(trackDisplays)) {
     return conf
   }
 
-  // displayId is a types.identifier that postProcessSnapshot strips, so
-  // the only reliable source is the display model snapshot's configuration
-  // reference value
   const displaySnap = getSnapshot(
     display as unknown as IAnyStateTreeNode,
   ) as Record<string, unknown>
   const displayConfId = displaySnap.configuration as string | undefined
-
   const displayType = display.configuration.type as string | undefined
 
   return {

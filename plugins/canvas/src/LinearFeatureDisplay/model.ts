@@ -15,7 +15,6 @@ import {
   isSessionModelWithWidgets,
   measureText,
 } from '@jbrowse/core/util'
-import { getEffectiveTrackConfig } from '@jbrowse/core/util/getConfigOverrides'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -201,7 +200,10 @@ export default function stateModelFactory(
       },
 
       get showDescriptions(): boolean {
-        return self.trackShowDescriptions ?? (getConf(self, 'showDescriptions') as boolean)
+        return (
+          self.trackShowDescriptions ??
+          (getConf(self, 'showDescriptions') as boolean)
+        )
       },
 
       get effectiveShowDescriptions(): boolean {
@@ -799,15 +801,6 @@ export default function stateModelFactory(
       }
     })
 
-    .views(self => ({
-      get effectiveTrackConfig() {
-        const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(
-          track.configuration,
-          self as unknown as { configuration: Record<string, unknown>;[key: string]: unknown },
-        )
-      },
-    }))
     .views(self => ({
       get isGeneLike() {
         const type = (self.contextMenuInfo?.type ?? '').toLowerCase()

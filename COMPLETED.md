@@ -267,19 +267,20 @@ reversed region) producing parallel lines is the correct biological behavior.
 Added testable migration utilities for loading old sessions and configs:
 
 - **`migrateWiggleSnapshot`** (17 tests) — migrates old `SharedWiggleMixin`
-  property names (`scale` → `scaleTypeSetting`, `autoscale` → `autoscaleSetting`,
-  `rendererTypeNameState` → `renderingTypeSetting`, `constraints.{min,max}` →
-  `minScoreSetting`/`maxScoreSetting`, color properties, `showSidebar` →
-  `showTreeSetting`). Strips removed properties (`fill`, `minSize`). Handles
-  `xyplot` → `multixyplot` remap for multi-wiggle.
+  property names (`scale` → `scaleTypeSetting`, `autoscale` →
+  `autoscaleSetting`, `rendererTypeNameState` → `renderingTypeSetting`,
+  `constraints.{min,max}` → `minScoreSetting`/`maxScoreSetting`, color
+  properties, `showSidebar` → `showTreeSetting`). Strips removed properties
+  (`fill`, `minSize`). Handles `xyplot` → `multixyplot` remap for multi-wiggle.
 - **`migrateAlignmentsSnapshot`** (15 tests) — remaps old display types
   (`LinearPileupDisplay`, `LinearReadArcsDisplay`, `LinearReadCloudDisplay`,
   `LinearSNPCoverageDisplay` → `LinearAlignmentsDisplay`), migrates
-  `renderingMode` → `showLinkedReads`, nested `PileupDisplay`/`SNPCoverageDisplay`
-  sub-display format, `height` → `heightPreConfig`.
-- **`migrateSessionSnapshot` / `migrateConfigSnapshot`** (17 tests) — recursively
-  walks session snapshots (views → tracks → displays) and config snapshots
-  (tracks → displays) to remap old display types.
+  `renderingMode` → `showLinkedReads`, nested
+  `PileupDisplay`/`SNPCoverageDisplay` sub-display format, `height` →
+  `heightPreConfig`.
+- **`migrateSessionSnapshot` / `migrateConfigSnapshot`** (17 tests) —
+  recursively walks session snapshots (views → tracks → displays) and config
+  snapshots (tracks → displays) to remap old display types.
 - Wired into `createPluginManager.ts` (sessions), `jbrowseModel.ts` (configs),
   and display `preProcessSnapshot` hooks.
 - Test configs updated: `LinearPileupDisplay`/`LinearSNPCoverageDisplay` →

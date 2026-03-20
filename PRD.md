@@ -30,16 +30,20 @@ These issues block production readiness or affect the majority of users.
 
 ### P1.4 Demo Session Loading
 
-**Why:** Many shared session links fail to load or load with incorrect settings.
-This is the primary way users encounter the app.
+- Many shared session links fail to load or load with incorrect settings. This
+  is the primary way users encounter the app.
 
-**Requirements:**
+### Extra ideas
+
+Make curvy breakpoint split view lines in the alignments track for link
+paired/supp reads
 
 - Idea: The 'Link supplementary alignments has the concept of connecting reads
   using a single line. But, we have logic in breakpoint split view for properly
   linking the ORIENTATION of the reads using curved lines. evaluate whether we
   can do this in the Linked paired end/supplementary reads mode in the normal
-  alignments track
+  alignments track. If might be a separate mode from Link supplementary reads,
+  like "Link paired/supp reads with curved lines"
 
 ## Priority 4 — Low / Future Enhancements
 
@@ -126,10 +130,3 @@ This is the primary way users encounter the app.
 
 1. **Cross-backend visual regression**: Use `compare-backends.ts` to flag
    rendering differences between WebGL and Canvas2D for each track type
-
-### Remaining Bugs
-
-**P2 (High) — Still Open:**
-
-- Clicking chain — should get both features' info in widget
-- Hs1 vs mm39 synteny still slow — viewport culling helps but further LOD needed

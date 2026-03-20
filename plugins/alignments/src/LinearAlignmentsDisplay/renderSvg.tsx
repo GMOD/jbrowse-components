@@ -12,10 +12,7 @@ import {
   arcLineColorPalette,
   sashimiColorPalette,
 } from './components/shaders/arcShaders.ts'
-import {
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-} from '../shared/types.ts'
+import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../shared/types.ts'
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LONG_INSERTION_MIN_LENGTH,
@@ -921,7 +918,8 @@ export async function renderSvg(
             }
             if (clipAlpha > 0) {
               pileupCtx.globalAlpha = clipAlpha
-              pileupCtx.fillStyle = ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
+              pileupCtx.fillStyle =
+                ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
               pileupCtx.fillRect(cx - bw / 2, ibY, bw, featureHeightSetting)
               pileupCtx.globalAlpha = 1
             }
@@ -1100,7 +1098,8 @@ export async function renderSvg(
               clipAlpha = base + freq * (1 - base)
             }
             if (clipAlpha > 0) {
-              const color = ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
+              const color =
+                ibType === INTERBASE_SOFTCLIP ? softclipColor : hardclipColor
               content += `<rect x="${cx - bw / 2}" y="${ibY}" width="${bw}" height="${featureHeightSetting}" fill="${color}" fill-opacity="${clipAlpha}"/>`
             }
           }

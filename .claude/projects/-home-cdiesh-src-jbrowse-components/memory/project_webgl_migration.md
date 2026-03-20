@@ -23,17 +23,18 @@ Branch: `webgl-poc`, PRD at repo root `/PRD.md`
   fix, linked read snapshot migration
 - **P2.2 Wiggle**: Cross-hatches (displayCrossHatches toggle + SVG overlay)
 - **Effective Track Config**: `effectiveTrackConfig` getter on displays bakes
-  session overrides into track config snapshots for "Copy config" in About
-  track dialog (14 tests)
+  session overrides into track config snapshots for "Copy config" in About track
+  dialog (14 tests)
 - **Tests**: 63+ new tests across 5 suites
 
 ## Architecture: Config Override Pattern
 
 Display models have `*Setting` properties (e.g., `colorSetting`) that override
-config slots. Getters merge them: `get color() { return self.colorSetting ??
-getConf(self, 'color') }`. The `effectiveTrackConfig` getter iterates config
-slots and compares against display getters to produce a config snapshot with
-overrides baked in. Plan to simplify this in `CONFIG_SIMPLIFICATION.md`.
+config slots. Getters merge them:
+`get color() { return self.colorSetting ?? getConf(self, 'color') }`. The
+`effectiveTrackConfig` getter iterates config slots and compares against display
+getters to produce a config snapshot with overrides baked in. Plan to simplify
+this in `CONFIG_SIMPLIFICATION.md`.
 
 ## Next Priority Items
 

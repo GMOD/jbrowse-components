@@ -5,8 +5,6 @@ import type { RenderConfigContext } from '../renderConfig.ts'
 import type { LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export { applyLabelDimensions } from '../labelUtils.ts'
-
 export function layoutFeature(args: {
   feature: Feature
   bpPerPx: number
@@ -33,12 +31,17 @@ export function layoutFeature(args: {
 
   const layout = findGlyph(feature, configContext).layout(layoutArgs)
 
-  applyLabelDimensions(layout, {
-    feature,
-    configContext,
-    isNested,
-    isTranscriptChild,
-  })
+  // Only apply label dimensions for nested/transcript children where
+  // totalLayoutHeight is used for stacking within parent glyphs.
+  // Top-level features skip this — layout.ts owns their height decisions.
+  if (isNested || isTranscriptChild) {
+    applyLabelDimensions(layout, {
+      feature,
+      configContext,
+      isNested,
+      isTranscriptChild,
+    })
+  }
 
   return layout
 }

@@ -7,8 +7,16 @@ function getTrackAndDisplay(trackId: string) {
     showTrack: (id: string) => void
     tracks: {
       trackId: string
-      activeDisplay: { type: string; effectiveTrackConfig: Record<string, unknown>; [key: string]: unknown }
-      displays: { type: string; effectiveTrackConfig: Record<string, unknown>; [key: string]: unknown }[]
+      activeDisplay: {
+        type: string
+        effectiveTrackConfig: Record<string, unknown>
+        [key: string]: unknown
+      }
+      displays: {
+        type: string
+        effectiveTrackConfig: Record<string, unknown>
+        [key: string]: unknown
+      }[]
     }[]
   }
   view.showTrack(trackId)
@@ -36,8 +44,13 @@ test('effective config includes display overrides for wiggle', () => {
   const { display } = getTrackAndDisplay('volvox_gc')
 
   if ('setScaleType' in display) {
-    ;(display as unknown as { setScaleType: (s: string) => void }).setScaleType('log')
-    const displays = display.effectiveTrackConfig.displays as Record<string, unknown>[]
+    ;(display as unknown as { setScaleType: (s: string) => void }).setScaleType(
+      'log',
+    )
+    const displays = display.effectiveTrackConfig.displays as Record<
+      string,
+      unknown
+    >[]
     const hasLogScale = displays.some(d => d.scaleType === 'log')
     expect(hasLogScale).toBe(true)
   }
@@ -45,7 +58,10 @@ test('effective config includes display overrides for wiggle', () => {
 
 test('effective config strips default values for unchanged slots', () => {
   const { display } = getTrackAndDisplay('volvox_gc')
-  const displays = display.effectiveTrackConfig.displays as Record<string, unknown>[]
+  const displays = display.effectiveTrackConfig.displays as Record<
+    string,
+    unknown
+  >[]
   const displayEntry = displays[0]!
   expect(displayEntry.type).toBeDefined()
   expect(displayEntry.displayId).toBeDefined()

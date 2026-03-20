@@ -1,8 +1,9 @@
 import type React from 'react'
 
-import { getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
+import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
 import {
   getContainingTrack,
   getContainingView,
@@ -204,7 +205,13 @@ function stateModelFactory() {
 
       get effectiveTrackConfig() {
         const track = getContainingTrack(self)
-        return getSnapshot(track.configuration) as Record<string, unknown>
+        return getEffectiveTrackConfig(
+          track.configuration,
+          self as unknown as {
+            configuration: Record<string, unknown>
+            [key: string]: unknown
+          },
+        )
       },
     }))
     .actions(self => ({

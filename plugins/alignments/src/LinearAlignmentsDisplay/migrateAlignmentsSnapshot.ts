@@ -46,7 +46,9 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest,
       showLinkedReads: linked,
       colorBySetting: linked
-        ? ((rest.colorBySetting as unknown) ?? { type: 'insertSizeAndOrientation' })
+        ? ((rest.colorBySetting as unknown) ?? {
+            type: 'insertSizeAndOrientation',
+          })
         : rest.colorBySetting,
     }
   }
@@ -59,7 +61,9 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
       ...rest,
       showLinkedReads: linked,
       colorBySetting: linked
-        ? ((rest.colorBySetting as unknown) ?? { type: 'insertSizeAndOrientation' })
+        ? ((rest.colorBySetting as unknown) ?? {
+            type: 'insertSizeAndOrientation',
+          })
         : rest.colorBySetting,
     }
   }
@@ -67,12 +71,7 @@ export function migrateAlignmentsSnapshot(snap: Record<string, unknown>) {
   // Migrate old nested PileupDisplay/SNPCoverageDisplay sub-display format
   // from v1.x LinearAlignmentsDisplay sessions
   if (result.PileupDisplay || result.SNPCoverageDisplay) {
-    const {
-      PileupDisplay,
-      SNPCoverageDisplay,
-      snpCovHeight,
-      ...rest
-    } = result
+    const { PileupDisplay, SNPCoverageDisplay, snpCovHeight, ...rest } = result
     const pileup = (PileupDisplay ?? {}) as Record<string, unknown>
     result = {
       ...rest,
