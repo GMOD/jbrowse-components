@@ -2,23 +2,17 @@ import readline from 'readline'
 
 import { getReadline } from '../file-utils.ts'
 
-// SyRI output format (.syri.out):
-// refChr refStart refEnd qryChr qryStart qryEnd ... type parent
-// The type column contains: SYNAL, INVAL, TRANS, DUPAL, etc.
-// Parent column links sub-alignments to their structural block
+// SyRI output format (.syri.out), 12 columns:
+// refChr refStart refEnd - - qryChr qryStart qryEnd ID parent type -
 
 const SYRI_TYPE_MAP: Record<string, string> = {
   SYNAL: 'SYN',
-  SYN: 'SYN',
   INVAL: 'INV',
-  INV: 'INV',
-  TRANS: 'TRANS',
   TRANSAL: 'TRANS',
   DUPAL: 'DUP',
-  DUP: 'DUP',
-  INVTR: 'TRANS',
-  INVDP: 'DUP',
-  NOTAL: 'SYN',
+  INVTRAL: 'TRANS',
+  INVDPAL: 'DUP',
+  HDR: 'SYN',
 }
 
 export interface PAFLikeRecord {
@@ -49,24 +43,30 @@ export async function parseSyriOutput(
     }
 
     const parts = line.split('\t')
-    if (parts.length < 10) {
+    if (parts.length < 11) {
       continue
     }
 
-    const [refChr, refStartStr, refEndStr, qryChr, qryStartStr, qryEndStr, , , , typeStr] = parts
-    const refStart = +refStartStr!
-    const refEnd = +refEndStr!
-    const qryStart = +qryStartStr!
-    const qryEnd = +qryEndStr!
-    const typeTag = typeStr!.trim()
+    // Columns: 0=refChr 1=refStart 2=refEnd 3=- 4=- 5=qryChr 6=qryStart 7=qryEnd 8=ID 9=parent 10=type 11=-
+    const refChr = parts[0]
+    const refStart = +parts[1]!
+    const refEnd = +parts[2]!
+    const qryChr = parts[5]
+    const qryStart = +parts[6]!
+    const qryEnd = +parts[7]!
+    const typeTag = parts[10]!.trim()
 
-    // Only include alignment-level entries (SYNAL, INVAL, etc.)
-    // Skip structural parent entries and non-alignment entries
-    if (!typeTag.endsWith('AL') && typeTag !== 'NOTAL') {
+    // Only include alignment-level entries (SYNAL, INVAL, TRANSAL, DUPAL, HDR)
+    // Skip structural parent entries (SYN, INV, TRANS, DUP without AL suffix)
+    // and NOTAL (no query mapping)
+    const syriType = SYRI_TYPE_MAP[typeTag]
+    if (!syriType) {
       continue
     }
-
-    const syriType = SYRI_TYPE_MAP[typeTag] ?? 'SYN'
+    // Skip entries without a query chromosome (e.g. NOTAL)
+    if (!qryChr || qryChr === '-') {
+      continue
+    }
     const strand = qryStart <= qryEnd ? '+' : '-'
     const actualQStart = Math.min(qryStart, qryEnd)
     const actualQEnd = Math.max(qryStart, qryEnd)

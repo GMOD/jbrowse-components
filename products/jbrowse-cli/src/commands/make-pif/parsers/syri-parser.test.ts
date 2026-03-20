@@ -14,12 +14,28 @@ function writeTmp(content: string) {
   return tmpFile
 }
 
+// Real SyRI format: refChr refStart refEnd - - qryChr qryStart qryEnd ID parent type -
+function syriLine(
+  refChr: string,
+  refStart: number,
+  refEnd: number,
+  qryChr: string,
+  qryStart: number,
+  qryEnd: number,
+  id: string,
+  parent: string,
+  type: string,
+) {
+  return `${refChr}\t${refStart}\t${refEnd}\t-\t-\t${qryChr}\t${qryStart}\t${qryEnd}\t${id}\t${parent}\t${type}\t-`
+}
+
 test('parses basic SyRI alignment entries', async () => {
   const data = [
-    'chr1\t100\t5000\tchr1\t200\t5100\t0\t0\t0\tSYNAL\tSYN1',
-    'chr1\t6000\t8000\tchr1\t8000\t6000\t0\t0\t0\tINVAL\tINV1',
-    'chr2\t100\t3000\tchr3\t500\t3400\t0\t0\t0\tTRANSAL\tTRANS1',
-    'chr1\t100\t5000\tchr1\t200\t5100\t0\t0\t0\tSYN\tSYN1',
+    syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYNAL1', 'SYN1', 'SYNAL'),
+    syriLine('chr1', 6000, 8000, 'chr1', 8000, 6000, 'INVAL1', 'INV1', 'INVAL'),
+    syriLine('chr2', 100, 3000, 'chr3', 500, 3400, 'TRANSAL1', 'TRANS1', 'TRANSAL'),
+    // SYN parent entry should be skipped
+    syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYN1', '-', 'SYN'),
   ].join('\n')
 
   const tmpFile = writeTmp(data)
@@ -47,9 +63,9 @@ test('parses basic SyRI alignment entries', async () => {
 
 test('skips structural parent entries', async () => {
   const data = [
-    'chr1\t100\t5000\tchr1\t200\t5100\t0\t0\t0\tSYN\t-',
-    'chr1\t100\t5000\tchr1\t200\t5100\t0\t0\t0\tSYNAL\tSYN1',
-    'chr1\t6000\t8000\tchr1\t6000\t8000\t0\t0\t0\tINV\t-',
+    syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYN1', '-', 'SYN'),
+    syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYNAL1', 'SYN1', 'SYNAL'),
+    syriLine('chr1', 6000, 8000, 'chr1', 6000, 8000, 'INV1', '-', 'INV'),
   ].join('\n')
 
   const tmpFile = writeTmp(data)
@@ -64,7 +80,7 @@ test('skips comments and blank lines', async () => {
   const data = [
     '# this is a comment',
     '',
-    'chr1\t100\t5000\tchr1\t200\t5100\t0\t0\t0\tSYNAL\tSYN1',
+    syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYNAL1', 'SYN1', 'SYNAL'),
   ].join('\n')
 
   const tmpFile = writeTmp(data)
@@ -74,8 +90,23 @@ test('skips comments and blank lines', async () => {
   expect(records).toHaveLength(1)
 })
 
-test('handles NOTAL entries', async () => {
-  const data = 'chr1\t100\t5000\tchr1\t200\t5100\t0\t0\t0\tNOTAL\t-\n'
+test('skips NOTAL entries (no query mapping)', async () => {
+  const data = [
+    // NOTAL has - for query chromosome
+    'chr1\t1\t1084\t-\t-\t-\t-\t-\tNOTAL1\t-\tNOTAL\t-',
+    syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYNAL1', 'SYN1', 'SYNAL'),
+  ].join('\n')
+
+  const tmpFile = writeTmp(data)
+  const records = await parseSyriOutput(tmpFile)
+  fs.unlinkSync(tmpFile)
+
+  expect(records).toHaveLength(1)
+  expect(records[0]!.syriType).toBe('SYN')
+})
+
+test('handles HDR entries', async () => {
+  const data = syriLine('chr1', 100, 200, 'chr1', 150, 250, 'HDR1', 'SYN1', 'HDR')
 
   const tmpFile = writeTmp(data)
   const records = await parseSyriOutput(tmpFile)

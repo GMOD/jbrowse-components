@@ -58,9 +58,10 @@ async function scanPafForPairs(filename: string) {
     const qname = cols[0]!
     const tname = cols[5]!
 
-    // Extract assembly name (part before first '.' or ':' if present, else full name)
-    const qAsm = qname.split('.')[0]!.split(':')[0]!
-    const tAsm = tname.split('.')[0]!.split(':')[0]!
+    // Extract assembly name: handles HPRC naming (sample#hap#contig) and
+    // other conventions (assembly.chr, assembly:chr)
+    const qAsm = qname.split('#')[0]!.split('.')[0]!.split(':')[0]!
+    const tAsm = tname.split('#')[0]!.split('.')[0]!.split(':')[0]!
 
     if (qAsm === tAsm) {
       continue
