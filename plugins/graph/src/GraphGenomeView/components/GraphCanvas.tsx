@@ -18,7 +18,12 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LinearScaleIcon from '@mui/icons-material/LinearScale'
 
-import { buildGeometry } from '../../renderer/GeometryBuilder.ts'
+import {
+  buildGeometry,
+  brightenColors,
+  extractColorSlice,
+  recolorNodes,
+} from '../../renderer/GeometryBuilder.ts'
 import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
 import { findHoveredNode, findHoveredEdge } from '../../util/hitDetection.ts'
 
@@ -26,6 +31,9 @@ import type { GraphGenomeViewModel } from '../model.ts'
 import type { ColorScheme } from '../../types.ts'
 
 const CANVAS_HEIGHT = 600
+const HOVER_BRIGHTEN = 1.4
+const SELECT_BRIGHTEN = 1.6
+const VIEWPORT_DEBOUNCE_MS = 150
 
 const tooltipStyle = {
   position: 'absolute' as const,
@@ -56,6 +64,22 @@ function renderFrame(
   renderer.render(
     darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
   )
+}
+
+function computeViewportBounds(model: GraphGenomeViewModel) {
+  const padding = 0.2
+  const minX = -model.translateX / model.scale
+  const minY = -model.translateY / model.scale
+  const maxX = (model.width - model.translateX) / model.scale
+  const maxY = (CANVAS_HEIGHT - model.translateY) / model.scale
+  const w = maxX - minX
+  const h = maxY - minY
+  return {
+    minX: minX - w * padding,
+    minY: minY - h * padding,
+    maxX: maxX + w * padding,
+    maxY: maxY + h * padding,
+  }
 }
 
 const GraphCanvas = observer(function GraphCanvas({
@@ -113,8 +137,8 @@ const GraphCanvas = observer(function GraphCanvas({
     )
   }, [model])
 
-  // Rebuild geometry when graph data or display options change.
-  // Pan (translateX/Y) does NOT trigger this — only the transform autorun below.
+  // Autorun 1: Rebuild geometry when graph data or display options change.
+  // Does NOT trigger on hover, select, scale, or translate.
   useEffect(() => {
     if (!rendererReady) {
       return
@@ -125,6 +149,10 @@ const GraphCanvas = observer(function GraphCanvas({
         return
       }
 
+      // Read viewportDirty to trigger on debounced viewport changes
+      const _vd = model.viewportDirty
+      const viewportBounds = computeViewportBounds(model)
+
       const batch = buildGeometry({
         nodePositions: model.nodePositions,
         graph: model.graph,
@@ -132,18 +160,127 @@ const GraphCanvas = observer(function GraphCanvas({
         contigThickness: model.contigThickness,
         connectorThickness: model.connectorThickness,
         drawPaths: model.drawPaths,
-        hoveredNode: model.hoveredNode,
-        hoveredEdge: model.hoveredEdge,
-        selectedNode: model.selectedNode,
-        scale: model.scale,
+        viewportBounds,
       })
+
+      model.storeRenderBatchMeta(
+        batch.nodeVertexRanges,
+        batch.edgeVertexRanges,
+        batch.arrowVertexRanges,
+        batch.nodes.colors,
+        batch.edges.colors,
+        batch.arrows.colors,
+      )
 
       renderer.uploadGeometry(batch)
       renderFrame(renderer, model, model.darkMode)
     })
   }, [model, rendererReady])
 
-  // Re-render on pan/zoom without rebuilding geometry (cheap)
+  // Reaction 2: Hover/select color-only updates — no geometry rebuild.
+  useEffect(() => {
+    if (!rendererReady) {
+      return
+    }
+
+    let prevHoveredNode: string | null = null
+    let prevHoveredEdge: number | null = null
+    let prevSelectedNode: string | null = null
+
+    return reaction(
+      () => ({
+        hoveredNode: model.hoveredNode,
+        hoveredEdge: model.hoveredEdge,
+        selectedNode: model.selectedNode,
+      }),
+      ({ hoveredNode, hoveredEdge, selectedNode }) => {
+        const renderer = rendererRef.current
+        if (!renderer) {
+          return
+        }
+
+        // Restore previous node highlights
+        if (prevHoveredNode && model.baseNodeColors && model.nodeVertexRanges) {
+          const range = model.nodeVertexRanges.get(prevHoveredNode)
+          if (range) {
+            const original = extractColorSlice(model.baseNodeColors, range)
+            renderer.updateSubBatchColors('nodes', original, range.start)
+          }
+        }
+        if (prevSelectedNode && prevSelectedNode !== prevHoveredNode &&
+            model.baseNodeColors && model.nodeVertexRanges) {
+          const range = model.nodeVertexRanges.get(prevSelectedNode)
+          if (range) {
+            const original = extractColorSlice(model.baseNodeColors, range)
+            renderer.updateSubBatchColors('nodes', original, range.start)
+          }
+        }
+
+        // Restore previous edge highlights
+        if (prevHoveredEdge !== null) {
+          if (model.baseEdgeColors && model.edgeVertexRanges) {
+            const range = model.edgeVertexRanges.get(prevHoveredEdge)
+            if (range) {
+              const original = extractColorSlice(model.baseEdgeColors, range)
+              renderer.updateSubBatchColors('edges', original, range.start)
+            }
+          }
+          if (model.baseArrowColors && model.arrowVertexRanges) {
+            const range = model.arrowVertexRanges.get(prevHoveredEdge)
+            if (range) {
+              const original = extractColorSlice(model.baseArrowColors, range)
+              renderer.updateSubBatchColors('arrows', original, range.start)
+            }
+          }
+        }
+
+        // Apply selected node highlight
+        if (selectedNode && model.baseNodeColors && model.nodeVertexRanges) {
+          const range = model.nodeVertexRanges.get(selectedNode)
+          if (range) {
+            const brightened = brightenColors(model.baseNodeColors, range, SELECT_BRIGHTEN)
+            renderer.updateSubBatchColors('nodes', brightened, range.start)
+          }
+        }
+
+        // Apply hovered node highlight
+        if (hoveredNode && hoveredNode !== selectedNode &&
+            model.baseNodeColors && model.nodeVertexRanges) {
+          const range = model.nodeVertexRanges.get(hoveredNode)
+          if (range) {
+            const brightened = brightenColors(model.baseNodeColors, range, HOVER_BRIGHTEN)
+            renderer.updateSubBatchColors('nodes', brightened, range.start)
+          }
+        }
+
+        // Apply hovered edge highlight
+        if (hoveredEdge !== null) {
+          if (model.baseEdgeColors && model.edgeVertexRanges) {
+            const range = model.edgeVertexRanges.get(hoveredEdge)
+            if (range) {
+              const brightened = brightenColors(model.baseEdgeColors, range, HOVER_BRIGHTEN)
+              renderer.updateSubBatchColors('edges', brightened, range.start)
+            }
+          }
+          if (model.baseArrowColors && model.arrowVertexRanges) {
+            const range = model.arrowVertexRanges.get(hoveredEdge)
+            if (range) {
+              const brightened = brightenColors(model.baseArrowColors, range, HOVER_BRIGHTEN)
+              renderer.updateSubBatchColors('arrows', brightened, range.start)
+            }
+          }
+        }
+
+        prevHoveredNode = hoveredNode
+        prevHoveredEdge = hoveredEdge
+        prevSelectedNode = selectedNode
+
+        renderFrame(renderer, model, model.darkMode)
+      },
+    )
+  }, [model, rendererReady])
+
+  // Autorun 3: Re-render on pan/zoom without rebuilding geometry (cheap)
   useEffect(() => {
     if (!rendererReady) {
       return
@@ -155,6 +292,62 @@ const GraphCanvas = observer(function GraphCanvas({
       }
       renderFrame(renderer, model, model.darkMode)
     })
+  }, [model, rendererReady])
+
+  // Reaction 4: Debounced viewport culling — rebuild geometry after pan/zoom settles
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null
+    return reaction(
+      () => ({
+        scale: model.scale,
+        translateX: model.translateX,
+        translateY: model.translateY,
+      }),
+      () => {
+        if (timer) {
+          clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+          model.setViewportDirty()
+        }, VIEWPORT_DEBOUNCE_MS)
+      },
+    )
+  }, [model])
+
+  // Reaction 5: Incremental color scheme changes — recolor without geometry rebuild
+  useEffect(() => {
+    if (!rendererReady) {
+      return
+    }
+    let prevColorScheme = model.colorScheme
+    return reaction(
+      () => model.colorScheme,
+      colorScheme => {
+        const renderer = rendererRef.current
+        if (!renderer || !model.graph || !model.nodeVertexRanges || !model.baseNodeColors) {
+          return
+        }
+        if (colorScheme !== prevColorScheme) {
+          const newColors = recolorNodes(
+            model.graph,
+            model.nodeVertexRanges,
+            colorScheme,
+            model.baseNodeColors,
+          )
+          model.storeRenderBatchMeta(
+            model.nodeVertexRanges,
+            model.edgeVertexRanges!,
+            model.arrowVertexRanges!,
+            newColors,
+            model.baseEdgeColors!,
+            model.baseArrowColors!,
+          )
+          renderer.updateSubBatchColors('nodes', newColors, 0)
+          renderFrame(renderer, model, model.darkMode)
+          prevColorScheme = colorScheme
+        }
+      },
+    )
   }, [model, rendererReady])
 
   function screenToGraph(screenX: number, screenY: number) {

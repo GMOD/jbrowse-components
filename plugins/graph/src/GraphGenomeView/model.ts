@@ -6,6 +6,7 @@ import { parseGFA } from '../gfa/gfaParser.ts'
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
 
 import type { Graph, LayoutResult, ColorScheme, NodeSegment } from '../types.ts'
+import type { VertexRange } from '../renderer/types.ts'
 
 const MIN_ZOOM = 0.001
 const MAX_ZOOM = 100.0
@@ -42,6 +43,13 @@ export default function stateModelFactory() {
       translateX: 0,
       translateY: 0,
       drawPaths: true,
+      viewportDirty: 0,
+      nodeVertexRanges: undefined as Map<string, VertexRange> | undefined,
+      edgeVertexRanges: undefined as Map<number, VertexRange> | undefined,
+      arrowVertexRanges: undefined as Map<number, VertexRange> | undefined,
+      baseNodeColors: undefined as Float32Array | undefined,
+      baseEdgeColors: undefined as Float32Array | undefined,
+      baseArrowColors: undefined as Float32Array | undefined,
     }))
     .views(self => ({
       get nodeCount() {
@@ -100,6 +108,24 @@ export default function stateModelFactory() {
         self.scale = newScale
         self.translateX = centerX - (centerX - self.translateX) * ratio
         self.translateY = centerY - (centerY - self.translateY) * ratio
+      },
+      setViewportDirty() {
+        self.viewportDirty++
+      },
+      storeRenderBatchMeta(
+        nodeVertexRanges: Map<string, VertexRange>,
+        edgeVertexRanges: Map<number, VertexRange>,
+        arrowVertexRanges: Map<number, VertexRange>,
+        baseNodeColors: Float32Array,
+        baseEdgeColors: Float32Array,
+        baseArrowColors: Float32Array,
+      ) {
+        self.nodeVertexRanges = nodeVertexRanges
+        self.edgeVertexRanges = edgeVertexRanges
+        self.arrowVertexRanges = arrowVertexRanges
+        self.baseNodeColors = baseNodeColors
+        self.baseEdgeColors = baseEdgeColors
+        self.baseArrowColors = baseArrowColors
       },
       zoomToFit(canvasHeight: number) {
         if (!self.layoutResult) {
@@ -214,6 +240,12 @@ export default function stateModelFactory() {
         self.hoveredNode = null
         self.hoveredEdge = null
         self.selectedNode = null
+        self.nodeVertexRanges = undefined
+        self.edgeVertexRanges = undefined
+        self.arrowVertexRanges = undefined
+        self.baseNodeColors = undefined
+        self.baseEdgeColors = undefined
+        self.baseArrowColors = undefined
       },
     }))
 }

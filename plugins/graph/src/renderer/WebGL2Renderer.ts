@@ -1,15 +1,18 @@
-import type { Renderer, RenderBatch, TransformUniform } from './types.ts'
+import type { Renderer, RenderBatch, SubBatch, TransformUniform } from './types.ts'
 
 const vertexShaderSource = `#version 300 es
 precision highp float;
 layout(location = 0) in vec2 a_position;
-layout(location = 1) in vec4 a_color;
+layout(location = 1) in vec2 a_normal;
+layout(location = 2) in float a_thickness;
+layout(location = 3) in vec4 a_color;
 uniform vec2 u_scale;
 uniform vec2 u_translate;
 uniform vec2 u_viewport;
 out vec4 v_color;
 void main() {
-  vec2 screen = a_position * u_scale + u_translate;
+  vec2 expanded = a_position + a_normal * a_thickness / u_scale.x;
+  vec2 screen = expanded * u_scale + u_translate;
   vec2 clip = (screen / u_viewport) * 2.0 - 1.0;
   clip.y = -clip.y;
   gl_Position = vec4(clip, 0.0, 1.0);
@@ -26,17 +29,25 @@ void main() {
 }
 `
 
+interface SubBatchBuffers {
+  vao: WebGLVertexArrayObject
+  positionBuffer: WebGLBuffer
+  normalBuffer: WebGLBuffer
+  thicknessBuffer: WebGLBuffer
+  colorBuffer: WebGLBuffer
+  indexBuffer: WebGLBuffer
+  indexCount: number
+}
+
 export class WebGL2Renderer implements Renderer {
   private gl: WebGL2RenderingContext
   private program: WebGLProgram
   private uScale: WebGLUniformLocation | null
   private uTranslate: WebGLUniformLocation | null
   private uViewport: WebGLUniformLocation | null
-  private vao: WebGLVertexArrayObject
-  private positionBuffer: WebGLBuffer
-  private colorBuffer: WebGLBuffer
-  private indexBuffer: WebGLBuffer
-  private indexCount = 0
+  private edgeBuffers: SubBatchBuffers | null = null
+  private nodeBuffers: SubBatchBuffers | null = null
+  private arrowBuffers: SubBatchBuffers | null = null
 
   constructor(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2', {
@@ -65,24 +76,6 @@ export class WebGL2Renderer implements Renderer {
     this.uTranslate = gl.getUniformLocation(program, 'u_translate')
     this.uViewport = gl.getUniformLocation(program, 'u_viewport')
 
-    this.vao = gl.createVertexArray()!
-    gl.bindVertexArray(this.vao)
-
-    this.positionBuffer = gl.createBuffer()!
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
-    gl.enableVertexAttribArray(0)
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
-
-    this.colorBuffer = gl.createBuffer()!
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-    gl.enableVertexAttribArray(1)
-    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 0, 0)
-
-    this.indexBuffer = gl.createBuffer()!
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-
-    gl.bindVertexArray(null)
-
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   }
@@ -99,6 +92,58 @@ export class WebGL2Renderer implements Renderer {
     return shader
   }
 
+  private createSubBatchBuffers(batch: SubBatch): SubBatchBuffers {
+    const gl = this.gl
+
+    const vao = gl.createVertexArray()!
+    gl.bindVertexArray(vao)
+
+    const positionBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, batch.positions, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(0)
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
+
+    const normalBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, batch.normals, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(1)
+    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0)
+
+    const thicknessBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, thicknessBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, batch.thicknesses, gl.STATIC_DRAW)
+    gl.enableVertexAttribArray(2)
+    gl.vertexAttribPointer(2, 1, gl.FLOAT, false, 0, 0)
+
+    const colorBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+    gl.bufferData(gl.ARRAY_BUFFER, batch.colors, gl.DYNAMIC_DRAW)
+    gl.enableVertexAttribArray(3)
+    gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 0, 0)
+
+    const indexBuffer = gl.createBuffer()!
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, batch.indices, gl.STATIC_DRAW)
+
+    gl.bindVertexArray(null)
+
+    return {
+      vao, positionBuffer, normalBuffer, thicknessBuffer,
+      colorBuffer, indexBuffer, indexCount: batch.indices.length,
+    }
+  }
+
+  private destroySubBatchBuffers(buffers: SubBatchBuffers) {
+    const gl = this.gl
+    gl.deleteVertexArray(buffers.vao)
+    gl.deleteBuffer(buffers.positionBuffer)
+    gl.deleteBuffer(buffers.normalBuffer)
+    gl.deleteBuffer(buffers.thicknessBuffer)
+    gl.deleteBuffer(buffers.colorBuffer)
+    gl.deleteBuffer(buffers.indexBuffer)
+  }
+
   resize(width: number, height: number) {
     const dpr = window.devicePixelRatio || 1
     this.gl.canvas.width = width * dpr
@@ -109,18 +154,39 @@ export class WebGL2Renderer implements Renderer {
   }
 
   uploadGeometry(batch: RenderBatch) {
+    if (this.edgeBuffers) {
+      this.destroySubBatchBuffers(this.edgeBuffers)
+    }
+    if (this.nodeBuffers) {
+      this.destroySubBatchBuffers(this.nodeBuffers)
+    }
+    if (this.arrowBuffers) {
+      this.destroySubBatchBuffers(this.arrowBuffers)
+    }
+
+    this.edgeBuffers = batch.edges.indices.length > 0
+      ? this.createSubBatchBuffers(batch.edges) : null
+    this.nodeBuffers = batch.nodes.indices.length > 0
+      ? this.createSubBatchBuffers(batch.nodes) : null
+    this.arrowBuffers = batch.arrows.indices.length > 0
+      ? this.createSubBatchBuffers(batch.arrows) : null
+  }
+
+  updateSubBatchColors(
+    target: 'edges' | 'nodes' | 'arrows',
+    colors: Float32Array,
+    vertexStart: number,
+  ) {
+    const buffers =
+      target === 'edges' ? this.edgeBuffers
+      : target === 'nodes' ? this.nodeBuffers
+      : this.arrowBuffers
+    if (!buffers) {
+      return
+    }
     const gl = this.gl
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, batch.positions, gl.DYNAMIC_DRAW)
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, batch.colors, gl.DYNAMIC_DRAW)
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, batch.indices, gl.DYNAMIC_DRAW)
-
-    this.indexCount = batch.indices.length
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colorBuffer)
+    gl.bufferSubData(gl.ARRAY_BUFFER, vertexStart * 16, colors)
   }
 
   updateTransform(t: TransformUniform) {
@@ -132,25 +198,31 @@ export class WebGL2Renderer implements Renderer {
   }
 
   render(clearColor: [number, number, number, number]) {
-    if (this.indexCount === 0) {
-      return
-    }
     const gl = this.gl
 
     gl.clearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3])
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.useProgram(this.program)
 
-    gl.bindVertexArray(this.vao)
-    gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0)
+    for (const buffers of [this.edgeBuffers, this.nodeBuffers, this.arrowBuffers]) {
+      if (buffers && buffers.indexCount > 0) {
+        gl.bindVertexArray(buffers.vao)
+        gl.drawElements(gl.TRIANGLES, buffers.indexCount, gl.UNSIGNED_INT, 0)
+      }
+    }
     gl.bindVertexArray(null)
   }
 
   destroy() {
-    this.gl.deleteVertexArray(this.vao)
-    this.gl.deleteBuffer(this.positionBuffer)
-    this.gl.deleteBuffer(this.colorBuffer)
-    this.gl.deleteBuffer(this.indexBuffer)
+    if (this.edgeBuffers) {
+      this.destroySubBatchBuffers(this.edgeBuffers)
+    }
+    if (this.nodeBuffers) {
+      this.destroySubBatchBuffers(this.nodeBuffers)
+    }
+    if (this.arrowBuffers) {
+      this.destroySubBatchBuffers(this.arrowBuffers)
+    }
     this.gl.deleteProgram(this.program)
   }
 }

@@ -2,7 +2,7 @@
 
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
-import type { Renderer, RenderBatch, TransformUniform } from './types.ts'
+import type { Renderer, RenderBatch, SubBatch, TransformUniform } from './types.ts'
 
 const shaderSource = `
 struct Uniforms {
@@ -15,7 +15,9 @@ struct Uniforms {
 
 struct VertexInput {
   @location(0) position: vec2f,
-  @location(1) color: vec4f,
+  @location(1) normal: vec2f,
+  @location(2) thickness: f32,
+  @location(3) color: vec4f,
 }
 
 struct VertexOutput {
@@ -26,7 +28,8 @@ struct VertexOutput {
 @vertex
 fn vs_main(input: VertexInput) -> VertexOutput {
   var out: VertexOutput;
-  let screen = input.position * u.scale + u.translate;
+  let expanded = input.position + input.normal * input.thickness / u.scale.x;
+  let screen = expanded * u.scale + u.translate;
   let clip = (screen / u.viewport) * 2.0 - 1.0;
   out.position = vec4f(clip.x, -clip.y, 0.0, 1.0);
   out.color = input.color;
@@ -39,16 +42,24 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4f {
 }
 `
 
+interface SubBatchBuffers {
+  positionBuffer: GPUBuffer
+  normalBuffer: GPUBuffer
+  thicknessBuffer: GPUBuffer
+  colorBuffer: GPUBuffer
+  indexBuffer: GPUBuffer
+  indexCount: number
+}
+
 export class WebGPURenderer implements Renderer {
   private device: GPUDevice
   private context: GPUCanvasContext
   private pipeline: GPURenderPipeline
   private uniformBuffer: GPUBuffer
   private uniformBindGroup: GPUBindGroup
-  private positionBuffer: GPUBuffer | null = null
-  private colorBuffer: GPUBuffer | null = null
-  private indexBuffer: GPUBuffer | null = null
-  private indexCount = 0
+  private edgeBuffers: SubBatchBuffers | null = null
+  private nodeBuffers: SubBatchBuffers | null = null
+  private arrowBuffers: SubBatchBuffers | null = null
 
   private constructor(
     device: GPUDevice,
@@ -80,11 +91,19 @@ export class WebGPURenderer implements Renderer {
         buffers: [
           {
             arrayStride: 8,
-            attributes: [{ shaderLocation: 0, offset: 0, format: 'float32x2' }],
+            attributes: [{ shaderLocation: 0, offset: 0, format: 'float32x2' as GPUVertexFormat }],
+          },
+          {
+            arrayStride: 8,
+            attributes: [{ shaderLocation: 1, offset: 0, format: 'float32x2' as GPUVertexFormat }],
+          },
+          {
+            arrayStride: 4,
+            attributes: [{ shaderLocation: 2, offset: 0, format: 'float32' as GPUVertexFormat }],
           },
           {
             arrayStride: 16,
-            attributes: [{ shaderLocation: 1, offset: 0, format: 'float32x4' }],
+            attributes: [{ shaderLocation: 3, offset: 0, format: 'float32x4' as GPUVertexFormat }],
           },
         ],
       },
@@ -93,7 +112,7 @@ export class WebGPURenderer implements Renderer {
         entryPoint: 'fs_main',
         targets: [
           {
-            format: 'bgra8unorm',
+            format: 'bgra8unorm' as GPUTextureFormat,
             blend: {
               color: {
                 srcFactor: 'src-alpha',
@@ -143,15 +162,57 @@ export class WebGPURenderer implements Renderer {
     return buffer
   }
 
-  uploadGeometry(batch: RenderBatch) {
-    this.positionBuffer?.destroy()
-    this.colorBuffer?.destroy()
-    this.indexBuffer?.destroy()
+  private createSubBatchBuffers(batch: SubBatch): SubBatchBuffers {
+    return {
+      positionBuffer: this.createBuffer(batch.positions, GPUBufferUsage.VERTEX),
+      normalBuffer: this.createBuffer(batch.normals, GPUBufferUsage.VERTEX),
+      thicknessBuffer: this.createBuffer(batch.thicknesses, GPUBufferUsage.VERTEX),
+      colorBuffer: this.createBuffer(batch.colors, GPUBufferUsage.VERTEX),
+      indexBuffer: this.createBuffer(batch.indices, GPUBufferUsage.INDEX),
+      indexCount: batch.indices.length,
+    }
+  }
 
-    this.positionBuffer = this.createBuffer(batch.positions, GPUBufferUsage.VERTEX)
-    this.colorBuffer = this.createBuffer(batch.colors, GPUBufferUsage.VERTEX)
-    this.indexBuffer = this.createBuffer(batch.indices, GPUBufferUsage.INDEX)
-    this.indexCount = batch.indices.length
+  private destroySubBatchBuffers(buffers: SubBatchBuffers) {
+    buffers.positionBuffer.destroy()
+    buffers.normalBuffer.destroy()
+    buffers.thicknessBuffer.destroy()
+    buffers.colorBuffer.destroy()
+    buffers.indexBuffer.destroy()
+  }
+
+  uploadGeometry(batch: RenderBatch) {
+    if (this.edgeBuffers) {
+      this.destroySubBatchBuffers(this.edgeBuffers)
+    }
+    if (this.nodeBuffers) {
+      this.destroySubBatchBuffers(this.nodeBuffers)
+    }
+    if (this.arrowBuffers) {
+      this.destroySubBatchBuffers(this.arrowBuffers)
+    }
+
+    this.edgeBuffers = batch.edges.indices.length > 0
+      ? this.createSubBatchBuffers(batch.edges) : null
+    this.nodeBuffers = batch.nodes.indices.length > 0
+      ? this.createSubBatchBuffers(batch.nodes) : null
+    this.arrowBuffers = batch.arrows.indices.length > 0
+      ? this.createSubBatchBuffers(batch.arrows) : null
+  }
+
+  updateSubBatchColors(
+    target: 'edges' | 'nodes' | 'arrows',
+    colors: Float32Array,
+    vertexStart: number,
+  ) {
+    const buffers =
+      target === 'edges' ? this.edgeBuffers
+      : target === 'nodes' ? this.nodeBuffers
+      : this.arrowBuffers
+    if (!buffers) {
+      return
+    }
+    this.device.queue.writeBuffer(buffers.colorBuffer, vertexStart * 16, colors)
   }
 
   updateTransform(t: TransformUniform) {
@@ -165,7 +226,8 @@ export class WebGPURenderer implements Renderer {
   }
 
   render(clearColor: [number, number, number, number]) {
-    if (!this.positionBuffer || this.indexCount === 0) {
+    const hasGeometry = this.edgeBuffers || this.nodeBuffers || this.arrowBuffers
+    if (!hasGeometry) {
       return
     }
 
@@ -184,22 +246,35 @@ export class WebGPURenderer implements Renderer {
 
     pass.setPipeline(this.pipeline)
     pass.setBindGroup(0, this.uniformBindGroup)
-    pass.setVertexBuffer(0, this.positionBuffer)
-    pass.setVertexBuffer(1, this.colorBuffer!)
-    pass.setIndexBuffer(this.indexBuffer!, 'uint32')
-    pass.drawIndexed(this.indexCount)
+
+    for (const buffers of [this.edgeBuffers, this.nodeBuffers, this.arrowBuffers]) {
+      if (buffers && buffers.indexCount > 0) {
+        pass.setVertexBuffer(0, buffers.positionBuffer)
+        pass.setVertexBuffer(1, buffers.normalBuffer)
+        pass.setVertexBuffer(2, buffers.thicknessBuffer)
+        pass.setVertexBuffer(3, buffers.colorBuffer)
+        pass.setIndexBuffer(buffers.indexBuffer, 'uint32')
+        pass.drawIndexed(buffers.indexCount)
+      }
+    }
 
     pass.end()
     this.device.queue.submit([encoder.finish()])
   }
 
   destroy() {
-    this.positionBuffer?.destroy()
-    this.colorBuffer?.destroy()
-    this.indexBuffer?.destroy()
+    if (this.edgeBuffers) {
+      this.destroySubBatchBuffers(this.edgeBuffers)
+    }
+    if (this.nodeBuffers) {
+      this.destroySubBatchBuffers(this.nodeBuffers)
+    }
+    if (this.arrowBuffers) {
+      this.destroySubBatchBuffers(this.arrowBuffers)
+    }
     this.uniformBuffer.destroy()
-    this.positionBuffer = null
-    this.colorBuffer = null
-    this.indexBuffer = null
+    this.edgeBuffers = null
+    this.nodeBuffers = null
+    this.arrowBuffers = null
   }
 }

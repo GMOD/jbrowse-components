@@ -42,6 +42,14 @@ export class GraphRenderer {
     this.backend?.uploadGeometry(batch)
   }
 
+  updateSubBatchColors(
+    target: 'edges' | 'nodes' | 'arrows',
+    colors: Float32Array,
+    vertexStart: number,
+  ) {
+    this.backend?.updateSubBatchColors(target, colors, vertexStart)
+  }
+
   updateTransform(transform: TransformUniform) {
     this.backend?.updateTransform(transform)
   }

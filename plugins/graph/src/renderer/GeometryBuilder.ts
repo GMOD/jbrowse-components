@@ -2,22 +2,19 @@ import { computeEdgeCurves } from '../util/geometry.ts'
 
 import type { Graph, NodeSegment, ColorScheme, GraphNode } from '../types.ts'
 import type { BezierCurve } from '../util/geometry.ts'
-import type { RenderBatch } from './types.ts'
+import type { RenderBatch, SubBatch, VertexRange } from './types.ts'
 
-interface BuildOptions {
+export interface BuildOptions {
   nodePositions: Record<string, NodeSegment[]>
   graph: Graph
   colorScheme: ColorScheme
   contigThickness: number
   connectorThickness: number
   drawPaths: boolean
-  hoveredNode: string | null
-  hoveredEdge: number | null
-  selectedNode: string | null
-  scale: number
+  viewportBounds?: { minX: number; minY: number; maxX: number; maxY: number }
 }
 
-function hslToRgb(
+export function hslToRgb(
   h: number,
   s: number,
   l: number,
@@ -50,14 +47,14 @@ function hslToRgb(
   return [r + m, g + m, b + m]
 }
 
-interface ColorSchemeRange {
+export interface ColorSchemeRange {
   minDepth: number
   maxDepth: number
   minLength: number
   maxLength: number
 }
 
-function computeColorSchemeRange(graph: Graph) {
+export function computeColorSchemeRange(graph: Graph) {
   let minDepth = Infinity,
     maxDepth = -Infinity
   let minLength = Infinity,
@@ -80,7 +77,7 @@ function computeColorSchemeRange(graph: Graph) {
   return { minDepth, maxDepth, minLength, maxLength } satisfies ColorSchemeRange
 }
 
-function getNodeColor(
+export function getNodeColor(
   node: GraphNode,
   colorScheme: ColorScheme,
   range: ColorSchemeRange,
@@ -233,16 +230,57 @@ function tessellateBezierCurves(
   return allPoints
 }
 
+function isSegmentInBounds(
+  segments: NodeSegment[],
+  bounds: { minX: number; minY: number; maxX: number; maxY: number },
+) {
+  for (const seg of segments) {
+    if (seg.x >= bounds.minX && seg.x <= bounds.maxX &&
+        seg.y >= bounds.minY && seg.y <= bounds.maxY) {
+      return true
+    }
+  }
+  return false
+}
+
+function isBezierInBounds(
+  curves: BezierCurve[],
+  bounds: { minX: number; minY: number; maxX: number; maxY: number },
+) {
+  for (const c of curves) {
+    const cMinX = Math.min(c.x0, c.cx0, c.cx1, c.x1)
+    const cMaxX = Math.max(c.x0, c.cx0, c.cx1, c.x1)
+    const cMinY = Math.min(c.y0, c.cy0, c.cy1, c.y1)
+    const cMaxY = Math.max(c.y0, c.cy0, c.cy1, c.y1)
+    if (cMaxX >= bounds.minX && cMinX <= bounds.maxX &&
+        cMaxY >= bounds.minY && cMinY <= bounds.maxY) {
+      return true
+    }
+  }
+  return false
+}
+
 class MeshBuilder {
   positions: number[] = []
+  normals: number[] = []
+  thicknesses: number[] = []
   colors: number[] = []
   indices: number[] = []
   vertexCount = 0
 
-  pushColor(color: [number, number, number, number], count = 1) {
-    for (let i = 0; i < count; i++) {
-      this.colors.push(color[0], color[1], color[2], color[3])
-    }
+  pushVertex(
+    x: number,
+    y: number,
+    nx: number,
+    ny: number,
+    thickness: number,
+    color: [number, number, number, number],
+  ) {
+    this.positions.push(x, y)
+    this.normals.push(nx, ny)
+    this.thicknesses.push(thickness)
+    this.colors.push(color[0], color[1], color[2], color[3])
+    this.vertexCount++
   }
 
   addRoundCap(
@@ -254,21 +292,18 @@ class MeshBuilder {
   ) {
     const capSegments = 4
     const centerIdx = this.vertexCount
-    this.positions.push(center.x, center.y)
-    this.pushColor(color)
-    this.vertexCount++
+    this.pushVertex(center.x, center.y, 0, 0, 0, color)
 
     for (let i = 0; i <= capSegments; i++) {
       const a = angle + startAngleOffset + (Math.PI * i) / capSegments
-      this.positions.push(
-        center.x + Math.cos(a) * thickness,
-        center.y + Math.sin(a) * thickness,
+      this.pushVertex(
+        center.x, center.y,
+        Math.cos(a), Math.sin(a),
+        thickness, color,
       )
-      this.pushColor(color)
       if (i > 0) {
-        this.indices.push(centerIdx, this.vertexCount - 1, this.vertexCount)
+        this.indices.push(centerIdx, this.vertexCount - 2, this.vertexCount - 1)
       }
-      this.vertexCount++
     }
   }
 
@@ -281,7 +316,7 @@ class MeshBuilder {
       return
     }
 
-    const normals: { nx: number; ny: number }[] = []
+    const pointNormals: { nx: number; ny: number }[] = []
     for (let i = 0; i < points.length; i++) {
       let nx = 0,
         ny = 0
@@ -330,7 +365,7 @@ class MeshBuilder {
           ny = dx2 / len2
         }
       }
-      normals.push({ nx, ny })
+      pointNormals.push({ nx, ny })
     }
 
     const startDx = points[1]!.x - points[0]!.x
@@ -342,11 +377,9 @@ class MeshBuilder {
     const stripStart = this.vertexCount
     for (let i = 0; i < points.length; i++) {
       const p = points[i]!
-      const n = normals[i]!
-      this.positions.push(p.x + n.nx * thickness, p.y + n.ny * thickness)
-      this.positions.push(p.x - n.nx * thickness, p.y - n.ny * thickness)
-      this.pushColor(color, 2)
-      this.vertexCount += 2
+      const n = pointNormals[i]!
+      this.pushVertex(p.x, p.y, n.nx, n.ny, thickness, color)
+      this.pushVertex(p.x, p.y, -n.nx, -n.ny, thickness, color)
     }
 
     for (let i = 0; i < points.length - 1; i++) {
@@ -370,22 +403,17 @@ class MeshBuilder {
     size: number,
     color: [number, number, number, number],
   ) {
-    this.positions.push(
-      x,
-      y,
-      x - Math.cos(angle - 0.5) * size,
-      y - Math.sin(angle - 0.5) * size,
-      x - Math.cos(angle + 0.5) * size,
-      y - Math.sin(angle + 0.5) * size,
-    )
-    this.pushColor(color, 3)
-    this.indices.push(this.vertexCount, this.vertexCount + 1, this.vertexCount + 2)
-    this.vertexCount += 3
+    this.pushVertex(x, y, 0, 0, 0, color)
+    this.pushVertex(x, y, -Math.cos(angle - 0.5), -Math.sin(angle - 0.5), size, color)
+    this.pushVertex(x, y, -Math.cos(angle + 0.5), -Math.sin(angle + 0.5), size, color)
+    this.indices.push(this.vertexCount - 3, this.vertexCount - 2, this.vertexCount - 1)
   }
 
-  toBatch(): RenderBatch {
+  toSubBatch(): SubBatch {
     return {
       positions: new Float32Array(this.positions),
+      normals: new Float32Array(this.normals),
+      thicknesses: new Float32Array(this.thicknesses),
       colors: new Float32Array(this.colors),
       indices: new Uint32Array(this.indices),
     }
@@ -400,13 +428,16 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     contigThickness,
     connectorThickness,
     drawPaths,
-    hoveredNode,
-    hoveredEdge,
-    selectedNode,
-    scale,
+    viewportBounds,
   } = options
 
-  const mesh = new MeshBuilder()
+  const edgeMesh = new MeshBuilder()
+  const nodeMesh = new MeshBuilder()
+  const arrowMesh = new MeshBuilder()
+
+  const nodeVertexRanges = new Map<string, VertexRange>()
+  const edgeVertexRanges = new Map<number, VertexRange>()
+  const arrowVertexRanges = new Map<number, VertexRange>()
 
   const colorRange = computeColorSchemeRange(graph)
   const nodeById = new Map<string, GraphNode>()
@@ -425,7 +456,6 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     }
   }
 
-  // Edges first (drawn behind nodes)
   for (let ei = 0; ei < graph.edges.length; ei++) {
     const edge = graph.edges[ei]!
     const fromSegments = nodePositions[edge.from]
@@ -436,35 +466,38 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
 
     const fromEnd = fromSegments[fromSegments.length - 1]!
     const toStart = toSegments[0]!
-    const isHovered = hoveredEdge === ei
     const numPaths = edge.pathIds?.length ?? 0
     const isSelfLoop = edge.from === edge.to
-    const lineWidth = isHovered ? connectorThickness + 1 : connectorThickness
+    const edgeThickness = connectorThickness / 2
 
     const buildSingleEdge = (
       offsetX: number,
       offsetY: number,
       color: [number, number, number, number],
     ) => {
-      const thickness = lineWidth / 2 / scale
-      const curves = computeEdgeCurves(fromSegments, toSegments, isSelfLoop, scale, offsetX, offsetY)
-      const allPoints = tessellateBezierCurves(curves, 0.5 / scale)
+      const curves = computeEdgeCurves(fromSegments, toSegments, isSelfLoop, offsetX, offsetY)
 
-      mesh.addPolyline(allPoints, thickness, color)
+      if (viewportBounds && !isBezierInBounds(curves, viewportBounds)) {
+        return
+      }
+
+      const allPoints = tessellateBezierCurves(curves, 0.5)
+      edgeMesh.addPolyline(allPoints, edgeThickness, color)
 
       const lastPt = allPoints[allPoints.length - 1]!
       const prevPt = allPoints[allPoints.length - 2]!
-      mesh.addArrowhead(
+      arrowMesh.addArrowhead(
         lastPt.x, lastPt.y,
         Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x),
-        12 / scale, color,
+        12, color,
       )
     }
 
+    const edgeStart = edgeMesh.vertexCount
+    const arrowStart = arrowMesh.vertexCount
+
     if (!drawPaths || numPaths === 0) {
-      const edgeColor: [number, number, number, number] = isHovered
-        ? [0.667, 0.667, 0.667, 0.85]
-        : [0.467, 0.467, 0.467, 0.85]
+      const edgeColor: [number, number, number, number] = [0.467, 0.467, 0.467, 0.85]
       buildSingleEdge(0, 0, edgeColor)
     } else {
       const dx = toStart.x - fromEnd.x
@@ -473,7 +506,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       if (len > 0) {
         const perpX = -dy / len
         const perpY = dx / len
-        const offsetDist = 3 / scale
+        const offsetDist = 3
 
         for (let pathIdx = 0; pathIdx < numPaths; pathIdx++) {
           const offset = (pathIdx - (numPaths - 1) / 2) * offsetDist
@@ -483,25 +516,100 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
         }
       }
     }
+
+    const edgeCount = edgeMesh.vertexCount - edgeStart
+    if (edgeCount > 0) {
+      edgeVertexRanges.set(ei, { start: edgeStart, count: edgeCount })
+    }
+    const arrowCount = arrowMesh.vertexCount - arrowStart
+    if (arrowCount > 0) {
+      arrowVertexRanges.set(ei, { start: arrowStart, count: arrowCount })
+    }
   }
 
-  // Nodes on top of edges
   for (const [nodeId, segments] of Object.entries(nodePositions)) {
     const node = nodeById.get(nodeId)
     if (!node) {
       continue
     }
 
+    if (viewportBounds && !isSegmentInBounds(segments, viewportBounds)) {
+      continue
+    }
+
     const color = getNodeColor(node, colorScheme, colorRange)
-    const isHovered = hoveredNode === nodeId
-    const isSelected = selectedNode === nodeId
-    const screenPx = isSelected
-      ? contigThickness + 2
-      : isHovered
-        ? contigThickness + 1
-        : contigThickness
-    mesh.addPolyline(segments, screenPx / 2 / scale, color)
+    const nodeThickness = contigThickness / 2
+
+    const startVert = nodeMesh.vertexCount
+    nodeMesh.addPolyline(segments, nodeThickness, color)
+    const count = nodeMesh.vertexCount - startVert
+    if (count > 0) {
+      nodeVertexRanges.set(nodeId, { start: startVert, count })
+    }
   }
 
-  return mesh.toBatch()
+  return {
+    edges: edgeMesh.toSubBatch(),
+    nodes: nodeMesh.toSubBatch(),
+    arrows: arrowMesh.toSubBatch(),
+    nodeVertexRanges,
+    edgeVertexRanges,
+    arrowVertexRanges,
+  }
+}
+
+export function recolorNodes(
+  graph: Graph,
+  nodeVertexRanges: Map<string, VertexRange>,
+  colorScheme: ColorScheme,
+  baseNodeColors: Float32Array,
+) {
+  const colorRange = computeColorSchemeRange(graph)
+  const nodeById = new Map<string, GraphNode>()
+  for (let i = 0; i < graph.nodes.length; i++) {
+    const n = graph.nodes[i]!
+    nodeById.set(n.id, n)
+  }
+
+  const result = new Float32Array(baseNodeColors.length)
+  result.set(baseNodeColors)
+
+  for (const [nodeId, range] of nodeVertexRanges) {
+    const node = nodeById.get(nodeId)
+    if (!node) {
+      continue
+    }
+    const color = getNodeColor(node, colorScheme, colorRange)
+    for (let v = 0; v < range.count; v++) {
+      const idx = (range.start + v) * 4
+      result[idx] = color[0]
+      result[idx + 1] = color[1]
+      result[idx + 2] = color[2]
+      result[idx + 3] = color[3]
+    }
+  }
+  return result
+}
+
+export function brightenColors(
+  baseColors: Float32Array,
+  range: VertexRange,
+  factor: number,
+) {
+  const slice = new Float32Array(range.count * 4)
+  for (let v = 0; v < range.count; v++) {
+    const srcIdx = (range.start + v) * 4
+    slice[v * 4] = Math.min(1, baseColors[srcIdx]! * factor)
+    slice[v * 4 + 1] = Math.min(1, baseColors[srcIdx + 1]! * factor)
+    slice[v * 4 + 2] = Math.min(1, baseColors[srcIdx + 2]! * factor)
+    slice[v * 4 + 3] = baseColors[srcIdx + 3]!
+  }
+  return slice
+}
+
+export function extractColorSlice(
+  baseColors: Float32Array,
+  range: VertexRange,
+) {
+  return baseColors.slice(range.start * 4, (range.start + range.count) * 4)
 }
