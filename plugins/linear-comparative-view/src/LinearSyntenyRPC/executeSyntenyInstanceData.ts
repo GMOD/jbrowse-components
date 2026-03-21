@@ -182,6 +182,7 @@ export function executeSyntenyInstanceData({
   starts,
   ends,
   colorBy,
+  syriTypes,
   drawCurves,
   drawCIGAR,
   drawCIGARMatchesOnly,

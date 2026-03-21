@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseLinearDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingTrack,
   getContainingView,
@@ -11,10 +11,11 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
-import { syriColors } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+import { doAfterAttach } from './afterAttach.ts'
 
-import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
+import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -25,19 +26,9 @@ type LGV = LinearGenomeViewModel
 const LaunchSyntenyViewDialog = lazy(
   () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog.tsx'),
 )
-
-export interface MultiSyntenyFeature {
-  queryGenome: string
-  start: number
-  end: number
-  mateStart: number
-  mateEnd: number
-  mateRefName: string
-  strand: number
-  syriType: SyriType | undefined
-  identity: number
-  featureId: string
-}
+const GenomeSubsetSelector = lazy(
+  () => import('./components/GenomeSubsetSelector.tsx'),
+)
 
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
@@ -52,8 +43,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       }),
     )
     .volatile(() => ({
-      genomeRows: new Map<string, MultiSyntenyFeature[]>(),
+      genomeRows: new Map<string, MultiPairFeature[]>(),
       allGenomeNames: [] as string[],
+      error: undefined as unknown,
     }))
     .views(self => ({
       get displayedGenomes() {
@@ -62,12 +54,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         return self.allGenomeNames
       },
-      get displayHeight() {
+      get height() {
         return Math.max(this.displayedGenomes.length * self.rowHeight, 40)
       },
     }))
     .actions(self => ({
-      setGenomeRows(rows: Map<string, MultiSyntenyFeature[]>) {
+      setGenomeRows(rows: Map<string, MultiPairFeature[]>) {
         self.genomeRows = rows
       },
       setAllGenomeNames(names: string[]) {
@@ -87,6 +79,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           self.selectedGenomes.push(name)
         }
       },
+      setError(e: unknown) {
+        self.error = e
+      },
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
@@ -102,6 +97,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           session.showWidget(featureWidget)
         }
         session.setSelection(feature)
+      },
+      afterAttach() {
+        doAfterAttach(self as MultiLGVSyntenyDisplayModel)
       },
     }))
     .views(self => ({
@@ -144,9 +142,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               session.notify('Copied to clipboard', 'success')
             },
           },
-        ] as MenuItem[]
+        ]
       },
-      trackMenuItems() {
+      trackMenuItems(): MenuItem[] {
+        const view = getContainingView(self) as LGV
+        const track = getContainingTrack(self)
+        const trackId = getConf(track, 'trackId')
+        const refAssembly = view.displayedRegions[0]?.assemblyName
+        const loc = view.displayedRegions[0]
+          ? `${view.displayedRegions[0].refName}:${Math.floor(view.offsetPx * view.bpPerPx)}-${Math.floor((view.offsetPx + view.width) * view.bpPerPx)}`
+          : undefined
+
         return [
           {
             label: 'Row height',
@@ -160,14 +166,64 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             })),
           },
           {
-            label: 'Select genomes...',
+            label: `Select genomes (${self.displayedGenomes.length}/${self.allGenomeNames.length})...`,
             onClick: () => {
-              // Opens genome selector dialog - TODO: implement
+              getSession(self).queueDialog(handleClose => [
+                GenomeSubsetSelector,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
           },
-        ] as MenuItem[]
+          ...(refAssembly && loc && self.displayedGenomes.length > 0
+            ? [
+                {
+                  label: `Launch N-way synteny view (${self.displayedGenomes.length + 1} genomes)`,
+                  icon: ViewComfyIcon,
+                  onClick: () => {
+                    const genomes = self.displayedGenomes
+                    const tracks = genomes.map(() => [trackId])
+                    getSession(self).addView('LinearSyntenyView', {
+                      type: 'LinearSyntenyView',
+                      init: {
+                        views: [
+                          { assembly: refAssembly, loc },
+                          ...genomes.map(genome => ({ assembly: genome })),
+                        ],
+                        tracks,
+                      },
+                    })
+                  },
+                },
+                {
+                  label: 'Launch 2-way synteny with...',
+                  subMenu: self.displayedGenomes.map(genome => ({
+                    label: genome,
+                    onClick: () => {
+                      getSession(self).addView('LinearSyntenyView', {
+                        type: 'LinearSyntenyView',
+                        init: {
+                          views: [
+                            { assembly: refAssembly, loc },
+                            { assembly: genome },
+                          ],
+                          tracks: [[trackId]],
+                        },
+                      })
+                    },
+                  })),
+                },
+              ]
+            : []),
+        ]
       },
     }))
 }
+
+export type MultiLGVSyntenyDisplayModel = ReturnType<
+  typeof stateModelFactory
+>['Type']
 
 export default stateModelFactory
