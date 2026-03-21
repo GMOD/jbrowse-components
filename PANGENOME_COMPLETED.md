@@ -1,6 +1,6 @@
 # Pangenome Synteny: Completed Work
 
-## CLI (`jbrowse make-pif`)
+## CLI (`jbrowse make-pif`, `jbrowse make-gfa-db`)
 
 - 3-tier PIF format: full (t/q with CIGAR), summary (st/sq with absolute-position indels), structural (xt/xq with SyRI types)
 - SyRI classification on all tiers via `sy:Z:` tag
@@ -10,6 +10,9 @@
 - Multi-pair PIF with pair-indexed prefixes (t0/q0, t1/q1, ...)
 - GFA parser emits `sg:Z:` segment IDs for cross-pair tracking
 - `segmentId` field on `PAFLikeRecord`, emitted as `sg:Z:` tag in PAF output
+- `jbrowse make-gfa-db` converts GFA → SQLite with segments, paths, path_steps tables
+  - Supports P-lines (GFA1) and W-lines (GFA1.1+), assembly filtering
+  - Uses `node:sqlite` (built-in), indexed by path + cumulative_offset
 
 ## PairwiseIndexedPAFAdapter
 

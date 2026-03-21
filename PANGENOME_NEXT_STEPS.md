@@ -21,19 +21,23 @@
 
 Runtime GFA access is needed for both graph visualization AND synteny projection.
 
-**Approach: GFA → SQLite**
+**Approach: GFA → SQLite** (done: CLI conversion)
 
-Convert GFA to a SQLite database with tables for segments, links, and path steps. Index by path name + offset for random access without loading the full graph.
+`jbrowse make-gfa-db` converts GFA to SQLite with tables for segments, paths, and path_steps. Uses `node:sqlite` (built-in since Node 22.5). Index by path + cumulative_offset for O(log N) range queries.
 
 ```
-segments(id, length, sequence_offset, sn, so, sr)
-path_steps(path_id, step_index, segment_id, orientation, cumulative_offset)
-paths(id, sample, haplotype, sequence, start, end)
+segments(id, length, sn, so, sr)
+paths(id, name, sample, haplotype, sequence, total_length)
+path_steps(path_id, step_index, segment_id, orientation, cumulative_offset, segment_length)
 ```
 
-**Files to create:**
-- `packages/core/src/data_adapters/GfaAdapter/` — base GFA adapter with SQLite or indexed access
-- `plugins/comparative-adapters/src/GfaSyntenyAdapter/` — projects GFA paths into pairwise features
+**Remaining work:**
+- `plugins/comparative-adapters/src/GfaSyntenyAdapter/` — runtime adapter that reads SQLite DB and implements `getMultiPairFeatures()`. Needs `sql.js` (WASM) for browser support.
+- Assembly auto-creation from GFA paths (each genome → JBrowse assembly)
+
+**Prior art & alternatives:**
+- [gfabase](https://github.com/mlin/gfabase) — SQLite-based GFA indexing
+- vg/xg format — better for graph traversal performance, widely used in pangenomics community. Consider as future integration for graph viewer (D2-D3).
 
 ### A3. GFA-to-PIF Streaming Conversion
 
