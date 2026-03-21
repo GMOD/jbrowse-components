@@ -1,8 +1,8 @@
 # Graph Genome Plugin — Next Steps
 
 ## Layout Integration
-- [ ] Publish `bandage-layout-js` to npm or vendor it as a local dependency
-- [ ] Wire `bandage-layout-js/worker` into the model — call `computeLayout()` after `loadGFA` and feed result into `setLayoutResult`
+- [ ] Copy `bandage-layout-js` WASM, worker, and wrapper code into `plugins/graph/src/layout/` (vendor inline, no npm publish)
+- [ ] Wire the layout worker into the model — call `computeLayout()` after `loadGFA` and feed result into `setLayoutResult`
 - [ ] Add layout progress reporting (the worker emits progress events)
 - [ ] Add layout quality and linear layout toggles to the toolbar (volatiles exist but no UI)
 
