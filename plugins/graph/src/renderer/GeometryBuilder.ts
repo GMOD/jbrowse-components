@@ -1,6 +1,7 @@
-import { projectLine } from '../util/geometry.ts'
+import { computeEdgeCurves } from '../util/geometry.ts'
 
 import type { Graph, NodeSegment, ColorScheme, GraphNode } from '../types.ts'
+import type { BezierCurve } from '../util/geometry.ts'
 import type { RenderBatch } from './types.ts'
 
 interface BuildOptions {
@@ -213,6 +214,25 @@ function tessellateCubicBezier(
   return points
 }
 
+function tessellateBezierCurves(
+  curves: BezierCurve[],
+  flatness: number,
+) {
+  let allPoints: { x: number; y: number }[] = []
+  for (let i = 0; i < curves.length; i++) {
+    const c = curves[i]!
+    const pts = tessellateCubicBezier(
+      c.x0, c.y0, c.cx0, c.cy0, c.cx1, c.cy1, c.x1, c.y1, flatness,
+    )
+    if (i > 0) {
+      allPoints = allPoints.concat(pts.slice(1))
+    } else {
+      allPoints = pts
+    }
+  }
+  return allPoints
+}
+
 class MeshBuilder {
   positions: number[] = []
   colors: number[] = []
@@ -410,16 +430,12 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     const edge = graph.edges[ei]!
     const fromSegments = nodePositions[edge.from]
     const toSegments = nodePositions[edge.to]
-    if (!fromSegments || !toSegments) {
+    if (!fromSegments?.length || !toSegments?.length) {
       continue
     }
 
-    const fromEnd = fromSegments[fromSegments.length - 1]
-    const toStart = toSegments[0]
-    if (!fromEnd || !toStart) {
-      continue
-    }
-
+    const fromEnd = fromSegments[fromSegments.length - 1]!
+    const toStart = toSegments[0]!
     const isHovered = hoveredEdge === ei
     const numPaths = edge.pathIds?.length ?? 0
     const isSelfLoop = edge.from === edge.to
@@ -431,76 +447,13 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       color: [number, number, number, number],
     ) => {
       const thickness = lineWidth / 2 / scale
-      const p1x = fromEnd.x + offsetX
-      const p1y = fromEnd.y + offsetY
-      const p2x = toStart.x + offsetX
-      const p2y = toStart.y + offsetY
+      const curves = computeEdgeCurves(fromSegments, toSegments, isSelfLoop, scale, offsetX, offsetY)
+      const allPoints = tessellateBezierCurves(curves, 0.5 / scale)
 
-      let points: { x: number; y: number }[]
+      mesh.addPolyline(allPoints, thickness, color)
 
-      if (isSelfLoop) {
-        let segmentDirX = 1,
-          segmentDirY = 0
-        if (fromSegments.length >= 2) {
-          const prevSeg = fromSegments[fromSegments.length - 2]!
-          const lastSeg = fromSegments[fromSegments.length - 1]!
-          const dx = lastSeg.x - prevSeg.x
-          const dy = lastSeg.y - prevSeg.y
-          const len = Math.hypot(dx, dy)
-          if (len > 0) {
-            segmentDirX = dx / len
-            segmentDirY = dy / len
-          }
-        }
-
-        const ext = 50 / Math.pow(scale, 0.7)
-        const cp1x = p1x + segmentDirX * ext
-        const cp1y = p1y + segmentDirY * ext
-        const cp2x = p2x - segmentDirX * ext
-        const cp2y = p2y - segmentDirY * ext
-        const perpX = -segmentDirY
-        const perpY = segmentDirX
-        const midX = (fromEnd.x + toStart.x) / 2 + offsetX + perpX * ext
-        const midY = (fromEnd.y + toStart.y) / 2 + offsetY + perpY * ext
-
-        const points1 = tessellateCubicBezier(
-          p1x, p1y, cp1x, cp1y,
-          cp1x + perpX * ext, cp1y + perpY * ext,
-          midX, midY, 0.5 / scale,
-        )
-        const points2 = tessellateCubicBezier(
-          midX, midY,
-          cp2x + perpX * ext, cp2y + perpY * ext,
-          cp2x, cp2y, p2x, p2y, 0.5 / scale,
-        )
-        points = points1.concat(points2.slice(1))
-      } else {
-        const fromPrev =
-          fromSegments.length >= 2
-            ? fromSegments[fromSegments.length - 2]!
-            : { x: fromEnd.x - (toStart.x - fromEnd.x), y: fromEnd.y - (toStart.y - fromEnd.y) }
-        const toNext =
-          toSegments.length >= 2
-            ? toSegments[1]!
-            : { x: toStart.x - (fromEnd.x - toStart.x), y: toStart.y - (fromEnd.y - toStart.y) }
-
-        const dist = Math.hypot(p2x - p1x, p2y - p1y)
-        const projDist = Math.min(dist * 0.5, 80 / scale)
-        const [cx1, cy1] = projectLine(fromPrev.x, fromPrev.y, fromEnd.x, fromEnd.y, projDist)
-        const [cx2, cy2] = projectLine(toNext.x, toNext.y, toStart.x, toStart.y, projDist)
-
-        points = tessellateCubicBezier(
-          p1x, p1y,
-          cx1 + offsetX, cy1 + offsetY,
-          cx2 + offsetX, cy2 + offsetY,
-          p2x, p2y, 0.5 / scale,
-        )
-      }
-
-      mesh.addPolyline(points, thickness, color)
-
-      const lastPt = points[points.length - 1]!
-      const prevPt = points[points.length - 2]!
+      const lastPt = allPoints[allPoints.length - 1]!
+      const prevPt = allPoints[allPoints.length - 2]!
       mesh.addArrowhead(
         lastPt.x, lastPt.y,
         Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x),

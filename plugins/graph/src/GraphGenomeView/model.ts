@@ -1,10 +1,12 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { flow, types } from '@jbrowse/mobx-state-tree'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 import { parseGFA } from '../gfa/gfaParser.ts'
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
+import { computeLayout } from '../layout/computeLayout.ts'
 
 import type { Graph, LayoutResult, ColorScheme, NodeSegment } from '../types.ts'
+import type { LayoutOptions } from '../layout/computeLayout.ts'
 
 const MIN_ZOOM = 0.001
 const MAX_ZOOM = 100.0
@@ -27,6 +29,10 @@ export default function stateModelFactory() {
       layoutResult: undefined as LayoutResult | undefined,
       error: undefined as string | undefined,
       isLoading: false,
+      layoutProgress: 0,
+      layoutStage: '' as string,
+      layoutQuality: 1,
+      linearLayout: false,
       colorScheme: 'uniform' as ColorScheme,
       contigThickness: 5,
       connectorThickness: 1.5,
@@ -74,6 +80,16 @@ export default function stateModelFactory() {
       },
       setLoading(loading: boolean) {
         self.isLoading = loading
+      },
+      setLayoutProgress(progress: number, stage: string) {
+        self.layoutProgress = progress
+        self.layoutStage = stage
+      },
+      setLayoutQuality(quality: number) {
+        self.layoutQuality = quality
+      },
+      setLinearLayout(linear: boolean) {
+        self.linearLayout = linear
       },
       setColorScheme(scheme: ColorScheme) {
         self.colorScheme = scheme
@@ -139,12 +155,46 @@ export default function stateModelFactory() {
         self.translateY =
           padding - minY * newScale + (canvasHeight - padding * 2 - graphHeight * newScale) / 2
       },
-      loadGFA(text: string, name = 'Imported GFA') {
+      loadGFA: flow(function* (text: string, name = 'Imported GFA') {
         self.isLoading = true
         self.error = undefined
+        self.layoutProgress = 0
+        self.layoutStage = 'Parsing GFA'
         const gfaGraph = parseGFA(text)
-        self.graph = convertGFAToGraph(gfaGraph, name)
-      },
+        const graph = convertGFAToGraph(gfaGraph, name)
+        self.graph = graph
+        self.layoutStage = 'Computing layout'
+
+        const options: LayoutOptions = {
+          quality: self.layoutQuality,
+          linearLayout: self.linearLayout,
+        }
+        const { result } = yield computeLayout(graph, options, p => {
+          self.layoutProgress = p.progress
+          self.layoutStage = p.stage
+        })
+        self.layoutResult = result
+        self.isLoading = false
+      }),
+      recomputeLayout: flow(function* () {
+        if (!self.graph) {
+          return
+        }
+        self.isLoading = true
+        self.layoutProgress = 0
+        self.layoutStage = 'Computing layout'
+
+        const options: LayoutOptions = {
+          quality: self.layoutQuality,
+          linearLayout: self.linearLayout,
+        }
+        const { result } = yield computeLayout(self.graph, options, p => {
+          self.layoutProgress = p.progress
+          self.layoutStage = p.stage
+        })
+        self.layoutResult = result
+        self.isLoading = false
+      }),
       clearGraph() {
         self.graph = undefined
         self.layoutResult = undefined

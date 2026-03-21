@@ -1,20 +1,10 @@
 # Graph Genome Plugin — Next Steps
 
-## Layout Integration
-- [ ] Copy `bandage-layout-js` WASM, worker, and wrapper code into `plugins/graph/src/layout/` (vendor inline, no npm publish)
-- [ ] Wire the layout worker into the model — call `computeLayout()` after `loadGFA` and feed result into `setLayoutResult`
-- [ ] Add layout progress reporting (the worker emits progress events)
-- [ ] Add layout quality and linear layout toggles to the toolbar (volatiles exist but no UI)
-
-## Config-Driven Dataset Loading
-- [ ] Read `graphGenome.datasets` from root config in the ImportForm
-- [ ] Show configured datasets as quick-load buttons alongside file/URL import
-- [ ] Wire `gfaLocation` through JBrowse's `openLocation` / `getFileBytes` for auth/range support
+## GfaAdapter Integration
+- [ ] Wire graph view's ImportForm to load from GfaAdapter tracks (open from track list)
+- [ ] Add GfaAdapter to `GuessAdapter` for `.gfa` file extension detection
 
 ## Rendering
-- [ ] Test WebGPU backend end-to-end on Chrome/Firefox with `?gpu=webgpu`
-- [ ] Test Canvas2D fallback in environments without WebGL2
-- [ ] Add browser tests (puppeteer) for graph loading + render snapshot comparison across backends
 - [ ] Investigate incremental geometry updates (only rebuild changed nodes/edges on hover) to avoid full `buildGeometry` on every frame
 
 ## Interaction
@@ -24,20 +14,16 @@
 - [ ] Selection info panel — show details of selected node in a sidebar/widget
 
 ## GFA Support
-- [ ] Support W-lines (GFA 1.1 walk lines) in addition to P-lines
 - [ ] Support GFA2 fragment (F) and gap (G) lines
 - [ ] Handle large GFA files — streaming parse, or load via tabix-indexed GFA adapter
-- [ ] Connect to existing `GfaTabixAdapter` from comparative-adapters plugin for server-side GFA
+- [ ] Connect graph view to GfaTabixAdapter for server-side indexed GFA
 
 ## View Features
 - [ ] Dark mode toggle in toolbar (volatile exists, no UI)
-- [ ] Contig/connector thickness sliders
+- [ ] Contig/connector thickness sliders (volatiles exist, no UI)
 - [ ] Export graph view as SVG or PNG
 - [ ] Keyboard shortcuts (arrow keys for pan, +/- for zoom, Escape to deselect)
 - [ ] Touch/trackpad gesture support for mobile
 
 ## Testing
-- [ ] Unit tests for `parseGFA` with GFA1, GFA2, edge cases
-- [ ] Unit tests for `convertGFAToGraph` including path extraction
-- [ ] Unit tests for `MeshBuilder` geometry correctness
-- [ ] Unit tests for hit detection accuracy
+- [ ] Unit tests for `GfaAdapter` with sample GFA files

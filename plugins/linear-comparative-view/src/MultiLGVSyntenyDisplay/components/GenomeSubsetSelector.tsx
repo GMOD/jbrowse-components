@@ -13,13 +13,17 @@ import { observer } from 'mobx-react'
 
 import { Dialog } from '@jbrowse/core/ui'
 
-import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
+interface GenomeSubsetModel {
+  allGenomeNames: string[]
+  selectedGenomes: { length: number } & Iterable<string>
+  setSelectedGenomes(genomes: string[]): void
+}
 
 const GenomeSubsetSelector = observer(function GenomeSubsetSelector({
   model,
   handleClose,
 }: {
-  model: MultiLGVSyntenyDisplayModel
+  model: GenomeSubsetModel
   handleClose: () => void
 }) {
   const [filter, setFilter] = useState('')

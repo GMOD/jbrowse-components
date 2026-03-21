@@ -400,6 +400,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
+            ...(self.views.length > 2
+              ? [
+                  {
+                    label: 'Genome views',
+                    subMenu: [
+                      {
+                        label: 'Compact all views',
+                        onClick: () => self.compactAllViews(),
+                      },
+                      {
+                        label: 'Expand all views',
+                        onClick: () => self.expandAllViews(),
+                      },
+                      { label: '', type: 'divider' as const },
+                      ...self.views.map((view, idx) => ({
+                        label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+                        type: 'checkbox' as const,
+                        checked: !self.isViewCompact(idx),
+                        onClick: () => self.toggleCompactView(idx),
+                      })),
+                    ],
+                  },
+                ]
+              : []),
           ]
         },
         /**

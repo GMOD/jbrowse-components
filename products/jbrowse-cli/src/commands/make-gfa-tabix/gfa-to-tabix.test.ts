@@ -217,6 +217,53 @@ describe('GFA to tabix conversion', () => {
     })
   })
 
+  it('generates aln.bed.gz with cs tags from GFA with sequences', async () => {
+    const gfaWithSeqs = path.resolve('test_data/volvox/volvox_sample.gfa')
+    await withTmpDir(async dir => {
+      const prefix = path.join(dir, 'test')
+      const stats = await gfaToTabix(gfaWithSeqs, prefix)
+
+      expect(stats.alnFile).toBeDefined()
+      expect(fs.existsSync(`${prefix}.aln.bed.gz`)).toBe(true)
+      expect(fs.existsSync(`${prefix}.aln.bed.gz.tbi`)).toBe(true)
+
+      // Path names for P-lines without # are duplicated: path1#path1
+      const results = tabixQuery(
+        `${prefix}.aln.bed.gz`,
+        'path1#path1:0-1000',
+      )
+      expect(results.length).toBeGreaterThan(0)
+
+      // 9 columns: refPath, start, end, queryGenome, queryChrom, qStart, qEnd, strand, cs
+      const cols = results[0]!.split('\t')
+      expect(cols.length).toBe(9)
+      expect(cols[0]).toBe('path1#path1')
+      expect(cols[7]).toMatch(/^[+-]$/)
+      expect(cols[8]).toMatch(/:/)
+    })
+  })
+
+  it('cs tag contains substitution info for divergent segments', async () => {
+    const gfaWithSeqs = path.resolve('test_data/volvox/volvox_sample.gfa')
+    await withTmpDir(async dir => {
+      const prefix = path.join(dir, 'test')
+      await gfaToTabix(gfaWithSeqs, prefix)
+
+      const results = tabixQuery(
+        `${prefix}.aln.bed.gz`,
+        'path1#path1:0-1000',
+      )
+
+      // path1 uses s1,s2,s4,s5 and path2 uses s1,s3,s4,s5
+      // s2 vs s3 is a bubble — should produce substitution cs ops (*XY)
+      const csStrings = results.map(r => r.split('\t')[8])
+      const hasVariant = csStrings.some(
+        cs => cs && (cs.includes('*') || cs.includes('+') || cs.includes('-')),
+      )
+      expect(hasVariant).toBe(true)
+    })
+  })
+
   it('chunk size controls pos.bed.gz granularity', async () => {
     await withTmpDir(async dir => {
       const prefix10 = path.join(dir, 'chunk10')

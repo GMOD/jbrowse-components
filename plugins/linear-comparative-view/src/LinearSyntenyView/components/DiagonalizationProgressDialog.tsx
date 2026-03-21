@@ -30,32 +30,34 @@ const DiagonalizationProgressDialog = observer(
     const [error, setError] = useState<string>()
 
     useEffect(() => {
-      // Run diagonalization on mount
       const runDiagonalization = async () => {
         const session = getSession(model)
 
         try {
-          // Check we have exactly 2 views
-          if (model.views.length !== 2) {
-            setError('Diagonalization requires exactly 2 views')
+          if (model.views.length < 2) {
+            setError('Diagonalization requires at least 2 views')
             setProgress(100)
-            session.notify(
-              'Diagonalization requires exactly 2 views',
-              'warning',
-            )
             return
           }
 
-          const referenceView = model.views[0]!
-          const queryView = model.views[1]!
+          const numLevels = model.levels.length
+          let totalReversed = 0
+          let totalReordered = 0
 
-          setProgress(5)
-          setMessage('Collecting alignment data...')
+          for (let levelIdx = 0; levelIdx < numLevels; levelIdx++) {
+            const refView = model.views[levelIdx]!
+            const queryView = model.views[levelIdx + 1]!
+            const level = model.levels[levelIdx]!
 
-          // Collect all alignment data from all synteny tracks
-          const alignments: AlignmentData[] = []
+            const baseProgress = (levelIdx / numLevels) * 90
+            const levelProgress = 90 / numLevels
 
-          for (const level of model.levels) {
+            setProgress(baseProgress + 5)
+            setMessage(
+              `Collecting alignments for level ${levelIdx + 1}/${numLevels}...`,
+            )
+
+            const alignments: AlignmentData[] = []
             for (const track of level.tracks) {
               for (const display of track.displays) {
                 const { featureData } = display as {
@@ -88,45 +90,40 @@ const DiagonalizationProgressDialog = observer(
                 }
               }
             }
+
+            if (alignments.length === 0) {
+              continue
+            }
+
+            const result = await diagonalizeRegions(
+              alignments,
+              refView.displayedRegions,
+              queryView.displayedRegions,
+              async (prog, msg) => {
+                setProgress(baseProgress + (prog / 100) * levelProgress)
+                setMessage(
+                  `Level ${levelIdx + 1}/${numLevels}: ${msg}`,
+                )
+              },
+            )
+
+            if (result.newRegions.length > 0) {
+              transaction(() => {
+                queryView.setDisplayedRegions(result.newRegions)
+              })
+              totalReversed += result.stats.regionsReversed
+              totalReordered += result.stats.regionsReordered
+            }
           }
 
-          if (alignments.length === 0) {
-            setError('No alignments found')
-            setProgress(100)
-            session.notify('No alignments found to diagonalize', 'warning')
-            return
-          }
-
-          // Call the utility function with progress callback
-          const result = await diagonalizeRegions(
-            alignments,
-            referenceView.displayedRegions,
-            queryView.displayedRegions,
-            async (prog, msg) => {
-              setProgress(prog)
-              setMessage(msg)
-            },
+          setProgress(100)
+          setMessage(
+            `Done: reordered ${totalReordered} regions, reversed ${totalReversed}`,
           )
 
-          // Apply the new ordering
-          if (result.newRegions.length > 0) {
-            setProgress(95)
-            setMessage('Applying new layout...')
-            transaction(() => {
-              queryView.setDisplayedRegions(result.newRegions)
-            })
-            setProgress(100)
-            setMessage('Diagonalization complete')
-
-            // Auto-close after success
-            setTimeout(() => {
-              handleClose()
-            }, 1500)
-          } else {
-            setError('No regions to reorder')
-            setProgress(100)
-            session.notify('No query regions found to reorder', 'warning')
-          }
+          setTimeout(() => {
+            handleClose()
+          }, 1500)
         } catch (err) {
           console.error('Diagonalization error:', err)
           setError(`Error: ${err}`)

@@ -1,37 +1,27 @@
 import {
   getContainingTrack,
   getContainingView,
-  getEnv,
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { MultiLGVSyntenyDisplayModel } from './model.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+import type { MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/MultiPairGetFeatures.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { Region } from '@jbrowse/core/util/types'
 
-interface MultiPairAdapter {
-  getMultiPairFeatures(
-    query: Region,
-    opts: { bpPerPx?: number; stopToken?: StopToken },
-  ): Promise<{
-    genomeNames: string[]
-    genomeRows: Map<string, MultiPairFeature[]>
-  }>
-  getChromSizes?(): Promise<
-    Map<string, { refName: string; length: number }[]>
-  >
+interface MultiSyntenyDisplayActions {
+  setAllGenomeNames(names: string[]): void
+  setGenomeRows(rows: Map<string, MultiPairFeature[]>): void
+  setError(e: unknown): void
 }
 
-export function doAfterAttach(self: MultiLGVSyntenyDisplayModel) {
+export function doAfterAttach(self: MultiSyntenyDisplayActions) {
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
   let currentStopToken: StopToken | undefined
   let assembliesCreated = false
@@ -72,90 +62,61 @@ export function doAfterAttach(self: MultiLGVSyntenyDisplayModel) {
 
             const track = getContainingTrack(self)
             const adapterConfig = getConf(track, 'adapter')
-            const { pluginManager } = getEnv(self)
+            const session = getSession(self)
             const sessionId = getRpcSessionId(self)
-
-            const { dataAdapter } = await getAdapter(
-              pluginManager,
-              sessionId,
-              adapterConfig,
-            )
-            const adapter = dataAdapter as unknown as MultiPairAdapter
-
-            if (!assembliesCreated && adapter.getChromSizes) {
-              assembliesCreated = true
-              const chromSizes = await adapter.getChromSizes()
-              const session = getSession(self)
-              const { assemblyManager } = session
-              if (session.addAssembly) {
-                for (const [genome, regions] of chromSizes) {
-                  if (!assemblyManager.get(genome)) {
-                    session.addAssembly({
-                      name: genome,
-                      sequence: {
-                        type: 'ReferenceSequenceTrack',
-                        trackId: `${genome.replaceAll('#', '_')}_refseq`,
-                        adapter: {
-                          type: 'FromConfigRegionsAdapter',
-                          features: regions.map((r, i) => ({
-                            uniqueId: `${genome}-${r.refName}-${i}`,
-                            refName: r.refName,
-                            start: 0,
-                            end: r.length,
-                          })),
-                        },
-                      },
-                    })
-                  }
-                }
-              }
-            }
+            const { rpcManager } = session
 
             const contentBlocks = view.staticBlocks.contentBlocks
             const bpPerPx = view.bpPerPx
 
-            const allGenomeRows = new Map<string, MultiPairFeature[]>()
-            let allGenomeNames: string[] = []
+            const regions = contentBlocks.map(block => ({
+              assemblyName: block.assemblyName,
+              refName: block.refName,
+              start: block.start,
+              end: block.end,
+            }))
 
-            for (const block of contentBlocks) {
-              if (thisStopToken !== currentStopToken) {
-                return
-              }
-              const region = {
-                assemblyName: block.assemblyName,
-                refName: block.refName,
-                start: block.start,
-                end: block.end,
-              }
-
-              const { genomeNames, genomeRows } =
-                await adapter.getMultiPairFeatures(region, {
-                  bpPerPx,
-                  stopToken: thisStopToken,
-                })
-
-              if (allGenomeNames.length === 0) {
-                allGenomeNames = genomeNames
-              }
-
-              for (const [genome, features] of genomeRows) {
-                const existing = allGenomeRows.get(genome)
-                if (existing) {
-                  for (const f of features) {
-                    existing.push(f)
-                  }
-                } else {
-                  allGenomeRows.set(genome, [...features])
-                }
-              }
-            }
+            const result: MultiPairGetFeaturesResult =
+              await rpcManager.call(sessionId, 'MultiPairGetFeatures', {
+                adapterConfig,
+                regions,
+                bpPerPx,
+                sessionId,
+                stopToken: thisStopToken,
+                fetchChromSizes: !assembliesCreated,
+              })
 
             if (thisStopToken !== currentStopToken || !isAlive(self)) {
               return
             }
 
-            self.setAllGenomeNames(allGenomeNames)
-            self.setGenomeRows(allGenomeRows)
+            if (result.chromSizes && session.addAssembly) {
+              assembliesCreated = true
+              const { assemblyManager } = session
+              for (const [genome, regions] of result.chromSizes) {
+                if (!assemblyManager.get(genome)) {
+                  session.addAssembly({
+                    name: genome,
+                    sequence: {
+                      type: 'ReferenceSequenceTrack',
+                      trackId: `${genome.replaceAll('#', '_')}_refseq`,
+                      adapter: {
+                        type: 'FromConfigRegionsAdapter',
+                        features: regions.map((r, i) => ({
+                          uniqueId: `${genome}-${r.refName}-${i}`,
+                          refName: r.refName,
+                          start: 0,
+                          end: r.length,
+                        })),
+                      },
+                    },
+                  })
+                }
+              }
+            }
+
+            self.setAllGenomeNames(result.genomeNames)
+            self.setGenomeRows(new Map(result.genomeRows))
             self.setError(undefined)
           } catch (e) {
             if (!isAbortException(e)) {

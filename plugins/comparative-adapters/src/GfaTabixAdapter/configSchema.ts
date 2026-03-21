@@ -71,6 +71,33 @@ const GfaTabixAdapter = ConfigurationSchema(
         },
       },
     }),
+    /**
+     * #slot
+     */
+    alnLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of the aln.bed.gz file (precomputed pairwise alignments with cs tags)',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
+    /**
+     * #slot
+     */
+    alnIndex: ConfigurationSchema('AlnTabixIndex', {
+      /**
+       * #slot alnIndex.location
+       */
+      location: {
+        type: 'fileLocation',
+        defaultValue: {
+          uri: '',
+          locationType: 'UriLocation',
+        },
+      },
+    }),
   },
   {
     explicitlyTyped: true,
@@ -108,6 +135,16 @@ const GfaTabixAdapter = ConfigurationSchema(
           segsIndex: {
             location: {
               uri: `${snap.prefix}.segs.bed.gz.tbi`,
+              baseUri: snap.baseUri,
+            },
+          },
+          alnLocation: {
+            uri: `${snap.prefix}.aln.bed.gz`,
+            baseUri: snap.baseUri,
+          },
+          alnIndex: {
+            location: {
+              uri: `${snap.prefix}.aln.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
           },

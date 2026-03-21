@@ -85,18 +85,24 @@
 - **Genomes returned**: 17 (varies by region — not all contigs overlap every ref region)
 - **Merged features**: 3909 (segment merging active)
 
-## MultiLGVSyntenyDisplay (B1, A2, B3)
+## MultiLGVSyntenyDisplay (B1, A2, B3, B4)
 
-- Custom ReactComponent with Canvas2D rendering (not block-based)
-- `data-testid="multi_synteny_canvas"` for browser test targeting
-- afterAttach autorun: fetches multi-pair features, groups by genome, debounced (300ms)
+- Non-block-based display using `BaseDisplay` + `TrackHeightMixin` (no server-side rendered blocks)
+- Canvas2D rendering with `data-testid="multi_synteny_canvas"`
+- afterAttach autorun: fetches multi-pair features via RPC, groups by genome, debounced (300ms)
 - Genome sub-selection dialog (searchable checkbox list, select/deselect all)
-- Track menu: row height, genome selector, N-way and 2-way synteny view launch options
-- "Launch N-way synteny view" opens full LinearSyntenyView with ref + all displayed genomes (uses `init` for assembly loading)
-- "Launch 2-way synteny with..." per-genome submenu (also uses `init`)
-- Segment-based coloring: features with shared `segmentId` get consistent colors across rows
-- `height` auto-calculated from genome count × row height
+- Track menu: color by, row height (auto/manual), genome selector, synteny view launchers
+- Auto-height mode (default): rows auto-fit to display height (`height / numGenomes`), matching MultiWiggle pattern
+- Manual row height mode: fixed px per row (5/10/15/20/30px) for dense display
+- Adaptive rendering: hides labels when rowHeight<12, hides separators when <4
+- `colorBy` property: strand (blue/orange), syri (SYN/INV/TRANS/DUP), identity (green→red gradient)
+- CIGAR detail rendering: insertions (red), deletions (blue), mismatches (brown) overlaid on feature blocks
+  - CIGAR colors shared from `drawSyntenyUtils.ts` (same as LinearSyntenyDisplay)
+  - `MultiPairFeature.cigar` field extracted from PAF `cg:` tag by PairwiseIndexedPAFAdapter
+- Floating legend via `BaseLinearDisplay` `legendItems()` override + `FloatingLegend` component
+- "Launch 2-way synteny with..." converted from 90-item submenu to searchable dialog
 - Mouse hover tooltips showing genome name, coordinates, size, type, identity, segmentId
+- Duck-typed interfaces throughout to avoid circular MST type dependencies
 
 ## Scalable N-Way LinearSyntenyView (C1)
 
@@ -106,6 +112,54 @@
 - Collapsed levels skip data fetching (afterAttach checks `isLevelCollapsed`)
 - `effectiveHeight` getter on levels, respected by LinearSyntenyDisplay height
 - "Synteny levels" header submenu: expand/collapse all, auto-scale, per-level focus radio
+
+## N-Way Diagonalization (C3)
+
+- Extended `DiagonalizationProgressDialog` to support N views (was limited to 2)
+- Cascading diagonalization: view[1] against view[0], view[2] against (reordered) view[1], etc.
+- Progress bar shows per-level progress (`Level 1/N: message`)
+- Uses existing `diagonalizeRegions()` algorithm unchanged — just applied iteratively
+- Summary shows total regions reordered and reversed across all levels
+
+## RPC Migration for getMultiPairFeatures (E2)
+
+- New `MultiPairGetFeatures` RPC method moves adapter queries to web worker
+- Handles multiple content blocks in a single RPC call (was per-block loop on main thread)
+- `fetchChromSizes` flag: assembly auto-creation data fetched in same worker call
+- Map→entries serialization for structured clone compatibility (`genomeRows` as `[string, MultiPairFeature[]][]`)
+- `MultiLGVSyntenyDisplay.afterAttach` simplified: removed direct adapter access, uses `rpcManager.call()`
+
+## LaunchPairwiseSyntenyDialog
+
+- Searchable dialog for launching 2-way synteny views from MultiLGVSyntenyDisplay
+- Replaces long submenu (unusable with 44+ genomes)
+- Filter text field, click genome to launch and auto-close
+- Duck-typed `{ displayedGenomes: string[] }` interface (no circular model type import)
+
+## Scaffold Name Handling (A6)
+
+- Three-part path naming scheme (`sample#haplotype#scaffoldName`) correctly handles non-standard contig names
+- `parseGfaPathName()` correctly extracts scaffold names like `JAHBCB010000023.1` as `mateRefName`
+- Assembly auto-creation uses the correct scaffold names from the `#sizes=` header
+- No code changes needed — the existing architecture already supports this edge case
+
+## Auto-Default MultiLGVSyntenyDisplay (A6)
+
+- `Core-preProcessTrackConfig` extension reorders displays for multi-pair adapter types
+- `multiPairTypes` list: `PairwiseIndexedPAFAdapter`, `GfaTabixAdapter`
+- When a SyntenyTrack uses a multi-pair adapter, `MultiLGVSyntenyDisplay` is placed before `LGVSyntenyDisplay` in the display order
+- No manual display switching needed — users get multi-genome view by default
+- `GfaTabixAdapter` added to `syntenyTypes` list for proper track type detection
+
+## Compact View Mode (E0)
+
+- `compactViews` property on `LinearComparativeView`: per-view boolean array
+- Compact views render as 24px label bar showing assembly name
+- Click compact bar to expand back to full LGV
+- `CompactViewBar` component with theme-aware styling
+- "Genome views" header submenu (shown for >2 views): compact all / expand all / per-view checkboxes
+- `isViewCompact(idx)` view, `toggleCompactView`/`compactAllViews`/`expandAllViews` actions
+- State persisted in snapshots, only serialized when at least one view is compact
 
 ## Runtime UI
 

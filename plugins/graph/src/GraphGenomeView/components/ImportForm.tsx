@@ -33,15 +33,17 @@ const ImportForm = observer(function ImportForm({
       return
     }
     setFetchError('')
-    model.setLoading(true)
     const response = await fetch(url)
     if (!response.ok) {
       setFetchError(`Failed to fetch: ${response.statusText}`)
-      model.setLoading(false)
       return
     }
     const text = await response.text()
-    model.loadGFA(text, url.split('/').pop() ?? 'GFA')
+    try {
+      await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
+    } catch (e) {
+      model.setError(`Layout failed: ${e}`)
+    }
   }
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -49,12 +51,15 @@ const ImportForm = observer(function ImportForm({
     if (!file) {
       return
     }
-    model.setLoading(true)
     const reader = new FileReader()
-    reader.onload = e => {
+    reader.onload = async e => {
       const text = e.target?.result
       if (typeof text === 'string') {
-        model.loadGFA(text, file.name)
+        try {
+          await model.loadGFA(text, file.name)
+        } catch (err) {
+          model.setError(`Layout failed: ${err}`)
+        }
       }
     }
     reader.onerror = () => {
@@ -63,8 +68,12 @@ const ImportForm = observer(function ImportForm({
     reader.readAsText(file)
   }
 
-  function handleExampleLoad() {
-    model.loadGFA(EXAMPLE_GFA, 'Example graph')
+  async function handleExampleLoad() {
+    try {
+      await model.loadGFA(EXAMPLE_GFA, 'Example graph')
+    } catch (e) {
+      model.setError(`Layout failed: ${e}`)
+    }
   }
 
   return (

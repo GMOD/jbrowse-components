@@ -1,7 +1,8 @@
 import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingTrack,
   getContainingView,
@@ -14,6 +15,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 import { doAfterAttach } from './afterAttach.ts'
+import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -39,7 +41,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'MultiLGVSyntenyDisplay',
-      BaseLinearDisplay,
+      BaseDisplay,
+      TrackHeightMixin(),
       types.model({
         type: types.literal('MultiLGVSyntenyDisplay'),
         configuration: ConfigurationReference(schema),
@@ -53,6 +56,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       genomeRows: new Map<string, MultiPairFeature[]>(),
       allGenomeNames: [] as string[],
       error: undefined as unknown,
+      contextMenuFeature: undefined as Feature | undefined,
     }))
     .views(self => ({
       get displayedGenomes() {
@@ -74,6 +78,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         return self.rowHeightSetting
       },
+      legendItems() {
+        return legendItemsMap[self.colorBy] ?? []
+      },
     }))
     .actions(self => ({
       setGenomeRows(rows: Map<string, MultiPairFeature[]>) {
@@ -90,14 +97,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
-      },
-      toggleGenome(name: string) {
-        const idx = self.selectedGenomes.indexOf(name)
-        if (idx >= 0) {
-          self.selectedGenomes.splice(idx, 1)
-        } else {
-          self.selectedGenomes.push(name)
-        }
       },
       setError(e: unknown) {
         self.error = e
@@ -118,8 +117,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         session.setSelection(feature)
       },
+    }))
+    .actions(self => ({
       afterAttach() {
-        doAfterAttach(self as MultiLGVSyntenyDisplayModel)
+        doAfterAttach(self)
       },
     }))
     .views(self => ({

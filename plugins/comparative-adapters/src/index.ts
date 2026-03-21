@@ -4,6 +4,7 @@ import BlastTabularAdapter from './BlastTabularAdapter/index.ts'
 import ChainAdapterF from './ChainAdapter/index.ts'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent/index.tsx'
 import DeltaAdapterF from './DeltaAdapter/index.ts'
+import GfaAdapterF from './GfaAdapter/index.ts'
 import GfaTabixAdapterF from './GfaTabixAdapter/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import MCScanAddTrackComponentF from './MCScanAddTrackComponent/index.tsx'
@@ -14,6 +15,7 @@ import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
 
 export { computeSyriTypes } from './syriUtils.ts'
+export { multiPairTypes } from './syntenyTypes.ts'
 export type { SyriType } from './syriUtils.ts'
 export type {
   MultiPairFeature,
@@ -34,6 +36,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
     BlastTabularAdapter(pluginManager)
+    GfaAdapterF(pluginManager)
     GfaTabixAdapterF(pluginManager)
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)

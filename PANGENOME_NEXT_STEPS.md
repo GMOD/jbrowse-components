@@ -6,44 +6,35 @@
 
 | Priority | Phase | Task                                            | Effort | Impact                                          |
 | -------- | ----- | ----------------------------------------------- | ------ | ----------------------------------------------- |
-| 1        | A6    | GfaTabixAdapter → MultiLGVSyntenyDisplay wiring | Small  | End-to-end GFA→browser synteny                  |
-| 2        | E0    | Compact display                                 | Small  | Collapse LGV levels to line+label               |
-| 3        | D1    | Graph ↔ Synteny navigation                      | Medium | Connects the two visualization modes            |
-| 4        | C2    | Cross-level linking                             | Small  | Transitive relationships for non-adjacent pairs |
-| 5        | C3    | N-way diagonalization                           | Medium | Algorithmic improvement                         |
-| 6        | E2    | RPC migration for getMultiPairFeatures          | Medium | Move heavy queries to web worker                |
-| 7        | D2-D3 | Shared adapter + path highlighting              | Large  | Deep integration with graph viewer              |
+| 1        | B5    | MultiLGV scrolling for manual row height mode   | Small  | Scroll through assemblies when rows exceed display |
+| 2        | B6    | MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc.  |
+| 3        | D1    | Graph ↔ Synteny navigation                      | Medium | Blocked: no graph viewer yet                    |
+| 4        | D2-D3 | Shared adapter + path highlighting              | Large  | Blocked: no graph viewer yet                    |
+| 5        | C2    | Cross-level linking                             | Medium | Transitive relationships for non-adjacent pairs |
 
----
-
-## Phase A: Runtime GFA Integration (continued)
-
-### A6. GfaTabixAdapter → MultiLGVSyntenyDisplay Polish
-
-Basic wiring verified (HPRC chrM 44-haplotype rendering works). Remaining:
-
-- Default to `MultiLGVSyntenyDisplay` when adapter implements `getMultiPairFeatures` (currently user must switch manually via track menu)
-- Handle edge cases: paths with different contig names across genomes (HPRC chr20 uses scaffold names like `JAHBCB010000023.1` instead of `chr20`)
 ---
 
 ## Phase C: Improved N-Way LinearSyntenyView
 
-### C2. Cross-Level Linking
+### C2. Cross-Level Linking (deprioritized — Medium effort, not Small)
 
-When viewing N genomes (A, B, C, D), show relationships that skip levels:
+When viewing N genomes (A, B, C, D), show relationships that skip levels.
+Dotted/faded lines for non-adjacent pairs (A↔C, A↔D).
 
-- A↔B synteny + B↔C synteny visible by default
-- Optional: A↔C "transitive" synteny computed from A↔B + B↔C
-- Visual: dotted/faded lines for non-adjacent pairs
+**Rendering approach**: Full-height canvas overlay (`pointer-events: none`) on
+`LinearComparativeRenderArea`. Track each view's vertical offset via refs +
+ResizeObserver. Draw faded dotted lines from view[i] to view[j]. Uses
+`view.bpToPx()` for horizontal, `getBoundingClientRect()` for vertical.
 
-### C3. Diagonalization for N Genomes
+**Transitive computation** (two paths):
+- *Coordinate chaining* (universal): for A↔B feature with mate B[y1,y2], find
+  B↔C features overlapping that B region. Chain A→C. O(n×m) naive, interval
+  tree for scale.
+- *Segment-ID based* (GFA only): group features by `segmentId` across levels —
+  no coordinate math needed.
+- *User-provided*: direct A↔C PAF/PIF files, no computation.
 
-The existing "Re-order chromosomes" works for 2 genomes. For N genomes:
-
-- Optimize ordering to minimize crossing lines across ALL pairs simultaneously
-- Use a weighted objective function: minimize total crossings where adjacent
-  pairs have higher weight
-- Consider phylogenetic ordering as a starting heuristic
+**Visual**: dotted lines, ~0.3 alpha, color inherited from source feature.
 
 ---
 
@@ -78,18 +69,6 @@ adapter queries paths.
 ---
 
 ## Phase E: Performance & Scale
-
-### E0. Compact display
-
-It is very important that our display of data is compact. this means that we
-should even be able to completely collapse the linear genome view at each level,
-so it is just a line and a label of the assembly name at each level
-
-### E2. RPC Migration for getMultiPairFeatures
-
-Currently `getMultiPairFeatures()` runs on the main thread via direct adapter
-access. For large pangenomes (>20 genomes) this should move to an RPC method
-running in the web worker.
 
 ### E3. DuckDB/Parquet Investigation
 

@@ -1,7 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 
 import GraphGenomeViewF from './GraphGenomeView/index.ts'
@@ -27,25 +25,4 @@ export default class GraphPlugin extends Plugin {
       })
     }
   }
-
-  rootConfigurationSchema = (_pluginManager: PluginManager) => ({
-    graphGenome: ConfigurationSchema('GraphGenome', {
-      datasets: types.maybe(
-        types.array(
-          ConfigurationSchema('GraphGenomeDataset', {
-            name: {
-              type: 'string',
-              defaultValue: '',
-              description: 'Display name for this graph dataset',
-            },
-            gfaLocation: {
-              type: 'fileLocation',
-              defaultValue: { uri: '', locationType: 'UriLocation' },
-              description: 'Location of the GFA file',
-            },
-          }),
-        ),
-      ),
-    }),
-  })
 }

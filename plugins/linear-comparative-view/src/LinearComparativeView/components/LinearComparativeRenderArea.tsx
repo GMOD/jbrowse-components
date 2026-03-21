@@ -4,7 +4,7 @@ import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
@@ -20,7 +20,7 @@ interface TrackEntry {
   }[]
 }
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   container: {
     display: 'grid',
   },
@@ -56,13 +56,55 @@ const useStyles = makeStyles()({
   levelWrapper: {
     position: 'relative',
   },
-})
+  compactViewBar: {
+    height: 24,
+    background: theme.palette.action.hover,
+    display: 'flex',
+    alignItems: 'center',
+    paddingLeft: 8,
+    cursor: 'pointer',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    '&:hover': {
+      background: theme.palette.action.selected,
+    },
+  },
+  compactViewLabel: {
+    fontSize: 12,
+    fontWeight: 500,
+    userSelect: 'none',
+  },
+}))
 
 function View({ view }: { view: LinearGenomeViewModel }) {
   const { pluginManager } = getEnv(view)
   const { ReactComponent } = pluginManager.getViewType(view.type)!
   return <ReactComponent model={view} />
 }
+
+const CompactViewBar = observer(function CompactViewBar({
+  model,
+  viewIdx,
+}: {
+  model: LinearComparativeViewModel
+  viewIdx: number
+}) {
+  const { classes } = useStyles()
+  const view = model.views[viewIdx]!
+  const assemblyName = view.assemblyNames[0] ?? 'Unknown'
+  return (
+    <Tooltip title={`Expand ${assemblyName}`}>
+      <div
+        className={classes.compactViewBar}
+        onClick={() => model.toggleCompactView(viewIdx)}
+      >
+        <ExpandMoreIcon style={{ fontSize: 14, marginRight: 4 }} />
+        <Typography className={classes.compactViewLabel}>
+          {assemblyName}
+        </Typography>
+      </div>
+    </Tooltip>
+  )
+})
 
 const LinearComparativeRenderArea = observer(
   function LinearComparativeRenderArea({
@@ -71,7 +113,7 @@ const LinearComparativeRenderArea = observer(
     model: LinearComparativeViewModel
   }) {
     const { classes } = useStyles()
-    const { views, levels } = model
+    const { views } = model
 
     return (
       <div className={classes.container}>
@@ -84,7 +126,11 @@ const LinearComparativeRenderArea = observer(
                 classes={classes}
               />
             ) : null}
-            <View view={view} />
+            {model.isViewCompact(i) ? (
+              <CompactViewBar model={model} viewIdx={i} />
+            ) : (
+              <View view={view} />
+            )}
           </Fragment>
         ))}
       </div>

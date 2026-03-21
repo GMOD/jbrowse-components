@@ -13,8 +13,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
-
 const LaunchPairwiseSyntenyDialog = observer(
   function LaunchPairwiseSyntenyDialog({
     model,
@@ -23,7 +21,7 @@ const LaunchPairwiseSyntenyDialog = observer(
     loc,
     trackId,
   }: {
-    model: MultiLGVSyntenyDisplayModel
+    model: { displayedGenomes: string[] }
     handleClose: () => void
     refAssembly: string
     loc: string

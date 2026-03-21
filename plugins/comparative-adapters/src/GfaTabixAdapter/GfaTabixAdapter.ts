@@ -38,11 +38,54 @@ interface ParsedHeader {
   chromSizes: Map<string, { refName: string; length: number }[]>
 }
 
+// Convert minimap2-style cs tag to CIGAR string
+// cs format: :N (match), *XY (substitution), +seq (insertion), -seq (deletion)
+function csToCigar(cs: string) {
+  let cigar = ''
+  let i = 0
+  while (i < cs.length) {
+    const ch = cs[i]!
+    if (ch === ':') {
+      i++
+      let num = ''
+      while (i < cs.length && cs[i]! >= '0' && cs[i]! <= '9') {
+        num += cs[i]
+        i++
+      }
+      cigar += `${num}=`
+    } else if (ch === '*') {
+      i += 3 // skip *XY
+      cigar += '1X'
+    } else if (ch === '+') {
+      i++
+      let len = 0
+      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+        len++
+        i++
+      }
+      cigar += `${len}I`
+    } else if (ch === '-') {
+      i++
+      let len = 0
+      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+        len++
+        i++
+      }
+      cigar += `${len}D`
+    } else {
+      i++
+    }
+  }
+  return cigar
+}
+
 export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private posFile: TabixIndexedFile
   private segsFile: TabixIndexedFile
+  private alnFile?: TabixIndexedFile
+  private alnAvailablePromise?: Promise<boolean>
   private headerPromise?: Promise<ParsedHeader>
 
   public constructor(
@@ -70,6 +113,29 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       tbiFilehandle: openLocation(segsIdxLoc, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
+
+    const alnLoc = this.getConf('alnLocation') as FileLocation | undefined
+    if (alnLoc && 'uri' in alnLoc && alnLoc.uri !== '') {
+      const alnIdxLoc = this.getConf(['alnIndex', 'location']) as FileLocation
+      this.alnFile = new TabixIndexedFile({
+        filehandle: openLocation(alnLoc, pm),
+        tbiFilehandle: openLocation(alnIdxLoc, pm),
+        chunkCacheSize: 50 * 2 ** 20,
+      })
+    }
+  }
+
+  private async isAlnAvailable() {
+    if (!this.alnFile) {
+      return false
+    }
+    if (!this.alnAvailablePromise) {
+      this.alnAvailablePromise = this.alnFile
+        .getHeader()
+        .then(() => true)
+        .catch(() => false)
+    }
+    return this.alnAvailablePromise
   }
 
   private async getParsedHeader() {
@@ -159,6 +225,93 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
     query: Region,
     _opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
   ) {
+    if (await this.isAlnAvailable()) {
+      return this.getMultiPairFeaturesFromAln(query)
+    }
+    return this.getMultiPairFeaturesFromSegments(query)
+  }
+
+  private async getMultiPairFeaturesFromAln(query: Region) {
+    const genomeRows = new Map<string, MultiPairFeature[]>()
+    const { refName, start, end, assemblyName } = query
+
+    // Try path name formats: "genome#refName" or just "refName"
+    for (const candidate of [`${assemblyName}#${refName}`, refName]) {
+      try {
+        await this.alnFile!.getLines(candidate, start, end, {
+          lineCallback: (line, fileOffset) => {
+            const cols = line.split('\t')
+            const queryGenome = cols[3]!
+            const mateRefName = cols[4]!
+            const mateStart = +cols[5]!
+            const mateEnd = +cols[6]!
+            const strand = cols[7] === '-' ? -1 : 1
+            const cs = cols[8] ?? ''
+            const cigar = csToCigar(cs)
+
+            const refStart = +cols[1]!
+            const refEnd = +cols[2]!
+
+            // Compute identity from cs: count match bases vs total aligned
+            let matchBp = 0
+            let mismatchBp = 0
+            let i = 0
+            while (i < cs.length) {
+              const ch = cs[i]!
+              if (ch === ':') {
+                i++
+                let num = ''
+                while (i < cs.length && cs[i]! >= '0' && cs[i]! <= '9') {
+                  num += cs[i]
+                  i++
+                }
+                matchBp += +num
+              } else if (ch === '*') {
+                mismatchBp++
+                i += 3
+              } else if (ch === '+' || ch === '-') {
+                i++
+                while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+                  i++
+                }
+              } else {
+                i++
+              }
+            }
+            const totalAligned = matchBp + mismatchBp
+            const identity = totalAligned > 0 ? matchBp / totalAligned : 1
+
+            if (!genomeRows.has(queryGenome)) {
+              genomeRows.set(queryGenome, [])
+            }
+            genomeRows.get(queryGenome)!.push({
+              queryGenome,
+              start: refStart,
+              end: refEnd,
+              mateStart,
+              mateEnd,
+              mateRefName,
+              strand,
+              syriType: undefined,
+              identity,
+              featureId: `aln-${fileOffset}`,
+              segmentId: undefined,
+              cigar,
+            })
+          },
+        })
+        if (genomeRows.size > 0) {
+          break
+        }
+      } catch {
+        // path name format didn't match, try next
+      }
+    }
+
+    return { genomeNames: [...genomeRows.keys()], genomeRows }
+  }
+
+  private async getMultiPairFeaturesFromSegments(query: Region) {
     const genomeRows = new Map<string, MultiPairFeature[]>()
     const { refName, start, end, assemblyName } = query
 
@@ -248,7 +401,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       }
       paired.sort((a, b) => a.ref.offset - b.ref.offset)
 
-      // Merge adjacent contiguous segments with same strand
+      // Merge same-strand segments, building CIGAR from gaps
       let ms = -1
       let me = -1
       let mms = -1
@@ -256,9 +409,23 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       let mStrand = 0
       let mOrd = -1
       let mSegId = ''
+      let matchBp = 0
+      let mismatchBp = 0
+      let cigarParts: string[] = []
+      let runMatchLen = 0
+
+      const flushMatch = () => {
+        if (runMatchLen > 0) {
+          cigarParts.push(`${runMatchLen}=`)
+          matchBp += runMatchLen
+          runMatchLen = 0
+        }
+      }
 
       const emit = () => {
+        flushMatch()
         if (ms >= 0) {
+          const totalAligned = matchBp + mismatchBp
           features.push({
             queryGenome: genomeName,
             start: ms,
@@ -268,10 +435,15 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
             mateRefName,
             strand: mStrand,
             syriType: undefined,
-            identity: 1,
+            identity: totalAligned > 0 ? matchBp / totalAligned : 1,
             featureId: `gfa-${mOrd}-${otherPath}`,
             segmentId: mSegId,
+            cigar: cigarParts.length > 1 ? cigarParts.join('') : undefined,
           })
+          cigarParts = []
+          matchBp = 0
+          mismatchBp = 0
+          ms = -1
         }
       }
 
@@ -282,19 +454,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
         const qs = p.query.offset
         const qe = p.query.offset + p.query.segLen
 
-        if (
-          ms >= 0 &&
-          p.strand === mStrand &&
-          rs === me &&
-          ((mStrand === 1 && qs === mme) || (mStrand === -1 && qe === mms))
-        ) {
-          me = re
-          if (mStrand === 1) {
-            mme = qe
-          } else {
-            mms = qs
-          }
-        } else {
+        if (ms < 0 || p.strand !== mStrand) {
           emit()
           ms = rs
           me = re
@@ -303,6 +463,50 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
           mStrand = p.strand
           mOrd = p.ref.segOrd
           mSegId = p.ref.segId
+          runMatchLen = p.ref.segLen
+          continue
+        }
+
+        const refGap = rs - me
+        const queryGap =
+          mStrand === 1 ? qs - mme : mms - qe
+
+        if (refGap < 0 || queryGap < 0) {
+          emit()
+          ms = rs
+          me = re
+          mms = qs
+          mme = qe
+          mOrd = p.ref.segOrd
+          mSegId = p.ref.segId
+          runMatchLen = p.ref.segLen
+          continue
+        }
+
+        if (refGap > 0 || queryGap > 0) {
+          flushMatch()
+          if (refGap > 0 && queryGap > 0) {
+            const overlap = Math.min(refGap, queryGap)
+            cigarParts.push(`${overlap}X`)
+            mismatchBp += overlap
+            if (refGap > queryGap) {
+              cigarParts.push(`${refGap - queryGap}D`)
+            } else if (queryGap > refGap) {
+              cigarParts.push(`${queryGap - refGap}I`)
+            }
+          } else if (refGap > 0) {
+            cigarParts.push(`${refGap}D`)
+          } else {
+            cigarParts.push(`${queryGap}I`)
+          }
+        }
+
+        runMatchLen += p.ref.segLen
+        me = re
+        if (mStrand === 1) {
+          mme = qe
+        } else {
+          mms = qs
         }
       }
       emit()

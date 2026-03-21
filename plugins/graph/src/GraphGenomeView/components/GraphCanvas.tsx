@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { autorun } from 'mobx'
+import { autorun, reaction } from 'mobx'
 import { observer } from 'mobx-react'
 import {
   Typography,
@@ -9,11 +9,14 @@ import {
   InputLabel,
   Tooltip,
   IconButton,
+  ToggleButton,
+  LinearProgress,
 } from '@mui/material'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import DeleteIcon from '@mui/icons-material/Delete'
+import LinearScaleIcon from '@mui/icons-material/LinearScale'
 
 import { buildGeometry } from '../../renderer/GeometryBuilder.ts'
 import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
@@ -76,6 +79,17 @@ const GraphCanvas = observer(function GraphCanvas({
       rendererRef.current.resize(model.width, CANVAS_HEIGHT)
     }
   }, [model.width])
+
+  useEffect(() => {
+    return reaction(
+      () => model.layoutResult,
+      () => {
+        if (model.layoutResult) {
+          model.zoomToFit(CANVAS_HEIGHT)
+        }
+      },
+    )
+  }, [model])
 
   useEffect(() => {
     return autorun(() => {
@@ -221,6 +235,42 @@ const GraphCanvas = observer(function GraphCanvas({
           </Select>
         </FormControl>
 
+        <FormControl size="small" style={{ minWidth: 100 }}>
+          <InputLabel>Quality</InputLabel>
+          <Select
+            value={model.layoutQuality}
+            label="Quality"
+            onChange={e => {
+              model.setLayoutQuality(Number(e.target.value))
+              model.recomputeLayout().catch((err: unknown) => {
+                model.setError(`Layout failed: ${err}`)
+              })
+            }}
+          >
+            <MenuItem value={0}>Lowest</MenuItem>
+            <MenuItem value={1}>Low</MenuItem>
+            <MenuItem value={2}>Medium</MenuItem>
+            <MenuItem value={3}>High</MenuItem>
+            <MenuItem value={4}>Highest</MenuItem>
+          </Select>
+        </FormControl>
+
+        <Tooltip title="Linear layout">
+          <ToggleButton
+            size="small"
+            value="linear"
+            selected={model.linearLayout}
+            onChange={() => {
+              model.setLinearLayout(!model.linearLayout)
+              model.recomputeLayout().catch((err: unknown) => {
+                model.setError(`Layout failed: ${err}`)
+              })
+            }}
+          >
+            <LinearScaleIcon />
+          </ToggleButton>
+        </Tooltip>
+
         <Tooltip title="Zoom in">
           <IconButton size="small" onClick={() => model.zoom(1.5, model.width / 2, CANVAS_HEIGHT / 2)}>
             <ZoomInIcon />
@@ -264,9 +314,15 @@ const GraphCanvas = observer(function GraphCanvas({
             background: 'rgba(255,255,255,0.8)',
             padding: 16,
             borderRadius: 8,
+            minWidth: 200,
           }}
         >
-          <Typography>Computing layout...</Typography>
+          <Typography>{model.layoutStage || 'Computing layout...'}</Typography>
+          <LinearProgress
+            variant={model.layoutProgress > 0 ? 'determinate' : 'indeterminate'}
+            value={model.layoutProgress}
+            style={{ marginTop: 8 }}
+          />
         </div>
       ) : null}
 

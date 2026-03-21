@@ -31,6 +31,7 @@ export interface MultiPairFeature {
   identity: number
   featureId: string
   segmentId: string | undefined
+  cigar: string | undefined
 }
 
 export interface PairInfo {
@@ -410,6 +411,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 identity: +(parts[10] || 0),
                 featureId: `${fileOffset}`,
                 segmentId: parts[11] || undefined,
+                cigar: undefined,
               })
             } else {
               const r = parsePAFLine(line)
@@ -428,6 +430,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                   (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
                 featureId: `${fileOffset}`,
                 segmentId: (extra.sg as string) || undefined,
+                cigar: (extra.cg as string) || undefined,
               })
             }
           },
