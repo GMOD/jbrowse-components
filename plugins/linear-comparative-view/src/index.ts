@@ -56,5 +56,20 @@ export default class LinearComparativeViewPlugin extends Plugin {
       })
     }
 
+    // Make SyntenyTrack displays also available on MultiSyntenyTrack so that
+    // launching N-way synteny views or dotplots from a MultiSyntenyTrack works
+    const multiTrack = pluginManager.getTrackType('MultiSyntenyTrack')
+    if (multiTrack) {
+      for (const displayName of [
+        'LinearSyntenyDisplay',
+        'DotplotDisplay',
+        'LGVSyntenyDisplay',
+      ]) {
+        const display = pluginManager.getDisplayType(displayName)
+        if (display && !multiTrack.displayTypes.includes(display)) {
+          multiTrack.addDisplayType(display)
+        }
+      }
+    }
   }
 }

@@ -341,6 +341,96 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  private chooseTierPrefix(
+    idx: number,
+    refName: string,
+    perspective: 'q' | 't',
+    useStructural: boolean,
+    useSummary: boolean,
+    summaryRefs: Set<string>,
+  ) {
+    const xp = perspective === 'q' ? 'xq' : 'xt'
+    const sp = perspective === 'q' ? 'sq' : 'st'
+
+    let prefix: string
+    if (useStructural) {
+      prefix = `${xp}${idx}`
+    } else if (useSummary) {
+      prefix = `${sp}${idx}`
+    } else {
+      prefix = `${perspective}${idx}`
+    }
+
+    if (useStructural && !summaryRefs.has(prefix + refName)) {
+      prefix = `${sp}${idx}`
+      if (!summaryRefs.has(prefix + refName)) {
+        prefix = `${perspective}${idx}`
+      }
+    } else if (useSummary && !summaryRefs.has(prefix + refName)) {
+      prefix = `${perspective}${idx}`
+    }
+
+    return prefix
+  }
+
+  private async queryPairFeatures(
+    prefix: string,
+    refName: string,
+    start: number,
+    end: number,
+    queryGenome: string,
+    opts: { stopToken?: BaseOptions['stopToken'] },
+  ) {
+    const features: MultiPairFeature[] = []
+    const isStructural = prefix.startsWith('x')
+
+    await this.pif.getLines(prefix + refName, start, end, {
+      lineCallback: (line, fileOffset) => {
+        if (isStructural) {
+          const parts = line.split('\t')
+          features.push({
+            queryGenome,
+            start: +parts[2]!,
+            end: +parts[3]!,
+            strand: parts[4] === '-' ? -1 : 1,
+            mateRefName: parts[5]!,
+            mateStart: +parts[7]!,
+            mateEnd: +parts[8]!,
+            syriType: (parts[9] || 'SYN') as SyriType,
+            identity: +(parts[10] || 0),
+            featureId: `${fileOffset}`,
+            segmentId: parts[11] || undefined,
+            cigar: undefined,
+            cs: undefined,
+          })
+        } else {
+          const r = parsePAFLine(line)
+          const { strand } = r
+          const extra = r.extra as Record<string, string | number>
+          features.push({
+            queryGenome,
+            start: r.qstart,
+            end: r.qend,
+            strand,
+            mateRefName: r.tname,
+            mateStart: r.tstart,
+            mateEnd: r.tend,
+            syriType: (extra.sy as SyriType) || undefined,
+            identity:
+              (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
+            featureId: `${fileOffset}`,
+            segmentId: (extra.sg as string) || undefined,
+            cigar: (extra.cg as string) || undefined,
+            cs: (extra.cs as string) || undefined,
+          })
+        }
+      },
+      stopToken: opts.stopToken,
+    })
+
+    return features
+  }
+
   async getMultiPairFeatures(
     query: Region,
     opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
@@ -367,81 +457,44 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       opts.bpPerPx !== undefined &&
       opts.bpPerPx > splitThreshold
 
-    for (const [idx, [queryGenome, _targetGenome]] of pairs) {
-      genomeNames.push(queryGenome)
-      const features: MultiPairFeature[] = []
+    const refAssembly = query.assemblyName
 
-      let prefix: string
-      if (useStructural) {
-        prefix = `xt${idx}`
-      } else if (useSummary) {
-        prefix = `st${idx}`
+    // Only query pairs that directly contain the reference genome.
+    // Chained pairs (where the reference is not in the pair) are skipped
+    // because transitive coordinate projection is unreliable.
+    // For chained data, use the N-way LinearSyntenyView instead, or
+    // regenerate the PIF with --all-vs-all to get direct pairs.
+    for (const [idx, [qGenome, tGenome]] of pairs) {
+      let perspective: 'q' | 't'
+      let otherGenome: string
+      if (qGenome === refAssembly) {
+        perspective = 'q'
+        otherGenome = tGenome
+      } else if (tGenome === refAssembly) {
+        perspective = 't'
+        otherGenome = qGenome
       } else {
-        prefix = `t${idx}`
+        continue
       }
 
-      // Fallback if chosen tier doesn't exist for this refName
-      if (useStructural && !summaryRefs.has(prefix + query.refName)) {
-        prefix = `st${idx}`
-        if (!summaryRefs.has(prefix + query.refName)) {
-          prefix = `t${idx}`
-        }
-      } else if (useSummary && !summaryRefs.has(prefix + query.refName)) {
-        prefix = `t${idx}`
-      }
-
-      const isStructural = prefix.startsWith('x')
-
-      await this.pif.getLines(
-        prefix + query.refName,
+      genomeNames.push(otherGenome)
+      const prefix = this.chooseTierPrefix(
+        idx,
+        query.refName,
+        perspective,
+        useStructural,
+        useSummary,
+        summaryRefs,
+      )
+      const features = await this.queryPairFeatures(
+        prefix,
+        query.refName,
         query.start,
         query.end,
-        {
-          lineCallback: (line, fileOffset) => {
-            if (isStructural) {
-              const parts = line.split('\t')
-              features.push({
-                queryGenome,
-                start: +parts[2]!,
-                end: +parts[3]!,
-                strand: parts[4] === '-' ? -1 : 1,
-                mateRefName: parts[5]!,
-                mateStart: +parts[7]!,
-                mateEnd: +parts[8]!,
-                syriType: (parts[9] || 'SYN') as SyriType,
-                identity: +(parts[10] || 0),
-                featureId: `${fileOffset}`,
-                segmentId: parts[11] || undefined,
-                cigar: undefined,
-                cs: undefined,
-              })
-            } else {
-              const r = parsePAFLine(line)
-              const { strand } = r
-              const extra = r.extra as Record<string, string | number>
-              features.push({
-                queryGenome,
-                start: r.qstart,
-                end: r.qend,
-                strand,
-                mateRefName: r.tname,
-                mateStart: r.tstart,
-                mateEnd: r.tend,
-                syriType: (extra.sy as SyriType) || undefined,
-                identity:
-                  (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
-                featureId: `${fileOffset}`,
-                segmentId: (extra.sg as string) || undefined,
-                cigar: (extra.cg as string) || undefined,
-                cs: (extra.cs as string) || undefined,
-              })
-            }
-          },
-          stopToken: opts.stopToken,
-        },
+        otherGenome,
+        opts,
       )
-
-      genomeRows.set(queryGenome, features)
+      genomeRows.set(otherGenome, features)
     }
 
     return { genomeNames, genomeRows }

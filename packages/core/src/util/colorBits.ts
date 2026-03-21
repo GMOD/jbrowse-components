@@ -5,7 +5,7 @@ import {
   getRed,
   newColor,
   parse,
-} from 'color-bits'
+} from './color-bits/index.ts'
 
 import { namedColorToHex } from './color/cssColorsLevel4.ts'
 
@@ -26,8 +26,8 @@ export {
   parse,
   toHSLA,
   toRGBA,
-} from 'color-bits'
-export type { Color } from 'color-bits'
+} from './color-bits/index.ts'
+export type { Color } from './color-bits/index.ts'
 
 export function parseCssColor(color: string) {
   const str = color.trim().toLowerCase()

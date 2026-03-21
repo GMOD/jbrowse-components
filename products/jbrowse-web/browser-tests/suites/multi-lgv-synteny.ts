@@ -216,7 +216,7 @@ const suite: TestSuite = {
                 loc: 'Chr1:1-30000000',
                 tracks: [
                   {
-                    trackId: 'arabidopsis_4way_synteny',
+                    trackId: 'arabidopsis_4way_multi_synteny',
                     displaySnapshot: { type: 'MultiLGVSyntenyDisplay' },
                   },
                 ],

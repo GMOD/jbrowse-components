@@ -1,5 +1,12 @@
 # Graph Genome Plugin — Next Steps
 
+## Review Issues (pre-merge)
+
+- [ ] Hardcoded WASM URL fallback — `GraphComputeLayout.ts` loads from
+      `https://jbrowse.org/demos/bandage/` with no fallback. If URL is
+      unavailable, layout silently fails. The `layoutUrl` config already
+      exists — consider adding error messaging or a retry with alternate URL.
+
 ## Scalability (remaining)
 
 - [ ] LOD — reduce Bezier tessellation detail at low zoom levels (`flatness =
@@ -10,7 +17,8 @@
 ## GfaAdapter Integration
 
 - [ ] Wire graph view's ImportForm to load from GfaAdapter/GfaTabixAdapter
-      tracks (open from track list)
+      tracks (open from track list) — currently standalone, not integrated
+      with the track/adapter system
 - [ ] Add GfaAdapter to `GuessAdapter` for `.gfa` file extension detection
 - [ ] GfaTabixAdapter subgraph loading — fetch segments for a configurable
       region, convert to Graph format, compute layout on subgraph only

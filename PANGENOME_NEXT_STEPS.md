@@ -6,14 +6,51 @@
 
 | Priority | Phase | Task                                             | Effort | Impact                                           |
 | -------- | ----- | ------------------------------------------------ | ------ | ------------------------------------------------ |
-| 1        | F1    | WebGL/WebGPU backend for MultiSyntenyRenderer    | Medium | GPU-accelerated rendering for 90+ haplotypes     |
-| 2        | F2    | Automated performance tracing                    | Small  | Measurable regressions, data-driven optimization |
-| 3        | F3    | Virtual scrolling for large genome counts        | Medium | Smooth scrolling through 90+ assemblies          |
-| 4        | D1    | Graph ↔ Synteny navigation                       | Medium | Click bubble in graph → synteny context          |
-| 5        | D4    | Shared GFA data layer (graph + synteny)          | Large  | Single GFA load for both views                   |
-| 6        | F4    | LOD-aware aln.bed.gz loading                     | Small  | Load base-level detail only when zoomed in       |
-| 7        | B5    | MultiLGV scrolling for manual row height mode    | Small  | Scroll through assemblies when rows exceed display |
-| 8        | B6    | MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc. |
+| 1        | R1    | Lazy assembly creation for large pangenomes      | Small  | Avoid creating 90+ assemblies eagerly on first load |
+| 2        | R2    | Warning logs for missing GFA-tabix headers       | Small  | Prevent silent failures from malformed data      |
+| 3        | R3    | GFA W-line test coverage                         | Small  | W-lines are the primary HPRC format, untested    |
+| 4        | R4    | Wire stopToken through GfaTabixAdapter           | Small  | Enable cancellation of long-running pangenome queries |
+| 5        | F1    | WebGL/WebGPU backend for MultiSyntenyRenderer    | Medium | GPU-accelerated rendering for 90+ haplotypes     |
+| 6        | F2    | Automated performance tracing                    | Small  | Measurable regressions, data-driven optimization |
+| 7        | F3    | Virtual scrolling for large genome counts        | Medium | Smooth scrolling through 90+ assemblies          |
+| 8        | B7    | Canvas click-to-select and context menu          | Small  | Feature selection + detail widget from canvas    |
+| 9        | B8    | renderSvg for MultiLGVSyntenyDisplay             | Medium | Image/SVG export for multi-genome views          |
+| 10       | D1    | Graph ↔ Synteny navigation                       | Medium | Click bubble in graph → synteny context          |
+| 11       | D4    | Shared GFA data layer (graph + synteny)          | Large  | Single GFA load for both views                   |
+| 12       | F4    | LOD-aware aln.bed.gz loading                     | Small  | Load base-level detail only when zoomed in       |
+| 13       | B5    | MultiLGV scrolling for manual row height mode    | Small  | Scroll through assemblies when rows exceed display |
+| 14       | B6    | MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc. |
+
+---
+
+## Phase R: Review Issues (pre-merge)
+
+### R1. Lazy Assembly Creation
+
+In `afterAttach.ts`, all assemblies are created eagerly on first RPC response — even for 90+ haplotype pangenomes. Should only create assemblies for genomes the user actually selects via the genome subset selector, and lazily create the rest on demand.
+
+### R2. Warning Logs for Missing GFA-Tabix Headers
+
+`GfaTabixAdapter.ts` `getParsedHeader()` silently returns empty/incomplete results when `#sizes` or `#genomes` headers are missing from pos.bed.gz. Should `console.warn()` when critical headers are absent so users can diagnose misconfigured files.
+
+### R3. GFA W-Line Test Coverage
+
+`GfaAdapter` supports both P-lines (GFA1) and W-lines (GFA1.1+), but only P-lines are tested. W-lines are the format used by HPRC and other major pangenome projects. Need tests for:
+- W-line parsing correctness (segment walk syntax `>s1<s2>s3`)
+- Mixed P-line + W-line GFA files
+- W-line with wildcard haplotype (`*`)
+
+### R4. Wire stopToken Through GfaTabixAdapter
+
+`getMultiPairFeatures()` accepts a `stopToken` parameter but prefixes it with `_` (unused). For large pangenome queries (HPRC chr20 with 90 haplotypes), cancellation support is needed when the user scrolls away before the query completes.
+
+### R5. Regenerate Arabidopsis PIF as All-vs-All
+
+The arabidopsis 4-way PIF has chained pairs (Col-0→Ler, Ler→Cvi, Cvi→Eri). Only pair0 (Col-0→Ler) is directly queryable from Col-0's coordinate space. Cvi and Eri are not shown in the MultiLGVSyntenyDisplay because the adapter correctly skips pairs that don't contain the reference genome.
+
+To show all 4 genomes in the multi-LGV display, regenerate with `make-pif --all-vs-all` so all pairs are anchored to Col-0 (or re-align each genome directly to Col-0 with minimap2).
+
+The chained PIF still works correctly in the N-way LinearSyntenyView, where each genome has its own coordinate axis.
 
 ---
 
@@ -131,6 +168,17 @@ Use the graph bubble structure to annotate variants in the multi-synteny display
 ---
 
 ## Phase B: MultiLGV Enhancements
+
+### B7. Canvas Click-to-Select and Context Menu
+
+The MultiSyntenyRendering component has mouseover tooltips but no click handling for individual features. The model already has `selectFeature()` but it's not wired to the canvas:
+- Add click handler to canvas that selects the hovered feature
+- Open feature detail widget on click (like LinearSyntenyDisplay)
+- Right-click context menu on individual features (copy info, launch pairwise view for that pair)
+
+### B8. renderSvg for MultiLGVSyntenyDisplay
+
+LinearSyntenyDisplay has SVG export via `renderSvg.tsx`, but MultiLGVSyntenyDisplay is canvas-only. Need a `renderSvg` method for server-side rendering and image export (used by jbrowse-img and screenshot functionality).
 
 ### B5. Scrolling for Manual Row Height Mode
 
