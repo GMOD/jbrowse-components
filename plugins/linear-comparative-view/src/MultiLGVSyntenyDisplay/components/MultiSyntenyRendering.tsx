@@ -3,77 +3,75 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+import { getContainingView } from '@jbrowse/core/util'
 
+import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const SYRI_COLOR_MAP: Record<string, string> = {
-  SYN: syriColors.SYN,
-  INV: syriColors.INV,
-  TRANS: syriColors.TRANS,
-  DUP: syriColors.DUP,
-}
-
-const DEFAULT_COLOR = '#999999'
 const LABEL_WIDTH = 120
 
-const SEGMENT_PALETTE = [
-  '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-  '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-  '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5',
-]
-
-function hashString(s: string) {
-  let hash = 0
-  for (let i = 0; i < s.length; i++) {
-    hash = (hash * 31 + s.charCodeAt(i)) | 0
-  }
-  return Math.abs(hash)
+function getStrandColor(feat: MultiPairFeature) {
+  return feat.strand === -1 ? '#f57c00' : '#5677fc'
 }
 
-function getFeatureColor(
-  feat: MultiPairFeature,
-  segmentColorMap: Map<string, string> | undefined,
-) {
-  if (segmentColorMap && feat.segmentId) {
-    return segmentColorMap.get(feat.segmentId) ?? DEFAULT_COLOR
+function getSyriColor(feat: MultiPairFeature) {
+  switch (feat.syriType) {
+    case 'INV':
+      return '#FFA500'
+    case 'TRANS':
+      return '#6495ED'
+    case 'DUP':
+      return '#00CED1'
+    default:
+      return '#CCCCCC'
   }
-  if (feat.syriType) {
-    return SYRI_COLOR_MAP[feat.syriType] ?? DEFAULT_COLOR
-  }
-  if (feat.strand === -1) {
-    return '#FFA500'
-  }
-  return '#CCCCCC'
 }
 
-function hitTestFeature(
-  mouseX: number,
-  mouseY: number,
-  genomeRows: Map<string, MultiPairFeature[]>,
-  displayedGenomes: string[],
-  rowHeight: number,
-  bpPerPx: number,
-  offsetPx: number,
-) {
-  const genomeIdx = Math.floor(mouseY / rowHeight)
-  if (genomeIdx < 0 || genomeIdx >= displayedGenomes.length) {
-    return undefined
+function getIdentityColor(feat: MultiPairFeature) {
+  if (feat.identity < 0) {
+    return '#999'
   }
-  const genomeName = displayedGenomes[genomeIdx]!
-  const features = genomeRows.get(genomeName)
-  if (!features) {
-    return undefined
+  const t = feat.identity
+  if (t >= 0.95) {
+    const f = (t - 0.95) / 0.05
+    return `rgb(${Math.round(255 * (1 - f))},${Math.round(200 + 55 * f)},50)`
   }
+  if (t >= 0.8) {
+    const f = (t - 0.8) / 0.15
+    return `rgb(255,${Math.round(200 * f)},0)`
+  }
+  return 'rgb(200,0,0)'
+}
 
-  for (const feat of features) {
-    const x1 = feat.start / bpPerPx - offsetPx + LABEL_WIDTH
-    const x2 = feat.end / bpPerPx - offsetPx + LABEL_WIDTH
-    if (mouseX >= x1 && mouseX <= x2) {
-      return { feat, genomeName }
-    }
+function getFeatureColor(feat: MultiPairFeature, colorBy: string) {
+  switch (colorBy) {
+    case 'syri':
+      return getSyriColor(feat)
+    case 'identity':
+      return getIdentityColor(feat)
+    default:
+      return getStrandColor(feat)
   }
-  return undefined
+}
+
+const LEGENDS: Record<string, [string, string][]> = {
+  strand: [
+    ['Forward (+)', '#5677fc'],
+    ['Reverse (-)', '#f57c00'],
+  ],
+  syri: [
+    ['SYN', '#CCCCCC'],
+    ['INV', '#FFA500'],
+    ['TRANS', '#6495ED'],
+    ['DUP', '#00CED1'],
+  ],
+  identity: [
+    ['>99%', 'rgb(0,255,50)'],
+    ['95%', 'rgb(255,200,0)'],
+    ['80%', 'rgb(255,0,0)'],
+    ['<80%', 'rgb(200,0,0)'],
+  ],
 }
 
 function formatBp(bp: number) {
@@ -87,48 +85,23 @@ function formatBp(bp: number) {
 }
 
 const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
-  genomeRows,
-  displayedGenomes,
-  width,
-  rowHeight,
-  bpPerPx,
-  offsetPx,
+  model,
 }: {
-  genomeRows: Map<string, MultiPairFeature[]>
-  displayedGenomes: string[]
-  width: number
-  rowHeight: number
-  bpPerPx: number
-  offsetPx: number
+  model: MultiLGVSyntenyDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const height = displayedGenomes.length * rowHeight
-  const [tooltipText, setTooltipText] = useState('')
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
-  const [tooltipOpen, setTooltipOpen] = useState(false)
+  const [tooltip, setTooltip] = useState<{
+    text: string
+    open: boolean
+  }>({ text: '', open: false })
 
-  // Build segment color map once
-  const segmentColorMap = useRef<Map<string, string> | undefined>(undefined)
-  useEffect(() => {
-    const allSegmentIds = new Set<string>()
-    for (const features of genomeRows.values()) {
-      for (const f of features) {
-        if (f.segmentId) {
-          allSegmentIds.add(f.segmentId)
-        }
-      }
-    }
-    if (allSegmentIds.size > 0) {
-      const map = new Map<string, string>()
-      for (const sid of allSegmentIds) {
-        const idx = hashString(sid) % SEGMENT_PALETTE.length
-        map.set(sid, SEGMENT_PALETTE[idx]!)
-      }
-      segmentColorMap.current = map
-    } else {
-      segmentColorMap.current = undefined
-    }
-  }, [genomeRows])
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { genomeRows, displayedGenomes, rowHeight, colorBy, height } = model
+  const { width, bpPerPx, offsetPx } = view
+
+  const showLabels = rowHeight >= 12
+  const showSeparators = rowHeight >= 4
+  const labelW = showLabels ? LABEL_WIDTH : 0
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -146,8 +119,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     ctx.scale(dpr, dpr)
     ctx.clearRect(0, 0, width, height)
 
-    const trackLeft = LABEL_WIDTH
-
     for (let g = 0; g < displayedGenomes.length; g++) {
       const genomeName = displayedGenomes[g]!
       const y = g * rowHeight
@@ -158,48 +129,51 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         ctx.fillRect(0, y, width, rowHeight)
       }
 
-      ctx.fillStyle = '#333'
-      ctx.font = `${Math.min(rowHeight - 4, 12)}px sans-serif`
-      ctx.textBaseline = 'middle'
-      const displayName =
-        genomeName.length > 15 ? genomeName.slice(0, 12) + '...' : genomeName
-      ctx.fillText(displayName, 4, y + rowHeight / 2)
+      if (showLabels) {
+        ctx.fillStyle = '#333'
+        ctx.font = `${Math.min(rowHeight - 4, 12)}px sans-serif`
+        ctx.textBaseline = 'middle'
+        const displayName =
+          genomeName.length > 15 ? genomeName.slice(0, 12) + '...' : genomeName
+        ctx.fillText(displayName, 4, y + rowHeight / 2)
+      }
 
-      const padding = 2
+      const padding = rowHeight >= 6 ? 1 : 0
       for (const feat of features) {
-        const x1 = feat.start / bpPerPx - offsetPx + trackLeft
-        const x2 = feat.end / bpPerPx - offsetPx + trackLeft
+        const x1 = feat.start / bpPerPx - offsetPx + labelW
+        const x2 = feat.end / bpPerPx - offsetPx + labelW
         const blockWidth = Math.max(x2 - x1, 1)
 
-        if (x1 + blockWidth < trackLeft || x1 > width) {
+        if (x1 + blockWidth < labelW || x1 > width) {
           continue
         }
 
-        ctx.fillStyle = getFeatureColor(feat, segmentColorMap.current)
+        ctx.fillStyle = getFeatureColor(feat, colorBy)
         ctx.fillRect(
-          Math.max(x1, trackLeft),
+          Math.max(x1, labelW),
           y + padding,
-          Math.min(blockWidth, width - Math.max(x1, trackLeft)),
+          Math.min(blockWidth, width - Math.max(x1, labelW)),
           rowHeight - padding * 2,
         )
       }
 
-      ctx.strokeStyle = '#e0e0e0'
-      ctx.lineWidth = 0.5
-      ctx.beginPath()
-      ctx.moveTo(0, y + rowHeight)
-      ctx.lineTo(width, y + rowHeight)
-      ctx.stroke()
+      if (showSeparators) {
+        ctx.strokeStyle = '#e0e0e0'
+        ctx.lineWidth = 0.5
+        ctx.beginPath()
+        ctx.moveTo(0, y + rowHeight)
+        ctx.lineTo(width, y + rowHeight)
+        ctx.stroke()
+      }
     }
 
-    // Legend
-    if (displayedGenomes.length > 0) {
+    if (displayedGenomes.length > 0 && rowHeight >= 8) {
+      const legendEntries = LEGENDS[colorBy] ?? LEGENDS.strand!
       const legendY = 4
-      const legendX = trackLeft + 4
+      let lx = labelW + 4
       ctx.font = '10px sans-serif'
       ctx.textBaseline = 'top'
-      let lx = legendX
-      for (const [label, color] of Object.entries(SYRI_COLOR_MAP)) {
+      for (const [label, color] of legendEntries) {
         ctx.fillStyle = color
         ctx.fillRect(lx, legendY, 10, 10)
         ctx.fillStyle = '#333'
@@ -215,6 +189,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     rowHeight,
     bpPerPx,
     offsetPx,
+    colorBy,
+    showLabels,
+    showSeparators,
+    labelW,
   ])
 
   const onMouseMove = useCallback(
@@ -223,47 +201,54 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
 
-      const hit = hitTestFeature(
-        mouseX,
-        mouseY,
-        genomeRows,
-        displayedGenomes,
-        rowHeight,
-        bpPerPx,
-        offsetPx,
-      )
-
-      if (hit) {
-        const { feat, genomeName } = hit
-        const size = feat.end - feat.start
-        const lines = [
-          genomeName,
-          `${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()}`,
-          `Size: ${formatBp(size)}`,
-          feat.syriType ? `Type: ${feat.syriType}` : `Strand: ${feat.strand === -1 ? '-' : '+'}`,
-          feat.identity > 0 ? `Identity: ${(feat.identity * 100).toFixed(1)}%` : '',
-          feat.segmentId ? `Segment: ${feat.segmentId}` : '',
-        ].filter(Boolean)
-        setTooltipText(lines.join('\n'))
-        setTooltipPos({ x: e.clientX, y: e.clientY })
-        setTooltipOpen(true)
-      } else {
-        setTooltipOpen(false)
+      const genomeIdx = Math.floor(mouseY / rowHeight)
+      if (genomeIdx < 0 || genomeIdx >= displayedGenomes.length) {
+        setTooltip(t => (t.open ? { text: '', open: false } : t))
+        return
       }
+      const genomeName = displayedGenomes[genomeIdx]!
+      const features = genomeRows.get(genomeName)
+      if (!features) {
+        setTooltip(t => (t.open ? { text: '', open: false } : t))
+        return
+      }
+
+      for (const feat of features) {
+        const x1 = feat.start / bpPerPx - offsetPx + labelW
+        const x2 = feat.end / bpPerPx - offsetPx + labelW
+        if (mouseX >= x1 && mouseX <= x2) {
+          const size = feat.end - feat.start
+          const lines = [
+            genomeName,
+            `${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()}`,
+            `Size: ${formatBp(size)}`,
+            feat.syriType
+              ? `Type: ${feat.syriType}`
+              : `Strand: ${feat.strand === -1 ? '-' : '+'}`,
+            feat.identity > 0
+              ? `Identity: ${(feat.identity * 100).toFixed(1)}%`
+              : '',
+            feat.segmentId ? `Segment: ${feat.segmentId}` : '',
+          ].filter(Boolean)
+          setTooltip({ text: lines.join('\n'), open: true })
+          return
+        }
+      }
+      setTooltip(t => (t.open ? { text: '', open: false } : t))
     },
-    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx],
+    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx, labelW],
   )
 
   const onMouseLeave = useCallback(() => {
-    setTooltipOpen(false)
+    setTooltip({ text: '', open: false })
   }, [])
 
   return (
     <Tooltip
-      open={tooltipOpen}
+      open={tooltip.open}
       title={
         <span style={{ whiteSpace: 'pre-line', fontSize: 12 }}>
-          {tooltipText}
+          {tooltip.text}
         </span>
       }
       placement="right"
@@ -278,7 +263,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           width,
           height,
           display: 'block',
-          cursor: tooltipOpen ? 'pointer' : 'default',
+          cursor: tooltip.open ? 'pointer' : 'default',
         }}
       />
     </Tooltip>

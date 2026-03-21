@@ -23,11 +23,16 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+const colorByOptions = ['strand', 'syri', 'identity'] as const
+
 const LaunchSyntenyViewDialog = lazy(
   () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog.tsx'),
 )
 const GenomeSubsetSelector = lazy(
   () => import('./components/GenomeSubsetSelector.tsx'),
+)
+const LaunchPairwiseSyntenyDialog = lazy(
+  () => import('./components/LaunchPairwiseSyntenyDialog.tsx'),
 )
 
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
@@ -38,8 +43,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       types.model({
         type: types.literal('MultiLGVSyntenyDisplay'),
         configuration: ConfigurationReference(schema),
-        rowHeight: types.optional(types.number, 20),
+        colorBy: types.optional(types.string, 'strand'),
         selectedGenomes: types.optional(types.array(types.string), []),
+        // 0 = auto (fit rows to display height), >0 = manual px per row
+        rowHeightSetting: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
@@ -54,8 +61,18 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         return self.allGenomeNames
       },
-      get height() {
-        return Math.max(this.displayedGenomes.length * self.rowHeight, 40)
+      get autoRowHeight() {
+        const n = this.displayedGenomes.length
+        if (n === 0) {
+          return self.height
+        }
+        return self.height / n
+      },
+      get rowHeight() {
+        if (self.rowHeightSetting === 0) {
+          return this.autoRowHeight
+        }
+        return self.rowHeightSetting
       },
     }))
     .actions(self => ({
@@ -65,8 +82,11 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names
       },
-      setRowHeight(h: number) {
-        self.rowHeight = h
+      setColorBy(value: string) {
+        self.colorBy = value
+      },
+      setRowHeightSetting(h: number) {
+        self.rowHeightSetting = h
       },
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
@@ -155,15 +175,36 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
         return [
           {
-            label: 'Row height',
-            subMenu: [10, 15, 20, 30, 50].map(h => ({
-              label: `${h}px`,
+            label: 'Color by',
+            subMenu: colorByOptions.map(option => ({
+              label: option,
               type: 'radio' as const,
-              checked: self.rowHeight === h,
+              checked: self.colorBy === option,
               onClick: () => {
-                self.setRowHeight(h)
+                self.setColorBy(option)
               },
             })),
+          },
+          {
+            label: 'Row height',
+            subMenu: [
+              {
+                label: 'Auto (fit to display)',
+                type: 'radio' as const,
+                checked: self.rowHeightSetting === 0,
+                onClick: () => {
+                  self.setRowHeightSetting(0)
+                },
+              },
+              ...[5, 10, 15, 20, 30].map(h => ({
+                label: `${h}px`,
+                type: 'radio' as const,
+                checked: self.rowHeightSetting === h,
+                onClick: () => {
+                  self.setRowHeightSetting(h)
+                },
+              })),
+            ],
           },
           {
             label: `Select genomes (${self.displayedGenomes.length}/${self.allGenomeNames.length})...`,
@@ -199,21 +240,18 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 },
                 {
                   label: 'Launch 2-way synteny with...',
-                  subMenu: self.displayedGenomes.map(genome => ({
-                    label: genome,
-                    onClick: () => {
-                      getSession(self).addView('LinearSyntenyView', {
-                        type: 'LinearSyntenyView',
-                        init: {
-                          views: [
-                            { assembly: refAssembly, loc },
-                            { assembly: genome },
-                          ],
-                          tracks: [[trackId]],
-                        },
-                      })
-                    },
-                  })),
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      LaunchPairwiseSyntenyDialog,
+                      {
+                        model: self,
+                        handleClose,
+                        refAssembly,
+                        loc,
+                        trackId,
+                      },
+                    ])
+                  },
                 },
               ]
             : []),

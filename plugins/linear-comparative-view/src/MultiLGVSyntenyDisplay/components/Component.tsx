@@ -1,12 +1,10 @@
 import { observer } from 'mobx-react'
 
-import { getContainingView } from '@jbrowse/core/util'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 
 import MultiSyntenyRendering from './MultiSyntenyRendering.tsx'
 
 import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const MultiLGVSyntenyDisplayComponent = observer(
   function MultiLGVSyntenyDisplayComponent({
@@ -14,8 +12,6 @@ const MultiLGVSyntenyDisplayComponent = observer(
   }: {
     model: MultiLGVSyntenyDisplayModel
   }) {
-    const view = getContainingView(model) as LinearGenomeViewModel
-
     if (model.error) {
       return <ErrorMessage error={model.error} />
     }
@@ -28,16 +24,7 @@ const MultiLGVSyntenyDisplayComponent = observer(
       )
     }
 
-    return (
-      <MultiSyntenyRendering
-        genomeRows={model.genomeRows}
-        displayedGenomes={model.displayedGenomes}
-        width={view.width}
-        rowHeight={model.rowHeight}
-        bpPerPx={view.bpPerPx}
-        offsetPx={view.offsetPx}
-      />
-    )
+    return <MultiSyntenyRendering model={model} />
   },
 )
 
