@@ -1,7 +1,4 @@
-import {
-  defaultCigarColors,
-  syriColors,
-} from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
+import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -47,7 +44,9 @@ const OP_N = 3
 const OP_EQ = 7
 const OP_X = 8
 
-let drawCigarLogCount = 0
+const MISMATCH_COLOR = '#f00'
+const DELETION_COLOR = '#888'
+const INSERTION_COLOR = '#c000c0'
 
 export function drawCigarOps(
   ctx: CanvasRenderingContext2D,
@@ -60,11 +59,6 @@ export function drawCigarOps(
 ) {
   const pxPerBp = w / bpLen
   let refPos = 0
-  const shouldLog = drawCigarLogCount < 5
-
-  let insertionCount = 0
-  let deletionCount = 0
-  let mismatchCount = 0
 
   for (const packed of cigar) {
     const len = packed >>> 4
@@ -76,48 +70,51 @@ export function drawCigarOps(
       const px = x + refPos * pxPerBp
       const pw = len * pxPerBp
       if (pw >= 0.5) {
-        ctx.fillStyle = defaultCigarColors.X
+        ctx.fillStyle = MISMATCH_COLOR
         ctx.fillRect(px, y, Math.max(pw, 1), h)
-        mismatchCount++
       }
       refPos += len
     } else if (op === OP_D || op === OP_N) {
       const px = x + refPos * pxPerBp
       const pw = len * pxPerBp
-      if (shouldLog && deletionCount < 3) {
-        console.log(
-          `[drawCigarOps] D/N: len=${len}bp px=${px.toFixed(1)} pw=${pw.toFixed(2)}px ` +
-          `pxPerBp=${pxPerBp.toFixed(6)} color=${op === OP_D ? defaultCigarColors.D : defaultCigarColors.N}`,
-        )
-      }
       if (pw >= 0.5) {
-        ctx.fillStyle =
-          op === OP_D ? defaultCigarColors.D : defaultCigarColors.N
+        ctx.fillStyle = DELETION_COLOR
         ctx.fillRect(px, y, Math.max(pw, 1), h)
-        deletionCount++
+        if (pw > 12 && h >= 10) {
+          ctx.fillStyle = '#fff'
+          ctx.font = `${Math.min(h - 2, 10)}px sans-serif`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(`${len}`, px + pw / 2, y + h / 2)
+          ctx.textAlign = 'start'
+        }
       }
       refPos += len
     } else if (op === OP_I) {
+      // Draw insertion marker: vertical line with triangle markers
+      // at top and bottom (like pileup insertion rendering).
+      // Insertions don't consume reference space.
       const px = x + refPos * pxPerBp
-      const pw = len * pxPerBp
-      if (shouldLog && insertionCount < 3) {
-        console.log(
-          `[drawCigarOps] I: len=${len}bp px=${px.toFixed(1)} pw=${pw.toFixed(2)}px ` +
-          `pxPerBp=${pxPerBp.toFixed(6)} color=${defaultCigarColors.I}`,
-        )
-      }
-      ctx.fillStyle = defaultCigarColors.I
-      ctx.fillRect(px, y, Math.max(pw, 1), h)
-      insertionCount++
-    }
-  }
+      ctx.fillStyle = INSERTION_COLOR
+      ctx.fillRect(px - 0.5, y, 1, h)
 
-  if (shouldLog && (insertionCount > 0 || deletionCount > 0 || mismatchCount > 0)) {
-    console.log(
-      `[drawCigarOps] Summary: ${insertionCount} insertions, ${deletionCount} deletions, ` +
-      `${mismatchCount} mismatches drawn. pxPerBp=${pxPerBp.toFixed(6)} bpLen=${bpLen}`,
-    )
-    drawCigarLogCount++
+      if (h >= 6) {
+        const triW = Math.min(3, h / 3)
+        ctx.beginPath()
+        ctx.moveTo(px - triW, y)
+        ctx.lineTo(px + triW, y)
+        ctx.lineTo(px, y + triW)
+        ctx.closePath()
+        ctx.fill()
+
+        ctx.beginPath()
+        ctx.moveTo(px - triW, y + h)
+        ctx.lineTo(px + triW, y + h)
+        ctx.lineTo(px, y + h - triW)
+        ctx.closePath()
+        ctx.fill()
+      }
+    }
   }
 }
 

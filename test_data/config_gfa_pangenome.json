@@ -1,0 +1,107 @@
+{
+  "assemblies": [
+    {
+      "name": "ref#1",
+      "displayName": "ref",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ref1_refseq",
+        "adapter": {
+          "type": "FromConfigRegionsAdapter",
+          "features": [
+            { "uniqueId": "ref-chr1", "refName": "chr1", "start": 0, "end": 555 }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_pangenome_gfa",
+      "name": "Volvox pangenome (4 genomes, GFA with cs)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "volvox/volvox_pangenome.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segsLocation": {
+          "uri": "volvox/volvox_pangenome.segs.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "segsIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome.segs.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "alnLocation": {
+          "uri": "volvox/volvox_pangenome.aln.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "alnIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome.aln.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"]
+      },
+      "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"],
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_pangenome_gfa-MultiLGVSyntenyDisplay"
+        }
+      ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_pangenome_gfa_no_aln",
+      "name": "Volvox pangenome (4 genomes, GFA without aln)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "volvox/volvox_pangenome.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segsLocation": {
+          "uri": "volvox/volvox_pangenome.segs.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "segsIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome.segs.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"]
+      },
+      "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"],
+      "displays": [
+        {
+          "type": "MultiLGVSyntenyDisplay",
+          "displayId": "volvox_pangenome_gfa_no_aln-MultiLGVSyntenyDisplay"
+        }
+      ]
+    }
+  ]
+}

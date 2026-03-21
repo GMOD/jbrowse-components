@@ -1,12 +1,11 @@
 import { flow, types } from '@jbrowse/mobx-state-tree'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { getSession } from '@jbrowse/core/util'
 
 import { parseGFA } from '../gfa/gfaParser.ts'
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
-import { computeLayout } from '../layout/computeLayout.ts'
 
 import type { Graph, LayoutResult, ColorScheme, NodeSegment } from '../types.ts'
-import type { LayoutOptions } from '../layout/computeLayout.ts'
 
 const MIN_ZOOM = 0.001
 const MAX_ZOOM = 100.0
@@ -165,16 +164,30 @@ export default function stateModelFactory() {
         self.graph = graph
         self.layoutStage = 'Computing layout'
 
-        const options: LayoutOptions = {
-          quality: self.layoutQuality,
-          linearLayout: self.linearLayout,
+        try {
+          const session = getSession(self)
+          const { rpcManager } = session
+          const { result } = yield rpcManager.call(
+            session.id,
+            'GraphComputeLayout',
+            {
+              sessionId: session.id,
+              graph: { nodes: graph.nodes, edges: graph.edges },
+              options: {
+                quality: self.layoutQuality,
+                linearLayout: self.linearLayout,
+              },
+              statusCallback: (message: string) => {
+                self.setLayoutProgress(0, message)
+              },
+            },
+          )
+          self.layoutResult = result
+        } catch (e) {
+          self.error = `Layout failed: ${e instanceof Error ? e.message : e}`
+        } finally {
+          self.isLoading = false
         }
-        const { result } = yield computeLayout(graph, options, p => {
-          self.layoutProgress = p.progress
-          self.layoutStage = p.stage
-        })
-        self.layoutResult = result
-        self.isLoading = false
       }),
       recomputeLayout: flow(function* () {
         if (!self.graph) {
@@ -184,16 +197,30 @@ export default function stateModelFactory() {
         self.layoutProgress = 0
         self.layoutStage = 'Computing layout'
 
-        const options: LayoutOptions = {
-          quality: self.layoutQuality,
-          linearLayout: self.linearLayout,
+        try {
+          const session = getSession(self)
+          const { rpcManager } = session
+          const { result } = yield rpcManager.call(
+            session.id,
+            'GraphComputeLayout',
+            {
+              sessionId: session.id,
+              graph: { nodes: self.graph.nodes, edges: self.graph.edges },
+              options: {
+                quality: self.layoutQuality,
+                linearLayout: self.linearLayout,
+              },
+              statusCallback: (message: string) => {
+                self.setLayoutProgress(0, message)
+              },
+            },
+          )
+          self.layoutResult = result
+        } catch (e) {
+          self.error = `Layout failed: ${e instanceof Error ? e.message : e}`
+        } finally {
+          self.isLoading = false
         }
-        const { result } = yield computeLayout(self.graph, options, p => {
-          self.layoutProgress = p.progress
-          self.layoutStage = p.stage
-        })
-        self.layoutResult = result
-        self.isLoading = false
       }),
       clearGraph() {
         self.graph = undefined

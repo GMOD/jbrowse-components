@@ -1,5 +1,11 @@
 # Graph Genome Plugin — Next Steps
 
+## Scalability (remaining)
+- [ ] Move screen-space line width to vertex shader — eliminates geometry rebuild on zoom
+- [ ] Viewport culling — skip geometry for nodes/edges outside visible area
+- [ ] Edge spatial index — extend SpatialIndex to edges for O(1) edge hit detection
+- [ ] LOD — reduce tessellation detail at low zoom levels, skip small nodes
+
 ## GfaAdapter Integration
 - [ ] Wire graph view's ImportForm to load from GfaAdapter tracks (open from track list)
 - [ ] Add GfaAdapter to `GuessAdapter` for `.gfa` file extension detection
@@ -24,6 +30,9 @@
 - [ ] Export graph view as SVG or PNG
 - [ ] Keyboard shortcuts (arrow keys for pan, +/- for zoom, Escape to deselect)
 - [ ] Touch/trackpad gesture support for mobile
+
+## Deployment
+- [ ] Upload bandage-layout.js + bandage-layout.wasm to https://jbrowse.org/demos/bandage/
 
 ## Testing
 - [ ] Unit tests for `GfaAdapter` with sample GFA files

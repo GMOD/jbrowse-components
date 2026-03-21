@@ -64,8 +64,6 @@ function renderCanvas(
     }
 
     const padding = rowHeight >= 6 ? 1 : 0
-    let cigarCount = 0
-    let noCigarCount = 0
     for (const feat of features) {
       const x1 = feat.start / bpPerPx - offsetPx + labelW
       const x2 = feat.end / bpPerPx - offsetPx + labelW
@@ -83,36 +81,9 @@ function renderCanvas(
       ctx.fillStyle = getFeatureColor(feat, colorBy)
       ctx.fillRect(clippedX, fy, clippedW, fh)
 
-      if (feat.cigar) {
-        cigarCount++
-        if (blockWidth > 2) {
-          const ops = parseCigar2(feat.cigar)
-          if (cigarCount <= 3) {
-            const opSummary: Record<string, number> = {}
-            for (const packed of ops) {
-              const op = packed & 0xf
-              const len = packed >>> 4
-              const opNames = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
-              const name = opNames[op] ?? `?${op}`
-              opSummary[name] = (opSummary[name] ?? 0) + len
-            }
-            console.log(
-              `[MultiSynteny CIGAR] genome=${genomeName} feat=${feat.featureId} ` +
-              `blockWidth=${blockWidth.toFixed(1)}px bpLen=${feat.end - feat.start} ` +
-              `cigar(first 60)="${feat.cigar.slice(0, 60)}" ops=`, opSummary,
-            )
-          }
-          drawCigarOps(ctx, ops, x1, fy, blockWidth, fh, feat.end - feat.start)
-        }
-      } else {
-        noCigarCount++
+      if (feat.cigar && blockWidth > 2) {
+        drawCigarOps(ctx, parseCigar2(feat.cigar), x1, fy, blockWidth, fh, feat.end - feat.start)
       }
-    }
-    if (features.length > 0) {
-      console.log(
-        `[MultiSynteny] genome=${genomeName}: ${features.length} features, ` +
-        `${cigarCount} with CIGAR, ${noCigarCount} without CIGAR`,
-      )
     }
 
     if (rowHeight >= 4) {

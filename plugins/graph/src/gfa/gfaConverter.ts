@@ -24,6 +24,7 @@ export function convertGFAToGraph(
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
 
+  // Collect all strand-specific node IDs referenced by links and paths
   const usedStrands = new Set<string>()
   for (const link of gfaGraph.links) {
     const sourceStrand = link.strand1 || '+'
@@ -31,6 +32,17 @@ export function convertGFAToGraph(
     usedStrands.add(`${link.source}${sourceStrand}`)
     usedStrands.add(`${link.target}${targetStrand}`)
   }
+
+  for (const gfaPath of gfaGraph.paths) {
+    for (const segment of gfaPath.path.split(',')) {
+      const strand = segment.slice(-1)
+      const nodeName = segment.slice(0, -1)
+      usedStrands.add(`${nodeName}${strand}`)
+    }
+  }
+
+  // If no links or paths, create forward-strand nodes for all segments
+  const hasReferences = usedStrands.size > 0
 
   for (const gfaNode of gfaGraph.nodes) {
     const depth =
@@ -40,7 +52,7 @@ export function convertGFAToGraph(
       (gfaNode.tags.KC as number) ||
       1.0
 
-    if (usedStrands.has(`${gfaNode.id}+`)) {
+    if (!hasReferences || usedStrands.has(`${gfaNode.id}+`)) {
       nodes.push({
         id: `${gfaNode.id}+`,
         name: gfaNode.id,

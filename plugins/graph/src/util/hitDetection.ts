@@ -1,4 +1,5 @@
 import { computeEdgeCurves } from './geometry.ts'
+import { SpatialIndex } from './SpatialIndex.ts'
 
 import type { Graph, NodeSegment } from '../types.ts'
 import type { BezierCurve } from './geometry.ts'
@@ -63,6 +64,18 @@ function distanceToEdgeCurves(px: number, py: number, curves: BezierCurve[]) {
   return minDist
 }
 
+// Cached spatial index — rebuild only when positions change
+let cachedIndex: SpatialIndex | null = null
+let cachedPositions: Record<string, NodeSegment[]> | null = null
+
+function getSpatialIndex(nodePositions: Record<string, NodeSegment[]>) {
+  if (cachedPositions !== nodePositions) {
+    cachedPositions = nodePositions
+    cachedIndex = new SpatialIndex(nodePositions)
+  }
+  return cachedIndex!
+}
+
 export function findHoveredNode(
   nodePositions: Record<string, NodeSegment[]>,
   graphX: number,
@@ -70,16 +83,18 @@ export function findHoveredNode(
   scale: number,
 ) {
   const nodeThreshold = 5 / scale
-  for (const [nodeId, segments] of Object.entries(nodePositions)) {
-    for (let i = 0; i < segments.length - 1; i++) {
-      const dist = distanceToSegment(
-        graphX, graphY,
-        segments[i]!.x, segments[i]!.y,
-        segments[i + 1]!.x, segments[i + 1]!.y,
-      )
-      if (dist < nodeThreshold) {
-        return nodeId
-      }
+  const index = getSpatialIndex(nodePositions)
+  const candidates = index.query(graphX, graphY, nodeThreshold)
+
+  for (const { nodeId, segmentIdx } of candidates) {
+    const segments = nodePositions[nodeId]!
+    const dist = distanceToSegment(
+      graphX, graphY,
+      segments[segmentIdx]!.x, segments[segmentIdx]!.y,
+      segments[segmentIdx + 1]!.x, segments[segmentIdx + 1]!.y,
+    )
+    if (dist < nodeThreshold) {
+      return nodeId
     }
   }
   return null

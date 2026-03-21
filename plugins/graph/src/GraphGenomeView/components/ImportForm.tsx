@@ -39,11 +39,7 @@ const ImportForm = observer(function ImportForm({
       return
     }
     const text = await response.text()
-    try {
-      await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
-    } catch (e) {
-      model.setError(`Layout failed: ${e}`)
-    }
+    await model.loadGFA(text, url.split('/').pop() ?? 'GFA')
   }
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -55,11 +51,7 @@ const ImportForm = observer(function ImportForm({
     reader.onload = async e => {
       const text = e.target?.result
       if (typeof text === 'string') {
-        try {
-          await model.loadGFA(text, file.name)
-        } catch (err) {
-          model.setError(`Layout failed: ${err}`)
-        }
+        await model.loadGFA(text, file.name)
       }
     }
     reader.onerror = () => {
@@ -68,12 +60,8 @@ const ImportForm = observer(function ImportForm({
     reader.readAsText(file)
   }
 
-  async function handleExampleLoad() {
-    try {
-      await model.loadGFA(EXAMPLE_GFA, 'Example graph')
-    } catch (e) {
-      model.setError(`Layout failed: ${e}`)
-    }
+  function handleExampleLoad() {
+    model.loadGFA(EXAMPLE_GFA, 'Example graph')
   }
 
   return (

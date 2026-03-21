@@ -91,6 +91,8 @@ const GraphCanvas = observer(function GraphCanvas({
     )
   }, [model])
 
+  // Rebuild geometry when graph data or display options change.
+  // Pan (translateX/Y) does NOT trigger this — only the transform autorun below.
   useEffect(() => {
     return autorun(() => {
       const renderer = rendererRef.current
@@ -113,6 +115,31 @@ const GraphCanvas = observer(function GraphCanvas({
 
       renderer.uploadGeometry(batch)
 
+      // Render after geometry upload (needed when only hover/color changes,
+      // since the transform autorun below won't fire in that case)
+      const dpr = window.devicePixelRatio || 1
+      renderer.updateTransform({
+        scaleX: model.scale * dpr,
+        scaleY: model.scale * dpr,
+        translateX: model.translateX * dpr,
+        translateY: model.translateY * dpr,
+        viewportWidth: model.width * dpr,
+        viewportHeight: CANVAS_HEIGHT * dpr,
+      })
+      renderer.render(
+        model.darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
+      )
+    })
+  }, [model])
+
+  // Re-render on pan/zoom without rebuilding geometry (cheap)
+  useEffect(() => {
+    return autorun(() => {
+      const renderer = rendererRef.current
+      if (!renderer || !model.nodePositions) {
+        return
+      }
+
       const dpr = window.devicePixelRatio || 1
       renderer.updateTransform({
         scaleX: model.scale * dpr,
@@ -124,9 +151,7 @@ const GraphCanvas = observer(function GraphCanvas({
       })
 
       renderer.render(
-        model.darkMode
-          ? [0.12, 0.12, 0.12, 1.0]
-          : [1.0, 1.0, 1.0, 1.0],
+        model.darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
       )
     })
   }, [model])
@@ -242,9 +267,7 @@ const GraphCanvas = observer(function GraphCanvas({
             label="Quality"
             onChange={e => {
               model.setLayoutQuality(Number(e.target.value))
-              model.recomputeLayout().catch((err: unknown) => {
-                model.setError(`Layout failed: ${err}`)
-              })
+              model.recomputeLayout()
             }}
           >
             <MenuItem value={0}>Lowest</MenuItem>
@@ -262,9 +285,7 @@ const GraphCanvas = observer(function GraphCanvas({
             selected={model.linearLayout}
             onChange={() => {
               model.setLinearLayout(!model.linearLayout)
-              model.recomputeLayout().catch((err: unknown) => {
-                model.setError(`Layout failed: ${err}`)
-              })
+              model.recomputeLayout()
             }}
           >
             <LinearScaleIcon />

@@ -77,8 +77,39 @@ L\t1\t+\t2\t+\t*`)
 
 test('preserves node length from sequence', () => {
   const gfa = parseGFA('S\tnode1\tACGTACGT')
-  // node won't appear in graph without links, so add a self-link
-  gfa.links.push({ source: 'node1', target: 'node1', strand1: '+', strand2: '+', cigar: '0M', tags: {} })
   const graph = convertGFAToGraph(gfa)
   expect(graph.nodes[0]!.length).toBe(8)
+})
+
+test('creates nodes from segment-only GFA (no links)', () => {
+  const gfa = parseGFA(`S\tseq1\tACGT
+S\tseq2\tGGCC`)
+  const graph = convertGFAToGraph(gfa)
+  expect(graph.nodes).toHaveLength(2)
+  expect(graph.nodes.map(n => n.id).sort()).toEqual(['seq1+', 'seq2+'])
+  expect(graph.edges).toHaveLength(0)
+})
+
+test('includes path-only nodes not referenced by links', () => {
+  const gfa = parseGFA(`S\t1\tACGT
+S\t2\tGGCC
+S\t3\tTTAA
+L\t1\t+\t2\t+\t0M
+P\tp1\t1+,2+,3+\t*`)
+  const graph = convertGFAToGraph(gfa)
+
+  const ids = graph.nodes.map(n => n.id).sort()
+  expect(ids).toContain('3+')
+  expect(ids).toEqual(['1+', '2+', '3+'])
+})
+
+test('handles path referencing minus strand of unlinked node', () => {
+  const gfa = parseGFA(`S\t1\tACGT
+S\t2\tGGCC
+L\t1\t+\t2\t+\t0M
+P\tp1\t1+,2+,1-\t*`)
+  const graph = convertGFAToGraph(gfa)
+
+  const ids = graph.nodes.map(n => n.id).sort()
+  expect(ids).toContain('1-')
 })

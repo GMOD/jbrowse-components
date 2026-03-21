@@ -3,6 +3,7 @@ import { isAbstractMenuManager } from '@jbrowse/core/util'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 
 import GraphGenomeViewF from './GraphGenomeView/index.ts'
+import GraphComputeLayout from './layout/GraphComputeLayout.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -12,6 +13,7 @@ export default class GraphPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     GraphGenomeViewF(pluginManager)
+    pluginManager.addRpcMethod(() => new GraphComputeLayout(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

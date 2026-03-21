@@ -29,16 +29,27 @@
 - [x] Draw paths toggle
 
 ## Layout Engine
-- [x] Vendored `bandage-layout-js` WASM + Emscripten glue into `plugins/graph/src/layout/`
-- [x] Web Worker-based layout computation (`layout/layoutWorker.ts` + `layout/computeLayout.ts`)
-- [x] Layout wired into model — `loadGFA()` auto-computes layout via worker, sets `layoutResult`
-- [x] Layout progress reporting — progress bar with stage text in loading overlay
+- [x] Runtime-loaded layout engine — WASM fetched from `https://jbrowse.org/demos/bandage` (GPL code never bundled)
+- [x] Layout via JBrowse RPC system (`layout/GraphComputeLayout.ts`) — uses existing worker pool
+- [x] Lazy WASM init — module loaded on first layout call, shared across subsequent calls
+- [x] Configurable layout URL — `layoutUrl` arg allows self-hosted WASM
+- [x] Layout wired into model — `loadGFA()` calls `rpcManager.call('GraphComputeLayout', ...)`
+- [x] Layout progress via RPC `statusCallback` — progress bar with stage text in loading overlay
 - [x] Layout quality selector (0-4) in toolbar with live recompute
 - [x] Linear layout toggle button in toolbar with live recompute
 - [x] Auto zoom-to-fit after layout completes
 - [x] `recomputeLayout()` action for changing quality/linear settings without re-parsing GFA
-- [x] Error handling — layout failures surface as model errors, don't leave stuck loading state
-- [x] 60s timeout on layout computation
+- [x] Error handling — try/catch/finally in MST flows, `isLoading` always cleared
+
+## Scalability
+- [x] Spatial index for hit detection — grid-based index turns O(N) per-mousemove into O(1) average
+- [x] Separate transform from geometry rebuild — panning only updates transform uniform + re-renders, no geometry rebuild
+
+## Bug Fixes
+- [x] gfaConverter now includes nodes referenced in paths but not links (was silently dropping them)
+- [x] Segment-only GFA files (no links/paths) now create forward-strand nodes (was producing empty graph)
+- [x] MST flow error handling — try/catch/finally ensures `isLoading` is always cleared on error
+- [x] Proper error messages — `e instanceof Error ? e.message : e` instead of `"${e}"` which produces `[object Object]`
 
 ## Refactoring
 - [x] Extracted `computeEdgeCurves()` to `util/geometry.ts` — shared Bezier control point computation between GeometryBuilder and hitDetection (eliminated ~120 lines of duplication)
