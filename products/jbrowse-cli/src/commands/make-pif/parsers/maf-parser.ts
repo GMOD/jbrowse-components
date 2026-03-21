@@ -101,11 +101,9 @@ function mafPairToRecord(
   }
 
   // Convert MAF coordinates to forward-strand coordinates
-  const aStart =
-    a.strand === '+' ? a.start : a.srcSize - a.start - a.size
+  const aStart = a.strand === '+' ? a.start : a.srcSize - a.start - a.size
   const aEnd = aStart + a.size
-  const bStart =
-    b.strand === '+' ? b.start : b.srcSize - b.start - b.size
+  const bStart = b.strand === '+' ? b.start : b.srcSize - b.start - b.size
   const bEnd = bStart + b.size
 
   const strand = a.strand === b.strand ? '+' : '-'

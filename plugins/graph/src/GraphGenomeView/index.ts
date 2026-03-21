@@ -12,9 +12,7 @@ export default function GraphGenomeViewF(pluginManager: PluginManager) {
       name: 'GraphGenomeView',
       displayName: 'Graph genome view',
       stateModel: modelFactory(),
-      ReactComponent: lazy(
-        () => import('./components/GraphGenomeView.tsx'),
-      ),
+      ReactComponent: lazy(() => import('./components/GraphGenomeView.tsx')),
     })
   })
 }

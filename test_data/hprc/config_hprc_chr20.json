@@ -8,7 +8,14 @@
         "trackId": "grch38_0_chr20_refseq",
         "adapter": {
           "type": "FromConfigRegionsAdapter",
-          "features": [{ "uniqueId": "grch38-chr20", "refName": "chr20", "start": 0, "end": 64444167 }]
+          "features": [
+            {
+              "uniqueId": "grch38-chr20",
+              "refName": "chr20",
+              "start": 0,
+              "end": 64444167
+            }
+          ]
         }
       }
     }

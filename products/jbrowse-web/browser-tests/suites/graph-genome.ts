@@ -1,9 +1,4 @@
-import {
-  PORT,
-  appendGpuParam,
-  delay,
-  findByText,
-} from '../helpers.ts'
+import { PORT, appendGpuParam, delay, findByText } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
@@ -48,8 +43,7 @@ const suite: TestSuite = {
             const body = document.body.textContent || ''
             const hasNodes = body.includes('nodes')
             const isLoading =
-              body.includes('Computing layout') ||
-              body.includes('Downloading')
+              body.includes('Computing layout') || body.includes('Downloading')
             return hasNodes && !isLoading
           },
           { timeout: 60000, polling: 500 },
@@ -58,12 +52,7 @@ const suite: TestSuite = {
         // Give renderer time to draw
         await delay(2000)
 
-        await canvasSnapshot(
-          page,
-          'graph-genome-canvas',
-          'canvas',
-          0.15,
-        )
+        await canvasSnapshot(page, 'graph-genome-canvas', 'canvas', 0.15)
       },
     },
   ],

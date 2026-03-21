@@ -49,7 +49,10 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
 
   // Track target coverage for duplication detection
   // Group records by target chromosome
-  const targetGroups = new Map<string, { idx: number; rec: AlignmentRecord }[]>()
+  const targetGroups = new Map<
+    string,
+    { idx: number; rec: AlignmentRecord }[]
+  >()
   for (let i = 0; i < records.length; i++) {
     const r = records[i]!
     let group = targetGroups.get(r.tname)

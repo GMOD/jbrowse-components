@@ -1,4 +1,9 @@
-import type { Renderer, RenderBatch, SubBatch, TransformUniform } from './types.ts'
+import type {
+  Renderer,
+  RenderBatch,
+  SubBatch,
+  TransformUniform,
+} from './types.ts'
 
 export class Canvas2DRenderer implements Renderer {
   private ctx: CanvasRenderingContext2D
@@ -35,9 +40,11 @@ export class Canvas2DRenderer implements Renderer {
     vertexStart: number,
   ) {
     const batch =
-      target === 'edges' ? this.edgeBatch
-      : target === 'nodes' ? this.nodeBatch
-      : this.arrowBatch
+      target === 'edges'
+        ? this.edgeBatch
+        : target === 'nodes'
+          ? this.nodeBatch
+          : this.arrowBatch
     if (!batch) {
       return
     }
@@ -76,12 +83,33 @@ export class Canvas2DRenderer implements Renderer {
       const i1 = indices[i + 1]!
       const i2 = indices[i + 2]!
 
-      const x0 = positions[i0 * 2]! * t.scaleX + normals[i0 * 2]! * thicknesses[i0]! + t.translateX
-      const y0 = t.viewportHeight - (positions[i0 * 2 + 1]! * t.scaleY + normals[i0 * 2 + 1]! * thicknesses[i0]! + t.translateY)
-      const x1 = positions[i1 * 2]! * t.scaleX + normals[i1 * 2]! * thicknesses[i1]! + t.translateX
-      const y1 = t.viewportHeight - (positions[i1 * 2 + 1]! * t.scaleY + normals[i1 * 2 + 1]! * thicknesses[i1]! + t.translateY)
-      const x2 = positions[i2 * 2]! * t.scaleX + normals[i2 * 2]! * thicknesses[i2]! + t.translateX
-      const y2 = t.viewportHeight - (positions[i2 * 2 + 1]! * t.scaleY + normals[i2 * 2 + 1]! * thicknesses[i2]! + t.translateY)
+      const x0 =
+        positions[i0 * 2]! * t.scaleX +
+        normals[i0 * 2]! * thicknesses[i0]! +
+        t.translateX
+      const y0 =
+        t.viewportHeight -
+        (positions[i0 * 2 + 1]! * t.scaleY +
+          normals[i0 * 2 + 1]! * thicknesses[i0]! +
+          t.translateY)
+      const x1 =
+        positions[i1 * 2]! * t.scaleX +
+        normals[i1 * 2]! * thicknesses[i1]! +
+        t.translateX
+      const y1 =
+        t.viewportHeight -
+        (positions[i1 * 2 + 1]! * t.scaleY +
+          normals[i1 * 2 + 1]! * thicknesses[i1]! +
+          t.translateY)
+      const x2 =
+        positions[i2 * 2]! * t.scaleX +
+        normals[i2 * 2]! * thicknesses[i2]! +
+        t.translateX
+      const y2 =
+        t.viewportHeight -
+        (positions[i2 * 2 + 1]! * t.scaleY +
+          normals[i2 * 2 + 1]! * thicknesses[i2]! +
+          t.translateY)
 
       const r = Math.round(colors[i0 * 4]! * 255)
       const g = Math.round(colors[i0 * 4 + 1]! * 255)

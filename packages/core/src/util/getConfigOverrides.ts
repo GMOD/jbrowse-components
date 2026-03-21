@@ -56,7 +56,9 @@ export function getEffectiveTrackConfig(
     return conf
   }
 
-  const displaySnap = getSnapshot(display as unknown as IAnyStateTreeNode) as Record<string, unknown>
+  const displaySnap = getSnapshot(
+    display as unknown as IAnyStateTreeNode,
+  ) as Record<string, unknown>
   const displayConfId = displaySnap.configuration as string | undefined
   const displayType = display.configuration.type as string | undefined
 

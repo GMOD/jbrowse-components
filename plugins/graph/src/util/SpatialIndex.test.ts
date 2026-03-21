@@ -1,9 +1,18 @@
 import { SpatialIndex } from './SpatialIndex.ts'
 
 const positions = {
-  'A+': [{ x: 0, y: 0 }, { x: 100, y: 0 }],
-  'B+': [{ x: 200, y: 200 }, { x: 300, y: 200 }],
-  'C+': [{ x: 0, y: 0 }, { x: 0, y: 100 }],
+  'A+': [
+    { x: 0, y: 0 },
+    { x: 100, y: 0 },
+  ],
+  'B+': [
+    { x: 200, y: 200 },
+    { x: 300, y: 200 },
+  ],
+  'C+': [
+    { x: 0, y: 0 },
+    { x: 0, y: 100 },
+  ],
 }
 
 test('finds nearby segments', () => {

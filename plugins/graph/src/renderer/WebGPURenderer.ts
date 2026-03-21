@@ -2,7 +2,12 @@
 
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
-import type { Renderer, RenderBatch, SubBatch, TransformUniform } from './types.ts'
+import type {
+  Renderer,
+  RenderBatch,
+  SubBatch,
+  TransformUniform,
+} from './types.ts'
 
 const shaderSource = `
 struct Uniforms {
@@ -91,19 +96,43 @@ export class WebGPURenderer implements Renderer {
         buffers: [
           {
             arrayStride: 8,
-            attributes: [{ shaderLocation: 0, offset: 0, format: 'float32x2' as GPUVertexFormat }],
+            attributes: [
+              {
+                shaderLocation: 0,
+                offset: 0,
+                format: 'float32x2' as GPUVertexFormat,
+              },
+            ],
           },
           {
             arrayStride: 8,
-            attributes: [{ shaderLocation: 1, offset: 0, format: 'float32x2' as GPUVertexFormat }],
+            attributes: [
+              {
+                shaderLocation: 1,
+                offset: 0,
+                format: 'float32x2' as GPUVertexFormat,
+              },
+            ],
           },
           {
             arrayStride: 4,
-            attributes: [{ shaderLocation: 2, offset: 0, format: 'float32' as GPUVertexFormat }],
+            attributes: [
+              {
+                shaderLocation: 2,
+                offset: 0,
+                format: 'float32' as GPUVertexFormat,
+              },
+            ],
           },
           {
             arrayStride: 16,
-            attributes: [{ shaderLocation: 3, offset: 0, format: 'float32x4' as GPUVertexFormat }],
+            attributes: [
+              {
+                shaderLocation: 3,
+                offset: 0,
+                format: 'float32x4' as GPUVertexFormat,
+              },
+            ],
           },
         ],
       },
@@ -141,7 +170,13 @@ export class WebGPURenderer implements Renderer {
       entries: [{ binding: 0, resource: { buffer: uniformBuffer } }],
     })
 
-    return new WebGPURenderer(device, context, pipeline, uniformBuffer, uniformBindGroup)
+    return new WebGPURenderer(
+      device,
+      context,
+      pipeline,
+      uniformBuffer,
+      uniformBindGroup,
+    )
   }
 
   resize(width: number, height: number) {
@@ -166,7 +201,10 @@ export class WebGPURenderer implements Renderer {
     return {
       positionBuffer: this.createBuffer(batch.positions, GPUBufferUsage.VERTEX),
       normalBuffer: this.createBuffer(batch.normals, GPUBufferUsage.VERTEX),
-      thicknessBuffer: this.createBuffer(batch.thicknesses, GPUBufferUsage.VERTEX),
+      thicknessBuffer: this.createBuffer(
+        batch.thicknesses,
+        GPUBufferUsage.VERTEX,
+      ),
       colorBuffer: this.createBuffer(batch.colors, GPUBufferUsage.VERTEX),
       indexBuffer: this.createBuffer(batch.indices, GPUBufferUsage.INDEX),
       indexCount: batch.indices.length,
@@ -192,12 +230,18 @@ export class WebGPURenderer implements Renderer {
       this.destroySubBatchBuffers(this.arrowBuffers)
     }
 
-    this.edgeBuffers = batch.edges.indices.length > 0
-      ? this.createSubBatchBuffers(batch.edges) : null
-    this.nodeBuffers = batch.nodes.indices.length > 0
-      ? this.createSubBatchBuffers(batch.nodes) : null
-    this.arrowBuffers = batch.arrows.indices.length > 0
-      ? this.createSubBatchBuffers(batch.arrows) : null
+    this.edgeBuffers =
+      batch.edges.indices.length > 0
+        ? this.createSubBatchBuffers(batch.edges)
+        : null
+    this.nodeBuffers =
+      batch.nodes.indices.length > 0
+        ? this.createSubBatchBuffers(batch.nodes)
+        : null
+    this.arrowBuffers =
+      batch.arrows.indices.length > 0
+        ? this.createSubBatchBuffers(batch.arrows)
+        : null
   }
 
   updateSubBatchColors(
@@ -206,9 +250,11 @@ export class WebGPURenderer implements Renderer {
     vertexStart: number,
   ) {
     const buffers =
-      target === 'edges' ? this.edgeBuffers
-      : target === 'nodes' ? this.nodeBuffers
-      : this.arrowBuffers
+      target === 'edges'
+        ? this.edgeBuffers
+        : target === 'nodes'
+          ? this.nodeBuffers
+          : this.arrowBuffers
     if (!buffers) {
       return
     }
@@ -217,16 +263,21 @@ export class WebGPURenderer implements Renderer {
 
   updateTransform(t: TransformUniform) {
     const data = new Float32Array([
-      t.scaleX, t.scaleY,
-      t.translateX, t.translateY,
-      t.viewportWidth, t.viewportHeight,
-      0, 0,
+      t.scaleX,
+      t.scaleY,
+      t.translateX,
+      t.translateY,
+      t.viewportWidth,
+      t.viewportHeight,
+      0,
+      0,
     ])
     this.device.queue.writeBuffer(this.uniformBuffer, 0, data)
   }
 
   render(clearColor: [number, number, number, number]) {
-    const hasGeometry = this.edgeBuffers || this.nodeBuffers || this.arrowBuffers
+    const hasGeometry =
+      this.edgeBuffers || this.nodeBuffers || this.arrowBuffers
     if (!hasGeometry) {
       return
     }
@@ -237,7 +288,12 @@ export class WebGPURenderer implements Renderer {
       colorAttachments: [
         {
           view: textureView,
-          clearValue: { r: clearColor[0], g: clearColor[1], b: clearColor[2], a: clearColor[3] },
+          clearValue: {
+            r: clearColor[0],
+            g: clearColor[1],
+            b: clearColor[2],
+            a: clearColor[3],
+          },
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -247,7 +303,11 @@ export class WebGPURenderer implements Renderer {
     pass.setPipeline(this.pipeline)
     pass.setBindGroup(0, this.uniformBindGroup)
 
-    for (const buffers of [this.edgeBuffers, this.nodeBuffers, this.arrowBuffers]) {
+    for (const buffers of [
+      this.edgeBuffers,
+      this.nodeBuffers,
+      this.arrowBuffers,
+    ]) {
       if (buffers && buffers.indexCount > 0) {
         pass.setVertexBuffer(0, buffers.positionBuffer)
         pass.setVertexBuffer(1, buffers.normalBuffer)

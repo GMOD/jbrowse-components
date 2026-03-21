@@ -163,9 +163,13 @@ export default function stateModelFactory() {
         const newScale = clampZoom(Math.min(scaleX, scaleY))
         self.scale = newScale
         self.translateX =
-          padding - minX * newScale + (self.width - padding * 2 - graphWidth * newScale) / 2
+          padding -
+          minX * newScale +
+          (self.width - padding * 2 - graphWidth * newScale) / 2
         self.translateY =
-          padding - minY * newScale + (canvasHeight - padding * 2 - graphHeight * newScale) / 2
+          padding -
+          minY * newScale +
+          (canvasHeight - padding * 2 - graphHeight * newScale) / 2
       },
       loadGFA: flow(function* (text: string, name = 'Imported GFA') {
         self.isLoading = true

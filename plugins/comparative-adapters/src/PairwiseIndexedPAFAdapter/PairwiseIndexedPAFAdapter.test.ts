@@ -342,10 +342,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
       })
 
       // Compare with single-pair adapter results
-      const singleInsAdapter = makeAdapter(pifInsPath, [
-        'volvox_ins',
-        'volvox',
-      ])
+      const singleInsAdapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
       const singleInsFeatures = await firstValueFrom(
         singleInsAdapter
           .getFeatures({
@@ -504,9 +501,7 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(queryRefNames).toContain('ctgA')
 
       const targetRefNames = await adapter.getRefNames({
-        regions: [
-          { assemblyName: 'volvox', refName: '', start: 0, end: 0 },
-        ],
+        regions: [{ assemblyName: 'volvox', refName: '', start: 0, end: 0 }],
       })
       expect(targetRefNames).toContain('ctgA')
     })
@@ -564,6 +559,224 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(result.genomeNames).toEqual(['volvox_ins', 'volvox_del'])
       const insFeatures = result.genomeRows.get('volvox_ins')!
       expect(insFeatures.length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('coordinate space invariants', () => {
+    it('start/end are in reference coordinate space for perspective=q', async () => {
+      // pair0=volvox_ins,volvox — querying from volvox_ins uses q-prefix
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+      const result = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox_ins',
+      })
+
+      // volvox_ins is query genome in pair0, so perspective='q'
+      // volvox (target) should appear as the other genome
+      const volvoxFeatures = result.genomeRows.get('volvox')
+      expect(volvoxFeatures).toBeDefined()
+      expect(volvoxFeatures!.length).toBe(1)
+
+      // start/end must be in volvox_ins (reference) coordinate space
+      // volvox_ins ctgA is 54801bp
+      expect(volvoxFeatures![0]!.start).toBe(0)
+      expect(volvoxFeatures![0]!.end).toBe(54801)
+
+      // mateStart/mateEnd must be in volvox (other genome) coordinate space
+      // volvox ctgA is 50001bp
+      expect(volvoxFeatures![0]!.mateStart).toBe(0)
+      expect(volvoxFeatures![0]!.mateEnd).toBe(50001)
+    })
+
+    it('start/end are in reference coordinate space for perspective=t', async () => {
+      // pair0=volvox_ins,volvox — querying from volvox uses t-prefix
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+      const result = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+
+      // volvox is target genome in pair0, so perspective='t'
+      // volvox_ins (query) should appear as the other genome
+      const insFeatures = result.genomeRows.get('volvox_ins')
+      expect(insFeatures).toBeDefined()
+      expect(insFeatures!.length).toBe(1)
+
+      // start/end must be in volvox (reference) coordinate space
+      // volvox ctgA is 50001bp
+      expect(insFeatures![0]!.start).toBe(0)
+      expect(insFeatures![0]!.end).toBe(50001)
+
+      // mateStart/mateEnd must be in volvox_ins (other genome) coordinate space
+      // volvox_ins ctgA is 54801bp
+      expect(insFeatures![0]!.mateStart).toBe(0)
+      expect(insFeatures![0]!.mateEnd).toBe(54801)
+    })
+
+    it('coordinates are reciprocal: ref start/end matches other perspective mate', async () => {
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+
+      const fromVolvox = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+
+      const fromIns = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox_ins',
+      })
+
+      const insFromVolvox = fromVolvox.genomeRows.get('volvox_ins')![0]!
+      const volvoxFromIns = fromIns.genomeRows.get('volvox')![0]!
+
+      // When querying from volvox: start/end = volvox coords, mate = volvox_ins coords
+      // When querying from volvox_ins: start/end = volvox_ins coords, mate = volvox coords
+      // These should be reciprocal
+      expect(insFromVolvox.start).toBe(volvoxFromIns.mateStart)
+      expect(insFromVolvox.end).toBe(volvoxFromIns.mateEnd)
+      expect(insFromVolvox.mateStart).toBe(volvoxFromIns.start)
+      expect(insFromVolvox.mateEnd).toBe(volvoxFromIns.end)
+    })
+
+    it('start < end and mateStart < mateEnd for all features', async () => {
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+      const result = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+
+      for (const [, features] of result.genomeRows) {
+        for (const f of features) {
+          expect(f.start).toBeLessThan(f.end)
+          expect(f.mateStart).toBeLessThan(f.mateEnd)
+        }
+      }
+    })
+
+    it('chained pairs not containing the reference are skipped', async () => {
+      // volvox_multi has pair0=volvox_ins,volvox and pair1=volvox_del,volvox
+      // Both pairs contain volvox, so both should appear when querying from volvox
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+
+      // Query from volvox — both pairs contain volvox
+      const fromVolvox = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+      expect(fromVolvox.genomeNames).toEqual(['volvox_ins', 'volvox_del'])
+
+      // Query from volvox_ins — only pair0 contains volvox_ins
+      const fromIns = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox_ins',
+      })
+      expect(fromIns.genomeNames).toEqual(['volvox'])
+      expect(fromIns.genomeRows.has('volvox_del')).toBe(false)
+
+      // Query from volvox_del — only pair1 contains volvox_del
+      const fromDel = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox_del',
+      })
+      expect(fromDel.genomeNames).toEqual(['volvox'])
+      expect(fromDel.genomeRows.has('volvox_ins')).toBe(false)
+    })
+
+    it('features do not exceed reference chromosome length', async () => {
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+
+      // volvox ctgA = 50001bp
+      const result = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+
+      for (const [, features] of result.genomeRows) {
+        for (const f of features) {
+          expect(f.start).toBeGreaterThanOrEqual(0)
+          expect(f.end).toBeLessThanOrEqual(50001)
+        }
+      }
+    })
+
+    it('getMultiPairFeatures and getFeatures produce consistent coordinates', async () => {
+      const adapter = makeAdapter(pifMultiPath, [
+        'volvox_ins',
+        'volvox',
+        'volvox_del',
+      ] as unknown as [string, string])
+
+      const multiResult = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+
+      const singleFeatures = await firstValueFrom(
+        adapter
+          .getFeatures({
+            refName: 'ctgA',
+            start: 0,
+            end: 60000,
+            assemblyName: 'volvox',
+          })
+          .pipe(toArray()),
+      )
+
+      // getFeatures returns one feature per pair; getMultiPairFeatures
+      // groups by genome. The coordinates should match.
+      const multiIns = multiResult.genomeRows.get('volvox_ins')![0]!
+      const singleIns = singleFeatures.find(
+        f => f.get('mate').assemblyName === 'volvox_ins',
+      )!
+      expect(singleIns).toBeDefined()
+      expect(multiIns.start).toBe(singleIns.get('start'))
+      expect(multiIns.end).toBe(singleIns.get('end'))
+      expect(multiIns.mateStart).toBe(singleIns.get('mate').start)
+      expect(multiIns.mateEnd).toBe(singleIns.get('mate').end)
     })
   })
 

@@ -29,16 +29,43 @@ function tabixQuery(file: string, region: string) {
   }
 }
 
+function readSegsFile(prefix: string) {
+  return execSync(`zcat "${prefix}.segments.gz"`, { encoding: 'utf8' })
+    .trim()
+    .split('\n')
+    .filter(l => l.length > 0 && !l.startsWith('#'))
+}
+
+function readSegsIdx(prefix: string) {
+  const buf = fs.readFileSync(`${prefix}.segments.idx`)
+  const aligned = new ArrayBuffer(buf.byteLength)
+  new Uint8Array(aligned).set(buf)
+  return new BigUint64Array(aligned)
+}
+
+function querySegsRange(prefix: string, minOrd: number, maxOrd: number) {
+  const idx = readSegsIdx(prefix)
+  const startOffset = Number(idx[minOrd]!)
+  const endOffset = Number(idx[Math.min(maxOrd + 1, idx.length - 1)]!)
+  const allText = execSync(`zcat "${prefix}.segments.gz"`, { encoding: 'utf8' })
+  const slice = allText.slice(startOffset, endOffset)
+  return slice
+    .trim()
+    .split('\n')
+    .filter(l => l.length > 0 && !l.startsWith('#'))
+}
+
 describe('GFA to tabix conversion', () => {
-  it('creates pos.bed.gz and segs.bed.gz with indexes', async () => {
+  it('creates pos.bed.gz and segs.gz with indexes', async () => {
     await withTmpDir(async dir => {
       const prefix = path.join(dir, 'test')
       const stats = await gfaToTabix(GFA_FILE, prefix)
 
       expect(fs.existsSync(`${prefix}.pos.bed.gz`)).toBe(true)
       expect(fs.existsSync(`${prefix}.pos.bed.gz.tbi`)).toBe(true)
-      expect(fs.existsSync(`${prefix}.segs.bed.gz`)).toBe(true)
-      expect(fs.existsSync(`${prefix}.segs.bed.gz.tbi`)).toBe(true)
+      expect(fs.existsSync(`${prefix}.segments.gz`)).toBe(true)
+      expect(fs.existsSync(`${prefix}.segments.gz.gzi`)).toBe(true)
+      expect(fs.existsSync(`${prefix}.segments.idx`)).toBe(true)
 
       expect(stats.segmentCount).toBe(224)
       expect(stats.pathCount).toBe(4)
@@ -53,13 +80,9 @@ describe('GFA to tabix conversion', () => {
       const prefix = path.join(dir, 'test')
       await gfaToTabix(GFA_FILE, prefix)
 
-      const results = tabixQuery(
-        `${prefix}.pos.bed.gz`,
-        'ref#1#chr1:0-100000',
-      )
+      const results = tabixQuery(`${prefix}.pos.bed.gz`, 'ref#1#chr1:0-100000')
       expect(results.length).toBeGreaterThan(0)
 
-      // Each result should have 5 columns
       const cols = results[0]!.split('\t')
       expect(cols.length).toBe(5)
       expect(cols[0]).toBe('ref#1#chr1')
@@ -67,19 +90,18 @@ describe('GFA to tabix conversion', () => {
     })
   })
 
-  it('segs.bed.gz can be queried by segment ordinal range', async () => {
+  it('segs.gz has 6 columns per row', async () => {
     await withTmpDir(async dir => {
       const prefix = path.join(dir, 'test')
       await gfaToTabix(GFA_FILE, prefix)
 
-      // Query first few segments
-      const results = tabixQuery(`${prefix}.segs.bed.gz`, 'S:0-5')
-      expect(results.length).toBeGreaterThan(0)
+      const lines = readSegsFile(prefix)
+      expect(lines.length).toBeGreaterThan(0)
 
-      // Each result should have 8 columns
-      const cols = results[0]!.split('\t')
-      expect(cols.length).toBe(8)
-      expect(cols[0]).toBe('S')
+      const cols = lines[0]!.split('\t')
+      expect(cols.length).toBe(6)
+      // First column is numeric segment ID
+      expect(+cols[0]!).toBeGreaterThanOrEqual(0)
     })
   })
 
@@ -88,10 +110,7 @@ describe('GFA to tabix conversion', () => {
       const prefix = path.join(dir, 'test')
       await gfaToTabix(GFA_FILE, prefix)
 
-      const results = tabixQuery(
-        `${prefix}.pos.bed.gz`,
-        'ref#1#chr1:0-50000',
-      )
+      const results = tabixQuery(`${prefix}.pos.bed.gz`, 'ref#1#chr1:0-50000')
 
       for (const line of results) {
         const cols = line.split('\t')
@@ -103,18 +122,40 @@ describe('GFA to tabix conversion', () => {
     })
   })
 
-  it('shared segments appear in segs.bed.gz for multiple genomes', async () => {
+  it('shared segments appear in segs for multiple genomes', async () => {
     await withTmpDir(async dir => {
       const prefix = path.join(dir, 'test')
       await gfaToTabix(GFA_FILE, prefix)
 
-      // Query segment ordinal 0 (first segment, shared by all paths)
-      const results = tabixQuery(`${prefix}.segs.bed.gz`, 'S:0-1')
+      // Query segment ordinal 0 using companion index
+      const results = querySegsRange(prefix, 0, 0)
       expect(results.length).toBe(4) // shared by all 4 genomes
 
-      const paths = results.map(r => r.split('\t')[3])
+      const paths = results.map(r => r.split('\t')[1])
       expect(paths).toContain('ref#1#chr1')
       expect(paths).toContain('sample1#1#chr1')
+    })
+  })
+
+  it('companion index has correct offsets', async () => {
+    await withTmpDir(async dir => {
+      const prefix = path.join(dir, 'test')
+      await gfaToTabix(GFA_FILE, prefix)
+
+      const idx = readSegsIdx(prefix)
+      // Should have numSegments + 1 entries (sentinel at end)
+      expect(idx.length).toBeGreaterThan(1)
+
+      // Offsets should be monotonically non-decreasing
+      for (let i = 1; i < idx.length; i++) {
+        expect(idx[i]!).toBeGreaterThanOrEqual(idx[i - 1]!)
+      }
+
+      // Querying segment 0 via index should return rows starting with "0\t"
+      const seg0Lines = querySegsRange(prefix, 0, 0)
+      for (const line of seg0Lines) {
+        expect(line.startsWith('0\t')).toBe(true)
+      }
     })
   })
 
@@ -130,7 +171,6 @@ describe('GFA to tabix conversion', () => {
       )
       expect(posResults.length).toBeGreaterThan(0)
 
-      // Find overall min/max ordinals
       let minOrd = Infinity
       let maxOrd = -Infinity
       for (const line of posResults) {
@@ -139,33 +179,27 @@ describe('GFA to tabix conversion', () => {
         maxOrd = Math.max(maxOrd, +cols[4]!)
       }
 
-      // Step 2: get all paths for those segments
-      const segResults = tabixQuery(
-        `${prefix}.segs.bed.gz`,
-        `S:${minOrd}-${maxOrd + 1}`,
-      )
+      // Step 2: get all paths for those segments via companion index
+      const segResults = querySegsRange(prefix, minOrd, maxOrd)
       expect(segResults.length).toBeGreaterThan(0)
 
-      // Group by path name
       const byPath = new Map<string, string[]>()
       for (const line of segResults) {
         const cols = line.split('\t')
-        const pathName = cols[3]!
+        const pathName = cols[1]!
         if (!byPath.has(pathName)) {
           byPath.set(pathName, [])
         }
         byPath.get(pathName)!.push(line)
       }
 
-      // Should have entries for all 4 genomes
       expect(byPath.size).toBe(4)
 
-      // Each genome should have segments with valid offsets
       for (const [_pathName, lines] of byPath) {
         for (const line of lines) {
           const cols = line.split('\t')
-          const offset = +cols[4]!
-          const segLen = +cols[5]!
+          const offset = +cols[2]!
+          const segLen = +cols[3]!
           expect(offset).toBeGreaterThanOrEqual(0)
           expect(segLen).toBeGreaterThan(0)
         }
@@ -184,7 +218,7 @@ describe('GFA to tabix conversion', () => {
       expect(stats.genomes.sort()).toEqual(['ref#1', 'sample1#1'].sort())
 
       // Only 2 genomes in segs for segment 0
-      const results = tabixQuery(`${prefix}.segs.bed.gz`, 'S:0-1')
+      const results = querySegsRange(prefix, 0, 0)
       expect(results.length).toBe(2)
     })
   })
@@ -194,20 +228,17 @@ describe('GFA to tabix conversion', () => {
       const prefix = path.join(dir, 'test')
       await gfaToTabix(GFA_FILE, prefix)
 
-      // Read the header from pos.bed.gz
-      const headerOutput = execSync(
-        `zcat "${prefix}.pos.bed.gz" | head -5`,
-        { encoding: 'utf8' },
-      )
+      const headerOutput = execSync(`zcat "${prefix}.pos.bed.gz" | head -5`, {
+        encoding: 'utf8',
+      })
       const sizesLine = headerOutput
         .split('\n')
         .find(l => l.startsWith('#sizes='))
       expect(sizesLine).toBeDefined()
 
-      // Parse sizes and verify each path has a positive length
       const sizesStr = sizesLine!.replace('#sizes=', '')
       const entries = sizesStr.split(',')
-      expect(entries.length).toBe(4) // 4 genomes = 4 paths
+      expect(entries.length).toBe(4)
       for (const entry of entries) {
         const colonIdx = entry.lastIndexOf(':')
         expect(colonIdx).toBeGreaterThan(0)
@@ -227,14 +258,9 @@ describe('GFA to tabix conversion', () => {
       expect(fs.existsSync(`${prefix}.aln.bed.gz`)).toBe(true)
       expect(fs.existsSync(`${prefix}.aln.bed.gz.tbi`)).toBe(true)
 
-      // Path names for P-lines without # are duplicated: path1#path1
-      const results = tabixQuery(
-        `${prefix}.aln.bed.gz`,
-        'path1#path1:0-1000',
-      )
+      const results = tabixQuery(`${prefix}.aln.bed.gz`, 'path1#path1:0-1000')
       expect(results.length).toBeGreaterThan(0)
 
-      // 9 columns: refPath, start, end, queryGenome, queryChrom, qStart, qEnd, strand, cs
       const cols = results[0]!.split('\t')
       expect(cols.length).toBe(9)
       expect(cols[0]).toBe('path1#path1')
@@ -249,13 +275,8 @@ describe('GFA to tabix conversion', () => {
       const prefix = path.join(dir, 'test')
       await gfaToTabix(gfaWithSeqs, prefix)
 
-      const results = tabixQuery(
-        `${prefix}.aln.bed.gz`,
-        'path1#path1:0-1000',
-      )
+      const results = tabixQuery(`${prefix}.aln.bed.gz`, 'path1#path1:0-1000')
 
-      // path1 uses s1,s2,s4,s5 and path2 uses s1,s3,s4,s5
-      // s2 vs s3 is a bubble — should produce substitution cs ops (*XY)
       const csStrings = results.map(r => r.split('\t')[8])
       const hasVariant = csStrings.some(
         cs => cs && (cs.includes('*') || cs.includes('+') || cs.includes('-')),
@@ -280,7 +301,6 @@ describe('GFA to tabix conversion', () => {
         'ref#1#chr1:0-10000000',
       )
 
-      // Smaller chunks → more pos.bed.gz entries
       expect(results10.length).toBeGreaterThan(results100.length)
     })
   })

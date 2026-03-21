@@ -100,7 +100,8 @@ function rgbToHSL(r: number, g: number, b: number) {
         : 4 + (r - g) / s
     : 0
   buffer[0] = 60 * h < 0 ? 60 * h + 360 : 60 * h
-  buffer[1] = 100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0)
+  buffer[1] =
+    100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0)
   buffer[2] = (100 * (2 * l - s)) / 2
 }
 

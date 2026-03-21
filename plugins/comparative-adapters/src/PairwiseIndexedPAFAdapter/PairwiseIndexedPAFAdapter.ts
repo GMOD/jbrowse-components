@@ -190,9 +190,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         // Find which pair index corresponds to our assembly pair
         const assemblyNames = this.getAssemblyNames()
         for (const [idx, [a, b]] of pairs) {
-          if (
-            (assemblyNames.includes(a) && assemblyNames.includes(b))
-          ) {
+          if (assemblyNames.includes(a) && assemblyNames.includes(b)) {
             pairIdx = String(idx)
             break
           }
@@ -203,7 +201,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // - structural tier (xt/xq): bpPerPx > mergeGap (or splitThreshold * 10)
       // - summary tier (st/sq): bpPerPx > splitThreshold
       // - full tier (t/q): else
-      const structuralThreshold = mergeGap ?? (splitThreshold ? splitThreshold * 10 : undefined)
+      const structuralThreshold =
+        mergeGap ?? (splitThreshold ? splitThreshold * 10 : undefined)
       const useStructural =
         structuralThreshold !== undefined &&
         bpPerPx !== undefined &&
@@ -416,8 +415,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mateStart: r.tstart,
             mateEnd: r.tend,
             syriType: (extra.sy as SyriType) || undefined,
-            identity:
-              (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
+            identity: (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
             featureId: `${fileOffset}`,
             segmentId: (extra.sg as string) || undefined,
             cigar: (extra.cg as string) || undefined,

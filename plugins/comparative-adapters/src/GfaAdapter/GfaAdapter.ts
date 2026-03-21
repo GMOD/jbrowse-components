@@ -104,10 +104,17 @@ function parseGfa(text: string) {
           const orient = walkStr[pos]!
           pos++
           let end = pos
-          while (end < walkStr.length && walkStr[end] !== '>' && walkStr[end] !== '<') {
+          while (
+            end < walkStr.length &&
+            walkStr[end] !== '>' &&
+            walkStr[end] !== '<'
+          ) {
             end++
           }
-          segs.push({ segId: walkStr.slice(pos, end), orient: orient === '>' ? '+' : '-' })
+          segs.push({
+            segId: walkStr.slice(pos, end),
+            orient: orient === '>' ? '+' : '-',
+          })
           pos = end
         }
 
@@ -130,7 +137,9 @@ function parseGfa(text: string) {
     if (!chromSizes.has(path.genome)) {
       chromSizes.set(path.genome, [])
     }
-    chromSizes.get(path.genome)!.push({ refName: path.refName, length: totalLen })
+    chromSizes
+      .get(path.genome)!
+      .push({ refName: path.refName, length: totalLen })
   }
 
   return {
@@ -217,10 +226,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  async getMultiPairFeatures(
-    query: Region,
-    _opts: BaseOptions = {},
-  ) {
+  async getMultiPairFeatures(query: Region, _opts: BaseOptions = {}) {
     const gfa = await this.getGfa()
     const genomeRows = new Map<string, MultiPairFeature[]>()
     const { refName, start, end, assemblyName } = query
@@ -231,11 +237,21 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       { segId: string; orient: string; offset: number; length: number }[]
     >()
     for (const path of gfa.paths) {
-      const positions: { segId: string; orient: string; offset: number; length: number }[] = []
+      const positions: {
+        segId: string
+        orient: string
+        offset: number
+        length: number
+      }[] = []
       let offset = 0
       for (const seg of path.segments) {
         const segLen = gfa.segments.get(seg.segId)?.length ?? 0
-        positions.push({ segId: seg.segId, orient: seg.orient, offset, length: segLen })
+        positions.push({
+          segId: seg.segId,
+          orient: seg.orient,
+          offset,
+          length: segLen,
+        })
         offset += segLen
       }
       pathPositions.set(path.name, positions)
@@ -261,7 +277,10 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
 
     // Find segments in the query range
     const refSegSet = new Set<string>()
-    const refSegBySegId = new Map<string, { offset: number; length: number; orient: string }>()
+    const refSegBySegId = new Map<
+      string,
+      { offset: number; length: number; orient: string }
+    >()
     for (const pos of refPositions) {
       if (pos.offset + pos.length > start && pos.offset < end) {
         refSegSet.add(pos.segId)

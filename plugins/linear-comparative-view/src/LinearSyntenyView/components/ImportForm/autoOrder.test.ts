@@ -58,9 +58,7 @@ test('accumulates alignment lengths for repeated pairs', () => {
 })
 
 test('returns single genome list for two genomes', () => {
-  const records = [
-    { qname: 'A', tname: 'B', alignmentLength: 500 },
-  ]
+  const records = [{ qname: 'A', tname: 'B', alignmentLength: 500 }]
   const result = computeGenomeOrdering(records)
   expect(result).toEqual(['A', 'B'])
 })

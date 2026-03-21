@@ -1,0 +1,117 @@
+{
+  "assemblies": [
+    {
+      "name": "Col-0#1",
+      "displayName": "Col-0 (TAIR10)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "col0_pggb_refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Col-0.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Col-0.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Col-0.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "name": "Ler#1",
+      "displayName": "Ler-0",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ler_pggb_refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Ler.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Ler.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Ler.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "name": "Cvi#1",
+      "displayName": "Cvi-0",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "cvi_pggb_refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Cvi.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Cvi.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Cvi.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "name": "Eri#1",
+      "displayName": "Eri-1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "eri_pggb_refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Eri.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Eri.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/demos/gfadata/athaliana/Eri.fa.gz.gzi"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "athaliana_chr1_pggb_synteny",
+      "name": "A. thaliana chr1 pangenome synteny (PGGB, 4 ecotypes)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "prefix": "https://jbrowse.org/demos/gfadata/athaliana/athaliana_chr1",
+        "assemblyNames": ["Col-0#1", "Ler#1", "Cvi#1", "Eri#1"]
+      },
+      "assemblyNames": ["Col-0#1", "Ler#1", "Cvi#1", "Eri#1"]
+    }
+  ],
+  "defaultSession": {
+    "name": "Arabidopsis chr1 pangenome (PGGB)",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "Col-0#1",
+        "loc": "NC_003070.9:1-5000000",
+        "tracks": [
+          {
+            "trackId": "athaliana_chr1_pggb_synteny",
+            "displaySnapshot": { "type": "MultiLGVSyntenyDisplay" }
+          }
+        ]
+      }
+    ]
+  }
+}

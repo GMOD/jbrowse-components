@@ -9,7 +9,12 @@
         "adapter": {
           "type": "FromConfigRegionsAdapter",
           "features": [
-            { "uniqueId": "ref-chr1", "refName": "chr1", "start": 0, "end": 555 }
+            {
+              "uniqueId": "ref-chr1",
+              "refName": "chr1",
+              "start": 0,
+              "end": 555
+            }
           ]
         }
       }
@@ -36,15 +41,17 @@
             "locationType": "UriLocation"
           }
         },
-        "segsLocation": {
-          "uri": "volvox/volvox_pangenome.segs.bed.gz",
+        "segmentsLocation": {
+          "uri": "volvox/volvox_pangenome.segments.gz",
           "locationType": "UriLocation"
         },
-        "segsIndex": {
-          "location": {
-            "uri": "volvox/volvox_pangenome.segs.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
+        "segmentsGziLocation": {
+          "uri": "volvox/volvox_pangenome.segments.gz.gzi",
+          "locationType": "UriLocation"
+        },
+        "segmentsIdxLocation": {
+          "uri": "volvox/volvox_pangenome.segments.idx",
+          "locationType": "UriLocation"
         },
         "alnLocation": {
           "uri": "volvox/volvox_pangenome.aln.bed.gz",
@@ -83,15 +90,17 @@
             "locationType": "UriLocation"
           }
         },
-        "segsLocation": {
-          "uri": "volvox/volvox_pangenome.segs.bed.gz",
+        "segmentsLocation": {
+          "uri": "volvox/volvox_pangenome.segments.gz",
           "locationType": "UriLocation"
         },
-        "segsIndex": {
-          "location": {
-            "uri": "volvox/volvox_pangenome.segs.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
+        "segmentsGziLocation": {
+          "uri": "volvox/volvox_pangenome.segments.gz.gzi",
+          "locationType": "UriLocation"
+        },
+        "segmentsIdxLocation": {
+          "uri": "volvox/volvox_pangenome.segments.idx",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"]
       },

@@ -68,17 +68,17 @@
     {
       "type": "MultiSyntenyTrack",
       "trackId": "arabidopsis_4way_multi_synteny",
-      "name": "Arabidopsis synteny (multi-LGV, chained — Col-0 vs Ler only)",
+      "name": "Arabidopsis 4-way synteny (all-vs-all, minimap2)",
       "category": ["Synteny"],
       "adapter": {
         "type": "PairwiseIndexedPAFAdapter",
         "pifGzLocation": {
-          "uri": "arabidopsis_4way.pif.gz",
+          "uri": "arabidopsis_4way_allvsall.pif.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "arabidopsis_4way.pif.gz.tbi",
+            "uri": "arabidopsis_4way_allvsall.pif.gz.tbi",
             "locationType": "UriLocation"
           },
           "indexType": "TBI"

@@ -1,4 +1,8 @@
-import { distanceToSegment, distanceToCubicBezier, findHoveredNode } from './hitDetection.ts'
+import {
+  distanceToSegment,
+  distanceToCubicBezier,
+  findHoveredNode,
+} from './hitDetection.ts'
 
 describe('distanceToSegment', () => {
   test('point on the segment', () => {
@@ -37,8 +41,14 @@ describe('distanceToCubicBezier', () => {
 
 describe('findHoveredNode', () => {
   const nodePositions = {
-    'A+': [{ x: 0, y: 0 }, { x: 10, y: 0 }],
-    'B+': [{ x: 20, y: 20 }, { x: 30, y: 20 }],
+    'A+': [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ],
+    'B+': [
+      { x: 20, y: 20 },
+      { x: 30, y: 20 },
+    ],
   }
 
   test('finds node when cursor is on segment', () => {

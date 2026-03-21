@@ -222,10 +222,7 @@ export function drawCsOps(
   }
 }
 
-export const legendItems: Record<
-  string,
-  { label: string; color: string }[]
-> = {
+export const legendItems: Record<string, { label: string; color: string }[]> = {
   strand: [
     { label: 'Forward (+)', color: '#c8c8c8' },
     { label: 'Reverse (inversion)', color: '#6899e0' },

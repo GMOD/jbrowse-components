@@ -39,8 +39,7 @@ async function makeGfaTabix(args: string[]) {
         '--out': 'Output prefix (default: input basename)',
         '--assemblies':
           'Comma-separated assembly names to include (default: all)',
-        '--chunk-size':
-          'Number of segments per position chunk (default: 100)',
+        '--chunk-size': 'Number of segments per position chunk (default: 100)',
       },
       examples: [
         'jbrowse make-gfa-tabix pangenome.gfa',

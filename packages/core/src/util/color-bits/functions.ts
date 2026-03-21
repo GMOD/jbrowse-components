@@ -1,5 +1,12 @@
 import type { Color } from './core.ts'
-import { getAlpha, getBlue, getGreen, getRed, newColor, setAlpha } from './core.ts'
+import {
+  getAlpha,
+  getBlue,
+  getGreen,
+  getRed,
+  newColor,
+  setAlpha,
+} from './core.ts'
 
 /**
  * Modifies color alpha channel.

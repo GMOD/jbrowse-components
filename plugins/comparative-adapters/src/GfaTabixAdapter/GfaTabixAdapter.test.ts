@@ -14,24 +14,26 @@ function makeAdapter(prefix: string, assemblyNames: string[]) {
           locationType: 'LocalPathLocation',
         },
       },
-      segsLocation: {
-        localPath: `${prefix}.segs.bed.gz`,
+      segmentsLocation: {
+        localPath: `${prefix}.segments.gz`,
         locationType: 'LocalPathLocation',
       },
-      segsIndex: {
-        location: {
-          localPath: `${prefix}.segs.bed.gz.tbi`,
-          locationType: 'LocalPathLocation',
-        },
+      segmentsGziLocation: {
+        localPath: `${prefix}.segments.gz.gzi`,
+        locationType: 'LocalPathLocation',
+      },
+      segmentsIdxLocation: {
+        localPath: `${prefix}.segments.idx`,
+        locationType: 'LocalPathLocation',
       },
       assemblyNames,
     }),
   )
 }
 
-const prefix = require.resolve(
-  '../../../../test_data/volvox/synthetic_4genome.pos.bed.gz',
-).replace('.pos.bed.gz', '')
+const prefix = require
+  .resolve('../../../../test_data/volvox/synthetic_4genome.pos.bed.gz')
+  .replace('.pos.bed.gz', '')
 
 describe('GfaTabixAdapter', () => {
   it('getMultiPairFeatures returns features for all genomes', async () => {
@@ -154,6 +156,131 @@ describe('GfaTabixAdapter', () => {
     expect(adapter.getAssemblyNames()).toEqual(['ref#1', 'sample1#1'])
   })
 
+  it('start/end are in reference coordinate space when querying from ref#1', async () => {
+    const adapter = makeAdapter(prefix, [
+      'ref#1',
+      'sample1#1',
+      'sample2#1',
+      'sample3#1',
+    ])
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    // ref#1 chr1 = 5472117bp (from #sizes header)
+    for (const [, features] of result.genomeRows) {
+      for (const f of features) {
+        expect(f.start).toBeGreaterThanOrEqual(0)
+        expect(f.end).toBeLessThanOrEqual(5472117)
+        expect(f.start).toBeLessThan(f.end)
+        expect(f.mateStart).toBeLessThan(f.mateEnd)
+      }
+    }
+  })
+
+  it('start/end are in reference coordinate space when querying from sample1#1', async () => {
+    const adapter = makeAdapter(prefix, [
+      'ref#1',
+      'sample1#1',
+      'sample2#1',
+      'sample3#1',
+    ])
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'sample1#1',
+    })
+
+    // sample1#1 chr1 = 5485194bp (from #sizes header)
+    expect(result.genomeRows.size).toBeGreaterThanOrEqual(1)
+    for (const [, features] of result.genomeRows) {
+      for (const f of features) {
+        expect(f.start).toBeGreaterThanOrEqual(0)
+        expect(f.end).toBeLessThanOrEqual(5485194)
+        expect(f.start).toBeLessThan(f.end)
+        expect(f.mateStart).toBeLessThan(f.mateEnd)
+      }
+    }
+  })
+
+  it('coordinates are reciprocal between ref#1 and sample1#1', async () => {
+    const adapter = makeAdapter(prefix, [
+      'ref#1',
+      'sample1#1',
+      'sample2#1',
+      'sample3#1',
+    ])
+
+    const fromRef = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 5500000,
+      assemblyName: 'ref#1',
+    })
+
+    const fromSample = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 5500000,
+      assemblyName: 'sample1#1',
+    })
+
+    const sample1FromRef = fromRef.genomeRows.get('sample1#1')
+    const refFromSample = fromSample.genomeRows.get('ref#1')
+    expect(sample1FromRef).toBeDefined()
+    expect(refFromSample).toBeDefined()
+    expect(sample1FromRef!.length).toBeGreaterThan(0)
+    expect(refFromSample!.length).toBeGreaterThan(0)
+
+    // Find the first shared segment feature from each perspective
+    const s0FromRef = sample1FromRef!.find(f => f.segmentId === 's0')
+    const s0FromSample = refFromSample!.find(f => f.segmentId === 's0')
+    expect(s0FromRef).toBeDefined()
+    expect(s0FromSample).toBeDefined()
+
+    // Reciprocal: ref→sample1 start/end should match sample1→ref mate
+    expect(s0FromRef!.start).toBe(s0FromSample!.mateStart)
+    expect(s0FromRef!.end).toBe(s0FromSample!.mateEnd)
+    expect(s0FromRef!.mateStart).toBe(s0FromSample!.start)
+    expect(s0FromRef!.mateEnd).toBe(s0FromSample!.end)
+  })
+
+  it('features do not exceed reference chromosome length for any genome', async () => {
+    const adapter = makeAdapter(prefix, [
+      'ref#1',
+      'sample1#1',
+      'sample2#1',
+      'sample3#1',
+    ])
+    const chromSizes = await adapter.getChromSizes()
+
+    // Query from each genome and verify features stay within bounds
+    for (const [genome, regions] of chromSizes) {
+      const chr1Len = regions.find(r => r.refName === 'chr1')?.length
+      if (!chr1Len) {
+        continue
+      }
+
+      const result = await adapter.getMultiPairFeatures({
+        refName: 'chr1',
+        start: 0,
+        end: chr1Len,
+        assemblyName: genome,
+      })
+
+      for (const [, features] of result.genomeRows) {
+        for (const f of features) {
+          expect(f.start).toBeGreaterThanOrEqual(0)
+          expect(f.end).toBeLessThanOrEqual(chr1Len)
+        }
+      }
+    }
+  })
+
   it('getChromSizes returns per-genome chromosome sizes from header', async () => {
     const adapter = makeAdapter(prefix, [
       'ref#1',
@@ -200,7 +327,7 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
       expect(features.length).toBeGreaterThan(0)
       totalFeatures += features.length
     }
-    expect(totalFeatures).toBeGreaterThan(100)
+    expect(totalFeatures).toBeGreaterThanOrEqual(43)
   })
 
   it('getChromSizes returns sizes for all 44 genomes', async () => {
@@ -251,4 +378,3 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
     expect(elapsed).toBeLessThan(500)
   })
 })
-

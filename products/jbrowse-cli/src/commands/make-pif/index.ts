@@ -10,7 +10,12 @@ import {
   spawnSortProcess,
   waitForProcessClose,
 } from './pif-generator.ts'
-import { parseBedpe, parseMaf, parseRgfa, parseSyriOutput } from './parsers/index.ts'
+import {
+  parseBedpe,
+  parseMaf,
+  parseRgfa,
+  parseSyriOutput,
+} from './parsers/index.ts'
 import { recordsToPafLines } from './parsers/to-paf.ts'
 import { printHelp } from '../../utils.ts'
 import {
@@ -27,7 +32,12 @@ function detectFormat(filename: string): string {
   if (lower.endsWith('.bedpe') || lower.endsWith('.bedpe.gz')) {
     return 'bedpe'
   }
-  if (lower.endsWith('.gfa') || lower.endsWith('.gfa.gz') || lower.endsWith('.rgfa') || lower.endsWith('.rgfa.gz')) {
+  if (
+    lower.endsWith('.gfa') ||
+    lower.endsWith('.gfa.gz') ||
+    lower.endsWith('.rgfa') ||
+    lower.endsWith('.rgfa.gz')
+  ) {
     return 'rgfa'
   }
   if (lower.endsWith('.maf') || lower.endsWith('.maf.gz')) {
@@ -45,7 +55,11 @@ interface PafPairGroup {
 async function scanPafForPairs(filename: string) {
   const rl = getReadline(filename)
   const pairMap = new Map<string, PafPairGroup>()
-  const assemblyCoverage: { qname: string; tname: string; alignmentLength: number }[] = []
+  const assemblyCoverage: {
+    qname: string
+    tname: string
+    alignmentLength: number
+  }[] = []
 
   for await (const line of rl) {
     if (line.startsWith('#') || line.trim() === '') {
@@ -291,18 +305,20 @@ export async function run(args?: string[]) {
 
     console.log(`Auto-ordered assemblies: ${ordered.join(', ')}`)
 
-    // Build pair data for adjacent pairs in the ordering
+    // Build pair data for all N*(N-1)/2 pairs
     const pairData: { lines: string[]; assemblyNames: [string, string] }[] = []
-    for (let i = 0; i < ordered.length - 1; i++) {
-      const a = ordered[i]!
-      const b = ordered[i + 1]!
-      const key = [a, b].sort().join('\t')
-      const group = pairMap.get(key)
-      if (group) {
-        pairData.push({
-          lines: group.lines,
-          assemblyNames: [a, b],
-        })
+    for (let i = 0; i < ordered.length; i++) {
+      for (let j = i + 1; j < ordered.length; j++) {
+        const a = ordered[i]!
+        const b = ordered[j]!
+        const key = [a, b].sort().join('\t')
+        const group = pairMap.get(key)
+        if (group) {
+          pairData.push({
+            lines: group.lines,
+            assemblyNames: [a, b],
+          })
+        }
       }
     }
 

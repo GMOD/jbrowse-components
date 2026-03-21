@@ -1,4 +1,9 @@
-import { buildGeometry, recolorNodes, brightenColors, extractColorSlice } from './GeometryBuilder.ts'
+import {
+  buildGeometry,
+  recolorNodes,
+  brightenColors,
+  extractColorSlice,
+} from './GeometryBuilder.ts'
 
 const simpleGraph = {
   name: 'test',
@@ -10,8 +15,14 @@ const simpleGraph = {
 }
 
 const simplePositions = {
-  'A+': [{ x: 0, y: 0 }, { x: 10, y: 0 }],
-  'B+': [{ x: 20, y: 0 }, { x: 30, y: 0 }],
+  'A+': [
+    { x: 0, y: 0 },
+    { x: 10, y: 0 },
+  ],
+  'B+': [
+    { x: 20, y: 0 },
+    { x: 30, y: 0 },
+  ],
 }
 
 test('produces non-empty geometry for simple graph', () => {
@@ -43,13 +54,21 @@ test('produces different geometry for different color schemes', () => {
     drawPaths: false,
   }
 
-  const uniformBatch = buildGeometry({ ...opts, colorScheme: 'uniform' as const })
+  const uniformBatch = buildGeometry({
+    ...opts,
+    colorScheme: 'uniform' as const,
+  })
   const depthBatch = buildGeometry({ ...opts, colorScheme: 'depth' as const })
 
-  expect(uniformBatch.nodes.positions.length).toBe(depthBatch.nodes.positions.length)
+  expect(uniformBatch.nodes.positions.length).toBe(
+    depthBatch.nodes.positions.length,
+  )
   let colorsDiffer = false
   for (let i = 0; i < uniformBatch.nodes.colors.length; i++) {
-    if (Math.abs(uniformBatch.nodes.colors[i]! - depthBatch.nodes.colors[i]!) > 0.01) {
+    if (
+      Math.abs(uniformBatch.nodes.colors[i]! - depthBatch.nodes.colors[i]!) >
+      0.01
+    ) {
       colorsDiffer = true
       break
     }

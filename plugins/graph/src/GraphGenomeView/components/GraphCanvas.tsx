@@ -61,9 +61,7 @@ function renderFrame(
     viewportWidth: model.width * dpr,
     viewportHeight: CANVAS_HEIGHT * dpr,
   })
-  renderer.render(
-    darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
-  )
+  renderer.render(darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0])
 }
 
 function computeViewportBounds(model: GraphGenomeViewModel) {
@@ -207,8 +205,12 @@ const GraphCanvas = observer(function GraphCanvas({
             renderer.updateSubBatchColors('nodes', original, range.start)
           }
         }
-        if (prevSelectedNode && prevSelectedNode !== prevHoveredNode &&
-            model.baseNodeColors && model.nodeVertexRanges) {
+        if (
+          prevSelectedNode &&
+          prevSelectedNode !== prevHoveredNode &&
+          model.baseNodeColors &&
+          model.nodeVertexRanges
+        ) {
           const range = model.nodeVertexRanges.get(prevSelectedNode)
           if (range) {
             const original = extractColorSlice(model.baseNodeColors, range)
@@ -238,17 +240,29 @@ const GraphCanvas = observer(function GraphCanvas({
         if (selectedNode && model.baseNodeColors && model.nodeVertexRanges) {
           const range = model.nodeVertexRanges.get(selectedNode)
           if (range) {
-            const brightened = brightenColors(model.baseNodeColors, range, SELECT_BRIGHTEN)
+            const brightened = brightenColors(
+              model.baseNodeColors,
+              range,
+              SELECT_BRIGHTEN,
+            )
             renderer.updateSubBatchColors('nodes', brightened, range.start)
           }
         }
 
         // Apply hovered node highlight
-        if (hoveredNode && hoveredNode !== selectedNode &&
-            model.baseNodeColors && model.nodeVertexRanges) {
+        if (
+          hoveredNode &&
+          hoveredNode !== selectedNode &&
+          model.baseNodeColors &&
+          model.nodeVertexRanges
+        ) {
           const range = model.nodeVertexRanges.get(hoveredNode)
           if (range) {
-            const brightened = brightenColors(model.baseNodeColors, range, HOVER_BRIGHTEN)
+            const brightened = brightenColors(
+              model.baseNodeColors,
+              range,
+              HOVER_BRIGHTEN,
+            )
             renderer.updateSubBatchColors('nodes', brightened, range.start)
           }
         }
@@ -258,14 +272,22 @@ const GraphCanvas = observer(function GraphCanvas({
           if (model.baseEdgeColors && model.edgeVertexRanges) {
             const range = model.edgeVertexRanges.get(hoveredEdge)
             if (range) {
-              const brightened = brightenColors(model.baseEdgeColors, range, HOVER_BRIGHTEN)
+              const brightened = brightenColors(
+                model.baseEdgeColors,
+                range,
+                HOVER_BRIGHTEN,
+              )
               renderer.updateSubBatchColors('edges', brightened, range.start)
             }
           }
           if (model.baseArrowColors && model.arrowVertexRanges) {
             const range = model.arrowVertexRanges.get(hoveredEdge)
             if (range) {
-              const brightened = brightenColors(model.baseArrowColors, range, HOVER_BRIGHTEN)
+              const brightened = brightenColors(
+                model.baseArrowColors,
+                range,
+                HOVER_BRIGHTEN,
+              )
               renderer.updateSubBatchColors('arrows', brightened, range.start)
             }
           }
@@ -324,7 +346,12 @@ const GraphCanvas = observer(function GraphCanvas({
       () => model.colorScheme,
       colorScheme => {
         const renderer = rendererRef.current
-        if (!renderer || !model.graph || !model.nodeVertexRanges || !model.baseNodeColors) {
+        if (
+          !renderer ||
+          !model.graph ||
+          !model.nodeVertexRanges ||
+          !model.baseNodeColors
+        ) {
           return
         }
         if (colorScheme !== prevColorScheme) {
@@ -369,20 +396,34 @@ const GraphCanvas = observer(function GraphCanvas({
       const dx = e.clientX - lastMouseRef.current.x
       const dy = e.clientY - lastMouseRef.current.y
       lastMouseRef.current = { x: e.clientX, y: e.clientY }
-      model.setTransform(model.scale, model.translateX + dx, model.translateY + dy)
+      model.setTransform(
+        model.scale,
+        model.translateX + dx,
+        model.translateY + dy,
+      )
     } else if (model.nodePositions && model.graph) {
       const rect = canvasRef.current?.getBoundingClientRect()
       if (!rect) {
         return
       }
-      const { x, y } = screenToGraph(e.clientX - rect.left, e.clientY - rect.top)
+      const { x, y } = screenToGraph(
+        e.clientX - rect.left,
+        e.clientY - rect.top,
+      )
 
       const node = findHoveredNode(model.nodePositions, x, y, model.scale)
       model.setHoveredNode(node)
       model.setHoveredEdge(
         node
           ? null
-          : findHoveredEdge(model.nodePositions, model.graph, x, y, model.scale, model.drawPaths),
+          : findHoveredEdge(
+              model.nodePositions,
+              model.graph,
+              x,
+              y,
+              model.scale,
+              model.drawPaths,
+            ),
       )
     }
   }
@@ -403,8 +444,13 @@ const GraphCanvas = observer(function GraphCanvas({
       if (!rect) {
         return
       }
-      const { x, y } = screenToGraph(e.clientX - rect.left, e.clientY - rect.top)
-      model.setSelectedNode(findHoveredNode(model.nodePositions, x, y, model.scale))
+      const { x, y } = screenToGraph(
+        e.clientX - rect.left,
+        e.clientY - rect.top,
+      )
+      model.setSelectedNode(
+        findHoveredNode(model.nodePositions, x, y, model.scale),
+      )
     }
   }
 
@@ -414,7 +460,11 @@ const GraphCanvas = observer(function GraphCanvas({
     if (!rect) {
       return
     }
-    model.zoom(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX - rect.left, e.clientY - rect.top)
+    model.zoom(
+      e.deltaY < 0 ? 1.1 : 1 / 1.1,
+      e.clientX - rect.left,
+      e.clientY - rect.top,
+    )
   }
 
   const hoveredNodeData =
@@ -487,17 +537,28 @@ const GraphCanvas = observer(function GraphCanvas({
         </Tooltip>
 
         <Tooltip title="Zoom in">
-          <IconButton size="small" onClick={() => model.zoom(1.5, model.width / 2, CANVAS_HEIGHT / 2)}>
+          <IconButton
+            size="small"
+            onClick={() => model.zoom(1.5, model.width / 2, CANVAS_HEIGHT / 2)}
+          >
             <ZoomInIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Zoom out">
-          <IconButton size="small" onClick={() => model.zoom(1 / 1.5, model.width / 2, CANVAS_HEIGHT / 2)}>
+          <IconButton
+            size="small"
+            onClick={() =>
+              model.zoom(1 / 1.5, model.width / 2, CANVAS_HEIGHT / 2)
+            }
+          >
             <ZoomOutIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Zoom to fit">
-          <IconButton size="small" onClick={() => model.zoomToFit(CANVAS_HEIGHT)}>
+          <IconButton
+            size="small"
+            onClick={() => model.zoomToFit(CANVAS_HEIGHT)}
+          >
             <CropFreeIcon />
           </IconButton>
         </Tooltip>
@@ -533,10 +594,7 @@ const GraphCanvas = observer(function GraphCanvas({
           }}
         >
           <Typography>{model.statusMessage || 'Loading...'}</Typography>
-          <LinearProgress
-            variant="indeterminate"
-            style={{ marginTop: 8 }}
-          />
+          <LinearProgress variant="indeterminate" style={{ marginTop: 8 }} />
         </div>
       ) : null}
 

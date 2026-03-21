@@ -30,9 +30,7 @@ const GenomeSubsetSelector = observer(function GenomeSubsetSelector({
 
   const allNames = model.allGenomeNames
   const selected = new Set(
-    model.selectedGenomes.length > 0
-      ? [...model.selectedGenomes]
-      : allNames,
+    model.selectedGenomes.length > 0 ? [...model.selectedGenomes] : allNames,
   )
 
   const filtered = filter

@@ -137,10 +137,7 @@
             { "assembly": "volvox_ins", "loc": "ctgA" },
             { "assembly": "volvox_del", "loc": "ctgA" }
           ],
-          "tracks": [
-            ["volvox_ins_synteny_pif"],
-            ["volvox_del_synteny_pif"]
-          ]
+          "tracks": [["volvox_ins_synteny_pif"], ["volvox_del_synteny_pif"]]
         }
       }
     ]

@@ -40,9 +40,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     pluginManager.addRpcMethod(
       () => new SyntenyGetFeaturesAndPositions(pluginManager),
     )
-    pluginManager.addRpcMethod(
-      () => new MultiPairGetFeatures(pluginManager),
-    )
+    pluginManager.addRpcMethod(() => new MultiPairGetFeatures(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

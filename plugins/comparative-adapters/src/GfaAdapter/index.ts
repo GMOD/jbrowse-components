@@ -15,8 +15,7 @@ export default function GfaAdapterF(pluginManager: PluginManager) {
           category: 'Synteny adapters',
           hiddenFromGUI: true,
         },
-        getAdapterClass: () =>
-          import('./GfaAdapter.ts').then(r => r.default),
+        getAdapterClass: () => import('./GfaAdapter.ts').then(r => r.default),
       }),
   )
 }

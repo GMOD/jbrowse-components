@@ -120,11 +120,7 @@ const LinearComparativeRenderArea = observer(
         {views.map((view, i) => (
           <Fragment key={view.id}>
             {i > 0 ? (
-              <LevelSection
-                model={model}
-                levelIdx={i - 1}
-                classes={classes}
-              />
+              <LevelSection model={model} levelIdx={i - 1} classes={classes} />
             ) : null}
             {model.isViewCompact(i) ? (
               <CompactViewBar model={model} viewIdx={i} />
@@ -152,7 +148,9 @@ const LevelSection = observer(function LevelSection({
 
   if (isCollapsed) {
     return (
-      <Tooltip title={`Expand level ${levelIdx + 1} (${model.views[levelIdx]!.assemblyNames[0]} ↔ ${model.views[levelIdx + 1]!.assemblyNames[0]})`}>
+      <Tooltip
+        title={`Expand level ${levelIdx + 1} (${model.views[levelIdx]!.assemblyNames[0]} ↔ ${model.views[levelIdx + 1]!.assemblyNames[0]})`}
+      >
         <div
           className={classes.collapsedBar}
           onClick={() => level.toggleCollapsed()}

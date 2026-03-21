@@ -2,9 +2,7 @@ import path from 'path'
 import { parseArgs } from 'util'
 
 import { printHelp } from '../../utils.ts'
-import {
-  validateFileArgument,
-} from '../shared/validators.ts'
+import { validateFileArgument } from '../shared/validators.ts'
 
 import { createGfaDatabase, populateFromGfa } from './gfa-to-sqlite.ts'
 

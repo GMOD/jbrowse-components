@@ -197,7 +197,7 @@ fn main() {
 
     eprintln!("Indexing with tabix...");
     run_tabix(&pos_file);
-    run_tabix(&segs_file);
+    run_tabix_segs(&segs_file);
 
     eprintln!("Done.");
     eprintln!("  Segments: {}", seg_lengths.len());
@@ -273,9 +273,8 @@ fn process_walk(
 
         writeln!(
             segs_w,
-            "S\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            "S\t{}\t{}\t{}\t{}\t{}\t{}",
             ord,
-            ord + 1,
             path_name,
             offset,
             seg_len,
@@ -344,9 +343,8 @@ fn process_p_line(
 
         writeln!(
             segs_w,
-            "S\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            "S\t{}\t{}\t{}\t{}\t{}\t{}",
             ord,
-            ord + 1,
             path_name,
             offset,
             seg_len,
@@ -404,6 +402,16 @@ fn get_or_assign_ordinal(
 fn run_tabix(file: &str) {
     let status = Command::new("tabix")
         .args(["-c", "#", "-p", "bed", file])
+        .status()
+        .unwrap_or_else(|_| panic!("Failed to run tabix on {}", file));
+    if !status.success() {
+        eprintln!("Warning: tabix failed for {}", file);
+    }
+}
+
+fn run_tabix_segs(file: &str) {
+    let status = Command::new("tabix")
+        .args(["-0", "-s", "1", "-b", "2", "-e", "2", "-c", "#", file])
         .status()
         .unwrap_or_else(|_| panic!("Failed to run tabix on {}", file));
     if !status.success() {

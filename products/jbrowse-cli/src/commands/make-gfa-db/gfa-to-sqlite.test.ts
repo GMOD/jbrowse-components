@@ -57,7 +57,9 @@ describe('GFA to SQLite conversion', () => {
       const db = createGfaDatabase(dbPath)
       await populateFromGfa(db, GFA_FILE)
 
-      const seg = db.prepare('SELECT * FROM segments WHERE id = ?').get('s0') as {
+      const seg = db
+        .prepare('SELECT * FROM segments WHERE id = ?')
+        .get('s0') as {
         id: string
         length: number
       }
@@ -74,9 +76,12 @@ describe('GFA to SQLite conversion', () => {
       const db = createGfaDatabase(dbPath)
       await populateFromGfa(db, GFA_FILE)
 
-      const paths = db
-        .prepare('SELECT * FROM paths ORDER BY name')
-        .all() as { name: string; sample: string; sequence: string; total_length: number }[]
+      const paths = db.prepare('SELECT * FROM paths ORDER BY name').all() as {
+        name: string
+        sample: string
+        sequence: string
+        total_length: number
+      }[]
       expect(paths.length).toBe(4)
       expect(paths.map(p => p.sample).sort()).toEqual(
         ['ref#1', 'sample1#1', 'sample2#1', 'sample3#1'].sort(),

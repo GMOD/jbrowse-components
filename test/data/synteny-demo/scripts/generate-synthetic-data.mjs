@@ -5,7 +5,8 @@
 import fs from 'fs'
 import path from 'path'
 
-const outDir = process.argv[2] || path.join(import.meta.dirname, '..', 'synthetic')
+const outDir =
+  process.argv[2] || path.join(import.meta.dirname, '..', 'synthetic')
 fs.mkdirSync(outDir, { recursive: true })
 
 function generateChromosomes(assemblyName, numChrs, baseLengths) {
@@ -103,9 +104,7 @@ fs.writeFileSync(
 
 // 8-genome dataset (larger, for scalability testing)
 console.log('Generating 8-genome synthetic dataset...')
-const baseLens8 = [
-  50_000_000, 40_000_000, 35_000_000, 30_000_000, 25_000_000,
-]
+const baseLens8 = [50_000_000, 40_000_000, 35_000_000, 30_000_000, 25_000_000]
 const names8 = [
   'species1',
   'species2',
@@ -130,18 +129,13 @@ for (let i = 0; i < assemblies8.length - 1; i++) {
     paf8Lines.push(line)
   }
 }
-fs.writeFileSync(
-  path.join(outDir, 'synthetic_8way.paf'),
-  paf8Lines.join('\n'),
-)
+fs.writeFileSync(path.join(outDir, 'synthetic_8way.paf'), paf8Lines.join('\n'))
 
 // All-vs-all PAF (5 genomes, all pairs)
 console.log('Generating all-vs-all synthetic dataset...')
 const baseLensAll = [20_000_000, 15_000_000]
 const namesAll = ['alpha', 'beta', 'gamma', 'delta', 'epsilon']
-const assembliesAll = namesAll.map(n =>
-  generateChromosomes(n, 2, baseLensAll),
-)
+const assembliesAll = namesAll.map(n => generateChromosomes(n, 2, baseLensAll))
 
 const pafAllLines = []
 for (let i = 0; i < assembliesAll.length; i++) {
@@ -202,7 +196,12 @@ for (const v of variantSegments) {
 }
 
 // Paths for 4 genomes
-const genomeNames = ['ref#1#chr1', 'sample1#1#chr1', 'sample2#1#chr1', 'sample3#1#chr1']
+const genomeNames = [
+  'ref#1#chr1',
+  'sample1#1#chr1',
+  'sample2#1#chr1',
+  'sample3#1#chr1',
+]
 for (let g = 0; g < genomeNames.length; g++) {
   const steps = []
   for (let i = 0; i < segmentCount; i++) {
@@ -223,7 +222,8 @@ fs.writeFileSync(
 
 // Generate FAI-like chromosome length files for assemblies
 for (const name of ['genomeA', 'genomeB', 'genomeC']) {
-  const chrs = name === 'genomeA' ? asm3_A : name === 'genomeB' ? asm3_B : asm3_C
+  const chrs =
+    name === 'genomeA' ? asm3_A : name === 'genomeB' ? asm3_B : asm3_C
   const fai = chrs.map(c => `${c.name}\t${c.length}`).join('\n')
   fs.writeFileSync(path.join(outDir, `${name}.chrom.sizes`), fai)
 }

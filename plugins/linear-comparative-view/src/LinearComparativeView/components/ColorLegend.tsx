@@ -30,7 +30,10 @@ const ColorLegend = observer(function ColorLegend({
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mx: 1 }}>
       {syriLegendItems.map(item => (
-        <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+        <Box
+          key={item.label}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}
+        >
           <Box
             sx={{
               width: 12,

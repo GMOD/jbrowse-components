@@ -17,10 +17,7 @@ function parseCigarOverlap(cigar: string) {
   }, 0)
 }
 
-export function convertGFAToGraph(
-  gfaGraph: GFAGraph,
-  name = 'Imported GFA',
-) {
+export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
 

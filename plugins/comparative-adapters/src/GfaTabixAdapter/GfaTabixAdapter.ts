@@ -1,3 +1,4 @@
+import { BgzfFilehandle } from '@gmod/bgzf-filehandle'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -13,6 +14,7 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 interface SegRecord {
   segOrd: number
@@ -45,7 +47,9 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private posFile: TabixIndexedFile
-  private segsFile: TabixIndexedFile
+  private segsBgzf: BgzfFilehandle
+  private segsIdxFile: GenericFilehandle
+  private segsIdxPromise?: Promise<BigUint64Array>
   private alnFile?: TabixIndexedFile
   private alnAvailablePromise?: Promise<boolean>
   private headerPromise?: Promise<ParsedHeader>
@@ -67,14 +71,15 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
-    const segsLoc = this.getConf('segsLocation') as FileLocation
-    const segsIdxLoc = this.getConf(['segsIndex', 'location']) as FileLocation
+    const segsLoc = this.getConf('segmentsLocation') as FileLocation
+    const segsGziLoc = this.getConf('segmentsGziLocation') as FileLocation
+    const segsIdxLoc = this.getConf('segmentsIdxLocation') as FileLocation
 
-    this.segsFile = new TabixIndexedFile({
+    this.segsBgzf = new BgzfFilehandle({
       filehandle: openLocation(segsLoc, pm),
-      tbiFilehandle: openLocation(segsIdxLoc, pm),
-      chunkCacheSize: 50 * 2 ** 20,
+      gziFilehandle: openLocation(segsGziLoc, pm),
     })
+    this.segsIdxFile = openLocation(segsIdxLoc, pm)
 
     const alnLoc = this.getConf('alnLocation') as FileLocation | undefined
     if (alnLoc && 'uri' in alnLoc && alnLoc.uri !== '') {
@@ -85,6 +90,45 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
         chunkCacheSize: 50 * 2 ** 20,
       })
     }
+  }
+
+  private async getSegsIndex() {
+    if (!this.segsIdxPromise) {
+      this.segsIdxPromise = this.segsIdxFile.readFile().then(buf => {
+        const aligned = new ArrayBuffer(buf.byteLength)
+        new Uint8Array(aligned).set(buf)
+        return new BigUint64Array(aligned)
+      })
+    }
+    return this.segsIdxPromise
+  }
+
+  private async getSegsForRange(minSegOrd: number, maxSegOrd: number) {
+    const idx = await this.getSegsIndex()
+    const startOffset = Number(idx[minSegOrd] ?? 0n)
+    const endOffset = Number(idx[Math.min(maxSegOrd + 1, idx.length - 1)] ?? 0n)
+    const length = endOffset - startOffset
+    if (length <= 0) {
+      return [] as SegRecord[]
+    }
+    const bytes = await this.segsBgzf.read(length, startOffset)
+    const text = new TextDecoder().decode(bytes)
+    const records: SegRecord[] = []
+    for (const line of text.split('\n')) {
+      if (line.length === 0 || line.startsWith('#')) {
+        continue
+      }
+      const cols = line.split('\t')
+      records.push({
+        segOrd: +cols[0]!,
+        pathName: cols[1]!,
+        offset: +cols[2]!,
+        segLen: +cols[3]!,
+        orient: cols[4]!,
+        segId: cols[5]!,
+      })
+    }
+    return records
   }
 
   private async isAlnAvailable() {
@@ -233,7 +277,13 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
                 i += 3
               } else if (ch === '+' || ch === '-') {
                 i++
-                while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+                while (
+                  i < cs.length &&
+                  cs[i] !== ':' &&
+                  cs[i] !== '*' &&
+                  cs[i] !== '+' &&
+                  cs[i] !== '-'
+                ) {
                   i++
                 }
               } else {
@@ -305,32 +355,21 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
       return { genomeNames: [] as string[], genomeRows }
     }
 
-    // Step 2: Query segs.bed.gz for segment range → all genome positions
+    // Step 2: Query segs for segment range → all genome positions
+    const allSegs = await this.getSegsForRange(minSegOrd, maxSegOrd)
     const refSegments: SegRecord[] = []
     const otherSegments = new Map<string, SegRecord[]>()
 
-    await this.segsFile.getLines('S', minSegOrd, maxSegOrd + 1, {
-      lineCallback: line => {
-        const cols = line.split('\t')
-        const rec: SegRecord = {
-          segOrd: +cols[1]!,
-          pathName: cols[3]!,
-          offset: +cols[4]!,
-          segLen: +cols[5]!,
-          orient: cols[6]!,
-          segId: cols[7]!,
+    for (const rec of allSegs) {
+      if (rec.pathName === refPathName) {
+        refSegments.push(rec)
+      } else {
+        if (!otherSegments.has(rec.pathName)) {
+          otherSegments.set(rec.pathName, [])
         }
-
-        if (rec.pathName === refPathName) {
-          refSegments.push(rec)
-        } else {
-          if (!otherSegments.has(rec.pathName)) {
-            otherSegments.set(rec.pathName, [])
-          }
-          otherSegments.get(rec.pathName)!.push(rec)
-        }
-      },
-    })
+        otherSegments.get(rec.pathName)!.push(rec)
+      }
+    }
 
     const refSegOrdSet = new Set(refSegments.map(s => s.segOrd))
     const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
@@ -432,8 +471,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
         }
 
         const refGap = rs - me
-        const queryGap =
-          mStrand === 1 ? qs - mme : mms - qe
+        const queryGap = mStrand === 1 ? qs - mme : mms - qe
 
         if (refGap < 0 || queryGap < 0) {
           emit()

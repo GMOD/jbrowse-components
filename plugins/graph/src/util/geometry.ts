@@ -69,39 +69,69 @@ export function computeEdgeCurves(
 
     return [
       {
-        x0: p1x, y0: p1y,
-        cx0: cp1x, cy0: cp1y,
-        cx1: cp1x + perpX * ext, cy1: cp1y + perpY * ext,
-        x1: midX, y1: midY,
+        x0: p1x,
+        y0: p1y,
+        cx0: cp1x,
+        cy0: cp1y,
+        cx1: cp1x + perpX * ext,
+        cy1: cp1y + perpY * ext,
+        x1: midX,
+        y1: midY,
       },
       {
-        x0: midX, y0: midY,
-        cx0: cp2x + perpX * ext, cy0: cp2y + perpY * ext,
-        cx1: cp2x, cy1: cp2y,
-        x1: p2x, y1: p2y,
+        x0: midX,
+        y0: midY,
+        cx0: cp2x + perpX * ext,
+        cy0: cp2y + perpY * ext,
+        cx1: cp2x,
+        cy1: cp2y,
+        x1: p2x,
+        y1: p2y,
       },
     ]
   } else {
     const fromPrev =
       fromSegments.length >= 2
         ? fromSegments[fromSegments.length - 2]!
-        : { x: fromEnd.x - (toStart.x - fromEnd.x), y: fromEnd.y - (toStart.y - fromEnd.y) }
+        : {
+            x: fromEnd.x - (toStart.x - fromEnd.x),
+            y: fromEnd.y - (toStart.y - fromEnd.y),
+          }
     const toNext =
       toSegments.length >= 2
         ? toSegments[1]!
-        : { x: toStart.x - (fromEnd.x - toStart.x), y: toStart.y - (fromEnd.y - toStart.y) }
+        : {
+            x: toStart.x - (fromEnd.x - toStart.x),
+            y: toStart.y - (fromEnd.y - toStart.y),
+          }
 
     const dist = Math.hypot(p2x - p1x, p2y - p1y)
     const projDist = Math.min(dist * 0.5, 80)
-    const [cx1, cy1] = projectLine(fromPrev.x, fromPrev.y, fromEnd.x, fromEnd.y, projDist)
-    const [cx2, cy2] = projectLine(toNext.x, toNext.y, toStart.x, toStart.y, projDist)
+    const [cx1, cy1] = projectLine(
+      fromPrev.x,
+      fromPrev.y,
+      fromEnd.x,
+      fromEnd.y,
+      projDist,
+    )
+    const [cx2, cy2] = projectLine(
+      toNext.x,
+      toNext.y,
+      toStart.x,
+      toStart.y,
+      projDist,
+    )
 
     return [
       {
-        x0: p1x, y0: p1y,
-        cx0: cx1 + offsetX, cy0: cy1 + offsetY,
-        cx1: cx2 + offsetX, cy1: cy2 + offsetY,
-        x1: p2x, y1: p2y,
+        x0: p1x,
+        y0: p1y,
+        cx0: cx1 + offsetX,
+        cy0: cy1 + offsetY,
+        cx1: cx2 + offsetX,
+        cy1: cy2 + offsetY,
+        x1: p2x,
+        y1: p2y,
       },
     ]
   }

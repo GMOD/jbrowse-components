@@ -116,11 +116,9 @@ test('handles multiple alignment blocks', async () => {
 })
 
 test('skips blocks with fewer than 2 sequences', async () => {
-  const data = [
-    'a score=100',
-    's hg38.chr1 0 10 + 100 ACGTACGTAC',
-    '',
-  ].join('\n')
+  const data = ['a score=100', 's hg38.chr1 0 10 + 100 ACGTACGTAC', ''].join(
+    '\n',
+  )
 
   const tmpFile = writeTmp(data)
   const records = await parseMaf(tmpFile)

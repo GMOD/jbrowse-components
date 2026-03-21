@@ -13,9 +13,7 @@ interface MultiPairAdapter {
     genomeNames: string[]
     genomeRows: Map<string, MultiPairFeature[]>
   }>
-  getChromSizes?(): Promise<
-    Map<string, { refName: string; length: number }[]>
-  >
+  getChromSizes?(): Promise<Map<string, { refName: string; length: number }[]>>
 }
 
 export interface MultiPairGetFeaturesArgs {
@@ -52,10 +50,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
     return args
   }
 
-  async execute(
-    args: MultiPairGetFeaturesArgs,
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: MultiPairGetFeaturesArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
@@ -76,7 +71,9 @@ export class MultiPairGetFeatures extends RpcMethodType {
     )
     const adapter = dataAdapter as unknown as MultiPairAdapter
 
-    let chromSizes: [string, { refName: string; length: number }[]][] | undefined
+    let chromSizes:
+      | [string, { refName: string; length: number }[]][]
+      | undefined
     if (fetchChromSizes && adapter.getChromSizes) {
       const sizesMap = await adapter.getChromSizes()
       chromSizes = [...sizesMap.entries()]
@@ -86,8 +83,10 @@ export class MultiPairGetFeatures extends RpcMethodType {
     let allGenomeNames: string[] = []
 
     for (const region of regions) {
-      const { genomeNames, genomeRows } =
-        await adapter.getMultiPairFeatures(region, { bpPerPx, stopToken })
+      const { genomeNames, genomeRows } = await adapter.getMultiPairFeatures(
+        region,
+        { bpPerPx, stopToken },
+      )
 
       if (allGenomeNames.length === 0) {
         allGenomeNames = genomeNames

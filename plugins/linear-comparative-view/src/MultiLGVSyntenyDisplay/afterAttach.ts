@@ -76,15 +76,18 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
               end: block.end,
             }))
 
-            const result: MultiPairGetFeaturesResult =
-              await rpcManager.call(sessionId, 'MultiPairGetFeatures', {
+            const result: MultiPairGetFeaturesResult = await rpcManager.call(
+              sessionId,
+              'MultiPairGetFeatures',
+              {
                 adapterConfig,
                 regions,
                 bpPerPx,
                 sessionId,
                 stopToken: thisStopToken,
                 fetchChromSizes: !assembliesCreated,
-              })
+              },
+            )
 
             if (thisStopToken !== currentStopToken || !isAlive(self)) {
               return

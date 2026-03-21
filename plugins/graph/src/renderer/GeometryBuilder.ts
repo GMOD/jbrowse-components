@@ -211,15 +211,20 @@ function tessellateCubicBezier(
   return points
 }
 
-function tessellateBezierCurves(
-  curves: BezierCurve[],
-  flatness: number,
-) {
+function tessellateBezierCurves(curves: BezierCurve[], flatness: number) {
   let allPoints: { x: number; y: number }[] = []
   for (let i = 0; i < curves.length; i++) {
     const c = curves[i]!
     const pts = tessellateCubicBezier(
-      c.x0, c.y0, c.cx0, c.cy0, c.cx1, c.cy1, c.x1, c.y1, flatness,
+      c.x0,
+      c.y0,
+      c.cx0,
+      c.cy0,
+      c.cx1,
+      c.cy1,
+      c.x1,
+      c.y1,
+      flatness,
     )
     if (i > 0) {
       allPoints = allPoints.concat(pts.slice(1))
@@ -235,8 +240,12 @@ function isSegmentInBounds(
   bounds: { minX: number; minY: number; maxX: number; maxY: number },
 ) {
   for (const seg of segments) {
-    if (seg.x >= bounds.minX && seg.x <= bounds.maxX &&
-        seg.y >= bounds.minY && seg.y <= bounds.maxY) {
+    if (
+      seg.x >= bounds.minX &&
+      seg.x <= bounds.maxX &&
+      seg.y >= bounds.minY &&
+      seg.y <= bounds.maxY
+    ) {
       return true
     }
   }
@@ -252,8 +261,12 @@ function isBezierInBounds(
     const cMaxX = Math.max(c.x0, c.cx0, c.cx1, c.x1)
     const cMinY = Math.min(c.y0, c.cy0, c.cy1, c.y1)
     const cMaxY = Math.max(c.y0, c.cy0, c.cy1, c.y1)
-    if (cMaxX >= bounds.minX && cMinX <= bounds.maxX &&
-        cMaxY >= bounds.minY && cMinY <= bounds.maxY) {
+    if (
+      cMaxX >= bounds.minX &&
+      cMinX <= bounds.maxX &&
+      cMaxY >= bounds.minY &&
+      cMinY <= bounds.maxY
+    ) {
       return true
     }
   }
@@ -297,9 +310,12 @@ class MeshBuilder {
     for (let i = 0; i <= capSegments; i++) {
       const a = angle + startAngleOffset + (Math.PI * i) / capSegments
       this.pushVertex(
-        center.x, center.y,
-        Math.cos(a), Math.sin(a),
-        thickness, color,
+        center.x,
+        center.y,
+        Math.cos(a),
+        Math.sin(a),
+        thickness,
+        color,
       )
       if (i > 0) {
         this.indices.push(centerIdx, this.vertexCount - 2, this.vertexCount - 1)
@@ -371,7 +387,13 @@ class MeshBuilder {
     const startDx = points[1]!.x - points[0]!.x
     const startDy = points[1]!.y - points[0]!.y
     if (Math.hypot(startDx, startDy) > 0) {
-      this.addRoundCap(points[0]!, Math.atan2(startDy, startDx), Math.PI / 2, thickness, color)
+      this.addRoundCap(
+        points[0]!,
+        Math.atan2(startDy, startDx),
+        Math.PI / 2,
+        thickness,
+        color,
+      )
     }
 
     const stripStart = this.vertexCount
@@ -392,7 +414,13 @@ class MeshBuilder {
     const endDx = points[lastIdx]!.x - points[lastIdx - 1]!.x
     const endDy = points[lastIdx]!.y - points[lastIdx - 1]!.y
     if (Math.hypot(endDx, endDy) > 0) {
-      this.addRoundCap(points[lastIdx]!, Math.atan2(endDy, endDx), -Math.PI / 2, thickness, color)
+      this.addRoundCap(
+        points[lastIdx]!,
+        Math.atan2(endDy, endDx),
+        -Math.PI / 2,
+        thickness,
+        color,
+      )
     }
   }
 
@@ -404,9 +432,27 @@ class MeshBuilder {
     color: [number, number, number, number],
   ) {
     this.pushVertex(x, y, 0, 0, 0, color)
-    this.pushVertex(x, y, -Math.cos(angle - 0.5), -Math.sin(angle - 0.5), size, color)
-    this.pushVertex(x, y, -Math.cos(angle + 0.5), -Math.sin(angle + 0.5), size, color)
-    this.indices.push(this.vertexCount - 3, this.vertexCount - 2, this.vertexCount - 1)
+    this.pushVertex(
+      x,
+      y,
+      -Math.cos(angle - 0.5),
+      -Math.sin(angle - 0.5),
+      size,
+      color,
+    )
+    this.pushVertex(
+      x,
+      y,
+      -Math.cos(angle + 0.5),
+      -Math.sin(angle + 0.5),
+      size,
+      color,
+    )
+    this.indices.push(
+      this.vertexCount - 3,
+      this.vertexCount - 2,
+      this.vertexCount - 1,
+    )
   }
 
   toSubBatch(): SubBatch {
@@ -475,7 +521,13 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       offsetY: number,
       color: [number, number, number, number],
     ) => {
-      const curves = computeEdgeCurves(fromSegments, toSegments, isSelfLoop, offsetX, offsetY)
+      const curves = computeEdgeCurves(
+        fromSegments,
+        toSegments,
+        isSelfLoop,
+        offsetX,
+        offsetY,
+      )
 
       if (viewportBounds && !isBezierInBounds(curves, viewportBounds)) {
         return
@@ -487,9 +539,11 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
       const lastPt = allPoints[allPoints.length - 1]!
       const prevPt = allPoints[allPoints.length - 2]!
       arrowMesh.addArrowhead(
-        lastPt.x, lastPt.y,
+        lastPt.x,
+        lastPt.y,
         Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x),
-        12, color,
+        12,
+        color,
       )
     }
 
@@ -497,7 +551,9 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
     const arrowStart = arrowMesh.vertexCount
 
     if (!drawPaths || numPaths === 0) {
-      const edgeColor: [number, number, number, number] = [0.467, 0.467, 0.467, 0.85]
+      const edgeColor: [number, number, number, number] = [
+        0.467, 0.467, 0.467, 0.85,
+      ]
       buildSingleEdge(0, 0, edgeColor)
     } else {
       const dx = toStart.x - fromEnd.x

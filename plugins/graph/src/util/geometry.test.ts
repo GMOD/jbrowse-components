@@ -28,8 +28,14 @@ describe('projectLine', () => {
 
 describe('computeEdgeCurves', () => {
   test('returns single curve for normal edge', () => {
-    const from = [{ x: 0, y: 0 }, { x: 10, y: 0 }]
-    const to = [{ x: 20, y: 0 }, { x: 30, y: 0 }]
+    const from = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ]
+    const to = [
+      { x: 20, y: 0 },
+      { x: 30, y: 0 },
+    ]
     const curves = computeEdgeCurves(from, to, false, 0, 0)
 
     expect(curves).toHaveLength(1)
@@ -40,7 +46,10 @@ describe('computeEdgeCurves', () => {
   })
 
   test('returns two curves for self-loop', () => {
-    const segments = [{ x: 0, y: 0 }, { x: 10, y: 0 }]
+    const segments = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ]
     const curves = computeEdgeCurves(segments, segments, true, 0, 0)
 
     expect(curves).toHaveLength(2)
@@ -49,8 +58,14 @@ describe('computeEdgeCurves', () => {
   })
 
   test('applies offset to curve endpoints', () => {
-    const from = [{ x: 0, y: 0 }, { x: 10, y: 0 }]
-    const to = [{ x: 20, y: 0 }, { x: 30, y: 0 }]
+    const from = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ]
+    const to = [
+      { x: 20, y: 0 },
+      { x: 30, y: 0 },
+    ]
     const curves = computeEdgeCurves(from, to, false, 0, 5)
 
     expect(curves[0]!.y0).toBeCloseTo(5)

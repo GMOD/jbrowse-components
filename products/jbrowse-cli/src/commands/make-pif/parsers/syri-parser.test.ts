@@ -33,7 +33,17 @@ test('parses basic SyRI alignment entries', async () => {
   const data = [
     syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYNAL1', 'SYN1', 'SYNAL'),
     syriLine('chr1', 6000, 8000, 'chr1', 8000, 6000, 'INVAL1', 'INV1', 'INVAL'),
-    syriLine('chr2', 100, 3000, 'chr3', 500, 3400, 'TRANSAL1', 'TRANS1', 'TRANSAL'),
+    syriLine(
+      'chr2',
+      100,
+      3000,
+      'chr3',
+      500,
+      3400,
+      'TRANSAL1',
+      'TRANS1',
+      'TRANSAL',
+    ),
     // SYN parent entry should be skipped
     syriLine('chr1', 100, 5000, 'chr1', 200, 5100, 'SYN1', '-', 'SYN'),
   ].join('\n')
@@ -106,7 +116,17 @@ test('skips NOTAL entries (no query mapping)', async () => {
 })
 
 test('handles HDR entries', async () => {
-  const data = syriLine('chr1', 100, 200, 'chr1', 150, 250, 'HDR1', 'SYN1', 'HDR')
+  const data = syriLine(
+    'chr1',
+    100,
+    200,
+    'chr1',
+    150,
+    250,
+    'HDR1',
+    'SYN1',
+    'HDR',
+  )
 
   const tmpFile = writeTmp(data)
   const records = await parseSyriOutput(tmpFile)

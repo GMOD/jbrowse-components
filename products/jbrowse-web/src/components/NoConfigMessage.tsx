@@ -1,11 +1,5 @@
-function configLink(
-  root: string,
-  rest: Record<string, string>,
-  link: string,
-) {
-  const params = new URLSearchParams(
-    Object.entries({ ...rest, config: link }),
-  )
+function configLink(root: string, rest: Record<string, string>, link: string) {
+  const params = new URLSearchParams(Object.entries({ ...rest, config: link }))
   return `${root}?${params}`
 }
 
@@ -84,6 +78,10 @@ const syntenyConfigs: [string, string][] = [
     'Arabidopsis 4-way synteny (Col-0, Ler, Cvi, Eri)',
   ],
   [
+    'test_data/arabidopsis_synteny/config_pggb_chr1.json',
+    'Arabidopsis chr1 pangenome (PGGB, 4 ecotypes, GFA tabix)',
+  ],
+  [
     'test_data/arabidopsis_synteny/config_chrM_pangenome.json',
     'Human chrM pangenome (4 genomes, GFA tabix)',
   ],
@@ -99,10 +97,7 @@ const syntenyConfigs: [string, string][] = [
     'test_data/config_gfa_pangenome.json',
     'Volvox GFA pangenome (4 genomes, with cs tags)',
   ],
-  [
-    'test_data/config_graph_genome.json',
-    'Graph genome viewer (GFA)',
-  ],
+  ['test_data/config_graph_genome.json', 'Graph genome viewer (GFA)'],
   ['test_data/hs1_vs_mm39/config.json', 'Human (hs1) vs Mouse (mm39) synteny'],
   ['test_data/hg19_vs_hg38/config.json', 'hg19 vs hg38 liftover synteny'],
 ]
@@ -114,11 +109,13 @@ const demoSessions: { href: string; label: string }[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=share-pjaAq1hNxB&password=Z9teR',
-    label: 'SKBR3 breast cancer cell line - breakpoint split view translocation',
+    label:
+      'SKBR3 breast cancer cell line - breakpoint split view translocation',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-XyL52LPDoO&password=861E4',
-    label: 'Human instance coloring methylation/modifications on nanopore reads',
+    label:
+      'Human instance coloring methylation/modifications on nanopore reads',
   },
   {
     href: '?config=test_data/breakpoint/config.json&session=share-xeUuLRakik&password=vh0ca',

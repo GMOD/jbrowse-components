@@ -114,7 +114,12 @@ export async function populateFromGfa(
           orient: match[1] === '>' ? '+' : '-',
         })
       }
-      allPaths.push({ sample: `${sample}#${haplotype}`, haplotype, sequence, steps })
+      allPaths.push({
+        sample: `${sample}#${haplotype}`,
+        haplotype,
+        sequence,
+        steps,
+      })
     } else if (line.startsWith('P\t')) {
       const parts = line.split('\t')
       const pathName = parts[1]!
@@ -160,7 +165,13 @@ export async function populateFromGfa(
     }
 
     const pathName = `${p.sample}#${p.sequence}`
-    const result = insertPath.run(pathName, p.sample, p.haplotype, p.sequence, totalLength)
+    const result = insertPath.run(
+      pathName,
+      p.sample,
+      p.haplotype,
+      p.sequence,
+      totalLength,
+    )
     const pathId = result.lastInsertRowid
 
     let offset = 0

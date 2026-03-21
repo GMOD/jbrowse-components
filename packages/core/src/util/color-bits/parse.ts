@@ -155,7 +155,10 @@ export function parseColor(color: string): Color {
       const aa = parsePercentageFor(p2, 125)
       const b = parsePercentageFor(p3, 125)
       const a = p4 ? parseAlphaChannel(p4) : 255
-      return newColorFromArray(a, convert.xyzd50ToSrgb(...convert.labToXyzd50(l, aa, b)))
+      return newColorFromArray(
+        a,
+        convert.xyzd50ToSrgb(...convert.labToXyzd50(l, aa, b)),
+      )
     }
     case 'lch': {
       const l = parsePercentageFor(p1, 100)
@@ -164,7 +167,9 @@ export function parseColor(color: string): Color {
       const a = p4 ? parseAlphaChannel(p4) : 255
       return newColorFromArray(
         a,
-        convert.xyzd50ToSrgb(...convert.labToXyzd50(...convert.lchToLab(l, c, h))),
+        convert.xyzd50ToSrgb(
+          ...convert.labToXyzd50(...convert.lchToLab(l, c, h)),
+        ),
       )
     }
     case 'oklab': {
@@ -184,7 +189,10 @@ export function parseColor(color: string): Color {
       const c = parsePercentageOrValue(p2)
       const h = parsePercentageOrValue(p3)
       const a = p4 ? parseAlphaChannel(p4) : 255
-      return newColorFromArray(a, convert.xyzd50ToSrgb(...convert.oklchToXyzd50(l, c, h)))
+      return newColorFromArray(
+        a,
+        convert.xyzd50ToSrgb(...convert.oklchToXyzd50(l, c, h)),
+      )
     }
     case 'color': {
       // https://drafts.csswg.org/css-color-4/#color-function

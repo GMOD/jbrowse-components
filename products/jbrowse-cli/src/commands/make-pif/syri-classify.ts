@@ -40,7 +40,10 @@ export function computeSyriTypes(records: AlignmentRecord[]): SyriType[] {
     primaryTarget.set(qname, best)
   }
 
-  const targetGroups = new Map<string, { idx: number; rec: AlignmentRecord }[]>()
+  const targetGroups = new Map<
+    string,
+    { idx: number; rec: AlignmentRecord }[]
+  >()
   for (let i = 0; i < records.length; i++) {
     const r = records[i]!
     let group = targetGroups.get(r.tname)

@@ -39,8 +39,16 @@ export function distanceToCubicBezier(
   for (let i = 0; i <= samples; i++) {
     const t = i / samples
     const u = 1 - t
-    const bx = u * u * u * x1 + 3 * u * u * t * cx1 + 3 * u * t * t * cx2 + t * t * t * x2
-    const by = u * u * u * y1 + 3 * u * u * t * cy1 + 3 * u * t * t * cy2 + t * t * t * y2
+    const bx =
+      u * u * u * x1 +
+      3 * u * u * t * cx1 +
+      3 * u * t * t * cx2 +
+      t * t * t * x2
+    const by =
+      u * u * u * y1 +
+      3 * u * u * t * cy1 +
+      3 * u * t * t * cy2 +
+      t * t * t * y2
     const dist = Math.hypot(px - bx, py - by)
     if (dist < minDist) {
       minDist = dist
@@ -50,7 +58,18 @@ export function distanceToCubicBezier(
 }
 
 function distanceToBezierCurve(px: number, py: number, c: BezierCurve) {
-  return distanceToCubicBezier(px, py, c.x0, c.y0, c.cx0, c.cy0, c.cx1, c.cy1, c.x1, c.y1)
+  return distanceToCubicBezier(
+    px,
+    py,
+    c.x0,
+    c.y0,
+    c.cx0,
+    c.cy0,
+    c.cx1,
+    c.cy1,
+    c.x1,
+    c.y1,
+  )
 }
 
 function distanceToEdgeCurves(px: number, py: number, curves: BezierCurve[]) {
@@ -85,9 +104,11 @@ function getEdgeSpatialIndex(
   graph: Graph,
   drawPaths: boolean,
 ) {
-  if (cachedEdgePositions !== nodePositions ||
-      cachedEdgeGraph !== graph ||
-      cachedEdgeDrawPaths !== drawPaths) {
+  if (
+    cachedEdgePositions !== nodePositions ||
+    cachedEdgeGraph !== graph ||
+    cachedEdgeDrawPaths !== drawPaths
+  ) {
     cachedEdgePositions = nodePositions
     cachedEdgeGraph = graph
     cachedEdgeDrawPaths = drawPaths
@@ -109,9 +130,12 @@ export function findHoveredNode(
   for (const { nodeId, segmentIdx } of candidates) {
     const segments = nodePositions[nodeId]!
     const dist = distanceToSegment(
-      graphX, graphY,
-      segments[segmentIdx]!.x, segments[segmentIdx]!.y,
-      segments[segmentIdx + 1]!.x, segments[segmentIdx + 1]!.y,
+      graphX,
+      graphY,
+      segments[segmentIdx]!.x,
+      segments[segmentIdx]!.y,
+      segments[segmentIdx + 1]!.x,
+      segments[segmentIdx + 1]!.y,
     )
     if (dist < nodeThreshold) {
       return nodeId
@@ -145,7 +169,13 @@ export function findHoveredEdge(
     let dist: number
 
     if (!drawPaths || numPaths === 0) {
-      const curves = computeEdgeCurves(fromSegments, toSegments, isSelfLoop, 0, 0)
+      const curves = computeEdgeCurves(
+        fromSegments,
+        toSegments,
+        isSelfLoop,
+        0,
+        0,
+      )
       dist = distanceToEdgeCurves(graphX, graphY, curves)
     } else {
       const fromEnd = fromSegments[fromSegments.length - 1]!
@@ -165,8 +195,11 @@ export function findHoveredEdge(
       for (let pathIdx = 0; pathIdx < numPaths; pathIdx++) {
         const pathOffset = (pathIdx - (numPaths - 1) / 2) * offsetDist
         const curves = computeEdgeCurves(
-          fromSegments, toSegments, isSelfLoop,
-          perpX * pathOffset, perpY * pathOffset,
+          fromSegments,
+          toSegments,
+          isSelfLoop,
+          perpX * pathOffset,
+          perpY * pathOffset,
         )
         const d = distanceToEdgeCurves(graphX, graphY, curves)
         if (d < minDist) {

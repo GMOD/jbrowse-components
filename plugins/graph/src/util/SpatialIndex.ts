@@ -11,10 +11,7 @@ export class SpatialIndex {
   private cellSize: number
   private cells = new Map<string, CellEntry[]>()
 
-  constructor(
-    nodePositions: Record<string, NodeSegment[]>,
-    cellSize = 50,
-  ) {
+  constructor(nodePositions: Record<string, NodeSegment[]>, cellSize = 50) {
     this.cellSize = cellSize
     for (const [nodeId, segments] of Object.entries(nodePositions)) {
       for (let i = 0; i < segments.length - 1; i++) {
@@ -93,7 +90,13 @@ export class EdgeSpatialIndex {
       }
 
       const isSelfLoop = edge.from === edge.to
-      const curves = computeEdgeCurves(fromSegments, toSegments, isSelfLoop, 0, 0)
+      const curves = computeEdgeCurves(
+        fromSegments,
+        toSegments,
+        isSelfLoop,
+        0,
+        0,
+      )
 
       let minX = Infinity
       let minY = Infinity

@@ -137,7 +137,10 @@ function extractSyntenyFromPaths(
   segments: Map<string, number>,
 ): PAFLikeRecord[] {
   // Build segment → position index for path B
-  const segPosB = new Map<string, { offset: number; len: number; orient: string }>()
+  const segPosB = new Map<
+    string,
+    { offset: number; len: number; orient: string }
+  >()
   let totalLenB = 0
   for (const step of pathB) {
     const len = segments.get(step.seg) ?? 0
@@ -189,9 +192,12 @@ function extractSyntenyFromPaths(
         blockSegmentIds.push(step.seg)
       } else {
         blocks.push({
-          startA: blockStartA, endA: blockEndA,
-          startB: blockStartB, endB: blockEndB,
-          strand: blockStrand, sharedBp,
+          startA: blockStartA,
+          endA: blockEndA,
+          startB: blockStartB,
+          endB: blockEndB,
+          strand: blockStrand,
+          sharedBp,
           segmentIds: blockSegmentIds,
         })
         blockStartA = offsetA
@@ -205,9 +211,12 @@ function extractSyntenyFromPaths(
     } else {
       if (blockStartA !== -1) {
         blocks.push({
-          startA: blockStartA, endA: blockEndA,
-          startB: blockStartB, endB: blockEndB,
-          strand: blockStrand, sharedBp,
+          startA: blockStartA,
+          endA: blockEndA,
+          startB: blockStartB,
+          endB: blockEndB,
+          strand: blockStrand,
+          sharedBp,
           segmentIds: blockSegmentIds,
         })
         blockStartA = -1
@@ -219,9 +228,12 @@ function extractSyntenyFromPaths(
   }
   if (blockStartA !== -1) {
     blocks.push({
-      startA: blockStartA, endA: blockEndA,
-      startB: blockStartB, endB: blockEndB,
-      strand: blockStrand, sharedBp,
+      startA: blockStartA,
+      endA: blockEndA,
+      startB: blockStartB,
+      endB: blockEndB,
+      strand: blockStrand,
+      sharedBp,
       segmentIds: blockSegmentIds,
     })
   }
@@ -240,8 +252,9 @@ function extractSyntenyFromPaths(
     tend: b.endB,
     numMatches: b.sharedBp,
     blockLen: Math.max(b.endA - b.startA, b.endB - b.startB),
-    segmentId: b.segmentIds.length === 1
-      ? b.segmentIds[0]
-      : `${b.segmentIds[0]}_${b.segmentIds[b.segmentIds.length - 1]}`,
+    segmentId:
+      b.segmentIds.length === 1
+        ? b.segmentIds[0]
+        : `${b.segmentIds[0]}_${b.segmentIds[b.segmentIds.length - 1]}`,
   }))
 }

@@ -5,7 +5,9 @@ import configSchemaF from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function registerMultiSyntenyTrack(pluginManager: PluginManager) {
+export default function registerMultiSyntenyTrack(
+  pluginManager: PluginManager,
+) {
   pluginManager.addTrackType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new TrackType({

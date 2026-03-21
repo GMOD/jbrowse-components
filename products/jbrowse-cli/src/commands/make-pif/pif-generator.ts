@@ -45,7 +45,13 @@ function flipCs(cs: string) {
       // insertion becomes deletion
       i++
       let seq = ''
-      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+      while (
+        i < cs.length &&
+        cs[i] !== ':' &&
+        cs[i] !== '*' &&
+        cs[i] !== '+' &&
+        cs[i] !== '-'
+      ) {
         seq += cs[i]
         i++
       }
@@ -54,7 +60,13 @@ function flipCs(cs: string) {
       // deletion becomes insertion
       i++
       let seq = ''
-      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+      while (
+        i < cs.length &&
+        cs[i] !== ':' &&
+        cs[i] !== '*' &&
+        cs[i] !== '+' &&
+        cs[i] !== '-'
+      ) {
         seq += cs[i]
         i++
       }
@@ -298,41 +310,67 @@ export async function createPIFFromLines(
       const cigarField = rest.find(f => f.startsWith('cg:Z:'))
       const summaryRest = stripDetailFromRest(rest)
       if (cigarField) {
-        const indelTag = extractLargeIndels(cigarField.slice(5), minSummaryIndel, +s2!, +s1!)
+        const indelTag = extractLargeIndels(
+          cigarField.slice(5),
+          minSummaryIndel,
+          +s2!,
+          +s1!,
+        )
         if (indelTag) {
           summaryRest.push(indelTag)
         }
       }
 
-      await writeWithBackpressure(`${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, typeTag].join('\t')}\n`)
-      await writeWithBackpressure(`${[`st${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest, typeTag].join('\t')}\n`)
+      await writeWithBackpressure(
+        `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, typeTag].join('\t')}\n`,
+      )
+      await writeWithBackpressure(
+        `${[`st${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest, typeTag].join('\t')}\n`,
+      )
 
       const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z:'))
       const CIGAR = rest[cigarIdx]
       if (CIGAR) {
-        rest[cigarIdx] = `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
+        rest[cigarIdx] =
+          `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
       }
 
       const qSummaryRest = stripDetailFromRest(rest)
       if (cigarField) {
         const qCigarStr = rest[cigarIdx]
         if (qCigarStr) {
-          const qIndelTag = extractLargeIndels(qCigarStr.slice(5), minSummaryIndel, +s1!, +s2!)
+          const qIndelTag = extractLargeIndels(
+            qCigarStr.slice(5),
+            minSummaryIndel,
+            +s1!,
+            +s2!,
+          )
           if (qIndelTag) {
             qSummaryRest.push(qIndelTag)
           }
         }
       }
 
-      await writeWithBackpressure(`${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, typeTag].join('\t')}\n`)
-      await writeWithBackpressure(`${[`sq${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...qSummaryRest, typeTag].join('\t')}\n`)
+      await writeWithBackpressure(
+        `${[`q${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, typeTag].join('\t')}\n`,
+      )
+      await writeWithBackpressure(
+        `${[`sq${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...qSummaryRest, typeTag].join('\t')}\n`,
+      )
     }
 
     if (mergeGap > 0) {
-      const blocks = mergeIntoStructuralBlocks(allSubAlignments.map(sa => sa.record), mergeGap)
+      const blocks = mergeIntoStructuralBlocks(
+        allSubAlignments.map(sa => sa.record),
+        mergeGap,
+      )
       for (const b of blocks) {
-        await writeWithBackpressure(`${[`xt${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`)
-        await writeWithBackpressure(`${[`xq${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`)
+        await writeWithBackpressure(
+          `${[`xt${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`,
+        )
+        await writeWithBackpressure(
+          `${[`xq${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`,
+        )
       }
     }
   } catch (error) {
@@ -417,41 +455,67 @@ export async function createMultiPairPIF(
         const cigarField = rest.find(f => f.startsWith('cg:Z:'))
         const summaryRest = stripDetailFromRest(rest)
         if (cigarField) {
-          const indelTag = extractLargeIndels(cigarField.slice(5), minSummaryIndel, +s2!, +s1!)
+          const indelTag = extractLargeIndels(
+            cigarField.slice(5),
+            minSummaryIndel,
+            +s2!,
+            +s1!,
+          )
           if (indelTag) {
             summaryRest.push(indelTag)
           }
         }
 
-        await writeWithBackpressure(`${[`t${p}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, typeTag].join('\t')}\n`)
-        await writeWithBackpressure(`${[`st${p}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest, typeTag].join('\t')}\n`)
+        await writeWithBackpressure(
+          `${[`t${p}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest, typeTag].join('\t')}\n`,
+        )
+        await writeWithBackpressure(
+          `${[`st${p}${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...summaryRest, typeTag].join('\t')}\n`,
+        )
 
         const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z:'))
         const CIGAR = rest[cigarIdx]
         if (CIGAR) {
-          rest[cigarIdx] = `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
+          rest[cigarIdx] =
+            `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
         }
 
         const qSummaryRest = stripDetailFromRest(rest)
         if (cigarField) {
           const qCigarStr = rest[cigarIdx]
           if (qCigarStr) {
-            const qIndelTag = extractLargeIndels(qCigarStr.slice(5), minSummaryIndel, +s1!, +s2!)
+            const qIndelTag = extractLargeIndels(
+              qCigarStr.slice(5),
+              minSummaryIndel,
+              +s1!,
+              +s2!,
+            )
             if (qIndelTag) {
               qSummaryRest.push(qIndelTag)
             }
           }
         }
 
-        await writeWithBackpressure(`${[`q${p}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, typeTag].join('\t')}\n`)
-        await writeWithBackpressure(`${[`sq${p}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...qSummaryRest, typeTag].join('\t')}\n`)
+        await writeWithBackpressure(
+          `${[`q${p}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...rest, typeTag].join('\t')}\n`,
+        )
+        await writeWithBackpressure(
+          `${[`sq${p}${c1}`, l1, s1, e1, strand, c2, l2, s2, e2, ...qSummaryRest, typeTag].join('\t')}\n`,
+        )
       }
 
       if (mergeGap > 0) {
-        const blocks = mergeIntoStructuralBlocks(allSubAlignments.map(sa => sa.record), mergeGap)
+        const blocks = mergeIntoStructuralBlocks(
+          allSubAlignments.map(sa => sa.record),
+          mergeGap,
+        )
         for (const b of blocks) {
-          await writeWithBackpressure(`${[`xt${p}${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`)
-          await writeWithBackpressure(`${[`xq${p}${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`)
+          await writeWithBackpressure(
+            `${[`xt${p}${b.tname}`, b.tlen, b.tstart, b.tend, b.strand, b.qname, b.qlen, b.qstart, b.qend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`,
+          )
+          await writeWithBackpressure(
+            `${[`xq${p}${b.qname}`, b.qlen, b.qstart, b.qend, b.strand, b.tname, b.tlen, b.tstart, b.tend, b.syriType, b.meanIdentity.toFixed(4)].join('\t')}\n`,
+          )
         }
       }
     }

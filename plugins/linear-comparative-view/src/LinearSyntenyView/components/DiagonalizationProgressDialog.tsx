@@ -101,9 +101,7 @@ const DiagonalizationProgressDialog = observer(
               queryView.displayedRegions,
               async (prog, msg) => {
                 setProgress(baseProgress + (prog / 100) * levelProgress)
-                setMessage(
-                  `Level ${levelIdx + 1}/${numLevels}: ${msg}`,
-                )
+                setMessage(`Level ${levelIdx + 1}/${numLevels}: ${msg}`)
               },
             )
 

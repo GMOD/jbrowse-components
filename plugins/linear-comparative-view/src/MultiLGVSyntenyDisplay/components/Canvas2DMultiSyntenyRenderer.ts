@@ -67,9 +67,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
         ctx.font = `${Math.min(rowHeight - 4, LABEL_FONT_MAX)}px sans-serif`
         ctx.textBaseline = 'middle'
         const displayName =
-          genomeName.length > 15
-            ? genomeName.slice(0, 12) + '...'
-            : genomeName
+          genomeName.length > 15 ? genomeName.slice(0, 12) + '...' : genomeName
         ctx.fillText(displayName, 4, y + rowHeight / 2)
       }
 

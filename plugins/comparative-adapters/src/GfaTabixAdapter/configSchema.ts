@@ -47,30 +47,38 @@ const GfaTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    segsLocation: {
+    segmentsLocation: {
       type: 'fileLocation',
       description:
-        'Location of the segs.bed.gz file (segment → position mapping)',
+        'Location of the segs.gz file (segment → position reverse index)',
       defaultValue: {
-        uri: '/path/to/data.segs.bed.gz',
+        uri: '/path/to/data.segments.gz',
         locationType: 'UriLocation',
       },
     },
     /**
      * #slot
      */
-    segsIndex: ConfigurationSchema('SegsTabixIndex', {
-      /**
-       * #slot segsIndex.location
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/data.segs.bed.gz.tbi',
-          locationType: 'UriLocation',
-        },
+    segmentsGziLocation: {
+      type: 'fileLocation',
+      description: 'Location of the segs.gz.gzi bgzip index',
+      defaultValue: {
+        uri: '/path/to/data.segments.gz.gzi',
+        locationType: 'UriLocation',
       },
-    }),
+    },
+    /**
+     * #slot
+     */
+    segmentsIdxLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of the segs.idx companion index (segment ID → byte offset)',
+      defaultValue: {
+        uri: '/path/to/data.segments.idx',
+        locationType: 'UriLocation',
+      },
+    },
     /**
      * #slot
      */
@@ -128,15 +136,17 @@ const GfaTabixAdapter = ConfigurationSchema(
               baseUri: snap.baseUri,
             },
           },
-          segsLocation: {
-            uri: `${snap.prefix}.segs.bed.gz`,
+          segmentsLocation: {
+            uri: `${snap.prefix}.segments.gz`,
             baseUri: snap.baseUri,
           },
-          segsIndex: {
-            location: {
-              uri: `${snap.prefix}.segs.bed.gz.tbi`,
-              baseUri: snap.baseUri,
-            },
+          segmentsGziLocation: {
+            uri: `${snap.prefix}.segments.gz.gzi`,
+            baseUri: snap.baseUri,
+          },
+          segmentsIdxLocation: {
+            uri: `${snap.prefix}.segments.idx`,
+            baseUri: snap.baseUri,
           },
           alnLocation: {
             uri: `${snap.prefix}.aln.bed.gz`,

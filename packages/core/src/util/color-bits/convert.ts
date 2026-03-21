@@ -45,15 +45,7 @@ class TransferFunction {
   e: number
   f: number
 
-  constructor(
-    g: number,
-    a: number,
-    b = 0,
-    c = 0,
-    d = 0,
-    e = 0,
-    f = 0,
-  ) {
+  constructor(g: number, a: number, b = 0, c = 0, d = 0, e = 0, f = 0) {
     this.g = g
     this.a = a
     this.b = b
@@ -74,14 +66,46 @@ class TransferFunction {
 }
 
 const NAMED_TRANSFER_FN = {
-  sRGB: new TransferFunction(2.4, 1 / 1.055, 0.055 / 1.055, 1 / 12.92, 0.04045, 0.0, 0.0),
-  sRGB_INVERSE: new TransferFunction(0.416667, 1.13728, -0, 12.92, 0.0031308, -0.0549698, -0),
+  sRGB: new TransferFunction(
+    2.4,
+    1 / 1.055,
+    0.055 / 1.055,
+    1 / 12.92,
+    0.04045,
+    0.0,
+    0.0,
+  ),
+  sRGB_INVERSE: new TransferFunction(
+    0.416667,
+    1.13728,
+    -0,
+    12.92,
+    0.0031308,
+    -0.0549698,
+    -0,
+  ),
   proPhotoRGB: new TransferFunction(1.8, 1),
   proPhotoRGB_INVERSE: new TransferFunction(0.555556, 1, -0, 0, 0, 0, 0),
   k2Dot2: new TransferFunction(2.2, 1.0),
   k2Dot2_INVERSE: new TransferFunction(0.454545, 1),
-  rec2020: new TransferFunction(2.22222, 0.909672, 0.0903276, 0.222222, 0.0812429, 0, 0),
-  rec2020_INVERSE: new TransferFunction(0.45, 1.23439, -0, 4.5, 0.018054, -0.0993195, -0),
+  rec2020: new TransferFunction(
+    2.22222,
+    0.909672,
+    0.0903276,
+    0.222222,
+    0.0812429,
+    0,
+    0,
+  ),
+  rec2020_INVERSE: new TransferFunction(
+    0.45,
+    1.23439,
+    -0,
+    4.5,
+    0.018054,
+    -0.0993195,
+    -0,
+  ),
 }
 
 const NAMED_GAMUTS: Record<string, [number, number, number][]> = {

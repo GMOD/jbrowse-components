@@ -4,31 +4,31 @@
 
 - [ ] Hardcoded WASM URL fallback — `GraphComputeLayout.ts` loads from
       `https://jbrowse.org/demos/bandage/` with no fallback. If URL is
-      unavailable, layout silently fails. The `layoutUrl` config already
-      exists — consider adding error messaging or a retry with alternate URL.
+      unavailable, layout silently fails. The `layoutUrl` config already exists
+      — consider adding error messaging or a retry with alternate URL.
 
 ## Scalability (remaining)
 
-- [ ] LOD — reduce Bezier tessellation detail at low zoom levels (`flatness =
-      Math.max(0.5, 2.0 / scale)`), skip nodes whose screen-space length < 2px
-- [ ] Adaptive multi-path edge offset — currently fixed at 3 graph units,
-      should scale with zoom for consistent screen-space separation
+- [ ] LOD — reduce Bezier tessellation detail at low zoom levels
+      (`flatness =     Math.max(0.5, 2.0 / scale)`), skip nodes whose
+      screen-space length < 2px
+- [ ] Adaptive multi-path edge offset — currently fixed at 3 graph units, should
+      scale with zoom for consistent screen-space separation
 
 ## GfaAdapter Integration
 
 - [ ] Wire graph view's ImportForm to load from GfaAdapter/GfaTabixAdapter
-      tracks (open from track list) — currently standalone, not integrated
-      with the track/adapter system
+      tracks (open from track list) — currently standalone, not integrated with
+      the track/adapter system
 - [ ] Add GfaAdapter to `GuessAdapter` for `.gfa` file extension detection
 - [ ] GfaTabixAdapter subgraph loading — fetch segments for a configurable
-      region, convert to Graph format, compute layout on subgraph only
-      (enables BandageNG-style scope-based viewing for huge files)
+      region, convert to Graph format, compute layout on subgraph only (enables
+      BandageNG-style scope-based viewing for huge files)
 
 ## Rendering
 
 - [ ] Depth-based node width — per-vertex thickness attribute computed from
-      coverage depth using power function (matches BandageNG's
-      `getNodeWidth()`)
+      coverage depth using power function (matches BandageNG's `getNodeWidth()`)
 - [ ] Anti-aliased edges — MSAA or alpha blending for smoother line rendering
 
 ## Interaction

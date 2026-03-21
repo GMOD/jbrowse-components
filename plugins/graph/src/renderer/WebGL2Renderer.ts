@@ -1,4 +1,9 @@
-import type { Renderer, RenderBatch, SubBatch, TransformUniform } from './types.ts'
+import type {
+  Renderer,
+  RenderBatch,
+  SubBatch,
+  TransformUniform,
+} from './types.ts'
 
 const vertexShaderSource = `#version 300 es
 precision highp float;
@@ -129,8 +134,13 @@ export class WebGL2Renderer implements Renderer {
     gl.bindVertexArray(null)
 
     return {
-      vao, positionBuffer, normalBuffer, thicknessBuffer,
-      colorBuffer, indexBuffer, indexCount: batch.indices.length,
+      vao,
+      positionBuffer,
+      normalBuffer,
+      thicknessBuffer,
+      colorBuffer,
+      indexBuffer,
+      indexCount: batch.indices.length,
     }
   }
 
@@ -164,12 +174,18 @@ export class WebGL2Renderer implements Renderer {
       this.destroySubBatchBuffers(this.arrowBuffers)
     }
 
-    this.edgeBuffers = batch.edges.indices.length > 0
-      ? this.createSubBatchBuffers(batch.edges) : null
-    this.nodeBuffers = batch.nodes.indices.length > 0
-      ? this.createSubBatchBuffers(batch.nodes) : null
-    this.arrowBuffers = batch.arrows.indices.length > 0
-      ? this.createSubBatchBuffers(batch.arrows) : null
+    this.edgeBuffers =
+      batch.edges.indices.length > 0
+        ? this.createSubBatchBuffers(batch.edges)
+        : null
+    this.nodeBuffers =
+      batch.nodes.indices.length > 0
+        ? this.createSubBatchBuffers(batch.nodes)
+        : null
+    this.arrowBuffers =
+      batch.arrows.indices.length > 0
+        ? this.createSubBatchBuffers(batch.arrows)
+        : null
   }
 
   updateSubBatchColors(
@@ -178,9 +194,11 @@ export class WebGL2Renderer implements Renderer {
     vertexStart: number,
   ) {
     const buffers =
-      target === 'edges' ? this.edgeBuffers
-      : target === 'nodes' ? this.nodeBuffers
-      : this.arrowBuffers
+      target === 'edges'
+        ? this.edgeBuffers
+        : target === 'nodes'
+          ? this.nodeBuffers
+          : this.arrowBuffers
     if (!buffers) {
       return
     }
@@ -204,7 +222,11 @@ export class WebGL2Renderer implements Renderer {
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.useProgram(this.program)
 
-    for (const buffers of [this.edgeBuffers, this.nodeBuffers, this.arrowBuffers]) {
+    for (const buffers of [
+      this.edgeBuffers,
+      this.nodeBuffers,
+      this.arrowBuffers,
+    ]) {
       if (buffers && buffers.indexCount > 0) {
         gl.bindVertexArray(buffers.vao)
         gl.drawElements(gl.TRIANGLES, buffers.indexCount, gl.UNSIGNED_INT, 0)
