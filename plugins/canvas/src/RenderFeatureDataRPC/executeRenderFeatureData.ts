@@ -11,7 +11,11 @@
 
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
+import {
+  cssColorToRgba,
+  formatHEX,
+  parseCssColor,
+} from '@jbrowse/core/util/colorBits'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -91,8 +95,8 @@ function applyUTRSizing(
 }
 
 function colorToUint32(colorStr: string) {
-  const { r, g, b, a } = colord(colorStr).toRgb()
-  return (Math.round(a * 255) << 24) | (b << 16) | (g << 8) | r
+  const [r, g, b, a] = cssColorToRgba(colorStr)
+  return (a << 24) | (b << 16) | (g << 8) | r
 }
 
 function writeColorBytes(out: Uint8Array, index: number, color: number) {
@@ -131,7 +135,7 @@ function emitCodonData(opts: {
     reversed,
     flatbushIdx,
   } = opts
-  const baseHex = colord(baseColor).toHex()
+  const baseHex = formatHEX(parseCssColor(baseColor))
   const color1 = lighten(baseHex, 0.2)
   const color2 = darken(baseHex, 0.1)
   const effectiveStrand = strand * (reversed ? -1 : 1)

@@ -1,5 +1,11 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import { colord } from '@jbrowse/core/util/colord'
+import {
+  cssColorToNormalizedRgb,
+  getBlue,
+  getGreen,
+  getRed,
+  parseCssColor,
+} from '@jbrowse/core/util/colorBits'
 
 import type { DotplotFeatPos } from './types.ts'
 
@@ -15,14 +21,11 @@ function hashString(str: string) {
   return Math.abs(hash)
 }
 
-const category10Normalized = category10.map(hex => {
-  const { r, g, b } = colord(hex).toRgb()
-  return [r / 255, g / 255, b / 255] as [number, number, number]
-})
+const category10Normalized = category10.map(hex => cssColorToNormalizedRgb(hex))
 
 function hslColor(hue: number, alpha: number): RGBA {
-  const { r, g, b } = colord(`hsl(${hue}, 100%, 40%)`).toRgb()
-  return [r / 255, g / 255, b / 255, alpha]
+  const c = parseCssColor(`hsl(${hue}, 100%, 40%)`)
+  return [getRed(c) / 255, getGreen(c) / 255, getBlue(c) / 255, alpha]
 }
 
 function hslColorFn(

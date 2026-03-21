@@ -1,4 +1,4 @@
-import { colord } from '@jbrowse/core/util/colord'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 // RGB color as [r, g, b] where each is 0-1
 export type RGBColor = [number, number, number]
@@ -31,6 +31,5 @@ export interface ColorPalette {
 }
 
 export function toRgb(color: string): RGBColor {
-  const { r, g, b } = colord(color).toRgb()
-  return [r / 255, g / 255, b / 255]
+  return cssColorToNormalizedRgb(color)
 }

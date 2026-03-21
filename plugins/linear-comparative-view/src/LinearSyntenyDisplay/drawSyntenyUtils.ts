@@ -1,5 +1,9 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import { colord } from '@jbrowse/core/util/colord'
+import {
+  alpha as setAlpha,
+  formatHEXA,
+  parseCssColor,
+} from '@jbrowse/core/util/colorBits'
 
 export const lineLimit = 3
 
@@ -70,10 +74,9 @@ export const colorSchemes = {
 
 export type ColorScheme = keyof typeof colorSchemes
 
-export function applyAlpha(color: string, alpha: number) {
-  // Skip colord processing if alpha is 1 (optimization)
-  if (alpha === 1) {
+export function applyAlpha(color: string, a: number) {
+  if (a === 1) {
     return color
   }
-  return colord(color).alpha(alpha).toHex()
+  return formatHEXA(setAlpha(parseCssColor(color), a))
 }

@@ -13,8 +13,6 @@ import { observer } from 'mobx-react'
 import ConfigureConnection from './ConfigureConnection.tsx'
 import ConnectionTypeSelect from './ConnectionTypeSelect.tsx'
 
-import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
-
 const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),
@@ -38,16 +36,20 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
 }: {
   model: unknown
 }) {
-  const [connectionType, setConnectionType] = useState<ConnectionType>()
-  const [connectionId, setConnectionId] = useState<string>()
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
+  const connectionTypeChoices = pluginManager.getConnectionElements()
+  const firstChoice = connectionTypeChoices[0]!
+  const [connectionType, setConnectionType] = useState(firstChoice)
+  const [connectionId, setConnectionId] = useState(
+    `${firstChoice.name}-${Date.now()}`,
+  )
 
   // useMemo is needed for react@18+mobx-react@9, previous code called configSchema.create directly in a setConfigModel useState hook setter but this caused infinite loop
   const configModel = useMemo(
-    () => connectionType?.configSchema.create({ connectionId }, getEnv(model)),
+    () => connectionType.configSchema.create({ connectionId }, getEnv(model)),
     [connectionId, connectionType, model],
   )
 
@@ -64,23 +66,20 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
             <StepContent>
               {activeStep === 0 ? (
                 <ConnectionTypeSelect
-                  connectionTypeChoices={pluginManager.getConnectionElements()}
+                  connectionTypeChoices={connectionTypeChoices}
                   connectionType={connectionType}
                   setConnectionType={c => {
                     setConnectionType(c)
-                    if (!c) {
-                      return
-                    }
                     setConnectionId(`${c.name}-${Date.now()}`)
                   }}
                 />
-              ) : connectionType && configModel ? (
+              ) : (
                 <ConfigureConnection
                   connectionType={connectionType}
                   model={configModel}
                   session={session}
                 />
-              ) : null}
+              )}
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
@@ -92,17 +91,12 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                   Back
                 </Button>
                 <Button
-                  disabled={
-                    !(
-                      (activeStep === 0 && connectionType) ||
-                      (activeStep === 1 && configModel)
-                    )
-                  }
+                  disabled={activeStep !== 0 && activeStep !== 1}
                   variant="contained"
                   color="primary"
                   onClick={() => {
                     if (activeStep === steps.length - 1) {
-                      if (configModel && isSessionWithConnections(session)) {
+                      if (isSessionWithConnections(session)) {
                         const conf = session.addConnectionConf(configModel)
                         session.makeConnection(conf)
                       } else {

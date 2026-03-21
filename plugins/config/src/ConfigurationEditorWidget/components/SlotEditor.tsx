@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { FileSelector } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
@@ -90,12 +90,6 @@ const IntegerEditor = observer(function IntegerEditor({
   }
 }) {
   const [val, setVal] = useState(slot.value)
-  useEffect(() => {
-    const num = Number.parseInt(val, 10)
-    if (!Number.isNaN(num)) {
-      slot.set(num)
-    }
-  }, [slot, val])
   return (
     <ConfigurationTextField
       label={slot.name}
@@ -103,7 +97,12 @@ const IntegerEditor = observer(function IntegerEditor({
       value={val}
       type="number"
       onChange={evt => {
-        setVal(evt.target.value)
+        const v = evt.target.value
+        setVal(v)
+        const num = Number.parseInt(v, 10)
+        if (!Number.isNaN(num)) {
+          slot.set(num)
+        }
       }}
     />
   )

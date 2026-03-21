@@ -40,42 +40,52 @@ const ImportSyntenyOpenCustomTrack = observer(
     const [fileLocation, setFileLocation] = useState<FileLocation>()
     const [indexFileLocation, setIndexFileLocation] = useState<FileLocation>()
     const [value, setValue] = useState('')
-    const [error, setError] = useState<unknown>()
     const fileName = getName(fileLocation)
 
     const radioOption = value || (fileName ? extName(stripGz(fileName)) : '')
 
-    useEffect(() => {
+    let error: unknown
+    if (fileLocation) {
       try {
-        if (fileLocation) {
-          const fn = fileName ? basename(fileName) : 'MyTrack'
-          const trackId = `${fn}-${Date.now()}-sessionTrack`
-          setError(undefined)
-
-          model.setImportFormSyntenyTrack(selectedRow, {
-            type: 'userOpened',
-            value: {
-              trackId,
-              name: fn,
-              assemblyNames: [assembly2, assembly1],
-              type: 'SyntenyTrack',
-              adapter: getAdapter({
-                radioOption,
-                assembly1: swap ? assembly2 : assembly1,
-                assembly2: swap ? assembly1 : assembly2,
-                fileLocation,
-                indexFileLocation,
-                bed1Location,
-                bed2Location,
-              }),
-            },
-          })
-        }
+        getAdapter({
+          radioOption,
+          assembly1: swap ? assembly2 : assembly1,
+          assembly2: swap ? assembly1 : assembly2,
+          fileLocation,
+          indexFileLocation,
+          bed1Location,
+          bed2Location,
+        })
       } catch (e) {
-        console.error(e)
-        setError(e)
+        error = e
+      }
+    }
+
+    useEffect(() => {
+      if (fileLocation && !error) {
+        const fn = fileName ? basename(fileName) : 'MyTrack'
+        const trackId = `${fn}-${Date.now()}-sessionTrack`
+        model.setImportFormSyntenyTrack(selectedRow, {
+          type: 'userOpened',
+          value: {
+            trackId,
+            name: fn,
+            assemblyNames: [assembly2, assembly1],
+            type: 'SyntenyTrack',
+            adapter: getAdapter({
+              radioOption,
+              assembly1: swap ? assembly2 : assembly1,
+              assembly2: swap ? assembly1 : assembly2,
+              fileLocation,
+              indexFileLocation,
+              bed1Location,
+              bed2Location,
+            }),
+          },
+        })
       }
     }, [
+      error,
       swap,
       model,
       selectedRow,

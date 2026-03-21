@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
@@ -26,9 +26,6 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
 }) {
   const { bpPerPx, width } = model
   const [val, setVal] = useState(format(bpPerPx * width))
-  useEffect(() => {
-    setVal(format(bpPerPx * width))
-  }, [bpPerPx, width])
   const val2 = val.replace(/,/g, '')
 
   return (

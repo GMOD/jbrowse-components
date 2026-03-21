@@ -2,7 +2,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { category10 } from '@jbrowse/core/ui/colors'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { colord } from '@jbrowse/core/util/colord'
+import {
+  alpha as setAlpha,
+  formatRGBA,
+  parseCssColor,
+} from '@jbrowse/core/util/colorBits'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { parseCigar } from '@jbrowse/plugin-alignments'
 
@@ -43,12 +47,11 @@ export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   }
 }
 
-function applyAlpha(color: string, alpha: number) {
-  // Skip colord processing if alpha is 1 (optimization)
-  if (alpha === 1) {
+function applyAlpha(color: string, a: number) {
+  if (a === 1) {
     return color
   }
-  return colord(color).alpha(alpha).toRgbString()
+  return formatRGBA(setAlpha(parseCssColor(color), a))
 }
 
 export async function drawDotplot(

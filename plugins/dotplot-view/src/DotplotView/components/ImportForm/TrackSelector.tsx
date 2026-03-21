@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import {
@@ -45,11 +45,6 @@ const TrackSelector = observer(function TrackSelector({
 
   const selectedCustomOption = customOptions.find(opt => opt.value === choice)
 
-  useEffect(() => {
-    if (choice === 'none') {
-      model.setImportFormSyntenyTrack(0, { type: 'none' })
-    }
-  }, [model, choice])
   return (
     <>
       <FormControl>
@@ -60,7 +55,11 @@ const TrackSelector = observer(function TrackSelector({
           row
           value={choice}
           onChange={event => {
-            setChoice(event.target.value)
+            const val = event.target.value
+            setChoice(val)
+            if (val === 'none') {
+              model.setImportFormSyntenyTrack(0, { type: 'none' })
+            }
           }}
           aria-labelledby="group-label"
         >
@@ -94,6 +93,7 @@ const TrackSelector = observer(function TrackSelector({
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
+          key={`${assembly1}-${assembly2}`}
           model={model}
           assembly1={assembly1}
           assembly2={assembly2}

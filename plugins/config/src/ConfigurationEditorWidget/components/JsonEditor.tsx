@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputLabel, TextField } from '@mui/material'
@@ -44,17 +44,13 @@ const JsonEditor = observer(function JsonEditor({
 }) {
   const { classes } = useStyles()
   const [contents, setContents] = useState(JSON.stringify(slot.value, null, 2))
-  const [error, setError] = useState<unknown>()
 
-  useEffect(() => {
-    try {
-      setError(undefined)
-      slot.set(JSON.parse(contents))
-    } catch (e) {
-      console.error({ e })
-      setError(e)
-    }
-  }, [contents, slot])
+  let error: unknown
+  try {
+    JSON.parse(contents)
+  } catch (e) {
+    error = e
+  }
 
   return (
     <>
@@ -70,7 +66,13 @@ const JsonEditor = observer(function JsonEditor({
           helperText={slot.description}
           multiline
           onChange={event => {
-            setContents(event.target.value)
+            const val = event.target.value
+            setContents(val)
+            try {
+              slot.set(JSON.parse(val))
+            } catch {
+              // invalid JSON, error displayed via computed error above
+            }
           }}
           style={{ background: error ? '#fdd' : undefined }}
           slotProps={{

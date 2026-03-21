@@ -172,14 +172,6 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     })()
   }, [model, type, debouncedTag])
 
-  useEffect(() => {
-    if (type !== 'tag') {
-      setGroupByTagSet(undefined)
-      setError(undefined)
-      setLoading(false)
-    }
-  }, [type])
-
   return (
     <Dialog open onClose={handleClose} title="Group by">
       <DialogContent>
@@ -191,7 +183,13 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           fullWidth
           value={type}
           onChange={event => {
-            setType(event.target.value)
+            const val = event.target.value
+            setType(val)
+            if (val !== 'tag') {
+              setGroupByTagSet(undefined)
+              setError(undefined)
+              setLoading(false)
+            }
           }}
           label="Group by..."
           select

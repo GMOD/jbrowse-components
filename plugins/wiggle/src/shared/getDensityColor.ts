@@ -1,4 +1,4 @@
-import { colord } from '@jbrowse/core/util/colord'
+import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 
 import { normalizeScore } from '../util.ts'
 
@@ -18,7 +18,7 @@ export function getDensityColor(
     Math.max(0, Math.abs(norm - zeroNorm) / Math.max(maxDist, 0.0001)),
   )
 
-  const { r, g, b } = colord(colorHex).toRgb()
+  const [r, g, b] = cssColorToRgba(colorHex)
   const mr = Math.round(255 + (r - 255) * t)
   const mg = Math.round(255 + (g - 255) * t)
   const mb = Math.round(255 + (b - 255) * t)

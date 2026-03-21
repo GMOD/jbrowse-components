@@ -1,4 +1,4 @@
-import { colord } from '@jbrowse/core/util/colord'
+import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 
 export {
   cacheUniforms,
@@ -8,9 +8,7 @@ export {
 } from '@jbrowse/core/gpu/webglUtils'
 
 export function colorToRGBA(color: string): [number, number, number, number] {
-  const c = colord(color)
-  const { r, g, b, a } = c.toRgb()
-  return [r, g, b, Math.round(a * 255)]
+  return cssColorToRgba(color)
 }
 
 export function createCachedRGBA() {
