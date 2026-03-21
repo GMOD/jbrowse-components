@@ -1,0 +1,148 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_nway_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox/volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox_ins",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_ins_nway_refseq",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox/volvox_ins.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox/volvox_ins.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox_del",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_del_nway_refseq",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox/volvox_del.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox/volvox_del.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_ins_synteny_pif",
+      "name": "volvox vs volvox_ins (PIF)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "volvox/volvox_ins.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox/volvox_ins.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["volvox_ins", "volvox"]
+      },
+      "assemblyNames": ["volvox_ins", "volvox"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_del_synteny_pif",
+      "name": "volvox vs volvox_del (PIF)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "volvox/volvox_del.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox/volvox_del.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["volvox_del", "volvox"]
+      },
+      "assemblyNames": ["volvox_del", "volvox"]
+    }
+  ],
+  "defaultSession": {
+    "name": "N-way Synteny Demo",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          {
+            "type": "LinearGenomeView",
+            "hideHeader": true,
+            "init": {
+              "assembly": "volvox",
+              "loc": "ctgA"
+            }
+          },
+          {
+            "type": "LinearGenomeView",
+            "hideHeader": true,
+            "init": {
+              "assembly": "volvox_ins",
+              "loc": "ctgA"
+            }
+          },
+          {
+            "type": "LinearGenomeView",
+            "hideHeader": true,
+            "init": {
+              "assembly": "volvox_del",
+              "loc": "ctgA"
+            }
+          }
+        ],
+        "init": {
+          "views": [
+            { "assembly": "volvox", "loc": "ctgA" },
+            { "assembly": "volvox_ins", "loc": "ctgA" },
+            { "assembly": "volvox_del", "loc": "ctgA" }
+          ],
+          "tracks": [
+            ["volvox_ins_synteny_pif"],
+            ["volvox_del_synteny_pif"]
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -19,7 +19,9 @@ import {
 import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export type { WiggleDisplayModel } from './buildSourceRenderData.ts'
+import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
+
+export type { WiggleDisplayModel }
 
 type LGV = LinearGenomeViewModel
 
@@ -279,7 +281,7 @@ const WiggleComponent = observer(function WiggleComponent({
             width,
           }}
         >
-          {model.ticks.values.map((v, idx) => {
+          {model.ticks.values.map((v: number, idx: number) => {
             const pos = model.ticks!.position(v)
             if (!Number.isFinite(pos)) {
               return null

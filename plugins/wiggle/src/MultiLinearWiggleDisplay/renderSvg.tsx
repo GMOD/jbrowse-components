@@ -35,19 +35,22 @@ interface FeatureSlice {
   color: string
 }
 
+const DEFAULT_SOURCE_COLOR = '#999'
+
 function getFeatureSlices(
   source: MultiWiggleSourceData,
-  color: string,
-  negColor: string,
+  color: string | undefined,
+  negColor: string | undefined,
   isOverlay: boolean,
 ) {
+  const posColor = color ?? DEFAULT_SOURCE_COLOR
   const slices: FeatureSlice[] = []
   if (source.posNumFeatures > 0) {
     slices.push({
       positions: source.posFeaturePositions,
       scores: source.posFeatureScores,
       numFeatures: source.posNumFeatures,
-      color,
+      color: posColor,
     })
   }
   if (source.negNumFeatures > 0) {
@@ -55,7 +58,7 @@ function getFeatureSlices(
       positions: source.negFeaturePositions,
       scores: source.negFeatureScores,
       numFeatures: source.negNumFeatures,
-      color: isOverlay ? color : negColor,
+      color: isOverlay || !negColor ? posColor : negColor,
     })
   }
   return slices

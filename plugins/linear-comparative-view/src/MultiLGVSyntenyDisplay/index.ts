@@ -1,5 +1,6 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaF from './configSchemaF.ts'
 import stateModelF from './model.ts'
@@ -16,7 +17,7 @@ export default function MultiLGVSyntenyDisplayF(pluginManager: PluginManager) {
       stateModel,
       trackType: 'SyntenyTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: lazy(() => import('./components/Component.tsx')),
     })
   })
 }

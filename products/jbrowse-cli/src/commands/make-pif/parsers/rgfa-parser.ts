@@ -153,6 +153,7 @@ function extractSyntenyFromPaths(
     endB: number
     strand: string
     sharedBp: number
+    segmentIds: string[]
   }[] = []
 
   let offsetA = 0
@@ -162,6 +163,7 @@ function extractSyntenyFromPaths(
   let blockEndB = -1
   let blockStrand = '+'
   let sharedBp = 0
+  let blockSegmentIds: string[] = []
 
   for (const step of pathA) {
     const len = segments.get(step.seg) ?? 0
@@ -178,16 +180,19 @@ function extractSyntenyFromPaths(
         blockEndB = bPos.offset + len
         blockStrand = strand
         sharedBp = len
+        blockSegmentIds = [step.seg]
       } else if (strand === blockStrand) {
         blockEndA = offsetA + len
         blockStartB = Math.min(blockStartB, bPos.offset)
         blockEndB = Math.max(blockEndB, bPos.offset + len)
         sharedBp += len
+        blockSegmentIds.push(step.seg)
       } else {
         blocks.push({
           startA: blockStartA, endA: blockEndA,
           startB: blockStartB, endB: blockEndB,
           strand: blockStrand, sharedBp,
+          segmentIds: blockSegmentIds,
         })
         blockStartA = offsetA
         blockEndA = offsetA + len
@@ -195,6 +200,7 @@ function extractSyntenyFromPaths(
         blockEndB = bPos.offset + len
         blockStrand = strand
         sharedBp = len
+        blockSegmentIds = [step.seg]
       }
     } else {
       if (blockStartA !== -1) {
@@ -202,9 +208,11 @@ function extractSyntenyFromPaths(
           startA: blockStartA, endA: blockEndA,
           startB: blockStartB, endB: blockEndB,
           strand: blockStrand, sharedBp,
+          segmentIds: blockSegmentIds,
         })
         blockStartA = -1
         sharedBp = 0
+        blockSegmentIds = []
       }
     }
     offsetA += len
@@ -214,6 +222,7 @@ function extractSyntenyFromPaths(
       startA: blockStartA, endA: blockEndA,
       startB: blockStartB, endB: blockEndB,
       strand: blockStrand, sharedBp,
+      segmentIds: blockSegmentIds,
     })
   }
 
@@ -231,5 +240,8 @@ function extractSyntenyFromPaths(
     tend: b.endB,
     numMatches: b.sharedBp,
     blockLen: Math.max(b.endA - b.startA, b.endB - b.startB),
+    segmentId: b.segmentIds.length === 1
+      ? b.segmentIds[0]
+      : `${b.segmentIds[0]}_${b.segmentIds[b.segmentIds.length - 1]}`,
   }))
 }

@@ -47,5 +47,8 @@ export async function doSubmit({
       }
     })
   }
+  if (model.levels.length >= 4) {
+    model.autoScaleLevelHeights()
+  }
   model.clearImportFormSyntenyTracks()
 }

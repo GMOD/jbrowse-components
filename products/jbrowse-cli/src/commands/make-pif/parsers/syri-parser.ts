@@ -29,6 +29,7 @@ export interface PAFLikeRecord {
   blockLen: number
   cigar?: string
   syriType?: string
+  segmentId?: string
 }
 
 export async function parseSyriOutput(

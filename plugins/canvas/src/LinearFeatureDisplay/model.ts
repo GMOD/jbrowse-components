@@ -207,7 +207,7 @@ export default function stateModelFactory(
 
       get effectiveShowDescriptions(): boolean {
         return (
-          self.showDescriptions &&
+          this.showDescriptions &&
           self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
         )
       },
@@ -225,7 +225,7 @@ export default function stateModelFactory(
       },
 
       get effectiveGeneGlyphMode(): string {
-        const mode = self.geneGlyphMode
+        const mode = this.geneGlyphMode
         if (mode === 'auto') {
           const view = getContainingView(self) as LGV
           return view.bpPerPx > 100 ? 'longestCoding' : 'all'

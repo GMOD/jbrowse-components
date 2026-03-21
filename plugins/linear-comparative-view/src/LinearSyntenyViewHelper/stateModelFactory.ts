@@ -37,7 +37,16 @@ export function linearSyntenyViewHelperModelFactory(
        * #property
        */
       level: types.number,
+      /**
+       * #property
+       */
+      collapsed: false,
     })
+    .views(self => ({
+      get effectiveHeight() {
+        return self.collapsed ? 10 : self.height
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -45,6 +54,18 @@ export function linearSyntenyViewHelperModelFactory(
       setHeight(n: number) {
         self.height = n
         return self.height
+      },
+      /**
+       * #action
+       */
+      setCollapsed(collapsed: boolean) {
+        self.collapsed = collapsed
+      },
+      /**
+       * #action
+       */
+      toggleCollapsed() {
+        self.collapsed = !self.collapsed
       },
 
       /**

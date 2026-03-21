@@ -203,6 +203,29 @@ describe('PairwiseIndexedPAFAdapter', () => {
     })
   })
 
+  describe('getPairInfo', () => {
+    it('returns pairCount=1 for single-pair PIF', async () => {
+      const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
+      const pairInfo = await adapter.getPairInfo()
+      expect(pairInfo.pairCount).toBe(1)
+      expect(pairInfo.pairs.size).toBe(0)
+    })
+  })
+
+  describe('getMultiPairFeatures', () => {
+    it('returns empty results for single-pair PIF (no pairs header)', async () => {
+      const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
+      const result = await adapter.getMultiPairFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 60000,
+        assemblyName: 'volvox',
+      })
+      expect(result.genomeNames).toEqual([])
+      expect(result.genomeRows.size).toBe(0)
+    })
+  })
+
   describe('getAssemblyNames', () => {
     it('returns assembly names from config', () => {
       const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])

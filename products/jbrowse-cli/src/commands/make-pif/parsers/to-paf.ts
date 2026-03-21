@@ -20,6 +20,9 @@ export function recordsToPafLines(records: PAFLikeRecord[]): string[] {
     if (r.cigar) {
       cols.push(`cg:Z:${r.cigar}`)
     }
+    if (r.segmentId) {
+      cols.push(`sg:Z:${r.segmentId}`)
+    }
     return cols.join('\t')
   })
 }

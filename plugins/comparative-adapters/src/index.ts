@@ -14,6 +14,10 @@ import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
 
 export { computeSyriTypes } from './syriUtils.ts'
 export type { SyriType } from './syriUtils.ts'
+export type {
+  MultiPairFeature,
+  PairInfo,
+} from './PairwiseIndexedPAFAdapter/PairwiseIndexedPAFAdapter.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

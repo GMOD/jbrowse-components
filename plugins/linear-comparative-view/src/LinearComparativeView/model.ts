@@ -316,6 +316,43 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.views = cast([])
         self.levels = cast([])
       },
+      /**
+       * #action
+       */
+      collapseAllLevels() {
+        for (const level of self.levels) {
+          level.setCollapsed(true)
+        }
+      },
+      /**
+       * #action
+       */
+      expandAllLevels() {
+        for (const level of self.levels) {
+          level.setCollapsed(false)
+        }
+      },
+      /**
+       * #action
+       */
+      focusLevel(idx: number) {
+        for (let i = 0; i < self.levels.length; i++) {
+          self.levels[i]!.setCollapsed(i !== idx)
+        }
+      },
+      /**
+       * #action
+       */
+      autoScaleLevelHeights() {
+        const numLevels = self.levels.length
+        if (numLevels <= 0) {
+          return
+        }
+        const targetHeight = Math.max(40, Math.min(100, 400 / numLevels))
+        for (const level of self.levels) {
+          level.setHeight(targetHeight)
+        }
+      },
     }))
     .views(() => ({
       /**
