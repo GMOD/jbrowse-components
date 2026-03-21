@@ -2,7 +2,7 @@
   "assemblies": [],
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_sample_graph",
       "name": "Volvox sample graph",
       "assemblyNames": ["path1", "path2"],

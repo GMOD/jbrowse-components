@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-import { multiPairTypes } from '@jbrowse/plugin-comparative-adapters'
 import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay/index.ts'
@@ -14,6 +13,7 @@ import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFea
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
+import MultiSyntenyTrackF from './MultiSyntenyTrack/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -35,6 +35,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     MultiLGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
+    MultiSyntenyTrackF(pluginManager)
     LinearReadVsRefMenuItemF(pluginManager)
     pluginManager.addRpcMethod(
       () => new SyntenyGetFeaturesAndPositions(pluginManager),
@@ -55,31 +56,5 @@ export default class LinearComparativeViewPlugin extends Plugin {
       })
     }
 
-    pluginManager.addToExtensionPoint(
-      'Core-preProcessTrackConfig',
-      (snap: Record<string, unknown>) => {
-        const adapter = snap.adapter as { type?: string } | undefined
-        if (
-          snap.type === 'SyntenyTrack' &&
-          adapter &&
-          multiPairTypes.includes(adapter.type ?? '')
-        ) {
-          const displays = snap.displays as { type: string }[] | undefined
-          if (displays) {
-            const multiIdx = displays.findIndex(
-              d => d.type === 'MultiLGVSyntenyDisplay',
-            )
-            const lgvIdx = displays.findIndex(
-              d => d.type === 'LGVSyntenyDisplay',
-            )
-            if (multiIdx > lgvIdx && lgvIdx >= 0) {
-              const [multi] = displays.splice(multiIdx, 1)
-              displays.splice(lgvIdx, 0, multi!)
-            }
-          }
-        }
-        return snap
-      },
-    )
   }
 }

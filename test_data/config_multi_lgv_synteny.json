@@ -74,7 +74,7 @@
   },
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_multi_pif",
       "name": "Volvox multi-genome synteny (PIF)",
       "category": ["Synteny"],
@@ -96,7 +96,7 @@
       "assemblyNames": ["volvox_ins", "volvox", "volvox_del"]
     },
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_ins_pif",
       "name": "volvox vs volvox_ins (PIF)",
       "category": ["Synteny"],
@@ -118,7 +118,7 @@
       "assemblyNames": ["volvox_ins", "volvox"]
     },
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_del_pif",
       "name": "volvox vs volvox_del (PIF)",
       "category": ["Synteny"],
@@ -140,7 +140,7 @@
       "assemblyNames": ["volvox_del", "volvox"]
     },
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_snp_cs_pif",
       "name": "volvox vs volvox_snp (PIF with cs tags)",
       "category": ["Synteny"],

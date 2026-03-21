@@ -20,7 +20,7 @@
   },
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_pangenome_gfa",
       "name": "Volvox pangenome (4 genomes, GFA with cs)",
       "category": ["Synteny"],
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "volvox_pangenome_gfa_no_aln",
       "name": "Volvox pangenome (4 genomes, GFA without aln)",
       "category": ["Synteny"],

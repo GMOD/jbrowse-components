@@ -15,7 +15,7 @@ export default function MultiLGVSyntenyDisplayF(pluginManager: PluginManager) {
       name: 'MultiLGVSyntenyDisplay',
       configSchema,
       stateModel,
-      trackType: 'SyntenyTrack',
+      trackType: 'MultiSyntenyTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(() => import('./components/Component.tsx')),
     })

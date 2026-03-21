@@ -66,7 +66,7 @@
   },
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "chrM_gfa_tabix",
       "name": "chrM pangenome synteny (GFA tabix, 4 human MT genomes)",
       "category": ["Synteny"],

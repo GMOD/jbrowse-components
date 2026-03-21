@@ -18,7 +18,7 @@
   },
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "hprc_chrM_gfa_synteny",
       "name": "HPRC chrM pangenome synteny (44 haplotypes, minigraph-cactus v1.1)",
       "category": ["Synteny"],

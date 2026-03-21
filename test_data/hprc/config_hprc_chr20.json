@@ -18,7 +18,7 @@
   },
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "hprc_chr20_gfa_synteny",
       "name": "HPRC chr20 pangenome synteny (90 haplotypes, minigraph-cactus v1.1)",
       "category": ["Synteny"],
