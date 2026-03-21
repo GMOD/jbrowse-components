@@ -199,6 +199,93 @@ describe('GFA to SQLite conversion', () => {
     })
   })
 
+  it('can project a region from one genome to others via shared segments', async () => {
+    await withTempDb(async dbPath => {
+      const db = createGfaDatabase(dbPath)
+      await populateFromGfa(db, GFA_FILE)
+
+      const refPath = db
+        .prepare("SELECT id FROM paths WHERE sample = 'ref#1'")
+        .get() as { id: number }
+
+      // Find segments in ref region [0, 100000]
+      const refSteps = db
+        .prepare(
+          `SELECT segment_id, cumulative_offset, segment_length
+           FROM path_steps
+           WHERE path_id = ?
+             AND cumulative_offset + segment_length > 0
+             AND cumulative_offset < 100000
+           ORDER BY step_index`,
+        )
+        .all(refPath.id) as {
+        segment_id: string
+        cumulative_offset: number
+        segment_length: number
+      }[]
+
+      expect(refSteps.length).toBeGreaterThan(0)
+
+      // For each other genome, find where those segments appear
+      const otherPaths = db
+        .prepare("SELECT id, sample FROM paths WHERE sample != 'ref#1'")
+        .all() as { id: number; sample: string }[]
+
+      for (const otherPath of otherPaths) {
+        const segmentIds = refSteps.map(s => s.segment_id)
+        const placeholders = segmentIds.map(() => '?').join(',')
+        const projected = db
+          .prepare(
+            `SELECT segment_id, cumulative_offset, segment_length, orientation
+             FROM path_steps
+             WHERE path_id = ?
+               AND segment_id IN (${placeholders})
+             ORDER BY step_index`,
+          )
+          .all(otherPath.id, ...segmentIds) as {
+          segment_id: string
+          cumulative_offset: number
+          segment_length: number
+          orientation: string
+        }[]
+
+        expect(projected.length).toBeGreaterThan(0)
+
+        // Verify projected segments have valid offsets
+        for (const step of projected) {
+          expect(step.cumulative_offset).toBeGreaterThanOrEqual(0)
+          expect(step.segment_length).toBeGreaterThan(0)
+        }
+      }
+
+      db.close()
+    })
+  })
+
+  it('computes correct total_length for paths', async () => {
+    await withTempDb(async dbPath => {
+      const db = createGfaDatabase(dbPath)
+      await populateFromGfa(db, GFA_FILE)
+
+      const paths = db
+        .prepare('SELECT id, name, total_length FROM paths')
+        .all() as { id: number; name: string; total_length: number }[]
+
+      for (const p of paths) {
+        // Sum segment lengths for this path
+        const sumResult = db
+          .prepare(
+            'SELECT SUM(segment_length) as total FROM path_steps WHERE path_id = ?',
+          )
+          .get(p.id) as { total: number }
+
+        expect(p.total_length).toBe(sumResult.total)
+      }
+
+      db.close()
+    })
+  })
+
   it('filters by assemblies when specified', async () => {
     await withTempDb(async dbPath => {
       const db = createGfaDatabase(dbPath)

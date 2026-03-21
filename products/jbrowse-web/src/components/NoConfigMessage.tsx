@@ -51,10 +51,10 @@ const sampleConfigs: [string, string][] = [
   ['test_data/config_demo.json', 'Human sample data'],
   ['test_data/sars-cov2/config.json', 'SARS-CoV2'],
   ['test_data/cfam2/config.json', 'Dog (NCBI sequence aliases adapter)'],
-  ['test_data/breakpoint/config.json', 'Breakpoint'],
-  ['test_data/many_contigs/config.json', 'Many contigs'],
   ['test_data/honeybee/config.json', 'Honeybee'],
   ['test_data/wormbase/config.json', 'Wormbase'],
+  ['test_data/breakpoint/config.json', 'Breakpoint'],
+  ['test_data/many_contigs/config.json', 'Many contigs'],
   ['test_data/wgbs/config.json', 'WGBS methylation'],
   ['test_data/methylation_test/config.json', 'Nanopore methylation'],
   ['test_data/volvox/config_main_thread.json', 'Volvox (mainthreadrpc)'],
@@ -71,10 +71,29 @@ const syntenyConfigs: [string, string][] = [
   ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
   ['test_data/config_human_dotplot.json', 'Human dotplot'],
   ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
-  ['test_data/config_synteny_nway.json', 'N-way synteny (3 genomes, PIF)'],
+  [
+    'test_data/config_synteny_nway.json',
+    '3-way volvox synteny (volvox+ins+del)',
+  ],
+  [
+    'test_data/config_multi_lgv_synteny.json',
+    'Multi-genome volvox synteny (LGV, multi-pair)',
+  ],
+  [
+    'test_data/arabidopsis_synteny/config.json',
+    'Arabidopsis 4-way synteny (Col-0, Ler, Cvi, Eri)',
+  ],
+  [
+    'test_data/arabidopsis_synteny/config_chrM_pangenome.json',
+    'Human chrM pangenome (4 genomes, GFA tabix)',
+  ],
+  [
+    'test_data/hprc/config_hprc_chrM.json',
+    'HPRC chrM pangenome (44 haplotypes, minigraph-cactus)',
+  ],
 ]
 
-const demoSessions = [
+const demoSessions: { href: string; label: string }[] = [
   {
     href: '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
     label: 'Human instance with HG002 insertion shown',
@@ -137,7 +156,7 @@ const demoSessions = [
   },
 ]
 
-const galleryDemos = [
+const galleryDemos: { href: string; label: string }[] = [
   {
     href: '?config=test_data%2Fconfig_dotplot.json&session=share-r4sMB3bHh5&password=C9jCa',
     label: 'Dotplot showing alignment between grape vs peach genome',
@@ -194,21 +213,34 @@ const galleryDemos = [
 
 export default function NoConfigMessage() {
   const { href, search } = window.location
-  const { config, ...rest } = Object.fromEntries(new URLSearchParams(search))
+  const { config: _config, ...rest } = Object.fromEntries(
+    new URLSearchParams(search),
+  )
   const root = href.split('?')[0] ?? href
   return (
-    <div>
-      <div>Sample JBrowse configs:</div>
-      <ConfigLinkList root={root} rest={rest} links={sampleConfigs} />
+    <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: '0 0 4px' }}>
+          Sample configs{' '}
+          <small style={{ fontWeight: 'normal', fontSize: '0.8em' }}>
+            (local test data, requires dev server)
+          </small>
+        </h3>
+        <ConfigLinkList root={root} rest={rest} links={sampleConfigs} />
 
-      <div>Synteny and dotplot:</div>
-      <ConfigLinkList root={root} rest={rest} links={syntenyConfigs} />
+        <h3 style={{ margin: '16px 0 4px' }}>Synteny and dotplot</h3>
+        <ConfigLinkList root={root} rest={rest} links={syntenyConfigs} />
+      </div>
 
-      <div>Demo sessions:</div>
-      <SessionLinkList links={demoSessions} />
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: '0 0 4px' }}>Demo sessions</h3>
+        <SessionLinkList links={demoSessions} />
+      </div>
 
-      <div>Gallery demos:</div>
-      <SessionLinkList links={galleryDemos} />
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: '0 0 4px' }}>Gallery demos</h3>
+        <SessionLinkList links={galleryDemos} />
+      </div>
     </div>
   )
 }

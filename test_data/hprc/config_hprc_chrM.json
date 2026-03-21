@@ -1,0 +1,90 @@
+{
+  "assemblies": [
+    {
+      "name": "GRCh38#0",
+      "displayName": "GRCh38",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grch38_0_refseq",
+        "adapter": {
+          "type": "FromConfigRegionsAdapter",
+          "features": [{ "uniqueId": "grch38-chrM", "refName": "chrM", "start": 0, "end": 16569 }]
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_chrM_gfa_synteny",
+      "name": "HPRC chrM pangenome synteny (44 haplotypes, minigraph-cactus v1.1)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segsLocation": {
+          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.segs.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "segsIndex": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.segs.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": [
+          "GRCh38#0", "CHM13#0",
+          "HG00438#2", "HG00621#2", "HG00673#2", "HG00733#2", "HG00735#2",
+          "HG00741#2", "HG01106#2", "HG01109#2", "HG01123#2", "HG01175#2",
+          "HG01243#2", "HG01258#2", "HG01358#2", "HG01361#2", "HG01891#2",
+          "HG01928#2", "HG01952#2", "HG01978#2", "HG02055#2", "HG02080#2",
+          "HG02109#2", "HG02145#2", "HG02148#2", "HG02257#2", "HG02486#2",
+          "HG02559#2", "HG02572#2", "HG02622#2", "HG02630#2", "HG02717#2",
+          "HG02723#2", "HG02818#2", "HG02886#2", "HG03098#2", "HG03453#2",
+          "HG03486#2", "HG03492#2", "HG03516#2", "HG03540#2", "HG03579#2",
+          "NA18906#2", "NA20129#2"
+        ]
+      },
+      "assemblyNames": [
+        "GRCh38#0", "CHM13#0",
+        "HG00438#2", "HG00621#2", "HG00673#2", "HG00733#2", "HG00735#2",
+        "HG00741#2", "HG01106#2", "HG01109#2", "HG01123#2", "HG01175#2",
+        "HG01243#2", "HG01258#2", "HG01358#2", "HG01361#2", "HG01891#2",
+        "HG01928#2", "HG01952#2", "HG01978#2", "HG02055#2", "HG02080#2",
+        "HG02109#2", "HG02145#2", "HG02148#2", "HG02257#2", "HG02486#2",
+        "HG02559#2", "HG02572#2", "HG02622#2", "HG02630#2", "HG02717#2",
+        "HG02723#2", "HG02818#2", "HG02886#2", "HG03098#2", "HG03453#2",
+        "HG03486#2", "HG03492#2", "HG03516#2", "HG03540#2", "HG03579#2",
+        "NA18906#2", "NA20129#2"
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "HPRC chrM pangenome",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "displayedRegions": [
+          {
+            "assemblyName": "GRCh38#0",
+            "refName": "chrM",
+            "start": 0,
+            "end": 16569
+          }
+        ]
+      }
+    ]
+  }
+}

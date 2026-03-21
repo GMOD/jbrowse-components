@@ -1,0 +1,68 @@
+{
+  "assemblies": [
+    {
+      "name": "GRCh38#0",
+      "displayName": "GRCh38",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grch38_0_chr20_refseq",
+        "adapter": {
+          "type": "FromConfigRegionsAdapter",
+          "features": [{ "uniqueId": "grch38-chr20", "refName": "chr20", "start": 0, "end": 64444167 }]
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_chr20_gfa_synteny",
+      "name": "HPRC chr20 pangenome synteny (90 haplotypes, minigraph-cactus v1.1)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segsLocation": {
+          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.segs.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "segsIndex": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.segs.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": ["GRCh38#0"]
+      },
+      "assemblyNames": ["GRCh38#0"]
+    }
+  ],
+  "defaultSession": {
+    "name": "HPRC chr20 pangenome",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "displayedRegions": [
+          {
+            "assemblyName": "GRCh38#0",
+            "refName": "chr20",
+            "start": 30000000,
+            "end": 31000000
+          }
+        ]
+      }
+    ]
+  }
+}

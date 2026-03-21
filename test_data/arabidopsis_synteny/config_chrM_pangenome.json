@@ -1,0 +1,100 @@
+{
+  "assemblies": [
+    {
+      "name": "grch38#1",
+      "displayName": "GRCh38",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grch38_chrM_refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "grch38_1_chrM.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "chm13#1",
+      "displayName": "CHM13",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "chm13_chrM_refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "chm13_1_chrM.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG00438#2",
+      "displayName": "HG00438",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg00438_chrM_refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "HG00438_2_chrM.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG00621#2",
+      "displayName": "HG00621",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg00621_chrM_refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "HG00621_2_chrM.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "chrM_gfa_tabix",
+      "name": "chrM pangenome synteny (GFA tabix, 4 human MT genomes)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "chrM_pangenome.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "chrM_pangenome.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segsLocation": {
+          "uri": "chrM_pangenome.segs.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "segsIndex": {
+          "location": {
+            "uri": "chrM_pangenome.segs.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": ["grch38#1", "chm13#1", "HG00438#2", "HG00621#2"]
+      },
+      "assemblyNames": ["grch38#1", "chm13#1", "HG00438#2", "HG00621#2"]
+    }
+  ]
+}

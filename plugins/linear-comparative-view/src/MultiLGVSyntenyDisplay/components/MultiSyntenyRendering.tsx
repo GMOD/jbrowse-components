@@ -270,6 +270,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       followCursor
     >
       <canvas
+        data-testid="multi_synteny_canvas"
         ref={canvasRef}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}

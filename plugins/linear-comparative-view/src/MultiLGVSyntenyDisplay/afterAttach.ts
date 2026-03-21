@@ -2,6 +2,7 @@ import {
   getContainingTrack,
   getContainingView,
   getEnv,
+  getSession,
   isAbortException,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
@@ -25,11 +26,15 @@ interface MultiPairAdapter {
     genomeNames: string[]
     genomeRows: Map<string, MultiPairFeature[]>
   }>
+  getChromSizes?(): Promise<
+    Map<string, { refName: string; length: number }[]>
+  >
 }
 
 export function doAfterAttach(self: MultiLGVSyntenyDisplayModel) {
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
   let currentStopToken: StopToken | undefined
+  let assembliesCreated = false
 
   addDisposer(
     self,
@@ -76,6 +81,35 @@ export function doAfterAttach(self: MultiLGVSyntenyDisplayModel) {
               adapterConfig,
             )
             const adapter = dataAdapter as unknown as MultiPairAdapter
+
+            if (!assembliesCreated && adapter.getChromSizes) {
+              assembliesCreated = true
+              const chromSizes = await adapter.getChromSizes()
+              const session = getSession(self)
+              const { assemblyManager } = session
+              if (session.addAssembly) {
+                for (const [genome, regions] of chromSizes) {
+                  if (!assemblyManager.get(genome)) {
+                    session.addAssembly({
+                      name: genome,
+                      sequence: {
+                        type: 'ReferenceSequenceTrack',
+                        trackId: `${genome.replaceAll('#', '_')}_refseq`,
+                        adapter: {
+                          type: 'FromConfigRegionsAdapter',
+                          features: regions.map((r, i) => ({
+                            uniqueId: `${genome}-${r.refName}-${i}`,
+                            refName: r.refName,
+                            start: 0,
+                            end: r.length,
+                          })),
+                        },
+                      },
+                    })
+                  }
+                }
+              }
+            }
 
             const contentBlocks = view.staticBlocks.contentBlocks
             const bpPerPx = view.bpPerPx
