@@ -73,13 +73,13 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                     setConnectionId(`${c.name}-${Date.now()}`)
                   }}
                 />
-              ) : configModel ? (
+              ) : (
                 <ConfigureConnection
                   connectionType={connectionType}
                   model={configModel}
                   session={session}
                 />
-              ) : null}
+              )}
               <div className={classes.actionsContainer}>
                 <Button
                   disabled={activeStep === 0}
@@ -91,14 +91,12 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                   Back
                 </Button>
                 <Button
-                  disabled={
-                    !(activeStep === 0 || (activeStep === 1 && configModel))
-                  }
+                  disabled={activeStep !== 0 && activeStep !== 1}
                   variant="contained"
                   color="primary"
                   onClick={() => {
                     if (activeStep === steps.length - 1) {
-                      if (configModel && isSessionWithConnections(session)) {
+                      if (isSessionWithConnections(session)) {
                         const conf = session.addConnectionConf(configModel)
                         session.makeConnection(conf)
                       } else {

@@ -5,7 +5,7 @@
  * and GPU data upload coordination.
  */
 
-import { colord } from '@jbrowse/core/util/colord'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { fillColor } from '../../shared/color.ts'
 
@@ -22,8 +22,7 @@ import type {
 import type { Theme } from '@mui/material'
 
 function toRgb(color: string): RGBColor {
-  const { r, g, b } = colord(color).toRgb()
-  return [r / 255, g / 255, b / 255]
+  return cssColorToNormalizedRgb(color)
 }
 
 /**

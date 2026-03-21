@@ -1,10 +1,9 @@
-import { colord } from '@jbrowse/core/util/colord'
+import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 
 import type { Feature } from '@jbrowse/core/util'
 
-// Parse any CSS color string to [r,g,b] tuple using colord
 export function parseCssColor(color: string): [number, number, number] {
-  const { r, g, b } = colord(color).toRgb()
+  const [r, g, b] = cssColorToRgba(color)
   return [r, g, b]
 }
 

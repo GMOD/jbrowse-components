@@ -1,4 +1,4 @@
-import { colord } from '@jbrowse/core/util/colord'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { INSTANCE_STRIDE } from './wiggleShader.ts'
 
@@ -17,8 +17,7 @@ const parseColorCache = new Map<string, [number, number, number]>()
 export function parseColor(color: string): [number, number, number] {
   let result = parseColorCache.get(color)
   if (!result) {
-    const { r, g, b } = colord(color).toRgb()
-    result = [r / 255, g / 255, b / 255]
+    result = cssColorToNormalizedRgb(color)
     parseColorCache.set(color, result)
   }
   return result

@@ -1,5 +1,8 @@
 import { category10 } from '@jbrowse/core/ui/colors'
-import { colord } from '@jbrowse/core/util/colord'
+import {
+  cssColorToNormalizedRgb,
+  cssColorToNormalizedRgba,
+} from '@jbrowse/core/util/colorBits'
 
 import { colorSchemes } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
@@ -23,8 +26,7 @@ function toRelativeFloat32(
 }
 
 function cssColorToNormalized(color: string): [number, number, number, number] {
-  const { r, g, b, a } = colord(color).toRgb()
-  return [r / 255, g / 255, b / 255, a]
+  return cssColorToNormalizedRgba(color)
 }
 
 function hashString(str: string) {
@@ -37,10 +39,7 @@ function hashString(str: string) {
   return Math.abs(hash)
 }
 
-const category10Normalized = category10.map(hex => {
-  const { r, g, b } = colord(hex).toRgb()
-  return [r / 255, g / 255, b / 255] as [number, number, number]
-})
+const category10Normalized = category10.map(hex => cssColorToNormalizedRgb(hex))
 
 type RGBA = [number, number, number, number]
 
