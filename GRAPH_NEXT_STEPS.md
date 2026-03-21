@@ -2,23 +2,26 @@
 
 ## Scalability (remaining)
 
-- [ ] Move screen-space line width to vertex shader — eliminates geometry
-      rebuild on zoom
-- [ ] Viewport culling — skip geometry for nodes/edges outside visible area
-- [ ] Edge spatial index — extend SpatialIndex to edges for O(1) edge hit
-      detection
-- [ ] LOD — reduce tessellation detail at low zoom levels, skip small nodes
+- [ ] LOD — reduce Bezier tessellation detail at low zoom levels (`flatness =
+      Math.max(0.5, 2.0 / scale)`), skip nodes whose screen-space length < 2px
+- [ ] Adaptive multi-path edge offset — currently fixed at 3 graph units,
+      should scale with zoom for consistent screen-space separation
 
 ## GfaAdapter Integration
 
-- [ ] Wire graph view's ImportForm to load from GfaAdapter tracks (open from
-      track list)
+- [ ] Wire graph view's ImportForm to load from GfaAdapter/GfaTabixAdapter
+      tracks (open from track list)
 - [ ] Add GfaAdapter to `GuessAdapter` for `.gfa` file extension detection
+- [ ] GfaTabixAdapter subgraph loading — fetch segments for a configurable
+      region, convert to Graph format, compute layout on subgraph only
+      (enables BandageNG-style scope-based viewing for huge files)
 
 ## Rendering
 
-- [ ] Investigate incremental geometry updates (only rebuild changed nodes/edges
-      on hover) to avoid full `buildGeometry` on every frame
+- [ ] Depth-based node width — per-vertex thickness attribute computed from
+      coverage depth using power function (matches BandageNG's
+      `getNodeWidth()`)
+- [ ] Anti-aliased edges — MSAA or alpha blending for smoother line rendering
 
 ## Interaction
 
@@ -38,8 +41,13 @@
 ## View Features
 
 - [ ] Contig/connector thickness sliders (volatiles exist, no UI)
+- [ ] Dark mode UI toggle (state exists, no toggle button)
 - [ ] Export graph view as SVG or PNG
 
 ## Testing
 
 - [ ] Unit tests for `GfaAdapter` with sample GFA files
+- [ ] Performance benchmarks — 10K+ node GFA with console.time guards around
+      buildGeometry to verify hover/zoom don't trigger rebuilds
+- [ ] Browser e2e test for hover highlighting (verify color changes without
+      geometry rebuild)

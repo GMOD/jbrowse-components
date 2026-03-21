@@ -45,6 +45,13 @@
 ## Scalability
 - [x] Spatial index for hit detection — grid-based index turns O(N) per-mousemove into O(1) average
 - [x] Separate transform from geometry rebuild — panning only updates transform uniform + re-renders, no geometry rebuild
+- [x] Sub-batches with vertex range tracking — edges/nodes/arrows in separate GPU buffers with per-element vertex ranges for targeted color updates
+- [x] Shader-based line thickness — normals + thicknesses stored per vertex, expanded in vertex shader (`pos + normal * thickness / scale`), eliminates geometry rebuild on zoom
+- [x] Hover/select decoupled from geometry — color brightening via `bufferSubData`/`writeBuffer`, no geometry rebuild on hover/select
+- [x] Viewport culling — skip geometry for nodes/edges outside visible area with 20% padding, debounced rebuild (150ms) on pan/zoom settle
+- [x] Edge spatial index — `EdgeSpatialIndex` class uses Bezier bounding boxes for O(1) edge hit detection
+- [x] Incremental color scheme changes — `recolorNodes()` updates node colors via `updateSubBatchColors` without geometry rebuild
+- [x] Scale-independent edge curves — `computeEdgeCurves()` uses fixed graph-space control point distances (matches BandageNG pattern)
 
 ## Bug Fixes
 - [x] gfaConverter now includes nodes referenced in paths but not links (was silently dropping them)
@@ -69,9 +76,9 @@
 ## Testing
 - [x] Unit tests for `parseGFA` — GFA1 segments/links/paths, GFA2 E-lines, tags, headers, edge cases (8 tests)
 - [x] Unit tests for `convertGFAToGraph` — strand nodes, CIGAR overlap, depth tags, path mapping, orphan nodes (11 tests)
-- [x] Unit tests for `GeometryBuilder` — batch output, color schemes, hover thickness, empty graph, paths (5 tests)
+- [x] Unit tests for `GeometryBuilder` — sub-batches, vertex ranges, normals/thicknesses, recolor, brighten, viewport culling (9 tests)
 - [x] Unit tests for hit detection — `distanceToSegment`, `distanceToCubicBezier`, `findHoveredNode` (9 tests)
-- [x] Unit tests for geometry utils — `projectLine`, `computeEdgeCurves` normal/self-loop/offset (8 tests)
+- [x] Unit tests for geometry utils — `projectLine`, `computeEdgeCurves` normal/self-loop/offset (7 tests)
 - [x] Unit tests for `SpatialIndex` — nearby/far queries, intersections, deduplication (5 tests)
 - [x] Browser e2e test — puppeteer suite with canvas snapshot showing rendered graph (4 nodes, diamond topology)
 
