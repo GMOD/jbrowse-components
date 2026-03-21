@@ -83,7 +83,7 @@
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.1",
     "@types/json-parse-better-errors": "^1.0.3",
-    "@types/node": "^20.19.37",
+    "@types/node": "^25.5.0",
     "@types/pluralize": "^0.0.33",
     "@types/pngjs": "^6.0.5",
     "@types/range-parser": "^1.2.7",
