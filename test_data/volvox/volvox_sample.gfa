@@ -1,0 +1,13 @@
+H	VN:Z:1.0
+S	s1	ACGTACGTACGT
+S	s2	GGCCAATTGGCC
+S	s3	TTAACCGGTTAA
+S	s4	CCGGTTAACCGG
+S	s5	AATTCCGGAATT
+L	s1	+	s2	+	0M
+L	s1	+	s3	+	0M
+L	s2	+	s4	+	0M
+L	s3	+	s4	+	0M
+L	s4	+	s5	+	0M
+P	path1	s1+,s2+,s4+,s5+	*
+P	path2	s1+,s3+,s4+,s5+	*

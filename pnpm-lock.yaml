@@ -1037,6 +1037,33 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
 
+  plugins/graph:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.6.0
+        version: 5.6.0(mobx@6.15.0)
+      '@mui/icons-material':
+        specifier: ^7.3.9
+        version: 7.3.9(@mui/material@7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
+      '@mui/material':
+        specifier: ^7.3.9
+        version: 7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      mobx:
+        specifier: ^6.15.0
+        version: 6.15.0
+      mobx-react:
+        specifier: ^9.2.1
+        version: 9.2.1(mobx@6.15.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.4
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.4(react@19.2.4)
+
   plugins/grid-bookmark:
     dependencies:
       '@jbrowse/core':
@@ -2228,6 +2255,9 @@ importers:
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
+      '@jbrowse/plugin-graph':
+        specifier: workspace:^
+        version: link:../../plugins/graph
       '@jbrowse/plugin-grid-bookmark':
         specifier: workspace:^
         version: link:../../plugins/grid-bookmark

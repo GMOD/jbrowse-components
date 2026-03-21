@@ -1,0 +1,15 @@
+{
+  "assemblies": [],
+  "tracks": [],
+  "graphGenome": {
+    "datasets": [
+      {
+        "name": "Volvox sample graph",
+        "gfaLocation": {
+          "uri": "volvox/volvox_sample.gfa",
+          "locationType": "UriLocation"
+        }
+      }
+    ]
+  }
+}
