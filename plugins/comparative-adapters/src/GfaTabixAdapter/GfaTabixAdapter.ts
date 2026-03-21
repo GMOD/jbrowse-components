@@ -3,6 +3,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { csToCigar } from '../csUtils.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { MultiPairFeature } from '../PairwiseIndexedPAFAdapter/PairwiseIndexedPAFAdapter.ts'
@@ -40,45 +41,6 @@ interface ParsedHeader {
 
 // Convert minimap2-style cs tag to CIGAR string
 // cs format: :N (match), *XY (substitution), +seq (insertion), -seq (deletion)
-function csToCigar(cs: string) {
-  let cigar = ''
-  let i = 0
-  while (i < cs.length) {
-    const ch = cs[i]!
-    if (ch === ':') {
-      i++
-      let num = ''
-      while (i < cs.length && cs[i]! >= '0' && cs[i]! <= '9') {
-        num += cs[i]
-        i++
-      }
-      cigar += `${num}=`
-    } else if (ch === '*') {
-      i += 3 // skip *XY
-      cigar += '1X'
-    } else if (ch === '+') {
-      i++
-      let len = 0
-      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
-        len++
-        i++
-      }
-      cigar += `${len}I`
-    } else if (ch === '-') {
-      i++
-      let len = 0
-      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
-        len++
-        i++
-      }
-      cigar += `${len}D`
-    } else {
-      i++
-    }
-  }
-  return cigar
-}
-
 export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -297,6 +259,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
               featureId: `aln-${fileOffset}`,
               segmentId: undefined,
               cigar,
+              cs,
             })
           },
         })
@@ -439,6 +402,7 @@ export default class GfaTabixAdapter extends BaseFeatureDataAdapter {
             featureId: `gfa-${mOrd}-${otherPath}`,
             segmentId: mSegId,
             cigar: cigarParts.length > 1 ? cigarParts.join('') : undefined,
+            cs: undefined,
           })
           cigarParts = []
           matchBp = 0

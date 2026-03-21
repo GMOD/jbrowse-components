@@ -4,7 +4,7 @@ import {
   delay,
   findByText,
 } from '../helpers.ts'
-import { snapshot } from '../snapshot.ts'
+import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 
@@ -42,24 +42,28 @@ const suite: TestSuite = {
         const exampleBtn = await findByText(page, 'Load example graph', 10000)
         await exampleBtn?.click()
 
-        // Wait for layout to complete — loading overlay should disappear
+        // Wait for the layout + render to complete
         await page.waitForFunction(
           () => {
-            const canvases = document.querySelectorAll('canvas')
-            for (const c of canvases) {
-              if (c.width > 0 && c.height > 0) {
-                return true
-              }
-            }
-            return false
+            const body = document.body.textContent || ''
+            const hasNodes = body.includes('nodes')
+            const isLoading =
+              body.includes('Computing layout') ||
+              body.includes('Downloading')
+            return hasNodes && !isLoading
           },
-          { timeout: 30000, polling: 500 },
+          { timeout: 60000, polling: 500 },
         )
 
-        // Verify toolbar elements appeared
-        await findByText(page, 'nodes', 5000)
+        // Give renderer time to draw
+        await delay(2000)
 
-        await snapshot(page, 'graph-genome-example', 0.15)
+        await canvasSnapshot(
+          page,
+          'graph-genome-canvas',
+          'canvas',
+          0.15,
+        )
       },
     },
   ],

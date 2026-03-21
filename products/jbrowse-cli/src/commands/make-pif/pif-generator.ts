@@ -19,8 +19,51 @@ import { computeSyriTypes } from './syri-classify.ts'
 import type { AlignmentRecord } from './structural-summary.ts'
 import type { WritableStream } from './file-utils.ts'
 
-function stripCigarFromRest(rest: string[]) {
-  return rest.filter(f => !f.startsWith('cg:Z:'))
+function stripDetailFromRest(rest: string[]) {
+  return rest.filter(f => !f.startsWith('cg:Z:') && !f.startsWith('cs:Z:'))
+}
+
+// Swap cs tag from target-perspective to query-perspective:
+// *XY → *YX (swap ref/query), +seq → -seq (ins→del), -seq → +seq (del→ins)
+function flipCs(cs: string) {
+  let result = ''
+  let i = 0
+  while (i < cs.length) {
+    const ch = cs[i]!
+    if (ch === ':') {
+      const start = i
+      i++
+      while (i < cs.length && cs[i]! >= '0' && cs[i]! <= '9') {
+        i++
+      }
+      result += cs.slice(start, i)
+    } else if (ch === '*') {
+      // swap ref and query bases
+      result += `*${cs[i + 2]}${cs[i + 1]}`
+      i += 3
+    } else if (ch === '+') {
+      // insertion becomes deletion
+      i++
+      let seq = ''
+      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+        seq += cs[i]
+        i++
+      }
+      result += `-${seq}`
+    } else if (ch === '-') {
+      // deletion becomes insertion
+      i++
+      let seq = ''
+      while (i < cs.length && cs[i] !== ':' && cs[i] !== '*' && cs[i] !== '+' && cs[i] !== '-') {
+        seq += cs[i]
+        i++
+      }
+      result += `+${seq}`
+    } else {
+      i++
+    }
+  }
+  return result
 }
 
 interface SubAlignment {
@@ -47,7 +90,7 @@ export async function createPIF(
 
       for (const cols of subAlignments) {
         const [c1, l1, s1, e1, strand, c2, l2, , , ...rest] = cols
-        const summaryRest = stripCigarFromRest(rest)
+        const summaryRest = stripDetailFromRest(rest)
 
         allSubAlignments.push({
           cols,
@@ -98,7 +141,7 @@ export async function createPIF(
 
       // Extract large indels for summary tier (absolute positions, not CIGAR)
       const cigarField = rest.find(f => f.startsWith('cg:Z:'))
-      const summaryRest = stripCigarFromRest(rest)
+      const summaryRest = stripDetailFromRest(rest)
       if (cigarField) {
         // For target-perspective summary: indel positions relative to target start
         const indelTag = extractLargeIndels(
@@ -132,8 +175,14 @@ export async function createPIF(
         }`
       }
 
+      // Flip cs tag for query perspective (swap I↔D, swap ref/query bases)
+      const csIdx = rest.findIndex(f => f.startsWith('cs:Z:'))
+      if (csIdx >= 0) {
+        rest[csIdx] = `cs:Z:${flipCs(rest[csIdx]!.slice(5))}`
+      }
+
       // Recompute indel positions for query-perspective summary
-      const qSummaryRest = stripCigarFromRest(rest)
+      const qSummaryRest = stripDetailFromRest(rest)
       if (cigarField) {
         const qCigarStr = rest[cigarIdx]
         if (qCigarStr) {
@@ -202,7 +251,7 @@ export async function createPIFFromLines(
 
       for (const cols of subAlignments) {
         const [c1, l1, s1, e1, strand, c2, l2, , , ...rest] = cols
-        const summaryRest = stripCigarFromRest(rest)
+        const summaryRest = stripDetailFromRest(rest)
 
         allSubAlignments.push({
           cols,
@@ -247,7 +296,7 @@ export async function createPIFFromLines(
       const typeTag = `sy:Z:${syriType}`
 
       const cigarField = rest.find(f => f.startsWith('cg:Z:'))
-      const summaryRest = stripCigarFromRest(rest)
+      const summaryRest = stripDetailFromRest(rest)
       if (cigarField) {
         const indelTag = extractLargeIndels(cigarField.slice(5), minSummaryIndel, +s2!, +s1!)
         if (indelTag) {
@@ -264,7 +313,7 @@ export async function createPIFFromLines(
         rest[cigarIdx] = `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
       }
 
-      const qSummaryRest = stripCigarFromRest(rest)
+      const qSummaryRest = stripDetailFromRest(rest)
       if (cigarField) {
         const qCigarStr = rest[cigarIdx]
         if (qCigarStr) {
@@ -324,7 +373,7 @@ export async function createMultiPairPIF(
 
         for (const cols of subAlignments) {
           const [c1, l1, s1, e1, strand, c2, l2, , , ...rest] = cols
-          const summaryRest = stripCigarFromRest(rest)
+          const summaryRest = stripDetailFromRest(rest)
 
           allSubAlignments.push({
             cols,
@@ -366,7 +415,7 @@ export async function createMultiPairPIF(
         const typeTag = `sy:Z:${syriType}`
 
         const cigarField = rest.find(f => f.startsWith('cg:Z:'))
-        const summaryRest = stripCigarFromRest(rest)
+        const summaryRest = stripDetailFromRest(rest)
         if (cigarField) {
           const indelTag = extractLargeIndels(cigarField.slice(5), minSummaryIndel, +s2!, +s1!)
           if (indelTag) {
@@ -383,7 +432,7 @@ export async function createMultiPairPIF(
           rest[cigarIdx] = `cg:Z:${strand === '-' ? flipCigar(parseCigar(CIGAR.slice(5))).join('') : swapIndelCigar(CIGAR.slice(5))}`
         }
 
-        const qSummaryRest = stripCigarFromRest(rest)
+        const qSummaryRest = stripDetailFromRest(rest)
         if (cigarField) {
           const qCigarStr = rest[cigarIdx]
           if (qCigarStr) {

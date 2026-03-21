@@ -40,6 +40,7 @@
 - [x] Auto zoom-to-fit after layout completes
 - [x] `recomputeLayout()` action for changing quality/linear settings without re-parsing GFA
 - [x] Error handling — try/catch/finally in MST flows, `isLoading` always cleared
+- [x] WASM uploaded to `https://jbrowse.org/demos/bandage/` (bandage-layout.js + bandage-layout.wasm)
 
 ## Scalability
 - [x] Spatial index for hit detection — grid-based index turns O(N) per-mousemove into O(1) average
@@ -50,20 +51,29 @@
 - [x] Segment-only GFA files (no links/paths) now create forward-strand nodes (was producing empty graph)
 - [x] MST flow error handling — try/catch/finally ensures `isLoading` is always cleared on error
 - [x] Proper error messages — `e instanceof Error ? e.message : e` instead of `"${e}"` which produces `[object Object]`
+- [x] Fixed stale renderer reference — removed WeakMap cache, each GraphCanvas mount creates fresh renderer
+- [x] Fixed renderer init race — added `rendererReady` state to gate MobX autoruns until async WebGL init completes
+- [x] Fixed MST action error — `statusCallback` from RPC was writing volatile outside action, changed to call `setStatusMessage` action
+- [x] Fixed black canvas in browser tests — switched to `canvasSnapshot` targeting canvas element (full-page screenshots too small to see thin lines)
 
 ## Refactoring
 - [x] Extracted `computeEdgeCurves()` to `util/geometry.ts` — shared Bezier control point computation between GeometryBuilder and hitDetection (eliminated ~120 lines of duplication)
 - [x] Simplified hitDetection.ts to use shared `computeEdgeCurves` + `distanceToEdgeCurves`
 - [x] Simplified GeometryBuilder edge rendering with `tessellateBezierCurves` helper
 - [x] Removed redundant `setLoading(true)` calls in ImportForm (loadGFA handles it)
+- [x] Removed dead model actions (`setGraph`, `setLayoutResult`, `setLoading`) — flows handle state internally
+- [x] Extracted `renderFrame` helper in GraphCanvas — deduplicates transform+render between geometry and pan autoruns
+- [x] Removed debug logging after browser verification complete
+- [x] Increased default contigThickness (5→10) and connectorThickness (1.5→4) for visibility
 
 ## Testing
 - [x] Unit tests for `parseGFA` — GFA1 segments/links/paths, GFA2 E-lines, tags, headers, edge cases (8 tests)
-- [x] Unit tests for `convertGFAToGraph` — strand nodes, CIGAR overlap, depth tags, path mapping (8 tests)
+- [x] Unit tests for `convertGFAToGraph` — strand nodes, CIGAR overlap, depth tags, path mapping, orphan nodes (11 tests)
 - [x] Unit tests for `GeometryBuilder` — batch output, color schemes, hover thickness, empty graph, paths (5 tests)
 - [x] Unit tests for hit detection — `distanceToSegment`, `distanceToCubicBezier`, `findHoveredNode` (9 tests)
 - [x] Unit tests for geometry utils — `projectLine`, `computeEdgeCurves` normal/self-loop/offset (8 tests)
-- [x] Browser e2e test — puppeteer suite for import form rendering and example GFA load+render
+- [x] Unit tests for `SpatialIndex` — nearby/far queries, intersections, deduplication (5 tests)
+- [x] Browser e2e test — puppeteer suite with canvas snapshot showing rendered graph (4 nodes, diamond topology)
 
 ## Model & Architecture
 - [x] MST model with volatiles, views, and actions for full graph state

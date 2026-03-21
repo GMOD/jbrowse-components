@@ -91,6 +91,20 @@ const syntenyConfigs: [string, string][] = [
     'test_data/hprc/config_hprc_chrM.json',
     'HPRC chrM pangenome (44 haplotypes, minigraph-cactus)',
   ],
+  [
+    'test_data/hprc/config_hprc_chr20.json',
+    'HPRC chr20 pangenome (90 haplotypes, minigraph-cactus)',
+  ],
+  [
+    'test_data/config_gfa_pangenome.json',
+    'Volvox GFA pangenome (4 genomes, with cs tags)',
+  ],
+  [
+    'test_data/config_graph_genome.json',
+    'Graph genome viewer (GFA)',
+  ],
+  ['test_data/hs1_vs_mm39/config.json', 'Human (hs1) vs Mouse (mm39) synteny'],
+  ['test_data/hg19_vs_hg38/config.json', 'hg19 vs hg38 liftover synteny'],
 ]
 
 const demoSessions: { href: string; label: string }[] = [

@@ -28,13 +28,12 @@ export default function stateModelFactory() {
       layoutResult: undefined as LayoutResult | undefined,
       error: undefined as string | undefined,
       isLoading: false,
-      layoutProgress: 0,
-      layoutStage: '' as string,
+      statusMessage: '' as string,
       layoutQuality: 1,
       linearLayout: false,
       colorScheme: 'uniform' as ColorScheme,
-      contigThickness: 5,
-      connectorThickness: 1.5,
+      contigThickness: 10,
+      connectorThickness: 4,
       darkMode: false,
       hoveredNode: null as string | null,
       hoveredEdge: null as number | null,
@@ -65,24 +64,12 @@ export default function stateModelFactory() {
       },
     }))
     .actions(self => ({
-      setGraph(graph: Graph) {
-        self.graph = graph
-        self.error = undefined
-      },
-      setLayoutResult(result: LayoutResult) {
-        self.layoutResult = result
-        self.isLoading = false
-      },
       setError(error: string) {
         self.error = error
         self.isLoading = false
       },
-      setLoading(loading: boolean) {
-        self.isLoading = loading
-      },
-      setLayoutProgress(progress: number, stage: string) {
-        self.layoutProgress = progress
-        self.layoutStage = stage
+      setStatusMessage(message: string) {
+        self.statusMessage = message
       },
       setLayoutQuality(quality: number) {
         self.layoutQuality = quality
@@ -157,12 +144,11 @@ export default function stateModelFactory() {
       loadGFA: flow(function* (text: string, name = 'Imported GFA') {
         self.isLoading = true
         self.error = undefined
-        self.layoutProgress = 0
-        self.layoutStage = 'Parsing GFA'
+        self.statusMessage = 'Parsing GFA'
         const gfaGraph = parseGFA(text)
         const graph = convertGFAToGraph(gfaGraph, name)
         self.graph = graph
-        self.layoutStage = 'Computing layout'
+        self.statusMessage = 'Computing layout'
 
         try {
           const session = getSession(self)
@@ -178,7 +164,7 @@ export default function stateModelFactory() {
                 linearLayout: self.linearLayout,
               },
               statusCallback: (message: string) => {
-                self.setLayoutProgress(0, message)
+                self.setStatusMessage(message)
               },
             },
           )
@@ -194,8 +180,7 @@ export default function stateModelFactory() {
           return
         }
         self.isLoading = true
-        self.layoutProgress = 0
-        self.layoutStage = 'Computing layout'
+        self.statusMessage = 'Computing layout'
 
         try {
           const session = getSession(self)
@@ -211,7 +196,7 @@ export default function stateModelFactory() {
                 linearLayout: self.linearLayout,
               },
               statusCallback: (message: string) => {
-                self.setLayoutProgress(0, message)
+                self.setStatusMessage(message)
               },
             },
           )

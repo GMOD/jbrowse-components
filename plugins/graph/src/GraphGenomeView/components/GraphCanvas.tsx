@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { autorun, reaction } from 'mobx'
 import { observer } from 'mobx-react'
 import {
@@ -39,6 +39,25 @@ const tooltipStyle = {
   pointerEvents: 'none' as const,
 }
 
+function renderFrame(
+  renderer: GraphRenderer,
+  model: GraphGenomeViewModel,
+  darkMode: boolean,
+) {
+  const dpr = window.devicePixelRatio || 1
+  renderer.updateTransform({
+    scaleX: model.scale * dpr,
+    scaleY: model.scale * dpr,
+    translateX: model.translateX * dpr,
+    translateY: model.translateY * dpr,
+    viewportWidth: model.width * dpr,
+    viewportHeight: CANVAS_HEIGHT * dpr,
+  })
+  renderer.render(
+    darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
+  )
+}
+
 const GraphCanvas = observer(function GraphCanvas({
   model,
 }: {
@@ -46,6 +65,7 @@ const GraphCanvas = observer(function GraphCanvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<GraphRenderer | null>(null)
+  const [rendererReady, setRendererReady] = useState(false)
   const isDraggingRef = useRef(false)
   const lastMouseRef = useRef({ x: 0, y: 0 })
 
@@ -55,7 +75,7 @@ const GraphCanvas = observer(function GraphCanvas({
       return
     }
 
-    const renderer = GraphRenderer.getOrCreate(canvas)
+    const renderer = new GraphRenderer(canvas)
     let destroyed = false
 
     renderer.init().then(() => {
@@ -65,12 +85,14 @@ const GraphCanvas = observer(function GraphCanvas({
       }
       renderer.resize(model.width, CANVAS_HEIGHT)
       rendererRef.current = renderer
+      setRendererReady(true)
     })
 
     return () => {
       destroyed = true
       rendererRef.current?.destroy()
       rendererRef.current = null
+      setRendererReady(false)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -94,6 +116,9 @@ const GraphCanvas = observer(function GraphCanvas({
   // Rebuild geometry when graph data or display options change.
   // Pan (translateX/Y) does NOT trigger this — only the transform autorun below.
   useEffect(() => {
+    if (!rendererReady) {
+      return
+    }
     return autorun(() => {
       const renderer = rendererRef.current
       if (!renderer || !model.nodePositions || !model.graph) {
@@ -114,47 +139,23 @@ const GraphCanvas = observer(function GraphCanvas({
       })
 
       renderer.uploadGeometry(batch)
-
-      // Render after geometry upload (needed when only hover/color changes,
-      // since the transform autorun below won't fire in that case)
-      const dpr = window.devicePixelRatio || 1
-      renderer.updateTransform({
-        scaleX: model.scale * dpr,
-        scaleY: model.scale * dpr,
-        translateX: model.translateX * dpr,
-        translateY: model.translateY * dpr,
-        viewportWidth: model.width * dpr,
-        viewportHeight: CANVAS_HEIGHT * dpr,
-      })
-      renderer.render(
-        model.darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
-      )
+      renderFrame(renderer, model, model.darkMode)
     })
-  }, [model])
+  }, [model, rendererReady])
 
   // Re-render on pan/zoom without rebuilding geometry (cheap)
   useEffect(() => {
+    if (!rendererReady) {
+      return
+    }
     return autorun(() => {
       const renderer = rendererRef.current
       if (!renderer || !model.nodePositions) {
         return
       }
-
-      const dpr = window.devicePixelRatio || 1
-      renderer.updateTransform({
-        scaleX: model.scale * dpr,
-        scaleY: model.scale * dpr,
-        translateX: model.translateX * dpr,
-        translateY: model.translateY * dpr,
-        viewportWidth: model.width * dpr,
-        viewportHeight: CANVAS_HEIGHT * dpr,
-      })
-
-      renderer.render(
-        model.darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
-      )
+      renderFrame(renderer, model, model.darkMode)
     })
-  }, [model])
+  }, [model, rendererReady])
 
   function screenToGraph(screenX: number, screenY: number) {
     return {
@@ -338,10 +339,9 @@ const GraphCanvas = observer(function GraphCanvas({
             minWidth: 200,
           }}
         >
-          <Typography>{model.layoutStage || 'Computing layout...'}</Typography>
+          <Typography>{model.statusMessage || 'Loading...'}</Typography>
           <LinearProgress
-            variant={model.layoutProgress > 0 ? 'determinate' : 'indeterminate'}
-            value={model.layoutProgress}
+            variant="indeterminate"
             style={{ marginTop: 8 }}
           />
         </div>

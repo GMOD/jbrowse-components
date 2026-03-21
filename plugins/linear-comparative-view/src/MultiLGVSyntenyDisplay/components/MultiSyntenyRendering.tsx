@@ -4,9 +4,8 @@ import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { drawCigarOps, getFeatureColor } from './multiSyntenyColorUtils.ts'
+import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -21,88 +20,14 @@ interface MultiSyntenyModel {
 
 const LABEL_WIDTH = 120
 
-function renderCanvas(
-  ctx: CanvasRenderingContext2D,
-  genomeRows: Map<string, MultiPairFeature[]>,
-  displayedGenomes: string[],
-  opts: {
-    width: number
-    height: number
-    rowHeight: number
-    bpPerPx: number
-    offsetPx: number
-    colorBy: string
-    labelW: number
-  },
-) {
-  const { width, height, rowHeight, bpPerPx, offsetPx, colorBy, labelW } = opts
-  const showLabels = labelW > 0
-
-  const dpr = window.devicePixelRatio || 1
-  ctx.canvas.width = width * dpr
-  ctx.canvas.height = height * dpr
-  ctx.scale(dpr, dpr)
-  ctx.clearRect(0, 0, width, height)
-
-  for (let g = 0; g < displayedGenomes.length; g++) {
-    const genomeName = displayedGenomes[g]!
-    const y = g * rowHeight
-    const features = genomeRows.get(genomeName) ?? []
-
-    if (g % 2 === 0) {
-      ctx.fillStyle = '#f8f8f8'
-      ctx.fillRect(0, y, width, rowHeight)
-    }
-
-    if (showLabels) {
-      ctx.fillStyle = '#333'
-      ctx.font = `${Math.min(rowHeight - 4, 12)}px sans-serif`
-      ctx.textBaseline = 'middle'
-      const displayName =
-        genomeName.length > 15 ? genomeName.slice(0, 12) + '...' : genomeName
-      ctx.fillText(displayName, 4, y + rowHeight / 2)
-    }
-
-    const padding = rowHeight >= 6 ? 1 : 0
-    for (const feat of features) {
-      const x1 = feat.start / bpPerPx - offsetPx + labelW
-      const x2 = feat.end / bpPerPx - offsetPx + labelW
-      const blockWidth = Math.max(x2 - x1, 1)
-
-      if (x1 + blockWidth < labelW || x1 > width) {
-        continue
-      }
-
-      const clippedX = Math.max(x1, labelW)
-      const clippedW = Math.min(blockWidth, width - clippedX)
-      const fy = y + padding
-      const fh = rowHeight - padding * 2
-
-      ctx.fillStyle = getFeatureColor(feat, colorBy)
-      ctx.fillRect(clippedX, fy, clippedW, fh)
-
-      if (feat.cigar && blockWidth > 2) {
-        drawCigarOps(ctx, parseCigar2(feat.cigar), x1, fy, blockWidth, fh, feat.end - feat.start)
-      }
-    }
-
-    if (rowHeight >= 4) {
-      ctx.strokeStyle = '#e0e0e0'
-      ctx.lineWidth = 0.5
-      ctx.beginPath()
-      ctx.moveTo(0, y + rowHeight)
-      ctx.lineTo(width, y + rowHeight)
-      ctx.stroke()
-    }
-  }
-}
-
 const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   model,
 }: {
   model: MultiSyntenyModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rendererRef = useRef<MultiSyntenyRenderer | null>(null)
+  const [ready, setReady] = useState(false)
   const [tooltip, setTooltip] = useState<{
     text: string
     open: boolean
@@ -114,9 +39,34 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
   useEffect(() => {
-    const ctx = canvasRef.current?.getContext('2d')
-    if (ctx) {
-      renderCanvas(ctx, genomeRows, displayedGenomes, {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    let cancelled = false
+    const renderer = MultiSyntenyRenderer.getOrCreate(canvas)
+    renderer
+      .init()
+      .then(() => {
+        if (cancelled) {
+          return
+        }
+        rendererRef.current = renderer
+        setReady(true)
+      })
+      .catch((e: unknown) => {
+        console.error('Failed to initialize multi-synteny renderer:', e)
+      })
+    return () => {
+      cancelled = true
+      rendererRef.current?.dispose()
+      rendererRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (ready && rendererRef.current) {
+      rendererRef.current.render(genomeRows, displayedGenomes, {
         width,
         height,
         rowHeight,
@@ -127,6 +77,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       })
     }
   }, [
+    ready,
     genomeRows,
     displayedGenomes,
     width,
@@ -160,13 +111,14 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         const x1 = feat.start / bpPerPx - offsetPx + labelW
         const x2 = feat.end / bpPerPx - offsetPx + labelW
         if (mouseX >= x1 && mouseX <= x2) {
+          const refSize = feat.end - feat.start
+          const querySize = feat.mateEnd - feat.mateStart
           const lines = [
             genomeName,
-            `${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()}`,
-            `Size: ${getBpDisplayStr(feat.end - feat.start)}`,
-            feat.syriType
-              ? `Type: ${feat.syriType}`
-              : `Strand: ${feat.strand === -1 ? '-' : '+'}`,
+            `Ref: ${feat.start.toLocaleString()}-${feat.end.toLocaleString()} (${getBpDisplayStr(refSize)})`,
+            `Query: ${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()} (${getBpDisplayStr(querySize)})`,
+            feat.strand === -1 ? 'Inverted' : '',
+            feat.syriType ? `Type: ${feat.syriType}` : '',
             feat.identity > 0
               ? `Identity: ${(feat.identity * 100).toFixed(1)}%`
               : '',

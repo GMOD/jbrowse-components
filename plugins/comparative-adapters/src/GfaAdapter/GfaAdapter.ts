@@ -295,6 +295,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
             featureId: `gfa-${pos.segId}-${otherPath.name}`,
             segmentId: pos.segId,
             cigar: undefined,
+            cs: undefined,
           })
         }
       }

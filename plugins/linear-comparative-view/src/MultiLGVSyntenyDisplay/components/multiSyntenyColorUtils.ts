@@ -3,7 +3,7 @@ import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 function getStrandColor(feat: MultiPairFeature) {
-  return feat.strand === -1 ? '#f57c00' : '#5677fc'
+  return feat.strand === -1 ? '#6899e0' : '#c8c8c8'
 }
 
 function getSyriColor(feat: MultiPairFeature) {
@@ -48,6 +48,78 @@ const MISMATCH_COLOR = '#f00'
 const DELETION_COLOR = '#888'
 const INSERTION_COLOR = '#c000c0'
 
+const BASE_COLORS: Record<string, string> = {
+  A: '#00bf00',
+  a: '#00bf00',
+  C: '#4747ff',
+  c: '#4747ff',
+  G: '#d5bb04',
+  g: '#d5bb04',
+  T: '#f00',
+  t: '#f00',
+}
+
+function drawDeletion(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  y: number,
+  pw: number,
+  h: number,
+  len: number,
+) {
+  ctx.fillStyle = DELETION_COLOR
+  ctx.fillRect(px, y, Math.max(pw, 1), h)
+  if (pw > 12 && h >= 10) {
+    ctx.fillStyle = '#fff'
+    ctx.font = `${Math.min(h - 2, 10)}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(`${len}`, px + pw / 2, y + h / 2)
+    ctx.textAlign = 'start'
+  }
+}
+
+function drawInsertion(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  y: number,
+  h: number,
+) {
+  ctx.fillStyle = INSERTION_COLOR
+  ctx.fillRect(px - 0.5, y, 1, h)
+  if (h >= 6) {
+    const triW = Math.min(3, h / 3)
+    ctx.beginPath()
+    ctx.moveTo(px - triW, y)
+    ctx.lineTo(px + triW, y)
+    ctx.lineTo(px, y + triW)
+    ctx.closePath()
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(px - triW, y + h)
+    ctx.lineTo(px + triW, y + h)
+    ctx.lineTo(px, y + h - triW)
+    ctx.closePath()
+    ctx.fill()
+  }
+}
+
+function isDigit(ch: string) {
+  return ch >= '0' && ch <= '9'
+}
+
+function isCsOpChar(ch: string | undefined) {
+  return ch === ':' || ch === '*' || ch === '+' || ch === '-'
+}
+
+function parseCsSeqLen(cs: string, start: number) {
+  let i = start
+  while (i < cs.length && !isCsOpChar(cs[i])) {
+    i++
+  }
+  return i - start
+}
+
 export function drawCigarOps(
   ctx: CanvasRenderingContext2D,
   cigar: number[],
@@ -75,45 +147,77 @@ export function drawCigarOps(
       }
       refPos += len
     } else if (op === OP_D || op === OP_N) {
-      const px = x + refPos * pxPerBp
       const pw = len * pxPerBp
       if (pw >= 0.5) {
-        ctx.fillStyle = DELETION_COLOR
-        ctx.fillRect(px, y, Math.max(pw, 1), h)
-        if (pw > 12 && h >= 10) {
-          ctx.fillStyle = '#fff'
-          ctx.font = `${Math.min(h - 2, 10)}px sans-serif`
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(`${len}`, px + pw / 2, y + h / 2)
-          ctx.textAlign = 'start'
-        }
+        drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, len)
       }
       refPos += len
     } else if (op === OP_I) {
-      // Draw insertion marker: vertical line with triangle markers
-      // at top and bottom (like pileup insertion rendering).
-      // Insertions don't consume reference space.
-      const px = x + refPos * pxPerBp
-      ctx.fillStyle = INSERTION_COLOR
-      ctx.fillRect(px - 0.5, y, 1, h)
+      drawInsertion(ctx, x + refPos * pxPerBp, y, h)
+    }
+  }
+}
 
-      if (h >= 6) {
-        const triW = Math.min(3, h / 3)
-        ctx.beginPath()
-        ctx.moveTo(px - triW, y)
-        ctx.lineTo(px + triW, y)
-        ctx.lineTo(px, y + triW)
-        ctx.closePath()
-        ctx.fill()
+export function drawCsOps(
+  ctx: CanvasRenderingContext2D,
+  cs: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  bpLen: number,
+) {
+  const pxPerBp = w / bpLen
+  let refPos = 0
+  let i = 0
 
-        ctx.beginPath()
-        ctx.moveTo(px - triW, y + h)
-        ctx.lineTo(px + triW, y + h)
-        ctx.lineTo(px, y + h - triW)
-        ctx.closePath()
-        ctx.fill()
+  while (i < cs.length) {
+    const ch = cs[i]!
+
+    if (ch === ':') {
+      i++
+      let num = 0
+      while (i < cs.length && isDigit(cs[i]!)) {
+        num = num * 10 + (cs.charCodeAt(i) - 48)
+        i++
       }
+      refPos += num
+    } else if (ch === '*') {
+      const queryBase = cs[i + 2] ?? ''
+      const px = x + refPos * pxPerBp
+      const pw = Math.max(pxPerBp, 1)
+      ctx.fillStyle = BASE_COLORS[queryBase] ?? MISMATCH_COLOR
+      ctx.fillRect(px, y, pw, h)
+      if (pxPerBp >= 6 && h >= 8) {
+        ctx.fillStyle = '#fff'
+        ctx.font = `bold ${Math.min(h - 2, 10)}px monospace`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(queryBase.toUpperCase(), px + pw / 2, y + h / 2)
+        ctx.textAlign = 'start'
+      }
+      i += 3
+      refPos += 1
+    } else if (ch === '-') {
+      i++
+      const len = parseCsSeqLen(cs, i)
+      i += len
+      if (len > 0) {
+        const pw = len * pxPerBp
+        if (pw >= 0.5) {
+          drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, len)
+        }
+        refPos += len
+      }
+    } else if (ch === '+') {
+      i++
+      const len = parseCsSeqLen(cs, i)
+      i += len
+      if (len > 0) {
+        drawInsertion(ctx, x + refPos * pxPerBp, y, h)
+      }
+    } else {
+      i++
     }
   }
 }
@@ -123,8 +227,8 @@ export const legendItems: Record<
   { label: string; color: string }[]
 > = {
   strand: [
-    { label: 'Forward (+)', color: '#5677fc' },
-    { label: 'Reverse (-)', color: '#f57c00' },
+    { label: 'Forward (+)', color: '#c8c8c8' },
+    { label: 'Reverse (inversion)', color: '#6899e0' },
   ],
   syri: Object.entries(syriColors).map(([label, color]) => ({
     label,

@@ -13,12 +13,58 @@
 - `jbrowse make-gfa-db` converts GFA → SQLite with segments, paths, path_steps tables
   - Supports P-lines (GFA1) and W-lines (GFA1.1+), assembly filtering
   - Uses `node:sqlite` (built-in), indexed by path + cumulative_offset
-- `jbrowse make-gfa-tabix` converts GFA → 2 tabix-indexed files for runtime synteny
+- `jbrowse make-gfa-tabix` converts GFA → tabix-indexed files for runtime synteny
   - `*.pos.bed.gz` — position → segment ordinal mapping per genome path
   - `*.segs.bed.gz` — segment ordinal → position mapping across all genomes
+  - `*.aln.bed.gz` — precomputed pairwise alignments with cs tags (base-level detail)
   - Both indexed with `tabix -p bed`, supports comment headers
   - Configurable chunk size (default 100 segments per pos chunk)
   - Assembly filtering via `--assemblies` flag
+- cs tag support in make-pif: `cs:Z:` tags preserved in full-tier lines, stripped from summary tiers
+- `flipCs` function properly swaps cs tag perspective for q-prefix lines (*XY→*YX, +seq→-seq, -seq→+seq)
+
+## cs Tag as First-Class Citizen
+
+- `MultiPairFeature` interface: `cs: string | undefined` field alongside `cigar`
+- `csUtils.ts` shared utilities: `csToCigar()` and `flipCs()` exported from comparative-adapters plugin
+- `drawCsOps()` renders cs tags directly with base-specific mismatch colors (A=#00bf00, C=#4747ff, G=#d5bb04, T=#f00)
+- Base letters rendered on mismatches when zoomed in (pxPerBp >= 6, rowHeight >= 8)
+- Renderer priority: cs > cigar (if cs available, used directly without CIGAR conversion)
+- cs extracted from: GFA aln.bed.gz (precomputed), PAF `cs:Z:` tag, PIF (preserved through make-pif)
+- 16 unit tests for cs utilities (csToCigar + flipCs including self-inverse property)
+
+## GFA Alignment Preprocessing (aln.bed.gz)
+
+- `make-gfa-tabix` stores segment sequences from GFA S-lines in memory
+- After writing pos/segs files, computes pairwise alignments for each query genome vs reference
+- Walks shared segment anchors, detects bubbles between them
+- Bubble cs computation: shared segments → `:N`, ref-only → `-seq`, query-only → `+seq`, equal-length both → base-by-base comparison producing `*XY` substitution ops
+- `computeBubbleCs()` and `baseByBaseCs()` functions with revcomp support for negative strand segments
+- Output: `aln.bed.gz` (tabix-indexed) with format: `refPath\tstart\tend\tqueryGenome\tqueryChrom\tqStart\tqEnd\tstrand\tcs`
+- Tested with volvox_pangenome.gfa (4 genomes, 12 segments, real sequences — verified base-level SNPs in cs output)
+
+## GfaTabixAdapter Enhancements
+
+- Runtime CIGAR derivation from segment gaps (`getMultiPairFeaturesFromSegments`): between shared anchors, ref gaps → D, query gaps → I, both → X
+- Precomputed alignment support (`getMultiPairFeaturesFromAln`): reads aln.bed.gz, converts cs→CIGAR, computes identity from cs
+- Graceful fallback: uses aln.bed.gz when available, otherwise segment-based runtime CIGAR
+- Config schema: `alnLocation`/`alnIndex` fields with prefix shorthand
+- `isAlnAvailable()` with promise caching for efficient availability check
+
+## MultiLGVSyntenyDisplay Rendering Overhaul
+
+- Renderer backend architecture: `MultiSyntenyRenderer` facade → `MultiSyntenyBackend` interface → `Canvas2DMultiSyntenyRenderer`
+  - Follows same pattern as `AlignmentsRenderer` and `SyntenyRenderer`
+  - `getOrCreate()` + `init()` with cancelled flag, dispose-before-reinit
+  - Backend selection via `getGpuOverride()` — WebGL/WebGPU implementations can be added
+- Pileup-style CIGAR rendering:
+  - Deletions: thick grey bars with deletion length text (white, centered)
+  - Insertions: purple vertical line with triangle markers at top/bottom
+  - Mismatches (CIGAR): red full-height rectangles
+  - Mismatches (cs): base-specific colors with letter labels when zoomed in
+  - Shared `drawDeletion()`/`drawInsertion()` helpers eliminate code duplication
+- Default coloring: grey (#c8c8c8) for forward strand, blue (#6899e0) for inversions
+- Improved tooltips: ref/query coordinates with sizes, identity %, inversion indicator
 
 ## PairwiseIndexedPAFAdapter
 
@@ -26,195 +72,100 @@
 - `getMultiPairFeatures()`: fetches all pairs for a region, grouped by query genome
 - `getPairInfo()`: exposes pair metadata from PIF header
 - `segmentId` support via `sg:Z:` PAF tag for cross-pair shared alignment tracking
+- cs tag extraction from PAF `cs:Z:` field into MultiPairFeature
 
 ## GfaTabixAdapter (A1)
 
 - Runtime GFA synteny adapter using `@gmod/tabix` — zero new dependencies
-- Reads pos.bed.gz + segs.bed.gz tabix files created by `make-gfa-tabix`
-- `getMultiPairFeatures()`: 2 tabix queries per call (O(1) regardless of genome count)
+- Reads pos.bed.gz + segs.bed.gz + optional aln.bed.gz tabix files
+- `getMultiPairFeatures()`: 2-3 tabix queries per call (O(1) regardless of genome count)
 - Synteny projection: query ref region → get segment ordinals → find all genome positions
 - HTTP range request compatible — works with remote files, no WASM needed
 - Registered in comparative-adapters plugin with `GfaTabixAdapter` config schema
 - Prefix-based config shorthand for minimal configuration
-- Prior art: sequenceTubeMap tabix approach (jmonlong), ported to JBrowse's `@gmod/tabix`
 
 ## Assembly Auto-Creation from GFA Paths (A4)
 
-- `make-gfa-tabix` now writes `#sizes=` header with per-path total lengths (e.g., `#sizes=ref#1#chr1:5472117,sample1#1#chr1:5485194,...`)
+- `make-gfa-tabix` now writes `#sizes=` header with per-path total lengths
 - `GfaTabixAdapter.getChromSizes()` parses the `#sizes=` header → returns `Map<genome, {refName, length}[]>`
 - `MultiLGVSyntenyDisplay.afterAttach` auto-creates session assemblies for genomes not already in the assembly manager
-  - Uses `FromConfigRegionsAdapter` with inline features derived from chrom sizes
-  - No `.chrom.sizes` files needed — everything comes from the GFA tabix header
-- Gracefully handles legacy tabix files without `#sizes=` header (returns empty Map, no auto-creation)
-- Enables "Launch N-way synteny view" to work even for unconfigured genomes
+- No `.chrom.sizes` files needed — everything comes from the GFA tabix header
 
 ## Segment Merging for GfaTabixAdapter (E1)
 
 - Adjacent shared segments with same strand and contiguous ref/mate coordinates are merged into single `MultiPairFeature` blocks
-- Reduces per-segment noise into larger alignment blocks for cleaner visualization
-- Forward strand merging: extends when `mateStart === prevMateEnd`
-- Reverse strand merging: extends when `mateEnd === prevMateStart`
-- Non-overlapping guarantee: merged features don't overlap on the ref axis
-- Tested with HPRC chrM (1393 segments, 44 haplotypes) — verified significant reduction in feature count
+- Forward and reverse strand merging with CIGAR derivation from gaps
+- Tested with HPRC chrM (1393 segments, 44 haplotypes)
 
 ## Large-Scale GFA Demo Data (A5)
 
-- Downloaded HPRC minigraph-cactus v1.1 per-chromosome VG files from S3 (`human-pangenomics/pangenomes/freeze/freeze1/`)
-- Converted chrM (44 haplotypes, 1393 segments) and chr20 (90 haplotypes, 1.86M segments) to GFA via `vg convert -f`
-- Generated tabix files including `#sizes=` header
-- chrM: Node.js `make-gfa-tabix` works fine (small data)
-- chr20: Node.js OOMs at 8GB — used Rust `tools/gfa-to-tabix` (4.5 min, streaming two-pass, O(segments) memory)
-- Demo configs: `config_hprc_chrM.json` (44 haplotypes), `config_hprc_chr20.json` (90 haplotypes)
-- Only ref assembly (GRCh38#0) pre-configured; others auto-created at runtime via A4
-- Added HPRC demo links to NoConfigMessage.tsx
-- Test data: `test/data/synteny-demo/hprc/hprc-v1.1-mc-grch38-{chrM,chr20}.*`
+- HPRC minigraph-cactus v1.1: chrM (44 haplotypes), chr20 (90 haplotypes)
+- Demo configs added to NoConfigMessage
+- Test data: `test/data/synteny-demo/hprc/`
 
 ## Streaming GFA Conversion - Rust Tool (A3)
 
 - `tools/gfa-to-tabix/` — Rust CLI for GFA→tabix conversion at pangenome scale
-- Two-pass streaming: pass 1 reads segments (HashMap), pass 2 streams paths to sort|bgzip pipes
-- Memory: O(segments) for ID→ordinal+length map, O(1) for path processing
-- Handles 1.86M segments / 919 paths in ~4.5 min (Node.js version OOMs at 8GB)
-- Produces identical output format to Node.js `jbrowse make-gfa-tabix`
-- Supports `--assemblies`, `--chunk-size` flags, both P-lines (GFA1) and W-lines (GFA1.1)
-- Validated performance: HPRC chr20 (1GB GFA, 90 haplotypes) → 12MB pos.bed.gz + 584MB segs.bed.gz
-
-### Validated Query Performance (chr20, 100kb region)
-
-- **Query time**: 274ms for 100kb region
-- **Genomes returned**: 17 (varies by region — not all contigs overlap every ref region)
-- **Merged features**: 3909 (segment merging active)
+- Two-pass streaming: O(segments) memory, handles multi-GB GFA files
+- HPRC chr20 (1GB GFA, 90 haplotypes, 1.86M segments) → 12MB pos.bed.gz + 584MB segs.bed.gz in ~4.5 min
 
 ## MultiLGVSyntenyDisplay (B1, A2, B3, B4)
 
-- Non-block-based display using `BaseDisplay` + `TrackHeightMixin` (no server-side rendered blocks)
-- Canvas2D rendering with `data-testid="multi_synteny_canvas"`
+- Non-block-based display using `BaseDisplay` + `TrackHeightMixin`
+- Canvas2D rendering with backend facade pattern
 - afterAttach autorun: fetches multi-pair features via RPC, groups by genome, debounced (300ms)
-- Genome sub-selection dialog (searchable checkbox list, select/deselect all)
-- Track menu: color by, row height (auto/manual), genome selector, synteny view launchers
-- Auto-height mode (default): rows auto-fit to display height (`height / numGenomes`), matching MultiWiggle pattern
-- Manual row height mode: fixed px per row (5/10/15/20/30px) for dense display
-- Adaptive rendering: hides labels when rowHeight<12, hides separators when <4
-- `colorBy` property: strand (blue/orange), syri (SYN/INV/TRANS/DUP), identity (green→red gradient)
-- CIGAR detail rendering: insertions (red), deletions (blue), mismatches (brown) overlaid on feature blocks
-  - CIGAR colors shared from `drawSyntenyUtils.ts` (same as LinearSyntenyDisplay)
-  - `MultiPairFeature.cigar` field extracted from PAF `cg:` tag by PairwiseIndexedPAFAdapter
-- Floating legend via `BaseLinearDisplay` `legendItems()` override + `FloatingLegend` component
-- "Launch 2-way synteny with..." converted from 90-item submenu to searchable dialog
-- Mouse hover tooltips showing genome name, coordinates, size, type, identity, segmentId
-- Duck-typed interfaces throughout to avoid circular MST type dependencies
+- Genome sub-selection dialog, color by (strand/syri/identity), auto/manual row height
+- Floating legend, searchable 2-way synteny launch dialog
+- Mouse hover tooltips with ref/query coordinates, size, identity, segment ID
 
 ## Scalable N-Way LinearSyntenyView (C1)
 
-- Collapsible synteny levels: each level has `collapsed` property, renders as 10px bar when collapsed
-- Focus mode: expand one level, collapse all others (header menu)
-- Auto-scale level heights for 4+ levels: `max(40, min(100, 400/numLevels))`
-- Collapsed levels skip data fetching (afterAttach checks `isLevelCollapsed`)
-- `effectiveHeight` getter on levels, respected by LinearSyntenyDisplay height
-- "Synteny levels" header submenu: expand/collapse all, auto-scale, per-level focus radio
+- Collapsible synteny levels, focus mode, auto-scale heights
+- Collapsed levels skip data fetching
 
 ## N-Way Diagonalization (C3)
 
-- Extended `DiagonalizationProgressDialog` to support N views (was limited to 2)
-- Cascading diagonalization: view[1] against view[0], view[2] against (reordered) view[1], etc.
-- Progress bar shows per-level progress (`Level 1/N: message`)
-- Uses existing `diagonalizeRegions()` algorithm unchanged — just applied iteratively
-- Summary shows total regions reordered and reversed across all levels
+- Cascading diagonalization across N views with progress reporting
 
 ## RPC Migration for getMultiPairFeatures (E2)
 
-- New `MultiPairGetFeatures` RPC method moves adapter queries to web worker
-- Handles multiple content blocks in a single RPC call (was per-block loop on main thread)
-- `fetchChromSizes` flag: assembly auto-creation data fetched in same worker call
-- Map→entries serialization for structured clone compatibility (`genomeRows` as `[string, MultiPairFeature[]][]`)
-- `MultiLGVSyntenyDisplay.afterAttach` simplified: removed direct adapter access, uses `rpcManager.call()`
-
-## LaunchPairwiseSyntenyDialog
-
-- Searchable dialog for launching 2-way synteny views from MultiLGVSyntenyDisplay
-- Replaces long submenu (unusable with 44+ genomes)
-- Filter text field, click genome to launch and auto-close
-- Duck-typed `{ displayedGenomes: string[] }` interface (no circular model type import)
-
-## Scaffold Name Handling (A6)
-
-- Three-part path naming scheme (`sample#haplotype#scaffoldName`) correctly handles non-standard contig names
-- `parseGfaPathName()` correctly extracts scaffold names like `JAHBCB010000023.1` as `mateRefName`
-- Assembly auto-creation uses the correct scaffold names from the `#sizes=` header
-- No code changes needed — the existing architecture already supports this edge case
-
-## Auto-Default MultiLGVSyntenyDisplay (A6)
-
-- `Core-preProcessTrackConfig` extension reorders displays for multi-pair adapter types
-- `multiPairTypes` list: `PairwiseIndexedPAFAdapter`, `GfaTabixAdapter`
-- When a SyntenyTrack uses a multi-pair adapter, `MultiLGVSyntenyDisplay` is placed before `LGVSyntenyDisplay` in the display order
-- No manual display switching needed — users get multi-genome view by default
-- `GfaTabixAdapter` added to `syntenyTypes` list for proper track type detection
-
-## Compact View Mode (E0)
-
-- `compactViews` property on `LinearComparativeView`: per-view boolean array
-- Compact views render as 24px label bar showing assembly name
-- Click compact bar to expand back to full LGV
-- `CompactViewBar` component with theme-aware styling
-- "Genome views" header submenu (shown for >2 views): compact all / expand all / per-view checkboxes
-- `isViewCompact(idx)` view, `toggleCompactView`/`compactAllViews`/`expandAllViews` actions
-- State persisted in snapshots, only serialized when at least one view is compact
-
-## Runtime UI
-
-- `syri` color mode: SYN (gray), INV (orange), TRANS (blue), DUP (cyan)
-- Color legend component in header
-- Quick Import panel (single-file import with format auto-detection)
-- Bulk assembly addition in import form
+- `MultiPairGetFeatures` RPC method moves adapter queries to web worker
+- Map→entries serialization for structured clone compatibility
 
 ## Testing
 
-### Unit Tests (51 tests, 4 suites)
+### Unit Tests (37+ tests, 4 suites)
 
-- **PairwiseIndexedPAFAdapter** (27 tests): coordinate extraction, CIGAR handling, getRefNames, getPairInfo, getAssemblyNames, multi-pair PIF (pair metadata, multi-genome features, syriType, empty regions, mate coordinate consistency, identity, strand, featureId uniqueness, partial overlap, nonexistent refName, header metadata, structural/summary tier LOD)
-- **GfaTabixAdapter** (7 tests): multi-genome features, shared segments, empty regions, nonexistent refNames, featureId uniqueness, strand correctness, getAssemblyNames
-- **GFA→SQLite** (9 tests): schema, segments, paths, path steps with offsets, offset range queries, shared segments, synteny projection, total_length verification, assembly filtering
-- **GFA→Tabix** (8 tests): file creation + indexing, pos.bed.gz queries, segs.bed.gz queries, segment ordinal ranges, shared segments across genomes, synteny projection workflow, assembly filtering, chunk size granularity
+- **csUtils** (16 tests): csToCigar (10 — match runs, substitutions, insertions, deletions, mixed ops, GFA bubble cs, empty, zero-length, long sequences), flipCs (6 — preserves matches, swaps bases, swaps I/D, mixed ops, empty, self-inverse property)
+- **GFA→Tabix** (11 tests): file creation + indexing, pos/segs queries, segment ordinal ranges, shared segments, synteny projection, assembly filtering, chunk size, aln.bed.gz generation with cs tags, cs substitution detection
+- **GfaTabixAdapter** (11 tests): multi-genome features, shared segments, empty regions, featureId uniqueness, strand, getAssemblyNames, chromSizes (+ 1 remote HPRC test)
+- **PairwiseIndexedPAFAdapter** (27 tests): coordinates, CIGAR, multi-pair, syriType, LOD tiers
 
-### Browser Tests (14 synteny tests)
+### Browser Tests (5 pangenome tests + 14 existing synteny tests)
 
-- **Multi-LGV Synteny Display** (7 tests): multi-pair PIF genome rows (canvas + page), N-way PIF (canvas + page), Arabidopsis 4-way Chr1 (canvas + page), Arabidopsis multi-genome LGV (canvas)
-- **Multi-Way Synteny Views** (4 tests): 3-way volvox, 3-way full page, 2-way with genes, dotplot grape/peach
-- **Synteny Views** (3 tests): flipped inverted, regular inverted, LGV synteny track
+- **GFA Pangenome** (3 tests): precomputed aln.bed.gz with cs tags, runtime CIGAR fallback, full page
+- **HPRC Pangenome** (2 tests, remote): chrM 44-haplotype multi-LGV canvas + full page
 
 ## Test Data & Demo Configs
 
 | Dataset | Location | Format | Size | Genomes |
 |---------|----------|--------|------|---------|
-| Plotsr Arabidopsis | `test/data/synteny-demo/plotsr/` | SyRI, PAF, BEDPE | 3.6MB | 4 (Col-0, Ler, Cvi, Eri) |
-| Arabidopsis 4-way PIF | `test_data/arabidopsis_synteny/` | Multi-pair PIF | 3MB | 4 (Col-0→Ler→Cvi→Eri) |
-| PGGB chrM tabix | `test_data/arabidopsis_synteny/` | GFA tabix (pos+segs) | 7KB | 4 human mitochondrial |
-| HPRC minigraph | `test/data/synteny-demo/hprc/` | rGFA (no paths) | 850MB | 90 haplotypes |
-| ntSynt great apes | `test/data/synteny-demo/ntsynt/` | TSV blocks | 1.7MB | 6 primates |
-| Synthetic 3-way | `test/data/synteny-demo/synthetic/` | PAF | 350KB | 3 genomes, 3 chr |
-| Synthetic 8-way | `test/data/synteny-demo/synthetic/` | PAF | 3.4MB | 8 genomes, 5 chr |
-| Synthetic all-vs-all | `test/data/synteny-demo/synthetic/` | PAF | 930KB | 5 genomes, 2 chr |
-| Synthetic 4-genome GFA | `test/data/synteny-demo/synthetic/` | GFA (P-lines) | 32KB | 4 genomes, 1 chr |
-| Synthetic 4-genome tabix | `test_data/volvox/synthetic_4genome.*` | GFA tabix (pos+segs) | 7KB | 4 genomes |
-| Volvox multi-pair PIF | `test_data/volvox/volvox_multi.pif.gz` | Multi-pair PIF | small | 3 (volvox+ins+del) |
-| Volvox N-way | `test_data/config_synteny_nway.json` | PIF | small | 3 (volvox, volvox_ins, volvox_del) |
+| Volvox pangenome GFA | `test_data/volvox/volvox_pangenome.*` | GFA tabix (pos+segs+aln) | small | 4 genomes, real sequences |
+| Volvox SNP PAF | `test_data/volvox/volvox_snp.paf` | PAF with cs:Z: tags | small | 2 (volvox vs volvox_snp, ~2% SNPs) |
+| Volvox SNP PIF | `test_data/volvox/volvox_snp_cs.pif.gz` | PIF with cs:Z: preserved | small | 2 (volvox vs volvox_snp) |
+| HPRC chrM | `test/data/synteny-demo/hprc/` | GFA tabix (pos+segs) | small | 44 haplotypes |
+| HPRC chr20 | `test/data/synteny-demo/hprc/` | GFA tabix (pos+segs) | 596MB | 90 haplotypes |
+| Arabidopsis 4-way | `test_data/arabidopsis_synteny/` | Multi-pair PIF | 3MB | 4 |
+| Volvox multi-pair PIF | `test_data/volvox/volvox_multi.pif.gz` | Multi-pair PIF | small | 3 |
 
 ### Demo Configs (NoConfigMessage)
 
-- `config_synteny_nway.json` — 3-way volvox synteny (volvox+ins+del)
-- `config_multi_lgv_synteny.json` — Multi-genome volvox synteny (LGV, multi-pair)
-- `arabidopsis_synteny/config.json` — Arabidopsis 4-way synteny (Col-0, Ler, Cvi, Eri)
-- `arabidopsis_synteny/config_chrM_pangenome.json` — Human chrM pangenome (4 genomes, GFA tabix)
-
-### Validated Performance
-
-- HPRC chr1 (46 assemblies, 123K PAF lines, 182MB): **2.3 seconds** to PIF
-- Arabidopsis 4-way (39K SyRI records): **~1 second** to multi-pair PIF
-- 3-tier LOD tested at chromosome scale through base level
+- Synteny: grape/peach, dotplot, human dotplot, yeast, 3-way volvox, multi-LGV volvox, Arabidopsis 4-way, chrM pangenome (4 genomes), HPRC chrM (44 haplotypes), HPRC chr20 (90 haplotypes), GFA pangenome (with cs), graph genome viewer, hs1 vs mm39, hg19 vs hg38
 
 ## Key Design Decisions Resolved
 
-1. **GFA indexing strategy**: Tabix-based (2 files: pos.bed.gz + segs.bed.gz). Chose over SQLite+sql.js because: zero new deps, HTTP range request support, proven by sequenceTubeMap at HPRC scale.
+1. **GFA indexing strategy**: Tabix-based (3 files: pos.bed.gz + segs.bed.gz + optional aln.bed.gz). Zero new deps, HTTP range request support, proven at HPRC scale.
 2. **Multi-pair PIF vs runtime projection**: Both supported — PIF for pre-computed pairwise, GfaTabixAdapter for runtime graph-based projection.
-3. **HPRC minigraph GFA**: rGFA format (segments+links only, no W-lines) — not suitable for multi-genome synteny. Need HPRC GBZ/GFA with explicit paths for full demos.
+3. **cs tag as first-class**: cs preferred over CIGAR when available, rendered with base-specific colors. Stored alongside CIGAR in MultiPairFeature interface.
+4. **Renderer backend pattern**: Facade → Backend interface → Canvas2D implementation, matching AlignmentsRenderer/SyntenyRenderer patterns. Ready for WebGL/WebGPU.
+5. **Rendering style**: Pileup-inspired — grey for matches, base-colored SNPs, grey deletion bars with length, purple insertion markers.

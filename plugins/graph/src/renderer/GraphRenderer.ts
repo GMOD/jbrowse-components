@@ -6,23 +6,12 @@ import { WebGPURenderer } from './WebGPURenderer.ts'
 
 import type { Renderer, RenderBatch, TransformUniform } from './types.ts'
 
-const cache = new WeakMap<HTMLCanvasElement, GraphRenderer>()
-
 export class GraphRenderer {
   private canvas: HTMLCanvasElement
   private backend: Renderer | null = null
 
-  private constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-  }
-
-  static getOrCreate(canvas: HTMLCanvasElement) {
-    let r = cache.get(canvas)
-    if (!r) {
-      r = new GraphRenderer(canvas)
-      cache.set(canvas, r)
-    }
-    return r
   }
 
   async init() {
@@ -64,6 +53,5 @@ export class GraphRenderer {
   destroy() {
     this.backend?.destroy()
     this.backend = null
-    cache.delete(this.canvas)
   }
 }

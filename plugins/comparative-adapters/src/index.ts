@@ -15,6 +15,7 @@ import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
 
 export { computeSyriTypes } from './syriUtils.ts'
+export { csToCigar, flipCs } from './csUtils.ts'
 export { multiPairTypes } from './syntenyTypes.ts'
 export type { SyriType } from './syriUtils.ts'
 export type {
