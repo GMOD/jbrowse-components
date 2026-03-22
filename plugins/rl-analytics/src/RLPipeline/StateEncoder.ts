@@ -8,9 +8,16 @@ export default class StateEncoder {
     recentActionCount: number,
     taskConfig?: TaskConfig,
   ): BrowserState {
-    const bpPerPx: number = view.bpPerPx ?? 1
-    const offsetPx: number = view.offsetPx ?? 0
-    const viewWidthPx: number = view.width ?? 800
+    let bpPerPx = 1
+    let offsetPx = 0
+    let viewWidthPx = 800
+    try {
+      bpPerPx = view.bpPerPx ?? 1
+      offsetPx = view.offsetPx ?? 0
+      viewWidthPx = view.width ?? 800
+    } catch {
+      // Computed properties may throw if view hasn't been rendered yet
+    }
     const viewportBp = bpPerPx * viewWidthPx
 
     const displayedRegions = view.displayedRegions ?? []

@@ -32,7 +32,11 @@ export default class PatchListener {
       }
       this.buffer.push(action)
       for (const cb of this.callbacks) {
-        cb(action)
+        try {
+          cb(action)
+        } catch {
+          // Callback errors should not break the patch listener
+        }
       }
     })
   }

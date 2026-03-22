@@ -51,25 +51,48 @@ export default class RLAnalyticsPlugin extends Plugin {
       return
     }
 
+    // Clean up any previous subsystems (configure may be called multiple
+    // times in test environments where the root model is recreated)
+    this.patchListener?.dispose()
+    this.episodeManager?.dispose()
+    this.exportManager?.dispose()
+
     // Initialize subsystems
     this.patchListener = new PatchListener(10000, 100, false)
     this.episodeManager = new EpisodeManager(300_000)
     this.exportManager = new ExportManager(this.episodeManager)
 
-    // Wire the view accessor for state extraction
+    // Wire the view accessor for state extraction (LinearGenomeView only)
     this.episodeManager.setViewAccessor(() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const session = (rootModel as any).session
-      return session?.views?.[0]
+      if (!session?.views) {
+        return undefined
+      }
+      // Find the first LinearGenomeView
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return session.views.find((v: any) => v.type === 'LinearGenomeView')
     })
 
     // Connect action logger to episode manager
+    // Use queueMicrotask to avoid interfering with synchronous MST patch
+    // processing — reading computed properties during onPatch can disrupt
+    // model initialization
     this.patchListener.onAction(action => {
-      this.episodeManager!.recordAction(action)
+      queueMicrotask(() => {
+        this.episodeManager!.recordAction(action)
+      })
     })
 
-    // Attach patch listener to the root model
-    this.patchListener.attach(rootModel)
+    // Defer patch listener attachment to next tick to avoid interfering
+    // with synchronous model initialization (e.g. view init processing)
+    // Attach to session instead of rootModel to avoid interfering with
+    // root-level model initialization (views, etc.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = (rootModel as any).session
+    if (session) {
+      this.patchListener.attach(session)
+    }
 
     // Add menu items
     if (isAbstractMenuManager(rootModel)) {
