@@ -1,0 +1,114 @@
+{
+  "id": "volvox-tasks-v1",
+  "name": "Volvox Genome Navigation Tasks",
+  "description": "Navigation tasks for the volvox test dataset",
+  "randomizeOrder": false,
+  "attentionCheckIndices": [3],
+  "tasks": [
+    {
+      "id": "v1-nav-ctgA",
+      "type": "navigate",
+      "tier": 1,
+      "title": "Navigate to ctgA:5,000-6,000",
+      "description": "Use the search bar or pan/zoom to navigate to the region ctgA:5,000-6,000.",
+      "hints": [
+        "Type 'ctgA:5000-6000' in the search bar"
+      ],
+      "target": {
+        "assemblyName": "volvox",
+        "refName": "ctgA",
+        "start": 5000,
+        "end": 6000
+      },
+      "maxTimeSeconds": 120,
+      "completionReward": 1.0
+    },
+    {
+      "id": "v1-zoom-basepairs",
+      "type": "navigate",
+      "tier": 1,
+      "title": "Zoom to base-pair resolution",
+      "description": "Navigate to ctgA:1,000-1,100 and zoom in until you can see individual bases.",
+      "hints": [
+        "Navigate to the region first, then zoom in with the scroll wheel"
+      ],
+      "target": {
+        "assemblyName": "volvox",
+        "refName": "ctgA",
+        "start": 1000,
+        "end": 1100
+      },
+      "maxTimeSeconds": 120,
+      "completionReward": 1.0
+    },
+    {
+      "id": "v2-nav-ctgB",
+      "type": "navigate",
+      "tier": 2,
+      "title": "Find ctgB",
+      "description": "Navigate to contig B. Make sure the region ctgB:1,000-3,000 is visible.",
+      "hints": [
+        "Type 'ctgB' in the search bar",
+        "ctgB is a different chromosome from ctgA"
+      ],
+      "target": {
+        "assemblyName": "volvox",
+        "refName": "ctgB",
+        "start": 1000,
+        "end": 3000
+      },
+      "maxTimeSeconds": 180,
+      "completionReward": 2.0
+    },
+    {
+      "id": "v2-attention-check",
+      "type": "identify",
+      "tier": 2,
+      "title": "Quick check",
+      "description": "What are the two contigs in the volvox genome? Select the correct answer.",
+      "hints": [],
+      "answerChoices": ["chr1 and chr2", "ctgA and ctgB", "chrX and chrY", "scaffold1 and scaffold2"],
+      "expectedAnswer": "ctgA and ctgB",
+      "maxTimeSeconds": 30,
+      "completionReward": 0.5
+    },
+    {
+      "id": "v2-nav-region",
+      "type": "navigate",
+      "tier": 2,
+      "title": "Find the gene-dense region",
+      "description": "Navigate to ctgA:15,000-20,000. This region has several annotated features.",
+      "hints": [
+        "Type 'ctgA:15000-20000' in the search bar"
+      ],
+      "target": {
+        "assemblyName": "volvox",
+        "refName": "ctgA",
+        "start": 15000,
+        "end": 20000
+      },
+      "maxTimeSeconds": 180,
+      "completionReward": 2.0
+    },
+    {
+      "id": "v3-end-region",
+      "type": "navigate",
+      "tier": 3,
+      "title": "Navigate to the end of ctgA",
+      "description": "Navigate to the end of contig A (approximately ctgA:48,000-50,000).",
+      "hints": [
+        "ctgA is about 50,001 bp long",
+        "Try typing 'ctgA:48000-50000' in the search bar"
+      ],
+      "target": {
+        "assemblyName": "volvox",
+        "refName": "ctgA",
+        "start": 48000,
+        "end": 50001
+      },
+      "minTimeSeconds": 5,
+      "maxTimeSeconds": 240,
+      "completionReward": 3.0
+    }
+  ]
+}

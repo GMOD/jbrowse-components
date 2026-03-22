@@ -151,6 +151,19 @@ export default class RLAnalyticsPlugin extends Plugin {
     this.loadTasksFromUrl(pluginManager)
   }
 
+  /** Public accessors for testing and external integration */
+  getExportManager() {
+    return this.exportManager
+  }
+
+  getEpisodeManager() {
+    return this.episodeManager
+  }
+
+  getPatchListener() {
+    return this.patchListener
+  }
+
   private loadTasksFromUrl(pluginManager: PluginManager) {
     if (typeof window === 'undefined') {
       return
