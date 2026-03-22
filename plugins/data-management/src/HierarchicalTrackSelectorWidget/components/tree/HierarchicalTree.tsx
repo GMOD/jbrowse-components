@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -14,6 +16,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
   model: HierarchicalTrackSelectorModel
 }) {
   const { flattenedItems, shownTrackIds } = model
+  const { drawerPosition } = getSession(model)
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const { startIndex, endIndex, totalHeight, itemOffsets } = model.itemOffsets(
@@ -85,6 +88,10 @@ const HierarchicalTree = observer(function HierarchicalTree({
           ) : null
         })}
       </div>
+      <SharedTooltip
+        containerRef={containerRef}
+        placement={drawerPosition === 'left' ? 'right' : 'left'}
+      />
     </div>
   )
 })

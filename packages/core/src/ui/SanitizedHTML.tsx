@@ -57,6 +57,10 @@ function isHTML(str: string) {
   return full.test(str)
 }
 
+function needsSanitization(str: string) {
+  return str.includes('<') || str.includes('://')
+}
+
 function SetHTML({ value, className }: { value: string; className?: string }) {
   const spanRef = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
@@ -84,7 +88,12 @@ export default function SanitizedHTML({
   className?: string
   html: unknown
 }) {
-  const html = linkify(`${pre}`)
+  const str = `${pre}`
+  if (!needsSanitization(str)) {
+    return <span className={className}>{str}</span>
+  }
+
+  const html = linkify(str)
   const value = isHTML(html) ? html : escapeHTML(html)
 
   // @ts-expect-error

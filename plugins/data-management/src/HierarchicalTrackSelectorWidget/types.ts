@@ -5,6 +5,7 @@ export interface TreeTrackNode {
   id: string
   trackId: string
   conf: AnyConfigurationModel
+  description: string
   children: TreeNode[] // empty
   nestingLevel: number
   type: 'track'
