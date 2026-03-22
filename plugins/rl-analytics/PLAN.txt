@@ -1,0 +1,1472 @@
+# PLAN: jbrowse-plugin-rl-analytics
+
+## Overview
+
+A JBrowse 2 plugin that instruments the genome browser to collect user interaction data for training reinforcement learning agents. The plugin has three subsystems:
+
+1. **Action Logger** — Captures all user interactions via MST patch interception
+2. **RL Data Pipeline** — Transforms raw logs into Gymnasium-compatible RL training data
+3. **Scavenger Hunt Widget** — Guided task system for structured data collection (MTurk-ready)
+
+The plugin is designed for "parasitic deployment" — it can be injected into any existing JBrowse 2 instance by adding a single plugin entry to the config, with no rebuild required.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    JBrowse 2 Runtime                         │
+│                                                              │
+│  ┌──────────────┐    ┌──────────────┐    ┌───────────────┐  │
+│  │ LinearGenome  │    │   Session    │    │   Widgets     │  │
+│  │ View Model    │    │   Model      │    │               │  │
+│  │ (MST)        │    │   (MST)      │    │               │  │
+│  └──────┬───────┘    └──────┬───────┘    └───────┬───────┘  │
+│         │                   │                    │           │
+│         └───────────────────┼────────────────────┘           │
+│                             │                                │
+│                      onPatch() listener                      │
+│                             │                                │
+│  ┌──────────────────────────▼─────────────────────────────┐  │
+│  │              jbrowse-plugin-rl-analytics                │  │
+│  │                                                         │  │
+│  │  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐  │  │
+│  │  │   Action    │  │  RL Data     │  │  Scavenger    │  │  │
+│  │  │   Logger    │  │  Pipeline    │  │  Hunt Widget  │  │  │
+│  │  │             │  │              │  │               │  │  │
+│  │  │ • Patch     │  │ • State      │  │ • Task cards  │  │  │
+│  │  │   intercept │  │   encoder    │  │ • Validation  │  │  │
+│  │  │ • Action    │  │ • Reward     │  │ • Progress    │  │  │
+│  │  │   classify  │  │   calculator │  │ • Timer       │  │  │
+│  │  │ • Ring      │  │ • Episode    │  │ • MTurk       │  │  │
+│  │  │   buffer    │  │   manager    │  │   codes       │  │  │
+│  │  └──────┬──────┘  └──────┬───────┘  └───────┬───────┘  │  │
+│  │         │                │                   │          │  │
+│  │         └────────────────┼───────────────────┘          │  │
+│  │                          │                              │  │
+│  │                   ┌──────▼───────┐                      │  │
+│  │                   │   Export     │                      │  │
+│  │                   │   Manager   │                      │  │
+│  │                   │             │                      │  │
+│  │                   │ • JSONL     │                      │  │
+│  │                   │ • HDF5     │                      │  │
+│  │                   │ • Webhook  │                      │  │
+│  │                   └─────────────┘                      │  │
+│  └─────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Subsystem 1: Action Logger
+
+### Purpose
+Intercept every state mutation in the JBrowse 2 session using MobX-State-Tree's `onPatch()` mechanism. Classify raw patches into semantic user actions.
+
+### Design
+
+**Patch Interception:**
+```typescript
+import { onPatch } from 'mobx-state-tree'
+
+// In configure() lifecycle method:
+configure(pluginManager: PluginManager) {
+  const rootModel = pluginManager.rootModel
+  this.disposer = onPatch(rootModel, (patch, reversePatch) => {
+    this.actionClassifier.classify(patch, reversePatch)
+  })
+}
+```
+
+**Action Classification:**
+
+MST patches have the form `{op: 'add'|'remove'|'replace', path: string, value: any}`. The classifier maps path patterns to semantic actions:
+
+```typescript
+interface ClassifiedAction {
+  type: ActionType
+  timestamp: number
+  patch: IJsonPatch
+  reversePatch: IJsonPatch
+  metadata: Record<string, any>  // action-specific data
+}
+
+enum ActionType {
+  ZOOM_IN = 'ZOOM_IN',
+  ZOOM_OUT = 'ZOOM_OUT',
+  PAN_LEFT = 'PAN_LEFT',
+  PAN_RIGHT = 'PAN_RIGHT',
+  SEARCH = 'SEARCH',
+  TOGGLE_TRACK = 'TOGGLE_TRACK',
+  OPEN_WIDGET = 'OPEN_WIDGET',
+  CLOSE_WIDGET = 'CLOSE_WIDGET',
+  SELECT_FEATURE = 'SELECT_FEATURE',
+  ADD_VIEW = 'ADD_VIEW',
+  UNKNOWN = 'UNKNOWN',
+}
+
+class ActionClassifier {
+  private rules: ClassificationRule[] = [
+    {
+      pathPattern: /\/views\/\d+\/bpPerPx$/,
+      op: 'replace',
+      classify: (patch, reversePatch) => ({
+        type: patch.value < reversePatch.value
+          ? ActionType.ZOOM_IN
+          : ActionType.ZOOM_OUT,
+        metadata: {
+          oldBpPerPx: reversePatch.value,
+          newBpPerPx: patch.value,
+          zoomFactor: reversePatch.value / patch.value,
+        }
+      })
+    },
+    {
+      pathPattern: /\/views\/\d+\/offsetPx$/,
+      op: 'replace',
+      classify: (patch, reversePatch) => ({
+        type: patch.value > reversePatch.value
+          ? ActionType.PAN_RIGHT
+          : ActionType.PAN_LEFT,
+        metadata: {
+          deltaPixels: patch.value - reversePatch.value,
+        }
+      })
+    },
+    {
+      pathPattern: /\/views\/\d+\/displayedRegions$/,
+      op: 'replace',
+      classify: (patch) => ({
+        type: ActionType.SEARCH,
+        metadata: { regions: patch.value }
+      })
+    },
+    {
+      pathPattern: /\/views\/\d+\/tracks\/\d+$/,
+      op: 'add',
+      classify: (patch) => ({
+        type: ActionType.TOGGLE_TRACK,
+        metadata: { trackId: patch.value?.trackId, added: true }
+      })
+    },
+    {
+      pathPattern: /\/views\/\d+\/tracks\/\d+$/,
+      op: 'remove',
+      classify: (patch) => ({
+        type: ActionType.TOGGLE_TRACK,
+        metadata: { trackId: patch.value?.trackId, added: false }
+      })
+    },
+  ]
+
+  classify(patch: IJsonPatch, reversePatch: IJsonPatch): ClassifiedAction {
+    for (const rule of this.rules) {
+      if (rule.pathPattern.test(patch.path) && patch.op === rule.op) {
+        const { type, metadata } = rule.classify(patch, reversePatch)
+        return { type, timestamp: Date.now(), patch, reversePatch, metadata }
+      }
+    }
+    return {
+      type: ActionType.UNKNOWN,
+      timestamp: Date.now(),
+      patch,
+      reversePatch,
+      metadata: {}
+    }
+  }
+}
+```
+
+**Ring Buffer Storage:**
+```typescript
+class ActionBuffer {
+  private buffer: ClassifiedAction[] = []
+  private maxSize: number = 10000
+
+  push(action: ClassifiedAction) {
+    if (this.buffer.length >= this.maxSize) {
+      this.buffer.shift()
+    }
+    this.buffer.push(action)
+  }
+
+  drain(): ClassifiedAction[] {
+    const actions = [...this.buffer]
+    this.buffer = []
+    return actions
+  }
+
+  getRecent(n: number): ClassifiedAction[] {
+    return this.buffer.slice(-n)
+  }
+}
+```
+
+### Debouncing
+
+Continuous actions (pan, zoom via scroll wheel) generate many patches per second. Debounce strategy:
+- Group patches of the same type within 100ms windows
+- Emit a single action with aggregated metadata (total delta, final value)
+- Keep all raw patches in a `rawPatches` array on the aggregated action for replay
+
+---
+
+## Subsystem 2: RL Data Pipeline
+
+### Purpose
+Transform classified actions into (state, action, reward, next_state) tuples suitable for offline RL training.
+
+### State Representation
+
+```typescript
+interface BrowserState {
+  // Viewport (continuous)
+  bpPerPx: number              // zoom level
+  offsetPx: number             // horizontal scroll position
+  viewWidthPx: number          // view width in pixels
+
+  // Genomic context (discrete + continuous)
+  assemblyName: string
+  refName: string              // chromosome
+  startBp: number              // left edge in base pairs
+  endBp: number                // right edge in base pairs
+  viewportBp: number           // total base pairs visible
+
+  // Track state (categorical set)
+  activeTracks: string[]       // trackIds of visible tracks
+  numTracks: number
+
+  // Task context (if scavenger hunt active)
+  taskActive: boolean
+  targetRefName?: string
+  targetStartBp?: number
+  targetEndBp?: number
+  distanceToTargetBp?: number  // signed distance from viewport center to target center
+  targetVisible?: boolean      // is any part of target in viewport?
+  targetFullyVisible?: boolean // is entire target region in viewport?
+
+  // Temporal features
+  timeSinceLastAction: number  // milliseconds
+  actionsInLast5Seconds: number
+}
+```
+
+**State Encoder** (for numeric vector representation):
+```typescript
+class StateEncoder {
+  encode(state: BrowserState): number[] {
+    return [
+      Math.log(state.bpPerPx),           // log-scale zoom
+      state.offsetPx / 1000,              // normalized scroll
+      state.viewWidthPx / 1000,
+      state.viewportBp / 1e6,             // viewport in Mb
+      state.numTracks / 10,               // normalized track count
+      state.taskActive ? 1 : 0,
+      state.distanceToTargetBp
+        ? Math.sign(state.distanceToTargetBp) * Math.log1p(Math.abs(state.distanceToTargetBp))
+        : 0,
+      state.targetVisible ? 1 : 0,
+      state.targetFullyVisible ? 1 : 0,
+      Math.log1p(state.timeSinceLastAction),
+      state.actionsInLast5Seconds / 10,
+    ]
+  }
+
+  get dimensions(): number { return 11 }
+}
+```
+
+### Reward Calculator
+
+```typescript
+class RewardCalculator {
+  calculate(
+    prevState: BrowserState,
+    action: ClassifiedAction,
+    nextState: BrowserState,
+    taskConfig?: TaskConfig,
+  ): number {
+    let reward = 0
+
+    // 1. Task-based reward (if scavenger hunt active)
+    if (taskConfig && nextState.taskActive) {
+      // Potential-based distance shaping
+      const prevDistance = prevState.distanceToTargetBp ?? Infinity
+      const nextDistance = nextState.distanceToTargetBp ?? Infinity
+      const gamma = 0.99
+      const prevPotential = -Math.log1p(Math.abs(prevDistance))
+      const nextPotential = -Math.log1p(Math.abs(nextDistance))
+      reward += gamma * nextPotential - prevPotential
+
+      // Big bonus for making target visible
+      if (nextState.targetVisible && !prevState.targetVisible) {
+        reward += 5.0
+      }
+
+      // Completion bonus
+      if (nextState.targetFullyVisible && taskConfig.type === 'navigate') {
+        reward += 10.0
+      }
+    }
+
+    // 2. Efficiency penalty (small per-step cost encourages shorter paths)
+    reward -= 0.01
+
+    // 3. Confusion signals (penalize oscillating/undoing)
+    if (this.isOscillation(action)) {
+      reward -= 0.5
+    }
+
+    return reward
+  }
+
+  private recentActions: ActionType[] = []
+
+  private isOscillation(action: ClassifiedAction): boolean {
+    this.recentActions.push(action.type)
+    if (this.recentActions.length > 6) this.recentActions.shift()
+
+    // Check for ABAB pattern (e.g., zoom in, zoom out, zoom in, zoom out)
+    if (this.recentActions.length >= 4) {
+      const last4 = this.recentActions.slice(-4)
+      if (last4[0] === last4[2] && last4[1] === last4[3] && last4[0] !== last4[1]) {
+        return true
+      }
+    }
+    return false
+  }
+}
+```
+
+### Episode Manager
+
+```typescript
+interface Episode {
+  id: string
+  taskId?: string
+  startTime: number
+  endTime?: number
+  steps: Step[]
+  outcome: 'completed' | 'abandoned' | 'timeout' | 'in_progress'
+  metadata: {
+    workerId?: string       // MTurk worker
+    assignmentId?: string   // MTurk assignment
+    taskConfig?: TaskConfig
+  }
+}
+
+interface Step {
+  timestamp: number
+  state: BrowserState
+  action: ActionType
+  actionMetadata: Record<string, any>
+  reward: number
+  nextState: BrowserState
+  terminal: boolean
+}
+
+class EpisodeManager {
+  private currentEpisode: Episode | null = null
+  private completedEpisodes: Episode[] = []
+  private inactivityTimeout = 5 * 60 * 1000  // 5 minutes
+
+  startEpisode(taskConfig?: TaskConfig) {
+    this.currentEpisode = {
+      id: crypto.randomUUID(),
+      taskId: taskConfig?.id,
+      startTime: Date.now(),
+      steps: [],
+      outcome: 'in_progress',
+      metadata: { taskConfig },
+    }
+  }
+
+  addStep(step: Step) {
+    if (!this.currentEpisode) this.startEpisode()
+    this.currentEpisode!.steps.push(step)
+
+    if (step.terminal) {
+      this.endEpisode('completed')
+    }
+  }
+
+  checkInactivity() {
+    if (!this.currentEpisode) return
+    const lastStep = this.currentEpisode.steps.at(-1)
+    if (lastStep && Date.now() - lastStep.timestamp > this.inactivityTimeout) {
+      this.endEpisode('timeout')
+    }
+  }
+
+  endEpisode(outcome: Episode['outcome']) {
+    if (!this.currentEpisode) return
+    this.currentEpisode.endTime = Date.now()
+    this.currentEpisode.outcome = outcome
+    this.completedEpisodes.push(this.currentEpisode)
+    this.currentEpisode = null
+  }
+}
+```
+
+### Export Formats
+
+**JSONL (primary):**
+```typescript
+class JSONLExporter {
+  export(episodes: Episode[]): string {
+    const lines: string[] = []
+    for (const episode of episodes) {
+      for (const step of episode.steps) {
+        lines.push(JSON.stringify({
+          episode_id: episode.id,
+          task_id: episode.taskId,
+          timestamp: step.timestamp,
+          observation: step.state,
+          action: step.action,
+          action_metadata: step.actionMetadata,
+          reward: step.reward,
+          next_observation: step.nextState,
+          terminated: step.terminal,
+          truncated: episode.outcome === 'timeout',
+        }))
+      }
+    }
+    return lines.join('\n')
+  }
+}
+```
+
+**Gymnasium/d3rlpy-compatible NumPy arrays** (via post-processing script):
+```python
+# convert_jsonl_to_gymnasium.py
+import json
+import numpy as np
+
+def convert(jsonl_path: str, output_path: str):
+    steps = [json.loads(line) for line in open(jsonl_path)]
+
+    observations = np.array([encode_state(s['observation']) for s in steps])
+    actions = np.array([ACTION_MAP[s['action']] for s in steps])
+    rewards = np.array([s['reward'] for s in steps])
+    terminals = np.array([s['terminated'] for s in steps])
+    timeouts = np.array([s['truncated'] for s in steps])
+
+    np.savez(output_path,
+        observations=observations,
+        actions=actions,
+        rewards=rewards,
+        terminals=terminals,
+        timeouts=timeouts,
+    )
+```
+
+---
+
+## Subsystem 3: Scavenger Hunt Widget
+
+### Purpose
+A guided task system that presents users with genomic navigation challenges, validates their completion, and generates structured episodes for RL training.
+
+### Task Schema
+
+```typescript
+interface TaskConfig {
+  id: string
+  type: 'navigate' | 'identify' | 'compare' | 'freeform'
+  tier: 1 | 2 | 3                 // difficulty level
+  title: string                    // short display title
+  description: string              // full task instructions
+  hints: string[]                  // progressive hints (revealed one at a time)
+
+  // Validation criteria
+  target?: {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }
+  expectedAnswer?: string          // for identify/freeform tasks
+  answerChoices?: string[]         // for multiple-choice tasks
+  validationFn?: string            // name of custom validation function
+
+  // Constraints
+  minTimeSeconds?: number          // anti-gaming: minimum time to complete
+  maxTimeSeconds?: number          // timeout
+  requiredTracks?: string[]        // tracks that must be visible
+
+  // Reward
+  completionReward: number         // RL reward on task completion
+}
+
+interface TaskSet {
+  id: string
+  name: string
+  description: string
+  tasks: TaskConfig[]
+  randomizeOrder: boolean
+  attentionCheckIndices: number[]  // which tasks are attention checks
+}
+```
+
+### Widget State Model
+
+```typescript
+const ScavengerHuntModel = types
+  .model('ScavengerHuntWidget', {
+    id: ElementId,
+    type: types.literal('ScavengerHuntWidget'),
+    taskSetId: types.optional(types.string, ''),
+    tasks: types.array(TaskConfigModel),
+    currentTaskIndex: types.optional(types.number, 0),
+    taskOrder: types.array(types.number),  // shuffled indices
+    completedTaskIds: types.array(types.string),
+    taskStartTimes: types.map(types.number),
+    taskEndTimes: types.map(types.number),
+    hintsRevealed: types.map(types.number), // taskId -> hints revealed count
+    answers: types.map(types.string),       // taskId -> user answer
+    workerId: types.optional(types.string, ''),
+    assignmentId: types.optional(types.string, ''),
+  })
+  .views(self => ({
+    get currentTask() {
+      const idx = self.taskOrder[self.currentTaskIndex]
+      return self.tasks[idx]
+    },
+    get progress() {
+      return self.completedTaskIds.length / self.tasks.length
+    },
+    get isComplete() {
+      return self.completedTaskIds.length === self.tasks.length
+    },
+    get completionCode() {
+      if (!self.isComplete) return null
+      // Deterministic code for MTurk validation
+      const payload = `${self.assignmentId}:${self.taskSetId}:${self.completedTaskIds.join(',')}`
+      return sha256(payload).slice(0, 12).toUpperCase()
+    },
+  }))
+  .actions(self => ({
+    loadTaskSet(taskSet: TaskSet) {
+      self.tasks.replace(taskSet.tasks)
+      self.taskSetId = taskSet.id
+      if (taskSet.randomizeOrder) {
+        self.taskOrder.replace(shuffleArray([...Array(taskSet.tasks.length).keys()]))
+      } else {
+        self.taskOrder.replace([...Array(taskSet.tasks.length).keys()])
+      }
+    },
+    startCurrentTask() {
+      const task = self.currentTask
+      if (task) {
+        self.taskStartTimes.set(task.id, Date.now())
+        // Notify episode manager to start new episode
+      }
+    },
+    revealHint() {
+      const task = self.currentTask
+      if (!task) return
+      const current = self.hintsRevealed.get(task.id) ?? 0
+      if (current < task.hints.length) {
+        self.hintsRevealed.set(task.id, current + 1)
+      }
+    },
+    submitAnswer(answer: string) {
+      const task = self.currentTask
+      if (!task) return
+      self.answers.set(task.id, answer)
+    },
+    completeCurrentTask() {
+      const task = self.currentTask
+      if (!task) return
+      self.taskEndTimes.set(task.id, Date.now())
+      self.completedTaskIds.push(task.id)
+      if (self.currentTaskIndex < self.tasks.length - 1) {
+        self.currentTaskIndex += 1
+      }
+    },
+  }))
+```
+
+### Validation Engine
+
+```typescript
+class TaskValidator {
+  constructor(private pluginManager: PluginManager) {}
+
+  validate(task: TaskConfig, model: ScavengerHuntModel): ValidationResult {
+    switch (task.type) {
+      case 'navigate':
+        return this.validateNavigation(task)
+      case 'identify':
+        return this.validateIdentification(task, model)
+      case 'compare':
+        return this.validateComparison(task, model)
+      case 'freeform':
+        return this.validateFreeform(task, model)
+    }
+  }
+
+  private validateNavigation(task: TaskConfig): ValidationResult {
+    if (!task.target) return { valid: false, reason: 'No target defined' }
+
+    const session = this.pluginManager.rootModel!.session
+    const view = session.views[0] as LinearGenomeView
+
+    // Check if target region is visible
+    const visible = view.dynamicBlocks.contentBlocks.some(block =>
+      block.refName === task.target!.refName &&
+      block.start <= task.target!.end &&
+      block.end >= task.target!.start
+    )
+
+    if (!visible) {
+      return { valid: false, reason: 'Target region not in viewport' }
+    }
+
+    // Check required tracks
+    if (task.requiredTracks) {
+      const activeTrackIds = view.tracks.map(t => t.configuration.trackId)
+      const missingTracks = task.requiredTracks.filter(t => !activeTrackIds.includes(t))
+      if (missingTracks.length > 0) {
+        return { valid: false, reason: `Missing tracks: ${missingTracks.join(', ')}` }
+      }
+    }
+
+    // Check minimum time
+    const startTime = model.taskStartTimes.get(task.id)
+    if (startTime && task.minTimeSeconds) {
+      const elapsed = (Date.now() - startTime) / 1000
+      if (elapsed < task.minTimeSeconds) {
+        return { valid: false, reason: 'Completed too quickly — please explore more carefully' }
+      }
+    }
+
+    return { valid: true }
+  }
+
+  private validateIdentification(task: TaskConfig, model: ScavengerHuntModel): ValidationResult {
+    const answer = model.answers.get(task.id)
+    if (!answer) return { valid: false, reason: 'No answer provided' }
+
+    if (task.answerChoices) {
+      return { valid: answer === task.expectedAnswer, reason: answer === task.expectedAnswer ? undefined : 'Incorrect answer' }
+    }
+
+    // Fuzzy match for free-text answers
+    const similarity = jaroWinkler(answer.toLowerCase(), task.expectedAnswer!.toLowerCase())
+    return { valid: similarity > 0.85, reason: similarity > 0.85 ? undefined : 'Answer does not match expected' }
+  }
+}
+```
+
+### React Components
+
+```typescript
+// TaskCard — displays current task
+const TaskCard = observer(({ task, hintsRevealed, onRevealHint }) => (
+  <Card>
+    <CardHeader>
+      <Chip label={`Tier ${task.tier}`} />
+      <Typography variant="h6">{task.title}</Typography>
+    </CardHeader>
+    <CardContent>
+      <Typography>{task.description}</Typography>
+      {Array.from({ length: hintsRevealed }, (_, i) => (
+        <Alert key={i} severity="info">Hint {i + 1}: {task.hints[i]}</Alert>
+      ))}
+      {hintsRevealed < task.hints.length && (
+        <Button onClick={onRevealHint}>
+          Reveal Hint ({task.hints.length - hintsRevealed} remaining)
+        </Button>
+      )}
+    </CardContent>
+  </Card>
+))
+
+// ProgressBar — shows overall hunt progress
+const ProgressBar = observer(({ model }) => (
+  <LinearProgress
+    variant="determinate"
+    value={model.progress * 100}
+  />
+))
+
+// CompletionScreen — shows MTurk code when done
+const CompletionScreen = observer(({ model }) => (
+  <Card>
+    <Typography variant="h5">All tasks complete!</Typography>
+    <Typography>Your completion code:</Typography>
+    <Typography variant="h4" style={{ fontFamily: 'monospace' }}>
+      {model.completionCode}
+    </Typography>
+    <Typography variant="caption">
+      Copy this code back to the MTurk HIT page.
+    </Typography>
+  </Card>
+))
+```
+
+---
+
+## File Structure
+
+```
+plugins/rl-analytics/
+├── package.json
+├── tsconfig.json
+├── src/
+│   ├── index.ts                    # Plugin entry point (install + configure)
+│   │
+│   ├── ActionLogger/
+│   │   ├── ActionClassifier.ts     # Patch → semantic action mapping
+│   │   ├── ActionBuffer.ts         # Ring buffer with debouncing
+│   │   ├── ActionTypes.ts          # ActionType enum + interfaces
+│   │   └── PatchListener.ts        # onPatch() setup and teardown
+│   │
+│   ├── RLPipeline/
+│   │   ├── StateEncoder.ts         # BrowserState extraction + vector encoding
+│   │   ├── RewardCalculator.ts     # Multi-component reward function
+│   │   ├── EpisodeManager.ts       # Episode lifecycle management
+│   │   └── types.ts                # Step, Episode, BrowserState interfaces
+│   │
+│   ├── ScavengerHunt/
+│   │   ├── model.ts                # MST state model for widget
+│   │   ├── TaskValidator.ts        # Validation engine
+│   │   ├── components/
+│   │   │   ├── ScavengerHuntWidget.tsx   # Main widget container
+│   │   │   ├── TaskCard.tsx              # Individual task display
+│   │   │   ├── ProgressBar.tsx           # Progress indicator
+│   │   │   ├── HintSystem.tsx            # Progressive hint reveals
+│   │   │   ├── AnswerInput.tsx           # Text/multiple-choice input
+│   │   │   └── CompletionScreen.tsx      # MTurk completion code
+│   │   └── tasks/
+│   │       ├── taskSchema.ts             # TaskConfig interfaces
+│   │       └── sampleTasks.json          # Example task set
+│   │
+│   ├── Export/
+│   │   ├── JSONLExporter.ts        # JSONL export
+│   │   ├── WebhookExporter.ts      # Real-time webhook streaming
+│   │   └── ExportManager.ts        # Coordinates export triggers
+│   │
+│   └── config.ts                   # Plugin ConfigurationSchema
+│
+├── scripts/
+│   ├── convert_to_gymnasium.py     # JSONL → NumPy/HDF5 converter
+│   └── generate_parasitic_config.ts # Config generator for parasitic deployment
+│
+└── test/
+    ├── ActionClassifier.test.ts
+    ├── RewardCalculator.test.ts
+    ├── TaskValidator.test.ts
+    └── EpisodeManager.test.ts
+```
+
+---
+
+## Implementation Phases
+
+### Phase 1: Action Logger (Week 1-2)
+1. Scaffold plugin with `@jbrowse/plugin-template`
+2. Implement `PatchListener` with `onPatch()` hook in `configure()`
+3. Build `ActionClassifier` with rules for zoom, pan, search, track toggle
+4. Add `ActionBuffer` with debouncing for continuous actions
+5. Create debug widget showing live action stream (development aid)
+6. Write unit tests for classifier rules
+
+### Phase 2: RL Pipeline (Week 2-3)
+1. Implement `StateEncoder` extracting `BrowserState` from session/view models
+2. Build `RewardCalculator` with potential-based shaping
+3. Create `EpisodeManager` with task-boundary and timeout segmentation
+4. Implement `JSONLExporter`
+5. Write Python `convert_to_gymnasium.py` script
+6. Integration test: simulate navigation → export → load in d3rlpy
+
+### Phase 3: Scavenger Hunt (Week 3-4)
+1. Create widget state model with task management
+2. Build `TaskValidator` for navigate/identify task types
+3. Implement React components (TaskCard, ProgressBar, HintSystem, CompletionScreen)
+4. Add URL parameter loading for task sets
+5. Wire up to EpisodeManager (task start/end → episode boundaries)
+6. Create sample task set with 10 tasks across 3 tiers
+
+### Phase 4: Parasitic Deployment (Week 4-5)
+1. Build `generate_parasitic_config.ts` script
+2. Set up plugin UMD bundle build
+3. Deploy to CDN (GitHub Pages or npm)
+4. Test injection into jbrowse.org demo, UCSC instances
+5. Add MTurk integration (worker ID capture, completion codes)
+6. CORS proxy for non-CORS servers (Cloudflare Worker)
+
+### Phase 5: Polish & Paper (Week 5-6)
+1. Export analytics dashboard widget (session stats, action heatmaps)
+2. Add webhook exporter for real-time data streaming
+3. Write documentation
+4. Generate figures for paper (action distribution plots, episode statistics)
+
+---
+
+## Key Technical Decisions
+
+### Why MST `onPatch()` instead of React event listeners?
+- **Completeness**: Catches ALL state changes, including programmatic ones (search bar, URL navigation, undo/redo)
+- **Structure**: Patches encode the exact model path, making classification deterministic
+- **No UI coupling**: Works regardless of how the UI triggers the change
+- **Reversibility**: `reversePatch` gives us previous state for free
+
+### Why not extend the existing `TimeTraveller`?
+- `TimeTraveller` uses `onSnapshot()` with 300ms debounce — too coarse for RL
+- It captures full snapshots, not incremental changes — expensive and lossy
+- Our needs are fundamentally different (action classification vs. undo/redo)
+
+### Why JSONL over HDF5 for primary export?
+- Human-readable, debuggable, streamable
+- Appendable (no need to rewrite whole file)
+- Easy to post-process into any format (NumPy, HDF5, Parquet)
+- HDF5 as a derived format via Python script
+
+### Why potential-based reward shaping?
+- Preserves optimal policy (proven by Ng et al. 1999)
+- Provides dense learning signal without changing what's optimal
+- Distance-based potential is intuitive for navigation tasks
+
+---
+
+## Configuration Schema
+
+```typescript
+const configSchema = ConfigurationSchema('RLAnalyticsPlugin', {
+  enabled: {
+    type: 'boolean',
+    defaultValue: true,
+    description: 'Enable/disable the RL analytics plugin',
+  },
+  actionBufferSize: {
+    type: 'number',
+    defaultValue: 10000,
+    description: 'Maximum number of actions to buffer before export',
+  },
+  debounceMs: {
+    type: 'number',
+    defaultValue: 100,
+    description: 'Debounce window for continuous actions (ms)',
+  },
+  webhookUrl: {
+    type: 'string',
+    defaultValue: '',
+    description: 'URL to POST action data to in real-time (empty = disabled)',
+  },
+  webhookBatchSize: {
+    type: 'number',
+    defaultValue: 50,
+    description: 'Number of actions to batch per webhook POST',
+  },
+  webhookIntervalMs: {
+    type: 'number',
+    defaultValue: 5000,
+    description: 'Maximum interval between webhook POSTs (ms)',
+  },
+  scavengerTasksUrl: {
+    type: 'string',
+    defaultValue: '',
+    description: 'URL to fetch scavenger hunt task set JSON',
+  },
+  autoStartScavenger: {
+    type: 'boolean',
+    defaultValue: false,
+    description: 'Auto-open scavenger hunt widget on session start',
+  },
+  rewardShaping: {
+    type: 'string',
+    defaultValue: 'potential',
+    description: 'Reward shaping strategy: "potential", "sparse", or "dense"',
+  },
+  inactivityTimeoutMs: {
+    type: 'number',
+    defaultValue: 300000,
+    description: 'Inactivity timeout for episode segmentation (ms)',
+  },
+  logUnknownPatches: {
+    type: 'boolean',
+    defaultValue: false,
+    description: 'Log unclassified MST patches (for debugging/discovery)',
+  },
+})
+```
+
+---
+
+## Open Questions
+
+1. **Privacy**: Should we strip/hash genomic coordinates before export? Some datasets may contain PHI.
+2. **Consent UI**: Do we need a consent banner, or is that handled at the MTurk HIT level?
+3. **Multi-view support**: Should we track actions across multiple `LinearGenomeView` instances, or just the primary?
+4. **Server-side aggregation**: Do we need a lightweight backend for collecting webhook data, or rely on external services (S3, Firebase)?
+5. **Plugin size budget**: UMD bundle should stay under 100KB gzipped for fast parasitic loading.
+
+---
+
+## Research Applications
+
+### Offline RL for Browser Agents
+Train agents (CQL, IQL, Decision Transformer) on collected human navigation data. Evaluate on held-out scavenger hunt tasks. Compare against behavioral cloning baseline.
+
+### Imitation Learning
+Use episodes without reward signal (free exploration) for behavioral cloning. Learn a "genomics expert navigation policy" from bioinformaticians' browsing patterns.
+
+### UI/UX Analytics
+Analyze action distributions to identify common workflows, pain points (oscillation patterns), and feature adoption. Compare novice vs. expert navigation strategies.
+
+### Crowdsourced Annotation
+Use MTurk scavenger hunts with annotation tasks. Measure inter-annotator agreement. Compare crowd annotations against gold-standard databases (ClinVar, COSMIC).
+
+### Mouse/Eye Tracking Heatmaps
+Identify which interface regions receive the most attention. Find "dead zones" that users never look at. Optimize layout based on attention data.
+
+---
+
+## Appendix A: Action Logger — Codebase Research
+
+### How JBrowse 2 Plugins Work
+
+JBrowse 2 plugins extend `Plugin` from `@jbrowse/core/Plugin` and implement two lifecycle methods:
+
+- **`install(pluginManager)`** — Register new types (views, tracks, widgets, adapters, renderers, display types). Called during initialization before the root model is created.
+- **`configure(pluginManager)`** — Hook into the live session (add menu items, attach listeners, use extension points). Called after the root model exists.
+
+Key extension point for session augmentation: `Core-extendSession`. Plugins use `pluginManager.addToExtensionPoint('Core-extendSession', ...)` to modify the session model, adding new views, actions, or middleware.
+
+### MST Patch System
+
+JBrowse 2 already uses MST's `onPatch()` internally:
+
+- **`TimeTraveller` mixin** (`packages/product-core/src/Session/TimeTraveller.ts`): Records snapshots (not patches) at 300ms debounce for undo/redo. Uses `onSnapshot()`, not `onPatch()`.
+- **`onPatch()` is available** but unused in core — this is our entry point. It fires synchronously for every state mutation, providing `{op, path, value}` and a `reversePatch`.
+
+MST patch paths encode the full model hierarchy:
+```
+/session/views/0/bpPerPx          → zoom change
+/session/views/0/offsetPx         → pan
+/session/views/0/tracks/0         → track added (op=add) or removed (op=remove)
+/session/views/0/displayedRegions → region navigation
+/session/widgets/...              → widget open/close
+```
+
+### Existing Analytics
+
+The only existing analytics is `@jbrowse/core/util/analytics.ts`:
+- Single startup ping using `navigator.sendBeacon()` or `fetch()`
+- Reports: version, plugins loaded, timestamp
+- No continuous action logging exists — this is the gap our plugin fills
+
+### View Models
+
+`LinearGenomeView` (the primary view) exposes:
+- `bpPerPx` — zoom level
+- `offsetPx` — scroll position
+- `displayedRegions` — genomic coordinates currently shown
+- `tracks` — MST array of active tracks
+- `dynamicBlocks.contentBlocks` — blocks currently rendered (for viewport overlap checks)
+- `navToLocString(locString)` — programmatic navigation
+
+### Widget System
+
+Widgets are registered via `pluginManager.addWidgetType()`:
+```typescript
+pluginManager.addWidgetType(() => new WidgetType({
+  name: 'MyWidget',
+  heading: 'My Widget',
+  configSchema: myConfigSchema,
+  stateModel: myStateModel,
+  ReactComponent: lazy(() => import('./MyComponent')),
+}))
+```
+
+Opened via `session.addWidget('MyWidget', 'myWidget-id', { ...data })` and `session.showWidget(widget)`.
+
+### Configuration System
+
+Uses `ConfigurationSchema` from `@jbrowse/core/configuration`:
+```typescript
+const configSchema = ConfigurationSchema('PluginName', {
+  settingName: {
+    type: 'string',       // string, number, boolean, color, fileLocation, etc.
+    defaultValue: 'foo',
+    description: 'What this does',
+  },
+})
+```
+
+Plugin configuration is accessible at runtime via `getConf(model, 'settingName')`.
+
+### Menu System
+
+Add items to the main menu bar via `rootModel.appendToMenu('Tools', { ... })` or to view-specific menus via `addToExtensionPoint('LinearGenomeView-menu', ...)`.
+
+---
+
+## Appendix B: RL Data Pipeline — Codebase Research
+
+### State Extraction Points
+
+The RL pipeline needs to capture genomic browser state at each timestep. Key model properties:
+
+**From `LinearGenomeView`** (`plugins/linear-genome-view/src/LinearGenomeView/model.ts`):
+- `displayedRegions: Region[]` — array of `{assemblyName, refName, start, end}`
+- `bpPerPx: number` — zoom level (lower = more zoomed in)
+- `offsetPx: number` — horizontal scroll position in pixels
+- `width: number` — view width in pixels
+- `tracks: Track[]` — MST array of track instances
+- `coarseDynamicBlocks` / `dynamicBlocks` — computed blocks visible in viewport
+
+**Derived state calculations:**
+```typescript
+// Current viewport in bp
+const viewportBp = view.bpPerPx * view.width
+
+// Distance to target region (for reward calculation)
+const viewCenter = view.displayedRegions[0].start + (viewportBp / 2)
+const targetCenter = (target.start + target.end) / 2
+const distance = Math.abs(viewCenter - targetCenter)
+
+// Is target visible?
+const targetVisible = view.dynamicBlocks.contentBlocks.some(block =>
+  block.refName === target.refName &&
+  block.start <= target.end &&
+  block.end >= target.start
+)
+```
+
+### Action Classification from Patches
+
+MST patches map to discrete RL actions:
+
+| Patch Path Pattern | Op | RL Action |
+|---|---|---|
+| `*/bpPerPx` | replace | ZOOM_IN (if value decreased) / ZOOM_OUT (if increased) |
+| `*/offsetPx` | replace | PAN_LEFT (if value decreased) / PAN_RIGHT (if increased) |
+| `*/displayedRegions` | replace | SEARCH (triggered by location search bar) |
+| `*/tracks/*` | add | TOGGLE_TRACK |
+| `*/tracks/*` | remove | TOGGLE_TRACK |
+| `*/widgets/*` | add | OPEN_WIDGET |
+| `*/widgets/*` | remove | CLOSE_WIDGET |
+| `*/views/*` | add | ADD_VIEW |
+
+To distinguish ZOOM_IN from ZOOM_OUT (and PAN_LEFT from PAN_RIGHT), the classifier needs both the patch `value` and the `reversePatch.value` (previous value).
+
+### Episode Segmentation
+
+Episodes are segmented by:
+1. **Task boundaries** — Each scavenger hunt task is one episode
+2. **Time gaps** — If >5 minutes of inactivity, start a new episode
+3. **Navigation resets** — If user uses search bar to jump to entirely different region
+
+### Gymnasium Compatibility
+
+The standard format for offline RL datasets:
+```python
+# Expected by d3rlpy, Decision Transformer, CQL
+dataset = {
+    'observations': np.array([...]),  # (N, state_dim)
+    'actions': np.array([...]),       # (N,) discrete
+    'rewards': np.array([...]),       # (N,)
+    'terminals': np.array([...]),     # (N,) bool
+    'timeouts': np.array([...]),      # (N,) bool (episode truncated)
+}
+```
+
+Our JSONL export produces one JSON object per step matching this schema, plus episode-level metadata.
+
+### Reward Design Considerations
+
+- **Sparse vs. dense**: Pure task-completion reward (+10 at end) is too sparse for learning. Distance-based shaping provides denser signal.
+- **Potential-based shaping**: `R_shaped = R + gamma * phi(s') - phi(s)` where `phi(s) = -distance_to_target`. This preserves optimal policy while providing learning signal.
+- **Negative rewards for confusion signals**: Undo usage, rapid zoom in/out oscillation, and repeated search queries suggest user confusion — penalize these to learn "clean" navigation.
+- **No reward for free exploration**: When no task is active, reward is 0 everywhere. Episodes are still collected for imitation learning (behavioral cloning doesn't need reward).
+
+---
+
+## Appendix C: Scavenger Hunt — Codebase Research
+
+### Widget Registration Pattern
+
+Every JBrowse 2 widget follows this pattern (from studying existing widgets like `BaseFeatureWidget`, `AddTrackWidget`, etc.):
+
+**1. State Model** (MST model):
+```typescript
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { types } from 'mobx-state-tree'
+
+const stateModel = types.model('ScavengerHuntWidget', {
+  id: ElementId,
+  type: types.literal('ScavengerHuntWidget'),
+  // Custom state
+  currentTaskIndex: types.optional(types.number, 0),
+  tasks: types.array(TaskModel),
+  startTime: types.maybe(types.number),
+  completedTasks: types.array(types.string),
+})
+.actions(self => ({
+  setCurrentTask(index: number) { self.currentTaskIndex = index },
+  markCompleted(taskId: string) { self.completedTasks.push(taskId) },
+  startTimer() { self.startTime = Date.now() },
+}))
+.views(self => ({
+  get currentTask() { return self.tasks[self.currentTaskIndex] },
+  get progress() { return self.completedTasks.length / self.tasks.length },
+  get elapsedMs() { return self.startTime ? Date.now() - self.startTime : 0 },
+}))
+```
+
+**2. React Component:**
+```typescript
+import { observer } from 'mobx-react'
+
+const TaskWidget = observer(({ model }: { model: ScavengerHuntModel }) => {
+  const task = model.currentTask
+  return (
+    <div>
+      <TaskCard task={task} />
+      <HintSystem hints={task.hints} />
+      <Timer elapsed={model.elapsedMs} />
+      <ProgressBar progress={model.progress} />
+      <SubmitButton onSubmit={() => model.validateAndAdvance()} />
+    </div>
+  )
+})
+```
+
+**3. Registration in `install()`:**
+```typescript
+pluginManager.addWidgetType(() => new WidgetType({
+  name: 'ScavengerHuntWidget',
+  heading: 'Scavenger Hunt',
+  configSchema,
+  stateModel,
+  ReactComponent: lazy(() => import('./TaskWidget')),
+}))
+```
+
+### Opening the Widget
+
+From a menu item or URL parameter handler:
+```typescript
+const session = pluginManager.rootModel.session
+const widget = session.addWidget('ScavengerHuntWidget', 'scavenger-hunt', {
+  tasks: loadedTasks,
+})
+session.showWidget(widget)
+```
+
+### Task Validation Approaches
+
+**Region overlap validation** (for navigate-to-region tasks):
+```typescript
+function isTargetVisible(view: LinearGenomeView, target: Region): boolean {
+  // Use dynamicBlocks which represent what's actually rendered
+  return view.dynamicBlocks.contentBlocks.some(block =>
+    block.refName === target.refName &&
+    block.start <= target.end &&
+    block.end >= target.start
+  )
+}
+
+function isTargetFullyVisible(view: LinearGenomeView, target: Region): boolean {
+  return view.dynamicBlocks.contentBlocks.some(block =>
+    block.refName === target.refName &&
+    block.start <= target.start &&
+    block.end >= target.end
+  )
+}
+```
+
+**Feature click validation** (for identify-variant tasks):
+- Listen for `Core-extendSession` or widget events
+- When user clicks a feature and opens `BaseFeatureWidget`, check if the feature matches the target criteria
+- Access feature data from the widget model's `featureData` property
+
+**Manual validation** (for subjective tasks):
+- Show a text input or multiple-choice answer form
+- Compare against expected answer with fuzzy matching
+
+### URL Parameter Loading
+
+JBrowse 2 processes URL parameters in session initialization. The plugin can read custom params:
+```typescript
+const urlParams = new URLSearchParams(window.location.search)
+const tasksUrl = urlParams.get('scavengerTasks')
+if (tasksUrl) {
+  const tasks = await fetch(tasksUrl).then(r => r.json())
+  // Auto-open widget with loaded tasks
+}
+```
+
+### MTurk Completion Code
+
+Standard MTurk pattern:
+1. Worker accepts HIT, gets redirected to JBrowse with `?workerId=X&assignmentId=Y&scavengerTasks=Z`
+2. Worker completes all tasks
+3. Plugin generates deterministic completion code: `SHA256(assignmentId + taskSetHash + completionTimestamp)`
+4. Worker copies code back to MTurk HIT page
+5. Requester validates codes server-side
+
+Anti-gaming measures:
+- Minimum time per task (can't complete a navigation task in <3 seconds)
+- Task order randomization (different workers see different orderings)
+- Attention check tasks (known-answer questions interspersed)
+
+### Biologically-Grounded Task Examples
+
+**Tier 1 (No biology knowledge):**
+- "Navigate to chromosome 7, position 55,000,000" (tests search/navigation)
+- "Zoom in until you can see individual base pairs" (tests zoom)
+- "Add the 'Genes' track to your view" (tests track management)
+
+**Tier 2 (Trained via tutorial):**
+- "Find the gene TP53 and count how many exons it has" (tests gene navigation + reading)
+- "Is there a coverage drop in the region chr17:7,570,000-7,580,000?" (tests visual interpretation)
+- "Compare the BAM and BigWig tracks at this locus" (tests multi-track analysis)
+
+**Tier 3 (Bioinformatics literate):**
+- "Find a heterozygous SNV in the BRCA1 coding region" (tests variant identification)
+- "Is the variant at chr13:32,340,300 likely a sequencing artifact?" (tests quality assessment)
+- "Identify a structural variant in this region using split-read evidence" (tests SV analysis)
+
+---
+
+## Appendix D: Parasitic Deployment — Codebase Research
+
+### JBrowse 2 Configuration System
+
+JBrowse 2 configuration is a JSON document (`config.json`) with these top-level sections:
+
+```typescript
+interface JBrowseConfig {
+  assemblies: Assembly[]        // Genome assemblies (reference sequences)
+  tracks: TrackConfig[]         // Available tracks
+  defaultSession: Session       // Initial session state
+  plugins: PluginDefinition[]   // External plugins to load
+  configuration: {}             // Global settings
+}
+```
+
+**Assembly structure:**
+```typescript
+interface Assembly {
+  name: string                  // e.g., "hg38"
+  sequence: {
+    type: 'ReferenceSequenceTrack'
+    trackId: string
+    adapter: {
+      type: string              // 'BgzipFastaAdapter', 'TwoBitAdapter', etc.
+      fastaLocation: { uri: string }     // Remote URI to FASTA
+      faiLocation: { uri: string }       // Remote URI to .fai index
+      gziLocation?: { uri: string }      // Remote URI to .gzi (bgzip)
+    }
+  }
+  aliases?: string[]
+  refNameAliases?: { adapter: { ... } }
+}
+```
+
+**Track structure:**
+```typescript
+interface TrackConfig {
+  type: string                  // 'FeatureTrack', 'AlignmentsTrack', 'QuantitativeTrack', etc.
+  trackId: string
+  name: string
+  assemblyNames: string[]
+  adapter: {
+    type: string                // 'BigWigAdapter', 'BamAdapter', 'VcfTabixAdapter', etc.
+    bigWigLocation?: { uri: string }
+    bamLocation?: { uri: string }
+    index?: { location: { uri: string } }
+  }
+}
+```
+
+### Key Insight: URIs Are Already Remote
+
+JBrowse 2 configs already reference data by URI. Most public genomics data lives on S3/GCS/HTTP servers. A "parasitic" config simply reuses these URIs — no data copying needed.
+
+Example from a real JBrowse 2 instance:
+```json
+{
+  "type": "QuantitativeTrack",
+  "trackId": "encode_h3k27ac",
+  "name": "H3K27ac",
+  "adapter": {
+    "type": "BigWigAdapter",
+    "bigWigLocation": {
+      "uri": "https://www.encodeproject.org/files/ENCFF123ABC/@@download/ENCFF123ABC.bigWig"
+    }
+  }
+}
+```
+
+This URI works from any JBrowse instance — no CORS issues with ENCODE, UCSC, AWS S3 public buckets, etc.
+
+### Data Adapter Architecture
+
+JBrowse 2 adapters handle all data fetching. Key adapter types:
+
+| Adapter | Data Format | Typical Source |
+|---------|------------|----------------|
+| `BgzipFastaAdapter` | .fa.gz + .fai + .gzi | Reference genomes |
+| `TwoBitAdapter` | .2bit | UCSC reference genomes |
+| `BigWigAdapter` | .bigWig | Quantitative tracks (coverage, ChIP-seq) |
+| `BigBedAdapter` | .bigBed | Annotation tracks |
+| `BamAdapter` | .bam + .bai | Alignments |
+| `CramAdapter` | .cram + .crai | Compressed alignments |
+| `VcfTabixAdapter` | .vcf.gz + .tbi | Variants |
+| `GtfAdapter` | .gtf.gz | Gene annotations |
+| `Gff3TabixAdapter` | .gff3.gz + .tbi | General features |
+
+All adapters use byte-range HTTP requests (`Range: bytes=X-Y`), so they only download the data needed for the current viewport. This is what makes parasitic deployment efficient — no full file downloads.
+
+### Plugin Loading
+
+JBrowse 2 supports loading external plugins via:
+
+**1. UMD bundle URL** (for production/parasitic use):
+```json
+{
+  "plugins": [
+    {
+      "name": "RLAnalytics",
+      "url": "https://our-cdn.com/jbrowse-plugin-rl-analytics.umd.production.min.js"
+    }
+  ]
+}
+```
+
+**2. ESM URL** (alternative):
+```json
+{
+  "plugins": [
+    {
+      "name": "RLAnalytics",
+      "esmUrl": "https://our-cdn.com/jbrowse-plugin-rl-analytics.esm.js"
+    }
+  ]
+}
+```
+
+The plugin is fetched and loaded at runtime. No rebuild of JBrowse needed.
+
+### Config Generator Implementation
+
+```typescript
+async function generateParasiticConfig(
+  sourceUrl: string,
+  options: {
+    pluginUrl: string           // URL to our plugin's UMD bundle
+    additionalTracks?: TrackConfig[]
+    taskSetUrl?: string         // Scavenger hunt tasks
+  }
+): Promise<JBrowseConfig> {
+  // 1. Fetch source config
+  const sourceConfig = await fetch(`${sourceUrl}/config.json`).then(r => r.json())
+
+  // 2. Resolve relative URIs to absolute
+  const resolvedConfig = resolveRelativeUris(sourceConfig, sourceUrl)
+
+  // 3. Inject our plugin
+  const plugins = [
+    ...(resolvedConfig.plugins || []),
+    { name: 'RLAnalytics', url: options.pluginUrl }
+  ]
+
+  // 4. Add plugin configuration
+  const configuration = {
+    ...resolvedConfig.configuration,
+    RLAnalyticsPlugin: {
+      enabled: true,
+      scavengerTasksUrl: options.taskSetUrl || '',
+    }
+  }
+
+  // 5. Optionally add extra tracks
+  const tracks = [
+    ...resolvedConfig.tracks,
+    ...(options.additionalTracks || [])
+  ]
+
+  return { ...resolvedConfig, plugins, configuration, tracks }
+}
+
+function resolveRelativeUris(config: any, baseUrl: string): any {
+  // Walk the config tree, find all {uri: "..."} objects,
+  // resolve relative paths against baseUrl
+  return JSON.parse(JSON.stringify(config), (key, value) => {
+    if (key === 'uri' && typeof value === 'string' && !value.startsWith('http')) {
+      return new URL(value, baseUrl).toString()
+    }
+    return value
+  })
+}
+```
+
+### CORS Reality Check
+
+Most public genomics data servers already allow cross-origin access:
+
+| Source | CORS Status | Notes |
+|--------|-------------|-------|
+| AWS S3 public buckets | `Access-Control-Allow-Origin: *` | 1000 Genomes, gnomAD, ENCODE |
+| Google Cloud Storage | `Access-Control-Allow-Origin: *` | When configured for public access |
+| UCSC Genome Browser | `Access-Control-Allow-Origin: *` | DAS and API endpoints |
+| ENCODE portal | `Access-Control-Allow-Origin: *` | All file downloads |
+| Ensembl REST API | `Access-Control-Allow-Origin: *` | API endpoints |
+| Private institutional servers | Often NO CORS | Requires proxy |
+
+For servers without CORS, a lightweight Cloudflare Worker proxy (~20 lines of code) can add the headers:
+```javascript
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  const url = new URL(request.url)
+  const targetUrl = url.searchParams.get('url')
+  const response = await fetch(targetUrl, {
+    headers: request.headers,
+  })
+  const newResponse = new Response(response.body, response)
+  newResponse.headers.set('Access-Control-Allow-Origin', '*')
+  newResponse.headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+  newResponse.headers.set('Access-Control-Allow-Headers', 'Range')
+  newResponse.headers.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length')
+  return newResponse
+}
+```
+
+### Deployment Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│  Our Server (e.g., GitHub Pages, Vercel)    │
+│                                             │
+│  ┌─────────────────┐  ┌──────────────────┐ │
+│  │ JBrowse 2 app   │  │ RL Analytics     │ │
+│  │ (static build)  │  │ plugin (.umd.js) │ │
+│  └────────┬────────┘  └────────┬─────────┘ │
+│           │                    │            │
+│  ┌────────┴────────────────────┴─────────┐ │
+│  │ Generated config.json                  │ │
+│  │ (assemblies + tracks pointing to       │ │
+│  │  remote data servers)                  │ │
+│  └────────────────────────────────────────┘ │
+└─────────────────────────────────────────────┘
+              │
+              │ Browser fetches byte-ranges
+              ▼
+┌──────────────────────────────────┐
+│  Original Data Servers           │
+│  (S3, GCS, ENCODE, UCSC, etc.)  │
+│  Serving .bam, .bigWig, .vcf.gz │
+│  via HTTP Range requests         │
+└──────────────────────────────────┘
+```
+
+No data duplication. The browser fetches genomic data directly from the original servers. Our server only hosts the JBrowse app, the plugin bundle, and the config file.

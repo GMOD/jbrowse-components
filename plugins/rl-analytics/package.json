@@ -1,0 +1,59 @@
+{
+  "name": "@jbrowse/plugin-rl-analytics",
+  "version": "4.1.14",
+  "type": "module",
+  "description": "JBrowse 2 plugin for collecting user interaction data for reinforcement learning",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "reinforcement-learning",
+    "analytics"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/rl-analytics"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "prebuild": "pnpm clean",
+    "build": "pnpm run /^build:/",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "test": "cd ../..; jest --passWithNoTests plugins/rl-analytics",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@mui/icons-material": "^7.3.8",
+    "@mui/material": "^7.3.8",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}
