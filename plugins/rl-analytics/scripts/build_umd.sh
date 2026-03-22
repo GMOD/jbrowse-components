@@ -48,6 +48,11 @@ let code = fs.readFileSync('$BUNDLE', 'utf-8');
 // so window.JBrowseExports is available. We use it to resolve imports.
 let varIdx = 0;
 
+// Collapse multi-line imports to single line first
+code = code.replace(/import\\s*\\{([^}]+)\\}\\s*from/gs, (match, names) => {
+  return 'import {' + names.replace(/\\n/g, ' ').replace(/\\s+/g, ' ').trim() + '} from';
+});
+
 code = code.replace(/^import\\s+(.+?)\\s+from\\s+\"([^\"]+)\";?$/gm, (match, clause, mod) => {
   // Icons aren't in JBrowseExports - use null placeholders
   if (mod.startsWith('@mui/icons-material/')) {
@@ -62,21 +67,31 @@ code = code.replace(/^import\\s+(.+?)\\s+from\\s+\"([^\"]+)\";?$/gm, (match, cla
     const name = c.replace('* as ', '');
     return 'var ' + name + ' = __jbx(\"' + mod + '\");';
   } else if (c.startsWith('{')) {
-    return 'var ' + c + ' = __jbx(\"' + mod + '\");';
+    // Convert 'import {X as Y}' to 'var {X: Y}' (destructuring uses : not as)
+    var destructured = c.replace(/\\b(\\w+)\\s+as\\s+(\\w+)\\b/g, '\$1: \$2');
+    return 'var ' + destructured + ' = __jbx(\"' + mod + '\");';
   } else {
     return 'var __t' + vi + ' = __jbx(\"' + mod + '\"); var ' + c + ' = __t' + vi + '.default || __t' + vi + ';';
   }
 });
 
-// Remove export statements but keep the class
+// Extract default export name from 'export { X as default }' pattern
+var defaultExportMatch = code.match(/^export\\s*\\{[^}]*?(\\w+)\\s+as\\s+default[^}]*\\}/m);
+var defaultExportName = defaultExportMatch ? defaultExportMatch[1] : null;
+
+// Remove export statements
 code = code.replace(/^export\\s*\\{[^}]*\\};?$/gm, '');
 code = code.replace(/^export default /gm, 'var __rl_plugin_default = ');
+
+if (defaultExportName) {
+  code += '\\nvar __rl_plugin_default = ' + defaultExportName + ';\\n';
+}
 
 // Wrap in IIFE with JBrowseExports accessor
 const umd = ';(function() {\\n' +
   '// jbrowse-plugin-rl-analytics UMD bundle\\n' +
   '// JBrowseExports is set by installGlobalReExports() before plugin load\\n' +
-  'var _g = typeof self !== \"undefined\" ? self : window;\\n' +
+  'var _g = typeof self !== \"undefined\" ? self : typeof window !== \"undefined\" ? window : typeof globalThis !== \"undefined\" ? globalThis : {};\\n' +
   'var _jbx = _g.JBrowseExports || {};\\n' +
   'function __jbx(mod) {\\n' +
   '  var m = _jbx[mod];\\n' +

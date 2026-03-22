@@ -1,7 +1,7 @@
 ;(function() {
 // jbrowse-plugin-rl-analytics UMD bundle
 // JBrowseExports is set by installGlobalReExports() before plugin load
-var _g = typeof self !== "undefined" ? self : window;
+var _g = typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : {};
 var _jbx = _g.JBrowseExports || {};
 function __jbx(mod) {
   var m = _jbx[mod];
@@ -201,19 +201,10 @@ var init_TaskValidator = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx
-import {
-  Box,
-  Button,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  TextField,
-  Typography
-} from "@mui/material";
-var { observer } = __jbx("mobx-react");
-var { useState } = __jbx("react");
-var { jsx, jsxs } = __jbx("react/jsx-runtime");
+var {Box, Button, FormControl, FormControlLabel, Radio, RadioGroup, TextField, Typography} = __jbx("@mui/material");
+var {observer} = __jbx("mobx-react");
+var {useState} = __jbx("react");
+var {jsx, jsxs} = __jbx("react/jsx-runtime");
 var AnswerInput, AnswerInput_default;
 var init_AnswerInput = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx"() {
@@ -295,9 +286,9 @@ var init_AnswerInput = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx
-var { Box as Box2, Card, CardContent, Typography as Typography2 } = __jbx("@mui/material");
-var { observer as observer2 } = __jbx("mobx-react");
-var { Fragment, jsx as jsx2, jsxs as jsxs2 } = __jbx("react/jsx-runtime");
+var {Box: Box2, Card, CardContent, Typography: Typography2} = __jbx("@mui/material");
+var {observer: observer2} = __jbx("mobx-react");
+var {Fragment, jsx: jsx2, jsxs: jsxs2} = __jbx("react/jsx-runtime");
 var CompletionScreen, CompletionScreen_default;
 var init_CompletionScreen = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx"() {
@@ -338,9 +329,9 @@ var init_CompletionScreen = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
-var { Box as Box3, LinearProgress, Typography as Typography3 } = __jbx("@mui/material");
-var { observer as observer3 } = __jbx("mobx-react");
-var { jsx as jsx3, jsxs as jsxs3 } = __jbx("react/jsx-runtime");
+var {Box: Box3, LinearProgress, Typography: Typography3} = __jbx("@mui/material");
+var {observer: observer3} = __jbx("mobx-react");
+var {jsx: jsx3, jsxs: jsxs3} = __jbx("react/jsx-runtime");
 var ProgressBar, ProgressBar_default;
 var init_ProgressBar = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
@@ -365,9 +356,9 @@ var init_ProgressBar = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx
-var { Alert, Button as Button2, Card as Card2, CardContent as CardContent2, CardHeader, Chip, Typography as Typography4 } = __jbx("@mui/material");
-var { observer as observer4 } = __jbx("mobx-react");
-var { Fragment as Fragment2, jsx as jsx4, jsxs as jsxs4 } = __jbx("react/jsx-runtime");
+var {Alert, Button: Button2, Card: Card2, CardContent: CardContent2, CardHeader, Chip, Typography: Typography4} = __jbx("@mui/material");
+var {observer: observer4} = __jbx("mobx-react");
+var {Fragment: Fragment2, jsx: jsx4, jsxs: jsxs4} = __jbx("react/jsx-runtime");
 var TaskCard, TaskCard_default;
 var init_TaskCard = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx"() {
@@ -420,10 +411,10 @@ var ScavengerHuntWidget_exports = {};
 __export(ScavengerHuntWidget_exports, {
   default: () => ScavengerHuntWidget_default
 });
-var { Alert as Alert2, Box as Box4, Button as Button3, Typography as Typography5 } = __jbx("@mui/material");
-var { observer as observer5 } = __jbx("mobx-react");
-var { useEffect, useState as useState2 } = __jbx("react");
-var { jsx as jsx5, jsxs as jsxs5 } = __jbx("react/jsx-runtime");
+var {Alert: Alert2, Box: Box4, Button: Button3, Typography: Typography5} = __jbx("@mui/material");
+var {observer: observer5} = __jbx("mobx-react");
+var {useEffect, useState: useState2} = __jbx("react");
+var {jsx: jsx5, jsxs: jsxs5} = __jbx("react/jsx-runtime");
 var ScavengerHuntWidget, ScavengerHuntWidget_default;
 var init_ScavengerHuntWidget = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
@@ -508,19 +499,16 @@ var init_ScavengerHuntWidget = __esm({
 });
 
 // plugins/rl-analytics/src/index.ts
-var { lazy } = __jbx("react");
-var __t17 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t17.default || __t17;
-var { WidgetType } = __jbx("@jbrowse/core/pluggableElementTypes");
-import {
-  isAbstractMenuManager,
-  isSessionModelWithWidgets
-} from "@jbrowse/core/util";
+var {lazy} = __jbx("react");
+var __t18 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t18.default || __t18;
+var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
+var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
 var ExploreIcon = null;
 var SaveAltIcon = null;
 
 // plugins/rl-analytics/src/ActionLogger/PatchListener.ts
-var { onPatch } = __jbx("@jbrowse/mobx-state-tree");
+var {onPatch} = __jbx("@jbrowse/mobx-state-tree");
 
 // plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
@@ -1180,7 +1168,7 @@ var EpisodeManager = class {
 };
 
 // plugins/rl-analytics/src/config.ts
-var { ConfigurationSchema } = __jbx("@jbrowse/core/configuration");
+var {ConfigurationSchema} = __jbx("@jbrowse/core/configuration");
 var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
   enabled: {
     type: "boolean",
@@ -1241,9 +1229,9 @@ var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
 var config_default = configSchema;
 
 // plugins/rl-analytics/src/ScavengerHunt/model.ts
-var { ConfigurationSchema as ConfigurationSchema2 } = __jbx("@jbrowse/core/configuration");
-var { ElementId } = __jbx("@jbrowse/core/util/types/mst");
-var { types } = __jbx("@jbrowse/mobx-state-tree");
+var {ConfigurationSchema: ConfigurationSchema2} = __jbx("@jbrowse/core/configuration");
+var {ElementId} = __jbx("@jbrowse/core/util/types/mst");
+var {types} = __jbx("@jbrowse/mobx-state-tree");
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1524,6 +1512,8 @@ Buffer size: ${this.patchListener?.buffer.length ?? 0}`
   }
 };
 
+
+var __rl_plugin_default = RLAnalyticsPlugin;
 
 
 var Plugin = typeof __rl_plugin_default !== "undefined" ? __rl_plugin_default : null;
