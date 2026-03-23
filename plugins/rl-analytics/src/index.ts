@@ -1,10 +1,9 @@
 import { lazy } from 'react'
 
 import Plugin from '@jbrowse/core/Plugin'
-import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import {
   isAbstractMenuManager,
-  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import ExploreIcon from '@mui/icons-material/Explore'
@@ -15,12 +14,9 @@ import ExportManager from './Export/ExportManager.ts'
 import EpisodeManager from './RLPipeline/EpisodeManager.ts'
 import StateEncoder from './RLPipeline/StateEncoder.ts'
 import GameEngine from './ScavengerHunt/GameEngine.ts'
-import { setGameEngine } from './ScavengerHunt/components/ScavengerHuntWidget.tsx'
+import { setGameEngine } from './ScavengerHunt/components/ScavengerHuntView.tsx'
 import configSchema from './config.ts'
-import {
-  ScavengerHuntModel,
-  configSchema as scavengerConfigSchema,
-} from './ScavengerHunt/model.ts'
+import stateModelFactory from './ScavengerHunt/viewModel.ts'
 
 import type { TaskSet } from './ScavengerHunt/tasks/taskSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -36,15 +32,14 @@ export default class RLAnalyticsPlugin extends Plugin {
   private stateEncoder = new StateEncoder()
 
   install(pluginManager: PluginManager) {
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: 'ScavengerHuntWidget',
-        heading: 'Scavenger Hunt',
-        configSchema: scavengerConfigSchema,
-        stateModel: ScavengerHuntModel,
+    pluginManager.addViewType(() => {
+      return new ViewType({
+        name: 'ScavengerHuntView',
+        displayName: 'Scavenger Hunt',
+        stateModel: stateModelFactory(),
         ReactComponent: lazy(
           () =>
-            import('./ScavengerHunt/components/ScavengerHuntWidget.tsx'),
+            import('./ScavengerHunt/components/ScavengerHuntView.tsx'),
         ),
       })
     })
@@ -82,17 +77,14 @@ export default class RLAnalyticsPlugin extends Plugin {
     this.episodeManager.setViewAccessor(getView)
     this.gameEngine.setViewAccessor(getView)
 
-    // Make game engine available to the widget
+    // Make game engine available to the view component
     setGameEngine(this.gameEngine)
 
-    // Connect debounced actions to:
-    // 1. Episode manager (RL data recording)
-    // 2. Game engine (award checking + auto-validation)
+    // Connect debounced actions to episode manager + game engine
     this.patchListener.buffer.onDebouncedAction(action => {
       queueMicrotask(() => {
         this.episodeManager!.recordAction(action)
 
-        // Feed to game engine with current state for award checking
         const view = getView()
         if (view && this.gameEngine) {
           const state = this.stateEncoder.extractState(view, 0, 0)
@@ -116,15 +108,8 @@ export default class RLAnalyticsPlugin extends Plugin {
         onClick: () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const session = (rootModel as any).session
-          if (isSessionModelWithWidgets(session)) {
-            let widget = session.widgets.get('ScavengerHunt')
-            if (!widget) {
-              widget = session.addWidget(
-                'ScavengerHuntWidget',
-                'ScavengerHunt',
-              )
-            }
-            session.showWidget(widget)
+          if (session) {
+            session.addView('ScavengerHuntView', {})
           }
         },
       })
@@ -197,31 +182,25 @@ export default class RLAnalyticsPlugin extends Plugin {
         .then(taskSet => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const session = (pluginManager.rootModel as any)?.session
-          if (isSessionModelWithWidgets(session)) {
-            const widget = session.addWidget(
-              'ScavengerHuntWidget',
-              'ScavengerHunt',
-              {},
-            )
+          if (session) {
+            // Add as a view (not a widget)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const model = widget as any
-            model.loadTaskSet(taskSet)
+            const view = session.addView('ScavengerHuntView', {}) as any
+            view.loadTaskSet(taskSet)
             if (workerId) {
-              model.setWorkerId(workerId)
+              view.setWorkerId(workerId)
             }
             if (assignmentId) {
-              model.setAssignmentId(assignmentId)
+              view.setAssignmentId(assignmentId)
             }
-            session.showWidget(widget)
 
-            // Wire game engine to model and task set
+            // Wire game engine
             if (this.gameEngine) {
-              this.gameEngine.setModel(model)
+              this.gameEngine.setModel(view)
               this.gameEngine.loadTaskSet(taskSet)
-              // Start the first task
-              const firstTask = model.currentTask
+              const firstTask = view.currentTask
               if (firstTask) {
-                model.startCurrentTask()
+                view.startCurrentTask()
                 this.gameEngine.startTask(firstTask)
               }
             }

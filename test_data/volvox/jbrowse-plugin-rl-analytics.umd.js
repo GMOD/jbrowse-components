@@ -287,22 +287,22 @@ var init_ProgressBar = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx
-var ScavengerHuntWidget_exports = {};
-__export(ScavengerHuntWidget_exports, {
-  default: () => ScavengerHuntWidget_default,
+// plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntView.tsx
+var ScavengerHuntView_exports = {};
+__export(ScavengerHuntView_exports, {
+  default: () => ScavengerHuntView_default,
   setGameEngine: () => setGameEngine
 });
 var {Box: Box6, Button: Button2, Chip: Chip2, Typography: Typography5} = __jbx("@mui/material");
 var {observer: observer5} = __jbx("mobx-react");
-var {useCallback, useEffect: useEffect2, useRef: useRef2, useState: useState2} = __jbx("react");
+var {useEffect: useEffect2, useRef: useRef2, useState: useState2} = __jbx("react");
 var {Fragment: Fragment2, jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
 function setGameEngine(engine) {
   gameEngineRef = engine;
 }
-var gameEngineRef, ScavengerHuntWidget, ScavengerHuntWidget_default;
-var init_ScavengerHuntWidget = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
+var gameEngineRef, ScavengerHuntView, ScavengerHuntView_default;
+var init_ScavengerHuntView = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntView.tsx"() {
     "use strict";
     init_AnswerInput();
     init_AwardChips();
@@ -310,7 +310,7 @@ var init_ScavengerHuntWidget = __esm({
     init_NarratorLog();
     init_ProgressBar();
     gameEngineRef = null;
-    ScavengerHuntWidget = observer5(function ScavengerHuntWidget2({
+    ScavengerHuntView = observer5(function ScavengerHuntView2({
       model
     }) {
       const [, forceUpdate] = useState2(0);
@@ -339,13 +339,13 @@ var init_ScavengerHuntWidget = __esm({
         if (!model.completionCode) {
           void model.generateCompletionCode();
         }
-        return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2 }, children: [
+        return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2, height: model.height, overflow: "auto" }, children: [
           /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }),
           /* @__PURE__ */ jsx6(CompletionScreen_default, { model })
         ] });
       }
       if (!currentTask) {
-        return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2 }, children: [
+        return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2, height: model.height, overflow: "auto" }, children: [
           /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }),
           /* @__PURE__ */ jsx6(Typography5, { variant: "body2", sx: { fontStyle: "italic" }, children: "Waiting for tasks..." })
         ] });
@@ -353,119 +353,133 @@ var init_ScavengerHuntWidget = __esm({
       const missingAwards = engine.getMissingAwards(currentTask);
       const isGated = missingAwards.length > 0;
       const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
-      const handleSubmit = useCallback(() => {
+      const handleSubmit = () => {
         engine.tryAutoValidate();
-      }, [engine]);
+      };
       const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
-      return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2 }, children: [
-        /* @__PURE__ */ jsxs5(Box6, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
-          /* @__PURE__ */ jsx6(
-            Chip2,
-            {
-              label: tierLabel,
-              size: "small",
-              color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
-              variant: "outlined"
-            }
-          ),
-          /* @__PURE__ */ jsx6(ProgressBar_default, { model })
-        ] }),
-        /* @__PURE__ */ jsx6(AwardChips_default, { model }),
-        /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }),
-        isGated ? /* @__PURE__ */ jsxs5(Box6, { sx: { p: 1, bgcolor: "grey.50", borderRadius: 1, mb: 1 }, children: [
-          /* @__PURE__ */ jsx6(Typography5, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
-          missingAwards.map((id) => {
-            const def = model.awardDefinitions.find(
-              (a) => a.id === id
-            );
-            return /* @__PURE__ */ jsxs5(Typography5, { variant: "body2", sx: { ml: 1 }, children: [
-              'Earn "',
-              def?.name ?? id,
-              '"'
-            ] }, id);
-          })
-        ] }) : /* @__PURE__ */ jsxs5(Fragment2, { children: [
-          /* @__PURE__ */ jsxs5(
-            Box6,
-            {
-              sx: {
-                p: 1.5,
-                mb: 1,
-                bgcolor: "grey.50",
-                borderRadius: 1,
-                borderLeft: 3,
-                borderColor: "primary.main"
-              },
-              children: [
-                /* @__PURE__ */ jsx6(Typography5, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
-                /* @__PURE__ */ jsx6(Typography5, { variant: "body2", children: currentTask.description })
-              ]
-            }
-          ),
-          needsTextAnswer && /* @__PURE__ */ jsxs5(Fragment2, { children: [
-            /* @__PURE__ */ jsx6(
-              AnswerInput_default,
-              {
-                task: currentTask,
-                currentAnswer: model.answers.get(currentTask.id) ?? "",
-                onSubmit: (answer) => {
-                  model.submitAnswer(answer);
-                  engine.onAnswerSubmit(answer);
-                }
-              }
-            ),
-            /* @__PURE__ */ jsx6(
-              Button2,
-              {
-                variant: "outlined",
-                size: "small",
-                sx: { mt: 1 },
-                onClick: handleSubmit,
-                children: "Submit"
-              }
-            )
-          ] }),
-          currentTask.hints.length > 0 && /* @__PURE__ */ jsx6(
-            Button2,
-            {
-              variant: "text",
-              size: "small",
-              sx: { mt: 0.5, fontSize: "0.75rem" },
-              onClick: () => {
-                model.revealHint();
-              },
-              children: model.currentHintsRevealed < currentTask.hints.length ? `Need a hint? (${currentTask.hints.length - model.currentHintsRevealed} available)` : "All hints shown"
-            }
-          ),
-          model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsx6(
-            Typography5,
-            {
-              variant: "caption",
-              sx: {
-                display: "block",
-                mt: 0.5,
-                p: 0.75,
-                bgcolor: "info.light",
-                color: "info.contrastText",
-                borderRadius: 0.5,
-                fontSize: "0.75rem"
-              },
-              children: hint
-            },
-            i
-          ))
-        ] })
-      ] });
+      return /* @__PURE__ */ jsxs5(
+        Box6,
+        {
+          sx: {
+            height: model.height,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "row",
+            gap: 2,
+            p: 2
+          },
+          children: [
+            /* @__PURE__ */ jsx6(Box6, { sx: { flex: 1, minWidth: 0, overflow: "auto" }, children: /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }) }),
+            /* @__PURE__ */ jsxs5(Box6, { sx: { width: 350, minWidth: 350, overflow: "auto" }, children: [
+              /* @__PURE__ */ jsxs5(Box6, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
+                /* @__PURE__ */ jsx6(
+                  Chip2,
+                  {
+                    label: tierLabel,
+                    size: "small",
+                    color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
+                    variant: "outlined"
+                  }
+                ),
+                /* @__PURE__ */ jsx6(ProgressBar_default, { model })
+              ] }),
+              /* @__PURE__ */ jsx6(AwardChips_default, { model }),
+              isGated ? /* @__PURE__ */ jsxs5(Box6, { sx: { p: 1, bgcolor: "grey.50", borderRadius: 1, mb: 1 }, children: [
+                /* @__PURE__ */ jsx6(Typography5, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
+                missingAwards.map((id) => {
+                  const def = model.awardDefinitions.find(
+                    (a) => a.id === id
+                  );
+                  return /* @__PURE__ */ jsxs5(Typography5, { variant: "body2", sx: { ml: 1 }, children: [
+                    'Earn "',
+                    def?.name ?? id,
+                    '"'
+                  ] }, id);
+                })
+              ] }) : /* @__PURE__ */ jsxs5(Fragment2, { children: [
+                /* @__PURE__ */ jsxs5(
+                  Box6,
+                  {
+                    sx: {
+                      p: 1.5,
+                      mb: 1,
+                      bgcolor: "grey.50",
+                      borderRadius: 1,
+                      borderLeft: 3,
+                      borderColor: "primary.main"
+                    },
+                    children: [
+                      /* @__PURE__ */ jsx6(Typography5, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
+                      /* @__PURE__ */ jsx6(Typography5, { variant: "body2", sx: { fontSize: "0.8125rem" }, children: currentTask.description })
+                    ]
+                  }
+                ),
+                needsTextAnswer && /* @__PURE__ */ jsxs5(Fragment2, { children: [
+                  /* @__PURE__ */ jsx6(
+                    AnswerInput_default,
+                    {
+                      task: currentTask,
+                      currentAnswer: model.answers.get(currentTask.id) ?? "",
+                      onSubmit: (answer) => {
+                        model.submitAnswer(answer);
+                        engine.onAnswerSubmit(answer);
+                      }
+                    }
+                  ),
+                  /* @__PURE__ */ jsx6(
+                    Button2,
+                    {
+                      variant: "outlined",
+                      size: "small",
+                      sx: { mt: 1 },
+                      onClick: handleSubmit,
+                      children: "Submit"
+                    }
+                  )
+                ] }),
+                currentTask.hints.length > 0 && /* @__PURE__ */ jsx6(
+                  Button2,
+                  {
+                    variant: "text",
+                    size: "small",
+                    sx: { mt: 0.5, fontSize: "0.75rem" },
+                    onClick: () => {
+                      model.revealHint();
+                    },
+                    children: model.currentHintsRevealed < currentTask.hints.length ? `Hint (${currentTask.hints.length - model.currentHintsRevealed} available)` : "All hints shown"
+                  }
+                ),
+                model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsx6(
+                  Typography5,
+                  {
+                    variant: "caption",
+                    sx: {
+                      display: "block",
+                      mt: 0.5,
+                      p: 0.75,
+                      bgcolor: "info.light",
+                      color: "info.contrastText",
+                      borderRadius: 0.5
+                    },
+                    children: hint
+                  },
+                  i
+                ))
+              ] })
+            ] })
+          ]
+        }
+      );
     });
-    ScavengerHuntWidget_default = ScavengerHuntWidget;
+    ScavengerHuntView_default = ScavengerHuntView;
   }
 });
 
 // plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
 var __t21 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t21.default || __t21;
-var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
-var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
+var __t22 = __jbx("@jbrowse/core/pluggableElementTypes/ViewType"); var ViewType = __t22.default || __t22;
+var {isAbstractMenuManager} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
 var ExploreIcon = null;
 var SaveAltIcon = null;
@@ -1765,7 +1779,7 @@ var GameEngine = class {
 };
 
 // plugins/rl-analytics/src/index.ts
-init_ScavengerHuntWidget();
+init_ScavengerHuntView();
 
 // plugins/rl-analytics/src/config.ts
 var {ConfigurationSchema} = __jbx("@jbrowse/core/configuration");
@@ -1828,9 +1842,8 @@ var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
 });
 var config_default = configSchema;
 
-// plugins/rl-analytics/src/ScavengerHunt/model.ts
-var {ConfigurationSchema: ConfigurationSchema2} = __jbx("@jbrowse/core/configuration");
-var {ElementId} = __jbx("@jbrowse/core/util/types/mst");
+// plugins/rl-analytics/src/ScavengerHunt/viewModel.ts
+var {BaseViewModel} = __jbx("@jbrowse/core/pluggableElementTypes/models");
 var {types} = __jbx("@jbrowse/mobx-state-tree");
 function shuffleArray(arr) {
   const a = [...arr];
@@ -1912,185 +1925,139 @@ var TaskConfigModel = types.model("TaskConfig", {
   autoAdvanceOnFail: types.maybe(types.boolean),
   coaching: types.maybe(CoachingModel)
 });
-var configSchema2 = ConfigurationSchema2("ScavengerHuntWidget", {});
-var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
-  id: ElementId,
-  type: types.literal("ScavengerHuntWidget"),
-  taskSetId: types.optional(types.string, ""),
-  tasks: types.array(TaskConfigModel),
-  currentTaskIndex: types.optional(types.number, 0),
-  taskOrder: types.array(types.number),
-  completedTaskIds: types.array(types.string),
-  taskStartTimes: types.map(types.number),
-  taskEndTimes: types.map(types.number),
-  hintsRevealed: types.map(types.number),
-  answers: types.map(types.string),
-  retryCount: types.map(types.number),
-  workerId: types.optional(types.string, ""),
-  assignmentId: types.optional(types.string, ""),
-  earnedAwardIds: types.array(types.string)
-}).volatile(() => ({
-  completionCode: null,
-  awardDefinitions: [],
-  latestAward: null,
-  coachingActive: false
-})).views((self) => ({
-  get currentTask() {
-    const idx = self.taskOrder[self.currentTaskIndex];
-    return idx !== void 0 ? self.tasks[idx] : void 0;
-  },
-  get progress() {
-    return self.tasks.length > 0 ? self.completedTaskIds.length / self.tasks.length : 0;
-  },
-  get isComplete() {
-    return self.tasks.length > 0 && self.completedTaskIds.length === self.tasks.length;
-  },
-  get currentHintsRevealed() {
-    const task = self.taskOrder[self.currentTaskIndex];
-    const taskModel = task !== void 0 ? self.tasks[task] : void 0;
-    if (!taskModel) {
-      return 0;
-    }
-    return self.hintsRevealed.get(taskModel.id) ?? 0;
-  },
-  get currentRetryCount() {
-    const task = self.taskOrder[self.currentTaskIndex];
-    const taskModel = task !== void 0 ? self.tasks[task] : void 0;
-    if (!taskModel) {
-      return 0;
-    }
-    return self.retryCount.get(taskModel.id) ?? 0;
-  },
-  get currentTier() {
-    const task = this.currentTask;
-    return task?.tier ?? 0;
-  },
-  get missingAwards() {
-    const task = this.currentTask;
-    if (!task?.requiredAwards) {
-      return [];
-    }
-    return task.requiredAwards.filter(
-      (id) => !self.earnedAwardIds.includes(id)
-    );
-  },
-  get isGated() {
-    return this.missingAwards.length > 0;
-  }
-})).actions((self) => ({
-  loadTaskSet(taskSet) {
-    self.tasks.clear();
-    for (const task of taskSet.tasks) {
-      self.tasks.push(task);
-    }
-    self.taskSetId = taskSet.id;
-    if (taskSet.awards) {
-      self.awardDefinitions = taskSet.awards;
-    }
-    const indices = [...Array(taskSet.tasks.length).keys()];
-    self.taskOrder.clear();
-    if (taskSet.randomizeWithinTier) {
-      const byTier = /* @__PURE__ */ new Map();
-      for (const i of indices) {
-        const tier = taskSet.tasks[i].tier;
-        if (!byTier.has(tier)) {
-          byTier.set(tier, []);
-        }
-        byTier.get(tier).push(i);
+var defaultHeight = 250;
+function stateModelFactory() {
+  return types.compose(
+    BaseViewModel,
+    types.model("ScavengerHuntView", {
+      type: types.literal("ScavengerHuntView"),
+      height: types.optional(types.number, defaultHeight),
+      taskSetId: types.optional(types.string, ""),
+      tasks: types.array(TaskConfigModel),
+      currentTaskIndex: types.optional(types.number, 0),
+      taskOrder: types.array(types.number),
+      completedTaskIds: types.array(types.string),
+      taskStartTimes: types.map(types.number),
+      taskEndTimes: types.map(types.number),
+      hintsRevealed: types.map(types.number),
+      answers: types.map(types.string),
+      retryCount: types.map(types.number),
+      workerId: types.optional(types.string, ""),
+      assignmentId: types.optional(types.string, ""),
+      earnedAwardIds: types.array(types.string)
+    })
+  ).volatile(() => ({
+    completionCode: null,
+    awardDefinitions: [],
+    latestAward: null
+  })).views((self) => ({
+    get currentTask() {
+      const idx = self.taskOrder[self.currentTaskIndex];
+      return idx !== void 0 ? self.tasks[idx] : void 0;
+    },
+    get progress() {
+      return self.tasks.length > 0 ? self.completedTaskIds.length / self.tasks.length : 0;
+    },
+    get isComplete() {
+      return self.tasks.length > 0 && self.completedTaskIds.length === self.tasks.length;
+    },
+    get currentHintsRevealed() {
+      const task = self.taskOrder[self.currentTaskIndex];
+      const taskModel = task !== void 0 ? self.tasks[task] : void 0;
+      if (!taskModel) {
+        return 0;
       }
-      const tiers = [...byTier.keys()].sort();
-      for (const tier of tiers) {
-        const group = byTier.get(tier);
-        const shuffled = taskSet.randomizeOrder ? shuffleArray(group) : group;
-        for (const i of shuffled) {
-          self.taskOrder.push(i);
-        }
+      return self.hintsRevealed.get(taskModel.id) ?? 0;
+    },
+    get currentTier() {
+      return this.currentTask?.tier ?? 0;
+    }
+  })).actions((self) => ({
+    setHeight(height) {
+      self.height = Math.max(100, height);
+    },
+    loadTaskSet(taskSet) {
+      self.tasks.clear();
+      for (const task of taskSet.tasks) {
+        self.tasks.push(task);
       }
-    } else {
+      self.taskSetId = taskSet.id;
+      if (taskSet.awards) {
+        self.awardDefinitions = taskSet.awards;
+      }
+      const indices = [...Array(taskSet.tasks.length).keys()];
+      self.taskOrder.clear();
       const order = taskSet.randomizeOrder ? shuffleArray(indices) : indices;
       for (const i of order) {
         self.taskOrder.push(i);
       }
-    }
-  },
-  startCurrentTask() {
-    const task = self.currentTask;
-    if (task) {
-      self.taskStartTimes.set(task.id, Date.now());
-      self.coachingActive = !!task.coaching;
-    }
-  },
-  revealHint() {
-    const task = self.currentTask;
-    if (!task) {
-      return;
-    }
-    const current = self.hintsRevealed.get(task.id) ?? 0;
-    if (current < task.hints.length) {
-      self.hintsRevealed.set(task.id, current + 1);
-    }
-  },
-  submitAnswer(answer) {
-    const task = self.currentTask;
-    if (!task) {
-      return;
-    }
-    self.answers.set(task.id, answer);
-  },
-  incrementRetry() {
-    const task = self.currentTask;
-    if (!task) {
-      return;
-    }
-    const current = self.retryCount.get(task.id) ?? 0;
-    self.retryCount.set(task.id, current + 1);
-  },
-  completeCurrentTask() {
-    const task = self.currentTask;
-    if (!task) {
-      return;
-    }
-    if (self.completedTaskIds.includes(task.id)) {
-      return;
-    }
-    self.taskEndTimes.set(task.id, Date.now());
-    self.completedTaskIds.push(task.id);
-    self.coachingActive = false;
-    if (self.currentTaskIndex < self.tasks.length - 1) {
-      self.currentTaskIndex += 1;
-    }
-  },
-  addAward(awardId) {
-    if (!self.earnedAwardIds.includes(awardId)) {
-      self.earnedAwardIds.push(awardId);
-      const def = self.awardDefinitions.find((a) => a.id === awardId);
-      if (def) {
-        self.latestAward = def;
+    },
+    startCurrentTask() {
+      const task = self.currentTask;
+      if (task) {
+        self.taskStartTimes.set(task.id, Date.now());
       }
+    },
+    revealHint() {
+      const task = self.currentTask;
+      if (!task) {
+        return;
+      }
+      const current = self.hintsRevealed.get(task.id) ?? 0;
+      if (current < task.hints.length) {
+        self.hintsRevealed.set(task.id, current + 1);
+      }
+    },
+    submitAnswer(answer) {
+      const task = self.currentTask;
+      if (!task) {
+        return;
+      }
+      self.answers.set(task.id, answer);
+    },
+    completeCurrentTask() {
+      const task = self.currentTask;
+      if (!task) {
+        return;
+      }
+      if (self.completedTaskIds.includes(task.id)) {
+        return;
+      }
+      self.taskEndTimes.set(task.id, Date.now());
+      self.completedTaskIds.push(task.id);
+      if (self.currentTaskIndex < self.tasks.length - 1) {
+        self.currentTaskIndex += 1;
+      }
+    },
+    addAward(awardId) {
+      if (!self.earnedAwardIds.includes(awardId)) {
+        self.earnedAwardIds.push(awardId);
+        const def = self.awardDefinitions.find((a) => a.id === awardId);
+        if (def) {
+          self.latestAward = def;
+        }
+      }
+    },
+    clearLatestAward() {
+      self.latestAward = null;
+    },
+    setWorkerId(id) {
+      self.workerId = id;
+    },
+    setAssignmentId(id) {
+      self.assignmentId = id;
+    },
+    setCompletionCode(code) {
+      self.completionCode = code;
+    },
+    generateCompletionCode() {
+      const payload = `${self.assignmentId}:${self.taskSetId}:${self.completedTaskIds.join(",")}`;
+      void sha256Hex(payload).then((hash) => {
+        this.setCompletionCode(hash.slice(0, 12).toUpperCase());
+      });
     }
-  },
-  clearLatestAward() {
-    self.latestAward = null;
-  },
-  setCoachingActive(active) {
-    self.coachingActive = active;
-  },
-  setWorkerId(id) {
-    self.workerId = id;
-  },
-  setAssignmentId(id) {
-    self.assignmentId = id;
-  },
-  setCompletionCode(code) {
-    self.completionCode = code;
-  },
-  generateCompletionCode() {
-    const payload = `${self.assignmentId}:${self.taskSetId}:${self.completedTaskIds.join(",")}`;
-    void sha256Hex(payload).then((hash) => {
-      this.setCompletionCode(hash.slice(0, 12).toUpperCase());
-    });
-  }
-}));
+  }));
+}
 
 // plugins/rl-analytics/src/index.ts
 var RLAnalyticsPlugin = class extends Plugin {
@@ -2105,14 +2072,13 @@ var RLAnalyticsPlugin = class extends Plugin {
     __publicField(this, "stateEncoder", new StateEncoder());
   }
   install(pluginManager) {
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: "ScavengerHuntWidget",
-        heading: "Scavenger Hunt",
-        configSchema: configSchema2,
-        stateModel: ScavengerHuntModel,
+    pluginManager.addViewType(() => {
+      return new ViewType({
+        name: "ScavengerHuntView",
+        displayName: "Scavenger Hunt",
+        stateModel: stateModelFactory(),
         ReactComponent: lazy(
-          () => Promise.resolve().then(() => (init_ScavengerHuntWidget(), ScavengerHuntWidget_exports))
+          () => Promise.resolve().then(() => (init_ScavengerHuntView(), ScavengerHuntView_exports))
         )
       });
     });
@@ -2160,15 +2126,8 @@ var RLAnalyticsPlugin = class extends Plugin {
         icon: ExploreIcon,
         onClick: () => {
           const session2 = rootModel.session;
-          if (isSessionModelWithWidgets(session2)) {
-            let widget = session2.widgets.get("ScavengerHunt");
-            if (!widget) {
-              widget = session2.addWidget(
-                "ScavengerHuntWidget",
-                "ScavengerHunt"
-              );
-            }
-            session2.showWidget(widget);
+          if (session2) {
+            session2.addView("ScavengerHuntView", {});
           }
         }
       });
@@ -2228,27 +2187,21 @@ Buffer size: ${this.patchListener?.buffer.length ?? 0}`
     if (tasksUrl) {
       void fetch(tasksUrl).then((r) => r.json()).then((taskSet) => {
         const session = pluginManager.rootModel?.session;
-        if (isSessionModelWithWidgets(session)) {
-          const widget = session.addWidget(
-            "ScavengerHuntWidget",
-            "ScavengerHunt",
-            {}
-          );
-          const model = widget;
-          model.loadTaskSet(taskSet);
+        if (session) {
+          const view = session.addView("ScavengerHuntView", {});
+          view.loadTaskSet(taskSet);
           if (workerId) {
-            model.setWorkerId(workerId);
+            view.setWorkerId(workerId);
           }
           if (assignmentId) {
-            model.setAssignmentId(assignmentId);
+            view.setAssignmentId(assignmentId);
           }
-          session.showWidget(widget);
           if (this.gameEngine) {
-            this.gameEngine.setModel(model);
+            this.gameEngine.setModel(view);
             this.gameEngine.loadTaskSet(taskSet);
-            const firstTask = model.currentTask;
+            const firstTask = view.currentTask;
             if (firstTask) {
-              model.startCurrentTask();
+              view.startCurrentTask();
               this.gameEngine.startTask(firstTask);
             }
           }
