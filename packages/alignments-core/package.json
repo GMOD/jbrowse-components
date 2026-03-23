@@ -1,0 +1,49 @@
+{
+  "name": "@jbrowse/alignments-core",
+  "version": "4.1.14",
+  "type": "module",
+  "description": "Shared GPU rendering utilities for alignments and synteny displays",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "gpu",
+    "webgl",
+    "webgpu"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/alignments-core"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build": "pnpm build:esm",
+    "test": "cd ../..; jest --passWithNoTests packages/alignments-core",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

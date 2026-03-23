@@ -3,17 +3,17 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import {
   BaseGfaTabixAdapter,
-  getSegsForRangeFromShard,
+  getSegmentsForOrdinalsFromShard,
 } from './gfaTabixUtils.ts'
 
-import type { SegRecord, SegsShard } from './gfaTabixUtils.ts'
+import type { SegRecord, SegmentsShard } from './gfaTabixUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class GfaTabixAdapter extends BaseGfaTabixAdapter {
-  private shard: SegsShard
+  private shard: SegmentsShard
 
   public constructor(
     config: AnyConfigurationModel,
@@ -23,23 +23,24 @@ export default class GfaTabixAdapter extends BaseGfaTabixAdapter {
     super(config, getSubAdapter, pluginManager)
     const pm = this.pluginManager
 
-    const segsLoc = this.getConf('segmentsLocation') as FileLocation
-    const segsGziLoc = this.getConf('segmentsGziLocation') as FileLocation
-    const segsIdxLoc = this.getConf('segmentsIdxLocation') as FileLocation
+    const segmentsLoc = this.getConf('segmentsLocation') as FileLocation
+    const segmentsGziLoc = this.getConf('segmentsGziLocation') as FileLocation
+    const segmentsIdxLoc = this.getConf('segmentsIdxLocation') as FileLocation
 
     this.shard = {
       bgzf: new BgzfFilehandle({
-        filehandle: openLocation(segsLoc, pm),
-        gziFilehandle: openLocation(segsGziLoc, pm),
+        filehandle: openLocation(segmentsLoc, pm),
+        gziFilehandle: openLocation(segmentsGziLoc, pm),
       }),
-      idxFile: openLocation(segsIdxLoc, pm),
+      idxFile: openLocation(segmentsIdxLoc, pm),
     }
   }
 
-  protected async getSegsForRange(
-    minSegOrd: number,
-    maxSegOrd: number,
+  protected async getSegsForOrdinals(
+    ordinals: number[],
+    pathNames: string[],
   ): Promise<SegRecord[]> {
-    return getSegsForRangeFromShard(this.shard, minSegOrd, maxSegOrd)
+    this.shard.pathNames ??= pathNames
+    return getSegmentsForOrdinalsFromShard(this.shard, ordinals)
   }
 }

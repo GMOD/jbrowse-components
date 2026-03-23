@@ -103,19 +103,19 @@ describe('gfa-to-tabix converter', () => {
       expect(results.length).toBeGreaterThan(0)
 
       const cols = results[0]!.split('\t')
-      expect(cols.length).toBe(5)
+      expect(cols.length).toBe(4)
       expect(cols[0]).toBe('ref#1#chr1')
     })
   })
 
-  it('segments.gz has 6 columns per row', () => {
+  it('segments.gz has 5 columns per row (ordinal, pathIdx, offset, len, orient)', () => {
     withTmpDir(dir => {
       const prefix = path.join(dir, 'test')
       runConverter(GFA_FILE, prefix)
 
       const lines = readSegsFile(prefix)
       expect(lines.length).toBeGreaterThan(0)
-      expect(lines[0]!.split('\t').length).toBe(6)
+      expect(lines[0]!.split('\t').length).toBe(5)
     })
   })
 
@@ -126,9 +126,8 @@ describe('gfa-to-tabix converter', () => {
 
       const results = querySegsRange(prefix, 0, 0)
       expect(results.length).toBe(4)
-      const paths = results.map(r => r.split('\t')[1])
-      expect(paths).toContain('ref#1#chr1')
-      expect(paths).toContain('sample1#1#chr1')
+      const pathIndices = results.map(r => +r.split('\t')[1]!)
+      expect(new Set(pathIndices).size).toBe(4)
     })
   })
 
@@ -257,13 +256,25 @@ describe('gfa-to-tabix converter', () => {
         `${prefix}.pos.bed.gz`,
         'ref#1#chr1:0-100000',
       )
-      let minOrd = Infinity
-      let maxOrd = -Infinity
+      const ordinalSet = new Set<number>()
       for (const line of posResults) {
         const cols = line.split('\t')
-        minOrd = Math.min(minOrd, +cols[3]!)
-        maxOrd = Math.max(maxOrd, +cols[4]!)
+        for (const token of cols[3]!.split(',')) {
+          const dash = token.indexOf('-')
+          if (dash > 0) {
+            const lo = +token.slice(0, dash)
+            const hi = +token.slice(dash + 1)
+            for (let o = lo; o <= hi; o++) {
+              ordinalSet.add(o)
+            }
+          } else {
+            ordinalSet.add(+token)
+          }
+        }
       }
+      const sorted = [...ordinalSet].sort((a, b) => a - b)
+      const minOrd = sorted[0]!
+      const maxOrd = sorted[sorted.length - 1]!
 
       const segResults = querySegsRange(prefix, minOrd, maxOrd)
       const byPath = new Map<string, string[]>()

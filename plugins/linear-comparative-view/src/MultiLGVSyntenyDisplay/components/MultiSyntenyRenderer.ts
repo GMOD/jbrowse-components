@@ -1,18 +1,23 @@
 import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 
 import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
+import { prepareMultiSyntenyGpuData } from './multiSyntenyGpuData.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type {
-  MultiSyntenyBackend,
-  MultiSyntenyRenderOpts,
+  MultiSyntenyCanvasBackend,
+  MultiSyntenyCanvasRenderOpts,
+  MultiSyntenyGpuBackend,
 } from './multiSyntenyBackendTypes.ts'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 const cache = new WeakMap<HTMLCanvasElement, MultiSyntenyRenderer>()
 
 export class MultiSyntenyRenderer {
   private canvas: HTMLCanvasElement
-  private backend: MultiSyntenyBackend | null = null
+  private gpuBackend: MultiSyntenyGpuBackend | null = null
+  private canvasBackend: MultiSyntenyCanvasBackend | null = null
+  private backendType: 'webgpu' | 'webgl' | 'canvas2d' = 'canvas2d'
 
   private constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -28,31 +33,100 @@ export class MultiSyntenyRenderer {
   }
 
   async init() {
-    this.backend?.dispose()
+    this.gpuBackend?.dispose()
+    this.canvasBackend?.dispose()
+    this.gpuBackend = null
+    this.canvasBackend = null
 
     if (getGpuOverride() === 'canvas2d') {
-      this.backend = new Canvas2DMultiSyntenyRenderer(this.canvas)
+      this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
+      this.backendType = 'canvas2d'
       return true
     }
 
-    // For now, multi-synteny uses Canvas2D for all backends.
-    // WebGL/WebGPU implementations can be added here following the
-    // same pattern as SyntenyRenderer or AlignmentsRenderer.
-    this.backend = new Canvas2DMultiSyntenyRenderer(this.canvas)
+    // Try WebGPU first
+    try {
+      const { WebGPUMultiSyntenyRenderer } = await import(
+        './WebGPUMultiSyntenyRenderer.ts'
+      )
+      const gpu = await WebGPUMultiSyntenyRenderer.create(this.canvas)
+      if (gpu) {
+        this.gpuBackend = gpu
+        this.backendType = 'webgpu'
+        return true
+      }
+    } catch {
+      // WebGPU not available
+    }
+
+    // Try WebGL2
+    try {
+      const { WebGLMultiSyntenyRenderer } = await import(
+        './WebGLMultiSyntenyRenderer.ts'
+      )
+      this.gpuBackend = new WebGLMultiSyntenyRenderer(this.canvas)
+      this.backendType = 'webgl'
+      return true
+    } catch {
+      // WebGL2 not available
+    }
+
+    // Fall back to Canvas2D
+    this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
+    this.backendType = 'canvas2d'
     return true
   }
 
-  render(
+  get isGpu() {
+    return this.gpuBackend !== null
+  }
+
+  uploadGeometry(
     genomeRows: Map<string, MultiPairFeature[]>,
     displayedGenomes: string[],
-    opts: MultiSyntenyRenderOpts,
+    colorBy: string,
   ) {
-    this.backend?.render(genomeRows, displayedGenomes, opts)
+    if (this.gpuBackend) {
+      const data = prepareMultiSyntenyGpuData(
+        genomeRows,
+        displayedGenomes,
+        colorBy,
+      )
+      this.gpuBackend.uploadGeometry(data)
+    }
+  }
+
+  renderGpu(
+    contentBlocks: BaseBlock[],
+    viewOffsetPx: number,
+    width: number,
+    height: number,
+    rowHeight: number,
+    labelW: number,
+  ) {
+    this.gpuBackend?.render(
+      contentBlocks,
+      viewOffsetPx,
+      width,
+      height,
+      rowHeight,
+      labelW,
+    )
+  }
+
+  renderCanvas(
+    genomeRows: Map<string, MultiPairFeature[]>,
+    displayedGenomes: string[],
+    opts: MultiSyntenyCanvasRenderOpts,
+  ) {
+    this.canvasBackend?.render(genomeRows, displayedGenomes, opts)
   }
 
   dispose() {
-    this.backend?.dispose()
-    this.backend = null
+    this.gpuBackend?.dispose()
+    this.canvasBackend?.dispose()
+    this.gpuBackend = null
+    this.canvasBackend = null
     cache.delete(this.canvas)
   }
 }

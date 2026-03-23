@@ -3,10 +3,13 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import {
   BaseGfaTabixAdapter,
-  getSegsForRangeFromShard,
+  getSegmentsForOrdinalsFromShard,
 } from '../GfaTabixAdapter/gfaTabixUtils.ts'
 
-import type { SegRecord, SegsShard } from '../GfaTabixAdapter/gfaTabixUtils.ts'
+import type {
+  SegRecord,
+  SegmentsShard,
+} from '../GfaTabixAdapter/gfaTabixUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -19,7 +22,7 @@ interface SegmentsManifest {
 
 export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
   private manifestPromise?: Promise<SegmentsManifest>
-  private genomeShardsCache = new Map<string, SegsShard>()
+  private genomeShardsCache = new Map<string, SegmentsShard>()
 
   public constructor(
     config: AnyConfigurationModel,
@@ -63,7 +66,7 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
         'localPath' in manifestLoc ? 'LocalPathLocation' : 'UriLocation'
       const locKey = 'localPath' in manifestLoc ? 'localPath' : 'uri'
 
-      const shard: SegsShard = {
+      const shard: SegmentsShard = {
         bgzf: new BgzfFilehandle({
           filehandle: openLocation(
             { [locKey]: `${shardBase}.gz`, locationType },
@@ -84,16 +87,17 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
     return this.genomeShardsCache.get(genome)!
   }
 
-  protected async getSegsForRange(
-    minSegOrd: number,
-    maxSegOrd: number,
+  protected async getSegsForOrdinals(
+    ordinals: number[],
+    pathNames: string[],
   ): Promise<SegRecord[]> {
     const manifest = await this.getManifest()
     const promises = manifest.genomes.map(async genome => {
       const prefix = manifest.files[genome]
       if (prefix) {
         const shard = this.getGenomeShard(genome, prefix)
-        return getSegsForRangeFromShard(shard, minSegOrd, maxSegOrd)
+        shard.pathNames ??= pathNames
+        return getSegmentsForOrdinalsFromShard(shard, ordinals)
       }
       return []
     })

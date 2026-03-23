@@ -75,12 +75,11 @@ describe('GfaTabixAdapter', () => {
         expect(f.end).toBeGreaterThan(f.start)
         expect(f.mateStart).toBeGreaterThanOrEqual(0)
         expect(f.mateEnd).toBeGreaterThan(f.mateStart)
-        expect(f.segmentId).toBeDefined()
       }
     }
   })
 
-  it('returns shared segments with correct segmentId', async () => {
+  it('all genomes share the first segment starting at offset 0', async () => {
     const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
@@ -89,11 +88,9 @@ describe('GfaTabixAdapter', () => {
       assemblyName: 'ref#1',
     })
 
-    // All genomes should share the first segment (s0)
     for (const features of result.genomeRows.values()) {
-      const s0Features = features.filter(f => f.segmentId === 's0')
-      expect(s0Features.length).toBeGreaterThanOrEqual(1)
-      expect(s0Features[0]!.start).toBe(0)
+      const atZero = features.filter(f => f.start === 0)
+      expect(atZero.length).toBeGreaterThanOrEqual(1)
     }
   })
 
@@ -228,17 +225,17 @@ describe('GfaTabixAdapter', () => {
     expect(sample1FromRef!.length).toBeGreaterThan(0)
     expect(refFromSample!.length).toBeGreaterThan(0)
 
-    // Find the first shared segment feature from each perspective
-    const s0FromRef = sample1FromRef!.find(f => f.segmentId === 's0')
-    const s0FromSample = refFromSample!.find(f => f.segmentId === 's0')
-    expect(s0FromRef).toBeDefined()
-    expect(s0FromSample).toBeDefined()
+    // Find the first feature (at start=0) from each perspective
+    const firstFromRef = sample1FromRef!.find(f => f.start === 0)
+    const firstFromSample = refFromSample!.find(f => f.start === 0)
+    expect(firstFromRef).toBeDefined()
+    expect(firstFromSample).toBeDefined()
 
     // Reciprocal: ref→sample1 start/end should match sample1→ref mate
-    expect(s0FromRef!.start).toBe(s0FromSample!.mateStart)
-    expect(s0FromRef!.end).toBe(s0FromSample!.mateEnd)
-    expect(s0FromRef!.mateStart).toBe(s0FromSample!.start)
-    expect(s0FromRef!.mateEnd).toBe(s0FromSample!.end)
+    expect(firstFromRef!.start).toBe(firstFromSample!.mateStart)
+    expect(firstFromRef!.end).toBe(firstFromSample!.mateEnd)
+    expect(firstFromRef!.mateStart).toBe(firstFromSample!.start)
+    expect(firstFromRef!.mateEnd).toBe(firstFromSample!.end)
   })
 
   it('features do not exceed reference chromosome length for any genome', async () => {

@@ -244,8 +244,8 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let abs_start = inst.start_off + region_start();
   let abs_end = inst.end_off + region_start();
-  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range());
-  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range());
+  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range(), uf(5u));
+  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range(), uf(5u));
 
   let row_h = feature_height() + feature_spacing();
   let row_center = coverage_offset() + inst.y * row_h + feature_height() * 0.5 - uf(28u);

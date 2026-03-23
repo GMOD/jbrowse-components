@@ -19,28 +19,9 @@ interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
 }
 
-export interface MultiPairFeature {
-  queryGenome: string
-  start: number
-  end: number
-  mateStart: number
-  mateEnd: number
-  mateRefName: string
-  strand: number
-  syriType: SyriType | undefined
-  identity: number
-  featureId: string
-  segmentId: string | undefined
-  cigar: string | undefined
-  cs: string | undefined
-}
+import type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 
-export interface PairInfo {
-  pairCount: number
-  pairs: Map<number, [string, string]>
-  splitThreshold: number | undefined
-  mergeGap: number | undefined
-}
+export type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -389,6 +370,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           const parts = line.split('\t')
           features.push({
             queryGenome,
+            origRefName: refName,
             start: +parts[2]!,
             end: +parts[3]!,
             strand: parts[4] === '-' ? -1 : 1,
@@ -408,6 +390,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           const extra = r.extra as Record<string, string | number>
           features.push({
             queryGenome,
+            origRefName: refName,
             start: r.qstart,
             end: r.qend,
             strand,

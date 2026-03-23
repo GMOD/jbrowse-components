@@ -46,6 +46,28 @@ export function createProgram(
   return program
 }
 
+export function bindUniformBlock(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  blockName: string,
+  bindingPoint: number,
+) {
+  const idx = gl.getUniformBlockIndex(program, blockName)
+  if (idx !== gl.INVALID_INDEX) {
+    gl.uniformBlockBinding(program, idx, bindingPoint)
+  }
+}
+
+export function enableStandardBlend(gl: WebGL2RenderingContext) {
+  gl.enable(gl.BLEND)
+  gl.blendFuncSeparate(
+    gl.SRC_ALPHA,
+    gl.ONE_MINUS_SRC_ALPHA,
+    gl.ONE,
+    gl.ONE_MINUS_SRC_ALPHA,
+  )
+}
+
 export function cacheUniforms(
   gl: WebGL2RenderingContext,
   program: WebGLProgram,

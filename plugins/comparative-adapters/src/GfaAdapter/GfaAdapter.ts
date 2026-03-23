@@ -4,7 +4,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
-import type { MultiPairFeature } from '../PairwiseIndexedPAFAdapter/PairwiseIndexedPAFAdapter.ts'
+import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -303,6 +303,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
           const strand = pos.orient === refSeg.orient ? 1 : -1
           features.push({
             queryGenome: otherPath.genome,
+            origRefName: refName,
             start: refSeg.offset,
             end: refSeg.offset + refSeg.length,
             mateStart: pos.offset,

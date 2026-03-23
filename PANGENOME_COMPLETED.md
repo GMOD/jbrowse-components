@@ -64,19 +64,40 @@
   query gaps → I, both → X
 - Precomputed alignment support (`getMultiPairFeaturesFromAln`): reads
   aln.bed.gz, converts cs→CIGAR, computes identity from cs
-- Graceful fallback: uses aln.bed.gz when available, otherwise segment-based
-  runtime CIGAR
+- LOD-aware aln.bed.gz loading: only uses base-level aln path when
+  `bpPerPx < 10`, falls back to lightweight segment-based CIGAR at wider zoom
 - Config schema: `alnLocation`/`alnIndex` fields with prefix shorthand
-- `isAlnAvailable()` with promise caching for efficient availability check
+- Consolidated `setup()`/`setupPre()` initialization pattern: single cached
+  promise resolves header, chrom sizes, pos/aln refName sets, and aln
+  availability in one shot (follows BamAdapter pattern)
+- Deterministic tabix refName resolution via `resolveTabixRefName()`: checks
+  the tabix file's actual refName set (from `getReferenceSequenceNames()`)
+  instead of try/catch guessing with candidate formats
+
+## MultiPairFeature Shared Interface
+
+- `MultiPairFeature` moved from `PairwiseIndexedPAFAdapter.ts` to shared
+  `plugins/comparative-adapters/src/MultiPairFeature.ts`
+- Added `origRefName` field: carries the reference genome's refName from the
+  query that produced the feature, enabling deterministic coordinate mapping
+  downstream without guessing or iterating displayed regions
 
 ## MultiLGVSyntenyDisplay Rendering Overhaul
 
+- Coordinate mapping uses `view.bpToPx({ refName: feat.origRefName, coord })`
+  for deterministic bp→px conversion, delegating to the LGV's own region-aware
+  logic (handles multiple regions, reversed regions, inter-region padding)
+- Renderer receives a `BpToPxFn` closure instead of raw `bpPerPx`/`offsetPx`/
+  `displayedRegionStart` — clean separation between view state and rendering
+- Loading overlay: `LoadingOverlay` with 500ms debounce during refetches, using
+  `model.statusMessage` from RPC `statusCallback` (matches alignments pattern)
 - Renderer backend architecture: `MultiSyntenyRenderer` facade →
-  `MultiSyntenyBackend` interface → `Canvas2DMultiSyntenyRenderer`
+  `MultiSyntenyCanvasBackend` / `MultiSyntenyGpuBackend` interfaces →
+  Canvas2D, WebGL2, and WebGPU implementations
   - Follows same pattern as `AlignmentsRenderer` and `SyntenyRenderer`
   - `getOrCreate()` + `init()` with cancelled flag, dispose-before-reinit
-  - Backend selection via `getGpuOverride()` — WebGL/WebGPU implementations can
-    be added
+  - Backend selection: WebGPU → WebGL2 → Canvas2D fallback via
+    `getGpuOverride()`
 - Pileup-style CIGAR rendering:
   - Deletions: thick grey bars with deletion length text (white, centered)
   - Insertions: purple vertical line with triangle markers at top/bottom
@@ -181,7 +202,7 @@
 
 ## Testing
 
-### Unit Tests (98 tests, 10 suites)
+### Unit Tests (116 tests, 11 suites)
 
 - **csUtils** (16 tests): csToCigar, flipCs with self-inverse property
 - **gfa-to-tabix converter** (11 tests): file creation, pos/segs queries,
@@ -196,6 +217,11 @@
   vs sharded parity, chromSizes, assemblyNamesFromHeader
 - **PairwiseIndexedPAFAdapter** (27 tests): coordinates, CIGAR, multi-pair,
   syriType, LOD tiers
+- **multiSyntenyGpuData** (18 tests): instance buffer packing, genome row
+  assignment, refName sorting/indexing, CIGAR expansion (D/I/X with ref
+  position tracking), CS expansion (substitutions with base colors,
+  deletions, insertions), feature ID uniqueness, HP split correctness,
+  region render param computation
 
 ### Browser Tests (5 pangenome tests + 14 existing synteny tests)
 
@@ -223,6 +249,128 @@
   haplotypes), HPRC chr20 (90 haplotypes), GFA pangenome (with cs), graph genome
   viewer, hs1 vs mm39, hg19 vs hg38
 
+## `@jbrowse/alignments-core` Shared Package
+
+New package (`packages/alignments-core/`) containing GPU rendering utilities
+shared between the alignments plugin and the MultiLGVSyntenyDisplay:
+
+- **HP GLSL functions** (`hpGlsl.ts`): `HP_GLSL_CORE` with parameterized 3-arg
+  `hpSplitUint`, `hpToClipX`, `hpScaleLinear` (caller provides hpZero value);
+  `HP_GLSL_WITH_UNIFORM` adds `uniform float u_zero;` and 2-arg overloads for
+  alignments backward compatibility
+- **HP WGSL functions** (`hpWgsl.ts`): `HP_WGSL_CORE` with parameterized 3-arg
+  versions; alignments WGSL call sites updated to pass `uf(5u)` explicitly
+- **InstanceBuilder** (`InstanceBuilder.ts`): growable typed-array buffer with
+  `alloc()` returning element offset, shared `u32`/`f32` views, auto-doubling
+  capacity — used by both MultiLGV GPU data prep and adaptable for alignments
+- **`bindUniformBlock`** moved to `@jbrowse/core/gpu/webglUtils` (generic
+  WebGL2 UBO helper used by both plugins)
+
+- **Shared shader fragments** (`sharedShaders.ts`): `RECT_LOCALS_WGSL`
+  (6-vertex quad corner selection), `SIMPLE_FS_WGSL` / `SIMPLE_FS_GLSL`
+  (passthrough fragment shaders), `SIMPLE_VERTEX_OUTPUT_WGSL` (standard vertex
+  output struct), `PICKING_FS_GLSL` / `PICKING_FS_WGSL` (featureId → RGB
+  picking fragment shaders)
+- **Renderer utilities** (`rendererUtils.ts`): `getDevicePixelRatio()`,
+  `resizeCanvas()` (DPR-aware canvas resize with change detection),
+  `createPickingFbo()` (WebGL2 picking FBO setup/teardown)
+
+Consumers:
+- Alignments `shaders/utils.ts` imports `HP_GLSL_WITH_UNIFORM`
+- Alignments `wgsl/common.ts` imports `HP_WGSL_CORE`, `RECT_LOCALS_WGSL`,
+  `SIMPLE_FS_WGSL`, `SIMPLE_VERTEX_OUTPUT_WGSL`
+- MultiLGV `multiSyntenyGpuShaders.ts` imports `HP_GLSL_CORE`, `HP_WGSL_CORE`,
+  `PICKING_FS_GLSL`, `PICKING_FS_WGSL`, `SIMPLE_FS_GLSL`
+- MultiLGV `multiSyntenyGpuData.ts` imports `InstanceBuilder`
+- MultiLGV `WebGLMultiSyntenyRenderer.ts` imports `getDevicePixelRatio`,
+  `resizeCanvas`, `createPickingFbo`
+- MultiLGV `WebGPUMultiSyntenyRenderer.ts` imports `getDevicePixelRatio`,
+  `resizeCanvas`
+
+## WebGL/WebGPU Backend for MultiSyntenyRenderer
+
+GPU-accelerated rendering for MultiLGVSyntenyDisplay using HP (High Precision)
+64-bit float emulation, matching the approach used in the alignments plugin.
+
+### Architecture
+
+- **Backend selection**: `MultiSyntenyRenderer` tries WebGPU → WebGL2 →
+  Canvas2D fallback, using dynamic `import()` for GPU backends
+- **Data flow**: geometry uploaded once on feature change
+  (`prepareMultiSyntenyGpuData`), per-frame render updates only uniforms
+- **No JS bpToPx in render path**: all position computation happens on the GPU
+  via HP shader functions
+
+### HP 64-Bit Float Emulation
+
+Feature bp coordinates stored as `uint32` in instance buffers. The shader
+splits each coordinate into hi/lo components using a 12-bit mask (`0xFFF`),
+then computes positions with compiler guards that prevent GLSL/WGSL optimizers
+from combining the split terms:
+
+- `hpSplitUint(uint)` → `vec2(float(hi), float(lo))` where `hi` is multiple
+  of 4096
+- `hpScaleLinear(splitPos, bpRange, hpZero)` uses `1.0/hpZero` (runtime
+  infinity), `max(-inf)`, and `dot()` to maintain precision
+- `splitPositionWithFrac()` on JS side splits region start for uniform upload
+
+Technique from genome-spy (MIT license).
+
+### Per-Region Draw Calls
+
+Multi-chromosome views supported via per-displayed-region draw calls:
+
+- Features sorted by `origRefName` with a `RefNameIndex` map for O(1) lookup
+- Each region gets its own `bpRange` uniform (hi/lo split of region start +
+  region bp length) and screen-space position
+- WebGL2: rebinds instance buffer with byte offset per region (no
+  `firstInstance` support)
+- WebGPU: uses `draw(vertexCount, instanceCount, 0, firstInstance)` with
+  per-region command encoder submit (ensures `writeBuffer` completes before
+  render pass reads uniforms)
+
+### Instance Buffer Layout (32 bytes per instance)
+
+```
+startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: vec4f
+```
+
+- WGSL: `vec4f` at offset 16 is 16-byte aligned in storage buffer
+- GLSL: `uvec4 a_data0` via `vertexAttribIPointer` + `vec4 a_color` via
+  `vertexAttribPointer`
+- CIGAR/CS ops expanded at upload time into overlay sub-instances (deletions,
+  insertions, mismatches) with appropriate colors from `cssColorToNormalizedRgba`
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `multiSyntenyGpuShaders.ts` | GLSL + WGSL shaders with HP functions |
+| `multiSyntenyGpuData.ts` | Instance data prep, CIGAR/CS expansion, sorting |
+| `WebGLMultiSyntenyRenderer.ts` | WebGL2 renderer with UBO + instanced draws |
+| `WebGPUMultiSyntenyRenderer.ts` | WebGPU renderer with storage buffer + pipelines |
+| `multiSyntenyBackendTypes.ts` | Split into Canvas and GPU backend interfaces |
+| `MultiSyntenyRenderer.ts` | Backend selection facade |
+| `MultiSyntenyRendering.tsx` | React component with separated upload/render effects |
+
+### Tests (18 tests)
+
+- `multiSyntenyGpuData.test.ts`: instance packing, genome row assignment,
+  refName sorting/indexing, CIGAR expansion (D/I/X), CS expansion
+  (substitutions/deletions/insertions), insertion ref position invariant,
+  feature ID uniqueness, HP split correctness, region param computation
+
+## GfaTabixAdapter Reliability
+
+- **Warning logs for missing headers**: `setupPre()` now `console.warn()`s
+  when `#genomes=` or `#sizes=` headers are missing from pos.bed.gz, preventing
+  silent failures from malformed data
+- **stopToken cancellation**: `getMultiPairFeatures()` threads `stopToken`
+  through to `getMultiPairFeaturesFromAln()` and
+  `getMultiPairFeaturesFromSegments()` via opts parameter.
+  `checkStopToken()` called in tabix lineCallbacks (per-line cancellation) and
+  at async boundaries before `getSegsForOrdinals()`.
+
 ## Key Design Decisions Resolved
 
 1. **GFA indexing strategy**: pos.bed.gz (tabix) + segments.gz (bgzip with
@@ -234,8 +382,8 @@
 3. **cs tag as first-class**: cs preferred over CIGAR when available, rendered
    with base-specific colors. Stored alongside CIGAR in MultiPairFeature
    interface.
-4. **Renderer backend pattern**: Facade → Backend interface → Canvas2D
-   implementation, matching AlignmentsRenderer/SyntenyRenderer patterns. Ready
-   for WebGL/WebGPU.
+4. **Renderer backend pattern**: Facade → Backend interface → Canvas2D / WebGL2
+   / WebGPU implementations, matching AlignmentsRenderer/SyntenyRenderer
+   patterns. GPU backends use HP 64-bit float emulation for positioning.
 5. **Rendering style**: Pileup-inspired — grey for matches, base-colored SNPs,
    grey deletion bars with length, purple insertion markers.

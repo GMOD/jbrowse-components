@@ -37,6 +37,7 @@
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
+    "./gpu/webgpuUtils": "./src/gpu/webgpuUtils.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",

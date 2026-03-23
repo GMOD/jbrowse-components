@@ -1,60 +1,144 @@
 import { RemoteFile } from 'generic-filehandle2'
 
-import pLimit from '../p-limit.ts'
-
+const MAX_CACHE_ENTRIES = 2000
 const CHUNK_SIZE = 256 * 1024
-const CACHE_NAME = 'jbrowse-range-cache'
+const MAX_CONCURRENT = 20
 
-const hasCacheAPI = typeof caches !== 'undefined'
-let mapCache = new Map<string, Uint8Array>()
-let cachePromise: Promise<Cache> | undefined
+let cache = new Map<string, Uint8Array>()
+let activeCount = 0
+const queue: (() => void)[] = []
 
-const limit = pLimit(20)
-
-function cacheKey(url: string, chunkNum: number) {
-  const sep = url.includes('?') ? '&' : '?'
-  return `${url}${sep}__jb_chunk=${chunkNum}`
+function getCached(key: string) {
+  return cache.get(key)
 }
 
-function getCache() {
-  if (!cachePromise && hasCacheAPI) {
-    cachePromise = caches.open(CACHE_NAME)
-  }
-  return cachePromise
-}
-
-async function getCached(key: string) {
-  const cache = await getCache()
-  if (cache) {
-    const res = await cache.match(key)
-    if (res) {
-      return new Uint8Array(await res.arrayBuffer())
+function putCached(key: string, buffer: Uint8Array) {
+  if (cache.size >= MAX_CACHE_ENTRIES) {
+    const firstKey = cache.keys().next().value
+    if (firstKey !== undefined) {
+      cache.delete(firstKey)
     }
-  } else {
-    return mapCache.get(key)
   }
-  return undefined
-}
-
-async function putCached(key: string, buffer: Uint8Array) {
-  const cache = await getCache()
-  if (cache) {
-    // @ts-expect-error
-    await cache.put(new Request(key), new Response(buffer))
-  } else {
-    mapCache.set(key, buffer)
-  }
+  cache.set(key, buffer)
 }
 
 export function clearCache() {
-  if (hasCacheAPI) {
-    cachePromise = undefined
-    caches.delete(CACHE_NAME).catch(() => {})
+  cache = new Map<string, Uint8Array>()
+}
+
+function runNext() {
+  if (queue.length > 0 && activeCount < MAX_CONCURRENT) {
+    activeCount++
+    const next = queue.shift()!
+    next()
   }
-  mapCache = new Map()
+}
+
+function limitConcurrency<T>(fn: () => Promise<T>) {
+  return new Promise<T>((resolve, reject) => {
+    function run() {
+      fn().then(
+        val => {
+          activeCount--
+          resolve(val)
+          runNext()
+        },
+        (err: unknown) => {
+          activeCount--
+          reject(err as Error)
+          runNext()
+        },
+      )
+    }
+    if (activeCount < MAX_CONCURRENT) {
+      activeCount++
+      run()
+    } else {
+      queue.push(run)
+    }
+  })
+}
+
+function cacheKey(url: string, chunkIndex: number) {
+  return `${url}:${chunkIndex}`
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
+  private async fetchRange(
+    url: string,
+    start: number,
+    end: number,
+    signal?: AbortSignal | null,
+  ) {
+    const res = await super.fetch(url, {
+      signal: signal ?? undefined,
+      headers: { range: `bytes=${start}-${end}` },
+    })
+    if (!res.ok) {
+      const errorMessage = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}`
+      const hint = ' (should be 206 for range requests)'
+      throw new Error(`${errorMessage}${res.status === 200 ? hint : ''}`)
+    }
+    return new Uint8Array(await res.arrayBuffer())
+  }
+
+  private async getCachedRange(
+    url: string,
+    start: number,
+    length: number,
+    signal?: AbortSignal | null,
+  ) {
+    const startChunk = Math.floor(start / CHUNK_SIZE)
+    const endChunk = Math.floor((start + length - 1) / CHUNK_SIZE)
+    const chunkCount = endChunk - startChunk + 1
+    const label = url.split('/').pop()
+    const t0 = performance.now()
+
+    let hits = 0
+    const chunks = await Promise.all(
+      Array.from({ length: chunkCount }, (_, i) => {
+        const idx = startChunk + i
+        const key = cacheKey(url, idx)
+        const existing = getCached(key)
+        if (existing) {
+          hits++
+          return Promise.resolve(existing)
+        }
+        return limitConcurrency(async () => {
+          const alreadyCached = getCached(key)
+          if (alreadyCached) {
+            hits++
+            return alreadyCached
+          }
+          const chunkStart = idx * CHUNK_SIZE
+          const chunkEnd = chunkStart + CHUNK_SIZE - 1
+          const data = await this.fetchRange(url, chunkStart, chunkEnd, signal)
+          putCached(key, data)
+          return data
+        })
+      }),
+    )
+
+    console.log(
+      `getCachedRange ${label}: bytes ${start}-${start + length} (${(length / 1024 / 1024).toFixed(2)} MB),` +
+        ` ${chunkCount} chunks, ${hits} hits / ${chunkCount - hits} misses, ${(performance.now() - t0).toFixed(0)}ms`,
+    )
+
+    const offsetInFirstChunk = start - startChunk * CHUNK_SIZE
+    const result = new Uint8Array(length)
+    let written = 0
+    for (const [i, chunk_] of chunks.entries()) {
+      const chunk = chunk_
+      const sourceStart = i === 0 ? offsetInFirstChunk : 0
+      const available = chunk.length - sourceStart
+      const needed = length - written
+      const copyLen = Math.min(available, needed)
+      result.set(chunk.subarray(sourceStart, sourceStart + copyLen), written)
+      written += copyLen
+    }
+    return result.subarray(0, written)
+  }
+
   public async fetch(
     url: string | RequestInfo,
     init?: RequestInit,
@@ -63,89 +147,18 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     if (range) {
       const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)
       if (rangeParse) {
-        const [, start, end] = rangeParse
-        const s = Number.parseInt(start!, 10)
-        const e = Number.parseInt(end!, 10)
-        const buffer = await this.getCachedRange(String(url), s, e)
-        // @ts-expect-error
+        const [, startStr, endStr] = rangeParse
+        const s = Number.parseInt(startStr!, 10)
+        const e = Number.parseInt(endStr!, 10)
+        const buffer = await this.getCachedRange(
+          String(url),
+          s,
+          e - s + 1,
+          init?.signal,
+        )
         return new Response(buffer, { status: 206 })
       }
     }
     return super.fetch(url, init)
-  }
-
-  private async getCachedRange(url: string, start: number, end: number) {
-    const startChunk = Math.floor(start / CHUNK_SIZE)
-    const endChunk = Math.floor(end / CHUNK_SIZE)
-
-    // Check which chunks we already have
-    const chunks = new Array<Uint8Array | undefined>(endChunk - startChunk + 1)
-    for (let i = startChunk; i <= endChunk; i++) {
-      chunks[i - startChunk] = await getCached(cacheKey(url, i))
-    }
-
-    // Fetch contiguous runs of missing chunks in single requests
-    let i = 0
-    while (i < chunks.length) {
-      if (chunks[i]) {
-        i++
-        continue
-      }
-      // Find the end of this contiguous gap
-      let gapEnd = i
-      while (gapEnd < chunks.length && !chunks[gapEnd]) {
-        gapEnd++
-      }
-
-      const fetchStart = (startChunk + i) * CHUNK_SIZE
-      const fetchEnd = (startChunk + gapEnd) * CHUNK_SIZE - 1
-      const fetched = await this.fetchRange(url, fetchStart, fetchEnd)
-
-      // Split into chunks and cache each one
-      for (let j = i; j < gapEnd; j++) {
-        const off = (j - i) * CHUNK_SIZE
-        const chunk = fetched.subarray(off, off + CHUNK_SIZE)
-        chunks[j] = chunk
-        await putCached(cacheKey(url, startChunk + j), chunk)
-      }
-
-      i = gapEnd
-    }
-
-    // Assemble the result from cached chunks
-    if (chunks.length === 1) {
-      const sliceStart = start - startChunk * CHUNK_SIZE
-      return chunks[0]!.subarray(sliceStart, sliceStart + (end - start + 1))
-    }
-
-    const totalLen = chunks.reduce((acc, b) => acc + b!.length, 0)
-    const combined = new Uint8Array(totalLen)
-    let offset = 0
-    for (const buf of chunks) {
-      combined.set(buf!, offset)
-      offset += buf!.length
-    }
-
-    const sliceStart = start - startChunk * CHUNK_SIZE
-    return combined.subarray(sliceStart, sliceStart + (end - start + 1))
-  }
-
-  private fetchRange(url: string, start: number, end: number) {
-    return limit(async () => {
-      const res = await super.fetch(url, {
-        headers: { range: `bytes=${start}-${end}` },
-      })
-      if (!res.ok) {
-        const hint =
-          res.status === 200 ? ' (should be 206 for range requests)' : ''
-        throw Object.assign(
-          new Error(
-            `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${hint}`,
-          ),
-          { status: res.status },
-        )
-      }
-      return new Uint8Array(await res.arrayBuffer())
-    })
   }
 }

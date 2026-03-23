@@ -1,38 +1,13 @@
-// SYNC(shaders/utils.ts): HP_LOW_MASK=0xFFF, hp_split_uint/hp_to_clip_x/hp_scale_linear must match hpSplitUint/hpToClipX/hpScaleLinear
-export const HP_WGSL = `
-const HP_LOW_MASK: u32 = 0xFFFu;
+import { HP_WGSL_CORE } from '@jbrowse/alignments-core'
+import {
+  RECT_LOCALS_WGSL,
+  SIMPLE_FS_WGSL,
+  SIMPLE_VERTEX_OUTPUT_WGSL,
+} from '@jbrowse/alignments-core'
 
-fn hp_split_uint(value: u32) -> vec2f {
-  let lo = value & HP_LOW_MASK;
-  let hi = value - lo;
-  return vec2f(f32(hi), f32(lo));
-}
-
-// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
-// terms. Do not simplify.
-// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
-fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let inf = 1.0 / uf(5u);
-  let step = 2.0 / bp_range.z;
-  let hi = max(split_pos.x - bp_range.x, -inf);
-  let lo = max(split_pos.y - bp_range.y, -inf);
-  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
-}
-
-// WARNING: same compiler guards as hp_to_clip_x. Do not simplify.
-fn hp_scale_linear(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let inf = 1.0 / uf(5u);
-  let step = 1.0 / bp_range.z;
-  let hi = max(split_pos.x - bp_range.x, -inf);
-  let lo = max(split_pos.y - bp_range.y, -inf);
-  return dot(vec2f(hi, lo), vec2f(step, step));
-}
-
-fn snap_to_pixel_x(clip_x: f32, canvas_width: f32) -> f32 {
-  let px = (clip_x + 1.0) * 0.5 * canvas_width;
-  return floor(px + 0.5) / canvas_width * 2.0 - 1.0;
-}
-`
+// Re-export shared HP functions. Call sites pass uf(5u) (U_HP_ZERO) as the
+// hp_zero parameter: hp_to_clip_x(pos, range, uf(5u))
+export const HP_WGSL = HP_WGSL_CORE
 
 // SYNC(shaders/readShaders.ts, shaders/arcShaders.ts, shaders/cigarShaders.ts, shaders/coverageShaders.ts, shaders/connectingLineShaders.ts):
 // Uniform slot indices below map to named GLSL uniforms. GLSL uses named uniforms; WGSL uses raw[i] via uf()/uu()/ui().
@@ -56,25 +31,10 @@ fn feature_spacing() -> f32 { return uf(10u); }
 
 export const PREAMBLE = UNIFORM_WGSL + HP_WGSL
 
-export const SIMPLE_FS = `
-@fragment
-fn fs_main(@location(0) color: vec4f) -> @location(0) vec4f {
-  return color;
-}
-`
-
-export const SIMPLE_VERTEX_OUTPUT = `
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-}
-`
-
-export const RECT_LOCALS = `
-  let v = vid % 6u;
-  let local_x = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
-  let local_y = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
-`
+// Re-export shared shader fragments for backward compat with existing references
+export const SIMPLE_FS = SIMPLE_FS_WGSL
+export const SIMPLE_VERTEX_OUTPUT = SIMPLE_VERTEX_OUTPUT_WGSL
+export const RECT_LOCALS = RECT_LOCALS_WGSL
 
 export const PILEUP_Y = `
 fn pileup_y(row: f32) -> vec2f {

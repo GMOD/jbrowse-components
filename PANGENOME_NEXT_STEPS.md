@@ -10,17 +10,18 @@
 | Task                                             | Effort | Impact                                                |
 | ------------------------------------------------ | ------ | ----------------------------------------------------- |
 | Lazy assembly creation for large pangenomes      | Small  | Avoid creating 90+ assemblies eagerly on first load   |
-| Warning logs for missing GFA-tabix headers       | Small  | Prevent silent failures from malformed data           |
+| ~~Warning logs for missing GFA-tabix headers~~   | Small  | ~~Done — warns on missing #genomes= and #sizes=~~     |
 | GFA W-line test coverage                         | Small  | W-lines are the primary HPRC format, untested         |
-| Wire stopToken through GfaTabixAdapter           | Small  | Enable cancellation of long-running pangenome queries |
-| WebGL/WebGPU backend for MultiSyntenyRenderer    | Medium | GPU-accelerated rendering for 90+ haplotypes          |
+| ~~Wire stopToken through GfaTabixAdapter~~       | Small  | ~~Done — checkStopToken in lineCallbacks + async boundaries~~ |
+| SVG overlay for MultiSynteny text labels           | Small  | SVG text layer for deletion lengths, base letters     |
+| GPU feature picking for MultiSynteny              | Small  | Color-encoded picking FBO (currently JS fallback)     |
 | Automated performance tracing                    | Small  | Measurable regressions, data-driven optimization      |
 | Virtual scrolling for large genome counts        | Medium | Smooth scrolling through 90+ assemblies               |
 | Canvas click-to-select and context menu          | Small  | Feature selection + detail widget from canvas         |
 | renderSvg for MultiLGVSyntenyDisplay             | Medium | Image/SVG export for multi-genome views               |
 | Graph ↔ Synteny navigation                       | Medium | Click bubble in graph → synteny context               |
 | Shared GFA data layer (graph + synteny)          | Large  | Single GFA load for both views                        |
-| LOD-aware aln.bed.gz loading                     | Small  | Load base-level detail only when zoomed in            |
+| Test LOD-aware aln.bed.gz switching               | Small  | Verify segment↔aln transition at bpPerPx threshold   |
 | Multi-resolution segment index (LOD)             | Medium | Whole-chromosome views for large pangenomes           |
 | MultiLGV scrolling for manual row height mode    | Small  | Scroll through assemblies when rows exceed display    |
 | MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc.      |
@@ -36,12 +37,10 @@ even for 90+ haplotype pangenomes. Should only create assemblies for genomes the
 user actually selects via the genome subset selector, and lazily create the rest
 on demand.
 
-### Warning Logs for Missing GFA-Tabix Headers
+### ~~Warning Logs for Missing GFA-Tabix Headers~~ (Done)
 
-`GfaTabixAdapter.ts` `getParsedHeader()` silently returns empty/incomplete
-results when `#sizes` or `#genomes` headers are missing from pos.bed.gz. Should
-`console.warn()` when critical headers are absent so users can diagnose
-misconfigured files.
+`console.warn()` added in `setupPre()` when `#genomes=` or `#sizes=` headers
+are missing from pos.bed.gz.
 
 ### GFA W-Line Test Coverage
 
@@ -53,12 +52,11 @@ pangenome projects. Need tests for:
 - Mixed P-line + W-line GFA files
 - W-line with wildcard haplotype (`*`)
 
-### Wire stopToken Through GfaTabixAdapter
+### ~~Wire stopToken Through GfaTabixAdapter~~ (Done)
 
-`getMultiPairFeatures()` accepts a `stopToken` parameter but prefixes it with
-`_` (unused). For large pangenome queries (HPRC chr20 with 90 haplotypes),
-cancellation support is needed when the user scrolls away before the query
-completes.
+`checkStopToken()` calls added in `getMultiPairFeaturesFromAln` and
+`getMultiPairFeaturesFromSegments` lineCallbacks, plus at async boundaries
+before `getSegsForOrdinals`. Uses `opts: { stopToken? }` pattern.
 
 ### Regenerate Arabidopsis PIF as All-vs-All
 
@@ -78,20 +76,19 @@ genome has its own coordinate axis.
 
 ## Performance & Scale
 
-### WebGL/WebGPU Backend for MultiSyntenyRenderer
+### SVG Overlay for MultiSynteny Text Labels
 
-The `MultiSyntenyRenderer` facade is already in place with
-`Canvas2DMultiSyntenyRenderer`. Add WebGL2 and WebGPU backends following the
-same pattern as `AlignmentsRenderer` and `SyntenyRenderer`:
+The GPU renderers don't render text (deletion lengths, mismatch base letters).
+Use an SVG overlay layer (same approach as the alignments track) positioned
+above the WebGL/WebGPU canvas for text that needs to be rendered at specific
+feature positions.
 
-- Batch feature rectangles into instanced draw calls (position + color per
-  instance)
-- CIGAR/cs overlays: separate draw pass for mismatch/deletion/insertion marks
-- Insertion triangles: geometry shader or pre-built triangle strip
-- Text rendering: bitmap font atlas for deletion lengths and mismatch base
-  letters
-- Expected impact: 5-10x for chr20 (90 haplotypes, thousands of features per
-  viewport)
+### GPU Feature Picking for MultiSynteny
+
+The WebGL/WebGPU renderers have picking shader plumbing (fragment shader
+encodes featureId as RGB) but picking is not yet wired up. Currently the
+tooltip falls back to JS `bpToPx`. Wire up the picking FBO/texture readback
+following the `LinearSyntenyDisplay` pattern.
 
 ### Automated Performance Tracing
 
@@ -107,8 +104,9 @@ regressions:
 - Key areas to trace:
   - `GfaTabixAdapter.getMultiPairFeatures()` — tabix query + segment merging +
     CIGAR derivation
-  - `Canvas2DMultiSyntenyRenderer.render()` — canvas drawing time per frame
-  - `drawCsOps()` / `drawCigarOps()` — per-feature overlay cost
+  - `WebGLMultiSyntenyRenderer.render()` / `WebGPUMultiSyntenyRenderer.render()`
+    — GPU render time per frame
+  - `prepareMultiSyntenyGpuData()` — CIGAR/CS expansion + sort at upload time
   - React effect scheduling — debounce effectiveness during scroll
 
 ### Virtual Scrolling for Large Genome Counts
@@ -122,17 +120,15 @@ off-screen:
 - Binary search for feature hit-testing instead of linear scan in `onMouseMove`
 - Consider OffscreenCanvas for off-main-thread rendering
 
-### LOD-Aware aln.bed.gz Loading
+### Test LOD-Aware aln.bed.gz Switching
 
-The aln.bed.gz file has base-level detail (cs tags) which is expensive to load
-and render at overview zoom:
+LOD switching is implemented (`bpPerPx < 10` → aln, otherwise segments). Needs
+tests to verify:
 
-- When `bpPerPx > threshold`: use segment-based runtime CIGAR (lightweight,
-  structural only)
-- When `bpPerPx < threshold`: load aln.bed.gz for base-level cs rendering
-- Threshold should be configurable, default ~50 bp/px (one screen width ≈ 50kb)
-- The two code paths already exist (`getMultiPairFeaturesFromAln` vs
-  `getMultiPairFeaturesFromSegments`), just need zoom-level switching
+- Zoomed-out queries use segment path (no cs tags in returned features)
+- Zoomed-in queries use aln path (cs tags present)
+- Transition is seamless when scrolling across the threshold
+- Features at the boundary don't duplicate or disappear
 
 ### Multi-Resolution Segment Index (Level of Detail)
 
@@ -158,12 +154,13 @@ responsive even for large pangenomes.
 
 ### Reduce Redundant Renders
 
-Current rendering re-runs full canvas clear + redraw on every scroll pixel:
+With GPU backends, rendering is faster but still re-runs on every scroll pixel.
+The GPU path only updates uniforms per frame (geometry is pre-uploaded), which
+is already much cheaper than Canvas2D. Remaining optimizations:
 
-- Implement dirty-rect tracking: only redraw rows/regions that changed
-- Cache genome labels (they don't change on scroll, only on zoom)
 - Use `requestAnimationFrame` batching to coalesce rapid scroll events
 - Profile with Chrome DevTools to identify hot paths
+- Consider double-buffering for WebGPU to avoid stalls
 
 ### Precompute aln.bed.gz in Rust Tool
 

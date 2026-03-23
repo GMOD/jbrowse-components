@@ -12,6 +12,9 @@ fn main() {
         );
         eprintln!("Converts GFA to tabix-indexed pos.bed.gz + segments.gz files.");
         eprintln!("Streaming two-pass approach: O(segments) memory.");
+        eprintln!("Segment ordinals are assigned in path-traversal order so that");
+        eprintln!("reference-path queries span compact ordinal ranges in segments.gz.");
+        eprintln!("List the reference assembly's paths first in the GFA for best performance.");
         std::process::exit(if args.len() < 2 { 1 } else { 0 });
     }
 
@@ -49,7 +52,12 @@ fn main() {
         }
     }
 
-    // Pass 1: segment lengths and ordinals
+    // Pass 1: collect segment lengths from S-lines.  Numeric IDs are NOT
+    // assigned here — they are assigned during path traversal in Pass 2 so
+    // that graph nodes visited consecutively by the first assembly get
+    // consecutive IDs.  This keeps the ID lists in pos.bed.gz compact for that
+    // assembly's queries, reducing the number of byte-range reads against
+    // segments.gz.
     eprintln!("Pass 1: Reading segments...");
     let mut seg_lengths: HashMap<String, u64> = HashMap::new();
     let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
@@ -72,16 +80,13 @@ fn main() {
                     .map(|t| t[5..].parse::<u64>().unwrap_or(0))
             })
             .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
-
-        if !seg_ordinals.contains_key(&name) {
-            seg_ordinals.insert(name.clone(), next_ordinal);
-            next_ordinal += 1;
-        }
         seg_lengths.insert(name, length);
     }
     eprintln!("  {} segments", seg_lengths.len());
 
-    // Pass 2: stream pos.bed.gz + segments rows to temp files
+    // Pass 2: walk each path, assigning numeric IDs to graph nodes on first
+    // encounter, and emitting both pos.bed.gz chunks (with explicit ID lists)
+    // and segments.tsv rows (one per path×node, later sorted by numeric ID).
     eprintln!("Pass 2: Processing paths...");
 
     let tmp_dir = output_parent(&output_prefix).join(format!(".gfa-tmp-{}", std::process::id()));
@@ -91,10 +96,10 @@ fn main() {
     let mut pos_proc = spawn_sort_bgzip(&pos_file);
     let mut pos_w = BufWriter::new(pos_proc.stdin.take().unwrap());
 
-    let combined_tmp = tmp_dir.join("segs.tsv");
-    let mut segs_files: HashMap<String, BufWriter<File>> = HashMap::new();
+    let combined_tmp = tmp_dir.join("segments.tsv");
+    let mut segments_files: HashMap<String, BufWriter<File>> = HashMap::new();
     if !sharded {
-        segs_files.insert(
+        segments_files.insert(
             String::new(),
             BufWriter::new(File::create(&combined_tmp).expect("create temp")),
         );
@@ -102,6 +107,8 @@ fn main() {
 
     let mut genomes: Vec<String> = Vec::new();
     let mut genome_set: HashSet<String> = HashSet::new();
+    let mut path_names: Vec<String> = Vec::new();
+    let mut path_name_indices: HashMap<String, u64> = HashMap::new();
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
     let mut path_count: u64 = 0;
 
@@ -126,18 +133,28 @@ fn main() {
                 genomes.push(assembly.clone());
             }
 
-            let segs_key = if sharded { assembly.clone() } else { String::new() };
-            if !segs_files.contains_key(&segs_key) {
+            let path_index = if let Some(&idx) = path_name_indices.get(&path_name) {
+                idx
+            } else {
+                let idx = path_names.len() as u64;
+                path_name_indices.insert(path_name.clone(), idx);
+                path_names.push(path_name.clone());
+                idx
+            };
+
+            let segments_key = if sharded { assembly.clone() } else { String::new() };
+            if !segments_files.contains_key(&segments_key) {
                 let p = tmp_dir.join(format!("{}.tsv", encode_filename(&assembly)));
-                segs_files.insert(
-                    segs_key.clone(),
+                segments_files.insert(
+                    segments_key.clone(),
                     BufWriter::new(File::create(&p).expect("create shard temp")),
                 );
             }
-            let segs_w = segs_files.get_mut(&segs_key).unwrap();
+            let segments_w = segments_files.get_mut(&segments_key).unwrap();
 
             let total = emit_path_rows(
                 &path_name,
+                path_index,
                 &seg_str,
                 is_walk,
                 chunk_size,
@@ -145,7 +162,7 @@ fn main() {
                 &mut seg_ordinals,
                 &mut next_ordinal,
                 &mut pos_w,
-                segs_w,
+                segments_w,
             );
 
             path_sizes.push((path_name, total));
@@ -160,7 +177,8 @@ fn main() {
         .map(|(n, s)| format!("{}:{}", n, s))
         .collect();
     let sizes_header = format!("#sizes={}\n", sizes_str.join(","));
-    let full_header = format!("{}{}", header, sizes_header);
+    let paths_header = format!("#paths={}\n", path_names.join(","));
+    let full_header = format!("{}{}{}", header, sizes_header, paths_header);
 
     // Finish pos.bed.gz
     pos_w.write_all(header.as_bytes()).unwrap();
@@ -173,7 +191,7 @@ fn main() {
     run_cmd("tabix", &["-c", "#", "-p", "bed", &pos_file]);
 
     // Flush segment temp files
-    drop(segs_files);
+    drop(segments_files);
 
     // Build segments.gz + .gzi + .idx
     if sharded {
@@ -224,9 +242,17 @@ fn main() {
     eprintln!("  Genomes: {} ({})", genomes.len(), genomes.join(", "));
 }
 
-/// Sort an unsorted segments TSV, build the companion byte-offset index,
-/// and pipe directly to `bgzip -i` to produce .gz + .gzi in one step.
-/// Disk: only the unsorted input + final compressed output (no sorted intermediate).
+/// Sort the unsorted segments TSV by ordinal, build the companion byte-offset
+/// index (.idx), and compress to .gz + .gzi via bgzip.
+///
+/// The .idx file is a flat array of little-endian u64 values, one per numeric
+/// ID.  idx[N] = byte offset in the *uncompressed* segments data where node N's
+/// rows begin.  The viewer loads this into a BigUint64Array and uses it to
+/// convert node ID lists (from pos.bed.gz) into precise byte-range reads
+/// against the bgzf-compressed segments file.
+///
+/// Disk: only the unsorted input + final compressed output (no sorted
+/// intermediate).
 fn sort_and_build_segments(
     unsorted_path: &str,
     header: &str,
@@ -306,8 +332,29 @@ fn sort_and_build_segments(
     }
 }
 
+/// Process one path (P-line or W-line walk) from the GFA, emitting:
+///
+///   - segments.tsv rows: one row per step with the segment's numeric ID (a
+///     sequential integer we assign to each unique graph node), path name,
+///     base-pair offset along the path, segment length, orientation, and
+///     segment name.  These are later sorted by numeric ID and compressed into
+///     segments.gz with a companion byte-offset index (.idx).
+///
+///   - pos.bed.gz rows: one row per chunk of `chunk_size` steps.  Each row is
+///     a BED-like line (path, start_bp, end_bp) with a 4th column containing a
+///     comma-separated list of the *exact* numeric IDs of graph nodes traversed
+///     by that chunk.  The viewer uses this list to look up only the specific
+///     nodes it needs from segments.gz, avoiding huge range reads.  (An earlier
+///     format stored only min/max IDs per chunk, which caused multi-GB reads
+///     when a path mixed shared and assembly-private nodes whose IDs were far
+///     apart in the file.)
+///
+/// Numeric IDs are assigned on first encounter: the first path to traverse a
+/// graph node determines its ID.  This means the GFA's path ordering matters —
+/// assemblies listed earlier get tighter, more contiguous ID sequences.
 fn emit_path_rows(
     path_name: &str,
+    path_index: u64,
     seg_str: &str,
     is_walk: bool,
     chunk_size: usize,
@@ -315,16 +362,18 @@ fn emit_path_rows(
     seg_ordinals: &mut HashMap<String, u64>,
     next_ordinal: &mut u64,
     pos_w: &mut BufWriter<impl Write>,
-    segs_w: &mut BufWriter<File>,
+    segments_w: &mut BufWriter<File>,
 ) -> u64 {
     let mut offset: u64 = 0;
     let mut chunk_start: u64 = 0;
-    let mut chunk_min: u64 = u64::MAX;
-    let mut chunk_max: u64 = 0;
+    let mut chunk_ords: Vec<u64> = Vec::new();
     let mut steps: usize = 0;
 
     let mut emit_step = |seg_id: &str, orient: &str| {
         let seg_len = seg_lengths.get(seg_id).copied().unwrap_or(0);
+
+        // Assign a numeric ID on first encounter; reuse the existing ID if
+        // this graph node was already visited by an earlier path.
         let ord = if let Some(&o) = seg_ordinals.get(seg_id) {
             o
         } else {
@@ -334,28 +383,29 @@ fn emit_path_rows(
             o
         };
 
+        // segments.tsv: ordinal, path_index, offset, length, orient
         writeln!(
-            segs_w,
-            "{}\t{}\t{}\t{}\t{}\t{}",
-            ord, path_name, offset, seg_len, orient, seg_id
+            segments_w,
+            "{}\t{}\t{}\t{}\t{}",
+            ord, path_index, offset, seg_len, orient
         )
         .unwrap();
 
-        chunk_min = chunk_min.min(ord);
-        chunk_max = chunk_max.max(ord);
+        chunk_ords.push(ord);
         offset += seg_len;
         steps += 1;
 
+        // Flush a pos.bed.gz chunk every `chunk_size` steps.
+        // Dedup IDs so the viewer doesn't fetch the same node twice (a path
+        // can revisit the same node in complex graph regions).
         if steps >= chunk_size {
-            writeln!(
-                pos_w,
-                "{}\t{}\t{}\t{}\t{}",
-                path_name, chunk_start, offset, chunk_min, chunk_max
-            )
-            .unwrap();
+            chunk_ords.sort_unstable();
+            chunk_ords.dedup();
+            let ords_str = encode_ordinal_ranges(&chunk_ords);
+            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
+                .unwrap();
             chunk_start = offset;
-            chunk_min = u64::MAX;
-            chunk_max = 0;
+            chunk_ords.clear();
             steps = 0;
         }
     };
@@ -388,12 +438,11 @@ fn emit_path_rows(
     }
 
     if steps > 0 {
-        writeln!(
-            pos_w,
-            "{}\t{}\t{}\t{}\t{}",
-            path_name, chunk_start, offset, chunk_min, chunk_max
-        )
-        .unwrap();
+        chunk_ords.sort_unstable();
+        chunk_ords.dedup();
+        let ords_str = encode_ordinal_ranges(&chunk_ords);
+        writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
+            .unwrap();
     }
 
     offset
@@ -440,6 +489,34 @@ fn write_manifest(path: &str, genomes: &[String], files: &[(String, String)]) {
         write!(out, "\n    \"{}\": \"{}\"", genome, prefix).unwrap();
     }
     write!(out, "\n  }}\n}}\n").unwrap();
+}
+
+fn encode_ordinal_ranges(ords: &[u64]) -> String {
+    if ords.is_empty() {
+        return String::new();
+    }
+    let mut parts: Vec<String> = Vec::new();
+    let mut run_start = ords[0];
+    let mut run_end = ords[0];
+    for &o in &ords[1..] {
+        if o == run_end + 1 {
+            run_end = o;
+        } else {
+            if run_start == run_end {
+                parts.push(run_start.to_string());
+            } else {
+                parts.push(format!("{}-{}", run_start, run_end));
+            }
+            run_start = o;
+            run_end = o;
+        }
+    }
+    if run_start == run_end {
+        parts.push(run_start.to_string());
+    } else {
+        parts.push(format!("{}-{}", run_start, run_end));
+    }
+    parts.join(",")
 }
 
 fn encode_filename(s: &str) -> String {

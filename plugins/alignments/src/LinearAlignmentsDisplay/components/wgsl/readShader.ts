@@ -150,8 +150,8 @@ fn vs_main(
   let v = vid % 9u;
   let abs_start = inst.start_off + region_start();
   let abs_end = inst.end_off + region_start();
-  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range());
-  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range());
+  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), bp_range(), uf(5u));
+  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), bp_range(), uf(5u));
 
   let yy = pileup_y(f32(inst.y));
   let sy_top = yy.x;
@@ -177,8 +177,8 @@ fn vs_main(
     // Highlight overlay uses full read span (not segment span) to cover introns
     let hl_abs_start = inst.read_start_off + region_start();
     let hl_abs_end = inst.read_end_off + region_start();
-    let hl_sx1 = hp_to_clip_x(hp_split_uint(hl_abs_start), bp_range());
-    let hl_sx2 = hp_to_clip_x(hp_split_uint(hl_abs_end), bp_range());
+    let hl_sx1 = hp_to_clip_x(hp_split_uint(hl_abs_start), bp_range(), uf(5u));
+    let hl_sx2 = hp_to_clip_x(hp_split_uint(hl_abs_end), bp_range(), uf(5u));
     lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
     ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
     sx = mix(hl_sx1, hl_sx2, lx);

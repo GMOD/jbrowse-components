@@ -306,6 +306,12 @@ importers:
         specifier: ^5.2.3
         version: 5.2.3(tslib@2.8.1)(webpack-cli@7.0.2)(webpack@5.105.4)
 
+  packages/alignments-core:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+
   packages/app-core:
     dependencies:
       '@jbrowse/core':
@@ -592,6 +598,9 @@ importers:
       '@gmod/cram':
         specifier: ^8.0.5
         version: 8.0.5(buffer@6.0.3)
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1231,6 +1240,9 @@ importers:
 
   plugins/linear-comparative-view:
     dependencies:
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

@@ -23,6 +23,7 @@ export interface MultiPairGetFeaturesArgs {
   sessionId: string
   stopToken?: StopToken
   fetchChromSizes?: boolean
+  statusCallback?: (msg: string) => void
 }
 
 export interface MultiPairGetFeaturesResult {

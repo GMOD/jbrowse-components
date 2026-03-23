@@ -35,9 +35,8 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const { genomeRows, displayedGenomes, rowHeight, colorBy, height } = model
-  const { width, bpPerPx, offsetPx, displayedRegions } = view
+  const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-  const displayedRegionStart = displayedRegions[0]?.start ?? 0
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -65,15 +64,55 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     }
   }, [])
 
+  // GPU path: upload geometry when features or colors change
   useEffect(() => {
-    if (ready && rendererRef.current) {
-      rendererRef.current.render(genomeRows, displayedGenomes, {
+    if (ready && rendererRef.current?.isGpu) {
+      rendererRef.current.uploadGeometry(genomeRows, displayedGenomes, colorBy)
+    }
+  }, [ready, genomeRows, displayedGenomes, colorBy])
+
+  // GPU path: render when view changes (scroll, zoom)
+  useEffect(() => {
+    if (ready && rendererRef.current?.isGpu) {
+      const contentBlocks = view.staticBlocks.contentBlocks
+      rendererRef.current.renderGpu(
+        contentBlocks,
+        offsetPx,
         width,
         height,
         rowHeight,
-        bpPerPx,
-        offsetPx,
-        displayedRegionStart,
+        labelW,
+      )
+    }
+  }, [
+    ready,
+    genomeRows,
+    displayedGenomes,
+    colorBy,
+    width,
+    height,
+    rowHeight,
+    bpPerPx,
+    offsetPx,
+    labelW,
+    view,
+  ])
+
+  // Canvas2D fallback path
+  useEffect(() => {
+    if (ready && rendererRef.current && !rendererRef.current.isGpu) {
+      const bpToPx = (refName: string, coord: number) => {
+        const result = view.bpToPx({ refName, coord })
+        if (result === undefined) {
+          return undefined
+        }
+        return result.offsetPx - offsetPx
+      }
+      rendererRef.current.renderCanvas(genomeRows, displayedGenomes, {
+        width,
+        height,
+        rowHeight,
+        bpToPx,
         colorBy,
         labelW,
       })
@@ -87,9 +126,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     rowHeight,
     bpPerPx,
     offsetPx,
-    displayedRegionStart,
     colorBy,
     labelW,
+    view,
   ])
 
   const onMouseMove = useCallback(
@@ -111,8 +150,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       }
 
       for (const feat of features) {
-        const x1 = (feat.start - displayedRegionStart) / bpPerPx - offsetPx + labelW
-        const x2 = (feat.end - displayedRegionStart) / bpPerPx - offsetPx + labelW
+        const px1 = view.bpToPx({ refName: feat.origRefName, coord: feat.start })
+        const px2 = view.bpToPx({ refName: feat.origRefName, coord: feat.end })
+        if (!px1 || !px2) {
+          continue
+        }
+        const x1 = px1.offsetPx - offsetPx + labelW
+        const x2 = px2.offsetPx - offsetPx + labelW
         if (mouseX >= x1 && mouseX <= x2) {
           const refSize = feat.end - feat.start
           const querySize = feat.mateEnd - feat.mateStart
@@ -133,7 +177,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       }
       setTooltip(t => (t.open ? { text: '', open: false } : t))
     },
-    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx, displayedRegionStart, labelW],
+    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx, labelW, view],
   )
 
   const onMouseLeave = useCallback(() => {

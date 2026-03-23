@@ -19,10 +19,7 @@ export { computeSyriTypes } from './syriUtils.ts'
 export { csToCigar, flipCs } from './csUtils.ts'
 export { multiPairTypes } from './syntenyTypes.ts'
 export type { SyriType } from './syriUtils.ts'
-export type {
-  MultiPairFeature,
-  PairInfo,
-} from './PairwiseIndexedPAFAdapter/PairwiseIndexedPAFAdapter.ts'
+export type { MultiPairFeature, PairInfo } from './MultiPairFeature.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

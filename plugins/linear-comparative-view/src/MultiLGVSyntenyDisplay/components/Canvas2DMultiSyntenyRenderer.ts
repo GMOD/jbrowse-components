@@ -8,13 +8,13 @@ import {
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type {
-  MultiSyntenyBackend,
-  MultiSyntenyRenderOpts,
+  MultiSyntenyCanvasBackend,
+  MultiSyntenyCanvasRenderOpts,
 } from './multiSyntenyBackendTypes.ts'
 
 const LABEL_FONT_MAX = 12
 
-export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
+export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
 
@@ -40,18 +40,9 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
   render(
     genomeRows: Map<string, MultiPairFeature[]>,
     displayedGenomes: string[],
-    opts: MultiSyntenyRenderOpts,
+    opts: MultiSyntenyCanvasRenderOpts,
   ) {
-    const {
-      width,
-      height,
-      rowHeight,
-      bpPerPx,
-      offsetPx,
-      displayedRegionStart,
-      colorBy,
-      labelW,
-    } = opts
+    const { width, height, rowHeight, bpToPx, colorBy, labelW } = opts
     const showLabels = labelW > 0
     const ctx = this.ctx
 
@@ -81,10 +72,13 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
 
       const padding = rowHeight >= 6 ? 1 : 0
       for (const feat of features) {
-        const x1 =
-          (feat.start - displayedRegionStart) / bpPerPx - offsetPx + labelW
-        const x2 =
-          (feat.end - displayedRegionStart) / bpPerPx - offsetPx + labelW
+        const px1 = bpToPx(feat.origRefName, feat.start)
+        const px2 = bpToPx(feat.origRefName, feat.end)
+        if (px1 === undefined || px2 === undefined) {
+          continue
+        }
+        const x1 = px1 + labelW
+        const x2 = px2 + labelW
         const blockWidth = Math.max(x2 - x1, 1)
 
         if (x1 + blockWidth < labelW || x1 > width) {
