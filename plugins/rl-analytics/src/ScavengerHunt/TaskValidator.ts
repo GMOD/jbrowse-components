@@ -145,19 +145,19 @@ export default class TaskValidator {
     let searchUsed = false
 
     if (constraints) {
-      // Check required action types
+      // Check required action types — need at least ONE of the listed types
       if (constraints.requiredActionTypes) {
         const actionSet = new Set(actions)
-        const missing = constraints.requiredActionTypes.filter(
-          t => !actionSet.has(t as ActionType),
+        const hasAny = constraints.requiredActionTypes.some(t =>
+          actionSet.has(t as ActionType),
         )
-        if (missing.length > 0) {
-          const hints = missing.map(m =>
+        if (!hasAny) {
+          const hints = constraints.requiredActionTypes.map(m =>
             m.toLowerCase().replace(/_/g, ' '),
           )
           return {
             valid: false,
-            reason: `Try: ${hints.join(', ')}`,
+            reason: `Try: ${hints.join(' or ')}`,
           }
         }
       }

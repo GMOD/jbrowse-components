@@ -225,16 +225,16 @@ var init_TaskValidator = __esm({
         if (constraints) {
           if (constraints.requiredActionTypes) {
             const actionSet = new Set(actions);
-            const missing = constraints.requiredActionTypes.filter(
-              (t) => !actionSet.has(t)
+            const hasAny = constraints.requiredActionTypes.some(
+              (t) => actionSet.has(t)
             );
-            if (missing.length > 0) {
-              const hints = missing.map(
+            if (!hasAny) {
+              const hints = constraints.requiredActionTypes.map(
                 (m) => m.toLowerCase().replace(/_/g, " ")
               );
               return {
                 valid: false,
-                reason: `Try: ${hints.join(", ")}`
+                reason: `Try: ${hints.join(" or ")}`
               };
             }
           }
