@@ -55,10 +55,31 @@ export interface Episode {
   }
 }
 
+export interface NavigationConstraint {
+  requiredActionTypes?: string[]
+  forbiddenActionTypes?: { type: string; mode: 'soft' | 'hard' }[]
+  zoomRange?: { min?: number; max?: number }
+  minActions?: number
+  minActionDiversity?: number
+}
+
+export interface AnswerValidation {
+  mode: 'exact' | 'fuzzy' | 'keyword_set' | 'any_nonempty'
+  keywords?: string[]
+  minLength?: number
+  fuzzyThreshold?: number
+}
+
 export interface TaskConfig {
   id: string
-  type: 'navigate' | 'identify' | 'compare' | 'freeform'
-  tier: 1 | 2 | 3
+  type:
+    | 'navigate'
+    | 'navigate_constrained'
+    | 'action_required'
+    | 'identify'
+    | 'compare'
+    | 'freeform'
+  tier: 0 | 1 | 2 | 3 | 4
   title: string
   description: string
   hints: string[]
@@ -75,4 +96,30 @@ export interface TaskConfig {
   maxTimeSeconds?: number
   requiredTracks?: string[]
   completionReward: number
+  requiredAwards?: string[]
+  navigationConstraints?: NavigationConstraint
+  searchPenalty?: number
+  awardOnComplete?: string
+  answerValidation?: AnswerValidation
+  maxRetries?: number
+  autoAdvanceOnFail?: boolean
+  coaching?: {
+    message: string
+    highlightElement?: string
+  }
+}
+
+export interface AwardDefinition {
+  id: string
+  name: string
+  description: string
+  flavorText?: string
+  triggerCondition: {
+    type: 'action_type' | 'state_threshold' | 'task_complete' | 'keyword_match'
+    actionType?: string
+    stateField?: string
+    threshold?: number
+    comparator?: 'lt' | 'gt' | 'eq'
+    keywords?: string[]
+  }
 }

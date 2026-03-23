@@ -1,3 +1,4 @@
+import type { ActionType } from '../ActionLogger/ActionTypes.ts'
 import type { TaskConfig } from '../RLPipeline/types.ts'
 
 import type { ValidationResult } from './tasks/taskSchema.ts'
@@ -54,9 +55,11 @@ function jaroWinkler(s1: string, s2: string): number {
   }
 
   const jaro =
-    (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3
+    (matches / len1 +
+      matches / len2 +
+      (matches - transpositions / 2) / matches) /
+    3
 
-  // Winkler adjustment
   let prefix = 0
   for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
     if (s1[i] === s2[i]) {
@@ -70,67 +73,16 @@ function jaroWinkler(s1: string, s2: string): number {
 }
 
 export default class TaskValidator {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(private getView: () => any) {}
+  constructor(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private getView: () => any,
+    private getActionsSinceTaskStart?: () => ActionType[],
+  ) {}
 
   validate(
     task: TaskConfig,
     model: ScavengerHuntWidgetModel,
   ): ValidationResult {
-    switch (task.type) {
-      case 'navigate':
-        return this.validateNavigation(task, model)
-      case 'identify':
-        return this.validateIdentification(task, model)
-      case 'compare':
-        return this.validateComparison(task, model)
-      case 'freeform':
-        return this.validateFreeform(task, model)
-    }
-  }
-
-  private validateNavigation(
-    task: TaskConfig,
-    model: ScavengerHuntWidgetModel,
-  ): ValidationResult {
-    if (!task.target) {
-      return { valid: false, reason: 'No target defined' }
-    }
-
-    const view = this.getView()
-    if (!view) {
-      return { valid: false, reason: 'No active view' }
-    }
-
-    // Check if target region is visible
-    const contentBlocks = view.dynamicBlocks?.contentBlocks ?? []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const visible = contentBlocks.some((block: any) =>
-      block.refName === task.target!.refName &&
-      block.start <= task.target!.end &&
-      block.end >= task.target!.start,
-    )
-
-    if (!visible) {
-      return { valid: false, reason: 'Target region not in viewport' }
-    }
-
-    // Check required tracks
-    if (task.requiredTracks) {
-      const activeTrackIds =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        view.tracks?.map((t: any) => t.configuration?.trackId) ?? []
-      const missingTracks = task.requiredTracks.filter(
-        (t: string) => !activeTrackIds.includes(t),
-      )
-      if (missingTracks.length > 0) {
-        return {
-          valid: false,
-          reason: `Missing tracks: ${missingTracks.join(', ')}`,
-        }
-      }
-    }
-
     // Check minimum time
     const startTime = model.taskStartTimes.get(task.id)
     if (startTime && task.minTimeSeconds) {
@@ -143,7 +95,140 @@ export default class TaskValidator {
       }
     }
 
-    return { valid: true }
+    switch (task.type) {
+      case 'navigate':
+        return this.validateNavigation(task)
+      case 'navigate_constrained':
+        return this.validateConstrainedNavigation(task)
+      case 'action_required':
+        return this.validateActionRequired(task)
+      case 'identify':
+        return this.validateIdentification(task, model)
+      case 'compare':
+        return this.validateIdentification(task, model)
+      case 'freeform':
+        return this.validateFreeform(task, model)
+    }
+  }
+
+  private validateNavigation(task: TaskConfig): ValidationResult {
+    if (!task.target) {
+      return { valid: false, reason: 'No target defined' }
+    }
+
+    const view = this.getView()
+    if (!view) {
+      return { valid: false, reason: 'No active view' }
+    }
+
+    const contentBlocks = view.dynamicBlocks?.contentBlocks ?? []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const visible = contentBlocks.some(
+      (block: any) =>
+        block.refName === task.target!.refName &&
+        block.start <= task.target!.end &&
+        block.end >= task.target!.start,
+    )
+
+    if (!visible) {
+      return { valid: false, reason: 'Target region not in viewport' }
+    }
+
+    return this.checkRequiredTracks(task)
+  }
+
+  private validateConstrainedNavigation(
+    task: TaskConfig,
+  ): ValidationResult {
+    const constraints = task.navigationConstraints
+    const actions = this.getActionsSinceTaskStart?.() ?? []
+    let searchUsed = false
+
+    if (constraints) {
+      // Check required action types
+      if (constraints.requiredActionTypes) {
+        const actionSet = new Set(actions)
+        const missing = constraints.requiredActionTypes.filter(
+          t => !actionSet.has(t as ActionType),
+        )
+        if (missing.length > 0) {
+          const hints = missing.map(m =>
+            m.toLowerCase().replace(/_/g, ' '),
+          )
+          return {
+            valid: false,
+            reason: `Try: ${hints.join(', ')}`,
+          }
+        }
+      }
+
+      // Check min actions
+      if (
+        constraints.minActions &&
+        actions.length < constraints.minActions
+      ) {
+        return {
+          valid: false,
+          reason: 'Keep exploring — interact with the browser a bit more',
+        }
+      }
+
+      // Check min action diversity
+      if (constraints.minActionDiversity) {
+        const diversity = new Set(actions).size
+        if (diversity < constraints.minActionDiversity) {
+          return {
+            valid: false,
+            reason: 'Try using different controls',
+          }
+        }
+      }
+
+      // Check zoom range
+      if (constraints.zoomRange) {
+        const view = this.getView()
+        if (view) {
+          try {
+            const bpPerPx = view.bpPerPx ?? 1
+            if (
+              constraints.zoomRange.max !== undefined &&
+              bpPerPx > constraints.zoomRange.max
+            ) {
+              return { valid: false, reason: 'Zoom in more' }
+            }
+            if (
+              constraints.zoomRange.min !== undefined &&
+              bpPerPx < constraints.zoomRange.min
+            ) {
+              return { valid: false, reason: 'Zoom out more' }
+            }
+          } catch {
+            // view not ready
+          }
+        }
+      }
+    }
+
+    searchUsed = actions.includes('SEARCH' as ActionType)
+
+    // If task has a target, also validate position
+    if (task.target) {
+      const navResult = this.validateNavigation(task)
+      if (!navResult.valid) {
+        return navResult
+      }
+    }
+
+    const tracksResult = this.checkRequiredTracks(task)
+    if (!tracksResult.valid) {
+      return tracksResult
+    }
+
+    return { valid: true, searchUsed }
+  }
+
+  private validateActionRequired(task: TaskConfig): ValidationResult {
+    return this.checkRequiredTracks(task)
   }
 
   private validateIdentification(
@@ -155,6 +240,30 @@ export default class TaskValidator {
       return { valid: false, reason: 'No answer provided' }
     }
 
+    const validation = task.answerValidation
+
+    if (validation?.mode === 'keyword_set' && validation.keywords) {
+      const lower = answer.toLowerCase()
+      const match = validation.keywords.some(kw =>
+        lower.includes(kw.toLowerCase()),
+      )
+      return {
+        valid: match,
+        reason: match ? undefined : 'Answer not recognized — try again',
+      }
+    }
+
+    if (validation?.mode === 'any_nonempty') {
+      const minLen = validation.minLength ?? 1
+      return {
+        valid: answer.trim().length >= minLen,
+        reason:
+          answer.trim().length >= minLen
+            ? undefined
+            : 'Please provide a longer answer',
+      }
+    }
+
     if (task.answerChoices && task.expectedAnswer) {
       return {
         valid: answer === task.expectedAnswer,
@@ -164,40 +273,20 @@ export default class TaskValidator {
     }
 
     if (task.expectedAnswer) {
+      const threshold = validation?.fuzzyThreshold ?? 0.85
       const similarity = jaroWinkler(
         answer.toLowerCase(),
         task.expectedAnswer.toLowerCase(),
       )
       return {
-        valid: similarity > 0.85,
+        valid: similarity > threshold,
         reason:
-          similarity > 0.85 ? undefined : 'Answer does not match expected',
+          similarity > threshold
+            ? undefined
+            : 'Answer does not match expected',
       }
     }
 
-    return { valid: true }
-  }
-
-  private validateComparison(
-    task: TaskConfig,
-    model: ScavengerHuntWidgetModel,
-  ): ValidationResult {
-    // Comparison tasks require an answer and visible target
-    const answer = model.answers.get(task.id)
-    if (!answer) {
-      return { valid: false, reason: 'No answer provided' }
-    }
-    if (task.expectedAnswer) {
-      const similarity = jaroWinkler(
-        answer.toLowerCase(),
-        task.expectedAnswer.toLowerCase(),
-      )
-      return {
-        valid: similarity > 0.85,
-        reason:
-          similarity > 0.85 ? undefined : 'Answer does not match expected',
-      }
-    }
     return { valid: true }
   }
 
@@ -209,18 +298,47 @@ export default class TaskValidator {
     if (!answer || answer.trim().length === 0) {
       return { valid: false, reason: 'Please provide an answer' }
     }
+    const minLen = task.answerValidation?.minLength ?? 1
+    if (answer.trim().length < minLen) {
+      return { valid: false, reason: 'Please provide a more detailed answer' }
+    }
     if (task.expectedAnswer) {
+      const threshold = task.answerValidation?.fuzzyThreshold ?? 0.85
       const similarity = jaroWinkler(
         answer.toLowerCase(),
         task.expectedAnswer.toLowerCase(),
       )
       return {
-        valid: similarity > 0.85,
+        valid: similarity > threshold,
         reason:
-          similarity > 0.85 ? undefined : 'Answer does not match expected',
+          similarity > threshold
+            ? undefined
+            : 'Answer does not match expected',
       }
     }
-    // For truly freeform tasks, any non-empty answer is valid
+    return { valid: true }
+  }
+
+  private checkRequiredTracks(task: TaskConfig): ValidationResult {
+    if (!task.requiredTracks) {
+      return { valid: true }
+    }
+    const view = this.getView()
+    if (!view) {
+      return { valid: true }
+    }
+    const activeTrackIds =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      view.tracks?.map((t: any) => t.configuration?.trackId) ?? []
+    const missingTracks = task.requiredTracks.filter(
+      (t: string) => !activeTrackIds.includes(t),
+    )
+    if (missingTracks.length > 0) {
+      return {
+        valid: false,
+        reason: `Open the required track: ${missingTracks.join(', ')}`,
+      }
+    }
     return { valid: true }
   }
 }

@@ -3017,12 +3017,6 @@
     {
       "name": "UMDUrlPlugin",
       "umdUrl": "umd_plugin.js"
-    },
-    {
-      "name": "RLAnalyticsPlugin",
-      "umdLoc": {
-        "uri": "jbrowse-plugin-rl-analytics.umd.js"
-      }
     }
   ],
   "aggregateTextSearchAdapters": [

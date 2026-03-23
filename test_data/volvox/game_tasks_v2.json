@@ -1,0 +1,310 @@
+{
+  "id": "volvox-game-v2",
+  "name": "JBrowse Navigator",
+  "description": "Learn to navigate a genome browser through guided exploration",
+  "version": "2.0.0",
+  "randomizeOrder": false,
+  "randomizeWithinTier": false,
+  "attentionCheckIndices": [9],
+  "awards": [
+    {
+      "id": "first_steps",
+      "name": "First Steps",
+      "description": "Panned the genome view",
+      "flavorText": "You moved! The genome is yours to explore.",
+      "triggerCondition": { "type": "action_type", "actionType": "PAN_RIGHT" }
+    },
+    {
+      "id": "eagle_eye",
+      "name": "Eagle Eye",
+      "description": "Zoomed to base-pair resolution",
+      "flavorText": "Individual nucleotides. You're reading the code of life.",
+      "triggerCondition": { "type": "state_threshold", "stateField": "bpPerPx", "threshold": 0.1, "comparator": "lt" }
+    },
+    {
+      "id": "curator",
+      "name": "Curator",
+      "description": "Opened a track",
+      "flavorText": "Layers of data, revealed.",
+      "triggerCondition": { "type": "action_type", "actionType": "TOGGLE_TRACK" }
+    },
+    {
+      "id": "collector",
+      "name": "Collector",
+      "description": "Had 3+ tracks open at once",
+      "flavorText": "Multiple data types, one view. Serious analysis.",
+      "triggerCondition": { "type": "state_threshold", "stateField": "numTracks", "threshold": 3, "comparator": "gt" }
+    },
+    {
+      "id": "cartographer",
+      "name": "Cartographer",
+      "description": "Visited both contigs",
+      "flavorText": "You've mapped the whole territory.",
+      "triggerCondition": { "type": "action_type", "actionType": "SEARCH" }
+    },
+    {
+      "id": "biologist",
+      "name": "Biologist",
+      "description": "Demonstrated biological interpretation",
+      "flavorText": "You speak the language of genomes.",
+      "triggerCondition": {
+        "type": "keyword_match",
+        "keywords": ["exon", "intron", "gene", "variant", "snp", "coverage", "alignment", "read", "strand", "forward", "reverse", "deletion", "insertion", "mutation", "mRNA", "CDS"]
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t0-zoom",
+      "type": "navigate_constrained",
+      "tier": 0,
+      "title": "Zoom In",
+      "description": "Use your scroll wheel (or pinch gesture) on the genome view to zoom in.",
+      "hints": ["Place your mouse cursor over the colored bar and scroll up"],
+      "navigationConstraints": {
+        "requiredActionTypes": ["ZOOM_IN"]
+      },
+      "maxTimeSeconds": 60,
+      "completionReward": 0.5,
+      "coaching": {
+        "message": "Place your mouse over the genome display and scroll your mouse wheel up"
+      }
+    },
+    {
+      "id": "t0-pan",
+      "type": "navigate_constrained",
+      "tier": 0,
+      "title": "Look Around",
+      "description": "Click and drag the genome view to slide left or right.",
+      "hints": ["Click and hold, then drag sideways"],
+      "navigationConstraints": {
+        "requiredActionTypes": ["PAN_RIGHT"]
+      },
+      "maxTimeSeconds": 60,
+      "completionReward": 0.5,
+      "coaching": {
+        "message": "Click and hold on the genome display, then drag left or right"
+      }
+    },
+    {
+      "id": "t1-basepairs",
+      "type": "navigate_constrained",
+      "tier": 1,
+      "title": "Read the Code",
+      "description": "Zoom in until you can see individual letters (A, T, G, C) in the sequence track. These are the nucleotide bases — the building blocks of DNA.",
+      "hints": [
+        "Keep scrolling to zoom in further",
+        "The letters appear when you're zoomed in enough — they represent adenine, thymine, guanine, and cytosine"
+      ],
+      "navigationConstraints": {
+        "requiredActionTypes": ["ZOOM_IN"],
+        "zoomRange": { "max": 0.1 }
+      },
+      "awardOnComplete": "eagle_eye",
+      "minTimeSeconds": 3,
+      "maxTimeSeconds": 120,
+      "completionReward": 1.0
+    },
+    {
+      "id": "t1-open-track",
+      "type": "action_required",
+      "tier": 1,
+      "title": "Reveal Hidden Data",
+      "description": "The genome has more data than what's shown. Open the track selector and turn on the 'volvox-sorted-vcf' track (variants data).",
+      "hints": [
+        "Look for 'Open track selector' at the bottom of the genome view",
+        "Search for 'vcf' in the track list and click its checkbox"
+      ],
+      "requiredTracks": ["volvox_filtered_vcf"],
+      "awardOnComplete": "curator",
+      "maxTimeSeconds": 120,
+      "completionReward": 1.0,
+      "coaching": {
+        "message": "Look for a button or '+' icon near the bottom of the genome view to open the track selector"
+      }
+    },
+    {
+      "id": "t1-find-feature",
+      "type": "identify",
+      "tier": 1,
+      "title": "Name That Feature",
+      "description": "Pan along ctgA until you find an annotated feature (a colored block with a label). Zoom in if needed to read its name. Type the name below.",
+      "hints": [
+        "Click and drag to pan along the genome",
+        "Zoom in with the scroll wheel to see feature labels",
+        "Features have names like 'EDEN', 'Apple1', 'seg01', etc."
+      ],
+      "answerValidation": {
+        "mode": "keyword_set",
+        "keywords": ["EDEN", "eden", "Apple1", "Apple2", "Apple3", "banana1", "seg01", "seg02", "seg10", "f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09", "f10", "f11", "f12", "f13", "f14", "f15"]
+      },
+      "navigationConstraints": {
+        "requiredActionTypes": ["PAN_RIGHT"],
+        "minActions": 2
+      },
+      "searchPenalty": 0.5,
+      "minTimeSeconds": 5,
+      "maxTimeSeconds": 180,
+      "completionReward": 1.5
+    },
+    {
+      "id": "t1-other-contig",
+      "type": "navigate",
+      "tier": 1,
+      "title": "The Other Contig",
+      "description": "This genome has two contigs (chromosome-like sequences): ctgA and ctgB. Navigate to ctgB.",
+      "hints": [
+        "Try typing 'ctgB' in the search bar at the top of the genome view",
+        "ctgB is much shorter than ctgA — only about 6,000 base pairs"
+      ],
+      "target": {
+        "assemblyName": "volvox",
+        "refName": "ctgB",
+        "start": 0,
+        "end": 6079
+      },
+      "awardOnComplete": "cartographer",
+      "maxTimeSeconds": 120,
+      "completionReward": 1.0
+    },
+    {
+      "id": "t2-gene-anatomy",
+      "type": "identify",
+      "tier": 2,
+      "title": "Gene Anatomy",
+      "description": "Navigate back to ctgA and find the gene called 'EDEN'. Zoom in to see its internal structure. The thick blocks are exons (protein-coding regions). How many exons does EDEN have?",
+      "hints": [
+        "Search for 'EDEN' in the search bar",
+        "Exons are the thick colored blocks; thin lines between them are introns",
+        "Count each thick block separately"
+      ],
+      "requiredAwards": ["eagle_eye", "curator"],
+      "expectedAnswer": "3",
+      "answerValidation": { "mode": "fuzzy", "fuzzyThreshold": 0.9 },
+      "minTimeSeconds": 5,
+      "maxTimeSeconds": 180,
+      "completionReward": 2.0
+    },
+    {
+      "id": "t2-downstream",
+      "type": "identify",
+      "tier": 2,
+      "title": "The Neighbor",
+      "description": "Starting at gene EDEN, pan to the right. What is the name of the next annotated feature you find?",
+      "hints": [
+        "Navigate to EDEN first, then click-drag to pan rightward",
+        "Zoom in if you need to read the label"
+      ],
+      "answerValidation": {
+        "mode": "keyword_set",
+        "keywords": ["Apple1", "apple1", "Apple2", "apple2", "Apple3", "apple3"]
+      },
+      "navigationConstraints": {
+        "requiredActionTypes": ["PAN_RIGHT"],
+        "minActions": 2
+      },
+      "searchPenalty": 0.5,
+      "minTimeSeconds": 5,
+      "maxTimeSeconds": 180,
+      "completionReward": 2.0
+    },
+    {
+      "id": "t2-variant-type",
+      "type": "identify",
+      "tier": 2,
+      "title": "Variant Spotting",
+      "description": "With the VCF variants track visible, navigate to ctgA around position 5,000. Click on a variant feature to inspect it. What type of variant is it?",
+      "hints": [
+        "Navigate to ctgA:4000-6000 and look for variant markers",
+        "Click on a variant to open its detail widget",
+        "The variant type might be listed as the REF and ALT alleles"
+      ],
+      "requiredTracks": ["volvox_filtered_vcf"],
+      "answerChoices": ["SNV (single base change)", "Insertion", "Deletion", "Not sure"],
+      "expectedAnswer": "SNV (single base change)",
+      "minTimeSeconds": 5,
+      "maxTimeSeconds": 240,
+      "completionReward": 2.0
+    },
+    {
+      "id": "t2-attention",
+      "type": "identify",
+      "tier": 2,
+      "title": "Quick Check",
+      "description": "What are the two contigs in this genome?",
+      "hints": [],
+      "answerChoices": ["chr1 and chr2", "ctgA and ctgB", "chrX and chrY", "scaffold1 and scaffold2"],
+      "expectedAnswer": "ctgA and ctgB",
+      "minTimeSeconds": 3,
+      "maxTimeSeconds": 30,
+      "completionReward": 0.5
+    },
+    {
+      "id": "t3-multi-track",
+      "type": "freeform",
+      "tier": 3,
+      "title": "Layers of Evidence",
+      "description": "Open at least 3 tracks simultaneously (e.g., genes, variants, and an alignments track). Find a region where data from different tracks tells an interesting story. Describe what you see in 1-2 sentences.",
+      "hints": [
+        "Open the track selector and add more tracks",
+        "Try the alignments track alongside genes and variants",
+        "Look for regions where variant calls overlap with gene features"
+      ],
+      "requiredAwards": ["eagle_eye", "curator"],
+      "answerValidation": { "mode": "any_nonempty", "minLength": 20 },
+      "minTimeSeconds": 15,
+      "maxTimeSeconds": 300,
+      "completionReward": 3.0
+    },
+    {
+      "id": "t3-exploration",
+      "type": "freeform",
+      "tier": 3,
+      "title": "Free Exploration",
+      "description": "Spend a minute freely exploring the genome. Navigate anywhere, open any tracks. When done, describe the most interesting thing you found.",
+      "hints": [
+        "Try zooming to different scales — overview, gene level, base pair level",
+        "Open tracks you haven't tried yet",
+        "Look for patterns: coverage dips, variant clusters, gene-dense regions"
+      ],
+      "answerValidation": { "mode": "any_nonempty", "minLength": 20 },
+      "navigationConstraints": {
+        "minActions": 10,
+        "minActionDiversity": 3
+      },
+      "minTimeSeconds": 30,
+      "maxTimeSeconds": 300,
+      "completionReward": 3.0
+    },
+    {
+      "id": "t4-teach",
+      "type": "freeform",
+      "tier": 4,
+      "title": "Teach a Robot",
+      "description": "Navigate to a region you find interesting. Describe step-by-step how you got there and what makes it worth looking at. (Your description will help train an AI navigation agent.)",
+      "hints": [
+        "Think about what actions you took: zoom, pan, open tracks",
+        "Explain why you chose to look where you did"
+      ],
+      "requiredAwards": ["biologist"],
+      "answerValidation": { "mode": "any_nonempty", "minLength": 50 },
+      "navigationConstraints": {
+        "minActions": 5
+      },
+      "minTimeSeconds": 30,
+      "maxTimeSeconds": 300,
+      "completionReward": 5.0
+    },
+    {
+      "id": "t4-graduation",
+      "type": "freeform",
+      "tier": 4,
+      "title": "Graduation",
+      "description": "Final question: what would you want to explore further in this genome, or in a larger genome, if you had more time?",
+      "hints": [],
+      "answerValidation": { "mode": "any_nonempty", "minLength": 10 },
+      "maxTimeSeconds": 120,
+      "completionReward": 5.0
+    }
+  ]
+}

@@ -13,6 +13,8 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt'
 import PatchListener from './ActionLogger/PatchListener.ts'
 import ExportManager from './Export/ExportManager.ts'
 import EpisodeManager from './RLPipeline/EpisodeManager.ts'
+import AwardManager from './ScavengerHunt/AwardManager.ts'
+import { pushActionForValidation } from './ScavengerHunt/components/ScavengerHuntWidget.tsx'
 import configSchema from './config.ts'
 import {
   ScavengerHuntModel,
@@ -29,6 +31,7 @@ export default class RLAnalyticsPlugin extends Plugin {
   private patchListener: PatchListener | null = null
   private episodeManager: EpisodeManager | null = null
   private exportManager: ExportManager | null = null
+  private awardManager: AwardManager | null = null
 
   install(pluginManager: PluginManager) {
     pluginManager.addWidgetType(() => {
@@ -61,6 +64,7 @@ export default class RLAnalyticsPlugin extends Plugin {
     this.patchListener = new PatchListener(10000, 500, false)
     this.episodeManager = new EpisodeManager(300_000)
     this.exportManager = new ExportManager(this.episodeManager)
+    this.awardManager = new AwardManager()
 
     // Wire the view accessor for state extraction (LinearGenomeView only)
     this.episodeManager.setViewAccessor(() => {
@@ -81,6 +85,9 @@ export default class RLAnalyticsPlugin extends Plugin {
     // processing — reading computed properties during onPatch can disrupt
     // model initialization.
     this.patchListener.buffer.onDebouncedAction(action => {
+      // Feed action type to widget for navigation constraint validation
+      pushActionForValidation(action.type)
+
       queueMicrotask(() => {
         this.episodeManager!.recordAction(action)
       })

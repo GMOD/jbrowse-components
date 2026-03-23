@@ -21,7 +21,7 @@ var __export = (target, all) => {
 };
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts
+// plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts
 function jaroWinkler(s1, s2) {
   if (s1 === s2) {
     return 1;
@@ -78,26 +78,40 @@ function jaroWinkler(s1, s2) {
 }
 var TaskValidator;
 var init_TaskValidator = __esm({
-  "../../plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts"() {
+  "plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts"() {
     "use strict";
     TaskValidator = class {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      constructor(getView) {
-        this.getView = getView;
+      constructor(getView2, getActionsSinceTaskStart) {
+        this.getView = getView2;
+        this.getActionsSinceTaskStart = getActionsSinceTaskStart;
       }
       validate(task, model) {
+        const startTime = model.taskStartTimes.get(task.id);
+        if (startTime && task.minTimeSeconds) {
+          const elapsed = (Date.now() - startTime) / 1e3;
+          if (elapsed < task.minTimeSeconds) {
+            return {
+              valid: false,
+              reason: "Completed too quickly \u2014 please explore more carefully"
+            };
+          }
+        }
         switch (task.type) {
           case "navigate":
-            return this.validateNavigation(task, model);
+            return this.validateNavigation(task);
+          case "navigate_constrained":
+            return this.validateConstrainedNavigation(task);
+          case "action_required":
+            return this.validateActionRequired(task);
           case "identify":
             return this.validateIdentification(task, model);
           case "compare":
-            return this.validateComparison(task, model);
+            return this.validateIdentification(task, model);
           case "freeform":
             return this.validateFreeform(task, model);
         }
       }
-      validateNavigation(task, model) {
+      validateNavigation(task) {
         if (!task.target) {
           return { valid: false, reason: "No target defined" };
         }
@@ -112,37 +126,97 @@ var init_TaskValidator = __esm({
         if (!visible) {
           return { valid: false, reason: "Target region not in viewport" };
         }
-        if (task.requiredTracks) {
-          const activeTrackIds = (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            view.tracks?.map((t) => t.configuration?.trackId) ?? []
-          );
-          const missingTracks = task.requiredTracks.filter(
-            (t) => !activeTrackIds.includes(t)
-          );
-          if (missingTracks.length > 0) {
+        return this.checkRequiredTracks(task);
+      }
+      validateConstrainedNavigation(task) {
+        const constraints = task.navigationConstraints;
+        const actions = this.getActionsSinceTaskStart?.() ?? [];
+        let searchUsed = false;
+        if (constraints) {
+          if (constraints.requiredActionTypes) {
+            const actionSet = new Set(actions);
+            const missing = constraints.requiredActionTypes.filter(
+              (t) => !actionSet.has(t)
+            );
+            if (missing.length > 0) {
+              const hints = missing.map(
+                (m) => m.toLowerCase().replace(/_/g, " ")
+              );
+              return {
+                valid: false,
+                reason: `Try: ${hints.join(", ")}`
+              };
+            }
+          }
+          if (constraints.minActions && actions.length < constraints.minActions) {
             return {
               valid: false,
-              reason: `Missing tracks: ${missingTracks.join(", ")}`
+              reason: "Keep exploring \u2014 interact with the browser a bit more"
             };
           }
-        }
-        const startTime = model.taskStartTimes.get(task.id);
-        if (startTime && task.minTimeSeconds) {
-          const elapsed = (Date.now() - startTime) / 1e3;
-          if (elapsed < task.minTimeSeconds) {
-            return {
-              valid: false,
-              reason: "Completed too quickly \u2014 please explore more carefully"
-            };
+          if (constraints.minActionDiversity) {
+            const diversity = new Set(actions).size;
+            if (diversity < constraints.minActionDiversity) {
+              return {
+                valid: false,
+                reason: "Try using different controls"
+              };
+            }
+          }
+          if (constraints.zoomRange) {
+            const view = this.getView();
+            if (view) {
+              try {
+                const bpPerPx = view.bpPerPx ?? 1;
+                if (constraints.zoomRange.max !== void 0 && bpPerPx > constraints.zoomRange.max) {
+                  return { valid: false, reason: "Zoom in more" };
+                }
+                if (constraints.zoomRange.min !== void 0 && bpPerPx < constraints.zoomRange.min) {
+                  return { valid: false, reason: "Zoom out more" };
+                }
+              } catch {
+              }
+            }
           }
         }
-        return { valid: true };
+        searchUsed = actions.includes("SEARCH");
+        if (task.target) {
+          const navResult = this.validateNavigation(task);
+          if (!navResult.valid) {
+            return navResult;
+          }
+        }
+        const tracksResult = this.checkRequiredTracks(task);
+        if (!tracksResult.valid) {
+          return tracksResult;
+        }
+        return { valid: true, searchUsed };
+      }
+      validateActionRequired(task) {
+        return this.checkRequiredTracks(task);
       }
       validateIdentification(task, model) {
         const answer = model.answers.get(task.id);
         if (!answer) {
           return { valid: false, reason: "No answer provided" };
+        }
+        const validation = task.answerValidation;
+        if (validation?.mode === "keyword_set" && validation.keywords) {
+          const lower = answer.toLowerCase();
+          const match = validation.keywords.some(
+            (kw) => lower.includes(kw.toLowerCase())
+          );
+          return {
+            valid: match,
+            reason: match ? void 0 : "Answer not recognized \u2014 try again"
+          };
+        }
+        if (validation?.mode === "any_nonempty") {
+          const minLen = validation.minLength ?? 1;
+          return {
+            valid: answer.trim().length >= minLen,
+            reason: answer.trim().length >= minLen ? void 0 : "Please provide a longer answer"
+          };
         }
         if (task.answerChoices && task.expectedAnswer) {
           return {
@@ -151,30 +225,14 @@ var init_TaskValidator = __esm({
           };
         }
         if (task.expectedAnswer) {
+          const threshold = validation?.fuzzyThreshold ?? 0.85;
           const similarity = jaroWinkler(
             answer.toLowerCase(),
             task.expectedAnswer.toLowerCase()
           );
           return {
-            valid: similarity > 0.85,
-            reason: similarity > 0.85 ? void 0 : "Answer does not match expected"
-          };
-        }
-        return { valid: true };
-      }
-      validateComparison(task, model) {
-        const answer = model.answers.get(task.id);
-        if (!answer) {
-          return { valid: false, reason: "No answer provided" };
-        }
-        if (task.expectedAnswer) {
-          const similarity = jaroWinkler(
-            answer.toLowerCase(),
-            task.expectedAnswer.toLowerCase()
-          );
-          return {
-            valid: similarity > 0.85,
-            reason: similarity > 0.85 ? void 0 : "Answer does not match expected"
+            valid: similarity > threshold,
+            reason: similarity > threshold ? void 0 : "Answer does not match expected"
           };
         }
         return { valid: true };
@@ -184,14 +242,42 @@ var init_TaskValidator = __esm({
         if (!answer || answer.trim().length === 0) {
           return { valid: false, reason: "Please provide an answer" };
         }
+        const minLen = task.answerValidation?.minLength ?? 1;
+        if (answer.trim().length < minLen) {
+          return { valid: false, reason: "Please provide a more detailed answer" };
+        }
         if (task.expectedAnswer) {
+          const threshold = task.answerValidation?.fuzzyThreshold ?? 0.85;
           const similarity = jaroWinkler(
             answer.toLowerCase(),
             task.expectedAnswer.toLowerCase()
           );
           return {
-            valid: similarity > 0.85,
-            reason: similarity > 0.85 ? void 0 : "Answer does not match expected"
+            valid: similarity > threshold,
+            reason: similarity > threshold ? void 0 : "Answer does not match expected"
+          };
+        }
+        return { valid: true };
+      }
+      checkRequiredTracks(task) {
+        if (!task.requiredTracks) {
+          return { valid: true };
+        }
+        const view = this.getView();
+        if (!view) {
+          return { valid: true };
+        }
+        const activeTrackIds = (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          view.tracks?.map((t) => t.configuration?.trackId) ?? []
+        );
+        const missingTracks = task.requiredTracks.filter(
+          (t) => !activeTrackIds.includes(t)
+        );
+        if (missingTracks.length > 0) {
+          return {
+            valid: false,
+            reason: `Open the required track: ${missingTracks.join(", ")}`
           };
         }
         return { valid: true };
@@ -200,14 +286,14 @@ var init_TaskValidator = __esm({
   }
 });
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx
+// plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx
 var {Box, Button, FormControl, FormControlLabel, Radio, RadioGroup, TextField, Typography} = __jbx("@mui/material");
 var {observer} = __jbx("mobx-react");
 var {useState} = __jbx("react");
 var {jsx, jsxs} = __jbx("react/jsx-runtime");
 var AnswerInput, AnswerInput_default;
 var init_AnswerInput = __esm({
-  "../../plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx"() {
+  "plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx"() {
     "use strict";
     AnswerInput = observer(function AnswerInput2({
       task,
@@ -285,23 +371,124 @@ var init_AnswerInput = __esm({
   }
 });
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx
-var {Box: Box2, Card, CardContent, Typography: Typography2} = __jbx("@mui/material");
+// plugins/rl-analytics/src/ScavengerHunt/components/AwardChips.tsx
+var {Box: Box2, Chip, Tooltip} = __jbx("@mui/material");
 var {observer: observer2} = __jbx("mobx-react");
-var {Fragment, jsx: jsx2, jsxs: jsxs2} = __jbx("react/jsx-runtime");
-var CompletionScreen, CompletionScreen_default;
-var init_CompletionScreen = __esm({
-  "../../plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx"() {
+var {jsx: jsx2} = __jbx("react/jsx-runtime");
+var AwardChips, AwardChips_default;
+var init_AwardChips = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/AwardChips.tsx"() {
     "use strict";
-    CompletionScreen = observer2(function CompletionScreen2({
+    AwardChips = observer2(function AwardChips2({
       model
     }) {
-      return /* @__PURE__ */ jsx2(Card, { children: /* @__PURE__ */ jsxs2(CardContent, { children: [
-        /* @__PURE__ */ jsx2(Typography2, { variant: "h5", sx: { mb: 2 }, children: "All tasks complete!" }),
-        model.completionCode ? /* @__PURE__ */ jsxs2(Fragment, { children: [
-          /* @__PURE__ */ jsx2(Typography2, { sx: { mb: 1 }, children: "Your completion code:" }),
-          /* @__PURE__ */ jsx2(
-            Box2,
+      if (model.earnedAwardIds.length === 0) {
+        return null;
+      }
+      return /* @__PURE__ */ jsx2(Box2, { sx: { display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1 }, children: model.earnedAwardIds.map((id) => {
+        const def = model.awardDefinitions.find(
+          (a) => a.id === id
+        );
+        return /* @__PURE__ */ jsx2(
+          Tooltip,
+          {
+            title: def?.flavorText ?? def?.description ?? id,
+            children: /* @__PURE__ */ jsx2(
+              Chip,
+              {
+                label: def?.name ?? id,
+                size: "small",
+                color: "primary",
+                variant: "outlined",
+                sx: {
+                  animation: "awardPopIn 0.3s ease-out",
+                  "@keyframes awardPopIn": {
+                    "0%": { transform: "scale(0)", opacity: 0 },
+                    "70%": { transform: "scale(1.1)" },
+                    "100%": { transform: "scale(1)", opacity: 1 }
+                  }
+                }
+              }
+            )
+          },
+          id
+        );
+      }) });
+    });
+    AwardChips_default = AwardChips;
+  }
+});
+
+// plugins/rl-analytics/src/ScavengerHunt/components/AwardSnackbar.tsx
+var {Alert, Snackbar, Typography: Typography2} = __jbx("@mui/material");
+var {observer: observer3} = __jbx("mobx-react");
+var {jsx: jsx3, jsxs: jsxs2} = __jbx("react/jsx-runtime");
+var AwardSnackbar, AwardSnackbar_default;
+var init_AwardSnackbar = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/AwardSnackbar.tsx"() {
+    "use strict";
+    AwardSnackbar = observer3(function AwardSnackbar2({
+      model
+    }) {
+      const award = model.latestAward;
+      if (!award) {
+        return null;
+      }
+      return /* @__PURE__ */ jsx3(
+        Snackbar,
+        {
+          open: !!award,
+          autoHideDuration: 4e3,
+          onClose: () => {
+            model.clearLatestAward();
+          },
+          anchorOrigin: { vertical: "bottom", horizontal: "left" },
+          children: /* @__PURE__ */ jsxs2(
+            Alert,
+            {
+              severity: "success",
+              variant: "filled",
+              sx: {
+                bgcolor: "success.dark",
+                animation: "awardSlideIn 0.4s ease-out",
+                "@keyframes awardSlideIn": {
+                  "0%": { transform: "translateY(20px)", opacity: 0 },
+                  "100%": { transform: "translateY(0)", opacity: 1 }
+                }
+              },
+              onClose: () => {
+                model.clearLatestAward();
+              },
+              children: [
+                /* @__PURE__ */ jsx3(Typography2, { variant: "subtitle2", sx: { fontWeight: "bold" }, children: award.name }),
+                /* @__PURE__ */ jsx3(Typography2, { variant: "caption", children: award.flavorText ?? award.description })
+              ]
+            }
+          )
+        }
+      );
+    });
+    AwardSnackbar_default = AwardSnackbar;
+  }
+});
+
+// plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx
+var {Box: Box3, Card, CardContent, Typography: Typography3} = __jbx("@mui/material");
+var {observer: observer4} = __jbx("mobx-react");
+var {Fragment, jsx: jsx4, jsxs: jsxs3} = __jbx("react/jsx-runtime");
+var CompletionScreen, CompletionScreen_default;
+var init_CompletionScreen = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx"() {
+    "use strict";
+    CompletionScreen = observer4(function CompletionScreen2({
+      model
+    }) {
+      return /* @__PURE__ */ jsx4(Card, { children: /* @__PURE__ */ jsxs3(CardContent, { children: [
+        /* @__PURE__ */ jsx4(Typography3, { variant: "h5", sx: { mb: 2 }, children: "All tasks complete!" }),
+        model.completionCode ? /* @__PURE__ */ jsxs3(Fragment, { children: [
+          /* @__PURE__ */ jsx4(Typography3, { sx: { mb: 1 }, children: "Your completion code:" }),
+          /* @__PURE__ */ jsx4(
+            Box3,
             {
               sx: {
                 p: 2,
@@ -310,8 +497,8 @@ var init_CompletionScreen = __esm({
                 textAlign: "center",
                 mb: 2
               },
-              children: /* @__PURE__ */ jsx2(
-                Typography2,
+              children: /* @__PURE__ */ jsx4(
+                Typography3,
                 {
                   variant: "h4",
                   sx: { fontFamily: "monospace", letterSpacing: 2 },
@@ -320,61 +507,61 @@ var init_CompletionScreen = __esm({
               )
             }
           ),
-          /* @__PURE__ */ jsx2(Typography2, { variant: "caption", color: "text.secondary", children: "Copy this code back to the MTurk HIT page." })
-        ] }) : /* @__PURE__ */ jsx2(Typography2, { children: "Generating completion code..." })
+          /* @__PURE__ */ jsx4(Typography3, { variant: "caption", color: "text.secondary", children: "Copy this code back to the MTurk HIT page." })
+        ] }) : /* @__PURE__ */ jsx4(Typography3, { children: "Generating completion code..." })
       ] }) });
     });
     CompletionScreen_default = CompletionScreen;
   }
 });
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
-var {Box: Box3, LinearProgress, Typography: Typography3} = __jbx("@mui/material");
-var {observer: observer3} = __jbx("mobx-react");
-var {jsx: jsx3, jsxs: jsxs3} = __jbx("react/jsx-runtime");
+// plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
+var {Box: Box4, LinearProgress, Typography: Typography4} = __jbx("@mui/material");
+var {observer: observer5} = __jbx("mobx-react");
+var {jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
 var ProgressBar, ProgressBar_default;
 var init_ProgressBar = __esm({
-  "../../plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
+  "plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
     "use strict";
-    ProgressBar = observer3(function ProgressBar2({
+    ProgressBar = observer5(function ProgressBar2({
       model
     }) {
-      return /* @__PURE__ */ jsxs3(Box3, { sx: { mb: 2 }, children: [
-        /* @__PURE__ */ jsxs3(Box3, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
-          /* @__PURE__ */ jsx3(Typography3, { variant: "body2", children: "Progress" }),
-          /* @__PURE__ */ jsxs3(Typography3, { variant: "body2", children: [
+      return /* @__PURE__ */ jsxs4(Box4, { sx: { mb: 2 }, children: [
+        /* @__PURE__ */ jsxs4(Box4, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
+          /* @__PURE__ */ jsx5(Typography4, { variant: "body2", children: "Progress" }),
+          /* @__PURE__ */ jsxs4(Typography4, { variant: "body2", children: [
             model.completedTaskIds.length,
             " / ",
             model.tasks.length
           ] })
         ] }),
-        /* @__PURE__ */ jsx3(LinearProgress, { variant: "determinate", value: model.progress * 100 })
+        /* @__PURE__ */ jsx5(LinearProgress, { variant: "determinate", value: model.progress * 100 })
       ] });
     });
     ProgressBar_default = ProgressBar;
   }
 });
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx
-var {Alert, Button: Button2, Card: Card2, CardContent: CardContent2, CardHeader, Chip, Typography: Typography4} = __jbx("@mui/material");
-var {observer: observer4} = __jbx("mobx-react");
-var {Fragment: Fragment2, jsx: jsx4, jsxs: jsxs4} = __jbx("react/jsx-runtime");
+// plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx
+var {Alert: Alert2, Button: Button2, Card: Card2, CardContent: CardContent2, CardHeader, Chip: Chip2, Typography: Typography5} = __jbx("@mui/material");
+var {observer: observer6} = __jbx("mobx-react");
+var {Fragment: Fragment2, jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
 var TaskCard, TaskCard_default;
 var init_TaskCard = __esm({
-  "../../plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx"() {
+  "plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx"() {
     "use strict";
-    TaskCard = observer4(function TaskCard2({
+    TaskCard = observer6(function TaskCard2({
       task,
       hintsRevealed,
       onRevealHint
     }) {
-      return /* @__PURE__ */ jsxs4(Card2, { sx: { mb: 2 }, children: [
-        /* @__PURE__ */ jsx4(
+      return /* @__PURE__ */ jsxs5(Card2, { sx: { mb: 2 }, children: [
+        /* @__PURE__ */ jsx6(
           CardHeader,
           {
-            title: /* @__PURE__ */ jsxs4(Fragment2, { children: [
-              /* @__PURE__ */ jsx4(
-                Chip,
+            title: /* @__PURE__ */ jsxs5(Fragment2, { children: [
+              /* @__PURE__ */ jsx6(
+                Chip2,
                 {
                   label: `Tier ${task.tier}`,
                   size: "small",
@@ -382,19 +569,19 @@ var init_TaskCard = __esm({
                   sx: { mr: 1 }
                 }
               ),
-              /* @__PURE__ */ jsx4(Typography4, { variant: "h6", component: "span", children: task.title })
+              /* @__PURE__ */ jsx6(Typography5, { variant: "h6", component: "span", children: task.title })
             ] })
           }
         ),
-        /* @__PURE__ */ jsxs4(CardContent2, { children: [
-          /* @__PURE__ */ jsx4(Typography4, { sx: { mb: 2 }, children: task.description }),
-          Array.from({ length: hintsRevealed }, (_, i) => /* @__PURE__ */ jsxs4(Alert, { severity: "info", sx: { mb: 1 }, children: [
+        /* @__PURE__ */ jsxs5(CardContent2, { children: [
+          /* @__PURE__ */ jsx6(Typography5, { sx: { mb: 2 }, children: task.description }),
+          Array.from({ length: hintsRevealed }, (_, i) => /* @__PURE__ */ jsxs5(Alert2, { severity: "info", sx: { mb: 1 }, children: [
             "Hint ",
             i + 1,
             ": ",
             task.hints[i]
           ] }, i)),
-          hintsRevealed < task.hints.length && /* @__PURE__ */ jsxs4(Button2, { variant: "outlined", size: "small", onClick: onRevealHint, children: [
+          hintsRevealed < task.hints.length && /* @__PURE__ */ jsxs5(Button2, { variant: "outlined", size: "small", onClick: onRevealHint, children: [
             "Reveal Hint (",
             task.hints.length - hintsRevealed,
             " remaining)"
@@ -406,26 +593,81 @@ var init_TaskCard = __esm({
   }
 });
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx
+// plugins/rl-analytics/src/ScavengerHunt/components/TierGate.tsx
+var {Alert: Alert3, Box: Box5, Typography: Typography6} = __jbx("@mui/material");
+var {observer: observer7} = __jbx("mobx-react");
+var {jsx: jsx7, jsxs: jsxs6} = __jbx("react/jsx-runtime");
+var TierGate, TierGate_default;
+var init_TierGate = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/TierGate.tsx"() {
+    "use strict";
+    TierGate = observer7(function TierGate2({
+      model
+    }) {
+      const missing = model.missingAwards;
+      if (missing.length === 0) {
+        return null;
+      }
+      const task = model.currentTask;
+      const coaching = task?.coaching;
+      return /* @__PURE__ */ jsx7(Box5, { sx: { mb: 2 }, children: /* @__PURE__ */ jsxs6(Alert3, { severity: "info", children: [
+        /* @__PURE__ */ jsx7(Typography6, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
+        missing.map((id) => {
+          const def = model.awardDefinitions.find(
+            (a) => a.id === id
+          );
+          return /* @__PURE__ */ jsx7(Typography6, { variant: "body2", sx: { ml: 1 }, children: def ? `Earn "${def.name}" \u2014 ${def.description}` : `Earn award: ${id}` }, id);
+        }),
+        coaching && /* @__PURE__ */ jsx7(Typography6, { variant: "body2", sx: { mt: 1, fontStyle: "italic" }, children: coaching.message })
+      ] }) });
+    });
+    TierGate_default = TierGate;
+  }
+});
+
+// plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx
 var ScavengerHuntWidget_exports = {};
 __export(ScavengerHuntWidget_exports, {
-  default: () => ScavengerHuntWidget_default
+  default: () => ScavengerHuntWidget_default,
+  pushActionForValidation: () => pushActionForValidation,
+  resetActionLog: () => resetActionLog
 });
-var {Alert: Alert2, Box: Box4, Button: Button3, Typography: Typography5} = __jbx("@mui/material");
+var {Alert: Alert4, Box: Box6, Button: Button3, Chip: Chip3, Typography: Typography7} = __jbx("@mui/material");
 var {getSession} = __jbx("@jbrowse/core/util");
-var {observer: observer5} = __jbx("mobx-react");
+var {observer: observer8} = __jbx("mobx-react");
 var {useEffect, useState: useState2} = __jbx("react");
-var {jsx: jsx5, jsxs: jsxs5} = __jbx("react/jsx-runtime");
-var ScavengerHuntWidget, ScavengerHuntWidget_default;
+var {Fragment: Fragment3, jsx: jsx8, jsxs: jsxs7} = __jbx("react/jsx-runtime");
+function pushActionForValidation(actionType) {
+  actionLogRef.push(actionType);
+}
+function resetActionLog() {
+  actionLogRef = [];
+}
+function getView(model) {
+  try {
+    const session = getSession(model);
+    return session?.views?.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (v) => v.type === "LinearGenomeView"
+    );
+  } catch {
+    return null;
+  }
+}
+var actionLogRef, ScavengerHuntWidget, ScavengerHuntWidget_default;
 var init_ScavengerHuntWidget = __esm({
-  "../../plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
+  "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
     "use strict";
     init_TaskValidator();
     init_AnswerInput();
+    init_AwardChips();
+    init_AwardSnackbar();
     init_CompletionScreen();
     init_ProgressBar();
     init_TaskCard();
-    ScavengerHuntWidget = observer5(function ScavengerHuntWidget2({
+    init_TierGate();
+    actionLogRef = [];
+    ScavengerHuntWidget = observer8(function ScavengerHuntWidget2({
       model
     }) {
       const [validationError, setValidationError] = useState2(null);
@@ -434,94 +676,123 @@ var init_ScavengerHuntWidget = __esm({
       useEffect(() => {
         if (currentTask && !taskStarted) {
           model.startCurrentTask();
+          resetActionLog();
           setTaskStarted(true);
         }
       }, [currentTask, taskStarted, model]);
       useEffect(() => {
         setTaskStarted(false);
         setValidationError(null);
+        resetActionLog();
       }, [model.currentTaskIndex]);
       if (model.isComplete) {
         if (!model.completionCode) {
           void model.generateCompletionCode();
         }
-        return /* @__PURE__ */ jsx5(CompletionScreen_default, { model });
+        return /* @__PURE__ */ jsxs7(Fragment3, { children: [
+          /* @__PURE__ */ jsx8(CompletionScreen_default, { model }),
+          /* @__PURE__ */ jsx8(AwardSnackbar_default, { model })
+        ] });
       }
       if (!currentTask) {
-        return /* @__PURE__ */ jsx5(Box4, { sx: { p: 2 }, children: /* @__PURE__ */ jsx5(Typography5, { children: "No tasks loaded. Load a task set to begin." }) });
+        return /* @__PURE__ */ jsx8(Box6, { sx: { p: 2 }, children: /* @__PURE__ */ jsx8(Typography7, { children: "No tasks loaded. Load a task set to begin." }) });
       }
-      const handleValidateAndAdvance = () => {
-        const validator = new TaskValidator(() => {
-          try {
-            const session = getSession(model);
-            return session?.views?.find(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (v) => v.type === "LinearGenomeView"
-            );
-          } catch {
-            return null;
-          }
-        });
+      const handleSubmit = () => {
+        const validator = new TaskValidator(
+          () => getView(model),
+          () => [...actionLogRef]
+        );
+        if (model.isGated) {
+          return;
+        }
         const result = validator.validate(currentTask, model);
         if (result.valid) {
+          if (currentTask.awardOnComplete) {
+            model.addAward(currentTask.awardOnComplete);
+          }
           model.completeCurrentTask();
           setValidationError(null);
         } else {
-          setValidationError(result.reason ?? "Validation failed");
+          model.incrementRetry();
+          const maxRetries = currentTask.maxRetries ?? 3;
+          if (model.currentRetryCount >= maxRetries && currentTask.autoAdvanceOnFail !== false) {
+            model.completeCurrentTask();
+            setValidationError(null);
+          } else {
+            setValidationError(result.reason ?? "Validation failed");
+          }
         }
       };
-      return /* @__PURE__ */ jsxs5(Box4, { sx: { p: 2 }, children: [
-        /* @__PURE__ */ jsx5(ProgressBar_default, { model }),
-        /* @__PURE__ */ jsx5(
-          TaskCard_default,
-          {
-            task: currentTask,
-            hintsRevealed: model.currentHintsRevealed,
-            onRevealHint: () => {
-              model.revealHint();
+      const needsAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
+      const buttonLabel = currentTask.type === "navigate" || currentTask.type === "navigate_constrained" ? "Check" : currentTask.type === "action_required" ? "Verify" : "Submit";
+      const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
+      return /* @__PURE__ */ jsxs7(Box6, { sx: { p: 2 }, children: [
+        /* @__PURE__ */ jsxs7(Box6, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
+          /* @__PURE__ */ jsx8(
+            Chip3,
+            {
+              label: tierLabel,
+              size: "small",
+              color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
+              variant: "outlined"
             }
-          }
-        ),
-        /* @__PURE__ */ jsx5(
-          AnswerInput_default,
-          {
-            task: currentTask,
-            currentAnswer: model.answers.get(currentTask.id) ?? "",
-            onSubmit: (answer) => {
-              model.submitAnswer(answer);
+          ),
+          /* @__PURE__ */ jsx8(ProgressBar_default, { model })
+        ] }),
+        /* @__PURE__ */ jsx8(AwardChips_default, { model }),
+        model.isGated ? /* @__PURE__ */ jsx8(TierGate_default, { model }) : /* @__PURE__ */ jsxs7(Fragment3, { children: [
+          /* @__PURE__ */ jsx8(
+            TaskCard_default,
+            {
+              task: currentTask,
+              hintsRevealed: model.currentHintsRevealed,
+              onRevealHint: () => {
+                model.revealHint();
+              }
             }
-          }
-        ),
-        validationError && /* @__PURE__ */ jsx5(Alert2, { severity: "warning", sx: { mt: 1, mb: 1 }, children: validationError }),
-        /* @__PURE__ */ jsx5(
-          Button3,
-          {
-            variant: "contained",
-            color: "primary",
-            sx: { mt: 2 },
-            onClick: handleValidateAndAdvance,
-            children: currentTask.type === "navigate" ? "Check Position" : "Submit & Continue"
-          }
-        )
+          ),
+          needsAnswer && /* @__PURE__ */ jsx8(
+            AnswerInput_default,
+            {
+              task: currentTask,
+              currentAnswer: model.answers.get(currentTask.id) ?? "",
+              onSubmit: (answer) => {
+                model.submitAnswer(answer);
+              }
+            }
+          ),
+          validationError && /* @__PURE__ */ jsx8(Alert4, { severity: "warning", sx: { mt: 1, mb: 1 }, children: validationError }),
+          /* @__PURE__ */ jsx8(
+            Button3,
+            {
+              variant: "contained",
+              color: "primary",
+              sx: { mt: 2 },
+              onClick: handleSubmit,
+              children: buttonLabel
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx8(AwardSnackbar_default, { model })
       ] });
     });
     ScavengerHuntWidget_default = ScavengerHuntWidget;
   }
 });
 
-// ../../plugins/rl-analytics/src/index.ts
+// plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
-var __t19 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t19.default || __t19;
+var __t28 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t28.default || __t28;
 var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
 var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
 var ExploreIcon = null;
 var SaveAltIcon = null;
 
-// ../../plugins/rl-analytics/src/ActionLogger/PatchListener.ts
+// plugins/rl-analytics/src/ActionLogger/PatchListener.ts
 var {onPatch} = __jbx("@jbrowse/mobx-state-tree");
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
+// plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
   constructor(maxSize = 1e4, debounceMs = 100) {
     __publicField(this, "buffer", []);
@@ -615,7 +886,7 @@ var ActionBuffer = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
+// plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
 var ActionType = /* @__PURE__ */ ((ActionType2) => {
   ActionType2["ZOOM_IN"] = "ZOOM_IN";
   ActionType2["ZOOM_OUT"] = "ZOOM_OUT";
@@ -631,7 +902,7 @@ var ActionType = /* @__PURE__ */ ((ActionType2) => {
   return ActionType2;
 })(ActionType || {});
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionClassifier.ts
+// plugins/rl-analytics/src/ActionLogger/ActionClassifier.ts
 var classificationRules = [
   {
     pathPattern: /\/views\/\d+\/bpPerPx$/,
@@ -736,7 +1007,7 @@ var ActionClassifier = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/ActionLogger/PatchListener.ts
+// plugins/rl-analytics/src/ActionLogger/PatchListener.ts
 var PatchListener = class {
   constructor(bufferSize = 1e4, debounceMs = 100, logUnknown = false) {
     __publicField(this, "classifier", new ActionClassifier());
@@ -779,7 +1050,7 @@ var PatchListener = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/Export/JSONLExporter.ts
+// plugins/rl-analytics/src/Export/JSONLExporter.ts
 var JSONLExporter = class {
   export(episodes) {
     const lines = [];
@@ -814,7 +1085,7 @@ var JSONLExporter = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/Export/WebhookExporter.ts
+// plugins/rl-analytics/src/Export/WebhookExporter.ts
 var WebhookExporter = class {
   constructor(url, batchSize = 50, intervalMs = 5e3) {
     __publicField(this, "url");
@@ -883,7 +1154,7 @@ var WebhookExporter = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/Export/ExportManager.ts
+// plugins/rl-analytics/src/Export/ExportManager.ts
 var ExportManager = class {
   constructor(episodeManager) {
     __publicField(this, "jsonlExporter", new JSONLExporter());
@@ -923,7 +1194,7 @@ var ExportManager = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
+// plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
 var RewardCalculator = class {
   constructor() {
     __publicField(this, "recentActions", []);
@@ -968,7 +1239,7 @@ var RewardCalculator = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
+// plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
 var StateEncoder = class {
   extractState(view, lastActionTimestamp, recentActionCount, taskConfig) {
     let bpPerPx = 1;
@@ -1054,7 +1325,7 @@ var StateEncoder = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/RLPipeline/EpisodeManager.ts
+// plugins/rl-analytics/src/RLPipeline/EpisodeManager.ts
 var EpisodeManager = class {
   constructor(inactivityTimeoutMs = 3e5) {
     __publicField(this, "currentEpisode", null);
@@ -1193,7 +1464,113 @@ var EpisodeManager = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/config.ts
+// plugins/rl-analytics/src/ScavengerHunt/AwardManager.ts
+var AwardManager = class {
+  constructor() {
+    __publicField(this, "awards", []);
+    __publicField(this, "earned", /* @__PURE__ */ new Set());
+    __publicField(this, "callbacks", []);
+    __publicField(this, "actionHistory", []);
+    __publicField(this, "keywordBuffer", []);
+  }
+  loadAwards(awards) {
+    this.awards = awards;
+  }
+  onAwardEarned(cb) {
+    this.callbacks.push(cb);
+  }
+  getEarnedAwards() {
+    return [...this.earned];
+  }
+  hasAward(id) {
+    return this.earned.has(id);
+  }
+  hasAllAwards(ids) {
+    return ids.every((id) => this.earned.has(id));
+  }
+  /** Check awards after an action is recorded */
+  checkAction(action, state) {
+    this.actionHistory.push(action.type);
+    for (const award of this.awards) {
+      if (this.earned.has(award.id)) {
+        continue;
+      }
+      if (this.checkTrigger(award, action, state)) {
+        this.earn(award);
+      }
+    }
+  }
+  /** Check awards after a text answer is submitted */
+  checkTextAnswer(text) {
+    this.keywordBuffer.push(text.toLowerCase());
+    for (const award of this.awards) {
+      if (this.earned.has(award.id)) {
+        continue;
+      }
+      if (award.triggerCondition.type === "keyword_match" && award.triggerCondition.keywords) {
+        const allText = this.keywordBuffer.join(" ");
+        const matches = award.triggerCondition.keywords.filter(
+          (kw) => allText.includes(kw.toLowerCase())
+        );
+        if (matches.length >= 2) {
+          this.earn(award);
+        }
+      }
+    }
+  }
+  /** Force-grant an award (e.g., from awardOnComplete) */
+  grant(awardId) {
+    const award = this.awards.find((a) => a.id === awardId);
+    if (award && !this.earned.has(awardId)) {
+      this.earn(award);
+    }
+  }
+  checkTrigger(award, action, state) {
+    const { triggerCondition } = award;
+    switch (triggerCondition.type) {
+      case "action_type":
+        return action.type === triggerCondition.actionType;
+      case "state_threshold": {
+        const field = triggerCondition.stateField;
+        const value = state[field];
+        if (typeof value !== "number" || triggerCondition.threshold === void 0) {
+          return false;
+        }
+        switch (triggerCondition.comparator) {
+          case "lt":
+            return value < triggerCondition.threshold;
+          case "gt":
+            return value > triggerCondition.threshold;
+          case "eq":
+            return value === triggerCondition.threshold;
+          default:
+            return false;
+        }
+      }
+      default:
+        return false;
+    }
+  }
+  earn(award) {
+    this.earned.add(award.id);
+    for (const cb of this.callbacks) {
+      try {
+        cb(award);
+      } catch {
+      }
+    }
+  }
+  reset() {
+    this.earned.clear();
+    this.actionHistory = [];
+    this.keywordBuffer = [];
+  }
+};
+
+// plugins/rl-analytics/src/index.ts
+init_ScavengerHuntWidget();
+
+// plugins/rl-analytics/src/config.ts
 var {ConfigurationSchema} = __jbx("@jbrowse/core/configuration");
 var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
   enabled: {
@@ -1254,7 +1631,7 @@ var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
 });
 var config_default = configSchema;
 
-// ../../plugins/rl-analytics/src/ScavengerHunt/model.ts
+// plugins/rl-analytics/src/ScavengerHunt/model.ts
 var {ConfigurationSchema: ConfigurationSchema2} = __jbx("@jbrowse/core/configuration");
 var {ElementId} = __jbx("@jbrowse/core/util/types/mst");
 var {types} = __jbx("@jbrowse/mobx-state-tree");
@@ -1271,10 +1648,41 @@ async function sha256Hex(data) {
   const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
   return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+var NavigationConstraintModel = types.model("NavigationConstraint", {
+  requiredActionTypes: types.maybe(types.array(types.string)),
+  minActions: types.maybe(types.number),
+  minActionDiversity: types.maybe(types.number)
+});
+var AnswerValidationModel = types.model("AnswerValidation", {
+  mode: types.optional(
+    types.enumeration(["exact", "fuzzy", "keyword_set", "any_nonempty"]),
+    "exact"
+  ),
+  keywords: types.maybe(types.array(types.string)),
+  minLength: types.maybe(types.number),
+  fuzzyThreshold: types.maybe(types.number)
+});
+var CoachingModel = types.model("Coaching", {
+  message: types.string,
+  highlightElement: types.maybe(types.string)
+});
 var TaskConfigModel = types.model("TaskConfig", {
   id: types.identifier,
-  type: types.enumeration(["navigate", "identify", "compare", "freeform"]),
-  tier: types.union(types.literal(1), types.literal(2), types.literal(3)),
+  type: types.enumeration([
+    "navigate",
+    "navigate_constrained",
+    "action_required",
+    "identify",
+    "compare",
+    "freeform"
+  ]),
+  tier: types.union(
+    types.literal(0),
+    types.literal(1),
+    types.literal(2),
+    types.literal(3),
+    types.literal(4)
+  ),
   title: types.string,
   description: types.string,
   hints: types.array(types.string),
@@ -1292,7 +1700,15 @@ var TaskConfigModel = types.model("TaskConfig", {
   minTimeSeconds: types.maybe(types.number),
   maxTimeSeconds: types.maybe(types.number),
   requiredTracks: types.maybe(types.array(types.string)),
-  completionReward: types.optional(types.number, 1)
+  completionReward: types.optional(types.number, 1),
+  requiredAwards: types.maybe(types.array(types.string)),
+  navigationConstraints: types.maybe(NavigationConstraintModel),
+  searchPenalty: types.maybe(types.number),
+  awardOnComplete: types.maybe(types.string),
+  answerValidation: types.maybe(AnswerValidationModel),
+  maxRetries: types.maybe(types.number),
+  autoAdvanceOnFail: types.maybe(types.boolean),
+  coaching: types.maybe(CoachingModel)
 });
 var configSchema2 = ConfigurationSchema2("ScavengerHuntWidget", {});
 var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
@@ -1307,10 +1723,15 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
   taskEndTimes: types.map(types.number),
   hintsRevealed: types.map(types.number),
   answers: types.map(types.string),
+  retryCount: types.map(types.number),
   workerId: types.optional(types.string, ""),
-  assignmentId: types.optional(types.string, "")
+  assignmentId: types.optional(types.string, ""),
+  earnedAwardIds: types.array(types.string)
 }).volatile(() => ({
-  completionCode: null
+  completionCode: null,
+  awardDefinitions: [],
+  latestAward: null,
+  coachingActive: false
 })).views((self) => ({
   get currentTask() {
     const idx = self.taskOrder[self.currentTaskIndex];
@@ -1329,6 +1750,30 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
       return 0;
     }
     return self.hintsRevealed.get(taskModel.id) ?? 0;
+  },
+  get currentRetryCount() {
+    const task = self.taskOrder[self.currentTaskIndex];
+    const taskModel = task !== void 0 ? self.tasks[task] : void 0;
+    if (!taskModel) {
+      return 0;
+    }
+    return self.retryCount.get(taskModel.id) ?? 0;
+  },
+  get currentTier() {
+    const task = this.currentTask;
+    return task?.tier ?? 0;
+  },
+  get missingAwards() {
+    const task = this.currentTask;
+    if (!task?.requiredAwards) {
+      return [];
+    }
+    return task.requiredAwards.filter(
+      (id) => !self.earnedAwardIds.includes(id)
+    );
+  },
+  get isGated() {
+    return this.missingAwards.length > 0;
   }
 })).actions((self) => ({
   loadTaskSet(taskSet) {
@@ -1337,17 +1782,40 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
       self.tasks.push(task);
     }
     self.taskSetId = taskSet.id;
+    if (taskSet.awards) {
+      self.awardDefinitions = taskSet.awards;
+    }
     const indices = [...Array(taskSet.tasks.length).keys()];
     self.taskOrder.clear();
-    const order = taskSet.randomizeOrder ? shuffleArray(indices) : indices;
-    for (const i of order) {
-      self.taskOrder.push(i);
+    if (taskSet.randomizeWithinTier) {
+      const byTier = /* @__PURE__ */ new Map();
+      for (const i of indices) {
+        const tier = taskSet.tasks[i].tier;
+        if (!byTier.has(tier)) {
+          byTier.set(tier, []);
+        }
+        byTier.get(tier).push(i);
+      }
+      const tiers = [...byTier.keys()].sort();
+      for (const tier of tiers) {
+        const group = byTier.get(tier);
+        const shuffled = taskSet.randomizeOrder ? shuffleArray(group) : group;
+        for (const i of shuffled) {
+          self.taskOrder.push(i);
+        }
+      }
+    } else {
+      const order = taskSet.randomizeOrder ? shuffleArray(indices) : indices;
+      for (const i of order) {
+        self.taskOrder.push(i);
+      }
     }
   },
   startCurrentTask() {
     const task = self.currentTask;
     if (task) {
       self.taskStartTimes.set(task.id, Date.now());
+      self.coachingActive = !!task.coaching;
     }
   },
   revealHint() {
@@ -1367,6 +1835,14 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
     }
     self.answers.set(task.id, answer);
   },
+  incrementRetry() {
+    const task = self.currentTask;
+    if (!task) {
+      return;
+    }
+    const current = self.retryCount.get(task.id) ?? 0;
+    self.retryCount.set(task.id, current + 1);
+  },
   completeCurrentTask() {
     const task = self.currentTask;
     if (!task) {
@@ -1374,9 +1850,25 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
     }
     self.taskEndTimes.set(task.id, Date.now());
     self.completedTaskIds.push(task.id);
+    self.coachingActive = false;
     if (self.currentTaskIndex < self.tasks.length - 1) {
       self.currentTaskIndex += 1;
     }
+  },
+  addAward(awardId) {
+    if (!self.earnedAwardIds.includes(awardId)) {
+      self.earnedAwardIds.push(awardId);
+      const def = self.awardDefinitions.find((a) => a.id === awardId);
+      if (def) {
+        self.latestAward = def;
+      }
+    }
+  },
+  clearLatestAward() {
+    self.latestAward = null;
+  },
+  setCoachingActive(active) {
+    self.coachingActive = active;
   },
   setWorkerId(id) {
     self.workerId = id;
@@ -1395,7 +1887,7 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
   }
 }));
 
-// ../../plugins/rl-analytics/src/index.ts
+// plugins/rl-analytics/src/index.ts
 var RLAnalyticsPlugin = class extends Plugin {
   constructor() {
     super(...arguments);
@@ -1404,6 +1896,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     __publicField(this, "patchListener", null);
     __publicField(this, "episodeManager", null);
     __publicField(this, "exportManager", null);
+    __publicField(this, "awardManager", null);
   }
   install(pluginManager) {
     pluginManager.addWidgetType(() => {
@@ -1429,6 +1922,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.patchListener = new PatchListener(1e4, 500, false);
     this.episodeManager = new EpisodeManager(3e5);
     this.exportManager = new ExportManager(this.episodeManager);
+    this.awardManager = new AwardManager();
     this.episodeManager.setViewAccessor(() => {
       const session2 = rootModel.session;
       if (!session2?.views) {
@@ -1437,6 +1931,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       return session2.views.find((v) => v.type === "LinearGenomeView");
     });
     this.patchListener.buffer.onDebouncedAction((action) => {
+      pushActionForValidation(action.type);
       queueMicrotask(() => {
         this.episodeManager.recordAction(action);
       });

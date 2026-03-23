@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { AwardDefinition } from '../RLPipeline/types.ts'
 import type { TaskSet } from './tasks/taskSchema.ts'
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -21,10 +22,44 @@ async function sha256Hex(data: string): Promise<string> {
     .join('')
 }
 
+const NavigationConstraintModel = types.model('NavigationConstraint', {
+  requiredActionTypes: types.maybe(types.array(types.string)),
+  minActions: types.maybe(types.number),
+  minActionDiversity: types.maybe(types.number),
+})
+
+const AnswerValidationModel = types.model('AnswerValidation', {
+  mode: types.optional(
+    types.enumeration(['exact', 'fuzzy', 'keyword_set', 'any_nonempty']),
+    'exact',
+  ),
+  keywords: types.maybe(types.array(types.string)),
+  minLength: types.maybe(types.number),
+  fuzzyThreshold: types.maybe(types.number),
+})
+
+const CoachingModel = types.model('Coaching', {
+  message: types.string,
+  highlightElement: types.maybe(types.string),
+})
+
 const TaskConfigModel = types.model('TaskConfig', {
   id: types.identifier,
-  type: types.enumeration(['navigate', 'identify', 'compare', 'freeform']),
-  tier: types.union(types.literal(1), types.literal(2), types.literal(3)),
+  type: types.enumeration([
+    'navigate',
+    'navigate_constrained',
+    'action_required',
+    'identify',
+    'compare',
+    'freeform',
+  ]),
+  tier: types.union(
+    types.literal(0),
+    types.literal(1),
+    types.literal(2),
+    types.literal(3),
+    types.literal(4),
+  ),
   title: types.string,
   description: types.string,
   hints: types.array(types.string),
@@ -43,6 +78,14 @@ const TaskConfigModel = types.model('TaskConfig', {
   maxTimeSeconds: types.maybe(types.number),
   requiredTracks: types.maybe(types.array(types.string)),
   completionReward: types.optional(types.number, 1),
+  requiredAwards: types.maybe(types.array(types.string)),
+  navigationConstraints: types.maybe(NavigationConstraintModel),
+  searchPenalty: types.maybe(types.number),
+  awardOnComplete: types.maybe(types.string),
+  answerValidation: types.maybe(AnswerValidationModel),
+  maxRetries: types.maybe(types.number),
+  autoAdvanceOnFail: types.maybe(types.boolean),
+  coaching: types.maybe(CoachingModel),
 })
 
 export const configSchema = ConfigurationSchema('ScavengerHuntWidget', {})
@@ -60,11 +103,16 @@ export const ScavengerHuntModel = types
     taskEndTimes: types.map(types.number),
     hintsRevealed: types.map(types.number),
     answers: types.map(types.string),
+    retryCount: types.map(types.number),
     workerId: types.optional(types.string, ''),
     assignmentId: types.optional(types.string, ''),
+    earnedAwardIds: types.array(types.string),
   })
   .volatile(() => ({
     completionCode: null as string | null,
+    awardDefinitions: [] as AwardDefinition[],
+    latestAward: null as AwardDefinition | null,
+    coachingActive: false,
   }))
   .views(self => ({
     get currentTask() {
@@ -90,6 +138,30 @@ export const ScavengerHuntModel = types
       }
       return self.hintsRevealed.get(taskModel.id) ?? 0
     },
+    get currentRetryCount() {
+      const task = self.taskOrder[self.currentTaskIndex]
+      const taskModel = task !== undefined ? self.tasks[task] : undefined
+      if (!taskModel) {
+        return 0
+      }
+      return self.retryCount.get(taskModel.id) ?? 0
+    },
+    get currentTier() {
+      const task = this.currentTask
+      return task?.tier ?? 0
+    },
+    get missingAwards(): string[] {
+      const task = this.currentTask
+      if (!task?.requiredAwards) {
+        return []
+      }
+      return task.requiredAwards.filter(
+        id => !self.earnedAwardIds.includes(id),
+      )
+    },
+    get isGated(): boolean {
+      return this.missingAwards.length > 0
+    },
   }))
   .actions(self => ({
     loadTaskSet(taskSet: TaskSet) {
@@ -98,17 +170,43 @@ export const ScavengerHuntModel = types
         self.tasks.push(task)
       }
       self.taskSetId = taskSet.id
+      if (taskSet.awards) {
+        self.awardDefinitions = taskSet.awards
+      }
       const indices = [...Array(taskSet.tasks.length).keys()]
       self.taskOrder.clear()
-      const order = taskSet.randomizeOrder ? shuffleArray(indices) : indices
-      for (const i of order) {
-        self.taskOrder.push(i)
+      if (taskSet.randomizeWithinTier) {
+        // Group by tier, shuffle within each tier, concatenate
+        const byTier = new Map<number, number[]>()
+        for (const i of indices) {
+          const tier = taskSet.tasks[i]!.tier
+          if (!byTier.has(tier)) {
+            byTier.set(tier, [])
+          }
+          byTier.get(tier)!.push(i)
+        }
+        const tiers = [...byTier.keys()].sort()
+        for (const tier of tiers) {
+          const group = byTier.get(tier)!
+          const shuffled = taskSet.randomizeOrder
+            ? shuffleArray(group)
+            : group
+          for (const i of shuffled) {
+            self.taskOrder.push(i)
+          }
+        }
+      } else {
+        const order = taskSet.randomizeOrder ? shuffleArray(indices) : indices
+        for (const i of order) {
+          self.taskOrder.push(i)
+        }
       }
     },
     startCurrentTask() {
       const task = self.currentTask
       if (task) {
         self.taskStartTimes.set(task.id, Date.now())
+        self.coachingActive = !!task.coaching
       }
     },
     revealHint() {
@@ -128,6 +226,14 @@ export const ScavengerHuntModel = types
       }
       self.answers.set(task.id, answer)
     },
+    incrementRetry() {
+      const task = self.currentTask
+      if (!task) {
+        return
+      }
+      const current = self.retryCount.get(task.id) ?? 0
+      self.retryCount.set(task.id, current + 1)
+    },
     completeCurrentTask() {
       const task = self.currentTask
       if (!task) {
@@ -135,9 +241,25 @@ export const ScavengerHuntModel = types
       }
       self.taskEndTimes.set(task.id, Date.now())
       self.completedTaskIds.push(task.id)
+      self.coachingActive = false
       if (self.currentTaskIndex < self.tasks.length - 1) {
         self.currentTaskIndex += 1
       }
+    },
+    addAward(awardId: string) {
+      if (!self.earnedAwardIds.includes(awardId)) {
+        self.earnedAwardIds.push(awardId)
+        const def = self.awardDefinitions.find(a => a.id === awardId)
+        if (def) {
+          self.latestAward = def
+        }
+      }
+    },
+    clearLatestAward() {
+      self.latestAward = null
+    },
+    setCoachingActive(active: boolean) {
+      self.coachingActive = active
     },
     setWorkerId(id: string) {
       self.workerId = id
@@ -151,7 +273,6 @@ export const ScavengerHuntModel = types
     generateCompletionCode() {
       const payload = `${self.assignmentId}:${self.taskSetId}:${self.completedTaskIds.join(',')}`
       void sha256Hex(payload).then(hash => {
-        // Must call a named action — can't set volatile directly from async
         this.setCompletionCode(hash.slice(0, 12).toUpperCase())
       })
     },

@@ -129,7 +129,7 @@ describe('TaskValidator', () => {
 
       const result = validator.validate(task, makeMockModel())
       expect(result.valid).toBe(false)
-      expect(result.reason).toContain('Missing tracks')
+      expect(result.reason).toContain('required track')
     })
 
     it('fails when completed too quickly', () => {
