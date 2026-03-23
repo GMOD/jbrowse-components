@@ -85,12 +85,14 @@ export class MultiSyntenyRenderer {
     genomeRows: Map<string, MultiPairFeature[]>,
     displayedGenomes: string[],
     colorBy: string,
+    showSnps: boolean,
   ) {
     if (this.gpuBackend) {
       const data = prepareMultiSyntenyGpuData(
         genomeRows,
         displayedGenomes,
         colorBy,
+        showSnps,
       )
       this.gpuBackend.uploadGeometry(data)
     }

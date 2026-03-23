@@ -11,6 +11,7 @@ export interface MultiSyntenyCanvasRenderOpts {
   bpToPx: BpToPxFn
   colorBy: string
   labelW: number
+  showSnps: boolean
 }
 
 export interface MultiSyntenyCanvasBackend {

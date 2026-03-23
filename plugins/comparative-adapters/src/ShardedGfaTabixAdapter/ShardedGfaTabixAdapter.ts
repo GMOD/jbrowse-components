@@ -6,10 +6,7 @@ import {
   getSegmentsForOrdinalsFromShard,
 } from '../GfaTabixAdapter/gfaTabixUtils.ts'
 
-import type {
-  SegRecord,
-  SegmentsShard,
-} from '../GfaTabixAdapter/gfaTabixUtils.ts'
+import type { SegmentsShard } from '../GfaTabixAdapter/gfaTabixUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -83,26 +80,18 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
   }
 
   protected async getSegsForOrdinals(
-    ordinals: number[],
-    pathNames: string[],
-  ): Promise<SegRecord[]> {
+    ordinalRanges: [number, number][],
+  ) {
     const manifest = await this.getManifest()
     const promises = manifest.genomes.map(async genome => {
       const prefix = manifest.files[genome]
       if (prefix) {
         const shard = this.getGenomeShard(genome, prefix)
-        shard.pathNames ??= pathNames
-        return getSegmentsForOrdinalsFromShard(shard, ordinals)
+        return getSegmentsForOrdinalsFromShard(shard, ordinalRanges)
       }
       return []
     })
     const results = await Promise.all(promises)
-    const allRecords: SegRecord[] = []
-    for (const records of results) {
-      for (const rec of records) {
-        allRecords.push(rec)
-      }
-    }
-    return allRecords
+    return results.flat()
   }
 }

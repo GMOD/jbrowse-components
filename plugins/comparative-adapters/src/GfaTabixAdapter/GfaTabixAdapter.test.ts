@@ -64,7 +64,6 @@ describe('GfaTabixAdapter', () => {
       assemblyName: 'ref#1',
     })
 
-    expect(result.genomeNames.length).toBeGreaterThanOrEqual(1)
     expect(result.genomeRows.size).toBeGreaterThanOrEqual(1)
 
     for (const [genomeName, features] of result.genomeRows) {
@@ -103,7 +102,7 @@ describe('GfaTabixAdapter', () => {
       assemblyName: 'ref#1',
     })
 
-    expect(result.genomeNames.length).toBe(0)
+    expect(result.genomeRows.size).toBe(0)
   })
 
   it('returns empty for nonexistent refName', async () => {
@@ -115,7 +114,7 @@ describe('GfaTabixAdapter', () => {
       assemblyName: 'ref#1',
     })
 
-    expect(result.genomeNames.length).toBe(0)
+    expect(result.genomeRows.size).toBe(0)
   })
 
   it('features have unique featureIds', async () => {
@@ -298,7 +297,6 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
       assemblyName: 'GRCh38#0',
     })
 
-    expect(result.genomeNames.length).toBe(43)
     expect(result.genomeRows.size).toBe(43)
 
     let totalFeatures = 0
@@ -394,8 +392,7 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
       assemblyName: 'GRCh38#0',
     })
 
-    // Snapshot genome count and a representative genome's features
-    expect(result.genomeNames.length).toBeGreaterThan(0)
+    expect(result.genomeRows.size).toBeGreaterThan(0)
 
     const chm13 = result.genomeRows.get('CHM13#0')
     expect(chm13).toBeDefined()

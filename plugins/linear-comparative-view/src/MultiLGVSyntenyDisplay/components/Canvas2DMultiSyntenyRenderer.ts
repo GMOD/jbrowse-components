@@ -42,7 +42,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
     displayedGenomes: string[],
     opts: MultiSyntenyCanvasRenderOpts,
   ) {
-    const { width, height, rowHeight, bpToPx, colorBy, labelW } = opts
+    const { width, height, rowHeight, bpToPx, colorBy, labelW, showSnps } = opts
     const showLabels = labelW > 0
     const ctx = this.ctx
 
@@ -93,7 +93,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
         ctx.fillStyle = getFeatureColor(feat, colorBy)
         ctx.fillRect(clippedX, fy, clippedW, fh)
 
-        if (blockWidth > 2) {
+        if (showSnps) {
           const bpLen = feat.end - feat.start
           if (feat.cs) {
             drawCsOps(ctx, feat.cs, x1, fy, blockWidth, fh, bpLen)

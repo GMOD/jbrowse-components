@@ -62,7 +62,6 @@ describe('ShardedGfaTabixAdapter round-trip', () => {
         assemblyName: 'ref#1',
       })
 
-      expect(result.genomeNames.length).toBe(3)
       expect(result.genomeRows.size).toBe(3)
       for (const features of result.genomeRows.values()) {
         expect(features.length).toBeGreaterThan(0)
@@ -114,8 +113,8 @@ describe('ShardedGfaTabixAdapter round-trip', () => {
       const combinedResult = await combinedAdapter.getMultiPairFeatures(query)
       const shardedResult = await shardedAdapter.getMultiPairFeatures(query)
 
-      expect(shardedResult.genomeNames.sort()).toEqual(
-        combinedResult.genomeNames.sort(),
+      expect([...shardedResult.genomeRows.keys()].sort()).toEqual(
+        [...combinedResult.genomeRows.keys()].sort(),
       )
 
       for (const [genome, shardedFeatures] of shardedResult.genomeRows) {

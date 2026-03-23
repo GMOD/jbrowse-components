@@ -177,6 +177,7 @@ export function prepareMultiSyntenyGpuData(
   genomeRows: Map<string, MultiPairFeature[]>,
   displayedGenomes: string[],
   colorBy: string,
+  showSnps: boolean,
 ): MultiSyntenyGpuInstanceData {
   // Estimate capacity
   let totalFeatures = 0
@@ -205,11 +206,13 @@ export function prepareMultiSyntenyGpuData(
 
       addInstance(builder, origRefNames, feat.start, feat.end, g, fId, cr, cg, cb, ca, origRefName)
 
-      if (feat.cs) {
-        expandCsOps(builder, origRefNames, feat.cs, feat.start, g, fId, origRefName)
-      } else if (feat.cigar) {
-        const parsed = parseCigar2(feat.cigar)
-        expandCigarOps(builder, origRefNames, parsed, feat.start, g, fId, origRefName)
+      if (showSnps) {
+        if (feat.cs) {
+          expandCsOps(builder, origRefNames, feat.cs, feat.start, g, fId, origRefName)
+        } else if (feat.cigar) {
+          const parsed = parseCigar2(feat.cigar)
+          expandCigarOps(builder, origRefNames, parsed, feat.start, g, fId, origRefName)
+        }
       }
     }
   }
@@ -271,6 +274,8 @@ export function prepareMultiSyntenyGpuData(
       count: n - regionStartIdx,
     })
   }
+
+  console.log(`[multiSyntenyGpuData] ${n} instances, ${displayedGenomes.length} genomes, ${refNameIndex.size} refNames`)
 
   return { buffer: sortedBuf, instanceCount: n, refNameIndex }
 }

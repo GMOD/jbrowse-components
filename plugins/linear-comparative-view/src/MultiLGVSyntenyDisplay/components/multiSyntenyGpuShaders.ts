@@ -61,6 +61,9 @@ void main() {
   float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth + u.labelW;
   float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth + u.labelW;
 
+  // Ensure minimum 1px width so sub-pixel features don't flicker during pan/zoom
+  px2 = max(px2, px1 + 1.0);
+
   // Cull off-screen features
   if (px2 < u.labelW || px1 > u.resolutionX) {
     gl_Position = vec4(0.0);
@@ -161,7 +164,10 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let t2 = hp_scale_linear(splitEnd, bpRange, uniforms.hpZero);
 
   var px1 = uniforms.regionScreenLeft + t1 * uniforms.regionScreenWidth + uniforms.labelW;
-  let px2 = uniforms.regionScreenLeft + t2 * uniforms.regionScreenWidth + uniforms.labelW;
+  var px2 = uniforms.regionScreenLeft + t2 * uniforms.regionScreenWidth + uniforms.labelW;
+
+  // Ensure minimum 1px width so sub-pixel features don't flicker during pan/zoom
+  px2 = max(px2, px1 + 1.0);
 
   if (px2 < uniforms.labelW || px1 > uniforms.resolutionX) {
     out.pos = vec4f(0.0, 0.0, 0.0, 0.0);

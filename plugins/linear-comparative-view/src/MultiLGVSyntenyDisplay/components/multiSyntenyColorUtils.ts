@@ -141,14 +141,14 @@ export function drawCigarOps(
     } else if (op === OP_X) {
       const px = x + refPos * pxPerBp
       const pw = len * pxPerBp
-      if (pw >= 0.5) {
+      if (pw >= 0.1) {
         ctx.fillStyle = MISMATCH_COLOR
         ctx.fillRect(px, y, Math.max(pw, 1), h)
       }
       refPos += len
     } else if (op === OP_D || op === OP_N) {
       const pw = len * pxPerBp
-      if (pw >= 0.5) {
+      if (pw >= 0.1) {
         drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, len)
       }
       refPos += len
@@ -204,7 +204,7 @@ export function drawCsOps(
       i += len
       if (len > 0) {
         const pw = len * pxPerBp
-        if (pw >= 0.5) {
+        if (pw >= 0.1) {
           drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, len)
         }
         refPos += len

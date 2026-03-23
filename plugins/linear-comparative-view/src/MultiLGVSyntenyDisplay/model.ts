@@ -10,6 +10,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
@@ -36,6 +37,9 @@ const GenomeSubsetSelector = lazy(
 const LaunchPairwiseSyntenyDialog = lazy(
   () => import('./components/LaunchPairwiseSyntenyDialog.tsx'),
 )
+const SetRowHeightDialog = lazy(
+  () => import('./components/SetRowHeightDialog.tsx'),
+)
 
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
@@ -50,6 +54,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         selectedGenomes: types.optional(types.array(types.string), []),
         // 0 = auto (fit rows to display height), >0 = manual px per row
         rowHeightSetting: types.optional(types.number, 0),
+        // bpPerPx threshold below which SNP/CIGAR details are fetched and drawn
+        // 0 = off, higher = show SNPs at more zoomed-out levels
+        snpBpPerPxThreshold: types.optional(types.number, 100),
       }),
     )
     .volatile(() => ({
@@ -98,6 +105,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setRowHeightSetting(h: number) {
         self.rowHeightSetting = h
+      },
+      setSnpBpPerPxThreshold(t: number) {
+        self.snpBpPerPxThreshold = t
       },
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
@@ -173,10 +183,75 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         const view = getContainingView(self) as LGV
         const track = getContainingTrack(self)
         const trackId = getConf(track, 'trackId')
+        const adapterConfig = getConf(track, 'adapter')
         const refAssembly = view.displayedRegions[0]?.assemblyName
         const loc = view.displayedRegions[0]
           ? `${view.displayedRegions[0].refName}:${Math.floor(view.offsetPx * view.bpPerPx)}-${Math.floor((view.offsetPx + view.width) * view.bpPerPx)}`
           : undefined
+
+        const launchSubMenu: MenuItem[] = []
+        if (refAssembly && loc && self.displayedGenomes.length > 0) {
+          launchSubMenu.push(
+            {
+              label: `N-way synteny view (${self.displayedGenomes.length + 1} genomes)`,
+              icon: ViewComfyIcon,
+              onClick: () => {
+                const genomes = self.displayedGenomes
+                const tracks = genomes.map(() => [trackId])
+                getSession(self).addView('LinearSyntenyView', {
+                  type: 'LinearSyntenyView',
+                  init: {
+                    views: [
+                      { assembly: refAssembly, loc },
+                      ...genomes.map(genome => ({ assembly: genome })),
+                    ],
+                    tracks,
+                  },
+                })
+              },
+            },
+            {
+              label: '2-way synteny with...',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  LaunchPairwiseSyntenyDialog,
+                  {
+                    model: self,
+                    handleClose,
+                    refAssembly,
+                    loc,
+                    trackId,
+                  },
+                ])
+              },
+            },
+          )
+        }
+
+        if (adapterConfig.type === 'GfaAdapter') {
+          const gfaLocation = adapterConfig.gfaLocation
+          launchSubMenu.push({
+            label: 'Graph genome view',
+            icon: BubbleChartIcon,
+            onClick: async () => {
+              const session = getSession(self)
+              const graphView = session.addView('GraphGenomeView', {})
+              const uri =
+                gfaLocation.uri ??
+                gfaLocation.localPath ??
+                gfaLocation.internetAccountId
+              if (uri) {
+                const response = await fetch(uri)
+                const text = await response.text()
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (graphView as any).loadGFA(
+                  text,
+                  uri.split('/').pop() ?? 'GFA',
+                )
+              }
+            },
+          })
+        }
 
         return [
           {
@@ -194,19 +269,60 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             label: 'Row height',
             subMenu: [
               {
-                label: 'Auto (fit to display)',
+                label: 'Normal',
                 type: 'radio' as const,
                 checked: self.rowHeightSetting === 0,
                 onClick: () => {
                   self.setRowHeightSetting(0)
                 },
               },
-              ...[5, 10, 15, 20, 30].map(h => ({
-                label: `${h}px`,
+              {
+                label: 'Compact',
                 type: 'radio' as const,
-                checked: self.rowHeightSetting === h,
+                checked: self.rowHeightSetting === 3,
                 onClick: () => {
-                  self.setRowHeightSetting(h)
+                  self.setRowHeightSetting(3)
+                },
+              },
+              {
+                label: 'Super-compact',
+                type: 'radio' as const,
+                checked: self.rowHeightSetting === 1,
+                onClick: () => {
+                  self.setRowHeightSetting(1)
+                },
+              },
+              {
+                label: 'Custom...',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    SetRowHeightDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
+            ],
+          },
+          {
+            label: 'SNP detail threshold',
+            subMenu: [
+              {
+                label: 'Off',
+                type: 'radio' as const,
+                checked: self.snpBpPerPxThreshold === 0,
+                onClick: () => {
+                  self.setSnpBpPerPxThreshold(0)
+                },
+              },
+              ...[10, 50, 100, 500, 1000].map(t => ({
+                label: `${t} bp/px`,
+                type: 'radio' as const,
+                checked: self.snpBpPerPxThreshold === t,
+                onClick: () => {
+                  self.setSnpBpPerPxThreshold(t)
                 },
               })),
             ],
@@ -223,40 +339,11 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ])
             },
           },
-          ...(refAssembly && loc && self.displayedGenomes.length > 0
+          ...(launchSubMenu.length > 0
             ? [
                 {
-                  label: `Launch N-way synteny view (${self.displayedGenomes.length + 1} genomes)`,
-                  icon: ViewComfyIcon,
-                  onClick: () => {
-                    const genomes = self.displayedGenomes
-                    const tracks = genomes.map(() => [trackId])
-                    getSession(self).addView('LinearSyntenyView', {
-                      type: 'LinearSyntenyView',
-                      init: {
-                        views: [
-                          { assembly: refAssembly, loc },
-                          ...genomes.map(genome => ({ assembly: genome })),
-                        ],
-                        tracks,
-                      },
-                    })
-                  },
-                },
-                {
-                  label: 'Launch 2-way synteny with...',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      LaunchPairwiseSyntenyDialog,
-                      {
-                        model: self,
-                        handleClose,
-                        refAssembly,
-                        loc,
-                        trackId,
-                      },
-                    ])
-                  },
+                  label: 'Launch',
+                  subMenu: launchSubMenu,
                 },
               ]
             : []),

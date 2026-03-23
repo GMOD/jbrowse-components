@@ -102,6 +102,11 @@ genome has its own coordinate axis.
 
 ---
 
+## Feature: Add clustering
+
+Add ability to cluter pangenome rows similar to MultiSampleVariant and
+MultiWiggle display types
+
 ## Performance & Scale
 
 ### SVG Overlay for MultiSynteny Text Labels

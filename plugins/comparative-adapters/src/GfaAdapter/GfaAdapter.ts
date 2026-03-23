@@ -180,6 +180,11 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     return this.getConf('assemblyNames') as string[]
   }
 
+  async getSources() {
+    const gfa = await this.getGfa()
+    return gfa.genomes.map(g => ({ name: g }))
+  }
+
   async getChromSizes() {
     return (await this.getGfa()).chromSizes
   }
@@ -270,7 +275,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     }
 
     if (!refPath) {
-      return { genomeNames: [] as string[], genomeRows }
+      return { genomeRows }
     }
 
     const refPositions = pathPositions.get(refPath.name)!
@@ -331,6 +336,6 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    return { genomeNames: [...genomeRows.keys()], genomeRows }
+    return { genomeRows }
   }
 }

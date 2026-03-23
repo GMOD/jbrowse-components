@@ -3,7 +3,11 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken,
+  checkStopToken2,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
 
 import { csToCigar } from '../csUtils.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
@@ -20,17 +24,16 @@ import type { GenericFilehandle } from 'generic-filehandle2'
 
 export interface SegRecord {
   segOrd: number
-  pathName: string
+  pathNameIdx: number
   offset: number
   segLen: number
-  orient: string
+  orient: number // char code: 0x2B '+' or 0x2D '-'
 }
 
 export interface SegmentsShard {
   bgzf: BgzfFilehandle
   idxFile: GenericFilehandle
   idxPromise?: Promise<BigUint64Array>
-  pathNames?: string[]
 }
 
 interface SetupResult {
@@ -53,45 +56,58 @@ export function parseGfaPathName(path: string) {
   return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
 }
 
-const DECODE_CHUNK = 512 * 1024 * 1024
+// Parse an integer directly from ASCII bytes, avoiding string allocation.
+function parseIntBytes(buf: Uint8Array, start: number, end: number) {
+  let n = 0
+  for (let i = start; i < end; i++) {
+    n = n * 10 + buf[i]! - 48
+  }
+  return n
+}
 
-export function parseSegmentsBytes(bytes: Uint8Array, pathNames: string[]) {
-  const decoder = new TextDecoder()
+const TAB = 9
+const NEWLINE = 10
+const HASH = 35
+
+export function parseSegmentsBytes(bytes: Uint8Array) {
   const records: SegRecord[] = []
-  let tail = ''
+  const len = bytes.length
+  let lineStart = 0
 
-  const parseLine = (line: string) => {
-    if (line.length === 0 || line.charCodeAt(0) === 35 /* '#' */) {
-      return
+  while (lineStart < len) {
+    let lineEnd = lineStart
+    while (lineEnd < len && bytes[lineEnd] !== NEWLINE) {
+      lineEnd++
     }
-    const t1 = line.indexOf('\t')
-    const t2 = line.indexOf('\t', t1 + 1)
-    const t3 = line.indexOf('\t', t2 + 1)
-    const t4 = line.indexOf('\t', t3 + 1)
-    records.push({
-      segOrd: +line.slice(0, t1),
-      pathName: pathNames[+line.slice(t1 + 1, t2)] ?? line.slice(t1 + 1, t2),
-      offset: +line.slice(t2 + 1, t3),
-      segLen: +line.slice(t3 + 1, t4),
-      orient: line[t4 + 1]!,
-    })
-  }
 
-  for (let pos = 0; pos < bytes.length; pos += DECODE_CHUNK) {
-    const isLast = pos + DECODE_CHUNK >= bytes.length
-    const text =
-      tail +
-      decoder.decode(bytes.subarray(pos, pos + DECODE_CHUNK), {
-        stream: !isLast,
+    if (lineEnd > lineStart && bytes[lineStart] !== HASH) {
+      let t1 = lineStart
+      while (t1 < lineEnd && bytes[t1] !== TAB) {
+        t1++
+      }
+      let t2 = t1 + 1
+      while (t2 < lineEnd && bytes[t2] !== TAB) {
+        t2++
+      }
+      let t3 = t2 + 1
+      while (t3 < lineEnd && bytes[t3] !== TAB) {
+        t3++
+      }
+      let t4 = t3 + 1
+      while (t4 < lineEnd && bytes[t4] !== TAB) {
+        t4++
+      }
+
+      records.push({
+        segOrd: parseIntBytes(bytes, lineStart, t1),
+        pathNameIdx: parseIntBytes(bytes, t1 + 1, t2),
+        offset: parseIntBytes(bytes, t2 + 1, t3),
+        segLen: parseIntBytes(bytes, t3 + 1, t4),
+        orient: bytes[t4 + 1]!,
       })
-    const lines = text.split('\n')
-    tail = lines.pop()!
-    for (const line of lines) {
-      parseLine(line)
     }
-  }
-  if (tail.length > 0) {
-    parseLine(tail)
+
+    lineStart = lineEnd + 1
   }
 
   return records
@@ -115,19 +131,16 @@ const MAX_MERGED_BYTES = 20 * 1024 * 1024
 
 export async function getSegmentsForOrdinalsFromShard(
   shard: SegmentsShard,
-  ordinals: number[],
+  ordinalRanges: [number, number][],
 ) {
   const idx = await loadSegmentsIndex(shard)
-  const pathNames = shard.pathNames ?? []
 
-  // Convert sorted ordinals directly into merged byte ranges. Since ordinals
-  // are sorted and the idx is monotonically increasing, byte ranges arrive in
-  // order and we can merge in a single pass without a separate sort step.
+  // Convert sorted ordinal ranges directly into merged byte ranges.
   const merged: { start: number; end: number }[] = []
-  for (const ord of ordinals) {
-    if (ord >= 0 && ord + 1 < idx.length) {
-      const start = Number(idx[ord]!)
-      const end = Number(idx[ord + 1]!)
+  for (const [lo, hi] of ordinalRanges) {
+    if (lo >= 0 && hi + 1 < idx.length) {
+      const start = Number(idx[lo]!)
+      const end = Number(idx[hi + 1]!)
       if (end > start) {
         const prev = merged.length > 0 ? merged[merged.length - 1]! : undefined
         if (
@@ -143,11 +156,6 @@ export async function getSegmentsForOrdinalsFromShard(
     }
   }
 
-  console.log(
-    `getSegmentsForOrdinalsFromShard: ${ordinals.length} ordinals -> ${merged.length} merged ranges (idx.length=${idx.length}, ordinals=${JSON.stringify(ordinals.slice(0, 10))})`,
-  )
-
-  const allRecords: SegRecord[] = []
   const results = await Promise.all(
     merged.map(async range => {
       const length = range.end - range.start
@@ -157,7 +165,7 @@ export async function getSegmentsForOrdinalsFromShard(
       const t0 = performance.now()
       const bytes = await shard.bgzf.read(length, range.start)
       const t1 = performance.now()
-      const records = parseSegmentsBytes(bytes, pathNames)
+      const records = parseSegmentsBytes(bytes)
       const t2 = performance.now()
       console.log(
         `  bgzf.read ${(t1 - t0).toFixed(0)}ms, parse ${(t2 - t1).toFixed(0)}ms,` +
@@ -166,12 +174,7 @@ export async function getSegmentsForOrdinalsFromShard(
       return records
     }),
   )
-  for (const records of results) {
-    for (const r of records) {
-      allRecords.push(r)
-    }
-  }
-  return allRecords
+  return results.flat()
 }
 
 export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
@@ -214,8 +217,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   protected abstract getSegsForOrdinals(
-    ordinals: number[],
-    pathNames: string[],
+    ordinalRanges: [number, number][],
   ): Promise<SegRecord[]>
 
   private async setup() {
@@ -386,17 +388,22 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     })
   }
 
+  async getSources() {
+    const { genomes } = await this.setup()
+    return genomes.map(g => ({ name: this.remapGenome(g) }))
+  }
+
   async getMultiPairFeatures(
     query: Region,
     opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
   ) {
     const { alnAvailable } = await this.setup()
     checkStopToken(opts.stopToken)
-    const useAln = alnAvailable && (opts.bpPerPx ?? Infinity) < 10
-    if (useAln) {
-      return this.getMultiPairFeaturesFromAln(query, opts)
-    }
-    return this.getMultiPairFeaturesFromSegments(query, opts)
+    const genomeRows = alnAvailable
+      ? await this.getMultiPairFeaturesFromAln(query, opts)
+      : await this.getMultiPairFeaturesFromSegments(query, opts)
+
+    return { genomeRows }
   }
 
   private async getMultiPairFeaturesFromAln(
@@ -408,7 +415,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
     const { alnRefNames } = await this.setup()
     if (!alnRefNames) {
-      return { genomeNames: [] as string[], genomeRows }
+      return genomeRows
     }
     const tabixRefName = this.resolveTabixRefName(
       alnRefNames,
@@ -416,12 +423,13 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       refName,
     )
     if (!tabixRefName) {
-      return { genomeNames: [] as string[], genomeRows }
+      return genomeRows
     }
 
+    const alnChecker = createStopTokenChecker(opts.stopToken)
     await this.alnFile!.getLines(tabixRefName, start, end, {
       lineCallback: (line: string, fileOffset: number) => {
-        checkStopToken(opts.stopToken)
+        checkStopToken2(alnChecker)
         const cols = line.split('\t')
         const queryGenome = this.remapGenome(cols[3]!)
         const mateRefName = cols[4]!
@@ -490,7 +498,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       },
     })
 
-    return { genomeNames: [...genomeRows.keys()], genomeRows }
+    return genomeRows
   }
 
   private async getMultiPairFeaturesFromSegments(
@@ -507,75 +515,86 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       refName,
     )
     if (!refPathName) {
-      return { genomeNames: [] as string[], genomeRows }
+      return genomeRows
     }
 
-    const ordinalSet = new Set<number>()
-    let lineCount = 0
+    const rawRanges: [number, number][] = []
 
+    const posChecker = createStopTokenChecker(opts.stopToken)
     await this.posFile.getLines(refPathName, start, end, {
       lineCallback: (line: string) => {
-        checkStopToken(opts.stopToken)
-        // Find the 4th column (ordinal ranges) without allocating a split
-        // array. Format: path\tstart\tend\t0-23,58-80,121
-        // Each token is either a single ordinal or a start-end range.
+        checkStopToken2(posChecker)
+        // Format: path\tstart\tend\tstartOrd\tendOrd
         let t = 0
         for (let n = 0; n < 3; n++) {
           t = line.indexOf('\t', t) + 1
         }
-        const idsStr = line.slice(t)
-        if (lineCount < 3) {
-          console.log(`pos line[${lineCount}]: ${line.slice(0, 200)}, idsStr=${idsStr.slice(0, 80)}`)
-        }
-        lineCount++
-        let i = 0
-        while (i < idsStr.length) {
-          let j = idsStr.indexOf(',', i)
-          if (j === -1) {
-            j = idsStr.length
-          }
-          const token = idsStr.slice(i, j)
-          const dash = token.indexOf('-')
-          if (dash > 0) {
-            const lo = +token.slice(0, dash)
-            const hi = +token.slice(dash + 1)
-            for (let o = lo; o <= hi; o++) {
-              ordinalSet.add(o)
+        const t5 = line.indexOf('\t', t)
+        const col4 = line.slice(t, t5 >= 0 ? t5 : undefined)
+
+        if (t5 >= 0) {
+          // New two-column format: startOrd\tendOrd
+          rawRanges.push([+col4, +line.slice(t5 + 1)])
+        } else if (col4.includes('-') || col4.includes(',')) {
+          // Old sparse format: 0-6,10,15-20
+          let i = 0
+          while (i < col4.length) {
+            let j = col4.indexOf(',', i)
+            if (j === -1) {
+              j = col4.length
             }
-          } else {
-            ordinalSet.add(+token)
+            const token = col4.slice(i, j)
+            const dash = token.indexOf('-')
+            if (dash > 0) {
+              rawRanges.push([+token.slice(0, dash), +token.slice(dash + 1)])
+            } else {
+              rawRanges.push([+token, +token])
+            }
+            i = j + 1
           }
-          i = j + 1
+        } else {
+          rawRanges.push([+col4, +col4])
         }
       },
     })
 
-    console.log(`posFile.getLines done: ${lineCount} lines, ${ordinalSet.size} ordinals, refPathName=${refPathName}`)
-    if (ordinalSet.size === 0) {
-      return { genomeNames: [] as string[], genomeRows }
+    if (rawRanges.length === 0) {
+      return genomeRows
     }
 
-    checkStopToken(opts.stopToken)
-    const ordinals = [...ordinalSet].sort((a, b) => a - b)
-    const allSegs = await this.getSegsForOrdinals(ordinals, pathNames)
-    const refSegments: SegRecord[] = []
-    const otherSegments = new Map<string, SegRecord[]>()
-
-    for (const rec of allSegs) {
-      if (rec.pathName === refPathName) {
-        refSegments.push(rec)
+    // Sort by lo ordinal, then merge overlapping/adjacent ranges
+    rawRanges.sort((a, b) => a[0] - b[0])
+    const ordinalRanges: [number, number][] = []
+    for (const [lo, hi] of rawRanges) {
+      const prev = ordinalRanges.length > 0 ? ordinalRanges[ordinalRanges.length - 1]! : undefined
+      if (prev && lo <= prev[1] + 1) {
+        prev[1] = Math.max(prev[1], hi)
       } else {
-        if (!otherSegments.has(rec.pathName)) {
-          otherSegments.set(rec.pathName, [])
-        }
-        otherSegments.get(rec.pathName)!.push(rec)
+        ordinalRanges.push([lo, hi])
       }
     }
 
-    const refSegOrdSet = new Set(refSegments.map(s => s.segOrd))
+    checkStopToken(opts.stopToken)
+    const allSegs = await this.getSegsForOrdinals(ordinalRanges)
+    const refPathIdx = pathNames.indexOf(refPathName)
+    const refSegments: SegRecord[] = []
+    const otherSegments = new Map<number, SegRecord[]>()
+
+    for (const rec of allSegs) {
+      if (rec.pathNameIdx === refPathIdx) {
+        refSegments.push(rec)
+      } else {
+        if (!otherSegments.has(rec.pathNameIdx)) {
+          otherSegments.set(rec.pathNameIdx, [])
+        }
+        otherSegments.get(rec.pathNameIdx)!.push(rec)
+      }
+    }
+
     const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
 
-    for (const [otherPath, segments] of otherSegments) {
+    for (const [otherPathIdx, segments] of otherSegments) {
+      const otherPath = pathNames[otherPathIdx] ?? String(otherPathIdx)
       const { genome: rawGenome, refName: mateRefName } =
         parseGfaPathName(otherPath)
       const genomeName = this.remapGenome(rawGenome)
@@ -585,24 +604,23 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
       const features = genomeRows.get(genomeName)!
 
-      const paired: { ref: SegRecord; query: SegRecord; strand: number }[] = []
-      for (const seg of segments) {
-        const refSeg = refSegOrdSet.has(seg.segOrd)
-          ? refByOrd.get(seg.segOrd)
-          : undefined
-        if (refSeg) {
-          paired.push({
-            ref: refSeg,
-            query: seg,
-            strand: seg.orient === refSeg.orient ? 1 : -1,
-          })
+      // Collect matched segment indices and sort by ref offset to ensure
+      // correct merge order. We avoid creating wrapper objects by using
+      // parallel index arrays.
+      const matchIdx: number[] = []
+      const matchRefOff: number[] = []
+      for (let j = 0; j < segments.length; j++) {
+        const seg = segments[j]!
+        if (refByOrd.has(seg.segOrd)) {
+          matchIdx.push(j)
+          matchRefOff.push(refByOrd.get(seg.segOrd)!.offset)
         }
       }
-      if (paired.length === 0) {
+      if (matchIdx.length === 0) {
         continue
       }
-      paired.sort((a, b) => a.ref.offset - b.ref.offset)
-
+      const sortOrder = Array.from({ length: matchIdx.length }, (_, i) => i)
+      sortOrder.sort((a, b) => matchRefOff[a]! - matchRefOff[b]!)
       let ms = -1
       let me = -1
       let mms = -1
@@ -610,22 +628,121 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       let mStrand = 0
       let mOrd = -1
       let matchBp = 0
-      let mismatchBp = 0
       let cigarParts: string[] = []
       let runMatchLen = 0
+      for (let si = 0; si < sortOrder.length; si++) {
+        const seg = segments[matchIdx[sortOrder[si]!]!]!
+        const refSeg = refByOrd.get(seg.segOrd)!
 
-      const flushMatch = () => {
-        if (runMatchLen > 0) {
-          cigarParts.push(`${runMatchLen}=`)
-          matchBp += runMatchLen
-          runMatchLen = 0
+        const strand = seg.orient === refSeg.orient ? 1 : -1
+        const rs = refSeg.offset
+        const re = refSeg.offset + refSeg.segLen
+        const qs = seg.offset
+        const qe = seg.offset + seg.segLen
+
+        if (ms < 0 || strand !== mStrand) {
+          if (runMatchLen > 0) {
+            cigarParts.push(`${runMatchLen}=`)
+            matchBp += runMatchLen
+            runMatchLen = 0
+          }
+          if (ms >= 0) {
+            features.push({
+              queryGenome: genomeName,
+              origRefName: refName,
+              start: ms,
+              end: me,
+              mateStart: mms,
+              mateEnd: mme,
+              mateRefName,
+              strand: mStrand,
+              syriType: undefined,
+              identity: me > ms ? matchBp / (me - ms) : 1,
+              featureId: `gfa-${mOrd}-${otherPath}`,
+              segmentId: undefined,
+              cigar: cigarParts.length > 1 ? cigarParts.join('') : undefined,
+              cs: undefined,
+            })
+            cigarParts = []
+            matchBp = 0
+          }
+          ms = rs
+          me = re
+          mms = qs
+          mme = qe
+          mStrand = strand
+          mOrd = refSeg.segOrd
+          runMatchLen = refSeg.segLen
+          continue
+        }
+
+        const refGap = rs - me
+        const queryGap = mStrand === 1 ? qs - mme : mms - qe
+
+        if (refGap < 0 || queryGap < 0) {
+          if (runMatchLen > 0) {
+            cigarParts.push(`${runMatchLen}=`)
+            matchBp += runMatchLen
+            runMatchLen = 0
+          }
+          if (ms >= 0) {
+            features.push({
+              queryGenome: genomeName,
+              origRefName: refName,
+              start: ms,
+              end: me,
+              mateStart: mms,
+              mateEnd: mme,
+              mateRefName,
+              strand: mStrand,
+              syriType: undefined,
+              identity: me > ms ? matchBp / (me - ms) : 1,
+              featureId: `gfa-${mOrd}-${otherPath}`,
+              segmentId: undefined,
+              cigar: cigarParts.length > 1 ? cigarParts.join('') : undefined,
+              cs: undefined,
+            })
+            cigarParts = []
+            matchBp = 0
+          }
+          ms = rs
+          me = re
+          mms = qs
+          mme = qe
+          mOrd = refSeg.segOrd
+          runMatchLen = refSeg.segLen
+          continue
+        }
+
+        if (refGap > 0 || queryGap > 0) {
+          if (runMatchLen > 0) {
+            cigarParts.push(`${runMatchLen}=`)
+            matchBp += runMatchLen
+            runMatchLen = 0
+          }
+          if (refGap > 0) {
+            cigarParts.push(`${refGap}D`)
+          }
+          if (queryGap > 0) {
+            cigarParts.push(`${queryGap}I`)
+          }
+        }
+
+        runMatchLen += refSeg.segLen
+        me = re
+        if (mStrand === 1) {
+          mme = qe
+        } else {
+          mms = qs
         }
       }
 
-      const emit = () => {
-        flushMatch()
+      {
+        if (runMatchLen > 0) {
+          cigarParts.push(`${runMatchLen}=`)
+          matchBp += runMatchLen
+        }
         if (ms >= 0) {
-          const totalAligned = matchBp + mismatchBp
           features.push({
             queryGenome: genomeName,
             origRefName: refName,
@@ -636,83 +753,16 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
             mateRefName,
             strand: mStrand,
             syriType: undefined,
-            identity: totalAligned > 0 ? matchBp / totalAligned : 1,
+            identity: me > ms ? matchBp / (me - ms) : 1,
             featureId: `gfa-${mOrd}-${otherPath}`,
             segmentId: undefined,
             cigar: cigarParts.length > 1 ? cigarParts.join('') : undefined,
             cs: undefined,
           })
-          cigarParts = []
-          matchBp = 0
-          mismatchBp = 0
-          ms = -1
         }
       }
-
-      for (let i = 0; i < paired.length; i++) {
-        const p = paired[i]!
-        const rs = p.ref.offset
-        const re = p.ref.offset + p.ref.segLen
-        const qs = p.query.offset
-        const qe = p.query.offset + p.query.segLen
-
-        if (ms < 0 || p.strand !== mStrand) {
-          emit()
-          ms = rs
-          me = re
-          mms = qs
-          mme = qe
-          mStrand = p.strand
-          mOrd = p.ref.segOrd
-
-          runMatchLen = p.ref.segLen
-          continue
-        }
-
-        const refGap = rs - me
-        const queryGap = mStrand === 1 ? qs - mme : mms - qe
-
-        if (refGap < 0 || queryGap < 0) {
-          emit()
-          ms = rs
-          me = re
-          mms = qs
-          mme = qe
-          mOrd = p.ref.segOrd
-
-          runMatchLen = p.ref.segLen
-          continue
-        }
-
-        if (refGap > 0 || queryGap > 0) {
-          flushMatch()
-          if (refGap > 0 && queryGap > 0) {
-            const overlap = Math.min(refGap, queryGap)
-            cigarParts.push(`${overlap}X`)
-            mismatchBp += overlap
-            if (refGap > queryGap) {
-              cigarParts.push(`${refGap - queryGap}D`)
-            } else if (queryGap > refGap) {
-              cigarParts.push(`${queryGap - refGap}I`)
-            }
-          } else if (refGap > 0) {
-            cigarParts.push(`${refGap}D`)
-          } else {
-            cigarParts.push(`${queryGap}I`)
-          }
-        }
-
-        runMatchLen += p.ref.segLen
-        me = re
-        if (mStrand === 1) {
-          mme = qe
-        } else {
-          mms = qs
-        }
-      }
-      emit()
     }
 
-    return { genomeNames: [...genomeRows.keys()], genomeRows }
+    return genomeRows
   }
 }

@@ -6,7 +6,7 @@ import {
   getSegmentsForOrdinalsFromShard,
 } from './gfaTabixUtils.ts'
 
-import type { SegRecord, SegmentsShard } from './gfaTabixUtils.ts'
+import type { SegmentsShard } from './gfaTabixUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -37,10 +37,8 @@ export default class GfaTabixAdapter extends BaseGfaTabixAdapter {
   }
 
   protected async getSegsForOrdinals(
-    ordinals: number[],
-    pathNames: string[],
-  ): Promise<SegRecord[]> {
-    this.shard.pathNames ??= pathNames
-    return getSegmentsForOrdinalsFromShard(this.shard, ordinals)
+    ordinalRanges: [number, number][],
+  ) {
+    return getSegmentsForOrdinalsFromShard(this.shard, ordinalRanges)
   }
 }

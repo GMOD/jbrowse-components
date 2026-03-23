@@ -117,6 +117,18 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return this.headerDataPromise
   }
 
+  async getSources() {
+    const { pairs } = await this.getHeaderData()
+    const names = new Set<string>()
+    if (pairs) {
+      for (const [q, t] of pairs.values()) {
+        names.add(q)
+        names.add(t)
+      }
+    }
+    return [...names].map(name => ({ name }))
+  }
+
   public async hasDataForRefName() {
     return true
   }
@@ -419,10 +431,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     const headerData = await this.getHeaderData()
     const { splitThreshold, mergeGap, pairCount, pairs } = headerData
     const genomeRows = new Map<string, MultiPairFeature[]>()
-    const genomeNames: string[] = []
 
     if (!pairCount || !pairs) {
-      return { genomeNames, genomeRows }
+      return { genomeRows }
     }
 
     const summaryRefs = await this.getSummaryRefNames()
@@ -458,7 +469,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         continue
       }
 
-      genomeNames.push(otherGenome)
       const prefix = this.chooseTierPrefix(
         idx,
         query.refName,
@@ -478,6 +488,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       genomeRows.set(otherGenome, features)
     }
 
-    return { genomeNames, genomeRows }
+    return { genomeRows }
   }
 }

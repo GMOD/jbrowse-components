@@ -26,7 +26,7 @@ interface MultiSyntenyDisplayActions {
 export function doAfterAttach(self: MultiSyntenyDisplayActions) {
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
   let currentStopToken: StopToken | undefined
-  let assembliesCreated = false
+  let metadataFetched = false
 
   addDisposer(
     self,
@@ -88,7 +88,7 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
                 bpPerPx,
                 sessionId,
                 stopToken: thisStopToken,
-                fetchChromSizes: !assembliesCreated,
+                fetchMetadata: !metadataFetched,
                 statusCallback: (msg: string) => {
                   if (isAlive(self)) {
                     self.setStatusMessage(msg)
@@ -102,7 +102,6 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
             }
 
             if (result.chromSizes && session.addAssembly) {
-              assembliesCreated = true
               const { assemblyManager } = session
               for (const [genome, regions] of result.chromSizes) {
                 if (!assemblyManager.get(genome)) {
@@ -126,7 +125,14 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
               }
             }
 
-            self.setAllGenomeNames(result.genomeNames)
+            if (result.sources) {
+              metadataFetched = true
+              self.setAllGenomeNames(result.sources.map(s => s.name))
+              console.log(
+                `[MultiSyntenyFetch] ${result.sources.length} genomes from header`,
+              )
+            }
+
             self.setGenomeRows(new Map(result.genomeRows))
             self.setError(undefined)
             self.setLoading(false)

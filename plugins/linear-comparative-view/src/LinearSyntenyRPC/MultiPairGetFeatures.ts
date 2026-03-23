@@ -8,11 +8,15 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 interface MultiPairAdapter {
   getMultiPairFeatures(
     query: Region,
-    opts: { bpPerPx?: number; stopToken?: StopToken },
+    opts: {
+      bpPerPx?: number
+      snpBpPerPxThreshold?: number
+      stopToken?: StopToken
+    },
   ): Promise<{
-    genomeNames: string[]
     genomeRows: Map<string, MultiPairFeature[]>
   }>
+  getSources(): Promise<{ name: string }[]>
   getChromSizes?(): Promise<Map<string, { refName: string; length: number }[]>>
 }
 
@@ -22,13 +26,13 @@ export interface MultiPairGetFeaturesArgs {
   bpPerPx: number
   sessionId: string
   stopToken?: StopToken
-  fetchChromSizes?: boolean
+  fetchMetadata?: boolean
   statusCallback?: (msg: string) => void
 }
 
 export interface MultiPairGetFeaturesResult {
-  genomeNames: string[]
   genomeRows: [string, MultiPairFeature[]][]
+  sources?: { name: string }[]
   chromSizes?: [string, { refName: string; length: number }[]][]
 }
 
@@ -62,7 +66,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
       bpPerPx,
       sessionId,
       stopToken,
-      fetchChromSizes,
+      fetchMetadata,
     } = deserializedArgs as MultiPairGetFeaturesArgs
 
     const { dataAdapter } = await getAdapter(
@@ -72,26 +76,25 @@ export class MultiPairGetFeatures extends RpcMethodType {
     )
     const adapter = dataAdapter as unknown as MultiPairAdapter
 
+    let sources: { name: string }[] | undefined
     let chromSizes:
       | [string, { refName: string; length: number }[]][]
       | undefined
-    if (fetchChromSizes && adapter.getChromSizes) {
-      const sizesMap = await adapter.getChromSizes()
-      chromSizes = [...sizesMap.entries()]
+
+    if (fetchMetadata) {
+      sources = await adapter.getSources()
+      if (adapter.getChromSizes) {
+        chromSizes = [...(await adapter.getChromSizes()).entries()]
+      }
     }
 
     const allGenomeRows = new Map<string, MultiPairFeature[]>()
-    let allGenomeNames: string[] = []
 
     for (const region of regions) {
-      const { genomeNames, genomeRows } = await adapter.getMultiPairFeatures(
-        region,
-        { bpPerPx, stopToken },
-      )
-
-      if (allGenomeNames.length === 0) {
-        allGenomeNames = genomeNames
-      }
+      const { genomeRows } = await adapter.getMultiPairFeatures(region, {
+        bpPerPx,
+        stopToken,
+      })
 
       for (const [genome, features] of genomeRows) {
         const existing = allGenomeRows.get(genome)
@@ -106,8 +109,8 @@ export class MultiPairGetFeatures extends RpcMethodType {
     }
 
     return {
-      genomeNames: allGenomeNames,
       genomeRows: [...allGenomeRows.entries()],
+      sources,
       chromSizes,
     }
   }

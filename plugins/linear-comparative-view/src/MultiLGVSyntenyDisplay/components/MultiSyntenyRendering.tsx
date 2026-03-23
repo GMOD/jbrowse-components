@@ -16,6 +16,7 @@ interface MultiSyntenyModel {
   rowHeight: number
   colorBy: string
   height: number
+  snpBpPerPxThreshold: number
 }
 
 const LABEL_WIDTH = 120
@@ -34,9 +35,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   }>({ text: '', open: false })
 
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { genomeRows, displayedGenomes, rowHeight, colorBy, height } = model
+  const { genomeRows, displayedGenomes, rowHeight, colorBy, height, snpBpPerPxThreshold } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+  const showSnps = snpBpPerPxThreshold > 0 && bpPerPx < snpBpPerPxThreshold
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -67,9 +69,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // GPU path: upload geometry when features or colors change
   useEffect(() => {
     if (ready && rendererRef.current?.isGpu) {
-      rendererRef.current.uploadGeometry(genomeRows, displayedGenomes, colorBy)
+      rendererRef.current.uploadGeometry(genomeRows, displayedGenomes, colorBy, showSnps)
     }
-  }, [ready, genomeRows, displayedGenomes, colorBy])
+  }, [ready, genomeRows, displayedGenomes, colorBy, showSnps])
 
   // GPU path: render when view changes (scroll, zoom)
   useEffect(() => {
@@ -115,6 +117,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         bpToPx,
         colorBy,
         labelW,
+        showSnps,
       })
     }
   }, [
@@ -128,6 +131,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     offsetPx,
     colorBy,
     labelW,
+    showSnps,
     view,
   ])
 

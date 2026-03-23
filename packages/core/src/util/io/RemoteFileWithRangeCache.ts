@@ -64,6 +64,19 @@ function cacheKey(url: string, chunkIndex: number) {
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
+  private cachedStat?: { size: number }
+
+  async stat() {
+    if (!this.cachedStat) {
+      // Trigger a range fetch which will populate cachedStat from Content-Range
+      await this.getCachedRange(this.url, 0, 1)
+      if (!this.cachedStat) {
+        throw new Error(`unable to determine size of file at ${this.url}`)
+      }
+    }
+    return this.cachedStat
+  }
+
   private async fetchRange(
     url: string,
     start: number,
@@ -78,6 +91,14 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       const errorMessage = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}`
       const hint = ' (should be 206 for range requests)'
       throw new Error(`${errorMessage}${res.status === 200 ? hint : ''}`)
+    }
+    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345")
+    if (!this.cachedStat) {
+      const contentRange = res.headers.get('content-range')
+      const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
+      if (match) {
+        this.cachedStat = { size: parseInt(match[1]!, 10) }
+      }
     }
     return new Uint8Array(await res.arrayBuffer())
   }
