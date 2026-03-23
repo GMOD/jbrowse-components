@@ -138,7 +138,7 @@
       ],
       "answerValidation": {
         "mode": "keyword_set",
-        "keywords": ["EDEN", "eden", "Eden", "Apple1", "apple1", "Apple2", "apple2", "Apple3", "apple3", "Apple4", "apple4", "seg01", "seg02", "seg03", "seg04", "seg05", "seg06", "seg07", "seg08", "seg09", "seg10", "seg11", "seg12", "seg13", "seg14", "seg15", "b101", "agt830", "agt221", "agt767", "FakeSNP", "fakesnp"]
+        "keywords": ["EDEN", "eden", "Eden", "Apple1", "apple1", "Apple2", "apple2", "Apple3", "apple3", "Apple4", "apple4", "seg01", "seg02", "seg03", "seg04", "seg05", "seg06", "seg07", "seg08", "seg09", "seg10", "seg11", "seg12", "seg13", "seg14", "seg15", "b101.2", "b101", "agt830.5", "agt830.3", "agt830", "agt221.5", "agt221.3", "agt221", "agt767.5", "agt767.3", "agt767", "FakeSNP", "fakesnp", "HGA", "hga", "HGB", "hgb"]
       },
       "minTimeSeconds": 5,
       "maxTimeSeconds": 180,
