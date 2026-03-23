@@ -59,11 +59,9 @@
       "type": "navigate_constrained",
       "tier": 0,
       "title": "Change Your View",
-      "description": "Try zooming the genome view. Use the zoom controls in the header bar (the + and - buttons), your scroll wheel, or pinch-to-zoom on a trackpad.",
+      "description": "Try zooming the genome view. Use the + and - buttons in the header bar above the genome display.",
       "hints": [
-        "Look for the + and - zoom buttons in the genome view header",
-        "If you have a scroll wheel, try it over the genome display",
-        "On a Mac trackpad, pinch with two fingers"
+        "Look for the + and - zoom buttons in the genome view header"
       ],
       "navigationConstraints": {
         "requiredActionTypes": ["ZOOM_IN", "ZOOM_OUT"]
@@ -71,7 +69,7 @@
       "maxTimeSeconds": 120,
       "completionReward": 0.5,
       "coaching": {
-        "message": "Try the + and - buttons in the genome view header, or scroll/pinch over the genome display"
+        "message": "Try the + and - buttons in the genome view header"
       }
     },
     {
@@ -95,17 +93,18 @@
       "type": "navigate_constrained",
       "tier": 1,
       "title": "Read the Code",
-      "description": "Zoom in as far as you can go — until you see individual colored letters (A, T, G, C) in the sequence track at the top. These are nucleotide bases, the building blocks of DNA.",
+      "description": "Make sure the reference sequence track is visible (open the track selector if needed — look for 'volvox' under 'Reference sequence'). Then zoom in with the + button until you see individual colored letters (A, T, G, C).",
       "hints": [
-        "Keep zooming in. The letters appear at the highest zoom levels.",
-        "A = adenine, T = thymine, G = guanine, C = cytosine"
+        "First: open the track selector and make sure the reference sequence track is turned on.",
+        "Then zoom in with the + button. The letters appear at the highest zoom levels."
       ],
+      "requiredTracks": ["volvox_refseq"],
       "navigationConstraints": {
         "zoomRange": { "max": 0.1 }
       },
       "awardOnComplete": "eagle_eye",
       "minTimeSeconds": 3,
-      "maxTimeSeconds": 120,
+      "maxTimeSeconds": 180,
       "completionReward": 1.0
     },
     {

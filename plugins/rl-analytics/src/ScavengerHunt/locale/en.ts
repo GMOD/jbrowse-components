@@ -54,7 +54,7 @@ const en = {
 
   // === Task intro lines (narrator voice when task begins) ===
   'task.t0-zoom.intro':
-    'See that colorful bar? That\'s a genome. Try scrolling your mouse wheel over it.',
+    'See that colorful bar? That\'s a genome. Use the + and - buttons in the header to zoom.',
   'task.t0-zoom.success':
     'Good. You changed your magnification. Zoom in for detail, zoom out for context.',
   'task.t0-pan.intro':

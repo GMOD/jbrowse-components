@@ -2,6 +2,7 @@ import { Box, Button, Chip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { ActionType } from '../../ActionLogger/ActionTypes.ts'
 import type { TaskConfig } from '../../RLPipeline/types.ts'
 import type GameEngine from '../GameEngine.ts'
 import type { NarratorEntry } from '../GameEngine.ts'
@@ -10,7 +11,6 @@ import type { ScavengerHuntWidgetModel } from '../model.ts'
 import AnswerInput from './AnswerInput.tsx'
 import AwardChips from './AwardChips.tsx'
 import CompletionScreen from './CompletionScreen.tsx'
-import FloatingPanel from './FloatingPanel.tsx'
 import NarratorLog from './NarratorLog.tsx'
 import ProgressBar from './ProgressBar.tsx'
 
@@ -68,25 +68,21 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
       void model.generateCompletionCode()
     }
     return (
-      <FloatingPanel title="Quest">
-        <Box sx={{ p: 1.5 }}>
-          <NarratorLog entries={narratorLog} />
-          <CompletionScreen model={model} />
-        </Box>
-      </FloatingPanel>
+      <Box sx={{ p: 2 }}>
+        <NarratorLog entries={narratorLog} />
+        <CompletionScreen model={model} />
+      </Box>
     )
   }
 
   if (!currentTask) {
     return (
-      <FloatingPanel title="Quest">
-        <Box sx={{ p: 1.5 }}>
-          <NarratorLog entries={narratorLog} />
-          <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-            Waiting for tasks...
-          </Typography>
-        </Box>
-      </FloatingPanel>
+      <Box sx={{ p: 2 }}>
+        <NarratorLog entries={narratorLog} />
+        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+          Waiting for tasks...
+        </Typography>
+      </Box>
     )
   }
 
@@ -100,11 +96,7 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
     currentTask.type === 'freeform'
 
   const handleSubmit = useCallback(() => {
-    const result = engine.tryAutoValidate()
-    if (result && !result.valid && result.reason) {
-      // The engine handles narrator entries for success;
-      // for failure we just let the log show the last validation error
-    }
+    engine.tryAutoValidate()
   }, [engine])
 
   const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
@@ -112,130 +104,128 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
   ]
 
   return (
-    <FloatingPanel title="Quest">
-      <Box sx={{ p: 1.5 }}>
-        {/* Header: tier + progress */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <Chip
-            label={tierLabel}
-            size="small"
-            color={
-              currentTask.tier <= 1
-                ? 'success'
-                : currentTask.tier <= 2
-                  ? 'warning'
-                  : 'error'
-            }
-            variant="outlined"
-          />
-          <ProgressBar model={model} />
+    <Box sx={{ p: 2 }}>
+      {/* Header: tier + progress */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Chip
+          label={tierLabel}
+          size="small"
+          color={
+            currentTask.tier <= 1
+              ? 'success'
+              : currentTask.tier <= 2
+                ? 'warning'
+                : 'error'
+          }
+          variant="outlined"
+        />
+        <ProgressBar model={model} />
+      </Box>
+
+      {/* Awards earned */}
+      <AwardChips model={model} />
+
+      {/* Scrollable narrator history */}
+      <NarratorLog entries={narratorLog} />
+
+      {/* Tier gate or active task */}
+      {isGated ? (
+        <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+            Before continuing:
+          </Typography>
+          {missingAwards.map(id => {
+            const def = model.awardDefinitions.find(
+              (a: { id: string }) => a.id === id,
+            )
+            return (
+              <Typography key={id} variant="body2" sx={{ ml: 1 }}>
+                Earn &quot;{def?.name ?? id}&quot;
+              </Typography>
+            )
+          })}
         </Box>
-
-        {/* Awards earned */}
-        <AwardChips model={model} />
-
-        {/* Scrollable narrator history */}
-        <NarratorLog entries={narratorLog} />
-
-        {/* Tier gate or active task */}
-        {isGated ? (
-          <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, mb: 1 }}>
+      ) : (
+        <>
+          {/* Current task */}
+          <Box
+            sx={{
+              p: 1.5,
+              mb: 1,
+              bgcolor: 'grey.50',
+              borderRadius: 1,
+              borderLeft: 3,
+              borderColor: 'primary.main',
+            }}
+          >
             <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-              Before continuing:
+              {currentTask.title}
             </Typography>
-            {missingAwards.map(id => {
-              const def = model.awardDefinitions.find(
-                (a: { id: string }) => a.id === id,
-              )
-              return (
-                <Typography key={id} variant="body2" sx={{ ml: 1 }}>
-                  Earn &quot;{def?.name ?? id}&quot;
-                </Typography>
-              )
-            })}
+            <Typography variant="body2">
+              {currentTask.description}
+            </Typography>
           </Box>
-        ) : (
-          <>
-            {/* Current task */}
-            <Box
-              sx={{
-                p: 1.5,
-                mb: 1,
-                bgcolor: 'grey.50',
-                borderRadius: 1,
-                borderLeft: 3,
-                borderColor: 'primary.main',
+
+          {/* Text answer input */}
+          {needsTextAnswer && (
+            <>
+              <AnswerInput
+                task={currentTask}
+                currentAnswer={model.answers.get(currentTask.id) ?? ''}
+                onSubmit={answer => {
+                  model.submitAnswer(answer)
+                  engine.onAnswerSubmit(answer)
+                }}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ mt: 1 }}
+                onClick={handleSubmit}
+              >
+                Submit
+              </Button>
+            </>
+          )}
+
+          {/* Hints */}
+          {currentTask.hints.length > 0 && (
+            <Button
+              variant="text"
+              size="small"
+              sx={{ mt: 0.5, fontSize: '0.75rem' }}
+              onClick={() => {
+                model.revealHint()
               }}
             >
-              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                {currentTask.title}
-              </Typography>
-              <Typography variant="body2">
-                {currentTask.description}
-              </Typography>
-            </Box>
-
-            {/* Text answer input */}
-            {needsTextAnswer && (
-              <>
-                <AnswerInput
-                  task={currentTask}
-                  currentAnswer={model.answers.get(currentTask.id) ?? ''}
-                  onSubmit={answer => {
-                    model.submitAnswer(answer)
-                    engine.onAnswerSubmit(answer)
+              {model.currentHintsRevealed < currentTask.hints.length
+                ? `Need a hint? (${currentTask.hints.length - model.currentHintsRevealed} available)`
+                : 'All hints shown'}
+            </Button>
+          )}
+          {model.currentHintsRevealed > 0 &&
+            currentTask.hints
+              .slice(0, model.currentHintsRevealed)
+              .map((hint, i) => (
+                <Typography
+                  key={i}
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mt: 0.5,
+                    p: 0.75,
+                    bgcolor: 'info.light',
+                    color: 'info.contrastText',
+                    borderRadius: 0.5,
+                    fontSize: '0.75rem',
                   }}
-                />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{ mt: 1 }}
-                  onClick={handleSubmit}
                 >
-                  Submit
-                </Button>
-              </>
-            )}
-
-            {/* Hints */}
-            {currentTask.hints.length > 0 && (
-              <Button
-                variant="text"
-                size="small"
-                sx={{ mt: 0.5, fontSize: '0.75rem' }}
-                onClick={() => {
-                  model.revealHint()
-                }}
-              >
-                {model.currentHintsRevealed < currentTask.hints.length
-                  ? `Need a hint? (${currentTask.hints.length - model.currentHintsRevealed} available)`
-                  : 'All hints shown'}
-              </Button>
-            )}
-            {model.currentHintsRevealed > 0 &&
-              currentTask.hints
-                .slice(0, model.currentHintsRevealed)
-                .map((hint, i) => (
-                  <Typography
-                    key={i}
-                    variant="caption"
-                    sx={{
-                      display: 'block',
-                      mt: 0.5,
-                      p: 0.75,
-                      bgcolor: 'info.light',
-                      color: 'info.contrastText',
-                      borderRadius: 0.5,
-                      fontSize: '0.75rem',
-                    }}
-                  >
-                    {hint}
-                  </Typography>
-                ))}
-          </>
-        )}
-      </Box>
-    </FloatingPanel>
+                  {hint}
+                </Typography>
+              ))}
+        </>
+      )}
+    </Box>
   )
 })
 

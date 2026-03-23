@@ -197,93 +197,10 @@ var init_CompletionScreen = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/FloatingPanel.tsx
-var {Box: Box4, IconButton, Paper, Typography: Typography3} = __jbx("@mui/material");
-var {observer: observer4} = __jbx("mobx-react");
-var {createPortal} = __jbx("react-dom");
-var {useState: useState2} = __jbx("react");
-var {Fragment: Fragment2, jsx: jsx4, jsxs: jsxs3} = __jbx("react/jsx-runtime");
-var FloatingPanel, FloatingPanel_default;
-var init_FloatingPanel = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/FloatingPanel.tsx"() {
-    "use strict";
-    FloatingPanel = observer4(function FloatingPanel2({
-      title,
-      children
-    }) {
-      const [minimized, setMinimized] = useState2(false);
-      const panel = /* @__PURE__ */ jsxs3(
-        Paper,
-        {
-          elevation: 4,
-          sx: {
-            position: "fixed",
-            right: 8,
-            top: 60,
-            width: minimized ? 40 : 320,
-            maxHeight: minimized ? 40 : "calc(100vh - 80px)",
-            zIndex: 1e4,
-            overflow: "hidden",
-            transition: "width 0.3s ease, max-height 0.3s ease",
-            display: "flex",
-            flexDirection: "column",
-            borderRadius: 2
-          },
-          children: [
-            /* @__PURE__ */ jsx4(
-              Box4,
-              {
-                sx: {
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  px: 1.5,
-                  py: 0.75,
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                  cursor: "pointer",
-                  minHeight: 36
-                },
-                onClick: () => {
-                  setMinimized(!minimized);
-                },
-                children: minimized ? /* @__PURE__ */ jsx4(IconButton, { size: "small", sx: { color: "inherit", p: 0 }, children: /* @__PURE__ */ jsx4(Typography3, { variant: "caption", sx: { fontWeight: "bold" }, children: "Q" }) }) : /* @__PURE__ */ jsxs3(Fragment2, { children: [
-                  /* @__PURE__ */ jsx4(Typography3, { variant: "subtitle2", sx: { fontWeight: "bold" }, children: title }),
-                  /* @__PURE__ */ jsx4(Typography3, { variant: "caption", sx: { opacity: 0.7 }, children: "[minimize]" })
-                ] })
-              }
-            ),
-            !minimized && /* @__PURE__ */ jsx4(
-              Box4,
-              {
-                sx: {
-                  flex: 1,
-                  overflowY: "auto",
-                  "&::-webkit-scrollbar": { width: 4 },
-                  "&::-webkit-scrollbar-thumb": {
-                    bgcolor: "grey.300",
-                    borderRadius: 2
-                  }
-                },
-                children
-              }
-            )
-          ]
-        }
-      );
-      if (typeof document !== "undefined") {
-        return createPortal(panel, document.body);
-      }
-      return panel;
-    });
-    FloatingPanel_default = FloatingPanel;
-  }
-});
-
 // plugins/rl-analytics/src/ScavengerHunt/components/NarratorLog.tsx
-var {Box: Box5, Typography: Typography4} = __jbx("@mui/material");
+var {Box: Box4, Typography: Typography3} = __jbx("@mui/material");
 var {useEffect, useRef} = __jbx("react");
-var {jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
+var {jsx: jsx4, jsxs: jsxs3} = __jbx("react/jsx-runtime");
 function NarratorLog({
   entries
 }) {
@@ -294,8 +211,8 @@ function NarratorLog({
   if (entries.length === 0) {
     return null;
   }
-  return /* @__PURE__ */ jsxs4(
-    Box5,
+  return /* @__PURE__ */ jsxs3(
+    Box4,
     {
       sx: {
         maxHeight: 200,
@@ -308,8 +225,8 @@ function NarratorLog({
         }
       },
       children: [
-        entries.map((entry) => /* @__PURE__ */ jsx5(
-          Typography4,
+        entries.map((entry) => /* @__PURE__ */ jsx4(
+          Typography3,
           {
             variant: "body2",
             sx: {
@@ -324,7 +241,7 @@ function NarratorLog({
           },
           entry.id
         )),
-        /* @__PURE__ */ jsx5("div", { ref: bottomRef })
+        /* @__PURE__ */ jsx4("div", { ref: bottomRef })
       ]
     }
   );
@@ -344,26 +261,26 @@ var init_NarratorLog = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
-var {Box: Box6, LinearProgress, Typography: Typography5} = __jbx("@mui/material");
-var {observer: observer5} = __jbx("mobx-react");
-var {jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
+var {Box: Box5, LinearProgress, Typography: Typography4} = __jbx("@mui/material");
+var {observer: observer4} = __jbx("mobx-react");
+var {jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
 var ProgressBar, ProgressBar_default;
 var init_ProgressBar = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
     "use strict";
-    ProgressBar = observer5(function ProgressBar2({
+    ProgressBar = observer4(function ProgressBar2({
       model
     }) {
-      return /* @__PURE__ */ jsxs5(Box6, { sx: { mb: 2 }, children: [
-        /* @__PURE__ */ jsxs5(Box6, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
-          /* @__PURE__ */ jsx6(Typography5, { variant: "body2", children: "Progress" }),
-          /* @__PURE__ */ jsxs5(Typography5, { variant: "body2", children: [
+      return /* @__PURE__ */ jsxs4(Box5, { sx: { mb: 2 }, children: [
+        /* @__PURE__ */ jsxs4(Box5, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
+          /* @__PURE__ */ jsx5(Typography4, { variant: "body2", children: "Progress" }),
+          /* @__PURE__ */ jsxs4(Typography4, { variant: "body2", children: [
             model.completedTaskIds.length,
             " / ",
             model.tasks.length
           ] })
         ] }),
-        /* @__PURE__ */ jsx6(LinearProgress, { variant: "determinate", value: model.progress * 100 })
+        /* @__PURE__ */ jsx5(LinearProgress, { variant: "determinate", value: model.progress * 100 })
       ] });
     });
     ProgressBar_default = ProgressBar;
@@ -376,10 +293,10 @@ __export(ScavengerHuntWidget_exports, {
   default: () => ScavengerHuntWidget_default,
   setGameEngine: () => setGameEngine
 });
-var {Box: Box7, Button: Button2, Chip: Chip2, Typography: Typography6} = __jbx("@mui/material");
-var {observer: observer6} = __jbx("mobx-react");
-var {useCallback, useEffect: useEffect2, useRef: useRef2, useState: useState3} = __jbx("react");
-var {Fragment: Fragment3, jsx: jsx7, jsxs: jsxs6} = __jbx("react/jsx-runtime");
+var {Box: Box6, Button: Button2, Chip: Chip2, Typography: Typography5} = __jbx("@mui/material");
+var {observer: observer5} = __jbx("mobx-react");
+var {useCallback, useEffect: useEffect2, useRef: useRef2, useState: useState2} = __jbx("react");
+var {Fragment: Fragment2, jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
 function setGameEngine(engine) {
   gameEngineRef = engine;
 }
@@ -390,14 +307,13 @@ var init_ScavengerHuntWidget = __esm({
     init_AnswerInput();
     init_AwardChips();
     init_CompletionScreen();
-    init_FloatingPanel();
     init_NarratorLog();
     init_ProgressBar();
     gameEngineRef = null;
-    ScavengerHuntWidget = observer6(function ScavengerHuntWidget2({
+    ScavengerHuntWidget = observer5(function ScavengerHuntWidget2({
       model
     }) {
-      const [, forceUpdate] = useState3(0);
+      const [, forceUpdate] = useState2(0);
       const startedTaskRef = useRef2(null);
       const engine = gameEngineRef;
       useEffect2(() => {
@@ -416,36 +332,34 @@ var init_ScavengerHuntWidget = __esm({
         }
       }, [currentTask, engine, model]);
       if (!engine) {
-        return /* @__PURE__ */ jsx7(Box7, { sx: { p: 2 }, children: /* @__PURE__ */ jsx7(Typography6, { variant: "body2", children: "Initializing..." }) });
+        return /* @__PURE__ */ jsx6(Box6, { sx: { p: 2 }, children: /* @__PURE__ */ jsx6(Typography5, { variant: "body2", children: "Initializing..." }) });
       }
       const narratorLog = engine.getNarratorLog();
       if (model.isComplete) {
         if (!model.completionCode) {
           void model.generateCompletionCode();
         }
-        return /* @__PURE__ */ jsx7(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1.5 }, children: [
-          /* @__PURE__ */ jsx7(NarratorLog, { entries: narratorLog }),
-          /* @__PURE__ */ jsx7(CompletionScreen_default, { model })
-        ] }) });
+        return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2 }, children: [
+          /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }),
+          /* @__PURE__ */ jsx6(CompletionScreen_default, { model })
+        ] });
       }
       if (!currentTask) {
-        return /* @__PURE__ */ jsx7(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1.5 }, children: [
-          /* @__PURE__ */ jsx7(NarratorLog, { entries: narratorLog }),
-          /* @__PURE__ */ jsx7(Typography6, { variant: "body2", sx: { fontStyle: "italic" }, children: "Waiting for tasks..." })
-        ] }) });
+        return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2 }, children: [
+          /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }),
+          /* @__PURE__ */ jsx6(Typography5, { variant: "body2", sx: { fontStyle: "italic" }, children: "Waiting for tasks..." })
+        ] });
       }
       const missingAwards = engine.getMissingAwards(currentTask);
       const isGated = missingAwards.length > 0;
       const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
       const handleSubmit = useCallback(() => {
-        const result = engine.tryAutoValidate();
-        if (result && !result.valid && result.reason) {
-        }
+        engine.tryAutoValidate();
       }, [engine]);
       const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
-      return /* @__PURE__ */ jsx7(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1.5 }, children: [
-        /* @__PURE__ */ jsxs6(Box7, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
-          /* @__PURE__ */ jsx7(
+      return /* @__PURE__ */ jsxs5(Box6, { sx: { p: 2 }, children: [
+        /* @__PURE__ */ jsxs5(Box6, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
+          /* @__PURE__ */ jsx6(
             Chip2,
             {
               label: tierLabel,
@@ -454,25 +368,25 @@ var init_ScavengerHuntWidget = __esm({
               variant: "outlined"
             }
           ),
-          /* @__PURE__ */ jsx7(ProgressBar_default, { model })
+          /* @__PURE__ */ jsx6(ProgressBar_default, { model })
         ] }),
-        /* @__PURE__ */ jsx7(AwardChips_default, { model }),
-        /* @__PURE__ */ jsx7(NarratorLog, { entries: narratorLog }),
-        isGated ? /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1, bgcolor: "grey.50", borderRadius: 1, mb: 1 }, children: [
-          /* @__PURE__ */ jsx7(Typography6, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
+        /* @__PURE__ */ jsx6(AwardChips_default, { model }),
+        /* @__PURE__ */ jsx6(NarratorLog, { entries: narratorLog }),
+        isGated ? /* @__PURE__ */ jsxs5(Box6, { sx: { p: 1, bgcolor: "grey.50", borderRadius: 1, mb: 1 }, children: [
+          /* @__PURE__ */ jsx6(Typography5, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
           missingAwards.map((id) => {
             const def = model.awardDefinitions.find(
               (a) => a.id === id
             );
-            return /* @__PURE__ */ jsxs6(Typography6, { variant: "body2", sx: { ml: 1 }, children: [
+            return /* @__PURE__ */ jsxs5(Typography5, { variant: "body2", sx: { ml: 1 }, children: [
               'Earn "',
               def?.name ?? id,
               '"'
             ] }, id);
           })
-        ] }) : /* @__PURE__ */ jsxs6(Fragment3, { children: [
-          /* @__PURE__ */ jsxs6(
-            Box7,
+        ] }) : /* @__PURE__ */ jsxs5(Fragment2, { children: [
+          /* @__PURE__ */ jsxs5(
+            Box6,
             {
               sx: {
                 p: 1.5,
@@ -483,13 +397,13 @@ var init_ScavengerHuntWidget = __esm({
                 borderColor: "primary.main"
               },
               children: [
-                /* @__PURE__ */ jsx7(Typography6, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
-                /* @__PURE__ */ jsx7(Typography6, { variant: "body2", children: currentTask.description })
+                /* @__PURE__ */ jsx6(Typography5, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
+                /* @__PURE__ */ jsx6(Typography5, { variant: "body2", children: currentTask.description })
               ]
             }
           ),
-          needsTextAnswer && /* @__PURE__ */ jsxs6(Fragment3, { children: [
-            /* @__PURE__ */ jsx7(
+          needsTextAnswer && /* @__PURE__ */ jsxs5(Fragment2, { children: [
+            /* @__PURE__ */ jsx6(
               AnswerInput_default,
               {
                 task: currentTask,
@@ -500,7 +414,7 @@ var init_ScavengerHuntWidget = __esm({
                 }
               }
             ),
-            /* @__PURE__ */ jsx7(
+            /* @__PURE__ */ jsx6(
               Button2,
               {
                 variant: "outlined",
@@ -511,7 +425,7 @@ var init_ScavengerHuntWidget = __esm({
               }
             )
           ] }),
-          currentTask.hints.length > 0 && /* @__PURE__ */ jsx7(
+          currentTask.hints.length > 0 && /* @__PURE__ */ jsx6(
             Button2,
             {
               variant: "text",
@@ -523,8 +437,8 @@ var init_ScavengerHuntWidget = __esm({
               children: model.currentHintsRevealed < currentTask.hints.length ? `Need a hint? (${currentTask.hints.length - model.currentHintsRevealed} available)` : "All hints shown"
             }
           ),
-          model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsx7(
-            Typography6,
+          model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsx6(
+            Typography5,
             {
               variant: "caption",
               sx: {
@@ -541,7 +455,7 @@ var init_ScavengerHuntWidget = __esm({
             i
           ))
         ] })
-      ] }) });
+      ] });
     });
     ScavengerHuntWidget_default = ScavengerHuntWidget;
   }
@@ -549,7 +463,7 @@ var init_ScavengerHuntWidget = __esm({
 
 // plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
-var __t26 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t26.default || __t26;
+var __t21 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t21.default || __t21;
 var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
 var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
@@ -1632,7 +1546,7 @@ var en = {
   "idle.120s": "I've been studying this region while you were away. Something caught my eye nearby.",
   "idle.180s": "The quest panel is over here, whenever you're ready. I've been reorganizing my notes.",
   // === Task intro lines (narrator voice when task begins) ===
-  "task.t0-zoom.intro": "See that colorful bar? That's a genome. Try scrolling your mouse wheel over it.",
+  "task.t0-zoom.intro": "See that colorful bar? That's a genome. Use the + and - buttons in the header to zoom.",
   "task.t0-zoom.success": "Good. You changed your magnification. Zoom in for detail, zoom out for context.",
   "task.t0-pan.intro": "Now try clicking and dragging sideways. You're moving along the chromosome.",
   "task.t0-pan.success": "You're navigating. Everything you need is somewhere along this line.",
