@@ -21,7 +21,7 @@ import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Lollipop from '@jbrowse/plugin-lollipop'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
-import RLAnalytics from '@jbrowse/plugin-rl-analytics'
+
 import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
@@ -59,7 +59,6 @@ const corePlugins = [
   GridBookmarkPlugin,
   ComparativeAdapters,
   Arc,
-  RLAnalytics,
 ]
 
 export default corePlugins

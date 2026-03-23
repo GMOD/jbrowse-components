@@ -21,7 +21,7 @@ var __export = (target, all) => {
 };
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
-// plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts
+// ../../plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts
 function jaroWinkler(s1, s2) {
   if (s1 === s2) {
     return 1;
@@ -78,7 +78,7 @@ function jaroWinkler(s1, s2) {
 }
 var TaskValidator;
 var init_TaskValidator = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts"() {
+  "../../plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts"() {
     "use strict";
     TaskValidator = class {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,14 +200,14 @@ var init_TaskValidator = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx
+// ../../plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx
 var {Box, Button, FormControl, FormControlLabel, Radio, RadioGroup, TextField, Typography} = __jbx("@mui/material");
 var {observer} = __jbx("mobx-react");
 var {useState} = __jbx("react");
 var {jsx, jsxs} = __jbx("react/jsx-runtime");
 var AnswerInput, AnswerInput_default;
 var init_AnswerInput = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx"() {
+  "../../plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx"() {
     "use strict";
     AnswerInput = observer(function AnswerInput2({
       task,
@@ -285,13 +285,13 @@ var init_AnswerInput = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx
+// ../../plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx
 var {Box: Box2, Card, CardContent, Typography: Typography2} = __jbx("@mui/material");
 var {observer: observer2} = __jbx("mobx-react");
 var {Fragment, jsx: jsx2, jsxs: jsxs2} = __jbx("react/jsx-runtime");
 var CompletionScreen, CompletionScreen_default;
 var init_CompletionScreen = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx"() {
+  "../../plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx"() {
     "use strict";
     CompletionScreen = observer2(function CompletionScreen2({
       model
@@ -328,13 +328,13 @@ var init_CompletionScreen = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
+// ../../plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
 var {Box: Box3, LinearProgress, Typography: Typography3} = __jbx("@mui/material");
 var {observer: observer3} = __jbx("mobx-react");
 var {jsx: jsx3, jsxs: jsxs3} = __jbx("react/jsx-runtime");
 var ProgressBar, ProgressBar_default;
 var init_ProgressBar = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
+  "../../plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
     "use strict";
     ProgressBar = observer3(function ProgressBar2({
       model
@@ -355,13 +355,13 @@ var init_ProgressBar = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx
+// ../../plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx
 var {Alert, Button: Button2, Card: Card2, CardContent: CardContent2, CardHeader, Chip, Typography: Typography4} = __jbx("@mui/material");
 var {observer: observer4} = __jbx("mobx-react");
 var {Fragment: Fragment2, jsx: jsx4, jsxs: jsxs4} = __jbx("react/jsx-runtime");
 var TaskCard, TaskCard_default;
 var init_TaskCard = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx"() {
+  "../../plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx"() {
     "use strict";
     TaskCard = observer4(function TaskCard2({
       task,
@@ -406,18 +406,19 @@ var init_TaskCard = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx
+// ../../plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx
 var ScavengerHuntWidget_exports = {};
 __export(ScavengerHuntWidget_exports, {
   default: () => ScavengerHuntWidget_default
 });
 var {Alert: Alert2, Box: Box4, Button: Button3, Typography: Typography5} = __jbx("@mui/material");
+var {getSession} = __jbx("@jbrowse/core/util");
 var {observer: observer5} = __jbx("mobx-react");
 var {useEffect, useState: useState2} = __jbx("react");
 var {jsx: jsx5, jsxs: jsxs5} = __jbx("react/jsx-runtime");
 var ScavengerHuntWidget, ScavengerHuntWidget_default;
 var init_ScavengerHuntWidget = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
+  "../../plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
     "use strict";
     init_TaskValidator();
     init_AnswerInput();
@@ -450,7 +451,17 @@ var init_ScavengerHuntWidget = __esm({
         return /* @__PURE__ */ jsx5(Box4, { sx: { p: 2 }, children: /* @__PURE__ */ jsx5(Typography5, { children: "No tasks loaded. Load a task set to begin." }) });
       }
       const handleValidateAndAdvance = () => {
-        const validator = new TaskValidator(() => null);
+        const validator = new TaskValidator(() => {
+          try {
+            const session = getSession(model);
+            return session?.views?.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (v) => v.type === "LinearGenomeView"
+            );
+          } catch {
+            return null;
+          }
+        });
         const result = validator.validate(currentTask, model);
         if (result.valid) {
           model.completeCurrentTask();
@@ -498,19 +509,19 @@ var init_ScavengerHuntWidget = __esm({
   }
 });
 
-// plugins/rl-analytics/src/index.ts
+// ../../plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
-var __t18 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t18.default || __t18;
+var __t19 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t19.default || __t19;
 var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
 var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
 var ExploreIcon = null;
 var SaveAltIcon = null;
 
-// plugins/rl-analytics/src/ActionLogger/PatchListener.ts
+// ../../plugins/rl-analytics/src/ActionLogger/PatchListener.ts
 var {onPatch} = __jbx("@jbrowse/mobx-state-tree");
 
-// plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
+// ../../plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
   constructor(maxSize = 1e4, debounceMs = 100) {
     __publicField(this, "buffer", []);
@@ -518,8 +529,13 @@ var ActionBuffer = class {
     __publicField(this, "debounceMs");
     __publicField(this, "pendingAction", null);
     __publicField(this, "debounceTimer", null);
+    __publicField(this, "debouncedCallbacks", []);
     this.maxSize = maxSize;
     this.debounceMs = debounceMs;
+  }
+  /** Register a callback that fires only for debounced (merged) actions */
+  onDebouncedAction(cb) {
+    this.debouncedCallbacks.push(cb);
   }
   push(action) {
     if (this.pendingAction && action.type === this.pendingAction.type && action.timestamp - this.pendingAction.timestamp < this.debounceMs) {
@@ -570,6 +586,12 @@ var ActionBuffer = class {
       this.buffer.shift();
     }
     this.buffer.push(action);
+    for (const cb of this.debouncedCallbacks) {
+      try {
+        cb(action);
+      } catch {
+      }
+    }
   }
   /** Flush pending and return + clear all buffered actions */
   drain() {
@@ -593,7 +615,7 @@ var ActionBuffer = class {
   }
 };
 
-// plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
+// ../../plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
 var ActionType = /* @__PURE__ */ ((ActionType2) => {
   ActionType2["ZOOM_IN"] = "ZOOM_IN";
   ActionType2["ZOOM_OUT"] = "ZOOM_OUT";
@@ -609,7 +631,7 @@ var ActionType = /* @__PURE__ */ ((ActionType2) => {
   return ActionType2;
 })(ActionType || {});
 
-// plugins/rl-analytics/src/ActionLogger/ActionClassifier.ts
+// ../../plugins/rl-analytics/src/ActionLogger/ActionClassifier.ts
 var classificationRules = [
   {
     pathPattern: /\/views\/\d+\/bpPerPx$/,
@@ -644,24 +666,28 @@ var classificationRules = [
   {
     pathPattern: /\/views\/\d+\/tracks\/\d+$/,
     op: "add",
-    classify: (patch) => ({
-      type: "TOGGLE_TRACK" /* TOGGLE_TRACK */,
-      metadata: {
-        trackId: patch.value?.trackId,
-        added: true
-      }
-    })
+    classify: (patch) => {
+      const val = patch.value;
+      const config = val?.configuration;
+      const trackId = typeof config === "string" ? config : config?.trackId ?? val?.trackId;
+      return {
+        type: "TOGGLE_TRACK" /* TOGGLE_TRACK */,
+        metadata: { trackId, added: true }
+      };
+    }
   },
   {
     pathPattern: /\/views\/\d+\/tracks\/\d+$/,
     op: "remove",
-    classify: (patch) => ({
-      type: "TOGGLE_TRACK" /* TOGGLE_TRACK */,
-      metadata: {
-        trackId: patch.value?.trackId,
-        added: false
-      }
-    })
+    classify: (patch) => {
+      const val = patch.value;
+      const config = val?.configuration;
+      const trackId = typeof config === "string" ? config : config?.trackId ?? val?.trackId;
+      return {
+        type: "TOGGLE_TRACK" /* TOGGLE_TRACK */,
+        metadata: { trackId, added: false }
+      };
+    }
   },
   {
     pathPattern: /\/widgets\/[^/]+$/,
@@ -710,7 +736,7 @@ var ActionClassifier = class {
   }
 };
 
-// plugins/rl-analytics/src/ActionLogger/PatchListener.ts
+// ../../plugins/rl-analytics/src/ActionLogger/PatchListener.ts
 var PatchListener = class {
   constructor(bufferSize = 1e4, debounceMs = 100, logUnknown = false) {
     __publicField(this, "classifier", new ActionClassifier());
@@ -753,7 +779,7 @@ var PatchListener = class {
   }
 };
 
-// plugins/rl-analytics/src/Export/JSONLExporter.ts
+// ../../plugins/rl-analytics/src/Export/JSONLExporter.ts
 var JSONLExporter = class {
   export(episodes) {
     const lines = [];
@@ -788,7 +814,7 @@ var JSONLExporter = class {
   }
 };
 
-// plugins/rl-analytics/src/Export/WebhookExporter.ts
+// ../../plugins/rl-analytics/src/Export/WebhookExporter.ts
 var WebhookExporter = class {
   constructor(url, batchSize = 50, intervalMs = 5e3) {
     __publicField(this, "url");
@@ -857,7 +883,7 @@ var WebhookExporter = class {
   }
 };
 
-// plugins/rl-analytics/src/Export/ExportManager.ts
+// ../../plugins/rl-analytics/src/Export/ExportManager.ts
 var ExportManager = class {
   constructor(episodeManager) {
     __publicField(this, "jsonlExporter", new JSONLExporter());
@@ -897,7 +923,7 @@ var ExportManager = class {
   }
 };
 
-// plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
+// ../../plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
 var RewardCalculator = class {
   constructor() {
     __publicField(this, "recentActions", []);
@@ -942,7 +968,7 @@ var RewardCalculator = class {
   }
 };
 
-// plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
+// ../../plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
 var StateEncoder = class {
   extractState(view, lastActionTimestamp, recentActionCount, taskConfig) {
     let bpPerPx = 1;
@@ -1028,7 +1054,7 @@ var StateEncoder = class {
   }
 };
 
-// plugins/rl-analytics/src/RLPipeline/EpisodeManager.ts
+// ../../plugins/rl-analytics/src/RLPipeline/EpisodeManager.ts
 var EpisodeManager = class {
   constructor(inactivityTimeoutMs = 3e5) {
     __publicField(this, "currentEpisode", null);
@@ -1167,7 +1193,7 @@ var EpisodeManager = class {
   }
 };
 
-// plugins/rl-analytics/src/config.ts
+// ../../plugins/rl-analytics/src/config.ts
 var {ConfigurationSchema} = __jbx("@jbrowse/core/configuration");
 var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
   enabled: {
@@ -1228,7 +1254,7 @@ var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
 });
 var config_default = configSchema;
 
-// plugins/rl-analytics/src/ScavengerHunt/model.ts
+// ../../plugins/rl-analytics/src/ScavengerHunt/model.ts
 var {ConfigurationSchema: ConfigurationSchema2} = __jbx("@jbrowse/core/configuration");
 var {ElementId} = __jbx("@jbrowse/core/util/types/mst");
 var {types} = __jbx("@jbrowse/mobx-state-tree");
@@ -1361,14 +1387,15 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
   setCompletionCode(code) {
     self.completionCode = code;
   },
-  async generateCompletionCode() {
+  generateCompletionCode() {
     const payload = `${self.assignmentId}:${self.taskSetId}:${self.completedTaskIds.join(",")}`;
-    const hash = await sha256Hex(payload);
-    self.completionCode = hash.slice(0, 12).toUpperCase();
+    void sha256Hex(payload).then((hash) => {
+      this.setCompletionCode(hash.slice(0, 12).toUpperCase());
+    });
   }
 }));
 
-// plugins/rl-analytics/src/index.ts
+// ../../plugins/rl-analytics/src/index.ts
 var RLAnalyticsPlugin = class extends Plugin {
   constructor() {
     super(...arguments);
@@ -1399,7 +1426,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.patchListener?.dispose();
     this.episodeManager?.dispose();
     this.exportManager?.dispose();
-    this.patchListener = new PatchListener(1e4, 100, false);
+    this.patchListener = new PatchListener(1e4, 500, false);
     this.episodeManager = new EpisodeManager(3e5);
     this.exportManager = new ExportManager(this.episodeManager);
     this.episodeManager.setViewAccessor(() => {
@@ -1409,7 +1436,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       }
       return session2.views.find((v) => v.type === "LinearGenomeView");
     });
-    this.patchListener.onAction((action) => {
+    this.patchListener.buffer.onDebouncedAction((action) => {
       queueMicrotask(() => {
         this.episodeManager.recordAction(action);
       });

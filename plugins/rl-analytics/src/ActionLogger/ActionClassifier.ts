@@ -47,24 +47,35 @@ const classificationRules: ClassificationRule[] = [
   {
     pathPattern: /\/views\/\d+\/tracks\/\d+$/,
     op: 'add',
-    classify: patch => ({
-      type: ActionType.TOGGLE_TRACK,
-      metadata: {
-        trackId: (patch.value as Record<string, unknown>)?.trackId,
-        added: true,
-      },
-    }),
+    classify: patch => {
+      const val = patch.value as Record<string, unknown> | undefined
+      // trackId can be at value.configuration (string ref) or value.configuration.trackId
+      const config = val?.configuration
+      const trackId =
+        typeof config === 'string'
+          ? config
+          : (config as Record<string, unknown>)?.trackId ?? val?.trackId
+      return {
+        type: ActionType.TOGGLE_TRACK,
+        metadata: { trackId, added: true },
+      }
+    },
   },
   {
     pathPattern: /\/views\/\d+\/tracks\/\d+$/,
     op: 'remove',
-    classify: patch => ({
-      type: ActionType.TOGGLE_TRACK,
-      metadata: {
-        trackId: (patch.value as Record<string, unknown>)?.trackId,
-        added: false,
-      },
-    }),
+    classify: patch => {
+      const val = patch.value as Record<string, unknown> | undefined
+      const config = val?.configuration
+      const trackId =
+        typeof config === 'string'
+          ? config
+          : (config as Record<string, unknown>)?.trackId ?? val?.trackId
+      return {
+        type: ActionType.TOGGLE_TRACK,
+        metadata: { trackId, added: false },
+      }
+    },
   },
   {
     pathPattern: /\/widgets\/[^/]+$/,

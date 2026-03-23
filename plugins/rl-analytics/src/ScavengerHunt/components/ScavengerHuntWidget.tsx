@@ -1,4 +1,5 @@
 import { Alert, Box, Button, Typography } from '@mui/material'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { useEffect, useState } from 'react'
 
@@ -51,9 +52,19 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
   }
 
   const handleValidateAndAdvance = () => {
-    // For navigation tasks, use a simple validator stub
-    // (full validation requires view access which is wired in the plugin)
-    const validator = new TaskValidator(() => null)
+    // Get the first LinearGenomeView from the session for validation
+    const validator = new TaskValidator(() => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const session = getSession(model) as any
+        return session?.views?.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (v: any) => v.type === 'LinearGenomeView',
+        )
+      } catch {
+        return null
+      }
+    })
     const result = validator.validate(currentTask, model)
     if (result.valid) {
       model.completeCurrentTask()

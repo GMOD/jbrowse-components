@@ -1,15 +1,23 @@
 import type { ClassifiedAction } from './ActionTypes.ts'
 
+export type DebouncedActionCallback = (action: ClassifiedAction) => void
+
 export default class ActionBuffer {
   private buffer: ClassifiedAction[] = []
   private maxSize: number
   private debounceMs: number
   private pendingAction: ClassifiedAction | null = null
   private debounceTimer: ReturnType<typeof setTimeout> | null = null
+  private debouncedCallbacks: DebouncedActionCallback[] = []
 
   constructor(maxSize = 10000, debounceMs = 100) {
     this.maxSize = maxSize
     this.debounceMs = debounceMs
+  }
+
+  /** Register a callback that fires only for debounced (merged) actions */
+  onDebouncedAction(cb: DebouncedActionCallback) {
+    this.debouncedCallbacks.push(cb)
   }
 
   push(action: ClassifiedAction) {
@@ -79,6 +87,13 @@ export default class ActionBuffer {
       this.buffer.shift()
     }
     this.buffer.push(action)
+    for (const cb of this.debouncedCallbacks) {
+      try {
+        cb(action)
+      } catch {
+        // don't break the buffer
+      }
+    }
   }
 
   /** Flush pending and return + clear all buffered actions */

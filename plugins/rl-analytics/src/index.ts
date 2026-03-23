@@ -58,7 +58,7 @@ export default class RLAnalyticsPlugin extends Plugin {
     this.exportManager?.dispose()
 
     // Initialize subsystems
-    this.patchListener = new PatchListener(10000, 100, false)
+    this.patchListener = new PatchListener(10000, 500, false)
     this.episodeManager = new EpisodeManager(300_000)
     this.exportManager = new ExportManager(this.episodeManager)
 
@@ -74,11 +74,13 @@ export default class RLAnalyticsPlugin extends Plugin {
       return session.views.find((v: any) => v.type === 'LinearGenomeView')
     })
 
-    // Connect action logger to episode manager
+    // Connect debounced actions to episode manager.
+    // Debounced actions fire after the buffer's debounce window closes,
+    // so rapid pan/zoom events are merged into single actions.
     // Use queueMicrotask to avoid interfering with synchronous MST patch
     // processing — reading computed properties during onPatch can disrupt
-    // model initialization
-    this.patchListener.onAction(action => {
+    // model initialization.
+    this.patchListener.buffer.onDebouncedAction(action => {
       queueMicrotask(() => {
         this.episodeManager!.recordAction(action)
       })

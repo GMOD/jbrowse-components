@@ -148,10 +148,12 @@ export const ScavengerHuntModel = types
     setCompletionCode(code: string) {
       self.completionCode = code
     },
-    async generateCompletionCode() {
+    generateCompletionCode() {
       const payload = `${self.assignmentId}:${self.taskSetId}:${self.completedTaskIds.join(',')}`
-      const hash = await sha256Hex(payload)
-      self.completionCode = hash.slice(0, 12).toUpperCase()
+      void sha256Hex(payload).then(hash => {
+        // Must call a named action — can't set volatile directly from async
+        this.setCompletionCode(hash.slice(0, 12).toUpperCase())
+      })
     },
   }))
 
