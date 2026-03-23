@@ -1,10 +1,11 @@
-import { Alert, Box, Button, Chip, Typography } from '@mui/material'
+import { Box, Button, Chip, Typography } from '@mui/material'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { ActionType } from '../../ActionLogger/ActionTypes.ts'
 import type { TaskConfig } from '../../RLPipeline/types.ts'
+import locale from '../locale/en.ts'
 import type { ScavengerHuntWidgetModel } from '../model.ts'
 import TaskValidator from '../TaskValidator.ts'
 
@@ -19,7 +20,6 @@ import TierGate from './TierGate.tsx'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let actionLogRef: any[] = []
 
-/** Called by the plugin to feed actions into the widget for validation */
 export function pushActionForValidation(actionType: ActionType) {
   actionLogRef.push(actionType)
 }
@@ -41,27 +41,95 @@ function getView(model: ScavengerHuntWidgetModel) {
   }
 }
 
+function getNarratorLine(key: string): string {
+  return (locale as Record<string, string>)[key] ?? ''
+}
+
 const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
   model,
 }: {
   model: ScavengerHuntWidgetModel
 }) {
-  const [validationError, setValidationError] = useState<string | null>(null)
+  const [narratorMessage, setNarratorMessage] = useState<string | null>(null)
+  const [narratorType, setNarratorType] = useState<'info' | 'success'>('info')
   const [taskStarted, setTaskStarted] = useState(false)
+  const autoValidateRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const currentTask = model.currentTask as TaskConfig | undefined
 
+  const makeValidator = useCallback(
+    () =>
+      new TaskValidator(
+        () => getView(model),
+        () => [...actionLogRef] as ActionType[],
+      ),
+    [model],
+  )
+
+  // Auto-advance: validate every 500ms for non-text tasks
+  useEffect(() => {
+    if (!currentTask || model.isGated || model.isComplete) {
+      return
+    }
+
+    const needsTextAnswer =
+      currentTask.type === 'identify' ||
+      currentTask.type === 'compare' ||
+      currentTask.type === 'freeform'
+
+    // For text tasks, only auto-validate when an answer exists
+    // For action/nav tasks, validate continuously
+    autoValidateRef.current = setInterval(() => {
+      if (needsTextAnswer && !model.answers.get(currentTask.id)) {
+        return
+      }
+
+      const validator = makeValidator()
+      const result = validator.validate(currentTask, model)
+
+      if (result.valid) {
+        // Success! Show narrator line and advance
+        const successKey = `task.${currentTask.id}.success`
+        const line = getNarratorLine(successKey)
+        if (line) {
+          setNarratorMessage(line)
+          setNarratorType('success')
+        }
+        if (currentTask.awardOnComplete) {
+          model.addAward(currentTask.awardOnComplete)
+        }
+        model.completeCurrentTask()
+      }
+    }, 500)
+
+    return () => {
+      if (autoValidateRef.current) {
+        clearInterval(autoValidateRef.current)
+      }
+    }
+  }, [currentTask, model, model.isGated, model.isComplete, makeValidator])
+
+  // Show intro narrator line when task starts
   useEffect(() => {
     if (currentTask && !taskStarted) {
       model.startCurrentTask()
       resetActionLog()
       setTaskStarted(true)
+
+      const introKey = `task.${currentTask.id}.intro`
+      const line = getNarratorLine(introKey)
+      if (line) {
+        setNarratorMessage(line)
+        setNarratorType('info')
+      } else {
+        setNarratorMessage(null)
+      }
     }
   }, [currentTask, taskStarted, model])
 
   useEffect(() => {
     setTaskStarted(false)
-    setValidationError(null)
+    setNarratorMessage(null)
     resetActionLog()
   }, [model.currentTaskIndex])
 
@@ -80,61 +148,33 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
   if (!currentTask) {
     return (
       <Box sx={{ p: 2 }}>
-        <Typography>No tasks loaded. Load a task set to begin.</Typography>
+        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+          {getNarratorLine('narrator.welcome')}
+        </Typography>
       </Box>
     )
   }
 
-  const handleSubmit = () => {
-    // For tasks with text input, save the answer first
-    // (The AnswerInput component's onSubmit already calls model.submitAnswer,
-    // but the user might click "Check" without clicking "Submit Answer" first)
+  const needsTextAnswer =
+    currentTask.type === 'identify' ||
+    currentTask.type === 'compare' ||
+    currentTask.type === 'freeform'
 
-    const validator = new TaskValidator(
-      () => getView(model),
-      () => [...actionLogRef] as ActionType[],
-    )
-
-    // If gated by awards, show the gate instead
-    if (model.isGated) {
-      return
-    }
-
+  // Manual submit only for text-answer tasks (as a convenience,
+  // since auto-validation checks text answers too once submitted)
+  const handleManualSubmit = () => {
+    const validator = makeValidator()
     const result = validator.validate(currentTask, model)
     if (result.valid) {
-      // Grant task-specific award
       if (currentTask.awardOnComplete) {
         model.addAward(currentTask.awardOnComplete)
       }
       model.completeCurrentTask()
-      setValidationError(null)
     } else {
-      model.incrementRetry()
-      const maxRetries = currentTask.maxRetries ?? 3
-      if (
-        model.currentRetryCount >= maxRetries &&
-        currentTask.autoAdvanceOnFail !== false
-      ) {
-        // Auto-advance after max retries
-        model.completeCurrentTask()
-        setValidationError(null)
-      } else {
-        setValidationError(result.reason ?? 'Validation failed')
-      }
+      setNarratorMessage(result.reason ?? getNarratorLine('validate.answer_wrong'))
+      setNarratorType('info')
     }
   }
-
-  // Determine button label based on task type
-  const needsAnswer =
-    currentTask.type === 'identify' ||
-    currentTask.type === 'compare' ||
-    currentTask.type === 'freeform'
-  const buttonLabel =
-    currentTask.type === 'navigate' || currentTask.type === 'navigate_constrained'
-      ? 'Check'
-      : currentTask.type === 'action_required'
-        ? 'Verify'
-        : 'Submit'
 
   const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
     currentTask.tier
@@ -171,28 +211,45 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
               model.revealHint()
             }}
           />
-          {needsAnswer && (
-            <AnswerInput
-              task={currentTask}
-              currentAnswer={model.answers.get(currentTask.id) ?? ''}
-              onSubmit={answer => {
-                model.submitAnswer(answer)
+
+          {/* Narrator message */}
+          {narratorMessage && (
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 1,
+                mb: 1,
+                p: 1.5,
+                bgcolor: narratorType === 'success' ? 'success.main' : 'grey.100',
+                color: narratorType === 'success' ? 'success.contrastText' : 'text.primary',
+                borderRadius: 1,
+                fontStyle: 'italic',
+                transition: 'all 0.3s ease',
               }}
-            />
+            >
+              {narratorMessage}
+            </Typography>
           )}
-          {validationError && (
-            <Alert severity="warning" sx={{ mt: 1, mb: 1 }}>
-              {validationError}
-            </Alert>
+
+          {needsTextAnswer && (
+            <>
+              <AnswerInput
+                task={currentTask}
+                currentAnswer={model.answers.get(currentTask.id) ?? ''}
+                onSubmit={answer => {
+                  model.submitAnswer(answer)
+                }}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ mt: 1 }}
+                onClick={handleManualSubmit}
+              >
+                Submit
+              </Button>
+            </>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
-            onClick={handleSubmit}
-          >
-            {buttonLabel}
-          </Button>
         </>
       )}
 
