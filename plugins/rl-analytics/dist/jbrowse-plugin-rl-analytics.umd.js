@@ -354,7 +354,7 @@ var init_ScavengerHuntView = __esm({
       const isGated = missingAwards.length > 0;
       const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
       const handleSubmit = () => {
-        engine.tryAutoValidate();
+        engine.submitValidation();
       };
       const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
       return /* @__PURE__ */ jsxs5(
@@ -1679,17 +1679,27 @@ var GameEngine = class {
     this.awardManager.checkTextAnswer(answer);
     this.tryAutoValidate();
   }
-  /** Try to validate the current task against current state */
+  /** Silent auto-validation — called on each action, no feedback on failure */
   tryAutoValidate() {
+    return this.validate(false);
+  }
+  /** Explicit submit — called when user clicks Submit, gives feedback on failure */
+  submitValidation() {
+    return this.validate(true);
+  }
+  validate(showFeedback) {
     if (!this.model) {
       return null;
     }
     const task = this.model.currentTask;
-    if (!task || this.model.isComplete || this.model.isGated) {
+    if (!task || this.model.isComplete) {
       return null;
     }
     const needsText = task.type === "identify" || task.type === "compare" || task.type === "freeform";
     if (needsText && !this.model.answers.get(task.id)) {
+      if (showFeedback) {
+        this.addNarratorEntry("Enter an answer first.", "hint");
+      }
       return null;
     }
     const validator = new TaskValidator(
@@ -1700,6 +1710,8 @@ var GameEngine = class {
     this.lastValidationResult = result;
     if (result.valid) {
       this.completeCurrentTask(task);
+    } else if (showFeedback && result.reason) {
+      this.addNarratorEntry(result.reason, "hint");
     }
     return result;
   }

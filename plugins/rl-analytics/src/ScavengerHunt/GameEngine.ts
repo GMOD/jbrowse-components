@@ -94,13 +94,22 @@ export default class GameEngine {
     this.tryAutoValidate()
   }
 
-  /** Try to validate the current task against current state */
+  /** Silent auto-validation — called on each action, no feedback on failure */
   tryAutoValidate(): ValidationResult | null {
+    return this.validate(false)
+  }
+
+  /** Explicit submit — called when user clicks Submit, gives feedback on failure */
+  submitValidation(): ValidationResult | null {
+    return this.validate(true)
+  }
+
+  private validate(showFeedback: boolean): ValidationResult | null {
     if (!this.model) {
       return null
     }
     const task = this.model.currentTask as TaskConfig | undefined
-    if (!task || this.model.isComplete || this.model.isGated) {
+    if (!task || this.model.isComplete) {
       return null
     }
 
@@ -110,6 +119,9 @@ export default class GameEngine {
       task.type === 'compare' ||
       task.type === 'freeform'
     if (needsText && !this.model.answers.get(task.id)) {
+      if (showFeedback) {
+        this.addNarratorEntry('Enter an answer first.', 'hint')
+      }
       return null
     }
 
@@ -123,6 +135,8 @@ export default class GameEngine {
 
     if (result.valid) {
       this.completeCurrentTask(task)
+    } else if (showFeedback && result.reason) {
+      this.addNarratorEntry(result.reason, 'hint')
     }
 
     return result

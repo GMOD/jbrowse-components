@@ -91,7 +91,7 @@ const ScavengerHuntView = observer(function ScavengerHuntView({
     currentTask.type === 'freeform'
 
   const handleSubmit = () => {
-    engine.tryAutoValidate()
+    engine.submitValidation()
   }
 
   const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
