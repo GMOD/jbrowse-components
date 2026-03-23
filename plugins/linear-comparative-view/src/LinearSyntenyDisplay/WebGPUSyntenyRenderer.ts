@@ -200,7 +200,7 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
     const interleaved = interleaveInstances(data)
 
     this.instanceBuffer?.destroy()
-    this.instanceBuffer = createStorageBuffer(device, interleaved.buffer)
+    this.instanceBuffer = createStorageBuffer(device, interleaved)
 
     this.bindGroup = createStandardBindGroup(
       device,

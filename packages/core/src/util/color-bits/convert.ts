@@ -17,14 +17,14 @@ const D50_Z = 0.8251
 
 function multiply(
   matrix: [number, number, number][],
-  other: number[],
+  other: [number, number, number],
 ): [number, number, number] {
   const dst: [number, number, number] = [0, 0, 0]
   for (let row = 0; row < 3; ++row) {
     dst[row] =
-      matrix[row][0] * other[0] +
-      matrix[row][1] * other[1] +
-      matrix[row][2] * other[2]
+      matrix[row]![0] * other[0] +
+      matrix[row]![1] * other[1] +
+      matrix[row]![2] * other[2]
   }
   return dst
 }
@@ -274,7 +274,7 @@ export function oklabToXyzd65(
   a: number,
   b: number,
 ): [number, number, number] {
-  const labInput = [l, a, b]
+  const labInput: [number, number, number] = [l, a, b]
   const lmsIntermediate = multiply(OKLAB_TO_LMS_MATRIX, labInput)
   lmsIntermediate[0] =
     lmsIntermediate[0] * lmsIntermediate[0] * lmsIntermediate[0]
@@ -290,7 +290,7 @@ export function xyzd65ToOklab(
   y: number,
   z: number,
 ): [number, number, number] {
-  const xyzInput = [x, y, z]
+  const xyzInput: [number, number, number] = [x, y, z]
   const lmsIntermediate = multiply(XYZ_TO_LMS_MATRIX, xyzInput)
   lmsIntermediate[0] = Math.pow(lmsIntermediate[0], 1.0 / 3.0)
   lmsIntermediate[1] = Math.pow(lmsIntermediate[1], 1.0 / 3.0)

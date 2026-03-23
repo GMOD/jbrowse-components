@@ -511,6 +511,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     const ordinalSet = new Set<number>()
+    let lineCount = 0
 
     await this.posFile.getLines(refPathName, start, end, {
       lineCallback: (line: string) => {
@@ -523,6 +524,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           t = line.indexOf('\t', t) + 1
         }
         const idsStr = line.slice(t)
+        if (lineCount < 3) {
+          console.log(`pos line[${lineCount}]: ${line.slice(0, 200)}, idsStr=${idsStr.slice(0, 80)}`)
+        }
+        lineCount++
         let i = 0
         while (i < idsStr.length) {
           let j = idsStr.indexOf(',', i)
@@ -545,6 +550,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       },
     })
 
+    console.log(`posFile.getLines done: ${lineCount} lines, ${ordinalSet.size} ordinals, refPathName=${refPathName}`)
     if (ordinalSet.size === 0) {
       return { genomeNames: [] as string[], genomeRows }
     }

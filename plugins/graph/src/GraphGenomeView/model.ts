@@ -171,23 +171,39 @@ export default function stateModelFactory() {
           minY * newScale +
           (canvasHeight - padding * 2 - graphHeight * newScale) / 2
       },
+      clearGraph() {
+        self.graph = undefined
+        self.layoutResult = undefined
+        self.error = undefined
+        self.hoveredNode = null
+        self.hoveredEdge = null
+        self.selectedNode = null
+        self.nodeVertexRanges = undefined
+        self.edgeVertexRanges = undefined
+        self.arrowVertexRanges = undefined
+        self.baseNodeColors = undefined
+        self.baseEdgeColors = undefined
+        self.baseArrowColors = undefined
+      },
+    }))
+    .actions(self => ({
       loadGFA: flow(function* (text: string, name = 'Imported GFA') {
         self.isLoading = true
         self.error = undefined
-        self.statusMessage = 'Parsing GFA'
+        self.setStatusMessage('Parsing GFA')
         const gfaGraph = parseGFA(text)
         const graph = convertGFAToGraph(gfaGraph, name)
         self.graph = graph
-        self.statusMessage = 'Computing layout'
+        self.setStatusMessage('Computing layout')
 
         try {
           const session = getSession(self)
           const { rpcManager } = session
           const { result } = yield rpcManager.call(
-            session.id,
+            session.id ?? '',
             'GraphComputeLayout',
             {
-              sessionId: session.id,
+              sessionId: session.id ?? '',
               graph: { nodes: graph.nodes, edges: graph.edges },
               options: {
                 quality: self.layoutQuality,
@@ -210,16 +226,16 @@ export default function stateModelFactory() {
           return
         }
         self.isLoading = true
-        self.statusMessage = 'Computing layout'
+        self.setStatusMessage('Computing layout')
 
         try {
           const session = getSession(self)
           const { rpcManager } = session
           const { result } = yield rpcManager.call(
-            session.id,
+            session.id ?? '',
             'GraphComputeLayout',
             {
-              sessionId: session.id,
+              sessionId: session.id ?? '',
               graph: { nodes: self.graph.nodes, edges: self.graph.edges },
               options: {
                 quality: self.layoutQuality,
@@ -237,20 +253,6 @@ export default function stateModelFactory() {
           self.isLoading = false
         }
       }),
-      clearGraph() {
-        self.graph = undefined
-        self.layoutResult = undefined
-        self.error = undefined
-        self.hoveredNode = null
-        self.hoveredEdge = null
-        self.selectedNode = null
-        self.nodeVertexRanges = undefined
-        self.edgeVertexRanges = undefined
-        self.arrowVertexRanges = undefined
-        self.baseNodeColors = undefined
-        self.baseEdgeColors = undefined
-        self.baseArrowColors = undefined
-      },
     }))
 }
 

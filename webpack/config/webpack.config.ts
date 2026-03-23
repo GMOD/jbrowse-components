@@ -1,6 +1,5 @@
 import { execSync } from 'child_process'
 
-import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import webpack from 'webpack'
@@ -29,8 +28,6 @@ function getWorkspaces() {
 export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
   const isEnvProduction = process.env.NODE_ENV === 'production'
-
-  const shouldUseReactRefresh = process.env.FAST_REFRESH !== 'false'
 
   const getStyleLoaders = (cssOptions: Record<string, unknown>) => {
     return [
@@ -86,12 +83,7 @@ export default function webpackBuilder(): webpack.Configuration {
               include: [appSrc, getWorkspaces()],
               loader: 'babel-loader',
               options: {
-                plugins: [
-                  'babel-plugin-react-compiler',
-                  isEnvDevelopment &&
-                    shouldUseReactRefresh &&
-                    'react-refresh/babel',
-                ].filter(Boolean),
+                plugins: ['babel-plugin-react-compiler'],
                 presets: [
                   ['@babel/preset-react', { runtime: 'automatic' }],
                   '@babel/preset-typescript',
@@ -154,9 +146,6 @@ export default function webpackBuilder(): webpack.Configuration {
           HtmlWebpackPlugin as unknown as InlineChunkHtmlPlugin['htmlWebpackPlugin'],
           [/runtime-.+[.]js/],
         ),
-      isEnvDevelopment &&
-        shouldUseReactRefresh &&
-        new ReactRefreshWebpackPlugin({ overlay: false }),
       isEnvProduction &&
         new MiniCssExtractPlugin({
           filename: 'static/css/[name].[contenthash:8].css',

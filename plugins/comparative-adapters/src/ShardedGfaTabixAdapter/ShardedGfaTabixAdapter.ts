@@ -62,25 +62,20 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
       }
       const shardBase = baseDir + shardPrefix
 
-      const locationType =
-        'localPath' in manifestLoc ? 'LocalPathLocation' : 'UriLocation'
-      const locKey = 'localPath' in manifestLoc ? 'localPath' : 'uri'
+      const makeLocation = (path: string): FileLocation =>
+        'localPath' in manifestLoc
+          ? { localPath: path, locationType: 'LocalPathLocation' }
+          : { uri: path, locationType: 'UriLocation' }
 
       const shard: SegmentsShard = {
         bgzf: new BgzfFilehandle({
-          filehandle: openLocation(
-            { [locKey]: `${shardBase}.gz`, locationType },
-            pm,
-          ),
+          filehandle: openLocation(makeLocation(`${shardBase}.gz`), pm),
           gziFilehandle: openLocation(
-            { [locKey]: `${shardBase}.gz.gzi`, locationType },
+            makeLocation(`${shardBase}.gz.gzi`),
             pm,
           ),
         }),
-        idxFile: openLocation(
-          { [locKey]: `${shardBase}.idx`, locationType },
-          pm,
-        ),
+        idxFile: openLocation(makeLocation(`${shardBase}.idx`), pm),
       }
       this.genomeShardsCache.set(genome, shard)
     }

@@ -249,6 +249,7 @@ export function parseColor(color: string): Color {
         }
         default:
       }
+      break
     }
     default:
   }

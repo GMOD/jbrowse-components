@@ -2,7 +2,7 @@ import type { Color } from './core.ts'
 import { getAlpha, getBlue, getGreen, getRed } from './core.ts'
 
 // Return buffer, avoid allocations
-const buffer = [0, 0, 0]
+const buffer: [number, number, number] = [0, 0, 0]
 
 /**
  * Map 8-bits value to its hexadecimal representation
