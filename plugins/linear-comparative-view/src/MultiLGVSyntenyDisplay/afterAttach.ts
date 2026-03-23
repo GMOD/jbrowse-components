@@ -18,6 +18,8 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 interface MultiSyntenyDisplayActions {
   setAllGenomeNames(names: string[]): void
   setGenomeRows(rows: Map<string, MultiPairFeature[]>): void
+  setLoading(flag: boolean): void
+  setStatusMessage(msg?: string): void
   setError(e: unknown): void
 }
 
@@ -55,6 +57,7 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
             if (!isAlive(self)) {
               return
             }
+            self.setLoading(true)
             const view = getContainingView(self) as LinearGenomeViewModel
             if (!view.initialized || view.displayedRegions.length === 0) {
               return
@@ -86,6 +89,11 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
                 sessionId,
                 stopToken: thisStopToken,
                 fetchChromSizes: !assembliesCreated,
+                statusCallback: (msg: string) => {
+                  if (isAlive(self)) {
+                    self.setStatusMessage(msg)
+                  }
+                },
               },
             )
 
@@ -121,10 +129,12 @@ export function doAfterAttach(self: MultiSyntenyDisplayActions) {
             self.setAllGenomeNames(result.genomeNames)
             self.setGenomeRows(new Map(result.genomeRows))
             self.setError(undefined)
+            self.setLoading(false)
           } catch (e) {
             if (!isAbortException(e)) {
               if (isAlive(self)) {
                 console.error('MultiLGVSyntenyDisplay fetch error:', e)
+                self.setLoading(false)
                 self.setError(e)
               }
             }

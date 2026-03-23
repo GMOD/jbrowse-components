@@ -1,7 +1,24 @@
+import { execSync } from 'child_process'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+
 import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
-function makeAdapter(prefix: string, assemblyNames: string[]) {
+const BINARY = path.resolve('tools/gfa-to-tabix/target/release/gfa-to-tabix')
+
+function runConverter(gfaFile: string, prefix: string) {
+  execSync(`"${BINARY}" "${gfaFile}" "${prefix}"`, {
+    stdio: 'pipe',
+    env: { ...process.env, LC_ALL: 'C' },
+  })
+}
+
+function makeAdapter(
+  prefix: string,
+  opts?: { assemblyNameMap?: Record<string, string> },
+) {
   return new Adapter(
     MyConfigSchema.create({
       posLocation: {
@@ -26,7 +43,9 @@ function makeAdapter(prefix: string, assemblyNames: string[]) {
         localPath: `${prefix}.segments.idx`,
         locationType: 'LocalPathLocation',
       },
-      assemblyNames,
+      ...(opts?.assemblyNameMap
+        ? { assemblyNameMap: opts.assemblyNameMap }
+        : {}),
     }),
   )
 }
@@ -37,12 +56,7 @@ const prefix = require
 
 describe('GfaTabixAdapter', () => {
   it('getMultiPairFeatures returns features for all genomes', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 0,
@@ -67,12 +81,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('returns shared segments with correct segmentId', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 0,
@@ -89,7 +98,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('returns empty for non-overlapping region', async () => {
-    const adapter = makeAdapter(prefix, ['ref#1', 'sample1#1'])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 99999999,
@@ -101,7 +110,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('returns empty for nonexistent refName', async () => {
-    const adapter = makeAdapter(prefix, ['ref#1', 'sample1#1'])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'nonexistent',
       start: 0,
@@ -113,12 +122,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('features have unique featureIds', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 0,
@@ -136,7 +140,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('strand is correct for same-orientation segments', async () => {
-    const adapter = makeAdapter(prefix, ['ref#1', 'sample1#1'])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 0,
@@ -151,18 +155,16 @@ describe('GfaTabixAdapter', () => {
     }
   })
 
-  it('getAssemblyNames returns configured names', () => {
-    const adapter = makeAdapter(prefix, ['ref#1', 'sample1#1'])
-    expect(adapter.getAssemblyNames()).toEqual(['ref#1', 'sample1#1'])
+  it('getAssemblyNamesFromHeader derives names from file header', async () => {
+    const adapter = makeAdapter(prefix)
+    const names = await adapter.getAssemblyNamesFromHeader()
+    expect(names.sort()).toEqual(
+      ['ref#1', 'sample1#1', 'sample2#1', 'sample3#1'].sort(),
+    )
   })
 
   it('start/end are in reference coordinate space when querying from ref#1', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 0,
@@ -182,12 +184,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('start/end are in reference coordinate space when querying from sample1#1', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chr1',
       start: 0,
@@ -208,12 +205,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('coordinates are reciprocal between ref#1 and sample1#1', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
 
     const fromRef = await adapter.getMultiPairFeatures({
       refName: 'chr1',
@@ -250,12 +242,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('features do not exceed reference chromosome length for any genome', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const chromSizes = await adapter.getChromSizes()
 
     // Query from each genome and verify features stay within bounds
@@ -282,12 +269,7 @@ describe('GfaTabixAdapter', () => {
   })
 
   it('getChromSizes returns per-genome chromosome sizes from header', async () => {
-    const adapter = makeAdapter(prefix, [
-      'ref#1',
-      'sample1#1',
-      'sample2#1',
-      'sample3#1',
-    ])
+    const adapter = makeAdapter(prefix)
     const chromSizes = await adapter.getChromSizes()
 
     // Regenerated test data should have sizes header
@@ -311,7 +293,7 @@ const hprcPrefix = require
 
 describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
   it('returns features for all 43 non-ref genomes', async () => {
-    const adapter = makeAdapter(hprcPrefix, ['GRCh38#0'])
+    const adapter = makeAdapter(hprcPrefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chrM',
       start: 0,
@@ -331,7 +313,7 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
   })
 
   it('getChromSizes returns sizes for all 44 genomes', async () => {
-    const adapter = makeAdapter(hprcPrefix, ['GRCh38#0'])
+    const adapter = makeAdapter(hprcPrefix)
     const chromSizes = await adapter.getChromSizes()
 
     expect(chromSizes.size).toBe(44)
@@ -342,7 +324,7 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
   })
 
   it('merges adjacent segments into larger blocks', async () => {
-    const adapter = makeAdapter(hprcPrefix, ['GRCh38#0'])
+    const adapter = makeAdapter(hprcPrefix)
     const result = await adapter.getMultiPairFeatures({
       refName: 'chrM',
       start: 0,
@@ -366,7 +348,7 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
   })
 
   it('completes full-chromosome query in under 500ms', async () => {
-    const adapter = makeAdapter(hprcPrefix, ['GRCh38#0'])
+    const adapter = makeAdapter(hprcPrefix)
     const t0 = Date.now()
     await adapter.getMultiPairFeatures({
       refName: 'chrM',
@@ -377,4 +359,123 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
     const elapsed = Date.now() - t0
     expect(elapsed).toBeLessThan(500)
   })
+
+  it('mid-region query returns subset of features', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+    const full = await adapter.getMultiPairFeatures({
+      refName: 'chrM',
+      start: 0,
+      end: 16569,
+      assemblyName: 'GRCh38#0',
+    })
+    const mid = await adapter.getMultiPairFeatures({
+      refName: 'chrM',
+      start: 5000,
+      end: 10000,
+      assemblyName: 'GRCh38#0',
+    })
+
+    // Mid-region should return fewer or equal features per genome
+    for (const [genome, midFeatures] of mid.genomeRows) {
+      const fullFeatures = full.genomeRows.get(genome)!
+      expect(midFeatures.length).toBeLessThanOrEqual(fullFeatures.length)
+
+      // All mid features should be within the query bounds or overlap them
+      for (const f of midFeatures) {
+        expect(f.end).toBeGreaterThan(5000)
+        expect(f.start).toBeLessThan(10000)
+      }
+    }
+  })
+
+  it('snapshot: features at chrM:8000-9000 are stable', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chrM',
+      start: 8000,
+      end: 9000,
+      assemblyName: 'GRCh38#0',
+    })
+
+    // Snapshot genome count and a representative genome's features
+    expect(result.genomeNames.length).toBeGreaterThan(0)
+
+    const chm13 = result.genomeRows.get('CHM13#0')
+    expect(chm13).toBeDefined()
+    expect(chm13!.length).toBeGreaterThan(0)
+
+    // Snapshot first CHM13 feature's structure
+    const f = chm13![0]!
+    expect(f.start).toBeLessThanOrEqual(8000)
+    expect(f.end).toBeGreaterThanOrEqual(9000)
+    expect(f.strand).toBe(1)
+    expect(f.mateRefName).toBe('chrM')
+    expect(f.identity).toBeGreaterThan(0.9)
+  })
+
+  it('reciprocal query from non-reference genome', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+
+    // Query from CHM13 instead of GRCh38
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chrM',
+      start: 0,
+      end: 16569,
+      assemblyName: 'CHM13#0',
+    })
+
+    // Should find GRCh38 as one of the query genomes
+    expect(result.genomeRows.has('GRCh38#0')).toBe(true)
+    const grch38Features = result.genomeRows.get('GRCh38#0')!
+    expect(grch38Features.length).toBeGreaterThan(0)
+  })
 })
+
+describe('assemblyNameMap remapping', () => {
+  it('remaps genome names in feature results', async () => {
+    const adapter = makeAdapter(prefix, {
+      assemblyNameMap: { 'sample1#1': 'sampleOne' },
+    })
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    expect(result.genomeRows.has('sampleOne')).toBe(true)
+    expect(result.genomeRows.has('sample1#1')).toBe(false)
+
+    // Unmapped genomes keep original names
+    expect(result.genomeRows.has('sample2#1')).toBe(true)
+  })
+
+  it('remaps genome names in chromSizes', async () => {
+    const adapter = makeAdapter(prefix, {
+      assemblyNameMap: { 'ref#1': 'myRef' },
+    })
+    const chromSizes = await adapter.getChromSizes()
+    expect(chromSizes.has('myRef')).toBe(true)
+    expect(chromSizes.has('ref#1')).toBe(false)
+  })
+
+  it('remaps genome names in getAssemblyNamesFromHeader', async () => {
+    const adapter = makeAdapter(prefix, {
+      assemblyNameMap: {
+        'ref#1': 'refGenome',
+        'sample1#1': 'sOne',
+      },
+    })
+    const names = await adapter.getAssemblyNamesFromHeader()
+    expect(names).toContain('refGenome')
+    expect(names).toContain('sOne')
+    expect(names).not.toContain('ref#1')
+    expect(names).not.toContain('sample1#1')
+    // Unmapped stay as-is
+    expect(names).toContain('sample2#1')
+  })
+})
+
+// Note: aln.bed.gz e2e tests removed — the Rust converter does not produce
+// aln files. The adapter's aln code path is tested via pre-generated fixtures
+// if available.

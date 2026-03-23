@@ -505,11 +505,11 @@ export function isFileHandleLocation(
   )
 }
 export class AuthNeededError extends Error {
-  constructor(
-    public message: string,
-    public url: string,
-  ) {
+  url: string
+
+  constructor(message: string, url: string) {
     super(message)
+    this.url = url
     this.name = 'AuthNeededError'
 
     Object.setPrototypeOf(this, AuthNeededError.prototype)
@@ -517,11 +517,11 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  constructor(
-    public message: string,
-    public internetAccountId: string,
-  ) {
+  internetAccountId: string
+
+  constructor(message: string, internetAccountId: string) {
     super(message)
+    this.internetAccountId = internetAccountId
     this.name = 'RetryError'
   }
 }

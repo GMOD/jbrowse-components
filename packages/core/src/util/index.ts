@@ -55,7 +55,7 @@ export * from './range.ts'
 export * from './dedupe.ts'
 export * from './coarseStripHTML.ts'
 
-export * from './offscreenCanvasPonyfill.tsx'
+export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
 export * from './rpc.ts'
 export * from './crypto.ts'

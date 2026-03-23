@@ -46,16 +46,25 @@ type PluggableElementTypeGroup =
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: Record<string, ElementClass> = {}
+  typeName: string
+  baseClass:
+    | (new (...args: unknown[]) => ElementClass)
+    | (Function & {
+        prototype: ElementClass
+      })
 
   constructor(
-    public typeName: string,
-    public baseClass:
+    typeName: string,
+    baseClass:
       | (new (...args: unknown[]) => ElementClass)
       // covers abstract class case
       | (Function & {
           prototype: ElementClass
         }),
-  ) {}
+  ) {
+    this.typeName = typeName
+    this.baseClass = baseClass
+  }
 
   add(name: string, t: ElementClass) {
     this.registeredTypes[name] = t

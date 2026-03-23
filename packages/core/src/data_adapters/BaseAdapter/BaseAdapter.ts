@@ -14,17 +14,23 @@ import type { getSubAdapterType } from '../dataAdapterCache.ts'
 const EmptyConfig = ConfigurationSchema('empty', {})
 
 export class BaseAdapter {
-  public id: string
+  id: string
+  config: AnyConfigurationModel
+  getSubAdapter?: getSubAdapterType
+  pluginManager?: PluginManager
 
-  public sequenceAdapterConfig?: Record<string, unknown>
+  sequenceAdapterConfig?: Record<string, unknown>
 
   static capabilities = [] as string[]
 
   constructor(
-    public config: AnyConfigurationModel = EmptyConfig.create(),
-    public getSubAdapter?: getSubAdapterType,
-    public pluginManager?: PluginManager,
+    config: AnyConfigurationModel = EmptyConfig.create(),
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
+    this.config = config
+    this.getSubAdapter = getSubAdapter
+    this.pluginManager = pluginManager
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {

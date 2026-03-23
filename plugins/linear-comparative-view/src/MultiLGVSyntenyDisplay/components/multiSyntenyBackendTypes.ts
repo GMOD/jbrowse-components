@@ -6,6 +6,7 @@ export interface MultiSyntenyRenderOpts {
   rowHeight: number
   bpPerPx: number
   offsetPx: number
+  displayedRegionStart: number
   colorBy: string
   labelW: number
 }

@@ -122,7 +122,11 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     })
 
     const alnLoc = this.getConf('alnLocation') as FileLocation | undefined
-    if (alnLoc && 'uri' in alnLoc && alnLoc.uri !== '') {
+    const hasAlnLoc =
+      alnLoc &&
+      (('uri' in alnLoc && alnLoc.uri !== '') ||
+        ('localPath' in alnLoc && alnLoc.localPath !== ''))
+    if (hasAlnLoc) {
       const alnIdxLoc = this.getConf(['alnIndex', 'location']) as FileLocation
       this.alnFile = new TabixIndexedFile({
         filehandle: openLocation(alnLoc, pm),
@@ -183,12 +187,36 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     return this.headerPromise
   }
 
+  private getAssemblyNameMap() {
+    return this.getConf('assemblyNameMap') as Record<string, string>
+  }
+
+  protected remapGenome(genome: string) {
+    const map = this.getAssemblyNameMap()
+    return map[genome] ?? genome
+  }
+
   getAssemblyNames() {
-    return this.getConf('assemblyNames') as string[]
+    return [] as string[]
+  }
+
+  async getAssemblyNamesFromHeader() {
+    const genomes = (await this.getParsedHeader()).genomes
+    return genomes.map(g => this.remapGenome(g))
   }
 
   async getChromSizes() {
-    return (await this.getParsedHeader()).chromSizes
+    const raw = (await this.getParsedHeader()).chromSizes
+    const map = this.getAssemblyNameMap()
+    if (Object.keys(map).length === 0) {
+      return raw
+    }
+    const remapped = new Map<string, { refName: string; length: number }[]>()
+    for (const [genome, sizes] of raw) {
+      const mapped = map[genome] ?? genome
+      remapped.set(mapped, sizes)
+    }
+    return remapped
   }
 
   public async hasDataForRefName() {
@@ -252,7 +280,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         await this.alnFile!.getLines(candidate, start, end, {
           lineCallback: (line, fileOffset) => {
             const cols = line.split('\t')
-            const queryGenome = cols[3]!
+            const queryGenome = this.remapGenome(cols[3]!)
             const mateRefName = cols[4]!
             const mateStart = +cols[5]!
             const mateEnd = +cols[6]!
@@ -377,8 +405,9 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
 
     for (const [otherPath, segments] of otherSegments) {
-      const { genome: genomeName, refName: mateRefName } =
+      const { genome: rawGenome, refName: mateRefName } =
         parseGfaPathName(otherPath)
+      const genomeName = this.remapGenome(rawGenome)
 
       if (!genomeRows.has(genomeName)) {
         genomeRows.set(genomeName, [])

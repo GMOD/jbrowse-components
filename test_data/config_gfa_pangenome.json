@@ -62,8 +62,7 @@
             "uri": "volvox/volvox_pangenome.aln.bed.gz.tbi",
             "locationType": "UriLocation"
           }
-        },
-        "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"]
+        }
       },
       "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"],
       "displays": [
@@ -101,8 +100,7 @@
         "segmentsIdxLocation": {
           "uri": "volvox/volvox_pangenome.segments.idx",
           "locationType": "UriLocation"
-        },
-        "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"]
+        }
       },
       "assemblyNames": ["ref#1", "sample1#1", "sample2#1", "sample3#1"],
       "displays": [

@@ -31,14 +31,20 @@ export type RpcDriverFactory = (
 export default class RpcManager {
   static configSchema = rpcConfigSchema
 
+  pluginManager: PluginManager
+  mainConfiguration: AnyConfigurationModel
+  backendConfigurations: BackendConfigurations
   driverObjects: Map<string, DriverClass>
   driverFactories: Map<string, RpcDriverFactory>
 
   constructor(
-    public pluginManager: PluginManager,
-    public mainConfiguration: AnyConfigurationModel,
-    public backendConfigurations: BackendConfigurations,
+    pluginManager: PluginManager,
+    mainConfiguration: AnyConfigurationModel,
+    backendConfigurations: BackendConfigurations,
   ) {
+    this.pluginManager = pluginManager
+    this.mainConfiguration = mainConfiguration
+    this.backendConfigurations = backendConfigurations
     this.driverObjects = new Map()
     this.driverFactories = new Map()
 

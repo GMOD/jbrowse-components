@@ -167,15 +167,18 @@ Current rendering re-runs full canvas clear + redraw on every scroll pixel:
 
 ### Precompute aln.bed.gz in Rust Tool
 
-The Node.js `make-gfa-tabix` stores all segment sequences in memory. For large
-genomes:
+The Rust `gfa-to-tabix` does not yet produce aln.bed.gz (base-level pairwise
+alignments with cs tags). The adapter supports reading aln.bed.gz when
+available, falling back to segment-based runtime CIGAR.
 
-- Add aln.bed.gz generation to the Rust `tools/gfa-to-tabix`
-- Stream segment sequences during pass 1 (already reads S-lines)
-- Compute pairwise alignments during pass 2 (walking paths)
-- Memory: O(segments \* avg_seq_len) for sequence storage — needs careful
-  management
-- For very large genomes, consider disk-backed sequence storage
+To add aln support to the Rust tool:
+
+- Pass 1 already reads S-lines — store sequences for GFAs that have them
+- Pass 3 (new): compute pairwise alignments using shared segment anchors
+- Emit bidirectional rows (A→B and B→A via cs flip) so any genome works as ref
+- Memory: O(segments × avg_seq_len) for sequences — skip for all-N sequences
+  (minigraph-cactus) or very large genomes
+- For GFAs without sequences (most HPRC data), this step is skipped entirely
 
 ---
 
@@ -290,14 +293,18 @@ based linking for GFA, coordinate chaining for PAF.
 
 For future scale beyond tabix (hundreds of genomes, complex graph queries).
 
-### S3 Data Regeneration
+### S3 Data Upload
 
-Regenerate HPRC chrM data with aln.bed.gz using the v1.1-mc chrM GFA source:
+HPRC chrM and chr20 data has been regenerated using the Rust converter with
+per-chromosome .vg files from HPRC (converted to GFA via `vg convert`).
 
-- Download HPRC v1.1 minigraph-cactus chrM GFA (contains segment sequences)
-- Run `make-gfa-tabix` to generate pos.bed.gz + segments.gz + aln.bed.gz
-- Upload to `s3://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/`
-- Update config_hprc_chrM.json to reference aln files
+Build script: `test/data/synteny-demo/scripts/build-gfa-tabix.sh`
+
+Upload:
+```bash
+aws s3 sync test/data/synteny-demo/gfa-tabix-output/ \
+  s3://jbrowse.org/demos/gfadata/ --exclude 'downloads/*'
+```
 
 ### MAF/TAF Integration
 
@@ -335,7 +342,7 @@ For base-level multiple alignment at zoomed-in views:
 - **Multi-pair PIF with cs tags**: Generate from minimap2 `--cs` for
   multi-genome comparison (currently have single-pair only)
 
-- **HPRC chrM with aln.bed.gz**: Regenerate from v1.1-mc GFA source to get
-  precomputed base-level cs tags (see S3 Data Regeneration above)
+- **HPRC chrM and chr20**: Regenerated from v1.1-mc per-chromosome .vg files
+  via `vg convert` → Rust `gfa-to-tabix`. Available locally and for S3 upload.
 
 - **C. elegans multi-species PAF**: Small genomes, good for integration testing

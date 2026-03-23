@@ -82,8 +82,7 @@
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
-        },
-        "assemblyNames": ["Col-0", "Ler", "Cvi", "Eri"]
+        }
       },
       "assemblyNames": ["Col-0", "Ler", "Cvi", "Eri"]
     },
@@ -104,8 +103,7 @@
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
-        },
-        "assemblyNames": ["Col-0", "Ler", "Cvi", "Eri"]
+        }
       },
       "assemblyNames": ["Col-0", "Ler", "Cvi", "Eri"]
     }

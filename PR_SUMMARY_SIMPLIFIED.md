@@ -120,9 +120,103 @@ No per-reference indexes, no N^2 pairwise precomputation.
 
 ## Optional: Base-Level Detail (`aln.bed.gz`)
 
-Segments show **where** genomes align. An optional third file adds **how** —
-`make-gfa-tabix` precomputes pairwise cs tags at index time, enabling SNP/indel
-coloring when zoomed in.
+Segments show **where** genomes align but not **how** — without sequences, the
+adapter can only report that two genomes share a segment, not whether they
+differ at individual bases within a bubble. The optional `aln.bed.gz` file adds
+base-level resolution by precomputing pairwise alignments at index time.
+
+### When is it generated?
+
+`aln.bed.gz` is only generated when the GFA file contains actual segment
+sequences (not `*` placeholders). The converter checks
+`segmentSequences.size > 0` — if all S-lines have `*` for their sequence field
+(common in large pangenome GFAs distributed without sequences), the aln step is
+skipped. GFA files from pggb typically include sequences; minigraph-cactus
+output often omits them.
+
+### How it works
+
+The converter walks every pair of paths (first genome as reference vs each
+other genome) and uses **shared segments as alignment anchors**:
+
+```
+ref path:     s1 ── s2 ── s3 ── s4 ── s5
+query path:   s1 ── s2 ── s6 ── s4 ── s5
+                          ↑
+                    "bubble" — ref has s3, query has s6
+```
+
+1. **Find shared segments** between the ref path and query path (s1, s2, s4, s5
+   above). These are anchors where both genomes traverse the same graph node.
+
+2. **Walk between anchors** to find "bubbles" — regions where each path takes
+   different segments. Between s2 and s4, the ref has s3 and the query has s6.
+
+3. **Compare bubble sequences** base-by-base using the actual segment DNA
+   sequences from the GFA:
+   - Same length → base-by-base comparison producing `:N` (match) and `*xy`
+     (substitution) cs operations
+   - Ref-only sequence → `-seq` (deletion in query)
+   - Query-only sequence → `+seq` (insertion in query)
+   - Different lengths → emit as deletion + insertion
+
+4. **Merge into alignment blocks.** Consecutive same-strand shared segments and
+   their intervening bubbles are merged into a single alignment block with a
+   composite cs tag. Strand changes (inversions) break the block.
+
+### Example
+
+```
+ref:     s1(100bp) ── s2(200bp) ── s3(150bp, ref-only) ── s4(80bp)
+query:   s1(100bp) ── s2(200bp) ── s6(90bp, query-only) ── s4(80bp)
+
+Shared anchors: s1, s2, s4
+Bubble between s2 and s4: ref has s3 (150bp), query has s6 (90bp)
+
+cs tag: :100:200-<s3 seq lowercase>+<s6 seq lowercase>:80
+        ^^^  ^^^                                       ^^
+        s1   s2   deletion(150bp)  insertion(90bp)     s4
+
+aln.bed.gz row:
+ref#1#chr1  0  530  query#1  chr1  0  470  +  :100:200-aaccgg...+ttggcc...:80
+```
+
+### How it's used at runtime
+
+When `aln.bed.gz` is configured and available, the GfaTabixAdapter
+**skips segment-based merging entirely** and reads precomputed alignment blocks
+directly. This is the `isAlnAvailable()` check — if it returns true,
+`getMultiPairFeaturesFromAln()` is used instead of
+`getMultiPairFeaturesFromSegments()`.
+
+The cs tag is converted to CIGAR for rendering and used to compute per-feature
+identity (match bases / total aligned bases). This enables:
+- **SNP coloring** when zoomed to base level
+- **Insertion/deletion visualization** in the synteny display
+- **Identity shading** based on actual sequence similarity, not just segment
+  sharing
+
+### Without `aln.bed.gz`
+
+When the aln file is absent, the adapter falls back to segment-based merging.
+This produces synteny blocks with approximate CIGAR strings derived from segment
+length gaps (e.g., "150bp ref gap + 90bp query gap → 90X60D") but without
+base-level accuracy. Identity is estimated from segment sharing patterns rather
+than sequence comparison. This mode is faster to generate and sufficient for
+structural overview.
+
+### Bidirectional: any genome as reference
+
+The converter computes alignments for **all genome pairs**, not just from a
+single reference. For each pair (A, B), it computes A→B using shared segment
+anchors, then derives B→A by swapping coordinates and flipping the cs tag
+(`+seq` ↔ `-seq`, `*xy` → `*yx`). This means `aln.bed.gz` is queryable from
+any genome as reference — the same "any genome as reference" property as the
+segment index.
+
+The cost is ~2× the rows compared to single-reference (each pair produces two
+rows instead of one), but the computation is only done once per pair — the
+reverse direction is derived algebraically, not recomputed.
 
 ## GFA Compatibility
 

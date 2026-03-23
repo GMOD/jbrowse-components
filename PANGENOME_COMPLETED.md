@@ -1,6 +1,6 @@
 # Pangenome Synteny: Completed Work
 
-## CLI (`jbrowse make-pif`, `jbrowse make-gfa-db`, `jbrowse make-gfa-tabix`)
+## CLI (`jbrowse make-pif`, `jbrowse make-gfa-db`) and `gfa-to-tabix` (Rust)
 
 - 3-tier PIF format: full (t/q with CIGAR), summary (st/sq with
   absolute-position indels), structural (xt/xq with SyRI types)
@@ -15,15 +15,17 @@
   tables
   - Supports P-lines (GFA1) and W-lines (GFA1.1+), assembly filtering
   - Uses `node:sqlite` (built-in), indexed by path + cumulative_offset
-- `jbrowse make-gfa-tabix` converts GFA → tabix-indexed files for runtime
-  synteny
-  - `*.pos.bed.gz` — position → segment ordinal mapping per genome path
-  - `*.segs.bed.gz` — segment ordinal → position mapping across all genomes
-  - `*.aln.bed.gz` — precomputed pairwise alignments with cs tags (base-level
-    detail)
-  - Both indexed with `tabix -p bed`, supports comment headers
+- `gfa-to-tabix` (Rust, `tools/gfa-to-tabix/`) converts GFA → tabix-indexed
+  files for runtime synteny
+  - Two-pass streaming: O(segments) memory, handles multi-GB GFA files
+  - `*.pos.bed.gz` + `.tbi` — position → segment ordinal mapping per genome path
+  - `*.segments.gz` + `.gzi` + `.idx` — segment → position reverse index with
+    bgzip companion byte-offset index
+  - Combined mode (default) or `--sharded` mode (one segments file per genome
+    with manifest JSON)
   - Configurable chunk size (default 100 segments per pos chunk)
   - Assembly filtering via `--assemblies` flag
+  - Tested at HPRC scale: chr20 (1GB GFA, 90 haplotypes, 1.86M segments)
 - cs tag support in make-pif: `cs:Z:` tags preserved in full-tier lines,
   stripped from summary tiers
 - `flipCs` function properly swaps cs tag perspective for q-prefix lines
@@ -45,21 +47,15 @@
 - 16 unit tests for cs utilities (csToCigar + flipCs including self-inverse
   property)
 
-## GFA Alignment Preprocessing (aln.bed.gz)
+## GFA Alignment Preprocessing (aln.bed.gz) — Future
 
-- `make-gfa-tabix` stores segment sequences from GFA S-lines in memory
-- After writing pos/segs files, computes pairwise alignments for each query
-  genome vs reference
-- Walks shared segment anchors, detects bubbles between them
-- Bubble cs computation: shared segments → `:N`, ref-only → `-seq`, query-only →
-  `+seq`, equal-length both → base-by-base comparison producing `*XY`
-  substitution ops
-- `computeBubbleCs()` and `baseByBaseCs()` functions with revcomp support for
-  negative strand segments
-- Output: `aln.bed.gz` (tabix-indexed) with format:
-  `refPath\tstart\tend\tqueryGenome\tqueryChrom\tqStart\tqEnd\tstrand\tcs`
-- Tested with volvox_pangenome.gfa (4 genomes, 12 segments, real sequences —
-  verified base-level SNPs in cs output)
+- aln.bed.gz format is defined and the adapter supports it, but the Rust
+  converter does not yet generate it
+- When available: precomputed pairwise alignments with cs tags for base-level
+  SNP/indel coloring
+- Format: `refPath\tstart\tend\tqueryGenome\tqueryChrom\tqStart\tqEnd\tstrand\tcs`
+- Adapter auto-detects: uses aln.bed.gz when configured, falls back to
+  segment-based runtime CIGAR otherwise
 
 ## GfaTabixAdapter Enhancements
 
@@ -102,17 +98,23 @@
   tracking
 - cs tag extraction from PAF `cs:Z:` field into MultiPairFeature
 
-## GfaTabixAdapter (A1)
+## GfaTabixAdapter and ShardedGfaTabixAdapter (A1)
 
-- Runtime GFA synteny adapter using `@gmod/tabix` — zero new dependencies
-- Reads pos.bed.gz + segs.bed.gz + optional aln.bed.gz tabix files
-- `getMultiPairFeatures()`: 2-3 tabix queries per call (O(1) regardless of
-  genome count)
+- Two adapter types sharing a base class (`BaseGfaTabixAdapter`):
+  - `GfaTabixAdapter` — combined segments.gz (single file)
+  - `ShardedGfaTabixAdapter` — per-genome segments files with manifest JSON
+- Reads pos.bed.gz + segments.gz (+ .gzi + .idx) + optional aln.bed.gz
+- `getMultiPairFeatures()`: tabix query + byte-range segment lookup
 - Synteny projection: query ref region → get segment ordinals → find all genome
-  positions
-- HTTP range request compatible — works with remote files, no WASM needed
-- Registered in comparative-adapters plugin with `GfaTabixAdapter` config schema
+  positions via companion byte-offset index
+- HTTP range request compatible — works with remote files
+- `assemblyNameMap` config: optional remapping of file genome names to JBrowse
+  assembly names (e.g., `GRCh38#0` → `hg38`)
+- Assembly names derived from file header (`#genomes=...`), no need to configure
+  `assemblyNames` on the adapter
 - Prefix-based config shorthand for minimal configuration
+- Registered in comparative-adapters plugin with `syntenyTypes` and
+  `multiPairTypes`
 
 ## Assembly Auto-Creation from GFA Paths (A4)
 
@@ -138,10 +140,19 @@
 
 ## Streaming GFA Conversion - Rust Tool (A3)
 
-- `tools/gfa-to-tabix/` — Rust CLI for GFA→tabix conversion at pangenome scale
+- `tools/gfa-to-tabix/` — sole converter, replaces previous TS implementation
 - Two-pass streaming: O(segments) memory, handles multi-GB GFA files
-- HPRC chr20 (1GB GFA, 90 haplotypes, 1.86M segments) → 12MB pos.bed.gz + 584MB
-  segs.bed.gz in ~4.5 min
+- Pass 1: read S-lines → segment lengths + ordinals
+- Pass 2: read P/W-lines → stream pos.bed.gz + segments rows to temp file →
+  external sort → build companion byte-offset index → bgzip
+- Combined mode (single segments.gz) or `--sharded` (per-genome segments files)
+- Output: `segments.gz` + `.gzi` + `.idx` (bgzip with companion byte-offset
+  index, not tabix)
+- HPRC chr20 (1GB GFA, 90 haplotypes, 1.86M segments) → 12MB pos.bed.gz + 541MB
+  segments.gz
+- Build: `cargo build --release --manifest-path tools/gfa-to-tabix/Cargo.toml`
+- Build script: `test/data/synteny-demo/scripts/build-gfa-tabix.sh` downloads
+  HPRC per-chromosome .vg files, converts via `vg convert`, then indexes
 
 ## MultiLGVSyntenyDisplay (B1, A2, B3, B4)
 
@@ -170,18 +181,19 @@
 
 ## Testing
 
-### Unit Tests (37+ tests, 4 suites)
+### Unit Tests (98 tests, 10 suites)
 
-- **csUtils** (16 tests): csToCigar (10 — match runs, substitutions, insertions,
-  deletions, mixed ops, GFA bubble cs, empty, zero-length, long sequences),
-  flipCs (6 — preserves matches, swaps bases, swaps I/D, mixed ops, empty,
-  self-inverse property)
-- **GFA→Tabix** (11 tests): file creation + indexing, pos/segs queries, segment
-  ordinal ranges, shared segments, synteny projection, assembly filtering, chunk
-  size, aln.bed.gz generation with cs tags, cs substitution detection
-- **GfaTabixAdapter** (11 tests): multi-genome features, shared segments, empty
-  regions, featureId uniqueness, strand, getAssemblyNames, chromSizes (+ 1
-  remote HPRC test)
+- **csUtils** (16 tests): csToCigar, flipCs with self-inverse property
+- **gfa-to-tabix converter** (11 tests): file creation, pos/segs queries,
+  segment ordinals, shared segments, synteny projection, assembly filtering,
+  chunk size, sharded mode with manifest, sharded/combined parity
+- **GfaTabixAdapter** (22 tests): multi-genome features, shared segments, empty
+  regions, featureId uniqueness, strand, chromSizes, assemblyNamesFromHeader,
+  assemblyNameMap remapping (features, chromSizes, header), HPRC chrM (44
+  haplotypes — full-chromosome query, mid-region subset, snapshot at chrM:8000,
+  reciprocal query from non-reference genome, segment merging, performance)
+- **ShardedGfaTabixAdapter** (4 tests): round-trip conversion + query, combined
+  vs sharded parity, chromSizes, assemblyNamesFromHeader
 - **PairwiseIndexedPAFAdapter** (27 tests): coordinates, CIGAR, multi-pair,
   syriType, LOD tiers
 
@@ -213,9 +225,10 @@
 
 ## Key Design Decisions Resolved
 
-1. **GFA indexing strategy**: Tabix-based (3 files: pos.bed.gz + segs.bed.gz +
-   optional aln.bed.gz). Zero new deps, HTTP range request support, proven at
-   HPRC scale.
+1. **GFA indexing strategy**: pos.bed.gz (tabix) + segments.gz (bgzip with
+   companion byte-offset index). Combined or sharded (per-genome) modes. HTTP
+   range request support, proven at HPRC scale (90 haplotypes, 1.86M segments).
+   Converter is Rust-only for scalable memory usage.
 2. **Multi-pair PIF vs runtime projection**: Both supported — PIF for
    pre-computed pairwise, GfaTabixAdapter for runtime graph-based projection.
 3. **cs tag as first-class**: cs preferred over CIGAR when available, rendered

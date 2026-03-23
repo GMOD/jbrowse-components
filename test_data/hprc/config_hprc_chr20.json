@@ -31,27 +31,7 @@
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
-        "posLocation": {
-          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.pos.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "posIndex": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.pos.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "segsLocation": {
-          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.segs.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "segsIndex": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.segs.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "assemblyNames": ["GRCh38#0"]
+        "prefix": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20"
       },
       "assemblyNames": ["GRCh38#0"]
     }

@@ -72,27 +72,7 @@
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
-        "posLocation": {
-          "uri": "chrM_pangenome.pos.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "posIndex": {
-          "location": {
-            "uri": "chrM_pangenome.pos.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "segsLocation": {
-          "uri": "chrM_pangenome.segs.bed.gz",
-          "locationType": "UriLocation"
-        },
-        "segsIndex": {
-          "location": {
-            "uri": "chrM_pangenome.segs.bed.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        },
-        "assemblyNames": ["grch38#1", "chm13#1", "HG00438#2", "HG00621#2"]
+        "prefix": "chrM_pangenome"
       },
       "assemblyNames": ["grch38#1", "chm13#1", "HG00438#2", "HG00621#2"]
     }

@@ -113,7 +113,7 @@
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/mst-reflection": "./src/util/mst-reflection.ts",
-    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.tsx",
+    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/offscreenCanvasUtils": "./src/util/offscreenCanvasUtils.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
     "./util/QuickLRU": "./src/util/QuickLRU/index.ts",

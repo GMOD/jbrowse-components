@@ -11,11 +11,11 @@ const GfaTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
+    assemblyNameMap: {
+      type: 'frozen',
+      defaultValue: {} as Record<string, string>,
       description:
-        'Array of assembly names (genome sample names from GFA paths)',
+        'Map from file genome names (e.g. GRCh38#0) to JBrowse assembly names (e.g. hg38)',
     },
     /**
      * #slot
@@ -117,8 +117,7 @@ const GfaTabixAdapter = ConfigurationSchema(
      * ```json
      * {
      *   "type": "GfaTabixAdapter",
-     *   "prefix": "https://example.com/data/pangenome",
-     *   "assemblyNames": ["ref#1", "sample1#1"]
+     *   "prefix": "https://example.com/data/pangenome"
      * }
      * ```
      */

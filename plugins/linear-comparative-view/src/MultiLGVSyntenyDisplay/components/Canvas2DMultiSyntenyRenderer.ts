@@ -42,8 +42,16 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
     displayedGenomes: string[],
     opts: MultiSyntenyRenderOpts,
   ) {
-    const { width, height, rowHeight, bpPerPx, offsetPx, colorBy, labelW } =
-      opts
+    const {
+      width,
+      height,
+      rowHeight,
+      bpPerPx,
+      offsetPx,
+      displayedRegionStart,
+      colorBy,
+      labelW,
+    } = opts
     const showLabels = labelW > 0
     const ctx = this.ctx
 
@@ -73,8 +81,10 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyBackend {
 
       const padding = rowHeight >= 6 ? 1 : 0
       for (const feat of features) {
-        const x1 = feat.start / bpPerPx - offsetPx + labelW
-        const x2 = feat.end / bpPerPx - offsetPx + labelW
+        const x1 =
+          (feat.start - displayedRegionStart) / bpPerPx - offsetPx + labelW
+        const x2 =
+          (feat.end - displayedRegionStart) / bpPerPx - offsetPx + labelW
         const blockWidth = Math.max(x2 - x1, 1)
 
         if (x1 + blockWidth < labelW || x1 > width) {

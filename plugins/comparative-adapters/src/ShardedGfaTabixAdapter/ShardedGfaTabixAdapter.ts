@@ -50,23 +50,32 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
       const manifestLoc = this.getConf(
         'segmentsManifestLocation',
       ) as FileLocation
-      const baseUri =
-        'uri' in manifestLoc ? manifestLoc.uri.replace(/[^/]*$/, '') : ''
-      const shardBase = baseUri + shardPrefix
+
+      let baseDir = ''
+      if ('localPath' in manifestLoc) {
+        baseDir = manifestLoc.localPath.replace(/[^/]*$/, '')
+      } else if ('uri' in manifestLoc) {
+        baseDir = manifestLoc.uri.replace(/[^/]*$/, '')
+      }
+      const shardBase = baseDir + shardPrefix
+
+      const locationType =
+        'localPath' in manifestLoc ? 'LocalPathLocation' : 'UriLocation'
+      const locKey = 'localPath' in manifestLoc ? 'localPath' : 'uri'
 
       const shard: SegsShard = {
         bgzf: new BgzfFilehandle({
           filehandle: openLocation(
-            { uri: `${shardBase}.gz`, locationType: 'UriLocation' },
+            { [locKey]: `${shardBase}.gz`, locationType },
             pm,
           ),
           gziFilehandle: openLocation(
-            { uri: `${shardBase}.gz.gzi`, locationType: 'UriLocation' },
+            { [locKey]: `${shardBase}.gz.gzi`, locationType },
             pm,
           ),
         }),
         idxFile: openLocation(
-          { uri: `${shardBase}.idx`, locationType: 'UriLocation' },
+          { [locKey]: `${shardBase}.idx`, locationType },
           pm,
         ),
       }

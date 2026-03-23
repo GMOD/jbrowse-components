@@ -92,8 +92,7 @@
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
-        "prefix": "https://jbrowse.org/demos/gfadata/athaliana/athaliana_chr1",
-        "assemblyNames": ["Col-0#1", "Ler#1", "Cvi#1", "Eri#1"]
+        "prefix": "https://jbrowse.org/demos/gfadata/athaliana/athaliana_chr1"
       },
       "assemblyNames": ["Col-0#1", "Ler#1", "Cvi#1", "Eri#1"]
     }

@@ -35,8 +35,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const { genomeRows, displayedGenomes, rowHeight, colorBy, height } = model
-  const { width, bpPerPx, offsetPx } = view
+  const { width, bpPerPx, offsetPx, displayedRegions } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+  const displayedRegionStart = displayedRegions[0]?.start ?? 0
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -72,6 +73,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         rowHeight,
         bpPerPx,
         offsetPx,
+        displayedRegionStart,
         colorBy,
         labelW,
       })
@@ -85,6 +87,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     rowHeight,
     bpPerPx,
     offsetPx,
+    displayedRegionStart,
     colorBy,
     labelW,
   ])
@@ -108,8 +111,8 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       }
 
       for (const feat of features) {
-        const x1 = feat.start / bpPerPx - offsetPx + labelW
-        const x2 = feat.end / bpPerPx - offsetPx + labelW
+        const x1 = (feat.start - displayedRegionStart) / bpPerPx - offsetPx + labelW
+        const x2 = (feat.end - displayedRegionStart) / bpPerPx - offsetPx + labelW
         if (mouseX >= x1 && mouseX <= x2) {
           const refSize = feat.end - feat.start
           const querySize = feat.mateEnd - feat.mateStart
@@ -130,7 +133,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       }
       setTooltip(t => (t.open ? { text: '', open: false } : t))
     },
-    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx, labelW],
+    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx, displayedRegionStart, labelW],
   )
 
   const onMouseLeave = useCallback(() => {

@@ -55,6 +55,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
     .volatile(() => ({
       genomeRows: new Map<string, MultiPairFeature[]>(),
       allGenomeNames: [] as string[],
+      loading: false,
       error: undefined as unknown,
       contextMenuFeature: undefined as Feature | undefined,
     }))
@@ -88,6 +89,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names
+      },
+      setLoading(flag: boolean) {
+        self.loading = flag
       },
       setColorBy(value: string) {
         self.colorBy = value

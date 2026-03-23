@@ -1,7 +1,7 @@
 import { CanvasSequence } from 'canvas-sequencer-ts'
 
 import { blobToDataURL } from './blobToDataURL.ts'
-import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill.tsx'
+import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill.ts'
 
 interface ExportSVGOptions {
   rasterizeLayers?: boolean
