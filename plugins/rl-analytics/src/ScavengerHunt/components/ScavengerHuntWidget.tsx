@@ -1,50 +1,27 @@
 import { Box, Button, Chip, Typography } from '@mui/material'
-import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import type { ActionType } from '../../ActionLogger/ActionTypes.ts'
 import type { TaskConfig } from '../../RLPipeline/types.ts'
-import locale from '../locale/en.ts'
+import type GameEngine from '../GameEngine.ts'
+import type { NarratorEntry } from '../GameEngine.ts'
 import type { ScavengerHuntWidgetModel } from '../model.ts'
-import TaskValidator from '../TaskValidator.ts'
 
 import AnswerInput from './AnswerInput.tsx'
 import AwardChips from './AwardChips.tsx'
-import AwardSnackbar from './AwardSnackbar.tsx'
 import CompletionScreen from './CompletionScreen.tsx'
 import FloatingPanel from './FloatingPanel.tsx'
-import NarratorLog, { type NarratorEntry } from './NarratorLog.tsx'
+import NarratorLog from './NarratorLog.tsx'
 import ProgressBar from './ProgressBar.tsx'
-import TierGate from './TierGate.tsx'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let actionLogRef: any[] = []
-let nextEntryId = 0
+/**
+ * Module-level reference to the GameEngine instance.
+ * Set by the plugin in configure(), read by the widget.
+ */
+let gameEngineRef: GameEngine | null = null
 
-export function pushActionForValidation(actionType: ActionType) {
-  actionLogRef.push(actionType)
-}
-
-export function resetActionLog() {
-  actionLogRef = []
-}
-
-function getView(model: ScavengerHuntWidgetModel) {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const session = getSession(model) as any
-    return session?.views?.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (v: any) => v.type === 'LinearGenomeView',
-    )
-  } catch {
-    return null
-  }
-}
-
-function t(key: string): string {
-  return (locale as Record<string, string>)[key] ?? ''
+export function setGameEngine(engine: GameEngine) {
+  gameEngineRef = engine
 }
 
 const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
@@ -52,154 +29,92 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
 }: {
   model: ScavengerHuntWidgetModel
 }) {
-  const [narratorLog, setNarratorLog] = useState<NarratorEntry[]>([])
-  const [taskStarted, setTaskStarted] = useState(false)
-  const autoValidateRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [, forceUpdate] = useState(0)
+  const startedTaskRef = useRef<string | null>(null)
+  const engine = gameEngineRef
 
+  // Re-render when engine state changes
+  useEffect(() => {
+    if (engine) {
+      engine.setOnChange(() => {
+        forceUpdate(n => n + 1)
+      })
+    }
+  }, [engine])
+
+  // Start task when currentTask changes
   const currentTask = model.currentTask as TaskConfig | undefined
-
-  const addNarratorEntry = useCallback(
-    (text: string, type: NarratorEntry['type']) => {
-      if (!text) {
-        return
-      }
-      setNarratorLog(prev => [...prev, { id: nextEntryId++, text, type }])
-    },
-    [],
-  )
-
-  const makeValidator = useCallback(
-    () =>
-      new TaskValidator(
-        () => getView(model),
-        () => [...actionLogRef] as ActionType[],
-      ),
-    [model],
-  )
-
-  // Auto-advance: validate every 500ms
   useEffect(() => {
-    if (!currentTask || model.isGated || model.isComplete) {
-      return
-    }
-
-    const needsTextAnswer =
-      currentTask.type === 'identify' ||
-      currentTask.type === 'compare' ||
-      currentTask.type === 'freeform'
-
-    autoValidateRef.current = setInterval(() => {
-      if (needsTextAnswer && !model.answers.get(currentTask.id)) {
-        return
-      }
-
-      const validator = makeValidator()
-      const result = validator.validate(currentTask, model)
-
-      if (result.valid) {
-        const line = t(`task.${currentTask.id}.success`)
-        if (line) {
-          addNarratorEntry(line, 'success')
-        }
-        if (currentTask.awardOnComplete) {
-          model.addAward(currentTask.awardOnComplete)
-        }
-        model.completeCurrentTask()
-      }
-    }, 500)
-
-    return () => {
-      if (autoValidateRef.current) {
-        clearInterval(autoValidateRef.current)
-      }
-    }
-  }, [currentTask, model, model.isGated, model.isComplete, makeValidator, addNarratorEntry])
-
-  // Show intro narrator line when task starts
-  useEffect(() => {
-    if (currentTask && !taskStarted) {
+    if (currentTask && engine && startedTaskRef.current !== currentTask.id) {
+      startedTaskRef.current = currentTask.id
       model.startCurrentTask()
-      resetActionLog()
-      setTaskStarted(true)
-
-      const line = t(`task.${currentTask.id}.intro`)
-      if (line) {
-        addNarratorEntry(line, 'intro')
-      }
+      engine.startTask(currentTask)
     }
-  }, [currentTask, taskStarted, model, addNarratorEntry])
+  }, [currentTask, engine, model])
 
-  // Show welcome message on first mount
-  useEffect(() => {
-    const welcomeLine = t('narrator.welcome')
-    if (welcomeLine) {
-      addNarratorEntry(welcomeLine, 'system')
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    setTaskStarted(false)
-    resetActionLog()
-  }, [model.currentTaskIndex])
-
-  // Watch for new awards and log them
-  useEffect(() => {
-    const award = model.latestAward
-    if (award) {
-      const line = t(`award.${award.id}.earned`) || award.flavorText || award.description
-      addNarratorEntry(line, 'award')
-    }
-  }, [model.latestAward, addNarratorEntry])
-
-  const renderContent = () => {
-    if (model.isComplete) {
-      if (!model.completionCode) {
-        void model.generateCompletionCode()
-      }
-      addNarratorEntry(t('narrator.graduation'), 'success')
-      return <CompletionScreen model={model} />
-    }
-
-    if (!currentTask) {
-      return (
-        <Typography variant="body2" sx={{ p: 2, fontStyle: 'italic' }}>
-          Waiting for tasks...
-        </Typography>
-      )
-    }
-
-    const needsTextAnswer =
-      currentTask.type === 'identify' ||
-      currentTask.type === 'compare' ||
-      currentTask.type === 'freeform'
-
-    const handleManualSubmit = () => {
-      const validator = makeValidator()
-      const result = validator.validate(currentTask, model)
-      if (result.valid) {
-        const line = t(`task.${currentTask.id}.success`)
-        if (line) {
-          addNarratorEntry(line, 'success')
-        }
-        if (currentTask.awardOnComplete) {
-          model.addAward(currentTask.awardOnComplete)
-        }
-        model.completeCurrentTask()
-      } else {
-        addNarratorEntry(
-          result.reason ?? t('validate.answer_wrong'),
-          'hint',
-        )
-      }
-    }
-
-    const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
-      currentTask.tier
-    ]
-
+  if (!engine) {
     return (
-      <>
+      <Box sx={{ p: 2 }}>
+        <Typography variant="body2">Initializing...</Typography>
+      </Box>
+    )
+  }
+
+  const narratorLog = engine.getNarratorLog() as NarratorEntry[]
+
+  // Completion screen
+  if (model.isComplete) {
+    if (!model.completionCode) {
+      void model.generateCompletionCode()
+    }
+    return (
+      <FloatingPanel title="Quest">
+        <Box sx={{ p: 1.5 }}>
+          <NarratorLog entries={narratorLog} />
+          <CompletionScreen model={model} />
+        </Box>
+      </FloatingPanel>
+    )
+  }
+
+  if (!currentTask) {
+    return (
+      <FloatingPanel title="Quest">
+        <Box sx={{ p: 1.5 }}>
+          <NarratorLog entries={narratorLog} />
+          <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+            Waiting for tasks...
+          </Typography>
+        </Box>
+      </FloatingPanel>
+    )
+  }
+
+  // Check tier gating
+  const missingAwards = engine.getMissingAwards(currentTask)
+  const isGated = missingAwards.length > 0
+
+  const needsTextAnswer =
+    currentTask.type === 'identify' ||
+    currentTask.type === 'compare' ||
+    currentTask.type === 'freeform'
+
+  const handleSubmit = useCallback(() => {
+    const result = engine.tryAutoValidate()
+    if (result && !result.valid && result.reason) {
+      // The engine handles narrator entries for success;
+      // for failure we just let the log show the last validation error
+    }
+  }, [engine])
+
+  const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
+    currentTask.tier
+  ]
+
+  return (
+    <FloatingPanel title="Quest">
+      <Box sx={{ p: 1.5 }}>
+        {/* Header: tier + progress */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           <Chip
             label={tierLabel}
@@ -216,13 +131,32 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
           <ProgressBar model={model} />
         </Box>
 
+        {/* Awards earned */}
         <AwardChips model={model} />
 
-        {model.isGated ? (
-          <TierGate model={model} />
+        {/* Scrollable narrator history */}
+        <NarratorLog entries={narratorLog} />
+
+        {/* Tier gate or active task */}
+        {isGated ? (
+          <Box sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1, mb: 1 }}>
+            <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+              Before continuing:
+            </Typography>
+            {missingAwards.map(id => {
+              const def = model.awardDefinitions.find(
+                (a: { id: string }) => a.id === id,
+              )
+              return (
+                <Typography key={id} variant="body2" sx={{ ml: 1 }}>
+                  Earn &quot;{def?.name ?? id}&quot;
+                </Typography>
+              )
+            })}
+          </Box>
         ) : (
           <>
-            {/* Current task description */}
+            {/* Current task */}
             <Box
               sx={{
                 p: 1.5,
@@ -241,6 +175,7 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
               </Typography>
             </Box>
 
+            {/* Text answer input */}
             {needsTextAnswer && (
               <>
                 <AnswerInput
@@ -248,13 +183,14 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
                   currentAnswer={model.answers.get(currentTask.id) ?? ''}
                   onSubmit={answer => {
                     model.submitAnswer(answer)
+                    engine.onAnswerSubmit(answer)
                   }}
                 />
                 <Button
                   variant="outlined"
                   size="small"
                   sx={{ mt: 1 }}
-                  onClick={handleManualSubmit}
+                  onClick={handleSubmit}
                 >
                   Submit
                 </Button>
@@ -262,6 +198,20 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
             )}
 
             {/* Hints */}
+            {currentTask.hints.length > 0 && (
+              <Button
+                variant="text"
+                size="small"
+                sx={{ mt: 0.5, fontSize: '0.75rem' }}
+                onClick={() => {
+                  model.revealHint()
+                }}
+              >
+                {model.currentHintsRevealed < currentTask.hints.length
+                  ? `Need a hint? (${currentTask.hints.length - model.currentHintsRevealed} available)`
+                  : 'All hints shown'}
+              </Button>
+            )}
             {model.currentHintsRevealed > 0 &&
               currentTask.hints
                 .slice(0, model.currentHintsRevealed)
@@ -279,37 +229,11 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
                       fontSize: '0.75rem',
                     }}
                   >
-                    Hint: {hint}
+                    {hint}
                   </Typography>
                 ))}
-            {model.currentHintsRevealed < currentTask.hints.length && (
-              <Button
-                variant="text"
-                size="small"
-                sx={{ mt: 0.5, fontSize: '0.75rem' }}
-                onClick={() => {
-                  model.revealHint()
-                }}
-              >
-                Need a hint? ({currentTask.hints.length - model.currentHintsRevealed} available)
-              </Button>
-            )}
           </>
         )}
-      </>
-    )
-  }
-
-  return (
-    <FloatingPanel title="Quest">
-      <Box sx={{ p: 1.5 }}>
-        {/* Scrollable narrator history */}
-        <NarratorLog entries={narratorLog} />
-
-        {/* Active task content */}
-        {renderContent()}
-
-        <AwardSnackbar model={model} />
       </Box>
     </FloatingPanel>
   )

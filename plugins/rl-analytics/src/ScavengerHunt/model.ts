@@ -22,10 +22,16 @@ async function sha256Hex(data: string): Promise<string> {
     .join('')
 }
 
+const ZoomRangeModel = types.model('ZoomRange', {
+  min: types.maybe(types.number),
+  max: types.maybe(types.number),
+})
+
 const NavigationConstraintModel = types.model('NavigationConstraint', {
   requiredActionTypes: types.maybe(types.array(types.string)),
   minActions: types.maybe(types.number),
   minActionDiversity: types.maybe(types.number),
+  zoomRange: types.maybe(ZoomRangeModel),
 })
 
 const AnswerValidationModel = types.model('AnswerValidation', {
@@ -237,6 +243,10 @@ export const ScavengerHuntModel = types
     completeCurrentTask() {
       const task = self.currentTask
       if (!task) {
+        return
+      }
+      // Dedup — don't complete the same task twice
+      if (self.completedTaskIds.includes(task.id)) {
         return
       }
       self.taskEndTimes.set(task.id, Date.now())

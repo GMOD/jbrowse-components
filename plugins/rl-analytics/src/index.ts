@@ -13,8 +13,9 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt'
 import PatchListener from './ActionLogger/PatchListener.ts'
 import ExportManager from './Export/ExportManager.ts'
 import EpisodeManager from './RLPipeline/EpisodeManager.ts'
-import AwardManager from './ScavengerHunt/AwardManager.ts'
-import { pushActionForValidation } from './ScavengerHunt/components/ScavengerHuntWidget.tsx'
+import StateEncoder from './RLPipeline/StateEncoder.ts'
+import GameEngine from './ScavengerHunt/GameEngine.ts'
+import { setGameEngine } from './ScavengerHunt/components/ScavengerHuntWidget.tsx'
 import configSchema from './config.ts'
 import {
   ScavengerHuntModel,
@@ -31,7 +32,8 @@ export default class RLAnalyticsPlugin extends Plugin {
   private patchListener: PatchListener | null = null
   private episodeManager: EpisodeManager | null = null
   private exportManager: ExportManager | null = null
-  private awardManager: AwardManager | null = null
+  private gameEngine: GameEngine | null = null
+  private stateEncoder = new StateEncoder()
 
   install(pluginManager: PluginManager) {
     pluginManager.addWidgetType(() => {
@@ -54,49 +56,52 @@ export default class RLAnalyticsPlugin extends Plugin {
       return
     }
 
-    // Clean up any previous subsystems (configure may be called multiple
-    // times in test environments where the root model is recreated)
+    // Clean up previous subsystems
     this.patchListener?.dispose()
     this.episodeManager?.dispose()
     this.exportManager?.dispose()
+    this.gameEngine?.dispose()
 
     // Initialize subsystems
     this.patchListener = new PatchListener(10000, 500, false)
     this.episodeManager = new EpisodeManager(300_000)
     this.exportManager = new ExportManager(this.episodeManager)
-    this.awardManager = new AwardManager()
+    this.gameEngine = new GameEngine()
 
-    // Wire the view accessor for state extraction (LinearGenomeView only)
-    this.episodeManager.setViewAccessor(() => {
+    // View accessor — finds first LinearGenomeView in session
+    const getView = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const session = (rootModel as any).session
       if (!session?.views) {
         return undefined
       }
-      // Find the first LinearGenomeView
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return session.views.find((v: any) => v.type === 'LinearGenomeView')
-    })
+    }
 
-    // Connect debounced actions to episode manager.
-    // Debounced actions fire after the buffer's debounce window closes,
-    // so rapid pan/zoom events are merged into single actions.
-    // Use queueMicrotask to avoid interfering with synchronous MST patch
-    // processing — reading computed properties during onPatch can disrupt
-    // model initialization.
+    this.episodeManager.setViewAccessor(getView)
+    this.gameEngine.setViewAccessor(getView)
+
+    // Make game engine available to the widget
+    setGameEngine(this.gameEngine)
+
+    // Connect debounced actions to:
+    // 1. Episode manager (RL data recording)
+    // 2. Game engine (award checking + auto-validation)
     this.patchListener.buffer.onDebouncedAction(action => {
-      // Feed action type to widget for navigation constraint validation
-      pushActionForValidation(action.type)
-
       queueMicrotask(() => {
         this.episodeManager!.recordAction(action)
+
+        // Feed to game engine with current state for award checking
+        const view = getView()
+        if (view && this.gameEngine) {
+          const state = this.stateEncoder.extractState(view, 0, 0)
+          this.gameEngine.onAction(action, state)
+        }
       })
     })
 
-    // Defer patch listener attachment to next tick to avoid interfering
-    // with synchronous model initialization (e.g. view init processing)
-    // Attach to session instead of rootModel to avoid interfering with
-    // root-level model initialization (views, etc.)
+    // Attach to session
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = (rootModel as any).session
     if (session) {
@@ -173,6 +178,10 @@ export default class RLAnalyticsPlugin extends Plugin {
     return this.patchListener
   }
 
+  getGameEngine() {
+    return this.gameEngine
+  }
+
   private loadTasksFromUrl(pluginManager: PluginManager) {
     if (typeof window === 'undefined') {
       return
@@ -204,6 +213,18 @@ export default class RLAnalyticsPlugin extends Plugin {
               model.setAssignmentId(assignmentId)
             }
             session.showWidget(widget)
+
+            // Wire game engine to model and task set
+            if (this.gameEngine) {
+              this.gameEngine.setModel(model)
+              this.gameEngine.loadTaskSet(taskSet)
+              // Start the first task
+              const firstTask = model.currentTask
+              if (firstTask) {
+                model.startCurrentTask()
+                this.gameEngine.startTask(firstTask)
+              }
+            }
           }
         })
         .catch(err => {

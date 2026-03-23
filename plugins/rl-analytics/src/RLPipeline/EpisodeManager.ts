@@ -14,6 +14,7 @@ export default class EpisodeManager {
   private rewardCalculator = new RewardCalculator()
   private lastActionTimestamp = 0
   private recentActionTimestamps: number[] = []
+  private cachedState: BrowserState | null = null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getView: (() => any) | null = null
   private activeTaskConfig?: TaskConfig
@@ -32,12 +33,12 @@ export default class EpisodeManager {
   }
 
   startEpisode(taskConfig?: TaskConfig) {
-    // End any current episode
     if (this.currentEpisode) {
       this.endEpisode('abandoned')
     }
     this.activeTaskConfig = taskConfig
     this.rewardCalculator.reset()
+    this.cachedState = null
     this.currentEpisode = {
       id: crypto.randomUUID(),
       taskId: taskConfig?.id,
@@ -45,6 +46,16 @@ export default class EpisodeManager {
       steps: [],
       outcome: 'in_progress',
       metadata: { taskConfig },
+    }
+    // Capture initial state
+    const view = this.getView?.()
+    if (view) {
+      this.cachedState = this.stateEncoder.extractState(
+        view,
+        0,
+        0,
+        this.activeTaskConfig,
+      )
     }
     this.startInactivityTimer()
   }
@@ -65,15 +76,18 @@ export default class EpisodeManager {
       return
     }
 
-    const prevState = this.stateEncoder.extractState(
-      view,
-      this.lastActionTimestamp,
-      this.recentActionTimestamps.length - 1,
-      this.activeTaskConfig,
-    )
+    // prevState comes from cache (state BEFORE this patch)
+    // If no cache, extract current (best effort — first step of episode)
+    const prevState =
+      this.cachedState ??
+      this.stateEncoder.extractState(
+        view,
+        this.lastActionTimestamp,
+        this.recentActionTimestamps.length - 1,
+        this.activeTaskConfig,
+      )
 
-    // After the patch is applied, extract next state
-    // (patch is already applied when onPatch fires)
+    // nextState is the current view state (patch already applied)
     const nextState = this.stateEncoder.extractState(
       view,
       now,
@@ -104,6 +118,8 @@ export default class EpisodeManager {
 
     this.currentEpisode!.steps.push(step)
     this.lastActionTimestamp = now
+    // Cache current state as prevState for next action
+    this.cachedState = nextState
     this.restartInactivityTimer()
 
     if (terminal) {
@@ -119,6 +135,7 @@ export default class EpisodeManager {
     this.currentEpisode.outcome = outcome
     this.completedEpisodes.push(this.currentEpisode)
     this.currentEpisode = null
+    this.cachedState = null
     this.stopInactivityTimer()
   }
 

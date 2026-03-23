@@ -21,361 +21,6 @@ var __export = (target, all) => {
 };
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
-// plugins/rl-analytics/src/ScavengerHunt/locale/en.ts
-var en, en_default;
-var init_en = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/locale/en.ts"() {
-    "use strict";
-    en = {
-      // === Awards: earned lines ===
-      "award.first_steps.earned": "You moved! The genome stretches out in both directions. What's out there?",
-      "award.eagle_eye.earned": "Individual nucleotides. Four letters encoding a living thing. You're reading source code.",
-      "award.curator.earned": "A new layer of evidence, revealed. Every track tells part of the story.",
-      "award.collector.earned": "Three tracks at once. You're cross-referencing \u2014 that's how real analysis works.",
-      "award.cartographer.earned": "Two contigs explored. You've seen the whole territory.",
-      "award.biologist.earned": "You're speaking the language now. Exons, variants, coverage \u2014 this is genomics.",
-      "award.wayfinder.earned": "No search bar. You navigated by eye and hand. That's skill.",
-      "award.inspector.earned": "Curious minds click things. There's always more data behind the surface.",
-      "award.colorist.earned": "Color reveals structure. You're seeing the data differently now.",
-      "award.rubberband.earned": "Precision selection. Elegant.",
-      // === Negative/observational awards ===
-      "award.oscillator.earned": "You're going back and forth. Interesting approach \u2014 but if you're looking for something specific, try a different direction.",
-      "award.speed_demon.earned": "That was fast. Maybe too fast? The data rewards patience.",
-      "award.lost.earned": "Feeling turned around? The overview bar at the top shows where you are on the whole chromosome.",
-      // === Idle nudges (escalating) ===
-      "idle.pulse": "",
-      // no text, just highlight the relevant control
-      "idle.30s": "",
-      "idle.60s": "Still here. No rush.",
-      "idle.90s": "The genome is patient. But I admit I'm curious what you'll find next.",
-      "idle.120s": "I've been studying this region while you were away. Something caught my eye nearby.",
-      "idle.180s": "The quest panel is over here, whenever you're ready. I've been reorganizing my notes.",
-      // === Task intro lines (narrator voice when task begins) ===
-      "task.t0-zoom.intro": "See that colorful bar? That's a genome. Try scrolling your mouse wheel over it.",
-      "task.t0-zoom.success": "Good. You changed your magnification. Zoom in for detail, zoom out for context.",
-      "task.t0-pan.intro": "Now try clicking and dragging sideways. You're moving along the chromosome.",
-      "task.t0-pan.success": "You're navigating. Everything you need is somewhere along this line.",
-      "task.t1-basepairs.intro": "Keep zooming in. There are letters hidden in the sequence. Find them.",
-      "task.t1-basepairs.success": "A, T, G, C. Adenine, thymine, guanine, cytosine. Every living thing is written in this alphabet.",
-      "task.t1-open-track.intro": "There's more data here than what you see. Open the track selector to reveal hidden layers.",
-      "task.t1-open-track.success": "Each track is a different kind of evidence. Genes, variants, alignments \u2014 pieces of the same puzzle.",
-      "task.t1-find-feature.intro": "Pan along the genome. You'll find annotated features \u2014 genes, mostly. Tell me the name of one.",
-      "task.t1-find-feature.success": "Found one. These annotations are predictions about what the DNA does. Some are well-studied, others are mysteries.",
-      "task.t1-other-contig.intro": "This genome has two contigs. You've been on ctgA. ctgB is smaller \u2014 can you find it?",
-      "task.t1-other-contig.success": "ctgB. Smaller, but no less interesting. In real genomes, some of the most important genes are on the shortest chromosomes.",
-      "task.t2-gene-anatomy.intro": "Find the gene EDEN. Zoom in to see its exons \u2014 the thick blocks. Count them.",
-      "task.t2-gene-anatomy.success": "Three exons. The thin lines between them are introns \u2014 they're transcribed but spliced out of the mRNA.",
-      "task.t2-downstream.intro": "Starting at EDEN, pan to the right. What's the next feature you find?",
-      "task.t2-downstream.success": "Good eye. Genes often cluster in neighborhoods. Whether that clustering means something is one of the big questions.",
-      "task.t2-variant-type.intro": "Open the variants track and find a variant near position 5,000. Click it. What kind of change is it?",
-      "task.t2-variant-type.success": "Variants are the raw material of evolution. Each one is a place where this genome differs from the reference.",
-      "task.t3-multi-track.intro": "Open three or more tracks. Find a region where the data layers tell you something together that no single layer shows alone.",
-      "task.t3-multi-track.success": "Integration. That's what separates looking from analyzing.",
-      "task.t3-exploration.intro": "Free exploration. Go wherever you want, look at whatever interests you. Report back.",
-      "task.t3-exploration.success": "Your path through this data is unique. No two people explore a genome the same way.",
-      "task.t4-teach.intro": "Navigate somewhere interesting. Then describe how you got there and why it matters \u2014 as if teaching someone.",
-      "task.t4-teach.success": "That description will help train an AI to navigate genomes the way you do.",
-      "task.t4-graduation.intro": "Last question. What would you want to explore further, given more time?",
-      "task.t4-graduation.success": "That curiosity is the point. Your exploration data will help build tools that make this kind of investigation faster for everyone.",
-      // === Validation feedback ===
-      "validate.zoom_more": "Zoom in a bit more. The detail is there.",
-      "validate.zoom_less": "Try zooming out to see more context.",
-      "validate.pan_needed": "Try clicking and dragging to move along the genome.",
-      "validate.track_missing": "Open the track selector and look for the track mentioned above.",
-      "validate.answer_wrong": "Not quite. Look more carefully at the data.",
-      "validate.too_fast": "That was fast. Take a moment to actually look at what's there.",
-      "validate.keep_going": "Keep exploring. Interact a bit more.",
-      "validate.try_different": "Try using different controls.",
-      // === Narrator framing ===
-      "narrator.welcome": "Welcome. You're about to explore a genome \u2014 a complete set of genetic instructions for a living organism. I'll be your guide.",
-      "narrator.tier1_intro": "Let's learn the controls. Every tool here has a purpose.",
-      "narrator.tier2_intro": "You know the controls. Now let's use them to answer questions about the biology.",
-      "narrator.tier3_intro": "Real analysis. Multiple data types, real questions. This is what bioinformaticians do.",
-      "narrator.tier4_intro": "You've earned this. Free exploration, then graduation.",
-      "narrator.graduation": "You've demonstrated genuine skill with a genome browser. Your exploration data will help train the next generation of analysis tools. If you'd like to participate in future sessions with larger genomes and harder challenges, your completion code enters you into the priority pool.",
-      // === Fog of war ===
-      "fog.blocked": 'Earn "{awardName}" first.',
-      "fog.undiscovered": "There's something here you haven't tried yet.",
-      "fog.lifting": "Unlocked.",
-      // === Drifting notifications (narrator gets lonely) ===
-      "drift.lonely.1": "I'm still over here, in the quest panel.",
-      "drift.lonely.2": "Exploring on your own? Fair enough. I'll be here when you need me.",
-      "drift.lonely.3": "Did you know this genome has multiple data tracks available? Open the track selector to see them all.",
-      "drift.encouragement.1": "You're doing well. Keep going.",
-      "drift.encouragement.2": "Every genome has surprises. Have you found yours yet?",
-      "drift.hint.search_bar": "The search bar at the top can take you to specific positions. But navigating by hand teaches you more.",
-      "drift.hint.right_click": "Try right-clicking on features. There's always more information than what's on the surface.",
-      "drift.hint.track_menu": "Each track has its own menu. Look for the three-dot icon on the track header."
-    };
-    en_default = en;
-  }
-});
-
-// plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts
-function jaroWinkler(s1, s2) {
-  if (s1 === s2) {
-    return 1;
-  }
-  const len1 = s1.length;
-  const len2 = s2.length;
-  if (len1 === 0 || len2 === 0) {
-    return 0;
-  }
-  const matchDistance = Math.floor(Math.max(len1, len2) / 2) - 1;
-  const s1Matches = new Array(len1).fill(false);
-  const s2Matches = new Array(len2).fill(false);
-  let matches = 0;
-  let transpositions = 0;
-  for (let i = 0; i < len1; i++) {
-    const start = Math.max(0, i - matchDistance);
-    const end = Math.min(i + matchDistance + 1, len2);
-    for (let j = start; j < end; j++) {
-      if (s2Matches[j] || s1[i] !== s2[j]) {
-        continue;
-      }
-      s1Matches[i] = true;
-      s2Matches[j] = true;
-      matches++;
-      break;
-    }
-  }
-  if (matches === 0) {
-    return 0;
-  }
-  let k = 0;
-  for (let i = 0; i < len1; i++) {
-    if (!s1Matches[i]) {
-      continue;
-    }
-    while (!s2Matches[k]) {
-      k++;
-    }
-    if (s1[i] !== s2[k]) {
-      transpositions++;
-    }
-    k++;
-  }
-  const jaro = (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
-  let prefix = 0;
-  for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
-    if (s1[i] === s2[i]) {
-      prefix++;
-    } else {
-      break;
-    }
-  }
-  return jaro + prefix * 0.1 * (1 - jaro);
-}
-var TaskValidator;
-var init_TaskValidator = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts"() {
-    "use strict";
-    TaskValidator = class {
-      constructor(getView2, getActionsSinceTaskStart) {
-        this.getView = getView2;
-        this.getActionsSinceTaskStart = getActionsSinceTaskStart;
-      }
-      validate(task, model) {
-        const startTime = model.taskStartTimes.get(task.id);
-        if (startTime && task.minTimeSeconds) {
-          const elapsed = (Date.now() - startTime) / 1e3;
-          if (elapsed < task.minTimeSeconds) {
-            return {
-              valid: false,
-              reason: "Completed too quickly \u2014 please explore more carefully"
-            };
-          }
-        }
-        switch (task.type) {
-          case "navigate":
-            return this.validateNavigation(task);
-          case "navigate_constrained":
-            return this.validateConstrainedNavigation(task);
-          case "action_required":
-            return this.validateActionRequired(task);
-          case "identify":
-            return this.validateIdentification(task, model);
-          case "compare":
-            return this.validateIdentification(task, model);
-          case "freeform":
-            return this.validateFreeform(task, model);
-        }
-      }
-      validateNavigation(task) {
-        if (!task.target) {
-          return { valid: false, reason: "No target defined" };
-        }
-        const view = this.getView();
-        if (!view) {
-          return { valid: false, reason: "No active view" };
-        }
-        const contentBlocks = view.dynamicBlocks?.contentBlocks ?? [];
-        const visible = contentBlocks.some(
-          (block) => block.refName === task.target.refName && block.start <= task.target.end && block.end >= task.target.start
-        );
-        if (!visible) {
-          return { valid: false, reason: "Target region not in viewport" };
-        }
-        return this.checkRequiredTracks(task);
-      }
-      validateConstrainedNavigation(task) {
-        const constraints = task.navigationConstraints;
-        const actions = this.getActionsSinceTaskStart?.() ?? [];
-        let searchUsed = false;
-        if (constraints) {
-          if (constraints.requiredActionTypes) {
-            const actionSet = new Set(actions);
-            const hasAny = constraints.requiredActionTypes.some(
-              (t2) => actionSet.has(t2)
-            );
-            if (!hasAny) {
-              const hints = constraints.requiredActionTypes.map(
-                (m) => m.toLowerCase().replace(/_/g, " ")
-              );
-              return {
-                valid: false,
-                reason: `Try: ${hints.join(" or ")}`
-              };
-            }
-          }
-          if (constraints.minActions && actions.length < constraints.minActions) {
-            return {
-              valid: false,
-              reason: "Keep exploring \u2014 interact with the browser a bit more"
-            };
-          }
-          if (constraints.minActionDiversity) {
-            const diversity = new Set(actions).size;
-            if (diversity < constraints.minActionDiversity) {
-              return {
-                valid: false,
-                reason: "Try using different controls"
-              };
-            }
-          }
-          if (constraints.zoomRange) {
-            const view = this.getView();
-            if (view) {
-              try {
-                const bpPerPx = view.bpPerPx ?? 1;
-                if (constraints.zoomRange.max !== void 0 && bpPerPx > constraints.zoomRange.max) {
-                  return { valid: false, reason: "Zoom in more" };
-                }
-                if (constraints.zoomRange.min !== void 0 && bpPerPx < constraints.zoomRange.min) {
-                  return { valid: false, reason: "Zoom out more" };
-                }
-              } catch {
-              }
-            }
-          }
-        }
-        searchUsed = actions.includes("SEARCH");
-        if (task.target) {
-          const navResult = this.validateNavigation(task);
-          if (!navResult.valid) {
-            return navResult;
-          }
-        }
-        const tracksResult = this.checkRequiredTracks(task);
-        if (!tracksResult.valid) {
-          return tracksResult;
-        }
-        return { valid: true, searchUsed };
-      }
-      validateActionRequired(task) {
-        return this.checkRequiredTracks(task);
-      }
-      validateIdentification(task, model) {
-        const answer = model.answers.get(task.id);
-        if (!answer) {
-          return { valid: false, reason: "No answer provided" };
-        }
-        const validation = task.answerValidation;
-        if (validation?.mode === "keyword_set" && validation.keywords) {
-          const lower = answer.toLowerCase();
-          const match = validation.keywords.some(
-            (kw) => lower.includes(kw.toLowerCase())
-          );
-          return {
-            valid: match,
-            reason: match ? void 0 : "Answer not recognized \u2014 try again"
-          };
-        }
-        if (validation?.mode === "any_nonempty") {
-          const minLen = validation.minLength ?? 1;
-          return {
-            valid: answer.trim().length >= minLen,
-            reason: answer.trim().length >= minLen ? void 0 : "Please provide a longer answer"
-          };
-        }
-        if (task.answerChoices && task.expectedAnswer) {
-          return {
-            valid: answer === task.expectedAnswer,
-            reason: answer === task.expectedAnswer ? void 0 : "Incorrect answer"
-          };
-        }
-        if (task.expectedAnswer) {
-          const threshold = validation?.fuzzyThreshold ?? 0.85;
-          const similarity = jaroWinkler(
-            answer.toLowerCase(),
-            task.expectedAnswer.toLowerCase()
-          );
-          return {
-            valid: similarity > threshold,
-            reason: similarity > threshold ? void 0 : "Answer does not match expected"
-          };
-        }
-        return { valid: true };
-      }
-      validateFreeform(task, model) {
-        const answer = model.answers.get(task.id);
-        if (!answer || answer.trim().length === 0) {
-          return { valid: false, reason: "Please provide an answer" };
-        }
-        const minLen = task.answerValidation?.minLength ?? 1;
-        if (answer.trim().length < minLen) {
-          return { valid: false, reason: "Please provide a more detailed answer" };
-        }
-        if (task.expectedAnswer) {
-          const threshold = task.answerValidation?.fuzzyThreshold ?? 0.85;
-          const similarity = jaroWinkler(
-            answer.toLowerCase(),
-            task.expectedAnswer.toLowerCase()
-          );
-          return {
-            valid: similarity > threshold,
-            reason: similarity > threshold ? void 0 : "Answer does not match expected"
-          };
-        }
-        return { valid: true };
-      }
-      checkRequiredTracks(task) {
-        if (!task.requiredTracks) {
-          return { valid: true };
-        }
-        const view = this.getView();
-        if (!view) {
-          return { valid: true };
-        }
-        const activeTrackIds = (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          view.tracks?.map((t2) => t2.configuration?.trackId) ?? []
-        );
-        const missingTracks = task.requiredTracks.filter(
-          (t2) => !activeTrackIds.includes(t2)
-        );
-        if (missingTracks.length > 0) {
-          return {
-            valid: false,
-            reason: `Open the required track: ${missingTracks.join(", ")}`
-          };
-        }
-        return { valid: true };
-      }
-    };
-  }
-});
-
 // plugins/rl-analytics/src/ScavengerHunt/components/AnswerInput.tsx
 var {Box, Button, FormControl, FormControlLabel, Radio, RadioGroup, TextField, Typography} = __jbx("@mui/material");
 var {observer} = __jbx("mobx-react");
@@ -509,75 +154,22 @@ var init_AwardChips = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/AwardSnackbar.tsx
-var {Alert, Snackbar, Typography: Typography2} = __jbx("@mui/material");
-var {observer: observer3} = __jbx("mobx-react");
-var {jsx: jsx3, jsxs: jsxs2} = __jbx("react/jsx-runtime");
-var AwardSnackbar, AwardSnackbar_default;
-var init_AwardSnackbar = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/AwardSnackbar.tsx"() {
-    "use strict";
-    AwardSnackbar = observer3(function AwardSnackbar2({
-      model
-    }) {
-      const award = model.latestAward;
-      if (!award) {
-        return null;
-      }
-      return /* @__PURE__ */ jsx3(
-        Snackbar,
-        {
-          open: !!award,
-          autoHideDuration: 4e3,
-          onClose: () => {
-            model.clearLatestAward();
-          },
-          anchorOrigin: { vertical: "bottom", horizontal: "left" },
-          children: /* @__PURE__ */ jsxs2(
-            Alert,
-            {
-              severity: "success",
-              variant: "filled",
-              sx: {
-                bgcolor: "success.dark",
-                animation: "awardSlideIn 0.4s ease-out",
-                "@keyframes awardSlideIn": {
-                  "0%": { transform: "translateY(20px)", opacity: 0 },
-                  "100%": { transform: "translateY(0)", opacity: 1 }
-                }
-              },
-              onClose: () => {
-                model.clearLatestAward();
-              },
-              children: [
-                /* @__PURE__ */ jsx3(Typography2, { variant: "subtitle2", sx: { fontWeight: "bold" }, children: award.name }),
-                /* @__PURE__ */ jsx3(Typography2, { variant: "caption", children: award.flavorText ?? award.description })
-              ]
-            }
-          )
-        }
-      );
-    });
-    AwardSnackbar_default = AwardSnackbar;
-  }
-});
-
 // plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx
-var {Box: Box3, Card, CardContent, Typography: Typography3} = __jbx("@mui/material");
-var {observer: observer4} = __jbx("mobx-react");
-var {Fragment, jsx: jsx4, jsxs: jsxs3} = __jbx("react/jsx-runtime");
+var {Box: Box3, Card, CardContent, Typography: Typography2} = __jbx("@mui/material");
+var {observer: observer3} = __jbx("mobx-react");
+var {Fragment, jsx: jsx3, jsxs: jsxs2} = __jbx("react/jsx-runtime");
 var CompletionScreen, CompletionScreen_default;
 var init_CompletionScreen = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/CompletionScreen.tsx"() {
     "use strict";
-    CompletionScreen = observer4(function CompletionScreen2({
+    CompletionScreen = observer3(function CompletionScreen2({
       model
     }) {
-      return /* @__PURE__ */ jsx4(Card, { children: /* @__PURE__ */ jsxs3(CardContent, { children: [
-        /* @__PURE__ */ jsx4(Typography3, { variant: "h5", sx: { mb: 2 }, children: "All tasks complete!" }),
-        model.completionCode ? /* @__PURE__ */ jsxs3(Fragment, { children: [
-          /* @__PURE__ */ jsx4(Typography3, { sx: { mb: 1 }, children: "Your completion code:" }),
-          /* @__PURE__ */ jsx4(
+      return /* @__PURE__ */ jsx3(Card, { children: /* @__PURE__ */ jsxs2(CardContent, { children: [
+        /* @__PURE__ */ jsx3(Typography2, { variant: "h5", sx: { mb: 2 }, children: "All tasks complete!" }),
+        model.completionCode ? /* @__PURE__ */ jsxs2(Fragment, { children: [
+          /* @__PURE__ */ jsx3(Typography2, { sx: { mb: 1 }, children: "Your completion code:" }),
+          /* @__PURE__ */ jsx3(
             Box3,
             {
               sx: {
@@ -587,8 +179,8 @@ var init_CompletionScreen = __esm({
                 textAlign: "center",
                 mb: 2
               },
-              children: /* @__PURE__ */ jsx4(
-                Typography3,
+              children: /* @__PURE__ */ jsx3(
+                Typography2,
                 {
                   variant: "h4",
                   sx: { fontFamily: "monospace", letterSpacing: 2 },
@@ -597,8 +189,8 @@ var init_CompletionScreen = __esm({
               )
             }
           ),
-          /* @__PURE__ */ jsx4(Typography3, { variant: "caption", color: "text.secondary", children: "Copy this code back to the MTurk HIT page." })
-        ] }) : /* @__PURE__ */ jsx4(Typography3, { children: "Generating completion code..." })
+          /* @__PURE__ */ jsx3(Typography2, { variant: "caption", color: "text.secondary", children: "Copy this code back to the MTurk HIT page." })
+        ] }) : /* @__PURE__ */ jsx3(Typography2, { children: "Generating completion code..." })
       ] }) });
     });
     CompletionScreen_default = CompletionScreen;
@@ -606,21 +198,21 @@ var init_CompletionScreen = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/FloatingPanel.tsx
-var {Box: Box4, IconButton, Paper, Typography: Typography4} = __jbx("@mui/material");
-var {observer: observer5} = __jbx("mobx-react");
+var {Box: Box4, IconButton, Paper, Typography: Typography3} = __jbx("@mui/material");
+var {observer: observer4} = __jbx("mobx-react");
 var {createPortal} = __jbx("react-dom");
 var {useState: useState2} = __jbx("react");
-var {Fragment: Fragment2, jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
+var {Fragment: Fragment2, jsx: jsx4, jsxs: jsxs3} = __jbx("react/jsx-runtime");
 var FloatingPanel, FloatingPanel_default;
 var init_FloatingPanel = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/FloatingPanel.tsx"() {
     "use strict";
-    FloatingPanel = observer5(function FloatingPanel2({
+    FloatingPanel = observer4(function FloatingPanel2({
       title,
       children
     }) {
       const [minimized, setMinimized] = useState2(false);
-      const panel = /* @__PURE__ */ jsxs4(
+      const panel = /* @__PURE__ */ jsxs3(
         Paper,
         {
           elevation: 4,
@@ -638,7 +230,7 @@ var init_FloatingPanel = __esm({
             borderRadius: 2
           },
           children: [
-            /* @__PURE__ */ jsx5(
+            /* @__PURE__ */ jsx4(
               Box4,
               {
                 sx: {
@@ -655,13 +247,13 @@ var init_FloatingPanel = __esm({
                 onClick: () => {
                   setMinimized(!minimized);
                 },
-                children: minimized ? /* @__PURE__ */ jsx5(IconButton, { size: "small", sx: { color: "inherit", p: 0 }, children: /* @__PURE__ */ jsx5(Typography4, { variant: "caption", sx: { fontWeight: "bold" }, children: "Q" }) }) : /* @__PURE__ */ jsxs4(Fragment2, { children: [
-                  /* @__PURE__ */ jsx5(Typography4, { variant: "subtitle2", sx: { fontWeight: "bold" }, children: title }),
-                  /* @__PURE__ */ jsx5(Typography4, { variant: "caption", sx: { opacity: 0.7 }, children: "[minimize]" })
+                children: minimized ? /* @__PURE__ */ jsx4(IconButton, { size: "small", sx: { color: "inherit", p: 0 }, children: /* @__PURE__ */ jsx4(Typography3, { variant: "caption", sx: { fontWeight: "bold" }, children: "Q" }) }) : /* @__PURE__ */ jsxs3(Fragment2, { children: [
+                  /* @__PURE__ */ jsx4(Typography3, { variant: "subtitle2", sx: { fontWeight: "bold" }, children: title }),
+                  /* @__PURE__ */ jsx4(Typography3, { variant: "caption", sx: { opacity: 0.7 }, children: "[minimize]" })
                 ] })
               }
             ),
-            !minimized && /* @__PURE__ */ jsx5(
+            !minimized && /* @__PURE__ */ jsx4(
               Box4,
               {
                 sx: {
@@ -689,11 +281,55 @@ var init_FloatingPanel = __esm({
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/NarratorLog.tsx
-var {Box: Box5, Typography: Typography5} = __jbx("@mui/material");
-var {observer: observer6} = __jbx("mobx-react");
+var {Box: Box5, Typography: Typography4} = __jbx("@mui/material");
 var {useEffect, useRef} = __jbx("react");
-var {jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
-var typeStyles, NarratorLog, NarratorLog_default;
+var {jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
+function NarratorLog({
+  entries
+}) {
+  const bottomRef = useRef(null);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [entries.length]);
+  if (entries.length === 0) {
+    return null;
+  }
+  return /* @__PURE__ */ jsxs4(
+    Box5,
+    {
+      sx: {
+        maxHeight: 200,
+        overflowY: "auto",
+        mb: 1,
+        "&::-webkit-scrollbar": { width: 4 },
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: "grey.300",
+          borderRadius: 2
+        }
+      },
+      children: [
+        entries.map((entry) => /* @__PURE__ */ jsx5(
+          Typography4,
+          {
+            variant: "body2",
+            sx: {
+              p: 0.75,
+              mb: 0.5,
+              borderRadius: 1,
+              fontStyle: entry.type === "intro" || entry.type === "hint" ? "italic" : "normal",
+              fontSize: entry.type === "system" ? "0.75rem" : "0.8125rem",
+              ...typeStyles[entry.type]
+            },
+            children: entry.text
+          },
+          entry.id
+        )),
+        /* @__PURE__ */ jsx5("div", { ref: bottomRef })
+      ]
+    }
+  );
+}
+var typeStyles;
 var init_NarratorLog = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/NarratorLog.tsx"() {
     "use strict";
@@ -702,115 +338,35 @@ var init_NarratorLog = __esm({
       success: { bgcolor: "success.light", color: "success.contrastText" },
       hint: { bgcolor: "info.light", color: "info.contrastText" },
       award: { bgcolor: "warning.light", color: "warning.contrastText" },
-      system: { bgcolor: "grey.200", color: "text.secondary", fontSize: "0.75rem" }
+      system: { bgcolor: "grey.200", color: "text.secondary" }
     };
-    NarratorLog = observer6(function NarratorLog2({
-      entries
-    }) {
-      const bottomRef = useRef(null);
-      useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, [entries.length]);
-      return /* @__PURE__ */ jsxs5(
-        Box5,
-        {
-          sx: {
-            maxHeight: 200,
-            overflowY: "auto",
-            mb: 1,
-            "&::-webkit-scrollbar": { width: 4 },
-            "&::-webkit-scrollbar-thumb": {
-              bgcolor: "grey.300",
-              borderRadius: 2
-            }
-          },
-          children: [
-            entries.map((entry) => /* @__PURE__ */ jsx6(
-              Typography5,
-              {
-                variant: "body2",
-                sx: {
-                  p: 1,
-                  mb: 0.5,
-                  borderRadius: 1,
-                  fontStyle: entry.type === "intro" || entry.type === "hint" ? "italic" : "normal",
-                  fontSize: entry.type === "system" ? "0.75rem" : "0.8125rem",
-                  animation: "narratorFadeIn 0.3s ease-out",
-                  "@keyframes narratorFadeIn": {
-                    "0%": { opacity: 0, transform: "translateY(4px)" },
-                    "100%": { opacity: 1, transform: "translateY(0)" }
-                  },
-                  ...typeStyles[entry.type]
-                },
-                children: entry.text
-              },
-              entry.id
-            )),
-            /* @__PURE__ */ jsx6("div", { ref: bottomRef })
-          ]
-        }
-      );
-    });
-    NarratorLog_default = NarratorLog;
   }
 });
 
 // plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
-var {Box: Box6, LinearProgress, Typography: Typography6} = __jbx("@mui/material");
-var {observer: observer7} = __jbx("mobx-react");
-var {jsx: jsx7, jsxs: jsxs6} = __jbx("react/jsx-runtime");
+var {Box: Box6, LinearProgress, Typography: Typography5} = __jbx("@mui/material");
+var {observer: observer5} = __jbx("mobx-react");
+var {jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
 var ProgressBar, ProgressBar_default;
 var init_ProgressBar = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
     "use strict";
-    ProgressBar = observer7(function ProgressBar2({
+    ProgressBar = observer5(function ProgressBar2({
       model
     }) {
-      return /* @__PURE__ */ jsxs6(Box6, { sx: { mb: 2 }, children: [
-        /* @__PURE__ */ jsxs6(Box6, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
-          /* @__PURE__ */ jsx7(Typography6, { variant: "body2", children: "Progress" }),
-          /* @__PURE__ */ jsxs6(Typography6, { variant: "body2", children: [
+      return /* @__PURE__ */ jsxs5(Box6, { sx: { mb: 2 }, children: [
+        /* @__PURE__ */ jsxs5(Box6, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
+          /* @__PURE__ */ jsx6(Typography5, { variant: "body2", children: "Progress" }),
+          /* @__PURE__ */ jsxs5(Typography5, { variant: "body2", children: [
             model.completedTaskIds.length,
             " / ",
             model.tasks.length
           ] })
         ] }),
-        /* @__PURE__ */ jsx7(LinearProgress, { variant: "determinate", value: model.progress * 100 })
+        /* @__PURE__ */ jsx6(LinearProgress, { variant: "determinate", value: model.progress * 100 })
       ] });
     });
     ProgressBar_default = ProgressBar;
-  }
-});
-
-// plugins/rl-analytics/src/ScavengerHunt/components/TierGate.tsx
-var {Alert: Alert2, Box: Box7, Typography: Typography7} = __jbx("@mui/material");
-var {observer: observer8} = __jbx("mobx-react");
-var {jsx: jsx8, jsxs: jsxs7} = __jbx("react/jsx-runtime");
-var TierGate, TierGate_default;
-var init_TierGate = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/TierGate.tsx"() {
-    "use strict";
-    TierGate = observer8(function TierGate2({
-      model
-    }) {
-      const missing = model.missingAwards;
-      if (missing.length === 0) {
-        return null;
-      }
-      const task = model.currentTask;
-      const coaching = task?.coaching;
-      return /* @__PURE__ */ jsx8(Box7, { sx: { mb: 2 }, children: /* @__PURE__ */ jsxs7(Alert2, { severity: "info", children: [
-        /* @__PURE__ */ jsx8(Typography7, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
-        missing.map((id) => {
-          const def = model.awardDefinitions.find(
-            (a) => a.id === id
-          );
-          return /* @__PURE__ */ jsx8(Typography7, { variant: "body2", sx: { ml: 1 }, children: def ? `Earn "${def.name}" \u2014 ${def.description}` : `Earn award: ${id}` }, id);
-        }),
-        coaching && /* @__PURE__ */ jsx8(Typography7, { variant: "body2", sx: { mt: 1, fontStyle: "italic" }, children: coaching.message })
-      ] }) });
-    });
-    TierGate_default = TierGate;
   }
 });
 
@@ -818,258 +374,173 @@ var init_TierGate = __esm({
 var ScavengerHuntWidget_exports = {};
 __export(ScavengerHuntWidget_exports, {
   default: () => ScavengerHuntWidget_default,
-  pushActionForValidation: () => pushActionForValidation,
-  resetActionLog: () => resetActionLog
+  setGameEngine: () => setGameEngine
 });
-var {Box: Box8, Button: Button2, Chip: Chip2, Typography: Typography8} = __jbx("@mui/material");
-var {getSession} = __jbx("@jbrowse/core/util");
-var {observer: observer9} = __jbx("mobx-react");
+var {Box: Box7, Button: Button2, Chip: Chip2, Typography: Typography6} = __jbx("@mui/material");
+var {observer: observer6} = __jbx("mobx-react");
 var {useCallback, useEffect: useEffect2, useRef: useRef2, useState: useState3} = __jbx("react");
-var {Fragment: Fragment3, jsx: jsx9, jsxs: jsxs8} = __jbx("react/jsx-runtime");
-function pushActionForValidation(actionType) {
-  actionLogRef.push(actionType);
+var {Fragment: Fragment3, jsx: jsx7, jsxs: jsxs6} = __jbx("react/jsx-runtime");
+function setGameEngine(engine) {
+  gameEngineRef = engine;
 }
-function resetActionLog() {
-  actionLogRef = [];
-}
-function getView(model) {
-  try {
-    const session = getSession(model);
-    return session?.views?.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (v) => v.type === "LinearGenomeView"
-    );
-  } catch {
-    return null;
-  }
-}
-function t(key) {
-  return en_default[key] ?? "";
-}
-var actionLogRef, nextEntryId, ScavengerHuntWidget, ScavengerHuntWidget_default;
+var gameEngineRef, ScavengerHuntWidget, ScavengerHuntWidget_default;
 var init_ScavengerHuntWidget = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
     "use strict";
-    init_en();
-    init_TaskValidator();
     init_AnswerInput();
     init_AwardChips();
-    init_AwardSnackbar();
     init_CompletionScreen();
     init_FloatingPanel();
     init_NarratorLog();
     init_ProgressBar();
-    init_TierGate();
-    actionLogRef = [];
-    nextEntryId = 0;
-    ScavengerHuntWidget = observer9(function ScavengerHuntWidget2({
+    gameEngineRef = null;
+    ScavengerHuntWidget = observer6(function ScavengerHuntWidget2({
       model
     }) {
-      const [narratorLog, setNarratorLog] = useState3([]);
-      const [taskStarted, setTaskStarted] = useState3(false);
-      const autoValidateRef = useRef2(null);
+      const [, forceUpdate] = useState3(0);
+      const startedTaskRef = useRef2(null);
+      const engine = gameEngineRef;
+      useEffect2(() => {
+        if (engine) {
+          engine.setOnChange(() => {
+            forceUpdate((n) => n + 1);
+          });
+        }
+      }, [engine]);
       const currentTask = model.currentTask;
-      const addNarratorEntry = useCallback(
-        (text, type) => {
-          if (!text) {
-            return;
-          }
-          setNarratorLog((prev) => [...prev, { id: nextEntryId++, text, type }]);
-        },
-        []
-      );
-      const makeValidator = useCallback(
-        () => new TaskValidator(
-          () => getView(model),
-          () => [...actionLogRef]
-        ),
-        [model]
-      );
       useEffect2(() => {
-        if (!currentTask || model.isGated || model.isComplete) {
-          return;
-        }
-        const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
-        autoValidateRef.current = setInterval(() => {
-          if (needsTextAnswer && !model.answers.get(currentTask.id)) {
-            return;
-          }
-          const validator = makeValidator();
-          const result = validator.validate(currentTask, model);
-          if (result.valid) {
-            const line = t(`task.${currentTask.id}.success`);
-            if (line) {
-              addNarratorEntry(line, "success");
-            }
-            if (currentTask.awardOnComplete) {
-              model.addAward(currentTask.awardOnComplete);
-            }
-            model.completeCurrentTask();
-          }
-        }, 500);
-        return () => {
-          if (autoValidateRef.current) {
-            clearInterval(autoValidateRef.current);
-          }
-        };
-      }, [currentTask, model, model.isGated, model.isComplete, makeValidator, addNarratorEntry]);
-      useEffect2(() => {
-        if (currentTask && !taskStarted) {
+        if (currentTask && engine && startedTaskRef.current !== currentTask.id) {
+          startedTaskRef.current = currentTask.id;
           model.startCurrentTask();
-          resetActionLog();
-          setTaskStarted(true);
-          const line = t(`task.${currentTask.id}.intro`);
-          if (line) {
-            addNarratorEntry(line, "intro");
-          }
+          engine.startTask(currentTask);
         }
-      }, [currentTask, taskStarted, model, addNarratorEntry]);
-      useEffect2(() => {
-        const welcomeLine = t("narrator.welcome");
-        if (welcomeLine) {
-          addNarratorEntry(welcomeLine, "system");
+      }, [currentTask, engine, model]);
+      if (!engine) {
+        return /* @__PURE__ */ jsx7(Box7, { sx: { p: 2 }, children: /* @__PURE__ */ jsx7(Typography6, { variant: "body2", children: "Initializing..." }) });
+      }
+      const narratorLog = engine.getNarratorLog();
+      if (model.isComplete) {
+        if (!model.completionCode) {
+          void model.generateCompletionCode();
         }
-      }, []);
-      useEffect2(() => {
-        setTaskStarted(false);
-        resetActionLog();
-      }, [model.currentTaskIndex]);
-      useEffect2(() => {
-        const award = model.latestAward;
-        if (award) {
-          const line = t(`award.${award.id}.earned`) || award.flavorText || award.description;
-          addNarratorEntry(line, "award");
+        return /* @__PURE__ */ jsx7(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1.5 }, children: [
+          /* @__PURE__ */ jsx7(NarratorLog, { entries: narratorLog }),
+          /* @__PURE__ */ jsx7(CompletionScreen_default, { model })
+        ] }) });
+      }
+      if (!currentTask) {
+        return /* @__PURE__ */ jsx7(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1.5 }, children: [
+          /* @__PURE__ */ jsx7(NarratorLog, { entries: narratorLog }),
+          /* @__PURE__ */ jsx7(Typography6, { variant: "body2", sx: { fontStyle: "italic" }, children: "Waiting for tasks..." })
+        ] }) });
+      }
+      const missingAwards = engine.getMissingAwards(currentTask);
+      const isGated = missingAwards.length > 0;
+      const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
+      const handleSubmit = useCallback(() => {
+        const result = engine.tryAutoValidate();
+        if (result && !result.valid && result.reason) {
         }
-      }, [model.latestAward, addNarratorEntry]);
-      const renderContent = () => {
-        if (model.isComplete) {
-          if (!model.completionCode) {
-            void model.generateCompletionCode();
-          }
-          addNarratorEntry(t("narrator.graduation"), "success");
-          return /* @__PURE__ */ jsx9(CompletionScreen_default, { model });
-        }
-        if (!currentTask) {
-          return /* @__PURE__ */ jsx9(Typography8, { variant: "body2", sx: { p: 2, fontStyle: "italic" }, children: "Waiting for tasks..." });
-        }
-        const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
-        const handleManualSubmit = () => {
-          const validator = makeValidator();
-          const result = validator.validate(currentTask, model);
-          if (result.valid) {
-            const line = t(`task.${currentTask.id}.success`);
-            if (line) {
-              addNarratorEntry(line, "success");
+      }, [engine]);
+      const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
+      return /* @__PURE__ */ jsx7(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1.5 }, children: [
+        /* @__PURE__ */ jsxs6(Box7, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
+          /* @__PURE__ */ jsx7(
+            Chip2,
+            {
+              label: tierLabel,
+              size: "small",
+              color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
+              variant: "outlined"
             }
-            if (currentTask.awardOnComplete) {
-              model.addAward(currentTask.awardOnComplete);
-            }
-            model.completeCurrentTask();
-          } else {
-            addNarratorEntry(
-              result.reason ?? t("validate.answer_wrong"),
-              "hint"
+          ),
+          /* @__PURE__ */ jsx7(ProgressBar_default, { model })
+        ] }),
+        /* @__PURE__ */ jsx7(AwardChips_default, { model }),
+        /* @__PURE__ */ jsx7(NarratorLog, { entries: narratorLog }),
+        isGated ? /* @__PURE__ */ jsxs6(Box7, { sx: { p: 1, bgcolor: "grey.50", borderRadius: 1, mb: 1 }, children: [
+          /* @__PURE__ */ jsx7(Typography6, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
+          missingAwards.map((id) => {
+            const def = model.awardDefinitions.find(
+              (a) => a.id === id
             );
-          }
-        };
-        const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
-        return /* @__PURE__ */ jsxs8(Fragment3, { children: [
-          /* @__PURE__ */ jsxs8(Box8, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
-            /* @__PURE__ */ jsx9(
-              Chip2,
-              {
-                label: tierLabel,
-                size: "small",
-                color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
-                variant: "outlined"
-              }
-            ),
-            /* @__PURE__ */ jsx9(ProgressBar_default, { model })
-          ] }),
-          /* @__PURE__ */ jsx9(AwardChips_default, { model }),
-          model.isGated ? /* @__PURE__ */ jsx9(TierGate_default, { model }) : /* @__PURE__ */ jsxs8(Fragment3, { children: [
-            /* @__PURE__ */ jsxs8(
-              Box8,
-              {
-                sx: {
-                  p: 1.5,
-                  mb: 1,
-                  bgcolor: "grey.50",
-                  borderRadius: 1,
-                  borderLeft: 3,
-                  borderColor: "primary.main"
-                },
-                children: [
-                  /* @__PURE__ */ jsx9(Typography8, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
-                  /* @__PURE__ */ jsx9(Typography8, { variant: "body2", children: currentTask.description })
-                ]
-              }
-            ),
-            needsTextAnswer && /* @__PURE__ */ jsxs8(Fragment3, { children: [
-              /* @__PURE__ */ jsx9(
-                AnswerInput_default,
-                {
-                  task: currentTask,
-                  currentAnswer: model.answers.get(currentTask.id) ?? "",
-                  onSubmit: (answer) => {
-                    model.submitAnswer(answer);
-                  }
-                }
-              ),
-              /* @__PURE__ */ jsx9(
-                Button2,
-                {
-                  variant: "outlined",
-                  size: "small",
-                  sx: { mt: 1 },
-                  onClick: handleManualSubmit,
-                  children: "Submit"
-                }
-              )
-            ] }),
-            model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsxs8(
-              Typography8,
-              {
-                variant: "caption",
-                sx: {
-                  display: "block",
-                  mt: 0.5,
-                  p: 0.75,
-                  bgcolor: "info.light",
-                  color: "info.contrastText",
-                  borderRadius: 0.5,
-                  fontSize: "0.75rem"
-                },
-                children: [
-                  "Hint: ",
-                  hint
-                ]
+            return /* @__PURE__ */ jsxs6(Typography6, { variant: "body2", sx: { ml: 1 }, children: [
+              'Earn "',
+              def?.name ?? id,
+              '"'
+            ] }, id);
+          })
+        ] }) : /* @__PURE__ */ jsxs6(Fragment3, { children: [
+          /* @__PURE__ */ jsxs6(
+            Box7,
+            {
+              sx: {
+                p: 1.5,
+                mb: 1,
+                bgcolor: "grey.50",
+                borderRadius: 1,
+                borderLeft: 3,
+                borderColor: "primary.main"
               },
-              i
-            )),
-            model.currentHintsRevealed < currentTask.hints.length && /* @__PURE__ */ jsxs8(
+              children: [
+                /* @__PURE__ */ jsx7(Typography6, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
+                /* @__PURE__ */ jsx7(Typography6, { variant: "body2", children: currentTask.description })
+              ]
+            }
+          ),
+          needsTextAnswer && /* @__PURE__ */ jsxs6(Fragment3, { children: [
+            /* @__PURE__ */ jsx7(
+              AnswerInput_default,
+              {
+                task: currentTask,
+                currentAnswer: model.answers.get(currentTask.id) ?? "",
+                onSubmit: (answer) => {
+                  model.submitAnswer(answer);
+                  engine.onAnswerSubmit(answer);
+                }
+              }
+            ),
+            /* @__PURE__ */ jsx7(
               Button2,
               {
-                variant: "text",
+                variant: "outlined",
                 size: "small",
-                sx: { mt: 0.5, fontSize: "0.75rem" },
-                onClick: () => {
-                  model.revealHint();
-                },
-                children: [
-                  "Need a hint? (",
-                  currentTask.hints.length - model.currentHintsRevealed,
-                  " available)"
-                ]
+                sx: { mt: 1 },
+                onClick: handleSubmit,
+                children: "Submit"
               }
             )
-          ] })
-        ] });
-      };
-      return /* @__PURE__ */ jsx9(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs8(Box8, { sx: { p: 1.5 }, children: [
-        /* @__PURE__ */ jsx9(NarratorLog_default, { entries: narratorLog }),
-        renderContent(),
-        /* @__PURE__ */ jsx9(AwardSnackbar_default, { model })
+          ] }),
+          currentTask.hints.length > 0 && /* @__PURE__ */ jsx7(
+            Button2,
+            {
+              variant: "text",
+              size: "small",
+              sx: { mt: 0.5, fontSize: "0.75rem" },
+              onClick: () => {
+                model.revealHint();
+              },
+              children: model.currentHintsRevealed < currentTask.hints.length ? `Need a hint? (${currentTask.hints.length - model.currentHintsRevealed} available)` : "All hints shown"
+            }
+          ),
+          model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsx7(
+            Typography6,
+            {
+              variant: "caption",
+              sx: {
+                display: "block",
+                mt: 0.5,
+                p: 0.75,
+                bgcolor: "info.light",
+                color: "info.contrastText",
+                borderRadius: 0.5,
+                fontSize: "0.75rem"
+              },
+              children: hint
+            },
+            i
+          ))
+        ] })
       ] }) });
     });
     ScavengerHuntWidget_default = ScavengerHuntWidget;
@@ -1078,7 +549,7 @@ var init_ScavengerHuntWidget = __esm({
 
 // plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
-var __t34 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t34.default || __t34;
+var __t26 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t26.default || __t26;
 var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
 var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
@@ -1632,6 +1103,7 @@ var EpisodeManager = class {
     __publicField(this, "rewardCalculator", new RewardCalculator());
     __publicField(this, "lastActionTimestamp", 0);
     __publicField(this, "recentActionTimestamps", []);
+    __publicField(this, "cachedState", null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     __publicField(this, "getView", null);
     __publicField(this, "activeTaskConfig");
@@ -1650,6 +1122,7 @@ var EpisodeManager = class {
     }
     this.activeTaskConfig = taskConfig;
     this.rewardCalculator.reset();
+    this.cachedState = null;
     this.currentEpisode = {
       id: crypto.randomUUID(),
       taskId: taskConfig?.id,
@@ -1658,6 +1131,15 @@ var EpisodeManager = class {
       outcome: "in_progress",
       metadata: { taskConfig }
     };
+    const view = this.getView?.();
+    if (view) {
+      this.cachedState = this.stateEncoder.extractState(
+        view,
+        0,
+        0,
+        this.activeTaskConfig
+      );
+    }
     this.startInactivityTimer();
   }
   recordAction(action) {
@@ -1673,7 +1155,7 @@ var EpisodeManager = class {
     if (!view) {
       return;
     }
-    const prevState = this.stateEncoder.extractState(
+    const prevState = this.cachedState ?? this.stateEncoder.extractState(
       view,
       this.lastActionTimestamp,
       this.recentActionTimestamps.length - 1,
@@ -1703,6 +1185,7 @@ var EpisodeManager = class {
     };
     this.currentEpisode.steps.push(step);
     this.lastActionTimestamp = now;
+    this.cachedState = nextState;
     this.restartInactivityTimer();
     if (terminal) {
       this.endEpisode("completed");
@@ -1716,6 +1199,7 @@ var EpisodeManager = class {
     this.currentEpisode.outcome = outcome;
     this.completedEpisodes.push(this.currentEpisode);
     this.currentEpisode = null;
+    this.cachedState = null;
     this.stopInactivityTimer();
   }
   getCompletedEpisodes() {
@@ -1863,6 +1347,509 @@ var AwardManager = class {
   }
 };
 
+// plugins/rl-analytics/src/ScavengerHunt/TaskValidator.ts
+function jaroWinkler(s1, s2) {
+  if (s1 === s2) {
+    return 1;
+  }
+  const len1 = s1.length;
+  const len2 = s2.length;
+  if (len1 === 0 || len2 === 0) {
+    return 0;
+  }
+  const matchDistance = Math.floor(Math.max(len1, len2) / 2) - 1;
+  const s1Matches = new Array(len1).fill(false);
+  const s2Matches = new Array(len2).fill(false);
+  let matches = 0;
+  let transpositions = 0;
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchDistance);
+    const end = Math.min(i + matchDistance + 1, len2);
+    for (let j = start; j < end; j++) {
+      if (s2Matches[j] || s1[i] !== s2[j]) {
+        continue;
+      }
+      s1Matches[i] = true;
+      s2Matches[j] = true;
+      matches++;
+      break;
+    }
+  }
+  if (matches === 0) {
+    return 0;
+  }
+  let k = 0;
+  for (let i = 0; i < len1; i++) {
+    if (!s1Matches[i]) {
+      continue;
+    }
+    while (!s2Matches[k]) {
+      k++;
+    }
+    if (s1[i] !== s2[k]) {
+      transpositions++;
+    }
+    k++;
+  }
+  const jaro = (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
+  let prefix = 0;
+  for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
+    if (s1[i] === s2[i]) {
+      prefix++;
+    } else {
+      break;
+    }
+  }
+  return jaro + prefix * 0.1 * (1 - jaro);
+}
+var TaskValidator = class {
+  constructor(getView, getActionsSinceTaskStart) {
+    this.getView = getView;
+    this.getActionsSinceTaskStart = getActionsSinceTaskStart;
+  }
+  validate(task, model) {
+    const startTime = model.taskStartTimes.get(task.id);
+    if (startTime && task.minTimeSeconds) {
+      const elapsed = (Date.now() - startTime) / 1e3;
+      if (elapsed < task.minTimeSeconds) {
+        return {
+          valid: false,
+          reason: "Completed too quickly \u2014 please explore more carefully"
+        };
+      }
+    }
+    switch (task.type) {
+      case "navigate":
+        return this.validateNavigation(task);
+      case "navigate_constrained":
+        return this.validateConstrainedNavigation(task);
+      case "action_required":
+        return this.validateActionRequired(task);
+      case "identify":
+        return this.validateIdentification(task, model);
+      case "compare":
+        return this.validateIdentification(task, model);
+      case "freeform":
+        return this.validateFreeform(task, model);
+    }
+  }
+  validateNavigation(task) {
+    if (!task.target) {
+      return { valid: false, reason: "No target defined" };
+    }
+    const view = this.getView();
+    if (!view) {
+      return { valid: false, reason: "No active view" };
+    }
+    const contentBlocks = view.dynamicBlocks?.contentBlocks ?? [];
+    const visible = contentBlocks.some(
+      (block) => block.refName === task.target.refName && block.start <= task.target.end && block.end >= task.target.start
+    );
+    if (!visible) {
+      return { valid: false, reason: "Target region not in viewport" };
+    }
+    return this.checkRequiredTracks(task);
+  }
+  validateConstrainedNavigation(task) {
+    const constraints = task.navigationConstraints;
+    const actions = this.getActionsSinceTaskStart?.() ?? [];
+    let searchUsed = false;
+    if (constraints) {
+      if (constraints.requiredActionTypes) {
+        const actionSet = new Set(actions);
+        const hasAny = constraints.requiredActionTypes.some(
+          (t2) => actionSet.has(t2)
+        );
+        if (!hasAny) {
+          const hints = constraints.requiredActionTypes.map(
+            (m) => m.toLowerCase().replace(/_/g, " ")
+          );
+          return {
+            valid: false,
+            reason: `Try: ${hints.join(" or ")}`
+          };
+        }
+      }
+      if (constraints.minActions && actions.length < constraints.minActions) {
+        return {
+          valid: false,
+          reason: "Keep exploring \u2014 interact with the browser a bit more"
+        };
+      }
+      if (constraints.minActionDiversity) {
+        const diversity = new Set(actions).size;
+        if (diversity < constraints.minActionDiversity) {
+          return {
+            valid: false,
+            reason: "Try using different controls"
+          };
+        }
+      }
+      if (constraints.zoomRange) {
+        const view = this.getView();
+        if (view) {
+          try {
+            const bpPerPx = view.bpPerPx ?? 1;
+            if (constraints.zoomRange.max !== void 0 && bpPerPx > constraints.zoomRange.max) {
+              return { valid: false, reason: "Zoom in more" };
+            }
+            if (constraints.zoomRange.min !== void 0 && bpPerPx < constraints.zoomRange.min) {
+              return { valid: false, reason: "Zoom out more" };
+            }
+          } catch {
+          }
+        }
+      }
+    }
+    searchUsed = actions.includes("SEARCH");
+    if (task.target) {
+      const navResult = this.validateNavigation(task);
+      if (!navResult.valid) {
+        return navResult;
+      }
+    }
+    const tracksResult = this.checkRequiredTracks(task);
+    if (!tracksResult.valid) {
+      return tracksResult;
+    }
+    return { valid: true, searchUsed };
+  }
+  validateActionRequired(task) {
+    return this.checkRequiredTracks(task);
+  }
+  validateIdentification(task, model) {
+    const answer = model.answers.get(task.id);
+    if (!answer) {
+      return { valid: false, reason: "No answer provided" };
+    }
+    const validation = task.answerValidation;
+    if (validation?.mode === "keyword_set" && validation.keywords) {
+      const lower = answer.toLowerCase();
+      const match = validation.keywords.some(
+        (kw) => lower.includes(kw.toLowerCase())
+      );
+      return {
+        valid: match,
+        reason: match ? void 0 : "Answer not recognized \u2014 try again"
+      };
+    }
+    if (validation?.mode === "any_nonempty") {
+      const minLen = validation.minLength ?? 1;
+      return {
+        valid: answer.trim().length >= minLen,
+        reason: answer.trim().length >= minLen ? void 0 : "Please provide a longer answer"
+      };
+    }
+    if (task.answerChoices && task.expectedAnswer) {
+      return {
+        valid: answer === task.expectedAnswer,
+        reason: answer === task.expectedAnswer ? void 0 : "Incorrect answer"
+      };
+    }
+    if (task.expectedAnswer) {
+      const threshold = validation?.fuzzyThreshold ?? 0.85;
+      const similarity = jaroWinkler(
+        answer.toLowerCase(),
+        task.expectedAnswer.toLowerCase()
+      );
+      return {
+        valid: similarity > threshold,
+        reason: similarity > threshold ? void 0 : "Answer does not match expected"
+      };
+    }
+    return { valid: true };
+  }
+  validateFreeform(task, model) {
+    const answer = model.answers.get(task.id);
+    if (!answer || answer.trim().length === 0) {
+      return { valid: false, reason: "Please provide an answer" };
+    }
+    const minLen = task.answerValidation?.minLength ?? 1;
+    if (answer.trim().length < minLen) {
+      return { valid: false, reason: "Please provide a more detailed answer" };
+    }
+    if (task.expectedAnswer) {
+      const threshold = task.answerValidation?.fuzzyThreshold ?? 0.85;
+      const similarity = jaroWinkler(
+        answer.toLowerCase(),
+        task.expectedAnswer.toLowerCase()
+      );
+      return {
+        valid: similarity > threshold,
+        reason: similarity > threshold ? void 0 : "Answer does not match expected"
+      };
+    }
+    return { valid: true };
+  }
+  checkRequiredTracks(task) {
+    if (!task.requiredTracks) {
+      return { valid: true };
+    }
+    const view = this.getView();
+    if (!view) {
+      return { valid: true };
+    }
+    const activeTrackIds = (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      view.tracks?.map((t2) => t2.configuration?.trackId) ?? []
+    );
+    const missingTracks = task.requiredTracks.filter(
+      (t2) => !activeTrackIds.includes(t2)
+    );
+    if (missingTracks.length > 0) {
+      return {
+        valid: false,
+        reason: `Open the required track: ${missingTracks.join(", ")}`
+      };
+    }
+    return { valid: true };
+  }
+};
+
+// plugins/rl-analytics/src/ScavengerHunt/locale/en.ts
+var en = {
+  // === Awards: earned lines ===
+  "award.first_steps.earned": "You moved! The genome stretches out in both directions. What's out there?",
+  "award.eagle_eye.earned": "Individual nucleotides. Four letters encoding a living thing. You're reading source code.",
+  "award.curator.earned": "A new layer of evidence, revealed. Every track tells part of the story.",
+  "award.collector.earned": "Three tracks at once. You're cross-referencing \u2014 that's how real analysis works.",
+  "award.cartographer.earned": "Two contigs explored. You've seen the whole territory.",
+  "award.biologist.earned": "You're speaking the language now. Exons, variants, coverage \u2014 this is genomics.",
+  "award.wayfinder.earned": "No search bar. You navigated by eye and hand. That's skill.",
+  "award.inspector.earned": "Curious minds click things. There's always more data behind the surface.",
+  "award.colorist.earned": "Color reveals structure. You're seeing the data differently now.",
+  "award.rubberband.earned": "Precision selection. Elegant.",
+  // === Negative/observational awards ===
+  "award.oscillator.earned": "You're going back and forth. Interesting approach \u2014 but if you're looking for something specific, try a different direction.",
+  "award.speed_demon.earned": "That was fast. Maybe too fast? The data rewards patience.",
+  "award.lost.earned": "Feeling turned around? The overview bar at the top shows where you are on the whole chromosome.",
+  // === Idle nudges (escalating) ===
+  "idle.pulse": "",
+  // no text, just highlight the relevant control
+  "idle.30s": "",
+  "idle.60s": "Still here. No rush.",
+  "idle.90s": "The genome is patient. But I admit I'm curious what you'll find next.",
+  "idle.120s": "I've been studying this region while you were away. Something caught my eye nearby.",
+  "idle.180s": "The quest panel is over here, whenever you're ready. I've been reorganizing my notes.",
+  // === Task intro lines (narrator voice when task begins) ===
+  "task.t0-zoom.intro": "See that colorful bar? That's a genome. Try scrolling your mouse wheel over it.",
+  "task.t0-zoom.success": "Good. You changed your magnification. Zoom in for detail, zoom out for context.",
+  "task.t0-pan.intro": "Now try clicking and dragging sideways. You're moving along the chromosome.",
+  "task.t0-pan.success": "You're navigating. Everything you need is somewhere along this line.",
+  "task.t1-basepairs.intro": "Keep zooming in. There are letters hidden in the sequence. Find them.",
+  "task.t1-basepairs.success": "A, T, G, C. Adenine, thymine, guanine, cytosine. Every living thing is written in this alphabet.",
+  "task.t1-open-track.intro": "There's more data here than what you see. Open the track selector to reveal hidden layers.",
+  "task.t1-open-track.success": "Each track is a different kind of evidence. Genes, variants, alignments \u2014 pieces of the same puzzle.",
+  "task.t1-find-feature.intro": "Pan along the genome. You'll find annotated features \u2014 genes, mostly. Tell me the name of one.",
+  "task.t1-find-feature.success": "Found one. These annotations are predictions about what the DNA does. Some are well-studied, others are mysteries.",
+  "task.t1-other-contig.intro": "This genome has two contigs. You've been on ctgA. ctgB is smaller \u2014 can you find it?",
+  "task.t1-other-contig.success": "ctgB. Smaller, but no less interesting. In real genomes, some of the most important genes are on the shortest chromosomes.",
+  "task.t2-gene-anatomy.intro": "Find the gene EDEN. Zoom in to see its exons \u2014 the thick blocks. Count them.",
+  "task.t2-gene-anatomy.success": "Three exons. The thin lines between them are introns \u2014 they're transcribed but spliced out of the mRNA.",
+  "task.t2-downstream.intro": "Starting at EDEN, pan to the right. What's the next feature you find?",
+  "task.t2-downstream.success": "Good eye. Genes often cluster in neighborhoods. Whether that clustering means something is one of the big questions.",
+  "task.t2-variant-type.intro": "Open the variants track and find a variant near position 5,000. Click it. What kind of change is it?",
+  "task.t2-variant-type.success": "Variants are the raw material of evolution. Each one is a place where this genome differs from the reference.",
+  "task.t3-multi-track.intro": "Open three or more tracks. Find a region where the data layers tell you something together that no single layer shows alone.",
+  "task.t3-multi-track.success": "Integration. That's what separates looking from analyzing.",
+  "task.t3-exploration.intro": "Free exploration. Go wherever you want, look at whatever interests you. Report back.",
+  "task.t3-exploration.success": "Your path through this data is unique. No two people explore a genome the same way.",
+  "task.t4-teach.intro": "Navigate somewhere interesting. Then describe how you got there and why it matters \u2014 as if teaching someone.",
+  "task.t4-teach.success": "That description will help train an AI to navigate genomes the way you do.",
+  "task.t4-graduation.intro": "Last question. What would you want to explore further, given more time?",
+  "task.t4-graduation.success": "That curiosity is the point. Your exploration data will help build tools that make this kind of investigation faster for everyone.",
+  // === Validation feedback ===
+  "validate.zoom_more": "Zoom in a bit more. The detail is there.",
+  "validate.zoom_less": "Try zooming out to see more context.",
+  "validate.pan_needed": "Try clicking and dragging to move along the genome.",
+  "validate.track_missing": "Open the track selector and look for the track mentioned above.",
+  "validate.answer_wrong": "Not quite. Look more carefully at the data.",
+  "validate.too_fast": "That was fast. Take a moment to actually look at what's there.",
+  "validate.keep_going": "Keep exploring. Interact a bit more.",
+  "validate.try_different": "Try using different controls.",
+  // === Narrator framing ===
+  "narrator.welcome": "Welcome. You're about to explore a genome \u2014 a complete set of genetic instructions for a living organism. I'll be your guide.",
+  "narrator.tier1_intro": "Let's learn the controls. Every tool here has a purpose.",
+  "narrator.tier2_intro": "You know the controls. Now let's use them to answer questions about the biology.",
+  "narrator.tier3_intro": "Real analysis. Multiple data types, real questions. This is what bioinformaticians do.",
+  "narrator.tier4_intro": "You've earned this. Free exploration, then graduation.",
+  "narrator.graduation": "You've demonstrated genuine skill with a genome browser. Your exploration data will help train the next generation of analysis tools. If you'd like to participate in future sessions with larger genomes and harder challenges, your completion code enters you into the priority pool.",
+  // === Fog of war ===
+  "fog.blocked": 'Earn "{awardName}" first.',
+  "fog.undiscovered": "There's something here you haven't tried yet.",
+  "fog.lifting": "Unlocked.",
+  // === Drifting notifications (narrator gets lonely) ===
+  "drift.lonely.1": "I'm still over here, in the quest panel.",
+  "drift.lonely.2": "Exploring on your own? Fair enough. I'll be here when you need me.",
+  "drift.lonely.3": "Did you know this genome has multiple data tracks available? Open the track selector to see them all.",
+  "drift.encouragement.1": "You're doing well. Keep going.",
+  "drift.encouragement.2": "Every genome has surprises. Have you found yours yet?",
+  "drift.hint.search_bar": "The search bar at the top can take you to specific positions. But navigating by hand teaches you more.",
+  "drift.hint.right_click": "Try right-clicking on features. There's always more information than what's on the surface.",
+  "drift.hint.track_menu": "Each track has its own menu. Look for the three-dot icon on the track header."
+};
+var en_default = en;
+
+// plugins/rl-analytics/src/ScavengerHunt/GameEngine.ts
+function t(key) {
+  return en_default[key] ?? "";
+}
+var GameEngine = class {
+  constructor() {
+    __publicField(this, "awardManager", new AwardManager());
+    __publicField(this, "actionLog", []);
+    __publicField(this, "narratorLog", []);
+    __publicField(this, "nextEntryId", 0);
+    __publicField(this, "taskStartTimestamp", 0);
+    __publicField(this, "lastValidationResult", null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    __publicField(this, "getView", null);
+    __publicField(this, "model", null);
+    __publicField(this, "onChange", null);
+  }
+  /** Set the view accessor (for TaskValidator) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setViewAccessor(fn) {
+    this.getView = fn;
+  }
+  /** Bind to the MST model (for reading task state and mutating on completion) */
+  setModel(model) {
+    this.model = model;
+  }
+  /** Set a callback to trigger re-render when game state changes */
+  setOnChange(fn) {
+    this.onChange = fn;
+  }
+  /** Load a task set — initializes awards and emits welcome */
+  loadTaskSet(taskSet) {
+    if (taskSet.awards) {
+      this.awardManager.loadAwards(taskSet.awards);
+      this.awardManager.onAwardEarned((award) => {
+        this.onAwardEarned(award);
+      });
+    }
+    this.addNarratorEntry(t("narrator.welcome"), "system");
+  }
+  /** Called when a new task becomes current */
+  startTask(task) {
+    this.actionLog = [];
+    this.taskStartTimestamp = Date.now();
+    this.lastValidationResult = null;
+    const line = t(`task.${task.id}.intro`);
+    if (line) {
+      this.addNarratorEntry(line, "intro");
+    }
+  }
+  /** Called on every debounced action from the PatchListener */
+  onAction(action, state) {
+    this.actionLog.push(action.type);
+    this.awardManager.checkAction(action, state);
+    this.tryAutoValidate();
+  }
+  /** Called when the user submits a text answer */
+  onAnswerSubmit(answer) {
+    this.awardManager.checkTextAnswer(answer);
+    this.tryAutoValidate();
+  }
+  /** Try to validate the current task against current state */
+  tryAutoValidate() {
+    if (!this.model) {
+      return null;
+    }
+    const task = this.model.currentTask;
+    if (!task || this.model.isComplete || this.model.isGated) {
+      return null;
+    }
+    const needsText = task.type === "identify" || task.type === "compare" || task.type === "freeform";
+    if (needsText && !this.model.answers.get(task.id)) {
+      return null;
+    }
+    const validator = new TaskValidator(
+      () => this.getView?.() ?? null,
+      () => [...this.actionLog]
+    );
+    const result = validator.validate(task, this.model);
+    this.lastValidationResult = result;
+    if (result.valid) {
+      this.completeCurrentTask(task);
+    }
+    return result;
+  }
+  /** Get the current narrator log (read-only) */
+  getNarratorLog() {
+    return this.narratorLog;
+  }
+  /** Get the last validation result (for showing feedback) */
+  getLastValidationResult() {
+    return this.lastValidationResult;
+  }
+  /** Get earned award IDs */
+  getEarnedAwards() {
+    return this.awardManager.getEarnedAwards();
+  }
+  /** Check if all required awards are met for a task */
+  hasRequiredAwards(task) {
+    if (!task.requiredAwards) {
+      return true;
+    }
+    return this.awardManager.hasAllAwards(task.requiredAwards);
+  }
+  /** Get missing awards for current task */
+  getMissingAwards(task) {
+    if (!task.requiredAwards) {
+      return [];
+    }
+    return task.requiredAwards.filter((id) => !this.awardManager.hasAward(id));
+  }
+  completeCurrentTask(task) {
+    const line = t(`task.${task.id}.success`);
+    if (line) {
+      this.addNarratorEntry(line, "success");
+    }
+    if (task.awardOnComplete) {
+      this.awardManager.grant(task.awardOnComplete);
+    }
+    if (this.model && !this.model.completedTaskIds.includes(task.id)) {
+      this.model.completeCurrentTask();
+    }
+    this.actionLog = [];
+    this.lastValidationResult = null;
+    const nextTask = this.model?.currentTask;
+    if (nextTask && nextTask.id !== task.id) {
+      this.startTask(nextTask);
+      this.model?.startCurrentTask();
+    } else if (this.model?.isComplete) {
+      this.addNarratorEntry(t("narrator.graduation"), "success");
+    }
+    this.notifyChange();
+  }
+  onAwardEarned(award) {
+    const line = t(`award.${award.id}.earned`) || award.flavorText || award.description;
+    this.addNarratorEntry(line, "award");
+    if (this.model) {
+      this.model.addAward(award.id);
+    }
+    this.notifyChange();
+  }
+  addNarratorEntry(text, type) {
+    if (!text) {
+      return;
+    }
+    this.narratorLog.push({
+      id: this.nextEntryId++,
+      text,
+      type,
+      timestamp: Date.now()
+    });
+    this.notifyChange();
+  }
+  notifyChange() {
+    this.onChange?.();
+  }
+  dispose() {
+  }
+};
+
 // plugins/rl-analytics/src/index.ts
 init_ScavengerHuntWidget();
 
@@ -1944,10 +1931,15 @@ async function sha256Hex(data) {
   const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
   return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+var ZoomRangeModel = types.model("ZoomRange", {
+  min: types.maybe(types.number),
+  max: types.maybe(types.number)
+});
 var NavigationConstraintModel = types.model("NavigationConstraint", {
   requiredActionTypes: types.maybe(types.array(types.string)),
   minActions: types.maybe(types.number),
-  minActionDiversity: types.maybe(types.number)
+  minActionDiversity: types.maybe(types.number),
+  zoomRange: types.maybe(ZoomRangeModel)
 });
 var AnswerValidationModel = types.model("AnswerValidation", {
   mode: types.optional(
@@ -2144,6 +2136,9 @@ var ScavengerHuntModel = types.model("ScavengerHuntWidget", {
     if (!task) {
       return;
     }
+    if (self.completedTaskIds.includes(task.id)) {
+      return;
+    }
     self.taskEndTimes.set(task.id, Date.now());
     self.completedTaskIds.push(task.id);
     self.coachingActive = false;
@@ -2192,7 +2187,8 @@ var RLAnalyticsPlugin = class extends Plugin {
     __publicField(this, "patchListener", null);
     __publicField(this, "episodeManager", null);
     __publicField(this, "exportManager", null);
-    __publicField(this, "awardManager", null);
+    __publicField(this, "gameEngine", null);
+    __publicField(this, "stateEncoder", new StateEncoder());
   }
   install(pluginManager) {
     pluginManager.addWidgetType(() => {
@@ -2215,21 +2211,29 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.patchListener?.dispose();
     this.episodeManager?.dispose();
     this.exportManager?.dispose();
+    this.gameEngine?.dispose();
     this.patchListener = new PatchListener(1e4, 500, false);
     this.episodeManager = new EpisodeManager(3e5);
     this.exportManager = new ExportManager(this.episodeManager);
-    this.awardManager = new AwardManager();
-    this.episodeManager.setViewAccessor(() => {
+    this.gameEngine = new GameEngine();
+    const getView = () => {
       const session2 = rootModel.session;
       if (!session2?.views) {
         return void 0;
       }
       return session2.views.find((v) => v.type === "LinearGenomeView");
-    });
+    };
+    this.episodeManager.setViewAccessor(getView);
+    this.gameEngine.setViewAccessor(getView);
+    setGameEngine(this.gameEngine);
     this.patchListener.buffer.onDebouncedAction((action) => {
-      pushActionForValidation(action.type);
       queueMicrotask(() => {
         this.episodeManager.recordAction(action);
+        const view = getView();
+        if (view && this.gameEngine) {
+          const state = this.stateEncoder.extractState(view, 0, 0);
+          this.gameEngine.onAction(action, state);
+        }
       });
     });
     const session = rootModel.session;
@@ -2296,6 +2300,9 @@ Buffer size: ${this.patchListener?.buffer.length ?? 0}`
   getPatchListener() {
     return this.patchListener;
   }
+  getGameEngine() {
+    return this.gameEngine;
+  }
   loadTasksFromUrl(pluginManager) {
     if (typeof window === "undefined") {
       return;
@@ -2322,6 +2329,15 @@ Buffer size: ${this.patchListener?.buffer.length ?? 0}`
             model.setAssignmentId(assignmentId);
           }
           session.showWidget(widget);
+          if (this.gameEngine) {
+            this.gameEngine.setModel(model);
+            this.gameEngine.loadTaskSet(taskSet);
+            const firstTask = model.currentTask;
+            if (firstTask) {
+              model.startCurrentTask();
+              this.gameEngine.startTask(firstTask);
+            }
+          }
         }
       }).catch((err) => {
         console.error("Failed to load scavenger hunt tasks:", err);

@@ -1,22 +1,17 @@
 import { Box, Typography } from '@mui/material'
-import { observer } from 'mobx-react'
 import { useEffect, useRef } from 'react'
 
-export interface NarratorEntry {
-  id: number
-  text: string
-  type: 'intro' | 'success' | 'hint' | 'award' | 'system'
-}
+import type { NarratorEntry } from '../GameEngine.ts'
 
 const typeStyles: Record<NarratorEntry['type'], Record<string, unknown>> = {
   intro: { bgcolor: 'grey.50', color: 'text.primary' },
   success: { bgcolor: 'success.light', color: 'success.contrastText' },
   hint: { bgcolor: 'info.light', color: 'info.contrastText' },
   award: { bgcolor: 'warning.light', color: 'warning.contrastText' },
-  system: { bgcolor: 'grey.200', color: 'text.secondary', fontSize: '0.75rem' },
+  system: { bgcolor: 'grey.200', color: 'text.secondary' },
 }
 
-const NarratorLog = observer(function NarratorLog({
+export default function NarratorLog({
   entries,
 }: {
   entries: NarratorEntry[]
@@ -26,6 +21,10 @@ const NarratorLog = observer(function NarratorLog({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [entries.length])
+
+  if (entries.length === 0) {
+    return null
+  }
 
   return (
     <Box
@@ -45,16 +44,14 @@ const NarratorLog = observer(function NarratorLog({
           key={entry.id}
           variant="body2"
           sx={{
-            p: 1,
+            p: 0.75,
             mb: 0.5,
             borderRadius: 1,
-            fontStyle: entry.type === 'intro' || entry.type === 'hint' ? 'italic' : 'normal',
+            fontStyle:
+              entry.type === 'intro' || entry.type === 'hint'
+                ? 'italic'
+                : 'normal',
             fontSize: entry.type === 'system' ? '0.75rem' : '0.8125rem',
-            animation: 'narratorFadeIn 0.3s ease-out',
-            '@keyframes narratorFadeIn': {
-              '0%': { opacity: 0, transform: 'translateY(4px)' },
-              '100%': { opacity: 1, transform: 'translateY(0)' },
-            },
             ...typeStyles[entry.type],
           }}
         >
@@ -64,6 +61,4 @@ const NarratorLog = observer(function NarratorLog({
       <div ref={bottomRef} />
     </Box>
   )
-})
-
-export default NarratorLog
+}
