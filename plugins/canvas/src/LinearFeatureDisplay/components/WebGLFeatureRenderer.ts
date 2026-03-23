@@ -1,3 +1,4 @@
+import { HP_GLSL_WITH_UNIFORM } from '@jbrowse/alignments-core'
 import {
   createProgram as createGLProgram,
   splitPositionWithFrac,
@@ -7,32 +8,6 @@ import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
-
-const HP_GLSL_FUNCTIONS = `
-const uint HP_LOW_MASK = 0xFFFu;
-
-// WARNING: u_zero MUST be 0.0 at runtime. Produces runtime infinity (1.0/0.0)
-// that prevents the compiler from combining hi/lo subtractions.
-// A compile-time constant would be optimized away.
-// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
-uniform float u_zero;
-
-vec2 hpSplitUint(uint value) {
-  uint lo = value & HP_LOW_MASK;
-  uint hi = value - lo;
-  return vec2(float(hi), float(lo));
-}
-
-// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
-// terms. Do not simplify.
-float hpToClipX(vec2 splitPos, vec3 domain) {
-  float inf = 1.0 / u_zero;
-  float step = 2.0 / domain.z;
-  float hi = max(splitPos.x - domain.x, -inf);
-  float lo = max(splitPos.y - domain.y, -inf);
-  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
-}
-`
 
 const RECT_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -51,7 +26,7 @@ uniform float u_scrollY;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 float snapToPixelX(float clipX) {
   float px = (clipX + 1.0) * 0.5 * u_canvasWidth;
@@ -112,7 +87,7 @@ uniform float u_scrollY;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 void main() {
   int vid = gl_VertexID % 2;
@@ -154,7 +129,7 @@ uniform float u_bpPerPx;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 void main() {
   int localChevronIndex = gl_VertexID / 4;
@@ -232,7 +207,7 @@ uniform float u_scrollY;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 void main() {
   int vid = gl_VertexID % 9;

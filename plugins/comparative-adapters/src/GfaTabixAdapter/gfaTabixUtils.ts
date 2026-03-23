@@ -144,7 +144,7 @@ export async function getSegmentsForOrdinalsFromShard(
   }
 
   console.log(
-    `getSegmentsForOrdinalsFromShard: ${ordinals.length} ordinals -> ${merged.length} merged ranges`,
+    `getSegmentsForOrdinalsFromShard: ${ordinals.length} ordinals -> ${merged.length} merged ranges (idx.length=${idx.length}, ordinals=${JSON.stringify(ordinals.slice(0, 10))})`,
   )
 
   const allRecords: SegRecord[] = []

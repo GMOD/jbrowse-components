@@ -1,30 +1,58 @@
 # Pangenome Synteny: Next Steps
 
-> Completed items moved to `PANGENOME_COMPLETED.md`.
+> Move completed items to `PANGENOME_COMPLETED.md` and remove from this document
 >
 > Note: do not use numbering or ID prefixes (R1, F2, etc.) for tasks in this
 > document. Use descriptive section headers instead.
 
 ## Priority
 
-| Task                                             | Effort | Impact                                                |
-| ------------------------------------------------ | ------ | ----------------------------------------------------- |
-| Lazy assembly creation for large pangenomes      | Small  | Avoid creating 90+ assemblies eagerly on first load   |
-| ~~Warning logs for missing GFA-tabix headers~~   | Small  | ~~Done — warns on missing #genomes= and #sizes=~~     |
-| GFA W-line test coverage                         | Small  | W-lines are the primary HPRC format, untested         |
-| ~~Wire stopToken through GfaTabixAdapter~~       | Small  | ~~Done — checkStopToken in lineCallbacks + async boundaries~~ |
-| SVG overlay for MultiSynteny text labels           | Small  | SVG text layer for deletion lengths, base letters     |
-| GPU feature picking for MultiSynteny              | Small  | Color-encoded picking FBO (currently JS fallback)     |
-| Automated performance tracing                    | Small  | Measurable regressions, data-driven optimization      |
-| Virtual scrolling for large genome counts        | Medium | Smooth scrolling through 90+ assemblies               |
-| Canvas click-to-select and context menu          | Small  | Feature selection + detail widget from canvas         |
-| renderSvg for MultiLGVSyntenyDisplay             | Medium | Image/SVG export for multi-genome views               |
-| Graph ↔ Synteny navigation                       | Medium | Click bubble in graph → synteny context               |
-| Shared GFA data layer (graph + synteny)          | Large  | Single GFA load for both views                        |
-| Test LOD-aware aln.bed.gz switching               | Small  | Verify segment↔aln transition at bpPerPx threshold   |
-| Multi-resolution segment index (LOD)             | Medium | Whole-chromosome views for large pangenomes           |
-| MultiLGV scrolling for manual row height mode    | Small  | Scroll through assemblies when rows exceed display    |
-| MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc.      |
+| Task                                                 | Effort | Impact                                                                        |
+| ---------------------------------------------------- | ------ | ----------------------------------------------------------------------------- |
+| Lazy assembly creation for large pangenomes          | Small  | Avoid creating 90+ assemblies eagerly on first load                           |
+| ~~Warning logs for missing GFA-tabix headers~~       | Small  | ~~Done — warns on missing #genomes= and #sizes=~~                             |
+| GFA W-line test coverage                             | Small  | W-lines are the primary HPRC format, untested                                 |
+| ~~Wire stopToken through GfaTabixAdapter~~           | Small  | ~~Done — checkStopToken in lineCallbacks + async boundaries~~                 |
+| SVG overlay for MultiSynteny text labels             | Small  | SVG text layer for deletion lengths, base letters                             |
+| GPU feature picking for MultiSynteny                 | Small  | Color-encoded picking FBO (currently JS fallback)                             |
+| Automated performance tracing                        | Small  | Measurable regressions, data-driven optimization                              |
+| Virtual scrolling for large genome counts            | Medium | Smooth scrolling through 90+ assemblies                                       |
+| Canvas click-to-select and context menu              | Small  | Feature selection + detail widget from canvas                                 |
+| renderSvg for MultiLGVSyntenyDisplay                 | Medium | Image/SVG export for multi-genome views                                       |
+| Graph ↔ Synteny navigation                           | Medium | Click bubble in graph → synteny context                                       |
+| Shared GFA data layer (graph + synteny)              | Large  | Single GFA load for both views                                                |
+| Test LOD-aware aln.bed.gz switching                  | Small  | Verify segment↔aln transition at bpPerPx threshold                            |
+| Multi-resolution segment index (LOD)                 | Medium | Whole-chromosome views for large pangenomes                                   |
+| MultiLGV scrolling for manual row height mode        | Small  | Scroll through assemblies when rows exceed display                            |
+| MultiLGV sorting/grouping by assembly properties     | Small  | Organize 90+ assemblies by clade, identity, etc.                              |
+| ~~Alignments WebGL renderer: use shared webglUtils~~ | Small  | ~~Done — uses createProgram, cacheUniforms, enableStandardBlend from core~~   |
+| ~~Canvas plugin: use shared HP shader functions~~    | Small  | ~~Done — imports HP_GLSL_WITH_UNIFORM and HP_WGSL_CORE from alignments-core~~ |
+| Wiggle/variants: adopt shared GPU utilities          | Small  | These plugins have their own color/GPU wrappers                               |
+
+---
+
+## Further GPU Code Sharing
+
+### ~~Alignments WebGLRenderer: Adopt Shared Utilities~~ (Done)
+
+`WebGLRenderer.ts` now uses `createProgram()`, `cacheUniforms()`, and
+`enableStandardBlend()` from `@jbrowse/core/gpu/webglUtils`, removing ~45 lines
+of duplicated code. The color wrappers (`toRgb()` etc.) are kept as-is since
+they're thin context-specific helpers.
+
+### Wiggle/Variants GPU Renderers
+
+`plugins/wiggle/src/shared/webglUtils.ts` has `parseColor()` with caching that
+wraps `cssColorToNormalizedRgb()`.
+`plugins/variants/src/shared/ variantWebglUtils.ts` has `colorToRGBA()` +
+`createCachedRGBA()`. Both could use a shared cached color utility from
+`@jbrowse/core/util/colorBits`.
+
+### Canvas2D DPR Transform
+
+Both Canvas2D renderers do `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` +
+`ctx.clearRect()`. Could add a `prepareCanvas2D(ctx, width, height)` helper to
+`@jbrowse/alignments-core/rendererUtils` for consistency.
 
 ---
 
@@ -39,8 +67,8 @@ on demand.
 
 ### ~~Warning Logs for Missing GFA-Tabix Headers~~ (Done)
 
-`console.warn()` added in `setupPre()` when `#genomes=` or `#sizes=` headers
-are missing from pos.bed.gz.
+`console.warn()` added in `setupPre()` when `#genomes=` or `#sizes=` headers are
+missing from pos.bed.gz.
 
 ### GFA W-Line Test Coverage
 
@@ -85,10 +113,10 @@ feature positions.
 
 ### GPU Feature Picking for MultiSynteny
 
-The WebGL/WebGPU renderers have picking shader plumbing (fragment shader
-encodes featureId as RGB) but picking is not yet wired up. Currently the
-tooltip falls back to JS `bpToPx`. Wire up the picking FBO/texture readback
-following the `LinearSyntenyDisplay` pattern.
+The WebGL/WebGPU renderers have picking shader plumbing (fragment shader encodes
+featureId as RGB) but picking is not yet wired up. Currently the tooltip falls
+back to JS `bpToPx`. Wire up the picking FBO/texture readback following the
+`LinearSyntenyDisplay` pattern.
 
 ### Automated Performance Tracing
 
@@ -298,6 +326,7 @@ per-chromosome .vg files from HPRC (converted to GFA via `vg convert`).
 Build script: `test/data/synteny-demo/scripts/build-gfa-tabix.sh`
 
 Upload:
+
 ```bash
 aws s3 sync test/data/synteny-demo/gfa-tabix-output/ \
   s3://jbrowse.org/demos/gfadata/ --exclude 'downloads/*'
@@ -339,7 +368,7 @@ For base-level multiple alignment at zoomed-in views:
 - **Multi-pair PIF with cs tags**: Generate from minimap2 `--cs` for
   multi-genome comparison (currently have single-pair only)
 
-- **HPRC chrM and chr20**: Regenerated from v1.1-mc per-chromosome .vg files
-  via `vg convert` → Rust `gfa-to-tabix`. Available locally and for S3 upload.
+- **HPRC chrM and chr20**: Regenerated from v1.1-mc per-chromosome .vg files via
+  `vg convert` → Rust `gfa-to-tabix`. Available locally and for S3 upload.
 
 - **C. elegans multi-species PAF**: Small genomes, good for integration testing

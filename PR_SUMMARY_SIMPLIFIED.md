@@ -71,20 +71,22 @@ This reverse lookup is what makes cross-genome queries possible.
 
 ```
 THE GRAPH                         pos.bed.gz                segments.gz
-                                  (coords → segments)       (segment → all genomes)
+                                  (coords → ordinals)       (ordinal → all genomes)
 
-ref:     s1──s2──s3──s4──s5       ref:0-100    → s1         s1 → ref:0,     samA:0,   samB:0
-samA:    s1──s2──s6──s4──s5       ref:100-300  → s2         s2 → ref:100,   samA:100
-samB:    s1──s7──s8──s4──s5       ref:300-450  → s3         s3 → ref:300
-                                  ref:450-530  → s4         s4 → ref:450,   samA:390, samB:450
-                                  ref:530-650  → s5         s5 → ref:530,   samA:470, samB:530
-                                  samA:0-100   → s1         s6 → samA:300
-                                  samA:100-300 → s2         s7 → samB:100
-                                  samA:300-390 → s6         s8 → samB:400
-                                  samB:0-100   → s1
-                                  samB:100-400 → s7
+ref:     s1──s2──s3──s4──s5       ref:0-100    → 0          0 → ref:0,     samA:0,   samB:0
+samA:    s1──s2──s6──s4──s5       ref:100-300  → 1          1 → ref:100,   samA:100
+samB:    s1──s7──s8──s4──s5       ref:300-450  → 2          2 → ref:300
+                                  ref:450-530  → 3          3 → ref:450,   samA:390, samB:450
+                                  ref:530-650  → 4          4 → ref:530,   samA:470, samB:530
+                                  samA:0-100   → 0          5 → samA:300
+                                  samA:100-300 → 1          6 → samB:100
+                                  samA:300-390 → 5          7 → samB:400
+                                  samB:0-100   → 0
+                                  samB:100-400 → 6
                                   ...                       ...
 ```
+
+Segments (graph nodes) are assigned sequential numeric ordinals. These are internal IDs used as array indices into the companion byte-offset index — they have no meaning outside a given file set.
 
 ## How a Query Works
 
@@ -259,9 +261,9 @@ overlaps throughout.
 
 ```bash
 jbrowse make-gfa-tabix input.gfa --out mydata
-# mydata.pos.bed.gz      + .tbi              (forward index)
-# mydata.segments.gz     + .gzi + .segments.idx  (reverse index)
-# mydata.aln.bed.gz      + .tbi              (optional, base-level)
+# mydata.pos.bed.gz       + .tbi              (forward index: coords → ordinals)
+# mydata.segments.gz      + .gzi + .idx       (reverse index: ordinals → all genomes)
+# mydata.aln.bed.gz       + .tbi              (optional, base-level cs tags)
 ```
 
 Genome names and sizes come from file headers — the GfaTabixAdapter auto-creates
@@ -286,8 +288,7 @@ nearly all paths, so _k_ approaches _P_ for those segments.
 | HPRC whole genome | ~30M | 90 | ~1.6B | ~240MB |
 | 1000 haplotypes | ~2M | 1000 | ~1B+ | ~16MB |
 
-At query time, `getSegsForRange(min, max)` fetches **all paths** for the
-queried segment ordinals. With 90 paths this is fast; with 1000+ paths,
+At query time, the adapter fetches **all paths** for the queried segment ordinals. With 90 paths this is fast; with 1000+ paths,
 a small genomic region pulls megabytes of segment rows even if the user only
 has a few genomes visible. The adapter parses and filters client-side, but the
 network cost is paid regardless.
@@ -307,8 +308,7 @@ See the Caveats section for planned mitigations.
   `aln.bed.gz`.
 - **Companion index is a flat array.** ~15MB for 1.86M segments (HPRC chr20);
   only needed offsets are fetched via range requests.
-- **Segment IDs are arbitrary.** Assigned in encounter order; only valid within
-  one file set.
+- **Segment ordinals are internal.** Assigned in GFA path-traversal order; only valid within one file set.
 - **No path filtering in segments.gz.** Querying a segment range fetches all
   paths' data for those segments. With 90 haplotypes this is fine; at 1000+
   paths, queries fetch far more data than displayed. Possible mitigations:
@@ -402,13 +402,31 @@ frequencies; GFA Tabix at large-scale structural synteny. Complementary.
 
 ### pos.bed.gz (tabix)
 
-| Column     | Description                     |
-| ---------- | ------------------------------- |
-| pathName   | Genome path (e.g. `ref#1#chr1`) |
-| chunkStart | Start coordinate                |
-| chunkEnd   | End coordinate                  |
-| minSegId   | First segment ID in chunk       |
-| maxSegId   | Last segment ID in chunk        |
+| Column     | Description                              |
+| ---------- | ---------------------------------------- |
+| pathName   | Genome path (e.g. `ref#1#chr1`)          |
+| chunkStart | Start coordinate                         |
+| chunkEnd   | End coordinate                           |
+| ordinals   | Range-encoded ordinals for this chunk    |
+
+The ordinal column uses range notation to compactly express lists of segment
+ordinals. Consecutive ordinals are collapsed into `start-end` ranges;
+non-consecutive ordinals are comma-separated:
+
+```
+# old format (one number per ordinal, each comma-separated):
+ref#1#chr1  0  76082  787815,787816,...,787914
+
+# new format (range notation):
+ref#1#chr1  0  76082  787815-787914
+ref#1#chr1  0  76082  0-23,58-80,121-170,1119592-1119596
+```
+
+The second example shows a region where the reference path traverses two
+groups of consecutive shared segments (0–23, 58–80, 121–170) and a cluster of
+assembly-private segments (1119592–1119596) — a typical pattern in pangenome
+graphs where conserved regions have dense consecutive ordinals and divergent
+regions have sparse ones.
 
 Segments chunked (default 100) to reduce queries. Headers encode `#genomes=...`
 and `#sizes=path:length,...`.
@@ -420,14 +438,35 @@ flat uint64 LE array where `idx[N]` is the byte offset where segment N starts.
 To query segments N–M: read `idx[N]` and `idx[M+1]`, then fetch that byte range
 via the GZI index.
 
-| Column   | Description                         |
-| -------- | ----------------------------------- |
-| segId    | Numeric ID (0, 1, 2, ...)           |
-| pathName | Genome path containing this segment |
-| offset   | Position within that genome         |
-| segLen   | Length in bases                     |
-| strand   | `+` or `-`                          |
-| segName  | Original GFA segment name           |
+Path names appear once in the file header (`#paths=...`) and are referenced by
+numeric index in each row — the same approach BAM uses for reference sequence
+names. This avoids repeating 30-character path names millions of times.
+
+```
+# header lines (written once):
+#genomes=ref#1,samA#1,samB#1
+#sizes=ref#1#chr1:650,samA#1#chr1:470,samB#1#chr1:530
+#paths=ref#1#chr1,samA#1#chr1,samB#1#chr1
+
+# data rows: ordinal, pathIdx, offset, length, strand
+0  0  0    100  +        ← ordinal 0, path 0 (ref#1#chr1),  offset 0,   len 100
+0  1  0    100  +        ← ordinal 0, path 1 (samA#1#chr1), offset 0,   len 100
+0  2  0    100  +        ← ordinal 0, path 2 (samB#1#chr1), offset 0,   len 100
+1  0  100  200  +        ← ordinal 1, path 0 (ref),         offset 100, len 200
+1  1  100  200  +        ← ordinal 1, path 1 (samA),        offset 100, len 200
+2  0  300  150  +        ← ordinal 2, path 0 (ref only)
+3  0  450  80   +
+3  1  390  80   +
+3  2  450  80   +
+```
+
+| Column   | Description                                  |
+| -------- | -------------------------------------------- |
+| ordinal  | Numeric segment ID (0, 1, 2, ...)            |
+| pathIdx  | Index into `#paths=` header                  |
+| offset   | Position within that genome's path           |
+| segLen   | Length in bases                              |
+| strand   | `+` or `-`                                   |
 
 One row per (segment, genome) pair.
 

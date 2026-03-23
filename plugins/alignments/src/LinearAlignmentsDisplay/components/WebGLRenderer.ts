@@ -20,6 +20,12 @@
  * reads appear to "stick" at integer positions and snap when crossing boundaries.
  */
 
+import {
+  cacheUniforms,
+  createProgram,
+  enableStandardBlend,
+} from '@jbrowse/core/gpu/webglUtils'
+
 import { renderArcLines, renderArcs } from './ArcsRenderer.ts'
 import { renderConnectingLine } from './ConnectingLineRenderer.ts'
 import { renderCoverage } from './CoverageRenderer.ts'
@@ -218,62 +224,62 @@ export class WebGLRenderer implements AlignmentsBackend {
     }
     this.gl = gl
 
-    this.readProgram = this.createProgram(
+    this.readProgram = createProgram(gl,
       READ_VERTEX_SHADER,
       READ_FRAGMENT_SHADER,
     )
 
-    this.coverageProgram = this.createProgram(
+    this.coverageProgram = createProgram(gl,
       COVERAGE_VERTEX_SHADER,
       COVERAGE_FRAGMENT_SHADER,
     )
 
-    this.snpCoverageProgram = this.createProgram(
+    this.snpCoverageProgram = createProgram(gl,
       SNP_COVERAGE_VERTEX_SHADER,
       SNP_COVERAGE_FRAGMENT_SHADER,
     )
 
-    this.noncovHistogramProgram = this.createProgram(
+    this.noncovHistogramProgram = createProgram(gl,
       NONCOV_HISTOGRAM_VERTEX_SHADER,
       NONCOV_HISTOGRAM_FRAGMENT_SHADER,
     )
 
-    this.indicatorProgram = this.createProgram(
+    this.indicatorProgram = createProgram(gl,
       INDICATOR_VERTEX_SHADER,
       INDICATOR_FRAGMENT_SHADER,
     )
 
-    this.lineProgram = this.createProgram(
+    this.lineProgram = createProgram(gl,
       LINE_VERTEX_SHADER,
       LINE_FRAGMENT_SHADER,
     )
-    this.gapProgram = this.createProgram(GAP_VERTEX_SHADER, GAP_FRAGMENT_SHADER)
-    this.mismatchProgram = this.createProgram(
+    this.gapProgram = createProgram(gl, GAP_VERTEX_SHADER, GAP_FRAGMENT_SHADER)
+    this.mismatchProgram = createProgram(gl,
       MISMATCH_VERTEX_SHADER,
       MISMATCH_FRAGMENT_SHADER,
     )
-    this.insertionProgram = this.createProgram(
+    this.insertionProgram = createProgram(gl,
       INSERTION_VERTEX_SHADER,
       INSERTION_FRAGMENT_SHADER,
     )
-    this.softclipProgram = this.createProgram(
+    this.softclipProgram = createProgram(gl,
       SOFTCLIP_VERTEX_SHADER,
       SOFTCLIP_FRAGMENT_SHADER,
     )
-    this.hardclipProgram = this.createProgram(
+    this.hardclipProgram = createProgram(gl,
       HARDCLIP_VERTEX_SHADER,
       HARDCLIP_FRAGMENT_SHADER,
     )
-    this.modificationProgram = this.createProgram(
+    this.modificationProgram = createProgram(gl,
       MODIFICATION_VERTEX_SHADER,
       MODIFICATION_FRAGMENT_SHADER,
     )
-    this.modCoverageProgram = this.createProgram(
+    this.modCoverageProgram = createProgram(gl,
       MOD_COVERAGE_VERTEX_SHADER,
       MOD_COVERAGE_FRAGMENT_SHADER,
     )
 
-    this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
+    this.lineUniforms = cacheUniforms(gl, this.lineProgram, ['u_color'])
 
     // Create line VAO and buffer for separator
     this.lineVAO = gl.createVertexArray()
@@ -285,7 +291,7 @@ export class WebGLRenderer implements AlignmentsBackend {
     gl.vertexAttribPointer(linePosLoc, 2, gl.FLOAT, false, 0, 0)
     gl.bindVertexArray(null)
 
-    this.cacheUniforms(this.readProgram, this.readUniforms, [
+    this.readUniforms = cacheUniforms(gl, this.readProgram, [
       'u_bpRangeX',
       'u_regionStart',
       'u_rangeY',
@@ -319,7 +325,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_zero',
     ])
 
-    this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
+    this.coverageUniforms = cacheUniforms(gl, this.coverageProgram, [
       'u_visibleRange',
       'u_coverageHeight',
       'u_coverageYOffset',
@@ -344,7 +350,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_colorHardclip',
     ]
 
-    this.cacheUniforms(this.snpCoverageProgram, this.snpCoverageUniforms, [
+    this.snpCoverageUniforms = cacheUniforms(gl, this.snpCoverageProgram, [
       'u_visibleRange',
       'u_coverageHeight',
       'u_coverageYOffset',
@@ -354,9 +360,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       ...baseColorUniforms,
     ])
 
-    this.cacheUniforms(
-      this.noncovHistogramProgram,
-      this.noncovHistogramUniforms,
+    this.noncovHistogramUniforms = cacheUniforms(gl, this.noncovHistogramProgram,
       [
         'u_visibleRange',
         'u_noncovHeight',
@@ -366,7 +370,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       ],
     )
 
-    this.cacheUniforms(this.indicatorProgram, this.indicatorUniforms, [
+    this.indicatorUniforms = cacheUniforms(gl, this.indicatorProgram, [
       'u_visibleRange',
       'u_canvasHeight',
       'u_canvasWidth',
@@ -382,31 +386,31 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_canvasHeight',
       'u_canvasWidth',
     ]
-    this.cacheUniforms(this.gapProgram, this.gapUniforms, [
+    this.gapUniforms = cacheUniforms(gl, this.gapProgram, [
       ...cigarUniforms,
       'u_colorDeletion',
       'u_colorSkip',
     ])
-    this.cacheUniforms(this.mismatchProgram, this.mismatchUniforms, [
+    this.mismatchUniforms = cacheUniforms(gl, this.mismatchProgram, [
       ...cigarUniforms,
       ...baseColorUniforms,
     ])
-    this.cacheUniforms(this.insertionProgram, this.insertionUniforms, [
+    this.insertionUniforms = cacheUniforms(gl, this.insertionProgram, [
       ...cigarUniforms,
       'u_colorInsertion',
     ])
-    this.cacheUniforms(this.softclipProgram, this.softclipUniforms, [
+    this.softclipUniforms = cacheUniforms(gl, this.softclipProgram, [
       ...cigarUniforms,
       'u_colorSoftclip',
     ])
-    this.cacheUniforms(this.hardclipProgram, this.hardclipUniforms, [
+    this.hardclipUniforms = cacheUniforms(gl, this.hardclipProgram, [
       ...cigarUniforms,
       'u_colorHardclip',
     ])
-    this.cacheUniforms(this.modificationProgram, this.modificationUniforms, [
+    this.modificationUniforms = cacheUniforms(gl, this.modificationProgram, [
       ...cigarUniforms,
     ])
-    this.cacheUniforms(this.modCoverageProgram, this.modCoverageUniforms, [
+    this.modCoverageUniforms = cacheUniforms(gl, this.modCoverageProgram, [
       'u_visibleRange',
       'u_coverageHeight',
       'u_coverageYOffset',
@@ -416,13 +420,13 @@ export class WebGLRenderer implements AlignmentsBackend {
     ])
 
     // Arcs programs
-    this.arcProgram = this.createProgram(ARC_VERTEX_SHADER, ARC_FRAGMENT_SHADER)
-    this.arcLineProgram = this.createProgram(
+    this.arcProgram = createProgram(gl, ARC_VERTEX_SHADER, ARC_FRAGMENT_SHADER)
+    this.arcLineProgram = createProgram(gl,
       ARC_LINE_VERTEX_SHADER,
       ARC_LINE_FRAGMENT_SHADER,
     )
 
-    this.cacheUniforms(this.arcProgram, this.arcUniforms, [
+    this.arcUniforms = cacheUniforms(gl, this.arcProgram, [
       'u_canvasWidth',
       'u_canvasHeight',
       'u_coverageOffset',
@@ -443,7 +447,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       )
     }
 
-    this.cacheUniforms(this.arcLineProgram, this.arcLineUniforms, [
+    this.arcLineUniforms = cacheUniforms(gl, this.arcLineProgram, [
       'u_bpRangeX',
       'u_regionStart',
       'u_canvasHeight',
@@ -476,11 +480,11 @@ export class WebGLRenderer implements AlignmentsBackend {
     gl.bufferData(gl.ARRAY_BUFFER, templateData, gl.STATIC_DRAW)
 
     // Sashimi program (reuses arc template buffer)
-    this.sashimiProgram = this.createProgram(
+    this.sashimiProgram = createProgram(gl,
       SASHIMI_ARC_VERTEX_SHADER,
       SASHIMI_ARC_FRAGMENT_SHADER,
     )
-    this.cacheUniforms(this.sashimiProgram, this.sashimiUniforms, [
+    this.sashimiUniforms = cacheUniforms(gl, this.sashimiProgram, [
       'u_canvasWidth',
       'u_canvasHeight',
       'u_coverageOffset',
@@ -501,13 +505,11 @@ export class WebGLRenderer implements AlignmentsBackend {
     }
 
     // Connecting line program
-    this.connectingLineProgram = this.createProgram(
+    this.connectingLineProgram = createProgram(gl,
       CONNECTING_LINE_VERTEX_SHADER,
       CONNECTING_LINE_FRAGMENT_SHADER,
     )
-    this.cacheUniforms(
-      this.connectingLineProgram,
-      this.connectingLineUniforms,
+    this.connectingLineUniforms = cacheUniforms(gl, this.connectingLineProgram,
       [
         'u_bpRangeX',
         'u_regionStart',
@@ -520,57 +522,9 @@ export class WebGLRenderer implements AlignmentsBackend {
       ],
     )
 
-    gl.enable(gl.BLEND)
-    gl.blendFuncSeparate(
-      gl.SRC_ALPHA,
-      gl.ONE_MINUS_SRC_ALPHA,
-      gl.ONE,
-      gl.ONE_MINUS_SRC_ALPHA,
-    )
+    enableStandardBlend(gl)
   }
 
-  private createShader(type: number, source: string): WebGLShader {
-    const gl = this.gl
-    const shader = gl.createShader(type)!
-    gl.shaderSource(shader, source)
-    gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      const info = gl.getShaderInfoLog(shader)
-      gl.deleteShader(shader)
-      throw new Error(`Shader compile error: ${info}`)
-    }
-    return shader
-  }
-
-  private createProgram(vsSource: string, fsSource: string): WebGLProgram {
-    const gl = this.gl
-    const vs = this.createShader(gl.VERTEX_SHADER, vsSource)
-    const fs = this.createShader(gl.FRAGMENT_SHADER, fsSource)
-    const program = gl.createProgram()
-    gl.attachShader(program, vs)
-    gl.attachShader(program, fs)
-    gl.linkProgram(program)
-    gl.detachShader(program, vs)
-    gl.detachShader(program, fs)
-    gl.deleteShader(vs)
-    gl.deleteShader(fs)
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      const info = gl.getProgramInfoLog(program)
-      gl.deleteProgram(program)
-      throw new Error(`Program link error: ${info}`)
-    }
-    return program
-  }
-
-  private cacheUniforms(
-    program: WebGLProgram,
-    cache: Record<string, WebGLUniformLocation | null>,
-    names: string[],
-  ) {
-    for (const name of names) {
-      cache[name] = this.gl.getUniformLocation(program, name)
-    }
-  }
 
   /**
    * Upload reads from pre-computed typed arrays (from RPC worker)

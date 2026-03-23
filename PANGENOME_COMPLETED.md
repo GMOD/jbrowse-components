@@ -273,19 +273,38 @@ shared between the alignments plugin and the MultiLGVSyntenyDisplay:
   picking fragment shaders)
 - **Renderer utilities** (`rendererUtils.ts`): `getDevicePixelRatio()`,
   `resizeCanvas()` (DPR-aware canvas resize with change detection),
-  `createPickingFbo()` (WebGL2 picking FBO setup/teardown)
+  `createPickingFbo()` (WebGL2 picking FBO setup/teardown); re-exports
+  generic GPU utilities from `@jbrowse/core/gpu/`
 
-Consumers:
-- Alignments `shaders/utils.ts` imports `HP_GLSL_WITH_UNIFORM`
-- Alignments `wgsl/common.ts` imports `HP_WGSL_CORE`, `RECT_LOCALS_WGSL`,
-  `SIMPLE_FS_WGSL`, `SIMPLE_VERTEX_OUTPUT_WGSL`
-- MultiLGV `multiSyntenyGpuShaders.ts` imports `HP_GLSL_CORE`, `HP_WGSL_CORE`,
-  `PICKING_FS_GLSL`, `PICKING_FS_WGSL`, `SIMPLE_FS_GLSL`
-- MultiLGV `multiSyntenyGpuData.ts` imports `InstanceBuilder`
-- MultiLGV `WebGLMultiSyntenyRenderer.ts` imports `getDevicePixelRatio`,
-  `resizeCanvas`, `createPickingFbo`
-- MultiLGV `WebGPUMultiSyntenyRenderer.ts` imports `getDevicePixelRatio`,
-  `resizeCanvas`
+## `@jbrowse/core/gpu/` Shared GPU Utilities
+
+Generic WebGL/WebGPU utilities used across all GPU track types:
+
+- **`webglUtils.ts`**: `createProgram()`, `createShader()`,
+  `bindUniformBlock()`, `cacheUniforms()`, `splitPositionWithFrac()`,
+  `enableStandardBlend()` (standard alpha blend setup)
+- **`webgpuUtils.ts`** (new): `STANDARD_BLEND_STATE` (shared GPUBlendState),
+  `createStandardBindGroupLayout()` (storage + uniform at binding 0/1),
+  `createStorageBuffer()` (create + writeBuffer helper),
+  `createStandardBindGroup()` (storage + uniform bind group helper)
+- **`getGpuDevice.ts`**: singleton WebGPU device management
+- **`initGpuContext.ts`**: canvas WebGPU context setup
+
+Consumers (all GPU renderers):
+- Alignments `WebGPUAlignmentsRenderer.ts` imports
+  `STANDARD_BLEND_STATE`, `createStandardBindGroupLayout`,
+  `createStorageBuffer`, `createStandardBindGroup`
+- Alignments `wgsl/common.ts` imports shared shader fragments from
+  `@jbrowse/alignments-core`
+- Pairwise `WebGPUSyntenyRenderer.ts` imports all webgpuUtils +
+  `getDevicePixelRatio`, `resizeCanvas`
+- Pairwise `WebGLSyntenyRenderer.ts` imports `enableStandardBlend`,
+  `bindUniformBlock` (removed local reimplementation)
+- MultiLGV `WebGPUMultiSyntenyRenderer.ts` imports all webgpuUtils +
+  `getDevicePixelRatio`, `resizeCanvas`
+- MultiLGV `WebGLMultiSyntenyRenderer.ts` imports `enableStandardBlend`,
+  `getDevicePixelRatio`, `resizeCanvas`, `createPickingFbo`
+- MultiLGV `multiSyntenyGpuShaders.ts` imports shared shader fragments
 
 ## WebGL/WebGPU Backend for MultiSyntenyRenderer
 
