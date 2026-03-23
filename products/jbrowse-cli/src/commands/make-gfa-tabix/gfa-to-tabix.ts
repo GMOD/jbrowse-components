@@ -306,15 +306,71 @@ function waitForClose(child: ChildProcess) {
   })
 }
 
+function encodeGenomeFilename(genome: string) {
+  return genome.replaceAll('#', '_').replaceAll('/', '_')
+}
+
+function writeSegsShard(
+  rows: { segOrd: number; line: string }[],
+  totalOrdinals: number,
+  headerBytes: string,
+  outputFile: string,
+  idxFile: string,
+) {
+  const tmpFile = path.join(
+    os.tmpdir(),
+    `gfa-shard-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  )
+
+  rows.sort((a, b) => a.segOrd - b.segOrd)
+
+  const indexOffsets: number[] = []
+  let byteOffset = Buffer.byteLength(headerBytes)
+  let lastOrd = -1
+
+  const tmpFd = fs.openSync(tmpFile, 'w')
+  fs.writeSync(tmpFd, headerBytes)
+
+  for (const row of rows) {
+    if (row.segOrd !== lastOrd) {
+      while (indexOffsets.length <= row.segOrd) {
+        indexOffsets.push(byteOffset)
+      }
+      lastOrd = row.segOrd
+    }
+    const lineBytes = Buffer.byteLength(row.line)
+    fs.writeSync(tmpFd, row.line)
+    byteOffset += lineBytes
+  }
+  // Fill remaining ordinals up to totalOrdinals
+  while (indexOffsets.length <= totalOrdinals) {
+    indexOffsets.push(byteOffset)
+  }
+  fs.closeSync(tmpFd)
+
+  execSync(`bgzip -i "${tmpFile}"`, { stdio: 'inherit' })
+  fs.copyFileSync(`${tmpFile}.gz`, outputFile)
+  fs.unlinkSync(`${tmpFile}.gz`)
+  fs.copyFileSync(`${tmpFile}.gz.gzi`, `${outputFile}.gzi`)
+  fs.unlinkSync(`${tmpFile}.gz.gzi`)
+
+  const idxBuf = Buffer.alloc(indexOffsets.length * 8)
+  for (let i = 0; i < indexOffsets.length; i++) {
+    idxBuf.writeBigUInt64LE(BigInt(indexOffsets[i]!), i * 8)
+  }
+  fs.writeFileSync(idxFile, idxBuf)
+}
+
 export async function gfaToTabix(
   gfaPath: string,
   outputPrefix: string,
   opts: {
     assemblies?: string[]
     chunkSize?: number
+    sharded?: boolean
   } = {},
 ) {
-  const { assemblies, chunkSize = 100 } = opts
+  const { assemblies, chunkSize = 100, sharded = false } = opts
   const rl = getReadline(gfaPath)
 
   const segmentLengths = new Map<string, number>()
@@ -322,6 +378,7 @@ export async function gfaToTabix(
   const segmentOrdinals = new Map<string, number>()
   let nextOrdinal = 0
   const allPaths: PathInfo[] = []
+  const unsupportedLines = new Map<string, number>()
 
   for await (const line of rl) {
     if (line.startsWith('S\t')) {
@@ -389,7 +446,28 @@ export async function gfaToTabix(
         return { segOrd: ord, orient, segLen }
       })
       allPaths.push({ name: pathName, sample, steps })
+    } else if (line.length > 0 && !line.startsWith('#') && !line.startsWith('H\t') && !line.startsWith('L\t')) {
+      const lineType = line.split('\t')[0]!
+      unsupportedLines.set(lineType, (unsupportedLines.get(lineType) ?? 0) + 1)
     }
+  }
+
+  if (unsupportedLines.size > 0) {
+    const summary = [...unsupportedLines.entries()]
+      .map(([type, count]) => `${type} (${count})`)
+      .join(', ')
+    console.warn(
+      `Warning: skipped unsupported GFA line types: ${summary}. ` +
+        'This converter supports S, P, and W lines from GFA 1.0/1.1.',
+    )
+  }
+
+  if (allPaths.length === 0) {
+    console.warn(
+      'Warning: no paths (P-lines) or walks (W-lines) found. ' +
+        'If this is an rGFA file from minigraph, paths must be ' +
+        'generated first (e.g. via minigraph --call).',
+    )
   }
 
   const ordToSegId = new Map<number, string>()
@@ -418,94 +496,89 @@ export async function gfaToTabix(
   const sizesLine = `#sizes=${pathSizes.join(',')}\n`
   posStdin.write(sizesLine)
 
-  // Collect segs rows, keyed by ordinal for sorting
-  const segsRows: { segOrd: number; line: string }[] = []
+  // Build segs rows from paths and write pos chunks
+  function buildSegsRowsForPaths(paths: PathInfo[]) {
+    const rows: { segOrd: number; line: string }[] = []
+    for (const p of paths) {
+      let offset = 0
+      let chunkStart = 0
+      let chunkMinOrd = Infinity
+      let chunkMaxOrd = -Infinity
+      let stepsInChunk = 0
 
-  for (const p of allPaths) {
-    let offset = 0
-    let chunkStart = 0
-    let chunkMinOrd = Infinity
-    let chunkMaxOrd = -Infinity
-    let stepsInChunk = 0
+      for (let i = 0; i < p.steps.length; i++) {
+        const step = p.steps[i]!
+        const segId = ordToSegId.get(step.segOrd) ?? `${step.segOrd}`
+        rows.push({
+          segOrd: step.segOrd,
+          line: `${step.segOrd}\t${p.name}\t${offset}\t${step.segLen}\t${step.orient}\t${segId}\n`,
+        })
 
-    for (let i = 0; i < p.steps.length; i++) {
-      const step = p.steps[i]!
-      const segId = ordToSegId.get(step.segOrd) ?? `${step.segOrd}`
-      segsRows.push({
-        segOrd: step.segOrd,
-        line: `${step.segOrd}\t${p.name}\t${offset}\t${step.segLen}\t${step.orient}\t${segId}\n`,
-      })
+        chunkMinOrd = Math.min(chunkMinOrd, step.segOrd)
+        chunkMaxOrd = Math.max(chunkMaxOrd, step.segOrd)
+        offset += step.segLen
+        stepsInChunk++
 
-      chunkMinOrd = Math.min(chunkMinOrd, step.segOrd)
-      chunkMaxOrd = Math.max(chunkMaxOrd, step.segOrd)
-      offset += step.segLen
-      stepsInChunk++
-
-      if (stepsInChunk >= chunkSize || i === p.steps.length - 1) {
-        posStdin.write(
-          `${p.name}\t${chunkStart}\t${offset}\t${chunkMinOrd}\t${chunkMaxOrd}\n`,
-        )
-        chunkStart = offset
-        chunkMinOrd = Infinity
-        chunkMaxOrd = -Infinity
-        stepsInChunk = 0
+        if (stepsInChunk >= chunkSize || i === p.steps.length - 1) {
+          posStdin.write(
+            `${p.name}\t${chunkStart}\t${offset}\t${chunkMinOrd}\t${chunkMaxOrd}\n`,
+          )
+          chunkStart = offset
+          chunkMinOrd = Infinity
+          chunkMaxOrd = -Infinity
+          stepsInChunk = 0
+        }
       }
     }
+    return rows
+  }
+
+  const headerContent = headerLine + sizesLine
+  const segsFile = `${outputPrefix}.segments.gz`
+  const segsIdxFile = `${outputPrefix}.segments.idx`
+  let manifestFile: string | undefined
+
+  if (sharded) {
+    // Process one genome at a time to keep memory O(segments_per_genome)
+    const segsDir = `${outputPrefix}_segments`
+    fs.mkdirSync(segsDir, { recursive: true })
+
+    const pathsByGenome = new Map<string, PathInfo[]>()
+    for (const p of allPaths) {
+      if (!pathsByGenome.has(p.sample)) {
+        pathsByGenome.set(p.sample, [])
+      }
+      pathsByGenome.get(p.sample)!.push(p)
+    }
+
+    const manifest: {
+      genomes: string[]
+      files: Record<string, string>
+    } = { genomes: [], files: {} }
+
+    for (const [genome, genomePaths] of pathsByGenome) {
+      const rows = buildSegsRowsForPaths(genomePaths)
+      const encoded = encodeGenomeFilename(genome)
+      const shardFile = path.join(segsDir, `${encoded}.segments.gz`)
+      const shardIdxFile = path.join(segsDir, `${encoded}.segments.idx`)
+      writeSegsShard(rows, nextOrdinal, headerContent, shardFile, shardIdxFile)
+      manifest.genomes.push(genome)
+      manifest.files[genome] = path.join(
+        path.basename(segsDir),
+        `${encoded}.segments`,
+      )
+    }
+
+    manifestFile = `${outputPrefix}.segments.manifest.json`
+    fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2))
+  } else {
+    const segsRows = buildSegsRowsForPaths(allPaths)
+    writeSegsShard(segsRows, nextOrdinal, headerContent, segsFile, segsIdxFile)
   }
 
   posStdin.end()
   await waitForClose(posProc)
   execSync(`tabix -c '#' -p bed "${posFile}"`, { stdio: 'inherit' })
-
-  // Write segs file: sorted by ordinal, bgzipped with companion index
-  segsRows.sort((a, b) => a.segOrd - b.segOrd)
-
-  const segsFile = `${outputPrefix}.segments.gz`
-  const segsIdxFile = `${outputPrefix}.segments.idx`
-  const tmpSegsFile = path.join(
-    os.tmpdir(),
-    `gfa-segs-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-  )
-
-  // Write sorted rows to temp file, tracking byte offsets per segment
-  const indexOffsets: number[] = []
-  let byteOffset = 0
-  let headerBytes = headerLine + sizesLine
-  byteOffset = Buffer.byteLength(headerBytes)
-  let lastOrd = -1
-
-  const tmpFd = fs.openSync(tmpSegsFile, 'w')
-  fs.writeSync(tmpFd, headerBytes)
-
-  for (const row of segsRows) {
-    if (row.segOrd !== lastOrd) {
-      // Fill gaps for any skipped ordinals
-      while (indexOffsets.length <= row.segOrd) {
-        indexOffsets.push(byteOffset)
-      }
-      lastOrd = row.segOrd
-    }
-    const lineBytes = Buffer.byteLength(row.line)
-    fs.writeSync(tmpFd, row.line)
-    byteOffset += lineBytes
-  }
-  // Sentinel: offset past all data
-  indexOffsets.push(byteOffset)
-  fs.closeSync(tmpFd)
-
-  // bgzip with -i to produce .gz + .gzi
-  execSync(`bgzip -i "${tmpSegsFile}"`, { stdio: 'inherit' })
-  fs.copyFileSync(`${tmpSegsFile}.gz`, segsFile)
-  fs.unlinkSync(`${tmpSegsFile}.gz`)
-  fs.copyFileSync(`${tmpSegsFile}.gz.gzi`, `${segsFile}.gzi`)
-  fs.unlinkSync(`${tmpSegsFile}.gz.gzi`)
-
-  // Write companion index: flat array of uint64 LE byte offsets
-  const idxBuf = Buffer.alloc(indexOffsets.length * 8)
-  for (let i = 0; i < indexOffsets.length; i++) {
-    idxBuf.writeBigUInt64LE(BigInt(indexOffsets[i]!), i * 8)
-  }
-  fs.writeFileSync(segsIdxFile, idxBuf)
 
   // Step 3: Compute pairwise alignments with cs tags and write aln.bed.gz
   const alnFile = `${outputPrefix}.aln.bed.gz`
@@ -563,6 +636,8 @@ export async function gfaToTabix(
     posFile,
     segsFile,
     segsIdxFile,
+    manifestFile,
+    sharded,
     alnFile: alnGenerated ? alnFile : undefined,
     segmentCount: segmentLengths.size,
     pathCount: allPaths.length,

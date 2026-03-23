@@ -55,6 +55,17 @@ function querySegsRange(prefix: string, minOrd: number, maxOrd: number) {
     .filter(l => l.length > 0 && !l.startsWith('#'))
 }
 
+function parseGfaPathName(p: string) {
+  const parts = p.split('#')
+  if (parts.length >= 3) {
+    return {
+      genome: parts.slice(0, -1).join('#'),
+      refName: parts[parts.length - 1]!,
+    }
+  }
+  return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
+}
+
 describe('GFA to tabix conversion', () => {
   it('creates pos.bed.gz and segs.gz with indexes', async () => {
     await withTmpDir(async dir => {
@@ -302,6 +313,128 @@ describe('GFA to tabix conversion', () => {
       )
 
       expect(results10.length).toBeGreaterThan(results100.length)
+    })
+  })
+
+  it('sharded mode creates per-genome segments files and manifest', async () => {
+    await withTmpDir(async dir => {
+      const prefix = path.join(dir, 'test')
+      const stats = await gfaToTabix(GFA_FILE, prefix, { sharded: true })
+
+      expect(stats.sharded).toBe(true)
+      expect(stats.manifestFile).toBeDefined()
+      expect(fs.existsSync(`${prefix}.segments.manifest.json`)).toBe(true)
+
+      const manifest = JSON.parse(
+        fs.readFileSync(`${prefix}.segments.manifest.json`, 'utf8'),
+      )
+      expect(manifest.genomes.sort()).toEqual(
+        ['ref#1', 'sample1#1', 'sample2#1', 'sample3#1'].sort(),
+      )
+
+      const segsDir = `${prefix}_segments`
+      expect(fs.existsSync(segsDir)).toBe(true)
+
+      for (const genome of manifest.genomes) {
+        const shardPrefix = path.join(
+          path.dirname(prefix),
+          manifest.files[genome],
+        )
+        expect(fs.existsSync(`${shardPrefix}.gz`)).toBe(true)
+        expect(fs.existsSync(`${shardPrefix}.gz.gzi`)).toBe(true)
+        expect(fs.existsSync(`${shardPrefix}.idx`)).toBe(true)
+      }
+    })
+  })
+
+  it('sharded segments contain correct data per genome', async () => {
+    await withTmpDir(async dir => {
+      const prefix = path.join(dir, 'test')
+      await gfaToTabix(GFA_FILE, prefix, { sharded: true })
+
+      const manifest = JSON.parse(
+        fs.readFileSync(`${prefix}.segments.manifest.json`, 'utf8'),
+      )
+
+      for (const genome of manifest.genomes) {
+        const shardPrefix = path.join(
+          path.dirname(prefix),
+          manifest.files[genome],
+        )
+        const lines = execSync(`zcat "${shardPrefix}.gz"`, {
+          encoding: 'utf8',
+        })
+          .trim()
+          .split('\n')
+          .filter(l => l.length > 0 && !l.startsWith('#'))
+
+        expect(lines.length).toBeGreaterThan(0)
+
+        for (const line of lines) {
+          const pathName = line.split('\t')[1]!
+          const { genome: lineGenome } = parseGfaPathName(pathName)
+          expect(lineGenome).toBe(genome)
+        }
+      }
+    })
+  })
+
+  it('sharded total rows equal combined total rows', async () => {
+    await withTmpDir(async dir => {
+      const combinedPrefix = path.join(dir, 'combined')
+      await gfaToTabix(GFA_FILE, combinedPrefix)
+      const combinedLines = readSegsFile(combinedPrefix)
+
+      const shardedPrefix = path.join(dir, 'sharded')
+      await gfaToTabix(GFA_FILE, shardedPrefix, { sharded: true })
+
+      const manifest = JSON.parse(
+        fs.readFileSync(`${shardedPrefix}.segments.manifest.json`, 'utf8'),
+      )
+
+      let shardedTotal = 0
+      for (const genome of manifest.genomes) {
+        const shardPrefix = path.join(
+          path.dirname(shardedPrefix),
+          manifest.files[genome],
+        )
+        const lines = execSync(`zcat "${shardPrefix}.gz"`, {
+          encoding: 'utf8',
+        })
+          .trim()
+          .split('\n')
+          .filter(l => l.length > 0 && !l.startsWith('#'))
+        shardedTotal += lines.length
+      }
+
+      expect(shardedTotal).toBe(combinedLines.length)
+    })
+  })
+
+  it('sharded companion index has correct ordinal coverage', async () => {
+    await withTmpDir(async dir => {
+      const prefix = path.join(dir, 'test')
+      await gfaToTabix(GFA_FILE, prefix, { sharded: true })
+
+      const manifest = JSON.parse(
+        fs.readFileSync(`${prefix}.segments.manifest.json`, 'utf8'),
+      )
+
+      for (const genome of manifest.genomes) {
+        const shardFile = path.join(
+          path.dirname(prefix),
+          manifest.files[genome],
+        )
+        const buf = fs.readFileSync(`${shardFile}.idx`)
+        const aligned = new ArrayBuffer(buf.byteLength)
+        new Uint8Array(aligned).set(buf)
+        const idx = new BigUint64Array(aligned)
+
+        expect(idx.length).toBeGreaterThan(1)
+        for (let i = 1; i < idx.length; i++) {
+          expect(idx[i]!).toBeGreaterThanOrEqual(idx[i - 1]!)
+        }
+      }
     })
   })
 })

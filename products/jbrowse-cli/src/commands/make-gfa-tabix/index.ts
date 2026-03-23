@@ -26,6 +26,7 @@ async function makeGfaTabix(args: string[]) {
       out: { type: 'string' },
       assemblies: { type: 'string' },
       'chunk-size': { type: 'string' },
+      sharded: { type: 'boolean' },
     },
     allowPositionals: true,
     strict: false,
@@ -40,6 +41,8 @@ async function makeGfaTabix(args: string[]) {
         '--assemblies':
           'Comma-separated assembly names to include (default: all)',
         '--chunk-size': 'Number of segments per position chunk (default: 100)',
+        '--sharded':
+          'Write one segments file per genome for scalability with many paths',
       },
       examples: [
         'jbrowse make-gfa-tabix pangenome.gfa',
@@ -65,12 +68,14 @@ async function makeGfaTabix(args: string[]) {
   const chunkSizeRaw =
     typeof values['chunk-size'] === 'string' ? values['chunk-size'] : undefined
   const chunkSize = chunkSizeRaw ? +chunkSizeRaw : undefined
+  const sharded = values.sharded === true
 
   console.error(`Converting ${gfaFile} to tabix-indexed files...`)
 
   const stats = await gfaToTabix(gfaFile!, outputPrefix, {
     assemblies,
     chunkSize,
+    sharded,
   })
 
   console.error(`Done.`)

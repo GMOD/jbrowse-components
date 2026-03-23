@@ -1,0 +1,100 @@
+import { BgzfFilehandle } from '@gmod/bgzf-filehandle'
+import { openLocation } from '@jbrowse/core/util/io'
+
+import {
+  BaseGfaTabixAdapter,
+  getSegsForRangeFromShard,
+} from '../GfaTabixAdapter/gfaTabixUtils.ts'
+
+import type { SegRecord, SegsShard } from '../GfaTabixAdapter/gfaTabixUtils.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { FileLocation } from '@jbrowse/core/util/types'
+
+interface SegmentsManifest {
+  genomes: string[]
+  files: Record<string, string>
+}
+
+export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
+  private manifestPromise?: Promise<SegmentsManifest>
+  private genomeShardsCache = new Map<string, SegsShard>()
+
+  public constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
+  }
+
+  private async getManifest() {
+    if (!this.manifestPromise) {
+      this.manifestPromise = (async () => {
+        const manifestLoc = this.getConf(
+          'segmentsManifestLocation',
+        ) as FileLocation
+        const fh = openLocation(manifestLoc, this.pluginManager)
+        const buf = await fh.readFile()
+        const text = new TextDecoder().decode(buf)
+        return JSON.parse(text) as SegmentsManifest
+      })()
+    }
+    return this.manifestPromise
+  }
+
+  private getGenomeShard(genome: string, shardPrefix: string) {
+    if (!this.genomeShardsCache.has(genome)) {
+      const pm = this.pluginManager
+      const manifestLoc = this.getConf(
+        'segmentsManifestLocation',
+      ) as FileLocation
+      const baseUri =
+        'uri' in manifestLoc ? manifestLoc.uri.replace(/[^/]*$/, '') : ''
+      const shardBase = baseUri + shardPrefix
+
+      const shard: SegsShard = {
+        bgzf: new BgzfFilehandle({
+          filehandle: openLocation(
+            { uri: `${shardBase}.gz`, locationType: 'UriLocation' },
+            pm,
+          ),
+          gziFilehandle: openLocation(
+            { uri: `${shardBase}.gz.gzi`, locationType: 'UriLocation' },
+            pm,
+          ),
+        }),
+        idxFile: openLocation(
+          { uri: `${shardBase}.idx`, locationType: 'UriLocation' },
+          pm,
+        ),
+      }
+      this.genomeShardsCache.set(genome, shard)
+    }
+    return this.genomeShardsCache.get(genome)!
+  }
+
+  protected async getSegsForRange(
+    minSegOrd: number,
+    maxSegOrd: number,
+  ): Promise<SegRecord[]> {
+    const manifest = await this.getManifest()
+    const promises = manifest.genomes.map(async genome => {
+      const prefix = manifest.files[genome]
+      if (prefix) {
+        const shard = this.getGenomeShard(genome, prefix)
+        return getSegsForRangeFromShard(shard, minSegOrd, maxSegOrd)
+      }
+      return []
+    })
+    const results = await Promise.all(promises)
+    const allRecords: SegRecord[] = []
+    for (const records of results) {
+      for (const rec of records) {
+        allRecords.push(rec)
+      }
+    }
+    return allRecords
+  }
+}

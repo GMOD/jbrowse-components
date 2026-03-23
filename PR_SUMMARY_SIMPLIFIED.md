@@ -126,8 +126,40 @@ coloring when zoomed in.
 
 ## GFA Compatibility
 
-- **P-lines** (GFA v1.0): `P ref#1#chr1 s1+,s2+,s3+ *` — typical pggb output
-- **W-lines** (GFA v1.1+): `W sample 1 chr1 0 1000 >s1>s2>s3` — HPRC format
+The converter targets **path-based pangenome graphs** — the output of tools like
+pggb, minigraph-cactus, and vg. These tools all produce GFA1 with S-lines,
+L-lines, and either P-lines or W-lines for paths, with `0M` (blunt-ended)
+overlaps throughout.
+
+**Supported record types:**
+
+- **S-lines** (segments/nodes): the DNA sequences that form graph vertices
+- **P-lines** (GFA v1.0 paths): `P ref#1#chr1 s1+,s2+,s3+ *` — typical pggb
+  output
+- **W-lines** (GFA v1.1 walks): `W sample 1 chr1 0 1000 >s1>s2>s3` — HPRC
+  minigraph-cactus format
+
+**Not supported (and why):**
+
+- **L-lines** (links/edges): parsed by the graph viewer but not needed for the
+  tabix conversion — path walks implicitly encode adjacency, and all pangenome
+  tools produce `0M` overlaps so link CIGARs don't affect coordinate computation
+- **GFA2** (E, O, F, G, U lines): not adopted by the pangenome community — no
+  major tool (pggb, minigraph-cactus, vg, odgi) outputs GFA2
+- **C-lines** (containments), **J-lines** (jumps): not produced by pangenome
+  graph builders
+- **rGFA** (minigraph): uses SN/SO/SR tags on segments instead of paths —
+  requires a different conversion approach (see `RGFA_PLAN.md`)
+
+**Tool compatibility:**
+
+| Tool               | GFA version | Path type | Supported |
+| ------------------ | ----------- | --------- | --------- |
+| pggb               | GFA 1.0     | P-lines   | Yes       |
+| minigraph-cactus   | GFA 1.1     | W-lines   | Yes       |
+| vg (export)        | GFA 1.0/1.1 | P or W    | Yes       |
+| odgi (export)      | GFA 1.0     | P-lines   | Yes       |
+| minigraph (rGFA)   | rGFA        | None      | No (see `RGFA_PLAN.md`) |
 
 ## Usage
 
@@ -145,8 +177,33 @@ assemblies for query genomes on first load.
 
 - HPRC chr20 (90 haplotypes, 1GB GFA): ~4.5 min conversion
 - HTTP range requests fetch only the relevant region
-- Query time independent of genome count
 - A Rust implementation of `make-gfa-tabix` is available for multi-GB files
+
+**Current scaling characteristics:**
+
+`segments.gz` has one row per (segment, path) pair. For a graph with _S_
+segments and _P_ paths where each segment appears in _k_ paths on average, the
+file has _S × k_ rows. In pangenome graphs, conserved segments are shared by
+nearly all paths, so _k_ approaches _P_ for those segments.
+
+| Scale | Segments | Paths | Est. segments.gz rows | segments.idx |
+| ----- | -------- | ----- | --------------------- | ------------ |
+| HPRC chr20 | 1.86M | 90 | ~100M | ~15MB |
+| HPRC whole genome | ~30M | 90 | ~1.6B | ~240MB |
+| 1000 haplotypes | ~2M | 1000 | ~1B+ | ~16MB |
+
+At query time, `getSegsForRange(min, max)` fetches **all paths** for the
+queried segment ordinals. With 90 paths this is fast; with 1000+ paths,
+a small genomic region pulls megabytes of segment rows even if the user only
+has a few genomes visible. The adapter parses and filters client-side, but the
+network cost is paid regardless.
+
+**Conversion memory:** The TypeScript converter accumulates all segment rows
+in memory before sorting (`segsRows` array). At 1B+ rows this exceeds
+available memory. The Rust implementation streams to an external sort, so it
+handles larger inputs but still produces the same large output file.
+
+See the Caveats section for planned mitigations.
 
 ## Caveats
 
@@ -158,23 +215,40 @@ assemblies for query genomes on first load.
   only needed offsets are fetched via range requests.
 - **Segment IDs are arbitrary.** Assigned in encounter order; only valid within
   one file set.
+- **No path filtering in segments.gz.** Querying a segment range fetches all
+  paths' data for those segments. With 90 haplotypes this is fine; at 1000+
+  paths, queries fetch far more data than displayed. Possible mitigations:
+  - **Path-sharded segments files** — one `segments.{genome}.gz` per genome (or
+    per group). The adapter opens only the files for visible genomes. Simple to
+    implement, trades one large file for many small ones.
+  - **Sub-index per segment** — within each segment's block in segments.gz,
+    store a small directory of which paths are present and their byte offsets.
+    Allows skipping unwanted paths without sharding files.
+  - **Server-side filtering** — a thin proxy or cloud function that filters
+    segments.gz by requested genomes before returning bytes. Keeps the file
+    format simple.
 - **No level-of-detail yet.** At whole-chromosome zoom, the adapter fetches all
   segments for the region — potentially millions of rows for large pangenomes. A
   precomputed structural summary tier (like PIF's 3-tier system) would make
   whole-genome views responsive. Planned as a future enhancement.
 - **Pre-computation required.** Raw GFA can't be browsed at scale.
 - **No incremental updates.** Adding a genome means regenerating all files.
+- **Conversion memory.** The TypeScript converter holds all segment rows in
+  memory. For graphs with >100M segment×path pairs, use the Rust implementation
+  which streams to an external sort.
 
 ## Related Formats
 
 **rGFA**
-([reference GFA](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md)) tags
-each segment with its reference contig, position, and rank, so you can map
-segments back to a single reference without walking paths. Our approach differs:
-we walk _every_ path to compute coordinates for _every_ genome, producing
-indexes that support any genome as reference. rGFA answers "where is this
-segment on the reference?"; GFA Tabix answers "where is this segment on every
-genome?"
+([reference GFA](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md)) is
+minigraph's output format. It tags each segment with `SN` (reference contig),
+`SO` (offset), and `SR` (rank), so you can map segments back to a single
+reference without walking paths. Crucially, rGFA **does not embed paths** for
+non-reference genomes — to get those, you must re-map assemblies with
+`minigraph --call`, which produces GAF alignments. Our converter requires paths
+(P or W lines) so rGFA is not directly supported; see `RGFA_PLAN.md` for a
+proposed approach. rGFA answers "where is this segment on the reference?"; GFA
+Tabix answers "where is this segment on every genome?"
 
 **GAF**
 ([Graph Alignment Format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md#the-graph-alignment-format-gaf))
