@@ -226,7 +226,7 @@ var init_TaskValidator = __esm({
           if (constraints.requiredActionTypes) {
             const actionSet = new Set(actions);
             const hasAny = constraints.requiredActionTypes.some(
-              (t) => actionSet.has(t)
+              (t2) => actionSet.has(t2)
             );
             if (!hasAny) {
               const hints = constraints.requiredActionTypes.map(
@@ -359,10 +359,10 @@ var init_TaskValidator = __esm({
         }
         const activeTrackIds = (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          view.tracks?.map((t) => t.configuration?.trackId) ?? []
+          view.tracks?.map((t2) => t2.configuration?.trackId) ?? []
         );
         const missingTracks = task.requiredTracks.filter(
-          (t) => !activeTrackIds.includes(t)
+          (t2) => !activeTrackIds.includes(t2)
         );
         if (missingTracks.length > 0) {
           return {
@@ -605,93 +605,192 @@ var init_CompletionScreen = __esm({
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
-var {Box: Box4, LinearProgress, Typography: Typography4} = __jbx("@mui/material");
+// plugins/rl-analytics/src/ScavengerHunt/components/FloatingPanel.tsx
+var {Box: Box4, IconButton, Paper, Typography: Typography4} = __jbx("@mui/material");
 var {observer: observer5} = __jbx("mobx-react");
-var {jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
+var {createPortal} = __jbx("react-dom");
+var {useState: useState2} = __jbx("react");
+var {Fragment: Fragment2, jsx: jsx5, jsxs: jsxs4} = __jbx("react/jsx-runtime");
+var FloatingPanel, FloatingPanel_default;
+var init_FloatingPanel = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/FloatingPanel.tsx"() {
+    "use strict";
+    FloatingPanel = observer5(function FloatingPanel2({
+      title,
+      children
+    }) {
+      const [minimized, setMinimized] = useState2(false);
+      const panel = /* @__PURE__ */ jsxs4(
+        Paper,
+        {
+          elevation: 4,
+          sx: {
+            position: "fixed",
+            right: 8,
+            top: 60,
+            width: minimized ? 40 : 320,
+            maxHeight: minimized ? 40 : "calc(100vh - 80px)",
+            zIndex: 1e4,
+            overflow: "hidden",
+            transition: "width 0.3s ease, max-height 0.3s ease",
+            display: "flex",
+            flexDirection: "column",
+            borderRadius: 2
+          },
+          children: [
+            /* @__PURE__ */ jsx5(
+              Box4,
+              {
+                sx: {
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  px: 1.5,
+                  py: 0.75,
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                  cursor: "pointer",
+                  minHeight: 36
+                },
+                onClick: () => {
+                  setMinimized(!minimized);
+                },
+                children: minimized ? /* @__PURE__ */ jsx5(IconButton, { size: "small", sx: { color: "inherit", p: 0 }, children: /* @__PURE__ */ jsx5(Typography4, { variant: "caption", sx: { fontWeight: "bold" }, children: "Q" }) }) : /* @__PURE__ */ jsxs4(Fragment2, { children: [
+                  /* @__PURE__ */ jsx5(Typography4, { variant: "subtitle2", sx: { fontWeight: "bold" }, children: title }),
+                  /* @__PURE__ */ jsx5(Typography4, { variant: "caption", sx: { opacity: 0.7 }, children: "[minimize]" })
+                ] })
+              }
+            ),
+            !minimized && /* @__PURE__ */ jsx5(
+              Box4,
+              {
+                sx: {
+                  flex: 1,
+                  overflowY: "auto",
+                  "&::-webkit-scrollbar": { width: 4 },
+                  "&::-webkit-scrollbar-thumb": {
+                    bgcolor: "grey.300",
+                    borderRadius: 2
+                  }
+                },
+                children
+              }
+            )
+          ]
+        }
+      );
+      if (typeof document !== "undefined") {
+        return createPortal(panel, document.body);
+      }
+      return panel;
+    });
+    FloatingPanel_default = FloatingPanel;
+  }
+});
+
+// plugins/rl-analytics/src/ScavengerHunt/components/NarratorLog.tsx
+var {Box: Box5, Typography: Typography5} = __jbx("@mui/material");
+var {observer: observer6} = __jbx("mobx-react");
+var {useEffect, useRef} = __jbx("react");
+var {jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
+var typeStyles, NarratorLog, NarratorLog_default;
+var init_NarratorLog = __esm({
+  "plugins/rl-analytics/src/ScavengerHunt/components/NarratorLog.tsx"() {
+    "use strict";
+    typeStyles = {
+      intro: { bgcolor: "grey.50", color: "text.primary" },
+      success: { bgcolor: "success.light", color: "success.contrastText" },
+      hint: { bgcolor: "info.light", color: "info.contrastText" },
+      award: { bgcolor: "warning.light", color: "warning.contrastText" },
+      system: { bgcolor: "grey.200", color: "text.secondary", fontSize: "0.75rem" }
+    };
+    NarratorLog = observer6(function NarratorLog2({
+      entries
+    }) {
+      const bottomRef = useRef(null);
+      useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, [entries.length]);
+      return /* @__PURE__ */ jsxs5(
+        Box5,
+        {
+          sx: {
+            maxHeight: 200,
+            overflowY: "auto",
+            mb: 1,
+            "&::-webkit-scrollbar": { width: 4 },
+            "&::-webkit-scrollbar-thumb": {
+              bgcolor: "grey.300",
+              borderRadius: 2
+            }
+          },
+          children: [
+            entries.map((entry) => /* @__PURE__ */ jsx6(
+              Typography5,
+              {
+                variant: "body2",
+                sx: {
+                  p: 1,
+                  mb: 0.5,
+                  borderRadius: 1,
+                  fontStyle: entry.type === "intro" || entry.type === "hint" ? "italic" : "normal",
+                  fontSize: entry.type === "system" ? "0.75rem" : "0.8125rem",
+                  animation: "narratorFadeIn 0.3s ease-out",
+                  "@keyframes narratorFadeIn": {
+                    "0%": { opacity: 0, transform: "translateY(4px)" },
+                    "100%": { opacity: 1, transform: "translateY(0)" }
+                  },
+                  ...typeStyles[entry.type]
+                },
+                children: entry.text
+              },
+              entry.id
+            )),
+            /* @__PURE__ */ jsx6("div", { ref: bottomRef })
+          ]
+        }
+      );
+    });
+    NarratorLog_default = NarratorLog;
+  }
+});
+
+// plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx
+var {Box: Box6, LinearProgress, Typography: Typography6} = __jbx("@mui/material");
+var {observer: observer7} = __jbx("mobx-react");
+var {jsx: jsx7, jsxs: jsxs6} = __jbx("react/jsx-runtime");
 var ProgressBar, ProgressBar_default;
 var init_ProgressBar = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ProgressBar.tsx"() {
     "use strict";
-    ProgressBar = observer5(function ProgressBar2({
+    ProgressBar = observer7(function ProgressBar2({
       model
     }) {
-      return /* @__PURE__ */ jsxs4(Box4, { sx: { mb: 2 }, children: [
-        /* @__PURE__ */ jsxs4(Box4, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
-          /* @__PURE__ */ jsx5(Typography4, { variant: "body2", children: "Progress" }),
-          /* @__PURE__ */ jsxs4(Typography4, { variant: "body2", children: [
+      return /* @__PURE__ */ jsxs6(Box6, { sx: { mb: 2 }, children: [
+        /* @__PURE__ */ jsxs6(Box6, { sx: { display: "flex", justifyContent: "space-between", mb: 0.5 }, children: [
+          /* @__PURE__ */ jsx7(Typography6, { variant: "body2", children: "Progress" }),
+          /* @__PURE__ */ jsxs6(Typography6, { variant: "body2", children: [
             model.completedTaskIds.length,
             " / ",
             model.tasks.length
           ] })
         ] }),
-        /* @__PURE__ */ jsx5(LinearProgress, { variant: "determinate", value: model.progress * 100 })
+        /* @__PURE__ */ jsx7(LinearProgress, { variant: "determinate", value: model.progress * 100 })
       ] });
     });
     ProgressBar_default = ProgressBar;
   }
 });
 
-// plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx
-var {Alert: Alert2, Button: Button2, Card: Card2, CardContent: CardContent2, CardHeader, Chip: Chip2, Typography: Typography5} = __jbx("@mui/material");
-var {observer: observer6} = __jbx("mobx-react");
-var {Fragment: Fragment2, jsx: jsx6, jsxs: jsxs5} = __jbx("react/jsx-runtime");
-var TaskCard, TaskCard_default;
-var init_TaskCard = __esm({
-  "plugins/rl-analytics/src/ScavengerHunt/components/TaskCard.tsx"() {
-    "use strict";
-    TaskCard = observer6(function TaskCard2({
-      task,
-      hintsRevealed,
-      onRevealHint
-    }) {
-      return /* @__PURE__ */ jsxs5(Card2, { sx: { mb: 2 }, children: [
-        /* @__PURE__ */ jsx6(
-          CardHeader,
-          {
-            title: /* @__PURE__ */ jsxs5(Fragment2, { children: [
-              /* @__PURE__ */ jsx6(
-                Chip2,
-                {
-                  label: `Tier ${task.tier}`,
-                  size: "small",
-                  color: task.tier === 1 ? "success" : task.tier === 2 ? "warning" : "error",
-                  sx: { mr: 1 }
-                }
-              ),
-              /* @__PURE__ */ jsx6(Typography5, { variant: "h6", component: "span", children: task.title })
-            ] })
-          }
-        ),
-        /* @__PURE__ */ jsxs5(CardContent2, { children: [
-          /* @__PURE__ */ jsx6(Typography5, { sx: { mb: 2 }, children: task.description }),
-          Array.from({ length: hintsRevealed }, (_, i) => /* @__PURE__ */ jsxs5(Alert2, { severity: "info", sx: { mb: 1 }, children: [
-            "Hint ",
-            i + 1,
-            ": ",
-            task.hints[i]
-          ] }, i)),
-          hintsRevealed < task.hints.length && /* @__PURE__ */ jsxs5(Button2, { variant: "outlined", size: "small", onClick: onRevealHint, children: [
-            "Reveal Hint (",
-            task.hints.length - hintsRevealed,
-            " remaining)"
-          ] })
-        ] })
-      ] });
-    });
-    TaskCard_default = TaskCard;
-  }
-});
-
 // plugins/rl-analytics/src/ScavengerHunt/components/TierGate.tsx
-var {Alert: Alert3, Box: Box5, Typography: Typography6} = __jbx("@mui/material");
-var {observer: observer7} = __jbx("mobx-react");
-var {jsx: jsx7, jsxs: jsxs6} = __jbx("react/jsx-runtime");
+var {Alert: Alert2, Box: Box7, Typography: Typography7} = __jbx("@mui/material");
+var {observer: observer8} = __jbx("mobx-react");
+var {jsx: jsx8, jsxs: jsxs7} = __jbx("react/jsx-runtime");
 var TierGate, TierGate_default;
 var init_TierGate = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/TierGate.tsx"() {
     "use strict";
-    TierGate = observer7(function TierGate2({
+    TierGate = observer8(function TierGate2({
       model
     }) {
       const missing = model.missingAwards;
@@ -700,15 +799,15 @@ var init_TierGate = __esm({
       }
       const task = model.currentTask;
       const coaching = task?.coaching;
-      return /* @__PURE__ */ jsx7(Box5, { sx: { mb: 2 }, children: /* @__PURE__ */ jsxs6(Alert3, { severity: "info", children: [
-        /* @__PURE__ */ jsx7(Typography6, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
+      return /* @__PURE__ */ jsx8(Box7, { sx: { mb: 2 }, children: /* @__PURE__ */ jsxs7(Alert2, { severity: "info", children: [
+        /* @__PURE__ */ jsx8(Typography7, { variant: "subtitle2", sx: { mb: 0.5 }, children: "Before continuing:" }),
         missing.map((id) => {
           const def = model.awardDefinitions.find(
             (a) => a.id === id
           );
-          return /* @__PURE__ */ jsx7(Typography6, { variant: "body2", sx: { ml: 1 }, children: def ? `Earn "${def.name}" \u2014 ${def.description}` : `Earn award: ${id}` }, id);
+          return /* @__PURE__ */ jsx8(Typography7, { variant: "body2", sx: { ml: 1 }, children: def ? `Earn "${def.name}" \u2014 ${def.description}` : `Earn award: ${id}` }, id);
         }),
-        coaching && /* @__PURE__ */ jsx7(Typography6, { variant: "body2", sx: { mt: 1, fontStyle: "italic" }, children: coaching.message })
+        coaching && /* @__PURE__ */ jsx8(Typography7, { variant: "body2", sx: { mt: 1, fontStyle: "italic" }, children: coaching.message })
       ] }) });
     });
     TierGate_default = TierGate;
@@ -722,11 +821,11 @@ __export(ScavengerHuntWidget_exports, {
   pushActionForValidation: () => pushActionForValidation,
   resetActionLog: () => resetActionLog
 });
-var {Box: Box6, Button: Button3, Chip: Chip3, Typography: Typography7} = __jbx("@mui/material");
+var {Box: Box8, Button: Button2, Chip: Chip2, Typography: Typography8} = __jbx("@mui/material");
 var {getSession} = __jbx("@jbrowse/core/util");
-var {observer: observer8} = __jbx("mobx-react");
-var {useCallback, useEffect, useRef, useState: useState2} = __jbx("react");
-var {Fragment: Fragment3, jsx: jsx8, jsxs: jsxs7} = __jbx("react/jsx-runtime");
+var {observer: observer9} = __jbx("mobx-react");
+var {useCallback, useEffect: useEffect2, useRef: useRef2, useState: useState3} = __jbx("react");
+var {Fragment: Fragment3, jsx: jsx9, jsxs: jsxs8} = __jbx("react/jsx-runtime");
 function pushActionForValidation(actionType) {
   actionLogRef.push(actionType);
 }
@@ -744,10 +843,10 @@ function getView(model) {
     return null;
   }
 }
-function getNarratorLine(key) {
+function t(key) {
   return en_default[key] ?? "";
 }
-var actionLogRef, ScavengerHuntWidget, ScavengerHuntWidget_default;
+var actionLogRef, nextEntryId, ScavengerHuntWidget, ScavengerHuntWidget_default;
 var init_ScavengerHuntWidget = __esm({
   "plugins/rl-analytics/src/ScavengerHunt/components/ScavengerHuntWidget.tsx"() {
     "use strict";
@@ -757,18 +856,28 @@ var init_ScavengerHuntWidget = __esm({
     init_AwardChips();
     init_AwardSnackbar();
     init_CompletionScreen();
+    init_FloatingPanel();
+    init_NarratorLog();
     init_ProgressBar();
-    init_TaskCard();
     init_TierGate();
     actionLogRef = [];
-    ScavengerHuntWidget = observer8(function ScavengerHuntWidget2({
+    nextEntryId = 0;
+    ScavengerHuntWidget = observer9(function ScavengerHuntWidget2({
       model
     }) {
-      const [narratorMessage, setNarratorMessage] = useState2(null);
-      const [narratorType, setNarratorType] = useState2("info");
-      const [taskStarted, setTaskStarted] = useState2(false);
-      const autoValidateRef = useRef(null);
+      const [narratorLog, setNarratorLog] = useState3([]);
+      const [taskStarted, setTaskStarted] = useState3(false);
+      const autoValidateRef = useRef2(null);
       const currentTask = model.currentTask;
+      const addNarratorEntry = useCallback(
+        (text, type) => {
+          if (!text) {
+            return;
+          }
+          setNarratorLog((prev) => [...prev, { id: nextEntryId++, text, type }]);
+        },
+        []
+      );
       const makeValidator = useCallback(
         () => new TaskValidator(
           () => getView(model),
@@ -776,23 +885,21 @@ var init_ScavengerHuntWidget = __esm({
         ),
         [model]
       );
-      useEffect(() => {
+      useEffect2(() => {
         if (!currentTask || model.isGated || model.isComplete) {
           return;
         }
-        const needsTextAnswer2 = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
+        const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
         autoValidateRef.current = setInterval(() => {
-          if (needsTextAnswer2 && !model.answers.get(currentTask.id)) {
+          if (needsTextAnswer && !model.answers.get(currentTask.id)) {
             return;
           }
           const validator = makeValidator();
           const result = validator.validate(currentTask, model);
           if (result.valid) {
-            const successKey = `task.${currentTask.id}.success`;
-            const line = getNarratorLine(successKey);
+            const line = t(`task.${currentTask.id}.success`);
             if (line) {
-              setNarratorMessage(line);
-              setNarratorType("success");
+              addNarratorEntry(line, "success");
             }
             if (currentTask.awardOnComplete) {
               model.addAward(currentTask.awardOnComplete);
@@ -805,121 +912,165 @@ var init_ScavengerHuntWidget = __esm({
             clearInterval(autoValidateRef.current);
           }
         };
-      }, [currentTask, model, model.isGated, model.isComplete, makeValidator]);
-      useEffect(() => {
+      }, [currentTask, model, model.isGated, model.isComplete, makeValidator, addNarratorEntry]);
+      useEffect2(() => {
         if (currentTask && !taskStarted) {
           model.startCurrentTask();
           resetActionLog();
           setTaskStarted(true);
-          const introKey = `task.${currentTask.id}.intro`;
-          const line = getNarratorLine(introKey);
+          const line = t(`task.${currentTask.id}.intro`);
           if (line) {
-            setNarratorMessage(line);
-            setNarratorType("info");
-          } else {
-            setNarratorMessage(null);
+            addNarratorEntry(line, "intro");
           }
         }
-      }, [currentTask, taskStarted, model]);
-      useEffect(() => {
+      }, [currentTask, taskStarted, model, addNarratorEntry]);
+      useEffect2(() => {
+        const welcomeLine = t("narrator.welcome");
+        if (welcomeLine) {
+          addNarratorEntry(welcomeLine, "system");
+        }
+      }, []);
+      useEffect2(() => {
         setTaskStarted(false);
-        setNarratorMessage(null);
         resetActionLog();
       }, [model.currentTaskIndex]);
-      if (model.isComplete) {
-        if (!model.completionCode) {
-          void model.generateCompletionCode();
+      useEffect2(() => {
+        const award = model.latestAward;
+        if (award) {
+          const line = t(`award.${award.id}.earned`) || award.flavorText || award.description;
+          addNarratorEntry(line, "award");
         }
-        return /* @__PURE__ */ jsxs7(Fragment3, { children: [
-          /* @__PURE__ */ jsx8(CompletionScreen_default, { model }),
-          /* @__PURE__ */ jsx8(AwardSnackbar_default, { model })
-        ] });
-      }
-      if (!currentTask) {
-        return /* @__PURE__ */ jsx8(Box6, { sx: { p: 2 }, children: /* @__PURE__ */ jsx8(Typography7, { variant: "body2", sx: { fontStyle: "italic" }, children: getNarratorLine("narrator.welcome") }) });
-      }
-      const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
-      const handleManualSubmit = () => {
-        const validator = makeValidator();
-        const result = validator.validate(currentTask, model);
-        if (result.valid) {
-          if (currentTask.awardOnComplete) {
-            model.addAward(currentTask.awardOnComplete);
+      }, [model.latestAward, addNarratorEntry]);
+      const renderContent = () => {
+        if (model.isComplete) {
+          if (!model.completionCode) {
+            void model.generateCompletionCode();
           }
-          model.completeCurrentTask();
-        } else {
-          setNarratorMessage(result.reason ?? getNarratorLine("validate.answer_wrong"));
-          setNarratorType("info");
+          addNarratorEntry(t("narrator.graduation"), "success");
+          return /* @__PURE__ */ jsx9(CompletionScreen_default, { model });
         }
-      };
-      const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
-      return /* @__PURE__ */ jsxs7(Box6, { sx: { p: 2 }, children: [
-        /* @__PURE__ */ jsxs7(Box6, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
-          /* @__PURE__ */ jsx8(
-            Chip3,
-            {
-              label: tierLabel,
-              size: "small",
-              color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
-              variant: "outlined"
+        if (!currentTask) {
+          return /* @__PURE__ */ jsx9(Typography8, { variant: "body2", sx: { p: 2, fontStyle: "italic" }, children: "Waiting for tasks..." });
+        }
+        const needsTextAnswer = currentTask.type === "identify" || currentTask.type === "compare" || currentTask.type === "freeform";
+        const handleManualSubmit = () => {
+          const validator = makeValidator();
+          const result = validator.validate(currentTask, model);
+          if (result.valid) {
+            const line = t(`task.${currentTask.id}.success`);
+            if (line) {
+              addNarratorEntry(line, "success");
             }
-          ),
-          /* @__PURE__ */ jsx8(ProgressBar_default, { model })
-        ] }),
-        /* @__PURE__ */ jsx8(AwardChips_default, { model }),
-        model.isGated ? /* @__PURE__ */ jsx8(TierGate_default, { model }) : /* @__PURE__ */ jsxs7(Fragment3, { children: [
-          /* @__PURE__ */ jsx8(
-            TaskCard_default,
-            {
-              task: currentTask,
-              hintsRevealed: model.currentHintsRevealed,
-              onRevealHint: () => {
-                model.revealHint();
-              }
+            if (currentTask.awardOnComplete) {
+              model.addAward(currentTask.awardOnComplete);
             }
-          ),
-          narratorMessage && /* @__PURE__ */ jsx8(
-            Typography7,
-            {
-              variant: "body2",
-              sx: {
-                mt: 1,
-                mb: 1,
-                p: 1.5,
-                bgcolor: narratorType === "success" ? "success.main" : "grey.100",
-                color: narratorType === "success" ? "success.contrastText" : "text.primary",
-                borderRadius: 1,
-                fontStyle: "italic",
-                transition: "all 0.3s ease"
-              },
-              children: narratorMessage
-            }
-          ),
-          needsTextAnswer && /* @__PURE__ */ jsxs7(Fragment3, { children: [
-            /* @__PURE__ */ jsx8(
-              AnswerInput_default,
+            model.completeCurrentTask();
+          } else {
+            addNarratorEntry(
+              result.reason ?? t("validate.answer_wrong"),
+              "hint"
+            );
+          }
+        };
+        const tierLabel = ["Hook", "Discovery", "Competence", "Expertise", "Mastery"][currentTask.tier];
+        return /* @__PURE__ */ jsxs8(Fragment3, { children: [
+          /* @__PURE__ */ jsxs8(Box8, { sx: { display: "flex", alignItems: "center", gap: 1, mb: 1 }, children: [
+            /* @__PURE__ */ jsx9(
+              Chip2,
               {
-                task: currentTask,
-                currentAnswer: model.answers.get(currentTask.id) ?? "",
-                onSubmit: (answer) => {
-                  model.submitAnswer(answer);
-                }
+                label: tierLabel,
+                size: "small",
+                color: currentTask.tier <= 1 ? "success" : currentTask.tier <= 2 ? "warning" : "error",
+                variant: "outlined"
               }
             ),
-            /* @__PURE__ */ jsx8(
-              Button3,
+            /* @__PURE__ */ jsx9(ProgressBar_default, { model })
+          ] }),
+          /* @__PURE__ */ jsx9(AwardChips_default, { model }),
+          model.isGated ? /* @__PURE__ */ jsx9(TierGate_default, { model }) : /* @__PURE__ */ jsxs8(Fragment3, { children: [
+            /* @__PURE__ */ jsxs8(
+              Box8,
               {
-                variant: "outlined",
+                sx: {
+                  p: 1.5,
+                  mb: 1,
+                  bgcolor: "grey.50",
+                  borderRadius: 1,
+                  borderLeft: 3,
+                  borderColor: "primary.main"
+                },
+                children: [
+                  /* @__PURE__ */ jsx9(Typography8, { variant: "subtitle2", sx: { mb: 0.5 }, children: currentTask.title }),
+                  /* @__PURE__ */ jsx9(Typography8, { variant: "body2", children: currentTask.description })
+                ]
+              }
+            ),
+            needsTextAnswer && /* @__PURE__ */ jsxs8(Fragment3, { children: [
+              /* @__PURE__ */ jsx9(
+                AnswerInput_default,
+                {
+                  task: currentTask,
+                  currentAnswer: model.answers.get(currentTask.id) ?? "",
+                  onSubmit: (answer) => {
+                    model.submitAnswer(answer);
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsx9(
+                Button2,
+                {
+                  variant: "outlined",
+                  size: "small",
+                  sx: { mt: 1 },
+                  onClick: handleManualSubmit,
+                  children: "Submit"
+                }
+              )
+            ] }),
+            model.currentHintsRevealed > 0 && currentTask.hints.slice(0, model.currentHintsRevealed).map((hint, i) => /* @__PURE__ */ jsxs8(
+              Typography8,
+              {
+                variant: "caption",
+                sx: {
+                  display: "block",
+                  mt: 0.5,
+                  p: 0.75,
+                  bgcolor: "info.light",
+                  color: "info.contrastText",
+                  borderRadius: 0.5,
+                  fontSize: "0.75rem"
+                },
+                children: [
+                  "Hint: ",
+                  hint
+                ]
+              },
+              i
+            )),
+            model.currentHintsRevealed < currentTask.hints.length && /* @__PURE__ */ jsxs8(
+              Button2,
+              {
+                variant: "text",
                 size: "small",
-                sx: { mt: 1 },
-                onClick: handleManualSubmit,
-                children: "Submit"
+                sx: { mt: 0.5, fontSize: "0.75rem" },
+                onClick: () => {
+                  model.revealHint();
+                },
+                children: [
+                  "Need a hint? (",
+                  currentTask.hints.length - model.currentHintsRevealed,
+                  " available)"
+                ]
               }
             )
           ] })
-        ] }),
-        /* @__PURE__ */ jsx8(AwardSnackbar_default, { model })
-      ] });
+        ] });
+      };
+      return /* @__PURE__ */ jsx9(FloatingPanel_default, { title: "Quest", children: /* @__PURE__ */ jsxs8(Box8, { sx: { p: 1.5 }, children: [
+        /* @__PURE__ */ jsx9(NarratorLog_default, { entries: narratorLog }),
+        renderContent(),
+        /* @__PURE__ */ jsx9(AwardSnackbar_default, { model })
+      ] }) });
     });
     ScavengerHuntWidget_default = ScavengerHuntWidget;
   }
@@ -927,7 +1078,7 @@ var init_ScavengerHuntWidget = __esm({
 
 // plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
-var __t28 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t28.default || __t28;
+var __t34 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t34.default || __t34;
 var {WidgetType} = __jbx("@jbrowse/core/pluggableElementTypes");
 var {isAbstractMenuManager, isSessionModelWithWidgets} = __jbx("@jbrowse/core/util");
 var AssessmentIcon = null;
@@ -1407,7 +1558,7 @@ var StateEncoder = class {
     const tracks = view.tracks ?? [];
     const activeTracks = tracks.map(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (t) => t.configuration?.trackId ?? ""
+      (t2) => t2.configuration?.trackId ?? ""
     );
     let taskActive = false;
     let distanceToTargetBp;
@@ -1515,7 +1666,7 @@ var EpisodeManager = class {
     }
     const now = Date.now();
     this.recentActionTimestamps = this.recentActionTimestamps.filter(
-      (t) => now - t < 5e3
+      (t2) => now - t2 < 5e3
     );
     this.recentActionTimestamps.push(now);
     const view = this.getView?.();

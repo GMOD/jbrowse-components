@@ -13,12 +13,14 @@ import AnswerInput from './AnswerInput.tsx'
 import AwardChips from './AwardChips.tsx'
 import AwardSnackbar from './AwardSnackbar.tsx'
 import CompletionScreen from './CompletionScreen.tsx'
+import FloatingPanel from './FloatingPanel.tsx'
+import NarratorLog, { type NarratorEntry } from './NarratorLog.tsx'
 import ProgressBar from './ProgressBar.tsx'
-import TaskCard from './TaskCard.tsx'
 import TierGate from './TierGate.tsx'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let actionLogRef: any[] = []
+let nextEntryId = 0
 
 export function pushActionForValidation(actionType: ActionType) {
   actionLogRef.push(actionType)
@@ -41,7 +43,7 @@ function getView(model: ScavengerHuntWidgetModel) {
   }
 }
 
-function getNarratorLine(key: string): string {
+function t(key: string): string {
   return (locale as Record<string, string>)[key] ?? ''
 }
 
@@ -50,12 +52,21 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
 }: {
   model: ScavengerHuntWidgetModel
 }) {
-  const [narratorMessage, setNarratorMessage] = useState<string | null>(null)
-  const [narratorType, setNarratorType] = useState<'info' | 'success'>('info')
+  const [narratorLog, setNarratorLog] = useState<NarratorEntry[]>([])
   const [taskStarted, setTaskStarted] = useState(false)
   const autoValidateRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const currentTask = model.currentTask as TaskConfig | undefined
+
+  const addNarratorEntry = useCallback(
+    (text: string, type: NarratorEntry['type']) => {
+      if (!text) {
+        return
+      }
+      setNarratorLog(prev => [...prev, { id: nextEntryId++, text, type }])
+    },
+    [],
+  )
 
   const makeValidator = useCallback(
     () =>
@@ -66,7 +77,7 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
     [model],
   )
 
-  // Auto-advance: validate every 500ms for non-text tasks
+  // Auto-advance: validate every 500ms
   useEffect(() => {
     if (!currentTask || model.isGated || model.isComplete) {
       return
@@ -77,8 +88,6 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
       currentTask.type === 'compare' ||
       currentTask.type === 'freeform'
 
-    // For text tasks, only auto-validate when an answer exists
-    // For action/nav tasks, validate continuously
     autoValidateRef.current = setInterval(() => {
       if (needsTextAnswer && !model.answers.get(currentTask.id)) {
         return
@@ -88,12 +97,9 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
       const result = validator.validate(currentTask, model)
 
       if (result.valid) {
-        // Success! Show narrator line and advance
-        const successKey = `task.${currentTask.id}.success`
-        const line = getNarratorLine(successKey)
+        const line = t(`task.${currentTask.id}.success`)
         if (line) {
-          setNarratorMessage(line)
-          setNarratorType('success')
+          addNarratorEntry(line, 'success')
         }
         if (currentTask.awardOnComplete) {
           model.addAward(currentTask.awardOnComplete)
@@ -107,7 +113,7 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
         clearInterval(autoValidateRef.current)
       }
     }
-  }, [currentTask, model, model.isGated, model.isComplete, makeValidator])
+  }, [currentTask, model, model.isGated, model.isComplete, makeValidator, addNarratorEntry])
 
   // Show intro narrator line when task starts
   useEffect(() => {
@@ -116,145 +122,196 @@ const ScavengerHuntWidget = observer(function ScavengerHuntWidget({
       resetActionLog()
       setTaskStarted(true)
 
-      const introKey = `task.${currentTask.id}.intro`
-      const line = getNarratorLine(introKey)
+      const line = t(`task.${currentTask.id}.intro`)
       if (line) {
-        setNarratorMessage(line)
-        setNarratorType('info')
-      } else {
-        setNarratorMessage(null)
+        addNarratorEntry(line, 'intro')
       }
     }
-  }, [currentTask, taskStarted, model])
+  }, [currentTask, taskStarted, model, addNarratorEntry])
+
+  // Show welcome message on first mount
+  useEffect(() => {
+    const welcomeLine = t('narrator.welcome')
+    if (welcomeLine) {
+      addNarratorEntry(welcomeLine, 'system')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     setTaskStarted(false)
-    setNarratorMessage(null)
     resetActionLog()
   }, [model.currentTaskIndex])
 
-  if (model.isComplete) {
-    if (!model.completionCode) {
-      void model.generateCompletionCode()
+  // Watch for new awards and log them
+  useEffect(() => {
+    const award = model.latestAward
+    if (award) {
+      const line = t(`award.${award.id}.earned`) || award.flavorText || award.description
+      addNarratorEntry(line, 'award')
     }
+  }, [model.latestAward, addNarratorEntry])
+
+  const renderContent = () => {
+    if (model.isComplete) {
+      if (!model.completionCode) {
+        void model.generateCompletionCode()
+      }
+      addNarratorEntry(t('narrator.graduation'), 'success')
+      return <CompletionScreen model={model} />
+    }
+
+    if (!currentTask) {
+      return (
+        <Typography variant="body2" sx={{ p: 2, fontStyle: 'italic' }}>
+          Waiting for tasks...
+        </Typography>
+      )
+    }
+
+    const needsTextAnswer =
+      currentTask.type === 'identify' ||
+      currentTask.type === 'compare' ||
+      currentTask.type === 'freeform'
+
+    const handleManualSubmit = () => {
+      const validator = makeValidator()
+      const result = validator.validate(currentTask, model)
+      if (result.valid) {
+        const line = t(`task.${currentTask.id}.success`)
+        if (line) {
+          addNarratorEntry(line, 'success')
+        }
+        if (currentTask.awardOnComplete) {
+          model.addAward(currentTask.awardOnComplete)
+        }
+        model.completeCurrentTask()
+      } else {
+        addNarratorEntry(
+          result.reason ?? t('validate.answer_wrong'),
+          'hint',
+        )
+      }
+    }
+
+    const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
+      currentTask.tier
+    ]
+
     return (
       <>
-        <CompletionScreen model={model} />
-        <AwardSnackbar model={model} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Chip
+            label={tierLabel}
+            size="small"
+            color={
+              currentTask.tier <= 1
+                ? 'success'
+                : currentTask.tier <= 2
+                  ? 'warning'
+                  : 'error'
+            }
+            variant="outlined"
+          />
+          <ProgressBar model={model} />
+        </Box>
+
+        <AwardChips model={model} />
+
+        {model.isGated ? (
+          <TierGate model={model} />
+        ) : (
+          <>
+            {/* Current task description */}
+            <Box
+              sx={{
+                p: 1.5,
+                mb: 1,
+                bgcolor: 'grey.50',
+                borderRadius: 1,
+                borderLeft: 3,
+                borderColor: 'primary.main',
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                {currentTask.title}
+              </Typography>
+              <Typography variant="body2">
+                {currentTask.description}
+              </Typography>
+            </Box>
+
+            {needsTextAnswer && (
+              <>
+                <AnswerInput
+                  task={currentTask}
+                  currentAnswer={model.answers.get(currentTask.id) ?? ''}
+                  onSubmit={answer => {
+                    model.submitAnswer(answer)
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{ mt: 1 }}
+                  onClick={handleManualSubmit}
+                >
+                  Submit
+                </Button>
+              </>
+            )}
+
+            {/* Hints */}
+            {model.currentHintsRevealed > 0 &&
+              currentTask.hints
+                .slice(0, model.currentHintsRevealed)
+                .map((hint, i) => (
+                  <Typography
+                    key={i}
+                    variant="caption"
+                    sx={{
+                      display: 'block',
+                      mt: 0.5,
+                      p: 0.75,
+                      bgcolor: 'info.light',
+                      color: 'info.contrastText',
+                      borderRadius: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    Hint: {hint}
+                  </Typography>
+                ))}
+            {model.currentHintsRevealed < currentTask.hints.length && (
+              <Button
+                variant="text"
+                size="small"
+                sx={{ mt: 0.5, fontSize: '0.75rem' }}
+                onClick={() => {
+                  model.revealHint()
+                }}
+              >
+                Need a hint? ({currentTask.hints.length - model.currentHintsRevealed} available)
+              </Button>
+            )}
+          </>
+        )}
       </>
     )
   }
 
-  if (!currentTask) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-          {getNarratorLine('narrator.welcome')}
-        </Typography>
-      </Box>
-    )
-  }
-
-  const needsTextAnswer =
-    currentTask.type === 'identify' ||
-    currentTask.type === 'compare' ||
-    currentTask.type === 'freeform'
-
-  // Manual submit only for text-answer tasks (as a convenience,
-  // since auto-validation checks text answers too once submitted)
-  const handleManualSubmit = () => {
-    const validator = makeValidator()
-    const result = validator.validate(currentTask, model)
-    if (result.valid) {
-      if (currentTask.awardOnComplete) {
-        model.addAward(currentTask.awardOnComplete)
-      }
-      model.completeCurrentTask()
-    } else {
-      setNarratorMessage(result.reason ?? getNarratorLine('validate.answer_wrong'))
-      setNarratorType('info')
-    }
-  }
-
-  const tierLabel = ['Hook', 'Discovery', 'Competence', 'Expertise', 'Mastery'][
-    currentTask.tier
-  ]
-
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <Chip
-          label={tierLabel}
-          size="small"
-          color={
-            currentTask.tier <= 1
-              ? 'success'
-              : currentTask.tier <= 2
-                ? 'warning'
-                : 'error'
-          }
-          variant="outlined"
-        />
-        <ProgressBar model={model} />
+    <FloatingPanel title="Quest">
+      <Box sx={{ p: 1.5 }}>
+        {/* Scrollable narrator history */}
+        <NarratorLog entries={narratorLog} />
+
+        {/* Active task content */}
+        {renderContent()}
+
+        <AwardSnackbar model={model} />
       </Box>
-
-      <AwardChips model={model} />
-
-      {model.isGated ? (
-        <TierGate model={model} />
-      ) : (
-        <>
-          <TaskCard
-            task={currentTask}
-            hintsRevealed={model.currentHintsRevealed}
-            onRevealHint={() => {
-              model.revealHint()
-            }}
-          />
-
-          {/* Narrator message */}
-          {narratorMessage && (
-            <Typography
-              variant="body2"
-              sx={{
-                mt: 1,
-                mb: 1,
-                p: 1.5,
-                bgcolor: narratorType === 'success' ? 'success.main' : 'grey.100',
-                color: narratorType === 'success' ? 'success.contrastText' : 'text.primary',
-                borderRadius: 1,
-                fontStyle: 'italic',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              {narratorMessage}
-            </Typography>
-          )}
-
-          {needsTextAnswer && (
-            <>
-              <AnswerInput
-                task={currentTask}
-                currentAnswer={model.answers.get(currentTask.id) ?? ''}
-                onSubmit={answer => {
-                  model.submitAnswer(answer)
-                }}
-              />
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ mt: 1 }}
-                onClick={handleManualSubmit}
-              >
-                Submit
-              </Button>
-            </>
-          )}
-        </>
-      )}
-
-      <AwardSnackbar model={model} />
-    </Box>
+    </FloatingPanel>
   )
 })
 
