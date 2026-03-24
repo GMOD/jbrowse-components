@@ -7,38 +7,27 @@
 
 ## Priority
 
-| Task                                                 | Effort | Impact                                                                        |
-| ---------------------------------------------------- | ------ | ----------------------------------------------------------------------------- |
-| Lazy assembly creation for large pangenomes          | Small  | Avoid creating 90+ assemblies eagerly on first load                           |
-| ~~Warning logs for missing GFA-tabix headers~~       | Small  | ~~Done — warns on missing #genomes= and #sizes=~~                             |
-| GFA W-line test coverage                             | Small  | W-lines are the primary HPRC format, untested                                 |
-| ~~Wire stopToken through GfaTabixAdapter~~           | Small  | ~~Done — checkStopToken in lineCallbacks + async boundaries~~                 |
-| SVG overlay for MultiSynteny text labels             | Small  | SVG text layer for deletion lengths, base letters                             |
-| GPU feature picking for MultiSynteny                 | Small  | Color-encoded picking FBO (currently JS fallback)                             |
-| Automated performance tracing                        | Small  | Measurable regressions, data-driven optimization                              |
-| Virtual scrolling for large genome counts            | Medium | Smooth scrolling through 90+ assemblies                                       |
-| Canvas click-to-select and context menu              | Small  | Feature selection + detail widget from canvas                                 |
-| renderSvg for MultiLGVSyntenyDisplay                 | Medium | Image/SVG export for multi-genome views                                       |
-| Graph ↔ Synteny navigation                           | Medium | Click bubble in graph → synteny context                                       |
-| Shared GFA data layer (graph + synteny)              | Large  | Single GFA load for both views                                                |
-| Test LOD-aware aln.bed.gz switching                  | Small  | Verify segment↔aln transition at bpPerPx threshold                            |
-| Multi-resolution segment index (LOD)                 | Medium | Whole-chromosome views for large pangenomes                                   |
-| MultiLGV scrolling for manual row height mode        | Small  | Scroll through assemblies when rows exceed display                            |
-| MultiLGV sorting/grouping by assembly properties     | Small  | Organize 90+ assemblies by clade, identity, etc.                              |
-| ~~Alignments WebGL renderer: use shared webglUtils~~ | Small  | ~~Done — uses createProgram, cacheUniforms, enableStandardBlend from core~~   |
-| ~~Canvas plugin: use shared HP shader functions~~    | Small  | ~~Done — imports HP_GLSL_WITH_UNIFORM and HP_WGSL_CORE from alignments-core~~ |
-| Wiggle/variants: adopt shared GPU utilities          | Small  | These plugins have their own color/GPU wrappers                               |
+| Task                                             | Effort | Impact                                              |
+| ------------------------------------------------ | ------ | --------------------------------------------------- |
+| Lazy assembly creation for large pangenomes      | Small  | Avoid creating 90+ assemblies eagerly on first load |
+| GFA W-line test coverage                         | Small  | W-lines are the primary HPRC format, untested       |
+| SVG overlay for MultiSynteny text labels         | Small  | SVG text layer for deletion lengths, base letters   |
+| GPU feature picking for MultiSynteny             | Small  | Color-encoded picking FBO (currently JS fallback)   |
+| Automated performance tracing                    | Small  | Measurable regressions, data-driven optimization    |
+| Virtual scrolling for large genome counts        | Medium | Smooth scrolling through 90+ assemblies             |
+| Canvas click-to-select and context menu          | Small  | Feature selection + detail widget from canvas       |
+| renderSvg for MultiLGVSyntenyDisplay             | Medium | Image/SVG export for multi-genome views             |
+| Graph ↔ Synteny navigation                       | Medium | Click bubble in graph → synteny context             |
+| Shared GFA data layer (graph + synteny)          | Large  | Single GFA load for both views                      |
+| Test LOD-aware aln.bed.gz switching              | Small  | Verify segment↔aln transition at bpPerPx threshold  |
+| Multi-resolution segment index (LOD)             | Medium | Whole-chromosome views for large pangenomes         |
+| MultiLGV scrolling for manual row height mode    | Small  | Scroll through assemblies when rows exceed display  |
+| MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc.    |
+| Wiggle/variants: adopt shared GPU utilities      | Small  | These plugins have their own color/GPU wrappers     |
 
 ---
 
 ## Further GPU Code Sharing
-
-### ~~Alignments WebGLRenderer: Adopt Shared Utilities~~ (Done)
-
-`WebGLRenderer.ts` now uses `createProgram()`, `cacheUniforms()`, and
-`enableStandardBlend()` from `@jbrowse/core/gpu/webglUtils`, removing ~45 lines
-of duplicated code. The color wrappers (`toRgb()` etc.) are kept as-is since
-they're thin context-specific helpers.
 
 ### Wiggle/Variants GPU Renderers
 
@@ -65,11 +54,6 @@ even for 90+ haplotype pangenomes. Should only create assemblies for genomes the
 user actually selects via the genome subset selector, and lazily create the rest
 on demand.
 
-### ~~Warning Logs for Missing GFA-Tabix Headers~~ (Done)
-
-`console.warn()` added in `setupPre()` when `#genomes=` or `#sizes=` headers are
-missing from pos.bed.gz.
-
 ### GFA W-Line Test Coverage
 
 `GfaAdapter` supports both P-lines (GFA1) and W-lines (GFA1.1+), but only
@@ -79,12 +63,6 @@ pangenome projects. Need tests for:
 - W-line parsing correctness (segment walk syntax `>s1<s2>s3`)
 - Mixed P-line + W-line GFA files
 - W-line with wildcard haplotype (`*`)
-
-### ~~Wire stopToken Through GfaTabixAdapter~~ (Done)
-
-`checkStopToken()` calls added in `getMultiPairFeaturesFromAln` and
-`getMultiPairFeaturesFromSegments` lineCallbacks, plus at async boundaries
-before `getSegsForOrdinals`. Uses `opts: { stopToken? }` pattern.
 
 ### Regenerate Arabidopsis PIF as All-vs-All
 

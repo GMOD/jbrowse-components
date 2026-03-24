@@ -22,7 +22,6 @@ import {
   buildGeometry,
   brightenColors,
   extractColorSlice,
-  recolorNodes,
 } from '../../renderer/GeometryBuilder.ts'
 import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
 import { findHoveredNode, findHoveredEdge } from '../../util/hitDetection.ts'
@@ -80,6 +79,51 @@ function computeViewportBounds(model: GraphGenomeViewModel) {
   }
 }
 
+const ZoomDisplay = observer(function ZoomDisplay({
+  model,
+}: {
+  model: GraphGenomeViewModel
+}) {
+  return (
+    <Typography variant="body2" style={{ marginLeft: 8 }}>
+      {model.zoomPercent}
+    </Typography>
+  )
+})
+
+const HoverTooltips = observer(function HoverTooltips({
+  model,
+}: {
+  model: GraphGenomeViewModel
+}) {
+  const hoveredNodeData =
+    model.hoveredNode && model.graph
+      ? model.graph.nodes.find(n => n.id === model.hoveredNode)
+      : null
+
+  const hoveredEdgeData =
+    model.hoveredEdge !== null && model.graph
+      ? model.graph.edges[model.hoveredEdge]
+      : null
+
+  return (
+    <>
+      {hoveredNodeData ? (
+        <div style={tooltipStyle}>
+          <strong>{hoveredNodeData.name}</strong> — length:{' '}
+          {hoveredNodeData.length.toLocaleString()}, depth:{' '}
+          {hoveredNodeData.depth.toFixed(1)}
+        </div>
+      ) : null}
+      {hoveredEdgeData ? (
+        <div style={tooltipStyle}>
+          Edge: {hoveredEdgeData.from} → {hoveredEdgeData.to}
+        </div>
+      ) : null}
+    </>
+  )
+})
+
 const GraphCanvas = observer(function GraphCanvas({
   model,
 }: {
@@ -89,6 +133,7 @@ const GraphCanvas = observer(function GraphCanvas({
   const rendererRef = useRef<GraphRenderer | null>(null)
   const [rendererReady, setRendererReady] = useState(false)
   const isDraggingRef = useRef(false)
+  const [isDragging, setIsDragging] = useState(false)
   const lastMouseRef = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -135,44 +180,52 @@ const GraphCanvas = observer(function GraphCanvas({
     )
   }, [model])
 
-  // Autorun 1: Rebuild geometry when graph data or display options change.
-  // Does NOT trigger on hover, select, scale, or translate.
+  // Reaction 1: Rebuild geometry when graph data or display options change.
+  // Does NOT trigger on hover, select, scale, or translate — those are read
+  // only in the effect body which is untracked by MobX.
   useEffect(() => {
     if (!rendererReady) {
       return
     }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (!renderer || !model.nodePositions || !model.graph) {
-        return
-      }
-
-      // Read viewportDirty to trigger on debounced viewport changes
-      const _vd = model.viewportDirty
-      const viewportBounds = computeViewportBounds(model)
-
-      const batch = buildGeometry({
+    return reaction(
+      () => ({
         nodePositions: model.nodePositions,
         graph: model.graph,
         colorScheme: model.colorScheme,
         contigThickness: model.contigThickness,
         connectorThickness: model.connectorThickness,
         drawPaths: model.drawPaths,
-        viewportBounds,
-      })
-
-      model.storeRenderBatchMeta(
-        batch.nodeVertexRanges,
-        batch.edgeVertexRanges,
-        batch.arrowVertexRanges,
-        batch.nodes.colors,
-        batch.edges.colors,
-        batch.arrows.colors,
-      )
-
-      renderer.uploadGeometry(batch)
-      renderFrame(renderer, model, model.darkMode)
-    })
+        darkMode: model.darkMode,
+        viewportDirty: model.viewportDirty,
+      }),
+      ({ nodePositions, graph, colorScheme, contigThickness, connectorThickness, drawPaths, darkMode }) => {
+        const renderer = rendererRef.current
+        if (!renderer || !nodePositions || !graph) {
+          return
+        }
+        const viewportBounds = computeViewportBounds(model)
+        const batch = buildGeometry({
+          nodePositions,
+          graph,
+          colorScheme,
+          contigThickness,
+          connectorThickness,
+          drawPaths,
+          viewportBounds,
+        })
+        model.storeRenderBatchMeta(
+          batch.nodeVertexRanges,
+          batch.edgeVertexRanges,
+          batch.arrowVertexRanges,
+          batch.nodes.colors,
+          batch.edges.colors,
+          batch.arrows.colors,
+        )
+        renderer.uploadGeometry(batch)
+        renderFrame(renderer, model, darkMode)
+      },
+      { fireImmediately: true },
+    )
   }, [model, rendererReady])
 
   // Reaction 2: Hover/select color-only updates — no geometry rebuild.
@@ -336,47 +389,6 @@ const GraphCanvas = observer(function GraphCanvas({
     )
   }, [model])
 
-  // Reaction 5: Incremental color scheme changes — recolor without geometry rebuild
-  useEffect(() => {
-    if (!rendererReady) {
-      return
-    }
-    let prevColorScheme = model.colorScheme
-    return reaction(
-      () => model.colorScheme,
-      colorScheme => {
-        const renderer = rendererRef.current
-        if (
-          !renderer ||
-          !model.graph ||
-          !model.nodeVertexRanges ||
-          !model.baseNodeColors
-        ) {
-          return
-        }
-        if (colorScheme !== prevColorScheme) {
-          const newColors = recolorNodes(
-            model.graph,
-            model.nodeVertexRanges,
-            colorScheme,
-            model.baseNodeColors,
-          )
-          model.storeRenderBatchMeta(
-            model.nodeVertexRanges,
-            model.edgeVertexRanges!,
-            model.arrowVertexRanges!,
-            newColors,
-            model.baseEdgeColors!,
-            model.baseArrowColors!,
-          )
-          renderer.updateSubBatchColors('nodes', newColors, 0)
-          renderFrame(renderer, model, model.darkMode)
-          prevColorScheme = colorScheme
-        }
-      },
-    )
-  }, [model, rendererReady])
-
   function screenToGraph(screenX: number, screenY: number) {
     return {
       x: (screenX - model.translateX) / model.scale,
@@ -387,6 +399,7 @@ const GraphCanvas = observer(function GraphCanvas({
   function handleMouseDown(e: React.MouseEvent) {
     if (e.button === 0) {
       isDraggingRef.current = true
+      setIsDragging(true)
       lastMouseRef.current = { x: e.clientX, y: e.clientY }
     }
   }
@@ -430,10 +443,12 @@ const GraphCanvas = observer(function GraphCanvas({
 
   function handleMouseUp() {
     isDraggingRef.current = false
+    setIsDragging(false)
   }
 
   function handleMouseLeave() {
     isDraggingRef.current = false
+    setIsDragging(false)
     model.setHoveredNode(null)
     model.setHoveredEdge(null)
   }
@@ -454,28 +469,25 @@ const GraphCanvas = observer(function GraphCanvas({
     }
   }
 
-  function handleWheel(e: React.WheelEvent) {
-    e.preventDefault()
-    const rect = canvasRef.current?.getBoundingClientRect()
-    if (!rect) {
-      return
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return undefined
     }
-    model.zoom(
-      e.deltaY < 0 ? 1.1 : 1 / 1.1,
-      e.clientX - rect.left,
-      e.clientY - rect.top,
-    )
-  }
-
-  const hoveredNodeData =
-    model.hoveredNode && model.graph
-      ? model.graph.nodes.find(n => n.id === model.hoveredNode)
-      : null
-
-  const hoveredEdgeData =
-    model.hoveredEdge !== null && model.graph
-      ? model.graph.edges[model.hoveredEdge]
-      : null
+    function handleWheel(e: WheelEvent) {
+      e.preventDefault()
+      const rect = canvas!.getBoundingClientRect()
+      model.zoom(
+        e.deltaY < 0 ? 1.1 : 1 / 1.1,
+        e.clientX - rect.left,
+        e.clientY - rect.top,
+      )
+    }
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [model])
 
   return (
     <div style={{ position: 'relative' }}>
@@ -563,9 +575,7 @@ const GraphCanvas = observer(function GraphCanvas({
           </IconButton>
         </Tooltip>
 
-        <Typography variant="body2" style={{ marginLeft: 8 }}>
-          {model.zoomPercent}
-        </Typography>
+        <ZoomDisplay model={model} />
 
         <Typography variant="body2" style={{ marginLeft: 'auto' }}>
           {model.nodeCount} nodes, {model.edgeCount} edges
@@ -603,7 +613,7 @@ const GraphCanvas = observer(function GraphCanvas({
         style={{
           width: model.width,
           height: CANVAS_HEIGHT,
-          cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+          cursor: isDragging ? 'grabbing' : 'grab',
           display: 'block',
         }}
         onMouseDown={handleMouseDown}
@@ -611,22 +621,9 @@ const GraphCanvas = observer(function GraphCanvas({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        onWheel={handleWheel}
       />
 
-      {hoveredNodeData ? (
-        <div style={tooltipStyle}>
-          <strong>{hoveredNodeData.name}</strong> — length:{' '}
-          {hoveredNodeData.length.toLocaleString()}, depth:{' '}
-          {hoveredNodeData.depth.toFixed(1)}
-        </div>
-      ) : null}
-
-      {hoveredEdgeData ? (
-        <div style={tooltipStyle}>
-          Edge: {hoveredEdgeData.from} → {hoveredEdgeData.to}
-        </div>
-      ) : null}
+      <HoverTooltips model={model} />
 
       {model.error ? (
         <Typography color="error" variant="body2" style={{ padding: 8 }}>

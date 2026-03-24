@@ -1,56 +1,72 @@
 use std::collections::{HashMap, HashSet};
-use std::env;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::process::{Command, Stdio};
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 || args.iter().any(|a| a == "-h" || a == "--help") {
-        eprintln!(
-            "Usage: gfa-to-tabix <gfa-file> [output-prefix] [--chunk-size N] [--assemblies a,b,c] [--sharded]"
-        );
-        eprintln!("Converts GFA to tabix-indexed pos.bed.gz + segments.gz files.");
-        eprintln!("Streaming two-pass approach: O(segments) memory.");
-        eprintln!("Segment ordinals are assigned in path-traversal order so that");
-        eprintln!("reference-path queries span compact ordinal ranges in segments.gz.");
-        eprintln!("List the reference assembly's paths first in the GFA for best performance.");
-        std::process::exit(if args.len() < 2 { 1 } else { 0 });
-    }
+use clap::Parser;
 
-    let gfa_path = &args[1];
-    let output_prefix = if args.len() > 2 && !args[2].starts_with('-') {
-        args[2].clone()
-    } else {
+/// Converts GFA to tabix-indexed pos.bed.gz + segments.gz files.
+///
+/// Streaming two-pass approach: O(segments) memory.
+/// Segment ordinals are assigned in path-traversal order so that
+/// reference-path queries span compact ordinal ranges in segments.gz.
+/// List the reference assembly's paths first in the GFA for best performance.
+///
+/// By default, walks whose segments ALL have opposite orientation to the
+/// reference are normalized (orient flipped, offsets reversed). This removes
+/// false inversions caused by reverse-complemented assembly contigs while
+/// preserving genuine biological inversions. Inspired by odgi groom
+/// (https://github.com/pangenome/odgi); for more thorough normalization,
+/// preprocess with: odgi groom -R ref_paths.txt
+#[derive(Parser)]
+#[command(name = "gfa-to-tabix")]
+struct Args {
+    /// Input GFA file (plain or .gz)
+    gfa_file: String,
+
+    /// Output prefix (default: derived from input filename)
+    output_prefix: Option<String>,
+
+    /// Number of walk steps per pos.bed.gz chunk
+    #[arg(long, default_value_t = 100)]
+    chunk_size: usize,
+
+    /// Comma-separated list of assemblies to include
+    #[arg(long)]
+    assemblies: Option<String>,
+
+    /// Produce per-assembly sharded segments files
+    #[arg(long)]
+    sharded: bool,
+
+    /// Disable orientation normalization of reverse-complemented contigs
+    #[arg(long)]
+    no_groom: bool,
+
+    /// Assembly name to use as reference for grooming (default: first assembly in GFA).
+    /// Should match the assembly used for browsing in JBrowse.
+    #[arg(long)]
+    ref_assembly: Option<String>,
+}
+
+fn main() {
+    let cli = Args::parse();
+
+    let gfa_path = &cli.gfa_file;
+    let output_prefix = cli.output_prefix.unwrap_or_else(|| {
         gfa_path
             .trim_end_matches(".gz")
             .trim_end_matches(".gfa")
             .to_string()
-    };
+    });
 
-    let mut chunk_size: usize = 100;
-    let mut assemblies_filter: Option<HashSet<String>> = None;
-    let mut sharded = false;
-
-    let mut i = 2;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--chunk-size" if i + 1 < args.len() => {
-                chunk_size = args[i + 1].parse().expect("Invalid chunk-size");
-                i += 2;
-            }
-            "--assemblies" if i + 1 < args.len() => {
-                assemblies_filter =
-                    Some(args[i + 1].split(',').map(|s| s.to_string()).collect());
-                i += 2;
-            }
-            "--sharded" => {
-                sharded = true;
-                i += 1;
-            }
-            _ => i += 1,
-        }
-    }
+    let chunk_size = cli.chunk_size;
+    let assemblies_filter: Option<HashSet<String>> = cli
+        .assemblies
+        .map(|s| s.split(',').map(|s| s.to_string()).collect());
+    let sharded = cli.sharded;
+    let groom = !cli.no_groom;
+    let ref_assembly_arg = cli.ref_assembly;
 
     // Pass 1: collect segment lengths from S-lines.  Numeric IDs are NOT
     // assigned here — they are assigned during path traversal in Pass 2 so
@@ -107,6 +123,10 @@ fn main() {
 
     let mut genomes: Vec<String> = Vec::new();
     let mut genome_set: HashSet<String> = HashSet::new();
+    // Map from segment ordinal → reference orient (true = "+").
+    // Populated by the first assembly's paths (the reference).
+    let mut ref_orients: HashMap<u64, bool> = HashMap::new();
+    let mut ref_assembly: Option<String> = None;
     let mut path_names: Vec<String> = Vec::new();
     let mut path_name_indices: HashMap<String, u64> = HashMap::new();
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
@@ -132,6 +152,24 @@ fn main() {
             if genome_set.insert(assembly.clone()) {
                 genomes.push(assembly.clone());
             }
+
+            // Use --ref-assembly if provided, otherwise the first assembly.
+            let is_ref = match &ref_assembly {
+                None => {
+                    if let Some(ref ra) = ref_assembly_arg {
+                        if *ra == assembly {
+                            ref_assembly = Some(assembly.clone());
+                            true
+                        } else {
+                            false
+                        }
+                    } else {
+                        ref_assembly = Some(assembly.clone());
+                        true
+                    }
+                }
+                Some(ra) => *ra == assembly,
+            };
 
             let path_index = if let Some(&idx) = path_name_indices.get(&path_name) {
                 idx
@@ -163,11 +201,18 @@ fn main() {
                 &mut next_ordinal,
                 &mut pos_w,
                 segments_w,
+                &mut ref_orients,
+                is_ref,
+                groom,
             );
 
             path_sizes.push((path_name, total));
             path_count += 1;
         }
+    }
+
+    if let Some(ref ra) = ref_assembly {
+        eprintln!("  Reference assembly: {} ({} orient entries)", ra, ref_orients.len());
     }
 
     // Headers
@@ -353,6 +398,13 @@ fn sort_and_build_segments(
 /// Numeric IDs are assigned on first encounter: the first path to traverse a
 /// graph node determines its ID.  This means the GFA's path ordering matters —
 /// assemblies listed earlier get tighter, more contiguous ID sequences.
+/// A buffered step from parsing a walk, before writing to segments.tsv.
+struct WalkStep {
+    ord: u64,
+    seg_len: u64,
+    is_plus: bool,
+}
+
 fn emit_path_rows(
     path_name: &str,
     path_index: u64,
@@ -364,17 +416,17 @@ fn emit_path_rows(
     next_ordinal: &mut u64,
     pos_w: &mut BufWriter<impl Write>,
     segments_w: &mut BufWriter<File>,
+    ref_orients: &mut HashMap<u64, bool>,
+    is_ref: bool,
+    groom: bool,
 ) -> u64 {
-    let mut offset: u64 = 0;
-    let mut chunk_start: u64 = 0;
-    let mut chunk_ords: Vec<u64> = Vec::new();
-    let mut steps: usize = 0;
+    // Phase 1: parse the walk and assign ordinals, buffering all steps.
+    let mut walk_steps: Vec<WalkStep> = Vec::new();
 
-    let mut emit_step = |seg_id: &str, orient: &str| {
+    let mut collect_step = |seg_id: &str, orient: &str| {
         let seg_len = seg_lengths.get(seg_id).copied().unwrap_or(0);
+        let is_plus = orient == "+";
 
-        // Assign a numeric ID on first encounter; reuse the existing ID if
-        // this graph node was already visited by an earlier path.
         let ord = if let Some(&o) = seg_ordinals.get(seg_id) {
             o
         } else {
@@ -384,31 +436,11 @@ fn emit_path_rows(
             o
         };
 
-        // segments.tsv: ordinal, path_index, offset, length, orient
-        writeln!(
-            segments_w,
-            "{}\t{}\t{}\t{}\t{}",
-            ord, path_index, offset, seg_len, orient
-        )
-        .unwrap();
-
-        chunk_ords.push(ord);
-        offset += seg_len;
-        steps += 1;
-
-        // Flush a pos.bed.gz chunk every `chunk_size` steps.
-        // Dedup IDs so the viewer doesn't fetch the same node twice (a path
-        // can revisit the same node in complex graph regions).
-        if steps >= chunk_size {
-            chunk_ords.sort_unstable();
-            chunk_ords.dedup();
-            let ords_str = encode_ordinal_ranges(&chunk_ords);
-            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
-                .unwrap();
-            chunk_start = offset;
-            chunk_ords.clear();
-            steps = 0;
+        if is_ref {
+            ref_orients.insert(ord, is_plus);
         }
+
+        walk_steps.push(WalkStep { ord, seg_len, is_plus });
     };
 
     if is_walk {
@@ -425,7 +457,7 @@ fn emit_path_rows(
             while pos < bytes.len() && bytes[pos] != b'>' && bytes[pos] != b'<' {
                 pos += 1;
             }
-            emit_step(&seg_str[start..pos], orient);
+            collect_step(&seg_str[start..pos], orient);
         }
     } else {
         for step in seg_str.split(',') {
@@ -434,7 +466,86 @@ fn emit_path_rows(
             } else {
                 (step, "+")
             };
-            emit_step(seg_id, orient);
+            collect_step(seg_id, orient);
+        }
+    }
+
+    // Phase 2: for non-reference walks, detect if the walk is a
+    // reverse-complemented contig. A walk is reverse-complemented iff
+    // EVERY segment shared with the reference has opposite orient.
+    // This is a deterministic condition, not a heuristic.
+    let need_flip = if is_ref || !groom {
+        false
+    } else {
+        // Use bp-weighted tally: tiny 1-2bp SNP nodes in the graph
+        // shouldn't prevent detection of a reversed contig.
+        let mut shared_bp = 0u64;
+        let mut opposite_bp = 0u64;
+        for step in &walk_steps {
+            if let Some(&ref_is_plus) = ref_orients.get(&step.ord) {
+                shared_bp += step.seg_len;
+                if step.is_plus != ref_is_plus {
+                    opposite_bp += step.seg_len;
+                }
+            }
+        }
+        // Flip if >99% of shared bp are opposite orientation.
+        shared_bp > 0 && opposite_bp * 100 >= shared_bp * 99
+    };
+
+    // Phase 3: emit segments.tsv and pos.bed.gz rows.
+    // If the walk needs flipping, reverse the offset direction and
+    // invert all orient values.
+    let total_len: u64 = walk_steps.iter().map(|s| s.seg_len).sum();
+    let mut offset: u64 = 0;
+    let mut chunk_start: u64 = 0;
+    let mut chunk_ords: Vec<u64> = Vec::new();
+    let mut steps: usize = 0;
+
+    for step in &walk_steps {
+        let effective_orient = if need_flip {
+            if step.is_plus { "-" } else { "+" }
+        } else if is_ref {
+            if step.is_plus { "+" } else { "-" }
+        } else if let Some(&ref_is_plus) = ref_orients.get(&step.ord) {
+            if step.is_plus == ref_is_plus { "+" } else { "-" }
+        } else {
+            if step.is_plus { "+" } else { "-" }
+        };
+
+        let emit_offset = if need_flip {
+            total_len - offset - step.seg_len
+        } else {
+            offset
+        };
+
+        writeln!(
+            segments_w,
+            "{}\t{}\t{}\t{}\t{}",
+            step.ord, path_index, emit_offset, step.seg_len, effective_orient
+        )
+        .unwrap();
+
+        chunk_ords.push(step.ord);
+        offset += step.seg_len;
+        steps += 1;
+
+        if steps >= chunk_size {
+            chunk_ords.sort_unstable();
+            chunk_ords.dedup();
+            let ords_str = encode_ordinal_ranges(&chunk_ords);
+            if need_flip {
+                let flip_start = total_len - offset;
+                let flip_end = total_len - chunk_start;
+                writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, flip_start, flip_end, ords_str)
+                    .unwrap();
+            } else {
+                writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
+                    .unwrap();
+            }
+            chunk_start = offset;
+            chunk_ords.clear();
+            steps = 0;
         }
     }
 
@@ -442,11 +553,22 @@ fn emit_path_rows(
         chunk_ords.sort_unstable();
         chunk_ords.dedup();
         let ords_str = encode_ordinal_ranges(&chunk_ords);
-        writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
-            .unwrap();
+        if need_flip {
+            let flip_start = total_len - offset;
+            let flip_end = total_len - chunk_start;
+            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, flip_start, flip_end, ords_str)
+                .unwrap();
+        } else {
+            writeln!(pos_w, "{}\t{}\t{}\t{}", path_name, chunk_start, offset, ords_str)
+                .unwrap();
+        }
     }
 
-    offset
+    if need_flip {
+        eprintln!("    flipped: {} (all {} shared segments had opposite orient)", path_name, walk_steps.iter().filter(|s| ref_orients.contains_key(&s.ord)).count());
+    }
+
+    total_len
 }
 
 fn parse_walk(line: &str) -> Option<(String, String, String, bool)> {

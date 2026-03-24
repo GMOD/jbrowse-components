@@ -49,6 +49,17 @@ const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
 
+// SYNC: This display follows the same fetch + GPU rendering architecture as
+// LinearAlignmentsDisplay (plugins/alignments/src/LinearAlignmentsDisplay/model.ts):
+//
+//   1. Compose with MultiRegionDisplayMixin for viewport-aware fetching
+//   2. Override onFetchNeeded → withFetchLifecycle for stop-token + stale checks
+//   3. Override clearDisplaySpecificData to reset display-specific state
+//   4. Capture superAfterAttach to register the mixin's autoruns
+//   5. GPU autoruns: upload (registered first) then draw (tracks dataVersion)
+//
+// Changes to this pattern should be mirrored in both displays.
+
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types
     .compose(
@@ -69,7 +80,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       genomeRows: new Map<string, MultiPairFeature[]>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
-      metadataFetched: false,
       statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
@@ -91,6 +101,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           return this.autoRowHeight
         }
         return self.rowHeightSetting
+      },
+      get showSnps() {
+        if (self.snpBpPerPxThreshold <= 0) {
+          return false
+        }
+        const view = getContainingView(self) as LGV
+        return view.bpPerPx < self.snpBpPerPxThreshold
       },
       legendItems() {
         return legendItemsMap[self.colorBy] ?? []
@@ -121,7 +138,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       clearDisplaySpecificData() {
         self.genomeRows = new Map()
         self.allGenomeNames = []
-        self.metadataFetched = false
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -171,7 +187,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 bpPerPx: view.bpPerPx,
                 sessionId,
                 stopToken: ctx.stopToken,
-                fetchMetadata: !self.metadataFetched,
+                fetchMetadata: self.allGenomeNames.length === 0,
                 statusCallback: (msg: string) => {
                   if (isAlive(self)) {
                     self.setStatusMessage(msg)
@@ -210,16 +226,53 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             }
 
             if (result.sources) {
-              self.metadataFetched = true
               self.setAllGenomeNames(result.sources.map(s => s.name))
             }
 
             const genomeRowsMap = new Map(result.genomeRows)
+            const totalFeatures = [...genomeRowsMap.values()].reduce(
+              (s, f) => s + f.length,
+              0,
+            )
+
+            // Debug: analyze feature bp distribution
+            let globalMinBp = Infinity
+            let globalMaxBp = 0
+            const bpBuckets = new Map<number, number>()
+            for (const [, features] of genomeRowsMap) {
+              for (const feat of features) {
+                if (feat.start < globalMinBp) {
+                  globalMinBp = feat.start
+                }
+                if (feat.end > globalMaxBp) {
+                  globalMaxBp = feat.end
+                }
+                const bucket = Math.floor(feat.start / 100_000) * 100_000
+                bpBuckets.set(bucket, (bpBuckets.get(bucket) ?? 0) + 1)
+              }
+            }
+            const sortedBuckets = [...bpBuckets.entries()]
+              .sort((a, b) => a[0] - b[0])
+              .map(([bp, count]) => `${(bp / 1e6).toFixed(1)}Mb:${count}`)
+
             console.log(
               '[MultiSyntenyFetch] RPC complete, genomeRows keys:',
               [...genomeRowsMap.keys()],
               'total features:',
-              [...genomeRowsMap.values()].reduce((s, f) => s + f.length, 0),
+              totalFeatures,
+            )
+            console.log(
+              '[MultiSyntenyFetch] Feature bp coverage:',
+              globalMinBp.toLocaleString(),
+              '-',
+              globalMaxBp.toLocaleString(),
+              `(${((globalMaxBp - globalMinBp) / 1e6).toFixed(2)} Mb)`,
+              'view range:',
+              regions.map(r => `${r.refName}:${r.start}-${r.end}`),
+            )
+            console.log(
+              '[MultiSyntenyFetch] Feature distribution (100kb buckets):',
+              sortedBuckets,
             )
             self.setGenomeRows(genomeRowsMap)
 
@@ -325,30 +378,45 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
         }
 
-        if (adapterConfig.type === 'GfaAdapter') {
-          const gfaLocation = adapterConfig.gfaLocation
-          launchSubMenu.push({
-            label: 'Graph genome view',
-            icon: BubbleChartIcon,
-            onClick: async () => {
-              const session = getSession(self)
-              const graphView = session.addView('GraphGenomeView', {})
-              const uri =
-                gfaLocation.uri ??
-                gfaLocation.localPath ??
-                gfaLocation.internetAccountId
-              if (uri) {
-                const response = await fetch(uri)
-                const text = await response.text()
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await (graphView as any).loadGFA(
-                  text,
-                  uri.split('/').pop() ?? 'GFA',
-                )
-              }
-            },
-          })
-        }
+        launchSubMenu.push({
+          label: 'Graph genome view (local)',
+          icon: BubbleChartIcon,
+          onClick: async () => {
+            const session = getSession(self)
+            const dr = view.displayedRegions[0]
+            if (!dr) {
+              return
+            }
+            const region = {
+              refName: dr.refName,
+              assemblyName: dr.assemblyName,
+              start: Math.floor(view.offsetPx * view.bpPerPx),
+              end: Math.floor(
+                (view.offsetPx + view.width) * view.bpPerPx,
+              ),
+            }
+            const sessionId = getRpcSessionId(self)
+            const { rpcManager } = session
+            const gfaText: string = await rpcManager.call(
+              sessionId,
+              'GetSubgraph',
+              { adapterConfig, region, sessionId },
+            )
+            if (!gfaText) {
+              session.notify(
+                'This adapter does not support graph subgraph extraction',
+                'warning',
+              )
+              return
+            }
+            const graphView = session.addView('GraphGenomeView', {})
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (graphView as any).loadGFA(
+              gfaText,
+              `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
+            )
+          },
+        })
 
         return [
           {

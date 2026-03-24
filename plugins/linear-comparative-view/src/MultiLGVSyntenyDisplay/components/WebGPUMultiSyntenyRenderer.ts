@@ -175,6 +175,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         block,
         viewOffsetPx,
         this.instanceData.refNameIndex,
+        this.instanceData.buffer,
       )
       if (!params) {
         console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → no params (refName not in index)`)
@@ -210,7 +211,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
             view: tv,
             loadOp: isFirstPass ? ('clear' as GPULoadOp) : ('load' as GPULoadOp),
             storeOp: 'store' as GPUStoreOp,
-            ...(isFirstPass && { clearValue: { r: 1, g: 1, b: 1, a: 1 } }),
+            ...(isFirstPass && { clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 } }),
           },
         ],
       })
@@ -231,7 +232,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
             view: tv,
             loadOp: 'clear' as GPULoadOp,
             storeOp: 'store' as GPUStoreOp,
-            clearValue: { r: 1, g: 1, b: 1, a: 1 },
+            clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 },
           },
         ],
       })

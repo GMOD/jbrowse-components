@@ -1503,6 +1503,9 @@ export default function stateModelFactory(
 
         afterAttach() {
           superAfterAttach()
+          // SYNC: Upload-before-draw autorun pattern is shared with
+          // MultiLGVSyntenyDisplay (plugins/linear-comparative-view/
+          // src/MultiLGVSyntenyDisplay/components/MultiSyntenyRendering.tsx).
           // Upload autoruns are registered BEFORE the draw autorun so
           // that MobX runs them first when rpcDataMap changes, ensuring
           // GPU buffers are populated before renderBlocks() reads them.

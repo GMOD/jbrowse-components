@@ -210,7 +210,7 @@ export default function MultiRegionDisplayMixin() {
               await work(ctx)
             } catch (e) {
               if (!isAbortException(e)) {
-                console.warn('Fetch failed:', e)
+                console.error('Fetch failed:', e)
                 if (!isStale()) {
                   self.setError(e)
                 }

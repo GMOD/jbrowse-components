@@ -85,45 +85,6 @@ paired/supp reads
 - `?gpu=off` — disable GPU (uses Canvas 2D fallback)
 - Default: auto-detect (WebGPU → WebGL2 → Canvas 2D)
 
-### Test Infrastructure
-
-- Puppeteer-based browser tests in `products/jbrowse-web/browser-tests/`
-- **21 test suites** with **~120 test cases** covering: alignments, bigwig,
-  variants, synteny, dotplot, HiC, canvas2d-fallback (8 tests: features,
-  multi-track, zoom, alignments+coverage, SNP coverage, arcs, sequence, wiggle),
-  canvas2d-variants, rendering-backends (16 tests: VCF, GFF3, wiggle, BAM/CRAM
-  pileup, SNP coverage, multi-wiggle, SV, JEXL, sequence, alignments+coverage,
-  arcs, synteny LGV, synteny linear, dotplot), color-by-tag, wiggle-color,
-  workspaces, session-spec, demo-inventory, svg-export, authentication,
-  main-thread-rpc, custom-url, redraw, basic-lgv, misc
-- Screenshot comparison via pixelmatch (threshold 0.1)
-- Backend-specific golden snapshots in `__snapshots__/{webgl,webgpu,canvas2d}/`
-- `--backend=webgl|webgpu|canvas2d` flag, `--filter=` for running subsets
-- `compare-backends.ts` for cross-backend visual regression (categories:
-  identical, similar <5%, different ≥5%)
-- Unit tests co-located with source (`*.test.ts`) using Jest with jsdom — **157
-  tests across 15 suites** in modified plugins
-- Canvas 2D renderer unit tests use mock canvas context pattern (20 tests
-  including picking)
-- Density-based feature limit unit tests (7 tests covering all threshold
-  scenarios)
-- Strand swap coordinate tests (4 tests covering all strand×reversed
-  combinations)
-- `copyView.renameIds()` unit tests (8 tests verifying ID uniqueness)
-- Fetch autorun tests include error recovery via `reload()` flow
-- Interbase indicator tests (7 tests for `computeNoncovCoverage` threshold
-  logic, depth boundaries, dominant type selection)
-- Interbase frequency tests (6 tests for `computePositionFrequencies`
-  edge/cliff/offset cases)
-- Depth-dependent threshold tests (2 tests for `applyDepthDependentThreshold`
-  interbase mode)
-- `featureFrequencyThreshold` tests (5 tests covering step boundaries,
-  interpolation, monotonicity)
-- Floating label regression test verifying description data stability across
-  zoom levels
-- Browser test runner forwards `[alignments]` and `[webgl-wiggle]` console logs
-  for debugging
-
 ## Next Steps
 
 ### Cross-Backend Testing

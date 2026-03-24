@@ -182,7 +182,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     ) {
       this.resize(width, height)
       gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-      gl.clearColor(1, 1, 1, 1)
+      gl.clearColor(0.93, 0.93, 0.93, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
       return
     }
@@ -194,7 +194,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-    gl.clearColor(1, 1, 1, 1)
+    gl.clearColor(0.93, 0.93, 0.93, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     gl.useProgram(this.fillProgram)
@@ -208,6 +208,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         block,
         viewOffsetPx,
         this.instanceData.refNameIndex,
+        this.instanceData.buffer,
       )
       if (!params) {
         console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → no params (refName not in index)`)
@@ -246,6 +247,40 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     }
 
     gl.bindVertexArray(null)
+
+    // Debug: log feature coverage vs view range summary
+    if (this.instanceData && contentBlocks.length > 0) {
+      const u32 = new Uint32Array(this.instanceData.buffer)
+      const stride = INSTANCE_BYTE_SIZE / 4
+      const viewStart = contentBlocks[0]!.start
+      const viewEnd = contentBlocks.at(-1)!.end
+
+      const entry = this.instanceData.refNameIndex.get(contentBlocks[0]!.refName)
+      if (entry) {
+        let minBp = Infinity
+        let maxBp = 0
+        let overlappingView = 0
+        for (let j = entry.startIdx; j < entry.startIdx + entry.count; j++) {
+          const sBp = u32[j * stride]!
+          const eBp = u32[j * stride + 1]!
+          if (sBp < minBp) {
+            minBp = sBp
+          }
+          if (eBp > maxBp) {
+            maxBp = eBp
+          }
+          if (eBp > viewStart && sBp < viewEnd) {
+            overlappingView++
+          }
+        }
+        const viewCoveragePct = ((maxBp - minBp) / (viewEnd - viewStart) * 100).toFixed(1)
+        console.log(
+          `[WebGLRender] Feature coverage: ${(minBp / 1e6).toFixed(2)}-${(maxBp / 1e6).toFixed(2)}Mb (${viewCoveragePct}% of view ${(viewStart / 1e6).toFixed(2)}-${(viewEnd / 1e6).toFixed(2)}Mb)`,
+          `${overlappingView}/${entry.count} features overlap view`,
+        )
+      }
+    }
+
     this.pickingDirty = true
   }
 

@@ -49,7 +49,8 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
     const dpr = window.devicePixelRatio || 1
     this.resize(width, height)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.clearRect(0, 0, width, height)
+    ctx.fillStyle = '#ededed'
+    ctx.fillRect(0, 0, width, height)
 
     for (let g = 0; g < displayedGenomes.length; g++) {
       const genomeName = displayedGenomes[g]!

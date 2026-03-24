@@ -151,6 +151,18 @@ function parseGfa(text: string) {
   } satisfies ParsedGfa
 }
 
+function findRefPath(
+  paths: GfaPathEntry[],
+  assemblyName: string,
+  refName: string,
+) {
+  return paths.find(
+    p =>
+      (p.genome === assemblyName && p.refName === refName) ||
+      p.name === `${assemblyName}#${refName}`,
+  )
+}
+
 export default class GfaAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -231,6 +243,80 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     })
   }
 
+  async getSubgraph(region: Region) {
+    const gfa = await this.getGfa()
+    const { refName, start, end, assemblyName } = region
+
+    const refPath = findRefPath(gfa.paths, assemblyName, refName)
+    if (!refPath) {
+      return ''
+    }
+
+    const refSegsInRange = new Set<string>()
+    let offset = 0
+    for (const seg of refPath.segments) {
+      const segLen = gfa.segments.get(seg.segId)?.length ?? 0
+      if (offset + segLen > start && offset < end) {
+        refSegsInRange.add(seg.segId)
+      }
+      offset += segLen
+    }
+    if (refSegsInRange.size === 0) {
+      return ''
+    }
+
+    const allSegIds = new Set<string>()
+    const pathSpans = new Map<
+      string,
+      { segId: string; orient: string }[]
+    >()
+
+    for (const path of gfa.paths) {
+      let firstShared = -1
+      let lastShared = -1
+      for (let i = 0; i < path.segments.length; i++) {
+        if (refSegsInRange.has(path.segments[i]!.segId)) {
+          if (firstShared === -1) {
+            firstShared = i
+          }
+          lastShared = i
+        }
+      }
+      if (firstShared >= 0) {
+        const span: { segId: string; orient: string }[] = []
+        for (let i = firstShared; i <= lastShared; i++) {
+          const seg = path.segments[i]!
+          allSegIds.add(seg.segId)
+          span.push(seg)
+        }
+        pathSpans.set(path.name, span)
+      }
+    }
+
+    const lines: string[] = ['H\tVN:Z:1.1']
+    for (const segId of allSegIds) {
+      const seg = gfa.segments.get(segId)
+      if (seg) {
+        lines.push(`S\t${segId}\t${seg.sequence}\tLN:i:${seg.length}`)
+      }
+    }
+    for (const link of gfa.links) {
+      if (allSegIds.has(link.source) && allSegIds.has(link.target)) {
+        lines.push(
+          `L\t${link.source}\t${link.strand1}\t${link.target}\t${link.strand2}\t*`,
+        )
+      }
+    }
+    for (const [pathName, span] of pathSpans) {
+      const walk = span
+        .map(s => `${s.segId}${s.orient}`)
+        .join(',')
+      lines.push(`P\t${pathName}\t${walk}\t*`)
+    }
+
+    return lines.join('\n')
+  }
+
   async getMultiPairFeatures(query: Region, _opts: BaseOptions = {}) {
     const gfa = await this.getGfa()
     const genomeRows = new Map<string, MultiPairFeature[]>()
@@ -262,18 +348,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       pathPositions.set(path.name, positions)
     }
 
-    // Find the reference path matching this query
-    let refPath: GfaPathEntry | undefined
-    for (const path of gfa.paths) {
-      if (
-        (path.genome === assemblyName && path.refName === refName) ||
-        path.name === `${assemblyName}#${refName}`
-      ) {
-        refPath = path
-        break
-      }
-    }
-
+    const refPath = findRefPath(gfa.paths, assemblyName, refName)
     if (!refPath) {
       return { genomeRows }
     }

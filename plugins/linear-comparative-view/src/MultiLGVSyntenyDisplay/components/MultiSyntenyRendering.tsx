@@ -17,7 +17,8 @@ interface MultiSyntenyModel {
   rowHeight: number
   colorBy: string
   height: number
-  snpBpPerPxThreshold: number
+  showSnps: boolean
+  dataVersion: number
 }
 
 const LABEL_WIDTH = 120
@@ -63,7 +64,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     }
   }, [])
 
-  // GPU path: upload geometry when features or colors change
+  // SYNC: GPU upload-before-draw autorun pattern mirrors
+  // LinearAlignmentsDisplay (plugins/alignments/src/LinearAlignmentsDisplay/model.ts).
+  // Upload is registered BEFORE draw so MobX runs it first when
+  // genomeRows changes, ensuring GPU buffers are populated before
+  // renderGpu() reads them.
+  //
+  // DEVIATION: These autoruns live in React useEffect hooks rather than
+  // in the model's afterAttach (as LinearAlignmentsDisplay does). This
+  // has no practical difference — the autoruns are disposed on unmount
+  // either way.
   useEffect(() => {
     if (!ready) {
       return
@@ -71,10 +81,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     return autorun(() => {
       const renderer = rendererRef.current
       if (renderer?.isGpu) {
-        const { genomeRows, displayedGenomes, colorBy, snpBpPerPxThreshold } =
-          model
-        const showSnps =
-          snpBpPerPxThreshold > 0 && view.bpPerPx < snpBpPerPxThreshold
+        const { genomeRows, displayedGenomes, colorBy, showSnps } = model
         renderer.uploadGeometry(
           genomeRows,
           displayedGenomes,
@@ -85,7 +92,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     })
   }, [ready, model, view])
 
-  // GPU path: render when view changes (scroll, zoom) or new data arrives
+  // GPU draw autorun: re-renders on view changes (scroll, zoom, resize)
+  // or new data. dataVersion is bumped by MultiRegionDisplayMixin when
+  // setLoadedRegionForRegion is called — same mechanism as the
+  // LinearAlignmentsDisplay:draw autorun tracking self.dataVersion.
   useEffect(() => {
     if (!ready) {
       return
@@ -93,14 +103,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     return autorun(() => {
       const renderer = rendererRef.current
       if (renderer?.isGpu) {
-        const { height, rowHeight, genomeRows } = model
-        // Track genomeRows so we re-render after new geometry is uploaded.
-        // Without this, zoom-out fetches upload new geometry but never
-        // trigger a render pass, leaving blank areas on screen.
-        console.log(
-          '[MultiSyntenyRendering] GPU render autorun fired, genomeRows size:',
-          genomeRows.size,
-        )
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _dv = model.dataVersion
+        const { height, rowHeight } = model
         const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
         const contentBlocks = view.staticBlocks.contentBlocks
         renderer.renderGpu(
@@ -129,12 +134,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           colorBy,
           height,
           rowHeight,
-          snpBpPerPxThreshold,
+          showSnps,
         } = model
-        const { width, bpPerPx, offsetPx } = view
+        const { width, offsetPx } = view
         const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-        const showSnps =
-          snpBpPerPxThreshold > 0 && bpPerPx < snpBpPerPxThreshold
         const bpToPx = (refName: string, coord: number) => {
           const result = view.bpToPx({ refName, coord })
           if (result === undefined) {

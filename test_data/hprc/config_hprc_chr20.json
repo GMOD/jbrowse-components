@@ -17,6 +17,12 @@
             }
           ]
         }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+        }
       }
     }
   ],
@@ -31,25 +37,12 @@
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
-        "prefix": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20"
+        "prefix": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20"
       },
       "assemblyNames": ["GRCh38#0"]
     }
   ],
   "defaultSession": {
-    "name": "HPRC chr20 pangenome",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "displayedRegions": [
-          {
-            "assemblyName": "GRCh38#0",
-            "refName": "chr20",
-            "start": 30000000,
-            "end": 31000000
-          }
-        ]
-      }
-    ]
+    "name": "HPRC chr20 pangenome"
   }
 }

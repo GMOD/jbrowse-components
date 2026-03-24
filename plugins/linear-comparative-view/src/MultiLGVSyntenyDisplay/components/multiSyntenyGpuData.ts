@@ -275,6 +275,32 @@ export function prepareMultiSyntenyGpuData(
     })
   }
 
+  // Debug: analyze feature bp coverage per refName
+  const sortedU32 = new Uint32Array(sortedBuf)
+  const sortedStride = INSTANCE_BYTE_SIZE / 4
+  for (const [refName, { startIdx, count }] of refNameIndex) {
+    let minBp = Infinity
+    let maxBp = 0
+    const genomeCoverage = new Map<number, number>()
+    for (let i = startIdx; i < startIdx + count; i++) {
+      const sBp = sortedU32[i * sortedStride]!
+      const eBp = sortedU32[i * sortedStride + 1]!
+      const row = sortedU32[i * sortedStride + 2]!
+      if (sBp < minBp) {
+        minBp = sBp
+      }
+      if (eBp > maxBp) {
+        maxBp = eBp
+      }
+      genomeCoverage.set(row, (genomeCoverage.get(row) ?? 0) + 1)
+    }
+    console.log(
+      `[multiSyntenyGpuData] refName=${refName}: ${count} instances, bp range ${minBp.toLocaleString()}-${maxBp.toLocaleString()} (${((maxBp - minBp) / 1e6).toFixed(2)} Mb)`,
+      `genomeRows with features: ${genomeCoverage.size}`,
+      `features/genome: min=${Math.min(...genomeCoverage.values())} max=${Math.max(...genomeCoverage.values())}`,
+    )
+  }
+
   console.log(`[multiSyntenyGpuData] ${n} instances, ${displayedGenomes.length} genomes, ${refNameIndex.size} refNames`, [...refNameIndex.entries()].map(([k, v]) => `${k}: startIdx=${v.startIdx} count=${v.count}`))
 
   return { buffer: sortedBuf, instanceCount: n, refNameIndex }
@@ -284,6 +310,7 @@ export function computeRegionRenderParams(
   block: BaseBlock,
   viewOffsetPx: number,
   refNameIndex: RefNameIndex,
+  instanceBuffer?: ArrayBuffer,
 ) {
   const entry = refNameIndex.get(block.refName)
   if (!entry || entry.count === 0) {
@@ -294,6 +321,30 @@ export function computeRegionRenderParams(
   const bpRangeLen = block.end - block.start
   const regionScreenLeft = block.offsetPx - viewOffsetPx
   const regionScreenWidth = block.widthPx
+
+  // Debug: count how many instances actually overlap this block's bp range
+  if (instanceBuffer) {
+    const u32 = new Uint32Array(instanceBuffer)
+    const stride = INSTANCE_BYTE_SIZE / 4
+    let overlapping = 0
+    let before = 0
+    let after = 0
+    for (let i = entry.startIdx; i < entry.startIdx + entry.count; i++) {
+      const sBp = u32[i * stride]!
+      const eBp = u32[i * stride + 1]!
+      if (eBp <= block.start) {
+        before++
+      } else if (sBp >= block.end) {
+        after++
+      } else {
+        overlapping++
+      }
+    }
+    console.log(
+      `[computeRegionRenderParams] block ${block.refName}:${block.start}-${block.end}:`,
+      `total=${entry.count} overlapping=${overlapping} before=${before} after=${after}`,
+    )
+  }
 
   return {
     bpRangeHi,
