@@ -13,7 +13,7 @@ const MultiLGVSyntenyDisplayComponent = observer(
   }: {
     model: MultiLGVSyntenyDisplayModel
   }) {
-    const debouncedLoading = useDebounce(model.loading, 500)
+    const debouncedLoading = useDebounce(model.isLoading, 500)
 
     if (model.error) {
       return <ErrorMessage error={model.error} />

@@ -202,13 +202,15 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
     const rowPadding = rowHeight >= 6 ? 1 : 0
 
-    for (const block of contentBlocks) {
+    for (let i = 0; i < contentBlocks.length; i++) {
+      const block = contentBlocks[i]!
       const params = computeRegionRenderParams(
         block,
         viewOffsetPx,
         this.instanceData.refNameIndex,
       )
       if (!params) {
+        console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → no params (refName not in index)`)
         continue
       }
 
@@ -217,8 +219,11 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         params.regionScreenLeft + params.regionScreenWidth < 0 ||
         params.regionScreenLeft > logicalW
       ) {
+        console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → off-screen (left=${params.regionScreenLeft} width=${params.regionScreenWidth} logicalW=${logicalW})`)
         continue
       }
+
+      console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → drawing ${params.instanceCount} instances, screenLeft=${params.regionScreenLeft.toFixed(1)} screenW=${params.regionScreenWidth.toFixed(1)} bpRange=${params.bpRangeLen}`)
 
       this.writeUniforms(
         logicalW,

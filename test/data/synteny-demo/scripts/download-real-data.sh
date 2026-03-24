@@ -3,29 +3,13 @@
 # Usage: bash download-real-data.sh [output-dir]
 #
 # Datasets:
-# 1. plotsr Arabidopsis 4-way (Col-0, Ler, Cvi, Eri) - SyRI output + PAF + BEDPE
-# 2. PGGB chrM pangenome GFA (4 human genomes) - small GFA with P-lines
-# 3. HPRC minigraph rGFA (whole-genome, 850MB) - large-scale test
+# 1. PGGB chrM pangenome GFA (4 human genomes) - small GFA with P-lines
+# 2. ntSynt-viz great apes data
+# 3. HPRC minigraph rGFA (whole-genome, 850MB) - large-scale test (optional)
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUT_DIR="${1:-$(dirname "$SCRIPT_DIR")}"
-
-echo "=== Downloading plotsr Arabidopsis 4-way test data ==="
-PLOTSR_DIR="$OUT_DIR/plotsr"
-mkdir -p "$PLOTSR_DIR"
-
-PLOTSR_BASE="https://raw.githubusercontent.com/schneebergerlab/plotsr/master/example"
-for f in col_lersyri.filtered.out ler_cvisyri.filtered.out cvi_erisyri.filtered.out \
-         genomes.txt col_ler.syri.bedpe TAIR10_Filtered.chrlen ler.chrlen cvi.chrlen eri.chrlen; do
-  [ -f "$PLOTSR_DIR/$f" ] || curl -sL "$PLOTSR_BASE/$f" -o "$PLOTSR_DIR/$f"
-done
-
-PLOTSR_TEST="https://raw.githubusercontent.com/schneebergerlab/plotsr/master/test/test_data"
-for f in out.paf syri.out; do
-  [ -f "$PLOTSR_DIR/$f" ] || curl -sL "$PLOTSR_TEST/$f" -o "$PLOTSR_DIR/$f"
-done
-echo "  plotsr data: $(du -sh "$PLOTSR_DIR" | cut -f1)"
 
 echo "=== Downloading PGGB chrM pangenome GFA ==="
 GFA_DIR="$OUT_DIR/pggb-chrM"

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 
@@ -35,10 +36,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   }>({ text: '', open: false })
 
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { genomeRows, displayedGenomes, rowHeight, colorBy, height, snpBpPerPxThreshold } = model
-  const { width, bpPerPx, offsetPx } = view
-  const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-  const showSnps = snpBpPerPxThreshold > 0 && bpPerPx < snpBpPerPxThreshold
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -68,72 +65,100 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   // GPU path: upload geometry when features or colors change
   useEffect(() => {
-    if (ready && rendererRef.current?.isGpu) {
-      rendererRef.current.uploadGeometry(genomeRows, displayedGenomes, colorBy, showSnps)
+    if (!ready) {
+      return
     }
-  }, [ready, genomeRows, displayedGenomes, colorBy, showSnps])
+    return autorun(() => {
+      const renderer = rendererRef.current
+      if (renderer?.isGpu) {
+        const { genomeRows, displayedGenomes, colorBy, snpBpPerPxThreshold } =
+          model
+        const showSnps =
+          snpBpPerPxThreshold > 0 && view.bpPerPx < snpBpPerPxThreshold
+        renderer.uploadGeometry(
+          genomeRows,
+          displayedGenomes,
+          colorBy,
+          showSnps,
+        )
+      }
+    })
+  }, [ready, model, view])
 
-  // GPU path: render when view changes (scroll, zoom)
+  // GPU path: render when view changes (scroll, zoom) or new data arrives
   useEffect(() => {
-    if (ready && rendererRef.current?.isGpu) {
-      const contentBlocks = view.staticBlocks.contentBlocks
-      rendererRef.current.renderGpu(
-        contentBlocks,
-        offsetPx,
-        width,
-        height,
-        rowHeight,
-        labelW,
-      )
+    if (!ready) {
+      return
     }
-  }, [
-    ready,
-    genomeRows,
-    displayedGenomes,
-    colorBy,
-    width,
-    height,
-    rowHeight,
-    bpPerPx,
-    offsetPx,
-    labelW,
-    view,
-  ])
+    return autorun(() => {
+      const renderer = rendererRef.current
+      if (renderer?.isGpu) {
+        const { height, rowHeight, genomeRows } = model
+        // Track genomeRows so we re-render after new geometry is uploaded.
+        // Without this, zoom-out fetches upload new geometry but never
+        // trigger a render pass, leaving blank areas on screen.
+        console.log(
+          '[MultiSyntenyRendering] GPU render autorun fired, genomeRows size:',
+          genomeRows.size,
+        )
+        const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+        const contentBlocks = view.staticBlocks.contentBlocks
+        renderer.renderGpu(
+          contentBlocks,
+          view.offsetPx,
+          view.width,
+          height,
+          rowHeight,
+          labelW,
+        )
+      }
+    })
+  }, [ready, model, view])
 
   // Canvas2D fallback path
   useEffect(() => {
-    if (ready && rendererRef.current && !rendererRef.current.isGpu) {
-      const bpToPx = (refName: string, coord: number) => {
-        const result = view.bpToPx({ refName, coord })
-        if (result === undefined) {
-          return undefined
-        }
-        return result.offsetPx - offsetPx
-      }
-      rendererRef.current.renderCanvas(genomeRows, displayedGenomes, {
-        width,
-        height,
-        rowHeight,
-        bpToPx,
-        colorBy,
-        labelW,
-        showSnps,
-      })
+    if (!ready) {
+      return
     }
-  }, [
-    ready,
-    genomeRows,
-    displayedGenomes,
-    width,
-    height,
-    rowHeight,
-    bpPerPx,
-    offsetPx,
-    colorBy,
-    labelW,
-    showSnps,
-    view,
-  ])
+    return autorun(() => {
+      const renderer = rendererRef.current
+      if (renderer && !renderer.isGpu) {
+        const {
+          genomeRows,
+          displayedGenomes,
+          colorBy,
+          height,
+          rowHeight,
+          snpBpPerPxThreshold,
+        } = model
+        const { width, bpPerPx, offsetPx } = view
+        const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+        const showSnps =
+          snpBpPerPxThreshold > 0 && bpPerPx < snpBpPerPxThreshold
+        const bpToPx = (refName: string, coord: number) => {
+          const result = view.bpToPx({ refName, coord })
+          if (result === undefined) {
+            return undefined
+          }
+          return result.offsetPx - offsetPx
+        }
+        renderer.renderCanvas(genomeRows, displayedGenomes, {
+          width,
+          height,
+          rowHeight,
+          bpToPx,
+          colorBy,
+          labelW,
+          showSnps,
+        })
+      }
+    })
+  }, [ready, model, view])
+
+  // Read observables during render for tooltip/style (observer tracks these)
+  const { genomeRows, displayedGenomes, rowHeight, height } = model
+  const { width, bpPerPx, offsetPx } = view
+  const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {

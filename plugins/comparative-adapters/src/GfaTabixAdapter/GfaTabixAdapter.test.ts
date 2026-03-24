@@ -470,6 +470,166 @@ describe('assemblyNameMap remapping', () => {
   })
 })
 
+describe('getSources', () => {
+  it('returns genome names from header', async () => {
+    const adapter = makeAdapter(prefix)
+    const sources = await adapter.getSources()
+    expect(sources.map(s => s.name).sort()).toEqual(
+      ['ref#1', 'sample1#1', 'sample2#1', 'sample3#1'].sort(),
+    )
+  })
+
+  it('returns remapped names when assemblyNameMap is set', async () => {
+    const adapter = makeAdapter(prefix, {
+      assemblyNameMap: { 'ref#1': 'myRef', 'sample1#1': 'sOne' },
+    })
+    const sources = await adapter.getSources()
+    const names = sources.map(s => s.name)
+    expect(names).toContain('myRef')
+    expect(names).toContain('sOne')
+    expect(names).not.toContain('ref#1')
+    expect(names).not.toContain('sample1#1')
+    expect(names).toContain('sample2#1')
+  })
+
+  it('genomeRows keys match getSources names', async () => {
+    const adapter = makeAdapter(prefix)
+    const sources = await adapter.getSources()
+    const sourceNames = new Set(sources.map(s => s.name))
+
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    for (const genomeName of result.genomeRows.keys()) {
+      expect(sourceNames.has(genomeName)).toBe(true)
+    }
+  })
+
+  it('genomeRows keys match getSources names with assemblyNameMap', async () => {
+    const adapter = makeAdapter(prefix, {
+      assemblyNameMap: {
+        'sample1#1': 'sOne',
+        'sample2#1': 'sTwo',
+        'sample3#1': 'sThree',
+      },
+    })
+    const sources = await adapter.getSources()
+    const sourceNames = new Set(sources.map(s => s.name))
+
+    // Query uses the original assembly name (assemblyNameMap only remaps
+    // output genome names, not the query assembly)
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    for (const genomeName of result.genomeRows.keys()) {
+      expect(sourceNames.has(genomeName)).toBe(true)
+    }
+    expect(result.genomeRows.has('sOne')).toBe(true)
+    expect(result.genomeRows.has('sample1#1')).toBe(false)
+  })
+})
+
+describe('getSources HPRC chrM', () => {
+  it('returns all 44 genomes', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+    const sources = await adapter.getSources()
+    expect(sources.length).toBe(44)
+    expect(sources.map(s => s.name)).toContain('GRCh38#0')
+    expect(sources.map(s => s.name)).toContain('CHM13#0')
+  })
+
+  it('genomeRows keys are a subset of getSources names', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+    const sources = await adapter.getSources()
+    const sourceNames = new Set(sources.map(s => s.name))
+
+    const result = await adapter.getMultiPairFeatures({
+      refName: 'chrM',
+      start: 0,
+      end: 16569,
+      assemblyName: 'GRCh38#0',
+    })
+
+    for (const genomeName of result.genomeRows.keys()) {
+      expect(sourceNames.has(genomeName)).toBe(true)
+    }
+  })
+})
+
+describe('parseSegmentsBytes', () => {
+  it('parses numeric path name indices correctly', () => {
+    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
+    const input = '100\t2\t5000\t300\t+\n200\t0\t6000\t400\t-\n'
+    const bytes = new TextEncoder().encode(input)
+    const records = parseSegmentsBytes(bytes)
+
+    expect(records.length).toBe(2)
+    expect(records[0]).toEqual({
+      segOrd: 100,
+      pathNameIdx: 2,
+      offset: 5000,
+      segLen: 300,
+      orient: 43, // '+'
+    })
+    expect(records[1]).toEqual({
+      segOrd: 200,
+      pathNameIdx: 0,
+      offset: 6000,
+      segLen: 400,
+      orient: 45, // '-'
+    })
+  })
+
+  it('skips comment lines starting with #', () => {
+    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
+    const input = '#header line\n0\t1\t100\t50\t+\n'
+    const bytes = new TextEncoder().encode(input)
+    const records = parseSegmentsBytes(bytes)
+
+    expect(records.length).toBe(1)
+    expect(records[0]!.segOrd).toBe(0)
+  })
+
+  it('handles empty input', () => {
+    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
+    const bytes = new Uint8Array(0)
+    const records = parseSegmentsBytes(bytes)
+    expect(records.length).toBe(0)
+  })
+
+  it('handles input with only comment lines', () => {
+    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
+    const input = '#genomes=a,b\n#sizes=a#chr1:100\n'
+    const bytes = new TextEncoder().encode(input)
+    const records = parseSegmentsBytes(bytes)
+    expect(records.length).toBe(0)
+  })
+
+  it('handles single record without trailing newline', () => {
+    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
+    const input = '42\t3\t7777\t999\t+'
+    const bytes = new TextEncoder().encode(input)
+    const records = parseSegmentsBytes(bytes)
+
+    expect(records.length).toBe(1)
+    expect(records[0]).toEqual({
+      segOrd: 42,
+      pathNameIdx: 3,
+      offset: 7777,
+      segLen: 999,
+      orient: 43,
+    })
+  })
+})
+
 // Note: aln.bed.gz e2e tests removed — the Rust converter does not produce
 // aln files. The adapter's aln code path is tested via pre-generated fixtures
 // if available.

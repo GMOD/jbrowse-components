@@ -74,18 +74,6 @@ const syntenyConfigs: [string, string][] = [
     'Multi-genome volvox synteny (LGV, multi-pair)',
   ],
   [
-    'test_data/arabidopsis_synteny/config.json',
-    'Arabidopsis 4-way synteny (Col-0, Ler, Cvi, Eri)',
-  ],
-  [
-    'test_data/arabidopsis_synteny/config_pggb_chr1.json',
-    'Arabidopsis chr1 pangenome (PGGB, 4 ecotypes, GFA tabix)',
-  ],
-  [
-    'test_data/arabidopsis_synteny/config_chrM_pangenome.json',
-    'Human chrM pangenome (4 genomes, GFA tabix)',
-  ],
-  [
     'test_data/hprc/config_hprc_chrM.json',
     'HPRC chrM pangenome (44 haplotypes, minigraph-cactus)',
   ],

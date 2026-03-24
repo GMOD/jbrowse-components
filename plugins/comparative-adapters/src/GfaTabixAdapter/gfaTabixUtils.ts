@@ -282,12 +282,15 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const pathNames = sizesMatch
-      ? sizesMatch[1]!.split(',').map(entry => {
-          const colonIdx = entry.lastIndexOf(':')
-          return colonIdx >= 0 ? entry.slice(0, colonIdx) : entry
-        })
-      : []
+    const pathsMatch = /paths=([^\n]+)/.exec(header)
+    const pathNames = pathsMatch
+      ? pathsMatch[1]!.split(',')
+      : sizesMatch
+        ? sizesMatch[1]!.split(',').map(entry => {
+            const colonIdx = entry.lastIndexOf(':')
+            return colonIdx >= 0 ? entry.slice(0, colonIdx) : entry
+          })
+        : []
 
     return {
       genomes,
@@ -580,6 +583,23 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     const refSegments: SegRecord[] = []
     const otherSegments = new Map<number, SegRecord[]>()
 
+    console.log(
+      `[getMultiPairFeaturesFromSegments] refPathName=${refPathName} refPathIdx=${refPathIdx} pathNames.length=${pathNames.length} allSegs=${allSegs.length} ordinalRanges=${ordinalRanges.length}`,
+    )
+    if (allSegs.length > 0) {
+      const sample = allSegs.slice(0, 3)
+      console.log(
+        `[getMultiPairFeaturesFromSegments] sample segs:`,
+        sample.map(s => `ord=${s.segOrd} pathIdx=${s.pathNameIdx} off=${s.offset} len=${s.segLen}`),
+      )
+      const uniquePathIdxs = new Set(allSegs.map(s => s.pathNameIdx))
+      console.log(
+        `[getMultiPairFeaturesFromSegments] unique pathNameIdx values:`,
+        [...uniquePathIdxs].slice(0, 10),
+        `(${uniquePathIdxs.size} total)`,
+      )
+    }
+
     for (const rec of allSegs) {
       if (rec.pathNameIdx === refPathIdx) {
         refSegments.push(rec)
@@ -590,6 +610,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         otherSegments.get(rec.pathNameIdx)!.push(rec)
       }
     }
+
+    console.log(
+      `[getMultiPairFeaturesFromSegments] refSegments=${refSegments.length} otherSegments groups=${otherSegments.size}`,
+    )
 
     const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
 
@@ -762,6 +786,19 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         }
       }
     }
+
+    let fwdCount = 0
+    let revCount = 0
+    for (const features of genomeRows.values()) {
+      for (const f of features) {
+        if (f.strand === -1) {
+          revCount++
+        } else {
+          fwdCount++
+        }
+      }
+    }
+    console.log(`[getMultiPairFeaturesFromSegments] strand distribution: fwd=${fwdCount} rev=${revCount} (${(revCount / (fwdCount + revCount) * 100).toFixed(1)}% inversions)`)
 
     return genomeRows
   }

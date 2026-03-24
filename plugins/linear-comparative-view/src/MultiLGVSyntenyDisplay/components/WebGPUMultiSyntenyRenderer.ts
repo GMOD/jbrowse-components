@@ -169,21 +169,25 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
     // Each region needs its own submit because writeBuffer is a queue
     // operation that must complete before the render pass reads the uniform
-    for (const block of contentBlocks) {
+    for (let i = 0; i < contentBlocks.length; i++) {
+      const block = contentBlocks[i]!
       const params = computeRegionRenderParams(
         block,
         viewOffsetPx,
         this.instanceData.refNameIndex,
       )
       if (!params) {
+        console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → no params (refName not in index)`)
         continue
       }
       if (
         params.regionScreenLeft + params.regionScreenWidth < 0 ||
         params.regionScreenLeft > logicalW
       ) {
+        console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → off-screen`)
         continue
       }
+      console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → drawing ${params.instanceCount} instances, screenLeft=${params.regionScreenLeft.toFixed(1)} screenW=${params.regionScreenWidth.toFixed(1)} bpRange=${params.bpRangeLen}`)
 
       this.writeUniforms(
         device,

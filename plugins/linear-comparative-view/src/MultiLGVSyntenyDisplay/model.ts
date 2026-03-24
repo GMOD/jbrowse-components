@@ -2,27 +2,35 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingTrack,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
-import { doAfterAttach } from './afterAttach.ts'
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+import type { MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/MultiPairGetFeatures.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  FetchContext,
+  LinearGenomeViewModel,
+  MultiRegionRegion as Region,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -47,24 +55,22 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       'MultiLGVSyntenyDisplay',
       BaseDisplay,
       TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
       types.model({
         type: types.literal('MultiLGVSyntenyDisplay'),
         configuration: ConfigurationReference(schema),
         colorBy: types.optional(types.string, 'strand'),
         selectedGenomes: types.optional(types.array(types.string), []),
-        // 0 = auto (fit rows to display height), >0 = manual px per row
         rowHeightSetting: types.optional(types.number, 0),
-        // bpPerPx threshold below which SNP/CIGAR details are fetched and drawn
-        // 0 = off, higher = show SNPs at more zoomed-out levels
         snpBpPerPxThreshold: types.optional(types.number, 100),
       }),
     )
     .volatile(() => ({
       genomeRows: new Map<string, MultiPairFeature[]>(),
       allGenomeNames: [] as string[],
-      loading: false,
-      error: undefined as unknown,
       contextMenuFeature: undefined as Feature | undefined,
+      metadataFetched: false,
+      statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
       get displayedGenomes() {
@@ -97,9 +103,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names
       },
-      setLoading(flag: boolean) {
-        self.loading = flag
-      },
       setColorBy(value: string) {
         self.colorBy = value
       },
@@ -112,8 +115,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
       },
-      setError(e: unknown) {
-        self.error = e
+      setStatusMessage(msg?: string) {
+        self.statusMessage = msg
+      },
+      clearDisplaySpecificData() {
+        self.genomeRows = new Map()
+        self.allGenomeNames = []
+        self.metadataFetched = false
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -132,11 +140,100 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         session.setSelection(feature)
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        doAfterAttach(self)
-      },
-    }))
+    .actions(self => {
+      const superAfterAttach = self.afterAttach
+
+      return {
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+          self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
+            const track = getContainingTrack(self)
+            const adapterConfig = getConf(track, 'adapter')
+            const session = getSession(self)
+            const sessionId = getRpcSessionId(self)
+            const { rpcManager } = session
+            const view = getContainingView(self) as LGV
+
+            const regions = needed.map(n => n.region)
+
+            console.log(
+              '[MultiSyntenyFetch] Starting RPC, bpPerPx:',
+              view.bpPerPx,
+              'regions:',
+              regions.map(r => `${r.refName}:${r.start}-${r.end}`),
+            )
+
+            const result: MultiPairGetFeaturesResult = await rpcManager.call(
+              sessionId,
+              'MultiPairGetFeatures',
+              {
+                adapterConfig,
+                regions,
+                bpPerPx: view.bpPerPx,
+                sessionId,
+                stopToken: ctx.stopToken,
+                fetchMetadata: !self.metadataFetched,
+                statusCallback: (msg: string) => {
+                  if (isAlive(self)) {
+                    self.setStatusMessage(msg)
+                  }
+                },
+              },
+            )
+
+            if (ctx.isStale()) {
+              console.log('[MultiSyntenyFetch] Discarding stale result')
+              return
+            }
+
+            if (result.chromSizes && session.addAssembly) {
+              const { assemblyManager } = session
+              for (const [genome, chromRegions] of result.chromSizes) {
+                if (!assemblyManager.get(genome)) {
+                  session.addAssembly({
+                    name: genome,
+                    sequence: {
+                      type: 'ReferenceSequenceTrack',
+                      trackId: `${genome.replaceAll('#', '_')}_refseq`,
+                      adapter: {
+                        type: 'FromConfigRegionsAdapter',
+                        features: chromRegions.map((r, i) => ({
+                          uniqueId: `${genome}-${r.refName}-${i}`,
+                          refName: r.refName,
+                          start: 0,
+                          end: r.length,
+                        })),
+                      },
+                    },
+                  })
+                }
+              }
+            }
+
+            if (result.sources) {
+              self.metadataFetched = true
+              self.setAllGenomeNames(result.sources.map(s => s.name))
+            }
+
+            const genomeRowsMap = new Map(result.genomeRows)
+            console.log(
+              '[MultiSyntenyFetch] RPC complete, genomeRows keys:',
+              [...genomeRowsMap.keys()],
+              'total features:',
+              [...genomeRowsMap.values()].reduce((s, f) => s + f.length, 0),
+            )
+            self.setGenomeRows(genomeRowsMap)
+
+            for (const { region, regionNumber } of needed) {
+              self.setLoadedRegionForRegion(regionNumber, region)
+            }
+          })
+        },
+
+        afterAttach() {
+          superAfterAttach()
+        },
+      }
+    })
     .views(self => ({
       contextMenuItems() {
         const feature = self.contextMenuFeature

@@ -183,6 +183,7 @@ fn main() {
     // Finish pos.bed.gz
     pos_w.write_all(header.as_bytes()).unwrap();
     pos_w.write_all(sizes_header.as_bytes()).unwrap();
+    pos_w.write_all(paths_header.as_bytes()).unwrap();
     drop(pos_w);
     assert!(
         pos_proc.wait().map(|s| s.success()).unwrap_or(false),

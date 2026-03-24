@@ -275,7 +275,7 @@ export function prepareMultiSyntenyGpuData(
     })
   }
 
-  console.log(`[multiSyntenyGpuData] ${n} instances, ${displayedGenomes.length} genomes, ${refNameIndex.size} refNames`)
+  console.log(`[multiSyntenyGpuData] ${n} instances, ${displayedGenomes.length} genomes, ${refNameIndex.size} refNames`, [...refNameIndex.entries()].map(([k, v]) => `${k}: startIdx=${v.startIdx} count=${v.count}`))
 
   return { buffer: sortedBuf, instanceCount: n, refNameIndex }
 }

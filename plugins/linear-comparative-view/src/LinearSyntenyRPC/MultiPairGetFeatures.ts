@@ -8,11 +8,7 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 interface MultiPairAdapter {
   getMultiPairFeatures(
     query: Region,
-    opts: {
-      bpPerPx?: number
-      snpBpPerPxThreshold?: number
-      stopToken?: StopToken
-    },
+    opts: { bpPerPx?: number; stopToken?: StopToken },
   ): Promise<{
     genomeRows: Map<string, MultiPairFeature[]>
   }>
