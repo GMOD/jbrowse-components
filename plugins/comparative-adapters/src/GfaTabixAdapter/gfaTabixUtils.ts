@@ -1,4 +1,3 @@
-import { BgzfFilehandle } from '@gmod/bgzf-filehandle'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -9,9 +8,15 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
+import {
+  loadAlnIndex,
+  queryAlnBin,
+} from '../binaryAlnReader.ts'
+import { binaryCsToCigar, decodeBinaryCs } from '../binaryCs.ts'
 import { csToCigar } from '../csUtils.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
+import type { AlnIndex } from '../binaryAlnReader.ts'
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -31,7 +36,7 @@ export interface SegRecord {
 }
 
 export interface SegmentsShard {
-  bgzf: BgzfFilehandle
+  filehandle: GenericFilehandle
   idxFile: GenericFilehandle
   idxPromise?: Promise<BigUint64Array>
 }
@@ -43,6 +48,7 @@ interface SetupResult {
   pathNames: string[]
   alnAvailable: boolean
   alnRefNames?: Set<string>
+  alnBinAvailable: boolean
 }
 
 export function parseGfaPathName(path: string) {
@@ -56,61 +62,24 @@ export function parseGfaPathName(path: string) {
   return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
 }
 
-// Parse an integer directly from ASCII bytes, avoiding string allocation.
-function parseIntBytes(buf: Uint8Array, start: number, end: number) {
-  let n = 0
-  for (let i = start; i < end; i++) {
-    n = n * 10 + buf[i]! - 48
-  }
-  return n
-}
+const RECORD_SIZE = 15
 
-const TAB = 9
-const NEWLINE = 10
-const HASH = 35
 const ORIENT_FWD = 0x2b // '+'
 
-export function parseSegmentsBytes(bytes: Uint8Array) {
-  const records: SegRecord[] = []
-  const len = bytes.length
-  let lineStart = 0
-
-  while (lineStart < len) {
-    let lineEnd = lineStart
-    while (lineEnd < len && bytes[lineEnd] !== NEWLINE) {
-      lineEnd++
+export function parseSegmentsBinary(buf: Uint8Array) {
+  const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength)
+  const count = Math.floor(buf.byteLength / RECORD_SIZE)
+  const records = new Array<SegRecord>(count)
+  for (let i = 0; i < count; i++) {
+    const off = i * RECORD_SIZE
+    records[i] = {
+      segOrd: dv.getUint32(off, true),
+      pathNameIdx: dv.getUint16(off + 4, true),
+      offset: dv.getUint32(off + 6, true),
+      segLen: dv.getUint32(off + 10, true),
+      orient: buf[buf.byteOffset + off + 14]!,
     }
-
-    if (lineEnd > lineStart && bytes[lineStart] !== HASH) {
-      let t1 = lineStart
-      while (t1 < lineEnd && bytes[t1] !== TAB) {
-        t1++
-      }
-      let t2 = t1 + 1
-      while (t2 < lineEnd && bytes[t2] !== TAB) {
-        t2++
-      }
-      let t3 = t2 + 1
-      while (t3 < lineEnd && bytes[t3] !== TAB) {
-        t3++
-      }
-      let t4 = t3 + 1
-      while (t4 < lineEnd && bytes[t4] !== TAB) {
-        t4++
-      }
-
-      records.push({
-        segOrd: parseIntBytes(bytes, lineStart, t1),
-        pathNameIdx: parseIntBytes(bytes, t1 + 1, t2),
-        offset: parseIntBytes(bytes, t2 + 1, t3),
-        segLen: parseIntBytes(bytes, t3 + 1, t4),
-        orient: bytes[t4 + 1]!,
-      })
-    }
-
-    lineStart = lineEnd + 1
   }
-
   return records
 }
 
@@ -126,7 +95,7 @@ export async function loadSegmentsIndex(shard: SegmentsShard) {
 }
 
 
-// Merge thresholds for combining nearby byte ranges into single bgzf reads
+// Merge thresholds for combining nearby byte ranges into single reads
 const MERGE_GAP = 65_000
 const MAX_MERGED_BYTES = 20 * 1024 * 1024
 
@@ -136,7 +105,6 @@ export async function getSegmentsForOrdinalsFromShard(
 ) {
   const idx = await loadSegmentsIndex(shard)
 
-  // Convert sorted ordinal ranges directly into merged byte ranges.
   const merged: { start: number; end: number }[] = []
   for (const [lo, hi] of ordinalRanges) {
     if (lo >= 0 && hi + 1 < idx.length) {
@@ -160,17 +128,14 @@ export async function getSegmentsForOrdinalsFromShard(
   const results = await Promise.all(
     merged.map(async range => {
       const length = range.end - range.start
-      console.log(
-        `  fetch bgzf bytes ${range.start}-${range.end} (${(length / 1024 / 1024).toFixed(2)} MB)`,
-      )
       const t0 = performance.now()
-      const bytes = await shard.bgzf.read(length, range.start)
+      const bytes = await shard.filehandle.read(length, range.start)
       const t1 = performance.now()
-      const records = parseSegmentsBytes(bytes)
+      const records = parseSegmentsBinary(bytes)
       const t2 = performance.now()
       console.log(
-        `  bgzf.read ${(t1 - t0).toFixed(0)}ms, parse ${(t2 - t1).toFixed(0)}ms,` +
-          ` decoded ${(bytes.length / 1024 / 1024).toFixed(2)} MB, ${records.length} records`,
+        `  read ${(t1 - t0).toFixed(0)}ms, parse ${(t2 - t1).toFixed(0)}ms,` +
+          ` ${(length / 1024 / 1024).toFixed(2)} MB, ${records.length} records`,
       )
       return records
     }),
@@ -228,6 +193,9 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
   protected posFile: TabixIndexedFile
   protected alnFile?: TabixIndexedFile
+  protected alnBinFile?: GenericFilehandle
+  protected alnBinIdxFile?: GenericFilehandle
+  private alnIndexP?: Promise<AlnIndex>
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -259,6 +227,19 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         tbiFilehandle: openLocation(alnIdxLoc, pm),
         chunkCacheSize: 50 * 2 ** 20,
       })
+    }
+
+    const alnBinLoc = this.getConf('alnBinLocation') as
+      | FileLocation
+      | undefined
+    const hasAlnBinLoc =
+      alnBinLoc &&
+      (('uri' in alnBinLoc && alnBinLoc.uri !== '') ||
+        ('localPath' in alnBinLoc && alnBinLoc.localPath !== ''))
+    if (hasAlnBinLoc) {
+      this.alnBinFile = openLocation(alnBinLoc, pm)
+      const alnBinIdxLoc = this.getConf('alnBinIdxLocation') as FileLocation
+      this.alnBinIdxFile = openLocation(alnBinIdxLoc, pm)
     }
   }
 
@@ -328,6 +309,18 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
+    let alnBinAvailable = false
+    if (this.alnBinIdxFile) {
+      try {
+        const idx = await this.loadAlnBinIndex()
+        if (idx.genomeNames.length > 0) {
+          alnBinAvailable = true
+        }
+      } catch {
+        // binary aln not available
+      }
+    }
+
     const pathsMatch = /paths=([^\n]+)/.exec(header)
     const pathNames = pathsMatch
       ? pathsMatch[1]!.split(',')
@@ -345,6 +338,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       pathNames,
       alnAvailable,
       alnRefNames,
+      alnBinAvailable,
     }
   }
 
@@ -442,15 +436,27 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     return genomes.map(g => ({ name: this.remapGenome(g) }))
   }
 
+  private async loadAlnBinIndex() {
+    if (!this.alnIndexP) {
+      this.alnIndexP = loadAlnIndex(this.alnBinIdxFile!)
+    }
+    return this.alnIndexP
+  }
+
   async getMultiPairFeatures(
     query: Region,
     opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
   ) {
-    const { alnAvailable } = await this.setup()
+    const { alnAvailable, alnBinAvailable } = await this.setup()
     checkStopToken(opts.stopToken)
-    const genomeRows = alnAvailable
-      ? await this.getMultiPairFeaturesFromAln(query, opts)
-      : await this.getMultiPairFeaturesFromSegments(query, opts)
+    let genomeRows: Map<string, MultiPairFeature[]>
+    if (alnBinAvailable) {
+      genomeRows = await this.getMultiPairFeaturesFromAlnBin(query, opts)
+    } else if (alnAvailable) {
+      genomeRows = await this.getMultiPairFeaturesFromAln(query, opts)
+    } else {
+      genomeRows = await this.getMultiPairFeaturesFromSegments(query, opts)
+    }
 
     return { genomeRows }
   }
@@ -630,6 +636,96 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         })
       },
     })
+
+    return genomeRows
+  }
+
+  private async getMultiPairFeaturesFromAlnBin(
+    query: Region,
+    opts: { bpPerPx?: number; stopToken?: StopToken } = {},
+  ) {
+    const genomeRows = new Map<string, MultiPairFeature[]>()
+    const { refName, start, end, assemblyName } = query
+
+    const alnIndex = await this.loadAlnBinIndex()
+
+    // Resolve the chrom name in the binary index
+    const qualified = `${assemblyName}#${refName}`
+    let chromName: string | undefined
+    if (alnIndex.chromNames.includes(qualified)) {
+      chromName = qualified
+    } else if (alnIndex.chromNames.includes(refName)) {
+      chromName = refName
+    } else {
+      // Try partial match — the aln.bed.gz format uses full path names
+      // like "assembly#hap#chr" as chrom names
+      chromName = alnIndex.chromNames.find(
+        n => n.endsWith(`#${refName}`) || n === refName,
+      )
+    }
+    if (!chromName) {
+      return genomeRows
+    }
+
+    checkStopToken(opts.stopToken)
+    const records = await queryAlnBin(
+      this.alnBinFile!,
+      alnIndex,
+      chromName,
+      start,
+      end,
+    )
+
+    // At zoomed-out views (bpPerPx > 50), skip expensive CIGAR/CS decoding
+    const decodeCigar = !opts.bpPerPx || opts.bpPerPx < 50
+
+    for (let i = 0; i < records.length; i++) {
+      const rec = records[i]!
+      const genomeName = this.remapGenome(
+        alnIndex.genomeNames[rec.queryGenomeIdx] ??
+          `genome-${rec.queryGenomeIdx}`,
+      )
+      const mateRefName =
+        alnIndex.chromNames[rec.mateChromIdx] ??
+        `chrom-${rec.mateChromIdx}`
+
+      // Parse the mate ref name to extract just the refName part
+      const { refName: parsedMateRefName } =
+        parseGfaPathName(mateRefName)
+
+      if (!genomeRows.has(genomeName)) {
+        genomeRows.set(genomeName, [])
+      }
+
+      let cigar: string | undefined
+      let cs: string | undefined
+      if (decodeCigar && rec.csData.length > 0) {
+        const cigarOps = binaryCsToCigar(rec.csData)
+        const opChars = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
+        cigar = ''
+        for (const packed of cigarOps) {
+          cigar += `${packed >>> 4}${opChars[packed & 0xf]}`
+        }
+        cs = decodeBinaryCs(rec.csData)
+      }
+
+      genomeRows.get(genomeName)!.push({
+        queryGenome: genomeName,
+        origRefName: refName,
+        start: rec.refStart,
+        end: rec.refEnd,
+        mateStart: rec.mateStart,
+        mateEnd: rec.mateEnd,
+        mateRefName: parsedMateRefName,
+        strand: rec.strand,
+        syriType: undefined,
+        identity: rec.identity,
+        featureId: `aln-bin-${i}`,
+        segmentId: undefined,
+        cigar,
+        cs,
+      })
+    }
 
     return genomeRows
   }

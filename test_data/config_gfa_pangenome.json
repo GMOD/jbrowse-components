@@ -42,14 +42,10 @@
           }
         },
         "segmentsLocation": {
-          "uri": "volvox/volvox_pangenome.segments.gz",
+          "uri": "volvox/volvox_pangenome.segments.bin",
           "locationType": "UriLocation"
         },
-        "segmentsGziLocation": {
-          "uri": "volvox/volvox_pangenome.segments.gz.gzi",
-          "locationType": "UriLocation"
-        },
-        "segmentsIdxLocation": {
+"segmentsIdxLocation": {
           "uri": "volvox/volvox_pangenome.segments.idx",
           "locationType": "UriLocation"
         },
@@ -90,14 +86,10 @@
           }
         },
         "segmentsLocation": {
-          "uri": "volvox/volvox_pangenome.segments.gz",
+          "uri": "volvox/volvox_pangenome.segments.bin",
           "locationType": "UriLocation"
         },
-        "segmentsGziLocation": {
-          "uri": "volvox/volvox_pangenome.segments.gz.gzi",
-          "locationType": "UriLocation"
-        },
-        "segmentsIdxLocation": {
+"segmentsIdxLocation": {
           "uri": "volvox/volvox_pangenome.segments.idx",
           "locationType": "UriLocation"
         }

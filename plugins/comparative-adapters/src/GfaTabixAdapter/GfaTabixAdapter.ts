@@ -1,4 +1,3 @@
-import { BgzfFilehandle } from '@gmod/bgzf-filehandle'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import {
@@ -24,14 +23,10 @@ export default class GfaTabixAdapter extends BaseGfaTabixAdapter {
     const pm = this.pluginManager
 
     const segmentsLoc = this.getConf('segmentsLocation') as FileLocation
-    const segmentsGziLoc = this.getConf('segmentsGziLocation') as FileLocation
     const segmentsIdxLoc = this.getConf('segmentsIdxLocation') as FileLocation
 
     this.shard = {
-      bgzf: new BgzfFilehandle({
-        filehandle: openLocation(segmentsLoc, pm),
-        gziFilehandle: openLocation(segmentsGziLoc, pm),
-      }),
+      filehandle: openLocation(segmentsLoc, pm),
       idxFile: openLocation(segmentsIdxLoc, pm),
     }
   }

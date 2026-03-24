@@ -88,11 +88,7 @@ describe('ShardedGfaTabixAdapter round-trip', () => {
             },
           },
           segmentsLocation: {
-            localPath: `${combinedPrefix}.segments.gz`,
-            locationType: 'LocalPathLocation',
-          },
-          segmentsGziLocation: {
-            localPath: `${combinedPrefix}.segments.gz.gzi`,
+            localPath: `${combinedPrefix}.segments.bin`,
             locationType: 'LocalPathLocation',
           },
           segmentsIdxLocation: {

@@ -1,4 +1,3 @@
-import { BgzfFilehandle } from '@gmod/bgzf-filehandle'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import {
@@ -65,13 +64,7 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
           : { uri: path, locationType: 'UriLocation' }
 
       const shard: SegmentsShard = {
-        bgzf: new BgzfFilehandle({
-          filehandle: openLocation(makeLocation(`${shardBase}.gz`), pm),
-          gziFilehandle: openLocation(
-            makeLocation(`${shardBase}.gz.gzi`),
-            pm,
-          ),
-        }),
+        filehandle: openLocation(makeLocation(`${shardBase}.bin`), pm),
         idxFile: openLocation(makeLocation(`${shardBase}.idx`), pm),
       }
       this.genomeShardsCache.set(genome, shard)

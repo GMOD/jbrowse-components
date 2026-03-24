@@ -1,22 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { autorun, reaction } from 'mobx'
 import { observer } from 'mobx-react'
-import {
-  Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Tooltip,
-  IconButton,
-  ToggleButton,
-  LinearProgress,
-} from '@mui/material'
-import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import ZoomOutIcon from '@mui/icons-material/ZoomOut'
-import CropFreeIcon from '@mui/icons-material/CropFree'
-import DeleteIcon from '@mui/icons-material/Delete'
-import LinearScaleIcon from '@mui/icons-material/LinearScale'
+import { Typography, LinearProgress } from '@mui/material'
 
 import {
   buildGeometry,
@@ -25,11 +10,11 @@ import {
 } from '../../renderer/GeometryBuilder.ts'
 import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
 import { findHoveredNode, findHoveredEdge } from '../../util/hitDetection.ts'
+import GraphToolbar from './GraphToolbar.tsx'
 
 import type { GraphGenomeViewModel } from '../model.ts'
-import type { ColorScheme } from '../../types.ts'
 
-const CANVAS_HEIGHT = 600
+export const CANVAS_HEIGHT = 600
 const HOVER_BRIGHTEN = 1.4
 const SELECT_BRIGHTEN = 1.6
 const VIEWPORT_DEBOUNCE_MS = 150
@@ -78,18 +63,6 @@ function computeViewportBounds(model: GraphGenomeViewModel) {
     maxY: maxY + h * padding,
   }
 }
-
-const ZoomDisplay = observer(function ZoomDisplay({
-  model,
-}: {
-  model: GraphGenomeViewModel
-}) {
-  return (
-    <Typography variant="body2" style={{ marginLeft: 8 }}>
-      {model.zoomPercent}
-    </Typography>
-  )
-})
 
 const HoverTooltips = observer(function HoverTooltips({
   model,
@@ -491,103 +464,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
   return (
     <div style={{ position: 'relative' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '4px 8px',
-          borderBottom: '1px solid #ddd',
-          flexWrap: 'wrap',
-        }}
-      >
-        <FormControl size="small" style={{ minWidth: 120 }}>
-          <InputLabel>Color</InputLabel>
-          <Select
-            value={model.colorScheme}
-            label="Color"
-            onChange={e => model.setColorScheme(e.target.value as ColorScheme)}
-          >
-            <MenuItem value="uniform">Uniform</MenuItem>
-            <MenuItem value="random">Random</MenuItem>
-            <MenuItem value="depth">Depth</MenuItem>
-            <MenuItem value="gc-content">GC Content</MenuItem>
-            <MenuItem value="grey">Grey</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" style={{ minWidth: 100 }}>
-          <InputLabel>Quality</InputLabel>
-          <Select
-            value={model.layoutQuality}
-            label="Quality"
-            onChange={e => {
-              model.setLayoutQuality(Number(e.target.value))
-              model.recomputeLayout()
-            }}
-          >
-            <MenuItem value={0}>Lowest</MenuItem>
-            <MenuItem value={1}>Low</MenuItem>
-            <MenuItem value={2}>Medium</MenuItem>
-            <MenuItem value={3}>High</MenuItem>
-            <MenuItem value={4}>Highest</MenuItem>
-          </Select>
-        </FormControl>
-
-        <Tooltip title="Linear layout">
-          <ToggleButton
-            size="small"
-            value="linear"
-            selected={model.linearLayout}
-            onChange={() => {
-              model.setLinearLayout(!model.linearLayout)
-              model.recomputeLayout()
-            }}
-          >
-            <LinearScaleIcon />
-          </ToggleButton>
-        </Tooltip>
-
-        <Tooltip title="Zoom in">
-          <IconButton
-            size="small"
-            onClick={() => model.zoom(1.5, model.width / 2, CANVAS_HEIGHT / 2)}
-          >
-            <ZoomInIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Zoom out">
-          <IconButton
-            size="small"
-            onClick={() =>
-              model.zoom(1 / 1.5, model.width / 2, CANVAS_HEIGHT / 2)
-            }
-          >
-            <ZoomOutIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Zoom to fit">
-          <IconButton
-            size="small"
-            onClick={() => model.zoomToFit(CANVAS_HEIGHT)}
-          >
-            <CropFreeIcon />
-          </IconButton>
-        </Tooltip>
-
-        <ZoomDisplay model={model} />
-
-        <Typography variant="body2" style={{ marginLeft: 'auto' }}>
-          {model.nodeCount} nodes, {model.edgeCount} edges
-          {model.pathCount > 0 ? `, ${model.pathCount} paths` : ''}
-        </Typography>
-
-        <Tooltip title="Close graph">
-          <IconButton size="small" onClick={() => model.clearGraph()}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      </div>
+      <GraphToolbar model={model} canvasHeight={CANVAS_HEIGHT} />
 
       {model.isLoading ? (
         <div

@@ -50,20 +50,9 @@ const GfaTabixAdapter = ConfigurationSchema(
     segmentsLocation: {
       type: 'fileLocation',
       description:
-        'Location of the segs.gz file (segment → position reverse index)',
+        'Location of the segments.bin file (binary segment records)',
       defaultValue: {
-        uri: '/path/to/data.segments.gz',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     */
-    segmentsGziLocation: {
-      type: 'fileLocation',
-      description: 'Location of the segs.gz.gzi bgzip index',
-      defaultValue: {
-        uri: '/path/to/data.segments.gz.gzi',
+        uri: '/path/to/data.segments.bin',
         locationType: 'UriLocation',
       },
     },
@@ -73,7 +62,7 @@ const GfaTabixAdapter = ConfigurationSchema(
     segmentsIdxLocation: {
       type: 'fileLocation',
       description:
-        'Location of the segs.idx companion index (segment ID → byte offset)',
+        'Location of the segments.idx companion index (segment ID → byte offset)',
       defaultValue: {
         uri: '/path/to/data.segments.idx',
         locationType: 'UriLocation',
@@ -106,6 +95,30 @@ const GfaTabixAdapter = ConfigurationSchema(
         },
       },
     }),
+    /**
+     * #slot
+     */
+    alnBinLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of the aln.bin file (binary alignment records)',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
+    /**
+     * #slot
+     */
+    alnBinIdxLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of the aln.idx file (binary alignment index)',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
   },
   {
     explicitlyTyped: true,
@@ -136,11 +149,7 @@ const GfaTabixAdapter = ConfigurationSchema(
             },
           },
           segmentsLocation: {
-            uri: `${snap.prefix}.segments.gz`,
-            baseUri: snap.baseUri,
-          },
-          segmentsGziLocation: {
-            uri: `${snap.prefix}.segments.gz.gzi`,
+            uri: `${snap.prefix}.segments.bin`,
             baseUri: snap.baseUri,
           },
           segmentsIdxLocation: {
@@ -156,6 +165,14 @@ const GfaTabixAdapter = ConfigurationSchema(
               uri: `${snap.prefix}.aln.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
+          },
+          alnBinLocation: {
+            uri: `${snap.prefix}.aln.bin`,
+            baseUri: snap.baseUri,
+          },
+          alnBinIdxLocation: {
+            uri: `${snap.prefix}.aln.idx`,
+            baseUri: snap.baseUri,
           },
         }
       }

@@ -32,11 +32,7 @@ function makeAdapter(
         },
       },
       segmentsLocation: {
-        localPath: `${prefix}.segments.gz`,
-        locationType: 'LocalPathLocation',
-      },
-      segmentsGziLocation: {
-        localPath: `${prefix}.segments.gz.gzi`,
+        localPath: `${prefix}.segments.bin`,
         locationType: 'LocalPathLocation',
       },
       segmentsIdxLocation: {
@@ -564,12 +560,29 @@ describe('getSources HPRC chrM', () => {
   })
 })
 
-describe('parseSegmentsBytes', () => {
-  it('parses numeric path name indices correctly', () => {
-    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
-    const input = '100\t2\t5000\t300\t+\n200\t0\t6000\t400\t-\n'
-    const bytes = new TextEncoder().encode(input)
-    const records = parseSegmentsBytes(bytes)
+describe('parseSegmentsBinary', () => {
+  it('parses binary records correctly', () => {
+    const { parseSegmentsBinary } = require('./gfaTabixUtils.ts')
+    // Build two 15-byte binary records
+    const buf = new ArrayBuffer(30)
+    const dv = new DataView(buf)
+    const bytes = new Uint8Array(buf)
+
+    // Record 0: segOrd=100, pathNameIdx=2, offset=5000, segLen=300, orient='+'
+    dv.setUint32(0, 100, true)
+    dv.setUint16(4, 2, true)
+    dv.setUint32(6, 5000, true)
+    dv.setUint32(10, 300, true)
+    bytes[14] = 43 // '+'
+
+    // Record 1: segOrd=200, pathNameIdx=0, offset=6000, segLen=400, orient='-'
+    dv.setUint32(15, 200, true)
+    dv.setUint16(19, 0, true)
+    dv.setUint32(21, 6000, true)
+    dv.setUint32(25, 400, true)
+    bytes[29] = 45 // '-'
+
+    const records = parseSegmentsBinary(bytes)
 
     expect(records.length).toBe(2)
     expect(records[0]).toEqual({
@@ -577,56 +590,22 @@ describe('parseSegmentsBytes', () => {
       pathNameIdx: 2,
       offset: 5000,
       segLen: 300,
-      orient: 43, // '+'
+      orient: 43,
     })
     expect(records[1]).toEqual({
       segOrd: 200,
       pathNameIdx: 0,
       offset: 6000,
       segLen: 400,
-      orient: 45, // '-'
+      orient: 45,
     })
-  })
-
-  it('skips comment lines starting with #', () => {
-    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
-    const input = '#header line\n0\t1\t100\t50\t+\n'
-    const bytes = new TextEncoder().encode(input)
-    const records = parseSegmentsBytes(bytes)
-
-    expect(records.length).toBe(1)
-    expect(records[0]!.segOrd).toBe(0)
   })
 
   it('handles empty input', () => {
-    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
+    const { parseSegmentsBinary } = require('./gfaTabixUtils.ts')
     const bytes = new Uint8Array(0)
-    const records = parseSegmentsBytes(bytes)
+    const records = parseSegmentsBinary(bytes)
     expect(records.length).toBe(0)
-  })
-
-  it('handles input with only comment lines', () => {
-    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
-    const input = '#genomes=a,b\n#sizes=a#chr1:100\n'
-    const bytes = new TextEncoder().encode(input)
-    const records = parseSegmentsBytes(bytes)
-    expect(records.length).toBe(0)
-  })
-
-  it('handles single record without trailing newline', () => {
-    const { parseSegmentsBytes } = require('./gfaTabixUtils.ts')
-    const input = '42\t3\t7777\t999\t+'
-    const bytes = new TextEncoder().encode(input)
-    const records = parseSegmentsBytes(bytes)
-
-    expect(records.length).toBe(1)
-    expect(records[0]).toEqual({
-      segOrd: 42,
-      pathNameIdx: 3,
-      offset: 7777,
-      segLen: 999,
-      orient: 43,
-    })
   })
 })
 

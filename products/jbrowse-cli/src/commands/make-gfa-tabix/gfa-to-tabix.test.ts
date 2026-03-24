@@ -35,11 +35,32 @@ function tabixQuery(file: string, region: string) {
   }
 }
 
-function readSegsFile(prefix: string) {
-  return execSync(`zcat "${prefix}.segments.gz"`, { encoding: 'utf8' })
-    .trim()
-    .split('\n')
-    .filter(l => l.length > 0 && !l.startsWith('#'))
+const RECORD_SIZE = 15
+
+interface SegRecord {
+  segOrd: number
+  pathNameIdx: number
+  offset: number
+  segLen: number
+  orient: number
+}
+
+function readSegsBinary(prefix: string) {
+  const buf = fs.readFileSync(`${prefix}.segments.bin`)
+  const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength)
+  const count = Math.floor(buf.byteLength / RECORD_SIZE)
+  const records: SegRecord[] = []
+  for (let i = 0; i < count; i++) {
+    const off = i * RECORD_SIZE
+    records.push({
+      segOrd: dv.getUint32(off, true),
+      pathNameIdx: dv.getUint16(off + 4, true),
+      offset: dv.getUint32(off + 6, true),
+      segLen: dv.getUint32(off + 10, true),
+      orient: buf[off + 14]!,
+    })
+  }
+  return records
 }
 
 function readSegsIdx(prefix: string) {
@@ -53,12 +74,10 @@ function querySegsRange(prefix: string, minOrd: number, maxOrd: number) {
   const idx = readSegsIdx(prefix)
   const startOffset = Number(idx[minOrd]!)
   const endOffset = Number(idx[Math.min(maxOrd + 1, idx.length - 1)]!)
-  const allText = execSync(`zcat "${prefix}.segments.gz"`, { encoding: 'utf8' })
-  return allText
-    .slice(startOffset, endOffset)
-    .trim()
-    .split('\n')
-    .filter(l => l.length > 0 && !l.startsWith('#'))
+  const all = readSegsBinary(prefix)
+  const startRecord = Math.floor(startOffset / RECORD_SIZE)
+  const endRecord = Math.floor(endOffset / RECORD_SIZE)
+  return all.slice(startRecord, endRecord)
 }
 
 function parseGfaPathName(p: string) {
@@ -81,15 +100,14 @@ beforeAll(() => {
 })
 
 describe('gfa-to-tabix converter', () => {
-  it('creates pos.bed.gz and segments.gz with indexes', () => {
+  it('creates pos.bed.gz and segments.bin with indexes', () => {
     withTmpDir(dir => {
       const prefix = path.join(dir, 'test')
       runConverter(GFA_FILE, prefix)
 
       expect(fs.existsSync(`${prefix}.pos.bed.gz`)).toBe(true)
       expect(fs.existsSync(`${prefix}.pos.bed.gz.tbi`)).toBe(true)
-      expect(fs.existsSync(`${prefix}.segments.gz`)).toBe(true)
-      expect(fs.existsSync(`${prefix}.segments.gz.gzi`)).toBe(true)
+      expect(fs.existsSync(`${prefix}.segments.bin`)).toBe(true)
       expect(fs.existsSync(`${prefix}.segments.idx`)).toBe(true)
     })
   })
@@ -108,14 +126,16 @@ describe('gfa-to-tabix converter', () => {
     })
   })
 
-  it('segments.gz has 5 columns per row (ordinal, pathIdx, offset, len, orient)', () => {
+  it('segments.bin has correct 15-byte record size', () => {
     withTmpDir(dir => {
       const prefix = path.join(dir, 'test')
       runConverter(GFA_FILE, prefix)
 
-      const lines = readSegsFile(prefix)
-      expect(lines.length).toBeGreaterThan(0)
-      expect(lines[0]!.split('\t').length).toBe(5)
+      const records = readSegsBinary(prefix)
+      expect(records.length).toBeGreaterThan(0)
+      const stat = fs.statSync(`${prefix}.segments.bin`)
+      expect(stat.size % RECORD_SIZE).toBe(0)
+      expect(stat.size / RECORD_SIZE).toBe(records.length)
     })
   })
 
@@ -126,7 +146,7 @@ describe('gfa-to-tabix converter', () => {
 
       const results = querySegsRange(prefix, 0, 0)
       expect(results.length).toBe(4)
-      const pathIndices = results.map(r => +r.split('\t')[1]!)
+      const pathIndices = results.map(r => r.pathNameIdx)
       expect(new Set(pathIndices).size).toBe(4)
     })
   })
@@ -151,6 +171,8 @@ describe('gfa-to-tabix converter', () => {
 
       const results = querySegsRange(prefix, 0, 0)
       expect(results.length).toBe(2)
+      const pathIndices = results.map(r => r.pathNameIdx)
+      expect(new Set(pathIndices).size).toBe(2)
     })
   })
 
@@ -208,8 +230,7 @@ describe('gfa-to-tabix converter', () => {
           path.dirname(prefix),
           manifest.files[genome],
         )
-        expect(fs.existsSync(`${shardPrefix}.gz`)).toBe(true)
-        expect(fs.existsSync(`${shardPrefix}.gz.gzi`)).toBe(true)
+        expect(fs.existsSync(`${shardPrefix}.bin`)).toBe(true)
         expect(fs.existsSync(`${shardPrefix}.idx`)).toBe(true)
       }
     })
@@ -219,7 +240,7 @@ describe('gfa-to-tabix converter', () => {
     withTmpDir(dir => {
       const combinedPrefix = path.join(dir, 'combined')
       runConverter(GFA_FILE, combinedPrefix)
-      const combinedLines = readSegsFile(combinedPrefix)
+      const combinedRecords = readSegsBinary(combinedPrefix)
 
       const shardedPrefix = path.join(dir, 'sharded')
       runConverter(GFA_FILE, shardedPrefix, ['--sharded'])
@@ -230,20 +251,15 @@ describe('gfa-to-tabix converter', () => {
 
       let shardedTotal = 0
       for (const genome of manifest.genomes) {
-        const shardPrefix = path.join(
+        const shardFile = path.join(
           path.dirname(shardedPrefix),
-          manifest.files[genome],
+          manifest.files[genome] + '.bin',
         )
-        const lines = execSync(`zcat "${shardPrefix}.gz"`, {
-          encoding: 'utf8',
-        })
-          .trim()
-          .split('\n')
-          .filter(l => l.length > 0 && !l.startsWith('#'))
-        shardedTotal += lines.length
+        const stat = fs.statSync(shardFile)
+        shardedTotal += stat.size / RECORD_SIZE
       }
 
-      expect(shardedTotal).toBe(combinedLines.length)
+      expect(shardedTotal).toBe(combinedRecords.length)
     })
   })
 
@@ -277,13 +293,12 @@ describe('gfa-to-tabix converter', () => {
       const maxOrd = sorted[sorted.length - 1]!
 
       const segResults = querySegsRange(prefix, minOrd, maxOrd)
-      const byPath = new Map<string, string[]>()
-      for (const line of segResults) {
-        const pathName = line.split('\t')[1]!
-        if (!byPath.has(pathName)) {
-          byPath.set(pathName, [])
+      const byPath = new Map<number, SegRecord[]>()
+      for (const rec of segResults) {
+        if (!byPath.has(rec.pathNameIdx)) {
+          byPath.set(rec.pathNameIdx, [])
         }
-        byPath.get(pathName)!.push(line)
+        byPath.get(rec.pathNameIdx)!.push(rec)
       }
 
       expect(byPath.size).toBe(4)

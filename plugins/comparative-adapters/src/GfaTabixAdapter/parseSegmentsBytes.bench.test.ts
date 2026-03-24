@@ -1,131 +1,73 @@
-import { parseSegmentsBytes } from './gfaTabixUtils.ts'
+import { parseSegmentsBinary } from './gfaTabixUtils.ts'
 import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 
-// Original implementation for comparison
-function parseSegmentsBytesOld(bytes: Uint8Array, pathNames: string[]) {
-  const decoder = new TextDecoder()
-  const records: { segOrd: number; pathName: string; offset: number; segLen: number; orient: string }[] = []
-  const DECODE_CHUNK = 512 * 1024 * 1024
-  let tail = ''
+const RECORD_SIZE = 15
 
-  const parseLine = (line: string) => {
-    if (line.length === 0 || line.charCodeAt(0) === 35) {
-      return
-    }
-    const t1 = line.indexOf('\t')
-    const t2 = line.indexOf('\t', t1 + 1)
-    const t3 = line.indexOf('\t', t2 + 1)
-    const t4 = line.indexOf('\t', t3 + 1)
-    records.push({
-      segOrd: +line.slice(0, t1),
-      pathName: pathNames[+line.slice(t1 + 1, t2)] ?? line.slice(t1 + 1, t2),
-      offset: +line.slice(t2 + 1, t3),
-      segLen: +line.slice(t3 + 1, t4),
-      orient: line[t4 + 1]!,
-    })
-  }
+function generateBinarySegments(numSegments: number, numPaths: number) {
+  const totalRecords = numSegments * numPaths
+  const buf = new ArrayBuffer(totalRecords * RECORD_SIZE)
+  const dv = new DataView(buf)
+  const bytes = new Uint8Array(buf)
 
-  for (let pos = 0; pos < bytes.length; pos += DECODE_CHUNK) {
-    const isLast = pos + DECODE_CHUNK >= bytes.length
-    const text =
-      tail +
-      decoder.decode(bytes.subarray(pos, pos + DECODE_CHUNK), {
-        stream: !isLast,
-      })
-    const lines = text.split('\n')
-    tail = lines.pop()!
-    for (const line of lines) {
-      parseLine(line)
-    }
-  }
-  if (tail.length > 0) {
-    parseLine(tail)
-  }
-
-  return records
-}
-
-function generateSegmentsData(numSegments: number, numPaths: number) {
-  const lines: string[] = []
-  let segOrd = 0
-  for (let i = 0; i < numSegments; i++) {
+  let i = 0
+  for (let seg = 0; seg < numSegments; seg++) {
     for (let p = 0; p < numPaths; p++) {
-      const offset = i * 10000
-      const segLen = 5000 + Math.floor(Math.random() * 5000)
-      const orient = Math.random() > 0.1 ? '+' : '-'
-      lines.push(`${segOrd}\t${p}\t${offset}\t${segLen}\t${orient}`)
+      const off = i * RECORD_SIZE
+      dv.setUint32(off, seg, true)
+      dv.setUint16(off + 4, p, true)
+      dv.setUint32(off + 6, seg * 10000, true)
+      dv.setUint32(off + 10, 5000 + Math.floor(Math.random() * 5000), true)
+      bytes[off + 14] = Math.random() > 0.1 ? 0x2b : 0x2d
+      i++
     }
-    segOrd++
   }
-  return new TextEncoder().encode(lines.join('\n'))
+  return bytes
 }
 
-function generatePathNames(numPaths: number) {
-  return Array.from({ length: numPaths }, (_, i) => `genome${i}#hap1#chr1`)
-}
-
-describe('parseSegmentsBytes benchmark', () => {
+describe('parseSegmentsBinary benchmark', () => {
   const NUM_SEGMENTS = 50_000
   const NUM_PATHS = 4
-  const pathNames = generatePathNames(NUM_PATHS)
-  const bytes = generateSegmentsData(NUM_SEGMENTS, NUM_PATHS)
+  const bytes = generateBinarySegments(NUM_SEGMENTS, NUM_PATHS)
 
-  it('correctness: new implementation matches old', () => {
-    const oldResult = parseSegmentsBytesOld(bytes, pathNames)
-    const newResult = parseSegmentsBytes(bytes)
+  it('correctness: parses all records', () => {
+    const records = parseSegmentsBinary(bytes)
+    expect(records.length).toBe(NUM_SEGMENTS * NUM_PATHS)
 
-    expect(newResult.length).toBe(oldResult.length)
-    for (let i = 0; i < Math.min(100, oldResult.length); i++) {
-      expect(newResult[i]!.segOrd).toBe(oldResult[i]!.segOrd)
-      expect(newResult[i]!.pathNameIdx).toBe(
-        pathNames.indexOf(oldResult[i]!.pathName),
-      )
-      expect(newResult[i]!.offset).toBe(oldResult[i]!.offset)
-      expect(newResult[i]!.segLen).toBe(oldResult[i]!.segLen)
-      expect(newResult[i]!.orient).toBe(oldResult[i]!.orient.charCodeAt(0))
-    }
-    const last = oldResult.length - 1
-    expect(newResult[last]!.segOrd).toBe(oldResult[last]!.segOrd)
-    expect(newResult[last]!.offset).toBe(oldResult[last]!.offset)
+    expect(records[0]!.segOrd).toBe(0)
+    expect(records[0]!.pathNameIdx).toBe(0)
+    expect(records[0]!.offset).toBe(0)
+
+    expect(records[NUM_PATHS]!.segOrd).toBe(1)
+    expect(records[NUM_PATHS]!.pathNameIdx).toBe(0)
+    expect(records[NUM_PATHS]!.offset).toBe(10000)
   })
 
-  it(`benchmark: old (TextDecoder+split) vs new (binary) on ${(NUM_SEGMENTS * NUM_PATHS).toLocaleString()} records`, () => {
+  it(`benchmark: parseSegmentsBinary on ${(NUM_SEGMENTS * NUM_PATHS).toLocaleString()} records`, () => {
     const WARMUP = 2
     const ITERS = 5
 
     for (let i = 0; i < WARMUP; i++) {
-      parseSegmentsBytesOld(bytes, pathNames)
-      parseSegmentsBytes(bytes)
+      parseSegmentsBinary(bytes)
     }
 
-    const oldTimes: number[] = []
+    const times: number[] = []
     for (let i = 0; i < ITERS; i++) {
       const t0 = performance.now()
-      parseSegmentsBytesOld(bytes, pathNames)
-      oldTimes.push(performance.now() - t0)
+      parseSegmentsBinary(bytes)
+      times.push(performance.now() - t0)
     }
 
-    const newTimes: number[] = []
-    for (let i = 0; i < ITERS; i++) {
-      const t0 = performance.now()
-      parseSegmentsBytes(bytes)
-      newTimes.push(performance.now() - t0)
-    }
-
-    const oldMedian = oldTimes.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
-    const newMedian = newTimes.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
-    const speedup = oldMedian / newMedian
+    const median = times.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
     const dataMB = (bytes.length / 1024 / 1024).toFixed(1)
 
     console.log(
-      `parseSegmentsBytes (${dataMB} MB, ${(NUM_SEGMENTS * NUM_PATHS).toLocaleString()} records):\n` +
-        `  old (TextDecoder+split): ${oldMedian.toFixed(0)}ms\n` +
-        `  new (binary scan):       ${newMedian.toFixed(0)}ms\n` +
-        `  speedup:                 ${speedup.toFixed(1)}x`,
+      `parseSegmentsBinary (${dataMB} MB, ${(NUM_SEGMENTS * NUM_PATHS).toLocaleString()} records):\n` +
+        `  median: ${median.toFixed(0)}ms`,
     )
 
-    expect(newMedian).toBeLessThan(oldMedian)
+    // 200k records in binary should parse very fast
+    expect(median).toBeLessThan(200)
   })
 })
 
@@ -149,11 +91,7 @@ function makeAdapter(prefix: string) {
         },
       },
       segmentsLocation: {
-        localPath: `${prefix}.segments.gz`,
-        locationType: 'LocalPathLocation',
-      },
-      segmentsGziLocation: {
-        localPath: `${prefix}.segments.gz.gzi`,
+        localPath: `${prefix}.segments.bin`,
         locationType: 'LocalPathLocation',
       },
       segmentsIdxLocation: {
