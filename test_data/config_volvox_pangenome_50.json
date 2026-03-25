@@ -1,0 +1,136 @@
+{
+  "assemblies": [
+    {
+      "name": "ref#0",
+      "displayName": "ref",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ref_0_refseq",
+        "adapter": {
+          "type": "FromConfigRegionsAdapter",
+          "features": [
+            {
+              "uniqueId": "ref-ctgA",
+              "refName": "ctgA",
+              "start": 0,
+              "end": 50001
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_pangenome_50_multi",
+      "name": "Volvox 50-sample pangenome",
+      "category": [
+        "Synteny"
+      ],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "volvox/volvox_pangenome_50.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segmentsLocation": {
+          "uri": "volvox/volvox_pangenome_50.segments.bin",
+          "locationType": "UriLocation"
+        },
+        "segmentsIdxLocation": {
+          "uri": "volvox/volvox_pangenome_50.segments.idx",
+          "locationType": "UriLocation"
+        },
+        "bubblesLocation": {
+          "uri": "volvox/volvox_pangenome_50.bubbles.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "bubblesIndex": {
+          "location": {
+            "uri": "volvox/volvox_pangenome_50.bubbles.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": [
+        "ref#0",
+        "sample01#0",
+        "sample02#0",
+        "sample03#0",
+        "sample04#0",
+        "sample05#0",
+        "sample06#0",
+        "sample07#0",
+        "sample08#0",
+        "sample09#0",
+        "sample10#0",
+        "sample11#0",
+        "sample12#0",
+        "sample13#0",
+        "sample14#0",
+        "sample15#0",
+        "sample16#0",
+        "sample17#0",
+        "sample18#0",
+        "sample19#0",
+        "sample20#0",
+        "sample21#0",
+        "sample22#0",
+        "sample23#0",
+        "sample24#0",
+        "sample25#0",
+        "sample26#0",
+        "sample27#0",
+        "sample28#0",
+        "sample29#0",
+        "sample30#0",
+        "sample31#0",
+        "sample32#0",
+        "sample33#0",
+        "sample34#0",
+        "sample35#0",
+        "sample36#0",
+        "sample37#0",
+        "sample38#0",
+        "sample39#0",
+        "sample40#0",
+        "sample41#0",
+        "sample42#0",
+        "sample43#0",
+        "sample44#0",
+        "sample45#0",
+        "sample46#0",
+        "sample47#0",
+        "sample48#0",
+        "sample49#0",
+        "sample50#0"
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "Volvox 50-sample pangenome",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "displayedRegions": [
+          {
+            "assemblyName": "ref#0",
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001
+          }
+        ]
+      }
+    ]
+  }
+}
