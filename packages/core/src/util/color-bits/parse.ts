@@ -1,6 +1,7 @@
-import { newColor } from './core.ts'
-import type { Color } from './core.ts'
 import * as convert from './convert.ts'
+import { newColor } from './core.ts'
+
+import type { Color } from './core.ts'
 
 const HASH = '#'.charCodeAt(0)
 const PERCENT = '%'.charCodeAt(0)
@@ -13,12 +14,12 @@ const E = 'e'.charCodeAt(0)
  * Approximative CSS colorspace string pattern, e.g. rgb(), color()
  */
 const PATTERN = (() => {
-  const NAME = '(\\w+)'
-  const SEPARATOR = '[\\s,\\/]'
-  const VALUE = '([^\\s,\\/]+)'
+  const NAME = String.raw`(\w+)`
+  const SEPARATOR = String.raw`[\s,\/]`
+  const VALUE = String.raw`([^\s,\/]+)`
   const SEPARATOR_THEN_VALUE = `(?:${SEPARATOR}+${VALUE})`
   return new RegExp(
-    `${NAME}\\(
+    String.raw`${NAME}\(
       ${SEPARATOR}*
       ${VALUE}
       ${SEPARATOR_THEN_VALUE}
@@ -26,7 +27,7 @@ const PATTERN = (() => {
       ${SEPARATOR_THEN_VALUE}?
       ${SEPARATOR_THEN_VALUE}?
       ${SEPARATOR}*
-    \\)`.replace(/\s/g, ''),
+    \)`.replace(/\s/g, ''),
   )
 })()
 
@@ -35,11 +36,7 @@ const PATTERN = (() => {
  * @param color CSS color string: #xxx, #xxxxxx, #xxxxxxxx, rgb(), rgba(), hsl(), hsla(), color()
  */
 export function parse(color: string): Color {
-  if (color.charCodeAt(0) === HASH) {
-    return parseHex(color)
-  } else {
-    return parseColor(color)
-  }
+  return color.charCodeAt(0) === HASH ? parseHex(color) : parseColor(color)
 }
 
 /**
@@ -118,7 +115,9 @@ export function parseColor(color: string): Color {
       const l = parsePercentage(p3)
       const a = p4 ? parseAlphaChannel(p4) : 255
       // https://stackoverflow.com/a/9493060/3112706
-      let r: number, g: number, b: number
+      let r: number
+      let g: number
+      let b: number
       if (s === 0) {
         r = g = b = Math.round(l * 255) // achromatic
       } else {
@@ -136,7 +135,7 @@ export function parseColor(color: string): Color {
       const bl = parsePercentage(p3)
       const a = p4 ? parseAlphaChannel(p4) : 255
       /* https://drafts.csswg.org/css-color/#hwb-to-rgb */
-      const s = 1.0
+      const s = 1
       const l = 0.5
       // Same as HSL to RGB
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s

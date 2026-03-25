@@ -12,7 +12,7 @@
 
 // https://en.wikipedia.org/wiki/CIELAB_color_space#Converting_between_CIELAB_and_CIEXYZ_coordinates
 const D50_X = 0.9642
-const D50_Y = 1.0
+const D50_Y = 1
 const D50_Z = 0.8251
 
 function multiply(
@@ -56,7 +56,7 @@ class TransferFunction {
   }
 
   eval(val: number) {
-    const sign = val < 0 ? -1.0 : 1.0
+    const sign = val < 0 ? -1 : 1
     const abs = val * sign
     if (abs < this.d) {
       return sign * (this.c * abs + this.f)
@@ -72,8 +72,8 @@ const NAMED_TRANSFER_FN = {
     0.055 / 1.055,
     1 / 12.92,
     0.04045,
-    0.0,
-    0.0,
+    0,
+    0,
   ),
   sRGB_INVERSE: new TransferFunction(
     0.416667,
@@ -86,7 +86,7 @@ const NAMED_TRANSFER_FN = {
   ),
   proPhotoRGB: new TransferFunction(1.8, 1),
   proPhotoRGB_INVERSE: new TransferFunction(0.555556, 1, -0, 0, 0, 0, 0),
-  k2Dot2: new TransferFunction(2.2, 1.0),
+  k2Dot2: new TransferFunction(2.2, 1),
   k2Dot2_INVERSE: new TransferFunction(0.454545, 1),
   rec2020: new TransferFunction(
     2.22222,
@@ -150,9 +150,9 @@ const NAMED_GAMUTS: Record<string, [number, number, number][]> = {
     [0.029662725298529837, -0.06291668721366285, 1.2533964313435522],
   ],
   xyz: [
-    [1.0, 0.0, 0.0],
-    [0.0, 1.0, 0.0],
-    [0.0, 0.0, 1.0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
   ],
 }
 
@@ -232,13 +232,13 @@ export function labToXyzd50(
   a: number,
   b: number,
 ): [number, number, number] {
-  let y = (l + 16.0) / 116.0
-  let x = y + a / 500.0
-  let z = y - b / 200.0
+  let y = (l + 16) / 116
+  let x = y + a / 500
+  let z = y - b / 200
   function labInverseTransferFunction(t: number) {
-    const delta = 24.0 / 116.0
+    const delta = 24 / 116
     if (t <= delta) {
-      return (108.0 / 841.0) * (t - 16.0 / 116.0)
+      return (108 / 841) * (t - 16 / 116)
     }
     return t * t * t
   }
@@ -254,18 +254,18 @@ export function xyzd50ToLab(
   z: number,
 ): [number, number, number] {
   function labTransferFunction(t: number) {
-    const deltaLimit = (24.0 / 116.0) * (24.0 / 116.0) * (24.0 / 116.0)
+    const deltaLimit = (24 / 116) * (24 / 116) * (24 / 116)
     if (t <= deltaLimit) {
-      return (841.0 / 108.0) * t + 16.0 / 116.0
+      return (841 / 108) * t + 16 / 116
     }
-    return Math.pow(t, 1.0 / 3.0)
+    return Math.pow(t, 1 / 3)
   }
   x = labTransferFunction(x / D50_X)
   y = labTransferFunction(y / D50_Y)
   z = labTransferFunction(z / D50_Z)
-  const l = 116.0 * y - 16.0
-  const a = 500.0 * (x - y)
-  const bOut = 200.0 * (y - z)
+  const l = 116 * y - 16
+  const a = 500 * (x - y)
+  const bOut = 200 * (y - z)
   return [l, a, bOut]
 }
 
@@ -292,9 +292,9 @@ export function xyzd65ToOklab(
 ): [number, number, number] {
   const xyzInput: [number, number, number] = [x, y, z]
   const lmsIntermediate = multiply(XYZ_TO_LMS_MATRIX, xyzInput)
-  lmsIntermediate[0] = Math.pow(lmsIntermediate[0], 1.0 / 3.0)
-  lmsIntermediate[1] = Math.pow(lmsIntermediate[1], 1.0 / 3.0)
-  lmsIntermediate[2] = Math.pow(lmsIntermediate[2], 1.0 / 3.0)
+  lmsIntermediate[0] = Math.pow(lmsIntermediate[0], 1 / 3)
+  lmsIntermediate[1] = Math.pow(lmsIntermediate[1], 1 / 3)
+  lmsIntermediate[2] = Math.pow(lmsIntermediate[2], 1 / 3)
   const labOutput = multiply(LMS_TO_OKLAB_MATRIX, lmsIntermediate)
   return [labOutput[0], labOutput[1], labOutput[2]]
 }

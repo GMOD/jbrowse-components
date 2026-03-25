@@ -46,14 +46,14 @@ GAF is the graph equivalent of PAF — it's how tools communicate "this sequence
 walks through these graph nodes." Both rGFA support and vg gafannot rely on GAF
 as the bridge between linear sequences and graph topology:
 
-| | rGFA + GAF (this plan) | vg gafannot |
-|-|------------------------|-------------|
-| GFA provides | Segments (nodes) | Segments (nodes) |
-| GAF provides | Per-sample genome paths | Annotation projections (genes, reads) |
+|                   | rGFA + GAF (this plan)      | vg gafannot                               |
+| ----------------- | --------------------------- | ----------------------------------------- |
+| GFA provides      | Segments (nodes)            | Segments (nodes)                          |
+| GAF provides      | Per-sample genome paths     | Annotation projections (genes, reads)     |
 | Question answered | "Where does sampleA align?" | "What annotations overlap this subgraph?" |
 
-The difference is *what* the GAF records represent (genome paths vs annotations),
-not *how* they're parsed. A single GAF parser serves both.
+The difference is _what_ the GAF records represent (genome paths vs
+annotations), not _how_ they're parsed. A single GAF parser serves both.
 
 ## Proposed Approach: `--gaf` flag on `make-gfa-tabix`
 
@@ -67,19 +67,19 @@ jbrowse make-gfa-tabix graph.rgfa --gaf sampleA.gaf --gaf sampleB.gaf --out myda
 The `--sharded` flag produces per-genome segments files and a
 `ShardedGfaTabixAdapter` manifest instead of a single combined segments file
 (`GfaTabixAdapter`). For rGFA with many re-mapped genomes, sharded mode is
-recommended since each GAF adds a genome and the combined segments file grows
-as O(segments × genomes).
+recommended since each GAF adds a genome and the combined segments file grows as
+O(segments × genomes).
 
 ### How it works
 
 1. **Parse S-lines** as today (segment names, lengths, sequences, ordinals)
 2. **Reconstruct the reference path** from SN/SO/SR tags: collect rank-0
    segments, group by `SN` (contig), sort by `SO` (offset) within each group
-3. **Parse GAF files** to extract non-reference paths: the `path` field gives the
-   walk string, the `query_name` gives the path name (in PanSN format)
+3. **Parse GAF files** to extract non-reference paths: the `path` field gives
+   the walk string, the `query_name` gives the path name (in PanSN format)
 4. **Feed all paths** into the existing `gfaToTabix` pipeline — from this point
-   on, the code doesn't know or care that the paths came from GAF instead of
-   P/W lines
+   on, the code doesn't know or care that the paths came from GAF instead of P/W
+   lines
 
 ### GAF path extraction
 
@@ -148,8 +148,8 @@ fragment, further increasing the row count in segments.gz.
    all_paths) network I/O into O(segments × visible_paths). File count grows
    linearly with genomes, but each file is small and independently indexed.
 
-2. **GAF deduplication.** Multiple GAF records for the same query sequence on the
-   same contig should be merged into a single path before conversion. This
+2. **GAF deduplication.** Multiple GAF records for the same query sequence on
+   the same contig should be merged into a single path before conversion. This
    prevents partial alignments from inflating the output.
 
 3. **Lazy genome loading.** The adapter should support a mode where genomes are

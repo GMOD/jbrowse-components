@@ -3,7 +3,6 @@ import { isAbstractMenuManager } from '@jbrowse/core/util'
 import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay/index.ts'
-import MultiLGVSyntenyDisplayF from './MultiLGVSyntenyDisplay/index.ts'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView.ts'
 import LinearComparativeViewF from './LinearComparativeView/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
@@ -13,8 +12,9 @@ import { MultiPairGetFeatures } from './LinearSyntenyRPC/MultiPairGetFeatures.ts
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import LinearSyntenyViewHelperF from './LinearSyntenyViewHelper/index.tsx'
-import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
+import MultiLGVSyntenyDisplayF from './MultiLGVSyntenyDisplay/index.ts'
 import MultiSyntenyTrackF from './MultiSyntenyTrack/index.ts'
+import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

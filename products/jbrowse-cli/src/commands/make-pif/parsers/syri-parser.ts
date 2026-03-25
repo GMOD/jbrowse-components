@@ -74,7 +74,7 @@ export async function parseSyriOutput(
     const blockLen = Math.max(refEnd - refStart, 1)
 
     records.push({
-      qname: qryChr!,
+      qname: qryChr,
       qlen: '0',
       qstart: actualQStart,
       qend: actualQEnd,

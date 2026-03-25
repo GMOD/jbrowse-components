@@ -1,6 +1,6 @@
 import type {
-  Renderer,
   RenderBatch,
+  Renderer,
   SubBatch,
   TransformUniform,
 } from './types.ts'
@@ -24,8 +24,8 @@ export class Canvas2DRenderer implements Renderer {
     const dpr = window.devicePixelRatio || 1
     this.ctx.canvas.width = width * dpr
     this.ctx.canvas.height = height * dpr
-    this.ctx.canvas.style.width = width + 'px'
-    this.ctx.canvas.style.height = height + 'px'
+    this.ctx.canvas.style.width = `${width}px`
+    this.ctx.canvas.style.height = `${height}px`
   }
 
   uploadGeometry(batch: RenderBatch) {

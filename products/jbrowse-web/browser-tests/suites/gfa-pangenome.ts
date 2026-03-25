@@ -84,7 +84,7 @@ const suite: TestSuite = {
         const hasFeatures = await page.evaluate(() => {
           const canvas = document.querySelector(
             '[data-testid="multi_synteny_canvas"]',
-          ) as HTMLCanvasElement
+          )!
           if (!canvas) {
             return false
           }
@@ -95,11 +95,7 @@ const suite: TestSuite = {
           ctx.drawImage(canvas, 0, 0)
           const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
           for (let i = 0; i < data.length; i += 4) {
-            if (
-              data[i]! < 240 ||
-              data[i + 1]! < 240 ||
-              data[i + 2]! < 240
-            ) {
+            if (data[i]! < 240 || data[i + 1]! < 240 || data[i + 2]! < 240) {
               return true
             }
           }

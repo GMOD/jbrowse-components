@@ -55,20 +55,23 @@ production use. Generated directly from GFA by `gfa-to-tabix --aln-bin`.
 ### Binary CS encoding
 
 Compact binary encoding of CS tags (analogous to BAM's binary CIGAR):
+
 - Match (`00xxxxxx`): 1 byte for lengths 1-63, varint for longer
 - Substitution (`01xxRRAA`): always 1 byte (ref + alt bases in 4 bits)
 - Insertion/Deletion (`10`/`11` + length + 2-bit packed bases)
-- ~50% smaller than text CS, ~10x faster to parse (typed array walk vs
-  character scanning)
+- ~50% smaller than text CS, ~10x faster to parse (typed array walk vs character
+  scanning)
 
 ### Binary record format (aln.bin)
 
 Variable-length records sorted by (chrom, refStart):
+
 ```
 refStart: u32, refEnd: u32, queryGenomeIdx: u16, mateChromIdx: u16,
 mateStart: u32, mateEnd: u32, strand: u8, identity: u16, csLen: u16,
 csData: [u8; csLen]    — total: 25 bytes fixed + variable CS
 ```
+
 Identity pre-computed at build time (matchBp / totalAligned × 10000) so
 zoomed-out rendering skips CS decoding entirely.
 
@@ -80,6 +83,7 @@ Range query: look up bin offsets → single HTTP range read → parse records.
 ### Rust generation (`gfa-to-tabix --aln-bin`)
 
 Generates aln.bin directly from GFA segment sequences:
+
 - Walks shared segments between ref and query paths as alignment anchors
 - Compares bubble sequences base-by-base → binary CS
 - Grooming: detects/flips reverse-complemented contigs (>99% opposite orient)
@@ -104,19 +108,19 @@ Generates aln.bin directly from GFA segment sequences:
 
 ### Adapter integration
 
-- `getMultiPairFeaturesFromAlnBin()` in `BaseGfaTabixAdapter` — loads binary
-  aln with lazy CS decoding (skips CIGAR/CS conversion when bpPerPx > 50)
+- `getMultiPairFeaturesFromAlnBin()` in `BaseGfaTabixAdapter` — loads binary aln
+  with lazy CS decoding (skips CIGAR/CS conversion when bpPerPx > 50)
 - Dispatch priority: binary aln > text aln > segments
 - Config: `alnBinLocation` / `alnBinIdxLocation` with prefix shorthand
 - Both `GfaTabixAdapter` and `ShardedGfaTabixAdapter` schemas updated
 
 ### Files on S3
 
-| File | Size | Records | Genomes |
-|------|------|---------|---------|
-| `pggb-chrM.aln.bin` + `.idx` | 540B + 223B | 3 | 4 |
-| `hprc-v1.1-mc-grch38-chrM.aln.bin` + `.idx` | 41KB + 1.9KB | 43 | 44 |
-| `hprc-v1.1-mc-grch38-chr20.aln.bin` + `.idx` | 141MB + 39KB | 25,856 | 90 |
+| File                                         | Size         | Records | Genomes |
+| -------------------------------------------- | ------------ | ------- | ------- |
+| `pggb-chrM.aln.bin` + `.idx`                 | 540B + 223B  | 3       | 4       |
+| `hprc-v1.1-mc-grch38-chrM.aln.bin` + `.idx`  | 41KB + 1.9KB | 43      | 44      |
+| `hprc-v1.1-mc-grch38-chr20.aln.bin` + `.idx` | 141MB + 39KB | 25,856  | 90      |
 
 ## GfaTabixAdapter Enhancements
 
@@ -131,9 +135,9 @@ Generates aln.bin directly from GFA segment sequences:
 - Consolidated `setup()`/`setupPre()` initialization pattern: single cached
   promise resolves header, chrom sizes, pos/aln refName sets, and aln
   availability in one shot (follows BamAdapter pattern)
-- Deterministic tabix refName resolution via `resolveTabixRefName()`: checks
-  the tabix file's actual refName set (from `getReferenceSequenceNames()`)
-  instead of try/catch guessing with candidate formats
+- Deterministic tabix refName resolution via `resolveTabixRefName()`: checks the
+  tabix file's actual refName set (from `getReferenceSequenceNames()`) instead
+  of try/catch guessing with candidate formats
 
 ## MultiPairFeature Shared Interface
 
@@ -153,8 +157,8 @@ Generates aln.bin directly from GFA segment sequences:
 - Loading overlay: `LoadingOverlay` with 500ms debounce during refetches, using
   `model.statusMessage` from RPC `statusCallback` (matches alignments pattern)
 - Renderer backend architecture: `MultiSyntenyRenderer` facade →
-  `MultiSyntenyCanvasBackend` / `MultiSyntenyGpuBackend` interfaces →
-  Canvas2D, WebGL2, and WebGPU implementations
+  `MultiSyntenyCanvasBackend` / `MultiSyntenyGpuBackend` interfaces → Canvas2D,
+  WebGL2, and WebGPU implementations
   - Follows same pattern as `AlignmentsRenderer` and `SyntenyRenderer`
   - `getOrCreate()` + `init()` with cancelled flag, dispose-before-reinit
   - Backend selection: WebGPU → WebGL2 → Canvas2D fallback via
@@ -265,8 +269,8 @@ Generates aln.bin directly from GFA segment sequences:
 
 ### Unit Tests (154 tests, 12 suites)
 
-- **binaryCs** (51 tests): encode/decode round-trip, identity computation,
-  CIGAR parity with text csToCigar, flip self-inverse, encoding size
+- **binaryCs** (51 tests): encode/decode round-trip, identity computation, CIGAR
+  parity with text csToCigar, flip self-inverse, encoding size
 - **binaryAlnReader** (5 tests): index parsing, range queries, CS round-trip
   validation, full-file record count, unknown chromosome handling
 - **csUtils** (16 tests): csToCigar, flipCs with self-inverse property
@@ -283,10 +287,10 @@ Generates aln.bin directly from GFA segment sequences:
 - **PairwiseIndexedPAFAdapter** (27 tests): coordinates, CIGAR, multi-pair,
   syriType, LOD tiers
 - **multiSyntenyGpuData** (18 tests): instance buffer packing, genome row
-  assignment, refName sorting/indexing, CIGAR expansion (D/I/X with ref
-  position tracking), CS expansion (substitutions with base colors,
-  deletions, insertions), feature ID uniqueness, HP split correctness,
-  region render param computation
+  assignment, refName sorting/indexing, CIGAR expansion (D/I/X with ref position
+  tracking), CS expansion (substitutions with base colors, deletions,
+  insertions), feature ID uniqueness, HP split correctness, region render param
+  computation
 
 ### Browser Tests (5 pangenome tests + 14 existing synteny tests)
 
@@ -328,18 +332,18 @@ shared between the alignments plugin and the MultiLGVSyntenyDisplay:
 - **InstanceBuilder** (`InstanceBuilder.ts`): growable typed-array buffer with
   `alloc()` returning element offset, shared `u32`/`f32` views, auto-doubling
   capacity — used by both MultiLGV GPU data prep and adaptable for alignments
-- **`bindUniformBlock`** moved to `@jbrowse/core/gpu/webglUtils` (generic
-  WebGL2 UBO helper used by both plugins)
+- **`bindUniformBlock`** moved to `@jbrowse/core/gpu/webglUtils` (generic WebGL2
+  UBO helper used by both plugins)
 
-- **Shared shader fragments** (`sharedShaders.ts`): `RECT_LOCALS_WGSL`
-  (6-vertex quad corner selection), `SIMPLE_FS_WGSL` / `SIMPLE_FS_GLSL`
-  (passthrough fragment shaders), `SIMPLE_VERTEX_OUTPUT_WGSL` (standard vertex
-  output struct), `PICKING_FS_GLSL` / `PICKING_FS_WGSL` (featureId → RGB
-  picking fragment shaders)
+- **Shared shader fragments** (`sharedShaders.ts`): `RECT_LOCALS_WGSL` (6-vertex
+  quad corner selection), `SIMPLE_FS_WGSL` / `SIMPLE_FS_GLSL` (passthrough
+  fragment shaders), `SIMPLE_VERTEX_OUTPUT_WGSL` (standard vertex output
+  struct), `PICKING_FS_GLSL` / `PICKING_FS_WGSL` (featureId → RGB picking
+  fragment shaders)
 - **Renderer utilities** (`rendererUtils.ts`): `getDevicePixelRatio()`,
   `resizeCanvas()` (DPR-aware canvas resize with change detection),
-  `createPickingFbo()` (WebGL2 picking FBO setup/teardown); re-exports
-  generic GPU utilities from `@jbrowse/core/gpu/`
+  `createPickingFbo()` (WebGL2 picking FBO setup/teardown); re-exports generic
+  GPU utilities from `@jbrowse/core/gpu/`
 
 ## `@jbrowse/core/gpu/` Shared GPU Utilities
 
@@ -356,9 +360,10 @@ Generic WebGL/WebGPU utilities used across all GPU track types:
 - **`initGpuContext.ts`**: canvas WebGPU context setup
 
 Consumers (all GPU renderers):
-- Alignments `WebGPUAlignmentsRenderer.ts` imports
-  `STANDARD_BLEND_STATE`, `createStandardBindGroupLayout`,
-  `createStorageBuffer`, `createStandardBindGroup`
+
+- Alignments `WebGPUAlignmentsRenderer.ts` imports `STANDARD_BLEND_STATE`,
+  `createStandardBindGroupLayout`, `createStorageBuffer`,
+  `createStandardBindGroup`
 - Alignments `wgsl/common.ts` imports shared shader fragments from
   `@jbrowse/alignments-core`
 - Pairwise `WebGPUSyntenyRenderer.ts` imports all webgpuUtils +
@@ -378,8 +383,8 @@ GPU-accelerated rendering for MultiLGVSyntenyDisplay using HP (High Precision)
 
 ### Architecture
 
-- **Backend selection**: `MultiSyntenyRenderer` tries WebGPU → WebGL2 →
-  Canvas2D fallback, using dynamic `import()` for GPU backends
+- **Backend selection**: `MultiSyntenyRenderer` tries WebGPU → WebGL2 → Canvas2D
+  fallback, using dynamic `import()` for GPU backends
 - **Data flow**: geometry uploaded once on feature change
   (`prepareMultiSyntenyGpuData`), per-frame render updates only uniforms
 - **No JS bpToPx in render path**: all position computation happens on the GPU
@@ -387,13 +392,13 @@ GPU-accelerated rendering for MultiLGVSyntenyDisplay using HP (High Precision)
 
 ### HP 64-Bit Float Emulation
 
-Feature bp coordinates stored as `uint32` in instance buffers. The shader
-splits each coordinate into hi/lo components using a 12-bit mask (`0xFFF`),
-then computes positions with compiler guards that prevent GLSL/WGSL optimizers
-from combining the split terms:
+Feature bp coordinates stored as `uint32` in instance buffers. The shader splits
+each coordinate into hi/lo components using a 12-bit mask (`0xFFF`), then
+computes positions with compiler guards that prevent GLSL/WGSL optimizers from
+combining the split terms:
 
-- `hpSplitUint(uint)` → `vec2(float(hi), float(lo))` where `hi` is multiple
-  of 4096
+- `hpSplitUint(uint)` → `vec2(float(hi), float(lo))` where `hi` is multiple of
+  4096
 - `hpScaleLinear(splitPos, bpRange, hpZero)` uses `1.0/hpZero` (runtime
   infinity), `max(-inf)`, and `dot()` to maintain precision
 - `splitPositionWithFrac()` on JS side splits region start for uniform upload
@@ -423,19 +428,20 @@ startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: vec4f
 - GLSL: `uvec4 a_data0` via `vertexAttribIPointer` + `vec4 a_color` via
   `vertexAttribPointer`
 - CIGAR/CS ops expanded at upload time into overlay sub-instances (deletions,
-  insertions, mismatches) with appropriate colors from `cssColorToNormalizedRgba`
+  insertions, mismatches) with appropriate colors from
+  `cssColorToNormalizedRgba`
 
 ### Files
 
-| File | Purpose |
-|------|---------|
-| `multiSyntenyGpuShaders.ts` | GLSL + WGSL shaders with HP functions |
-| `multiSyntenyGpuData.ts` | Instance data prep, CIGAR/CS expansion, sorting |
-| `WebGLMultiSyntenyRenderer.ts` | WebGL2 renderer with UBO + instanced draws |
-| `WebGPUMultiSyntenyRenderer.ts` | WebGPU renderer with storage buffer + pipelines |
-| `multiSyntenyBackendTypes.ts` | Split into Canvas and GPU backend interfaces |
-| `MultiSyntenyRenderer.ts` | Backend selection facade |
-| `MultiSyntenyRendering.tsx` | React component with separated upload/render effects |
+| File                            | Purpose                                              |
+| ------------------------------- | ---------------------------------------------------- |
+| `multiSyntenyGpuShaders.ts`     | GLSL + WGSL shaders with HP functions                |
+| `multiSyntenyGpuData.ts`        | Instance data prep, CIGAR/CS expansion, sorting      |
+| `WebGLMultiSyntenyRenderer.ts`  | WebGL2 renderer with UBO + instanced draws           |
+| `WebGPUMultiSyntenyRenderer.ts` | WebGPU renderer with storage buffer + pipelines      |
+| `multiSyntenyBackendTypes.ts`   | Split into Canvas and GPU backend interfaces         |
+| `MultiSyntenyRenderer.ts`       | Backend selection facade                             |
+| `MultiSyntenyRendering.tsx`     | React component with separated upload/render effects |
 
 ### Tests (18 tests)
 
@@ -446,14 +452,14 @@ startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: vec4f
 
 ## GfaTabixAdapter Reliability
 
-- **Warning logs for missing headers**: `setupPre()` now `console.warn()`s
-  when `#genomes=` or `#sizes=` headers are missing from pos.bed.gz, preventing
+- **Warning logs for missing headers**: `setupPre()` now `console.warn()`s when
+  `#genomes=` or `#sizes=` headers are missing from pos.bed.gz, preventing
   silent failures from malformed data
 - **stopToken cancellation**: `getMultiPairFeatures()` threads `stopToken`
   through to `getMultiPairFeaturesFromAln()` and
-  `getMultiPairFeaturesFromSegments()` via opts parameter.
-  `checkStopToken()` called in tabix lineCallbacks (per-line cancellation) and
-  at async boundaries before `getSegsForOrdinals()`.
+  `getMultiPairFeaturesFromSegments()` via opts parameter. `checkStopToken()`
+  called in tabix lineCallbacks (per-line cancellation) and at async boundaries
+  before `getSegsForOrdinals()`.
 
 ## SVG Export for MultiLGVSyntenyDisplay
 
@@ -462,12 +468,13 @@ startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: vec4f
 - Uses `SvgCanvas` from `@jbrowse/core/util/offscreenCanvasUtils` to produce
   vector SVG output, mirroring the `Canvas2DMultiSyntenyRenderer.render()` logic
 - Draws background, alternating row stripes, genome labels, synteny features
-  (strand/syri/identity coloring), SNP detail (CIGAR + cs ops), and row separators
+  (strand/syri/identity coloring), SNP detail (CIGAR + cs ops), and row
+  separators
 - `drawCigarOps()` and `drawCsOps()` in `multiSyntenyColorUtils.ts` widened to
-  accept `CanvasRenderingContext2D | SvgCanvas` for shared use between interactive
-  rendering and SVG export
-- Model wires `renderSvg()` action via lazy `import()` following the same pattern
-  as `LinearAlignmentsDisplay` and `BaseLinearDisplay`
+  accept `CanvasRenderingContext2D | SvgCanvas` for shared use between
+  interactive rendering and SVG export
+- Model wires `renderSvg()` action via lazy `import()` following the same
+  pattern as `LinearAlignmentsDisplay` and `BaseLinearDisplay`
 
 ## Key Design Decisions Resolved
 

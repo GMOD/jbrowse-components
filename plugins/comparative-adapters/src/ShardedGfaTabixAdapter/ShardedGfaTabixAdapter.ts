@@ -72,9 +72,7 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
     return this.genomeShardsCache.get(genome)!
   }
 
-  protected async getSegsForOrdinals(
-    ordinalRanges: [number, number][],
-  ) {
+  protected async getSegsForOrdinals(ordinalRanges: [number, number][]) {
     const manifest = await this.getManifest()
     const promises = manifest.genomes.map(async genome => {
       const prefix = manifest.files[genome]

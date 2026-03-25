@@ -254,7 +254,10 @@ describe('PairwiseIndexedPAFAdapter', () => {
         assemblyName: 'volvox',
       })
 
-      expect([...result.genomeRows.keys()]).toEqual(['volvox_ins', 'volvox_del'])
+      expect([...result.genomeRows.keys()]).toEqual([
+        'volvox_ins',
+        'volvox_del',
+      ])
       expect(result.genomeRows.size).toBe(2)
 
       const insFeatures = result.genomeRows.get('volvox_ins')!
@@ -304,7 +307,10 @@ describe('PairwiseIndexedPAFAdapter', () => {
         assemblyName: 'volvox',
       })
 
-      expect([...result.genomeRows.keys()]).toEqual(['volvox_ins', 'volvox_del'])
+      expect([...result.genomeRows.keys()]).toEqual([
+        'volvox_ins',
+        'volvox_del',
+      ])
       expect(result.genomeRows.get('volvox_ins')!.length).toBe(0)
       expect(result.genomeRows.get('volvox_del')!.length).toBe(0)
     })
@@ -465,7 +471,10 @@ describe('PairwiseIndexedPAFAdapter', () => {
         assemblyName: 'volvox',
       })
 
-      expect([...result.genomeRows.keys()]).toEqual(['volvox_ins', 'volvox_del'])
+      expect([...result.genomeRows.keys()]).toEqual([
+        'volvox_ins',
+        'volvox_del',
+      ])
       expect(result.genomeRows.get('volvox_ins')!.length).toBe(0)
       expect(result.genomeRows.get('volvox_del')!.length).toBe(0)
     })
@@ -523,7 +532,10 @@ describe('PairwiseIndexedPAFAdapter', () => {
         { bpPerPx: 1000000 },
       )
 
-      expect([...result.genomeRows.keys()]).toEqual(['volvox_ins', 'volvox_del'])
+      expect([...result.genomeRows.keys()]).toEqual([
+        'volvox_ins',
+        'volvox_del',
+      ])
 
       // Structural tier should still return features
       const insFeatures = result.genomeRows.get('volvox_ins')!
@@ -555,7 +567,10 @@ describe('PairwiseIndexedPAFAdapter', () => {
         { bpPerPx },
       )
 
-      expect([...result.genomeRows.keys()]).toEqual(['volvox_ins', 'volvox_del'])
+      expect([...result.genomeRows.keys()]).toEqual([
+        'volvox_ins',
+        'volvox_del',
+      ])
       const insFeatures = result.genomeRows.get('volvox_ins')!
       expect(insFeatures.length).toBeGreaterThanOrEqual(1)
     })
@@ -694,7 +709,10 @@ describe('PairwiseIndexedPAFAdapter', () => {
         end: 60000,
         assemblyName: 'volvox',
       })
-      expect([...fromVolvox.genomeRows.keys()]).toEqual(['volvox_ins', 'volvox_del'])
+      expect([...fromVolvox.genomeRows.keys()]).toEqual([
+        'volvox_ins',
+        'volvox_del',
+      ])
 
       // Query from volvox_ins — only pair0 contains volvox_ins
       const fromIns = await adapter.getMultiPairFeatures({

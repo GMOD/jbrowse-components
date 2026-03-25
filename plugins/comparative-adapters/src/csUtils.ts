@@ -55,13 +55,7 @@ export function csToCigar(cs: string) {
       const op = ch === '+' ? 'I' : 'D'
       i++
       let len = 0
-      while (
-        i < cs.length &&
-        cs[i] !== ':' &&
-        cs[i] !== '*' &&
-        cs[i] !== '+' &&
-        cs[i] !== '-'
-      ) {
+      while (i < cs.length && !isCsOpChar(cs[i])) {
         len++
         i++
       }

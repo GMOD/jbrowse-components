@@ -182,7 +182,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
         const loc = this.getConf('gfaLocation') as FileLocation
         const handle = openLocation(loc, this.pluginManager)
         const text = await handle.readFile('utf8')
-        return parseGfa(text as string)
+        return parseGfa(text)
       })()
     }
     return this.gfaPromise
@@ -266,10 +266,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     }
 
     const allSegIds = new Set<string>()
-    const pathSpans = new Map<
-      string,
-      { segId: string; orient: string }[]
-    >()
+    const pathSpans = new Map<string, { segId: string; orient: string }[]>()
 
     for (const path of gfa.paths) {
       let firstShared = -1
@@ -308,9 +305,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       }
     }
     for (const [pathName, span] of pathSpans) {
-      const walk = span
-        .map(s => `${s.segId}${s.orient}`)
-        .join(',')
+      const walk = span.map(s => `${s.segId}${s.orient}`).join(',')
       lines.push(`P\t${pathName}\t${walk}\t*`)
     }
 

@@ -1,8 +1,8 @@
 import {
-  buildGeometry,
-  recolorNodes,
   brightenColors,
+  buildGeometry,
   extractColorSlice,
+  recolorNodes,
 } from './GeometryBuilder.ts'
 
 const simpleGraph = {

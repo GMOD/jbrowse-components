@@ -95,7 +95,9 @@ const CompactViewBar = observer(function CompactViewBar({
     <Tooltip title={`Expand ${assemblyName}`}>
       <div
         className={classes.compactViewBar}
-        onClick={() => model.toggleCompactView(viewIdx)}
+        onClick={() => {
+          model.toggleCompactView(viewIdx)
+        }}
       >
         <ExpandMoreIcon style={{ fontSize: 14, marginRight: 4 }} />
         <Typography className={classes.compactViewLabel}>

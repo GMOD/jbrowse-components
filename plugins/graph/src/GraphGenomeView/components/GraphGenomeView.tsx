@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
-import ImportForm from './ImportForm.tsx'
 import GraphCanvas from './GraphCanvas.tsx'
+import ImportForm from './ImportForm.tsx'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 

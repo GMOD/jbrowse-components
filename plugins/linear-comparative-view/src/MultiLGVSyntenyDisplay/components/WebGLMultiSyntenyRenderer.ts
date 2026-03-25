@@ -1,14 +1,15 @@
 import {
-  createProgram,
-  bindUniformBlock,
-  enableStandardBlend,
-} from '@jbrowse/core/gpu/webglUtils'
-import {
+  createPickingFbo,
   getDevicePixelRatio,
   resizeCanvas,
-  createPickingFbo,
 } from '@jbrowse/alignments-core'
+import {
+  bindUniformBlock,
+  createProgram,
+  enableStandardBlend,
+} from '@jbrowse/core/gpu/webglUtils'
 
+import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
 import {
   FILL_FRAGMENT_SHADER,
   FILL_VERTEX_SHADER,
@@ -16,11 +17,10 @@ import {
   PICKING_FRAGMENT_SHADER,
   UNIFORM_BYTE_SIZE,
 } from './multiSyntenyGpuShaders.ts'
-import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
 
-import type { PickingFbo } from '@jbrowse/alignments-core'
-import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
 import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
+import type { PickingFbo } from '@jbrowse/alignments-core'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
@@ -80,7 +80,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
   private createInstancedVAO(program: WebGLProgram) {
     const gl = this.gl
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
     for (const name of ['a_data0', 'a_color']) {
       const loc = gl.getAttribLocation(program, name)
@@ -208,23 +208,17 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         block,
         viewOffsetPx,
         this.instanceData.refNameIndex,
-        this.instanceData.buffer,
       )
       if (!params) {
-        console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → no params (refName not in index)`)
         continue
       }
 
-      // Skip regions entirely off-screen
       if (
         params.regionScreenLeft + params.regionScreenWidth < 0 ||
         params.regionScreenLeft > logicalW
       ) {
-        console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → off-screen (left=${params.regionScreenLeft} width=${params.regionScreenWidth} logicalW=${logicalW})`)
         continue
       }
-
-      console.log(`[WebGLRender] block ${i} ${block.refName}:${block.start}-${block.end} → drawing ${params.instanceCount} instances, screenLeft=${params.regionScreenLeft.toFixed(1)} screenW=${params.regionScreenWidth.toFixed(1)} bpRange=${params.bpRangeLen}`)
 
       this.writeUniforms(
         logicalW,
@@ -247,40 +241,6 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     }
 
     gl.bindVertexArray(null)
-
-    // Debug: log feature coverage vs view range summary
-    if (this.instanceData && contentBlocks.length > 0) {
-      const u32 = new Uint32Array(this.instanceData.buffer)
-      const stride = INSTANCE_BYTE_SIZE / 4
-      const viewStart = contentBlocks[0]!.start
-      const viewEnd = contentBlocks.at(-1)!.end
-
-      const entry = this.instanceData.refNameIndex.get(contentBlocks[0]!.refName)
-      if (entry) {
-        let minBp = Infinity
-        let maxBp = 0
-        let overlappingView = 0
-        for (let j = entry.startIdx; j < entry.startIdx + entry.count; j++) {
-          const sBp = u32[j * stride]!
-          const eBp = u32[j * stride + 1]!
-          if (sBp < minBp) {
-            minBp = sBp
-          }
-          if (eBp > maxBp) {
-            maxBp = eBp
-          }
-          if (eBp > viewStart && sBp < viewEnd) {
-            overlappingView++
-          }
-        }
-        const viewCoveragePct = ((maxBp - minBp) / (viewEnd - viewStart) * 100).toFixed(1)
-        console.log(
-          `[WebGLRender] Feature coverage: ${(minBp / 1e6).toFixed(2)}-${(maxBp / 1e6).toFixed(2)}Mb (${viewCoveragePct}% of view ${(viewStart / 1e6).toFixed(2)}-${(viewEnd / 1e6).toFixed(2)}Mb)`,
-          `${overlappingView}/${entry.count} features overlap view`,
-        )
-      }
-    }
-
     this.pickingDirty = true
   }
 

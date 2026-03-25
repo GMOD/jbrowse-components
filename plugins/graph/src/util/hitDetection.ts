@@ -1,5 +1,5 @@
+import { EdgeSpatialIndex, SpatialIndex } from './SpatialIndex.ts'
 import { computeEdgeCurves } from './geometry.ts'
-import { SpatialIndex, EdgeSpatialIndex } from './SpatialIndex.ts'
 
 import type { Graph, NodeSegment } from '../types.ts'
 import type { BezierCurve } from './geometry.ts'

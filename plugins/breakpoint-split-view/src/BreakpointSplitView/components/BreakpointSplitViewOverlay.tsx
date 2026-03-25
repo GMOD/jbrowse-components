@@ -48,7 +48,7 @@ const BreakpointSplitViewOverlay = observer(
     const lastViewIndex = useRef(0)
     const rafId = useRef<number | null>(null)
     const lastRafTime = useRef<number | null>(null)
-    const [positionCache, setPositionCache] = useState<TrackPositionCache>({
+    const [positionCache, setPositionCache] = useState({
       svgTop: 0,
       tracks: {},
     })

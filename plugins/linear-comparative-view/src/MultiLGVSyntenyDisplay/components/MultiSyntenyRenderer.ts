@@ -3,13 +3,13 @@ import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
 import { prepareMultiSyntenyGpuData } from './multiSyntenyGpuData.ts'
 
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type {
   MultiSyntenyCanvasBackend,
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyGpuBackend,
 } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 const cache = new WeakMap<HTMLCanvasElement, MultiSyntenyRenderer>()
 
@@ -39,44 +39,34 @@ export class MultiSyntenyRenderer {
     this.canvasBackend = null
 
     if (getGpuOverride() === 'canvas2d') {
-      console.log('[MultiSyntenyRenderer] Using Canvas2D (forced)')
       this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
       this.backendType = 'canvas2d'
       return true
     }
 
-    // Try WebGPU first
     try {
-      const { WebGPUMultiSyntenyRenderer } = await import(
-        './WebGPUMultiSyntenyRenderer.ts'
-      )
+      const { WebGPUMultiSyntenyRenderer } =
+        await import('./WebGPUMultiSyntenyRenderer.ts')
       const gpu = await WebGPUMultiSyntenyRenderer.create(this.canvas)
       if (gpu) {
-        console.log('[MultiSyntenyRenderer] Using WebGPU backend')
         this.gpuBackend = gpu
         this.backendType = 'webgpu'
         return true
       }
-      console.log('[MultiSyntenyRenderer] WebGPU create returned null')
-    } catch (e) {
-      console.log('[MultiSyntenyRenderer] WebGPU not available:', e)
+    } catch {
+      // WebGPU not available
     }
 
-    // Try WebGL2
     try {
-      const { WebGLMultiSyntenyRenderer } = await import(
-        './WebGLMultiSyntenyRenderer.ts'
-      )
+      const { WebGLMultiSyntenyRenderer } =
+        await import('./WebGLMultiSyntenyRenderer.ts')
       this.gpuBackend = new WebGLMultiSyntenyRenderer(this.canvas)
-      console.log('[MultiSyntenyRenderer] Using WebGL2 backend')
       this.backendType = 'webgl'
       return true
-    } catch (e) {
-      console.log('[MultiSyntenyRenderer] WebGL2 not available:', e)
+    } catch {
+      // WebGL2 not available
     }
 
-    // Fall back to Canvas2D
-    console.log('[MultiSyntenyRenderer] Falling back to Canvas2D')
     this.canvasBackend = new Canvas2DMultiSyntenyRenderer(this.canvas)
     this.backendType = 'canvas2d'
     return true
@@ -93,24 +83,11 @@ export class MultiSyntenyRenderer {
     showSnps: boolean,
   ) {
     if (this.gpuBackend) {
-      console.log(
-        '[MultiSyntenyRenderer] uploadGeometry:',
-        'genomeRows:', genomeRows.size,
-        'displayedGenomes:', displayedGenomes.length,
-        'colorBy:', colorBy,
-        'showSnps:', showSnps,
-      )
       const data = prepareMultiSyntenyGpuData(
         genomeRows,
         displayedGenomes,
         colorBy,
         showSnps,
-      )
-      console.log(
-        '[MultiSyntenyRenderer] GPU data prepared:',
-        'instanceCount:', data.instanceCount,
-        'bufferBytes:', data.buffer.byteLength,
-        'refNameIndex:', [...data.refNameIndex.entries()],
       )
       this.gpuBackend.uploadGeometry(data)
     }
@@ -124,15 +101,6 @@ export class MultiSyntenyRenderer {
     rowHeight: number,
     labelW: number,
   ) {
-    console.log(
-      '[MultiSyntenyRenderer] renderGpu:',
-      'blocks:', contentBlocks.length,
-      'blockRefNames:', contentBlocks.map(b => `${b.refName}:${b.start}-${b.end}`),
-      'width:', width,
-      'height:', height,
-      'rowHeight:', rowHeight,
-      'labelW:', labelW,
-    )
     this.gpuBackend?.render(
       contentBlocks,
       viewOffsetPx,
@@ -148,14 +116,6 @@ export class MultiSyntenyRenderer {
     displayedGenomes: string[],
     opts: MultiSyntenyCanvasRenderOpts,
   ) {
-    console.log(
-      '[MultiSyntenyRenderer] renderCanvas:',
-      'genomeRows:', genomeRows.size,
-      'displayedGenomes:', displayedGenomes.length,
-      'width:', opts.width,
-      'height:', opts.height,
-      'rowHeight:', opts.rowHeight,
-    )
     this.canvasBackend?.render(genomeRows, displayedGenomes, opts)
   }
 

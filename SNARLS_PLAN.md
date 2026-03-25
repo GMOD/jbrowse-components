@@ -2,9 +2,16 @@
 
 ## Context
 
-We need base-level detail (SNPs, indels) on synteny lines between any pair of assemblies, without O(n²) precomputation. Previous approaches (bidirectional all-vs-all pairwise aln) caused combinatorial explosion. Solution: use vg's battle-tested snarl decomposition to identify bubbles, precompute CS between allele pairs at each bubble, and look up at runtime.
+We need base-level detail (SNPs, indels) on synteny lines between any pair of
+assemblies, without O(n²) precomputation. Previous approaches (bidirectional
+all-vs-all pairwise aln) caused combinatorial explosion. Solution: use vg's
+battle-tested snarl decomposition to identify bubbles, precompute CS between
+allele pairs at each bubble, and look up at runtime.
 
-**Core idea**: Each bubble/snarl in the graph has a small number of distinct alleles. The CS between any two alleles is computed once. At runtime, for any pair of assemblies, look up which allele each has and retrieve the precomputed CS. Storage is O(bubbles × allele_pairs), not O(n²).
+**Core idea**: Each bubble/snarl in the graph has a small number of distinct
+alleles. The CS between any two alleles is computed once. At runtime, for any
+pair of assemblies, look up which allele each has and retrieve the precomputed
+CS. Storage is O(bubbles × allele_pairs), not O(n²).
 
 ## Pipeline overview
 
@@ -26,6 +33,7 @@ Runtime (TypeScript):
 ## Why vg deconstruct VCF
 
 `vg deconstruct` already solves the hard problems:
+
 - Snarl decomposition (via integrated snarl finder)
 - Allele enumeration per snarl
 - Genotyping (which sample has which allele)
@@ -33,6 +41,7 @@ Runtime (TypeScript):
 - Handles nested snarls, complex topology
 
 The VCF output contains:
+
 - `CHROM/POS` = reference position (tabix-indexable)
 - `REF/ALT` = allele sequences
 - Per-sample `GT` = which allele each genome has
@@ -56,8 +65,8 @@ ref_path  start  end  allele_a  allele_b  identity  cs  genomes_a  genomes_b
 - `genomes_a`: comma-separated genome indices carrying allele_a
 - `genomes_b`: comma-separated genome indices carrying allele_b
 
-For biallelic sites: 1 record (allele 0 vs 1)
-For triallelic: 3 records (0v1, 0v2, 1v2)
+For biallelic sites: 1 record (allele 0 vs 1) For triallelic: 3 records (0v1,
+0v2, 1v2)
 
 ### Why text/tabix not binary
 
@@ -71,10 +80,12 @@ For triallelic: 3 records (0v1, 0v2, 1v2)
 New flag: `--bubbles <vcf_file>` (replaces `--aln`)
 
 ### Input
+
 - VCF from `vg deconstruct` (bgzipped + tabix OK)
 - GFA (for header/genome info already parsed)
 
 ### Algorithm
+
 ```
 Parse VCF header → sample names, map to genome indices
 For each VCF record:
@@ -94,14 +105,17 @@ Pipe through sort|bgzip, then tabix
 ```
 
 ### Memory: O(1 VCF record)
+
 Process one record at a time, stream to output. No accumulation.
 
 ## Runtime algorithm (TypeScript)
 
 ### At zoomed-out levels (bpPerPx > 50)
+
 No change — existing segment-based CIGAR with identity estimate.
 
 ### At zoomed-in levels (bpPerPx < 50)
+
 Enhanced `getMultiPairFeaturesFromSegments`:
 
 1. **Existing**: Find shared segments, build synteny features with CIGAR
@@ -116,20 +130,23 @@ Enhanced `getMultiPairFeaturesFromSegments`:
    - At bubbles: CS from bubble lookup
 
 ### Reference-free capability
+
 When viewing from assembly X to assembly Y:
+
 - Bubble positions in X's coordinates come from mapping through shared segments
 - The allele each assembly carries is recorded in `genomes_a`/`genomes_b`
 - The CS between alleles is the same regardless of which is "reference"
-- Note: bubbles.bed.gz is indexed in the ref assembly's coordinates, so non-ref views require coordinate translation through the existing segment mapping
+- Note: bubbles.bed.gz is indexed in the ref assembly's coordinates, so non-ref
+  views require coordinate translation through the existing segment mapping
 
 ## Files to modify
 
-| File | Action |
-|------|--------|
-| `tools/gfa-to-tabix/src/main.rs` | Add `--bubbles` VCF processing, CS computation, streaming output. Remove `--aln` code |
-| `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts` | Add bubble file loading, runtime CS lookup in segment renderer |
-| `plugins/comparative-adapters/src/GfaTabixAdapter/configSchema.ts` | Add `bubblesLocation`/`bubblesIndex` config slots |
-| `plugins/comparative-adapters/src/ShardedGfaTabixAdapter/configSchema.ts` | Same config additions |
+| File                                                                      | Action                                                                                |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `tools/gfa-to-tabix/src/main.rs`                                          | Add `--bubbles` VCF processing, CS computation, streaming output. Remove `--aln` code |
+| `plugins/comparative-adapters/src/GfaTabixAdapter/gfaTabixUtils.ts`       | Add bubble file loading, runtime CS lookup in segment renderer                        |
+| `plugins/comparative-adapters/src/GfaTabixAdapter/configSchema.ts`        | Add `bubblesLocation`/`bubblesIndex` config slots                                     |
+| `plugins/comparative-adapters/src/ShardedGfaTabixAdapter/configSchema.ts` | Same config additions                                                                 |
 
 ## Size estimates (HPRC chr20, 90 assemblies)
 
@@ -145,5 +162,6 @@ When viewing from assembly X to assembly Y:
 - Generate bubbles, inspect by hand
 - Run on chrM (44 genomes), verify bubble count and CS correctness
 - Run on chr20, verify size and generation time
-- Load in JBrowse: zoom into chrM, verify base-level detail appears on synteny lines
+- Load in JBrowse: zoom into chrM, verify base-level detail appears on synteny
+  lines
 - Switch reference assembly, verify CS still works for non-ref pairs

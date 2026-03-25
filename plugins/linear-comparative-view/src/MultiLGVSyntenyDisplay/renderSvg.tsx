@@ -58,7 +58,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
       ctx.font = `${Math.min(rowHeight - 4, LABEL_FONT_MAX)}px sans-serif`
       ctx.textBaseline = 'middle'
       const displayName =
-        genomeName.length > 15 ? genomeName.slice(0, 12) + '...' : genomeName
+        genomeName.length > 15 ? `${genomeName.slice(0, 12)}...` : genomeName
       ctx.fillText(displayName, 4, y + rowHeight / 2)
     }
 
@@ -90,7 +90,15 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
         if (feat.cs) {
           drawCsOps(ctx, feat.cs, x1, fy, blockWidth, fh, bpLen)
         } else if (feat.cigar) {
-          drawCigarOps(ctx, parseCigar2(feat.cigar), x1, fy, blockWidth, fh, bpLen)
+          drawCigarOps(
+            ctx,
+            parseCigar2(feat.cigar),
+            x1,
+            fy,
+            blockWidth,
+            fh,
+            bpLen,
+          )
         }
       }
     }

@@ -2617,8 +2617,8 @@
           }
         ]
       }
-    }
-    ,{
+    },
+    {
       "type": "MultiSyntenyTrack",
       "trackId": "volvox_del_gfa_multi",
       "name": "volvox vs volvox_del (GfaTabix MultiLGV)",
@@ -2649,8 +2649,8 @@
         }
       },
       "assemblyNames": ["volvox", "volvox_del"]
-    }
-    ,{
+    },
+    {
       "type": "MultiSyntenyTrack",
       "trackId": "volvox_pangenome_50_multi",
       "name": "Volvox 50-sample pangenome",

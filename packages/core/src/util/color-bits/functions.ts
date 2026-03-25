@@ -1,4 +1,3 @@
-import type { Color } from './core.ts'
 import {
   getAlpha,
   getBlue,
@@ -7,6 +6,8 @@ import {
   newColor,
   setAlpha,
 } from './core.ts'
+
+import type { Color } from './core.ts'
 
 /**
  * Modifies color alpha channel.
@@ -60,7 +61,7 @@ export function blend(
   background: Color,
   overlay: Color,
   opacity: number,
-  gamma = 1.0,
+  gamma = 1,
 ): number {
   const blendChannel = (b: number, o: number) =>
     Math.round(

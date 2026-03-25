@@ -1,5 +1,5 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { Region } from '@jbrowse/core/util'
 
@@ -30,10 +30,7 @@ export class GetSubgraph extends RpcMethodType {
     return args
   }
 
-  async execute(
-    args: Record<string, unknown>,
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: Record<string, unknown>, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

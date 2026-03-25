@@ -301,7 +301,10 @@ function buildGfa(
     pos = v.pos + v.refAllele.length
   }
   if (pos < refSeq.length) {
-    pieces.push({ type: 'interstitial', segId: addSegment(refSeq.length - pos) })
+    pieces.push({
+      type: 'interstitial',
+      segId: addSegment(refSeq.length - pos),
+    })
   }
 
   // Build walks
@@ -355,7 +358,7 @@ function buildGfa(
     lines.push(`W\t${gname}\t${hap}\t${REF_NAME}\t0\t${totalLen}\t${walkStr}`)
   }
 
-  return { gfa: lines.join('\n') + '\n', genomeNames }
+  return { gfa: `${lines.join('\n')}\n`, genomeNames }
 }
 
 // --- Build bubbles BED ---
@@ -393,7 +396,7 @@ function buildBubbles(
       `${REF_NAME}\t${start}\t${end}\t0\t1\t${identity.toFixed(6)}\t${cs}\t${refGenomes.join(',')}\t${altGenomes.join(',')}`,
     )
   }
-  return lines.join('\n') + '\n'
+  return `${lines.join('\n')}\n`
 }
 
 // --- Main ---
@@ -427,7 +430,12 @@ console.error(
 
 const assignments = assignVariants(variants, NUM_SAMPLES, rng)
 
-const { gfa, genomeNames } = buildGfa(refSeq, variants, assignments, NUM_SAMPLES)
+const { gfa, genomeNames } = buildGfa(
+  refSeq,
+  variants,
+  assignments,
+  NUM_SAMPLES,
+)
 writeFileSync(gfaOutput, gfa)
 console.error(`GFA written to ${gfaOutput}`)
 

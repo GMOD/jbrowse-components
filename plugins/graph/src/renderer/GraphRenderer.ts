@@ -4,7 +4,7 @@ import { Canvas2DRenderer } from './Canvas2DRenderer.ts'
 import { WebGL2Renderer } from './WebGL2Renderer.ts'
 import { WebGPURenderer } from './WebGPURenderer.ts'
 
-import type { Renderer, RenderBatch, TransformUniform } from './types.ts'
+import type { RenderBatch, Renderer, TransformUniform } from './types.ts'
 
 export class GraphRenderer {
   private canvas: HTMLCanvasElement

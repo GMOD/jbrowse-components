@@ -1,8 +1,8 @@
 # gfa-to-tabix
 
 Converts GFA pangenome graphs into tabix-indexed files for JBrowse's
-`GfaTabixAdapter`. Produces `pos.bed.gz`, `segments.bin`, `segments.idx`,
-and optionally `bubbles.bed.gz` for per-base variant detail from VCF.
+`GfaTabixAdapter`. Produces `pos.bed.gz`, `segments.bin`, `segments.idx`, and
+optionally `bubbles.bed.gz` for per-base variant detail from VCF.
 
 ## Usage
 
@@ -28,8 +28,8 @@ vg convert -f input.vg | gfa-to-tabix - output/prefix
 
 ### With bubbles from VCF
 
-The `--bubbles` flag reads a VCF produced by `vg deconstruct` and generates
-a tabix-indexed BED file with CS strings for all allele pairs at each variant
+The `--bubbles` flag reads a VCF produced by `vg deconstruct` and generates a
+tabix-indexed BED file with CS strings for all allele pairs at each variant
 site. This provides per-base mismatch/indel detail in the synteny view.
 
 ```bash
@@ -51,26 +51,26 @@ gfa-to-tabix --bubbles variants.vcf.gz --output-config config.json input.gfa out
 
 ## Options
 
-| Flag | Description |
-|------|-------------|
-| `--bubbles <VCF>` | Generate bubbles BED from a vg deconstruct VCF |
+| Flag                     | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| `--bubbles <VCF>`        | Generate bubbles BED from a vg deconstruct VCF    |
 | `--output-config <PATH>` | Write JBrowse config JSON (GfaTabix + VCF tracks) |
-| `--no-groom` | Skip path grooming (strand normalization) |
-| `--ref-assembly <NAME>` | Assembly to use as reference for grooming |
-| `--assemblies A,B,C` | Only process listed assemblies |
-| `--sharded` | Shard segments.bin by assembly |
-| `--chunk-size N` | Walk steps per pos.bed.gz chunk (default: 100) |
+| `--no-groom`             | Skip path grooming (strand normalization)         |
+| `--ref-assembly <NAME>`  | Assembly to use as reference for grooming         |
+| `--assemblies A,B,C`     | Only process listed assemblies                    |
+| `--sharded`              | Shard segments.bin by assembly                    |
+| `--chunk-size N`         | Walk steps per pos.bed.gz chunk (default: 100)    |
 
 ## Output files
 
-| File | Description |
-|------|-------------|
-| `prefix.pos.bed.gz` | Tabix-indexed segment positions per path |
-| `prefix.pos.bed.gz.tbi` | Tabix index |
-| `prefix.segments.bin` | Binary segment data (15-byte fixed-width records) |
-| `prefix.segments.idx` | Segment byte-offset index |
-| `prefix.bubbles.bed.gz` | Tabix-indexed bubble CS data (with `--bubbles`) |
-| `prefix.bubbles.bed.gz.tbi` | Bubbles tabix index (with `--bubbles`) |
+| File                        | Description                                       |
+| --------------------------- | ------------------------------------------------- |
+| `prefix.pos.bed.gz`         | Tabix-indexed segment positions per path          |
+| `prefix.pos.bed.gz.tbi`     | Tabix index                                       |
+| `prefix.segments.bin`       | Binary segment data (15-byte fixed-width records) |
+| `prefix.segments.idx`       | Segment byte-offset index                         |
+| `prefix.bubbles.bed.gz`     | Tabix-indexed bubble CS data (with `--bubbles`)   |
+| `prefix.bubbles.bed.gz.tbi` | Bubbles tabix index (with `--bubbles`)            |
 
 ## Requirements
 

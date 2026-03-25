@@ -30,9 +30,7 @@ import type { ThemeOptions } from '@mui/material'
 export * from './util.ts'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer extends IStateTreeNode<
-  IType<any, any, any>
-> {
+export interface AbstractViewContainer extends IStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(

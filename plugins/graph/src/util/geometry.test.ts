@@ -1,4 +1,4 @@
-import { projectLine, computeEdgeCurves } from './geometry.ts'
+import { computeEdgeCurves, projectLine } from './geometry.ts'
 
 describe('projectLine', () => {
   test('projects along positive x direction', () => {

@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
+
+import { LinearProgress, Typography } from '@mui/material'
 import { autorun, untracked } from 'mobx'
 import { observer } from 'mobx-react'
-import { Typography, LinearProgress } from '@mui/material'
 
+import GraphToolbar from './GraphToolbar.tsx'
 import {
-  buildGeometry,
   brightenColors,
+  buildGeometry,
   extractColorSlice,
 } from '../../renderer/GeometryBuilder.ts'
 import { GraphRenderer } from '../../renderer/GraphRenderer.ts'
-import { findHoveredNode, findHoveredEdge } from '../../util/hitDetection.ts'
-import GraphToolbar from './GraphToolbar.tsx'
+import { findHoveredEdge, findHoveredNode } from '../../util/hitDetection.ts'
 import useRafCallback from '../../util/useRafCallback.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
@@ -42,9 +43,7 @@ function renderFrame(renderer: GraphRenderer, model: GraphGenomeViewModel) {
     viewportWidth: model.width * dpr,
     viewportHeight: CANVAS_HEIGHT * dpr,
   })
-  renderer.render(
-    model.darkMode ? [0.12, 0.12, 0.12, 1.0] : [1.0, 1.0, 1.0, 1.0],
-  )
+  renderer.render(model.darkMode ? [0.12, 0.12, 0.12, 1] : [1, 1, 1, 1])
 }
 
 function computeViewportBounds(model: GraphGenomeViewModel) {

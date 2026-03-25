@@ -1,13 +1,13 @@
 /// <reference types="@webgpu/types" />
 
+import { getDevicePixelRatio, resizeCanvas } from '@jbrowse/alignments-core'
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
-import { getDevicePixelRatio, resizeCanvas } from '@jbrowse/alignments-core'
 import {
   STANDARD_BLEND_STATE,
+  createStandardBindGroup,
   createStandardBindGroupLayout,
   createStorageBuffer,
-  createStandardBindGroup,
 } from '@jbrowse/core/gpu/webgpuUtils'
 
 import {

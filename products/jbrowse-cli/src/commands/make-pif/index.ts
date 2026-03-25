@@ -2,6 +2,14 @@ import fs from 'fs'
 import path from 'path'
 import { parseArgs } from 'util'
 
+import { getReadline } from './file-utils.ts'
+import {
+  parseBedpe,
+  parseMaf,
+  parseRgfa,
+  parseSyriOutput,
+} from './parsers/index.ts'
+import { recordsToPafLines } from './parsers/to-paf.ts'
 import {
   createMultiPairPIF,
   createPIF,
@@ -10,19 +18,11 @@ import {
   spawnSortProcess,
   waitForProcessClose,
 } from './pif-generator.ts'
-import {
-  parseBedpe,
-  parseMaf,
-  parseRgfa,
-  parseSyriOutput,
-} from './parsers/index.ts'
-import { recordsToPafLines } from './parsers/to-paf.ts'
 import { printHelp } from '../../utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
 } from '../shared/validators.ts'
-import { getReadline } from './file-utils.ts'
 
 function detectFormat(filename: string): string {
   const lower = filename.toLowerCase()

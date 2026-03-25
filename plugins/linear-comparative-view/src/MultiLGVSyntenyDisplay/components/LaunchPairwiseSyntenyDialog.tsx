@@ -44,7 +44,9 @@ const LaunchPairwiseSyntenyDialog = observer(
         <DialogContent>
           <TextField
             value={filter}
-            onChange={e => setFilter(e.target.value)}
+            onChange={e => {
+              setFilter(e.target.value)
+            }}
             placeholder="Filter genomes..."
             size="small"
             fullWidth

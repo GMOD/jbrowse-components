@@ -3,18 +3,21 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import CombinedAdapter from '../GfaTabixAdapter/GfaTabixAdapter.ts'
-import CombinedSchema from '../GfaTabixAdapter/configSchema.ts'
-
 import Adapter from './ShardedGfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
+import CombinedAdapter from '../GfaTabixAdapter/GfaTabixAdapter.ts'
+import CombinedSchema from '../GfaTabixAdapter/configSchema.ts'
 
 const BINARY = path.resolve('tools/gfa-to-tabix/target/release/gfa-to-tabix')
 const GFA_FILE = path.resolve(
   'test/data/synteny-demo/synthetic/synthetic_4genome.gfa',
 )
 
-function runConverter(gfaFile: string, prefix: string, extraArgs: string[] = []) {
+function runConverter(
+  gfaFile: string,
+  prefix: string,
+  extraArgs: string[] = [],
+) {
   execSync(`"${BINARY}" "${gfaFile}" "${prefix}" ${extraArgs.join(' ')}`, {
     stdio: 'pipe',
     env: { ...process.env, LC_ALL: 'C' },

@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { observer } from 'mobx-react'
+
 import {
   Button,
+  CircularProgress,
+  Paper,
   TextField,
   Typography,
-  Paper,
-  CircularProgress,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 
@@ -97,7 +98,9 @@ const ImportForm = observer(function ImportForm({
             fullWidth
             placeholder="https://example.com/graph.gfa"
             value={url}
-            onChange={e => setUrl(e.target.value)}
+            onChange={e => {
+              setUrl(e.target.value)
+            }}
             onKeyDown={e => {
               if (e.key === 'Enter') {
                 handleUrlLoad()

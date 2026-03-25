@@ -4,10 +4,6 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
-import {
   getContainingTrack,
   getContainingView,
   getSession,
@@ -15,6 +11,10 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+} from '@jbrowse/plugin-linear-genome-view'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -22,11 +22,11 @@ import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/MultiPairGetFeatures.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type {
   FetchContext,
   LinearGenomeViewModel,
@@ -254,7 +254,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               )
               self.setAllGenomeNames(names)
             } else {
-              console.log('[MultiSyntenyFetch] WARNING: result.sources is undefined/null')
+              console.log(
+                '[MultiSyntenyFetch] WARNING: result.sources is undefined/null',
+              )
             }
 
             const genomeRowsMap = new Map(result.genomeRows)
@@ -424,9 +426,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               refName: dr.refName,
               assemblyName: dr.assemblyName,
               start: Math.floor(view.offsetPx * view.bpPerPx),
-              end: Math.floor(
-                (view.offsetPx + view.width) * view.bpPerPx,
-              ),
+              end: Math.floor((view.offsetPx + view.width) * view.bpPerPx),
             }
             const sessionId = getRpcSessionId(self)
             const { rpcManager } = session
@@ -443,7 +443,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               return
             }
             const graphView = session.addView('GraphGenomeView', {})
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             await (graphView as any).loadGFA(
               gfaText,
               `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,

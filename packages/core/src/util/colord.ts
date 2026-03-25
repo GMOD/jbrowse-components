@@ -1,3 +1,4 @@
+import { namedColorToHex } from './color/cssColorsLevel4.ts'
 import {
   alpha as cbAlpha,
   blend,
@@ -12,8 +13,6 @@ import {
   toHSLA,
   toRGBA,
 } from './color-bits/index.ts'
-
-import { namedColorToHex } from './color/cssColorsLevel4.ts'
 
 import type { Color } from './color-bits/index.ts'
 

@@ -1,6 +1,6 @@
 import {
-  createProgram,
   bindUniformBlock,
+  createProgram,
   enableStandardBlend,
 } from '@jbrowse/core/gpu/webglUtils'
 

@@ -1,15 +1,15 @@
-import { flow, types } from '@jbrowse/mobx-state-tree'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { getSession } from '@jbrowse/core/util'
+import { flow, types } from '@jbrowse/mobx-state-tree'
 
-import { parseGFA } from '../gfa/gfaParser.ts'
 import { convertGFAToGraph } from '../gfa/gfaConverter.ts'
+import { parseGFA } from '../gfa/gfaParser.ts'
 
-import type { Graph, LayoutResult, ColorScheme, NodeSegment } from '../types.ts'
 import type { VertexRange } from '../renderer/types.ts'
+import type { ColorScheme, Graph, LayoutResult, NodeSegment } from '../types.ts'
 
 const MIN_ZOOM = 0.001
-const MAX_ZOOM = 100.0
+const MAX_ZOOM = 100
 
 function clampZoom(zoom: number) {
   return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom))
@@ -132,10 +132,10 @@ export default function stateModelFactory() {
           return
         }
         const positions = self.layoutResult.nodePositions
-        let minX = Infinity,
-          minY = Infinity,
-          maxX = -Infinity,
-          maxY = -Infinity
+        let minX = Infinity
+        let minY = Infinity
+        let maxX = -Infinity
+        let maxY = -Infinity
         for (const segments of Object.values(positions)) {
           for (const seg of segments) {
             if (seg.x < minX) {

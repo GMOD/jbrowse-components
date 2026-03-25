@@ -261,12 +261,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   }, [model, view, ready, drawn, rendererRef])
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
-    0, 0,
-  ])
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
-    0, 0,
-  ])
+  const [clientMouseCoord, setClientMouseCoord] = useState([0, 0])
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState([0, 0])
 
   const handleMouseMove = useCallback(
     (event: React.MouseEvent) => {

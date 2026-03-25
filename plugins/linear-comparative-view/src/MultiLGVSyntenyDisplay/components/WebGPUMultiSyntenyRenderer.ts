@@ -1,24 +1,24 @@
 /// <reference types="@webgpu/types" />
 
+import { getDevicePixelRatio, resizeCanvas } from '@jbrowse/alignments-core'
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
-import { getDevicePixelRatio, resizeCanvas } from '@jbrowse/alignments-core'
 import {
   STANDARD_BLEND_STATE,
+  createStandardBindGroup,
   createStandardBindGroupLayout,
   createStorageBuffer,
-  createStandardBindGroup,
 } from '@jbrowse/core/gpu/webgpuUtils'
 
+import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
 import {
   INSTANCE_BYTE_SIZE,
   UNIFORM_BYTE_SIZE,
   WGSL_FILL_SHADER,
 } from './multiSyntenyGpuShaders.ts'
-import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
 
-import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
 import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
+import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
@@ -175,20 +175,16 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         block,
         viewOffsetPx,
         this.instanceData.refNameIndex,
-        this.instanceData.buffer,
       )
       if (!params) {
-        console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → no params (refName not in index)`)
         continue
       }
       if (
         params.regionScreenLeft + params.regionScreenWidth < 0 ||
         params.regionScreenLeft > logicalW
       ) {
-        console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → off-screen`)
         continue
       }
-      console.log(`[WebGPURender] block ${i} ${block.refName}:${block.start}-${block.end} → drawing ${params.instanceCount} instances, screenLeft=${params.regionScreenLeft.toFixed(1)} screenW=${params.regionScreenWidth.toFixed(1)} bpRange=${params.bpRangeLen}`)
 
       this.writeUniforms(
         device,
@@ -209,9 +205,13 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         colorAttachments: [
           {
             view: tv,
-            loadOp: isFirstPass ? ('clear' as GPULoadOp) : ('load' as GPULoadOp),
+            loadOp: isFirstPass
+              ? ('clear' as GPULoadOp)
+              : ('load' as GPULoadOp),
             storeOp: 'store' as GPUStoreOp,
-            ...(isFirstPass && { clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 } }),
+            ...(isFirstPass && {
+              clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 },
+            }),
           },
         ],
       })

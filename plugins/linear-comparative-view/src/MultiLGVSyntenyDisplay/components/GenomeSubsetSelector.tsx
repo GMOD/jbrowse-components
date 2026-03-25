@@ -1,8 +1,7 @@
+import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-
-import { Dialog } from '@jbrowse/core/ui'
 
 import type { GridColDef } from '@mui/x-data-grid'
 
@@ -36,7 +35,7 @@ const GenomeSubsetSelector = observer(function GenomeSubsetSelector({
   const rows = allNames.map(name => ({ name }))
   const selected =
     model.selectedGenomes.length > 0
-      ? new Set([...model.selectedGenomes])
+      ? new Set(model.selectedGenomes)
       : new Set(allNames)
 
   return (
@@ -59,9 +58,7 @@ const GenomeSubsetSelector = observer(function GenomeSubsetSelector({
             columnHeaderHeight={33}
             rowSelectionModel={{ type: 'include', ids: selected }}
             onRowSelectionModelChange={arg => {
-              model.setSelectedGenomes(
-                allNames.filter(n => arg.ids.has(n)),
-              )
+              model.setSelectedGenomes(allNames.filter(n => arg.ids.has(n)))
             }}
           />
         </div>

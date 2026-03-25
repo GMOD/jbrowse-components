@@ -16,8 +16,8 @@ import {
 import { mergeIntoStructuralBlocks } from './structural-summary.ts'
 import { computeSyriTypes } from './syri-classify.ts'
 
-import type { AlignmentRecord } from './structural-summary.ts'
 import type { WritableStream } from './file-utils.ts'
+import type { AlignmentRecord } from './structural-summary.ts'
 
 function stripDetailFromRest(rest: string[]) {
   return rest.filter(f => !f.startsWith('cg:Z:') && !f.startsWith('cs:Z:'))
@@ -189,7 +189,7 @@ export async function createPIF(
 
       // Flip cs tag for query perspective (swap I↔D, swap ref/query bases)
       const csIdx = rest.findIndex(f => f.startsWith('cs:Z:'))
-      if (csIdx >= 0) {
+      if (csIdx !== -1) {
         rest[csIdx] = `cs:Z:${flipCs(rest[csIdx]!.slice(5))}`
       }
 

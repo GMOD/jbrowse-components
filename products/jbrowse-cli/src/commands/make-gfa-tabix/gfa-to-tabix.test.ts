@@ -17,7 +17,11 @@ function withTmpDir(fn: (dir: string) => void) {
   }
 }
 
-function runConverter(gfaFile: string, prefix: string, extraArgs: string[] = []) {
+function runConverter(
+  gfaFile: string,
+  prefix: string,
+  extraArgs: string[] = [],
+) {
   execSync(`"${BINARY}" "${gfaFile}" "${prefix}" ${extraArgs.join(' ')}`, {
     stdio: 'pipe',
     env: { ...process.env, LC_ALL: 'C' },
@@ -253,7 +257,7 @@ describe('gfa-to-tabix converter', () => {
       for (const genome of manifest.genomes) {
         const shardFile = path.join(
           path.dirname(shardedPrefix),
-          manifest.files[genome] + '.bin',
+          `${manifest.files[genome]}.bin`,
         )
         const stat = fs.statSync(shardFile)
         shardedTotal += stat.size / RECORD_SIZE

@@ -11,7 +11,9 @@ const refGenome = process.argv[2]
 const queryGenome = process.argv[3]
 
 if (!refGenome || !queryGenome) {
-  console.error('Usage: minimap2 ... | node --experimental-strip-types scripts/paf-to-gfa.ts <ref_name> <query_name>')
+  console.error(
+    'Usage: minimap2 ... | node --experimental-strip-types scripts/paf-to-gfa.ts <ref_name> <query_name>',
+  )
   process.exit(1)
 }
 
@@ -144,9 +146,15 @@ rl.on('close', () => {
       const seg = segments.find(s => s.id === w.segId)!
       return sum + seg.len
     }, 0)
-    const walkStr = walk.map(w => `>${w.orient === '+' ? '' : '<'}s${w.segId}`).join('')
+    const walkStr = walk
+      .map(w => `>${w.orient === '+' ? '' : '<'}s${w.segId}`)
+      .join('')
     // Use W lines (GFA 1.1 walks)
-    const walkFormatted = walk.map(w => `${w.orient === '+' ? '>' : '<'}s${w.segId}`).join('')
-    console.log(`W\t${genome}\t${hap}\t${refName}\t0\t${totalLen}\t${walkFormatted}`)
+    const walkFormatted = walk
+      .map(w => `${w.orient === '+' ? '>' : '<'}s${w.segId}`)
+      .join('')
+    console.log(
+      `W\t${genome}\t${hap}\t${refName}\t0\t${totalLen}\t${walkFormatted}`,
+    )
   }
 })

@@ -301,16 +301,36 @@ fn main() {
         let _ = fs::remove_file(&combined_tmp);
     }
 
+    let rewritten_vcf_path;
     if let Some(ref vcf_path) = bubbles_vcf {
         generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes);
+        rewritten_vcf_path = format!("{}.vcf.gz", output_prefix);
+        // Write to a temp file first to avoid clobbering the input VCF
+        // when the output path matches the input path
+        let tmp_vcf = format!("{}.vcf.gz.tmp", output_prefix);
+        rewrite_vcf_strip_pansn(vcf_path, &tmp_vcf);
+        fs::rename(&tmp_vcf, &rewritten_vcf_path).expect("rename rewritten VCF");
+        // tabix indexed the tmp path, rename the index too
+        let tmp_tbi = format!("{}.tbi", tmp_vcf);
+        let final_tbi = format!("{}.tbi", rewritten_vcf_path);
+        if std::path::Path::new(&tmp_tbi).exists() {
+            fs::rename(&tmp_tbi, &final_tbi).expect("rename rewritten VCF index");
+        }
+    } else {
+        rewritten_vcf_path = String::new();
     }
 
     if let Some(ref config_path) = output_config {
+        let vcf_for_config = if bubbles_vcf.is_some() {
+            Some(rewritten_vcf_path.as_str())
+        } else {
+            None
+        };
         write_jbrowse_config(
             config_path,
             &output_prefix,
             &genomes,
-            bubbles_vcf.as_deref(),
+            vcf_for_config,
         );
     }
 
@@ -841,17 +861,6 @@ fn read_varint_slice(data: &[u8], pos: &mut usize) -> u32 {
     value
 }
 
-#[allow(dead_code)]
-fn complement_byte(b: u8) -> u8 {
-    match b {
-        b'A' | b'a' => b't',
-        b'C' | b'c' => b'g',
-        b'G' | b'g' => b'c',
-        b'T' | b't' => b'a',
-        _ => b,
-    }
-}
-
 fn to_lower(b: u8) -> u8 {
     if b >= b'A' && b <= b'Z' { b + 32 } else { b }
 }
@@ -951,22 +960,6 @@ fn compute_identity_from_binary_cs(data: &[u8]) -> f64 {
     if total > 0 { match_bp as f64 / total as f64 } else { 1.0 }
 }
 
-#[allow(dead_code)]
-fn fill_seg_sequence_by_ord(
-    ord: u64,
-    orient: bool,
-    ord_sequences: &[Vec<u8>],
-    buf: &mut Vec<u8>,
-) {
-    buf.clear();
-    let seq = &ord_sequences[ord as usize];
-    if orient {
-        buf.extend_from_slice(seq);
-    } else {
-        buf.extend(seq.iter().rev().map(|&b| complement_byte(b)));
-    }
-}
-
 fn encode_indel(cs: &mut Vec<u8>, op: u8, seq: &[u8]) {
     let len = seq.len() as u32;
     if len <= 63 { cs.push(op | len as u8); }
@@ -982,12 +975,6 @@ fn encode_bubble_cs(ref_seq: &[u8], query_seq: &[u8], cs: &mut Vec<u8>) {
     } else if !query_seq.is_empty() {
         encode_indel(cs, BCS_INS, query_seq);
     }
-}
-
-#[allow(dead_code)]
-fn emit_match_bin(cs: &mut Vec<u8>, len: u64) {
-    if len > 0 && len <= 63 { cs.push(BCS_MATCH | len as u8); }
-    else if len > 0 { cs.push(BCS_MATCH); write_varint(cs, len as u32); }
 }
 
 fn write_jbrowse_config(
@@ -1056,6 +1043,77 @@ fn write_jbrowse_config(
 
     write!(out, "\n  ]\n}}\n").unwrap();
     eprintln!("  Wrote {}", config_path);
+}
+
+/// Strips PanSN contig names from a `vg deconstruct` VCF.
+/// `GRCh38#0#chr20` in CHROM column and `##contig` headers becomes `chr20`
+/// (last `#`-separated component).  The output is bgzipped and tabix-indexed.
+fn rewrite_vcf_strip_pansn(vcf_path: &str, output_path: &str) {
+    eprintln!("Rewriting VCF with stripped PanSN contig names...");
+    let reader = open_file(vcf_path);
+
+    let mut bgzip = Command::new("bgzip")
+        .stdin(Stdio::piped())
+        .stdout(File::create(output_path).expect("create rewritten VCF"))
+        .spawn()
+        .expect("failed to spawn bgzip");
+    let mut w = BufWriter::new(bgzip.stdin.take().unwrap());
+
+    for line in reader.lines() {
+        let line = line.expect("read error");
+        if line.starts_with("##contig=<ID=") {
+            // ##contig=<ID=GRCh38#0#chr20,length=64444167>
+            // → ##contig=<ID=chr20,length=64444167>
+            let rest = &line["##contig=<ID=".len()..];
+            if let Some(comma_pos) = rest.find(',') {
+                let contig_name = &rest[..comma_pos];
+                let stripped = strip_pansn_contig(contig_name);
+                writeln!(w, "##contig=<ID={}{}", stripped, &rest[comma_pos..]).unwrap();
+            } else {
+                let contig_name = rest.trim_end_matches('>');
+                let stripped = strip_pansn_contig(contig_name);
+                writeln!(w, "##contig=<ID={}>", stripped).unwrap();
+            }
+            continue;
+        }
+        if line.starts_with("##") {
+            writeln!(w, "{}", line).unwrap();
+            continue;
+        }
+        if line.starts_with("#CHROM") {
+            writeln!(w, "{}", line).unwrap();
+            continue;
+        }
+
+        // Data line: strip PanSN from CHROM (field 0)
+        if let Some(tab_pos) = line.find('\t') {
+            let chrom = &line[..tab_pos];
+            let stripped = strip_pansn_contig(chrom);
+            write!(w, "{}{}\n", stripped, &line[tab_pos..]).unwrap();
+        } else {
+            writeln!(w, "{}", line).unwrap();
+        }
+    }
+
+    drop(w);
+    assert!(
+        bgzip.wait().map(|s| s.success()).unwrap_or(false),
+        "bgzip failed for rewritten VCF"
+    );
+    run_cmd("tabix", &["-p", "vcf", output_path]);
+    eprintln!("  Wrote {}", output_path);
+}
+
+/// Strips PanSN prefix from a contig name: `GRCh38#0#chr20` → `chr20`.
+/// Returns the last `#`-separated component if there are 3+ parts,
+/// otherwise returns the name unchanged.
+fn strip_pansn_contig(name: &str) -> &str {
+    let parts: Vec<&str> = name.split('#').collect();
+    if parts.len() >= 3 {
+        parts[parts.len() - 1]
+    } else {
+        name
+    }
 }
 
 fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[String]) {

@@ -3,8 +3,8 @@
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 
 import type {
-  Renderer,
   RenderBatch,
+  Renderer,
   SubBatch,
   TransformUniform,
 } from './types.ts'
@@ -184,8 +184,8 @@ export class WebGPURenderer implements Renderer {
     const canvas = this.context.canvas as HTMLCanvasElement
     canvas.width = width * dpr
     canvas.height = height * dpr
-    canvas.style.width = width + 'px'
-    canvas.style.height = height + 'px'
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
   }
 
   private createBuffer(data: ArrayBufferView, usage: GPUBufferUsageFlags) {

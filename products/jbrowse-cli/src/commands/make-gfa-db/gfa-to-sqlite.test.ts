@@ -1,8 +1,7 @@
 import fs from 'fs'
+import { DatabaseSync } from 'node:sqlite'
 import os from 'os'
 import path from 'path'
-
-import { DatabaseSync } from 'node:sqlite'
 
 import { createGfaDatabase, populateFromGfa } from './gfa-to-sqlite.ts'
 

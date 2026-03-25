@@ -1,5 +1,5 @@
-import { parseGFA } from './gfaParser.ts'
 import { convertGFAToGraph } from './gfaConverter.ts'
+import { parseGFA } from './gfaParser.ts'
 
 test('converts simple GFA to graph with strand-specific nodes', () => {
   const gfa = parseGFA(`S\t1\tACGT

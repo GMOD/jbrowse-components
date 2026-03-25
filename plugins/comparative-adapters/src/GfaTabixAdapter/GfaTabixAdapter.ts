@@ -31,9 +31,7 @@ export default class GfaTabixAdapter extends BaseGfaTabixAdapter {
     }
   }
 
-  protected async getSegsForOrdinals(
-    ordinalRanges: [number, number][],
-  ) {
+  protected async getSegsForOrdinals(ordinalRanges: [number, number][]) {
     return getSegmentsForOrdinalsFromShard(this.shard, ordinalRanges)
   }
 }

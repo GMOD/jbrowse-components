@@ -1,8 +1,6 @@
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import {
-  isDigit,
-  isCsOpChar,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   OP_D,
@@ -11,6 +9,8 @@ import {
   OP_M,
   OP_N,
   OP_X,
+  isCsOpChar,
+  isDigit,
 } from './cigarConstants.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -73,7 +73,11 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
     } else if (op === OP_I) {
       const isLong = len >= LONG_INSERTION_MIN_LENGTH
       const widthPx = isLong ? len * pxPerBp : 0
-      if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && h >= MIN_HEIGHT_FOR_TEXT) {
+      if (
+        isLong &&
+        widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
+        h >= MIN_HEIGHT_FOR_TEXT
+      ) {
         labels.push({
           type: 'insertion',
           x: x + refPos * pxPerBp,
@@ -143,7 +147,11 @@ function addCsLabels(ctx: LabelContext, cs: string) {
       if (len > 0) {
         const isLong = len >= LONG_INSERTION_MIN_LENGTH
         const widthPx = isLong ? len * pxPerBp : 0
-        if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX && h >= MIN_HEIGHT_FOR_TEXT) {
+        if (
+          isLong &&
+          widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
+          h >= MIN_HEIGHT_FOR_TEXT
+        ) {
           labels.push({
             type: 'insertion',
             x: x + refPos * pxPerBp,
@@ -164,7 +172,10 @@ export function computeMultiSyntenyLabels(
   rowHeight: number,
   labelW: number,
   showSnps: boolean,
-  bpToPx: (arg: { refName: string; coord: number }) => { offsetPx: number } | undefined,
+  bpToPx: (arg: {
+    refName: string
+    coord: number
+  }) => { offsetPx: number } | undefined,
   offsetPx: number,
   viewWidth: number,
 ) {

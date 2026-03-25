@@ -1,8 +1,4 @@
-import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
-
 import {
-  isDigit,
-  isCsOpChar,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   OP_D,
@@ -11,8 +7,11 @@ import {
   OP_M,
   OP_N,
   OP_X,
+  isCsOpChar,
+  isDigit,
   parseCsSeqLen,
 } from './cigarConstants.ts'
+import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -71,17 +70,12 @@ function drawDeletion(ctx: Ctx, px: number, y: number, pw: number, h: number) {
 }
 
 function textWidthForNumber(num: number) {
-  const digits = num < 10 ? 1 : num < 100 ? 2 : num < 1000 ? 3 : num < 10000 ? 4 : 5
+  const digits =
+    num < 10 ? 1 : num < 100 ? 2 : num < 1000 ? 3 : num < 10000 ? 4 : 5
   return digits * 6 + 10
 }
 
-function drawSerifs(
-  ctx: Ctx,
-  px: number,
-  y: number,
-  h: number,
-  triW: number,
-) {
+function drawSerifs(ctx: Ctx, px: number, y: number, h: number, triW: number) {
   ctx.beginPath()
   ctx.moveTo(px - triW, y)
   ctx.lineTo(px + triW, y)

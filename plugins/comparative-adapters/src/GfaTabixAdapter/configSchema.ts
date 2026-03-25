@@ -49,8 +49,7 @@ const GfaTabixAdapter = ConfigurationSchema(
      */
     segmentsLocation: {
       type: 'fileLocation',
-      description:
-        'Location of the segments.bin file (binary segment records)',
+      description: 'Location of the segments.bin file (binary segment records)',
       defaultValue: {
         uri: '/path/to/data.segments.bin',
         locationType: 'UriLocation',

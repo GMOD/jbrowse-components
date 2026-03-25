@@ -3,19 +3,20 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
-  checkStopToken,
   checkStopToken2,
+  checkStopToken,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
+
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
@@ -86,7 +87,6 @@ export async function loadSegmentsIndex(shard: SegmentsShard) {
   return shard.idxPromise
 }
 
-
 // Merge thresholds for combining nearby byte ranges into single reads
 const MERGE_GAP = 65_000
 const MAX_MERGED_BYTES = 20 * 1024 * 1024
@@ -141,9 +141,9 @@ function parsePosLineOrdinals(line: string, out: [number, number][]) {
     t = line.indexOf('\t', t) + 1
   }
   const t5 = line.indexOf('\t', t)
-  const col4 = line.slice(t, t5 >= 0 ? t5 : undefined)
+  const col4 = line.slice(t, t5 !== -1 ? t5 : undefined)
 
-  if (t5 >= 0) {
+  if (t5 !== -1) {
     out.push([+col4, +line.slice(t5 + 1)])
   } else if (col4.includes('-') || col4.includes(',')) {
     let i = 0
@@ -245,10 +245,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
     const genomes = genomesMatch ? genomesMatch[1]!.split(',') : []
 
-    const chromSizes = new Map<
-      string,
-      { refName: string; length: number }[]
-    >()
+    const chromSizes = new Map<string, { refName: string; length: number }[]>()
     const sizesMatch = /sizes=([^\n]+)/.exec(header)
     if (!sizesMatch) {
       console.warn(
@@ -258,12 +255,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     if (sizesMatch) {
       for (const entry of sizesMatch[1]!.split(',')) {
         const colonIdx = entry.lastIndexOf(':')
-        if (colonIdx < 0) {
+        if (colonIdx === -1) {
           continue
         }
-        const { genome, refName } = parseGfaPathName(
-          entry.slice(0, colonIdx),
-        )
+        const { genome, refName } = parseGfaPathName(entry.slice(0, colonIdx))
         const length = +entry.slice(colonIdx + 1)
         if (!chromSizes.has(genome)) {
           chromSizes.set(genome, [])
@@ -272,9 +267,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    const posRefNames = new Set(
-      await this.posFile.getReferenceSequenceNames(),
-    )
+    const posRefNames = new Set(await this.posFile.getReferenceSequenceNames())
 
     const pathsMatch = /paths=([^\n]+)/.exec(header)
     const pathNames = pathsMatch
@@ -282,7 +275,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       : sizesMatch
         ? sizesMatch[1]!.split(',').map(entry => {
             const colonIdx = entry.lastIndexOf(':')
-            return colonIdx >= 0 ? entry.slice(0, colonIdx) : entry
+            return colonIdx !== -1 ? entry.slice(0, colonIdx) : entry
           })
         : []
 
@@ -426,17 +419,11 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
   ) {
     checkStopToken(opts.stopToken)
-    const genomeRows = await this.getMultiPairFeaturesFromSegments(
-      query,
-      opts,
-    )
+    const genomeRows = await this.getMultiPairFeaturesFromSegments(query, opts)
     return { genomeRows }
   }
 
-  async getSubgraph(
-    region: Region,
-    opts: { stopToken?: StopToken } = {},
-  ) {
+  async getSubgraph(region: Region, opts: { stopToken?: StopToken } = {}) {
     const { posRefNames, pathNames } = await this.setup()
     const { refName, start, end, assemblyName } = region
 
@@ -563,7 +550,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       const sample = allSegs.slice(0, 3)
       console.log(
         `[getMultiPairFeaturesFromSegments] sample segs:`,
-        sample.map(s => `ord=${s.segOrd} pathIdx=${s.pathNameIdx} off=${s.offset} len=${s.segLen}`),
+        sample.map(
+          s =>
+            `ord=${s.segOrd} pathIdx=${s.pathNameIdx} off=${s.offset} len=${s.segLen}`,
+        ),
       )
       const uniquePathIdxs = new Set(allSegs.map(s => s.pathNameIdx))
       console.log(
@@ -590,7 +580,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
     const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
 
-
     // Debug: analyze ref segment coverage to see if there's a gap in ref itself
     {
       const sortedRef = [...refSegments].sort((a, b) => a.offset - b.offset)
@@ -598,7 +587,9 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       const gaps: string[] = []
       for (const seg of sortedRef) {
         if (seg.offset > prevEnd + 100) {
-          gaps.push(`${(prevEnd / 1e6).toFixed(3)}-${(seg.offset / 1e6).toFixed(3)}Mb (${((seg.offset - prevEnd) / 1000).toFixed(1)}kb)`)
+          gaps.push(
+            `${(prevEnd / 1e6).toFixed(3)}-${(seg.offset / 1e6).toFixed(3)}Mb (${((seg.offset - prevEnd) / 1000).toFixed(1)}kb)`,
+          )
         }
         prevEnd = Math.max(prevEnd, seg.offset + seg.segLen)
       }
@@ -811,7 +802,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           })
         }
       }
-
     }
 
     let fwdCount = 0
@@ -835,11 +825,13 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         totalFeatures++
       }
     }
-    console.log(`[getMultiPairFeaturesFromSegments] strand distribution: fwd=${fwdCount} rev=${revCount} (${(revCount / (fwdCount + revCount) * 100).toFixed(1)}% inversions)`)
+    console.log(
+      `[getMultiPairFeaturesFromSegments] strand distribution: fwd=${fwdCount} rev=${revCount} (${((revCount / (fwdCount + revCount)) * 100).toFixed(1)}% inversions)`,
+    )
     console.log(
       `[getMultiPairFeaturesFromSegments] feature bp coverage: ${globalMinBp.toLocaleString()}-${globalMaxBp.toLocaleString()}`,
       `query range: ${refName}:${start.toLocaleString()}-${end.toLocaleString()}`,
-      `features cover ${((globalMaxBp - globalMinBp) / (end - start) * 100).toFixed(1)}% of query`,
+      `features cover ${(((globalMaxBp - globalMinBp) / (end - start)) * 100).toFixed(1)}% of query`,
       `total features: ${totalFeatures} across ${genomeRows.size} genomes`,
     )
 
@@ -849,21 +841,25 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       if (features.length > 0) {
         const gMin = Math.min(...features.map(f => f.start))
         const gMax = Math.max(...features.map(f => f.end))
-        coverageSummary.push(`${genomeName}: ${features.length} feats ${(gMin / 1e6).toFixed(2)}-${(gMax / 1e6).toFixed(2)}Mb`)
+        coverageSummary.push(
+          `${genomeName}: ${features.length} feats ${(gMin / 1e6).toFixed(2)}-${(gMax / 1e6).toFixed(2)}Mb`,
+        )
       }
     }
     if (coverageSummary.length <= 10) {
-      console.log(`[getMultiPairFeaturesFromSegments] per-genome:`, coverageSummary)
+      console.log(
+        `[getMultiPairFeaturesFromSegments] per-genome:`,
+        coverageSummary,
+      )
     } else {
-      console.log(`[getMultiPairFeaturesFromSegments] first 5 genomes:`, coverageSummary.slice(0, 5))
+      console.log(
+        `[getMultiPairFeaturesFromSegments] first 5 genomes:`,
+        coverageSummary.slice(0, 5),
+      )
     }
 
     if (this.bubblesFile && opts.bpPerPx && opts.bpPerPx < 50) {
-      await this.annotateFeaturesWithBubbleCs(
-        genomeRows,
-        query,
-        opts,
-      )
+      await this.annotateFeaturesWithBubbleCs(genomeRows, query, opts)
     }
 
     return genomeRows
@@ -919,10 +915,16 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         const identity = +cols[5]!
         const cs = cols[6] ?? ''
         const genomesA = new Set(
-          (cols[7] ?? '').split(',').filter(s => s.length > 0).map(Number),
+          (cols[7] ?? '')
+            .split(',')
+            .filter(s => s.length > 0)
+            .map(Number),
         )
         const genomesB = new Set(
-          (cols[8] ?? '').split(',').filter(s => s.length > 0).map(Number),
+          (cols[8] ?? '')
+            .split(',')
+            .filter(s => s.length > 0)
+            .map(Number),
         )
         bubbles.push({
           start: bStart,
@@ -965,9 +967,9 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     let unmatchedGenomes = 0
     for (const [genomeName, features] of genomeRows) {
       // Try both the remapped name and reverse-mapped original name
-      const origName = Object.entries(nameMap).find(
-        ([, v]) => v === genomeName,
-      )?.[0] ?? genomeName
+      const origName =
+        Object.entries(nameMap).find(([, v]) => v === genomeName)?.[0] ??
+        genomeName
       const gIdx = genomeIdx.get(origName) ?? genomeIdx.get(genomeName)
       if (gIdx === undefined) {
         unmatchedGenomes++
@@ -981,44 +983,64 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       // not be that same assembly.  We resolve the ref assembly's genome index
       // in the bubbles header and check: if it is allele 0 for bubble records,
       // the view is ref-centric; otherwise we need to find the correct pair.
-      const refOrigName = Object.entries(nameMap).find(
-        ([, v]) => v === assemblyName,
-      )?.[0] ?? assemblyName
+      const refOrigName =
+        Object.entries(nameMap).find(([, v]) => v === assemblyName)?.[0] ??
+        assemblyName
 
       // The ref genome of the VCF is always allele 0 by convention (from vg
       // deconstruct).  If the view's ref assembly matches the VCF ref, refAllele=0.
       // Otherwise we need to find its allele index per-locus.
-      const refGenomeIdx = genomeIdx.get(refOrigName) ?? genomeIdx.get(assemblyName)
+      const refGenomeIdx =
+        genomeIdx.get(refOrigName) ?? genomeIdx.get(assemblyName)
 
       for (const feat of features) {
-        const overlapping = bubbles.filter(
-          b => b.end > feat.start && b.start < feat.end,
-        )
-        if (overlapping.length === 0) {
-          continue
-        }
-
-        // Deduplicate to unique loci (multiple allele-pair records share same
-        // start/end).  We only want to walk each locus once.
-        const seenLoci = new Set<string>()
-        const uniqueLoci: { start: number; end: number }[] = []
-        for (const b of overlapping) {
-          const key = `${b.start}:${b.end}`
-          if (!seenLoci.has(key)) {
-            seenLoci.add(key)
-            uniqueLoci.push({ start: b.start, end: b.end })
+        // Binary search for the first bubble that could overlap this feature.
+        // Bubbles are sorted by start, so find first where end > feat.start.
+        let lo = 0
+        let hi = bubbles.length
+        while (lo < hi) {
+          const mid = (lo + hi) >>> 1
+          if (bubbles[mid]!.end <= feat.start) {
+            lo = mid + 1
+          } else {
+            hi = mid
           }
         }
 
+        // Collect unique loci directly from the sorted scan
+        const uniqueLoci: { start: number; end: number }[] = []
+        let prevStart = -1
+        let prevEnd = -1
+        for (let bi = lo; bi < bubbles.length; bi++) {
+          const b = bubbles[bi]!
+          if (b.start >= feat.end) {
+            break
+          }
+          if (b.start !== prevStart || b.end !== prevEnd) {
+            uniqueLoci.push({ start: b.start, end: b.end })
+            prevStart = b.start
+            prevEnd = b.end
+          }
+        }
+        if (uniqueLoci.length === 0) {
+          continue
+        }
+
         const csParts: string[] = []
+        let identityMatchBp = 0
+        let identityTotalBp = 0
         let pos = feat.start
         for (const locus of uniqueLoci) {
           if (locus.start > pos) {
-            csParts.push(`:${locus.start - pos}`)
+            const gap = locus.start - pos
+            csParts.push(`:${gap}`)
+            identityMatchBp += gap
+            identityTotalBp += gap
           }
 
           const locusKey = `${locus.start}:${locus.end}`
           const records = locusBubbles.get(locusKey) ?? []
+          const locusLen = locus.end - locus.start
 
           // Find which allele this genome carries at this locus
           let queryAllele: number | undefined
@@ -1052,10 +1074,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
             viewRefAllele = 0
           }
 
-          if (
-            queryAllele !== undefined &&
-            queryAllele !== viewRefAllele
-          ) {
+          if (queryAllele !== undefined && queryAllele !== viewRefAllele) {
             // Find the pairwise CS record between the view-ref allele and query allele
             const pairRecord = records.find(
               r =>
@@ -1064,26 +1083,42 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
             )
             if (pairRecord) {
               csParts.push(pairRecord.cs)
+              identityMatchBp += pairRecord.identity * locusLen
+              identityTotalBp += locusLen
             } else {
-              csParts.push(`:${locus.end - locus.start}`)
+              csParts.push(`:${locusLen}`)
+              identityMatchBp += locusLen
+              identityTotalBp += locusLen
             }
           } else {
-            csParts.push(`:${locus.end - locus.start}`)
+            csParts.push(`:${locusLen}`)
+            identityMatchBp += locusLen
+            identityTotalBp += locusLen
           }
           pos = locus.end
         }
         if (pos < feat.end) {
-          csParts.push(`:${feat.end - pos}`)
+          const trailing = feat.end - pos
+          csParts.push(`:${trailing}`)
+          identityMatchBp += trailing
+          identityTotalBp += trailing
         }
         feat.cs = csParts.join('')
+        if (identityTotalBp > 0) {
+          feat.identity = identityMatchBp / identityTotalBp
+        }
       }
     }
     console.log(
       `[annotateFeaturesWithBubbleCs] ${bubbles.length} bubbles, ${matchedGenomes} matched genomes, ${unmatchedGenomes} unmatched genomes`,
       unmatchedGenomes > 0
         ? `(first unmatched: ${[...genomeRows.keys()].find(n => {
-            const orig = Object.entries(nameMap).find(([, v]) => v === n)?.[0] ?? n
-            return genomeIdx.get(orig) === undefined && genomeIdx.get(n) === undefined
+            const orig =
+              Object.entries(nameMap).find(([, v]) => v === n)?.[0] ?? n
+            return (
+              genomeIdx.get(orig) === undefined &&
+              genomeIdx.get(n) === undefined
+            )
           })}, bubbles genomes: ${[...genomeIdx.keys()].slice(0, 3).join(',')}...)`
         : '',
     )

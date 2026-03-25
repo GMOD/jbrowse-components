@@ -7,6 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { parsePAFLine } from '../util.ts'
 
+import type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 import type { SyriType } from '../syriUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -18,8 +19,6 @@ import type { FileLocation, Region } from '@jbrowse/core/util/types'
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
 }
-
-import type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 
 export type { MultiPairFeature, PairInfo } from '../MultiPairFeature.ts'
 
@@ -148,7 +147,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
     // Match both single-pair (q, t) and multi-pair (q0, q1, t0, t1) prefixes
     // Exclude summary (sq, st) and structural (xq, xt) prefixes
-    const fullPrefixRegex = new RegExp(`^${letter}\\d*`)
+    const fullPrefixRegex = new RegExp(String.raw`^${letter}\d*`)
     const excludePrefixRegex = new RegExp(`^[sx]${letter}`)
 
     const refNames = new Set<string>()

@@ -24,8 +24,8 @@ implementation.
 
 `bubblesLocation`/`bubblesIndex` config added to both adapter schemas.
 `annotateFeaturesWithBubbleCs()` queries bubbles at zoom-in (bpPerPx < 50),
-finds genome alleles, attaches CS to features. Debug logging reports matched
-vs unmatched genome counts.
+finds genome alleles, attaches CS to features. Debug logging reports matched vs
+unmatched genome counts.
 
 ## Cleanup
 
@@ -67,7 +67,8 @@ differ from GFA genome names.
 - Created `volvox_del_synteny.gfa` from minimap2 alignment of volvox vs
   volvox_del (4 segments, 2 genomes, deletion at 28498-33358)
 - Processed through gfa-to-tabix -> pos.bed.gz, segments.bin, segments.idx
-- Added `volvox_del_gfa_multi` MultiSyntenyTrack to `test_data/volvox/config.json`
+- Added `volvox_del_gfa_multi` MultiSyntenyTrack to
+  `test_data/volvox/config.json`
 - 4 browser e2e tests: canvas + fullpage screenshots from both volvox and
   volvox_del perspectives
 - Helper scripts: `scripts/paf-to-gfa.ts` (PAF->GFA converter)
@@ -83,24 +84,42 @@ on volvox ctgA (50001bp). Seeded RNG for deterministic output. Produces:
 - Bubbles BED with CS strings computed directly from known variant alleles
 
 Generated files in `test_data/volvox/`:
+
 - `volvox_pangenome_50.gfa` (249K)
 - `volvox_pangenome_50.pos.bed.gz` + `.tbi` (21K)
 - `volvox_pangenome_50.segments.bin` (588K) + `.idx` (9.3K)
 - `volvox_pangenome_50.bubbles.bed.gz` + `.tbi` (19K, 390 records)
 
-Config: `test_data/config_volvox_pangenome_50.json` with GfaTabixAdapter + bubbles.
-Also added to main volvox config as `volvox_pangenome_50_multi` track.
+Config: `test_data/config_volvox_pangenome_50.json` with GfaTabixAdapter +
+bubbles. Also added to main volvox config as `volvox_pangenome_50_multi` track.
 
 Browser e2e tests in `suites/multi-lgv-pangenome-50.ts`:
+
 - Full genome canvas + page snapshots (50 genome rows)
 - Zoomed-in view (ctgA:100-300) to exercise bubble CS rendering
 
 ## VCF variant tracks alongside synteny
 
 All HPRC configs now include a VcfTabixAdapter variant track for the source
-`vg deconstruct` VCF alongside the GfaTabix multi-synteny track. This lets
-users compare the graph-based synteny rendering against the standard multi-sample
+`vg deconstruct` VCF alongside the GfaTabix multi-synteny track. This lets users
+compare the graph-based synteny rendering against the standard multi-sample
 variant call representation. Files uploaded to S3.
+
+## Bubble-derived identity coloring
+
+`annotateFeaturesWithBubbleCs` now computes weighted-average identity from
+precomputed `pairRecord.identity` values during CS assembly. Each bubble locus
+contributes its identity proportional to locus length; inter-locus gaps and
+matching alleles count as 100% identity. This replaces the coarse
+segment-overlap ratio (`matchBp / span`) with true base-level identity for
+features that have bubble annotation.
+
+## CS parsing deduplication
+
+Removed duplicate `isCsOpChar` and `parseCsSeqLen` from
+`multiSyntenyGpuData.ts`, now imports from `cigarConstants.ts`. Also cleaned up
+inline `isCsOpChar` check in `csUtils.ts` `csToCigar` to use the existing
+private helper.
 
 ## Genome name mismatch fix
 

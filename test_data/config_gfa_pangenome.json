@@ -45,7 +45,7 @@
           "uri": "volvox/volvox_pangenome.segments.bin",
           "locationType": "UriLocation"
         },
-"segmentsIdxLocation": {
+        "segmentsIdxLocation": {
           "uri": "volvox/volvox_pangenome.segments.idx",
           "locationType": "UriLocation"
         },
@@ -89,7 +89,7 @@
           "uri": "volvox/volvox_pangenome.segments.bin",
           "locationType": "UriLocation"
         },
-"segmentsIdxLocation": {
+        "segmentsIdxLocation": {
           "uri": "volvox/volvox_pangenome.segments.idx",
           "locationType": "UriLocation"
         }

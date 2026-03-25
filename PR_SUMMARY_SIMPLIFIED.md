@@ -86,7 +86,9 @@ samB:    s1──s7──s8──s4──s5       ref:300-450  → 2          2 
                                   ...                       ...
 ```
 
-Segments (graph nodes) are assigned sequential numeric ordinals. These are internal IDs used as array indices into the companion byte-offset index — they have no meaning outside a given file set.
+Segments (graph nodes) are assigned sequential numeric ordinals. These are
+internal IDs used as array indices into the companion byte-offset index — they
+have no meaning outside a given file set.
 
 ## How a Query Works
 
@@ -138,8 +140,8 @@ output often omits them.
 
 ### How it works
 
-The converter walks every pair of paths (first genome as reference vs each
-other genome) and uses **shared segments as alignment anchors**:
+The converter walks every pair of paths (first genome as reference vs each other
+genome) and uses **shared segments as alignment anchors**:
 
 ```
 ref path:     s1 ── s2 ── s3 ── s4 ── s5
@@ -185,14 +187,15 @@ ref#1#chr1  0  530  query#1  chr1  0  470  +  :100:200-aaccgg...+ttggcc...:80
 
 ### How it's used at runtime
 
-When `aln.bed.gz` is configured and available, the GfaTabixAdapter
-**skips segment-based merging entirely** and reads precomputed alignment blocks
+When `aln.bed.gz` is configured and available, the GfaTabixAdapter **skips
+segment-based merging entirely** and reads precomputed alignment blocks
 directly. This is the `isAlnAvailable()` check — if it returns true,
 `getMultiPairFeaturesFromAln()` is used instead of
 `getMultiPairFeaturesFromSegments()`.
 
 The cs tag is converted to CIGAR for rendering and used to compute per-feature
 identity (match bases / total aligned bases). This enables:
+
 - **SNP coloring** when zoomed to base level
 - **Insertion/deletion visualization** in the synteny display
 - **Identity shading** based on actual sequence similarity, not just segment
@@ -212,9 +215,9 @@ structural overview.
 The converter computes alignments for **all genome pairs**, not just from a
 single reference. For each pair (A, B), it computes A→B using shared segment
 anchors, then derives B→A by swapping coordinates and flipping the cs tag
-(`+seq` ↔ `-seq`, `*xy` → `*yx`). This means `aln.bed.gz` is queryable from
-any genome as reference — the same "any genome as reference" property as the
-segment index.
+(`+seq` ↔ `-seq`, `*xy` → `*yx`). This means `aln.bed.gz` is queryable from any
+genome as reference — the same "any genome as reference" property as the segment
+index.
 
 The cost is ~2× the rows compared to single-reference (each pair produces two
 rows instead of one), but the computation is only done once per pair — the
@@ -249,13 +252,13 @@ overlaps throughout.
 
 **Tool compatibility:**
 
-| Tool               | GFA version | Path type | Supported |
-| ------------------ | ----------- | --------- | --------- |
-| pggb               | GFA 1.0     | P-lines   | Yes       |
-| minigraph-cactus   | GFA 1.1     | W-lines   | Yes       |
-| vg (export)        | GFA 1.0/1.1 | P or W    | Yes       |
-| odgi (export)      | GFA 1.0     | P-lines   | Yes       |
-| minigraph (rGFA)   | rGFA        | None      | No (see `RGFA_PLAN.md`) |
+| Tool             | GFA version | Path type | Supported               |
+| ---------------- | ----------- | --------- | ----------------------- |
+| pggb             | GFA 1.0     | P-lines   | Yes                     |
+| minigraph-cactus | GFA 1.1     | W-lines   | Yes                     |
+| vg (export)      | GFA 1.0/1.1 | P or W    | Yes                     |
+| odgi (export)    | GFA 1.0     | P-lines   | Yes                     |
+| minigraph (rGFA) | rGFA        | None      | No (see `RGFA_PLAN.md`) |
 
 ## Usage
 
@@ -282,21 +285,22 @@ segments and _P_ paths where each segment appears in _k_ paths on average, the
 file has _S × k_ rows. In pangenome graphs, conserved segments are shared by
 nearly all paths, so _k_ approaches _P_ for those segments.
 
-| Scale | Segments | Paths | Est. segments.gz rows | segments.idx |
-| ----- | -------- | ----- | --------------------- | ------------ |
-| HPRC chr20 | 1.86M | 90 | ~100M | ~15MB |
-| HPRC whole genome | ~30M | 90 | ~1.6B | ~240MB |
-| 1000 haplotypes | ~2M | 1000 | ~1B+ | ~16MB |
+| Scale             | Segments | Paths | Est. segments.gz rows | segments.idx |
+| ----------------- | -------- | ----- | --------------------- | ------------ |
+| HPRC chr20        | 1.86M    | 90    | ~100M                 | ~15MB        |
+| HPRC whole genome | ~30M     | 90    | ~1.6B                 | ~240MB       |
+| 1000 haplotypes   | ~2M      | 1000  | ~1B+                  | ~16MB        |
 
-At query time, the adapter fetches **all paths** for the queried segment ordinals. With 90 paths this is fast; with 1000+ paths,
-a small genomic region pulls megabytes of segment rows even if the user only
-has a few genomes visible. The adapter parses and filters client-side, but the
-network cost is paid regardless.
+At query time, the adapter fetches **all paths** for the queried segment
+ordinals. With 90 paths this is fast; with 1000+ paths, a small genomic region
+pulls megabytes of segment rows even if the user only has a few genomes visible.
+The adapter parses and filters client-side, but the network cost is paid
+regardless.
 
-**Conversion memory:** The TypeScript converter accumulates all segment rows
-in memory before sorting (`segsRows` array). At 1B+ rows this exceeds
-available memory. The Rust implementation streams to an external sort, so it
-handles larger inputs but still produces the same large output file.
+**Conversion memory:** The TypeScript converter accumulates all segment rows in
+memory before sorting (`segsRows` array). At 1B+ rows this exceeds available
+memory. The Rust implementation streams to an external sort, so it handles
+larger inputs but still produces the same large output file.
 
 See the Caveats section for planned mitigations.
 
@@ -308,7 +312,8 @@ See the Caveats section for planned mitigations.
   `aln.bed.gz`.
 - **Companion index is a flat array.** ~15MB for 1.86M segments (HPRC chr20);
   only needed offsets are fetched via range requests.
-- **Segment ordinals are internal.** Assigned in GFA path-traversal order; only valid within one file set.
+- **Segment ordinals are internal.** Assigned in GFA path-traversal order; only
+  valid within one file set.
 - **No path filtering in segments.gz.** Querying a segment range fetches all
   paths' data for those segments. With 90 haplotypes this is fine; at 1000+
   paths, queries fetch far more data than displayed. Possible mitigations:
@@ -402,12 +407,12 @@ frequencies; GFA Tabix at large-scale structural synteny. Complementary.
 
 ### pos.bed.gz (tabix)
 
-| Column     | Description                              |
-| ---------- | ---------------------------------------- |
-| pathName   | Genome path (e.g. `ref#1#chr1`)          |
-| chunkStart | Start coordinate                         |
-| chunkEnd   | End coordinate                           |
-| ordinals   | Range-encoded ordinals for this chunk    |
+| Column     | Description                           |
+| ---------- | ------------------------------------- |
+| pathName   | Genome path (e.g. `ref#1#chr1`)       |
+| chunkStart | Start coordinate                      |
+| chunkEnd   | End coordinate                        |
+| ordinals   | Range-encoded ordinals for this chunk |
 
 The ordinal column uses range notation to compactly express lists of segment
 ordinals. Consecutive ordinals are collapsed into `start-end` ranges;
@@ -422,8 +427,8 @@ ref#1#chr1  0  76082  787815-787914
 ref#1#chr1  0  76082  0-23,58-80,121-170,1119592-1119596
 ```
 
-The second example shows a region where the reference path traverses two
-groups of consecutive shared segments (0–23, 58–80, 121–170) and a cluster of
+The second example shows a region where the reference path traverses two groups
+of consecutive shared segments (0–23, 58–80, 121–170) and a cluster of
 assembly-private segments (1119592–1119596) — a typical pattern in pangenome
 graphs where conserved regions have dense consecutive ordinals and divergent
 regions have sparse ones.
@@ -460,13 +465,13 @@ names. This avoids repeating 30-character path names millions of times.
 3  2  450  80   +
 ```
 
-| Column   | Description                                  |
-| -------- | -------------------------------------------- |
-| ordinal  | Numeric segment ID (0, 1, 2, ...)            |
-| pathIdx  | Index into `#paths=` header                  |
-| offset   | Position within that genome's path           |
-| segLen   | Length in bases                              |
-| strand   | `+` or `-`                                   |
+| Column  | Description                        |
+| ------- | ---------------------------------- |
+| ordinal | Numeric segment ID (0, 1, 2, ...)  |
+| pathIdx | Index into `#paths=` header        |
+| offset  | Position within that genome's path |
+| segLen  | Length in bases                    |
+| strand  | `+` or `-`                         |
 
 One row per (segment, genome) pair.
 

@@ -5,9 +5,9 @@
 // Re-export generic GPU utilities for convenience
 export {
   STANDARD_BLEND_STATE,
+  createStandardBindGroup,
   createStandardBindGroupLayout,
   createStorageBuffer,
-  createStandardBindGroup,
 } from '@jbrowse/core/gpu/webgpuUtils'
 export { enableStandardBlend } from '@jbrowse/core/gpu/webglUtils'
 
@@ -15,7 +15,11 @@ export function getDevicePixelRatio() {
   return typeof window !== 'undefined' ? window.devicePixelRatio : 2
 }
 
-export function resizeCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
+export function resizeCanvas(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+) {
   const dpr = getDevicePixelRatio()
   const pw = Math.round(width * dpr)
   const ph = Math.round(height * dpr)
@@ -48,7 +52,7 @@ export function createPickingFbo(
     return undefined
   }
 
-  const colorTex = gl.createTexture()!
+  const colorTex = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, colorTex)
   gl.texImage2D(
     gl.TEXTURE_2D,
@@ -64,7 +68,7 @@ export function createPickingFbo(
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
-  const fbo = gl.createFramebuffer()!
+  const fbo = gl.createFramebuffer()
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
   gl.framebufferTexture2D(
     gl.FRAMEBUFFER,

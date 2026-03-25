@@ -1,10 +1,9 @@
 import path from 'path'
 import { parseArgs } from 'util'
 
+import { createGfaDatabase, populateFromGfa } from './gfa-to-sqlite.ts'
 import { printHelp } from '../../utils.ts'
 import { validateFileArgument } from '../shared/validators.ts'
-
-import { createGfaDatabase, populateFromGfa } from './gfa-to-sqlite.ts'
 
 export async function run(args?: string[]) {
   const options = {

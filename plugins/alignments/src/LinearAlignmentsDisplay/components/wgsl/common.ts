@@ -1,9 +1,4 @@
 import { HP_WGSL_CORE } from '@jbrowse/alignments-core'
-import {
-  RECT_LOCALS_WGSL,
-  SIMPLE_FS_WGSL,
-  SIMPLE_VERTEX_OUTPUT_WGSL,
-} from '@jbrowse/alignments-core'
 
 // Re-export shared HP functions. Call sites pass uf(5u) (U_HP_ZERO) as the
 // hp_zero parameter: hp_to_clip_x(pos, range, uf(5u))
@@ -32,9 +27,6 @@ fn feature_spacing() -> f32 { return uf(10u); }
 export const PREAMBLE = UNIFORM_WGSL + HP_WGSL
 
 // Re-export shared shader fragments for backward compat with existing references
-export const SIMPLE_FS = SIMPLE_FS_WGSL
-export const SIMPLE_VERTEX_OUTPUT = SIMPLE_VERTEX_OUTPUT_WGSL
-export const RECT_LOCALS = RECT_LOCALS_WGSL
 
 export const PILEUP_Y = `
 fn pileup_y(row: f32) -> vec2f {
@@ -138,3 +130,9 @@ export const ARC_HEIGHT_MARGIN = 8
 export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2
 export const NUM_SASHIMI_COLORS = 2
+
+export {
+  RECT_LOCALS_WGSL as RECT_LOCALS,
+  SIMPLE_FS_WGSL as SIMPLE_FS,
+  SIMPLE_VERTEX_OUTPUT_WGSL as SIMPLE_VERTEX_OUTPUT,
+} from '@jbrowse/alignments-core'

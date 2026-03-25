@@ -1,8 +1,8 @@
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 import {
-  prepareMultiSyntenyGpuData,
   computeRegionRenderParams,
+  prepareMultiSyntenyGpuData,
 } from './multiSyntenyGpuData.ts'
 import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
@@ -195,14 +195,14 @@ describe('prepareMultiSyntenyGpuData', () => {
       if (inst.startBp === 1050 && inst.endBp === 1060) {
         foundMismatch = true
         // Mismatch color #f00 → r=1, g=0, b=0
-        expect(inst.r).toBeCloseTo(1.0, 1)
-        expect(inst.g).toBeCloseTo(0.0, 1)
+        expect(inst.r).toBeCloseTo(1, 1)
+        expect(inst.g).toBeCloseTo(0, 1)
       }
     }
     expect(foundMismatch).toBe(true)
   })
 
-  test('expands CIGAR insertions as 1bp markers', () => {
+  test('expands CIGAR insertions as interbase markers', () => {
     const genomeRows = new Map([
       ['genomeA', [feat({ cigar: '50M5I50M', start: 1000, end: 1100 })]],
     ])
@@ -218,8 +218,8 @@ describe('prepareMultiSyntenyGpuData', () => {
     let foundInsertion = false
     for (let i = 0; i < result.instanceCount; i++) {
       const inst = readInstance(result.buffer, i)
-      // Insertion at refPos=50, so startBp=1050, endBp=1051 (1bp marker)
-      if (inst.startBp === 1050 && inst.endBp === 1051) {
+      // Insertion at refPos=50, so startBp=endBp=1050 (interbase)
+      if (inst.startBp === 1050 && inst.endBp === 1050) {
         foundInsertion = true
       }
     }
@@ -228,10 +228,7 @@ describe('prepareMultiSyntenyGpuData', () => {
 
   test('insertions do not advance reference position', () => {
     const genomeRows = new Map([
-      [
-        'genomeA',
-        [feat({ cigar: '50M5I10D40M', start: 1000, end: 1100 })],
-      ],
+      ['genomeA', [feat({ cigar: '50M5I10D40M', start: 1000, end: 1100 })]],
     ])
     const result = prepareMultiSyntenyGpuData(
       genomeRows,
@@ -303,7 +300,7 @@ describe('prepareMultiSyntenyGpuData', () => {
     expect(foundDel).toBe(true)
   })
 
-  test('expands cs insertions as 1bp markers', () => {
+  test('expands cs insertions as interbase markers', () => {
     const genomeRows = new Map([
       ['genomeA', [feat({ cs: ':50+acgt:50', start: 1000, end: 1100 })]],
     ])
@@ -319,7 +316,8 @@ describe('prepareMultiSyntenyGpuData', () => {
     let foundIns = false
     for (let i = 0; i < result.instanceCount; i++) {
       const inst = readInstance(result.buffer, i)
-      if (inst.startBp === 1050 && inst.endBp === 1051) {
+      // Interbase: startBp == endBp
+      if (inst.startBp === 1050 && inst.endBp === 1050) {
         foundIns = true
       }
     }

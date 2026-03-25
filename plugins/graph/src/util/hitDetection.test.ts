@@ -1,6 +1,6 @@
 import {
-  distanceToSegment,
   distanceToCubicBezier,
+  distanceToSegment,
   findHoveredNode,
 } from './hitDetection.ts'
 

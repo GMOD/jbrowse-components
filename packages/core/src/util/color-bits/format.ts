@@ -1,5 +1,6 @@
-import type { Color } from './core.ts'
 import { getAlpha, getBlue, getGreen, getRed } from './core.ts'
+
+import type { Color } from './core.ts'
 
 // Return buffer, avoid allocations
 const buffer: [number, number, number] = [0, 0, 0]
@@ -17,22 +18,15 @@ export const format = formatHEXA
 
 /** Format to a #RRGGBBAA string */
 export function formatHEXA(color: Color) {
-  return (
-    '#' +
-    FORMAT_HEX[getRed(color)] +
-    FORMAT_HEX[getGreen(color)] +
-    FORMAT_HEX[getBlue(color)] +
-    FORMAT_HEX[getAlpha(color)]
-  )
+  return `#${FORMAT_HEX[getRed(color)]}${FORMAT_HEX[getGreen(color)]}${
+    FORMAT_HEX[getBlue(color)]
+  }${FORMAT_HEX[getAlpha(color)]}`
 }
 
 export function formatHEX(color: Color) {
-  return (
-    '#' +
-    FORMAT_HEX[getRed(color)] +
-    FORMAT_HEX[getGreen(color)] +
-    FORMAT_HEX[getBlue(color)]
-  )
+  return `#${FORMAT_HEX[getRed(color)]}${
+    FORMAT_HEX[getGreen(color)]
+  }${FORMAT_HEX[getBlue(color)]}`
 }
 
 export function formatRGBA(color: Color) {

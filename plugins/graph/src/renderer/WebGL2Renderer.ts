@@ -1,6 +1,6 @@
 import type {
-  Renderer,
   RenderBatch,
+  Renderer,
   SubBatch,
   TransformUniform,
 } from './types.ts'
@@ -68,12 +68,12 @@ export class WebGL2Renderer implements Renderer {
     const vs = this.compileShader(gl.VERTEX_SHADER, vertexShaderSource)
     const fs = this.compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource)
 
-    const program = gl.createProgram()!
+    const program = gl.createProgram()
     gl.attachShader(program, vs)
     gl.attachShader(program, fs)
     gl.linkProgram(program)
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error('Shader link failed: ' + gl.getProgramInfoLog(program))
+      throw new Error(`Shader link failed: ${gl.getProgramInfoLog(program)}`)
     }
     this.program = program
 
@@ -92,7 +92,7 @@ export class WebGL2Renderer implements Renderer {
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
       const info = this.gl.getShaderInfoLog(shader)
       this.gl.deleteShader(shader)
-      throw new Error('Shader compile failed: ' + info)
+      throw new Error(`Shader compile failed: ${info}`)
     }
     return shader
   }
@@ -100,34 +100,34 @@ export class WebGL2Renderer implements Renderer {
   private createSubBatchBuffers(batch: SubBatch): SubBatchBuffers {
     const gl = this.gl
 
-    const vao = gl.createVertexArray()!
+    const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
 
-    const positionBuffer = gl.createBuffer()!
+    const positionBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, batch.positions, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(0)
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
 
-    const normalBuffer = gl.createBuffer()!
+    const normalBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, batch.normals, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(1)
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0)
 
-    const thicknessBuffer = gl.createBuffer()!
+    const thicknessBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, thicknessBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, batch.thicknesses, gl.STATIC_DRAW)
     gl.enableVertexAttribArray(2)
     gl.vertexAttribPointer(2, 1, gl.FLOAT, false, 0, 0)
 
-    const colorBuffer = gl.createBuffer()!
+    const colorBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, batch.colors, gl.DYNAMIC_DRAW)
     gl.enableVertexAttribArray(3)
     gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 0, 0)
 
-    const indexBuffer = gl.createBuffer()!
+    const indexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, batch.indices, gl.STATIC_DRAW)
 
@@ -158,8 +158,8 @@ export class WebGL2Renderer implements Renderer {
     const dpr = window.devicePixelRatio || 1
     this.gl.canvas.width = width * dpr
     this.gl.canvas.height = height * dpr
-    ;(this.gl.canvas as HTMLCanvasElement).style.width = width + 'px'
-    ;(this.gl.canvas as HTMLCanvasElement).style.height = height + 'px'
+    ;(this.gl.canvas as HTMLCanvasElement).style.width = `${width}px`
+    ;(this.gl.canvas as HTMLCanvasElement).style.height = `${height}px`
     this.gl.viewport(0, 0, width * dpr, height * dpr)
   }
 

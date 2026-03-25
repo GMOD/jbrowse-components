@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { Tooltip } from '@mui/material'
-import { observer } from 'mobx-react'
-import { autorun } from 'mobx'
-
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { Tooltip } from '@mui/material'
+import { autorun } from 'mobx'
+import { observer } from 'mobx-react'
 
+import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
+import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
-import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
-import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { FeatureHitResult } from './hitTesting.ts'
+import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MultiSyntenyModel {
@@ -36,9 +35,7 @@ function formatTooltip(hit: FeatureHitResult) {
     `Query: ${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()} (${getBpDisplayStr(querySize)})`,
     feat.strand === -1 ? 'Inverted' : '',
     feat.syriType ? `Type: ${feat.syriType}` : '',
-    feat.identity > 0
-      ? `Identity: ${(feat.identity * 100).toFixed(1)}%`
-      : '',
+    feat.identity > 0 ? `Identity: ${(feat.identity * 100).toFixed(1)}%` : '',
     feat.segmentId ? `Segment: ${feat.segmentId}` : '',
   ]
 
@@ -59,7 +56,7 @@ function formatTooltip(hit: FeatureHitResult) {
         if (cigarItem.insertionSeq) {
           const seq =
             cigarItem.insertionSeq.length > 20
-              ? cigarItem.insertionSeq.slice(0, 20) + '...'
+              ? `${cigarItem.insertionSeq.slice(0, 20)}...`
               : cigarItem.insertionSeq
           lines.push(`Seq: ${seq}`)
         }
@@ -83,7 +80,10 @@ function featureToRect(
   view: LinearGenomeViewModel,
   viewWidth: number,
 ) {
-  const px1 = view.bpToPx({ refName: feature.origRefName, coord: feature.start })
+  const px1 = view.bpToPx({
+    refName: feature.origRefName,
+    coord: feature.start,
+  })
   const px2 = view.bpToPx({ refName: feature.origRefName, coord: feature.end })
   if (!px1 || !px2) {
     return undefined
@@ -115,10 +115,24 @@ function FeatureHighlightOverlay({
   height: number
 }) {
   const hoverRect = hoveredHit
-    ? featureToRect(hoveredHit.feature, hoveredHit.sampleIdx, rowHeight, labelW, view, width)
+    ? featureToRect(
+        hoveredHit.feature,
+        hoveredHit.sampleIdx,
+        rowHeight,
+        labelW,
+        view,
+        width,
+      )
     : undefined
   const selectRect = selectedHit
-    ? featureToRect(selectedHit.feature, selectedHit.sampleIdx, rowHeight, labelW, view, width)
+    ? featureToRect(
+        selectedHit.feature,
+        selectedHit.sampleIdx,
+        rowHeight,
+        labelW,
+        view,
+        width,
+      )
     : undefined
 
   if (!hoverRect && !selectRect) {
@@ -185,16 +199,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       return
     }
     let cancelled = false
-    console.log('[MultiSyntenyRendering] Initializing renderer, canvas:', canvas.width, 'x', canvas.height)
     const renderer = MultiSyntenyRenderer.getOrCreate(canvas)
     renderer
       .init()
       .then(() => {
         if (cancelled) {
-          console.log('[MultiSyntenyRendering] Init completed but cancelled')
           return
         }
-        console.log('[MultiSyntenyRendering] Renderer ready, isGpu:', renderer.isGpu)
         rendererRef.current = renderer
         setReady(true)
       })
@@ -220,26 +231,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // either way.
   useEffect(() => {
     if (!ready) {
-      console.log('[MultiSyntenyRendering] Upload autorun skipped: ready=false')
       return
     }
     return autorun(() => {
       const renderer = rendererRef.current
-      console.log(
-        '[MultiSyntenyRendering] Upload autorun fired:',
-        'renderer:', !!renderer,
-        'isGpu:', renderer?.isGpu,
-        'genomeRows:', model.genomeRows.size,
-        'displayedGenomes:', model.displayedGenomes.length,
-      )
       if (renderer?.isGpu) {
         const { genomeRows, displayedGenomes, colorBy, showSnps } = model
-        renderer.uploadGeometry(
-          genomeRows,
-          displayedGenomes,
-          colorBy,
-          showSnps,
-        )
+        renderer.uploadGeometry(genomeRows, displayedGenomes, colorBy, showSnps)
       }
     })
   }, [ready, model, view])
@@ -250,7 +248,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // LinearAlignmentsDisplay:draw autorun tracking self.dataVersion.
   useEffect(() => {
     if (!ready) {
-      console.log('[MultiSyntenyRendering] Draw autorun skipped: ready=false')
       return
     }
     return autorun(() => {
@@ -261,13 +258,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         const { height, rowHeight } = model
         const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
         const contentBlocks = view.staticBlocks.contentBlocks
-        console.log(
-          '[MultiSyntenyRendering] Draw autorun:',
-          'dataVersion:', _dv,
-          'contentBlocks:', contentBlocks.length,
-          'height:', height,
-          'rowHeight:', rowHeight,
-        )
         renderer.renderGpu(
           contentBlocks,
           view.offsetPx,
@@ -283,16 +273,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // Canvas2D fallback path
   useEffect(() => {
     if (!ready) {
-      console.log('[MultiSyntenyRendering] Canvas2D autorun skipped: ready=false')
       return
     }
     return autorun(() => {
       const renderer = rendererRef.current
-      console.log(
-        '[MultiSyntenyRendering] Canvas2D autorun fired:',
-        'renderer:', !!renderer,
-        'isGpu:', renderer?.isGpu,
-      )
       if (renderer && !renderer.isGpu) {
         const {
           genomeRows,
@@ -332,7 +316,10 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // Hide tooltip and hover on zoom or scroll changes
   useEffect(() => {
     const prev = prevViewRef.current
-    if (prev.bpPerPx !== 0 && (prev.bpPerPx !== bpPerPx || prev.offsetPx !== offsetPx)) {
+    if (
+      prev.bpPerPx !== 0 &&
+      (prev.bpPerPx !== bpPerPx || prev.offsetPx !== offsetPx)
+    ) {
       setTooltip(t => (t.open ? { text: '', open: false } : t))
       setHoveredHit(undefined)
     }
@@ -404,7 +391,17 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         offsetPx,
         width,
       ),
-    [genomeRows, displayedGenomes, rowHeight, labelW, showSnps, view, offsetPx, width, bpPerPx],
+    [
+      genomeRows,
+      displayedGenomes,
+      rowHeight,
+      labelW,
+      showSnps,
+      view,
+      offsetPx,
+      width,
+      bpPerPx,
+    ],
   )
 
   return (

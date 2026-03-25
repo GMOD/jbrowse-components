@@ -1,9 +1,9 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 interface MultiPairAdapter {
   getMultiPairFeatures(
@@ -63,7 +63,7 @@ export class MultiPairGetFeatures extends RpcMethodType {
       sessionId,
       stopToken,
       fetchMetadata,
-    } = deserializedArgs as MultiPairGetFeaturesArgs
+    } = deserializedArgs
 
     const { dataAdapter } = await getAdapter(
       this.pluginManager,

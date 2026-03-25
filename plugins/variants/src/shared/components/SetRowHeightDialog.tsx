@@ -13,7 +13,7 @@ export default function SetRowHeight({
   }
   handleClose: () => void
 }) {
-  const [value, setValue] = useState<string>(`${model.rowHeight}`)
+  const [value, setValue] = useState(`${model.rowHeight}`)
 
   return (
     <Dialog open title="Set row height" onClose={handleClose}>

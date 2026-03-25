@@ -340,23 +340,21 @@ export async function executeSyntenyFeaturesAndPositions({
   let syriTypes: ReturnType<typeof computeSyriTypes> | undefined
   if (colorBy === 'syri') {
     const hasPrecomputed = precomputedSyriTypes.some(t => t !== undefined)
-    if (hasPrecomputed) {
-      syriTypes = precomputedSyriTypes.map(
-        t => (t as ReturnType<typeof computeSyriTypes>[number]) ?? 'SYN',
-      )
-    } else {
-      syriTypes = computeSyriTypes(
-        Array.from({ length: validCount }, (_, i) => ({
-          qname: names[i]!,
-          qstart: positionData.starts[i]!,
-          qend: positionData.ends[i]!,
-          tname: mates[i]!.refName,
-          tstart: mates[i]!.start,
-          tend: mates[i]!.end,
-          strand: positionData.strands[i]!,
-        })),
-      )
-    }
+    syriTypes = hasPrecomputed
+      ? precomputedSyriTypes.map(
+          t => (t as ReturnType<typeof computeSyriTypes>[number]) ?? 'SYN',
+        )
+      : computeSyriTypes(
+          Array.from({ length: validCount }, (_, i) => ({
+            qname: names[i]!,
+            qstart: positionData.starts[i]!,
+            qend: positionData.ends[i]!,
+            tname: mates[i]!.refName,
+            tstart: mates[i]!.start,
+            tend: mates[i]!.end,
+            strand: positionData.strands[i]!,
+          })),
+        )
   }
 
   const instanceData = executeSyntenyInstanceData({

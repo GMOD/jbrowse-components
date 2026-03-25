@@ -1,9 +1,7 @@
 import {
   HP_GLSL_CORE,
   HP_WGSL_CORE,
-  PICKING_FS_GLSL,
   PICKING_FS_WGSL,
-  SIMPLE_FS_GLSL,
 } from '@jbrowse/alignments-core'
 
 // SYNC: instance struct field order must match InstanceBuilder usage
@@ -95,9 +93,6 @@ void main() {
   v_featureId = float(a_data0.w);
 }
 `
-
-export const FILL_FRAGMENT_SHADER = SIMPLE_FS_GLSL
-export const PICKING_FRAGMENT_SHADER = PICKING_FS_GLSL
 
 // --- WGSL shaders for WebGPU ---
 
@@ -196,3 +191,8 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
 
 ${PICKING_FS_WGSL}
 `
+
+export {
+  PICKING_FS_GLSL as PICKING_FRAGMENT_SHADER,
+  SIMPLE_FS_GLSL as FILL_FRAGMENT_SHADER,
+} from '@jbrowse/alignments-core'

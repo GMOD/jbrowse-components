@@ -31,8 +31,8 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
-    const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
+    const [offsetMouseCoord, setOffsetMouseCoord] = useState([0, 0])
+    const [clientMouseCoord, setClientMouseCoord] = useState([0, 0])
     const view = getContainingView(model) as LinearGenomeViewModel
     const debouncedLoading = useDebounce(model.isLoading, 500)
 

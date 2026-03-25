@@ -1,6 +1,6 @@
-import { observer } from 'mobx-react'
-import { Tooltip, ToggleButton } from '@mui/material'
 import LinearScaleIcon from '@mui/icons-material/LinearScale'
+import { ToggleButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 

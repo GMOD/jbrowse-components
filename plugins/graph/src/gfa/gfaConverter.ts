@@ -1,4 +1,4 @@
-import type { Graph, GraphNode, GraphEdge, GraphPath } from '../types.ts'
+import type { Graph, GraphEdge, GraphNode, GraphPath } from '../types.ts'
 import type { GFAGraph } from './gfaParser.ts'
 
 function parseCigarOverlap(cigar: string) {
@@ -47,7 +47,7 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
       (gfaNode.tags.RC as number) ||
       (gfaNode.tags.FC as number) ||
       (gfaNode.tags.KC as number) ||
-      1.0
+      1
 
     if (!hasReferences || usedStrands.has(`${gfaNode.id}+`)) {
       nodes.push({

@@ -224,57 +224,69 @@ export class WebGLRenderer implements AlignmentsBackend {
     }
     this.gl = gl
 
-    this.readProgram = createProgram(gl,
+    this.readProgram = createProgram(
+      gl,
       READ_VERTEX_SHADER,
       READ_FRAGMENT_SHADER,
     )
 
-    this.coverageProgram = createProgram(gl,
+    this.coverageProgram = createProgram(
+      gl,
       COVERAGE_VERTEX_SHADER,
       COVERAGE_FRAGMENT_SHADER,
     )
 
-    this.snpCoverageProgram = createProgram(gl,
+    this.snpCoverageProgram = createProgram(
+      gl,
       SNP_COVERAGE_VERTEX_SHADER,
       SNP_COVERAGE_FRAGMENT_SHADER,
     )
 
-    this.noncovHistogramProgram = createProgram(gl,
+    this.noncovHistogramProgram = createProgram(
+      gl,
       NONCOV_HISTOGRAM_VERTEX_SHADER,
       NONCOV_HISTOGRAM_FRAGMENT_SHADER,
     )
 
-    this.indicatorProgram = createProgram(gl,
+    this.indicatorProgram = createProgram(
+      gl,
       INDICATOR_VERTEX_SHADER,
       INDICATOR_FRAGMENT_SHADER,
     )
 
-    this.lineProgram = createProgram(gl,
+    this.lineProgram = createProgram(
+      gl,
       LINE_VERTEX_SHADER,
       LINE_FRAGMENT_SHADER,
     )
     this.gapProgram = createProgram(gl, GAP_VERTEX_SHADER, GAP_FRAGMENT_SHADER)
-    this.mismatchProgram = createProgram(gl,
+    this.mismatchProgram = createProgram(
+      gl,
       MISMATCH_VERTEX_SHADER,
       MISMATCH_FRAGMENT_SHADER,
     )
-    this.insertionProgram = createProgram(gl,
+    this.insertionProgram = createProgram(
+      gl,
       INSERTION_VERTEX_SHADER,
       INSERTION_FRAGMENT_SHADER,
     )
-    this.softclipProgram = createProgram(gl,
+    this.softclipProgram = createProgram(
+      gl,
       SOFTCLIP_VERTEX_SHADER,
       SOFTCLIP_FRAGMENT_SHADER,
     )
-    this.hardclipProgram = createProgram(gl,
+    this.hardclipProgram = createProgram(
+      gl,
       HARDCLIP_VERTEX_SHADER,
       HARDCLIP_FRAGMENT_SHADER,
     )
-    this.modificationProgram = createProgram(gl,
+    this.modificationProgram = createProgram(
+      gl,
       MODIFICATION_VERTEX_SHADER,
       MODIFICATION_FRAGMENT_SHADER,
     )
-    this.modCoverageProgram = createProgram(gl,
+    this.modCoverageProgram = createProgram(
+      gl,
       MOD_COVERAGE_VERTEX_SHADER,
       MOD_COVERAGE_FRAGMENT_SHADER,
     )
@@ -360,7 +372,9 @@ export class WebGLRenderer implements AlignmentsBackend {
       ...baseColorUniforms,
     ])
 
-    this.noncovHistogramUniforms = cacheUniforms(gl, this.noncovHistogramProgram,
+    this.noncovHistogramUniforms = cacheUniforms(
+      gl,
+      this.noncovHistogramProgram,
       [
         'u_visibleRange',
         'u_noncovHeight',
@@ -421,7 +435,8 @@ export class WebGLRenderer implements AlignmentsBackend {
 
     // Arcs programs
     this.arcProgram = createProgram(gl, ARC_VERTEX_SHADER, ARC_FRAGMENT_SHADER)
-    this.arcLineProgram = createProgram(gl,
+    this.arcLineProgram = createProgram(
+      gl,
       ARC_LINE_VERTEX_SHADER,
       ARC_LINE_FRAGMENT_SHADER,
     )
@@ -480,7 +495,8 @@ export class WebGLRenderer implements AlignmentsBackend {
     gl.bufferData(gl.ARRAY_BUFFER, templateData, gl.STATIC_DRAW)
 
     // Sashimi program (reuses arc template buffer)
-    this.sashimiProgram = createProgram(gl,
+    this.sashimiProgram = createProgram(
+      gl,
       SASHIMI_ARC_VERTEX_SHADER,
       SASHIMI_ARC_FRAGMENT_SHADER,
     )
@@ -505,11 +521,14 @@ export class WebGLRenderer implements AlignmentsBackend {
     }
 
     // Connecting line program
-    this.connectingLineProgram = createProgram(gl,
+    this.connectingLineProgram = createProgram(
+      gl,
       CONNECTING_LINE_VERTEX_SHADER,
       CONNECTING_LINE_FRAGMENT_SHADER,
     )
-    this.connectingLineUniforms = cacheUniforms(gl, this.connectingLineProgram,
+    this.connectingLineUniforms = cacheUniforms(
+      gl,
+      this.connectingLineProgram,
       [
         'u_bpRangeX',
         'u_regionStart',
@@ -524,7 +543,6 @@ export class WebGLRenderer implements AlignmentsBackend {
 
     enableStandardBlend(gl)
   }
-
 
   /**
    * Upload reads from pre-computed typed arrays (from RPC worker)

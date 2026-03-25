@@ -1,13 +1,23 @@
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { InstanceBuilder } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
-import { InstanceBuilder } from '@jbrowse/alignments-core'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
+import {
+  OP_D,
+  OP_EQ,
+  OP_I,
+  OP_M,
+  OP_N,
+  OP_X,
+  isCsOpChar,
+  parseCsSeqLen,
+} from './cigarConstants.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
-import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export type RefNameIndex = Map<string, { startIdx: number; count: number }>
 
@@ -26,13 +36,6 @@ export interface RegionRenderParams {
   instanceOffset: number
   instanceCount: number
 }
-
-const OP_M = 0
-const OP_I = 1
-const OP_D = 2
-const OP_N = 3
-const OP_EQ = 7
-const OP_X = 8
 
 type RGBA = [number, number, number, number]
 
@@ -76,18 +79,6 @@ function addInstance(
   origRefNames.push(origRefName)
 }
 
-function isCsOpChar(ch: string | undefined) {
-  return ch === ':' || ch === '*' || ch === '+' || ch === '-'
-}
-
-function parseCsSeqLen(cs: string, start: number) {
-  let i = start
-  while (i < cs.length && !isCsOpChar(cs[i])) {
-    i++
-  }
-  return i - start
-}
-
 function expandCigarOps(
   builder: InstanceBuilder,
   origRefNames: string[],
@@ -106,15 +97,51 @@ function expandCigarOps(
       refPos += len
     } else if (op === OP_X) {
       const [r, g, b, a] = MISMATCH_RGBA
-      addInstance(builder, origRefNames, featStart + refPos, featStart + refPos + len, genomeRow, featureId, r, g, b, a, origRefName)
+      addInstance(
+        builder,
+        origRefNames,
+        featStart + refPos,
+        featStart + refPos + len,
+        genomeRow,
+        featureId,
+        r,
+        g,
+        b,
+        a,
+        origRefName,
+      )
       refPos += len
     } else if (op === OP_D || op === OP_N) {
       const [r, g, b, a] = DELETION_RGBA
-      addInstance(builder, origRefNames, featStart + refPos, featStart + refPos + len, genomeRow, featureId, r, g, b, a, origRefName)
+      addInstance(
+        builder,
+        origRefNames,
+        featStart + refPos,
+        featStart + refPos + len,
+        genomeRow,
+        featureId,
+        r,
+        g,
+        b,
+        a,
+        origRefName,
+      )
       refPos += len
     } else if (op === OP_I) {
       const [r, g, b, a] = INSERTION_RGBA
-      addInstance(builder, origRefNames, featStart + refPos, featStart + refPos + 1, genomeRow, featureId, r, g, b, a, origRefName)
+      addInstance(
+        builder,
+        origRefNames,
+        featStart + refPos,
+        featStart + refPos,
+        genomeRow,
+        featureId,
+        r,
+        g,
+        b,
+        a,
+        origRefName,
+      )
     }
   }
 }
@@ -145,7 +172,19 @@ function expandCsOps(
     } else if (ch === '*') {
       const queryBase = cs[i + 2] ?? ''
       const [r, g, b, a] = BASE_COLORS[queryBase] ?? MISMATCH_RGBA
-      addInstance(builder, origRefNames, featStart + refPos, featStart + refPos + 1, genomeRow, featureId, r, g, b, a, origRefName)
+      addInstance(
+        builder,
+        origRefNames,
+        featStart + refPos,
+        featStart + refPos + 1,
+        genomeRow,
+        featureId,
+        r,
+        g,
+        b,
+        a,
+        origRefName,
+      )
       i += 3
       refPos += 1
     } else if (ch === '-') {
@@ -154,7 +193,19 @@ function expandCsOps(
       i += len
       if (len > 0) {
         const [r, g, b, a] = DELETION_RGBA
-        addInstance(builder, origRefNames, featStart + refPos, featStart + refPos + len, genomeRow, featureId, r, g, b, a, origRefName)
+        addInstance(
+          builder,
+          origRefNames,
+          featStart + refPos,
+          featStart + refPos + len,
+          genomeRow,
+          featureId,
+          r,
+          g,
+          b,
+          a,
+          origRefName,
+        )
         refPos += len
       }
     } else if (ch === '+') {
@@ -163,7 +214,19 @@ function expandCsOps(
       i += len
       if (len > 0) {
         const [r, g, b, a] = INSERTION_RGBA
-        addInstance(builder, origRefNames, featStart + refPos, featStart + refPos + 1, genomeRow, featureId, r, g, b, a, origRefName)
+        addInstance(
+          builder,
+          origRefNames,
+          featStart + refPos,
+          featStart + refPos,
+          genomeRow,
+          featureId,
+          r,
+          g,
+          b,
+          a,
+          origRefName,
+        )
       }
     } else {
       i++
@@ -204,14 +267,42 @@ export function prepareMultiSyntenyGpuData(
       const color = getFeatureColor(feat, colorBy)
       const [cr, cg, cb, ca] = cssColorToNormalizedRgba(color)
 
-      addInstance(builder, origRefNames, feat.start, feat.end, g, fId, cr, cg, cb, ca, origRefName)
+      addInstance(
+        builder,
+        origRefNames,
+        feat.start,
+        feat.end,
+        g,
+        fId,
+        cr,
+        cg,
+        cb,
+        ca,
+        origRefName,
+      )
 
       if (showSnps) {
         if (feat.cs) {
-          expandCsOps(builder, origRefNames, feat.cs, feat.start, g, fId, origRefName)
+          expandCsOps(
+            builder,
+            origRefNames,
+            feat.cs,
+            feat.start,
+            g,
+            fId,
+            origRefName,
+          )
         } else if (feat.cigar) {
           const parsed = parseCigar2(feat.cigar)
-          expandCigarOps(builder, origRefNames, parsed, feat.start, g, fId, origRefName)
+          expandCigarOps(
+            builder,
+            origRefNames,
+            parsed,
+            feat.start,
+            g,
+            fId,
+            origRefName,
+          )
         }
       }
     }
@@ -275,34 +366,6 @@ export function prepareMultiSyntenyGpuData(
     })
   }
 
-  // Debug: analyze feature bp coverage per refName
-  const sortedU32 = new Uint32Array(sortedBuf)
-  const sortedStride = INSTANCE_BYTE_SIZE / 4
-  for (const [refName, { startIdx, count }] of refNameIndex) {
-    let minBp = Infinity
-    let maxBp = 0
-    const genomeCoverage = new Map<number, number>()
-    for (let i = startIdx; i < startIdx + count; i++) {
-      const sBp = sortedU32[i * sortedStride]!
-      const eBp = sortedU32[i * sortedStride + 1]!
-      const row = sortedU32[i * sortedStride + 2]!
-      if (sBp < minBp) {
-        minBp = sBp
-      }
-      if (eBp > maxBp) {
-        maxBp = eBp
-      }
-      genomeCoverage.set(row, (genomeCoverage.get(row) ?? 0) + 1)
-    }
-    console.log(
-      `[multiSyntenyGpuData] refName=${refName}: ${count} instances, bp range ${minBp.toLocaleString()}-${maxBp.toLocaleString()} (${((maxBp - minBp) / 1e6).toFixed(2)} Mb)`,
-      `genomeRows with features: ${genomeCoverage.size}`,
-      `features/genome: min=${Math.min(...genomeCoverage.values())} max=${Math.max(...genomeCoverage.values())}`,
-    )
-  }
-
-  console.log(`[multiSyntenyGpuData] ${n} instances, ${displayedGenomes.length} genomes, ${refNameIndex.size} refNames`, [...refNameIndex.entries()].map(([k, v]) => `${k}: startIdx=${v.startIdx} count=${v.count}`))
-
   return { buffer: sortedBuf, instanceCount: n, refNameIndex }
 }
 
@@ -310,14 +373,9 @@ export function computeRegionRenderParams(
   block: BaseBlock,
   viewOffsetPx: number,
   refNameIndex: RefNameIndex,
-  instanceBuffer?: ArrayBuffer,
 ) {
   const entry = refNameIndex.get(block.refName)
   if (!entry || entry.count === 0) {
-    console.log(
-      `[computeRegionRenderParams] No instances for block refName="${block.refName}"`,
-      'available refNames:', [...refNameIndex.keys()],
-    )
     return undefined
   }
 
@@ -325,30 +383,6 @@ export function computeRegionRenderParams(
   const bpRangeLen = block.end - block.start
   const regionScreenLeft = block.offsetPx - viewOffsetPx
   const regionScreenWidth = block.widthPx
-
-  // Debug: count how many instances actually overlap this block's bp range
-  if (instanceBuffer) {
-    const u32 = new Uint32Array(instanceBuffer)
-    const stride = INSTANCE_BYTE_SIZE / 4
-    let overlapping = 0
-    let before = 0
-    let after = 0
-    for (let i = entry.startIdx; i < entry.startIdx + entry.count; i++) {
-      const sBp = u32[i * stride]!
-      const eBp = u32[i * stride + 1]!
-      if (eBp <= block.start) {
-        before++
-      } else if (sBp >= block.end) {
-        after++
-      } else {
-        overlapping++
-      }
-    }
-    console.log(
-      `[computeRegionRenderParams] block ${block.refName}:${block.start}-${block.end}:`,
-      `total=${entry.count} overlapping=${overlapping} before=${before} after=${after}`,
-    )
-  }
 
   return {
     bpRangeHi,
@@ -360,4 +394,3 @@ export function computeRegionRenderParams(
     instanceCount: entry.count,
   } satisfies RegionRenderParams
 }
-

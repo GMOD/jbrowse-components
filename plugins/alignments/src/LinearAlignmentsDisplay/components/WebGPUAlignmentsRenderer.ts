@@ -4,9 +4,9 @@ import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
 import {
   STANDARD_BLEND_STATE,
+  createStandardBindGroup,
   createStandardBindGroupLayout,
   createStorageBuffer,
-  createStandardBindGroup,
 } from '@jbrowse/core/gpu/webgpuUtils'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'

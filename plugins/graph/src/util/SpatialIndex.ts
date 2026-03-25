@@ -1,6 +1,6 @@
 import { computeEdgeCurves } from './geometry.ts'
 
-import type { NodeSegment, Graph } from '../types.ts'
+import type { Graph, NodeSegment } from '../types.ts'
 
 interface CellEntry {
   nodeId: string

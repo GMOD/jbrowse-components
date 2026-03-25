@@ -1,8 +1,8 @@
 import { computeEdgeCurves } from '../util/geometry.ts'
 
-import type { Graph, NodeSegment, ColorScheme, GraphNode } from '../types.ts'
-import type { BezierCurve } from '../util/geometry.ts'
+import type { ColorScheme, Graph, GraphNode, NodeSegment } from '../types.ts'
 import type { RenderBatch, SubBatch, VertexRange } from './types.ts'
+import type { BezierCurve } from '../util/geometry.ts'
 
 export interface BuildOptions {
   nodePositions: Record<string, NodeSegment[]>
@@ -22,9 +22,9 @@ export function hslToRgb(
   const c = (1 - Math.abs(2 * l - 1)) * s
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
   const m = l - c / 2
-  let r = 0,
-    g = 0,
-    b = 0
+  let r = 0
+  let g = 0
+  let b = 0
   if (h < 60) {
     r = c
     g = x
@@ -55,10 +55,10 @@ export interface ColorSchemeRange {
 }
 
 export function computeColorSchemeRange(graph: Graph) {
-  let minDepth = Infinity,
-    maxDepth = -Infinity
-  let minLength = Infinity,
-    maxLength = -Infinity
+  let minDepth = Infinity
+  let maxDepth = -Infinity
+  let minLength = Infinity
+  let maxLength = -Infinity
   for (let i = 0; i < graph.nodes.length; i++) {
     const n = graph.nodes[i]!
     if (n.depth < minDepth) {
@@ -84,7 +84,7 @@ export function getNodeColor(
 ): [number, number, number, number] {
   switch (colorScheme) {
     case 'uniform':
-      return [52 / 255, 152 / 255, 219 / 255, 1.0]
+      return [52 / 255, 152 / 255, 219 / 255, 1]
 
     case 'random': {
       let hash = 0
@@ -93,7 +93,7 @@ export function getNodeColor(
       }
       const hue = Math.abs(hash % 360)
       const [r, g, b] = hslToRgb(hue, 0.7, 0.5)
-      return [r, g, b, 1.0]
+      return [r, g, b, 1]
     }
 
     case 'depth': {
@@ -102,7 +102,9 @@ export function getNodeColor(
           ? (node.depth - range.minDepth) / (range.maxDepth - range.minDepth)
           : 0.5
       const t = Math.max(0, Math.min(1, normalizedDepth))
-      let r: number, g: number, b: number
+      let r: number
+      let g: number
+      let b: number
       if (t < 0.25) {
         const s = t / 0.25
         r = (68 + (59 - 68) * s) / 255
@@ -124,7 +126,7 @@ export function getNodeColor(
         g = (201 + (231 - 201) * s) / 255
         b = (98 + (37 - 98) * s) / 255
       }
-      return [r!, g!, b!, 1.0]
+      return [r!, g!, b!, 1]
     }
 
     case 'gc-content': {
@@ -138,15 +140,15 @@ export function getNodeColor(
         (220 + (50 - 220) * t) / 255,
         (50 + (120 - 50) * t) / 255,
         (50 + (220 - 50) * t) / 255,
-        1.0,
+        1,
       ]
     }
 
     case 'grey':
-      return [160 / 255, 160 / 255, 160 / 255, 1.0]
+      return [160 / 255, 160 / 255, 160 / 255, 1]
 
     default:
-      return [52 / 255, 152 / 255, 219 / 255, 1.0]
+      return [52 / 255, 152 / 255, 219 / 255, 1]
   }
 }
 
@@ -190,18 +192,18 @@ function tessellateCubicBezier(
       return
     }
 
-    const abx = (ax + bx) / 2,
-      aby = (ay + by) / 2
-    const bcx = (bx + cx) / 2,
-      bcy = (by + cy) / 2
-    const cdx = (cx + dx) / 2,
-      cdy = (cy + dy) / 2
-    const abcx = (abx + bcx) / 2,
-      abcy = (aby + bcy) / 2
-    const bcdx = (bcx + cdx) / 2,
-      bcdy = (bcy + cdy) / 2
-    const abcdx = (abcx + bcdx) / 2,
-      abcdy = (abcy + bcdy) / 2
+    const abx = (ax + bx) / 2
+    const aby = (ay + by) / 2
+    const bcx = (bx + cx) / 2
+    const bcy = (by + cy) / 2
+    const cdx = (cx + dx) / 2
+    const cdy = (cy + dy) / 2
+    const abcx = (abx + bcx) / 2
+    const abcy = (aby + bcy) / 2
+    const bcdx = (bcx + cdx) / 2
+    const bcdy = (bcy + cdy) / 2
+    const abcdx = (abcx + bcdx) / 2
+    const abcdy = (abcy + bcdy) / 2
 
     subdivide(ax, ay, abx, aby, abcx, abcy, abcdx, abcdy, depth + 1)
     subdivide(abcdx, abcdy, bcdx, bcdy, cdx, cdy, dx, dy, depth + 1)
@@ -333,8 +335,8 @@ class MeshBuilder {
 
     const pointNormals: { nx: number; ny: number }[] = []
     for (let i = 0; i < points.length; i++) {
-      let nx = 0,
-        ny = 0
+      let nx = 0
+      let ny = 0
 
       if (i === 0) {
         const dx = points[1]!.x - points[0]!.x
@@ -361,10 +363,10 @@ class MeshBuilder {
         const len2 = Math.hypot(dx2, dy2)
 
         if (len1 > 0 && len2 > 0) {
-          const nx1 = -dy1 / len1,
-            ny1 = dx1 / len1
-          const nx2 = -dy2 / len2,
-            ny2 = dx2 / len2
+          const nx1 = -dy1 / len1
+          const ny1 = dx1 / len1
+          const nx2 = -dy2 / len2
+          const ny2 = dx2 / len2
           nx = (nx1 + nx2) / 2
           ny = (ny1 + ny2) / 2
           const dot = nx1 * nx + ny1 * ny
@@ -405,8 +407,7 @@ class MeshBuilder {
 
     for (let i = 0; i < points.length - 1; i++) {
       const vi = stripStart + i * 2
-      this.indices.push(vi, vi + 1, vi + 2)
-      this.indices.push(vi + 1, vi + 3, vi + 2)
+      this.indices.push(vi, vi + 1, vi + 2, vi + 1, vi + 3, vi + 2)
     }
 
     const lastIdx = points.length - 1

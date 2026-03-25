@@ -28,9 +28,7 @@
       "type": "MultiSyntenyTrack",
       "trackId": "volvox_pangenome_50_multi",
       "name": "Volvox 50-sample pangenome",
-      "category": [
-        "Synteny"
-      ],
+      "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
         "posLocation": {

@@ -16,12 +16,9 @@ import {
   makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
+import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
-
-export type { WiggleDisplayModel }
 
 type LGV = LinearGenomeViewModel
 
@@ -113,12 +110,8 @@ const WiggleComponent = observer(function WiggleComponent({
     })
   }, [model, view, ready, drawn, rendererRef])
 
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState<[number, number]>([
-    0, 0,
-  ])
-  const [clientMouseCoord, setClientMouseCoord] = useState<[number, number]>([
-    0, 0,
-  ])
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState([0, 0])
+  const [clientMouseCoord, setClientMouseCoord] = useState([0, 0])
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = useCallback(
@@ -315,3 +308,5 @@ const WiggleComponent = observer(function WiggleComponent({
 })
 
 export default WiggleComponent
+
+export { type WiggleDisplayModel } from './buildSourceRenderData.ts'

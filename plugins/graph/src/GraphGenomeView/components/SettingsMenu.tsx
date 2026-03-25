@@ -1,7 +1,7 @@
-import { observer } from 'mobx-react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { observer } from 'mobx-react'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 
@@ -30,7 +30,9 @@ const SettingsMenu = observer(function SettingsMenu({
         {
           label: 'Close graph',
           icon: DeleteIcon,
-          onClick: () => model.clearGraph(),
+          onClick: () => {
+            model.clearGraph()
+          },
         },
       ]}
     >

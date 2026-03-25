@@ -1,15 +1,15 @@
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import {
-  isDigit,
-  isCsOpChar,
   OP_D,
   OP_EQ,
   OP_I,
   OP_M,
   OP_N,
   OP_X,
+  isCsOpChar,
+  isDigit,
 } from './cigarConstants.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -189,7 +189,13 @@ export function buildSyntenyIndex(
     cigarFb.finish()
   }
 
-  return { featureFb, features, genomeNames, cigarFb, cigarEntries } satisfies SyntenyFlatbushIndex
+  return {
+    featureFb,
+    features,
+    genomeNames,
+    cigarFb,
+    cigarEntries,
+  } satisfies SyntenyFlatbushIndex
 }
 
 export function hitTestMultiSynteny(

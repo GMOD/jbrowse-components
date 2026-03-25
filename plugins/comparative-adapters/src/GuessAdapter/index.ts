@@ -5,7 +5,7 @@ import {
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
 
-import { syntenyTypes, multiPairTypes } from '../syntenyTypes.ts'
+import { multiPairTypes, syntenyTypes } from '../syntenyTypes.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {

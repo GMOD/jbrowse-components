@@ -1,7 +1,6 @@
-import { observer } from 'mobx-react'
-
 import { ErrorMessage, LoadingOverlay } from '@jbrowse/core/ui'
 import { useDebounce } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
 import MultiSyntenyRendering from './MultiSyntenyRendering.tsx'
 
@@ -22,10 +21,7 @@ const MultiLGVSyntenyDisplayComponent = observer(
     if (model.allGenomeNames.length === 0) {
       return (
         <div style={{ position: 'relative', height: model.height }}>
-          <LoadingOverlay
-            statusMessage={model.statusMessage}
-            isVisible
-          />
+          <LoadingOverlay statusMessage={model.statusMessage} isVisible />
         </div>
       )
     }

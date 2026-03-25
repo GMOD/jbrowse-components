@@ -377,15 +377,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     subMenu: [
                       {
                         label: 'Expand all levels',
-                        onClick: () => self.expandAllLevels(),
+                        onClick: () => {
+                          self.expandAllLevels()
+                        },
                       },
                       {
                         label: 'Collapse all levels',
-                        onClick: () => self.collapseAllLevels(),
+                        onClick: () => {
+                          self.collapseAllLevels()
+                        },
                       },
                       {
                         label: 'Auto-scale level heights',
-                        onClick: () => self.autoScaleLevelHeights(),
+                        onClick: () => {
+                          self.autoScaleLevelHeights()
+                        },
                       },
                       { label: '', type: 'divider' as const },
                       ...self.levels.map((level, idx) => ({
@@ -394,7 +400,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                         checked:
                           !level.collapsed &&
                           self.levels.filter(l => !l.collapsed).length === 1,
-                        onClick: () => self.focusLevel(idx),
+                        onClick: () => {
+                          self.focusLevel(idx)
+                        },
                       })),
                     ],
                   },
@@ -407,18 +415,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     subMenu: [
                       {
                         label: 'Compact all views',
-                        onClick: () => self.compactAllViews(),
+                        onClick: () => {
+                          self.compactAllViews()
+                        },
                       },
                       {
                         label: 'Expand all views',
-                        onClick: () => self.expandAllViews(),
+                        onClick: () => {
+                          self.expandAllViews()
+                        },
                       },
                       { label: '', type: 'divider' as const },
                       ...self.views.map((view, idx) => ({
                         label: view.assemblyNames[0] ?? `View ${idx + 1}`,
                         type: 'checkbox' as const,
                         checked: !self.isViewCompact(idx),
-                        onClick: () => self.toggleCompactView(idx),
+                        onClick: () => {
+                          self.toggleCompactView(idx)
+                        },
                       })),
                     ],
                   },
