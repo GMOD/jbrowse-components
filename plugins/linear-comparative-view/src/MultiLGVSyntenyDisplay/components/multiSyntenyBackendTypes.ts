@@ -1,3 +1,6 @@
+export const LABEL_WIDTH = 120
+export const LABEL_FONT_MAX = 12
+
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'

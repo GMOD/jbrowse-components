@@ -1258,6 +1258,9 @@ importers:
       '@mui/material':
         specifier: ^7.3.9
         version: 7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@mui/x-data-grid':
+        specifier: ^8.28.0
+        version: 8.28.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@mui/material@7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@mui/system@7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@types/file-saver-es':
         specifier: ^2.0.3
         version: 2.0.3
@@ -1875,8 +1878,8 @@ importers:
         specifier: 41.0.3
         version: 41.0.3
       electron-chromedriver:
-        specifier: ^41.0.3
-        version: 41.0.3
+        specifier: ^41.0.4
+        version: 41.0.4
       esbuild:
         specifier: ^0.27.4
         version: 0.27.4
@@ -3054,8 +3057,8 @@ packages:
     resolution: {integrity: sha512-dDlz3W405VMFO4w5kIP9DOmELBcvFQGmLoKSdIRstBDubKFYwaNHV1NnlzMCQpXQFGWVALmeMORAuiLx18AvZQ==}
     engines: {node: '>=14.17.0'}
 
-  '@electron/asar@4.1.0':
-    resolution: {integrity: sha512-DflfXtTFuTYHcyupbhnCWi+hBFdhsWl878NuA1UmW7YVFlqPlY0SHdREVnigEO3zjS2vh4hp1A4dEl3I6mgd9w==}
+  '@electron/asar@4.1.1':
+    resolution: {integrity: sha512-grbomy1TPEauyu+N4UdRQqSjOhsm0ZoTbprLpvJWQGYeEIMVBwSPV3Rv3E3EfqU5iFSufd/k+2KZvTDbgfesnw==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
@@ -4942,8 +4945,8 @@ packages:
   brace-expansion@2.0.2:
     resolution: {integrity: sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==}
 
-  brace-expansion@5.0.4:
-    resolution: {integrity: sha512-h+DEnpVvxmfVefa4jFbCf5HdH5YMDXRsmKflpf1pILZWRFlTbJpxeU55nJl4Smt5HQaGzg1o6RHFPJaOqnmBDg==}
+  brace-expansion@5.0.5:
+    resolution: {integrity: sha512-VZznLgtwhn+Mact9tfiwx64fA9erHH/MCXEUfB/0bX/6Fz6ny5EGTXYltMocqg4xFAQZtnO3DHWWXi8RiuN7cQ==}
     engines: {node: 18 || 20 || >=22}
 
   braces@3.0.3:
@@ -5605,8 +5608,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-chromedriver@41.0.3:
-    resolution: {integrity: sha512-2BZvgzKpbAFnwaMLRMMHpVsfyhcIScfvxzJ3H+3Kz4ogfQYFiDhpqtKJobi0Mc1zPR4F6BcUUXd/eaZ5y++P+w==}
+  electron-chromedriver@41.0.4:
+    resolution: {integrity: sha512-Q/f4AQgSUpuB2aM306jU3yEABjo6XtSs2UVAKzG5HE0t/7/HjUSyOUwggW7L6ZEhuT0foTRrsj02mJkzj84gfA==}
     engines: {node: '>=10.12.0'}
     hasBin: true
 
@@ -5632,8 +5635,8 @@ packages:
   electron-localshortcut@3.2.1:
     resolution: {integrity: sha512-DWvhKv36GsdXKnaFFhEiK8kZZA+24/yFLgtTwJJHc7AFgDjNRIBJZ/jq62Y/dWv9E4ypYwrVWN2bVrCYw1uv7Q==}
 
-  electron-to-chromium@1.5.322:
-    resolution: {integrity: sha512-vFU34OcrvMcH66T+dYC3G4nURmgfDVewMIu6Q2urXpumAPSMmzvcn04KVVV8Opikq8Vs5nUbO/8laNhNRqSzYw==}
+  electron-to-chromium@1.5.325:
+    resolution: {integrity: sha512-PwfIw7WQSt3xX7yOf5OE/unLzsK9CaN2f/FvV3WjPR1Knoc1T9vePRVV4W1EM301JzzysK51K7FNKcusCr0zYA==}
 
   electron-updater@6.8.3:
     resolution: {integrity: sha512-Z6sgw3jgbikWKXei1ENdqFOxBP0WlXg3TtKfz0rgw2vIZFJUyI4pD7ZN7jrkm7EoMK+tcm/qTnPUdqfZukBlBQ==}
@@ -9889,7 +9892,7 @@ snapshots:
 
   '@discoveryjs/json-ext@1.0.0': {}
 
-  '@electron/asar@4.1.0':
+  '@electron/asar@4.1.1':
     dependencies:
       commander: 13.1.0
       glob: 13.0.6
@@ -9942,7 +9945,7 @@ snapshots:
 
   '@electron/packager@19.1.0':
     dependencies:
-      '@electron/asar': 4.1.0
+      '@electron/asar': 4.1.1
       '@electron/get': 4.0.2
       '@electron/notarize': 3.1.1
       '@electron/osx-sign': 2.3.0
@@ -9967,7 +9970,7 @@ snapshots:
 
   '@electron/universal@3.0.3':
     dependencies:
-      '@electron/asar': 4.1.0
+      '@electron/asar': 4.1.1
       '@malept/cross-spawn-promise': 2.0.0
       debug: 4.4.3
       dir-compare: 4.2.0
@@ -12177,7 +12180,7 @@ snapshots:
     dependencies:
       balanced-match: 1.0.2
 
-  brace-expansion@5.0.4:
+  brace-expansion@5.0.5:
     dependencies:
       balanced-match: 4.0.4
 
@@ -12189,7 +12192,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.10.10
       caniuse-lite: 1.0.30001781
-      electron-to-chromium: 1.5.322
+      electron-to-chromium: 1.5.325
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
@@ -12819,7 +12822,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-chromedriver@41.0.3:
+  electron-chromedriver@41.0.4:
     dependencies:
       '@electron/get': 2.0.3
       extract-zip: 2.0.1
@@ -12858,7 +12861,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron-to-chromium@1.5.322: {}
+  electron-to-chromium@1.5.325: {}
 
   electron-updater@6.8.3:
     dependencies:
@@ -14892,7 +14895,7 @@ snapshots:
 
   minimatch@10.2.4:
     dependencies:
-      brace-expansion: 5.0.4
+      brace-expansion: 5.0.5
 
   minimatch@3.1.5:
     dependencies:

@@ -1,3 +1,4 @@
+import type React from 'react'
 import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
@@ -83,11 +84,27 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       statusMessage: undefined as string | undefined,
     }))
     .views(self => ({
-      get displayedGenomes() {
-        if (self.selectedGenomes.length > 0) {
-          return [...self.selectedGenomes]
+      get referenceGenomeName() {
+        const view = getContainingView(self) as LGV
+        return view.displayedRegions[0]?.assemblyName
+      },
+      get queryGenomeNames() {
+        const ref = this.referenceGenomeName
+        if (ref) {
+          return self.allGenomeNames.filter(n => n !== ref)
         }
         return self.allGenomeNames
+      },
+      get displayedGenomes() {
+        const ref = this.referenceGenomeName
+        const names =
+          self.selectedGenomes.length > 0
+            ? [...self.selectedGenomes]
+            : self.allGenomeNames
+        if (ref) {
+          return names.filter(n => n !== ref)
+        }
+        return names
       },
       get autoRowHeight() {
         const n = this.displayedGenomes.length
@@ -226,7 +243,18 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             }
 
             if (result.sources) {
-              self.setAllGenomeNames(result.sources.map(s => s.name))
+              const names = result.sources.map(s => s.name)
+              console.log(
+                '[MultiSyntenyFetch] Setting allGenomeNames:',
+                names.length,
+                'names, first 5:',
+                names.slice(0, 5),
+                'referenceGenomeName:',
+                self.referenceGenomeName,
+              )
+              self.setAllGenomeNames(names)
+            } else {
+              console.log('[MultiSyntenyFetch] WARNING: result.sources is undefined/null')
             }
 
             const genomeRowsMap = new Map(result.genomeRows)
@@ -284,6 +312,11 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
         afterAttach() {
           superAfterAttach()
+        },
+
+        async renderSvg(): Promise<React.ReactNode> {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self as MultiLGVSyntenyDisplayModel)
         },
       }
     })
@@ -493,7 +526,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ],
           },
           {
-            label: `Select genomes (${self.displayedGenomes.length}/${self.allGenomeNames.length})...`,
+            label: `Select genomes (${self.displayedGenomes.length}/${self.queryGenomeNames.length})...`,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 GenomeSubsetSelector,

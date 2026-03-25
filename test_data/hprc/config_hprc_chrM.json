@@ -86,14 +86,11 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "displayedRegions": [
-          {
-            "assemblyName": "GRCh38#0",
-            "refName": "chrM",
-            "start": 0,
-            "end": 16569
-          }
-        ]
+        "init": {
+          "loc": "chrM:1..1,464",
+          "assembly": "GRCh38#0",
+          "tracks": ["hprc_chrM_gfa_synteny"]
+        }
       }
     ]
   }

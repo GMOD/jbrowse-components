@@ -212,7 +212,7 @@ function tessellateCubicBezier(
 }
 
 function tessellateBezierCurves(curves: BezierCurve[], flatness: number) {
-  let allPoints: { x: number; y: number }[] = []
+  const allPoints: { x: number; y: number }[] = []
   for (let i = 0; i < curves.length; i++) {
     const c = curves[i]!
     const pts = tessellateCubicBezier(
@@ -226,10 +226,9 @@ function tessellateBezierCurves(curves: BezierCurve[], flatness: number) {
       c.y1,
       flatness,
     )
-    if (i > 0) {
-      allPoints = allPoints.concat(pts.slice(1))
-    } else {
-      allPoints = pts
+    const start = i === 0 ? 0 : 1
+    for (let j = start; j < pts.length; j++) {
+      allPoints.push(pts[j]!)
     }
   }
   return allPoints

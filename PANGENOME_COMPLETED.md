@@ -47,15 +47,76 @@
 - 16 unit tests for cs utilities (csToCigar + flipCs including self-inverse
   property)
 
-## GFA Alignment Preprocessing (aln.bed.gz) — Future
+## Binary Alignment Format (aln.bin + aln.idx)
 
-- aln.bed.gz format is defined and the adapter supports it, but the Rust
-  converter does not yet generate it
-- When available: precomputed pairwise alignments with cs tags for base-level
-  SNP/indel coloring
-- Format: `refPath\tstart\tend\tqueryGenome\tqueryChrom\tqStart\tqEnd\tstrand\tcs`
-- Adapter auto-detects: uses aln.bed.gz when configured, falls back to
-  segment-based runtime CIGAR otherwise
+BAM-like binary format for pangenome alignments, replacing text aln.bed.gz for
+production use. Generated directly from GFA by `gfa-to-tabix --aln-bin`.
+
+### Binary CS encoding
+
+Compact binary encoding of CS tags (analogous to BAM's binary CIGAR):
+- Match (`00xxxxxx`): 1 byte for lengths 1-63, varint for longer
+- Substitution (`01xxRRAA`): always 1 byte (ref + alt bases in 4 bits)
+- Insertion/Deletion (`10`/`11` + length + 2-bit packed bases)
+- ~50% smaller than text CS, ~10x faster to parse (typed array walk vs
+  character scanning)
+
+### Binary record format (aln.bin)
+
+Variable-length records sorted by (chrom, refStart):
+```
+refStart: u32, refEnd: u32, queryGenomeIdx: u16, mateChromIdx: u16,
+mateStart: u32, mateEnd: u32, strand: u8, identity: u16, csLen: u16,
+csData: [u8; csLen]    — total: 25 bytes fixed + variable CS
+```
+Identity pre-computed at build time (matchBp / totalAligned × 10000) so
+zoomed-out rendering skips CS decoding entirely.
+
+### Linear index (aln.idx)
+
+Header with genome/chrom name tables + per-chromosome linear index (16kb bins).
+Range query: look up bin offsets → single HTTP range read → parse records.
+
+### Rust generation (`gfa-to-tabix --aln-bin`)
+
+Generates aln.bin directly from GFA segment sequences:
+- Walks shared segments between ref and query paths as alignment anchors
+- Compares bubble sequences base-by-base → binary CS
+- Grooming: detects/flips reverse-complemented contigs (>99% opposite orient)
+- Pre-lowercased ordinal-indexed sequence Vec for O(1) lookup
+- Optional parallelism via `--threads` flag (rayon)
+- Performance: chr20 (90 haplotypes, 1.86M segments) in ~44s aln generation
+
+### TypeScript codec (`binaryCs.ts`)
+
+- `encodeBinaryCs()` / `decodeBinaryCs()` — text ↔ binary round-trip
+- `binaryCsIdentity()` — fast identity from binary (no string parsing)
+- `binaryCsToCigar()` — binary CS → packed CIGAR array (parseCigar2 format)
+- `binaryCsFlip()` — flip perspective (swap ref/alt, ins↔del)
+- 51 unit tests: round-trip, identity, CIGAR parity, flip self-inverse
+
+### TypeScript reader (`binaryAlnReader.ts`)
+
+- `loadAlnIndex()` — reads aln.idx header + per-chrom linear index
+- `queryAlnBin()` — range query via 16kb bin offsets + HTTP range reads
+- `parseAlnBinRecords()` — parses binary records from raw bytes
+- 5 unit tests: index parsing, range queries, CS round-trip, full-file parse
+
+### Adapter integration
+
+- `getMultiPairFeaturesFromAlnBin()` in `BaseGfaTabixAdapter` — loads binary
+  aln with lazy CS decoding (skips CIGAR/CS conversion when bpPerPx > 50)
+- Dispatch priority: binary aln > text aln > segments
+- Config: `alnBinLocation` / `alnBinIdxLocation` with prefix shorthand
+- Both `GfaTabixAdapter` and `ShardedGfaTabixAdapter` schemas updated
+
+### Files on S3
+
+| File | Size | Records | Genomes |
+|------|------|---------|---------|
+| `pggb-chrM.aln.bin` + `.idx` | 540B + 223B | 3 | 4 |
+| `hprc-v1.1-mc-grch38-chrM.aln.bin` + `.idx` | 41KB + 1.9KB | 43 | 44 |
+| `hprc-v1.1-mc-grch38-chr20.aln.bin` + `.idx` | 141MB + 39KB | 25,856 | 90 |
 
 ## GfaTabixAdapter Enhancements
 
@@ -202,8 +263,12 @@
 
 ## Testing
 
-### Unit Tests (116 tests, 11 suites)
+### Unit Tests (154 tests, 12 suites)
 
+- **binaryCs** (51 tests): encode/decode round-trip, identity computation,
+  CIGAR parity with text csToCigar, flip self-inverse, encoding size
+- **binaryAlnReader** (5 tests): index parsing, range queries, CS round-trip
+  validation, full-file record count, unknown chromosome handling
 - **csUtils** (16 tests): csToCigar, flipCs with self-inverse property
 - **gfa-to-tabix converter** (11 tests): file creation, pos/segs queries,
   segment ordinals, shared segments, synteny projection, assembly filtering,
@@ -237,8 +302,8 @@
 | Volvox pangenome GFA  | `test_data/volvox/volvox_pangenome.*`   | GFA tabix (pos+segs+aln) | small | 4 genomes, real sequences          |
 | Volvox SNP PAF        | `test_data/volvox/volvox_snp.paf`       | PAF with cs:Z: tags      | small | 2 (volvox vs volvox_snp, ~2% SNPs) |
 | Volvox SNP PIF        | `test_data/volvox/volvox_snp_cs.pif.gz` | PIF with cs:Z: preserved | small | 2 (volvox vs volvox_snp)           |
-| HPRC chrM             | `test/data/synteny-demo/hprc/`          | GFA tabix (pos+segs)     | small | 44 haplotypes                      |
-| HPRC chr20            | `test/data/synteny-demo/hprc/`          | GFA tabix (pos+segs)     | 596MB | 90 haplotypes                      |
+| HPRC chrM             | `test/data/synteny-demo/hprc/`          | GFA tabix (pos+segs+aln) | small | 44 haplotypes                      |
+| HPRC chr20            | `test/data/synteny-demo/hprc/`          | GFA tabix (pos+segs+aln) | 596MB | 90 haplotypes                      |
 | Arabidopsis 4-way     | `test_data/arabidopsis_synteny/`        | Multi-pair PIF           | 3MB   | 4                                  |
 | Volvox multi-pair PIF | `test_data/volvox/volvox_multi.pif.gz`  | Multi-pair PIF           | small | 3                                  |
 
@@ -389,6 +454,20 @@ startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, color: vec4f
   `getMultiPairFeaturesFromSegments()` via opts parameter.
   `checkStopToken()` called in tabix lineCallbacks (per-line cancellation) and
   at async boundaries before `getSegsForOrdinals()`.
+
+## SVG Export for MultiLGVSyntenyDisplay
+
+- `renderSvg.tsx` added to `MultiLGVSyntenyDisplay/`, enabling image/SVG export
+  for multi-genome views (used by jbrowse-img and screenshot functionality)
+- Uses `SvgCanvas` from `@jbrowse/core/util/offscreenCanvasUtils` to produce
+  vector SVG output, mirroring the `Canvas2DMultiSyntenyRenderer.render()` logic
+- Draws background, alternating row stripes, genome labels, synteny features
+  (strand/syri/identity coloring), SNP detail (CIGAR + cs ops), and row separators
+- `drawCigarOps()` and `drawCsOps()` in `multiSyntenyColorUtils.ts` widened to
+  accept `CanvasRenderingContext2D | SvgCanvas` for shared use between interactive
+  rendering and SVG export
+- Model wires `renderSvg()` action via lazy `import()` following the same pattern
+  as `LinearAlignmentsDisplay` and `BaseLinearDisplay`
 
 ## Key Design Decisions Resolved
 

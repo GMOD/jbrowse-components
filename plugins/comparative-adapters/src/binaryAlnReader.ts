@@ -3,8 +3,6 @@
 // aln.bin: sorted binary alignment records (by chrom, refStart)
 // aln.idx: header with genome/chrom name tables + per-chrom linear index
 
-import { binaryCsIdentity, binaryCsToCigar, decodeBinaryCs } from './binaryCs.ts'
-
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 const ALN_RECORD_FIXED = 25
@@ -126,6 +124,21 @@ export async function loadAlnIndex(
     chromSections.set(chromIdx, { chromLen, binOffsets })
   }
 
+  console.log(
+    '[loadAlnIndex]',
+    'genomes:', genomeNames.length,
+    'chroms:', chromNames.length,
+    'sections:', chromSections.size,
+  )
+  for (const [ci, sec] of chromSections) {
+    console.log(
+      `[loadAlnIndex] section ${ci} (${chromNames[ci]}):`,
+      'chromLen:', sec.chromLen,
+      'bins:', sec.binOffsets.length - 1,
+      'firstOffset:', Number(sec.binOffsets[0]),
+      'lastOffset:', Number(sec.binOffsets[sec.binOffsets.length - 1]),
+    )
+  }
   return { genomeNames, chromNames, chromSections }
 }
 
@@ -177,11 +190,13 @@ export async function queryAlnBin(
 ) {
   const chromIdx = index.chromNames.indexOf(chromName)
   if (chromIdx < 0) {
+    console.log('[queryAlnBin] chromName not found:', chromName)
     return []
   }
 
   const section = index.chromSections.get(chromIdx)
   if (!section) {
+    console.log('[queryAlnBin] No section for chromIdx:', chromIdx)
     return []
   }
 
@@ -191,63 +206,47 @@ export async function queryAlnBin(
   const firstBin = Math.max(0, startBin)
   const lastBin = Math.min(endBin, Number(section.binOffsets.length) - 2)
 
+  console.log(
+    '[queryAlnBin]',
+    chromName, `${start}-${end}`,
+    'bins:', firstBin, '-', lastBin,
+    'chromLen:', section.chromLen,
+    'numBinOffsets:', section.binOffsets.length,
+  )
+
   if (firstBin > lastBin) {
+    console.log('[queryAlnBin] firstBin > lastBin, returning empty')
     return []
   }
 
   const byteStart = Number(section.binOffsets[firstBin]!)
   const byteEnd = Number(section.binOffsets[lastBin + 1]!)
 
+  console.log(
+    '[queryAlnBin] byte range:',
+    byteStart, '-', byteEnd,
+    'length:', byteEnd - byteStart,
+  )
+
   if (byteEnd <= byteStart) {
+    console.log('[queryAlnBin] byteEnd <= byteStart, returning empty')
     return []
   }
 
   const length = byteEnd - byteStart
   const buf = await binFile.read(length, byteStart)
+  console.log('[queryAlnBin] fetched', buf.length, 'bytes, parsing records...')
   const allRecords = parseAlnBinRecords(buf)
 
   // Filter to records that overlap [start, end)
-  return allRecords.filter(r => r.refEnd > start && r.refStart < end)
+  const filtered = allRecords.filter(r => r.refEnd > start && r.refStart < end)
+  console.log(
+    '[queryAlnBin] parsed:', allRecords.length,
+    'records, overlapping:', filtered.length,
+    allRecords.length > 0
+      ? `first record: ${allRecords[0]!.refStart}-${allRecords[0]!.refEnd}`
+      : '',
+  )
+  return filtered
 }
 
-// Convenience: convert AlnBinRecord to the fields needed for MultiPairFeature
-export function alnBinRecordToFeature(
-  rec: AlnBinRecord,
-  index: AlnIndex,
-  refName: string,
-  fileOffset: number,
-  options?: { decodeCigar?: boolean; decodeCs?: boolean },
-) {
-  const genomeName = index.genomeNames[rec.queryGenomeIdx] ?? `genome-${rec.queryGenomeIdx}`
-  const mateRefName = index.chromNames[rec.mateChromIdx] ?? `chrom-${rec.mateChromIdx}`
-
-  return {
-    queryGenome: genomeName,
-    origRefName: refName,
-    start: rec.refStart,
-    end: rec.refEnd,
-    mateStart: rec.mateStart,
-    mateEnd: rec.mateEnd,
-    mateRefName,
-    strand: rec.strand,
-    syriType: undefined,
-    identity: rec.identity,
-    featureId: `aln-bin-${fileOffset}`,
-    segmentId: undefined,
-    cigar: options?.decodeCigar ? binaryCsToCigarString(rec.csData) : undefined,
-    cs: options?.decodeCs ? decodeBinaryCs(rec.csData) : undefined,
-    binaryCs: rec.csData,
-  }
-}
-
-function binaryCsToCigarString(data: Uint8Array) {
-  const ops = binaryCsToCigar(data)
-  const opChars = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
-  let result = ''
-  for (const packed of ops) {
-    const len = packed >>> 4
-    const op = packed & 0xf
-    result += `${len}${opChars[op]}`
-  }
-  return result
-}

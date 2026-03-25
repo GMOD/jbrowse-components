@@ -11,8 +11,7 @@ import type {
   MultiSyntenyCanvasBackend,
   MultiSyntenyCanvasRenderOpts,
 } from './multiSyntenyBackendTypes.ts'
-
-const LABEL_FONT_MAX = 12
+import { LABEL_FONT_MAX } from './multiSyntenyBackendTypes.ts'
 
 export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
   private canvas: HTMLCanvasElement
@@ -52,6 +51,8 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
     ctx.fillStyle = '#ededed'
     ctx.fillRect(0, 0, width, height)
 
+    let totalFeaturesDrawn = 0
+    let totalFeaturesSkipped = 0
     for (let g = 0; g < displayedGenomes.length; g++) {
       const genomeName = displayedGenomes[g]!
       const y = g * rowHeight
@@ -76,6 +77,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
         const px1 = bpToPx(feat.origRefName, feat.start)
         const px2 = bpToPx(feat.origRefName, feat.end)
         if (px1 === undefined || px2 === undefined) {
+          totalFeaturesSkipped++
           continue
         }
         const x1 = px1 + labelW
@@ -83,8 +85,10 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
         const blockWidth = Math.max(x2 - x1, 1)
 
         if (x1 + blockWidth < labelW || x1 > width) {
+          totalFeaturesSkipped++
           continue
         }
+        totalFeaturesDrawn++
 
         const clippedX = Math.max(x1, labelW)
         const clippedW = Math.min(blockWidth, width - clippedX)
@@ -119,6 +123,28 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
         ctx.moveTo(0, y + rowHeight)
         ctx.lineTo(width, y + rowHeight)
         ctx.stroke()
+      }
+    }
+    console.log(
+      '[Canvas2DRenderer] Render complete:',
+      'drawn:', totalFeaturesDrawn,
+      'skipped (no bpToPx or off-screen):', totalFeaturesSkipped,
+      'genomes:', displayedGenomes.length,
+      'canvas:', this.canvas.width, 'x', this.canvas.height,
+    )
+    if (totalFeaturesSkipped > 0 && totalFeaturesDrawn === 0) {
+      const firstGenome = displayedGenomes[0]
+      const features = firstGenome ? genomeRows.get(firstGenome) : undefined
+      if (features && features.length > 0) {
+        const f = features[0]!
+        const px1 = bpToPx(f.origRefName, f.start)
+        console.log(
+          '[Canvas2DRenderer] DEBUG: all features skipped! Sample feature:',
+          'origRefName:', f.origRefName,
+          'start:', f.start,
+          'end:', f.end,
+          'bpToPx result:', px1,
+        )
       }
     }
   }

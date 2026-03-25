@@ -314,6 +314,10 @@ export function computeRegionRenderParams(
 ) {
   const entry = refNameIndex.get(block.refName)
   if (!entry || entry.count === 0) {
+    console.log(
+      `[computeRegionRenderParams] No instances for block refName="${block.refName}"`,
+      'available refNames:', [...refNameIndex.keys()],
+    )
     return undefined
   }
 

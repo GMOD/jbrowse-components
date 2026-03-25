@@ -7,9 +7,27 @@ interface CellEntry {
   segmentIdx: number
 }
 
+function getOrCreateCell<T>(
+  cells: Map<number, Map<number, T[]>>,
+  cx: number,
+  cy: number,
+) {
+  let row = cells.get(cx)
+  if (!row) {
+    row = new Map()
+    cells.set(cx, row)
+  }
+  let cell = row.get(cy)
+  if (!cell) {
+    cell = []
+    row.set(cy, cell)
+  }
+  return cell
+}
+
 export class SpatialIndex {
   private cellSize: number
-  private cells = new Map<string, CellEntry[]>()
+  private cells = new Map<number, Map<number, CellEntry[]>>()
 
   constructor(nodePositions: Record<string, NodeSegment[]>, cellSize = 50) {
     this.cellSize = cellSize
@@ -28,15 +46,10 @@ export class SpatialIndex {
         const y0 = Math.floor(minY / cellSize)
         const y1 = Math.floor(maxY / cellSize)
 
+        const entry: CellEntry = { nodeId, segmentIdx: i }
         for (let cx = x0; cx <= x1; cx++) {
           for (let cy = y0; cy <= y1; cy++) {
-            const key = `${cx},${cy}`
-            let cell = this.cells.get(key)
-            if (!cell) {
-              cell = []
-              this.cells.set(key, cell)
-            }
-            cell.push({ nodeId, segmentIdx: i })
+            getOrCreateCell(this.cells, cx, cy).push(entry)
           }
         }
       }
@@ -50,16 +63,19 @@ export class SpatialIndex {
     const cy1 = Math.floor((y + radius) / this.cellSize)
 
     const results: CellEntry[] = []
-    const seen = new Set<string>()
+    const seen = new Set<CellEntry>()
 
     for (let cx = cx0; cx <= cx1; cx++) {
+      const row = this.cells.get(cx)
+      if (!row) {
+        continue
+      }
       for (let cy = cy0; cy <= cy1; cy++) {
-        const cell = this.cells.get(`${cx},${cy}`)
+        const cell = row.get(cy)
         if (cell) {
           for (const entry of cell) {
-            const key = `${entry.nodeId}:${entry.segmentIdx}`
-            if (!seen.has(key)) {
-              seen.add(key)
+            if (!seen.has(entry)) {
+              seen.add(entry)
               results.push(entry)
             }
           }
@@ -72,7 +88,7 @@ export class SpatialIndex {
 
 export class EdgeSpatialIndex {
   private cellSize: number
-  private cells = new Map<string, number[]>()
+  private cells = new Map<number, Map<number, number[]>>()
 
   constructor(
     nodePositions: Record<string, NodeSegment[]>,
@@ -136,13 +152,7 @@ export class EdgeSpatialIndex {
       const cy1 = Math.floor(maxY / cellSize)
       for (let cx = cx0; cx <= cx1; cx++) {
         for (let cy = cy0; cy <= cy1; cy++) {
-          const key = `${cx},${cy}`
-          let cell = this.cells.get(key)
-          if (!cell) {
-            cell = []
-            this.cells.set(key, cell)
-          }
-          cell.push(ei)
+          getOrCreateCell(this.cells, cx, cy).push(ei)
         }
       }
     }
@@ -158,8 +168,12 @@ export class EdgeSpatialIndex {
     const seen = new Set<number>()
 
     for (let cx = cx0; cx <= cx1; cx++) {
+      const row = this.cells.get(cx)
+      if (!row) {
+        continue
+      }
       for (let cy = cy0; cy <= cy1; cy++) {
-        const cell = this.cells.get(`${cx},${cy}`)
+        const cell = row.get(cy)
         if (cell) {
           for (const ei of cell) {
             if (!seen.has(ei)) {

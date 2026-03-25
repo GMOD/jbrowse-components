@@ -12,8 +12,7 @@ import {
   loadAlnIndex,
   queryAlnBin,
 } from '../binaryAlnReader.ts'
-import { binaryCsToCigar, decodeBinaryCs } from '../binaryCs.ts'
-import { csToCigar } from '../csUtils.ts'
+import { decodeBinaryCs } from '../binaryCs.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
 import type { AlnIndex } from '../binaryAlnReader.ts'
@@ -449,9 +448,22 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   ) {
     const { alnAvailable, alnBinAvailable } = await this.setup()
     checkStopToken(opts.stopToken)
+    console.log(
+      '[getMultiPairFeatures] dispatch:',
+      'alnBinAvailable:', alnBinAvailable,
+      'alnAvailable:', alnAvailable,
+      'query:', `${query.assemblyName}/${query.refName}:${query.start}-${query.end}`,
+    )
     let genomeRows: Map<string, MultiPairFeature[]>
     if (alnBinAvailable) {
       genomeRows = await this.getMultiPairFeaturesFromAlnBin(query, opts)
+      if (genomeRows.size === 0) {
+        console.warn(
+          '[getMultiPairFeatures] WARNING: alnBin returned 0 genomes for',
+          `${query.assemblyName}/${query.refName}:${query.start}-${query.end}`,
+          '— the aln.bin may have been generated from a GFA without segment sequences (non-d9 graph)',
+        )
+      }
     } else if (alnAvailable) {
       genomeRows = await this.getMultiPairFeaturesFromAln(query, opts)
     } else {
@@ -576,7 +588,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         const mateEnd = +cols[6]!
         const strand = cols[7] === '-' ? -1 : 1
         const cs = cols[8] ?? ''
-        const cigar = csToCigar(cs)
 
         const refStart = +cols[1]!
         const refEnd = +cols[2]!
@@ -631,7 +642,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           identity,
           featureId: `aln-${fileOffset}`,
           segmentId: undefined,
-          cigar,
+          cigar: undefined,
           cs,
         })
       },
@@ -663,7 +674,17 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         n => n.endsWith(`#${refName}`) || n === refName,
       )
     }
+    console.log(
+      '[getMultiPairFeaturesFromAlnBin] chromName resolution:',
+      'refName:', refName,
+      'assemblyName:', assemblyName,
+      'qualified:', qualified,
+      'resolved:', chromName,
+      'available chromNames:', alnIndex.chromNames.slice(0, 10),
+      '(total:', alnIndex.chromNames.length + ')',
+    )
     if (!chromName) {
+      console.log('[getMultiPairFeaturesFromAlnBin] No matching chromName found, returning empty')
       return genomeRows
     }
 
@@ -673,6 +694,15 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       alnIndex,
       chromName,
       start,
+      end,
+    )
+    console.log(
+      '[getMultiPairFeaturesFromAlnBin] queryAlnBin returned',
+      records.length,
+      'records for',
+      chromName,
+      start,
+      '-',
       end,
     )
 
@@ -697,15 +727,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         genomeRows.set(genomeName, [])
       }
 
-      let cigar: string | undefined
       let cs: string | undefined
       if (decodeCigar && rec.csData.length > 0) {
-        const cigarOps = binaryCsToCigar(rec.csData)
-        const opChars = ['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
-        cigar = ''
-        for (const packed of cigarOps) {
-          cigar += `${packed >>> 4}${opChars[packed & 0xf]}`
-        }
         cs = decodeBinaryCs(rec.csData)
       }
 
@@ -722,7 +745,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         identity: rec.identity,
         featureId: `aln-bin-${i}`,
         segmentId: undefined,
-        cigar,
+        cigar: undefined,
         cs,
       })
     }

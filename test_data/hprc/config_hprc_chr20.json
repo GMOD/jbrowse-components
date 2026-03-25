@@ -43,6 +43,16 @@
     }
   ],
   "defaultSession": {
-    "name": "HPRC chr20 pangenome"
+    "name": "HPRC chr20 pangenome",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "loc": "chr20:23,728,440..23,730,965",
+          "assembly": "GRCh38#0",
+          "tracks": ["hprc_chr20_gfa_synteny"]
+        }
+      }
+    ]
   }
 }

@@ -16,10 +16,8 @@
 | Automated performance tracing                    | Small  | Measurable regressions, data-driven optimization    |
 | Virtual scrolling for large genome counts        | Medium | Smooth scrolling through 90+ assemblies             |
 | Canvas click-to-select and context menu          | Small  | Feature selection + detail widget from canvas       |
-| renderSvg for MultiLGVSyntenyDisplay             | Medium | Image/SVG export for multi-genome views             |
 | Graph ↔ Synteny navigation                       | Medium | Click bubble in graph → synteny context             |
 | Shared GFA data layer (graph + synteny)          | Large  | Single GFA load for both views                      |
-| Test LOD-aware aln.bed.gz switching              | Small  | Verify segment↔aln transition at bpPerPx threshold  |
 | Multi-resolution segment index (LOD)             | Medium | Whole-chromosome views for large pangenomes         |
 | MultiLGV scrolling for manual row height mode    | Small  | Scroll through assemblies when rows exceed display  |
 | MultiLGV sorting/grouping by assembly properties | Small  | Organize 90+ assemblies by clade, identity, etc.    |
@@ -259,12 +257,6 @@ wired to the canvas:
 - Open feature detail widget on click (like LinearSyntenyDisplay)
 - Right-click context menu on individual features (copy info, launch pairwise
   view for that pair)
-
-### renderSvg for MultiLGVSyntenyDisplay
-
-LinearSyntenyDisplay has SVG export via `renderSvg.tsx`, but
-MultiLGVSyntenyDisplay is canvas-only. Need a `renderSvg` method for server-side
-rendering and image export (used by jbrowse-img and screenshot functionality).
 
 ### Scrolling for Manual Row Height Mode
 

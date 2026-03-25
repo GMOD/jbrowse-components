@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -6,9 +6,14 @@ import { autorun } from 'mobx'
 
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
 
+import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
+import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
+import { LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
+import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+import type { FeatureHitResult } from './hitTesting.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MultiSyntenyModel {
@@ -21,7 +26,140 @@ interface MultiSyntenyModel {
   dataVersion: number
 }
 
-const LABEL_WIDTH = 120
+function formatTooltip(hit: FeatureHitResult) {
+  const { feature: feat, genomeName, cigarItem } = hit
+  const refSize = feat.end - feat.start
+  const querySize = feat.mateEnd - feat.mateStart
+  const lines = [
+    genomeName,
+    `Ref: ${feat.origRefName}:${feat.start.toLocaleString()}-${feat.end.toLocaleString()} (${getBpDisplayStr(refSize)})`,
+    `Query: ${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()} (${getBpDisplayStr(querySize)})`,
+    feat.strand === -1 ? 'Inverted' : '',
+    feat.syriType ? `Type: ${feat.syriType}` : '',
+    feat.identity > 0
+      ? `Identity: ${(feat.identity * 100).toFixed(1)}%`
+      : '',
+    feat.segmentId ? `Segment: ${feat.segmentId}` : '',
+  ]
+
+  if (cigarItem) {
+    lines.push('')
+    switch (cigarItem.type) {
+      case 'mismatch':
+        lines.push(
+          cigarItem.base
+            ? `SNP: ${cigarItem.base} at ${cigarItem.refPosition.toLocaleString()}`
+            : `Mismatch: ${cigarItem.length}bp at ${cigarItem.refPosition.toLocaleString()}`,
+        )
+        break
+      case 'insertion':
+        lines.push(
+          `Insertion: ${cigarItem.length}bp at ${cigarItem.refPosition.toLocaleString()}`,
+        )
+        if (cigarItem.insertionSeq) {
+          const seq =
+            cigarItem.insertionSeq.length > 20
+              ? cigarItem.insertionSeq.slice(0, 20) + '...'
+              : cigarItem.insertionSeq
+          lines.push(`Seq: ${seq}`)
+        }
+        break
+      case 'deletion':
+        lines.push(
+          `Deletion: ${cigarItem.length}bp at ${cigarItem.refPosition.toLocaleString()}`,
+        )
+        break
+    }
+  }
+
+  return lines.filter(Boolean).join('\n')
+}
+
+function featureToRect(
+  feature: MultiPairFeature,
+  sampleIdx: number,
+  rowHeight: number,
+  labelW: number,
+  view: LinearGenomeViewModel,
+  viewWidth: number,
+) {
+  const px1 = view.bpToPx({ refName: feature.origRefName, coord: feature.start })
+  const px2 = view.bpToPx({ refName: feature.origRefName, coord: feature.end })
+  if (!px1 || !px2) {
+    return undefined
+  }
+  const padding = rowHeight >= 6 ? 1 : 0
+  return {
+    x: Math.max(px1.offsetPx - view.offsetPx + labelW, labelW),
+    x2: Math.min(px2.offsetPx - view.offsetPx + labelW, viewWidth),
+    y: sampleIdx * rowHeight + padding,
+    h: rowHeight - padding * 2,
+  }
+}
+
+function FeatureHighlightOverlay({
+  hoveredHit,
+  selectedHit,
+  rowHeight,
+  labelW,
+  view,
+  width,
+  height,
+}: {
+  hoveredHit: FeatureHitResult | undefined
+  selectedHit: FeatureHitResult | undefined
+  rowHeight: number
+  labelW: number
+  view: LinearGenomeViewModel
+  width: number
+  height: number
+}) {
+  const hoverRect = hoveredHit
+    ? featureToRect(hoveredHit.feature, hoveredHit.sampleIdx, rowHeight, labelW, view, width)
+    : undefined
+  const selectRect = selectedHit
+    ? featureToRect(selectedHit.feature, selectedHit.sampleIdx, rowHeight, labelW, view, width)
+    : undefined
+
+  if (!hoverRect && !selectRect) {
+    return null
+  }
+
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width,
+        height,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      {hoverRect ? (
+        <rect
+          x={hoverRect.x}
+          y={hoverRect.y}
+          width={hoverRect.x2 - hoverRect.x}
+          height={hoverRect.h}
+          fill="rgba(0,0,0,0.15)"
+        />
+      ) : null}
+      {selectRect ? (
+        <rect
+          x={selectRect.x}
+          y={selectRect.y}
+          width={selectRect.x2 - selectRect.x}
+          height={selectRect.h}
+          fill="none"
+          stroke="rgba(0,0,0,0.8)"
+          strokeWidth={2}
+        />
+      ) : null}
+    </svg>
+  )
+}
 
 const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   model,
@@ -35,6 +173,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     text: string
     open: boolean
   }>({ text: '', open: false })
+  const [hoveredHit, setHoveredHit] = useState<FeatureHitResult | undefined>()
+  const [selectedHit, setSelectedHit] = useState<FeatureHitResult | undefined>()
+  const prevViewRef = useRef({ bpPerPx: 0, offsetPx: 0 })
 
   const view = getContainingView(model) as LinearGenomeViewModel
 
@@ -44,13 +185,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       return
     }
     let cancelled = false
+    console.log('[MultiSyntenyRendering] Initializing renderer, canvas:', canvas.width, 'x', canvas.height)
     const renderer = MultiSyntenyRenderer.getOrCreate(canvas)
     renderer
       .init()
       .then(() => {
         if (cancelled) {
+          console.log('[MultiSyntenyRendering] Init completed but cancelled')
           return
         }
+        console.log('[MultiSyntenyRendering] Renderer ready, isGpu:', renderer.isGpu)
         rendererRef.current = renderer
         setReady(true)
       })
@@ -76,10 +220,18 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // either way.
   useEffect(() => {
     if (!ready) {
+      console.log('[MultiSyntenyRendering] Upload autorun skipped: ready=false')
       return
     }
     return autorun(() => {
       const renderer = rendererRef.current
+      console.log(
+        '[MultiSyntenyRendering] Upload autorun fired:',
+        'renderer:', !!renderer,
+        'isGpu:', renderer?.isGpu,
+        'genomeRows:', model.genomeRows.size,
+        'displayedGenomes:', model.displayedGenomes.length,
+      )
       if (renderer?.isGpu) {
         const { genomeRows, displayedGenomes, colorBy, showSnps } = model
         renderer.uploadGeometry(
@@ -98,6 +250,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // LinearAlignmentsDisplay:draw autorun tracking self.dataVersion.
   useEffect(() => {
     if (!ready) {
+      console.log('[MultiSyntenyRendering] Draw autorun skipped: ready=false')
       return
     }
     return autorun(() => {
@@ -108,6 +261,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         const { height, rowHeight } = model
         const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
         const contentBlocks = view.staticBlocks.contentBlocks
+        console.log(
+          '[MultiSyntenyRendering] Draw autorun:',
+          'dataVersion:', _dv,
+          'contentBlocks:', contentBlocks.length,
+          'height:', height,
+          'rowHeight:', rowHeight,
+        )
         renderer.renderGpu(
           contentBlocks,
           view.offsetPx,
@@ -123,10 +283,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   // Canvas2D fallback path
   useEffect(() => {
     if (!ready) {
+      console.log('[MultiSyntenyRendering] Canvas2D autorun skipped: ready=false')
       return
     }
     return autorun(() => {
       const renderer = rendererRef.current
+      console.log(
+        '[MultiSyntenyRendering] Canvas2D autorun fired:',
+        'renderer:', !!renderer,
+        'isGpu:', renderer?.isGpu,
+      )
       if (renderer && !renderer.isGpu) {
         const {
           genomeRows,
@@ -159,62 +325,87 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   }, [ready, model, view])
 
   // Read observables during render for tooltip/style (observer tracks these)
-  const { genomeRows, displayedGenomes, rowHeight, height } = model
+  const { genomeRows, displayedGenomes, rowHeight, height, showSnps } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
-  const onMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const mouseX = e.clientX - rect.left
-      const mouseY = e.clientY - rect.top
-
-      const genomeIdx = Math.floor(mouseY / rowHeight)
-      if (genomeIdx < 0 || genomeIdx >= displayedGenomes.length) {
-        setTooltip(t => (t.open ? { text: '', open: false } : t))
-        return
-      }
-      const genomeName = displayedGenomes[genomeIdx]!
-      const features = genomeRows.get(genomeName)
-      if (!features) {
-        setTooltip(t => (t.open ? { text: '', open: false } : t))
-        return
-      }
-
-      for (const feat of features) {
-        const px1 = view.bpToPx({ refName: feat.origRefName, coord: feat.start })
-        const px2 = view.bpToPx({ refName: feat.origRefName, coord: feat.end })
-        if (!px1 || !px2) {
-          continue
-        }
-        const x1 = px1.offsetPx - offsetPx + labelW
-        const x2 = px2.offsetPx - offsetPx + labelW
-        if (mouseX >= x1 && mouseX <= x2) {
-          const refSize = feat.end - feat.start
-          const querySize = feat.mateEnd - feat.mateStart
-          const lines = [
-            genomeName,
-            `Ref: ${feat.start.toLocaleString()}-${feat.end.toLocaleString()} (${getBpDisplayStr(refSize)})`,
-            `Query: ${feat.mateRefName}:${feat.mateStart.toLocaleString()}-${feat.mateEnd.toLocaleString()} (${getBpDisplayStr(querySize)})`,
-            feat.strand === -1 ? 'Inverted' : '',
-            feat.syriType ? `Type: ${feat.syriType}` : '',
-            feat.identity > 0
-              ? `Identity: ${(feat.identity * 100).toFixed(1)}%`
-              : '',
-            feat.segmentId ? `Segment: ${feat.segmentId}` : '',
-          ].filter(Boolean)
-          setTooltip({ text: lines.join('\n'), open: true })
-          return
-        }
-      }
+  // Hide tooltip and hover on zoom or scroll changes
+  useEffect(() => {
+    const prev = prevViewRef.current
+    if (prev.bpPerPx !== 0 && (prev.bpPerPx !== bpPerPx || prev.offsetPx !== offsetPx)) {
       setTooltip(t => (t.open ? { text: '', open: false } : t))
+      setHoveredHit(undefined)
+    }
+    prevViewRef.current = { bpPerPx, offsetPx }
+  }, [bpPerPx, offsetPx])
+
+  const spatialIndex = useMemo(
+    () => buildSyntenyIndex(genomeRows, displayedGenomes, showSnps),
+    [genomeRows, displayedGenomes, showSnps],
+  )
+
+  // Clear stale selection when data changes
+  useEffect(() => {
+    setSelectedHit(undefined)
+  }, [genomeRows, displayedGenomes])
+
+  const doHitTest = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect()
+      return hitTestMultiSynteny(
+        e.clientX - rect.left,
+        e.clientY - rect.top,
+        rowHeight,
+        labelW,
+        view,
+        spatialIndex,
+      )
     },
-    [genomeRows, displayedGenomes, rowHeight, bpPerPx, offsetPx, labelW, view],
+    [rowHeight, labelW, view, spatialIndex],
+  )
+
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const hit = doHitTest(e)
+      setHoveredHit(hit)
+      if (hit) {
+        setTooltip({ text: formatTooltip(hit), open: true })
+      } else {
+        setTooltip(t => (t.open ? { text: '', open: false } : t))
+      }
+    },
+    [doHitTest],
   )
 
   const onMouseLeave = useCallback(() => {
+    setHoveredHit(undefined)
     setTooltip({ text: '', open: false })
   }, [])
+
+  const onClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const hit = doHitTest(e)
+      setSelectedHit(prev =>
+        hit?.feature.featureId === prev?.feature.featureId ? undefined : hit,
+      )
+    },
+    [doHitTest],
+  )
+
+  const labels = useMemo(
+    () =>
+      computeMultiSyntenyLabels(
+        genomeRows,
+        displayedGenomes,
+        rowHeight,
+        labelW,
+        showSnps,
+        view.bpToPx.bind(view),
+        offsetPx,
+        width,
+      ),
+    [genomeRows, displayedGenomes, rowHeight, labelW, showSnps, view, offsetPx, width, bpPerPx],
+  )
 
   return (
     <Tooltip
@@ -227,18 +418,33 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       placement="right"
       followCursor
     >
-      <canvas
-        data-testid="multi_synteny_canvas"
-        ref={canvasRef}
+      <div
+        style={{ position: 'relative', width, height }}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
-        style={{
-          width,
-          height,
-          display: 'block',
-          cursor: tooltip.open ? 'pointer' : 'default',
-        }}
-      />
+        onClick={onClick}
+      >
+        <canvas
+          data-testid="multi_synteny_canvas"
+          ref={canvasRef}
+          style={{
+            width,
+            height,
+            display: 'block',
+            cursor: tooltip.open ? 'pointer' : 'default',
+          }}
+        />
+        <VisibleLabelsOverlay labels={labels} width={width} height={height} />
+        <FeatureHighlightOverlay
+          hoveredHit={hoveredHit}
+          selectedHit={selectedHit}
+          rowHeight={rowHeight}
+          labelW={labelW}
+          view={view}
+          width={width}
+          height={height}
+        />
+      </div>
     </Tooltip>
   )
 })
