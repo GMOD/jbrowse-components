@@ -38,8 +38,9 @@ interface SetupResult {
   chromSizes: Map<string, { refName: string; length: number }[]>
   posRefNames: Set<string>
   pathNames: string[]
-  alnAvailable: boolean
-  alnRefNames?: Set<string>
+  bubblesAvailable: boolean
+  bubblesRefNames?: Set<string>
+  bubblesGenomeNames?: string[]
 }
 
 export function parseGfaPathName(path: string) {
@@ -183,7 +184,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected posFile: TabixIndexedFile
-  protected alnFile?: TabixIndexedFile
+  protected bubblesFile?: TabixIndexedFile
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -203,20 +204,24 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
-    const alnLoc = this.getConf('alnLocation') as FileLocation | undefined
-    const hasAlnLoc =
-      alnLoc &&
-      (('uri' in alnLoc && alnLoc.uri !== '') ||
-        ('localPath' in alnLoc && alnLoc.localPath !== ''))
-    if (hasAlnLoc) {
-      const alnIdxLoc = this.getConf(['alnIndex', 'location']) as FileLocation
-      this.alnFile = new TabixIndexedFile({
-        filehandle: openLocation(alnLoc, pm),
-        tbiFilehandle: openLocation(alnIdxLoc, pm),
+    const bubblesLoc = this.getConf('bubblesLocation') as
+      | FileLocation
+      | undefined
+    const hasBubblesLoc =
+      bubblesLoc &&
+      (('uri' in bubblesLoc && bubblesLoc.uri !== '') ||
+        ('localPath' in bubblesLoc && bubblesLoc.localPath !== ''))
+    if (hasBubblesLoc) {
+      const bubblesIdxLoc = this.getConf([
+        'bubblesIndex',
+        'location',
+      ]) as FileLocation
+      this.bubblesFile = new TabixIndexedFile({
+        filehandle: openLocation(bubblesLoc, pm),
+        tbiFilehandle: openLocation(bubblesIdxLoc, pm),
         chunkCacheSize: 50 * 2 ** 20,
       })
     }
-
   }
 
   protected abstract getSegsForOrdinals(
@@ -271,20 +276,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       await this.posFile.getReferenceSequenceNames(),
     )
 
-    let alnAvailable = false
-    let alnRefNames: Set<string> | undefined
-    if (this.alnFile) {
-      try {
-        await this.alnFile.getHeader()
-        alnRefNames = new Set(
-          await this.alnFile.getReferenceSequenceNames(),
-        )
-        alnAvailable = true
-      } catch {
-        // aln file not available
-      }
-    }
-
     const pathsMatch = /paths=([^\n]+)/.exec(header)
     const pathNames = pathsMatch
       ? pathsMatch[1]!.split(',')
@@ -295,13 +286,33 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           })
         : []
 
+    let bubblesAvailable = false
+    let bubblesRefNames: Set<string> | undefined
+    let bubblesGenomeNames: string[] | undefined
+    if (this.bubblesFile) {
+      try {
+        const bHeader = await this.bubblesFile.getHeader()
+        bubblesRefNames = new Set(
+          await this.bubblesFile.getReferenceSequenceNames(),
+        )
+        bubblesAvailable = true
+        const gMatch = /genomes=([^\n]+)/.exec(bHeader)
+        if (gMatch) {
+          bubblesGenomeNames = gMatch[1]!.split(',')
+        }
+      } catch {
+        // bubbles file not available
+      }
+    }
+
     return {
       genomes,
       chromSizes,
       posRefNames,
       pathNames,
-      alnAvailable,
-      alnRefNames,
+      bubblesAvailable,
+      bubblesRefNames,
+      bubblesGenomeNames,
     }
   }
 
@@ -403,15 +414,11 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     query: Region,
     opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
   ) {
-    const { alnAvailable } = await this.setup()
     checkStopToken(opts.stopToken)
-    let genomeRows: Map<string, MultiPairFeature[]>
-    if (alnAvailable) {
-      genomeRows = await this.getMultiPairFeaturesFromAln(query, opts)
-    } else {
-      genomeRows = await this.getMultiPairFeaturesFromSegments(query, opts)
-    }
-
+    const genomeRows = await this.getMultiPairFeaturesFromSegments(
+      query,
+      opts,
+    )
     return { genomeRows }
   }
 
@@ -497,115 +504,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     return lines.join('\n')
-  }
-
-  private async getMultiPairFeaturesFromAln(
-    query: Region,
-    opts: { bpPerPx?: number; stopToken?: StopToken } = {},
-  ) {
-    const genomeRows = new Map<string, MultiPairFeature[]>()
-    const { refName, start, end, assemblyName } = query
-
-    const { alnRefNames } = await this.setup()
-    if (!alnRefNames) {
-      return genomeRows
-    }
-    const tabixRefName = this.resolveTabixRefName(
-      alnRefNames,
-      assemblyName,
-      refName,
-    )
-    if (!tabixRefName) {
-      return genomeRows
-    }
-
-    const includeCs = !opts.bpPerPx || opts.bpPerPx < 50
-
-    const alnChecker = createStopTokenChecker(opts.stopToken)
-    await this.alnFile!.getLines(tabixRefName, start, end, {
-      lineCallback: (line: string, fileOffset: number) => {
-        checkStopToken2(alnChecker)
-        const cols = line.split('\t')
-        const queryGenome = this.remapGenome(cols[3]!)
-        const mateRefName = cols[4]!
-        const mateStart = +cols[5]!
-        const mateEnd = +cols[6]!
-        const strand = cols[7] === '-' ? -1 : 1
-
-        const refStart = +cols[1]!
-        const refEnd = +cols[2]!
-
-        // New format: col8=identity, col9=cs
-        // Old format: col8=cs (no identity column)
-        const col8 = cols[8] ?? ''
-        const hasIdentityCol = cols.length >= 10
-        const identity = hasIdentityCol ? +col8 : undefined
-        const csRaw = hasIdentityCol ? (cols[9] ?? '') : col8
-        const cs = includeCs ? csRaw : undefined
-
-        // Parse identity from CS if not provided as a column
-        let finalIdentity = identity ?? 1
-        if (identity === undefined && csRaw.length > 0) {
-          let matchBp = 0
-          let mismatchBp = 0
-          let i = 0
-          while (i < csRaw.length) {
-            const ch = csRaw[i]!
-            if (ch === ':') {
-              i++
-              let num = ''
-              while (i < csRaw.length && csRaw[i]! >= '0' && csRaw[i]! <= '9') {
-                num += csRaw[i]
-                i++
-              }
-              matchBp += +num
-            } else if (ch === '*') {
-              mismatchBp++
-              i += 3
-            } else if (ch === '+' || ch === '-') {
-              i++
-              while (
-                i < csRaw.length &&
-                csRaw[i] !== ':' &&
-                csRaw[i] !== '*' &&
-                csRaw[i] !== '+' &&
-                csRaw[i] !== '-'
-              ) {
-                i++
-              }
-            } else {
-              i++
-            }
-          }
-          const totalAligned = matchBp + mismatchBp
-          finalIdentity = totalAligned > 0 ? matchBp / totalAligned : 1
-        }
-
-        const { refName: parsedMateRefName } = parseGfaPathName(mateRefName)
-
-        if (!genomeRows.has(queryGenome)) {
-          genomeRows.set(queryGenome, [])
-        }
-        genomeRows.get(queryGenome)!.push({
-          queryGenome,
-          origRefName: refName,
-          start: refStart,
-          end: refEnd,
-          mateStart,
-          mateEnd,
-          mateRefName: parsedMateRefName,
-          strand,
-          syriType: undefined,
-          identity: finalIdentity,
-          featureId: `aln-${fileOffset}`,
-          segmentId: undefined,
-          cigar: undefined,
-          cs,
-        })
-      },
-    })
-
-    return genomeRows
   }
 
   private async getMultiPairFeaturesFromSegments(
@@ -949,6 +847,156 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       console.log(`[getMultiPairFeaturesFromSegments] first 5 genomes:`, coverageSummary.slice(0, 5))
     }
 
+    if (this.bubblesFile && opts.bpPerPx && opts.bpPerPx < 50) {
+      await this.annotateFeaturesWithBubbleCs(
+        genomeRows,
+        query,
+        opts,
+      )
+    }
+
     return genomeRows
+  }
+
+  private async annotateFeaturesWithBubbleCs(
+    genomeRows: Map<string, MultiPairFeature[]>,
+    query: Region,
+    opts: { stopToken?: StopToken },
+  ) {
+    const { bubblesRefNames, bubblesGenomeNames } = await this.setup()
+    if (!bubblesRefNames || !bubblesGenomeNames) {
+      return
+    }
+
+    const { refName, start, end, assemblyName } = query
+    const tabixRefName = this.resolveTabixRefName(
+      bubblesRefNames,
+      assemblyName,
+      refName,
+    )
+    if (!tabixRefName) {
+      return
+    }
+
+    // Build genome name → index map from bubbles header
+    const genomeIdx = new Map<string, number>()
+    for (let i = 0; i < bubblesGenomeNames.length; i++) {
+      genomeIdx.set(bubblesGenomeNames[i]!, i)
+    }
+
+    // Load all bubble records in the visible region
+    const bubbles: {
+      start: number
+      end: number
+      alleleA: number
+      alleleB: number
+      identity: number
+      cs: string
+      genomesA: Set<number>
+      genomesB: Set<number>
+    }[] = []
+
+    const checker = createStopTokenChecker(opts.stopToken)
+    await this.bubblesFile!.getLines(tabixRefName, start, end, {
+      lineCallback: (line: string) => {
+        checkStopToken2(checker)
+        const cols = line.split('\t')
+        const bStart = +cols[1]!
+        const bEnd = +cols[2]!
+        const alleleA = +cols[3]!
+        const alleleB = +cols[4]!
+        const identity = +cols[5]!
+        const cs = cols[6] ?? ''
+        const genomesA = new Set(
+          (cols[7] ?? '').split(',').filter(s => s.length > 0).map(Number),
+        )
+        const genomesB = new Set(
+          (cols[8] ?? '').split(',').filter(s => s.length > 0).map(Number),
+        )
+        bubbles.push({
+          start: bStart,
+          end: bEnd,
+          alleleA,
+          alleleB,
+          identity,
+          cs,
+          genomesA,
+          genomesB,
+        })
+      },
+    })
+
+    if (bubbles.length === 0) {
+      return
+    }
+
+    // For each genome's features, annotate with bubble CS
+    for (const [genomeName, features] of genomeRows) {
+      const unmapped = genomeName
+      const nameMap = this.getAssemblyNameMap()
+      const origName = Object.entries(nameMap).find(
+        ([, v]) => v === genomeName,
+      )?.[0] ?? genomeName
+      const gIdx = genomeIdx.get(origName)
+      if (gIdx === undefined) {
+        continue
+      }
+
+      for (const feat of features) {
+        const overlapping = bubbles.filter(
+          b => b.end > feat.start && b.start < feat.end,
+        )
+        if (overlapping.length === 0) {
+          continue
+        }
+
+        // Build CS by walking through the feature's ref span
+        const csParts: string[] = []
+        let pos = feat.start
+        for (const bubble of overlapping) {
+          if (bubble.start > pos) {
+            csParts.push(`:${bubble.start - pos}`)
+          }
+          // Find which allele this genome has at this bubble
+          let genomeAllele: number | undefined
+          for (const b of bubbles) {
+            if (b.start !== bubble.start || b.end !== bubble.end) {
+              continue
+            }
+            if (b.genomesA.has(gIdx)) {
+              genomeAllele = b.alleleA
+              break
+            }
+            if (b.genomesB.has(gIdx)) {
+              genomeAllele = b.alleleB
+              break
+            }
+          }
+          // Ref allele is 0. If genome has allele 0, this is a match region.
+          if (genomeAllele !== undefined && genomeAllele !== 0) {
+            // Find the bubble record for (0, genomeAllele) pair
+            const pairRecord = bubbles.find(
+              b =>
+                b.start === bubble.start &&
+                b.end === bubble.end &&
+                ((b.alleleA === 0 && b.alleleB === genomeAllele) ||
+                  (b.alleleB === 0 && b.alleleA === genomeAllele)),
+            )
+            if (pairRecord) {
+              csParts.push(pairRecord.cs)
+            } else {
+              csParts.push(`:${bubble.end - bubble.start}`)
+            }
+          } else {
+            csParts.push(`:${bubble.end - bubble.start}`)
+          }
+          pos = bubble.end
+        }
+        if (pos < feat.end) {
+          csParts.push(`:${feat.end - pos}`)
+        }
+        feat.cs = csParts.join('')
+      }
+    }
   }
 }

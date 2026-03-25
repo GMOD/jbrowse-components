@@ -59,10 +59,10 @@ const ShardedGfaTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    alnLocation: {
+    bubblesLocation: {
       type: 'fileLocation',
       description:
-        'Location of the aln.bed.gz file (precomputed pairwise alignments with cs tags)',
+        'Location of the bubbles.bed.gz file (precomputed per-snarl CS between allele pairs)',
       defaultValue: {
         uri: '',
         locationType: 'UriLocation',
@@ -71,9 +71,9 @@ const ShardedGfaTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
-    alnIndex: ConfigurationSchema('ShardedAlnTabixIndex', {
+    bubblesIndex: ConfigurationSchema('ShardedBubblesTabixIndex', {
       /**
-       * #slot alnIndex.location
+       * #slot bubblesIndex.location
        */
       location: {
         type: 'fileLocation',
@@ -105,13 +105,13 @@ const ShardedGfaTabixAdapter = ConfigurationSchema(
             uri: `${snap.prefix}.segments.manifest.json`,
             baseUri: snap.baseUri,
           },
-          alnLocation: {
-            uri: `${snap.prefix}.aln.bed.gz`,
+          bubblesLocation: {
+            uri: `${snap.prefix}.bubbles.bed.gz`,
             baseUri: snap.baseUri,
           },
-          alnIndex: {
+          bubblesIndex: {
             location: {
-              uri: `${snap.prefix}.aln.bed.gz.tbi`,
+              uri: `${snap.prefix}.bubbles.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
           },
