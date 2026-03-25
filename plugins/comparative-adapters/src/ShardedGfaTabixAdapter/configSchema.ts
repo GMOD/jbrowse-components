@@ -83,30 +83,6 @@ const ShardedGfaTabixAdapter = ConfigurationSchema(
         },
       },
     }),
-    /**
-     * #slot
-     */
-    alnBinLocation: {
-      type: 'fileLocation',
-      description:
-        'Location of the aln.bin file (binary alignment records)',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
-    /**
-     * #slot
-     */
-    alnBinIdxLocation: {
-      type: 'fileLocation',
-      description:
-        'Location of the aln.idx file (binary alignment index)',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
-    },
   },
   {
     explicitlyTyped: true,
@@ -138,14 +114,6 @@ const ShardedGfaTabixAdapter = ConfigurationSchema(
               uri: `${snap.prefix}.aln.bed.gz.tbi`,
               baseUri: snap.baseUri,
             },
-          },
-          alnBinLocation: {
-            uri: `${snap.prefix}.aln.bin`,
-            baseUri: snap.baseUri,
-          },
-          alnBinIdxLocation: {
-            uri: `${snap.prefix}.aln.idx`,
-            baseUri: snap.baseUri,
           },
         }
       }

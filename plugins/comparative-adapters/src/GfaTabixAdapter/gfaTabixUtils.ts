@@ -8,14 +8,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import {
-  loadAlnIndex,
-  queryAlnBin,
-} from '../binaryAlnReader.ts'
-import { decodeBinaryCs } from '../binaryCs.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-
-import type { AlnIndex } from '../binaryAlnReader.ts'
 import type { MultiPairFeature } from '../MultiPairFeature.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -47,7 +40,6 @@ interface SetupResult {
   pathNames: string[]
   alnAvailable: boolean
   alnRefNames?: Set<string>
-  alnBinAvailable: boolean
 }
 
 export function parseGfaPathName(path: string) {
@@ -192,9 +184,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
   protected posFile: TabixIndexedFile
   protected alnFile?: TabixIndexedFile
-  protected alnBinFile?: GenericFilehandle
-  protected alnBinIdxFile?: GenericFilehandle
-  private alnIndexP?: Promise<AlnIndex>
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -228,18 +217,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       })
     }
 
-    const alnBinLoc = this.getConf('alnBinLocation') as
-      | FileLocation
-      | undefined
-    const hasAlnBinLoc =
-      alnBinLoc &&
-      (('uri' in alnBinLoc && alnBinLoc.uri !== '') ||
-        ('localPath' in alnBinLoc && alnBinLoc.localPath !== ''))
-    if (hasAlnBinLoc) {
-      this.alnBinFile = openLocation(alnBinLoc, pm)
-      const alnBinIdxLoc = this.getConf('alnBinIdxLocation') as FileLocation
-      this.alnBinIdxFile = openLocation(alnBinIdxLoc, pm)
-    }
   }
 
   protected abstract getSegsForOrdinals(
@@ -308,18 +285,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    let alnBinAvailable = false
-    if (this.alnBinIdxFile) {
-      try {
-        const idx = await this.loadAlnBinIndex()
-        if (idx.genomeNames.length > 0) {
-          alnBinAvailable = true
-        }
-      } catch {
-        // binary aln not available
-      }
-    }
-
     const pathsMatch = /paths=([^\n]+)/.exec(header)
     const pathNames = pathsMatch
       ? pathsMatch[1]!.split(',')
@@ -337,7 +302,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       pathNames,
       alnAvailable,
       alnRefNames,
-      alnBinAvailable,
     }
   }
 
@@ -435,36 +399,14 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     return genomes.map(g => ({ name: this.remapGenome(g) }))
   }
 
-  private async loadAlnBinIndex() {
-    if (!this.alnIndexP) {
-      this.alnIndexP = loadAlnIndex(this.alnBinIdxFile!)
-    }
-    return this.alnIndexP
-  }
-
   async getMultiPairFeatures(
     query: Region,
     opts: { bpPerPx?: number; stopToken?: BaseOptions['stopToken'] } = {},
   ) {
-    const { alnAvailable, alnBinAvailable } = await this.setup()
+    const { alnAvailable } = await this.setup()
     checkStopToken(opts.stopToken)
-    console.log(
-      '[getMultiPairFeatures] dispatch:',
-      'alnBinAvailable:', alnBinAvailable,
-      'alnAvailable:', alnAvailable,
-      'query:', `${query.assemblyName}/${query.refName}:${query.start}-${query.end}`,
-    )
     let genomeRows: Map<string, MultiPairFeature[]>
-    if (alnBinAvailable) {
-      genomeRows = await this.getMultiPairFeaturesFromAlnBin(query, opts)
-      if (genomeRows.size === 0) {
-        console.warn(
-          '[getMultiPairFeatures] WARNING: alnBin returned 0 genomes for',
-          `${query.assemblyName}/${query.refName}:${query.start}-${query.end}`,
-          '— the aln.bin may have been generated from a GFA without segment sequences (non-d9 graph)',
-        )
-      }
-    } else if (alnAvailable) {
+    if (alnAvailable) {
       genomeRows = await this.getMultiPairFeaturesFromAln(query, opts)
     } else {
       genomeRows = await this.getMultiPairFeaturesFromSegments(query, opts)
@@ -559,7 +501,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
   private async getMultiPairFeaturesFromAln(
     query: Region,
-    opts: { stopToken?: StopToken } = {},
+    opts: { bpPerPx?: number; stopToken?: StopToken } = {},
   ) {
     const genomeRows = new Map<string, MultiPairFeature[]>()
     const { refName, start, end, assemblyName } = query
@@ -577,6 +519,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       return genomeRows
     }
 
+    const includeCs = !opts.bpPerPx || opts.bpPerPx < 50
+
     const alnChecker = createStopTokenChecker(opts.stopToken)
     await this.alnFile!.getLines(tabixRefName, start, end, {
       lineCallback: (line: string, fileOffset: number) => {
@@ -587,44 +531,57 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         const mateStart = +cols[5]!
         const mateEnd = +cols[6]!
         const strand = cols[7] === '-' ? -1 : 1
-        const cs = cols[8] ?? ''
 
         const refStart = +cols[1]!
         const refEnd = +cols[2]!
 
-        let matchBp = 0
-        let mismatchBp = 0
-        let i = 0
-        while (i < cs.length) {
-          const ch = cs[i]!
-          if (ch === ':') {
-            i++
-            let num = ''
-            while (i < cs.length && cs[i]! >= '0' && cs[i]! <= '9') {
-              num += cs[i]
+        // New format: col8=identity, col9=cs
+        // Old format: col8=cs (no identity column)
+        const col8 = cols[8] ?? ''
+        const hasIdentityCol = cols.length >= 10
+        const identity = hasIdentityCol ? +col8 : undefined
+        const csRaw = hasIdentityCol ? (cols[9] ?? '') : col8
+        const cs = includeCs ? csRaw : undefined
+
+        // Parse identity from CS if not provided as a column
+        let finalIdentity = identity ?? 1
+        if (identity === undefined && csRaw.length > 0) {
+          let matchBp = 0
+          let mismatchBp = 0
+          let i = 0
+          while (i < csRaw.length) {
+            const ch = csRaw[i]!
+            if (ch === ':') {
+              i++
+              let num = ''
+              while (i < csRaw.length && csRaw[i]! >= '0' && csRaw[i]! <= '9') {
+                num += csRaw[i]
+                i++
+              }
+              matchBp += +num
+            } else if (ch === '*') {
+              mismatchBp++
+              i += 3
+            } else if (ch === '+' || ch === '-') {
+              i++
+              while (
+                i < csRaw.length &&
+                csRaw[i] !== ':' &&
+                csRaw[i] !== '*' &&
+                csRaw[i] !== '+' &&
+                csRaw[i] !== '-'
+              ) {
+                i++
+              }
+            } else {
               i++
             }
-            matchBp += +num
-          } else if (ch === '*') {
-            mismatchBp++
-            i += 3
-          } else if (ch === '+' || ch === '-') {
-            i++
-            while (
-              i < cs.length &&
-              cs[i] !== ':' &&
-              cs[i] !== '*' &&
-              cs[i] !== '+' &&
-              cs[i] !== '-'
-            ) {
-              i++
-            }
-          } else {
-            i++
           }
+          const totalAligned = matchBp + mismatchBp
+          finalIdentity = totalAligned > 0 ? matchBp / totalAligned : 1
         }
-        const totalAligned = matchBp + mismatchBp
-        const identity = totalAligned > 0 ? matchBp / totalAligned : 1
+
+        const { refName: parsedMateRefName } = parseGfaPathName(mateRefName)
 
         if (!genomeRows.has(queryGenome)) {
           genomeRows.set(queryGenome, [])
@@ -636,10 +593,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           end: refEnd,
           mateStart,
           mateEnd,
-          mateRefName,
+          mateRefName: parsedMateRefName,
           strand,
           syriType: undefined,
-          identity,
+          identity: finalIdentity,
           featureId: `aln-${fileOffset}`,
           segmentId: undefined,
           cigar: undefined,
@@ -647,108 +604,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         })
       },
     })
-
-    return genomeRows
-  }
-
-  private async getMultiPairFeaturesFromAlnBin(
-    query: Region,
-    opts: { bpPerPx?: number; stopToken?: StopToken } = {},
-  ) {
-    const genomeRows = new Map<string, MultiPairFeature[]>()
-    const { refName, start, end, assemblyName } = query
-
-    const alnIndex = await this.loadAlnBinIndex()
-
-    // Resolve the chrom name in the binary index
-    const qualified = `${assemblyName}#${refName}`
-    let chromName: string | undefined
-    if (alnIndex.chromNames.includes(qualified)) {
-      chromName = qualified
-    } else if (alnIndex.chromNames.includes(refName)) {
-      chromName = refName
-    } else {
-      // Try partial match — the aln.bed.gz format uses full path names
-      // like "assembly#hap#chr" as chrom names
-      chromName = alnIndex.chromNames.find(
-        n => n.endsWith(`#${refName}`) || n === refName,
-      )
-    }
-    console.log(
-      '[getMultiPairFeaturesFromAlnBin] chromName resolution:',
-      'refName:', refName,
-      'assemblyName:', assemblyName,
-      'qualified:', qualified,
-      'resolved:', chromName,
-      'available chromNames:', alnIndex.chromNames.slice(0, 10),
-      '(total:', alnIndex.chromNames.length + ')',
-    )
-    if (!chromName) {
-      console.log('[getMultiPairFeaturesFromAlnBin] No matching chromName found, returning empty')
-      return genomeRows
-    }
-
-    checkStopToken(opts.stopToken)
-    const records = await queryAlnBin(
-      this.alnBinFile!,
-      alnIndex,
-      chromName,
-      start,
-      end,
-    )
-    console.log(
-      '[getMultiPairFeaturesFromAlnBin] queryAlnBin returned',
-      records.length,
-      'records for',
-      chromName,
-      start,
-      '-',
-      end,
-    )
-
-    // At zoomed-out views (bpPerPx > 50), skip expensive CIGAR/CS decoding
-    const decodeCigar = !opts.bpPerPx || opts.bpPerPx < 50
-
-    for (let i = 0; i < records.length; i++) {
-      const rec = records[i]!
-      const genomeName = this.remapGenome(
-        alnIndex.genomeNames[rec.queryGenomeIdx] ??
-          `genome-${rec.queryGenomeIdx}`,
-      )
-      const mateRefName =
-        alnIndex.chromNames[rec.mateChromIdx] ??
-        `chrom-${rec.mateChromIdx}`
-
-      // Parse the mate ref name to extract just the refName part
-      const { refName: parsedMateRefName } =
-        parseGfaPathName(mateRefName)
-
-      if (!genomeRows.has(genomeName)) {
-        genomeRows.set(genomeName, [])
-      }
-
-      let cs: string | undefined
-      if (decodeCigar && rec.csData.length > 0) {
-        cs = decodeBinaryCs(rec.csData)
-      }
-
-      genomeRows.get(genomeName)!.push({
-        queryGenome: genomeName,
-        origRefName: refName,
-        start: rec.refStart,
-        end: rec.refEnd,
-        mateStart: rec.mateStart,
-        mateEnd: rec.mateEnd,
-        mateRefName: parsedMateRefName,
-        strand: rec.strand,
-        syriType: undefined,
-        identity: rec.identity,
-        featureId: `aln-bin-${i}`,
-        segmentId: undefined,
-        cigar: undefined,
-        cs,
-      })
-    }
 
     return genomeRows
   }

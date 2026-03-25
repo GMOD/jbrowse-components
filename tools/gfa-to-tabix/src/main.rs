@@ -49,14 +49,10 @@ struct Args {
     #[arg(long)]
     ref_assembly: Option<String>,
 
-    /// Generate binary alignment file (aln.bin + aln.idx) from the GFA.
-    /// Requires that the GFA contains actual segment sequences (not '*').
+    /// Generate bubbles BED file from a VCF produced by vg deconstruct.
+    /// Computes CS between all allele pairs at each variant site.
     #[arg(long)]
-    aln_bin: bool,
-
-    /// Number of threads for parallel aln generation (default: 1, 0 = all cores)
-    #[arg(long, default_value_t = 1)]
-    threads: usize,
+    bubbles: Option<String>,
 }
 
 fn main() {
@@ -78,8 +74,7 @@ fn main() {
     let sharded = cli.sharded;
     let groom = !cli.no_groom;
     let ref_assembly_arg = cli.ref_assembly;
-    let generate_aln_bin = cli.aln_bin;
-    let threads = cli.threads;
+    let bubbles_vcf = cli.bubbles;
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
     // and spilling P/W-lines to a temp file. Then replays the temp file to
@@ -91,10 +86,8 @@ fn main() {
 
     eprintln!("Reading GFA...");
     let mut seg_lengths: HashMap<String, u64> = HashMap::new();
-    let mut seg_sequences: HashMap<String, String> = HashMap::new();
     let mut seg_ordinals: HashMap<String, u64> = HashMap::new();
     let mut next_ordinal: u64 = 0;
-    let mut has_sequences = false;
 
     // Spool P/W-lines to a temp file to avoid buffering in memory
     let paths_tmp = tmp_dir.join("paths.txt");
@@ -117,10 +110,6 @@ fn main() {
                         .map(|t| t[5..].parse::<u64>().unwrap_or(0))
                 })
                 .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
-            if generate_aln_bin && seq != "*" {
-                has_sequences = true;
-                seg_sequences.insert(name.clone(), seq.to_string());
-            }
             seg_lengths.insert(name, length);
         } else if line.starts_with("W\t") || line.starts_with("P\t") {
             paths_tmp_w.write_all(line.as_bytes()).unwrap();
@@ -131,9 +120,6 @@ fn main() {
     drop(paths_tmp_w);
 
     eprintln!("  {} segments, {} path lines", seg_lengths.len(), path_line_count);
-    if generate_aln_bin && !has_sequences {
-        eprintln!("Warning: --aln-bin requested but GFA has no segment sequences (all '*'). Skipping aln generation.");
-    }
 
     // Replay buffered path lines now that all segments are known
     eprintln!("Processing paths...");
@@ -153,7 +139,6 @@ fn main() {
 
     let mut genomes: Vec<String> = Vec::new();
     let mut genome_set: HashSet<String> = HashSet::new();
-    let mut aln_paths: Vec<AlnPathInfo> = Vec::new();
     let mut ref_orients: HashMap<u64, bool> = HashMap::new();
     let mut ref_assembly: Option<String> = None;
     let mut path_names: Vec<String> = Vec::new();
@@ -234,17 +219,6 @@ fn main() {
                 groom,
             );
 
-            if generate_aln_bin && has_sequences {
-                let steps = parse_walk_to_ordinals(
-                    &seg_str, is_walk, &seg_ordinals, &seg_lengths,
-                );
-                aln_paths.push(AlnPathInfo {
-                    path_name: path_name.clone(),
-                    assembly: assembly.clone(),
-                    steps,
-                });
-            }
-
             path_sizes.push((path_name, total));
             path_count += 1;
         }
@@ -320,32 +294,11 @@ fn main() {
         let _ = fs::remove_file(&combined_tmp);
     }
 
-    let _ = fs::remove_dir_all(&tmp_dir);
-
-    if generate_aln_bin && has_sequences {
-        eprintln!("Generating binary alignment file...");
-        let t_idx = Instant::now();
-        // Build ordinal-indexed sequence Vec for O(1) lookup, then let
-        // seg_sequences fall out of scope to free the String-keyed HashMap.
-        let ord_sequences = {
-            let mut seqs: Vec<Vec<u8>> = vec![Vec::new(); next_ordinal as usize];
-            for (name, seq) in seg_sequences {
-                if let Some(&ord) = seg_ordinals.get(&name) {
-                    seqs[ord as usize] = seq.into_bytes().iter().map(|&b| to_lower(b)).collect();
-                }
-            }
-            seqs
-        };
-        eprintln!("  Built ordinal index ({:.1}s)", t_idx.elapsed().as_secs_f64());
-        generate_aln_bin_from_paths_fast(
-            &output_prefix,
-            &aln_paths,
-            &ord_sequences,
-            &ref_orients,
-            groom,
-            threads,
-        );
+    if let Some(ref vcf_path) = bubbles_vcf {
+        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes);
     }
+
+    let _ = fs::remove_dir_all(&tmp_dir);
 
     eprintln!("Done.");
     eprintln!("  Segments: {}", seg_lengths.len());
@@ -801,120 +754,78 @@ fn pack_bases(seq: &[u8], out: &mut Vec<u8>) {
     }
 }
 
-// ── aln.bin / aln.idx format ─────────────────────────────────────────────
-//
-// aln.bin: sorted binary records (by chrom, refStart)
-//   Per record:
-//     refStart:       u32 (4)
-//     refEnd:         u32 (4)
-//     queryGenomeIdx: u16 (2)
-//     mateChromIdx:   u16 (2)
-//     mateStart:      u32 (4)
-//     mateEnd:        u32 (4)
-//     strand:         u8  (1, 0x2B='+' or 0x2D='-')
-//     identity:       u16 (2, identity * 10000)
-//     csLen:          u16 (2)
-//     csData:         [u8; csLen]
-//
-// aln.idx: index header + per-chrom linear index
-//   Header:
-//     magic:      4 bytes "ALNI"
-//     version:    u8
-//     numGenomes: u16
-//     genome names: [u16 len, UTF-8 bytes] × numGenomes
-//     numChroms:  u16
-//     chrom names: [u16 len, UTF-8 bytes] × numChroms
-//   Per chrom:
-//     chromIdx:   u16
-//     chromLen:   u32 (bp)
-//     numBins:    u32 (ceil(chromLen / BIN_SIZE))
-//     binOffsets: [u64] × (numBins + 1)
+const TWOBIT_TO_BASE: [u8; 4] = [b'a', b'c', b'g', b't'];
 
-const BIN_SIZE: u32 = 16384;
-const ALN_RECORD_FIXED: usize = 25;
-
-struct AlnRecord {
-    ref_start: u32,
-    ref_end: u32,
-    query_genome_idx: u16,
-    mate_chrom_idx: u16,
-    mate_start: u32,
-    mate_end: u32,
-    strand: u8,
-    identity: u16,
-    cs_data: Vec<u8>,
-}
-
-impl AlnRecord {
-    fn write_to(&self, w: &mut impl Write) {
-        w.write_all(&self.ref_start.to_le_bytes()).unwrap();
-        w.write_all(&self.ref_end.to_le_bytes()).unwrap();
-        w.write_all(&self.query_genome_idx.to_le_bytes()).unwrap();
-        w.write_all(&self.mate_chrom_idx.to_le_bytes()).unwrap();
-        w.write_all(&self.mate_start.to_le_bytes()).unwrap();
-        w.write_all(&self.mate_end.to_le_bytes()).unwrap();
-        w.write_all(&[self.strand]).unwrap();
-        w.write_all(&self.identity.to_le_bytes()).unwrap();
-        w.write_all(&(self.cs_data.len() as u16).to_le_bytes()).unwrap();
-        w.write_all(&self.cs_data).unwrap();
-    }
-
-    fn byte_len(&self) -> usize {
-        ALN_RECORD_FIXED + self.cs_data.len()
-    }
-}
-
-fn write_length_prefixed_string(w: &mut impl Write, s: &str) {
-    let bytes = s.as_bytes();
-    w.write_all(&(bytes.len() as u16).to_le_bytes()).unwrap();
-    w.write_all(bytes).unwrap();
-}
-
-// ── Generate aln.bin directly from GFA path walks ────────────────────────
-
-// Parse a walk/path string directly into ordinal tuples, avoiding
-// intermediate String allocations for segment names.
-fn parse_walk_to_ordinals(
-    seg_str: &str,
-    is_walk: bool,
-    seg_ordinals: &HashMap<String, u64>,
-    seg_lengths: &HashMap<String, u64>,
-) -> Vec<(u64, bool, u64)> {
-    let mut steps = Vec::new();
-    if is_walk {
-        let bytes = seg_str.as_bytes();
-        let mut pos = 0;
-        while pos < bytes.len() {
-            if bytes[pos] != b'>' && bytes[pos] != b'<' {
-                pos += 1;
-                continue;
-            }
-            let orient = bytes[pos] == b'>';
-            pos += 1;
-            let start = pos;
-            while pos < bytes.len() && bytes[pos] != b'>' && bytes[pos] != b'<' {
-                pos += 1;
-            }
-            let name = &seg_str[start..pos];
-            let ord = seg_ordinals.get(name).copied().unwrap_or(0);
-            let len = seg_lengths.get(name).copied().unwrap_or(0);
-            steps.push((ord, orient, len));
+fn unpack_bases(data: &[u8], len: usize) -> Vec<u8> {
+    let mut out = Vec::with_capacity(len);
+    for &byte in data {
+        for shift in [6, 4, 2, 0] {
+            if out.len() >= len { break; }
+            out.push(TWOBIT_TO_BASE[((byte >> shift) & 0x03) as usize]);
         }
-    } else {
-        for step in seg_str.split(',') {
-            let (seg_id, orient) = if step.ends_with('+') || step.ends_with('-') {
-                (&step[..step.len() - 1], step.ends_with('+'))
+    }
+    out
+}
+
+fn binary_cs_to_text(data: &[u8]) -> String {
+    let mut out = String::new();
+    let mut i = 0;
+    while i < data.len() {
+        let byte = data[i];
+        let op = byte & 0xC0;
+
+        if op == BCS_MATCH {
+            let len_bits = byte & 0x3F;
+            i += 1;
+            let len = if len_bits == 0 {
+                read_varint_slice(data, &mut i) as u64
             } else {
-                (step, true)
+                len_bits as u64
             };
-            let ord = seg_ordinals.get(seg_id).copied().unwrap_or(0);
-            let len = seg_lengths.get(seg_id).copied().unwrap_or(0);
-            steps.push((ord, orient, len));
+            out.push(':');
+            out.push_str(&len.to_string());
+        } else if op == BCS_SUB {
+            let ref_base = TWOBIT_TO_BASE[((byte >> 2) & 0x03) as usize];
+            let alt_base = TWOBIT_TO_BASE[(byte & 0x03) as usize];
+            out.push('*');
+            out.push(ref_base as char);
+            out.push(alt_base as char);
+            i += 1;
+        } else {
+            let is_ins = op == BCS_INS;
+            let len_bits = byte & 0x3F;
+            i += 1;
+            let len = if len_bits == 0 {
+                read_varint_slice(data, &mut i) as u64
+            } else {
+                len_bits as u64
+            };
+            let packed = ((len + 3) / 4) as usize;
+            let bases = unpack_bases(&data[i..i + packed], len as usize);
+            out.push(if is_ins { '+' } else { '-' });
+            for &b in &bases {
+                out.push(b as char);
+            }
+            i += packed;
         }
     }
-    steps
+    out
 }
 
+fn read_varint_slice(data: &[u8], pos: &mut usize) -> u32 {
+    let mut value: u32 = 0;
+    let mut shift = 0;
+    while *pos < data.len() {
+        let b = data[*pos];
+        *pos += 1;
+        value |= ((b & 0x7f) as u32) << shift;
+        if b & 0x80 == 0 { break; }
+        shift += 7;
+    }
+    value
+}
+
+#[allow(dead_code)]
 fn complement_byte(b: u8) -> u8 {
     match b {
         b'A' | b'a' => b't',
@@ -1024,32 +935,7 @@ fn compute_identity_from_binary_cs(data: &[u8]) -> f64 {
     if total > 0 { match_bp as f64 / total as f64 } else { 1.0 }
 }
 
-struct AlnPathInfo {
-    path_name: String,
-    assembly: String,
-    steps: Vec<(u64, bool, u64)>, // (ordinal, orient, seg_len)
-}
-
-fn flush_block_bin(records: &mut Vec<(u16, AlnRecord)>,
-                   ref_chrom_idx: u16, query_genome_idx: u16, query_chrom_idx: u16,
-                   start_ref: u64, end_ref: u64, start_query: u64, end_query: u64,
-                   strand: i8, cs_data: &[u8]) {
-    if cs_data.is_empty() { return; }
-    let identity = compute_identity_from_binary_cs(cs_data);
-    records.push((ref_chrom_idx, AlnRecord {
-        ref_start: start_ref as u32, ref_end: end_ref as u32,
-        query_genome_idx, mate_chrom_idx: query_chrom_idx,
-        mate_start: start_query as u32, mate_end: end_query as u32,
-        strand: if strand < 0 { b'-' } else { b'+' },
-        identity: (identity * 10000.0).round() as u16,
-        cs_data: cs_data.to_vec(),
-    }));
-}
-
-// Fast version using ordinal-indexed Vecs instead of String-keyed HashMaps.
-// Steps are pre-parsed as (ordinal, orient, seg_len) tuples.
-// Forward-orient: sequences are already lowercased, just copy.
-// Reverse complement: reverse and complement each byte.
+#[allow(dead_code)]
 fn fill_seg_sequence_by_ord(
     ord: u64,
     orient: bool,
@@ -1059,7 +945,7 @@ fn fill_seg_sequence_by_ord(
     buf.clear();
     let seq = &ord_sequences[ord as usize];
     if orient {
-        buf.extend_from_slice(seq); // already lowercased
+        buf.extend_from_slice(seq);
     } else {
         buf.extend(seq.iter().rev().map(|&b| complement_byte(b)));
     }
@@ -1082,341 +968,109 @@ fn encode_bubble_cs(ref_seq: &[u8], query_seq: &[u8], cs: &mut Vec<u8>) {
     }
 }
 
+#[allow(dead_code)]
 fn emit_match_bin(cs: &mut Vec<u8>, len: u64) {
     if len > 0 && len <= 63 { cs.push(BCS_MATCH | len as u8); }
     else if len > 0 { cs.push(BCS_MATCH); write_varint(cs, len as u32); }
 }
 
-// Process a single (ref_path, query_path) pair into alignment records.
-fn process_path_pair(
-    ref_path: &AlnPathInfo,
-    ref_by_ord: &[Option<(u32, u64)>], // ordinal → (ref_step_index, ref_offset)
-    query_path: &AlnPathInfo,
-    ref_chrom_idx: u16,
-    query_genome_idx: u16,
-    query_chrom_idx: u16,
-    ref_orients: &HashMap<u64, bool>,
-    ord_sequences: &[Vec<u8>],
-    groom: bool,
-) -> Vec<(u16, AlnRecord)> {
-    let query_steps = &query_path.steps;
-    let mut records: Vec<(u16, AlnRecord)> = Vec::new();
+fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[String]) {
+    eprintln!("Generating bubbles from VCF...");
+    let t_start = Instant::now();
+    let bubbles_file = format!("{}.bubbles.bed.gz", output_prefix);
 
-    // Detect grooming need
-    let need_flip = if !groom {
-        false
-    } else {
-        let mut shared_bp = 0u64;
-        let mut opposite_bp = 0u64;
-        for &(ord, orient, seg_len) in query_steps {
-            if let Some(&ref_is_plus) = ref_orients.get(&ord) {
-                shared_bp += seg_len;
-                if orient != ref_is_plus { opposite_bp += seg_len; }
-            }
+    let mut proc = spawn_sort_bgzip(&bubbles_file);
+    let mut w = BufWriter::new(proc.stdin.take().unwrap());
+
+    let reader = open_file(vcf_path);
+    let mut sample_names: Vec<String> = Vec::new();
+    let mut record_count: u64 = 0;
+
+    for line in reader.lines() {
+        let line = line.expect("read error");
+        if line.starts_with("##") {
+            continue;
         }
-        shared_bp > 0 && opposite_bp * 100 >= shared_bp * 99
-    };
-
-    // Pre-compute cumulative offset array
-    let mut query_offsets: Vec<u64> = Vec::with_capacity(query_steps.len() + 1);
-    query_offsets.push(0);
-    let mut cumul: u64 = 0;
-    for &(_ord, _orient, seg_len) in query_steps {
-        cumul += seg_len;
-        query_offsets.push(cumul);
-    }
-    let query_total_len = cumul;
-
-    // Find shared segments (anchors) using Vec-indexed lookup
-    struct Anchor { ref_idx: u32, query_idx: u32, ref_offset: u64, seg_len: u64, same_strand: bool }
-    let mut anchors: Vec<Anchor> = Vec::new();
-    for (qi, &(ord, orient, seg_len)) in query_steps.iter().enumerate() {
-        if let Some(&Some((ri, r_off))) = ref_by_ord.get(ord as usize) {
-            let ref_orient = ref_path.steps[ri as usize].1;
-            let effective_orient = if need_flip { !orient } else { orient };
-            anchors.push(Anchor {
-                ref_idx: ri, query_idx: qi as u32, ref_offset: r_off,
-                seg_len, same_strand: effective_orient == ref_orient,
-            });
-        }
-    }
-    anchors.sort_unstable_by_key(|a| a.ref_offset);
-
-    // Merge anchors into alignment blocks with binary CS.
-    // A block breaks on strand change or coordinate overlap/out-of-order.
-    // Between consecutive same-strand anchors, bubble sequences (segments
-    // traversed by one path but not the other) produce CS indels/mismatches.
-    struct Block {
-        ref_start: u64,
-        ref_end: u64,
-        query_start: u64,
-        query_end: u64,
-        strand: i8,
-        prev_ref_idx: u32,
-        prev_query_idx: u32,
-        cs: Vec<u8>,
-    }
-
-    let mut block: Option<Block> = None;
-    let mut ref_bubble_buf: Vec<u8> = Vec::new();
-    let mut query_bubble_buf: Vec<u8> = Vec::new();
-    let mut seg_buf: Vec<u8> = Vec::new();
-
-    let mut flush = |blk: &Block| {
-        flush_block_bin(
-            &mut records, ref_chrom_idx, query_genome_idx, query_chrom_idx,
-            blk.ref_start, blk.ref_end, blk.query_start, blk.query_end,
-            blk.strand, &blk.cs,
-        );
-    };
-
-    for anchor in &anchors {
-        let strand: i8 = if anchor.same_strand { 1 } else { -1 };
-        let mut q_off = query_offsets[anchor.query_idx as usize];
-        if need_flip { q_off = query_total_len - q_off - anchor.seg_len; }
-        let q_end = q_off + anchor.seg_len;
-
-        let should_break = match &block {
-            None => true,
-            Some(blk) => {
-                if strand != blk.strand { true }
-                else {
-                    let ref_gap = anchor.ref_offset as i64 - blk.ref_end as i64;
-                    let query_gap = q_off as i64 - blk.query_end as i64;
-                    ref_gap < 0 || query_gap < 0
+        if line.starts_with("#CHROM") {
+            let fields: Vec<&str> = line.split('\t').collect();
+            if fields.len() > 9 {
+                for f in &fields[9..] {
+                    sample_names.push(f.to_string());
                 }
             }
-        };
-
-        if should_break {
-            if let Some(blk) = block.take() { flush(&blk); }
-            let mut cs = Vec::new();
-            emit_match_bin(&mut cs, anchor.seg_len);
-            block = Some(Block {
-                ref_start: anchor.ref_offset, ref_end: anchor.ref_offset + anchor.seg_len,
-                query_start: q_off, query_end: q_end, strand,
-                prev_ref_idx: anchor.ref_idx, prev_query_idx: anchor.query_idx,
-                cs,
-            });
+            writeln!(w, "#genomes={}", sample_names.join(",")).unwrap();
             continue;
         }
 
-        let blk = block.as_mut().unwrap();
-
-        // Encode bubble between previous anchor and this one
-        let ref_gap = anchor.ref_offset as i64 - blk.ref_end as i64;
-        let query_gap = q_off as i64 - blk.query_end as i64;
-        if ref_gap > 0 || query_gap > 0 {
-            ref_bubble_buf.clear();
-            for ri in (blk.prev_ref_idx as usize + 1)..anchor.ref_idx as usize {
-                let (ord, orient, _) = ref_path.steps[ri];
-                fill_seg_sequence_by_ord(ord, orient, ord_sequences, &mut seg_buf);
-                ref_bubble_buf.extend_from_slice(&seg_buf);
-            }
-            query_bubble_buf.clear();
-            for qi in (blk.prev_query_idx as usize + 1)..anchor.query_idx as usize {
-                let (ord, orient, _) = query_steps[qi];
-                let eff = if need_flip { !orient } else { orient };
-                fill_seg_sequence_by_ord(ord, eff, ord_sequences, &mut seg_buf);
-                query_bubble_buf.extend_from_slice(&seg_buf);
-            }
-            encode_bubble_cs(&ref_bubble_buf, &query_bubble_buf, &mut blk.cs);
+        let fields: Vec<&str> = line.split('\t').collect();
+        if fields.len() < 10 {
+            continue;
         }
 
-        emit_match_bin(&mut blk.cs, anchor.seg_len);
-        blk.ref_end = anchor.ref_offset + anchor.seg_len;
-        blk.query_end = q_end;
-        blk.prev_ref_idx = anchor.ref_idx;
-        blk.prev_query_idx = anchor.query_idx;
-    }
+        let chrom = fields[0];
+        let pos: u64 = fields[1].parse().unwrap_or(0);
+        let ref_seq = fields[3];
+        let alt_field = fields[4];
+        let start = pos - 1;
+        let end = start + ref_seq.len() as u64;
 
-    if let Some(blk) = block.take() { flush(&blk); }
-
-    records
-}
-
-fn generate_aln_bin_from_paths_fast(
-    output_prefix: &str,
-    aln_paths: &[AlnPathInfo],
-    ord_sequences: &[Vec<u8>],
-    ref_orients: &HashMap<u64, bool>,
-    groom: bool,
-    threads: usize,
-) {
-    use rayon::prelude::*;
-
-    let t_start = Instant::now();
-
-    // Configure rayon thread pool
-    if threads != 1 {
-        let num_threads = if threads == 0 { rayon::current_num_threads() } else { threads };
-        rayon::ThreadPoolBuilder::new()
-            .num_threads(num_threads)
-            .build_global()
-            .ok(); // ignore error if already initialized
-        eprintln!("  Using {} threads", num_threads);
-    }
-
-    // Group paths by assembly
-    let mut assembly_paths: HashMap<String, Vec<usize>> = HashMap::new();
-    for (i, p) in aln_paths.iter().enumerate() {
-        assembly_paths.entry(p.assembly.clone()).or_default().push(i);
-    }
-
-    // Collect genome and chrom names
-    let mut genome_names: Vec<String> = Vec::new();
-    let mut genome_map: HashMap<String, u16> = HashMap::new();
-    let mut chrom_names: Vec<String> = Vec::new();
-    let mut chrom_map: HashMap<String, u16> = HashMap::new();
-
-    for p in aln_paths {
-        if !genome_map.contains_key(&p.assembly) {
-            let idx = genome_names.len() as u16;
-            genome_map.insert(p.assembly.clone(), idx);
-            genome_names.push(p.assembly.clone());
+        let mut alleles: Vec<&str> = Vec::new();
+        alleles.push(ref_seq);
+        for alt in alt_field.split(',') {
+            alleles.push(alt);
         }
-        if !chrom_map.contains_key(&p.path_name) {
-            let idx = chrom_names.len() as u16;
-            chrom_map.insert(p.path_name.clone(), idx);
-            chrom_names.push(p.path_name.clone());
-        }
-    }
 
-    // Bidirectional: every assembly takes a turn as "reference" so records
-    // are queryable from any genome's coordinate space.
-    let assembly_names: Vec<String> = assembly_paths.keys().cloned().collect();
-    eprintln!("  Bidirectional mode: {} assemblies, each will be reference in turn", assembly_names.len());
+        // Parse GT fields to build genome lists per allele
+        let num_alleles = alleles.len();
+        let mut allele_genomes: Vec<Vec<usize>> = vec![Vec::new(); num_alleles];
 
-    // Build work items: (ref_by_ord_idx, query_path_idx, ref_chrom_idx, query_genome_idx, query_chrom_idx)
-    let mut work_items: Vec<(usize, usize, u16, u16, u16)> = Vec::new();
-    let mut ref_by_ord_vecs: Vec<(usize, Vec<Option<(u32, u64)>>)> = Vec::new();
-
-    for ref_asm in &assembly_names {
-        let ref_path_indices = &assembly_paths[ref_asm];
-        let ref_genome_idx = genome_map[ref_asm];
-
-        for &ref_pi in ref_path_indices {
-            let ref_path = &aln_paths[ref_pi];
-            let ref_chrom_idx = chrom_map[&ref_path.path_name];
-
-            let max_ord = ref_path.steps.iter().map(|&(ord, _, _)| ord).max().unwrap_or(0) as usize;
-            let mut ref_by_ord: Vec<Option<(u32, u64)>> = vec![None; max_ord + 1];
-            let mut ref_offset: u64 = 0;
-            for (i, &(ord, _orient, seg_len)) in ref_path.steps.iter().enumerate() {
-                ref_by_ord[ord as usize] = Some((i as u32, ref_offset));
-                ref_offset += seg_len;
-            }
-
-            let ref_ord_idx = ref_by_ord_vecs.len();
-            ref_by_ord_vecs.push((ref_pi, ref_by_ord));
-
-            for (query_asm, query_indices) in &assembly_paths {
-                if query_asm == ref_asm { continue; }
-                let query_genome_idx = genome_map[query_asm];
-                for &query_pi in query_indices {
-                    let query_chrom_idx = chrom_map[&aln_paths[query_pi].path_name];
-                    work_items.push((ref_ord_idx, query_pi, ref_chrom_idx, query_genome_idx, query_chrom_idx));
+        for (si, &sample_field) in fields[9..].iter().enumerate() {
+            let gt = sample_field.split(':').next().unwrap_or(".");
+            for part in gt.split(|c| c == '|' || c == '/') {
+                if part != "." {
+                    if let Ok(idx) = part.parse::<usize>() {
+                        if idx < num_alleles {
+                            allele_genomes[idx].push(si);
+                        }
+                    }
                 }
             }
         }
 
-        let _ = ref_genome_idx; // used implicitly via genome_map
-    }
+        // Compute CS between all distinct allele pairs
+        for a in 0..num_alleles {
+            for b in (a + 1)..num_alleles {
+                let seq_a = alleles[a].as_bytes();
+                let seq_b = alleles[b].as_bytes();
+                let lowered_a: Vec<u8> = seq_a.iter().map(|&c| to_lower(c)).collect();
+                let lowered_b: Vec<u8> = seq_b.iter().map(|&c| to_lower(c)).collect();
 
-    eprintln!("  {} work items (path pairs)", work_items.len());
+                let mut cs_bin: Vec<u8> = Vec::new();
+                encode_bubble_cs(&lowered_a, &lowered_b, &mut cs_bin);
 
-    // Process work items — parallel if threads > 1, sequential otherwise
-    let all_records: Vec<(u16, AlnRecord)> = if threads == 1 {
-        work_items.iter().flat_map(|&(ref_ord_idx, query_pi, ref_chrom_idx, query_genome_idx, query_chrom_idx)| {
-            let (ref_pi, ref_by_ord) = &ref_by_ord_vecs[ref_ord_idx];
-            process_path_pair(
-                &aln_paths[*ref_pi], ref_by_ord, &aln_paths[query_pi],
-                ref_chrom_idx, query_genome_idx, query_chrom_idx,
-                ref_orients, ord_sequences, groom,
-            )
-        }).collect()
-    } else {
-        work_items.par_iter().flat_map(|&(ref_ord_idx, query_pi, ref_chrom_idx, query_genome_idx, query_chrom_idx)| {
-            let (ref_pi, ref_by_ord) = &ref_by_ord_vecs[ref_ord_idx];
-            process_path_pair(
-                &aln_paths[*ref_pi], ref_by_ord, &aln_paths[query_pi],
-                ref_chrom_idx, query_genome_idx, query_chrom_idx,
-                ref_orients, ord_sequences, groom,
-            )
-        }).collect()
-    };
+                let identity = compute_identity_from_binary_cs(&cs_bin);
+                let cs_text = binary_cs_to_text(&cs_bin);
 
-    let num_pairs = assembly_names.len() * (assembly_names.len() - 1);
-    eprintln!("  {} alignment records from {} assembly pairs ({:.1}s)", all_records.len(), num_pairs, t_start.elapsed().as_secs_f64());
+                let genomes_a: Vec<String> = allele_genomes[a].iter().map(|&i| i.to_string()).collect();
+                let genomes_b: Vec<String> = allele_genomes[b].iter().map(|&i| i.to_string()).collect();
 
-    let mut all_records = all_records;
-    all_records.sort_unstable_by(|a, b| a.0.cmp(&b.0).then(a.1.ref_start.cmp(&b.1.ref_start)));
-    write_aln_bin_and_idx(output_prefix, &all_records, &genome_names, &chrom_names);
-}
-
-fn write_aln_bin_and_idx(
-    output_prefix: &str,
-    records: &[(u16, AlnRecord)],
-    genome_names: &[String],
-    chrom_names: &[String],
-) {
-    let bin_path = format!("{}.aln.bin", output_prefix);
-    let idx_path = format!("{}.aln.idx", output_prefix);
-
-    // Write records to aln.bin, tracking per-chrom bin offsets
-    let mut bin_out = BufWriter::new(File::create(&bin_path).expect("create aln.bin"));
-    let mut byte_offset: u64 = 0;
-    let mut chrom_max_end: HashMap<u16, u32> = HashMap::new();
-    let mut chrom_bin_offsets: HashMap<u16, Vec<(u32, u64)>> = HashMap::new();
-
-    for (ci, rec) in records {
-        let bin_idx = rec.ref_start / BIN_SIZE;
-        chrom_bin_offsets.entry(*ci).or_default().push((bin_idx, byte_offset));
-        let end = chrom_max_end.entry(*ci).or_insert(0);
-        if rec.ref_end > *end { *end = rec.ref_end; }
-        rec.write_to(&mut bin_out);
-        byte_offset += rec.byte_len() as u64;
-    }
-    drop(bin_out);
-    let total_bytes = byte_offset;
-
-    // Write aln.idx: header + per-chrom linear index
-    let mut idx_out = BufWriter::new(File::create(&idx_path).expect("create aln.idx"));
-    idx_out.write_all(b"ALNI").unwrap();
-    idx_out.write_all(&[1u8]).unwrap();
-
-    idx_out.write_all(&(genome_names.len() as u16).to_le_bytes()).unwrap();
-    for name in genome_names { write_length_prefixed_string(&mut idx_out, name); }
-    idx_out.write_all(&(chrom_names.len() as u16).to_le_bytes()).unwrap();
-    for name in chrom_names { write_length_prefixed_string(&mut idx_out, name); }
-
-    for ci in 0..chrom_names.len() as u16 {
-        let chrom_len = chrom_max_end.get(&ci).copied().unwrap_or(0);
-        let num_bins = if chrom_len > 0 { (chrom_len + BIN_SIZE - 1) / BIN_SIZE } else { 0 };
-        idx_out.write_all(&ci.to_le_bytes()).unwrap();
-        idx_out.write_all(&chrom_len.to_le_bytes()).unwrap();
-        idx_out.write_all(&num_bins.to_le_bytes()).unwrap();
-
-        // Linear index: binOffsets[i] = byte offset of first record in 16kb bin i.
-        // Forward-fill empty bins so range queries always find a valid start.
-        let mut offsets = vec![total_bytes; (num_bins + 1) as usize];
-        if let Some(entries) = chrom_bin_offsets.get(&ci) {
-            for &(bin_idx, off) in entries {
-                if (bin_idx as usize) < offsets.len() {
-                    if off < offsets[bin_idx as usize] { offsets[bin_idx as usize] = off; }
-                }
-            }
-            let mut min_so_far = total_bytes;
-            for i in (0..offsets.len()).rev() {
-                if offsets[i] < min_so_far { min_so_far = offsets[i]; }
-                offsets[i] = min_so_far;
+                writeln!(w, "{}\t{}\t{}\t{}\t{}\t{:.6}\t{}\t{}\t{}",
+                    chrom, start, end, a, b, identity, cs_text,
+                    genomes_a.join(","), genomes_b.join(","),
+                ).unwrap();
+                record_count += 1;
             }
         }
-        for off in &offsets { idx_out.write_all(&off.to_le_bytes()).unwrap(); }
     }
-    drop(idx_out);
 
-    eprintln!("  Wrote {} ({} bytes)", bin_path, total_bytes);
-    eprintln!("  Wrote {}", idx_path);
+    drop(w);
+    assert!(
+        proc.wait().map(|s| s.success()).unwrap_or(false),
+        "bubbles sort|bgzip failed"
+    );
+    run_cmd("tabix", &["-c", "#", "-p", "bed", &bubbles_file]);
+
+    eprintln!("  {} records ({:.1}s)", record_count, t_start.elapsed().as_secs_f64());
+    eprintln!("  Wrote {}", bubbles_file);
 }
 
