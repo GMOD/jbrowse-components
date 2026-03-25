@@ -2,12 +2,12 @@
 
 Converts GFA pangenome graphs into tabix-indexed files for JBrowse's
 `GfaTabixAdapter`. Produces `pos.bed.gz`, `segments.bin`, `segments.idx`,
-and optionally `aln.bin` + `aln.idx` for per-base alignment data.
+and optionally `bubbles.bed.gz` for per-base variant detail from VCF.
 
 ## Usage
 
 ```bash
-gfa-to-tabix [OPTIONS] <GFA_FILE> <OUTPUT_PREFIX>
+gfa-to-tabix [OPTIONS] <GFA_FILE> [OUTPUT_PREFIX]
 ```
 
 ### From a GFA file
@@ -26,39 +26,40 @@ intermediate GFA file to disk:
 vg convert -f input.vg | gfa-to-tabix - output/prefix
 ```
 
-For HPRC d9 graphs (which contain segment sequences needed for `--aln-bin`):
+### With bubbles from VCF
+
+The `--bubbles` flag reads a VCF produced by `vg deconstruct` and generates
+a tabix-indexed BED file with CS strings for all allele pairs at each variant
+site. This provides per-base mismatch/indel detail in the synteny view.
 
 ```bash
-vg convert -f hprc-v1.1-mc-grch38.chr20.d9.vg | gfa-to-tabix --aln-bin - output/hprc-chr20
+vg deconstruct -p "GRCh38#0#chr20" -a graph.gfa > variants.vcf
+bgzip variants.vcf && tabix -p vcf variants.vcf.gz
+gfa-to-tabix --bubbles variants.vcf.gz input.gfa output/prefix
 ```
 
-### With binary alignment output
+### With automatic JBrowse config
 
-The `--aln-bin` flag generates `aln.bin` and `aln.idx` files containing
-pre-computed pairwise alignments with binary CS tags. These provide per-base
-mismatch/indel detail in the MultiLGVSyntenyDisplay.
+The `--output-config` flag writes a ready-to-use JBrowse config JSON containing
+both the GfaTabix multi-synteny track and (when `--bubbles` is used) a VCF
+variant track pointing at the source VCF. This lets users view the pangenome
+variants in the standard multi-sample variant viewer alongside the synteny view.
 
 ```bash
-gfa-to-tabix --aln-bin input.gfa output/prefix
+gfa-to-tabix --bubbles variants.vcf.gz --output-config config.json input.gfa output/prefix
 ```
-
-The GFA must contain actual segment sequences (not `*`) for `--aln-bin` to
-produce records. HPRC d9 graphs have sequences; the default (non-d9) graphs
-do not.
-
-Alignment records are generated bidirectionally: every assembly pair produces
-records anchored to both assemblies, so the data is queryable from any
-genome's coordinate space.
 
 ## Options
 
 | Flag | Description |
 |------|-------------|
-| `--aln-bin` | Generate binary alignment files (aln.bin + aln.idx) |
+| `--bubbles <VCF>` | Generate bubbles BED from a vg deconstruct VCF |
+| `--output-config <PATH>` | Write JBrowse config JSON (GfaTabix + VCF tracks) |
 | `--no-groom` | Skip path grooming (strand normalization) |
+| `--ref-assembly <NAME>` | Assembly to use as reference for grooming |
 | `--assemblies A,B,C` | Only process listed assemblies |
 | `--sharded` | Shard segments.bin by assembly |
-| `--threads N` | Thread count for aln-bin generation (0 = auto) |
+| `--chunk-size N` | Walk steps per pos.bed.gz chunk (default: 100) |
 
 ## Output files
 
@@ -66,13 +67,13 @@ genome's coordinate space.
 |------|-------------|
 | `prefix.pos.bed.gz` | Tabix-indexed segment positions per path |
 | `prefix.pos.bed.gz.tbi` | Tabix index |
-| `prefix.segments.bin` | Binary segment data (sequences, lengths) |
-| `prefix.segments.idx` | Segment index |
-| `prefix.aln.bin` | Binary pairwise alignment records (with `--aln-bin`) |
-| `prefix.aln.idx` | Alignment index (with `--aln-bin`) |
+| `prefix.segments.bin` | Binary segment data (15-byte fixed-width records) |
+| `prefix.segments.idx` | Segment byte-offset index |
+| `prefix.bubbles.bed.gz` | Tabix-indexed bubble CS data (with `--bubbles`) |
+| `prefix.bubbles.bed.gz.tbi` | Bubbles tabix index (with `--bubbles`) |
 
 ## Requirements
 
 - `bgzip` and `tabix` (from htslib) must be on `$PATH`
 - `sort` (GNU coreutils)
-- `vg` (vg toolkit) if converting from `.vg` format
+- `vg` (vg toolkit) if converting from `.vg` format or generating VCF

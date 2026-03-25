@@ -53,6 +53,12 @@ struct Args {
     /// Computes CS between all allele pairs at each variant site.
     #[arg(long)]
     bubbles: Option<String>,
+
+    /// Write a JBrowse config JSON file with track entries for the generated
+    /// GfaTabix multi-synteny track plus (when --bubbles is used) a VCF
+    /// variant track pointing at the source VCF.
+    #[arg(long)]
+    output_config: Option<String>,
 }
 
 fn main() {
@@ -75,6 +81,7 @@ fn main() {
     let groom = !cli.no_groom;
     let ref_assembly_arg = cli.ref_assembly;
     let bubbles_vcf = cli.bubbles;
+    let output_config = cli.output_config;
 
     // Two-phase single-pass: reads all lines once, collecting S-lines in memory
     // and spilling P/W-lines to a temp file. Then replays the temp file to
@@ -296,6 +303,15 @@ fn main() {
 
     if let Some(ref vcf_path) = bubbles_vcf {
         generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes);
+    }
+
+    if let Some(ref config_path) = output_config {
+        write_jbrowse_config(
+            config_path,
+            &output_prefix,
+            &genomes,
+            bubbles_vcf.as_deref(),
+        );
     }
 
     let _ = fs::remove_dir_all(&tmp_dir);
@@ -972,6 +988,74 @@ fn encode_bubble_cs(ref_seq: &[u8], query_seq: &[u8], cs: &mut Vec<u8>) {
 fn emit_match_bin(cs: &mut Vec<u8>, len: u64) {
     if len > 0 && len <= 63 { cs.push(BCS_MATCH | len as u8); }
     else if len > 0 { cs.push(BCS_MATCH); write_varint(cs, len as u32); }
+}
+
+fn write_jbrowse_config(
+    config_path: &str,
+    output_prefix: &str,
+    genomes: &[String],
+    bubbles_vcf: Option<&str>,
+) {
+    eprintln!("Writing JBrowse config...");
+    let mut out = BufWriter::new(File::create(config_path).expect("create config file"));
+
+    let pos_bed = format!("{}.pos.bed.gz", output_prefix);
+    let pos_tbi = format!("{}.pos.bed.gz.tbi", output_prefix);
+    let seg_bin = format!("{}.segments.bin", output_prefix);
+    let seg_idx = format!("{}.segments.idx", output_prefix);
+    let bubbles_bed = format!("{}.bubbles.bed.gz", output_prefix);
+    let bubbles_tbi = format!("{}.bubbles.bed.gz.tbi", output_prefix);
+
+    // Build assembly names JSON array
+    let assembly_names_json: Vec<String> = genomes.iter().map(|g| format!("\"{}\"", g)).collect();
+
+    write!(out, "{{\n  \"tracks\": [\n").unwrap();
+
+    // GfaTabix multi-synteny track
+    write!(out, "    {{\n").unwrap();
+    write!(out, "      \"type\": \"MultiSyntenyTrack\",\n").unwrap();
+    write!(out, "      \"trackId\": \"gfa_tabix_multi\",\n").unwrap();
+    write!(out, "      \"name\": \"Pangenome synteny\",\n").unwrap();
+    write!(out, "      \"category\": [\"Synteny\"],\n").unwrap();
+    write!(out, "      \"adapter\": {{\n").unwrap();
+    write!(out, "        \"type\": \"GfaTabixAdapter\",\n").unwrap();
+    write!(out, "        \"posLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", pos_bed).unwrap();
+    write!(out, "        \"posIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }},\n", pos_tbi).unwrap();
+    write!(out, "        \"segmentsLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", seg_bin).unwrap();
+    if bubbles_vcf.is_some() {
+        write!(out, "        \"segmentsIdxLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", seg_idx).unwrap();
+        write!(out, "        \"bubblesLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", bubbles_bed).unwrap();
+        write!(out, "        \"bubblesIndex\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", bubbles_tbi).unwrap();
+    } else {
+        write!(out, "        \"segmentsIdxLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }}\n", seg_idx).unwrap();
+    }
+
+    write!(out, "      }},\n").unwrap();
+    write!(out, "      \"assemblyNames\": [{}]\n", assembly_names_json.join(", ")).unwrap();
+    write!(out, "    }}").unwrap();
+
+    // VCF variant track (when --bubbles VCF was provided)
+    if let Some(vcf_path) = bubbles_vcf {
+        let vcf_tbi = format!("{}.tbi", vcf_path);
+        write!(out, ",\n    {{\n").unwrap();
+        write!(out, "      \"type\": \"VariantTrack\",\n").unwrap();
+        write!(out, "      \"trackId\": \"pangenome_vcf\",\n").unwrap();
+        write!(out, "      \"name\": \"Pangenome variants (vg deconstruct)\",\n").unwrap();
+        write!(out, "      \"category\": [\"Variants\"],\n").unwrap();
+        write!(out, "      \"adapter\": {{\n").unwrap();
+        write!(out, "        \"type\": \"VcfTabixAdapter\",\n").unwrap();
+        write!(out, "        \"vcfGzLocation\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }},\n", vcf_path).unwrap();
+        write!(out, "        \"index\": {{ \"location\": {{ \"uri\": \"{}\", \"locationType\": \"UriLocation\" }} }}\n", vcf_tbi).unwrap();
+        write!(out, "      }},\n").unwrap();
+        // VCF variant track only needs the reference assembly (first genome)
+        if let Some(ref_genome) = genomes.first() {
+            write!(out, "      \"assemblyNames\": [\"{}\"]\n", ref_genome).unwrap();
+        }
+        write!(out, "    }}").unwrap();
+    }
+
+    write!(out, "\n  ]\n}}\n").unwrap();
+    eprintln!("  Wrote {}", config_path);
 }
 
 fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[String]) {

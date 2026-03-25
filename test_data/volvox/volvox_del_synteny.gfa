@@ -1,0 +1,12 @@
+H	VN:Z:1.1
+S	s1	*	LN:i:28498
+S	s2	*	LN:i:4860
+S	s3	*	LN:i:16643
+S	s4	*	LN:i:6079
+L	s1	+	s2	+	0M
+L	s2	+	s3	+	0M
+L	s1	+	s3	+	0M
+W	volvox	0	ctgA	0	50001	>s1>s2>s3
+W	volvox	0	ctgB	0	6079	>s4
+W	volvox_del	0	ctgA	0	45141	>s1>s3
+W	volvox_del	0	ctgB	0	6079	>s4

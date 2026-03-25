@@ -328,6 +328,17 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     if (refNameSet.has(refName)) {
       return refName
     }
+    // Try reverse-mapped original name from assemblyNameMap
+    // e.g. assemblyName="volvox" → original="volvox#0" → try "volvox#0#ctgA"
+    const nameMap = this.getAssemblyNameMap()
+    for (const [orig, mapped] of Object.entries(nameMap)) {
+      if (mapped === assemblyName) {
+        const origQualified = `${orig}#${refName}`
+        if (refNameSet.has(origQualified)) {
+          return origQualified
+        }
+      }
+    }
     return undefined
   }
 
@@ -930,17 +941,50 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       return
     }
 
-    // For each genome's features, annotate with bubble CS
+    // Sort bubbles by position for correct CS assembly
+    bubbles.sort((a, b) => a.start - b.start || a.end - b.end)
+
+    // Build a lookup: (start, end) → list of bubble records at that locus.
+    // A single VCF site with N alleles produces C(N,2) pairwise records that
+    // all share the same (start, end).
+    const locusBubbles = new Map<string, typeof bubbles>()
+    for (const b of bubbles) {
+      const key = `${b.start}:${b.end}`
+      const list = locusBubbles.get(key)
+      if (list) {
+        list.push(b)
+      } else {
+        locusBubbles.set(key, [b])
+      }
+    }
+
+    // Build genome name → index map using both original and remapped names
+    const nameMap = this.getAssemblyNameMap()
+
     for (const [genomeName, features] of genomeRows) {
-      const unmapped = genomeName
-      const nameMap = this.getAssemblyNameMap()
+      // Try both the remapped name and reverse-mapped original name
       const origName = Object.entries(nameMap).find(
         ([, v]) => v === genomeName,
       )?.[0] ?? genomeName
-      const gIdx = genomeIdx.get(origName)
+      const gIdx = genomeIdx.get(origName) ?? genomeIdx.get(genomeName)
       if (gIdx === undefined) {
         continue
       }
+
+      // Determine which allele index the view's ref assembly corresponds to.
+      // In the VCF from vg deconstruct, allele 0 is the reference used in the
+      // deconstruct command (e.g. GRCh38). The view's assemblyName may or may
+      // not be that same assembly.  We resolve the ref assembly's genome index
+      // in the bubbles header and check: if it is allele 0 for bubble records,
+      // the view is ref-centric; otherwise we need to find the correct pair.
+      const refOrigName = Object.entries(nameMap).find(
+        ([, v]) => v === assemblyName,
+      )?.[0] ?? assemblyName
+
+      // The ref genome of the VCF is always allele 0 by convention (from vg
+      // deconstruct).  If the view's ref assembly matches the VCF ref, refAllele=0.
+      // Otherwise we need to find its allele index per-locus.
+      const refGenomeIdx = genomeIdx.get(refOrigName) ?? genomeIdx.get(assemblyName)
 
       for (const feat of features) {
         const overlapping = bubbles.filter(
@@ -950,47 +994,79 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           continue
         }
 
-        // Build CS by walking through the feature's ref span
+        // Deduplicate to unique loci (multiple allele-pair records share same
+        // start/end).  We only want to walk each locus once.
+        const seenLoci = new Set<string>()
+        const uniqueLoci: { start: number; end: number }[] = []
+        for (const b of overlapping) {
+          const key = `${b.start}:${b.end}`
+          if (!seenLoci.has(key)) {
+            seenLoci.add(key)
+            uniqueLoci.push({ start: b.start, end: b.end })
+          }
+        }
+
         const csParts: string[] = []
         let pos = feat.start
-        for (const bubble of overlapping) {
-          if (bubble.start > pos) {
-            csParts.push(`:${bubble.start - pos}`)
+        for (const locus of uniqueLoci) {
+          if (locus.start > pos) {
+            csParts.push(`:${locus.start - pos}`)
           }
-          // Find which allele this genome has at this bubble
-          let genomeAllele: number | undefined
-          for (const b of bubbles) {
-            if (b.start !== bubble.start || b.end !== bubble.end) {
-              continue
-            }
-            if (b.genomesA.has(gIdx)) {
-              genomeAllele = b.alleleA
+
+          const locusKey = `${locus.start}:${locus.end}`
+          const records = locusBubbles.get(locusKey) ?? []
+
+          // Find which allele this genome carries at this locus
+          let queryAllele: number | undefined
+          for (const r of records) {
+            if (r.genomesA.has(gIdx)) {
+              queryAllele = r.alleleA
               break
             }
-            if (b.genomesB.has(gIdx)) {
-              genomeAllele = b.alleleB
+            if (r.genomesB.has(gIdx)) {
+              queryAllele = r.alleleB
               break
             }
           }
-          // Ref allele is 0. If genome has allele 0, this is a match region.
-          if (genomeAllele !== undefined && genomeAllele !== 0) {
-            // Find the bubble record for (0, genomeAllele) pair
-            const pairRecord = bubbles.find(
-              b =>
-                b.start === bubble.start &&
-                b.end === bubble.end &&
-                ((b.alleleA === 0 && b.alleleB === genomeAllele) ||
-                  (b.alleleB === 0 && b.alleleA === genomeAllele)),
+
+          // Find which allele the ref assembly carries
+          let viewRefAllele: number | undefined
+          if (refGenomeIdx !== undefined) {
+            for (const r of records) {
+              if (r.genomesA.has(refGenomeIdx)) {
+                viewRefAllele = r.alleleA
+                break
+              }
+              if (r.genomesB.has(refGenomeIdx)) {
+                viewRefAllele = r.alleleB
+                break
+              }
+            }
+          }
+          // Default: VCF ref is allele 0
+          if (viewRefAllele === undefined) {
+            viewRefAllele = 0
+          }
+
+          if (
+            queryAllele !== undefined &&
+            queryAllele !== viewRefAllele
+          ) {
+            // Find the pairwise CS record between the view-ref allele and query allele
+            const pairRecord = records.find(
+              r =>
+                (r.alleleA === viewRefAllele && r.alleleB === queryAllele) ||
+                (r.alleleB === viewRefAllele && r.alleleA === queryAllele),
             )
             if (pairRecord) {
               csParts.push(pairRecord.cs)
             } else {
-              csParts.push(`:${bubble.end - bubble.start}`)
+              csParts.push(`:${locus.end - locus.start}`)
             }
           } else {
-            csParts.push(`:${bubble.end - bubble.start}`)
+            csParts.push(`:${locus.end - locus.start}`)
           }
-          pos = bubble.end
+          pos = locus.end
         }
         if (pos < feat.end) {
           csParts.push(`:${feat.end - pos}`)

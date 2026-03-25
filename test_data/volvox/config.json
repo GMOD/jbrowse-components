@@ -2618,6 +2618,38 @@
         ]
       }
     }
+    ,{
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_del_gfa_multi",
+      "name": "volvox vs volvox_del (GfaTabix MultiLGV)",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "volvox_del_synteny.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "volvox_del_synteny.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segmentsLocation": {
+          "uri": "volvox_del_synteny.segments.bin",
+          "locationType": "UriLocation"
+        },
+        "segmentsIdxLocation": {
+          "uri": "volvox_del_synteny.segments.idx",
+          "locationType": "UriLocation"
+        },
+        "assemblyNameMap": {
+          "volvox#0": "volvox",
+          "volvox_del#0": "volvox_del"
+        }
+      },
+      "assemblyNames": ["volvox", "volvox_del"]
+    }
   ],
   "plugins": [
     {
