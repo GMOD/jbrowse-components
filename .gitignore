@@ -26,3 +26,4 @@ test_data/soa4
 **/.wgsl-hash
 tools/gfa-to-tabix/target/
 test/data
+*.log
