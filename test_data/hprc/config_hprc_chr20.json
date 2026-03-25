@@ -40,6 +40,26 @@
         "prefix": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20"
       },
       "assemblyNames": ["GRCh38#0"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc_chr20_vcf",
+      "name": "HPRC chr20 variants (vg deconstruct)",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chr20.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["GRCh38#0"]
     }
   ],
   "defaultSession": {

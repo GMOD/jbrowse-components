@@ -25,7 +25,7 @@
   },
   "tracks": [
     {
-      "type": "SyntenyTrack",
+      "type": "MultiSyntenyTrack",
       "trackId": "hprc_chrM_gfa_synteny",
       "name": "HPRC chrM pangenome synteny (44 haplotypes, minigraph-cactus v1.1)",
       "category": ["Synteny"],
@@ -79,6 +79,26 @@
         "NA18906#2",
         "NA20129#2"
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc_chrM_vcf",
+      "name": "HPRC chrM variants (vg deconstruct)",
+      "category": ["Variants"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["GRCh38#0"]
     }
   ],
   "defaultSession": {

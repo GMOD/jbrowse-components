@@ -68,7 +68,7 @@ function reverseComplement(seq: string) {
   return result
 }
 
-// --- CS/identity computation (same as vcf-to-bubbles.ts) ---
+// --- CS/identity computation ---
 function computeTextCs(refSeq: string, querySeq: string) {
   const minLen = Math.min(refSeq.length, querySeq.length)
   const parts: string[] = []

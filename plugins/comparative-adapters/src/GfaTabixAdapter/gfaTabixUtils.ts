@@ -961,6 +961,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     // Build genome name → index map using both original and remapped names
     const nameMap = this.getAssemblyNameMap()
 
+    let matchedGenomes = 0
+    let unmatchedGenomes = 0
     for (const [genomeName, features] of genomeRows) {
       // Try both the remapped name and reverse-mapped original name
       const origName = Object.entries(nameMap).find(
@@ -968,8 +970,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       )?.[0] ?? genomeName
       const gIdx = genomeIdx.get(origName) ?? genomeIdx.get(genomeName)
       if (gIdx === undefined) {
+        unmatchedGenomes++
         continue
       }
+      matchedGenomes++
 
       // Determine which allele index the view's ref assembly corresponds to.
       // In the VCF from vg deconstruct, allele 0 is the reference used in the
@@ -1074,5 +1078,14 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         feat.cs = csParts.join('')
       }
     }
+    console.log(
+      `[annotateFeaturesWithBubbleCs] ${bubbles.length} bubbles, ${matchedGenomes} matched genomes, ${unmatchedGenomes} unmatched genomes`,
+      unmatchedGenomes > 0
+        ? `(first unmatched: ${[...genomeRows.keys()].find(n => {
+            const orig = Object.entries(nameMap).find(([, v]) => v === n)?.[0] ?? n
+            return genomeIdx.get(orig) === undefined && genomeIdx.get(n) === undefined
+          })}, bubbles genomes: ${[...genomeIdx.keys()].slice(0, 3).join(',')}...)`
+        : '',
+    )
   }
 }

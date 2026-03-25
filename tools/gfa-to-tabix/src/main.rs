@@ -1058,7 +1058,7 @@ fn write_jbrowse_config(
     eprintln!("  Wrote {}", config_path);
 }
 
-fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[String]) {
+fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[String]) {
     eprintln!("Generating bubbles from VCF...");
     let t_start = Instant::now();
     let bubbles_file = format!("{}.bubbles.bed.gz", output_prefix);
@@ -1068,6 +1068,12 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[St
 
     let reader = open_file(vcf_path);
     let mut sample_names: Vec<String> = Vec::new();
+    // Maps (VCF sample index, haplotype index) → GFA genome index.
+    // For phased GT "0|1": haplotype 0 = first allele, haplotype 1 = second.
+    // Built once when the #CHROM header is parsed.
+    let mut sample_hap_to_genome: Vec<Vec<usize>> = Vec::new();
+    // Total number of GFA-matching genome entries in the bubbles header
+    let mut bubble_genome_names: Vec<String> = Vec::new();
     let mut record_count: u64 = 0;
 
     for line in reader.lines() {
@@ -1082,7 +1088,40 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[St
                     sample_names.push(f.to_string());
                 }
             }
-            writeln!(w, "#genomes={}", sample_names.join(",")).unwrap();
+
+            // Map VCF samples to GFA genome names. A VCF sample "HG00438"
+            // may correspond to GFA genomes "HG00438#1" and "HG00438#2".
+            // We assign a bubble genome index to each GFA genome and record
+            // which (sample, haplotype) maps to which bubble genome index.
+            let genome_set: HashMap<&str, Vec<(usize, &str)>> = {
+                let mut m: HashMap<&str, Vec<(usize, &str)>> = HashMap::new();
+                for (gi, g) in genomes.iter().enumerate() {
+                    // GFA genome name is "sample#haplotype", extract sample part
+                    let sample_part = g.split('#').next().unwrap_or(g);
+                    m.entry(sample_part).or_default().push((gi, g));
+                }
+                m
+            };
+
+            for sample_name in &sample_names {
+                let mut hap_indices: Vec<usize> = Vec::new();
+                if let Some(gfa_genomes) = genome_set.get(sample_name.as_str()) {
+                    // Sort by haplotype number so index 0 = hap 1, index 1 = hap 2
+                    let mut sorted: Vec<_> = gfa_genomes.clone();
+                    sorted.sort_by_key(|(_, name)| {
+                        name.split('#').nth(1).and_then(|s| s.parse::<u32>().ok()).unwrap_or(0)
+                    });
+                    for (_, gfa_name) in &sorted {
+                        let idx = bubble_genome_names.len();
+                        bubble_genome_names.push(gfa_name.to_string());
+                        hap_indices.push(idx);
+                    }
+                }
+                sample_hap_to_genome.push(hap_indices);
+            }
+
+            eprintln!("  {} VCF samples → {} bubble genomes", sample_names.len(), bubble_genome_names.len());
+            writeln!(w, "#genomes={}", bubble_genome_names.join(",")).unwrap();
             continue;
         }
 
@@ -1104,36 +1143,65 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[St
             alleles.push(alt);
         }
 
-        // Parse GT fields to build genome lists per allele
+        // Parse GT fields to build genome lists per allele.
+        // For phased GTs ("|"), each haplotype maps to a separate bubble genome.
+        // For unphased GTs ("/"), all haplotypes get the same allele assignments.
         let num_alleles = alleles.len();
         let mut allele_genomes: Vec<Vec<usize>> = vec![Vec::new(); num_alleles];
 
         for (si, &sample_field) in fields[9..].iter().enumerate() {
             let gt = sample_field.split(':').next().unwrap_or(".");
-            for part in gt.split(|c| c == '|' || c == '/') {
-                if part != "." {
-                    if let Ok(idx) = part.parse::<usize>() {
-                        if idx < num_alleles {
-                            allele_genomes[idx].push(si);
+            let is_phased = gt.contains('|');
+            let parts: Vec<&str> = gt.split(|c: char| c == '|' || c == '/').collect();
+            let haps = &sample_hap_to_genome[si];
+
+            for (hi, part) in parts.iter().enumerate() {
+                if *part != "." {
+                    if let Ok(allele_idx) = part.parse::<usize>() {
+                        if allele_idx < num_alleles {
+                            if is_phased && hi < haps.len() {
+                                // Phased: haplotype hi → specific genome
+                                allele_genomes[allele_idx].push(haps[hi]);
+                            } else {
+                                // Unphased or no GFA mapping: assign all haplotypes
+                                for &gidx in haps {
+                                    allele_genomes[allele_idx].push(gidx);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Compute CS between all distinct allele pairs
+        // Compute CS between all distinct allele pairs.
+        // Limit allele length and pair count to avoid O(n²) blowup on
+        // highly multi-allelic SVs.
+        const MAX_ALLELE_LEN: usize = 10_000;
+        const MAX_PAIRS_PER_SITE: usize = 500;
+        let mut site_pairs: usize = 0;
         for a in 0..num_alleles {
+            if site_pairs >= MAX_PAIRS_PER_SITE {
+                break;
+            }
             for b in (a + 1)..num_alleles {
+                if site_pairs >= MAX_PAIRS_PER_SITE {
+                    break;
+                }
                 let seq_a = alleles[a].as_bytes();
                 let seq_b = alleles[b].as_bytes();
-                let lowered_a: Vec<u8> = seq_a.iter().map(|&c| to_lower(c)).collect();
-                let lowered_b: Vec<u8> = seq_b.iter().map(|&c| to_lower(c)).collect();
 
-                let mut cs_bin: Vec<u8> = Vec::new();
-                encode_bubble_cs(&lowered_a, &lowered_b, &mut cs_bin);
+                let (cs_text, identity) = if seq_a.len() > MAX_ALLELE_LEN && seq_b.len() > MAX_ALLELE_LEN {
+                    (String::new(), 0.0)
+                } else {
+                    let lowered_a: Vec<u8> = seq_a.iter().map(|&c| to_lower(c)).collect();
+                    let lowered_b: Vec<u8> = seq_b.iter().map(|&c| to_lower(c)).collect();
 
-                let identity = compute_identity_from_binary_cs(&cs_bin);
-                let cs_text = binary_cs_to_text(&cs_bin);
+                    let mut cs_bin: Vec<u8> = Vec::new();
+                    encode_bubble_cs(&lowered_a, &lowered_b, &mut cs_bin);
+
+                    (binary_cs_to_text(&cs_bin), compute_identity_from_binary_cs(&cs_bin))
+                };
 
                 let genomes_a: Vec<String> = allele_genomes[a].iter().map(|&i| i.to_string()).collect();
                 let genomes_b: Vec<String> = allele_genomes[b].iter().map(|&i| i.to_string()).collect();
@@ -1143,6 +1211,7 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, _genomes: &[St
                     genomes_a.join(","), genomes_b.join(","),
                 ).unwrap();
                 record_count += 1;
+                site_pairs += 1;
             }
         }
     }

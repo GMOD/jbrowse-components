@@ -2650,6 +2650,47 @@
       },
       "assemblyNames": ["volvox", "volvox_del"]
     }
+    ,{
+      "type": "MultiSyntenyTrack",
+      "trackId": "volvox_pangenome_50_multi",
+      "name": "Volvox 50-sample pangenome",
+      "category": ["Synteny"],
+      "adapter": {
+        "type": "GfaTabixAdapter",
+        "posLocation": {
+          "uri": "volvox_pangenome_50.pos.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "posIndex": {
+          "location": {
+            "uri": "volvox_pangenome_50.pos.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "segmentsLocation": {
+          "uri": "volvox_pangenome_50.segments.bin",
+          "locationType": "UriLocation"
+        },
+        "segmentsIdxLocation": {
+          "uri": "volvox_pangenome_50.segments.idx",
+          "locationType": "UriLocation"
+        },
+        "bubblesLocation": {
+          "uri": "volvox_pangenome_50.bubbles.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "bubblesIndex": {
+          "location": {
+            "uri": "volvox_pangenome_50.bubbles.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNameMap": {
+          "ref#0": "volvox"
+        }
+      },
+      "assemblyNames": ["volvox"]
+    }
   ],
   "plugins": [
     {
