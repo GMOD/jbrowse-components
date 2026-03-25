@@ -106,9 +106,6 @@ export const WithInit = () => {
   return (
     <div>
       <ViewWithErrorHandling state={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithInit.tsx">
-        Source code
-      </a>
     </div>
   )
 }

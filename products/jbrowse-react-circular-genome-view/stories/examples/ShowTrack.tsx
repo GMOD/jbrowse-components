@@ -91,9 +91,6 @@ export const ShowTrack = () => {
   return (
     <div>
       <JBrowseCircularGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/examples/ShowTrack.tsx">
-        Source code
-      </a>
     </div>
   )
 }

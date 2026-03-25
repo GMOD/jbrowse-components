@@ -102,9 +102,6 @@ export const Volvox = () => {
   return (
     <div>
       <JBrowseCircularGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/examples/Volvox.tsx">
-        Source code
-      </a>
     </div>
   )
 }

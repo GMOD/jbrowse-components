@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Meta, Story, Source } from '@storybook/addon-docs/blocks'
 import {
   WithAggregateTextSearching,
   WithPerTrackTextSearching,
@@ -16,11 +16,15 @@ just be a single entry but could be multiple)
 
 <Story of={WithAggregateTextSearching} />
 
+<Source of={WithAggregateTextSearching} />
+
 ## Per-track search index
 
 Per-track search indexes contain information for a single track.
 
 <Story of={WithPerTrackTextSearching} />
+
+<Source of={WithPerTrackTextSearching} />
 
 # Preparing indexes
 

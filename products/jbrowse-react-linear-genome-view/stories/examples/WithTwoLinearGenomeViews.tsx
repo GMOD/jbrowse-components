@@ -19,9 +19,6 @@ export const WithTwoLinearGenomeViews = () => {
     <div>
       <JBrowseLinearGenomeView viewState={state1} />
       <JBrowseLinearGenomeView viewState={state2} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithTwoLinearGenomeViews.tsx">
-        Source code
-      </a>
     </div>
   )
 }

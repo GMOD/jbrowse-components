@@ -26,9 +26,6 @@ export const HorizontallyFlippedViaLocstring = () => {
         the horizontally flipped orientation.
       </p>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/HorizontallyFlipped.tsx">
-        Source code
-      </a>
     </div>
   )
 }
@@ -72,9 +69,6 @@ export const HorizontallyFlippedViaButton = () => {
       </p>
       <FlipButton state={state} />
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/HorizontallyFlipped.tsx">
-        Source code
-      </a>
     </div>
   )
 }
@@ -113,9 +107,6 @@ export const HorizontallyFlippedViaDisplayedRegions = () => {
         start in the horizontally flipped orientation.
       </p>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/HorizontallyFlipped.tsx">
-        Source code
-      </a>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Meta, Story, Source } from '@storybook/addon-docs/blocks'
 import {
   WithDarkTheme,
   WithCustomTheme,
@@ -17,9 +17,13 @@ See [here](https://jbrowse.org/jb2/docs/config_guides/theme/) for more info
 
 <Story of={WithCustomTheme} />
 
+<Source of={WithCustomTheme} />
+
 ## Dark theme
 
 Basic effort was made to make JBrowse dark mode compatible. This can be toggled
 via the 'mode':'dark' in the theme palette
 
 <Story of={WithDarkTheme} />
+
+<Source of={WithDarkTheme} />

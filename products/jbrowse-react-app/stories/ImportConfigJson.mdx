@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Meta, Story, Source } from '@storybook/addon-docs/blocks'
 import {
   WithImportConfigJson,
   WithFetchConfigJson,
@@ -19,6 +19,10 @@ the app but must implement some things themselves
 
 <Story of={WithImportConfigJson} />
 
+<Source of={WithImportConfigJson} />
+
 ## Example 2. Using 'fetch' to get the config.json
 
 <Story of={WithFetchConfigJson} />
+
+<Source of={WithFetchConfigJson} />

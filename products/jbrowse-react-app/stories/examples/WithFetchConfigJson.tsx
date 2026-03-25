@@ -29,9 +29,6 @@ export const WithFetchConfigJson = () => {
 
   return !state ? null : (
     <div>
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/stories/examples/WithFetchConfigJson.tsx">
-        Source code
-      </a>
       <JBrowseApp viewState={state} />
     </div>
   )

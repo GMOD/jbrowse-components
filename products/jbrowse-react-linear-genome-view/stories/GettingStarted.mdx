@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Meta, Story, Source } from '@storybook/addon-docs/blocks'
 import {
   OneLinearGenomeView,
   UsingLocObject,
@@ -20,6 +20,8 @@ React application.
 This is an example of using the @jbrowse/react-linear-genome-view2 component
 
 <Story of={OneLinearGenomeView} />
+
+<Source of={OneLinearGenomeView} />
 
 You can test out the various features of the component, and open tracks and
 interact with it as you would in your app. You can also click on the code button
@@ -84,6 +86,8 @@ Example
 
 <Story of={UsingLocObject} />
 
+<Source of={UsingLocObject} />
+
 ## Disabling the ability to add tracks
 
 By default users can add tracks, but you can add the `disableAddTracks` flag to
@@ -104,6 +108,8 @@ Example
 
 <Story of={DisableAddTrack} />
 
+<Source of={DisableAddTrack} />
+
 ## Opening up tracks by default
 
 You can use the `showTrack` function on the object returned by `createViewState`
@@ -111,6 +117,8 @@ to show a track with a given trackId. This can be easier than using the
 defaultSession.
 
 <Story of={WithShowTrack} />
+
+<Source of={WithShowTrack} />
 
 ## An overview of the LGV API
 

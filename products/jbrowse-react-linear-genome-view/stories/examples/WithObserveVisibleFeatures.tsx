@@ -83,9 +83,6 @@ export const WithObserveVisibleFeatures = () => {
     <div>
       <JBrowseLinearGenomeView viewState={state} />
       <VisibleFeatures session={state.session} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithObserveVisibleFeatures.tsx">
-        Source code
-      </a>
     </div>
   )
 }

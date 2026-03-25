@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/addon-docs/blocks'
+import { Meta, Story, Source } from '@storybook/addon-docs/blocks'
 import {
   WithInlinePlugins,
   WithExternalPlugin,
@@ -24,11 +24,15 @@ console.log's the region that was selected
 
 <Story of={WithInlinePlugins} />
 
+<Source of={WithInlinePlugins} />
+
 ## Plugins loaded from external URL
 
 This example loads a plugin from an external URL
 
 <Story of={WithExternalPlugin} />
+
+<Source of={WithExternalPlugin} />
 
 ## Plugins loaded from NPM
 

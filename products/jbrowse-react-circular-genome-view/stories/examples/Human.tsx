@@ -89,9 +89,6 @@ export const Human = () => {
   return (
     <div>
       <JBrowseCircularGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/examples/Human.tsx">
-        Source code
-      </a>
     </div>
   )
 }

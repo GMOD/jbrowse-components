@@ -1,5 +1,5 @@
 const GITHUB_BASE =
-  'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/'
+  'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/stories/examples/'
 
 export const decorators = [
   (Story, { parameters, viewMode }) => {
@@ -44,13 +44,7 @@ export const decorators = [
 export const parameters = {
   options: {
     storySort: {
-      order: [
-        'Getting Started',
-        'Default Sessions',
-        'Linear View',
-        'Nextstrain View',
-        'Next.js Usage',
-      ],
+      order: ['Getting Started'],
       locales: '',
     },
   },

@@ -22,9 +22,6 @@ export const WithOutsideStyling = () => {
         component, is fine here.
       </p>
       <JBrowseLinearGenomeView viewState={state} />
-      <a href="https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/stories/examples/WithOutsideStyling.tsx">
-        Source code
-      </a>
     </div>
   )
 }
