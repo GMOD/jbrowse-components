@@ -13,7 +13,6 @@ import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_FONT_MAX, LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
 
 import type { FeatureHitResult } from './hitTesting.ts'
-import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -21,6 +20,7 @@ interface MultiSyntenyModel {
   genomeRows: Map<string, MultiPairFeature[]>
   displayedGenomes: string[]
   rowHeight: number
+  rowSpacing: boolean
   colorBy: string
   height: number
   showSnps: boolean
@@ -244,18 +244,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const rendererRef = useRef<MultiSyntenyRenderer | null>(null)
   const [ready, setReady] = useState(false)
   const { palette } = useTheme()
-  const colors = useMemo<SyntenyColors>(
-    () => ({
-      mismatch: MISMATCH_COLOR,
-      deletion: palette.deletion,
-      insertion: palette.insertion,
-      baseA: palette.bases.A.main,
-      baseC: palette.bases.C.main,
-      baseG: palette.bases.G.main,
-      baseT: palette.bases.T.main,
-    }),
-    [palette],
-  )
   const [tooltip, setTooltip] = useState<{
     text: string
     open: boolean
@@ -310,16 +298,18 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       const renderer = rendererRef.current
       if (renderer?.isGpu) {
         const { genomeRows, displayedGenomes, colorBy, showSnps } = model
-        renderer.uploadGeometry(
-          genomeRows,
-          displayedGenomes,
-          colorBy,
-          showSnps,
-          colors,
-        )
+        renderer.uploadGeometry(genomeRows, displayedGenomes, colorBy, showSnps, {
+          mismatch: MISMATCH_COLOR,
+          deletion: palette.deletion,
+          insertion: palette.insertion,
+          baseA: palette.bases.A.main,
+          baseC: palette.bases.C.main,
+          baseG: palette.bases.G.main,
+          baseT: palette.bases.T.main,
+        })
       }
     })
-  }, [ready, model, colors])
+  }, [ready, model, palette])
 
   // GPU draw autorun: re-renders on view changes (scroll, zoom, resize)
   // or new data. dataVersion is bumped by MultiRegionDisplayMixin when
@@ -385,11 +375,19 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           colorBy,
           labelW,
           showSnps,
-          colors,
+          colors: {
+            mismatch: MISMATCH_COLOR,
+            deletion: palette.deletion,
+            insertion: palette.insertion,
+            baseA: palette.bases.A.main,
+            baseC: palette.bases.C.main,
+            baseG: palette.bases.G.main,
+            baseT: palette.bases.T.main,
+          },
         })
       }
     })
-  }, [ready, model, view, colors])
+  }, [ready, model, view, palette])
 
   // Read observables during render for tooltip/style (observer tracks these)
   const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, showSnps } = model

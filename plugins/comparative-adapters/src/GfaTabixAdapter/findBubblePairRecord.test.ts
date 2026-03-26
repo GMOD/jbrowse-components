@@ -28,6 +28,26 @@ describe('findBubblePairRecord', () => {
     expect(result?.cs).toBe('*ac')
   })
 
+  it('finds the pair record when view ref carries a higher-numbered allele than query', () => {
+    // Record stored as (0, 1) where a < b. View ref carries allele 1,
+    // query carries allele 0. The lookup should still find the record
+    // by normalizing to (min, max) order.
+    const bubbles: BubbleEntry[] = [
+      {
+        alleleA: 0,
+        alleleB: 1,
+        identity: 0.8,
+        cs: '*ac',
+        genomesA: new Set([1]),
+        genomesB: new Set([0]),
+      },
+    ]
+    // gIdx=1 carries allele 0, refGenomeIdx=0 carries allele 1
+    const result = findBubblePairRecord(bubbles, 0, 1, 1, 0)
+    expect(result?.cs).toBe('*ac')
+    expect(result?.identity).toBe(0.8)
+  })
+
   it('returns undefined when query carries same allele as ref', () => {
     const bubbles: BubbleEntry[] = [
       {

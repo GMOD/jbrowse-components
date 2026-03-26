@@ -165,6 +165,7 @@ fn main() {
     let mut path_name_indices: HashMap<String, u64> = HashMap::new();
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
     let mut path_count: u64 = 0;
+    let mut path_ord_walks: Vec<Vec<(u64, u64)>> = Vec::new();
 
     for line in BufReader::new(File::open(&paths_tmp).expect("reopen paths tmp")).lines() {
         let line = line.expect("read error");
@@ -223,6 +224,7 @@ fn main() {
             }
             let segments_w = segments_files.get_mut(&segments_key).unwrap();
 
+            let mut ord_walk: Vec<(u64, u64)> = Vec::new();
             let total = emit_path_rows(
                 &path_name,
                 path_index,
@@ -237,7 +239,15 @@ fn main() {
                 &mut ref_orients,
                 is_ref,
                 groom,
+                &mut ord_walk,
             );
+
+            ord_walk.sort_unstable_by_key(|&(off, _)| off);
+            let pi = path_index as usize;
+            while path_ord_walks.len() <= pi {
+                path_ord_walks.push(Vec::new());
+            }
+            path_ord_walks[pi] = ord_walk;
 
             path_sizes.push((path_name, total));
             path_count += 1;
@@ -329,7 +339,7 @@ fn main() {
 
     let rewritten_vcf_path;
     if let Some(ref vcf_path) = bubbles_vcf {
-        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes);
+        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &path_ord_walks);
         rewritten_vcf_path = format!("{}.vcf.gz", output_prefix);
         // Write to a temp file first to avoid clobbering the input VCF
         // when the output path matches the input path
@@ -584,6 +594,7 @@ fn emit_path_rows(
     ref_orients: &mut HashMap<u64, bool>,
     is_ref: bool,
     groom: bool,
+    ord_walk_out: &mut Vec<(u64, u64)>,
 ) -> u64 {
     // Phase 1: parse the walk and assign ordinals, buffering all steps.
     let mut walk_steps: Vec<WalkStep> = Vec::new();
@@ -691,6 +702,7 @@ fn emit_path_rows(
         )
         .unwrap();
 
+        ord_walk_out.push((emit_offset, step.ord));
         chunk_ords.push(step.ord);
         offset += step.seg_len;
         steps += 1;
@@ -1220,21 +1232,39 @@ fn strip_pansn_contig(name: &str) -> &str {
     }
 }
 
-fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[String]) {
+fn generate_bubbles_from_vcf(
+    vcf_path: &str,
+    output_prefix: &str,
+    genomes: &[String],
+    path_names: &[String],
+    path_ord_walks: &[Vec<(u64, u64)>],
+) {
     eprintln!("Generating bubbles from VCF...");
     let t_start = Instant::now();
     let bubbles_file = format!("{}.bubbles.bed.gz", output_prefix);
+
+    // Build ordinal → [(path_idx, offset)] lookup from path walks
+    let mut ord_to_paths: HashMap<u64, Vec<(usize, u64)>> = HashMap::new();
+    for (pi, walk) in path_ord_walks.iter().enumerate() {
+        for &(offset, ordinal) in walk {
+            ord_to_paths.entry(ordinal).or_default().push((pi, offset));
+        }
+    }
+
+    // Build VCF-ref path index: chrom name → path_idx for the VCF-ref's paths
+    // (the VCF CHROM field is a PanSN path name like GRCh38#0#chr20)
+    let path_name_to_idx: HashMap<&str, usize> = path_names
+        .iter()
+        .enumerate()
+        .map(|(i, n)| (n.as_str(), i))
+        .collect();
 
     let mut proc = spawn_sort_bgzip(&bubbles_file);
     let mut w = BufWriter::new(proc.stdin.take().unwrap());
 
     let reader = open_file(vcf_path);
     let mut sample_names: Vec<String> = Vec::new();
-    // Maps (VCF sample index, haplotype index) → GFA genome index.
-    // For phased GT "0|1": haplotype 0 = first allele, haplotype 1 = second.
-    // Built once when the #CHROM header is parsed.
     let mut sample_hap_to_genome: Vec<Vec<usize>> = Vec::new();
-    // Total number of GFA-matching genome entries in the bubbles header
     let mut bubble_genome_names: Vec<String> = Vec::new();
     let mut record_count: u64 = 0;
 
@@ -1251,14 +1281,9 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
                 }
             }
 
-            // Map VCF samples to GFA genome names. A VCF sample "HG00438"
-            // may correspond to GFA genomes "HG00438#1" and "HG00438#2".
-            // We assign a bubble genome index to each GFA genome and record
-            // which (sample, haplotype) maps to which bubble genome index.
             let genome_set: HashMap<&str, Vec<(usize, &str)>> = {
                 let mut m: HashMap<&str, Vec<(usize, &str)>> = HashMap::new();
                 for (gi, g) in genomes.iter().enumerate() {
-                    // GFA genome name is "sample#haplotype", extract sample part
                     let sample_part = g.split('#').next().unwrap_or(g);
                     m.entry(sample_part).or_default().push((gi, g));
                 }
@@ -1268,7 +1293,6 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
             for sample_name in &sample_names {
                 let mut hap_indices: Vec<usize> = Vec::new();
                 if let Some(gfa_genomes) = genome_set.get(sample_name.as_str()) {
-                    // Sort by haplotype number so index 0 = hap 1, index 1 = hap 2
                     let mut sorted: Vec<_> = gfa_genomes.clone();
                     sorted.sort_by_key(|(_, name)| {
                         name.split('#').nth(1).and_then(|s| s.parse::<u32>().ok()).unwrap_or(0)
@@ -1297,7 +1321,6 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
         let ref_seq = fields[3];
         let alt_field = fields[4];
         let start = pos - 1;
-        let end = start + ref_seq.len() as u64;
 
         let mut alleles: Vec<&str> = Vec::new();
         alleles.push(ref_seq);
@@ -1305,9 +1328,6 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
             alleles.push(alt);
         }
 
-        // Parse GT fields to build genome lists per allele.
-        // For phased GTs ("|"), each haplotype maps to a separate bubble genome.
-        // For unphased GTs ("/"), all haplotypes get the same allele assignments.
         let num_alleles = alleles.len();
         let mut allele_genomes: Vec<Vec<usize>> = vec![Vec::new(); num_alleles];
 
@@ -1322,10 +1342,8 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
                     if let Ok(allele_idx) = part.parse::<usize>() {
                         if allele_idx < num_alleles {
                             if is_phased && hi < haps.len() {
-                                // Phased: haplotype hi → specific genome
                                 allele_genomes[allele_idx].push(haps[hi]);
                             } else {
-                                // Unphased or no GFA mapping: assign all haplotypes
                                 for &gidx in haps {
                                     allele_genomes[allele_idx].push(gidx);
                                 }
@@ -1336,11 +1354,27 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
             }
         }
 
-        // Compute CS between all distinct allele pairs.
-        // Limit allele length and pair count to avoid O(n²) blowup on
-        // highly multi-allelic SVs.
+        // Find the ordinal at VCF-ref position `start` using that path's walk
+        let ref_path_idx = path_name_to_idx.get(chrom).copied();
+        let snarl_ordinal = ref_path_idx.and_then(|pi| {
+            let walk = &path_ord_walks[pi];
+            let idx = walk.partition_point(|&(off, _)| off <= start);
+            if idx > 0 { Some(walk[idx - 1].1) } else { walk.first().map(|&(_, o)| o) }
+        });
+
+        // Compute CS between all distinct allele pairs
         const MAX_ALLELE_LEN: usize = 10_000;
         const MAX_PAIRS_PER_SITE: usize = 500;
+
+        struct PairData {
+            a: usize,
+            b: usize,
+            identity: f64,
+            cs_text: String,
+            genomes_a: String,
+            genomes_b: String,
+        }
+        let mut pairs: Vec<PairData> = Vec::new();
         let mut site_pairs: usize = 0;
         for a in 0..num_alleles {
             if site_pairs >= MAX_PAIRS_PER_SITE {
@@ -1358,22 +1392,89 @@ fn generate_bubbles_from_vcf(vcf_path: &str, output_prefix: &str, genomes: &[Str
                 } else {
                     let lowered_a: Vec<u8> = seq_a.iter().map(|&c| to_lower(c)).collect();
                     let lowered_b: Vec<u8> = seq_b.iter().map(|&c| to_lower(c)).collect();
-
                     let mut cs_bin: Vec<u8> = Vec::new();
                     encode_bubble_cs(&lowered_a, &lowered_b, &mut cs_bin);
-
                     (binary_cs_to_text(&cs_bin), compute_identity_from_binary_cs(&cs_bin))
                 };
 
                 let genomes_a: Vec<String> = allele_genomes[a].iter().map(|&i| i.to_string()).collect();
                 let genomes_b: Vec<String> = allele_genomes[b].iter().map(|&i| i.to_string()).collect();
 
+                pairs.push(PairData {
+                    a, b, identity, cs_text,
+                    genomes_a: genomes_a.join(","),
+                    genomes_b: genomes_b.join(","),
+                });
+                site_pairs += 1;
+            }
+        }
+
+        if pairs.is_empty() {
+            continue;
+        }
+
+        // Determine which genome each path belongs to by matching chromosome name
+        let vcf_chrom_suffix = strip_pansn_contig(chrom);
+
+        // Collect paths to emit rows for: either from ordinal lookup or just the VCF-ref path
+        let paths_at_snarl: Vec<(usize, u64)> = if let Some(ord) = snarl_ordinal {
+            if let Some(entries) = ord_to_paths.get(&ord) {
+                entries.iter()
+                    .filter(|&&(pi, _)| strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix)
+                    .copied()
+                    .collect()
+            } else {
+                Vec::new()
+            }
+        } else {
+            Vec::new()
+        };
+
+        // If we found paths via ordinal lookup, emit per-genome rows
+        if !paths_at_snarl.is_empty() {
+            for &(pi, path_offset) in &paths_at_snarl {
+                let pname = &path_names[pi];
+                // Determine which allele this path's genome carries, to compute end position
+                // Extract genome from path name to find its bubble genome index
+                let path_genome = {
+                    let parts: Vec<&str> = pname.split('#').collect();
+                    if parts.len() >= 3 {
+                        parts[..parts.len()-1].join("#")
+                    } else {
+                        parts[0].to_string()
+                    }
+                };
+                let genome_allele_len = bubble_genome_names.iter()
+                    .position(|g| *g == path_genome)
+                    .and_then(|gidx| {
+                        for (ai, ag) in allele_genomes.iter().enumerate() {
+                            if ag.contains(&gidx) {
+                                return Some(alleles[ai].len() as u64);
+                            }
+                        }
+                        None
+                    })
+                    .unwrap_or(ref_seq.len() as u64);
+
+                let path_end = path_offset + genome_allele_len;
+
+                for pair in &pairs {
+                    writeln!(w, "{}\t{}\t{}\t{}\t{}\t{:.6}\t{}\t{}\t{}",
+                        pname, path_offset, path_end, pair.a, pair.b, pair.identity, pair.cs_text,
+                        pair.genomes_a, pair.genomes_b,
+                    ).unwrap();
+                    record_count += 1;
+                }
+            }
+        } else {
+            // Fallback: emit at VCF-ref coordinates only (no ordinal walk available)
+            let end = start + ref_seq.len() as u64;
+            for pair in &pairs {
                 writeln!(w, "{}\t{}\t{}\t{}\t{}\t{:.6}\t{}\t{}\t{}",
-                    chrom, start, end, a, b, identity, cs_text,
-                    genomes_a.join(","), genomes_b.join(","),
+                    chrom, start, end, pair.a, pair.b, pair.identity, pair.cs_text,
+                    pair.genomes_a, pair.genomes_b,
                 ).unwrap();
                 record_count += 1;
-                site_pairs += 1;
             }
         }
     }

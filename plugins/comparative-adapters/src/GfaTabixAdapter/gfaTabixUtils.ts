@@ -629,11 +629,14 @@ export function findBubblePairRecord(
     return undefined
   }
 
+  const lo = Math.min(viewRefAllele, queryAllele)
+  const hi = Math.max(viewRefAllele, queryAllele)
   for (let i = begin; i < end; i++) {
     const r = bubbles[i]!
-    if (r.alleleA === viewRefAllele && r.alleleB === queryAllele) {
+    if (r.alleleA === lo && r.alleleB === hi) {
       return { cs: r.cs, identity: r.identity }
     }
   }
   return undefined
 }
+
