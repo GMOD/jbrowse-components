@@ -625,28 +625,23 @@ export function findLast<T>(
   return undefined
 }
 
+// Maps a region's refName to the track adapter's name (via refNameMap), and
+// sets originalRefName to the seq adapter (FASTA) name so that CRAM/BAM
+// adapters can fetch reference sequence correctly.
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,
+  getSeqAdapterRefName?: (refName: string) => string,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
-
-  if (refNameMap?.[region.refName]) {
-    // clone the region so we don't modify it
-    region = isStateTreeNode(region)
-      ? { ...getSnapshot(region) }
-      : { ...region }
-
-    // modify it directly in the container
-    const newRef = refNameMap[region.refName]
-    if (newRef) {
-      return {
-        ...region,
-        refName: newRef,
-        originalRefName: region.refName,
-      }
+  const newRef = refNameMap?.[region.refName]
+  if (newRef) {
+    return {
+      ...(isStateTreeNode(region) ? getSnapshot(region) : region),
+      refName: newRef,
+      originalRefName: getSeqAdapterRefName?.(region.refName) ?? region.refName,
     }
   }
   return region
@@ -667,28 +662,35 @@ export async function renameRegionsIfNeeded<
     throw new Error('sessionId is required')
   }
 
-  const assemblyNames = regions.map(region => region.assemblyName)
-  const assemblyMaps = Object.fromEntries(
+  // capture assembly names before the await, since MST regions may be dead after
+  const assemblyNames = regions.map(r => r.assemblyName)
+  const uniqueAssemblyNames = [...new Set(assemblyNames)]
+  const assemblyData = Object.fromEntries(
     await Promise.all(
-      [...new Set(assemblyNames)].map(async assemblyName => {
-        return [
-          assemblyName,
-          await assemblyManager.getRefNameMapForAdapter(
+      uniqueAssemblyNames.map(async name => [
+        name,
+        {
+          refNameMap: await assemblyManager.getRefNameMapForAdapter(
             adapterConfig,
-            assemblyName,
+            name,
             args,
           ),
-        ]
-      }),
+          assembly: assemblyManager.get(name),
+        },
+      ]),
     ),
   )
 
   return {
     ...args,
-    regions: regions.map((region, i) =>
-      // note: uses assemblyNames defined above since region could be dead now
-      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]!], region),
-    ),
+    regions: regions.map((region, i) => {
+      const { refNameMap, assembly } = assemblyData[assemblyNames[i]!]
+      return renameRegionIfNeeded(
+        refNameMap,
+        region,
+        assembly ? r => assembly.getSeqAdapterRefName(r) : undefined,
+      )
+    }),
   }
 }
 

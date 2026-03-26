@@ -20,6 +20,7 @@ export {
   WithInit,
   WithInlinePlugins,
   WithInternetAccounts,
+  WithMultipleDisplayedRegionsFlipped,
   WithObserveVisibleFeatures,
   WithObserveVisibleRegions,
   WithOutsideStyling,
@@ -27,7 +28,6 @@ export {
   WithReact18,
   WithShowTrack,
   WithTwoLinearGenomeViews,
-  WithMultipleDisplayedRegionsFlipped,
   WithWebWorker,
 } from './examples/index.ts'
 

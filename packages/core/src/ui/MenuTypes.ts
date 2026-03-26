@@ -1,4 +1,3 @@
-
 export interface MenuDivider {
   priority?: number
   type: 'divider'

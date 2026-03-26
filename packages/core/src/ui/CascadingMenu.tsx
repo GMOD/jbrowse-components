@@ -22,7 +22,6 @@ import type {
   NormalMenuItem,
   RadioMenuItem,
 } from './MenuTypes.ts'
-import type { SvgIconProps } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
 type ActionableMenuItem = NormalMenuItem | CheckboxMenuItem | RadioMenuItem
@@ -49,7 +48,7 @@ function CascadingSubmenu({
 }: {
   title: React.ReactNode
   onMenuItemClick: Function
-  Icon: React.ComponentType<SvgIconProps> | undefined
+  Icon: React.ElementType | undefined
   inset: boolean
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
