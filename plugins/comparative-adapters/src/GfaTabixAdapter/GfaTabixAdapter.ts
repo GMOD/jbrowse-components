@@ -1,18 +1,16 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
-import {
-  BaseGfaTabixAdapter,
-  getSegmentsForOrdinalsFromShard,
-} from './gfaTabixUtils.ts'
+import { getSegmentsForOrdinalsFromShard } from './gfaBinaryIO.ts'
+import { BaseGfaTabixAdapter } from './gfaTabixUtils.ts'
 
-import type { SegmentsShard } from './gfaTabixUtils.ts'
+import type { IndexedBinaryShard } from './gfaBinaryIO.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class GfaTabixAdapter extends BaseGfaTabixAdapter {
-  private shard: SegmentsShard
+  private shard: IndexedBinaryShard
 
   public constructor(
     config: AnyConfigurationModel,

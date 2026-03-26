@@ -1,8 +1,8 @@
+import fs from 'fs'
+
 import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
-import { parseSegmentsBinary } from './gfaTabixUtils.ts'
-
-import fs from 'fs'
+import { parseSegmentsBinary } from './gfaBinaryIO.ts'
 
 function makeAdapter(
   prefix: string,
@@ -624,7 +624,6 @@ describe('GfaTabixAdapter getSubgraph', () => {
     const header = lines.filter(l => l.startsWith('H\t'))
     const segments = lines.filter(l => l.startsWith('S\t'))
     const links = lines.filter(l => l.startsWith('L\t'))
-    const paths = lines.filter(l => l.startsWith('P\t'))
 
     expect(header.length).toBe(1)
     expect(segments.length).toBeGreaterThan(0)

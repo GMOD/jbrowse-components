@@ -258,6 +258,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         )
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, model, view])
 
   // GPU draw autorun: re-renders on view changes (scroll, zoom, resize)
@@ -325,6 +326,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         })
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, model, view])
 
   // Read observables during render for tooltip/style (observer tracks these)

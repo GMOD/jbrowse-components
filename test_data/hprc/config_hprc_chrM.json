@@ -31,7 +31,7 @@
       "category": ["Synteny"],
       "adapter": {
         "type": "GfaTabixAdapter",
-        "prefix": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM"
+        "prefix": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM"
       },
       "assemblyNames": [
         "GRCh38#0",
@@ -88,12 +88,12 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.vcf.gz",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.vcf.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.vcf.gz.tbi",
+            "uri": "https://s3.amazonaws.com/jbrowse.org/demos/gfadata/hprc-v1.1-mc-grch38/hprc-v1.1-mc-grch38-chrM.vcf.gz.tbi",
             "locationType": "UriLocation"
           }
         }

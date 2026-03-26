@@ -1,6 +1,6 @@
 import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
-import { parseSegmentsBinary } from './gfaTabixUtils.ts'
+import { parseSegmentsBinary } from './gfaBinaryIO.ts'
 
 const RECORD_SIZE = 15
 

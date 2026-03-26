@@ -1,11 +1,9 @@
 import { openLocation } from '@jbrowse/core/util/io'
 
-import {
-  BaseGfaTabixAdapter,
-  getSegmentsForOrdinalsFromShard,
-} from '../GfaTabixAdapter/gfaTabixUtils.ts'
+import { getSegmentsForOrdinalsFromShard } from '../GfaTabixAdapter/gfaBinaryIO.ts'
+import { BaseGfaTabixAdapter } from '../GfaTabixAdapter/gfaTabixUtils.ts'
 
-import type { SegmentsShard } from '../GfaTabixAdapter/gfaTabixUtils.ts'
+import type { IndexedBinaryShard } from '../GfaTabixAdapter/gfaBinaryIO.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -18,7 +16,7 @@ interface SegmentsManifest {
 
 export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
   private manifestPromise?: Promise<SegmentsManifest>
-  private genomeShardsCache = new Map<string, SegmentsShard>()
+  private genomeShardsCache = new Map<string, IndexedBinaryShard>()
 
   public constructor(
     config: AnyConfigurationModel,
@@ -63,7 +61,7 @@ export default class ShardedGfaTabixAdapter extends BaseGfaTabixAdapter {
           ? { localPath: path, locationType: 'LocalPathLocation' }
           : { uri: path, locationType: 'UriLocation' }
 
-      const shard: SegmentsShard = {
+      const shard: IndexedBinaryShard = {
         filehandle: openLocation(makeLocation(`${shardBase}.bin`), pm),
         idxFile: openLocation(makeLocation(`${shardBase}.idx`), pm),
       }

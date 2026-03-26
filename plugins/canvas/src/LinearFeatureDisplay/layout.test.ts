@@ -1,4 +1,8 @@
-import { computeAndAssignLayout, relayoutAllRegions } from './layout.ts'
+import {
+  computeAndAssignLayout,
+  fillYArrays,
+  relayoutAllRegions,
+} from './layout.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -720,4 +724,364 @@ test('unstranded features that are close together can still share a row', () => 
   // Without strand, no arrow padding, so these don't overlap
   expect(data.flatbushItems[0]!.topPx).toBe(0)
   expect(data.flatbushItems[1]!.topPx).toBe(0)
+})
+
+test('fillYArrays is idempotent when called with the same layoutMap', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+  data.linePositions = new Uint32Array([200, 400])
+  data.lineYs = new Float32Array([7])
+  data.lineColors = new Uint8Array([0, 0, 0, 255])
+  data.lineDirections = new Int8Array([1])
+  data.numLines = 1
+  data.lineFeatureIndices = new Uint32Array([1])
+
+  const layoutMap = new Map([
+    ['f1', 0],
+    ['f2', 35],
+  ])
+
+  fillYArrays(data, layoutMap)
+
+  const snapshot = {
+    f1Top: data.flatbushItems[0]!.topPx,
+    f2Top: data.flatbushItems[1]!.topPx,
+    rectY0: data.rectYs[0]!,
+    rectY1: data.rectYs[1]!,
+    lineY0: data.lineYs[0]!,
+  }
+
+  // Call again with the same layoutMap — nothing should change
+  fillYArrays(data, layoutMap)
+
+  expect(data.flatbushItems[0]!.topPx).toBe(snapshot.f1Top)
+  expect(data.flatbushItems[1]!.topPx).toBe(snapshot.f2Top)
+  expect(data.rectYs[0]).toBe(snapshot.rectY0)
+  expect(data.rectYs[1]).toBe(snapshot.rectY1)
+  expect(data.lineYs[0]).toBe(snapshot.lineY0)
+})
+
+test('fillYArrays correctly transitions between different layouts', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+
+  // First layout: f1 at 0, f2 at 30
+  fillYArrays(
+    data,
+    new Map([
+      ['f1', 0],
+      ['f2', 30],
+    ]),
+  )
+  expect(data.rectYs[0]).toBe(0)
+  expect(data.rectYs[1]).toBe(30)
+
+  // Second layout: swap positions — f1 at 30, f2 at 0
+  fillYArrays(
+    data,
+    new Map([
+      ['f1', 30],
+      ['f2', 0],
+    ]),
+  )
+  expect(data.rectYs[0]).toBe(30)
+  expect(data.rectYs[1]).toBe(0)
+  expect(data.flatbushItems[0]!.topPx).toBe(30)
+  expect(data.flatbushItems[1]!.topPx).toBe(0)
+})
+
+test('fillYArrays handles subfeatures and labels across layout changes', () => {
+  const data = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'gene1', startBp: 100, endBp: 500, height: 30 },
+      { featureId: 'gene2', startBp: 200, endBp: 600, height: 30 },
+    ],
+  })
+  data.subfeatureInfos = [
+    {
+      featureId: 'exon1',
+      parentFeatureId: 'gene1',
+      type: 'exon',
+      startBp: 150,
+      endBp: 200,
+      topPx: 5,
+      bottomPx: 15,
+    },
+    {
+      featureId: 'exon2',
+      parentFeatureId: 'gene2',
+      type: 'exon',
+      startBp: 300,
+      endBp: 350,
+      topPx: 5,
+      bottomPx: 15,
+    },
+  ]
+  data.floatingLabelsData = {
+    gene1: {
+      featureId: 'gene1',
+      minX: 100,
+      maxX: 500,
+      topY: 0,
+      featureHeight: 30,
+    },
+    gene2: {
+      featureId: 'gene2',
+      minX: 200,
+      maxX: 600,
+      topY: 0,
+      featureHeight: 30,
+    },
+  }
+
+  // Layout 1: gene1 at 0, gene2 at 40
+  fillYArrays(
+    data,
+    new Map([
+      ['gene1', 0],
+      ['gene2', 40],
+    ]),
+  )
+  expect(data.subfeatureInfos[0]!.topPx).toBe(5)
+  expect(data.subfeatureInfos[1]!.topPx).toBe(45)
+  expect(data.floatingLabelsData.gene1!.topY).toBe(0)
+  expect(data.floatingLabelsData.gene2!.topY).toBe(40)
+
+  // Layout 2: both genes shift — gene1 at 10, gene2 at 50
+  fillYArrays(
+    data,
+    new Map([
+      ['gene1', 10],
+      ['gene2', 50],
+    ]),
+  )
+  expect(data.subfeatureInfos[0]!.topPx).toBe(15)
+  expect(data.subfeatureInfos[0]!.bottomPx).toBe(25)
+  expect(data.subfeatureInfos[1]!.topPx).toBe(55)
+  expect(data.subfeatureInfos[1]!.bottomPx).toBe(65)
+  expect(data.floatingLabelsData.gene1!.topY).toBe(10)
+  expect(data.floatingLabelsData.gene2!.topY).toBe(50)
+
+  // Layout 3: back to original — should exactly restore
+  fillYArrays(
+    data,
+    new Map([
+      ['gene1', 0],
+      ['gene2', 40],
+    ]),
+  )
+  expect(data.subfeatureInfos[0]!.topPx).toBe(5)
+  expect(data.subfeatureInfos[1]!.topPx).toBe(45)
+  expect(data.floatingLabelsData.gene1!.topY).toBe(0)
+  expect(data.floatingLabelsData.gene2!.topY).toBe(40)
+})
+
+test('incremental fetch: three batches on same chromosome', () => {
+  const makeRegion = (
+    regionStart: number,
+    localId: string,
+    localStart: number,
+  ) =>
+    makeFeatureData({
+      regionStart,
+      features: [
+        { featureId: 'gene1', startBp: 0, endBp: 1000, height: 30 },
+        {
+          featureId: localId,
+          startBp: localStart,
+          endBp: localStart + 100,
+          height: 30,
+        },
+      ],
+    })
+
+  const r0 = makeRegion(0, 'loc0', 0)
+  const r1 = makeRegion(200, 'loc1', 200)
+  const r2 = makeRegion(400, 'loc2', 400)
+
+  const regionKeys = new Map([
+    [0, 'hg38:chr1'],
+    [1, 'hg38:chr1'],
+    [2, 'hg38:chr1'],
+  ])
+
+  // Batch 1
+  const map1 = new Map<number, FeatureDataResult>([[0, r0]])
+  computeAndAssignLayout(map1, 1, regionKeys, new Set([0]), true, true)
+  const gene1Y = r0.flatbushItems.find(f => f.featureId === 'gene1')!.topPx
+
+  // Batch 2
+  const map2 = new Map<number, FeatureDataResult>([
+    [0, r0],
+    [1, r1],
+  ])
+  computeAndAssignLayout(map2, 1, regionKeys, new Set([1]), true, true)
+
+  // Batch 3
+  const map3 = new Map<number, FeatureDataResult>([
+    [0, r0],
+    [1, r1],
+    [2, r2],
+  ])
+  computeAndAssignLayout(map3, 1, regionKeys, new Set([2]), true, true)
+
+  // gene1 should have the same Y in all three regions, unchanged across batches
+  const gene1InR0 = r0.flatbushItems.find(f => f.featureId === 'gene1')!
+  const gene1InR1 = r1.flatbushItems.find(f => f.featureId === 'gene1')!
+  const gene1InR2 = r2.flatbushItems.find(f => f.featureId === 'gene1')!
+  expect(gene1InR0.topPx).toBe(gene1Y)
+  expect(gene1InR1.topPx).toBe(gene1Y)
+  expect(gene1InR2.topPx).toBe(gene1Y)
+
+  // rectYs for gene1 (index 0 in each region) should all match
+  expect(r0.rectYs[0]).toBe(r1.rectYs[0])
+  expect(r0.rectYs[0]).toBe(r2.rectYs[0])
+})
+
+test('incremental fetch with subfeatures preserves correct offsets', () => {
+  const r0 = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'gene1', startBp: 0, endBp: 1000, height: 30 },
+      { featureId: 'local0', startBp: 0, endBp: 100, height: 30 },
+    ],
+  })
+  r0.subfeatureInfos = [
+    {
+      featureId: 'exon0',
+      parentFeatureId: 'gene1',
+      type: 'exon',
+      startBp: 50,
+      endBp: 90,
+      topPx: 5,
+      bottomPx: 15,
+    },
+  ]
+
+  const r1 = makeFeatureData({
+    regionStart: 200,
+    features: [
+      { featureId: 'gene1', startBp: 0, endBp: 1000, height: 30 },
+      { featureId: 'local1', startBp: 200, endBp: 300, height: 30 },
+    ],
+  })
+  r1.subfeatureInfos = [
+    {
+      featureId: 'exon1',
+      parentFeatureId: 'gene1',
+      type: 'exon',
+      startBp: 210,
+      endBp: 250,
+      topPx: 5,
+      bottomPx: 15,
+    },
+  ]
+
+  const regionKeys = new Map([
+    [0, 'hg38:chr1'],
+    [1, 'hg38:chr1'],
+  ])
+
+  // Batch 1: only r0
+  const map1 = new Map<number, FeatureDataResult>([[0, r0]])
+  computeAndAssignLayout(map1, 1, regionKeys, new Set([0]), true, true)
+  const gene1Y = r0.flatbushItems.find(f => f.featureId === 'gene1')!.topPx
+  expect(r0.subfeatureInfos[0]!.topPx).toBe(5 + gene1Y)
+
+  // Batch 2: r1 arrives
+  const map2 = new Map<number, FeatureDataResult>([
+    [0, r0],
+    [1, r1],
+  ])
+  computeAndAssignLayout(map2, 1, regionKeys, new Set([1]), true, true)
+
+  // Both regions' gene1 subfeatures should be at 5 + gene1Y
+  expect(r0.subfeatureInfos[0]!.topPx).toBe(5 + gene1Y)
+  expect(r1.subfeatureInfos[0]!.topPx).toBe(5 + gene1Y)
+  expect(r0.subfeatureInfos[0]!.bottomPx).toBe(15 + gene1Y)
+  expect(r1.subfeatureInfos[0]!.bottomPx).toBe(15 + gene1Y)
+})
+
+test('incremental fetch: old regions do not get double Y offsets', () => {
+  // Simulate collapsed introns: multiple regions on same chromosome,
+  // same spanning feature in each, fetched in two batches
+  const region0 = makeFeatureData({
+    regionStart: 0,
+    features: [
+      { featureId: 'gene1', startBp: 0, endBp: 1000, height: 30 },
+      { featureId: 'local0', startBp: 0, endBp: 100, height: 30 },
+    ],
+  })
+  const region1 = makeFeatureData({
+    regionStart: 200,
+    features: [
+      { featureId: 'gene1', startBp: 0, endBp: 1000, height: 30 },
+      { featureId: 'local1', startBp: 200, endBp: 300, height: 30 },
+    ],
+  })
+  const region2 = makeFeatureData({
+    regionStart: 400,
+    features: [
+      { featureId: 'gene1', startBp: 0, endBp: 1000, height: 30 },
+      { featureId: 'local2', startBp: 400, endBp: 500, height: 30 },
+    ],
+  })
+
+  const regionKeys = new Map([
+    [0, 'hg38:chr1'],
+    [1, 'hg38:chr1'],
+    [2, 'hg38:chr1'],
+  ])
+
+  // Batch 1: regions 0 and 1
+  const dataMap1 = new Map<number, FeatureDataResult>([
+    [0, region0],
+    [1, region1],
+  ])
+  computeAndAssignLayout(dataMap1, 1, regionKeys, new Set([0, 1]), true, true)
+
+  const gene1InR0After1 = region0.flatbushItems.find(
+    f => f.featureId === 'gene1',
+  )!
+  const gene1InR1After1 = region1.flatbushItems.find(
+    f => f.featureId === 'gene1',
+  )!
+  expect(gene1InR0After1.topPx).toBe(gene1InR1After1.topPx)
+  const gene1YAfterBatch1 = gene1InR0After1.topPx
+
+  // Batch 2: region 2 arrives, old regions 0 and 1 are already in the map
+  const dataMap2 = new Map<number, FeatureDataResult>([
+    [0, region0],
+    [1, region1],
+    [2, region2],
+  ])
+  computeAndAssignLayout(dataMap2, 1, regionKeys, new Set([2]), true, true)
+
+  const gene1InR0After2 = region0.flatbushItems.find(
+    f => f.featureId === 'gene1',
+  )!
+  const gene1InR1After2 = region1.flatbushItems.find(
+    f => f.featureId === 'gene1',
+  )!
+  const gene1InR2After2 = region2.flatbushItems.find(
+    f => f.featureId === 'gene1',
+  )!
+
+  // All regions must have the same Y for the spanning feature
+  expect(gene1InR0After2.topPx).toBe(gene1InR1After2.topPx)
+  expect(gene1InR0After2.topPx).toBe(gene1InR2After2.topPx)
+
+  // The Y should not have changed from batch 1 (no double-application)
+  expect(gene1InR0After2.topPx).toBe(gene1YAfterBatch1)
 })

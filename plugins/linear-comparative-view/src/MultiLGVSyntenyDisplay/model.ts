@@ -306,11 +306,11 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             icon: BubbleChartIcon,
             onClick: async () => {
               const session = getSession(self)
-              const fStart = feature.get('start') as number
-              const fEnd = feature.get('end') as number
+              const fStart = feature.get('start')
+              const fEnd = feature.get('end')
               const padding = Math.max(10, Math.floor((fEnd - fStart) * 0.5))
               const region = {
-                refName: feature.get('refName') as string,
+                refName: feature.get('refName'),
                 assemblyName:
                   (feature.get('assemblyName') as string | undefined) ??
                   (getContainingView(self) as LGV).displayedRegions[0]
