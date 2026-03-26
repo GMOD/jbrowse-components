@@ -173,11 +173,39 @@ function mergeOrdinalRanges(rawRanges: [number, number][]) {
   return merged
 }
 
+export interface EdgeRecord {
+  targetOrd: number
+  srcOrient: number
+  tgtOrient: number
+  tgtLen: number
+}
+
+const EDGE_RECORD_SIZE = 10
+
+function parseEdgesBinary(buf: Uint8Array) {
+  const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength)
+  const count = Math.floor(buf.byteLength / EDGE_RECORD_SIZE)
+  const records = new Array<EdgeRecord>(count)
+  for (let i = 0; i < count; i++) {
+    const off = i * EDGE_RECORD_SIZE
+    records[i] = {
+      targetOrd: dv.getUint32(off, true),
+      srcOrient: buf[buf.byteOffset + off + 4]!,
+      tgtOrient: buf[buf.byteOffset + off + 5]!,
+      tgtLen: dv.getUint32(off + 6, true),
+    }
+  }
+  return records
+}
+
 export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected posFile: TabixIndexedFile
   protected bubblesFile?: TabixIndexedFile
+  private edgesFile?: GenericFilehandle
+  private edgesIdxFile?: GenericFilehandle
+  private edgesIdxPromise?: Promise<BigUint64Array>
   private setupP?: Promise<SetupResult>
 
   public constructor(
@@ -197,6 +225,19 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
     })
 
+    const edgesLoc = this.getConf('edgesLocation') as
+      | FileLocation
+      | undefined
+    const hasEdgesLoc =
+      edgesLoc &&
+      (('uri' in edgesLoc && edgesLoc.uri !== '') ||
+        ('localPath' in edgesLoc && edgesLoc.localPath !== ''))
+    if (hasEdgesLoc) {
+      const edgesIdxLoc = this.getConf('edgesIdxLocation') as FileLocation
+      this.edgesFile = openLocation(edgesLoc, pm)
+      this.edgesIdxFile = openLocation(edgesIdxLoc, pm)
+    }
+
     const bubblesLoc = this.getConf('bubblesLocation') as
       | FileLocation
       | undefined
@@ -215,6 +256,73 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         chunkCacheSize: 50 * 2 ** 20,
       })
     }
+  }
+
+  private async loadEdgesIndex() {
+    if (!this.edgesIdxFile) {
+      return undefined
+    }
+    if (!this.edgesIdxPromise) {
+      this.edgesIdxPromise = this.edgesIdxFile.readFile().then(buf => {
+        const aligned = new ArrayBuffer(buf.byteLength)
+        new Uint8Array(aligned).set(buf)
+        return new BigUint64Array(aligned)
+      })
+    }
+    return this.edgesIdxPromise
+  }
+
+  private async getEdgesForOrdinals(ordinals: number[]) {
+    const idx = await this.loadEdgesIndex()
+    if (!idx || !this.edgesFile) {
+      return new Map<number, EdgeRecord[]>()
+    }
+
+    const result = new Map<number, EdgeRecord[]>()
+    const ranges: { ord: number; start: number; end: number }[] = []
+
+    for (const ord of ordinals) {
+      if (ord >= 0 && ord + 1 < idx.length) {
+        const start = Number(idx[ord]!)
+        const end = Number(idx[ord + 1]!)
+        if (end > start) {
+          ranges.push({ ord, start, end })
+        }
+      }
+    }
+
+    // Batch nearby ranges into single reads
+    ranges.sort((a, b) => a.start - b.start)
+    const batched: { start: number; end: number; ords: number[] }[] = []
+    for (const r of ranges) {
+      const prev = batched.length > 0 ? batched[batched.length - 1]! : undefined
+      if (prev && r.start - prev.end < 4096) {
+        prev.end = Math.max(prev.end, r.end)
+        prev.ords.push(r.ord)
+      } else {
+        batched.push({ start: r.start, end: r.end, ords: [r.ord] })
+      }
+    }
+
+    await Promise.all(
+      batched.map(async batch => {
+        const bytes = await this.edgesFile!.read(
+          batch.end - batch.start,
+          batch.start,
+        )
+        // Parse each ordinal's edges from within the batch
+        for (const ord of batch.ords) {
+          const ordStart = Number(idx[ord]!) - batch.start
+          const ordEnd = Number(idx[ord + 1]!) - batch.start
+          if (ordEnd > ordStart) {
+            const slice = bytes.subarray(ordStart, ordEnd)
+            result.set(ord, parseEdgesBinary(slice))
+          }
+        }
+      }),
+    )
+
+    return result
   }
 
   protected abstract getSegsForOrdinals(
@@ -420,68 +528,192 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     const { posRefNames, pathNames } = await this.setup()
     const { refName, start, end, assemblyName } = region
 
-    console.log(
-      '[GfaTabixAdapter.getSubgraph] Query:',
-      JSON.stringify({ refName, start, end, assemblyName }),
-      'posRefNames:',
-      posRefNames,
-    )
-
     const refPathName = this.resolveTabixRefName(
       posRefNames,
       assemblyName,
       refName,
     )
     if (!refPathName) {
-      console.warn(
-        '[GfaTabixAdapter.getSubgraph] No refPathName resolved for',
-        assemblyName,
-        refName,
-      )
       return ''
     }
 
-    const rawRanges: [number, number][] = []
+    // Get ref ordinals for the queried region
+    const refRanges: [number, number][] = []
     const posChecker = createStopTokenChecker(opts.stopToken)
     await this.posFile.getLines(refPathName, start, end, {
       lineCallback: (line: string) => {
         checkStopToken2(posChecker)
-        parsePosLineOrdinals(line, rawRanges)
+        parsePosLineOrdinals(line, refRanges)
       },
     })
 
-    if (rawRanges.length === 0) {
+    if (refRanges.length === 0) {
       return ''
     }
 
     checkStopToken(opts.stopToken)
-    const allSegs = await this.getSegsForOrdinals(mergeOrdinalRanges(rawRanges))
 
+    // Fetch ref SegRecords and filter to viewport
+    const refOrdinals = mergeOrdinalRanges(refRanges)
+    const refSegs = await this.getSegsForOrdinals(refOrdinals)
+
+    const refPathIdx = pathNames.indexOf(refPathName)
+    const viewportRefOrds: number[] = []
     const segLens = new Map<number, number>()
+
+    for (const rec of refSegs) {
+      if (
+        rec.pathNameIdx === refPathIdx &&
+        rec.offset + rec.segLen > start &&
+        rec.offset < end
+      ) {
+        viewportRefOrds.push(rec.segOrd)
+        segLens.set(rec.segOrd, rec.segLen)
+      }
+    }
+
+    if (viewportRefOrds.length === 0) {
+      return ''
+    }
+
+    // Use edge index if available (precise, fast)
+    if (this.edgesFile) {
+      return this.getSubgraphViaEdges(viewportRefOrds, segLens)
+    }
+
+    // Fallback: infer links from path adjacency (no edge index)
+    return this.getSubgraphViaPathInference(
+      refSegs,
+      refPathIdx,
+      viewportRefOrds,
+      segLens,
+      pathNames,
+    )
+  }
+
+  private async getSubgraphViaEdges(
+    viewportRefOrds: number[],
+    segLens: Map<number, number>,
+  ) {
+    // 1-hop edge lookup to discover alt allele nodes
+    const edgeMap = await this.getEdgesForOrdinals(viewportRefOrds)
+    const allNodeOrds = new Set(viewportRefOrds)
+    const gfaLinks = new Set<string>()
+
+    for (const [srcOrd, edges] of edgeMap) {
+      for (const edge of edges) {
+        allNodeOrds.add(edge.targetOrd)
+        segLens.set(edge.targetOrd, edge.tgtLen)
+        const srcO = edge.srcOrient === ORIENT_FWD ? '+' : '-'
+        const tgtO = edge.tgtOrient === ORIENT_FWD ? '+' : '-'
+        gfaLinks.add(`L\ts${srcOrd}\t${srcO}\ts${edge.targetOrd}\t${tgtO}\t*`)
+      }
+    }
+
+    // Get edges FROM discovered alt nodes to find edges between
+    // alt nodes (e.g., alt→shared_boundary)
+    const altOrds = [...allNodeOrds].filter(
+      o => !viewportRefOrds.includes(o),
+    )
+    if (altOrds.length > 0) {
+      const altEdgeMap = await this.getEdgesForOrdinals(altOrds)
+      for (const [srcOrd, edges] of altEdgeMap) {
+        for (const edge of edges) {
+          if (allNodeOrds.has(edge.targetOrd)) {
+            const srcO = edge.srcOrient === ORIENT_FWD ? '+' : '-'
+            const tgtO = edge.tgtOrient === ORIENT_FWD ? '+' : '-'
+            gfaLinks.add(
+              `L\ts${srcOrd}\t${srcO}\ts${edge.targetOrd}\t${tgtO}\t*`,
+            )
+          }
+        }
+      }
+    }
+
+    // Emit GFA: S-lines + L-lines (no P/W-lines)
+    const lines: string[] = ['H\tVN:Z:1.1']
+    for (const ord of allNodeOrds) {
+      const len = segLens.get(ord) ?? 0
+      lines.push(`S\ts${ord}\t*\tLN:i:${len}`)
+    }
+    for (const link of gfaLinks) {
+      lines.push(link)
+    }
+
+    console.log(
+      '[GfaTabixAdapter.getSubgraph] Edge-based:',
+      allNodeOrds.size,
+      'nodes,',
+      gfaLinks.size,
+      'edges',
+    )
+    return lines.join('\n')
+  }
+
+  private getSubgraphViaPathInference(
+    refSegs: SegRecord[],
+    refPathIdx: number,
+    viewportRefOrds: number[],
+    segLens: Map<number, number>,
+    pathNames: string[],
+  ) {
+    // Group records by path
+    const rawPathSegs = new Map<number, SegRecord[]>()
+    for (const rec of refSegs) {
+      if (!rawPathSegs.has(rec.pathNameIdx)) {
+        rawPathSegs.set(rec.pathNameIdx, [])
+      }
+      rawPathSegs.get(rec.pathNameIdx)!.push(rec)
+    }
+
+    const refOrdSet = new Set(viewportRefOrds)
     const pathSegRecords = new Map<
       number,
       { segOrd: number; orient: number; offset: number }[]
     >()
 
-    for (const rec of allSegs) {
-      segLens.set(rec.segOrd, rec.segLen)
-      if (!pathSegRecords.has(rec.pathNameIdx)) {
-        pathSegRecords.set(rec.pathNameIdx, [])
-      }
-      pathSegRecords
-        .get(rec.pathNameIdx)!
-        .push({ segOrd: rec.segOrd, orient: rec.orient, offset: rec.offset })
-    }
+    pathSegRecords.set(
+      refPathIdx,
+      viewportRefOrds.map(ord => {
+        const rec = refSegs.find(
+          r => r.segOrd === ord && r.pathNameIdx === refPathIdx,
+        )!
+        return { segOrd: ord, orient: rec.orient, offset: rec.offset }
+      }),
+    )
 
-    for (const segs of pathSegRecords.values()) {
-      segs.sort((a, b) => a.offset - b.offset)
+    for (const [pathIdx, records] of rawPathSegs) {
+      if (pathIdx === refPathIdx) {
+        continue
+      }
+      records.sort((a, b) => a.offset - b.offset)
+      let firstShared = -1
+      let lastShared = -1
+      for (let i = 0; i < records.length; i++) {
+        if (refOrdSet.has(records[i]!.segOrd)) {
+          if (firstShared === -1) {
+            firstShared = i
+          }
+          lastShared = i
+        }
+      }
+      if (firstShared >= 0) {
+        const span: { segOrd: number; orient: number; offset: number }[] = []
+        for (let i = firstShared; i <= lastShared; i++) {
+          const r = records[i]!
+          segLens.set(r.segOrd, r.segLen)
+          span.push({ segOrd: r.segOrd, orient: r.orient, offset: r.offset })
+        }
+        pathSegRecords.set(pathIdx, span)
+      }
     }
 
     const links = new Set<string>()
     for (const segs of pathSegRecords.values()) {
-      for (let i = 0; i < segs.length - 1; i++) {
-        const a = segs[i]!
-        const b = segs[i + 1]!
+      const sorted = [...segs].sort((a, b) => a.offset - b.offset)
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = sorted[i]!
+        const b = sorted[i + 1]!
         const oA = a.orient === ORIENT_FWD ? '+' : '-'
         const oB = b.orient === ORIENT_FWD ? '+' : '-'
         links.add(`L\ts${a.segOrd}\t${oA}\ts${b.segOrd}\t${oB}\t*`)
@@ -500,25 +732,14 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       if (!pathName) {
         continue
       }
-      const walk = segs
+      const sorted = [...segs].sort((a, b) => a.offset - b.offset)
+      const walk = sorted
         .map(s => `s${s.segOrd}${s.orient === ORIENT_FWD ? '+' : '-'}`)
         .join(',')
       lines.push(`P\t${pathName}\t${walk}\t*`)
     }
 
-    const result = lines.join('\n')
-    console.log(
-      '[GfaTabixAdapter.getSubgraph] Result:',
-      lines.length,
-      'lines,',
-      segLens.size,
-      'segments,',
-      links.size,
-      'links,',
-      pathSegRecords.size,
-      'paths',
-    )
-    return result
+    return lines.join('\n')
   }
 
   private async getMultiPairFeaturesFromSegments(

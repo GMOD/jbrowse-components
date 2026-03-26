@@ -276,6 +276,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         if (!feature) {
           return [] as MenuItem[]
         }
+        const track = getContainingTrack(self)
+        const adapterConfig = getConf(track, 'adapter')
         return [
           {
             label: 'Open feature details',
@@ -291,12 +293,62 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 LaunchSyntenyViewDialog,
                 {
                   view: getContainingView(self) as LGV,
-                  trackId: getConf(getContainingTrack(self), 'trackId'),
+                  trackId: getConf(track, 'trackId'),
                   handleClose,
                   session: getSession(self),
                   feature,
                 },
               ])
+            },
+          },
+          {
+            label: 'Graph genome view (feature)',
+            icon: BubbleChartIcon,
+            onClick: async () => {
+              const session = getSession(self)
+              const fStart = feature.get('start') as number
+              const fEnd = feature.get('end') as number
+              const padding = Math.max(10, Math.floor((fEnd - fStart) * 0.5))
+              const region = {
+                refName: feature.get('refName') as string,
+                assemblyName:
+                  (feature.get('assemblyName') as string | undefined) ??
+                  (getContainingView(self) as LGV).displayedRegions[0]
+                    ?.assemblyName ??
+                  '',
+                start: Math.max(0, fStart - padding),
+                end: fEnd + padding,
+              }
+              console.log(
+                '[GraphView launch] Feature region:',
+                JSON.stringify(region),
+              )
+              const sessionId = getRpcSessionId(self)
+              try {
+                const gfaText: string = await session.rpcManager.call(
+                  sessionId,
+                  'GetSubgraph',
+                  { adapterConfig, region, sessionId },
+                )
+                if (!gfaText) {
+                  session.notify(
+                    'This adapter does not support graph subgraph extraction',
+                    'warning',
+                  )
+                  return
+                }
+                const graphView = session.addView('GraphGenomeView', {})
+                await (graphView as any).loadGFA(
+                  gfaText,
+                  `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
+                )
+              } catch (e) {
+                console.error('[GraphView launch] Error:', e)
+                session.notify(
+                  `Failed to launch graph view: ${e instanceof Error ? e.message : e}`,
+                  'error',
+                )
+              }
             },
           },
           {
@@ -380,14 +432,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               end: Math.floor(rawEnd),
             }
             console.log(
-              '[GraphView launch] Region:',
+              '[GraphView launch] Viewport region:',
               JSON.stringify(region),
-              'offsetPx:',
-              view.offsetPx,
-              'bpPerPx:',
-              view.bpPerPx,
-              'width:',
-              view.width,
+              `(${(region.end - region.start).toLocaleString()} bp)`,
             )
             const sessionId = getRpcSessionId(self)
             const { rpcManager } = session
@@ -396,12 +443,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 sessionId,
                 'GetSubgraph',
                 { adapterConfig, region, sessionId },
-              )
-              console.log(
-                '[GraphView launch] GFA result length:',
-                gfaText.length,
-                'lines:',
-                gfaText.split('\n').length,
               )
               if (!gfaText) {
                 session.notify(
@@ -416,7 +457,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 gfaText,
                 `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
               )
-              console.log('[GraphView launch] Graph view loaded successfully')
             } catch (e) {
               console.error('[GraphView launch] Error:', e)
               session.notify(

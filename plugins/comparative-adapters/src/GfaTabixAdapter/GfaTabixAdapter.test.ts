@@ -2,10 +2,13 @@ import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
 import { parseSegmentsBinary } from './gfaTabixUtils.ts'
 
+import fs from 'fs'
+
 function makeAdapter(
   prefix: string,
   opts?: { assemblyNameMap?: Record<string, string> },
 ) {
+  const hasEdges = fs.existsSync(`${prefix}.edges.bin`)
   return new Adapter(
     MyConfigSchema.create({
       posLocation: {
@@ -26,6 +29,18 @@ function makeAdapter(
         localPath: `${prefix}.segments.idx`,
         locationType: 'LocalPathLocation',
       },
+      ...(hasEdges
+        ? {
+            edgesLocation: {
+              localPath: `${prefix}.edges.bin`,
+              locationType: 'LocalPathLocation',
+            },
+            edgesIdxLocation: {
+              localPath: `${prefix}.edges.idx`,
+              locationType: 'LocalPathLocation',
+            },
+          }
+        : {}),
       ...(opts?.assemblyNameMap
         ? { assemblyNameMap: opts.assemblyNameMap }
         : {}),
@@ -614,17 +629,7 @@ describe('GfaTabixAdapter getSubgraph', () => {
     expect(header.length).toBe(1)
     expect(segments.length).toBeGreaterThan(0)
     expect(links.length).toBeGreaterThan(0)
-    expect(paths.length).toBeGreaterThan(0)
-
-    console.log(
-      'getSubgraph result:',
-      segments.length,
-      'segments,',
-      links.length,
-      'links,',
-      paths.length,
-      'paths',
-    )
+    // Edge-based approach emits S+L only (no P-lines)
   })
 
   it('returns empty for non-overlapping region', async () => {
@@ -734,18 +739,10 @@ describe('GfaTabixAdapter HPRC getSubgraph', () => {
     expect(result).toBeTruthy()
     const lines = result.split('\n')
     const segments = lines.filter(l => l.startsWith('S\t'))
-    const paths = lines.filter(l => l.startsWith('P\t'))
+    const links = lines.filter(l => l.startsWith('L\t'))
 
     expect(segments.length).toBeGreaterThan(0)
-    expect(paths.length).toBeGreaterThan(0)
-
-    console.log(
-      'HPRC chrM getSubgraph:',
-      segments.length,
-      'segments,',
-      paths.length,
-      'paths',
-    )
+    expect(links.length).toBeGreaterThan(0)
   })
 
   it('returns GFA for partial chrM region', async () => {

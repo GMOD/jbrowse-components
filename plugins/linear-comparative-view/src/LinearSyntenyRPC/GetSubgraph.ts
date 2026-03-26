@@ -54,20 +54,7 @@ export class GetSubgraph extends RpcMethodType {
       )
       return ''
     }
-    console.log(
-      '[GetSubgraph RPC] Calling getSubgraph on',
-      dataAdapter.constructor.name,
-      'region:',
-      JSON.stringify(region),
-    )
     const result = await adapter.getSubgraph(region)
-    console.log(
-      '[GetSubgraph RPC] Result:',
-      result.length,
-      'chars,',
-      result.split('\n').length,
-      'lines',
-    )
     return result
   }
 }

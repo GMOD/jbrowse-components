@@ -101,6 +101,9 @@ fn main() {
     let mut paths_tmp_w = BufWriter::new(File::create(&paths_tmp).expect("create paths tmp"));
     let mut path_line_count: u64 = 0;
 
+    // Collect L-lines (edges) as raw segment names for later ordinal mapping
+    let mut raw_links: Vec<(String, String, String, String)> = Vec::new();
+
     for line in open_file(gfa_path).lines() {
         let line = line.expect("read error");
 
@@ -118,6 +121,16 @@ fn main() {
                 })
                 .unwrap_or_else(|| if seq == "*" { 0 } else { seq.len() as u64 });
             seg_lengths.insert(name, length);
+        } else if line.starts_with("L\t") {
+            let cols: Vec<&str> = line.splitn(6, '\t').collect();
+            if cols.len() >= 5 {
+                raw_links.push((
+                    cols[1].to_string(),
+                    cols[2].to_string(),
+                    cols[3].to_string(),
+                    cols[4].to_string(),
+                ));
+            }
         } else if line.starts_with("W\t") || line.starts_with("P\t") {
             paths_tmp_w.write_all(line.as_bytes()).unwrap();
             paths_tmp_w.write_all(b"\n").unwrap();
@@ -126,7 +139,7 @@ fn main() {
     }
     drop(paths_tmp_w);
 
-    eprintln!("  {} segments, {} path lines", seg_lengths.len(), path_line_count);
+    eprintln!("  {} segments, {} path lines, {} links", seg_lengths.len(), path_line_count, raw_links.len());
 
     // Replay buffered path lines now that all segments are known
     eprintln!("Processing paths...");
@@ -301,6 +314,19 @@ fn main() {
         let _ = fs::remove_file(&combined_tmp);
     }
 
+    // Build edges.bin + edges.idx from L-lines
+    if !raw_links.is_empty() {
+        eprintln!("Building edge index...");
+        build_edge_index(
+            &raw_links,
+            &seg_ordinals,
+            &seg_lengths,
+            next_ordinal,
+            &output_prefix,
+        );
+        eprintln!("  {} links → edges.bin + edges.idx", raw_links.len());
+    }
+
     let rewritten_vcf_path;
     if let Some(ref vcf_path) = bubbles_vcf {
         generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes);
@@ -434,6 +460,84 @@ fn sort_and_build_segments(
 
     // Write companion index
     let mut idx_out = BufWriter::new(File::create(&idx_file).expect("create idx"));
+    for offset in &index_offsets {
+        idx_out.write_all(&offset.to_le_bytes()).unwrap();
+    }
+}
+
+/// Edge record layout (little-endian):
+///   target_ord: u32  (4 bytes) — ordinal of the neighbor node
+///   src_orient: u8   (1 byte)  — ASCII '+' or '-'
+///   tgt_orient: u8   (1 byte)  — ASCII '+' or '-'
+///   tgt_len:    u32  (4 bytes) — length of the target segment
+///   Total:      10 bytes per edge record
+///
+/// edges.bin stores adjacency lists sorted by source ordinal.
+/// edges.idx[N] = byte offset where ordinal N's edges begin.
+/// Edges are stored in BOTH directions so that any node can find
+/// all its neighbors.
+const EDGE_RECORD_SIZE: u64 = 10;
+
+fn build_edge_index(
+    raw_links: &[(String, String, String, String)],
+    seg_ordinals: &HashMap<String, u64>,
+    seg_lengths: &HashMap<String, u64>,
+    total_ordinals: u64,
+    output_prefix: &str,
+) {
+    // Build adjacency lists: source_ord → Vec<(target_ord, src_orient, tgt_orient, tgt_len)>
+    let mut adj: HashMap<u64, Vec<(u32, u8, u8, u32)>> = HashMap::new();
+
+    for (src_name, src_orient, tgt_name, tgt_orient) in raw_links {
+        let src_ord = match seg_ordinals.get(src_name) {
+            Some(&o) => o,
+            None => continue,
+        };
+        let tgt_ord = match seg_ordinals.get(tgt_name) {
+            Some(&o) => o,
+            None => continue,
+        };
+        let src_o = src_orient.as_bytes()[0];
+        let tgt_o = tgt_orient.as_bytes()[0];
+        let src_len = *seg_lengths.get(src_name).unwrap_or(&0) as u32;
+        let tgt_len = *seg_lengths.get(tgt_name).unwrap_or(&0) as u32;
+
+        // Forward direction: src → tgt
+        adj.entry(src_ord)
+            .or_default()
+            .push((tgt_ord as u32, src_o, tgt_o, tgt_len));
+
+        // Reverse direction: tgt → src
+        adj.entry(tgt_ord)
+            .or_default()
+            .push((src_ord as u32, tgt_o, src_o, src_len));
+    }
+
+    // Write edges.bin sorted by source ordinal, with edges.idx
+    let bin_file = format!("{}.edges.bin", output_prefix);
+    let idx_file = format!("{}.edges.idx", output_prefix);
+
+    let mut out = BufWriter::new(File::create(&bin_file).expect("create edges.bin"));
+    let mut index_offsets: Vec<u64> = Vec::new();
+    let mut byte_offset: u64 = 0;
+
+    for ord in 0..=total_ordinals {
+        index_offsets.push(byte_offset);
+        if let Some(edges) = adj.get(&ord) {
+            for &(target, src_o, tgt_o, tgt_len) in edges {
+                out.write_all(&target.to_le_bytes()).unwrap();
+                out.write_all(&[src_o]).unwrap();
+                out.write_all(&[tgt_o]).unwrap();
+                out.write_all(&tgt_len.to_le_bytes()).unwrap();
+                byte_offset += EDGE_RECORD_SIZE;
+            }
+        }
+    }
+    // Sentinel entry so idx[last+1] gives end offset
+    index_offsets.push(byte_offset);
+    drop(out);
+
+    let mut idx_out = BufWriter::new(File::create(&idx_file).expect("create edges.idx"));
     for offset in &index_offsets {
         idx_out.write_all(&offset.to_le_bytes()).unwrap();
     }

@@ -42,7 +42,7 @@ export default function stateModelFactory() {
       scale: 1,
       translateX: 0,
       translateY: 0,
-      drawPaths: true,
+      drawPaths: false,
       viewportDirty: 0,
       nodeVertexRanges: undefined as Map<string, VertexRange> | undefined,
       edgeVertexRanges: undefined as Map<number, VertexRange> | undefined,
@@ -84,6 +84,9 @@ export default function stateModelFactory() {
       },
       setLinearLayout(linear: boolean) {
         self.linearLayout = linear
+      },
+      setDrawPaths(draw: boolean) {
+        self.drawPaths = draw
       },
       setColorScheme(scheme: ColorScheme) {
         self.colorScheme = scheme
@@ -188,35 +191,11 @@ export default function stateModelFactory() {
     }))
     .actions(self => ({
       loadGFA: flow(function* (text: string, name = 'Imported GFA') {
-        console.log(
-          '[GraphGenomeView.loadGFA] Loading GFA:',
-          name,
-          'text length:',
-          text.length,
-          'lines:',
-          text.split('\n').length,
-        )
         self.isLoading = true
         self.error = undefined
         self.setStatusMessage('Parsing GFA')
         const gfaGraph = parseGFA(text)
-        console.log(
-          '[GraphGenomeView.loadGFA] Parsed GFA:',
-          gfaGraph.nodes.length,
-          'nodes,',
-          gfaGraph.links.length,
-          'links,',
-          gfaGraph.paths.length,
-          'paths',
-        )
         const graph = convertGFAToGraph(gfaGraph, name)
-        console.log(
-          '[GraphGenomeView.loadGFA] Graph:',
-          graph.nodes.length,
-          'nodes,',
-          graph.edges.length,
-          'edges',
-        )
         self.graph = graph
         self.setStatusMessage('Computing layout')
 
@@ -239,7 +218,6 @@ export default function stateModelFactory() {
             },
           )
           self.layoutResult = result
-          console.log('[GraphGenomeView.loadGFA] Layout complete')
         } catch (e) {
           console.error('[GraphGenomeView.loadGFA] Layout error:', e)
           self.error = `Layout failed: ${e instanceof Error ? e.message : e}`

@@ -2675,6 +2675,14 @@
           "uri": "volvox_pangenome_50.segments.idx",
           "locationType": "UriLocation"
         },
+        "edgesLocation": {
+          "uri": "volvox_pangenome_50.edges.bin",
+          "locationType": "UriLocation"
+        },
+        "edgesIdxLocation": {
+          "uri": "volvox_pangenome_50.edges.idx",
+          "locationType": "UriLocation"
+        },
         "bubblesLocation": {
           "uri": "volvox_pangenome_50.bubbles.bed.gz",
           "locationType": "UriLocation"

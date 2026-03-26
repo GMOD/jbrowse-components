@@ -27,8 +27,6 @@ describe('GfaAdapter getSubgraph', () => {
       assemblyName: 'ref#1',
     })
 
-    console.log('Full region subgraph:\n', result)
-
     expect(result).toBeTruthy()
     const lines = result.split('\n')
     const header = lines.filter(l => l.startsWith('H\t'))
@@ -54,8 +52,6 @@ describe('GfaAdapter getSubgraph', () => {
       end: 150,
       assemblyName: 'ref#1',
     })
-
-    console.log('Partial region (0-150) subgraph:\n', result)
 
     expect(result).toBeTruthy()
     const lines = result.split('\n')
@@ -181,8 +177,6 @@ describe('GfaAdapter getSubgraph', () => {
       lines.filter(l => l.startsWith('S\t')).map(l => l.split('\t')[1]),
     )
 
-    console.log('Segments in 0-400 subgraph:', [...segIds])
-
     // ref segments in range: s1(0-100), s2(100-200), s6(200-250), s8(250-254), s4(254-355)
     expect(segIds.has('s1')).toBe(true)
     expect(segIds.has('s2')).toBe(true)
@@ -204,8 +198,6 @@ describe('GfaAdapter getSubgraph', () => {
       assemblyName: 'sample1#1',
     })
 
-    console.log('sample1#1 perspective subgraph:\n', result)
-
     expect(result).toBeTruthy()
     const lines = result.split('\n')
     const segments = lines.filter(l => l.startsWith('S\t'))
@@ -223,8 +215,6 @@ describe('GfaAdapter getSubgraph', () => {
       end: 100,
       assemblyName: 'path1',
     })
-
-    console.log('P-line path subgraph:\n', result)
 
     if (result) {
       const lines = result.split('\n')

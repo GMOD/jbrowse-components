@@ -29,6 +29,15 @@ const SettingsMenu = observer(function SettingsMenu({
         })),
         { type: 'divider' as const },
         {
+          type: 'checkbox' as const,
+          label: 'Draw paths on edges',
+          checked: model.drawPaths,
+          onClick: () => {
+            model.setDrawPaths(!model.drawPaths)
+          },
+        },
+        { type: 'divider' as const },
+        {
           label: 'Close graph',
           icon: DeleteIcon,
           onClick: () => {

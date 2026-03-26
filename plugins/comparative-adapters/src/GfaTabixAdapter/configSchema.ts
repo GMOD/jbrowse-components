@@ -70,6 +70,24 @@ const GfaTabixAdapter = ConfigurationSchema(
     /**
      * #slot
      */
+    edgesLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of the edges.bin file (graph adjacency lists for subgraph extraction)',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
+    edgesIdxLocation: {
+      type: 'fileLocation',
+      description:
+        'Location of the edges.idx companion index (ordinal → byte offset in edges.bin)',
+      defaultValue: {
+        uri: '',
+        locationType: 'UriLocation',
+      },
+    },
     bubblesLocation: {
       type: 'fileLocation',
       description:
@@ -129,6 +147,14 @@ const GfaTabixAdapter = ConfigurationSchema(
           },
           segmentsIdxLocation: {
             uri: `${snap.prefix}.segments.idx`,
+            baseUri: snap.baseUri,
+          },
+          edgesLocation: {
+            uri: `${snap.prefix}.edges.bin`,
+            baseUri: snap.baseUri,
+          },
+          edgesIdxLocation: {
+            uri: `${snap.prefix}.edges.idx`,
             baseUri: snap.baseUri,
           },
           bubblesLocation: {

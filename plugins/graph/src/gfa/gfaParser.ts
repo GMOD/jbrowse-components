@@ -48,8 +48,7 @@ function parseWalkBody(body: string) {
   const segments: GFAWalkSegment[] = []
   let current = ''
   let currentStrand = '+'
-  for (let i = 0; i < body.length; i++) {
-    const ch = body[i]!
+  for (const ch of body) {
     if (ch === '>' || ch === '<') {
       if (current) {
         segments.push({ id: current, strand: currentStrand })

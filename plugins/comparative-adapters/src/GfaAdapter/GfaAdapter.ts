@@ -247,13 +247,6 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     const gfa = await this.getGfa()
     const { refName, start, end, assemblyName } = region
 
-    console.log(
-      '[GfaAdapter.getSubgraph] Query:',
-      JSON.stringify({ refName, start, end, assemblyName }),
-      'Available paths:',
-      gfa.paths.map(p => `${p.name} (genome=${p.genome}, ref=${p.refName})`),
-    )
-
     const refPath = findRefPath(gfa.paths, assemblyName, refName)
     if (!refPath) {
       console.warn(
@@ -273,12 +266,6 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       }
       offset += segLen
     }
-    console.log(
-      '[GfaAdapter.getSubgraph] Ref segments in range:',
-      [...refSegsInRange],
-      'total ref path length:',
-      offset,
-    )
     if (refSegsInRange.size === 0) {
       console.warn(
         '[GfaAdapter.getSubgraph] No ref segments overlap query range',
