@@ -27,6 +27,7 @@ export {
   WithReact18,
   WithShowTrack,
   WithTwoLinearGenomeViews,
+  WithMultipleDisplayedRegionsFlipped,
   WithWebWorker,
 } from './examples/index.ts'
 
