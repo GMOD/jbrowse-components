@@ -319,10 +319,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 start: Math.max(0, fStart - padding),
                 end: fEnd + padding,
               }
-              console.log(
-                '[GraphView launch] Feature region:',
-                JSON.stringify(region),
-              )
+
               const sessionId = getRpcSessionId(self)
               try {
                 const gfaText: string = await session.rpcManager.call(
@@ -431,11 +428,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               start: Math.max(0, Math.floor(rawStart)),
               end: Math.floor(rawEnd),
             }
-            console.log(
-              '[GraphView launch] Viewport region:',
-              JSON.stringify(region),
-              `(${(region.end - region.start).toLocaleString()} bp)`,
-            )
+
             const sessionId = getRpcSessionId(self)
             const { rpcManager } = session
             try {

@@ -17,7 +17,6 @@ export {
   WithInit,
   WithInlinePlugins,
   WithInternetAccounts,
-  WithMultipleDisplayedRegions,
   WithMultipleDisplayedRegionsFlipped,
   WithObserveVisibleFeatures,
   WithObserveVisibleRegions,

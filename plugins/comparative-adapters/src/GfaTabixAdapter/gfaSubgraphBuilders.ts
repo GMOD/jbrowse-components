@@ -45,13 +45,6 @@ export async function buildGfaFromEdges(
     lines.push(link)
   }
 
-  console.log(
-    '[GfaTabixAdapter.getSubgraph] Edge-based:',
-    allNodeOrds.size,
-    'nodes,',
-    gfaLinks.size,
-    'edges',
-  )
   return lines.join('\n')
 }
 
