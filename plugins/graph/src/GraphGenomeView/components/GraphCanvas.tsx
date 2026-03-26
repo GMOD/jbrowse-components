@@ -16,7 +16,7 @@ import useRafCallback from '../../util/useRafCallback.ts'
 
 import type { GraphGenomeViewModel } from '../model.ts'
 
-export const CANVAS_HEIGHT = 600
+const CANVAS_HEIGHT = 600
 const HOVER_BRIGHTEN = 1.4
 const SELECT_BRIGHTEN = 1.6
 const VIEWPORT_DEBOUNCE_MS = 150
@@ -123,6 +123,7 @@ const GraphCanvas = observer(function GraphCanvas({
     const renderer = new GraphRenderer(canvas)
     let destroyed = false
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     renderer.init().then(() => {
       if (destroyed) {
         renderer.destroy()
@@ -173,7 +174,8 @@ const GraphCanvas = observer(function GraphCanvas({
       if (!renderer || !model.nodePositions || !model.graph) {
         return
       }
-      const _vd = model.viewportDirty
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.viewportDirty
       const batch = buildGeometry({
         nodePositions: model.nodePositions,
         graph: model.graph,
@@ -194,7 +196,7 @@ const GraphCanvas = observer(function GraphCanvas({
       renderer.uploadGeometry(batch)
       scheduleRender()
     })
-  }, [model, rendererReady])
+  }, [model, rendererReady, scheduleRender])
 
   // Autorun 2: Hover/select color-only updates — no geometry rebuild.
   useEffect(() => {
@@ -317,7 +319,7 @@ const GraphCanvas = observer(function GraphCanvas({
 
       scheduleRender()
     })
-  }, [model, rendererReady])
+  }, [model, rendererReady, scheduleRender])
 
   // Autorun 3: Re-render on pan/zoom/darkMode without rebuilding geometry (cheap).
   // Uses autorun so MobX automatically tracks all observables read by renderFrame.
@@ -340,9 +342,12 @@ const GraphCanvas = observer(function GraphCanvas({
     let first = true
     return autorun(() => {
       // Read scale/translate to track them as dependencies
-      const _s = model.scale
-      const _tx = model.translateX
-      const _ty = model.translateY
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.scale
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.translateX
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      model.translateY
       if (first) {
         first = false
         return

@@ -99,7 +99,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
         if (pairsMatch) {
           const pairRegex = /pair(\d+)=([^,\n]+),([^,\n]+)/g
-          let m: RegExpExecArray | null = null
+          let m: RegExpExecArray | null
           while ((m = pairRegex.exec(header)) !== null) {
             pairs.set(+m[1]!, [m[2]!, m[3]!])
           }
@@ -408,7 +408,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mateRefName: r.tname,
             mateStart: r.tstart,
             mateEnd: r.tend,
-            syriType: (extra.sy as SyriType) || undefined,
+            syriType: extra.sy ? (extra.sy as SyriType) : undefined,
             identity: (+extra.numMatches! || 0) / (+extra.blockLen! || 1),
             featureId: `${fileOffset}`,
             segmentId: (extra.sg as string) || undefined,

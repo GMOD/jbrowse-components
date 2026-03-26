@@ -110,8 +110,9 @@ const WiggleComponent = observer(function WiggleComponent({
     })
   }, [model, view, ready, drawn, rendererRef])
 
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState([0, 0])
-  const [clientMouseCoord, setClientMouseCoord] = useState([0, 0])
+  const coord0: [number, number] = [0, 0]
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
+  const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = useCallback(

@@ -144,8 +144,8 @@ test('stores normals and thicknesses for shader-based expansion', () => {
 
   // Normals should have values (not all zeros)
   let hasNonZeroNormal = false
-  for (let i = 0; i < batch.nodes.normals.length; i++) {
-    if (Math.abs(batch.nodes.normals[i]!) > 0.001) {
+  for (const normal of batch.nodes.normals) {
+    if (Math.abs(normal) > 0.001) {
       hasNonZeroNormal = true
       break
     }
@@ -154,8 +154,8 @@ test('stores normals and thicknesses for shader-based expansion', () => {
 
   // Thicknesses should be positive for non-center vertices
   let hasPositiveThickness = false
-  for (let i = 0; i < batch.nodes.thicknesses.length; i++) {
-    if (batch.nodes.thicknesses[i]! > 0) {
+  for (const thickness of batch.nodes.thicknesses) {
+    if (thickness > 0) {
       hasPositiveThickness = true
       break
     }

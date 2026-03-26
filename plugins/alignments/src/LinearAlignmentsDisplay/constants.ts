@@ -1,5 +1,15 @@
-export const LONG_INSERTION_MIN_LENGTH = 10
-export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
+import {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+} from '@jbrowse/alignments-core'
+
+export {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_HEIGHT_FOR_TEXT,
+  computeLabelFontSize,
+} from '@jbrowse/alignments-core'
+
 export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 // SYNC: mirrors textWidthForNumber() in shaders/cigarShaders.ts

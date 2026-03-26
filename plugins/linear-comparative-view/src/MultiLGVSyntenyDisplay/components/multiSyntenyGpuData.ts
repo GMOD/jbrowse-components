@@ -10,7 +10,6 @@ import {
   OP_M,
   OP_N,
   OP_X,
-  isCsOpChar,
   parseCsSeqLen,
 } from './cigarConstants.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
@@ -244,8 +243,8 @@ export function prepareMultiSyntenyGpuData(
 ): MultiSyntenyGpuInstanceData {
   // Estimate capacity
   let totalFeatures = 0
-  for (let g = 0; g < displayedGenomes.length; g++) {
-    const features = genomeRows.get(displayedGenomes[g]!)
+  for (const genome of displayedGenomes) {
+    const features = genomeRows.get(genome)
     if (features) {
       totalFeatures += features.length
     }

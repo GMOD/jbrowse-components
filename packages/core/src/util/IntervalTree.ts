@@ -136,7 +136,7 @@ export class IntervalTree<V> {
       existing.values.push(value)
       return existing
     }
-    const insertNode = new Node<V>(
+    const insertNode = new Node(
       key,
       value,
       this.nilNode,

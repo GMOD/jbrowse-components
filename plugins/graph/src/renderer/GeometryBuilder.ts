@@ -59,8 +59,7 @@ export function computeColorSchemeRange(graph: Graph) {
   let maxDepth = -Infinity
   let minLength = Infinity
   let maxLength = -Infinity
-  for (let i = 0; i < graph.nodes.length; i++) {
-    const n = graph.nodes[i]!
+  for (const n of graph.nodes) {
     if (n.depth < minDepth) {
       minDepth = n.depth
     }
@@ -487,8 +486,7 @@ export function buildGeometry(options: BuildOptions): RenderBatch {
 
   const colorRange = computeColorSchemeRange(graph)
   const nodeById = new Map<string, GraphNode>()
-  for (let i = 0; i < graph.nodes.length; i++) {
-    const n = graph.nodes[i]!
+  for (const n of graph.nodes) {
     nodeById.set(n.id, n)
   }
 
@@ -622,8 +620,7 @@ export function recolorNodes(
 ) {
   const colorRange = computeColorSchemeRange(graph)
   const nodeById = new Map<string, GraphNode>()
-  for (let i = 0; i < graph.nodes.length; i++) {
-    const n = graph.nodes[i]!
+  for (const n of graph.nodes) {
     nodeById.set(n.id, n)
   }
 

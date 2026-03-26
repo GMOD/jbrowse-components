@@ -341,8 +341,8 @@ export async function executeSyntenyFeaturesAndPositions({
   if (colorBy === 'syri') {
     const hasPrecomputed = precomputedSyriTypes.some(t => t !== undefined)
     syriTypes = hasPrecomputed
-      ? precomputedSyriTypes.map(
-          t => (t as ReturnType<typeof computeSyriTypes>[number]) ?? 'SYN',
+      ? precomputedSyriTypes.map(t =>
+          t ? (t as ReturnType<typeof computeSyriTypes>[number]) : 'SYN',
         )
       : computeSyriTypes(
           Array.from({ length: validCount }, (_, i) => ({

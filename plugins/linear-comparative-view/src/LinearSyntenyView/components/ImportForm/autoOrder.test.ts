@@ -1,4 +1,4 @@
-import { computeGenomeOrdering } from './autoOrder'
+import { computeGenomeOrdering } from './autoOrder.ts'
 
 test('returns empty for no records', () => {
   expect(computeGenomeOrdering([])).toEqual([])

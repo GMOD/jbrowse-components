@@ -29,10 +29,48 @@ export interface GFAPath {
   rest: string[]
 }
 
+export interface GFAWalkSegment {
+  id: string
+  strand: string
+}
+
+export interface GFAWalk {
+  sample: string
+  haplotype: number
+  contig: string
+  start: number
+  end: number
+  segments: GFAWalkSegment[]
+  tags: Record<string, string | number>
+}
+
+function parseWalkBody(body: string) {
+  const segments: GFAWalkSegment[] = []
+  let current = ''
+  let currentStrand = '+'
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i]!
+    if (ch === '>' || ch === '<') {
+      if (current) {
+        segments.push({ id: current, strand: currentStrand })
+      }
+      current = ''
+      currentStrand = ch === '>' ? '+' : '-'
+    } else {
+      current += ch
+    }
+  }
+  if (current) {
+    segments.push({ id: current, strand: currentStrand })
+  }
+  return segments
+}
+
 export interface GFAGraph {
   nodes: GFANode[]
   links: GFALink[]
   paths: GFAPath[]
+  walks: GFAWalk[]
   header: Record<string, string | number>[]
   id: string
 }
@@ -42,6 +80,7 @@ export function parseGFA(file: string) {
     nodes: [],
     links: [],
     paths: [],
+    walks: [],
     header: [],
     id: '',
   }
@@ -57,8 +96,8 @@ export function parseGFA(file: string) {
     }
     if (line.startsWith('S')) {
       const [, name, ...rest] = line.split('\t')
-      let len = 0
-      let seq = ''
+      let len: number
+      let seq: string
       let tagfields: string[]
       let gfa1 = false
       if (+rest[0]!) {
@@ -72,8 +111,8 @@ export function parseGFA(file: string) {
         tagfields = rest.slice(1)
       }
       const tags = {} as Record<string, string | number>
-      for (let i = 0; i < tagfields.length; i++) {
-        parseTag(tagfields[i]!, tags)
+      for (const tagfield of tagfields) {
+        parseTag(tagfield, tags)
       }
       if (gfa1 && tags.LN) {
         len = +tags.LN
@@ -111,6 +150,22 @@ export function parseGFA(file: string) {
         strand1,
         strand2,
         cigar: cigar!,
+        tags,
+      })
+    } else if (line.startsWith('W')) {
+      const [, sample, hap, contig, start, end, body, ...rest] =
+        line.split('\t')
+      const tags = {} as Record<string, string | number>
+      for (const element of rest) {
+        parseTag(element, tags)
+      }
+      graph.walks.push({
+        sample: sample!,
+        haplotype: +hap!,
+        contig: contig!,
+        start: start === '*' ? -1 : +start!,
+        end: end === '*' ? -1 : +end!,
+        segments: parseWalkBody(body!),
         tags,
       })
     } else if (line.startsWith('P')) {

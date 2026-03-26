@@ -5,7 +5,11 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import { getInsertionType } from '../constants.ts'
+import {
+  MIN_HEIGHT_FOR_TEXT,
+  computeLabelFontSize,
+  getInsertionType,
+} from '../constants.ts'
 
 import type { PileupDataResult } from '../../RenderPileupDataRPC/types.ts'
 
@@ -15,6 +19,7 @@ export interface VisibleLabel {
   y: number
   text: string
   width: number
+  fontSize: number
 }
 
 interface BlockLabelParams {
@@ -55,7 +60,7 @@ export function computeVisibleLabels(
   }
 
   const rowHeight = featureHeightSetting + featureSpacing
-  const minFeatureHeightForText = 5
+  const fontSize = computeLabelFontSize(featureHeightSetting)
 
   for (const block of blocks) {
     const { rpcData, blockStart, blockEnd, blockScreenOffsetPx, bpPerPx } =
@@ -63,12 +68,12 @@ export function computeVisibleLabels(
     const pxPerBp = 1 / bpPerPx
     const charWidth = 6.5
     const canRenderText =
-      pxPerBp >= charWidth && featureHeightSetting >= minFeatureHeightForText
+      pxPerBp >= charWidth && featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
     const { regionStart } = rpcData
 
     // Process deletions (gaps)
     const { gapPositions, gapYs, gapLengths, gapTypes, numGaps } = rpcData
-    if (featureHeightSetting >= minFeatureHeightForText) {
+    if (featureHeightSetting >= MIN_HEIGHT_FOR_TEXT) {
       for (let i = 0; i < numGaps; i++) {
         if (gapTypes[i] !== 0) {
           continue
@@ -91,7 +96,7 @@ export function computeVisibleLabels(
         const widthPx = endPx - startPx
 
         const lengthStr = String(length)
-        const textWidth = measureText(lengthStr, 10)
+        const textWidth = measureText(lengthStr, fontSize)
 
         if (widthPx < textWidth) {
           continue
@@ -110,6 +115,7 @@ export function computeVisibleLabels(
           y: yPx,
           text: lengthStr,
           width: widthPx,
+          fontSize,
         })
       }
     }
@@ -148,7 +154,7 @@ export function computeVisibleLabels(
 
         if (
           insertionType === 'large' &&
-          featureHeightSetting >= minFeatureHeightForText
+          featureHeightSetting >= MIN_HEIGHT_FOR_TEXT
         ) {
           labels.push({
             type: 'insertion',
@@ -156,6 +162,7 @@ export function computeVisibleLabels(
             y: yPx,
             text: String(length),
             width: 0,
+            fontSize,
           })
         } else if (insertionType === 'small' && canRenderText) {
           labels.push({
@@ -164,6 +171,7 @@ export function computeVisibleLabels(
             y: yPx,
             text: `(${length})`,
             width: 0,
+            fontSize,
           })
         }
       }
@@ -175,6 +183,7 @@ export function computeVisibleLabels(
           y: yPx,
           text: `(S${length})`,
           width: 0,
+          fontSize,
         })
       }
 
@@ -185,6 +194,7 @@ export function computeVisibleLabels(
           y: yPx,
           text: `(H${length})`,
           width: 0,
+          fontSize,
         })
       }
     }
@@ -221,6 +231,7 @@ export function computeVisibleLabels(
           y: yPx,
           text: String.fromCharCode(baseCode),
           width: endPx - startPx,
+          fontSize,
         })
       }
     }

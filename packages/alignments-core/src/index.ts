@@ -1,3 +1,9 @@
+export {
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_HEIGHT_FOR_TEXT,
+  computeLabelFontSize,
+} from './labelConstants.ts'
 export { HP_GLSL_CORE, HP_GLSL_WITH_UNIFORM } from './hpGlsl.ts'
 export { HP_WGSL_CORE } from './hpWgsl.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'

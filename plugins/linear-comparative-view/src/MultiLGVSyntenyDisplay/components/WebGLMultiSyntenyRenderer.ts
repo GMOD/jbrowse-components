@@ -202,8 +202,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
     const rowPadding = rowHeight >= 6 ? 1 : 0
 
-    for (let i = 0; i < contentBlocks.length; i++) {
-      const block = contentBlocks[i]!
+    for (const block of contentBlocks) {
       const params = computeRegionRenderParams(
         block,
         viewOffsetPx,

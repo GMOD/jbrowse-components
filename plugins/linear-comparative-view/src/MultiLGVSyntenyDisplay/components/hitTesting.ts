@@ -131,8 +131,8 @@ export function buildSyntenyIndex(
   showSnps: boolean,
 ) {
   let totalFeatures = 0
-  for (let g = 0; g < displayedGenomes.length; g++) {
-    const feats = genomeRows.get(displayedGenomes[g]!)
+  for (const genome of displayedGenomes) {
+    const feats = genomeRows.get(genome)
     if (feats) {
       totalFeatures += feats.length
     }

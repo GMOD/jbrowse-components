@@ -1,13 +1,15 @@
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
+} from '@jbrowse/alignments-core'
+
+import {
   OP_D,
   OP_EQ,
   OP_I,
   OP_M,
   OP_N,
   OP_X,
-  isCsOpChar,
   isDigit,
   parseCsSeqLen,
 } from './cigarConstants.ts'
@@ -23,7 +25,7 @@ function getStrandColor(feat: MultiPairFeature) {
 }
 
 function getSyriColor(feat: MultiPairFeature) {
-  return syriColors[feat.syriType ?? 'SYN'] ?? syriColors.SYN
+  return syriColors[feat.syriType ?? 'SYN']
 }
 
 function getIdentityColor(feat: MultiPairFeature) {

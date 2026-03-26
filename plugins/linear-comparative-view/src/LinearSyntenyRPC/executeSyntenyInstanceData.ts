@@ -65,7 +65,7 @@ function createColorFunction(
 ): (strand: number, refName: string, index: number) => RGBA {
   if (colorBy === 'syri' && syriTypes) {
     return (_strand: number, _refName: string, index: number) =>
-      syriColorMap[syriTypes[index]!] ?? DEFAULT_COLOR
+      syriColorMap[syriTypes[index]!]
   }
 
   if (colorBy === 'strand') {

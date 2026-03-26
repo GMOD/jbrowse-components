@@ -120,15 +120,8 @@ export async function getSegmentsForOrdinalsFromShard(
   const results = await Promise.all(
     merged.map(async range => {
       const length = range.end - range.start
-      const t0 = performance.now()
       const bytes = await shard.filehandle.read(length, range.start)
-      const t1 = performance.now()
       const records = parseSegmentsBinary(bytes)
-      const t2 = performance.now()
-      console.log(
-        `  read ${(t1 - t0).toFixed(0)}ms, parse ${(t2 - t1).toFixed(0)}ms,` +
-          ` ${(length / 1024 / 1024).toFixed(2)} MB, ${records.length} records`,
-      )
       return records
     }),
   )
@@ -506,7 +499,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
 
   private async getMultiPairFeaturesFromSegments(
     query: Region,
-    opts: { stopToken?: StopToken } = {},
+    opts: { stopToken?: StopToken; bpPerPx?: number } = {},
   ) {
     const genomeRows = new Map<string, MultiPairFeature[]>()
     const { refName, start, end, assemblyName } = query
@@ -543,26 +536,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     const refSegments: SegRecord[] = []
     const otherSegments = new Map<number, SegRecord[]>()
 
-    console.log(
-      `[getMultiPairFeaturesFromSegments] refPathName=${refPathName} refPathIdx=${refPathIdx} pathNames.length=${pathNames.length} allSegs=${allSegs.length} ordinalRanges=${ordinalRanges.length}`,
-    )
-    if (allSegs.length > 0) {
-      const sample = allSegs.slice(0, 3)
-      console.log(
-        `[getMultiPairFeaturesFromSegments] sample segs:`,
-        sample.map(
-          s =>
-            `ord=${s.segOrd} pathIdx=${s.pathNameIdx} off=${s.offset} len=${s.segLen}`,
-        ),
-      )
-      const uniquePathIdxs = new Set(allSegs.map(s => s.pathNameIdx))
-      console.log(
-        `[getMultiPairFeaturesFromSegments] unique pathNameIdx values:`,
-        [...uniquePathIdxs].slice(0, 10),
-        `(${uniquePathIdxs.size} total)`,
-      )
-    }
-
     for (const rec of allSegs) {
       if (rec.pathNameIdx === refPathIdx) {
         refSegments.push(rec)
@@ -574,51 +547,7 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    console.log(
-      `[getMultiPairFeaturesFromSegments] refSegments=${refSegments.length} otherSegments groups=${otherSegments.size}`,
-    )
-
     const refByOrd = new Map(refSegments.map(s => [s.segOrd, s]))
-
-    // Debug: analyze ref segment coverage to see if there's a gap in ref itself
-    {
-      const sortedRef = [...refSegments].sort((a, b) => a.offset - b.offset)
-      let prevEnd = 0
-      const gaps: string[] = []
-      for (const seg of sortedRef) {
-        if (seg.offset > prevEnd + 100) {
-          gaps.push(
-            `${(prevEnd / 1e6).toFixed(3)}-${(seg.offset / 1e6).toFixed(3)}Mb (${((seg.offset - prevEnd) / 1000).toFixed(1)}kb)`,
-          )
-        }
-        prevEnd = Math.max(prevEnd, seg.offset + seg.segLen)
-      }
-      const refMin = sortedRef[0]?.offset ?? 0
-      const lastSeg = sortedRef[sortedRef.length - 1]
-      const refMax = lastSeg ? lastSeg.offset + lastSeg.segLen : 0
-      // 50kb bucket distribution of ref segments
-      const bucketSize = 50_000
-      const refBuckets = new Map<number, number>()
-      for (const seg of sortedRef) {
-        const bucket = Math.floor(seg.offset / bucketSize) * bucketSize
-        refBuckets.set(bucket, (refBuckets.get(bucket) ?? 0) + 1)
-      }
-      const refBucketStr = [...refBuckets.entries()]
-        .sort((a, b) => a[0] - b[0])
-        .map(([bp, count]) => `${(bp / 1e6).toFixed(2)}Mb:${count}`)
-
-      console.log(
-        `[getMultiPairFeaturesFromSegments] refSegments coverage: ${(refMin / 1e6).toFixed(3)}-${(refMax / 1e6).toFixed(3)}Mb`,
-        `gaps>100bp: ${gaps.length === 0 ? 'none' : gaps.join(', ')}`,
-      )
-      console.log(
-        `[getMultiPairFeaturesFromSegments] refSeg 50kb buckets:`,
-        refBucketStr,
-      )
-    }
-
-    // Debug: for first genome, log matched vs unmatched segment counts
-    let firstGenomeLogged = false
 
     for (const [otherPathIdx, segments] of otherSegments) {
       const otherPath = pathNames[otherPathIdx] ?? String(otherPathIdx)
@@ -643,20 +572,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           matchRefOff.push(refByOrd.get(seg.segOrd)!.offset)
         }
       }
-      // Debug: for first few genomes, log match details
-      if (!firstGenomeLogged) {
-        const unmatchedCount = segments.length - matchIdx.length
-        const matchedRefOffsets = matchRefOff.sort((a, b) => a - b)
-        const matchedMin = matchedRefOffsets[0] ?? 0
-        const matchedMax = matchedRefOffsets[matchedRefOffsets.length - 1] ?? 0
-        console.log(
-          `[getMultiPairFeaturesFromSegments] genome ${genomeName} (pathIdx=${otherPathIdx}):`,
-          `${segments.length} total segs, ${matchIdx.length} matched, ${unmatchedCount} unmatched`,
-          `matched ref range: ${(matchedMin / 1e6).toFixed(3)}-${(matchedMax / 1e6).toFixed(3)}Mb`,
-        )
-        firstGenomeLogged = true
-      }
-
       if (matchIdx.length === 0) {
         continue
       }
@@ -671,8 +586,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       let matchBp = 0
       let cigarParts: string[] = []
       let runMatchLen = 0
-      for (let si = 0; si < sortOrder.length; si++) {
-        const seg = segments[matchIdx[sortOrder[si]!]!]!
+      for (const sortIdx of sortOrder) {
+        const seg = segments[matchIdx[sortIdx]!]!
         const refSeg = refByOrd.get(seg.segOrd)!
 
         const strand = seg.orient === refSeg.orient ? 1 : -1
@@ -685,7 +600,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           if (runMatchLen > 0) {
             cigarParts.push(`${runMatchLen}=`)
             matchBp += runMatchLen
-            runMatchLen = 0
           }
           if (ms >= 0) {
             features.push({
@@ -724,7 +638,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           if (runMatchLen > 0) {
             cigarParts.push(`${runMatchLen}=`)
             matchBp += runMatchLen
-            runMatchLen = 0
           }
           if (ms >= 0) {
             features.push({
@@ -802,60 +715,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
           })
         }
       }
-    }
-
-    let fwdCount = 0
-    let revCount = 0
-    let globalMinBp = Infinity
-    let globalMaxBp = 0
-    let totalFeatures = 0
-    for (const [genomeName, features] of genomeRows) {
-      for (const f of features) {
-        if (f.strand === -1) {
-          revCount++
-        } else {
-          fwdCount++
-        }
-        if (f.start < globalMinBp) {
-          globalMinBp = f.start
-        }
-        if (f.end > globalMaxBp) {
-          globalMaxBp = f.end
-        }
-        totalFeatures++
-      }
-    }
-    console.log(
-      `[getMultiPairFeaturesFromSegments] strand distribution: fwd=${fwdCount} rev=${revCount} (${((revCount / (fwdCount + revCount)) * 100).toFixed(1)}% inversions)`,
-    )
-    console.log(
-      `[getMultiPairFeaturesFromSegments] feature bp coverage: ${globalMinBp.toLocaleString()}-${globalMaxBp.toLocaleString()}`,
-      `query range: ${refName}:${start.toLocaleString()}-${end.toLocaleString()}`,
-      `features cover ${(((globalMaxBp - globalMinBp) / (end - start)) * 100).toFixed(1)}% of query`,
-      `total features: ${totalFeatures} across ${genomeRows.size} genomes`,
-    )
-
-    // Log per-genome coverage to spot if some genomes have features only in part of range
-    const coverageSummary: string[] = []
-    for (const [genomeName, features] of genomeRows) {
-      if (features.length > 0) {
-        const gMin = Math.min(...features.map(f => f.start))
-        const gMax = Math.max(...features.map(f => f.end))
-        coverageSummary.push(
-          `${genomeName}: ${features.length} feats ${(gMin / 1e6).toFixed(2)}-${(gMax / 1e6).toFixed(2)}Mb`,
-        )
-      }
-    }
-    if (coverageSummary.length <= 10) {
-      console.log(
-        `[getMultiPairFeaturesFromSegments] per-genome:`,
-        coverageSummary,
-      )
-    } else {
-      console.log(
-        `[getMultiPairFeaturesFromSegments] first 5 genomes:`,
-        coverageSummary.slice(0, 5),
-      )
     }
 
     if (this.bubblesFile && opts.bpPerPx && opts.bpPerPx < 50) {
@@ -963,8 +822,6 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     // Build genome name → index map using both original and remapped names
     const nameMap = this.getAssemblyNameMap()
 
-    let matchedGenomes = 0
-    let unmatchedGenomes = 0
     for (const [genomeName, features] of genomeRows) {
       // Try both the remapped name and reverse-mapped original name
       const origName =
@@ -972,10 +829,8 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         genomeName
       const gIdx = genomeIdx.get(origName) ?? genomeIdx.get(genomeName)
       if (gIdx === undefined) {
-        unmatchedGenomes++
         continue
       }
-      matchedGenomes++
 
       // Determine which allele index the view's ref assembly corresponds to.
       // In the VCF from vg deconstruct, allele 0 is the reference used in the
@@ -1109,18 +964,5 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
         }
       }
     }
-    console.log(
-      `[annotateFeaturesWithBubbleCs] ${bubbles.length} bubbles, ${matchedGenomes} matched genomes, ${unmatchedGenomes} unmatched genomes`,
-      unmatchedGenomes > 0
-        ? `(first unmatched: ${[...genomeRows.keys()].find(n => {
-            const orig =
-              Object.entries(nameMap).find(([, v]) => v === n)?.[0] ?? n
-            return (
-              genomeIdx.get(orig) === undefined &&
-              genomeIdx.get(n) === undefined
-            )
-          })}, bubbles genomes: ${[...genomeIdx.keys()].slice(0, 3).join(',')}...)`
-        : '',
-    )
   }
 }

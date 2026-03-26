@@ -47,7 +47,7 @@ export function getEffectiveTrackConfig(
     [key: string]: unknown
   },
 ): Record<string, unknown> {
-  const conf = getSnapshot(trackConfig)
+  const conf: Record<string, unknown> = getSnapshot(trackConfig)
 
   const trackDisplays = (trackConfig as Record<string, unknown>).displays as
     | Record<string, unknown>[]
@@ -56,7 +56,9 @@ export function getEffectiveTrackConfig(
     return conf
   }
 
-  const displaySnap = getSnapshot(display as unknown as IAnyStateTreeNode)
+  const displaySnap: Record<string, unknown> = getSnapshot(
+    display as unknown as IAnyStateTreeNode,
+  )
   const displayConfId = displaySnap.configuration as string | undefined
   const displayType = display.configuration.type as string | undefined
 

@@ -44,7 +44,7 @@ export async function parseRgfa(
 
       const steps: PathStep[] = []
       const stepRegex = /([><])([^><]+)/g
-      let match: RegExpExecArray | null = null
+      let match: RegExpExecArray | null
       while ((match = stepRegex.exec(walkStr)) !== null) {
         steps.push({
           seg: match[2]!,

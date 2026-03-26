@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-env node */
 // Generates synthetic PAF test data for multi-genome synteny testing.
 // Usage: node generate-synthetic-data.mjs [output-dir]
 
@@ -89,7 +90,7 @@ function generatePairwisePAF(queryChrs, targetChrs, divergence) {
 }
 
 // 3-genome dataset (small, for quick tests)
-console.log('Generating 3-genome synthetic dataset...')
+console.warn('Generating 3-genome synthetic dataset...')
 const baseLens3 = [30_000_000, 20_000_000, 15_000_000]
 const asm3_A = generateChromosomes('genomeA', 3, baseLens3)
 const asm3_B = generateChromosomes('genomeB', 3, baseLens3)
@@ -103,7 +104,7 @@ fs.writeFileSync(
 )
 
 // 8-genome dataset (larger, for scalability testing)
-console.log('Generating 8-genome synthetic dataset...')
+console.warn('Generating 8-genome synthetic dataset...')
 const baseLens8 = [50_000_000, 40_000_000, 35_000_000, 30_000_000, 25_000_000]
 const names8 = [
   'species1',
@@ -132,7 +133,7 @@ for (let i = 0; i < assemblies8.length - 1; i++) {
 fs.writeFileSync(path.join(outDir, 'synthetic_8way.paf'), paf8Lines.join('\n'))
 
 // All-vs-all PAF (5 genomes, all pairs)
-console.log('Generating all-vs-all synthetic dataset...')
+console.warn('Generating all-vs-all synthetic dataset...')
 const baseLensAll = [20_000_000, 15_000_000]
 const namesAll = ['alpha', 'beta', 'gamma', 'delta', 'epsilon']
 const assembliesAll = namesAll.map(n => generateChromosomes(n, 2, baseLensAll))
@@ -156,7 +157,7 @@ fs.writeFileSync(
 )
 
 // Small GFA with P-lines (4 genomes, 1 chromosome)
-console.log('Generating synthetic GFA...')
+console.warn('Generating synthetic GFA...')
 const segmentCount = 200
 const segLengths = Array.from({ length: segmentCount }, () =>
   Math.floor(1000 + Math.random() * 50000),
@@ -228,8 +229,8 @@ for (const name of ['genomeA', 'genomeB', 'genomeC']) {
   fs.writeFileSync(path.join(outDir, `${name}.chrom.sizes`), fai)
 }
 
-console.log(`Generated files in ${outDir}:`)
+console.warn(`Generated files in ${outDir}:`)
 for (const f of fs.readdirSync(outDir)) {
   const stat = fs.statSync(path.join(outDir, f))
-  console.log(`  ${f}: ${(stat.size / 1024).toFixed(1)} KB`)
+  console.warn(`  ${f}: ${(stat.size / 1024).toFixed(1)} KB`)
 }

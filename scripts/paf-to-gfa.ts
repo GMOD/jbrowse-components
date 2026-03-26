@@ -146,9 +146,6 @@ rl.on('close', () => {
       const seg = segments.find(s => s.id === w.segId)!
       return sum + seg.len
     }, 0)
-    const walkStr = walk
-      .map(w => `>${w.orient === '+' ? '' : '<'}s${w.segId}`)
-      .join('')
     // Use W lines (GFA 1.1 walks)
     const walkFormatted = walk
       .map(w => `${w.orient === '+' ? '>' : '<'}s${w.segId}`)

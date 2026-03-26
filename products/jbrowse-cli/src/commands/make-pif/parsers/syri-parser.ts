@@ -1,5 +1,3 @@
-import readline from 'readline'
-
 import { getReadline } from '../file-utils.ts'
 
 // SyRI output format (.syri.out), 12 columns:

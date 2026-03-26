@@ -84,17 +84,6 @@ function querySegsRange(prefix: string, minOrd: number, maxOrd: number) {
   return all.slice(startRecord, endRecord)
 }
 
-function parseGfaPathName(p: string) {
-  const parts = p.split('#')
-  if (parts.length >= 3) {
-    return {
-      genome: parts.slice(0, -1).join('#'),
-      refName: parts[parts.length - 1]!,
-    }
-  }
-  return { genome: parts[0]!, refName: parts[1] ?? parts[0]! }
-}
-
 beforeAll(() => {
   if (!fs.existsSync(BINARY)) {
     throw new Error(

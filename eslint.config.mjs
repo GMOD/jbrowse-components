@@ -66,6 +66,7 @@ export default defineConfig(
 
       // Test fixtures and mocks
       '**/test_data',
+      'test/data',
       'packages/__mocks__',
       'integration.test.js',
 

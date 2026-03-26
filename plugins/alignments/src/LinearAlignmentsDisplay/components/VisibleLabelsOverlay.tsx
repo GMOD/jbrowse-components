@@ -59,7 +59,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
             y={label.y}
             textAnchor={isSmallInterbase ? 'start' : 'middle'}
             dominantBaseline="central"
-            fontSize={label.type === 'mismatch' ? 9 : 10}
+            fontSize={label.fontSize}
             fontFamily="sans-serif"
             fontWeight="bold"
             fill={fillColor}

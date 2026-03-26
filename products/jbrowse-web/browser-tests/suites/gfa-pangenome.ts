@@ -82,9 +82,9 @@ const suite: TestSuite = {
 
         // Verify the canvas has non-white pixels (features are actually drawn)
         const hasFeatures = await page.evaluate(() => {
-          const canvas = document.querySelector(
+          const canvas = document.querySelector<HTMLCanvasElement>(
             '[data-testid="multi_synteny_canvas"]',
-          )!
+          )
           if (!canvas) {
             return false
           }
@@ -135,7 +135,7 @@ const suite: TestSuite = {
             const popper = document.querySelector('.MuiTooltip-popper')
             return popper
               ? (popper as HTMLElement).style.display !== 'none' &&
-                  (popper.textContent?.trim().length ?? 0) > 0
+                  popper.textContent.trim().length > 0
               : false
           },
           { timeout: 5000 },
@@ -143,7 +143,7 @@ const suite: TestSuite = {
 
         const tooltipText = await page.$eval(
           '.MuiTooltip-popper',
-          el => el.textContent ?? '',
+          el => el.textContent,
         )
 
         if (!tooltipText.includes('Ref:') && !tooltipText.includes('Query:')) {

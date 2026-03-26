@@ -113,3 +113,59 @@ P\tp1\t1+,2+,1-\t*`)
   const ids = graph.nodes.map(n => n.id).sort()
   expect(ids).toContain('1-')
 })
+
+test('converts W-line walks to graph paths', () => {
+  const gfa = parseGFA(`S\tA\tACGT
+S\tB\tGGCC
+S\tC\tTTAA
+L\tA\t+\tB\t+\t0M
+L\tB\t+\tC\t+\t0M
+W\tsample1\t0\tchr1\t0\t1000\t>A>B>C`)
+  const graph = convertGFAToGraph(gfa)
+
+  expect(graph.paths).toHaveLength(1)
+  expect(graph.paths![0]!.name).toBe('sample1#0')
+  expect(graph.paths![0]!.nodeIds).toEqual(['A+', 'B+', 'C+'])
+  expect(graph.paths![0]!.sample).toBe('sample1')
+  expect(graph.paths![0]!.haplotype).toBe(0)
+  expect(graph.paths![0]!.contig).toBe('chr1')
+})
+
+test('walks create strand-specific nodes', () => {
+  const gfa = parseGFA(`S\tA\tACGT
+S\tB\tGGCC
+W\tsample1\t0\tchr1\t*\t*\t>A<B`)
+  const graph = convertGFAToGraph(gfa)
+
+  const ids = graph.nodes.map(n => n.id).sort()
+  expect(ids).toEqual(['A+', 'B-'])
+})
+
+test('walks annotate edge pathIds', () => {
+  const gfa = parseGFA(`S\tA\tACGT
+S\tB\tGGCC
+L\tA\t+\tB\t+\t0M
+W\tw1\t0\tchr1\t*\t*\t>A>B
+W\tw2\t1\tchr1\t*\t*\t>A>B`)
+  const graph = convertGFAToGraph(gfa)
+
+  const edge = graph.edges[0]!
+  expect(edge.pathIds).toContain('w1#0')
+  expect(edge.pathIds).toContain('w2#1')
+})
+
+test('mixed P-lines and W-lines both become paths', () => {
+  const gfa = parseGFA(`S\tA\tACGT
+S\tB\tGGCC
+S\tC\tTTAA
+L\tA\t+\tB\t+\t0M
+L\tB\t+\tC\t+\t0M
+P\tref\tA+,B+,C+\t*
+W\tsample1\t0\tchr1\t0\t1000\t>A>B>C`)
+  const graph = convertGFAToGraph(gfa)
+
+  expect(graph.paths).toHaveLength(2)
+  expect(graph.paths![0]!.name).toBe('ref')
+  expect(graph.paths![1]!.name).toBe('sample1#0')
+  expect(graph.paths![1]!.sample).toBe('sample1')
+})

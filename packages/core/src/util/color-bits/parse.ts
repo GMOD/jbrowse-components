@@ -138,7 +138,7 @@ export function parseColor(color: string): Color {
       const s = 1
       const l = 0.5
       // Same as HSL to RGB
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+      const q = l + s - l * s
       const p = 2 * l - q
       let r = Math.round(hueToRGB(p, q, h + 1 / 3) * 255)
       let g = Math.round(hueToRGB(p, q, h) * 255)
@@ -297,7 +297,7 @@ function parseAlphaValue(channel: string) {
  * @returns a value in the 0.0 to 1.0 range
  */
 function parseAngle(angle: string) {
-  let factor = 1
+  let factor: number
   switch (angle.charCodeAt(angle.length - 1)) {
     case E: {
       // 'none'
@@ -305,13 +305,10 @@ function parseAngle(angle: string) {
     }
     case D: {
       // 'rad', 'grad'
-      if (angle.charCodeAt(Math.max(0, angle.length - 4)) === G) {
-        // 'grad'
-        factor = 400
-      } else {
-        // 'rad'
-        factor = 2 * Math.PI // TAU
-      }
+      factor =
+        angle.charCodeAt(Math.max(0, angle.length - 4)) === G
+          ? 400
+          : 2 * Math.PI // TAU
       break
     }
     case N: {

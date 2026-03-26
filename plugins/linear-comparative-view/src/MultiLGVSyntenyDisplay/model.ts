@@ -188,13 +188,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
             const regions = needed.map(n => n.region)
 
-            console.log(
-              '[MultiSyntenyFetch] Starting RPC, bpPerPx:',
-              view.bpPerPx,
-              'regions:',
-              regions.map(r => `${r.refName}:${r.start}-${r.end}`),
-            )
-
             const result: MultiPairGetFeaturesResult = await rpcManager.call(
               sessionId,
               'MultiPairGetFeatures',
@@ -214,7 +207,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             )
 
             if (ctx.isStale()) {
-              console.log('[MultiSyntenyFetch] Discarding stale result')
               return
             }
 
@@ -243,67 +235,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             }
 
             if (result.sources) {
-              const names = result.sources.map(s => s.name)
-              console.log(
-                '[MultiSyntenyFetch] Setting allGenomeNames:',
-                names.length,
-                'names, first 5:',
-                names.slice(0, 5),
-                'referenceGenomeName:',
-                self.referenceGenomeName,
-              )
-              self.setAllGenomeNames(names)
-            } else {
-              console.log(
-                '[MultiSyntenyFetch] WARNING: result.sources is undefined/null',
-              )
+              self.setAllGenomeNames(result.sources.map(s => s.name))
             }
 
             const genomeRowsMap = new Map(result.genomeRows)
-            const totalFeatures = [...genomeRowsMap.values()].reduce(
-              (s, f) => s + f.length,
-              0,
-            )
-
-            // Debug: analyze feature bp distribution
-            let globalMinBp = Infinity
-            let globalMaxBp = 0
-            const bpBuckets = new Map<number, number>()
-            for (const [, features] of genomeRowsMap) {
-              for (const feat of features) {
-                if (feat.start < globalMinBp) {
-                  globalMinBp = feat.start
-                }
-                if (feat.end > globalMaxBp) {
-                  globalMaxBp = feat.end
-                }
-                const bucket = Math.floor(feat.start / 100_000) * 100_000
-                bpBuckets.set(bucket, (bpBuckets.get(bucket) ?? 0) + 1)
-              }
-            }
-            const sortedBuckets = [...bpBuckets.entries()]
-              .sort((a, b) => a[0] - b[0])
-              .map(([bp, count]) => `${(bp / 1e6).toFixed(1)}Mb:${count}`)
-
-            console.log(
-              '[MultiSyntenyFetch] RPC complete, genomeRows keys:',
-              [...genomeRowsMap.keys()],
-              'total features:',
-              totalFeatures,
-            )
-            console.log(
-              '[MultiSyntenyFetch] Feature bp coverage:',
-              globalMinBp.toLocaleString(),
-              '-',
-              globalMaxBp.toLocaleString(),
-              `(${((globalMaxBp - globalMinBp) / 1e6).toFixed(2)} Mb)`,
-              'view range:',
-              regions.map(r => `${r.refName}:${r.start}-${r.end}`),
-            )
-            console.log(
-              '[MultiSyntenyFetch] Feature distribution (100kb buckets):',
-              sortedBuckets,
-            )
             self.setGenomeRows(genomeRowsMap)
 
             for (const { region, regionNumber } of needed) {

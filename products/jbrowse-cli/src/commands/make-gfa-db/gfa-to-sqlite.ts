@@ -107,7 +107,7 @@ export async function populateFromGfa(
 
       const steps: PathStep[] = []
       const stepRegex = /([><])([^><]+)/g
-      let match: RegExpExecArray | null = null
+      let match: RegExpExecArray | null
       while ((match = stepRegex.exec(walkStr)) !== null) {
         steps.push({
           segId: match[2]!,

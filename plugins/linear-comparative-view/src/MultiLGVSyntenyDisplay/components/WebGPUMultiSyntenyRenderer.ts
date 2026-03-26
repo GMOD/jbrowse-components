@@ -12,7 +12,6 @@ import {
 
 import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
 import {
-  INSTANCE_BYTE_SIZE,
   UNIFORM_BYTE_SIZE,
   WGSL_FILL_SHADER,
 } from './multiSyntenyGpuShaders.ts'
@@ -169,8 +168,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
 
     // Each region needs its own submit because writeBuffer is a queue
     // operation that must complete before the render pass reads the uniform
-    for (let i = 0; i < contentBlocks.length; i++) {
-      const block = contentBlocks[i]!
+    for (const block of contentBlocks) {
       const params = computeRegionRenderParams(
         block,
         viewOffsetPx,

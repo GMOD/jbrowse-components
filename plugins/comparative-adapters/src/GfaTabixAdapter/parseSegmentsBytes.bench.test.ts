@@ -59,12 +59,6 @@ describe('parseSegmentsBinary benchmark', () => {
     }
 
     const median = times.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
-    const dataMB = (bytes.length / 1024 / 1024).toFixed(1)
-
-    console.log(
-      `parseSegmentsBinary (${dataMB} MB, ${(NUM_SEGMENTS * NUM_PATHS).toLocaleString()} records):\n` +
-        `  median: ${median.toFixed(0)}ms`,
-    )
 
     // 200k records in binary should parse very fast
     expect(median).toBeLessThan(200)
@@ -124,11 +118,6 @@ describe('getMultiPairFeatures e2e benchmark (HPRC chrM, 44 haplotypes)', () => 
     }
 
     const median = times.sort((a, b) => a - b)[Math.floor(ITERS / 2)]!
-    console.log(
-      `getMultiPairFeatures (HPRC chrM full, 44 haplotypes):\n` +
-        `  median: ${median.toFixed(0)}ms\n` +
-        `  all:    [${times.map(t => t.toFixed(0)).join(', ')}]ms`,
-    )
 
     expect(median).toBeLessThan(500)
   })

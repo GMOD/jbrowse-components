@@ -5,9 +5,6 @@ export const OP_N = 3
 export const OP_EQ = 7
 export const OP_X = 8
 
-export const LONG_INSERTION_MIN_LENGTH = 10
-export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
-
 export function isDigit(ch: string) {
   return ch >= '0' && ch <= '9'
 }

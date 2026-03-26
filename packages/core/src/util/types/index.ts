@@ -21,7 +21,6 @@ import type { Feature } from '../simpleFeature.ts'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
-  IType,
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'

@@ -15,6 +15,9 @@ export interface GraphEdge {
 export interface GraphPath {
   name: string
   nodeIds: string[]
+  sample?: string
+  haplotype?: number
+  contig?: string
 }
 
 export interface Graph {

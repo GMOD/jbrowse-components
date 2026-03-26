@@ -1,17 +1,12 @@
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
-
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
-  OP_D,
-  OP_EQ,
-  OP_I,
-  OP_M,
-  OP_N,
-  OP_X,
-  isCsOpChar,
-  isDigit,
-} from './cigarConstants.ts'
+  MIN_HEIGHT_FOR_TEXT,
+  computeLabelFontSize,
+} from '@jbrowse/alignments-core'
+
+import { OP_D, OP_EQ, OP_I, OP_M, OP_N, OP_X, isCsOpChar, isDigit } from './cigarConstants.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -20,10 +15,10 @@ export interface VisibleLabel {
   x: number
   y: number
   text: string
+  fontSize: number
 }
 
 const MIN_MISMATCH_PX_PER_BP = 6
-const MIN_HEIGHT_FOR_TEXT = 8
 const MIN_DELETION_WIDTH_PX = 12
 
 interface LabelContext {
@@ -39,6 +34,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
   const { x, y, w, h, bpLen, labels } = ctx
   const pxPerBp = w / bpLen
   let refPos = 0
+  const fontSize = computeLabelFontSize(h)
 
   for (const packed of cigar) {
     const len = packed >>> 4
@@ -55,6 +51,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
             x: x + (refPos + len / 2) * pxPerBp,
             y: y + h / 2,
             text: `${len}`,
+            fontSize,
           })
         }
       }
@@ -67,6 +64,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
           x: x + (refPos + len / 2) * pxPerBp,
           y: y + h / 2,
           text: `${len}`,
+          fontSize,
         })
       }
       refPos += len
@@ -83,6 +81,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
           x: x + refPos * pxPerBp,
           y: y + h / 2,
           text: `${len}`,
+          fontSize,
         })
       }
     }
@@ -94,6 +93,7 @@ function addCsLabels(ctx: LabelContext, cs: string) {
   const pxPerBp = w / bpLen
   let refPos = 0
   let i = 0
+  const fontSize = computeLabelFontSize(h)
 
   while (i < cs.length) {
     const ch = cs[i]!
@@ -114,6 +114,7 @@ function addCsLabels(ctx: LabelContext, cs: string) {
           x: x + (refPos + 0.5) * pxPerBp,
           y: y + h / 2,
           text: queryBase.toUpperCase(),
+          fontSize,
         })
       }
       i += 3
@@ -133,6 +134,7 @@ function addCsLabels(ctx: LabelContext, cs: string) {
             x: x + (refPos + len / 2) * pxPerBp,
             y: y + h / 2,
             text: `${len}`,
+            fontSize,
           })
         }
         refPos += len
@@ -157,6 +159,7 @@ function addCsLabels(ctx: LabelContext, cs: string) {
             x: x + refPos * pxPerBp,
             y: y + h / 2,
             text: `${len}`,
+            fontSize,
           })
         }
       }

@@ -38,6 +38,12 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
     }
   }
 
+  for (const walk of gfaGraph.walks) {
+    for (const seg of walk.segments) {
+      usedStrands.add(`${seg.id}${seg.strand}`)
+    }
+  }
+
   // If no links or paths, create forward-strand nodes for all segments
   const hasReferences = usedStrands.size > 0
 
@@ -91,7 +97,7 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
       nodeIds.push(`${nodeName}${strand}`)
     }
 
-    paths.push({ name: gfaPath.name, nodeIds })
+    paths.push({ name: gfaPath.name, nodeIds } satisfies GraphPath)
 
     for (let i = 0; i < nodeIds.length - 1; i++) {
       const from = nodeIds[i]!
@@ -102,6 +108,31 @@ export function convertGFAToGraph(gfaGraph: GFAGraph, name = 'Imported GFA') {
         edgeToPathsMap.set(edgeKey, new Set())
       }
       edgeToPathsMap.get(edgeKey)!.add(gfaPath.name)
+    }
+  }
+
+  for (const walk of gfaGraph.walks) {
+    const nodeIds: string[] = []
+    for (const seg of walk.segments) {
+      nodeIds.push(`${seg.id}${seg.strand}`)
+    }
+    const name = `${walk.sample}#${walk.haplotype}`
+    paths.push({
+      name,
+      nodeIds,
+      sample: walk.sample,
+      haplotype: walk.haplotype,
+      contig: walk.contig,
+    } satisfies GraphPath)
+
+    for (let i = 0; i < nodeIds.length - 1; i++) {
+      const from = nodeIds[i]!
+      const to = nodeIds[i + 1]!
+      const edgeKey = `${from}->${to}`
+      if (!edgeToPathsMap.has(edgeKey)) {
+        edgeToPathsMap.set(edgeKey, new Set())
+      }
+      edgeToPathsMap.get(edgeKey)!.add(name)
     }
   }
 

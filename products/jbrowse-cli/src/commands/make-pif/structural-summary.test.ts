@@ -1,6 +1,6 @@
-import { mergeIntoStructuralBlocks } from './structural-summary'
+import { mergeIntoStructuralBlocks } from './structural-summary.ts'
 
-import type { AlignmentRecord } from './structural-summary'
+import type { AlignmentRecord } from './structural-summary.ts'
 
 function rec(
   qname: string,

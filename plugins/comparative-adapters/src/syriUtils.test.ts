@@ -1,6 +1,4 @@
-import { computeSyriTypes } from './syriUtils'
-
-import type { SyriType } from './syriUtils'
+import { computeSyriTypes } from './syriUtils.ts'
 
 function rec(
   qname: string,

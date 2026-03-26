@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 
 function useRafCallback(callback: () => void) {
   const rafRef = useRef<number | null>(null)
   const callbackRef = useRef(callback)
-  callbackRef.current = callback
+  useLayoutEffect(() => {
+    callbackRef.current = callback
+  })
 
   useEffect(() => {
     return () => {

@@ -330,8 +330,9 @@ function buildGfa(
     return walk
   }
 
-  const allWalks: { genome: string; walk: number[] }[] = []
-  allWalks.push({ genome: genomeNames[0]!, walk: buildWalk(null) })
+  const allWalks: { genome: string; walk: number[] }[] = [
+    { genome: genomeNames[0]!, walk: buildWalk(null) },
+  ]
   for (let si = 0; si < numSamples; si++) {
     allWalks.push({ genome: genomeNames[si + 1]!, walk: buildWalk(si) })
   }

@@ -70,6 +70,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     if (!this.cachedStat) {
       // Trigger a range fetch which will populate cachedStat from Content-Range
       await this.getCachedRange(this.url, 0, 1)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!this.cachedStat) {
         throw new Error(`unable to determine size of file at ${this.url}`)
       }
@@ -112,23 +113,18 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     const startChunk = Math.floor(start / CHUNK_SIZE)
     const endChunk = Math.floor((start + length - 1) / CHUNK_SIZE)
     const chunkCount = endChunk - startChunk + 1
-    const label = url.split('/').pop()
-    const t0 = performance.now()
 
-    let hits = 0
     const chunks = await Promise.all(
       Array.from({ length: chunkCount }, (_, i) => {
         const idx = startChunk + i
         const key = cacheKey(url, idx)
         const existing = getCached(key)
         if (existing) {
-          hits++
           return Promise.resolve(existing)
         }
         return limitConcurrency(async () => {
           const alreadyCached = getCached(key)
           if (alreadyCached) {
-            hits++
             return alreadyCached
           }
           const chunkStart = idx * CHUNK_SIZE
@@ -138,11 +134,6 @@ export class RemoteFileWithRangeCache extends RemoteFile {
           return data
         })
       }),
-    )
-
-    console.log(
-      `getCachedRange ${label}: bytes ${start}-${start + length} (${(length / 1024 / 1024).toFixed(2)} MB),` +
-        ` ${chunkCount} chunks, ${hits} hits / ${chunkCount - hits} misses, ${(performance.now() - t0).toFixed(0)}ms`,
     )
 
     const offsetInFirstChunk = start - startChunk * CHUNK_SIZE

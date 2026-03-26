@@ -48,20 +48,16 @@ const ImportForm = observer(function ImportForm({
     if (!file) {
       return
     }
-    const reader = new FileReader()
-    reader.onload = async e => {
-      const text = e.target?.result
-      if (typeof text === 'string') {
-        await model.loadGFA(text, file.name)
-      }
-    }
-    reader.onerror = () => {
-      model.setError('Failed to read file')
-    }
-    reader.readAsText(file)
+    file
+      .text()
+      .then(text => model.loadGFA(text, file.name))
+      .catch((err: unknown) => {
+        model.setError(`Failed to read file: ${err}`)
+      })
   }
 
   function handleExampleLoad() {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.loadGFA(EXAMPLE_GFA, 'Example graph')
   }
 
@@ -103,6 +99,7 @@ const ImportForm = observer(function ImportForm({
             }}
             onKeyDown={e => {
               if (e.key === 'Enter') {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 handleUrlLoad()
               }
             }}

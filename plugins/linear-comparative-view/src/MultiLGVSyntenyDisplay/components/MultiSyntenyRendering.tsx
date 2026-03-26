@@ -400,7 +400,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       view,
       offsetPx,
       width,
-      bpPerPx,
     ],
   )
 

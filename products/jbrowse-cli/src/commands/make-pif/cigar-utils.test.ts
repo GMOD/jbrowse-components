@@ -1,4 +1,4 @@
-import { extractLargeIndels } from './cigar-utils'
+import { extractLargeIndels } from './cigar-utils.ts'
 
 test('extracts large deletions with absolute positions', () => {
   const cigar = '1000M5000D2000M'

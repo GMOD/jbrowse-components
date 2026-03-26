@@ -3066,8 +3066,8 @@ packages:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
     engines: {node: '>=12'}
 
-  '@electron/get@4.0.2':
-    resolution: {integrity: sha512-n9fRt/nzzOOZdDtTP3kT6GVdo0ro9FgMKCoS520kQMIiKBhpGmPny6yK/lER3tOCKr+wLYW1O25D9oI6ZinwCA==}
+  '@electron/get@4.0.3':
+    resolution: {integrity: sha512-HgUXcnXF37bz26gvhx47f6g0hfI3tccxbTjG+SyKXaaSE3QapDzUF3bpxfgu+x5D+jtarNrpLCWlYARfZzirAQ==}
     engines: {node: '>=22.12.0'}
 
   '@electron/notarize@3.1.1':
@@ -4875,12 +4875,15 @@ packages:
   bare-path@3.0.0:
     resolution: {integrity: sha512-tyfW2cQcB5NN8Saijrhqn0Zh7AnFNsnczRcuWODH0eYAXBsJ5gVxAUuNr7tsHSC6IZ77cA0SitzT+s47kot8Mw==}
 
-  bare-stream@2.10.0:
-    resolution: {integrity: sha512-DOPZF/DDcDruKDA43cOw6e9Quq5daua7ygcAwJE/pKJsRWhgSSemi7qVNGE5kyDIxIeN1533G/zfbvWX7Wcb9w==}
+  bare-stream@2.11.0:
+    resolution: {integrity: sha512-Y/+iQ49fL3rIn6w/AVxI/2+BRrpmzJvdWt5Jv8Za6Ngqc6V227c+pYjYYgLdpR3MwQ9ObVXD0ZrqoBztakM0rw==}
     peerDependencies:
+      bare-abort-controller: '*'
       bare-buffer: '*'
       bare-events: '*'
     peerDependenciesMeta:
+      bare-abort-controller:
+        optional: true
       bare-buffer:
         optional: true
       bare-events:
@@ -9913,7 +9916,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/get@4.0.2':
+  '@electron/get@4.0.3':
     dependencies:
       debug: 4.4.3
       env-paths: 3.0.0
@@ -9946,7 +9949,7 @@ snapshots:
   '@electron/packager@19.1.0':
     dependencies:
       '@electron/asar': 4.1.1
-      '@electron/get': 4.0.2
+      '@electron/get': 4.0.3
       '@electron/notarize': 3.1.1
       '@electron/osx-sign': 2.3.0
       '@electron/universal': 3.0.3
@@ -12076,7 +12079,7 @@ snapshots:
     dependencies:
       bare-events: 2.8.2
       bare-path: 3.0.0
-      bare-stream: 2.10.0(bare-events@2.8.2)
+      bare-stream: 2.11.0(bare-events@2.8.2)
       bare-url: 2.4.0
       fast-fifo: 1.3.2
     transitivePeerDependencies:
@@ -12089,14 +12092,13 @@ snapshots:
     dependencies:
       bare-os: 3.8.0
 
-  bare-stream@2.10.0(bare-events@2.8.2):
+  bare-stream@2.11.0(bare-events@2.8.2):
     dependencies:
       streamx: 2.25.0
       teex: 1.0.1
     optionalDependencies:
       bare-events: 2.8.2
     transitivePeerDependencies:
-      - bare-abort-controller
       - react-native-b4a
 
   bare-url@2.4.0:

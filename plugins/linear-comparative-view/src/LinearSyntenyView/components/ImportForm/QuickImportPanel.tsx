@@ -2,15 +2,7 @@ import { useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  FormControlLabel,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, Chip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { doSubmit } from './doSubmit.tsx'
@@ -79,7 +71,7 @@ const QuickImportPanel = observer(function QuickImportPanel({
       }
 
       // Use detected assemblies or fall back to session assemblies
-      const assemblyNames = detectedConfig?.assemblies?.length
+      const assemblyNames = detectedConfig?.assemblies.length
         ? detectedConfig.assemblies
         : session.assemblyNames.slice(0, 2)
 

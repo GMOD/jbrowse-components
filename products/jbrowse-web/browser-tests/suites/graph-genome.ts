@@ -2,8 +2,9 @@ import { PORT, appendGpuParam, delay, findByText } from '../helpers.ts'
 import { canvasSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
+import type { Page } from 'puppeteer'
 
-async function navigateAndAddGraphView(page: import('puppeteer').Page) {
+async function navigateAndAddGraphView(page: Page) {
   const url = appendGpuParam(
     `http://localhost:${PORT}/?config=test_data/volvox/config.json&sessionName=Test%20Session`,
   )

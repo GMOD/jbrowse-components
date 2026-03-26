@@ -44,9 +44,7 @@ export default function VisibleLabelsOverlay({
             y={label.y}
             textAnchor="middle"
             dominantBaseline="central"
-            fontSize={
-              label.type === 'mismatch' && label.text.length === 1 ? 9 : 10
-            }
+            fontSize={label.fontSize}
             fontFamily="monospace"
             fontWeight="bold"
             fill={fillColor}

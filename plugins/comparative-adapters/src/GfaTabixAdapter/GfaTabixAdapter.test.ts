@@ -1,19 +1,6 @@
-import { execSync } from 'child_process'
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
-
 import Adapter from './GfaTabixAdapter.ts'
 import MyConfigSchema from './configSchema.ts'
-
-const BINARY = path.resolve('tools/gfa-to-tabix/target/release/gfa-to-tabix')
-
-function runConverter(gfaFile: string, prefix: string) {
-  execSync(`"${BINARY}" "${gfaFile}" "${prefix}"`, {
-    stdio: 'pipe',
-    env: { ...process.env, LC_ALL: 'C' },
-  })
-}
+import { parseSegmentsBinary } from './gfaTabixUtils.ts'
 
 function makeAdapter(
   prefix: string,
@@ -325,7 +312,7 @@ describe('GfaTabixAdapter with HPRC chrM (44 haplotypes)', () => {
 
     // With 1393 segments and 43 non-ref genomes, unmerged would give
     // ~hundreds of features per genome. Merged should be much fewer.
-    for (const [_genome, features] of result.genomeRows) {
+    for (const [, features] of result.genomeRows) {
       // CHM13 and most HPRC samples share most of chrM
       // so merged features should be significantly fewer than raw segments
       expect(features.length).toBeLessThan(200)
@@ -562,7 +549,6 @@ describe('getSources HPRC chrM', () => {
 
 describe('parseSegmentsBinary', () => {
   it('parses binary records correctly', () => {
-    const { parseSegmentsBinary } = require('./gfaTabixUtils.ts')
     // Build two 15-byte binary records
     const buf = new ArrayBuffer(30)
     const dv = new DataView(buf)
@@ -602,7 +588,6 @@ describe('parseSegmentsBinary', () => {
   })
 
   it('handles empty input', () => {
-    const { parseSegmentsBinary } = require('./gfaTabixUtils.ts')
     const bytes = new Uint8Array(0)
     const records = parseSegmentsBinary(bytes)
     expect(records.length).toBe(0)

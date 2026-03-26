@@ -7,12 +7,6 @@ import Overlay from './Overlay.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
 
-interface TrackPositionCache {
-  svgTop: number
-  // trackId -> [level0Top, level1Top, ...]  relative to svgTop
-  tracks: Record<string, number[]>
-}
-
 const useStyles = makeStyles()({
   overlay: {
     display: 'flex',
@@ -50,7 +44,7 @@ const BreakpointSplitViewOverlay = observer(
     const lastRafTime = useRef<number | null>(null)
     const [positionCache, setPositionCache] = useState({
       svgTop: 0,
-      tracks: {},
+      tracks: {} as Record<string, number[]>,
     })
 
     const measurePositions = useCallback(() => {

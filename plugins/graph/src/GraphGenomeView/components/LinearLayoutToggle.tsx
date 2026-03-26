@@ -17,6 +17,7 @@ const LinearLayoutToggle = observer(function LinearLayoutToggle({
         selected={model.linearLayout}
         onChange={() => {
           model.setLinearLayout(!model.linearLayout)
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           model.recomputeLayout()
         }}
       >
