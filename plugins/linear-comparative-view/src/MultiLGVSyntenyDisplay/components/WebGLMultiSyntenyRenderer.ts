@@ -172,6 +172,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     width: number,
     height: number,
     rowHeight: number,
+    rowSpacing: boolean,
     labelW: number,
   ) {
     const gl = this.gl
@@ -200,7 +201,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     gl.useProgram(this.fillProgram)
     gl.bindVertexArray(this.fillVAO)
 
-    const rowPadding = rowHeight >= 6 ? 1 : 0
+    const rowPadding = rowSpacing ? 1 : 0
 
     for (const block of contentBlocks) {
       const params = computeRegionRenderParams(

@@ -23,8 +23,15 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
   const view = getContainingView(model) as LGV
   await when(() => model.genomeRows.size > 0 || !!model.error)
 
-  const { genomeRows, displayedGenomes, colorBy, height, rowHeight, showSnps } =
-    model
+  const {
+    genomeRows,
+    displayedGenomes,
+    colorBy,
+    height,
+    rowHeight,
+    rowSpacing,
+    showSnps,
+  } = model
   const { width, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
@@ -63,7 +70,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
       ctx.fillText(displayName, 4, y + rowHeight / 2)
     }
 
-    const padding = rowHeight >= 6 ? 1 : 0
+    const padding = rowSpacing ? 1 : 0
     for (const feat of features) {
       const px1 = bpToPx(feat.origRefName, feat.start)
       const px2 = bpToPx(feat.origRefName, feat.end)

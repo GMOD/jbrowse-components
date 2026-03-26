@@ -182,6 +182,7 @@ export function computeMultiSyntenyLabels(
   genomeRows: Map<string, MultiPairFeature[]>,
   displayedGenomes: string[],
   rowHeight: number,
+  rowSpacing: boolean,
   labelW: number,
   showSnps: boolean,
   bpToPx: (arg: {
@@ -196,7 +197,7 @@ export function computeMultiSyntenyLabels(
     return labels
   }
 
-  const padding = rowHeight >= 6 ? 1 : 0
+  const padding = rowSpacing ? 1 : 0
 
   for (let g = 0; g < displayedGenomes.length; g++) {
     const genomeName = displayedGenomes[g]!

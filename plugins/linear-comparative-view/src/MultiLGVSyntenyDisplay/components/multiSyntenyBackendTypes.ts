@@ -41,6 +41,7 @@ export interface MultiSyntenyCanvasRenderOpts {
   width: number
   height: number
   rowHeight: number
+  rowSpacing: boolean
   bpToPx: BpToPxFn
   colorBy: string
   labelW: number
@@ -67,6 +68,7 @@ export interface MultiSyntenyGpuBackend {
     width: number,
     height: number,
     rowHeight: number,
+    rowSpacing: boolean,
     labelW: number,
   ): void
   pick(x: number, y: number): number

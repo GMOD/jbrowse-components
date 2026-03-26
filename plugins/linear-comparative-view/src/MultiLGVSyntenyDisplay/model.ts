@@ -74,6 +74,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         colorBy: types.optional(types.string, 'strand'),
         selectedGenomes: types.optional(types.array(types.string), []),
         rowHeightSetting: types.optional(types.number, 0),
+        rowSpacing: types.optional(types.boolean, true),
         snpBpPerPxThreshold: types.optional(types.number, 100),
       }),
     )
@@ -145,6 +146,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setFitToHeight() {
         self.rowHeightSetting = 0
+      },
+      setRowSpacing(val: boolean) {
+        self.rowSpacing = val
       },
       resizeHeight(distance: number) {
         const oldHeight = self.height
@@ -489,8 +493,22 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               },
               {
                 label: 'Fit to display height',
+                type: 'checkbox' as const,
+                checked: self.rowHeightSetting === 0,
                 onClick: () => {
-                  self.setFitToHeight()
+                  if (self.rowHeightSetting === 0) {
+                    self.setRowHeight(self.rowHeight)
+                  } else {
+                    self.setFitToHeight()
+                  }
+                },
+              },
+              {
+                label: 'Row spacing',
+                type: 'checkbox' as const,
+                checked: self.rowSpacing,
+                onClick: () => {
+                  self.setRowSpacing(!self.rowSpacing)
                 },
               },
             ],

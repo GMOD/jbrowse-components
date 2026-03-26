@@ -142,6 +142,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     width: number,
     height: number,
     rowHeight: number,
+    rowSpacing: boolean,
     labelW: number,
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
@@ -160,7 +161,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     const dpr = getDevicePixelRatio()
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
-    const rowPadding = rowHeight >= 6 ? 1 : 0
+    const rowPadding = rowSpacing ? 1 : 0
 
     const tv = this.context.getCurrentTexture().createView()
 

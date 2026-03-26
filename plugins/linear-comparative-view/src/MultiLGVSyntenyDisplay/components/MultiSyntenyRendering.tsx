@@ -78,6 +78,7 @@ function featureToRect(
   feature: MultiPairFeature,
   sampleIdx: number,
   rowHeight: number,
+  rowSpacing: boolean,
   labelW: number,
   view: LinearGenomeViewModel,
   viewWidth: number,
@@ -90,7 +91,7 @@ function featureToRect(
   if (!px1 || !px2) {
     return undefined
   }
-  const padding = rowHeight >= 6 ? 1 : 0
+  const padding = rowSpacing ? 1 : 0
   return {
     x: Math.max(px1.offsetPx - view.offsetPx + labelW, labelW),
     x2: Math.min(px2.offsetPx - view.offsetPx + labelW, viewWidth),
@@ -103,6 +104,7 @@ function FeatureHighlightOverlay({
   hoveredHit,
   selectedHit,
   rowHeight,
+  rowSpacing,
   labelW,
   view,
   width,
@@ -111,6 +113,7 @@ function FeatureHighlightOverlay({
   hoveredHit: FeatureHitResult | undefined
   selectedHit: FeatureHitResult | undefined
   rowHeight: number
+  rowSpacing: boolean
   labelW: number
   view: LinearGenomeViewModel
   width: number
@@ -121,6 +124,7 @@ function FeatureHighlightOverlay({
         hoveredHit.feature,
         hoveredHit.sampleIdx,
         rowHeight,
+        rowSpacing,
         labelW,
         view,
         width,
@@ -131,6 +135,7 @@ function FeatureHighlightOverlay({
         selectedHit.feature,
         selectedHit.sampleIdx,
         rowHeight,
+        rowSpacing,
         labelW,
         view,
         width,
@@ -239,15 +244,18 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const rendererRef = useRef<MultiSyntenyRenderer | null>(null)
   const [ready, setReady] = useState(false)
   const { palette } = useTheme()
-  const colors: SyntenyColors = {
-    mismatch: MISMATCH_COLOR,
-    deletion: palette.deletion,
-    insertion: palette.insertion,
-    baseA: palette.bases.A.main,
-    baseC: palette.bases.C.main,
-    baseG: palette.bases.G.main,
-    baseT: palette.bases.T.main,
-  }
+  const colors = useMemo<SyntenyColors>(
+    () => ({
+      mismatch: MISMATCH_COLOR,
+      deletion: palette.deletion,
+      insertion: palette.insertion,
+      baseA: palette.bases.A.main,
+      baseC: palette.bases.C.main,
+      baseG: palette.bases.G.main,
+      baseT: palette.bases.T.main,
+    }),
+    [palette],
+  )
   const [tooltip, setTooltip] = useState<{
     text: string
     open: boolean
@@ -311,8 +319,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         )
       }
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, model, view])
+  }, [ready, model, colors])
 
   // GPU draw autorun: re-renders on view changes (scroll, zoom, resize)
   // or new data. dataVersion is bumped by MultiRegionDisplayMixin when
@@ -327,31 +334,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       if (renderer?.isGpu) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _dv = model.dataVersion
-        const { height, rowHeight } = model
+        const { height, rowHeight, rowSpacing } = model
         const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
         const contentBlocks = view.staticBlocks.contentBlocks
-        console.log('[MultiSynteny GPU draw]', {
-          viewWidth: view.width,
-          viewOffsetPx: view.offsetPx,
-          labelW,
-          rowHeight,
-          height,
-          numBlocks: contentBlocks.length,
-          blocks: contentBlocks.map(b => ({
-            refName: b.refName,
-            start: b.start,
-            end: b.end,
-            offsetPx: b.offsetPx,
-            widthPx: b.widthPx,
-            regionScreenLeft: b.offsetPx - view.offsetPx,
-          })),
-        })
         renderer.renderGpu(
           contentBlocks,
           view.offsetPx,
           view.width,
           height,
           rowHeight,
+          rowSpacing,
           labelW,
         )
       }
@@ -372,6 +364,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           colorBy,
           height,
           rowHeight,
+          rowSpacing,
           showSnps,
         } = model
         const { width, offsetPx } = view
@@ -387,6 +380,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           width,
           height,
           rowHeight,
+          rowSpacing,
           bpToPx,
           colorBy,
           labelW,
@@ -395,22 +389,12 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         })
       }
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, model, view])
+  }, [ready, model, view, colors])
 
   // Read observables during render for tooltip/style (observer tracks these)
-  const { genomeRows, displayedGenomes, rowHeight, height, showSnps } = model
+  const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, showSnps } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-
-  console.log('[MultiSynteny render]', {
-    displayedGenomes,
-    rowHeight,
-    labelW,
-    numGenomeRows: genomeRows.size,
-    genomeRowKeys: [...genomeRows.keys()],
-    featureCounts: [...genomeRows.entries()].map(([k, v]) => `${k}: ${v.length}`),
-  })
 
   // Hide tooltip and hover on zoom or scroll changes
   useEffect(() => {
@@ -484,6 +468,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         genomeRows,
         displayedGenomes,
         rowHeight,
+        rowSpacing,
         labelW,
         showSnps,
         view.bpToPx.bind(view),
@@ -494,6 +479,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       genomeRows,
       displayedGenomes,
       rowHeight,
+      rowSpacing,
       labelW,
       showSnps,
       view,
@@ -540,6 +526,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           hoveredHit={hoveredHit}
           selectedHit={selectedHit}
           rowHeight={rowHeight}
+          rowSpacing={rowSpacing}
           labelW={labelW}
           view={view}
           width={width}

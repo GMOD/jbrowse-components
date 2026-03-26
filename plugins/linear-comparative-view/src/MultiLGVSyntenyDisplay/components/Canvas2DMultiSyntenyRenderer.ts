@@ -45,6 +45,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
       width,
       height,
       rowHeight,
+      rowSpacing,
       bpToPx,
       colorBy,
       labelW,
@@ -79,7 +80,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
         ctx.fillText(displayName, 4, y + rowHeight / 2)
       }
 
-      const padding = rowHeight >= 6 ? 1 : 0
+      const padding = rowSpacing ? 1 : 0
       for (const feat of features) {
         const px1 = bpToPx(feat.origRefName, feat.start)
         const px2 = bpToPx(feat.origRefName, feat.end)
