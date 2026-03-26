@@ -2,12 +2,12 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import {
-  OP_D,
-  OP_EQ,
-  OP_I,
-  OP_M,
-  OP_N,
-  OP_X,
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
   isCsOpChar,
   isDigit,
 } from './cigarConstants.ts'
@@ -52,15 +52,15 @@ function collectCigarItems(
   for (const packed of cigar) {
     const len = packed >>> 4
     const op = packed & 0xf
-    if (op === OP_M || op === OP_EQ) {
+    if (op === CIGAR_M || op === CIGAR_EQ) {
       refPos += len
-    } else if (op === OP_X) {
+    } else if (op === CIGAR_X) {
       items.push({ type: 'mismatch', refPosition: refPos, length: len })
       refPos += len
-    } else if (op === OP_D || op === OP_N) {
+    } else if (op === CIGAR_D || op === CIGAR_N) {
       items.push({ type: 'deletion', refPosition: refPos, length: len })
       refPos += len
-    } else if (op === OP_I) {
+    } else if (op === CIGAR_I) {
       items.push({ type: 'insertion', refPosition: refPos, length: len })
     }
   }

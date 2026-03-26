@@ -7,6 +7,7 @@ import type {
   MultiSyntenyCanvasBackend,
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyGpuBackend,
+  SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -81,6 +82,7 @@ export class MultiSyntenyRenderer {
     displayedGenomes: string[],
     colorBy: string,
     showSnps: boolean,
+    colors: SyntenyColors,
   ) {
     if (this.gpuBackend) {
       const data = prepareMultiSyntenyGpuData(
@@ -88,6 +90,7 @@ export class MultiSyntenyRenderer {
         displayedGenomes,
         colorBy,
         showSnps,
+        colors,
       )
       this.gpuBackend.uploadGeometry(data)
     }

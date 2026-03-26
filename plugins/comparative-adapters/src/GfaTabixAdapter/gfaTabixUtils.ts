@@ -420,12 +420,24 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     const { posRefNames, pathNames } = await this.setup()
     const { refName, start, end, assemblyName } = region
 
+    console.log(
+      '[GfaTabixAdapter.getSubgraph] Query:',
+      JSON.stringify({ refName, start, end, assemblyName }),
+      'posRefNames:',
+      posRefNames,
+    )
+
     const refPathName = this.resolveTabixRefName(
       posRefNames,
       assemblyName,
       refName,
     )
     if (!refPathName) {
+      console.warn(
+        '[GfaTabixAdapter.getSubgraph] No refPathName resolved for',
+        assemblyName,
+        refName,
+      )
       return ''
     }
 
@@ -494,7 +506,19 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
       lines.push(`P\t${pathName}\t${walk}\t*`)
     }
 
-    return lines.join('\n')
+    const result = lines.join('\n')
+    console.log(
+      '[GfaTabixAdapter.getSubgraph] Result:',
+      lines.length,
+      'lines,',
+      segLens.size,
+      'segments,',
+      links.size,
+      'links,',
+      pathSegRecords.size,
+      'paths',
+    )
+    return result
   }
 
   private async getMultiPairFeaturesFromSegments(

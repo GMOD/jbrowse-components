@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 
 const BASE_CONTRAST: Record<string, string> = {
@@ -16,43 +18,46 @@ export default function VisibleLabelsOverlay({
   width: number
   height: number
 }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+    ctx.clearRect(0, 0, width, height)
+    for (const label of labels) {
+      ctx.font = `bold ${label.fontSize}px monospace`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      let fillColor = '#fff'
+      if (label.type === 'mismatch' && label.text.length === 1) {
+        fillColor = BASE_CONTRAST[label.text] ?? '#fff'
+      }
+      ctx.fillStyle = fillColor
+      ctx.fillText(label.text, label.x, label.y)
+    }
+  }, [labels, width, height])
+
   if (labels.length === 0) {
     return null
   }
 
   return (
-    <svg
+    <canvas
+      ref={canvasRef}
+      width={width}
+      height={height}
       style={{
         position: 'absolute',
         top: 0,
         left: 0,
-        width,
-        height,
         pointerEvents: 'none',
-        overflow: 'hidden',
       }}
-    >
-      {labels.map((label, i) => {
-        let fillColor = '#fff'
-        if (label.type === 'mismatch' && label.text.length === 1) {
-          fillColor = BASE_CONTRAST[label.text] ?? '#fff'
-        }
-        return (
-          <text
-            key={`${label.type}-${i}`}
-            x={label.x}
-            y={label.y}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize={label.fontSize}
-            fontFamily="monospace"
-            fontWeight="bold"
-            fill={fillColor}
-          >
-            {label.text}
-          </text>
-        )
-      })}
-    </svg>
+    />
   )
 }

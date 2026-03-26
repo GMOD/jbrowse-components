@@ -4,6 +4,7 @@ import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { when } from 'mobx'
 
 import {
+  DEFAULT_SYNTENY_COLORS,
   LABEL_FONT_MAX,
   LABEL_WIDTH,
 } from './components/multiSyntenyBackendTypes.ts'
@@ -88,7 +89,16 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
       if (showSnps) {
         const bpLen = feat.end - feat.start
         if (feat.cs) {
-          drawCsOps(ctx, feat.cs, x1, fy, blockWidth, fh, bpLen)
+          drawCsOps(
+            ctx,
+            feat.cs,
+            x1,
+            fy,
+            blockWidth,
+            fh,
+            bpLen,
+            DEFAULT_SYNTENY_COLORS,
+          )
         } else if (feat.cigar) {
           drawCigarOps(
             ctx,
@@ -98,6 +108,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
             blockWidth,
             fh,
             bpLen,
+            DEFAULT_SYNTENY_COLORS,
           )
         }
       }

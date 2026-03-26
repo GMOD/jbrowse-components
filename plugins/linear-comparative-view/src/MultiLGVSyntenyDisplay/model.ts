@@ -140,8 +140,21 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setColorBy(value: string) {
         self.colorBy = value
       },
-      setRowHeightSetting(h: number) {
+      setRowHeight(h: number) {
         self.rowHeightSetting = h
+      },
+      setFitToHeight() {
+        self.rowHeightSetting = 0
+      },
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = Math.max(self.height + distance, 20)
+        self.heightPreConfig = newHeight
+        if (self.rowHeightSetting > 0) {
+          self.rowHeightSetting =
+            self.rowHeightSetting * (newHeight / oldHeight)
+        }
+        return newHeight - oldHeight
       },
       setSnpBpPerPxThreshold(t: number) {
         self.snpBpPerPxThreshold = t
@@ -355,34 +368,62 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             const session = getSession(self)
             const dr = view.displayedRegions[0]
             if (!dr) {
+              console.warn('[GraphView launch] No displayed region found')
               return
             }
+            const rawStart = view.offsetPx * view.bpPerPx
+            const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
             const region = {
               refName: dr.refName,
               assemblyName: dr.assemblyName,
-              start: Math.floor(view.offsetPx * view.bpPerPx),
-              end: Math.floor((view.offsetPx + view.width) * view.bpPerPx),
+              start: Math.max(0, Math.floor(rawStart)),
+              end: Math.floor(rawEnd),
             }
+            console.log(
+              '[GraphView launch] Region:',
+              JSON.stringify(region),
+              'offsetPx:',
+              view.offsetPx,
+              'bpPerPx:',
+              view.bpPerPx,
+              'width:',
+              view.width,
+            )
             const sessionId = getRpcSessionId(self)
             const { rpcManager } = session
-            const gfaText: string = await rpcManager.call(
-              sessionId,
-              'GetSubgraph',
-              { adapterConfig, region, sessionId },
-            )
-            if (!gfaText) {
-              session.notify(
-                'This adapter does not support graph subgraph extraction',
-                'warning',
+            try {
+              const gfaText: string = await rpcManager.call(
+                sessionId,
+                'GetSubgraph',
+                { adapterConfig, region, sessionId },
               )
-              return
-            }
-            const graphView = session.addView('GraphGenomeView', {})
+              console.log(
+                '[GraphView launch] GFA result length:',
+                gfaText.length,
+                'lines:',
+                gfaText.split('\n').length,
+              )
+              if (!gfaText) {
+                session.notify(
+                  'This adapter does not support graph subgraph extraction',
+                  'warning',
+                )
+                return
+              }
+              const graphView = session.addView('GraphGenomeView', {})
 
-            await (graphView as any).loadGFA(
-              gfaText,
-              `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
-            )
+              await (graphView as any).loadGFA(
+                gfaText,
+                `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
+              )
+              console.log('[GraphView launch] Graph view loaded successfully')
+            } catch (e) {
+              console.error('[GraphView launch] Error:', e)
+              session.notify(
+                `Failed to launch graph view: ${e instanceof Error ? e.message : e}`,
+                'error',
+              )
+            }
           },
         })
 
@@ -402,31 +443,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             label: 'Row height',
             subMenu: [
               {
-                label: 'Normal',
-                type: 'radio' as const,
-                checked: self.rowHeightSetting === 0,
-                onClick: () => {
-                  self.setRowHeightSetting(0)
-                },
-              },
-              {
-                label: 'Compact',
-                type: 'radio' as const,
-                checked: self.rowHeightSetting === 3,
-                onClick: () => {
-                  self.setRowHeightSetting(3)
-                },
-              },
-              {
-                label: 'Super-compact',
-                type: 'radio' as const,
-                checked: self.rowHeightSetting === 1,
-                onClick: () => {
-                  self.setRowHeightSetting(1)
-                },
-              },
-              {
-                label: 'Custom...',
+                label: 'Manually set row height',
                 onClick: () => {
                   getSession(self).queueDialog(handleClose => [
                     SetRowHeightDialog,
@@ -435,6 +452,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                       handleClose,
                     },
                   ])
+                },
+              },
+              {
+                label: 'Fit to display height',
+                onClick: () => {
+                  self.setFitToHeight()
                 },
               },
             ],

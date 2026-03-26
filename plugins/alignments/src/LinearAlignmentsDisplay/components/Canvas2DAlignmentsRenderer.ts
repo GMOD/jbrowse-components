@@ -1,4 +1,11 @@
 import {
+  BASE_A_COLOR,
+  BASE_C_COLOR,
+  BASE_G_COLOR,
+  BASE_T_COLOR,
+} from '@jbrowse/alignments-core'
+
+import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
@@ -141,12 +148,11 @@ interface Canvas2DRegionData {
 const GAP_DELETION = 0
 const GAP_SKIP = 1
 
-// base colors (ACGT)
 const BASE_COLORS: Record<number, string> = {
-  0: '#00BF00', // A
-  1: '#4747ff', // C
-  2: '#d5bb04', // G  (amber/gold)
-  3: '#f00', // T
+  0: BASE_A_COLOR,
+  1: BASE_C_COLOR,
+  2: BASE_G_COLOR,
+  3: BASE_T_COLOR,
 }
 
 function emptyRegion(regionStart: number): Canvas2DRegionData {

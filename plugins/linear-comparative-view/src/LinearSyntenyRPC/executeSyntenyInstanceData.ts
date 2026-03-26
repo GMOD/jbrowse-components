@@ -1,3 +1,11 @@
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+} from '@jbrowse/alignments-core'
 import { category10 } from '@jbrowse/core/ui/colors'
 import {
   cssColorToNormalizedRgb,
@@ -10,13 +18,6 @@ import {
 } from '../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
 import type { SyriType } from '@jbrowse/plugin-comparative-adapters'
-
-const OP_M = 0
-const OP_I = 1
-const OP_D = 2
-const OP_N = 3
-const OP_EQ = 7
-const OP_X = 8
 
 function toRelativeFloat32(
   values: Float64Array,
@@ -96,9 +97,9 @@ function buildIndelColors(colorBy: string) {
   const cigarColors = scheme.cigarColors
   const indelColors: Partial<Record<number, RGBA>> = {}
   for (const [op, key] of [
-    [OP_I, 'I'],
-    [OP_D, 'D'],
-    [OP_N, 'N'],
+    [CIGAR_I, 'I'],
+    [CIGAR_D, 'D'],
+    [CIGAR_N, 'N'],
   ] as const) {
     const color = cigarColors[key as keyof typeof cigarColors]
     if (color) {
@@ -471,7 +472,7 @@ export function executeSyntenyInstanceData({
     for (const packed of cigar) {
       const len = packed >>> 4
       const op = packed & 0xf
-      if (op === OP_D || op === OP_N || op === OP_I) {
+      if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
         if (len > maxIndelLen) {
           maxIndelLen = len
         }
@@ -532,17 +533,17 @@ export function executeSyntenyInstanceData({
       const d1 = len * pxPerBp0
       const d2 = len * pxPerBp1
 
-      if (op === OP_M || op === OP_EQ || op === OP_X) {
+      if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
         cx1 += d1 * rev1
         cx2 += d2 * rev2
-      } else if (op === OP_D || op === OP_N) {
+      } else if (op === CIGAR_D || op === CIGAR_N) {
         cx1 += d1 * rev1
-      } else if (op === OP_I) {
+      } else if (op === CIGAR_I) {
         cx2 += d2 * rev2
       }
 
-      if (op === OP_D || op === OP_N || op === OP_I) {
-        const relevantPx = op === OP_I ? d2 : d1
+      if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
+        const relevantPx = op === CIGAR_I ? d2 : d1
         if (relevantPx < 1) {
           continuingFlag = true
           continue
@@ -553,7 +554,7 @@ export function executeSyntenyInstanceData({
       if (Math.abs(cx1 - px1) <= 1 && Math.abs(cx2 - px2) <= 1 && isNotLast) {
         continuingFlag = true
       } else {
-        const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
+        const resolvedOp = (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
         continuingFlag = false
 
         const topMin = Math.min(px1, cx1) - viewOff0
@@ -566,7 +567,9 @@ export function executeSyntenyInstanceData({
 
         if (!offScreen) {
           const isIndel =
-            resolvedOp === OP_I || resolvedOp === OP_D || resolvedOp === OP_N
+            resolvedOp === CIGAR_I ||
+            resolvedOp === CIGAR_D ||
+            resolvedOp === CIGAR_N
           const [cr, cg, cb, ca] =
             drawCIGARMatchesOnly && isIndel
               ? [0, 0, 0, 0]

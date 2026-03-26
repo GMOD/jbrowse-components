@@ -594,6 +594,186 @@ describe('parseSegmentsBinary', () => {
   })
 })
 
+describe('GfaTabixAdapter getSubgraph', () => {
+  it('returns GFA text for a valid region', async () => {
+    const adapter = makeAdapter(prefix)
+    const result = await adapter.getSubgraph({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    expect(result).toBeTruthy()
+    const lines = result.split('\n')
+    const header = lines.filter(l => l.startsWith('H\t'))
+    const segments = lines.filter(l => l.startsWith('S\t'))
+    const links = lines.filter(l => l.startsWith('L\t'))
+    const paths = lines.filter(l => l.startsWith('P\t'))
+
+    expect(header.length).toBe(1)
+    expect(segments.length).toBeGreaterThan(0)
+    expect(links.length).toBeGreaterThan(0)
+    expect(paths.length).toBeGreaterThan(0)
+
+    console.log(
+      'getSubgraph result:',
+      segments.length,
+      'segments,',
+      links.length,
+      'links,',
+      paths.length,
+      'paths',
+    )
+  })
+
+  it('returns empty for non-overlapping region', async () => {
+    const adapter = makeAdapter(prefix)
+    const result = await adapter.getSubgraph({
+      refName: 'chr1',
+      start: 99999999,
+      end: 100000000,
+      assemblyName: 'ref#1',
+    })
+
+    expect(result).toBe('')
+  })
+
+  it('returns empty for nonexistent refName', async () => {
+    const adapter = makeAdapter(prefix)
+    const result = await adapter.getSubgraph({
+      refName: 'nonexistent',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    expect(result).toBe('')
+  })
+
+  it('output GFA has valid links referencing existing segments', async () => {
+    const adapter = makeAdapter(prefix)
+    const result = await adapter.getSubgraph({
+      refName: 'chr1',
+      start: 0,
+      end: 50000,
+      assemblyName: 'ref#1',
+    })
+
+    expect(result).toBeTruthy()
+    const lines = result.split('\n')
+    const segIds = new Set(
+      lines.filter(l => l.startsWith('S\t')).map(l => l.split('\t')[1]),
+    )
+    const links = lines.filter(l => l.startsWith('L\t'))
+
+    for (const link of links) {
+      const cols = link.split('\t')
+      expect(segIds.has(cols[1])).toBe(true)
+      expect(segIds.has(cols[3])).toBe(true)
+    }
+  })
+
+  it('output GFA paths reference existing segments', async () => {
+    const adapter = makeAdapter(prefix)
+    const result = await adapter.getSubgraph({
+      refName: 'chr1',
+      start: 0,
+      end: 50000,
+      assemblyName: 'ref#1',
+    })
+
+    expect(result).toBeTruthy()
+    const lines = result.split('\n')
+    const segIds = new Set(
+      lines.filter(l => l.startsWith('S\t')).map(l => l.split('\t')[1]),
+    )
+    const paths = lines.filter(l => l.startsWith('P\t'))
+
+    for (const path of paths) {
+      const cols = path.split('\t')
+      const segs = cols[2]!.split(',').map(s => s.slice(0, -1))
+      for (const seg of segs) {
+        expect(segIds.has(seg)).toBe(true)
+      }
+    }
+  })
+
+  it('larger region returns more segments than smaller region', async () => {
+    const adapter = makeAdapter(prefix)
+    const small = await adapter.getSubgraph({
+      refName: 'chr1',
+      start: 0,
+      end: 10000,
+      assemblyName: 'ref#1',
+    })
+    const large = await adapter.getSubgraph({
+      refName: 'chr1',
+      start: 0,
+      end: 100000,
+      assemblyName: 'ref#1',
+    })
+
+    const smallSegs = small.split('\n').filter(l => l.startsWith('S\t')).length
+    const largeSegs = large.split('\n').filter(l => l.startsWith('S\t')).length
+
+    expect(largeSegs).toBeGreaterThanOrEqual(smallSegs)
+  })
+})
+
+describe('GfaTabixAdapter HPRC getSubgraph', () => {
+  it('returns GFA for chrM full region', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+    const result = await adapter.getSubgraph({
+      refName: 'chrM',
+      start: 0,
+      end: 16569,
+      assemblyName: 'GRCh38#0',
+    })
+
+    expect(result).toBeTruthy()
+    const lines = result.split('\n')
+    const segments = lines.filter(l => l.startsWith('S\t'))
+    const paths = lines.filter(l => l.startsWith('P\t'))
+
+    expect(segments.length).toBeGreaterThan(0)
+    expect(paths.length).toBeGreaterThan(0)
+
+    console.log(
+      'HPRC chrM getSubgraph:',
+      segments.length,
+      'segments,',
+      paths.length,
+      'paths',
+    )
+  })
+
+  it('returns GFA for partial chrM region', async () => {
+    const adapter = makeAdapter(hprcPrefix)
+    const result = await adapter.getSubgraph({
+      refName: 'chrM',
+      start: 5000,
+      end: 10000,
+      assemblyName: 'GRCh38#0',
+    })
+
+    expect(result).toBeTruthy()
+    const lines = result.split('\n')
+    const segments = lines.filter(l => l.startsWith('S\t'))
+    expect(segments.length).toBeGreaterThan(0)
+
+    // Partial should have fewer segments than full
+    const full = await adapter.getSubgraph({
+      refName: 'chrM',
+      start: 0,
+      end: 16569,
+      assemblyName: 'GRCh38#0',
+    })
+    const fullSegs = full.split('\n').filter(l => l.startsWith('S\t')).length
+    expect(segments.length).toBeLessThanOrEqual(fullSegs)
+  })
+})
+
 // Note: aln.bed.gz e2e tests removed — the Rust converter does not produce
 // aln files. The adapter's aln code path is tested via pre-generated fixtures
 // if available.

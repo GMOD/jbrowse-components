@@ -247,8 +247,20 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     const gfa = await this.getGfa()
     const { refName, start, end, assemblyName } = region
 
+    console.log(
+      '[GfaAdapter.getSubgraph] Query:',
+      JSON.stringify({ refName, start, end, assemblyName }),
+      'Available paths:',
+      gfa.paths.map(p => `${p.name} (genome=${p.genome}, ref=${p.refName})`),
+    )
+
     const refPath = findRefPath(gfa.paths, assemblyName, refName)
     if (!refPath) {
+      console.warn(
+        '[GfaAdapter.getSubgraph] No ref path found for',
+        assemblyName,
+        refName,
+      )
       return ''
     }
 
@@ -261,7 +273,16 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
       }
       offset += segLen
     }
+    console.log(
+      '[GfaAdapter.getSubgraph] Ref segments in range:',
+      [...refSegsInRange],
+      'total ref path length:',
+      offset,
+    )
     if (refSegsInRange.size === 0) {
+      console.warn(
+        '[GfaAdapter.getSubgraph] No ref segments overlap query range',
+      )
       return ''
     }
 
@@ -297,13 +318,33 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
         lines.push(`S\t${segId}\t${seg.sequence}\tLN:i:${seg.length}`)
       }
     }
+    // Emit explicit links from source GFA
+    const emittedLinks = new Set<string>()
     for (const link of gfa.links) {
       if (allSegIds.has(link.source) && allSegIds.has(link.target)) {
-        lines.push(
-          `L\t${link.source}\t${link.strand1}\t${link.target}\t${link.strand2}\t*`,
-        )
+        const key = `${link.source}\t${link.strand1}\t${link.target}\t${link.strand2}`
+        if (!emittedLinks.has(key)) {
+          emittedLinks.add(key)
+          lines.push(`L\t${key}\t*`)
+        }
       }
     }
+
+    // Infer links from path adjacency when no explicit links exist
+    if (gfa.links.length === 0) {
+      for (const span of pathSpans.values()) {
+        for (let i = 0; i < span.length - 1; i++) {
+          const a = span[i]!
+          const b = span[i + 1]!
+          const key = `${a.segId}\t${a.orient}\t${b.segId}\t${b.orient}`
+          if (!emittedLinks.has(key)) {
+            emittedLinks.add(key)
+            lines.push(`L\t${key}\t*`)
+          }
+        }
+      }
+    }
+
     for (const [pathName, span] of pathSpans) {
       const walk = span.map(s => `${s.segId}${s.orient}`).join(',')
       lines.push(`P\t${pathName}\t${walk}\t*`)

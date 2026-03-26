@@ -1,9 +1,28 @@
 export {
+  BASE_A_COLOR,
+  BASE_C_COLOR,
+  BASE_G_COLOR,
+  BASE_T_COLOR,
+  DELETION_COLOR,
+  INSERTION_COLOR,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  MISMATCH_COLOR,
   computeLabelFontSize,
+  textWidthForNumber,
 } from './labelConstants.ts'
+export {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_P,
+  CIGAR_S,
+  CIGAR_X,
+} from './cigarConstants.ts'
 export { HP_GLSL_CORE, HP_GLSL_WITH_UNIFORM } from './hpGlsl.ts'
 export { HP_WGSL_CORE } from './hpWgsl.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'

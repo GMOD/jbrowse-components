@@ -12,15 +12,13 @@ import { observer } from 'mobx-react'
 
 const SetRowHeightDialog = observer(function SetRowHeightDialog(props: {
   model: {
-    setRowHeightSetting: (h: number) => void
-    rowHeightSetting: number
+    setRowHeight: (h: number) => void
+    rowHeight: number
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [height, setHeight] = useState(
-    `${model.rowHeightSetting === 0 ? 20 : model.rowHeightSetting}`,
-  )
+  const [height, setHeight] = useState(`${model.rowHeight}`)
 
   const ok = height !== '' && !Number.isNaN(+height) && +height > 0
 
@@ -43,7 +41,7 @@ const SetRowHeightDialog = observer(function SetRowHeightDialog(props: {
             autoFocus
             disabled={!ok}
             onClick={() => {
-              model.setRowHeightSetting(+height)
+              model.setRowHeight(+height)
               handleClose()
             }}
           >

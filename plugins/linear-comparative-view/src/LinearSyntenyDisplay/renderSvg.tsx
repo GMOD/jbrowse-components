@@ -1,3 +1,11 @@
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+} from '@jbrowse/alignments-core'
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
@@ -7,20 +15,13 @@ import type { defaultCigarColors } from './drawSyntenyUtils.ts'
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
-const OP_M = 0
-const OP_I = 1
-const OP_D = 2
-const OP_N = 3
-const OP_EQ = 7
-const OP_X = 8
-
 const OP_TO_CIGAR_KEY: Record<number, string> = {
-  [OP_M]: 'M',
-  [OP_I]: 'I',
-  [OP_D]: 'D',
-  [OP_N]: 'N',
-  [OP_EQ]: '=',
-  [OP_X]: 'X',
+  [CIGAR_M]: 'M',
+  [CIGAR_I]: 'I',
+  [CIGAR_D]: 'D',
+  [CIGAR_N]: 'N',
+  [CIGAR_EQ]: '=',
+  [CIGAR_X]: 'X',
 }
 
 function svgBezierBox(
@@ -215,17 +216,17 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
           const d1 = len * bpPerPxInv0
           const d2 = len * bpPerPxInv1
 
-          if (op === OP_M || op === OP_EQ || op === OP_X) {
+          if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
             cx1 += d1 * rev1
             cx2 += d2 * rev2
-          } else if (op === OP_D || op === OP_N) {
+          } else if (op === CIGAR_D || op === CIGAR_N) {
             cx1 += d1 * rev1
-          } else if (op === OP_I) {
+          } else if (op === CIGAR_I) {
             cx2 += d2 * rev2
           }
 
-          if (op === OP_D || op === OP_N || op === OP_I) {
-            const relevantPx = op === OP_I ? d2 : d1
+          if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
+            const relevantPx = op === CIGAR_I ? d2 : d1
             if (relevantPx < 1) {
               continuingFlag = true
               continue
@@ -247,13 +248,13 @@ export async function renderSvg(model: LinearSyntenyDisplayModel) {
               continuingFlag = true
             } else {
               const resolvedOp =
-                (continuingFlag && d1 > 1) || d2 > 1 ? op : OP_M
+                (continuingFlag && d1 > 1) || d2 > 1 ? op : CIGAR_M
               const letter = OP_TO_CIGAR_KEY[resolvedOp] || 'M'
 
               const isInsertionOrDeletion =
-                resolvedOp === OP_I ||
-                resolvedOp === OP_D ||
-                resolvedOp === OP_N
+                resolvedOp === CIGAR_I ||
+                resolvedOp === CIGAR_D ||
+                resolvedOp === CIGAR_N
 
               let fillColor: string
               if (useStrandColor && !isInsertionOrDeletion) {

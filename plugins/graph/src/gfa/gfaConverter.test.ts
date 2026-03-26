@@ -154,6 +154,50 @@ W\tw2\t1\tchr1\t*\t*\t>A>B`)
   expect(edge.pathIds).toContain('w2#1')
 })
 
+test('handles getSubgraph output format (star sequences with LN tags)', () => {
+  // This is the format produced by GfaAdapter/GfaTabixAdapter getSubgraph:
+  // segments have * sequences with LN:i: tags, links and P-line paths
+  const gfaText = [
+    'H\tVN:Z:1.1',
+    'S\ts1\t*\tLN:i:100',
+    'S\ts2\t*\tLN:i:100',
+    'S\ts3\t*\tLN:i:100',
+    'S\ts4\t*\tLN:i:101',
+    'L\ts1\t+\ts2\t+\t*',
+    'L\ts1\t+\ts3\t+\t*',
+    'L\ts2\t+\ts4\t+\t*',
+    'L\ts3\t+\ts4\t+\t*',
+    'P\tref#1#chr1\ts1+,s2+,s4+\t*',
+    'P\tsample1#1#chr1\ts1+,s3+,s4+\t*',
+  ].join('\n')
+
+  const parsed = parseGFA(gfaText)
+  expect(parsed.nodes).toHaveLength(4)
+  expect(parsed.links).toHaveLength(4)
+  expect(parsed.paths).toHaveLength(2)
+
+  // LN:i: tag should set node length even with * sequence
+  for (const node of parsed.nodes) {
+    expect(node.length).toBeGreaterThan(0)
+  }
+
+  const graph = convertGFAToGraph(parsed, 'subgraph-test')
+  expect(graph.nodes.length).toBe(4)
+  expect(graph.edges.length).toBe(4)
+  expect(graph.paths).toHaveLength(2)
+  expect(graph.name).toBe('subgraph-test')
+
+  // Verify node lengths are preserved from LN tags
+  const s1 = graph.nodes.find(n => n.name === 's1')
+  expect(s1!.length).toBe(100)
+  const s4 = graph.nodes.find(n => n.name === 's4')
+  expect(s4!.length).toBe(101)
+
+  // Verify edges have path annotations
+  const s1ToS2 = graph.edges.find(e => e.from === 's1+' && e.to === 's2+')
+  expect(s1ToS2!.pathIds).toContain('ref#1#chr1')
+})
+
 test('mixed P-lines and W-lines both become paths', () => {
   const gfa = parseGFA(`S\tA\tACGT
 S\tB\tGGCC

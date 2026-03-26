@@ -41,7 +41,16 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
     displayedGenomes: string[],
     opts: MultiSyntenyCanvasRenderOpts,
   ) {
-    const { width, height, rowHeight, bpToPx, colorBy, labelW, showSnps } = opts
+    const {
+      width,
+      height,
+      rowHeight,
+      bpToPx,
+      colorBy,
+      labelW,
+      showSnps,
+      colors,
+    } = opts
     const showLabels = labelW > 0
     const ctx = this.ctx
 
@@ -96,7 +105,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
         if (showSnps) {
           const bpLen = feat.end - feat.start
           if (feat.cs) {
-            drawCsOps(ctx, feat.cs, x1, fy, blockWidth, fh, bpLen)
+            drawCsOps(ctx, feat.cs, x1, fy, blockWidth, fh, bpLen, colors)
           } else if (feat.cigar) {
             drawCigarOps(
               ctx,
@@ -106,6 +115,7 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
               blockWidth,
               fh,
               bpLen,
+              colors,
             )
           }
         }

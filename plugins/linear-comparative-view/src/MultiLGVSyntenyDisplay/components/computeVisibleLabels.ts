@@ -1,12 +1,21 @@
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   computeLabelFontSize,
 } from '@jbrowse/alignments-core'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { OP_D, OP_EQ, OP_I, OP_M, OP_N, OP_X, isCsOpChar, isDigit } from './cigarConstants.ts'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+  isCsOpChar,
+  isDigit,
+} from './cigarConstants.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -40,9 +49,9 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
     const len = packed >>> 4
     const op = packed & 0xf
 
-    if (op === OP_M || op === OP_EQ) {
+    if (op === CIGAR_M || op === CIGAR_EQ) {
       refPos += len
-    } else if (op === OP_X) {
+    } else if (op === CIGAR_X) {
       if (len > 1) {
         const pw = len * pxPerBp
         if (pw > MIN_DELETION_WIDTH_PX && h >= MIN_HEIGHT_FOR_TEXT) {
@@ -56,7 +65,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
         }
       }
       refPos += len
-    } else if (op === OP_D || op === OP_N) {
+    } else if (op === CIGAR_D || op === CIGAR_N) {
       const pw = len * pxPerBp
       if (pw > MIN_DELETION_WIDTH_PX && h >= MIN_HEIGHT_FOR_TEXT) {
         labels.push({
@@ -68,7 +77,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
         })
       }
       refPos += len
-    } else if (op === OP_I) {
+    } else if (op === CIGAR_I) {
       const isLong = len >= LONG_INSERTION_MIN_LENGTH
       const widthPx = isLong ? len * pxPerBp : 0
       if (

@@ -1,16 +1,5 @@
 import { parseCigar2 } from '../MismatchParser/index.ts'
 
-// CIGAR operation indices (from BAM spec) - used in packed Uint32Array format
-export const CIGAR_M = 0
-export const CIGAR_I = 1
-export const CIGAR_D = 2
-export const CIGAR_N = 3
-export const CIGAR_S = 4
-export const CIGAR_H = 5
-export const CIGAR_P = 6
-export const CIGAR_EQ = 7
-export const CIGAR_X = 8
-
 // Bitmasks for CIGAR operation categories (use with: (1 << op) & MASK)
 // Alignment match ops (M=0, ==7) - may contain mismatches, need MD tag
 export const CIGAR_M_EQ_MASK = 0b10000001 // (1<<0)|(1<<7) = 129
@@ -44,3 +33,15 @@ export function getCigarOps(
 ): ArrayLike<number> {
   return typeof cigar === 'string' ? parseCigar2(cigar) : cigar || []
 }
+
+export {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_P,
+  CIGAR_S,
+  CIGAR_X,
+} from '@jbrowse/alignments-core'

@@ -1,20 +1,19 @@
 import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
+  textWidthForNumber,
 } from '@jbrowse/alignments-core'
 
-import {
-  OP_D,
-  OP_EQ,
-  OP_I,
-  OP_M,
-  OP_N,
-  OP_X,
-  isDigit,
-  parseCsSeqLen,
-} from './cigarConstants.ts'
+import { isDigit, parseCsSeqLen } from './cigarConstants.ts'
 import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
+import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -55,26 +54,16 @@ export function getFeatureColor(feat: MultiPairFeature, colorBy: string) {
   }
 }
 
-const MISMATCH_COLOR = '#f00'
-const DELETION_COLOR = '#888'
-const INSERTION_COLOR = '#c000c0'
-
-const BASE_COLORS: Record<string, string> = {
-  a: '#00bf00',
-  c: '#4747ff',
-  g: '#d5bb04',
-  t: '#f00',
-}
-
-function drawDeletion(ctx: Ctx, px: number, y: number, pw: number, h: number) {
-  ctx.fillStyle = DELETION_COLOR
+function drawDeletion(
+  ctx: Ctx,
+  px: number,
+  y: number,
+  pw: number,
+  h: number,
+  colors: SyntenyColors,
+) {
+  ctx.fillStyle = colors.deletion
   ctx.fillRect(px, y, Math.max(pw, 1), h)
-}
-
-function textWidthForNumber(num: number) {
-  const digits =
-    num < 10 ? 1 : num < 100 ? 2 : num < 1000 ? 3 : num < 10000 ? 4 : 5
-  return digits * 6 + 10
 }
 
 function drawSerifs(ctx: Ctx, px: number, y: number, h: number, triW: number) {
@@ -99,8 +88,9 @@ function drawInsertion(
   h: number,
   len: number,
   pxPerBp: number,
+  colors: SyntenyColors,
 ) {
-  ctx.fillStyle = INSERTION_COLOR
+  ctx.fillStyle = colors.insertion
   const isLong = len >= LONG_INSERTION_MIN_LENGTH
   const widthPx = isLong ? len * pxPerBp : 0
 
@@ -129,6 +119,7 @@ export function drawCigarOps(
   w: number,
   h: number,
   bpLen: number,
+  colors: SyntenyColors,
 ) {
   const pxPerBp = w / bpLen
   let refPos = 0
@@ -137,24 +128,24 @@ export function drawCigarOps(
     const len = packed >>> 4
     const op = packed & 0xf
 
-    if (op === OP_M || op === OP_EQ) {
+    if (op === CIGAR_M || op === CIGAR_EQ) {
       refPos += len
-    } else if (op === OP_X) {
+    } else if (op === CIGAR_X) {
       const px = x + refPos * pxPerBp
       const pw = len * pxPerBp
       if (pw >= 0.1) {
-        ctx.fillStyle = MISMATCH_COLOR
+        ctx.fillStyle = colors.mismatch
         ctx.fillRect(px, y, Math.max(pw, 1), h)
       }
       refPos += len
-    } else if (op === OP_D || op === OP_N) {
+    } else if (op === CIGAR_D || op === CIGAR_N) {
       const pw = len * pxPerBp
       if (pw >= 0.1) {
-        drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h)
+        drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, colors)
       }
       refPos += len
-    } else if (op === OP_I) {
-      drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp)
+    } else if (op === CIGAR_I) {
+      drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors)
     }
   }
 }
@@ -167,10 +158,17 @@ export function drawCsOps(
   w: number,
   h: number,
   bpLen: number,
+  colors: SyntenyColors,
 ) {
   const pxPerBp = w / bpLen
   let refPos = 0
   let i = 0
+  const baseColors: Record<string, string> = {
+    a: colors.baseA,
+    c: colors.baseC,
+    g: colors.baseG,
+    t: colors.baseT,
+  }
 
   while (i < cs.length) {
     const ch = cs[i]!
@@ -187,7 +185,7 @@ export function drawCsOps(
       const queryBase = cs[i + 2] ?? ''
       const px = x + refPos * pxPerBp
       const pw = Math.max(pxPerBp, 1)
-      ctx.fillStyle = BASE_COLORS[queryBase.toLowerCase()] ?? MISMATCH_COLOR
+      ctx.fillStyle = baseColors[queryBase.toLowerCase()] ?? colors.mismatch
       ctx.fillRect(px, y, pw, h)
       i += 3
       refPos += 1
@@ -198,7 +196,7 @@ export function drawCsOps(
       if (len > 0) {
         const pw = len * pxPerBp
         if (pw >= 0.1) {
-          drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h)
+          drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, colors)
         }
         refPos += len
       }
@@ -207,7 +205,7 @@ export function drawCsOps(
       const len = parseCsSeqLen(cs, i)
       i += len
       if (len > 0) {
-        drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp)
+        drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors)
       }
     } else {
       i++

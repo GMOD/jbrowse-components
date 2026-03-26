@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
-import { Tooltip } from '@mui/material'
+import { Tooltip, useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -12,6 +13,7 @@ import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
 
 import type { FeatureHitResult } from './hitTesting.ts'
+import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -183,6 +185,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<MultiSyntenyRenderer | null>(null)
   const [ready, setReady] = useState(false)
+  const { palette } = useTheme()
+  const colors: SyntenyColors = {
+    mismatch: MISMATCH_COLOR,
+    deletion: palette.deletion,
+    insertion: palette.insertion,
+    baseA: palette.bases.A.main,
+    baseC: palette.bases.C.main,
+    baseG: palette.bases.G.main,
+    baseT: palette.bases.T.main,
+  }
   const [tooltip, setTooltip] = useState<{
     text: string
     open: boolean
@@ -237,7 +249,13 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       const renderer = rendererRef.current
       if (renderer?.isGpu) {
         const { genomeRows, displayedGenomes, colorBy, showSnps } = model
-        renderer.uploadGeometry(genomeRows, displayedGenomes, colorBy, showSnps)
+        renderer.uploadGeometry(
+          genomeRows,
+          displayedGenomes,
+          colorBy,
+          showSnps,
+          colors,
+        )
       }
     })
   }, [ready, model, view])
@@ -303,6 +321,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           colorBy,
           labelW,
           showSnps,
+          colors,
         })
       }
     })

@@ -48,8 +48,26 @@ export class GetSubgraph extends RpcMethodType {
     )
     const adapter = dataAdapter as unknown as Partial<SubgraphAdapter>
     if (typeof adapter.getSubgraph !== 'function') {
+      console.warn(
+        '[GetSubgraph RPC] Adapter does not implement getSubgraph:',
+        dataAdapter.constructor.name,
+      )
       return ''
     }
-    return adapter.getSubgraph(region)
+    console.log(
+      '[GetSubgraph RPC] Calling getSubgraph on',
+      dataAdapter.constructor.name,
+      'region:',
+      JSON.stringify(region),
+    )
+    const result = await adapter.getSubgraph(region)
+    console.log(
+      '[GetSubgraph RPC] Result:',
+      result.length,
+      'chars,',
+      result.split('\n').length,
+      'lines',
+    )
+    return result
   }
 }

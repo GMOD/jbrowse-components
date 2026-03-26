@@ -1,5 +1,6 @@
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
+import { DEFAULT_SYNTENY_COLORS } from './multiSyntenyBackendTypes.ts'
 import {
   computeRegionRenderParams,
   prepareMultiSyntenyGpuData,
@@ -48,7 +49,13 @@ function readInstance(buf: ArrayBuffer, index: number) {
 describe('prepareMultiSyntenyGpuData', () => {
   test('returns empty data for no features', () => {
     const genomeRows = new Map<string, MultiPairFeature[]>()
-    const result = prepareMultiSyntenyGpuData(genomeRows, [], 'strand', true)
+    const result = prepareMultiSyntenyGpuData(
+      genomeRows,
+      [],
+      'strand',
+      true,
+      DEFAULT_SYNTENY_COLORS,
+    )
     expect(result.instanceCount).toBe(0)
     expect(result.buffer.byteLength).toBe(0)
     expect(result.refNameIndex.size).toBe(0)
@@ -61,6 +68,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     expect(result.instanceCount).toBe(1)
     expect(result.buffer.byteLength).toBe(INSTANCE_BYTE_SIZE)
@@ -84,6 +92,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA', 'genomeB', 'genomeC'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     expect(result.instanceCount).toBe(3)
 
@@ -109,6 +118,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     expect(result.instanceCount).toBe(2)
 
@@ -143,6 +153,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     const first = readInstance(result.buffer, 0)
     const second = readInstance(result.buffer, 1)
@@ -159,6 +170,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base feature + 1 deletion sub-instance
     expect(result.instanceCount).toBe(2)
@@ -185,6 +197,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base + 1 mismatch
     expect(result.instanceCount).toBe(2)
@@ -211,6 +224,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base + 1 insertion marker
     expect(result.instanceCount).toBe(2)
@@ -235,6 +249,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base + 1 insertion + 1 deletion
     expect(result.instanceCount).toBe(3)
@@ -261,6 +276,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base + 1 substitution
     expect(result.instanceCount).toBe(2)
@@ -286,6 +302,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base + 1 deletion
     expect(result.instanceCount).toBe(2)
@@ -309,6 +326,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     // 1 base + 1 insertion
     expect(result.instanceCount).toBe(2)
@@ -339,6 +357,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     const ids = new Set<number>()
     for (let i = 0; i < result.instanceCount; i++) {
@@ -365,6 +384,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     expect(result.refNameIndex.size).toBe(3)
     expect(result.refNameIndex.get('chr1')!.count).toBe(2)
@@ -388,6 +408,7 @@ describe('prepareMultiSyntenyGpuData', () => {
       ['genomeA'],
       'strand',
       true,
+      DEFAULT_SYNTENY_COLORS,
     )
     expect(result.buffer.byteLength).toBe(
       result.instanceCount * INSTANCE_BYTE_SIZE,

@@ -1,9 +1,11 @@
-export const OP_M = 0
-export const OP_I = 1
-export const OP_D = 2
-export const OP_N = 3
-export const OP_EQ = 7
-export const OP_X = 8
+export {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+} from '@jbrowse/alignments-core'
 
 export function isDigit(ch: string) {
   return ch >= '0' && ch <= '9'

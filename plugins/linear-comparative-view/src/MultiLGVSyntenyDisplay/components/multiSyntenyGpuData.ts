@@ -1,20 +1,21 @@
-import { InstanceBuilder } from '@jbrowse/alignments-core'
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_X,
+  InstanceBuilder,
+} from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import {
-  OP_D,
-  OP_EQ,
-  OP_I,
-  OP_M,
-  OP_N,
-  OP_X,
-  parseCsSeqLen,
-} from './cigarConstants.ts'
+import { parseCsSeqLen } from './cigarConstants.ts'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
+import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -38,19 +39,25 @@ export interface RegionRenderParams {
 
 type RGBA = [number, number, number, number]
 
-const MISMATCH_RGBA: RGBA = cssColorToNormalizedRgba('#f00')
-const DELETION_RGBA: RGBA = cssColorToNormalizedRgba('#888')
-const INSERTION_RGBA: RGBA = cssColorToNormalizedRgba('#c000c0')
-
-const BASE_COLORS: Record<string, RGBA> = {
-  A: cssColorToNormalizedRgba('#00bf00'),
-  a: cssColorToNormalizedRgba('#00bf00'),
-  C: cssColorToNormalizedRgba('#4747ff'),
-  c: cssColorToNormalizedRgba('#4747ff'),
-  G: cssColorToNormalizedRgba('#d5bb04'),
-  g: cssColorToNormalizedRgba('#d5bb04'),
-  T: cssColorToNormalizedRgba('#f00'),
-  t: cssColorToNormalizedRgba('#f00'),
+function buildColorArrays(colors: SyntenyColors) {
+  const mismatch: RGBA = cssColorToNormalizedRgba(colors.mismatch)
+  const deletion: RGBA = cssColorToNormalizedRgba(colors.deletion)
+  const insertion: RGBA = cssColorToNormalizedRgba(colors.insertion)
+  const aRgba = cssColorToNormalizedRgba(colors.baseA)
+  const cRgba = cssColorToNormalizedRgba(colors.baseC)
+  const gRgba = cssColorToNormalizedRgba(colors.baseG)
+  const tRgba = cssColorToNormalizedRgba(colors.baseT)
+  const bases: Record<string, RGBA> = {
+    A: aRgba,
+    a: aRgba,
+    C: cRgba,
+    c: cRgba,
+    G: gRgba,
+    g: gRgba,
+    T: tRgba,
+    t: tRgba,
+  }
+  return { mismatch, deletion, insertion, bases }
 }
 
 function addInstance(
@@ -86,16 +93,17 @@ function expandCigarOps(
   genomeRow: number,
   featureId: number,
   origRefName: string,
+  rgba: ReturnType<typeof buildColorArrays>,
 ) {
   let refPos = 0
   for (const packed of cigar) {
     const len = packed >>> 4
     const op = packed & 0xf
 
-    if (op === OP_M || op === OP_EQ) {
+    if (op === CIGAR_M || op === CIGAR_EQ) {
       refPos += len
-    } else if (op === OP_X) {
-      const [r, g, b, a] = MISMATCH_RGBA
+    } else if (op === CIGAR_X) {
+      const [r, g, b, a] = rgba.mismatch
       addInstance(
         builder,
         origRefNames,
@@ -110,8 +118,8 @@ function expandCigarOps(
         origRefName,
       )
       refPos += len
-    } else if (op === OP_D || op === OP_N) {
-      const [r, g, b, a] = DELETION_RGBA
+    } else if (op === CIGAR_D || op === CIGAR_N) {
+      const [r, g, b, a] = rgba.deletion
       addInstance(
         builder,
         origRefNames,
@@ -126,8 +134,8 @@ function expandCigarOps(
         origRefName,
       )
       refPos += len
-    } else if (op === OP_I) {
-      const [r, g, b, a] = INSERTION_RGBA
+    } else if (op === CIGAR_I) {
+      const [r, g, b, a] = rgba.insertion
       addInstance(
         builder,
         origRefNames,
@@ -153,6 +161,7 @@ function expandCsOps(
   genomeRow: number,
   featureId: number,
   origRefName: string,
+  rgba: ReturnType<typeof buildColorArrays>,
 ) {
   let refPos = 0
   let i = 0
@@ -170,7 +179,7 @@ function expandCsOps(
       refPos += num
     } else if (ch === '*') {
       const queryBase = cs[i + 2] ?? ''
-      const [r, g, b, a] = BASE_COLORS[queryBase] ?? MISMATCH_RGBA
+      const [r, g, b, a] = rgba.bases[queryBase] ?? rgba.mismatch
       addInstance(
         builder,
         origRefNames,
@@ -191,7 +200,7 @@ function expandCsOps(
       const len = parseCsSeqLen(cs, i)
       i += len
       if (len > 0) {
-        const [r, g, b, a] = DELETION_RGBA
+        const [r, g, b, a] = rgba.deletion
         addInstance(
           builder,
           origRefNames,
@@ -212,7 +221,7 @@ function expandCsOps(
       const len = parseCsSeqLen(cs, i)
       i += len
       if (len > 0) {
-        const [r, g, b, a] = INSERTION_RGBA
+        const [r, g, b, a] = rgba.insertion
         addInstance(
           builder,
           origRefNames,
@@ -240,7 +249,9 @@ export function prepareMultiSyntenyGpuData(
   displayedGenomes: string[],
   colorBy: string,
   showSnps: boolean,
+  colors: SyntenyColors,
 ): MultiSyntenyGpuInstanceData {
+  const rgba = buildColorArrays(colors)
   // Estimate capacity
   let totalFeatures = 0
   for (const genome of displayedGenomes) {
@@ -290,6 +301,7 @@ export function prepareMultiSyntenyGpuData(
             g,
             fId,
             origRefName,
+            rgba,
           )
         } else if (feat.cigar) {
           const parsed = parseCigar2(feat.cigar)
@@ -301,6 +313,7 @@ export function prepareMultiSyntenyGpuData(
             g,
             fId,
             origRefName,
+            rgba,
           )
         }
       }
