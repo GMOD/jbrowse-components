@@ -17,7 +17,6 @@ import {
   buildGfaFromEdges,
   buildGfaFromPathInference,
 } from './gfaSubgraphBuilders.ts'
-import { flipCs } from '../csUtils.ts'
 import { buildFeaturesForPath } from './segmentFeatureBuilder.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
@@ -634,9 +633,6 @@ export function findBubblePairRecord(
     const r = bubbles[i]!
     if (r.alleleA === viewRefAllele && r.alleleB === queryAllele) {
       return { cs: r.cs, identity: r.identity }
-    }
-    if (r.alleleB === viewRefAllele && r.alleleA === queryAllele) {
-      return { cs: flipCs(r.cs), identity: r.identity }
     }
   }
   return undefined

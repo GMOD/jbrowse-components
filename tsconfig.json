@@ -33,7 +33,8 @@
       "@jbrowse/plugin-linear-genome-view": [
         "./plugins/linear-genome-view/src/index.ts"
       ],
-      "@jbrowse/plugin-variants": ["./plugins/variants/src/index.ts"]
+      "@jbrowse/plugin-variants": ["./plugins/variants/src/index.ts"],
+      "@jbrowse/tree-sidebar": ["./packages/tree-sidebar/src/index.ts"]
     }
   },
   "exclude": [

@@ -2,34 +2,14 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type {
-  ClusterHierarchyNode,
-  HoveredTreeNode,
-} from './components/types.ts'
-import type { Source } from './types.ts'
+import type { TreeDrawingModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface TreeDrawingModel {
-  treeCanvas?: HTMLCanvasElement
-  mouseoverCanvas?: HTMLCanvasElement
-  hierarchy?: ClusterHierarchyNode
-  treeAreaWidth: number
-  height: number
-  scrollTop: number
-  rowHeight: number
-  totalHeight: number
-  hoveredTreeNode?: HoveredTreeNode
-  sources?: Source[]
-  isMinimized: boolean
-}
-
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
-  // Draw tree structure
   addDisposer(
     self,
     autorun(
       function treeDrawAutorun() {
-        // isAlive check guards against display being destroyed during async import
         if (!isAlive(self) || self.isMinimized) {
           return
         }
@@ -38,11 +18,11 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           hierarchy,
           treeAreaWidth,
           height,
-          scrollTop,
-          // IMPORTANT: We must access totalHeight for MobX to track it as a dependency.
-          // Without this, the autorun won't re-run when row height changes.
-          // Do not remove - this ensures the tree redraws when row height changes.
-          // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+          scrollTop = 0,
+          // IMPORTANT: We must access totalHeight for MobX to track it as a
+          // dependency. Without this, the autorun won't re-run when row height
+          // changes.
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           totalHeight: _totalHeight,
         } = self
 
@@ -55,17 +35,14 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
 
-        // Clear the entire canvas
         ctx.resetTransform()
         ctx.scale(2, 2)
         ctx.clearRect(0, 0, treeAreaWidth, height)
 
-        // Translate to simulate scrolling
         ctx.translate(0, -scrollTop)
         ctx.strokeStyle = '#0008'
         ctx.lineWidth = 1
 
-        // Use single path for all tree lines for better performance
         ctx.beginPath()
         for (const link of hierarchy.links()) {
           const { source, target } = link
@@ -74,28 +51,22 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           const tx = target.y!
           const sx = source.y!
 
-          // Vertical line
           ctx.moveTo(sx, sy)
           ctx.lineTo(sx, ty)
 
-          // Horizontal line
           ctx.moveTo(sx, ty)
           ctx.lineTo(tx, ty)
         }
         ctx.stroke()
       },
-      {
-        name: 'TreeDraw',
-      },
+      { name: 'TreeDraw' },
     ),
   )
 
-  // Draw hover highlights
   addDisposer(
     self,
     autorun(
       function treeHoverAutorun() {
-        // isAlive check guards against display being destroyed during async import
         if (!isAlive(self) || self.isMinimized) {
           return
         }
@@ -105,12 +76,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           rowHeight,
           hoveredTreeNode,
           height,
-          scrollTop,
+          scrollTop = 0,
           sources,
-          // IMPORTANT: We must access totalHeight for MobX to track it as a dependency.
-          // Without this, the autorun won't re-run when row height changes.
-          // Do not remove - this ensures highlights redraw when row height changes.
-          // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           totalHeight,
         } = self
         if (!mouseoverCanvas) {
@@ -131,38 +99,29 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.clearRect(0, 0, viewWidth, height)
 
         if (hierarchy && hoveredTreeNode && sources) {
-          // Save the context state
           ctx.save()
-
-          // Translate to simulate scrolling
           ctx.translate(0, -scrollTop)
 
-          // Draw highlight rectangles for descendant leaf rows
-          // In phased mode, each sample name may correspond to multiple rows
-          // (e.g., SAMPLE1 -> SAMPLE1 HP0, SAMPLE1 HP1)
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
           const descendantSet = new Set(hoveredTreeNode.descendantNames)
           for (let i = 0, l = sources.length; i < l; i++) {
             const source = sources[i]!
             if (descendantSet.has(source.name)) {
-              const y = (i + 0.5) * rowHeight
-              ctx.fillRect(0, y - rowHeight / 2, viewWidth, rowHeight)
+              const y = i * rowHeight
+              ctx.fillRect(0, y, viewWidth, rowHeight)
             }
           }
 
-          // Draw circle at the hovered node
           const { node } = hoveredTreeNode
           ctx.fillStyle = 'rgba(255,165,0,0.8)'
           ctx.beginPath()
           ctx.arc(node.y!, node.x!, 4, 0, 2 * Math.PI)
           ctx.fill()
 
-          // Add a border to the circle
           ctx.strokeStyle = 'rgba(255,140,0,1)'
           ctx.lineWidth = 1
           ctx.stroke()
 
-          // Restore the context state
           ctx.restore()
         }
       },

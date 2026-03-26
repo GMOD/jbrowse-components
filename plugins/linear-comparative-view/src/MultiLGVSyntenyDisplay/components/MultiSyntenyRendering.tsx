@@ -10,7 +10,7 @@ import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
-import { LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
+import { LABEL_FONT_MAX, LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
 
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
@@ -177,6 +177,59 @@ function FeatureHighlightOverlay({
   )
 }
 
+function GenomeNameOverlay({
+  displayedGenomes,
+  rowHeight,
+  labelW,
+  height,
+}: {
+  displayedGenomes: string[]
+  rowHeight: number
+  labelW: number
+  height: number
+}) {
+  if (labelW === 0) {
+    return null
+  }
+  const fontSize = Math.min(rowHeight - 4, LABEL_FONT_MAX)
+  if (fontSize < 4) {
+    return null
+  }
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: labelW,
+        height,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      {displayedGenomes.map((name, i) => (
+        <div
+          key={name}
+          style={{
+            position: 'absolute',
+            top: i * rowHeight,
+            left: 4,
+            height: rowHeight,
+            display: 'flex',
+            alignItems: 'center',
+            fontSize,
+            fontFamily: 'sans-serif',
+            color: '#333',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {name.length > 15 ? `${name.slice(0, 12)}...` : name}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   model,
 }: {
@@ -277,6 +330,22 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         const { height, rowHeight } = model
         const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
         const contentBlocks = view.staticBlocks.contentBlocks
+        console.log('[MultiSynteny GPU draw]', {
+          viewWidth: view.width,
+          viewOffsetPx: view.offsetPx,
+          labelW,
+          rowHeight,
+          height,
+          numBlocks: contentBlocks.length,
+          blocks: contentBlocks.map(b => ({
+            refName: b.refName,
+            start: b.start,
+            end: b.end,
+            offsetPx: b.offsetPx,
+            widthPx: b.widthPx,
+            regionScreenLeft: b.offsetPx - view.offsetPx,
+          })),
+        })
         renderer.renderGpu(
           contentBlocks,
           view.offsetPx,
@@ -333,6 +402,15 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const { genomeRows, displayedGenomes, rowHeight, height, showSnps } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+
+  console.log('[MultiSynteny render]', {
+    displayedGenomes,
+    rowHeight,
+    labelW,
+    numGenomeRows: genomeRows.size,
+    genomeRowKeys: [...genomeRows.keys()],
+    featureCounts: [...genomeRows.entries()].map(([k, v]) => `${k}: ${v.length}`),
+  })
 
   // Hide tooltip and hover on zoom or scroll changes
   useEffect(() => {
@@ -450,6 +528,12 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
             display: 'block',
             cursor: tooltip.open ? 'pointer' : 'default',
           }}
+        />
+        <GenomeNameOverlay
+          displayedGenomes={displayedGenomes}
+          rowHeight={rowHeight}
+          labelW={labelW}
+          height={height}
         />
         <VisibleLabelsOverlay labels={labels} width={width} height={height} />
         <FeatureHighlightOverlay

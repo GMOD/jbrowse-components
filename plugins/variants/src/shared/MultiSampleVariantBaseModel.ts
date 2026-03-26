@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -28,7 +27,6 @@ import HeightIcon from '@mui/icons-material/Height'
 import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ascending } from '@mui/x-charts-vendor/d3-array'
 import deepEqual from 'fast-deep-equal'
 
 import {
@@ -40,12 +38,12 @@ import {
 } from './constants.ts'
 import { getSources } from './getSources.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
-import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
+import {
+  computeHierarchyLayout,
+  parseClusterTree,
+} from '@jbrowse/tree-sidebar'
 
-import type {
-  ClusterHierarchyNode,
-  HoveredTreeNode,
-} from './components/types.ts'
+import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 import type { SampleInfo, Source } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -676,48 +674,7 @@ export default function MultiSampleVariantBaseModelF(
         if (!newick) {
           return undefined
         }
-        const tree = fromNewick(newick)
-        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
-          .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
-          .sort((a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
-            ascending(a.data.height || 1, b.data.height || 1),
-          )
-
-        // If subtree filter is active, find the matching subtree
-        if (self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
-            if (!node.children?.length) {
-              return [node.data.name]
-            }
-            return node.children.flatMap(child => getLeafNames(child))
-          }
-          const findSubtree = (
-            node: ClusterHierarchyNode,
-          ): ClusterHierarchyNode | undefined => {
-            const leafNames = getLeafNames(node)
-            if (
-              leafNames.length === filterSet.size &&
-              leafNames.every(name => filterSet.has(name))
-            ) {
-              return node
-            }
-            if (node.children) {
-              for (const child of node.children) {
-                const found = findSubtree(child)
-                if (found) {
-                  return found
-                }
-              }
-            }
-            return undefined
-          }
-          const subtree = findSubtree(root)
-          if (subtree) {
-            root = subtree
-          }
-        }
-        return root
+        return parseClusterTree(newick, self.subtreeFilter?.slice())
       },
     }))
     .views(self => {
@@ -774,11 +731,11 @@ export default function MultiSampleVariantBaseModelF(
           if (!r || !self.sources?.length) {
             return undefined
           }
-          const clust = cluster()
-          clust.size([this.rowHeight * this.nrow, self.treeAreaWidth])
-          clust.separation(() => 1)
-          clust(r)
-          return r
+          return computeHierarchyLayout(
+            r,
+            this.rowHeight * this.nrow,
+            self.treeAreaWidth,
+          )
         },
         /**
          * #method

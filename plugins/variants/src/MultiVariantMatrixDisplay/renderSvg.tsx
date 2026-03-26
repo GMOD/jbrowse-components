@@ -6,7 +6,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { HierarchyNode } from 'd3-hierarchy'
+import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 type LGV = LinearGenomeViewModel
 
@@ -18,7 +18,7 @@ interface RenderSvgModel {
   scrollTop: number
   availableHeight: number
   sources: { name: string }[] | undefined
-  hierarchy: HierarchyNode<{ name: string }> | undefined
+  hierarchy: ClusterHierarchyNode | undefined
   showTree: boolean
   treeAreaWidth: number
 }

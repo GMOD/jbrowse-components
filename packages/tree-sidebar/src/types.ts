@@ -13,16 +13,38 @@ export interface HoveredTreeNode {
   descendantNames: string[]
 }
 
+export interface TreeSource {
+  name: string
+  color?: string
+}
+
 export interface TreeSidebarModel {
+  totalHeight?: number
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
+  lineZoneHeight?: number
+  scrollTop?: number
   showTree: boolean
-  sources: { name: string; color?: string }[]
+  sources?: TreeSource[]
   subtreeFilter?: string[]
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
+}
+
+export interface TreeDrawingModel {
+  treeCanvas?: HTMLCanvasElement
+  mouseoverCanvas?: HTMLCanvasElement
+  hierarchy?: ClusterHierarchyNode
+  treeAreaWidth: number
+  height: number
+  scrollTop?: number
+  rowHeight: number
+  totalHeight?: number
+  hoveredTreeNode?: HoveredTreeNode
+  sources?: TreeSource[]
+  isMinimized?: boolean
 }

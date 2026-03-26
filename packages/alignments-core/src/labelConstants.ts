@@ -11,7 +11,7 @@ export const BASE_G_COLOR = '#d5bb04'
 export const BASE_T_COLOR = '#f00'
 
 export function computeLabelFontSize(h: number) {
-  return Math.max(5, Math.min(h - 1, 10))
+  return Math.max(8, Math.min(h, 10))
 }
 
 // SYNC: mirrors textWidthForNumber() in GLSL/WGSL cigarShaders.ts

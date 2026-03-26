@@ -7,7 +7,7 @@ import { Menu, MenuItem, alpha } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { ClusterHierarchyNode, TreeSidebarModel } from './treeTypes.ts'
+import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MenuAnchor {
@@ -23,6 +23,8 @@ function getDescendantNames(node: ClusterHierarchyNode): string[] {
   return node.children.flatMap(child => getDescendantNames(child))
 }
 
+const SIDEBAR_BACKGROUND_OPACITY = 0.8
+
 const TreeSidebar = observer(function TreeSidebar({
   model,
 }: {
@@ -33,7 +35,15 @@ const TreeSidebar = observer(function TreeSidebar({
   const [nodeData, setNodeData] = useState<ClusterHierarchyNode[]>([])
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
-  const { hierarchy, treeAreaWidth, height, showTree, sources } = model
+  const {
+    hierarchy,
+    treeAreaWidth,
+    height,
+    lineZoneHeight = 0,
+    scrollTop = 0,
+    showTree,
+    sources,
+  } = model
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
   const treeCanvasRef = useCallback(
@@ -41,7 +51,7 @@ const TreeSidebar = observer(function TreeSidebar({
       model.setTreeCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, treeAreaWidth, height],
+    [model, treeAreaWidth, height, lineZoneHeight],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:
@@ -50,14 +60,18 @@ const TreeSidebar = observer(function TreeSidebar({
       model.setMouseoverCanvasRef(ref)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, viewWidth, height],
+    [model, viewWidth, height, lineZoneHeight],
   )
 
   useEffect(() => {
     return autorun(
       function treeSpatialIndexAutorun() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { treeAreaWidth: _t, hierarchy: h } = model
+        const { treeAreaWidth: _t, hierarchy: h, totalHeight: th } = model
+        // IMPORTANT: We must access these observables for MobX to track them as
+        // dependencies. Without this, the autorun won't re-run when they change.
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        th
         if (!h) {
           setNodeIndex(null)
           setNodeData([])
@@ -65,6 +79,7 @@ const TreeSidebar = observer(function TreeSidebar({
         }
 
         const nodes = h.descendants().filter(node => node.children?.length)
+
         const index = new Flatbush(nodes.length)
         const hitRadius = 8
 
@@ -89,11 +104,11 @@ const TreeSidebar = observer(function TreeSidebar({
       }
       const rect = event.currentTarget.getBoundingClientRect()
       const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
+      const y = event.clientY - rect.top + scrollTop
       const results = nodeIndex.search(x, y, x, y)
       return results.length > 0 ? nodeData[results[0]!] : undefined
     },
-    [hierarchy, nodeIndex, nodeData],
+    [hierarchy, nodeIndex, nodeData, scrollTop],
   )
 
   const handleMouseMove = useCallback(
@@ -133,39 +148,42 @@ const TreeSidebar = observer(function TreeSidebar({
     setMenuAnchor(null)
   }, [])
 
-  if (!hierarchy || !showTree || !sources.length) {
+  if (!hierarchy || !showTree || !sources?.length) {
     return null
   }
+
+  const contentHeight = height - lineZoneHeight
 
   return (
     <>
       <div
         style={{
-          position: 'absolute',
+          position: 'sticky',
           top: 0,
           left: 0,
+          height: 0,
           zIndex: 100,
         }}
       >
         <div
           style={{
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             width: treeAreaWidth,
-            height,
-            background: alpha('#fff', 0.8),
+            height: contentHeight,
+            background: alpha('#fff', SIDEBAR_BACKGROUND_OPACITY),
           }}
         />
         <canvas
           ref={treeCanvasRef}
           width={treeAreaWidth * 2}
-          height={height * 2}
+          height={contentHeight * 2}
           style={{
             width: treeAreaWidth,
-            height,
+            height: contentHeight,
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             pointerEvents: 'none',
           }}
@@ -173,12 +191,12 @@ const TreeSidebar = observer(function TreeSidebar({
         <canvas
           ref={mouseoverCanvasRef}
           width={viewWidth}
-          height={height}
+          height={contentHeight}
           style={{
             width: viewWidth,
-            height,
+            height: contentHeight,
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             zIndex: 1,
             pointerEvents: 'none',
@@ -190,10 +208,10 @@ const TreeSidebar = observer(function TreeSidebar({
           onClick={handleClick}
           style={{
             position: 'absolute',
-            top: 0,
+            top: lineZoneHeight,
             left: 0,
             width: treeAreaWidth,
-            height,
+            height: contentHeight,
             zIndex: 2,
             cursor: 'pointer',
           }}
@@ -206,8 +224,8 @@ const TreeSidebar = observer(function TreeSidebar({
         }}
         style={{
           position: 'absolute',
-          top: 0,
-          height: '100%',
+          top: lineZoneHeight,
+          height: `calc(100% - ${lineZoneHeight}px)`,
           width: 4,
           zIndex: 101,
           left: treeAreaWidth,
