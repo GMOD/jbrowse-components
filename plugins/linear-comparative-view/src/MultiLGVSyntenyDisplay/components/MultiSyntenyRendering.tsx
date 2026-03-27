@@ -474,7 +474,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       displayedGenomes,
       rowHeight,
       rowSpacing,
-      labelW,
       showSnps,
       view,
       offsetPx,
