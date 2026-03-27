@@ -33,3 +33,81 @@ export function textWidthForNumber(num: number) {
   }
   return charWidth * 5 + padding
 }
+
+interface DrawCtx {
+  fillStyle: string | CanvasGradient | CanvasPattern
+  font: string
+  textAlign: string
+  textBaseline: string
+  fillRect(x: number, y: number, w: number, h: number): void
+  fillText(text: string, x: number, y: number, maxWidth?: number): void
+  beginPath(): void
+  moveTo(x: number, y: number): void
+  lineTo(x: number, y: number): void
+  closePath(): void
+  fill(): void
+}
+
+function drawSerifs(ctx: DrawCtx, px: number, y: number, h: number, triW: number) {
+  ctx.beginPath()
+  ctx.moveTo(px - triW, y)
+  ctx.lineTo(px + triW, y)
+  ctx.lineTo(px, y + triW)
+  ctx.closePath()
+  ctx.fill()
+  ctx.beginPath()
+  ctx.moveTo(px - triW, y + h)
+  ctx.lineTo(px + triW, y + h)
+  ctx.lineTo(px, y + h - triW)
+  ctx.closePath()
+  ctx.fill()
+}
+
+export function drawInsertion(
+  ctx: DrawCtx,
+  px: number,
+  y: number,
+  h: number,
+  len: number,
+  pxPerBp: number,
+  color: string,
+) {
+  ctx.fillStyle = color
+  const isLong = len >= LONG_INSERTION_MIN_LENGTH
+  const widthPx = isLong ? len * pxPerBp : 0
+
+  if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+    const boxW = textWidthForNumber(len)
+    ctx.fillRect(px - boxW / 2, y, boxW, h)
+    ctx.fillStyle = 'white'
+    ctx.font = `${Math.min(9, h - 2)}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(`${len}`, px, y + h / 2)
+  } else if (isLong) {
+    const barW = Math.min(5, widthPx / 3)
+    ctx.fillRect(px - barW / 2, y, barW, h)
+    if (h >= 6) {
+      drawSerifs(ctx, px, y, h, Math.min(4, h / 3))
+    }
+    if (h >= MIN_HEIGHT_FOR_TEXT) {
+      ctx.fillStyle = color
+      ctx.font = `${Math.min(9, h - 2)}px sans-serif`
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(`${len}`, px + barW / 2 + 2, y + h / 2)
+    }
+  } else {
+    ctx.fillRect(px - 0.5, y, 1, h)
+    if (h >= 6) {
+      drawSerifs(ctx, px, y, h, Math.min(3, h / 3))
+    }
+    if (h >= MIN_HEIGHT_FOR_TEXT) {
+      ctx.fillStyle = color
+      ctx.font = `${Math.min(9, h - 2)}px sans-serif`
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(`${len}`, px + 3, y + h / 2)
+    }
+  }
+}

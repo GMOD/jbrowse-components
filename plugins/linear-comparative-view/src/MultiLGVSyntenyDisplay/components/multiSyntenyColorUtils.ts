@@ -5,9 +5,7 @@ import {
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
-  textWidthForNumber,
+  drawInsertion,
 } from '@jbrowse/alignments-core'
 
 import { isDigit, parseCsSeqLen } from './cigarConstants.ts'
@@ -66,51 +64,6 @@ function drawDeletion(
   ctx.fillRect(px, y, Math.max(pw, 1), h)
 }
 
-function drawSerifs(ctx: Ctx, px: number, y: number, h: number, triW: number) {
-  ctx.beginPath()
-  ctx.moveTo(px - triW, y)
-  ctx.lineTo(px + triW, y)
-  ctx.lineTo(px, y + triW)
-  ctx.closePath()
-  ctx.fill()
-  ctx.beginPath()
-  ctx.moveTo(px - triW, y + h)
-  ctx.lineTo(px + triW, y + h)
-  ctx.lineTo(px, y + h - triW)
-  ctx.closePath()
-  ctx.fill()
-}
-
-function drawInsertion(
-  ctx: Ctx,
-  px: number,
-  y: number,
-  h: number,
-  len: number,
-  pxPerBp: number,
-  colors: SyntenyColors,
-) {
-  ctx.fillStyle = colors.insertion
-  const isLong = len >= LONG_INSERTION_MIN_LENGTH
-  const widthPx = isLong ? len * pxPerBp : 0
-
-  if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
-    const boxW = textWidthForNumber(len)
-    ctx.fillRect(px - boxW / 2, y, boxW, h)
-  } else if (isLong) {
-    const barW = Math.min(5, widthPx / 3)
-    ctx.fillRect(px - barW / 2, y, barW, h)
-    if (h >= 6) {
-      drawSerifs(ctx, px, y, h, Math.min(4, h / 3))
-    }
-  } else {
-    ctx.fillRect(px - 0.5, y, 1, h)
-    if (h >= 6) {
-      drawSerifs(ctx, px, y, h, Math.min(3, h / 3))
-    }
-  }
-}
-
 export function drawCigarOps(
   ctx: Ctx,
   cigar: number[],
@@ -145,7 +98,7 @@ export function drawCigarOps(
       }
       refPos += len
     } else if (op === CIGAR_I) {
-      drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors)
+      drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors.insertion)
     }
   }
 }
@@ -205,7 +158,7 @@ export function drawCsOps(
       const len = parseCsSeqLen(cs, i)
       i += len
       if (len > 0) {
-        drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors)
+        drawInsertion(ctx, x + refPos * pxPerBp, y, h, len, pxPerBp, colors.insertion)
       }
     } else {
       i++

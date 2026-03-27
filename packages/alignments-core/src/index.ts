@@ -10,6 +10,7 @@ export {
   MIN_HEIGHT_FOR_TEXT,
   MISMATCH_COLOR,
   computeLabelFontSize,
+  drawInsertion,
   textWidthForNumber,
 } from './labelConstants.ts'
 export {
