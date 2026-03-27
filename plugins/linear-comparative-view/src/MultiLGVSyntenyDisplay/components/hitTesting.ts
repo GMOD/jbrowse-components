@@ -213,7 +213,7 @@ export function hitTestMultiSynteny(
   }
 
   const sampleIdx = Math.floor(mouseY / rowHeight)
-  const bp = view.pxToBp(mouseX - labelW)
+  const bp = view.pxToBp(mouseX)
   const coord = bp.start + bp.offset
 
   // Check mismatch index first for sub-feature detail

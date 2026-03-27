@@ -79,7 +79,6 @@ function featureToRect(
   sampleIdx: number,
   rowHeight: number,
   rowSpacing: boolean,
-  labelW: number,
   view: LinearGenomeViewModel,
   viewWidth: number,
 ) {
@@ -93,8 +92,8 @@ function featureToRect(
   }
   const padding = rowSpacing ? 1 : 0
   return {
-    x: Math.max(px1.offsetPx - view.offsetPx + labelW, labelW),
-    x2: Math.min(px2.offsetPx - view.offsetPx + labelW, viewWidth),
+    x: Math.max(px1.offsetPx - view.offsetPx, 0),
+    x2: Math.min(px2.offsetPx - view.offsetPx, viewWidth),
     y: sampleIdx * rowHeight + padding,
     h: rowHeight - padding * 2,
   }
@@ -105,7 +104,6 @@ function FeatureHighlightOverlay({
   selectedHit,
   rowHeight,
   rowSpacing,
-  labelW,
   view,
   width,
   height,
@@ -114,7 +112,6 @@ function FeatureHighlightOverlay({
   selectedHit: FeatureHitResult | undefined
   rowHeight: number
   rowSpacing: boolean
-  labelW: number
   view: LinearGenomeViewModel
   width: number
   height: number
@@ -125,7 +122,6 @@ function FeatureHighlightOverlay({
         hoveredHit.sampleIdx,
         rowHeight,
         rowSpacing,
-        labelW,
         view,
         width,
       )
@@ -136,7 +132,6 @@ function FeatureHighlightOverlay({
         selectedHit.sampleIdx,
         rowHeight,
         rowSpacing,
-        labelW,
         view,
         width,
       )
@@ -218,14 +213,18 @@ function GenomeNameOverlay({
           style={{
             position: 'absolute',
             top: i * rowHeight,
-            left: 4,
+            left: 0,
+            width: labelW,
             height: rowHeight,
+            background: i % 2 === 0 ? '#f8f8f8' : '#ededed',
             display: 'flex',
             alignItems: 'center',
+            paddingLeft: 4,
             fontSize,
             fontFamily: 'sans-serif',
             color: '#333',
             whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
           }}
         >
           {name.length > 15 ? `${name.slice(0, 12)}...` : name}
@@ -467,7 +466,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         displayedGenomes,
         rowHeight,
         rowSpacing,
-        labelW,
         showSnps,
         view.bpToPx.bind(view),
         offsetPx,
@@ -525,7 +523,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           selectedHit={selectedHit}
           rowHeight={rowHeight}
           rowSpacing={rowSpacing}
-          labelW={labelW}
           view={view}
           width={width}
           height={height}

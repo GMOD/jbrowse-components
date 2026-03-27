@@ -183,7 +183,6 @@ export function computeMultiSyntenyLabels(
   displayedGenomes: string[],
   rowHeight: number,
   rowSpacing: boolean,
-  labelW: number,
   showSnps: boolean,
   bpToPx: (arg: {
     refName: string
@@ -217,12 +216,12 @@ export function computeMultiSyntenyLabels(
       if (!px1 || !px2) {
         continue
       }
-      const x1 = px1.offsetPx - offsetPx + labelW
-      const x2 = px2.offsetPx - offsetPx + labelW
+      const x1 = px1.offsetPx - offsetPx
+      const x2 = px2.offsetPx - offsetPx
       const blockWidth = x2 - x1
 
       // Skip features entirely off-screen
-      if (x1 + blockWidth < labelW || x1 > viewWidth) {
+      if (x1 + blockWidth < 0 || x1 > viewWidth) {
         continue
       }
 

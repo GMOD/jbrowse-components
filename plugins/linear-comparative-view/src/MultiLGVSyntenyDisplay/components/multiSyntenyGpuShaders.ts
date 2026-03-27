@@ -56,20 +56,20 @@ void main() {
   float t1 = hpScaleLinear(splitStart, bpRange, u.hpZero);
   float t2 = hpScaleLinear(splitEnd, bpRange, u.hpZero);
 
-  float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth + u.labelW;
-  float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth + u.labelW;
+  float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth;
+  float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth;
 
   // Ensure minimum 1px width so sub-pixel features don't flicker during pan/zoom
   px2 = max(px2, px1 + 1.0);
 
   // Cull off-screen features
-  if (px2 < u.labelW || px1 > u.resolutionX) {
+  if (px2 < 0.0 || px1 > u.resolutionX) {
     gl_Position = vec4(0.0);
     return;
   }
 
-  // Clamp to label boundary
-  px1 = max(px1, u.labelW);
+  // Clamp to left edge
+  px1 = max(px1, 0.0);
 
   float pad = u.rowPadding;
   float y1 = float(genomeRow) * u.rowHeight + pad;
@@ -158,18 +158,18 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let t1 = hp_scale_linear(splitStart, bpRange, uniforms.hpZero);
   let t2 = hp_scale_linear(splitEnd, bpRange, uniforms.hpZero);
 
-  var px1 = uniforms.regionScreenLeft + t1 * uniforms.regionScreenWidth + uniforms.labelW;
-  var px2 = uniforms.regionScreenLeft + t2 * uniforms.regionScreenWidth + uniforms.labelW;
+  var px1 = uniforms.regionScreenLeft + t1 * uniforms.regionScreenWidth;
+  var px2 = uniforms.regionScreenLeft + t2 * uniforms.regionScreenWidth;
 
   // Ensure minimum 1px width so sub-pixel features don't flicker during pan/zoom
   px2 = max(px2, px1 + 1.0);
 
-  if (px2 < uniforms.labelW || px1 > uniforms.resolutionX) {
+  if (px2 < 0.0 || px1 > uniforms.resolutionX) {
     out.pos = vec4f(0.0, 0.0, 0.0, 0.0);
     return out;
   }
 
-  px1 = max(px1, uniforms.labelW);
+  px1 = max(px1, 0.0);
 
   let pad = uniforms.rowPadding;
   let y1 = f32(inst.genomeRow) * uniforms.rowHeight + pad;

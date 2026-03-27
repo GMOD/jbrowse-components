@@ -11,7 +11,123 @@ import type {
   MultiSyntenyCanvasBackend,
   MultiSyntenyCanvasRenderOpts,
 } from './multiSyntenyBackendTypes.ts'
+import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
+import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+
+type Ctx = CanvasRenderingContext2D | SvgCanvas
+
+export function renderMultiSyntenyToCtx(
+  ctx: Ctx,
+  genomeRows: Map<string, MultiPairFeature[]>,
+  displayedGenomes: string[],
+  opts: {
+    width: number
+    height: number
+    rowHeight: number
+    rowSpacing: boolean
+    bpToPx: (refName: string, coord: number) => number | undefined
+    colorBy: string
+    labelW: number
+    showSnps: boolean
+    colors: SyntenyColors
+  },
+) {
+  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors } = opts
+  const showLabels = labelW > 0
+
+  ctx.fillStyle = '#ededed'
+  ctx.fillRect(0, 0, width, height)
+
+  for (let g = 0; g < displayedGenomes.length; g++) {
+    const genomeName = displayedGenomes[g]!
+    const y = g * rowHeight
+    const features = genomeRows.get(genomeName) ?? []
+
+    if (g % 2 === 0) {
+      ctx.fillStyle = '#f8f8f8'
+      ctx.fillRect(0, y, width, rowHeight)
+    }
+
+    const padding = rowSpacing ? 1 : 0
+    for (const feat of features) {
+      const px1 = bpToPx(feat.origRefName, feat.start)
+      const px2 = bpToPx(feat.origRefName, feat.end)
+      if (px1 === undefined || px2 === undefined) {
+        continue
+      }
+      const blockWidth = Math.max(px2 - px1, 1)
+
+      if (px1 + blockWidth < 0 || px1 > width) {
+        continue
+      }
+
+      const clippedX = Math.max(px1, 0)
+      const clippedW = Math.min(blockWidth, width - clippedX)
+      const fy = y + padding
+      const fh = rowHeight - padding * 2
+
+      ctx.fillStyle = getFeatureColor(feat, colorBy)
+      ctx.fillRect(clippedX, fy, clippedW, fh)
+
+      if (showSnps) {
+        const bpLen = feat.end - feat.start
+        if (feat.cs) {
+          drawCsOps(ctx, feat.cs, px1, fy, blockWidth, fh, bpLen, colors)
+        } else if (feat.cigar) {
+          drawCigarOps(
+            ctx,
+            parseCigar2(feat.cigar),
+            px1,
+            fy,
+            blockWidth,
+            fh,
+            bpLen,
+            colors,
+          )
+        }
+      }
+    }
+
+    if (rowHeight >= 4) {
+      ctx.strokeStyle = '#e0e0e0'
+      ctx.lineWidth = 0.5
+      ctx.beginPath()
+      ctx.moveTo(0, y + rowHeight)
+      ctx.lineTo(width, y + rowHeight)
+      ctx.stroke()
+    }
+  }
+
+  // Re-draw sidebar area on top of features so genome labels are not
+  // obscured by features that extend into the label region
+  if (showLabels) {
+    ctx.fillStyle = '#ededed'
+    ctx.fillRect(0, 0, labelW, height)
+    for (let g = 0; g < displayedGenomes.length; g++) {
+      const y = g * rowHeight
+      if (g % 2 === 0) {
+        ctx.fillStyle = '#f8f8f8'
+        ctx.fillRect(0, y, labelW, rowHeight)
+      }
+      ctx.fillStyle = '#333'
+      ctx.font = `${Math.min(rowHeight - 4, LABEL_FONT_MAX)}px sans-serif`
+      ctx.textBaseline = 'middle'
+      const genomeName = displayedGenomes[g]!
+      const displayName =
+        genomeName.length > 15 ? `${genomeName.slice(0, 12)}...` : genomeName
+      ctx.fillText(displayName, 4, y + rowHeight / 2)
+      if (rowHeight >= 4) {
+        ctx.strokeStyle = '#e0e0e0'
+        ctx.lineWidth = 0.5
+        ctx.beginPath()
+        ctx.moveTo(0, y + rowHeight)
+        ctx.lineTo(labelW, y + rowHeight)
+        ctx.stroke()
+      }
+    }
+  }
+}
 
 export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
   private canvas: HTMLCanvasElement
@@ -41,96 +157,10 @@ export class Canvas2DMultiSyntenyRenderer implements MultiSyntenyCanvasBackend {
     displayedGenomes: string[],
     opts: MultiSyntenyCanvasRenderOpts,
   ) {
-    const {
-      width,
-      height,
-      rowHeight,
-      rowSpacing,
-      bpToPx,
-      colorBy,
-      labelW,
-      showSnps,
-      colors,
-    } = opts
-    const showLabels = labelW > 0
-    const ctx = this.ctx
-
     const dpr = window.devicePixelRatio || 1
-    this.resize(width, height)
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = '#ededed'
-    ctx.fillRect(0, 0, width, height)
-
-    for (let g = 0; g < displayedGenomes.length; g++) {
-      const genomeName = displayedGenomes[g]!
-      const y = g * rowHeight
-      const features = genomeRows.get(genomeName) ?? []
-
-      if (g % 2 === 0) {
-        ctx.fillStyle = '#f8f8f8'
-        ctx.fillRect(0, y, width, rowHeight)
-      }
-
-      if (showLabels) {
-        ctx.fillStyle = '#333'
-        ctx.font = `${Math.min(rowHeight - 4, LABEL_FONT_MAX)}px sans-serif`
-        ctx.textBaseline = 'middle'
-        const displayName =
-          genomeName.length > 15 ? `${genomeName.slice(0, 12)}...` : genomeName
-        ctx.fillText(displayName, 4, y + rowHeight / 2)
-      }
-
-      const padding = rowSpacing ? 1 : 0
-      for (const feat of features) {
-        const px1 = bpToPx(feat.origRefName, feat.start)
-        const px2 = bpToPx(feat.origRefName, feat.end)
-        if (px1 === undefined || px2 === undefined) {
-          continue
-        }
-        const x1 = px1 + labelW
-        const x2 = px2 + labelW
-        const blockWidth = Math.max(x2 - x1, 1)
-
-        if (x1 + blockWidth < labelW || x1 > width) {
-          continue
-        }
-
-        const clippedX = Math.max(x1, labelW)
-        const clippedW = Math.min(blockWidth, width - clippedX)
-        const fy = y + padding
-        const fh = rowHeight - padding * 2
-
-        ctx.fillStyle = getFeatureColor(feat, colorBy)
-        ctx.fillRect(clippedX, fy, clippedW, fh)
-
-        if (showSnps) {
-          const bpLen = feat.end - feat.start
-          if (feat.cs) {
-            drawCsOps(ctx, feat.cs, x1, fy, blockWidth, fh, bpLen, colors)
-          } else if (feat.cigar) {
-            drawCigarOps(
-              ctx,
-              parseCigar2(feat.cigar),
-              x1,
-              fy,
-              blockWidth,
-              fh,
-              bpLen,
-              colors,
-            )
-          }
-        }
-      }
-
-      if (rowHeight >= 4) {
-        ctx.strokeStyle = '#e0e0e0'
-        ctx.lineWidth = 0.5
-        ctx.beginPath()
-        ctx.moveTo(0, y + rowHeight)
-        ctx.lineTo(width, y + rowHeight)
-        ctx.stroke()
-      }
-    }
+    this.resize(opts.width, opts.height)
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    renderMultiSyntenyToCtx(this.ctx, genomeRows, displayedGenomes, opts)
   }
 
   dispose() {
