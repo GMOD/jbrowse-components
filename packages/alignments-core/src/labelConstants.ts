@@ -102,12 +102,5 @@ export function drawInsertion(
     if (h >= 6) {
       drawSerifs(ctx, px, y, h, Math.min(3, h / 3))
     }
-    if (h >= MIN_HEIGHT_FOR_TEXT) {
-      ctx.fillStyle = color
-      ctx.font = `${Math.min(9, h - 2)}px sans-serif`
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(`${len}`, px + 3, y + h / 2)
-    }
   }
 }

@@ -32,15 +32,13 @@ export default function VisibleLabelsOverlay({
     ctx.clearRect(0, 0, width, height)
     for (const label of labels) {
       ctx.font = `bold ${label.fontSize}px monospace`
-      ctx.textAlign = label.textAlign ?? 'center'
+      ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      if (label.color) {
-        ctx.fillStyle = label.color
-      } else if (label.type === 'mismatch' && label.text.length === 1) {
-        ctx.fillStyle = BASE_CONTRAST[label.text] ?? '#fff'
-      } else {
-        ctx.fillStyle = '#fff'
+      let fillColor = '#fff'
+      if (label.type === 'mismatch' && label.text.length === 1) {
+        fillColor = BASE_CONTRAST[label.text] ?? '#fff'
       }
+      ctx.fillStyle = fillColor
       ctx.fillText(label.text, label.x, label.y)
     }
   }, [labels, width, height])
