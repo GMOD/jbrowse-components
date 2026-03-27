@@ -351,6 +351,7 @@ export class WebGPUFeatureRenderer implements CanvasFeatureBackend {
         scissorW,
         scrollY,
         bpPerPx,
+        block.reversed,
       )
       device.queue.writeBuffer(
         this.uniformBuffer,
@@ -496,6 +497,7 @@ export class WebGPUFeatureRenderer implements CanvasFeatureBackend {
     canvasWidth: number,
     scrollY: number,
     bpPerPx: number,
+    reversed: boolean,
   ) {
     this.uniformF32[0] = bpRangeHi
     this.uniformF32[1] = bpRangeLo
@@ -506,6 +508,7 @@ export class WebGPUFeatureRenderer implements CanvasFeatureBackend {
     this.uniformF32[6] = scrollY
     this.uniformF32[7] = bpPerPx
     this.uniformF32[8] = 0
+    this.uniformF32[9] = reversed ? 1.0 : 0.0
   }
 
   private splitPositionWithFrac(value: number): [number, number] {

@@ -145,10 +145,10 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     bpLength: number,
     fullBlockWidth: number,
   ) {
-    return (
-      block.screenStartPx +
-      ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
-    )
+    const frac = (absBp - block.bpRangeX[0]) / bpLength
+    return block.reversed
+      ? block.screenEndPx - frac * fullBlockWidth
+      : block.screenStartPx + frac * fullBlockWidth
   }
 
   private drawLines(

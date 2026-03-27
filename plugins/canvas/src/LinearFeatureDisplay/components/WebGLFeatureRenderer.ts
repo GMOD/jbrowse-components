@@ -23,6 +23,8 @@ vec2 hpSplitUint(uint value) {
   return vec2(float(hi), float(lo));
 }
 
+uniform float u_reversed;
+
 // WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
 // terms. Do not simplify.
 float hpToClipX(vec2 splitPos, vec3 domain) {
@@ -30,7 +32,8 @@ float hpToClipX(vec2 splitPos, vec3 domain) {
   float step = 2.0 / domain.z;
   float hi = max(splitPos.x - domain.x, -inf);
   float lo = max(splitPos.y - domain.y, -inf);
-  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
+  float cx = dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
+  return mix(cx, -cx, u_reversed);
 }
 `
 
@@ -340,6 +343,7 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       'u_canvasWidth',
       'u_scrollY',
       'u_zero',
+      'u_reversed',
     ]
     this.cacheUniforms(this.rectProgram, this.rectUniforms, commonUniforms)
     this.cacheUniforms(this.lineProgram, this.lineUniforms, [
@@ -348,6 +352,7 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       'u_canvasHeight',
       'u_scrollY',
       'u_zero',
+      'u_reversed',
     ])
     this.cacheUniforms(this.chevronProgram, this.chevronUniforms, [
       ...commonUniforms,
@@ -659,6 +664,8 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       const clippedLengthBp = clippedBpEnd - clippedBpStart
       const regionStart = region.regionStart
 
+      const reversedF = block.reversed ? 1.0 : 0.0
+
       if (region.lineVAO && region.lineCount > 0) {
         gl.useProgram(this.lineProgram)
         gl.uniform3f(
@@ -671,6 +678,7 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
         gl.uniform1f(this.lineUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.lineUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.lineUniforms.u_zero!, 0)
+        gl.uniform1f(this.lineUniforms.u_reversed!, reversedF)
         gl.bindVertexArray(region.lineVAO)
         gl.drawArraysInstanced(gl.LINES, 0, 2, region.lineCount)
       }
@@ -692,6 +700,7 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
         gl.uniform1f(this.chevronUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.chevronUniforms.u_bpPerPx!, bpPerPx)
         gl.uniform1f(this.chevronUniforms.u_zero!, 0)
+        gl.uniform1f(this.chevronUniforms.u_reversed!, reversedF)
         gl.bindVertexArray(region.chevronVAO)
         gl.drawArraysInstanced(
           gl.LINES,
@@ -713,6 +722,7 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       gl.uniform1f(this.rectUniforms.u_canvasWidth!, scissorW)
       gl.uniform1f(this.rectUniforms.u_scrollY!, scrollY)
       gl.uniform1f(this.rectUniforms.u_zero!, 0)
+      gl.uniform1f(this.rectUniforms.u_reversed!, reversedF)
       gl.bindVertexArray(region.rectVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.rectCount)
 
@@ -732,6 +742,7 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
         gl.uniform1f(this.arrowUniforms.u_canvasWidth!, scissorW)
         gl.uniform1f(this.arrowUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.arrowUniforms.u_zero!, 0)
+        gl.uniform1f(this.arrowUniforms.u_reversed!, reversedF)
         gl.bindVertexArray(region.arrowVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, region.arrowCount)
       }
