@@ -26,7 +26,10 @@ export interface Region {
   assemblyName: string
 }
 
-export type RegionWithNumber = Region & { regionNumber: number }
+export interface RegionWithNumber {
+  region: Region
+  regionNumber: number
+}
 
 export interface FetchContext {
   stopToken: StopToken
@@ -192,7 +195,7 @@ export default function MultiRegionDisplayMixin() {
                 const result = await checkByteEstimate(
                   session.rpcManager,
                   getRpcSessionId(self),
-                  needed,
+                  needed.map(r => r.region),
                   byteEstimateConfig,
                   ctx,
                 )

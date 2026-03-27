@@ -352,7 +352,7 @@ export default function stateModelFactory(
 
         if (isAlive(self) && generation === self.fetchGeneration) {
           self.setRpcDataForRegion(region.regionNumber, result)
-          self.setLoadedRegionForRegion(region.regionNumber, region)
+          self.setLoadedRegionForRegion(region.regionNumber, region.region)
           self.setLoadedBpPerPxForRegion(region.regionNumber, bpPerPx)
         }
       }

@@ -655,10 +655,10 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(item =>
+            const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
-                item,
-                item.regionNumber,
+                region,
+                regionNumber,
                 bpPerPx,
                 ctx.stopToken,
               ),

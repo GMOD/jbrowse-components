@@ -1400,9 +1400,9 @@ export default function stateModelFactory(
             regionNumber,
           })
         }
-        for (const r of regions) {
-          if (!allRegionInfos.some(ri => ri.regionNumber === r.regionNumber)) {
-            allRegionInfos.push(r)
+        for (const { region, regionNumber } of regions) {
+          if (!allRegionInfos.some(ri => ri.regionNumber === regionNumber)) {
+            allRegionInfos.push({ ...region, regionNumber })
           }
         }
         const { arcs, lines } = computeArcsFromPileupData(
@@ -1435,7 +1435,7 @@ export default function stateModelFactory(
 
       return {
         async fetchFeatures(region: Region, regionNumber = 0) {
-          self.onFetchNeeded([{ ...region, regionNumber }])
+          self.onFetchNeeded([{ region, regionNumber }])
         },
 
         getByteEstimateConfig() {
@@ -1449,11 +1449,11 @@ export default function stateModelFactory(
 
         onFetchNeeded(needed: RegionWithNumber[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(item =>
+            const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
                 self.adapterConfigSnapshot,
-                item,
-                item.regionNumber,
+                region,
+                regionNumber,
                 ctx.stopToken,
               ),
             )
@@ -1726,7 +1726,12 @@ export default function stateModelFactory(
                 prevArcColorByType = colorByType
                 if (self.showArcs && self.rpcDataMap.size > 0) {
                   const view = getContainingView(self) as LGV
-                  computeAndSetArcs(view.mergedVisibleRegions)
+                  computeAndSetArcs(
+                    view.mergedVisibleRegions.map(vr => ({
+                      region: vr,
+                      regionNumber: vr.regionNumber,
+                    })),
+                  )
                 }
               },
               { name: 'LinearAlignmentsDisplay:recomputeArcColors' },

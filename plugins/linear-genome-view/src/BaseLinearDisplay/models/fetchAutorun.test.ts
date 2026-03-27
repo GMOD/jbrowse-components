@@ -7,9 +7,9 @@ function shouldFetchRegion(
 ) {
   const loaded = loadedRegions.get(vr.regionNumber)
   const boundsValid =
-    loaded?.refName === vr.refName &&
-    vr.start >= loaded.start &&
-    vr.end <= loaded.end
+    loaded?.refName === vr.region.refName &&
+    vr.region.start >= (loaded?.start ?? Infinity) &&
+    vr.region.end <= (loaded?.end ?? -Infinity)
   if (boundsValid && isCacheValid(vr.regionNumber)) {
     return false
   }
@@ -36,7 +36,7 @@ function makeRegion(
   end: number,
   refName = 'chr1',
 ): RegionWithNumber {
-  return { regionNumber, refName, start, end, assemblyName: 'test' }
+  return { region: { refName, start, end, assemblyName: 'test' }, regionNumber }
 }
 
 describe('fetch autorun region determination', () => {

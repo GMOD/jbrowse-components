@@ -1491,9 +1491,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.mergedVisibleRegions.map(vr => {
             const dr = self.displayedRegions[vr.regionNumber]!
             return {
-              ...vr,
-              start: Math.max(dr.start, vr.start - bufferBp),
-              end: Math.min(dr.end, vr.end + bufferBp),
+              region: {
+                refName: vr.refName,
+                start: Math.max(dr.start, vr.start - bufferBp),
+                end: Math.min(dr.end, vr.end + bufferBp),
+                assemblyName: vr.assemblyName,
+              },
+              regionNumber: vr.regionNumber,
             }
           })
         },
