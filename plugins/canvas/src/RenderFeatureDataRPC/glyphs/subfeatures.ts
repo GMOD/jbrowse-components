@@ -115,9 +115,7 @@ export const subfeaturesGlyph: Glyph = {
         start: child.get('start'),
         end: child.get('end'),
       }
-      const offsetBp = reversed
-        ? featureBp.end - childBp.end
-        : childBp.start - featureBp.start
+      const offsetBp = childBp.start - featureBp.start
       const xRelativePx = offsetBp / bpPerPx
 
       childLayout.x = xRelativePx

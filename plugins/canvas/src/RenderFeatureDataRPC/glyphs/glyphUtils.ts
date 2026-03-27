@@ -5,14 +5,11 @@ import type { Feature } from '@jbrowse/core/util'
 
 export const STRAND_ARROW_WIDTH = 8
 
-export function getStrandArrowPadding(strand: number, reversed: boolean) {
-  const reverseFlip = reversed ? -1 : 1
-  const effectiveStrand = strand * reverseFlip
+export function getStrandArrowPadding(strand: number) {
   return {
-    left: effectiveStrand === -1 ? STRAND_ARROW_WIDTH : 0,
-    right: effectiveStrand === 1 ? STRAND_ARROW_WIDTH : 0,
-    visualSide:
-      effectiveStrand === -1 ? 'left' : effectiveStrand === 1 ? 'right' : null,
+    left: strand === -1 ? STRAND_ARROW_WIDTH : 0,
+    right: strand === 1 ? STRAND_ARROW_WIDTH : 0,
+    visualSide: strand === -1 ? 'left' : strand === 1 ? 'right' : null,
     width: strand ? STRAND_ARROW_WIDTH : 0,
   }
 }
@@ -36,7 +33,7 @@ export function layoutChild(
 
   const widthPx = (childEnd - childStart) / bpPerPx
 
-  const offsetBp = reversed ? parentEnd - childEnd : childStart - parentStart
+  const offsetBp = childStart - parentStart
   const xRelativePx = offsetBp / bpPerPx
 
   return {

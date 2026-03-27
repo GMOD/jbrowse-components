@@ -17,7 +17,7 @@ export const segmentsGlyph: Glyph = {
     const widthPx = (end - start) / bpPerPx
 
     const strand = feature.get('strand') as number
-    const arrowPadding = getStrandArrowPadding(strand, reversed)
+    const arrowPadding = getStrandArrowPadding(strand)
 
     const subfeatures = feature.get('subfeatures') || []
     const children = subfeatures

@@ -18,7 +18,7 @@ export const processedTranscriptGlyph: Glyph = {
     const widthPx = (end - start) / bpPerPx
 
     const strand = feature.get('strand') as number
-    const arrowPadding = getStrandArrowPadding(strand, reversed)
+    const arrowPadding = getStrandArrowPadding(strand)
 
     const subparts = getSubparts(feature, config)
     const children = subparts
