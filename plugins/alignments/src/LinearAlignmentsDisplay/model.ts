@@ -92,6 +92,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
+  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -1383,7 +1384,7 @@ export default function stateModelFactory(
       }
 
       function computeAndSetArcs(
-        regions: { region: Region; regionNumber: number }[],
+        regions: RegionWithNumber[],
       ) {
         const allRegionInfos: {
           refName: string
@@ -1439,7 +1440,7 @@ export default function stateModelFactory(
 
       return {
         async fetchFeatures(region: Region, regionNumber = 0) {
-          self.onFetchNeeded([{ region, regionNumber }])
+          self.onFetchNeeded([{ ...region, regionNumber }])
         },
 
         getByteEstimateConfig() {
@@ -1451,7 +1452,7 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(needed: (Region & { regionNumber: number })[]) {
+        onFetchNeeded(needed: RegionWithNumber[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(item =>
               fetchFeaturesForRegion(

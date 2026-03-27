@@ -53,6 +53,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
+  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ContextMenuFeatureInfo {
@@ -650,7 +651,7 @@ export default function stateModelFactory(
           return null
         },
 
-        onFetchNeeded(needed: (Region & { regionNumber: number })[]) {
+        onFetchNeeded(needed: RegionWithNumber[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
