@@ -1402,12 +1402,7 @@ export default function stateModelFactory(
         }
         for (const r of regions) {
           if (!allRegionInfos.some(ri => ri.regionNumber === r.regionNumber)) {
-            allRegionInfos.push({
-              refName: r.region.refName,
-              start: r.region.start,
-              end: r.region.end,
-              regionNumber: r.regionNumber,
-            })
+            allRegionInfos.push(r)
           }
         }
         const { arcs, lines } = computeArcsFromPileupData(
@@ -1730,11 +1725,7 @@ export default function stateModelFactory(
                 prevArcColorByType = colorByType
                 if (self.showArcs && self.rpcDataMap.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const regions = view.mergedVisibleRegions.map(vr => ({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  }))
-                  computeAndSetArcs(regions)
+                  computeAndSetArcs(view.mergedVisibleRegions)
                 }
               },
               { name: 'LinearAlignmentsDisplay:recomputeArcColors' },
