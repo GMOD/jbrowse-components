@@ -63,12 +63,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        */
       get rendererConfig() {
-        const configBlob = getConf(self, ['renderer']) || {}
-        const config = configBlob as Omit<typeof configBlob, symbol>
-        return {
-          ...config,
-          displayMode: self.displayModeSetting,
-        }
+        return self.configuration.renderer
       },
     }))
     .views(self => {
@@ -81,6 +76,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           return {
             ...superRenderProps(),
             config: self.rendererConfig,
+            displayMode: self.displayModeSetting,
             height: self.height,
           }
         },

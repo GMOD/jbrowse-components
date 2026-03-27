@@ -21,7 +21,10 @@ export default function LoadingOverlayContainer({
 }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.container} style={height ? { height } : undefined}>
+    <div
+      className={classes.container}
+      style={height ? { minHeight: height } : undefined}
+    >
       {children}
       <LoadingOverlay
         statusMessage={statusMessage}

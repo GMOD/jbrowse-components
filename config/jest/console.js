@@ -1,7 +1,7 @@
 const originalError = console.error
 const originalWarn = console.warn
 
-jest.spyOn(console, 'error').mockImplementation((...args) => {
+console.error = (...args) => {
   const r = String(args)
   if (
     r.includes('volvox.2bit_404') ||
@@ -15,13 +15,13 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   }
 
   originalError.call(console, ...args)
-})
+}
 
-jest.spyOn(console, 'warn').mockImplementation((...args) => {
+console.warn = (...args) => {
   const r = String(args)
   if (r.includes('The `anchorEl` prop provided to the component is invalid')) {
     return undefined
   }
 
   originalWarn.call(console, ...args)
-})
+}

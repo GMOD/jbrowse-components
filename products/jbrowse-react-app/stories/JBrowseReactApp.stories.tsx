@@ -2,6 +2,7 @@ export {
   BasicExample,
   DarkTheme,
   HumanDemo,
+  SyntenyExample,
   WithFetchConfigJson,
   WithImportConfigJson,
   WithLaunchLinearGenomeView,

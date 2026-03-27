@@ -1,4 +1,5 @@
 export * from './BasicExample.tsx'
+export * from './SyntenyExample.tsx'
 export * from './DarkTheme.tsx'
 export * from './HumanDemo.tsx'
 export * from './WithWebWorker.tsx'

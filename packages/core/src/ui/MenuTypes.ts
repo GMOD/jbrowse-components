@@ -1,5 +1,3 @@
-import type { SvgIconProps } from '@mui/material'
-
 export interface MenuDivider {
   priority?: number
   type: 'divider'
@@ -16,7 +14,7 @@ export interface BaseMenuItem {
   label: React.ReactNode
   priority?: number
   subLabel?: string
-  icon?: React.ComponentType<SvgIconProps>
+  icon?: React.ElementType
   disabled?: boolean
   helpText?: string
 }

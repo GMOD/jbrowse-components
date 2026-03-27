@@ -624,6 +624,14 @@ function stateModelFactory() {
             self.setContextMenuFeature(undefined)
             self.clearFeatureSelection()
           },
+          onFeatureClick(_: unknown, featureId?: string) {
+            if (featureId) {
+              self.selectFeatureById(featureId).catch((e: unknown) => {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              })
+            }
+          },
         }
       },
       /**
