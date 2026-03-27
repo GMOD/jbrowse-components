@@ -9,11 +9,18 @@ export {
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   MISMATCH_COLOR,
+  DEFAULT_CIGAR_OP_DRAW_COLORS,
   computeLabelFontSize,
+  drawCigarOps,
+  drawCsOps,
   drawDeletion,
   drawInsertion,
+  isCsOpChar,
+  isDigit,
+  parseCsSeqLen,
   textWidthForNumber,
 } from './labelConstants.ts'
+export type { CigarOpDrawColors } from './labelConstants.ts'
 export {
   CIGAR_D,
   CIGAR_EQ,

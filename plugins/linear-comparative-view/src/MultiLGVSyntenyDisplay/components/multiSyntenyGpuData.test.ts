@@ -1,6 +1,6 @@
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
-import { DEFAULT_SYNTENY_COLORS } from './multiSyntenyBackendTypes.ts'
+import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
 import {
   computeRegionRenderParams,
   prepareMultiSyntenyGpuData,

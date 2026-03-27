@@ -1,11 +1,10 @@
+import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { when } from 'mobx'
 
-import {
-  DEFAULT_SYNTENY_COLORS,
-  LABEL_WIDTH,
-} from './components/multiSyntenyBackendTypes.ts'
+import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
@@ -33,6 +32,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     return null
   }
 
+  const { palette } = createJBrowseTheme()
   const ctx = new SvgCanvas()
   const bpToPx = (refName: string, coord: number) => {
     const result = view.bpToPx({ refName, coord })
@@ -51,7 +51,15 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     colorBy,
     labelW,
     showSnps,
-    colors: DEFAULT_SYNTENY_COLORS,
+    colors: {
+      mismatch: MISMATCH_COLOR,
+      deletion: palette.deletion,
+      insertion: palette.insertion,
+      baseA: palette.bases.A.main,
+      baseC: palette.bases.C.main,
+      baseG: palette.bases.G.main,
+      baseT: palette.bases.T.main,
+    },
   })
 
   return <g dangerouslySetInnerHTML={{ __html: ctx.getSerializedSvg() }} />

@@ -1,21 +1,18 @@
 import {
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
-  MIN_HEIGHT_FOR_TEXT,
-  computeLabelFontSize,
-} from '@jbrowse/alignments-core'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
-
-import {
   CIGAR_D,
   CIGAR_EQ,
   CIGAR_I,
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_HEIGHT_FOR_TEXT,
+  computeLabelFontSize,
   isCsOpChar,
   isDigit,
-} from './cigarConstants.ts'
+} from '@jbrowse/alignments-core'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 

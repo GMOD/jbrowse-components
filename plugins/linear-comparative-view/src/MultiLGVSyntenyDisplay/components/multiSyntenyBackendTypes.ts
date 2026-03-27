@@ -1,41 +1,14 @@
 export const LABEL_WIDTH = 120
 export const LABEL_FONT_MAX = 12
 
-import {
-  BASE_A_COLOR,
-  BASE_C_COLOR,
-  BASE_G_COLOR,
-  BASE_T_COLOR,
-  DELETION_COLOR,
-  INSERTION_COLOR,
-  MISMATCH_COLOR,
-} from '@jbrowse/alignments-core'
-
+import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
 export type BpToPxFn = (refName: string, coord: number) => number | undefined
 
-export interface SyntenyColors {
-  mismatch: string
-  deletion: string
-  insertion: string
-  baseA: string
-  baseC: string
-  baseG: string
-  baseT: string
-}
-
-export const DEFAULT_SYNTENY_COLORS: SyntenyColors = {
-  mismatch: MISMATCH_COLOR,
-  deletion: DELETION_COLOR,
-  insertion: INSERTION_COLOR,
-  baseA: BASE_A_COLOR,
-  baseC: BASE_C_COLOR,
-  baseG: BASE_G_COLOR,
-  baseT: BASE_T_COLOR,
-}
+export type SyntenyColors = CigarOpDrawColors
 
 export interface MultiSyntenyCanvasRenderOpts {
   width: number

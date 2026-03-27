@@ -11,7 +11,7 @@ import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { parseCsSeqLen } from './cigarConstants.ts'
+import { parseCsSeqLen } from '@jbrowse/alignments-core'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 

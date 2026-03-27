@@ -10,7 +10,7 @@ import {
   CIGAR_X,
   isCsOpChar,
   isDigit,
-} from './cigarConstants.ts'
+} from '@jbrowse/alignments-core'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
