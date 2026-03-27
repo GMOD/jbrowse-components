@@ -73,10 +73,11 @@ export function drawInsertion(
   color: string,
 ) {
   ctx.fillStyle = color
-  const isLong = len >= LONG_INSERTION_MIN_LENGTH
-  const widthPx = isLong ? len * pxPerBp : 0
+  const isLarge =
+    len >= LONG_INSERTION_MIN_LENGTH &&
+    len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
 
-  if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+  if (isLarge) {
     const boxW = textWidthForNumber(len)
     ctx.fillRect(px - boxW / 2, y, boxW, h)
     ctx.fillStyle = 'white'
@@ -84,19 +85,6 @@ export function drawInsertion(
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(`${len}`, px, y + h / 2)
-  } else if (isLong) {
-    const barW = Math.min(5, widthPx / 3)
-    ctx.fillRect(px - barW / 2, y, barW, h)
-    if (h >= 6) {
-      drawSerifs(ctx, px, y, h, Math.min(4, h / 3))
-    }
-    if (h >= MIN_HEIGHT_FOR_TEXT) {
-      ctx.fillStyle = color
-      ctx.font = `${Math.min(9, h - 2)}px sans-serif`
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(`${len}`, px + barW / 2 + 2, y + h / 2)
-    }
   } else {
     ctx.fillRect(px - 0.5, y, 1, h)
     if (h >= 6) {

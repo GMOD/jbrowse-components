@@ -82,27 +82,17 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
       refPos += len
     } else if (op === CIGAR_I) {
       if (h >= MIN_HEIGHT_FOR_TEXT) {
-        const isLong = len >= LONG_INSERTION_MIN_LENGTH
-        const widthPx = isLong ? len * pxPerBp : 0
+        const isLarge =
+          len >= LONG_INSERTION_MIN_LENGTH &&
+          len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
         const px = x + refPos * pxPerBp
-        if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+        if (isLarge) {
           labels.push({
             type: 'insertion',
             x: px,
             y: y + h / 2,
             text: `${len}`,
             fontSize,
-          })
-        } else if (isLong) {
-          const barW = Math.min(5, widthPx / 3)
-          labels.push({
-            type: 'insertion',
-            x: px + barW / 2 + 2,
-            y: y + h / 2,
-            text: `${len}`,
-            fontSize,
-            textAlign: 'left',
-            color: INSERTION_COLOR,
           })
         } else {
           labels.push({
@@ -179,27 +169,17 @@ function addCsLabels(ctx: LabelContext, cs: string) {
         i++
       }
       if (len > 0 && h >= MIN_HEIGHT_FOR_TEXT) {
-        const isLong = len >= LONG_INSERTION_MIN_LENGTH
-        const widthPx = isLong ? len * pxPerBp : 0
+        const isLarge =
+          len >= LONG_INSERTION_MIN_LENGTH &&
+          len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
         const px = x + refPos * pxPerBp
-        if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+        if (isLarge) {
           labels.push({
             type: 'insertion',
             x: px,
             y: y + h / 2,
             text: `${len}`,
             fontSize,
-          })
-        } else if (isLong) {
-          const barW = Math.min(5, widthPx / 3)
-          labels.push({
-            type: 'insertion',
-            x: px + barW / 2 + 2,
-            y: y + h / 2,
-            text: `${len}`,
-            fontSize,
-            textAlign: 'left',
-            color: INSERTION_COLOR,
           })
         } else {
           labels.push({
