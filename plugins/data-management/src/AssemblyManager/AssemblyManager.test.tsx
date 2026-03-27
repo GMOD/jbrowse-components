@@ -34,8 +34,8 @@ const mockRootModel = {
   },
 }
 
-test('renders successfully', () => {
-  const { getByText } = render(
+test('renders successfully', async () => {
+  const { findByText } = render(
     <AssemblyManager
       // @ts-expect-error
       session={mockRootModel.session}
@@ -43,7 +43,7 @@ test('renders successfully', () => {
       onClose={() => {}}
     />,
   )
-  expect(getByText('Assembly manager')).toBeTruthy()
+  expect(await findByText('Assembly manager')).toBeTruthy()
 })
 
 test('opens up the Add Assembly Form when clicked', async () => {

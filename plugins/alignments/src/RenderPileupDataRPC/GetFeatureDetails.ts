@@ -54,18 +54,10 @@ export default class GetFeatureDetails extends RpcMethodType {
       regions: [regionWithAssembly],
     })
 
+    // single-region RPC: we pass one region in, get one back
     const renamedRegion = result.regions[0]
     const renamed = renamedRegion
-      ? {
-          ...typedArgs,
-          region: {
-            refName: renamedRegion.refName,
-            originalRefName: renamedRegion.originalRefName,
-            start: renamedRegion.start,
-            end: renamedRegion.end,
-            assemblyName: renamedRegion.assemblyName,
-          },
-        }
+      ? { ...typedArgs, region: renamedRegion }
       : typedArgs
 
     return super.serializeArguments(

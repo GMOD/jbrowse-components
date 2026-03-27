@@ -53,6 +53,10 @@ export function renderConnectingLine(
     renderer.connectingLineUniforms.u_coverageOffset!,
     coverageOffset,
   )
+  gl.uniform1f(
+    renderer.connectingLineUniforms.u_reversed!,
+    state.reversed ? 1.0 : 0.0,
+  )
 
   gl.bindVertexArray(renderer.buffers.connectingLineVAO)
   gl.drawArraysInstanced(

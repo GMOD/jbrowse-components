@@ -3,6 +3,7 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
 } from '../../constants.ts'
+import { FLIP_GLSL } from './utils.ts'
 
 // Gap (deletion/skip) vertex shader
 // Deletions render as colored rectangles, skips as 1px centerlines
@@ -26,6 +27,8 @@ uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 uniform vec3 u_colorDeletion;
 uniform vec3 u_colorSkip;
+
+${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -57,7 +60,7 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // SYNC(wgsl/cigarShaders.ts): deletion sub-pixel alpha
   float alpha = 1.0;
@@ -113,6 +116,8 @@ uniform vec3 u_colorBaseC;
 uniform vec3 u_colorBaseG;
 uniform vec3 u_colorBaseT;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 
 void main() {
@@ -159,7 +164,7 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // Map ASCII code to base color
   vec3 color;
@@ -211,6 +216,8 @@ uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
 uniform vec3 u_colorInsertion;
+
+${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -334,7 +341,7 @@ void main() {
     return;
   }
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = vec4(u_colorInsertion, alpha);
 }
 `
@@ -370,6 +377,8 @@ uniform float u_canvasWidth;
 
 uniform vec3 u_colorSoftclip;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 
 void main() {
@@ -421,7 +430,7 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = vec4(u_colorSoftclip, alpha);
 }
 `
@@ -457,6 +466,8 @@ uniform float u_canvasWidth;
 
 uniform vec3 u_colorHardclip;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 
 void main() {
@@ -508,7 +519,7 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = vec4(u_colorHardclip, alpha);
 }
 `
@@ -540,6 +551,8 @@ uniform float u_featureSpacing;
 uniform float u_coverageOffset;
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
+
+${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -574,7 +587,7 @@ void main() {
   float syBot = pileupTop - yBotPx * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `

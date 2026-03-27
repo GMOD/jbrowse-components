@@ -132,6 +132,7 @@ const ArcRendering = observer(function ArcRendering({
   regions,
   bpPerPx,
   height,
+  displayMode,
   exportSVG,
   displayModel,
   onFeatureClick,
@@ -141,13 +142,15 @@ const ArcRendering = observer(function ArcRendering({
   regions: Region[]
   bpPerPx: number
   height: number
+  displayMode?: string
   displayModel?: { selectedFeatureId: string }
   onFeatureClick: (event: React.MouseEvent, featureId: string) => void
   exportSVG: boolean
 }) {
   const region = regions[0]!
   const width = (region.end - region.start) / bpPerPx
-  const semicircle = readConfObject(config, 'displayMode') === 'semicircles'
+  const semicircle =
+    (displayMode ?? readConfObject(config, 'displayMode')) === 'semicircles'
   const { selectedFeatureId } = displayModel || {}
 
   const children = [...features.values()].map(f => (

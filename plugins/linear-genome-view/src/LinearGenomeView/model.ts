@@ -1458,16 +1458,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * The actual fetch region is expanded with an explicit buffer.
          */
         get mergedVisibleRegions() {
-          const regionMap = new Map<
-            number,
-            {
-              refName: string
-              start: number
-              end: number
-              assemblyName: string
-              regionNumber: number
-            }
-          >()
+          const regionMap = new Map<number, Region & { regionNumber: number }>()
           for (const block of this.dynamicBlocks.contentBlocks) {
             const regionNumber = block.regionNumber!
             const existing = regionMap.get(regionNumber)
@@ -1481,6 +1472,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 end: Math.ceil(block.end),
                 assemblyName: block.assemblyName,
                 regionNumber,
+                reversed: block.reversed,
               })
             }
           }
@@ -1497,12 +1489,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get bufferedVisibleRegions() {
           const bufferBp = Math.ceil(self.width * self.bpPerPx * 0.5)
           return this.mergedVisibleRegions.map(vr => {
-            const dr = self.displayedRegions[vr.regionNumber]
+            const dr = self.displayedRegions[vr.regionNumber]!
             return {
               region: {
                 refName: vr.refName,
-                start: Math.max(dr?.start ?? 0, vr.start - bufferBp),
-                end: Math.min(dr?.end ?? vr.end, vr.end + bufferBp),
+                start: Math.max(dr.start, vr.start - bufferBp),
+                end: Math.min(dr.end, vr.end + bufferBp),
                 assemblyName: vr.assemblyName,
               },
               regionNumber: vr.regionNumber,

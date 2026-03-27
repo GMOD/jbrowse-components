@@ -3,6 +3,7 @@ export interface FeatureRenderBlock {
   bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
+  reversed: boolean
 }
 
 export interface CanvasFeatureBackend {

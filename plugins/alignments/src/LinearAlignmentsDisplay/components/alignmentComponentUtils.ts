@@ -77,6 +77,7 @@ export function canvasToGenomicCoords(
     bpRange: [number, number]
     blockStartPx: number
     blockWidth: number
+    reversed?: boolean
   },
   featureHeight: number,
   featureSpacing: number,
@@ -85,7 +86,10 @@ export function canvasToGenomicCoords(
 ) {
   const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
   const bpPerPx = (bpRange[1] - bpRange[0]) / blockWidth
-  const genomicPos = bpRange[0] + (canvasX - blockStartPx) * bpPerPx
+  const frac = (canvasX - blockStartPx) / blockWidth
+  const genomicPos = resolved.reversed
+    ? bpRange[1] - frac * (bpRange[1] - bpRange[0])
+    : bpRange[0] + frac * (bpRange[1] - bpRange[0])
   const posOffset = genomicPos - rpcData.regionStart
   const rowHeight = featureHeight + featureSpacing
   const scrolledY = canvasY + rangeY[0]

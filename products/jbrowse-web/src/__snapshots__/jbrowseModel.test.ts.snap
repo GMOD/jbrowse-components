@@ -2408,6 +2408,51 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "adapterId": "arc_custom_height_adapter",
+        "features": [
+          {
+            "end": 400,
+            "name": "SE_001",
+            "refName": "ctgA",
+            "score": 2,
+            "start": 190,
+            "type": "foo",
+            "uniqueId": "arc-custom-one",
+          },
+          {
+            "end": 300,
+            "name": "SE_002",
+            "refName": "ctgA",
+            "score": 5,
+            "start": 191,
+            "type": "bar",
+            "uniqueId": "arc-custom-two",
+          },
+        ],
+        "type": "FromConfigAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "displayId": "arc_track_custom_height_linear",
+          "renderer": {
+            "height": "jexl:log10(get(feature,'end')-get(feature,'start'))*20",
+            "type": "ArcRenderer",
+          },
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Arc track (custom JEXL height)",
+      "trackId": "arc_track_custom_height",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
         "bamLocation": {
           "locationType": "UriLocation",
           "uri": "spliced.bam",

@@ -92,6 +92,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
+  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -1383,7 +1384,7 @@ export default function stateModelFactory(
       }
 
       function computeAndSetArcs(
-        regions: { region: Region; regionNumber: number }[],
+        regions: RegionWithNumber[],
       ) {
         const allRegionInfos: {
           refName: string
@@ -1399,14 +1400,9 @@ export default function stateModelFactory(
             regionNumber,
           })
         }
-        for (const r of regions) {
-          if (!allRegionInfos.some(ri => ri.regionNumber === r.regionNumber)) {
-            allRegionInfos.push({
-              refName: r.region.refName,
-              start: r.region.start,
-              end: r.region.end,
-              regionNumber: r.regionNumber,
-            })
+        for (const { region, regionNumber } of regions) {
+          if (!allRegionInfos.some(ri => ri.regionNumber === regionNumber)) {
+            allRegionInfos.push({ ...region, regionNumber })
           }
         }
         const { arcs, lines } = computeArcsFromPileupData(
@@ -1451,7 +1447,7 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+        onFetchNeeded(needed: RegionWithNumber[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
             const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
@@ -1645,6 +1641,7 @@ export default function stateModelFactory(
                   bpRangeX: [r.start, r.end] as [number, number],
                   screenStartPx: r.screenStartPx,
                   screenEndPx: r.screenEndPx,
+                  reversed: r.reversed ?? false,
                 }))
                 renderer.renderBlocks(blocks, {
                   rangeY: self.currentRangeY,
@@ -1729,11 +1726,12 @@ export default function stateModelFactory(
                 prevArcColorByType = colorByType
                 if (self.showArcs && self.rpcDataMap.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const regions = view.mergedVisibleRegions.map(vr => ({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  }))
-                  computeAndSetArcs(regions)
+                  computeAndSetArcs(
+                    view.mergedVisibleRegions.map(vr => ({
+                      region: vr,
+                      regionNumber: vr.regionNumber,
+                    })),
+                  )
                 }
               },
               { name: 'LinearAlignmentsDisplay:recomputeArcColors' },

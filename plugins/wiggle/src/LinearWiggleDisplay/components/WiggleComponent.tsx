@@ -16,9 +16,9 @@ import {
   makeRenderState,
 } from '../../shared/wiggleComponentUtils.ts'
 
-import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 
 type LGV = LinearGenomeViewModel
 
@@ -92,6 +92,7 @@ const WiggleComponent = observer(function WiggleComponent({
         bpRangeX: [vr.start, vr.end] as [number, number],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
+        reversed: vr.reversed ?? false,
       }))
 
       renderer.renderBlocks(
@@ -149,7 +150,9 @@ const WiggleComponent = observer(function WiggleComponent({
 
       const blockWidth = region.screenEndPx - region.screenStartPx
       const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = Math.round(region.start + frac * (region.end - region.start))
+      const bp = region.reversed
+        ? Math.round(region.end - frac * (region.end - region.start))
+        : Math.round(region.start + frac * (region.end - region.start))
       const bpOffset = bp - data.regionStart
 
       const { featurePositions, featureScores, numFeatures } = data
@@ -310,4 +313,4 @@ const WiggleComponent = observer(function WiggleComponent({
 
 export default WiggleComponent
 
-export { type WiggleDisplayModel } from './buildSourceRenderData.ts'
+export type { WiggleDisplayModel } from './buildSourceRenderData.ts'

@@ -60,6 +60,10 @@ export function renderArcs(
     gl.uniform1f(renderer.arcUniforms.u_coverageOffset!, coverageOffset)
     gl.uniform1f(renderer.arcUniforms.u_lineWidthPx!, lineWidth)
     gl.uniform1f(renderer.arcUniforms.u_gradientHue!, 0)
+    gl.uniform1f(
+      renderer.arcUniforms.u_reversed!,
+      state.reversed ? 1.0 : 0.0,
+    )
 
     uploadRegionTable(gl, renderer.arcUniforms, regionTable)
 
@@ -119,6 +123,10 @@ export function renderArcLines(
       renderer.arcLineUniforms.u_coverageOffset!,
       state.showCoverage ? state.coverageHeight : 0,
     )
+    gl.uniform1f(
+      renderer.arcLineUniforms.u_reversed!,
+      state.reversed ? 1.0 : 0.0,
+    )
 
     for (let i = 0; i < NUM_LINE_COLORS; i++) {
       const c = arcLineColorPalette[i]!
@@ -162,6 +170,10 @@ export function renderSashimiArcs(
   gl.uniform1f(renderer.sashimiUniforms.u_canvasHeight!, canvasHeight)
   gl.uniform1f(renderer.sashimiUniforms.u_coverageOffset!, coverageOffset)
   gl.uniform1f(renderer.sashimiUniforms.u_coverageHeight!, coverageHeight)
+  gl.uniform1f(
+    renderer.sashimiUniforms.u_reversed!,
+    state.reversed ? 1.0 : 0.0,
+  )
 
   uploadRegionTable(gl, renderer.sashimiUniforms, regionTable)
 

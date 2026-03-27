@@ -34,6 +34,7 @@
     "./data_adapters/BaseAdapter/BaseOptions": "./src/data_adapters/BaseAdapter/BaseOptions.ts",
     "./data_adapters/BaseAdapter/stats": "./src/data_adapters/BaseAdapter/stats.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
+    "./gpu/shaderConstants": "./src/gpu/shaderConstants.ts",
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",

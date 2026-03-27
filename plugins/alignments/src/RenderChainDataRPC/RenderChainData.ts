@@ -38,6 +38,7 @@ export default class RenderChainData extends RpcMethodType {
       regions: [regionWithAssembly],
     })
 
+    // single-region RPC: we pass one region in, get one back
     const renamedRegion = result.regions[0]
     if (!renamedRegion) {
       return args
@@ -45,13 +46,7 @@ export default class RenderChainData extends RpcMethodType {
 
     return {
       ...args,
-      region: {
-        refName: renamedRegion.refName,
-        originalRefName: renamedRegion.originalRefName,
-        start: renamedRegion.start,
-        end: renamedRegion.end,
-        assemblyName: renamedRegion.assemblyName,
-      },
+      region: renamedRegion,
     }
   }
 

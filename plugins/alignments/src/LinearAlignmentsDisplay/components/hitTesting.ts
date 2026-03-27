@@ -72,6 +72,7 @@ export interface ResolvedBlock {
   blockStartPx: number
   blockWidth: number
   refName: string
+  reversed: boolean
 }
 
 export interface CigarCoords {
@@ -97,15 +98,19 @@ function calculateBpPerPx(
 }
 
 /**
- * Helper: Convert canvas X coordinate to genomic position
+ * Helper: Convert canvas X coordinate to genomic position.
+ * When reversed, left edge of the block corresponds to bpRange[1].
  */
 function canvasXToGenomicPosition(
   canvasX: number,
-  bpRange: [number, number],
-  blockStartPx: number,
+  resolved: ResolvedBlock,
   bpPerPx: number,
 ): number {
-  return bpRange[0] + (canvasX - blockStartPx) * bpPerPx
+  const { bpRange, blockStartPx, blockWidth } = resolved
+  const frac = (canvasX - blockStartPx) / blockWidth
+  return resolved.reversed
+    ? bpRange[1] - frac * (bpRange[1] - bpRange[0])
+    : bpRange[0] + frac * (bpRange[1] - bpRange[0])
 }
 
 /**
@@ -115,14 +120,9 @@ function canvasXToPosOffset(
   canvasX: number,
   resolved: ResolvedBlock,
 ): { genomicPos: number; posOffset: number; bpPerPx: number } {
-  const { bpRange, blockStartPx, blockWidth, rpcData } = resolved
+  const { bpRange, blockWidth, rpcData } = resolved
   const bpPerPx = calculateBpPerPx(bpRange, blockWidth)
-  const genomicPos = canvasXToGenomicPosition(
-    canvasX,
-    bpRange,
-    blockStartPx,
-    bpPerPx,
-  )
+  const genomicPos = canvasXToGenomicPosition(canvasX, resolved, bpPerPx)
   const posOffset = genomicPos - rpcData.regionStart
   return { genomicPos, posOffset, bpPerPx }
 }

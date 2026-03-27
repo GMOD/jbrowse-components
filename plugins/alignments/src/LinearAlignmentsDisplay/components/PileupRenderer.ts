@@ -21,16 +21,19 @@ function setCigarUniforms(
   gl.uniform1f(uniforms.u_coverageOffset!, coverageOffset)
   gl.uniform1f(uniforms.u_canvasHeight!, state.canvasHeight)
   gl.uniform1f(uniforms.u_canvasWidth!, state.canvasWidth)
+  gl.uniform1f(uniforms.u_reversed!, state.reversed ? 1.0 : 0.0)
 }
 
 function drawFilledRect(
   renderer: WebGLRenderer,
   gl: WebGL2RenderingContext,
   clip: ClipRect,
+  reversed?: boolean,
 ) {
   const { sx1, sx2, syTop, syBot } = clip
   gl.useProgram(renderer.lineProgram)
   gl.uniform4f(renderer.lineUniforms.u_color!, 0, 0, 0, 0.4)
+  gl.uniform1f(renderer.lineUniforms.u_reversed!, reversed ? 1.0 : 0.0)
   const quadData = new Float32Array([
     sx1,
     syTop,
@@ -63,6 +66,7 @@ function drawOutlineRect(
   const { sx1, sx2, syTop, syBot } = clip
   gl.useProgram(renderer.lineProgram)
   gl.uniform4f(renderer.lineUniforms.u_color!, 0, 0, 0, 1)
+  gl.uniform1f(renderer.lineUniforms.u_reversed!, state.reversed ? 1.0 : 0.0)
 
   const bpPerPx = regionLengthBp / canvasWidth
   const showChevron = bpPerPx < 10 && state.featureHeight > 5
@@ -235,6 +239,7 @@ export function renderPileup(
   gl.uniform1f(renderer.readUniforms.u_insertSizeLower!, stats?.lower ?? 0)
 
   gl.uniform1i(renderer.readUniforms.u_highlightOnlyMode!, 0)
+  gl.uniform1f(renderer.readUniforms.u_reversed!, state.reversed ? 1.0 : 0.0)
 
   gl.bindVertexArray(buffers.readVAO)
   gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, buffers.segmentCount)
@@ -421,7 +426,7 @@ export function renderPileup(
         coverageOffset,
         canvasHeight,
       )
-      drawFilledRect(renderer, gl, clip)
+      drawFilledRect(renderer, gl, clip, state.reversed)
     }
   } else if (state.highlightedFeatureId) {
     const hlIdx = buffers.readIdToIndex.get(state.highlightedFeatureId) ?? -1

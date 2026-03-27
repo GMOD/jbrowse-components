@@ -1,21 +1,15 @@
-import type { Region } from './MultiRegionDisplayMixin.ts'
-
-interface StaticRegion extends Region {
-  regionNumber: number
-}
-
-type LoadedRegion = Region
+import type { Region, RegionWithNumber } from './MultiRegionDisplayMixin.ts'
 
 function shouldFetchRegion(
-  vr: StaticRegion,
-  loadedRegions: Map<number, LoadedRegion>,
+  vr: RegionWithNumber,
+  loadedRegions: Map<number, Region>,
   isCacheValid: (regionNumber: number) => boolean,
 ) {
   const loaded = loadedRegions.get(vr.regionNumber)
   const boundsValid =
-    loaded?.refName === vr.refName &&
-    vr.start >= loaded.start &&
-    vr.end <= loaded.end
+    loaded?.refName === vr.region.refName &&
+    vr.region.start >= (loaded?.start ?? Infinity) &&
+    vr.region.end <= (loaded?.end ?? -Infinity)
   if (boundsValid && isCacheValid(vr.regionNumber)) {
     return false
   }
@@ -23,14 +17,14 @@ function shouldFetchRegion(
 }
 
 function computeNeededRegions(
-  staticRegions: StaticRegion[],
-  loadedRegions: Map<number, LoadedRegion>,
+  staticRegions: RegionWithNumber[],
+  loadedRegions: Map<number, Region>,
   isCacheValid: (regionNumber: number) => boolean,
 ) {
-  const needed: { region: Region; regionNumber: number }[] = []
+  const needed: RegionWithNumber[] = []
   for (const vr of staticRegions) {
     if (shouldFetchRegion(vr, loadedRegions, isCacheValid)) {
-      needed.push({ region: vr, regionNumber: vr.regionNumber })
+      needed.push(vr)
     }
   }
   return needed
@@ -41,8 +35,8 @@ function makeRegion(
   start: number,
   end: number,
   refName = 'chr1',
-): StaticRegion {
-  return { regionNumber, refName, start, end, assemblyName: 'test' }
+): RegionWithNumber {
+  return { region: { refName, start, end, assemblyName: 'test' }, regionNumber }
 }
 
 describe('fetch autorun region determination', () => {
@@ -57,7 +51,7 @@ describe('fetch autorun region determination', () => {
     })
 
     test('skips when loaded data fully covers static region', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -78,7 +72,7 @@ describe('fetch autorun region determination', () => {
     })
 
     test('fetches when static region extends beyond loaded end', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -99,7 +93,7 @@ describe('fetch autorun region determination', () => {
     })
 
     test('fetches when static region extends beyond loaded start', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -120,7 +114,7 @@ describe('fetch autorun region determination', () => {
     })
 
     test('fetches when refName differs', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -141,7 +135,7 @@ describe('fetch autorun region determination', () => {
     })
 
     test('handles multiple regions independently', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -166,7 +160,7 @@ describe('fetch autorun region determination', () => {
 
   describe('isCacheValid integration', () => {
     test('re-fetches when bounds valid but cache invalid (zoom-in)', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -187,7 +181,7 @@ describe('fetch autorun region determination', () => {
     })
 
     test('skips when both bounds valid and cache valid', () => {
-      const loaded = new Map<number, LoadedRegion>([
+      const loaded = new Map<number, Region>([
         [
           0,
           {
@@ -266,7 +260,7 @@ describe('fetch autorun region determination', () => {
 
     test('scenario: zoom from 10 to 2.5 bpPerPx triggers re-fetch', () => {
       const loaded = new Map([[0, 10]])
-      const loadedRegions = new Map<number, LoadedRegion>([
+      const loadedRegions = new Map<number, Region>([
         [
           0,
           {

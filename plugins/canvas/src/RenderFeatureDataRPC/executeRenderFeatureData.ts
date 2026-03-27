@@ -138,7 +138,7 @@ function emitCodonData(opts: {
   const baseHex = formatHEX(parseCssColor(baseColor))
   const color1 = lighten(baseHex, 0.2)
   const color2 = darken(baseHex, 0.1)
-  const effectiveStrand = strand * (reversed ? -1 : 1)
+  const effectiveStrand = strand
   const featureLen = featureEnd - featureStart
 
   for (const [i, aminoAcid] of aminoAcids.entries()) {
@@ -300,7 +300,7 @@ function collectRenderData(
       const transcriptStrokeUint = colorToUint32(transcriptStrokeColor)
 
       // Draw connecting line for intron gaps only (not inside boxes)
-      const effectiveStrand = reversed ? -transcriptStrand : transcriptStrand
+      const effectiveStrand = transcriptStrand
       const lineY = transcriptTopPx + transcriptLayout.height / 2
       const sortedChildren = transcriptLayout.children
       if (sortedChildren.length === 0) {
@@ -552,12 +552,11 @@ function collectRenderData(
       // Add strand arrow for top-level features
       const isTopLevel = !feature.parent?.()
       if (isTopLevel && strand !== 0) {
-        const effectiveStrand = reversed ? -strand : strand
-        const arrowX = effectiveStrand === 1 ? featureEnd : featureStart
+        const arrowX = strand === 1 ? featureEnd : featureStart
         arrows.push({
           x: arrowX - regionStart,
           y: layout.height / 2,
-          direction: effectiveStrand,
+          direction: strand,
           height: layout.height,
           color: strokeUint,
           flatbushIdx: currentFlatbushIdx,

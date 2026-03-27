@@ -3,6 +3,19 @@ import type {
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 
+import {
+  CHEVRON_H_PX,
+  CHEVRON_SPACING_PX,
+  CHEVRON_W_PX,
+  HEAD_HALF_H_PX,
+  MIN_RECT_WIDTH_PX,
+  STEM_HALF_H_PX,
+  STEM_LENGTH_PX,
+} from './sharedRendererConstants.ts'
+
+const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
+const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
+
 interface Canvas2DRegionData {
   regionStart: number
   rectPositions: Uint32Array
@@ -22,14 +35,6 @@ interface Canvas2DRegionData {
   arrowColors: Uint8Array
   numArrows: number
 }
-
-const MIN_RECT_WIDTH_PX = 2
-const CHEVRON_SPACING_PX = 25
-const CHEVRON_HALF_W = 4.5 * 0.5
-const CHEVRON_HALF_H = 3.5 * 0.5
-const STEM_LENGTH = 7
-const STEM_HALF_H = 0.5
-const HEAD_HALF_H = 2.5
 
 export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
   private ctx: CanvasRenderingContext2D
@@ -145,10 +150,10 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
     bpLength: number,
     fullBlockWidth: number,
   ) {
-    return (
-      block.screenStartPx +
-      ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
-    )
+    const frac = (absBp - block.bpRangeX[0]) / bpLength
+    return block.reversed
+      ? block.screenEndPx - frac * fullBlockWidth
+      : block.screenStartPx + frac * fullBlockWidth
   }
 
   private drawLines(
@@ -247,18 +252,18 @@ export class Canvas2DFeatureRenderer implements CanvasFeatureBackend {
 
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`
 
-      const stemEndX = cx + STEM_LENGTH * 0.5 * dir
+      const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
       ctx.fillRect(
         Math.min(cx, stemEndX),
-        y - STEM_HALF_H,
+        y - STEM_HALF_H_PX,
         Math.abs(stemEndX - cx),
-        STEM_HALF_H * 2,
+        STEM_HALF_H_PX * 2,
       )
 
-      const headTipX = cx + STEM_LENGTH * dir
+      const headTipX = cx + STEM_LENGTH_PX * dir
       ctx.beginPath()
-      ctx.moveTo(stemEndX, y - HEAD_HALF_H)
-      ctx.lineTo(stemEndX, y + HEAD_HALF_H)
+      ctx.moveTo(stemEndX, y - HEAD_HALF_H_PX)
+      ctx.lineTo(stemEndX, y + HEAD_HALF_H_PX)
       ctx.lineTo(headTipX, y)
       ctx.closePath()
       ctx.fill()

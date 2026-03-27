@@ -26,6 +26,11 @@ export interface Region {
   assemblyName: string
 }
 
+export interface RegionWithNumber {
+  region: Region
+  regionNumber: number
+}
+
 export interface FetchContext {
   stopToken: StopToken
   generation: number
@@ -118,7 +123,7 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       // Overridable hooks — subclasses override these
-      onFetchNeeded(_needed: { region: Region; regionNumber: number }[]) {
+      onFetchNeeded(_needed: RegionWithNumber[]) {
         // no-op base
       },
 
@@ -163,7 +168,7 @@ export default function MultiRegionDisplayMixin() {
 
       return {
         withFetchLifecycle(
-          needed: { region: Region; regionNumber: number }[],
+          needed: RegionWithNumber[],
           work: (ctx: FetchContext) => Promise<void>,
         ) {
           if (self.renderingStopToken) {
@@ -297,7 +302,7 @@ export default function MultiRegionDisplayMixin() {
                 const bufferedByRegion = new Map(
                   view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
                 )
-                const needed: { region: Region; regionNumber: number }[] = []
+                const needed: RegionWithNumber[] = []
                 for (const vr of visibleMerged) {
                   const loaded = untracked(() =>
                     self.loadedRegions.get(vr.regionNumber),

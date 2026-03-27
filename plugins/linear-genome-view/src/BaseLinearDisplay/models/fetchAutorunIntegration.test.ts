@@ -1,15 +1,6 @@
 import { autorun, observable, runInAction, untracked } from 'mobx'
 
-interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName: string
-}
-
-interface StaticRegion extends Region {
-  regionNumber: number
-}
+import type { Region, RegionWithNumber } from './MultiRegionDisplayMixin.ts'
 
 function createMockDisplayModel() {
   const state = observable({
@@ -18,7 +9,7 @@ function createMockDisplayModel() {
     regionTooLargeState: false,
     loadedRegions: new Map<number, Region>(),
     loadedBpPerPx: new Map<number, number>(),
-    fetchLog: [] as { regionNumber: number; region: Region }[][],
+    fetchLog: [] as RegionWithNumber[][],
   })
 
   return state
@@ -43,7 +34,7 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
   const windowLeftBp = view.offsetPx * view.bpPerPx
   const windowRightBp = (view.offsetPx + view.width) * view.bpPerPx
 
-  const regions: StaticRegion[] = []
+  const regions: RegionWithNumber[] = []
   for (const [idx, dr] of view.displayedRegions.entries()) {
     const blockStart = Math.floor((windowLeftBp - 0) / blockSizeBp)
     const blockEnd = Math.floor((windowRightBp - 0) / blockSizeBp)
@@ -51,11 +42,8 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
     const end = Math.min(dr.end, (blockEnd + 1) * blockSizeBp)
     if (end > start) {
       regions.push({
+        region: { refName: dr.refName, start, end, assemblyName: dr.assemblyName },
         regionNumber: idx,
-        refName: dr.refName,
-        start,
-        end,
-        assemblyName: dr.assemblyName,
       })
     }
   }
@@ -75,7 +63,7 @@ describe('fetch autorun integration with MobX observables', () => {
   test('initial load triggers fetch for all regions', () => {
     const model = createMockDisplayModel()
     const view = createMockView()
-    const fetches: { regionNumber: number; region: Region }[][] = []
+    const fetches: RegionWithNumber[][] = []
 
     const dispose = autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -85,17 +73,17 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
-          loaded?.refName === vr.refName &&
-          vr.start >= loaded.start &&
-          vr.end <= loaded.end
+          loaded?.refName === vr.region.refName &&
+          vr.region.start >= loaded.start &&
+          vr.region.end <= loaded.end
         if (boundsValid) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed)
@@ -121,17 +109,17 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
-          loaded?.refName === vr.refName &&
-          vr.start >= loaded.start &&
-          vr.end <= loaded.end
+          loaded?.refName === vr.region.refName &&
+          vr.region.start >= loaded.start &&
+          vr.region.end <= loaded.end
         if (boundsValid) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed.length)
@@ -145,10 +133,10 @@ describe('fetch autorun integration with MobX observables', () => {
       const staticRegions = computeStaticRegions(view)
       for (const vr of staticRegions) {
         model.loadedRegions.set(vr.regionNumber, {
-          refName: vr.refName,
-          start: vr.start,
-          end: vr.end,
-          assemblyName: vr.assemblyName,
+          refName: vr.region.refName,
+          start: vr.region.start,
+          end: vr.region.end,
+          assemblyName: vr.region.assemblyName,
         })
       }
       model.fetchGeneration++
@@ -173,20 +161,20 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
-          loaded?.refName === vr.refName &&
-          vr.start >= loaded.start &&
-          vr.end <= loaded.end
+          loaded?.refName === vr.region.refName &&
+          vr.region.start >= loaded.start &&
+          vr.region.end <= loaded.end
         if (
           boundsValid &&
           wiggleIsCacheValid(vr.regionNumber, model.loadedBpPerPx, view.bpPerPx)
         ) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed.length)
@@ -200,10 +188,10 @@ describe('fetch autorun integration with MobX observables', () => {
       const staticRegions = computeStaticRegions(view)
       for (const vr of staticRegions) {
         model.loadedRegions.set(vr.regionNumber, {
-          refName: vr.refName,
+          refName: vr.region.refName,
           start: 0,
           end: 1000000,
-          assemblyName: vr.assemblyName,
+          assemblyName: vr.region.assemblyName,
         })
         model.loadedBpPerPx.set(vr.regionNumber, 10)
       }
@@ -236,20 +224,20 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
-          loaded?.refName === vr.refName &&
-          vr.start >= loaded.start &&
-          vr.end <= loaded.end
+          loaded?.refName === vr.region.refName &&
+          vr.region.start >= loaded.start &&
+          vr.region.end <= loaded.end
         if (
           boundsValid &&
           wiggleIsCacheValid(vr.regionNumber, model.loadedBpPerPx, view.bpPerPx)
         ) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed.length)

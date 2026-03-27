@@ -196,6 +196,7 @@ export class WebGLWiggleRenderer implements WiggleBackend {
     numRows: number,
     viewportWidth: number,
     state: WiggleGPURenderState,
+    reversed: boolean,
   ) {
     this.uniformF32[0] = bpRangeHi
     this.uniformF32[1] = bpRangeLo
@@ -209,6 +210,7 @@ export class WebGLWiggleRenderer implements WiggleBackend {
     this.uniformF32[9] = state.domainY[1]
     this.uniformF32[10] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
     this.uniformF32[11] = viewportWidth
+    this.uniformF32[12] = reversed ? 1.0 : 0.0
 
     const gl = this.gl
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
@@ -287,6 +289,7 @@ export class WebGLWiggleRenderer implements WiggleBackend {
         region.numRows,
         Math.round(scissorW * dpr),
         state,
+        block.reversed,
       )
 
       gl.bindVertexArray(region.vao)

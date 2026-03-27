@@ -33,6 +33,7 @@ export {
   type FetchContext,
   type MultiRegionDisplayMixinType,
   type Region as MultiRegionRegion,
+  type RegionWithNumber as MultiRegionRegionWithNumber,
   default as MultiRegionDisplayMixin,
 } from './models/MultiRegionDisplayMixin.ts'
 export type { FeatureLabelData } from './components/util.ts'

@@ -1,5 +1,5 @@
 import { toRgb } from './colors.ts'
-import { HP_GLSL_FUNCTIONS } from './utils.ts'
+import { FLIP_GLSL, HP_GLSL_FUNCTIONS } from './utils.ts'
 import { fillColor } from '../../../shared/color.ts'
 
 import type { RGBColor } from './colors.ts'
@@ -53,6 +53,8 @@ uniform float u_gradientHue;
 uniform vec3 u_arcColors[${NUM_ARC_COLORS}];
 uniform int u_numRegions;
 uniform vec4 u_regions[${MAX_REGIONS}];
+
+${FLIP_GLSL}
 
 out vec4 v_color;
 out float v_dist;
@@ -157,7 +159,7 @@ void main() {
   pos += normal * halfWidth * a_side;
   float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
   float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
-  gl_Position = vec4(clipX, clipY, 0.0, 1.0);
+  gl_Position = vec4(flip_x(clipX), clipY, 0.0, 1.0);
   v_dist = a_side * halfWidth;
   v_color = vec4(getArcColor(a_colorType), 1.0);
 }
@@ -205,6 +207,8 @@ uniform float u_coverageHeight;
 uniform vec3 u_sashimiColors[${NUM_SASHIMI_COLORS}];
 uniform int u_numRegions;
 uniform vec4 u_regions[${MAX_REGIONS}];
+
+${FLIP_GLSL}
 
 out vec4 v_color;
 out float v_dist;
@@ -277,7 +281,7 @@ void main() {
   pos += normal * halfWidth * a_side;
   float clipX = (pos.x / u_canvasWidth) * 2.0 - 1.0;
   float clipY = 1.0 - ((pos.y + u_coverageOffset) / u_canvasHeight) * 2.0;
-  gl_Position = vec4(clipX, clipY, 0.0, 1.0);
+  gl_Position = vec4(flip_x(clipX), clipY, 0.0, 1.0);
   v_dist = a_side * halfWidth;
   v_lineWidth = a_lineWidth;
   int idx = int(a_colorType + 0.5);
@@ -322,16 +326,17 @@ uniform vec3 u_arcLineColors[${NUM_LINE_COLORS}];
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
+${FLIP_GLSL}
 
 void main() {
   uint absPos = a_position + u_regionStart;
-  vec2 splitPos = hpSplitUint(absPos);
+  vec2 splitPos = hp_split_uint(absPos);
   // Map genomic position to block-relative pixel, then to global clip space
-  float normalizedBpPos = hpScaleLinear(splitPos, u_bpRangeX);
+  float normalizedBpPos = hp_scale_linear(splitPos, u_bpRangeX);
   float screenX = u_blockStartPx + normalizedBpPos * u_blockWidth;
   float sx = (screenX / u_canvasWidth) * 2.0 - 1.0;
   float sy = 1.0 - ((a_y + u_coverageOffset) / u_canvasHeight) * 2.0;
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   int idx = int(a_colorType + 0.5);
   if (idx < ${NUM_LINE_COLORS}) {
     v_color = vec4(u_arcLineColors[idx], 1.0);

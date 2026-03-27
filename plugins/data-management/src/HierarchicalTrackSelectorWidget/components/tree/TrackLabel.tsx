@@ -1,10 +1,8 @@
 import { memo, useCallback } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
+import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isUnsupported } from '../util.ts'
@@ -29,12 +27,6 @@ const useStyles = makeStyles()(theme => ({
     background: '#cccc',
   },
 }))
-
-export interface InfoArgs {
-  target: HTMLElement
-  id: string
-  conf: AnyConfigurationModel
-}
 
 // Memoized checkbox - only re-renders when checked state changes
 const TrackCheckbox = memo(function TrackCheckbox({
@@ -102,51 +94,46 @@ const TrackLabel = memo(function TrackLabel({
   checked: boolean
 }) {
   const { classes } = useStyles()
-  const { drawerPosition } = getSession(model)
-  const { id, name, conf, trackId } = item
-  const description = readConfObject(conf, 'description')
+  const { id, name, conf, trackId, description } = item
   const onChange = useCallback(() => {
     model.view.toggleTrack(trackId)
   }, [model.view, trackId])
 
   return (
     <>
-      <Tooltip
-        title={description}
-        placement={drawerPosition === 'left' ? 'right' : 'left'}
-      >
-        <FormControlLabel
-          className={classes.checkboxLabel}
-          onClick={event => {
-            if (event.ctrlKey || event.metaKey) {
-              if (model.selectionSet.has(conf)) {
-                model.removeFromSelection([conf])
-              } else {
-                model.addToSelection([conf])
-              }
-              event.preventDefault()
+      <FormControlLabel
+        className={classes.checkboxLabel}
+        data-tooltip={description || undefined}
+        aria-description={description || undefined}
+        onClick={event => {
+          if (event.ctrlKey || event.metaKey) {
+            if (model.selectionSet.has(conf)) {
+              model.removeFromSelection([conf])
+            } else {
+              model.addToSelection([conf])
             }
-          }}
-          control={
-            <TrackCheckbox
-              checked={checked}
-              onChange={onChange}
-              id={id}
-              disabled={isUnsupported(name)}
-              className={classes.compactCheckbox}
-            />
+            event.preventDefault()
           }
-          label={
-            <TrackLabelText
-              model={model}
-              conf={conf}
-              id={id}
-              name={name}
-              selectedClass={classes.selected}
-            />
-          }
-        />
-      </Tooltip>
+        }}
+        control={
+          <TrackCheckbox
+            checked={checked}
+            onChange={onChange}
+            id={id}
+            disabled={isUnsupported(name)}
+            className={classes.compactCheckbox}
+          />
+        }
+        label={
+          <TrackLabelText
+            model={model}
+            conf={conf}
+            id={id}
+            name={name}
+            selectedClass={classes.selected}
+          />
+        }
+      />
       <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )

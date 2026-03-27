@@ -162,6 +162,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             blockStartPx: r.screenStartPx,
             blockWidth: r.screenEndPx - r.screenStartPx,
             refName: r.refName,
+            reversed: r.reversed ?? false,
           }
         }
       }
