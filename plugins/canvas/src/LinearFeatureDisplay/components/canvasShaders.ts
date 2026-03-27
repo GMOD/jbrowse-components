@@ -11,13 +11,16 @@ fn hp_split_uint(value: u32) -> vec2f {
 // subtractions. A compile-time constant would be optimized away.
 // max(-inf) and dot() guard against the compiler merging the split terms.
 // HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
-fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32, reversed: f32) -> f32 {
+fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32) -> f32 {
   let inf = 1.0 / zero;
   let step = 2.0 / bp_range.z;
   let hi = max(split_pos.x - bp_range.x, -inf);
   let lo = max(split_pos.y - bp_range.y, -inf);
-  let cx = dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
-  return mix(cx, -cx, reversed);
+  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
+}
+
+fn flip_x(x: f32, reversed: f32) -> f32 {
+  return mix(x, -x, reversed);
 }
 
 fn snap_to_pixel_x(clip_x: f32, canvas_width: f32) -> f32 {
@@ -67,8 +70,8 @@ fn vs_main(
 
   let abs_start = inst.start_end.x + u.region_start;
   let abs_end = inst.start_end.y + u.region_start;
-  let sx1 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero, u.reversed), u.canvas_width);
-  let sx2 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero, u.reversed), u.canvas_width);
+  let sx1 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero), u.canvas_width);
+  let sx2 = snap_to_pixel_x(hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero), u.canvas_width);
 
   let min_width = 4.0 / u.canvas_width;
   let final_sx2 = select(sx2, sx1 + min_width, sx2 - sx1 < min_width);
@@ -81,7 +84,7 @@ fn vs_main(
   let sy = mix(sy_bot, sy_top, local_y);
 
   var out: VertexOutput;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
   out.color = inst.color;
   return out;
 }
@@ -131,8 +134,8 @@ fn vs_main(
 
   let abs_start = inst.start_end.x + u.region_start;
   let abs_end = inst.start_end.y + u.region_start;
-  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero, u.reversed);
-  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero, u.reversed);
+  let sx1 = hp_to_clip_x(hp_split_uint(abs_start), u.bp_range_x, u.zero);
+  let sx2 = hp_to_clip_x(hp_split_uint(abs_end), u.bp_range_x, u.zero);
 
   let y_px = floor(inst.y - u.scroll_y + 0.5) + 0.5;
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
@@ -144,7 +147,7 @@ fn vs_main(
   let sy = mix(cy - half_px, cy + half_px, local_y);
 
   var out: VertexOutput;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
   out.color = inst.color;
   return out;
 }
@@ -226,7 +229,7 @@ fn vs_main(
   let line_start_abs = inst.start_end.x + u.region_start;
   let split_start = hp_split_uint(line_start_abs);
   let split_chevron = vec2f(split_start.x, split_start.y + chevron_offset_bp);
-  let cx = hp_to_clip_x(split_chevron, u.bp_range_x, u.zero, u.reversed);
+  let cx = hp_to_clip_x(split_chevron, u.bp_range_x, u.zero);
 
   let y_px = floor(inst.y - u.scroll_y + 0.5) + 0.5;
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
@@ -254,7 +257,7 @@ fn vs_main(
     default: { sx = outer_x; sy = cy + arm_y - select(thickness, -thickness, is_top_arm); }
   }
 
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
   out.color = inst.color;
   return out;
 }
@@ -307,7 +310,7 @@ fn vs_main(
   let v = vid % 9u;
 
   let abs_x = inst.x + u.region_start;
-  let cx = hp_to_clip_x(hp_split_uint(abs_x), u.bp_range_x, u.zero, u.reversed);
+  let cx = hp_to_clip_x(hp_split_uint(abs_x), u.bp_range_x, u.zero);
 
   let y_px = floor(inst.y - u.scroll_y + 0.5) + 0.5;
   let cy = 1.0 - (y_px / u.canvas_height) * 2.0;
@@ -340,7 +343,7 @@ fn vs_main(
   }
 
   var out: VertexOutput;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
   out.color = vec4f(inst.color_r, inst.color_g, inst.color_b, 1.0);
   return out;
 }

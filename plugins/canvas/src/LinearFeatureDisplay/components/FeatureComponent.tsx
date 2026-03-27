@@ -39,6 +39,7 @@ interface VisibleRegion {
   start: number
   end: number
   assemblyName: string
+  reversed?: boolean
   screenStartPx: number
   screenEndPx: number
 }
@@ -83,6 +84,15 @@ interface LinearFeatureDisplayModel {
 
 export interface Props {
   model: LinearFeatureDisplayModel
+}
+
+function bpToScreenPx(
+  bp: number,
+  vr: { start: number; screenStartPx: number; screenEndPx: number; reversed?: boolean },
+  blockBpPerPx: number,
+) {
+  const frac = (bp - vr.start) / blockBpPerPx
+  return vr.reversed ? vr.screenEndPx - frac : vr.screenStartPx + frac
 }
 
 interface FlatbushRegionCache {
@@ -253,8 +263,10 @@ function performMultiRegionHitDetection(
 
     const blockWidth = vr.screenEndPx - vr.screenStartPx
     const bpPerPx = (vr.end - vr.start) / blockWidth
-    const reversed = vr.start > vr.end
-    const bpPos = vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
+    const bpPos = vr.reversed
+      ? vr.end - (mouseXPx - vr.screenStartPx) * bpPerPx
+      : vr.start + (mouseXPx - vr.screenStartPx) * bpPerPx
+    const reversed = vr.reversed ?? false
 
     const { feature, subfeature } = performHitDetection(
       cache,
@@ -682,10 +694,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 
         renderedLabels.add(featureId)
 
-        const featureLeftPx =
-          vr.screenStartPx + (featureStartBp - vr.start) / blockBpPerPx
-        const featureRightPx =
-          vr.screenStartPx + (featureEndBp - vr.start) / blockBpPerPx
+        const px1 = bpToScreenPx(featureStartBp, vr, blockBpPerPx)
+        const px2 = bpToScreenPx(featureEndBp, vr, blockBpPerPx)
+        const featureLeftPx = Math.min(px1, px2)
+        const featureRightPx = Math.max(px1, px2)
 
         const featureWidth = featureRightPx - featureLeftPx
 
@@ -782,10 +794,8 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
           continue
         }
 
-        const leftPx =
-          vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx
-        const rightPx =
-          vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx
+        const leftPx = bpToScreenPx(item.startBp, vr, blockBpPerPx)
+        const rightPx = bpToScreenPx(item.endBp, vr, blockBpPerPx)
         const centerPx = (leftPx + rightPx) / 2
         const topPx = item.topPx
         const fontSize = Math.min(item.heightPx - 2, 12)
@@ -837,14 +847,10 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       }
       const blockBpPerPx =
         (vr.end - vr.start) / (vr.screenEndPx - vr.screenStartPx)
-      const leftPx = Math.max(
-        vr.screenStartPx,
-        vr.screenStartPx + (item.startBp - vr.start) / blockBpPerPx,
-      )
-      const rightPx = Math.min(
-        vr.screenEndPx,
-        vr.screenStartPx + (item.endBp - vr.start) / blockBpPerPx,
-      )
+      const px1 = bpToScreenPx(item.startBp, vr, blockBpPerPx)
+      const px2 = bpToScreenPx(item.endBp, vr, blockBpPerPx)
+      const leftPx = Math.max(vr.screenStartPx, Math.min(px1, px2))
+      const rightPx = Math.min(vr.screenEndPx, Math.max(px1, px2))
       return {
         leftPx,
         width: rightPx - leftPx,

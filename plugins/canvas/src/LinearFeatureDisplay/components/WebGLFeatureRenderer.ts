@@ -32,8 +32,11 @@ float hpToClipX(vec2 splitPos, vec3 domain) {
   float step = 2.0 / domain.z;
   float hi = max(splitPos.x - domain.x, -inf);
   float lo = max(splitPos.y - domain.y, -inf);
-  float cx = dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
-  return mix(cx, -cx, u_reversed);
+  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
+}
+
+float flipX(float x) {
+  return mix(x, -x, u_reversed);
 }
 `
 
@@ -86,7 +89,7 @@ void main() {
   float syBot = 1.0 - (yBotPx / u_canvasHeight) * 2.0;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -132,7 +135,7 @@ void main() {
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float sy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -212,7 +215,7 @@ void main() {
     sy = (vid == 0) ? cy + chevronHeight * 0.5 : cy - chevronHeight * 0.5;
   }
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -274,7 +277,7 @@ void main() {
     }
   }
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
