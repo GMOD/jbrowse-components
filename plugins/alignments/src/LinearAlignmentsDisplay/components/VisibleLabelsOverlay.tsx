@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -17,58 +19,63 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   contrastMap,
 }: VisibleLabelsOverlayProps) {
   const theme = useTheme()
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+    const w = width ?? 0
+    ctx.clearRect(0, 0, w, height)
+    for (const label of labels) {
+      const isSmallInterbase =
+        (label.type === 'insertion' ||
+          label.type === 'softclip' ||
+          label.type === 'hardclip') &&
+        label.text.startsWith('(')
+
+      let fillColor = theme.palette.common.white
+      if (isSmallInterbase) {
+        if (label.type === 'insertion') {
+          fillColor = theme.palette.insertion
+        } else if (label.type === 'softclip') {
+          fillColor = theme.palette.softclip
+        } else if (label.type === 'hardclip') {
+          fillColor = theme.palette.hardclip
+        }
+      } else if (label.type === 'mismatch') {
+        fillColor = contrastMap[label.text] ?? theme.palette.common.white
+      }
+
+      ctx.font = `bold ${label.fontSize}px sans-serif`
+      ctx.textAlign = isSmallInterbase ? 'left' : 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = fillColor
+      ctx.fillText(label.text, label.x, label.y)
+    }
+  }, [labels, width, height, contrastMap, theme])
 
   if (labels.length === 0) {
     return null
   }
 
-  const interbaseColorMap: Record<string, string> = {
-    insertion: theme.palette.insertion,
-    softclip: theme.palette.softclip,
-    hardclip: theme.palette.hardclip,
-  }
-
   return (
-    <svg
+    <canvas
+      ref={canvasRef}
+      width={width}
+      height={height}
       style={{
         position: 'absolute',
         top: 0,
         left: 0,
-        width,
-        height,
         pointerEvents: 'none',
-        overflow: 'hidden',
       }}
-    >
-      {labels.map((label, i) => {
-        const isSmallInterbase =
-          (label.type === 'insertion' ||
-            label.type === 'softclip' ||
-            label.type === 'hardclip') &&
-          label.text.startsWith('(')
-        let fillColor = theme.palette.common.white
-        if (isSmallInterbase) {
-          fillColor = interbaseColorMap[label.type]!
-        } else if (label.type === 'mismatch') {
-          fillColor = contrastMap[label.text]!
-        }
-        return (
-          <text
-            key={`${label.type}-${i}`}
-            x={label.x}
-            y={label.y}
-            textAnchor={isSmallInterbase ? 'start' : 'middle'}
-            dominantBaseline="central"
-            fontSize={label.type === 'mismatch' ? 9 : 10}
-            fontFamily="sans-serif"
-            fontWeight="bold"
-            fill={fillColor}
-          >
-            {label.text}
-          </text>
-        )
-      })}
-    </svg>
+    />
   )
 })
 

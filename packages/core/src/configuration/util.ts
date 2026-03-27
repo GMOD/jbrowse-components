@@ -118,7 +118,7 @@ export function getConf<CONFMODEL extends AnyConfigurationModel>(
   args?: Parameters<typeof readConfObject<CONFMODEL>>[2],
 ) {
   // Trust TypeScript types - the generic constraint ensures configuration is valid
-  return readConfObject<CONFMODEL>(model.configuration, slotPath, args)
+  return readConfObject(model.configuration, slotPath, args)
 }
 
 /**

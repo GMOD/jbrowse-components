@@ -5,6 +5,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { computeSyriTypes } from '@jbrowse/plugin-comparative-adapters'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -221,6 +222,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const refNames: string[] = []
   const assemblyNames: string[] = []
   const cigars: string[] = []
+  const precomputedSyriTypes: (string | undefined)[] = []
   const mates: {
     start: number
     end: number
@@ -305,6 +307,7 @@ export async function executeSyntenyFeaturesAndPositions({
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string) || '')
     cigars.push((f.get('CIGAR') as string) || '')
+    precomputedSyriTypes.push(f.get('syriType') as string | undefined)
     mates.push(mate)
 
     validCount++
@@ -331,10 +334,34 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const parsedCigars = cigars.map(s => (s ? parseCigar2(s) : []))
   const bpPerPxs = viewSnaps.map(v => v.bpPerPx)
+
+  // Compute SyRI types when colorBy='syri'
+  // If features already carry syriType from structural tier, use those directly
+  let syriTypes: ReturnType<typeof computeSyriTypes> | undefined
+  if (colorBy === 'syri') {
+    const hasPrecomputed = precomputedSyriTypes.some(t => t !== undefined)
+    syriTypes = hasPrecomputed
+      ? precomputedSyriTypes.map(t =>
+          t ? (t as ReturnType<typeof computeSyriTypes>[number]) : 'SYN',
+        )
+      : computeSyriTypes(
+          Array.from({ length: validCount }, (_, i) => ({
+            qname: names[i]!,
+            qstart: positionData.starts[i]!,
+            qend: positionData.ends[i]!,
+            tname: mates[i]!.refName,
+            tstart: mates[i]!.start,
+            tend: mates[i]!.end,
+            strand: positionData.strands[i]!,
+          })),
+        )
+  }
+
   const instanceData = executeSyntenyInstanceData({
     ...positionData,
     parsedCigars,
     colorBy,
+    syriTypes,
     drawCurves,
     drawCIGAR,
     drawCIGARMatchesOnly,

@@ -74,6 +74,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -108,6 +109,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -142,6 +144,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -174,6 +177,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -206,6 +210,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -239,6 +244,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -273,12 +279,14 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 400,
+          reversed: false,
         },
         {
           regionNumber: 1,
           bpRangeX: [1000, 2000],
           screenStartPx: 400,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {
@@ -321,6 +329,7 @@ describe('Canvas2DWiggleRenderer', () => {
           bpRangeX: [0, 1000],
           screenStartPx: 0,
           screenEndPx: 800,
+          reversed: false,
         },
       ],
       {

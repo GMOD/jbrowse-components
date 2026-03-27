@@ -2,6 +2,12 @@
 
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
+import {
+  STANDARD_BLEND_STATE,
+  createStandardBindGroup,
+  createStandardBindGroupLayout,
+  createStorageBuffer,
+} from '@jbrowse/core/gpu/webgpuUtils'
 
 import { getChainBounds, toClipRect } from './chainOverlayUtils.ts'
 import {
@@ -92,7 +98,6 @@ import {
   U_RANGE_Y0,
   U_REGION_START,
   U_SASHIMI_COLORS,
-  U_REVERSED,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
 } from './wgsl/common.ts'
@@ -263,33 +268,11 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private static initPipelines(device: GPUDevice) {
-    const blend: GPUBlendState = {
-      color: {
-        srcFactor: 'src-alpha',
-        dstFactor: 'one-minus-src-alpha',
-        operation: 'add',
-      },
-      alpha: {
-        srcFactor: 'one',
-        dstFactor: 'one-minus-src-alpha',
-        operation: 'add',
-      },
+    const target: GPUColorTargetState = {
+      format: 'bgra8unorm',
+      blend: STANDARD_BLEND_STATE,
     }
-    const target: GPUColorTargetState = { format: 'bgra8unorm', blend }
-    WebGPUAlignmentsRenderer.layout = device.createBindGroupLayout({
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'read-only-storage' },
-        },
-        {
-          binding: 1,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    })
+    WebGPUAlignmentsRenderer.layout = createStandardBindGroupLayout(device)
     const pLayout = device.createPipelineLayout({
       bindGroupLayouts: [WebGPUAlignmentsRenderer.layout],
     })
@@ -332,22 +315,16 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
   }
 
   private mkBuf(device: GPUDevice, data: ArrayBuffer) {
-    const buf = device.createBuffer({
-      size: Math.max(data.byteLength, 4),
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    })
-    device.queue.writeBuffer(buf, 0, data)
-    return buf
+    return createStorageBuffer(device, data)
   }
 
   private mkBG(device: GPUDevice, storage: GPUBuffer) {
-    return device.createBindGroup({
-      layout: WebGPUAlignmentsRenderer.layout!,
-      entries: [
-        { binding: 0, resource: { buffer: storage } },
-        { binding: 1, resource: { buffer: this.uBuf } },
-      ],
-    })
+    return createStandardBindGroup(
+      device,
+      WebGPUAlignmentsRenderer.layout!,
+      storage,
+      this.uBuf,
+    )
   }
 
   private destroyRegion(r: GpuRegion) {
@@ -928,7 +905,6 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
     region: GpuRegion,
     clippedBpStart: number,
     clippedBpEnd: number,
-    reversed: boolean,
   ) {
     const f = this.uF32
     const u = this.uU32
@@ -967,7 +943,6 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
     f[U_INSERT_UPPER] = region.insertSizeStats?.upper ?? 999999
     f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
     f[U_SCROLL_TOP] = state.rangeY[0]
-    f[U_REVERSED] = reversed ? 1.0 : 0.0
     const c = state.colors
     this.writeColor(U_COLOR_FWD, c.colorFwdStrand)
     this.writeColor(U_COLOR_REV, c.colorRevStrand)
@@ -1084,7 +1059,6 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
         region,
         clippedBpStart,
         clippedBpEnd,
-        block.reversed,
       )
 
       const mode = state.renderingMode ?? 'pileup'

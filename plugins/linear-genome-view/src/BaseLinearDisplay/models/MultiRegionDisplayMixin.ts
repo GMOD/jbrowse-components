@@ -24,10 +24,7 @@ export interface Region {
   start: number
   end: number
   assemblyName: string
-  reversed?: boolean
 }
-
-export type RegionWithNumber = Region & { regionNumber: number }
 
 export interface FetchContext {
   stopToken: StopToken
@@ -121,7 +118,7 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       // Overridable hooks — subclasses override these
-      onFetchNeeded(_needed: RegionWithNumber[]) {
+      onFetchNeeded(_needed: { region: Region; regionNumber: number }[]) {
         // no-op base
       },
 
@@ -166,7 +163,7 @@ export default function MultiRegionDisplayMixin() {
 
       return {
         withFetchLifecycle(
-          needed: RegionWithNumber[],
+          needed: { region: Region; regionNumber: number }[],
           work: (ctx: FetchContext) => Promise<void>,
         ) {
           if (self.renderingStopToken) {
@@ -193,7 +190,7 @@ export default function MultiRegionDisplayMixin() {
                 const result = await checkByteEstimate(
                   session.rpcManager,
                   getRpcSessionId(self),
-                  needed,
+                  needed.map(r => r.region),
                   byteEstimateConfig,
                   ctx,
                 )
@@ -213,7 +210,7 @@ export default function MultiRegionDisplayMixin() {
               await work(ctx)
             } catch (e) {
               if (!isAbortException(e)) {
-                console.warn('Fetch failed:', e)
+                console.error('Fetch failed:', e)
                 if (!isStale()) {
                   self.setError(e)
                 }
@@ -296,12 +293,12 @@ export default function MultiRegionDisplayMixin() {
 
                 self.beforeFetchCheck()
 
-                const visible = view.mergedVisibleRegions
+                const visibleMerged = view.mergedVisibleRegions
                 const bufferedByRegion = new Map(
                   view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
                 )
-                const needed: RegionWithNumber[] = []
-                for (const vr of visible) {
+                const needed: { region: Region; regionNumber: number }[] = []
+                for (const vr of visibleMerged) {
                   const loaded = untracked(() =>
                     self.loadedRegions.get(vr.regionNumber),
                   )

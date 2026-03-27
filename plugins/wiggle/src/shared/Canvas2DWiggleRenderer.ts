@@ -154,10 +154,10 @@ export class Canvas2DWiggleRenderer implements WiggleBackend {
     bpLength: number,
     fullBlockWidth: number,
   ) {
-    return (
-      block.screenStartPx +
-      ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
-    )
+    const frac = ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
+    return block.reversed
+      ? block.screenEndPx - frac
+      : block.screenStartPx + frac
   }
 
   private makeScoreToY(p: DrawParams) {

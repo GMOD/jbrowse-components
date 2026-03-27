@@ -1,7 +1,14 @@
 /// <reference types="@webgpu/types" />
 
+import { getDevicePixelRatio, resizeCanvas } from '@jbrowse/alignments-core'
 import getGpuDevice from '@jbrowse/core/gpu/getGpuDevice'
 import { initGpuContext } from '@jbrowse/core/gpu/initGpuContext'
+import {
+  STANDARD_BLEND_STATE,
+  createStandardBindGroup,
+  createStandardBindGroupLayout,
+  createStorageBuffer,
+} from '@jbrowse/core/gpu/webgpuUtils'
 
 import {
   EDGE_SEGMENTS,
@@ -62,7 +69,7 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
   private pickCallback?: (result: number) => void
 
   private get dpr() {
-    return typeof window !== 'undefined' ? window.devicePixelRatio : 2
+    return getDevicePixelRatio()
   }
 
   private constructor(
@@ -109,37 +116,12 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
   }
 
   private static async initPipelines(device: GPUDevice) {
-    WebGPUSyntenyRenderer.bindGroupLayout = device.createBindGroupLayout({
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'read-only-storage' },
-        },
-        {
-          binding: 1,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    })
+    WebGPUSyntenyRenderer.bindGroupLayout =
+      createStandardBindGroupLayout(device)
 
     const layout = device.createPipelineLayout({
       bindGroupLayouts: [WebGPUSyntenyRenderer.bindGroupLayout],
     })
-
-    const blendState: GPUBlendState = {
-      color: {
-        srcFactor: 'src-alpha',
-        dstFactor: 'one-minus-src-alpha',
-        operation: 'add',
-      },
-      alpha: {
-        srcFactor: 'one',
-        dstFactor: 'one-minus-src-alpha',
-        operation: 'add',
-      },
-    }
 
     const fillModule = device.createShaderModule({ code: fillVertexShader })
     const edgeModule = device.createShaderModule({ code: edgeVertexShader })
@@ -155,7 +137,7 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
         fragment: {
           module: fillModule,
           entryPoint: 'fs_main',
-          targets: [{ format: 'bgra8unorm', blend: blendState }],
+          targets: [{ format: 'bgra8unorm', blend: STANDARD_BLEND_STATE }],
         },
         primitive: { topology: 'triangle-list' },
       }),
@@ -175,7 +157,7 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
         fragment: {
           module: edgeModule,
           entryPoint: 'fs_main',
-          targets: [{ format: 'bgra8unorm', blend: blendState }],
+          targets: [{ format: 'bgra8unorm', blend: STANDARD_BLEND_STATE }],
         },
         primitive: { topology: 'triangle-list' },
       }),
@@ -183,12 +165,8 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
   }
 
   resize(width: number, height: number) {
-    const dpr = this.dpr
-    const pw = Math.round(width * dpr)
-    const ph = Math.round(height * dpr)
-    if (this.canvas.width !== pw || this.canvas.height !== ph) {
-      this.canvas.width = pw
-      this.canvas.height = ph
+    const { pw, ph, changed } = resizeCanvas(this.canvas, width, height)
+    if (changed) {
       this.createPickingTexture(pw, ph)
     }
   }
@@ -222,19 +200,14 @@ export class WebGPUSyntenyRenderer implements SyntenyBackend {
     const interleaved = interleaveInstances(data)
 
     this.instanceBuffer?.destroy()
-    this.instanceBuffer = device.createBuffer({
-      size: interleaved.byteLength || 4,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    })
-    device.queue.writeBuffer(this.instanceBuffer, 0, interleaved)
+    this.instanceBuffer = createStorageBuffer(device, interleaved)
 
-    this.bindGroup = device.createBindGroup({
-      layout: WebGPUSyntenyRenderer.bindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: this.instanceBuffer } },
-        { binding: 1, resource: { buffer: this.uniformBuffer } },
-      ],
-    })
+    this.bindGroup = createStandardBindGroup(
+      device,
+      WebGPUSyntenyRenderer.bindGroupLayout,
+      this.instanceBuffer,
+      this.uniformBuffer,
+    )
     this.pickingDirty = true
   }
 

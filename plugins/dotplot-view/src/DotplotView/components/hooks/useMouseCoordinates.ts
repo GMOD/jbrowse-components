@@ -22,7 +22,7 @@ export function useMouseCoordinates() {
   const [mousedownClient, setMouseDownClient] = useState<Coord>()
   const [mouseupClient, setMouseUpClient] = useState<Coord>()
   const [mouseOvered, setMouseOvered] = useState(false)
-  const [rect, setRect] = useState<Rect>(blank)
+  const [rect, setRect] = useState(blank)
   const ref = useRef<HTMLDivElement>(null)
   const root = useRef<HTMLDivElement>(null)
 

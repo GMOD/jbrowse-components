@@ -53,7 +53,6 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
-  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ContextMenuFeatureInfo {
@@ -208,7 +207,7 @@ export default function stateModelFactory(
 
       get effectiveShowDescriptions(): boolean {
         return (
-          self.showDescriptions &&
+          this.showDescriptions &&
           self.featureDensityPerPx < DESCRIPTION_DENSITY_THRESHOLD
         )
       },
@@ -226,7 +225,7 @@ export default function stateModelFactory(
       },
 
       get effectiveGeneGlyphMode(): string {
-        const mode = self.geneGlyphMode
+        const mode = this.geneGlyphMode
         if (mode === 'auto') {
           const view = getContainingView(self) as LGV
           return view.bpPerPx > 100 ? 'longestCoding' : 'all'
@@ -525,13 +524,15 @@ export default function stateModelFactory(
     })
     .actions(self => {
       interface FetchResult {
-        region: RegionWithNumber
+        regionNumber: number
         data: FeatureDataResult
+        region: Region
         bpPerPx: number
       }
 
       async function fetchFeaturesForRegion(
-        region: RegionWithNumber,
+        region: Region,
+        regionNumber: number,
         bpPerPx: number,
         stopToken: StopToken,
       ): Promise<FetchResult | 'regionTooLarge'> {
@@ -567,7 +568,7 @@ export default function stateModelFactory(
         if ('regionTooLarge' in result) {
           return 'regionTooLarge'
         }
-        return { region, data: result, bpPerPx }
+        return { regionNumber, data: result, region, bpPerPx }
       }
 
       function applyFetchResults(
@@ -579,21 +580,22 @@ export default function stateModelFactory(
         const newRegionNumbers = new Set<number>()
         for (const r of results) {
           if (r) {
-            const { regionNumber } = r.region
-            dataMap.set(regionNumber, r.data)
-            newRegionNumbers.add(regionNumber)
+            dataMap.set(r.regionNumber, r.data)
+            newRegionNumbers.add(r.regionNumber)
             regionKeys.set(
-              regionNumber,
+              r.regionNumber,
               `${r.region.assemblyName}:${r.region.refName}`,
             )
           }
         }
+        // Compute density BEFORE layout so effectiveShowDescriptions is
+        // accurate for the first layout pass (avoids a re-layout flash)
         let totalFeatures = 0
         let totalSpanPx = 0
         for (const r of results) {
           if (r) {
-            self.setLoadedRegionForRegion(r.region.regionNumber, r.region)
-            self.setLayoutBpPerPxForRegion(r.region.regionNumber, r.bpPerPx)
+            self.setLoadedRegionForRegion(r.regionNumber, r.region)
+            self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
             totalFeatures += r.data.featureCount
             totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
           }
@@ -648,12 +650,17 @@ export default function stateModelFactory(
           return null
         },
 
-        onFetchNeeded(needed: RegionWithNumber[]) {
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(region =>
-              fetchFeaturesForRegion(region, bpPerPx, ctx.stopToken),
+            const promises = needed.map(({ region, regionNumber }) =>
+              fetchFeaturesForRegion(
+                region,
+                regionNumber,
+                bpPerPx,
+                ctx.stopToken,
+              ),
             )
             const results = await Promise.all(promises)
             if (ctx.isStale()) {

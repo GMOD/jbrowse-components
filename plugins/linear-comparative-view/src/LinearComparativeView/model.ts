@@ -94,6 +94,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
+        /**
+         * #property
+         * per-view compact mode: when true, the LGV is collapsed to a label bar
+         */
+        compactViews: types.optional(types.array(types.boolean), []),
       }),
     )
     .volatile(() => ({
@@ -150,6 +155,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get showLoading() {
         return self.isLoading || (!this.initialized && self.views.length > 0)
+      },
+      /**
+       * #method
+       */
+      isViewCompact(idx: number) {
+        return self.compactViews[idx] ?? false
       },
     }))
     .actions(self => ({
@@ -316,6 +327,71 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.views = cast([])
         self.levels = cast([])
       },
+      /**
+       * #action
+       */
+      toggleCompactView(idx: number) {
+        while (self.compactViews.length <= idx) {
+          self.compactViews.push(false)
+        }
+        self.compactViews[idx] = !self.compactViews[idx]
+      },
+      /**
+       * #action
+       */
+      compactAllViews() {
+        while (self.compactViews.length < self.views.length) {
+          self.compactViews.push(false)
+        }
+        for (let i = 0; i < self.views.length; i++) {
+          self.compactViews[i] = true
+        }
+      },
+      /**
+       * #action
+       */
+      expandAllViews() {
+        for (let i = 0; i < self.compactViews.length; i++) {
+          self.compactViews[i] = false
+        }
+      },
+      /**
+       * #action
+       */
+      collapseAllLevels() {
+        for (const level of self.levels) {
+          level.setCollapsed(true)
+        }
+      },
+      /**
+       * #action
+       */
+      expandAllLevels() {
+        for (const level of self.levels) {
+          level.setCollapsed(false)
+        }
+      },
+      /**
+       * #action
+       */
+      focusLevel(idx: number) {
+        for (let i = 0; i < self.levels.length; i++) {
+          self.levels[i]!.setCollapsed(i !== idx)
+        }
+      },
+      /**
+       * #action
+       */
+      autoScaleLevelHeights() {
+        const numLevels = self.levels.length
+        if (numLevels <= 0) {
+          return
+        }
+        const targetHeight = Math.max(40, Math.min(100, 400 / numLevels))
+        for (const level of self.levels) {
+          level.setHeight(targetHeight)
+        }
+      },
     }))
     .views(() => ({
       /**
@@ -414,6 +490,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         scrollZoom,
         showDynamicControls,
         viewTrackConfigs,
+        compactViews,
         ...rest
       } = snap as Omit<typeof snap, symbol>
       return {
@@ -425,6 +502,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         ...(scrollZoom ? { scrollZoom } : {}),
         ...(!showDynamicControls ? { showDynamicControls } : {}),
         ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
+        ...(compactViews.some(Boolean) ? { compactViews } : {}),
       } as typeof snap
     })
 }

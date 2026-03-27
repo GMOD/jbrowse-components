@@ -200,14 +200,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
+      get parentHelper() {
+        return getParent<{
+          height: number
+          effectiveHeight?: number
+          level: number
+          collapsed?: boolean
+        }>(self, 4)
+      },
       get level() {
-        return getParent<{ height: number; level: number }>(self, 4).level
+        return this.parentHelper.level
       },
       /**
        * #getter
        */
       get height() {
-        return getParent<{ height: number; level: number }>(self, 4).height
+        const parent = this.parentHelper
+        return parent.effectiveHeight ?? parent.height
+      },
+      get isLevelCollapsed() {
+        return this.parentHelper.collapsed ?? false
       },
       /**
        * #getter

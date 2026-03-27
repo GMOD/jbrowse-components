@@ -39,6 +39,33 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private seqIdToOriginalRefName: string[] = []
 
+  private seqAdapterRefNamesP?: Promise<Set<string>>
+
+  private async getSeqAdapterRefNames() {
+    this.seqAdapterRefNamesP ??= this.getSequenceAdapter().then(async adapter => {
+      if (!adapter) {
+        return new Set<string>()
+      }
+      const refNames = await adapter.getRefNames()
+      return new Set(refNames)
+    })
+    return this.seqAdapterRefNamesP
+  }
+
+  private async resolveSeqFetchRefName(seqId: number) {
+    const originalName = this.refIdToOriginalName(seqId)
+    const cramName = this.refIdToName(seqId)
+    const seqRefNames = await this.getSeqAdapterRefNames()
+    if (originalName && seqRefNames.has(originalName)) {
+      return originalName
+    }
+    if (cramName && seqRefNames.has(cramName)) {
+      return cramName
+    }
+    // fall back to whatever we have, even if not in the set
+    return originalName || cramName
+  }
+
   private configure() {
     if (!this.configureResult) {
       const cramLocation = this.getConf('cramLocation')
@@ -55,19 +82,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
             if (!sequenceAdapter) {
               throw new Error('no sequenceAdapter available')
             }
-            const refName =
-              this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
+            const refName = await this.resolveSeqFetchRefName(seqId)
             if (!refName) {
               throw new Error('unknown refName')
             }
 
-            return (
-              (await sequenceAdapter.getSequence({
-                refName,
-                start: start - 1,
-                end,
-              })) ?? ''
-            )
+            const seq = await sequenceAdapter.getSequence({
+              refName,
+              start: start - 1,
+              end,
+            })
+            return seq ?? ''
           },
           checkSequenceMD5: false,
         }),

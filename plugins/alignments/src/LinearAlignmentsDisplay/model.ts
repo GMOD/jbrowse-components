@@ -92,7 +92,6 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
-  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -1163,7 +1162,8 @@ export default function stateModelFactory(
 
       async function fetchFeaturesForRegion(
         adapterConfig: unknown,
-        region: RegionWithNumber,
+        region: Region,
+        regionNumber: number,
         stopToken: StopToken,
       ) {
         const session = getSession(self)
@@ -1173,7 +1173,16 @@ export default function stateModelFactory(
           ? fetchChainData(adapterConfig, sequenceAdapter, region, stopToken)
           : fetchPileupData(adapterConfig, sequenceAdapter, region, stopToken))
 
-        return { region, result }
+        return {
+          regionNumber,
+          result,
+          region: {
+            refName: region.refName,
+            start: region.start,
+            end: region.end,
+            assemblyName: region.assemblyName,
+          },
+        }
       }
 
       function reconstructFromArrays(data: PileupDataResult) {
@@ -1373,7 +1382,9 @@ export default function stateModelFactory(
         }
       }
 
-      function computeAndSetArcs(regions: RegionWithNumber[]) {
+      function computeAndSetArcs(
+        regions: { region: Region; regionNumber: number }[],
+      ) {
         const allRegionInfos: {
           refName: string
           start: number
@@ -1390,7 +1401,12 @@ export default function stateModelFactory(
         }
         for (const r of regions) {
           if (!allRegionInfos.some(ri => ri.regionNumber === r.regionNumber)) {
-            allRegionInfos.push(r)
+            allRegionInfos.push({
+              refName: r.region.refName,
+              start: r.region.start,
+              end: r.region.end,
+              regionNumber: r.regionNumber,
+            })
           }
         }
         const { arcs, lines } = computeArcsFromPileupData(
@@ -1423,7 +1439,7 @@ export default function stateModelFactory(
 
       return {
         async fetchFeatures(region: Region, regionNumber = 0) {
-          self.onFetchNeeded([{ ...region, regionNumber }])
+          self.onFetchNeeded([{ region, regionNumber }])
         },
 
         getByteEstimateConfig() {
@@ -1435,12 +1451,13 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(needed: RegionWithNumber[]) {
+        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(region =>
+            const promises = needed.map(({ region, regionNumber }) =>
               fetchFeaturesForRegion(
                 self.adapterConfigSnapshot,
                 region,
+                regionNumber,
                 ctx.stopToken,
               ),
             )
@@ -1458,8 +1475,8 @@ export default function stateModelFactory(
               }
               self.setModificationsReady(true)
               self.setSimplexModifications(r.result.simplexModifications)
-              self.setLoadedRegion(r.region.regionNumber, r.region)
-              newDataMap.set(r.region.regionNumber, r.result)
+              self.setLoadedRegion(r.regionNumber, r.region)
+              newDataMap.set(r.regionNumber, r.result)
             }
             if (
               self.renderingMode !== 'linkedRead' &&
@@ -1486,6 +1503,9 @@ export default function stateModelFactory(
 
         afterAttach() {
           superAfterAttach()
+          // SYNC: Upload-before-draw autorun pattern is shared with
+          // MultiLGVSyntenyDisplay (plugins/linear-comparative-view/
+          // src/MultiLGVSyntenyDisplay/components/MultiSyntenyRendering.tsx).
           // Upload autoruns are registered BEFORE the draw autorun so
           // that MobX runs them first when rpcDataMap changes, ensuring
           // GPU buffers are populated before renderBlocks() reads them.
@@ -1625,7 +1645,6 @@ export default function stateModelFactory(
                   bpRangeX: [r.start, r.end] as [number, number],
                   screenStartPx: r.screenStartPx,
                   screenEndPx: r.screenEndPx,
-                  reversed: r.reversed ?? false,
                 }))
                 renderer.renderBlocks(blocks, {
                   rangeY: self.currentRangeY,
@@ -1710,7 +1729,11 @@ export default function stateModelFactory(
                 prevArcColorByType = colorByType
                 if (self.showArcs && self.rpcDataMap.size > 0) {
                   const view = getContainingView(self) as LGV
-                  computeAndSetArcs(view.mergedVisibleRegions)
+                  const regions = view.mergedVisibleRegions.map(vr => ({
+                    region: vr as Region,
+                    regionNumber: vr.regionNumber,
+                  }))
+                  computeAndSetArcs(regions)
                 }
               },
               { name: 'LinearAlignmentsDisplay:recomputeArcColors' },

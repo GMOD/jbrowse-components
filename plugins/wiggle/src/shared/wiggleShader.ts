@@ -1,5 +1,5 @@
 export const INSTANCE_STRIDE = 8 // SYNC: must match field count in WGSL struct Instance
-export const UNIFORM_SIZE = 64 // SYNC: must match byte size of WGSL struct Uniforms
+export const UNIFORM_SIZE = 64 // SYNC: must match byte size of WGSL struct Uniforms (padded to 16-byte alignment)
 export const VERTICES_PER_INSTANCE = 6 // SYNC: VERTICES_PER_INSTANCE in WGSL
 export const RENDERING_TYPE_XYPLOT = 0 // SYNC: RENDERING_TYPE_XYPLOT in WGSL
 export const RENDERING_TYPE_DENSITY = 1 // SYNC: RENDERING_TYPE_DENSITY in WGSL
@@ -81,7 +81,10 @@ struct Uniforms { // SYNC: byte size must match UNIFORM_SIZE in TS
   domain_y: vec2f,
   zero: f32, // MUST be 0.0 at runtime — used by hp_to_clip_x to create runtime infinity
   viewport_width: f32,
+  reversed: f32,
 }
+
+fn flip_x(x: f32) -> f32 { return mix(x, -x, u.reversed); }
 
 @group(0) @binding(0) var<storage, read> instances: array<Instance>;
 @group(0) @binding(1) var<uniform> u: Uniforms;
@@ -177,7 +180,7 @@ fn vs_main(
   }
 
   var out: VertexOutput;
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
   out.color = vec4f(color, 1.0);
   return out;
 }

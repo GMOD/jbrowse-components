@@ -1,4 +1,4 @@
-import { TextDecoder, TextEncoder } from 'util'
+import { TextDecoder, TextEncoder } from 'node:util'
 
 import { Image, createCanvas } from 'canvas'
 
@@ -16,6 +16,5 @@ function addGlobalCanvasUtils() {
 
 function addGlobalTextUtils() {
   global.TextEncoder = TextEncoder
-  // @ts-expect-error
   global.TextDecoder = TextDecoder
 }

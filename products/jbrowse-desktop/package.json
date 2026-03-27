@@ -73,11 +73,11 @@
     "@jbrowse/text-indexing": "workspace:^",
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
-    "@mui/x-data-grid": "^8.27.5",
+    "@mui/x-data-grid": "^8.28.1",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.1.0",
     "deepmerge": "^4.3.1",
-    "dockview": "^5.1.0",
+    "dockview": "^5.2.0",
     "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.3",
@@ -86,7 +86,7 @@
     "mobx-react": "^9.2.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "sanitize-filename": "^1.6.3",
+    "sanitize-filename": "^1.6.4",
     "swr": "^2.4.1"
   },
   "devDependencies": {
@@ -95,7 +95,7 @@
     "@types/selenium-webdriver": "^4.35.5",
     "cross-env": "^10.1.0",
     "electron": "41.0.3",
-    "electron-chromedriver": "^41.0.3",
+    "electron-chromedriver": "^41.0.4",
     "esbuild": "^0.27.4",
     "selenium-webdriver": "^4.41.0"
   },

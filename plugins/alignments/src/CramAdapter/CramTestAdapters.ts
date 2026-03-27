@@ -63,6 +63,9 @@ export class SequenceAdapter extends BaseSequenceAdapter {
   }
 
   async getRefNames() {
+    if (this.refNames.length === 0) {
+      this.refNames = await this.fasta.getSequenceList()
+    }
     return this.refNames
   }
 

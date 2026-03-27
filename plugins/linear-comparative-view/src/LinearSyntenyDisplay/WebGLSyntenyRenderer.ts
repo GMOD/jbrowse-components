@@ -1,4 +1,8 @@
-import { createProgram } from '@jbrowse/core/gpu/webglUtils'
+import {
+  bindUniformBlock,
+  createProgram,
+  enableStandardBlend,
+} from '@jbrowse/core/gpu/webglUtils'
 
 import {
   EDGE_FRAGMENT_SHADER,
@@ -21,18 +25,6 @@ import type { SyntenyBackend } from './syntenyBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/executeSyntenyInstanceData.ts'
 
 const INST_ATTRIB_NAMES = ['a_inst0', 'a_inst1', 'a_inst2', 'a_inst3']
-
-function bindUniformBlock(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  blockName: string,
-  bindingPoint: number,
-) {
-  const idx = gl.getUniformBlockIndex(program, blockName)
-  if (idx !== gl.INVALID_INDEX) {
-    gl.uniformBlockBinding(program, idx, bindingPoint)
-  }
-}
 
 export class WebGLSyntenyRenderer implements SyntenyBackend {
   private gl: WebGL2RenderingContext
@@ -125,13 +117,7 @@ export class WebGLSyntenyRenderer implements SyntenyBackend {
     this.pickingVAO = this.createInstancedVAO(this.pickingProgram)
     this.edgeVAO = this.createInstancedVAO(this.edgeProgram)
 
-    gl.enable(gl.BLEND)
-    gl.blendFuncSeparate(
-      gl.SRC_ALPHA,
-      gl.ONE_MINUS_SRC_ALPHA,
-      gl.ONE,
-      gl.ONE_MINUS_SRC_ALPHA,
-    )
+    enableStandardBlend(gl)
   }
 
   private createInstancedVAO(program: WebGLProgram) {

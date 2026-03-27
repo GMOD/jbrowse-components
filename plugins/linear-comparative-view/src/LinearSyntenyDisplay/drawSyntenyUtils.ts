@@ -46,6 +46,14 @@ export const strandCigarColors = {
   '=': '#f00a',
 }
 
+// SyRI structural type colors (plotsr-compatible)
+export const syriColors = {
+  SYN: '#CCCCCC',
+  INV: '#FFA500',
+  TRANS: '#6495ED',
+  DUP: '#00CED1',
+}
+
 // Color scheme configuration
 export const colorSchemes = {
   default: {
@@ -57,6 +65,9 @@ export const colorSchemes = {
     cigarColors: strandCigarColors,
   },
   query: {
+    cigarColors: defaultCigarColors,
+  },
+  syri: {
     cigarColors: defaultCigarColors,
   },
 }

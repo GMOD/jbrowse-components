@@ -24,7 +24,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       function syntenyDrawAutorun() {
-        if (self.isMinimized) {
+        if (self.isMinimized || self.isLevelCollapsed) {
           return
         }
         const view = getContainingView(self) as LinearSyntenyViewModel
@@ -108,7 +108,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       function syntenyFetchAutorun() {
-        if (self.isMinimized) {
+        if (self.isMinimized || self.isLevelCollapsed) {
           return
         }
         const view = getContainingView(self) as LSV

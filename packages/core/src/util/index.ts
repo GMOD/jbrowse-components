@@ -55,7 +55,7 @@ export * from './range.ts'
 export * from './dedupe.ts'
 export * from './coarseStripHTML.ts'
 
-export * from './offscreenCanvasPonyfill.tsx'
+export * from './offscreenCanvasPonyfill.ts'
 export * from './offscreenCanvasUtils.tsx'
 export * from './rpc.ts'
 export * from './crypto.ts'
@@ -160,7 +160,7 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode = getParent<IAnyStateTreeNode>(node)
+  let currentNode = getParent(node)
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (currentNode && isAlive(currentNode)) {

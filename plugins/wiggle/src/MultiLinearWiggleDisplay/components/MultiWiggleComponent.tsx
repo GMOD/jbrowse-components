@@ -242,6 +242,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
         bpRangeX: [vr.start, vr.end] as [number, number],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
+        reversed: vr.reversed ?? false,
       }))
 
       renderer.renderBlocks(

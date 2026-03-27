@@ -61,6 +61,16 @@ const ColorBySelector = observer(function ColorBySelector({
           helpText:
             'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
         },
+        {
+          label: 'SyRI (structural)',
+          type: 'radio',
+          checked: colorBy === 'syri',
+          onClick: () => {
+            setColorBy('syri')
+          },
+          helpText:
+            'Color alignments by structural variant type using SyRI-style classification: syntenic (gray), inversions (orange), translocations (blue), and duplications (cyan). Compatible with plotsr color conventions.',
+        },
       ]}
     >
       <PaletteIcon />

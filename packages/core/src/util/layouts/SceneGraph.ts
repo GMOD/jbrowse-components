@@ -10,23 +10,33 @@ interface AbsoluteCache {
 
 export default class SceneGraph {
   private children: Map<string, SceneGraph>
-
   private absoluteCache: AbsoluteCache
 
-  public parent?: SceneGraph
+  parent?: SceneGraph
+  name: string
+  left: number
+  top: number
+  width: number
+  height: number
+  data?: Record<string, any>
 
   /**
    * note: all coordinates are inter-base or inter-pixel coordinates
    */
   constructor(
-    public name: string,
-    public left: number,
-    public top: number,
-    public width: number,
-    public height: number,
-
-    public data?: Record<string, any>,
+    name: string,
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    data?: Record<string, any>,
   ) {
+    this.name = name
+    this.left = left
+    this.top = top
+    this.width = width
+    this.height = height
+    this.data = data
     this.children = new Map()
     this.absoluteCache = { dirty: true }
   }

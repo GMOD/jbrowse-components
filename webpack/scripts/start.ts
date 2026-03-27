@@ -53,6 +53,7 @@ export default function startWebpack(config: webpack.Configuration) {
         {
           host: HOST,
           port,
+          hot: false,
           static: {
             serveIndex: true,
             staticOptions: { dotfiles: 'allow' },

@@ -1,15 +1,13 @@
-import { createProgram as createGLProgram } from '@jbrowse/core/gpu/webglUtils'
+import { HP_GLSL_WITH_UNIFORM } from '@jbrowse/alignments-core'
+import {
+  createProgram as createGLProgram,
+  splitPositionWithFrac,
+} from '@jbrowse/core/gpu/webglUtils'
 
 import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
-
-import {
-  HP_GLSL_FUNCTIONS,
-  MAX_VISIBLE_CHEVRONS_PER_LINE,
-  splitPositionWithFrac,
-} from './sharedRendererConstants.ts'
 
 const RECT_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -28,7 +26,7 @@ uniform float u_scrollY;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 float snapToPixelX(float clipX) {
   float px = (clipX + 1.0) * 0.5 * u_canvasWidth;
@@ -42,10 +40,10 @@ void main() {
 
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hp_split_uint(absStart);
-  vec2 splitEnd = hp_split_uint(absEnd);
-  float sx1 = snapToPixelX(hp_to_clip_x(splitStart, u_bpRangeX));
-  float sx2 = snapToPixelX(hp_to_clip_x(splitEnd, u_bpRangeX));
+  vec2 splitStart = hpSplitUint(absStart);
+  vec2 splitEnd = hpSplitUint(absEnd);
+  float sx1 = snapToPixelX(hpToClipX(splitStart, u_bpRangeX));
+  float sx2 = snapToPixelX(hpToClipX(splitEnd, u_bpRangeX));
 
   float minWidth = 4.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
@@ -60,7 +58,7 @@ void main() {
   float syBot = 1.0 - (yBotPx / u_canvasHeight) * 2.0;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -89,27 +87,29 @@ uniform float u_scrollY;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 void main() {
   int vid = gl_VertexID % 2;
 
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hp_split_uint(absStart);
-  vec2 splitEnd = hp_split_uint(absEnd);
-  float sx1 = hp_to_clip_x(splitStart, u_bpRangeX);
-  float sx2 = hp_to_clip_x(splitEnd, u_bpRangeX);
+  vec2 splitStart = hpSplitUint(absStart);
+  vec2 splitEnd = hpSplitUint(absEnd);
+  float sx1 = hpToClipX(splitStart, u_bpRangeX);
+  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
 
   float sx = (vid == 0) ? sx1 : sx2;
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float sy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
+
+const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
 const CHEVRON_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -129,7 +129,7 @@ uniform float u_bpPerPx;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 void main() {
   int localChevronIndex = gl_VertexID / 4;
@@ -164,9 +164,9 @@ void main() {
 
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
   uint lineStartAbs = a_position.x + u_regionStart;
-  vec2 splitStart = hp_split_uint(lineStartAbs);
+  vec2 splitStart = hpSplitUint(lineStartAbs);
   vec2 splitChevron = vec2(splitStart.x, splitStart.y + chevronOffsetBp);
-  float cx = hp_to_clip_x(splitChevron, u_bpRangeX);
+  float cx = hpToClipX(splitChevron, u_bpRangeX);
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -184,7 +184,7 @@ void main() {
     sy = (vid == 0) ? cy + chevronHeight * 0.5 : cy - chevronHeight * 0.5;
   }
 
-  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -207,14 +207,14 @@ uniform float u_scrollY;
 
 out vec4 v_color;
 
-${HP_GLSL_FUNCTIONS}
+${HP_GLSL_WITH_UNIFORM}
 
 void main() {
   int vid = gl_VertexID % 9;
 
   uint absX = a_x + u_regionStart;
-  vec2 splitX = hp_split_uint(absX);
-  float cx = hp_to_clip_x(splitX, u_bpRangeX);
+  vec2 splitX = hpSplitUint(absX);
+  float cx = hpToClipX(splitX, u_bpRangeX);
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -246,7 +246,7 @@ void main() {
     }
   }
 
-  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(sx, sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -315,7 +315,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       'u_canvasWidth',
       'u_scrollY',
       'u_zero',
-      'u_reversed',
     ]
     this.cacheUniforms(this.rectProgram, this.rectUniforms, commonUniforms)
     this.cacheUniforms(this.lineProgram, this.lineUniforms, [
@@ -324,7 +323,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       'u_canvasHeight',
       'u_scrollY',
       'u_zero',
-      'u_reversed',
     ])
     this.cacheUniforms(this.chevronProgram, this.chevronUniforms, [
       ...commonUniforms,
@@ -636,8 +634,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       const clippedLengthBp = clippedBpEnd - clippedBpStart
       const regionStart = region.regionStart
 
-      const reversedF = block.reversed ? 1.0 : 0.0
-
       if (region.lineVAO && region.lineCount > 0) {
         gl.useProgram(this.lineProgram)
         gl.uniform3f(
@@ -650,7 +646,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
         gl.uniform1f(this.lineUniforms.u_canvasHeight!, canvasHeight)
         gl.uniform1f(this.lineUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.lineUniforms.u_zero!, 0)
-        gl.uniform1f(this.lineUniforms.u_reversed!, reversedF)
         gl.bindVertexArray(region.lineVAO)
         gl.drawArraysInstanced(gl.LINES, 0, 2, region.lineCount)
       }
@@ -672,7 +667,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
         gl.uniform1f(this.chevronUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.chevronUniforms.u_bpPerPx!, bpPerPx)
         gl.uniform1f(this.chevronUniforms.u_zero!, 0)
-        gl.uniform1f(this.chevronUniforms.u_reversed!, reversedF)
         gl.bindVertexArray(region.chevronVAO)
         gl.drawArraysInstanced(
           gl.LINES,
@@ -694,7 +688,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
       gl.uniform1f(this.rectUniforms.u_canvasWidth!, scissorW)
       gl.uniform1f(this.rectUniforms.u_scrollY!, scrollY)
       gl.uniform1f(this.rectUniforms.u_zero!, 0)
-      gl.uniform1f(this.rectUniforms.u_reversed!, reversedF)
       gl.bindVertexArray(region.rectVAO)
       gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.rectCount)
 
@@ -714,7 +707,6 @@ export class WebGLFeatureRenderer implements CanvasFeatureBackend {
         gl.uniform1f(this.arrowUniforms.u_canvasWidth!, scissorW)
         gl.uniform1f(this.arrowUniforms.u_scrollY!, scrollY)
         gl.uniform1f(this.arrowUniforms.u_zero!, 0)
-        gl.uniform1f(this.arrowUniforms.u_reversed!, reversedF)
         gl.bindVertexArray(region.arrowVAO)
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 9, region.arrowCount)
       }

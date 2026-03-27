@@ -9,6 +9,7 @@ import { FormGroup, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
+import ColorLegend from './ColorLegend.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 
@@ -135,6 +136,7 @@ const Header = observer(function Header({
       {hasDisplays && showDynamicControls ? (
         <>
           <ColorBySelector model={model} />
+          <ColorLegend model={model} />
           <SyntenySettingsPopover model={model} />
         </>
       ) : null}

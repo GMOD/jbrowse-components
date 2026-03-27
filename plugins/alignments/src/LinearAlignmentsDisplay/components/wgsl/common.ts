@@ -1,42 +1,8 @@
-// SYNC(shaders/utils.ts): HP_LOW_MASK=0xFFF, hp_split_uint/hp_to_clip_x/hp_scale_linear must match GLSL equivalents
-export const HP_WGSL = `
-const HP_LOW_MASK: u32 = 0xFFFu;
+import { HP_WGSL_CORE } from '@jbrowse/alignments-core'
 
-fn hp_split_uint(value: u32) -> vec2f {
-  let lo = value & HP_LOW_MASK;
-  let hi = value - lo;
-  return vec2f(f32(hi), f32(lo));
-}
-
-// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
-// terms. Do not simplify.
-// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
-fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let inf = 1.0 / uf(5u);
-  let step = 2.0 / bp_range.z;
-  let hi = max(split_pos.x - bp_range.x, -inf);
-  let lo = max(split_pos.y - bp_range.y, -inf);
-  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
-}
-
-// WARNING: same compiler guards as hp_to_clip_x. Do not simplify.
-fn hp_scale_linear(split_pos: vec2f, bp_range: vec3f) -> f32 {
-  let inf = 1.0 / uf(5u);
-  let step = 1.0 / bp_range.z;
-  let hi = max(split_pos.x - bp_range.x, -inf);
-  let lo = max(split_pos.y - bp_range.y, -inf);
-  return dot(vec2f(hi, lo), vec2f(step, step));
-}
-
-fn snap_to_pixel_x(clip_x: f32, canvas_width: f32) -> f32 {
-  let px = (clip_x + 1.0) * 0.5 * canvas_width;
-  return floor(px + 0.5) / canvas_width * 2.0 - 1.0;
-}
-
-fn flip_x(x: f32) -> f32 {
-  return mix(x, -x, uf(23u));
-}
-`
+// Re-export shared HP functions. Call sites pass uf(5u) (U_HP_ZERO) as the
+// hp_zero parameter: hp_to_clip_x(pos, range, uf(5u))
+export const HP_WGSL = HP_WGSL_CORE
 
 // SYNC(shaders/readShaders.ts, shaders/arcShaders.ts, shaders/cigarShaders.ts, shaders/coverageShaders.ts, shaders/connectingLineShaders.ts):
 // Uniform slot indices below map to named GLSL uniforms. GLSL uses named uniforms; WGSL uses raw[i] via uf()/uu()/ui().
@@ -60,25 +26,7 @@ fn feature_spacing() -> f32 { return uf(10u); }
 
 export const PREAMBLE = UNIFORM_WGSL + HP_WGSL
 
-export const SIMPLE_FS = `
-@fragment
-fn fs_main(@location(0) color: vec4f) -> @location(0) vec4f {
-  return color;
-}
-`
-
-export const SIMPLE_VERTEX_OUTPUT = `
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) color: vec4f,
-}
-`
-
-export const RECT_LOCALS = `
-  let v = vid % 6u;
-  let local_x = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
-  let local_y = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
-`
+// Re-export shared shader fragments for backward compat with existing references
 
 export const PILEUP_Y = `
 fn pileup_y(row: f32) -> vec2f {
@@ -118,7 +66,7 @@ export const U_BIN_SIZE = 19
 export const U_NONCOV_HEIGHT = 20
 export const U_INSERT_UPPER = 21
 export const U_INSERT_LOWER = 22
-export const U_REVERSED = 23
+// slot 23 unused (was U_ERASE_MODE, removed with stencil pass)
 export const U_BLOCK_START_PX = 24
 export const U_BLOCK_WIDTH = 25
 export const U_LINE_WIDTH_PX = 26
@@ -182,3 +130,9 @@ export const ARC_HEIGHT_MARGIN = 8
 export const NUM_ARC_COLORS = 8
 export const NUM_LINE_COLORS = 2
 export const NUM_SASHIMI_COLORS = 2
+
+export {
+  RECT_LOCALS_WGSL as RECT_LOCALS,
+  SIMPLE_FS_WGSL as SIMPLE_FS,
+  SIMPLE_VERTEX_OUTPUT_WGSL as SIMPLE_VERTEX_OUTPUT,
+} from '@jbrowse/alignments-core'

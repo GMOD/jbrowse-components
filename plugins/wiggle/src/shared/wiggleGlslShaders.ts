@@ -46,7 +46,10 @@ layout(std140) uniform Uniforms {
   vec2 domain_y;         // [min, max] score domain
   float zero;            // MUST be 0.0 at runtime — creates runtime infinity for hp precision
   float viewport_width;
+  float reversed;
 };
+
+float flip_x(float x) { return mix(x, -x, reversed); }
 
 out vec4 v_color;
 
@@ -160,7 +163,7 @@ void main() {
     color = a_color;
   }
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = vec4(color, 1.0);
 }
 `

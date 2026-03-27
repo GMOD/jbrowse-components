@@ -1,0 +1,58 @@
+{
+  "name": "@jbrowse/tree-sidebar",
+  "version": "4.1.14",
+  "type": "module",
+  "description": "Shared tree sidebar component for multi-sample displays",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "tree",
+    "sidebar",
+    "clustering"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/tree-sidebar"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build": "pnpm build:esm",
+    "test": "cd ../..; jest --passWithNoTests packages/tree-sidebar",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@gmod/hclust": "^2.0.1",
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/mobx-state-tree": "^5.6.0",
+    "@mui/material": "^7.3.9",
+    "mobx": "^6.15.0",
+    "mobx-react": "^9.2.1"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

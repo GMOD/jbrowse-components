@@ -21,7 +21,6 @@ import type { Feature } from '../simpleFeature.ts'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
-  IType,
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
@@ -30,9 +29,7 @@ import type { ThemeOptions } from '@mui/material'
 export * from './util.ts'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer extends IStateTreeNode<
-  IType<any, any, any>
-> {
+export interface AbstractViewContainer extends IStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -505,11 +502,11 @@ export function isFileHandleLocation(
   )
 }
 export class AuthNeededError extends Error {
-  constructor(
-    public message: string,
-    public url: string,
-  ) {
+  url: string
+
+  constructor(message: string, url: string) {
     super(message)
+    this.url = url
     this.name = 'AuthNeededError'
 
     Object.setPrototypeOf(this, AuthNeededError.prototype)
@@ -517,11 +514,11 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  constructor(
-    public message: string,
-    public internetAccountId: string,
-  ) {
+  internetAccountId: string
+
+  constructor(message: string, internetAccountId: string) {
     super(message)
+    this.internetAccountId = internetAccountId
     this.name = 'RetryError'
   }
 }

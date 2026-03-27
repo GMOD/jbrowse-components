@@ -11,8 +11,6 @@ import LoadingOverlay from './LoadingOverlay.tsx'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-type Coord = [number, number]
-
 const useStyles = makeStyles()({
   display: {
     position: 'relative',
@@ -31,8 +29,9 @@ const AlignmentsDisplayComponent = observer(
   }) {
     const { classes } = useStyles()
     const ref = useRef<HTMLDivElement>(null)
-    const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
-    const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
+    const coord0: [number, number] = [0, 0]
+    const [offsetMouseCoord, setOffsetMouseCoord] = useState(coord0)
+    const [clientMouseCoord, setClientMouseCoord] = useState(coord0)
     const view = getContainingView(model) as LinearGenomeViewModel
     const debouncedLoading = useDebounce(model.isLoading, 500)
 

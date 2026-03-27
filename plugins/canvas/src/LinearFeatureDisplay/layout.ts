@@ -149,51 +149,6 @@ export function computeAndAssignLayout(
   }
 }
 
-function undoFillYArrays(
-  data: FeatureDataResult,
-  globalOffsets: Map<string, number>,
-) {
-  const featureOffsets = new Float32Array(data.flatbushItems.length)
-  for (const [i, item] of data.flatbushItems.entries()) {
-    featureOffsets[i] = item.topPx
-  }
-
-  for (let i = 0; i < data.numRects; i++) {
-    data.rectYs[i] =
-      data.rectYs[i]! - featureOffsets[data.rectFeatureIndices[i]!]!
-  }
-  for (let i = 0; i < data.numLines; i++) {
-    data.lineYs[i] =
-      data.lineYs[i]! - featureOffsets[data.lineFeatureIndices[i]!]!
-  }
-  for (let i = 0; i < data.numArrows; i++) {
-    data.arrowYs[i] =
-      data.arrowYs[i]! - featureOffsets[data.arrowFeatureIndices[i]!]!
-  }
-
-  for (const item of data.flatbushItems) {
-    item.bottomPx = item.featureHeightPx
-    item.topPx = 0
-  }
-
-  for (const info of data.subfeatureInfos) {
-    const offset = globalOffsets.get(info.parentFeatureId) ?? 0
-    info.topPx -= offset
-    info.bottomPx -= offset
-  }
-
-  for (const labelData of Object.values(data.floatingLabelsData)) {
-    const offsetKey = labelData.parentFeatureId ?? labelData.featureId
-    labelData.topY -= globalOffsets.get(offsetKey) ?? 0
-  }
-
-  if (data.aminoAcidOverlay) {
-    for (const aaItem of data.aminoAcidOverlay) {
-      aaItem.topPx -= featureOffsets[aaItem.flatbushIdx]!
-    }
-  }
-}
-
 export function relayoutAllRegions(
   rpcDataMap: Map<number, FeatureDataResult>,
   bpPerPx: number,
@@ -202,20 +157,6 @@ export function relayoutAllRegions(
   showDescriptions: boolean,
   labelFontSize = 12,
 ) {
-  const globalOffsets = new Map<string, number>()
-  for (const data of rpcDataMap.values()) {
-    for (const item of data.flatbushItems) {
-      if (!globalOffsets.has(item.featureId)) {
-        globalOffsets.set(item.featureId, item.topPx)
-      }
-    }
-  }
-
-  for (const data of rpcDataMap.values()) {
-    if (data.flatbushItems.length > 0) {
-      undoFillYArrays(data, globalOffsets)
-    }
-  }
   const allRegionNumbers = new Set(rpcDataMap.keys())
   computeAndAssignLayout(
     rpcDataMap,
@@ -228,51 +169,69 @@ export function relayoutAllRegions(
   )
 }
 
+// Bakes per-feature layout offsets into the Y position arrays (rectYs, lineYs,
+// etc.) so the renderer can upload them directly to the GPU.
+//
+// Safe to call on data that already has offsets applied: each feature's
+// item.topPx records the offset currently baked in, so the function computes
+// the difference (new - current) and shifts by only that amount. On fresh RPC
+// data where topPx is 0 the shift equals the full offset; on already-laid-out
+// data only the change is applied. This avoids the need for a separate "undo"
+// step when the layout is recomputed (e.g. when new regions arrive
+// incrementally on the same chromosome).
 export function fillYArrays(
   data: FeatureDataResult,
   layoutMap: Map<string, number>,
   layoutHeights?: Map<string, number>,
 ) {
-  const featureYOffsets = new Float32Array(data.flatbushItems.length)
+  const featureDeltas = new Float32Array(data.flatbushItems.length)
+  const oldOffsetByFeatureId = new Map<string, number>()
   for (const [i, item] of data.flatbushItems.entries()) {
-    featureYOffsets[i] = layoutMap.get(item.featureId) ?? 0
+    const newOffset = layoutMap.get(item.featureId) ?? 0
+    featureDeltas[i] = newOffset - item.topPx
+    if (!oldOffsetByFeatureId.has(item.featureId)) {
+      oldOffsetByFeatureId.set(item.featureId, item.topPx)
+    }
   }
 
   for (let i = 0; i < data.numRects; i++) {
     data.rectYs[i] =
-      data.rectYs[i]! + featureYOffsets[data.rectFeatureIndices[i]!]!
+      data.rectYs[i]! + featureDeltas[data.rectFeatureIndices[i]!]!
   }
   for (let i = 0; i < data.numLines; i++) {
     data.lineYs[i] =
-      data.lineYs[i]! + featureYOffsets[data.lineFeatureIndices[i]!]!
+      data.lineYs[i]! + featureDeltas[data.lineFeatureIndices[i]!]!
   }
   for (let i = 0; i < data.numArrows; i++) {
     data.arrowYs[i] =
-      data.arrowYs[i]! + featureYOffsets[data.arrowFeatureIndices[i]!]!
+      data.arrowYs[i]! + featureDeltas[data.arrowFeatureIndices[i]!]!
   }
 
   for (const [i, item] of data.flatbushItems.entries()) {
-    const offset = featureYOffsets[i]!
+    const newOffset = item.topPx + featureDeltas[i]!
     const layoutHeight = layoutHeights?.get(item.featureId)
-    item.topPx = offset
-    item.bottomPx = offset + (layoutHeight ?? item.bottomPx)
+    item.topPx = newOffset
+    item.bottomPx = newOffset + (layoutHeight ?? item.featureHeightPx)
   }
 
   for (const info of data.subfeatureInfos) {
-    const offset = layoutMap.get(info.parentFeatureId) ?? 0
-    const height = info.bottomPx - info.topPx
-    info.topPx = info.topPx + offset
-    info.bottomPx = info.topPx + height
+    const oldOffset = oldOffsetByFeatureId.get(info.parentFeatureId) ?? 0
+    const newOffset = layoutMap.get(info.parentFeatureId) ?? 0
+    const delta = newOffset - oldOffset
+    info.topPx += delta
+    info.bottomPx += delta
   }
 
   for (const labelData of Object.values(data.floatingLabelsData)) {
     const offsetKey = labelData.parentFeatureId ?? labelData.featureId
-    labelData.topY = labelData.topY + (layoutMap.get(offsetKey) ?? 0)
+    const oldOffset = oldOffsetByFeatureId.get(offsetKey) ?? 0
+    const newOffset = layoutMap.get(offsetKey) ?? 0
+    labelData.topY += newOffset - oldOffset
   }
 
   if (data.aminoAcidOverlay) {
     for (const aaItem of data.aminoAcidOverlay) {
-      aaItem.topPx = aaItem.topPx + featureYOffsets[aaItem.flatbushIdx]!
+      aaItem.topPx += featureDeltas[aaItem.flatbushIdx]!
     }
   }
 

@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import LegendBar from '../../shared/components/MultiSampleVariantLegendBar.tsx'
-import TreeSidebar from '../../shared/components/TreeSidebar.tsx'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { useMouseTracking } from '../../shared/hooks/useMouseTracking.ts'
 
 import type { LinearVariantMatrixDisplayModel } from '../model.ts'

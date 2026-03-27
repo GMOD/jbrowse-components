@@ -1,7 +1,7 @@
-import { HP_WGSL } from './sharedRendererConstants.ts'
+import { HP_WGSL_CORE } from '@jbrowse/alignments-core'
 
 export const RECT_SHADER = /* wgsl */ `
-${HP_WGSL}
+${HP_WGSL_CORE}
 
 struct RectInstance {
   start_end: vec2u,
@@ -18,7 +18,6 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
-  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<RectInstance>;
@@ -55,7 +54,7 @@ fn vs_main(
   let sy = mix(sy_bot, sy_top, local_y);
 
   var out: VertexOutput;
-  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
+  out.position = vec4f(sx, sy, 0.0, 1.0);
   out.color = inst.color;
   return out;
 }
@@ -67,7 +66,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
 `
 
 export const LINE_SHADER = /* wgsl */ `
-${HP_WGSL}
+${HP_WGSL_CORE}
 
 struct LineInstance {
   start_end: vec2u,
@@ -84,7 +83,6 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
-  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<LineInstance>;
@@ -118,7 +116,7 @@ fn vs_main(
   let sy = mix(cy - half_px, cy + half_px, local_y);
 
   var out: VertexOutput;
-  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
+  out.position = vec4f(sx, sy, 0.0, 1.0);
   out.color = inst.color;
   return out;
 }
@@ -130,7 +128,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
 `
 
 export const CHEVRON_SHADER = /* wgsl */ `
-${HP_WGSL}
+${HP_WGSL_CORE}
 
 struct ChevronInstance {
   start_end: vec2u,
@@ -147,7 +145,6 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
-  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<ChevronInstance>;
@@ -228,7 +225,7 @@ fn vs_main(
     default: { sx = outer_x; sy = cy + arm_y - select(thickness, -thickness, is_top_arm); }
   }
 
-  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
+  out.position = vec4f(sx, sy, 0.0, 1.0);
   out.color = inst.color;
   return out;
 }
@@ -240,7 +237,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
 `
 
 export const ARROW_SHADER = /* wgsl */ `
-${HP_WGSL}
+${HP_WGSL_CORE}
 
 struct ArrowInstance {
   x: u32,
@@ -261,7 +258,6 @@ struct Uniforms {
   scroll_y: f32,
   bp_per_px: f32,
   zero: f32,
-  reversed: f32,
 }
 
 @group(0) @binding(0) var<storage, read> instances: array<ArrowInstance>;
@@ -314,7 +310,7 @@ fn vs_main(
   }
 
   var out: VertexOutput;
-  out.position = vec4f(flip_x(sx, u.reversed), sy, 0.0, 1.0);
+  out.position = vec4f(sx, sy, 0.0, 1.0);
   out.color = vec4f(inst.color_r, inst.color_g, inst.color_b, 1.0);
   return out;
 }

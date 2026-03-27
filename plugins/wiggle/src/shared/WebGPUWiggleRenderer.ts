@@ -256,6 +256,7 @@ export class WebGPUWiggleRenderer implements WiggleBackend {
         region.numRows,
         Math.round(scissorW * dpr),
         renderState,
+        block.reversed,
       )
 
       const encoder = device.createCommandEncoder()
@@ -329,6 +330,7 @@ export class WebGPUWiggleRenderer implements WiggleBackend {
     numRows: number,
     viewportWidth: number,
     state: WiggleGPURenderState,
+    reversed: boolean,
   ) {
     this.uniformF32[0] = bpRangeHi
     this.uniformF32[1] = bpRangeLo
@@ -342,6 +344,7 @@ export class WebGPUWiggleRenderer implements WiggleBackend {
     this.uniformF32[9] = state.domainY[1]
     this.uniformF32[10] = 0 // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
     this.uniformF32[11] = viewportWidth
+    this.uniformF32[12] = reversed ? 1.0 : 0.0
     device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData)
   }
 }

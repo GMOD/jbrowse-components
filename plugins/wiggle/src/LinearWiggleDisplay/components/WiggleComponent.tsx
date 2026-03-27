@@ -93,6 +93,7 @@ const WiggleComponent = observer(function WiggleComponent({
         bpRangeX: [vr.start, vr.end] as [number, number],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
+        reversed: vr.reversed ?? false,
       }))
 
       renderer.renderBlocks(
@@ -153,7 +154,9 @@ const WiggleComponent = observer(function WiggleComponent({
 
       const blockWidth = region.screenEndPx - region.screenStartPx
       const frac = (offsetX - region.screenStartPx) / blockWidth
-      const bp = Math.round(region.start + frac * (region.end - region.start))
+      const bp = region.reversed
+        ? Math.round(region.end - frac * (region.end - region.start))
+        : Math.round(region.start + frac * (region.end - region.start))
       const bpOffset = bp - data.regionStart
 
       const { featurePositions, featureScores, numFeatures } = data
