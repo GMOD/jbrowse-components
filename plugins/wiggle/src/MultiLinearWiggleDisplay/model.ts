@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { fromNewick } from '@gmod/hclust'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
@@ -24,7 +23,11 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, untracked } from 'mobx'
 
-import { cluster, hierarchy } from '../d3-hierarchy2/index.ts'
+import {
+  computeHierarchyLayout,
+  parseClusterTree,
+} from '@jbrowse/tree-sidebar'
+
 import axisPropsFromTickScale from '../shared/axisPropsFromTickScale.ts'
 import { migrateWiggleSnapshot } from '../shared/migrateWiggleSnapshot.ts'
 import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
@@ -37,10 +40,7 @@ import {
 
 import type { MultiWiggleDataResult } from '../RenderMultiWiggleDataRPC/types.ts'
 import type { Source, SourceInfo } from '../util.ts'
-import type {
-  ClusterHierarchyNode,
-  HoveredTreeNode,
-} from './components/treeTypes.ts'
+import type { HoveredTreeNode } from '@jbrowse/tree-sidebar'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -342,48 +342,7 @@ export default function stateModelFactory(
         if (!newick) {
           return undefined
         }
-        const tree = fromNewick(newick)
-        let root = hierarchy(tree, (d: ClusterHierarchyNode) => d.children)
-          .sum((d: ClusterHierarchyNode) => (d.children ? 0 : 1))
-          .sort(
-            (a: ClusterHierarchyNode, b: ClusterHierarchyNode) =>
-              (a.data.height || 1) - (b.data.height || 1),
-          )
-
-        if (self.subtreeFilter?.length) {
-          const filterSet = new Set(self.subtreeFilter)
-          const getLeafNames = (node: ClusterHierarchyNode): string[] => {
-            if (!node.children?.length) {
-              return [node.data.name]
-            }
-            return node.children.flatMap(child => getLeafNames(child))
-          }
-          const findSubtree = (
-            node: ClusterHierarchyNode,
-          ): ClusterHierarchyNode | undefined => {
-            const leafNames = getLeafNames(node)
-            if (
-              leafNames.length === filterSet.size &&
-              leafNames.every(name => filterSet.has(name))
-            ) {
-              return node
-            }
-            if (node.children) {
-              for (const child of node.children) {
-                const found = findSubtree(child)
-                if (found) {
-                  return found
-                }
-              }
-            }
-            return undefined
-          }
-          const subtree = findSubtree(root)
-          if (subtree) {
-            root = subtree
-          }
-        }
-        return root
+        return parseClusterTree(newick, self.subtreeFilter?.slice())
       },
     }))
     .views(self => ({
@@ -392,11 +351,7 @@ export default function stateModelFactory(
         if (!r || !self.sources.length) {
           return undefined
         }
-        const clust = cluster()
-        clust.size([self.height, self.treeAreaWidth])
-        clust.separation(() => 1)
-        clust(r)
-        return r
+        return computeHierarchyLayout(r, self.height, self.treeAreaWidth)
       },
     }))
     .actions(self => ({

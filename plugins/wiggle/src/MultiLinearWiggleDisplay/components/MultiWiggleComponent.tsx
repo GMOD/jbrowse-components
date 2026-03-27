@@ -6,7 +6,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import MultiWiggleTooltip from './Tooltip.tsx'
-import TreeSidebar from './TreeSidebar.tsx'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import DensityLegend from '../../shared/DensityLegend.tsx'
 import LoadingOverlay from '../../shared/LoadingOverlay.tsx'
 import MultiRowLabels from '../../shared/MultiRowLabels.tsx'
@@ -24,7 +24,7 @@ import {
   makeWhiskersSourceData,
 } from '../../shared/wiggleComponentUtils.ts'
 
-import type { ClusterHierarchyNode, HoveredTreeNode } from './treeTypes.ts'
+import type { ClusterHierarchyNode, HoveredTreeNode } from '@jbrowse/tree-sidebar'
 import type {
   MultiWiggleDataResult,
   MultiWiggleSourceData,

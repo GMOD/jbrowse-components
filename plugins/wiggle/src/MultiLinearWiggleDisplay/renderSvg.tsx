@@ -37,7 +37,7 @@ interface FeatureSlice {
 
 function getFeatureSlices(
   source: MultiWiggleSourceData,
-  color: string,
+  posColor: string,
   negColor: string,
   isOverlay: boolean,
 ) {
@@ -47,7 +47,7 @@ function getFeatureSlices(
       positions: source.posFeaturePositions,
       scores: source.posFeatureScores,
       numFeatures: source.posNumFeatures,
-      color,
+      color: posColor,
     })
   }
   if (source.negNumFeatures > 0) {
@@ -55,7 +55,7 @@ function getFeatureSlices(
       positions: source.negFeaturePositions,
       scores: source.negFeatureScores,
       numFeatures: source.negNumFeatures,
-      color: isOverlay ? color : negColor,
+      color: isOverlay ? posColor : negColor,
     })
   }
   return slices
@@ -154,8 +154,9 @@ function renderToCtx(
     sources: modelSources,
     isOverlay,
     rowHeight,
-    negColor,
   } = model
+  const defaultPosColor = model.posColor
+  const defaultNegColor = model.negColor
 
   if (!domain || modelSources.length === 0) {
     return
@@ -188,10 +189,11 @@ function renderToCtx(
       if (!modelSource) {
         continue
       }
-      const { color } = modelSource
+      const posColor = modelSource.color ?? defaultPosColor
+      const negColor = overlay ? posColor : defaultNegColor
       const rowY = overlay ? 0 : getRowTop(sourceIdx, rowHeight)
 
-      const slices = getFeatureSlices(source, color, negColor, overlay)
+      const slices = getFeatureSlices(source, posColor, negColor, overlay)
       for (const slice of slices) {
         renderFeatureSlice(
           ctx,
