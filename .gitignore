@@ -24,3 +24,5 @@ lerna-debug.log
 test_data/soa4
 *.tgz
 **/.wgsl-hash
+test/data
+*.log

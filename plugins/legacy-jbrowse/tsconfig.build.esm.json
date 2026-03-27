@@ -6,6 +6,5 @@
     "outDir": "esm",
     "rootDir": "src",
     "paths": {},
-    "baseUrl": "."
   }
 }
