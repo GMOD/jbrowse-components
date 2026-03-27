@@ -1,4 +1,5 @@
 import {
+  INSERTION_COLOR,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
@@ -25,6 +26,8 @@ export interface VisibleLabel {
   y: number
   text: string
   fontSize: number
+  textAlign?: 'center' | 'left'
+  color?: string
 }
 
 const MIN_MISMATCH_PX_PER_BP = 6
@@ -78,20 +81,40 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
       }
       refPos += len
     } else if (op === CIGAR_I) {
-      const isLong = len >= LONG_INSERTION_MIN_LENGTH
-      const widthPx = isLong ? len * pxPerBp : 0
-      if (
-        isLong &&
-        widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
-        h >= MIN_HEIGHT_FOR_TEXT
-      ) {
-        labels.push({
-          type: 'insertion',
-          x: x + refPos * pxPerBp,
-          y: y + h / 2,
-          text: `${len}`,
-          fontSize,
-        })
+      if (h >= MIN_HEIGHT_FOR_TEXT) {
+        const isLong = len >= LONG_INSERTION_MIN_LENGTH
+        const widthPx = isLong ? len * pxPerBp : 0
+        const px = x + refPos * pxPerBp
+        if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
+          labels.push({
+            type: 'insertion',
+            x: px,
+            y: y + h / 2,
+            text: `${len}`,
+            fontSize,
+          })
+        } else if (isLong) {
+          const barW = Math.min(5, widthPx / 3)
+          labels.push({
+            type: 'insertion',
+            x: px + barW / 2 + 2,
+            y: y + h / 2,
+            text: `${len}`,
+            fontSize,
+            textAlign: 'left',
+            color: INSERTION_COLOR,
+          })
+        } else {
+          labels.push({
+            type: 'insertion',
+            x: px + 3,
+            y: y + h / 2,
+            text: `${len}`,
+            fontSize,
+            textAlign: 'left',
+            color: INSERTION_COLOR,
+          })
+        }
       }
     }
   }
@@ -155,20 +178,38 @@ function addCsLabels(ctx: LabelContext, cs: string) {
         len++
         i++
       }
-      if (len > 0) {
+      if (len > 0 && h >= MIN_HEIGHT_FOR_TEXT) {
         const isLong = len >= LONG_INSERTION_MIN_LENGTH
         const widthPx = isLong ? len * pxPerBp : 0
-        if (
-          isLong &&
-          widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX &&
-          h >= MIN_HEIGHT_FOR_TEXT
-        ) {
+        const px = x + refPos * pxPerBp
+        if (isLong && widthPx >= LONG_INSERTION_TEXT_THRESHOLD_PX) {
           labels.push({
             type: 'insertion',
-            x: x + refPos * pxPerBp,
+            x: px,
             y: y + h / 2,
             text: `${len}`,
             fontSize,
+          })
+        } else if (isLong) {
+          const barW = Math.min(5, widthPx / 3)
+          labels.push({
+            type: 'insertion',
+            x: px + barW / 2 + 2,
+            y: y + h / 2,
+            text: `${len}`,
+            fontSize,
+            textAlign: 'left',
+            color: INSERTION_COLOR,
+          })
+        } else {
+          labels.push({
+            type: 'insertion',
+            x: px + 3,
+            y: y + h / 2,
+            text: `${len}`,
+            fontSize,
+            textAlign: 'left',
+            color: INSERTION_COLOR,
           })
         }
       }
