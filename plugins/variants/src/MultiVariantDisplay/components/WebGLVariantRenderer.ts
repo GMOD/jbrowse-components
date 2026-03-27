@@ -1,3 +1,5 @@
+import { HP_GLSL_CORE } from '@jbrowse/core/gpu/shaderConstants'
+
 import {
   INSTANCE_STRIDE,
   interleaveVariantInstances,
@@ -15,77 +17,37 @@ import type {
 // SYNC: Hand-written GLSL ES 3.00 for the WebGL2 renderer.
 // Mirrors the WGSL shader in variantShaders.ts (used by WebGPU).
 // When updating rendering logic, update BOTH this file and variantShaders.ts.
-//
-// Key differences from the WGSL version:
-//   - WGSL uses var<storage, read> instances: array<CellInstance> (storage buffer)
-//   - GLSL uses instanced vertex attributes via vertexAttribDivisor
-//   - WGSL uses struct Uniforms with @binding(1); GLSL uses individual uniforms
-//
-// SYNC: attribute layout must match interleaveVariantInstances() in variantShaders.ts
-// and struct CellInstance in variantShaders.ts (WGSL):
-//   [0..1] start_end: uvec2    -> a_start_end
-//   [2]    row_index: u32      -> a_row_index
-//   [3]    shape_type: u32     -> a_shape_type
-//   [4..7] color: vec4f        -> a_color
-//
-// SYNC: uniform names map to struct Uniforms fields in variantShaders.ts (WGSL)
-// HP (high-precision) position technique from genome-spy (MIT)
 
 const VERTEX_SHADER = `#version 300 es
 precision highp float;
 precision highp int;
 
-// SYNC: must match HP_LOW_MASK in variantShaders.ts (WGSL)
-const uint HP_LOW_MASK = 0xFFFu;
-
-// SYNC: attribute layout must match INSTANCE_STRIDE and interleaveVariantInstances()
-// in variantShaders.ts, and struct CellInstance in the WGSL shader
 in uvec2 a_start_end;
 in uint a_row_index;
 in uint a_shape_type;
 in vec4 a_color;
 
-// SYNC: uniforms must match struct Uniforms in variantShaders.ts (WGSL)
 uniform vec3 u_bp_range_x;
 uniform uint u_region_start;
 uniform float u_canvas_height;
 uniform float u_canvas_width;
 uniform float u_row_height;
 uniform float u_scroll_top;
-uniform float u_zero;
 
 out vec4 v_color;
 out vec2 v_local_px;
 flat out vec2 v_size_px;
 flat out uint v_shape_type_f;
 
-// SYNC: hp_split_uint must match variantShaders.ts (WGSL)
-vec2 hp_split_uint(uint value) {
-  uint lo = value & HP_LOW_MASK;
-  uint hi = value - lo;
-  return vec2(float(hi), float(lo));
-}
+${HP_GLSL_CORE}
 
-// SYNC: hp_to_clip_x must match variantShaders.ts (WGSL)
-// u_zero MUST be 0.0 at runtime to produce runtime infinity (1.0/0.0)
-// that prevents the compiler from combining hi/lo subtractions
-float hp_to_clip_x(vec2 split_pos, vec3 bpr, float z) {
-  float inf_ = 1.0 / z;
-  float step_ = 2.0 / bpr.z;
-  float hi = max(split_pos.x - bpr.x, -inf_);
-  float lo = max(split_pos.y - bpr.y, -inf_);
-  return dot(vec3(-1.0, hi, lo), vec3(1.0, step_, step_));
-}
-
-// SYNC: vs_main rendering logic must match variantShaders.ts (WGSL)
-// shape_type: 0=rect, 1=right-pointing triangle, 2=left-pointing triangle, 3=wide triangle
 void main() {
   uint vid = uint(gl_VertexID) % 6u;
 
   uint abs_start = a_start_end.x + u_region_start;
   uint abs_end = a_start_end.y + u_region_start;
-  float clip_x1 = hp_to_clip_x(hp_split_uint(abs_start), u_bp_range_x, u_zero);
-  float clip_x2 = hp_to_clip_x(hp_split_uint(abs_end), u_bp_range_x, u_zero);
+  float clip_x1 = hp_to_clip_x(hp_split_uint(abs_start), u_bp_range_x);
+  float clip_x2 = hp_to_clip_x(hp_split_uint(abs_end), u_bp_range_x);
 
   float px_size = 2.0 / u_canvas_width;
   float cx1 = floor(clip_x1 / px_size + 0.5) * px_size;

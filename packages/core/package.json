@@ -36,6 +36,7 @@
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
     "./gpu/getGpuDevice": "./src/gpu/getGpuDevice.ts",
     "./gpu/initGpuContext": "./src/gpu/initGpuContext.ts",
+    "./gpu/shaderConstants": "./src/gpu/shaderConstants.ts",
     "./gpu/webglUtils": "./src/gpu/webglUtils.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
@@ -256,6 +257,10 @@
       "./gpu/initGpuContext": {
         "types": "./esm/gpu/initGpuContext.d.ts",
         "import": "./esm/gpu/initGpuContext.js"
+      },
+      "./gpu/shaderConstants": {
+        "types": "./esm/gpu/shaderConstants.d.ts",
+        "import": "./esm/gpu/shaderConstants.js"
       },
       "./gpu/webglUtils": {
         "types": "./esm/gpu/webglUtils.d.ts",
@@ -703,6 +708,9 @@
         ],
         "gpu/initGpuContext": [
           "esm/gpu/initGpuContext.d.ts"
+        ],
+        "gpu/shaderConstants": [
+          "esm/gpu/shaderConstants.d.ts"
         ],
         "gpu/webglUtils": [
           "esm/gpu/webglUtils.d.ts"

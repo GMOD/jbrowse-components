@@ -1,3 +1,5 @@
+import { HP_WGSL_CORE } from '@jbrowse/core/gpu/shaderConstants'
+
 export const INSTANCE_STRIDE = 8
 
 export function interleaveVariantInstances(data: {
@@ -26,21 +28,7 @@ export function interleaveVariantInstances(data: {
 }
 
 export const variantShader = /* wgsl */ `
-const HP_LOW_MASK: u32 = 0xFFFu;
-
-fn hp_split_uint(value: u32) -> vec2f {
-  let lo = value & HP_LOW_MASK;
-  let hi = value - lo;
-  return vec2f(f32(hi), f32(lo));
-}
-
-fn hp_to_clip_x(split_pos: vec2f, bp_range: vec3f, zero: f32) -> f32 {
-  let inf = 1.0 / zero;
-  let step = 2.0 / bp_range.z;
-  let hi = max(split_pos.x - bp_range.x, -inf);
-  let lo = max(split_pos.y - bp_range.y, -inf);
-  return dot(vec3f(-1.0, hi, lo), vec3f(1.0, step, step));
-}
+${HP_WGSL_CORE}
 
 struct CellInstance {
   start_end: vec2u,

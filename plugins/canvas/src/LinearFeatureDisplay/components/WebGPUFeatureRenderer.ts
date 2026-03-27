@@ -15,7 +15,10 @@ import type {
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 
-const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
+import {
+  MAX_VISIBLE_CHEVRONS_PER_LINE,
+  splitPositionWithFrac,
+} from './sharedRendererConstants.ts'
 
 const UNIFORM_SIZE = 48
 const RECT_STRIDE = 8
@@ -338,7 +341,7 @@ export class WebGPUFeatureRenderer implements CanvasFeatureBackend {
         block.bpRangeX[1],
         block.bpRangeX[0] + (scissorEnd - block.screenStartPx) * bpPerPx,
       )
-      const [bpStartHi, bpStartLo] = this.splitPositionWithFrac(clippedBpStart)
+      const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
       const clippedLengthBp = clippedBpEnd - clippedBpStart
 
       const uniformOffset = blockIdx * this.uniformStride
@@ -511,14 +514,6 @@ export class WebGPUFeatureRenderer implements CanvasFeatureBackend {
     this.uniformF32[9] = reversed ? 1.0 : 0.0
   }
 
-  private splitPositionWithFrac(value: number): [number, number] {
-    const intValue = Math.floor(value)
-    const frac = value - intValue
-    const loInt = intValue & 0xfff
-    const hi = intValue - loInt
-    const lo = loInt + frac
-    return [hi, lo]
-  }
 
   private interleaveRects(
     positions: Uint32Array,

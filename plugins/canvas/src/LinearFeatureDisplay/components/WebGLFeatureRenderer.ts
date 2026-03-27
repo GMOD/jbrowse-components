@@ -1,44 +1,15 @@
-import {
-  createProgram as createGLProgram,
-  splitPositionWithFrac,
-} from '@jbrowse/core/gpu/webglUtils'
+import { createProgram as createGLProgram } from '@jbrowse/core/gpu/webglUtils'
 
 import type {
   CanvasFeatureBackend,
   FeatureRenderBlock,
 } from './canvasFeatureBackendTypes.ts'
 
-const HP_GLSL_FUNCTIONS = `
-const uint HP_LOW_MASK = 0xFFFu;
-
-// WARNING: u_zero MUST be 0.0 at runtime. Produces runtime infinity (1.0/0.0)
-// that prevents the compiler from combining hi/lo subtractions.
-// A compile-time constant would be optimized away.
-// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
-uniform float u_zero;
-
-vec2 hpSplitUint(uint value) {
-  uint lo = value & HP_LOW_MASK;
-  uint hi = value - lo;
-  return vec2(float(hi), float(lo));
-}
-
-uniform float u_reversed;
-
-// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
-// terms. Do not simplify.
-float hpToClipX(vec2 splitPos, vec3 domain) {
-  float inf = 1.0 / u_zero;
-  float step = 2.0 / domain.z;
-  float hi = max(splitPos.x - domain.x, -inf);
-  float lo = max(splitPos.y - domain.y, -inf);
-  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
-}
-
-float flipX(float x) {
-  return mix(x, -x, u_reversed);
-}
-`
+import {
+  HP_GLSL_FUNCTIONS,
+  MAX_VISIBLE_CHEVRONS_PER_LINE,
+  splitPositionWithFrac,
+} from './sharedRendererConstants.ts'
 
 const RECT_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -71,10 +42,10 @@ void main() {
 
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = snapToPixelX(hpToClipX(splitStart, u_bpRangeX));
-  float sx2 = snapToPixelX(hpToClipX(splitEnd, u_bpRangeX));
+  vec2 splitStart = hp_split_uint(absStart);
+  vec2 splitEnd = hp_split_uint(absEnd);
+  float sx1 = snapToPixelX(hp_to_clip_x(splitStart, u_bpRangeX));
+  float sx2 = snapToPixelX(hp_to_clip_x(splitEnd, u_bpRangeX));
 
   float minWidth = 4.0 / u_canvasWidth;
   if (sx2 - sx1 < minWidth) {
@@ -89,7 +60,7 @@ void main() {
   float syBot = 1.0 - (yBotPx / u_canvasHeight) * 2.0;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -125,22 +96,20 @@ void main() {
 
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
+  vec2 splitStart = hp_split_uint(absStart);
+  vec2 splitEnd = hp_split_uint(absEnd);
+  float sx1 = hp_to_clip_x(splitStart, u_bpRangeX);
+  float sx2 = hp_to_clip_x(splitEnd, u_bpRangeX);
 
   float sx = (vid == 0) ? sx1 : sx2;
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float sy = 1.0 - (yPx / u_canvasHeight) * 2.0;
 
-  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
-
-const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
 const CHEVRON_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -195,9 +164,9 @@ void main() {
 
   float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
   uint lineStartAbs = a_position.x + u_regionStart;
-  vec2 splitStart = hpSplitUint(lineStartAbs);
+  vec2 splitStart = hp_split_uint(lineStartAbs);
   vec2 splitChevron = vec2(splitStart.x, splitStart.y + chevronOffsetBp);
-  float cx = hpToClipX(splitChevron, u_bpRangeX);
+  float cx = hp_to_clip_x(splitChevron, u_bpRangeX);
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -215,7 +184,7 @@ void main() {
     sy = (vid == 0) ? cy + chevronHeight * 0.5 : cy - chevronHeight * 0.5;
   }
 
-  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -244,8 +213,8 @@ void main() {
   int vid = gl_VertexID % 9;
 
   uint absX = a_x + u_regionStart;
-  vec2 splitX = hpSplitUint(absX);
-  float cx = hpToClipX(splitX, u_bpRangeX);
+  vec2 splitX = hp_split_uint(absX);
+  float cx = hp_to_clip_x(splitX, u_bpRangeX);
 
   float yPx = floor(a_y - u_scrollY + 0.5) + 0.5;
   float cy = 1.0 - (yPx / u_canvasHeight) * 2.0;
@@ -277,7 +246,7 @@ void main() {
     }
   }
 
-  gl_Position = vec4(flipX(sx), sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
