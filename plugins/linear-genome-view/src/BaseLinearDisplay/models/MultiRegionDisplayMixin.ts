@@ -256,7 +256,6 @@ export default function MultiRegionDisplayMixin() {
                     refName: r.refName,
                     start: r.start,
                     end: r.end,
-                    reversed: r.reversed,
                   })),
                 )
                 if (

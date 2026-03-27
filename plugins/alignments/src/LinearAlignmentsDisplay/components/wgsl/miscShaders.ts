@@ -101,7 +101,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let offset_pos = pos + normal * hw * side;
   let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
   let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
-  out.position = vec4f(clip_x, clip_y, 0.0, 1.0);
+  out.position = vec4f(flip_x(clip_x), clip_y, 0.0, 1.0);
   out.dist = side * hw;
   out.color = vec4f(arc_color(inst.color_type), 1.0);
   return out;
@@ -143,7 +143,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   if v == 0u { sy = 1.0 - ((inst.y + coverage_offset()) / canvas_height()) * 2.0; }
   else { sy = 1.0 - (coverage_offset() / canvas_height()) * 2.0; }
 
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
   let idx = u32(inst.color_type + 0.5);
   let ci = min(idx, ${NUM_LINE_COLORS - 1}u);
   out.color = vec4f(color3(122u + ci * 3u), 1.0);
@@ -205,7 +205,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let offset_pos = pos + normal * hw * side;
   let clip_x = (offset_pos.x / canvas_width()) * 2.0 - 1.0;
   let clip_y = 1.0 - ((offset_pos.y + coverage_offset()) / canvas_height()) * 2.0;
-  out.position = vec4f(clip_x, clip_y, 0.0, 1.0);
+  out.position = vec4f(flip_x(clip_x), clip_y, 0.0, 1.0);
   out.dist = side * hw;
   out.lw = inst.line_width;
   let idx = min(u32(inst.color_type + 0.5), ${NUM_SASHIMI_COLORS - 1}u);
@@ -255,7 +255,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sy_top = 1.0 - y_top * px2clip;
   let sy_bot = 1.0 - y_bot * px2clip;
 
-  out.position = vec4f(mix(sx1, sx2, lx), mix(sy_bot, sy_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(sx1, sx2, lx)), mix(sy_bot, sy_top, ly), 0.0, 1.0);
   // SYNC(shaders/connectingLineShaders.ts): line color vec4(0,0,0,0.45), 1px tall with floor snapping
   out.color = vec4f(0.0, 0.0, 0.0, 0.45);
   return out;
@@ -279,7 +279,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let v = vid % 6u;
   let lx = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
   let ly = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
-  out.position = vec4f(mix(inst.sx1, inst.sx2, lx), mix(inst.sy_bot, inst.sy_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(inst.sx1, inst.sx2, lx)), mix(inst.sy_bot, inst.sy_top, ly), 0.0, 1.0);
   out.color = vec4f(inst.r, inst.g, inst.b, inst.a);
   return out;
 }

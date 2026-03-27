@@ -1,4 +1,4 @@
-import { HP_GLSL_FUNCTIONS } from './utils.ts'
+import { FLIP_GLSL, HP_GLSL_FUNCTIONS } from './utils.ts'
 
 // Connecting line shader for chain modes (cloud/linkedRead)
 // Draws thin horizontal lines between chain min(start) and max(end)
@@ -22,6 +22,7 @@ uniform float u_coverageOffset; // coverage area height
 out vec4 v_color;
 
 ${HP_GLSL_FUNCTIONS}
+${FLIP_GLSL}
 
 void main() {
   int vid = gl_VertexID % 6;
@@ -30,10 +31,10 @@ void main() {
 
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
+  vec2 splitStart = hp_split_uint(absStart);
+  vec2 splitEnd = hp_split_uint(absEnd);
+  float sx1 = hp_to_clip_x(splitStart, u_bpRangeX);
+  float sx2 = hp_to_clip_x(splitEnd, u_bpRangeX);
   float sx = mix(sx1, sx2, localX);
 
   // Y positioning: center of the feature row, exactly 1px tall line
@@ -46,7 +47,7 @@ void main() {
   float syBot = 1.0 - yBot * pxToClip;
   float sy = mix(syBot, syTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   // Plain grey line matching canvas LinearReadCloudDisplay (#6665)
   // SYNC(wgsl/miscShaders.ts): line color vec4(0,0,0,0.45), 1px tall with floor snapping
   v_color = vec4(0, 0, 0, 0.45);

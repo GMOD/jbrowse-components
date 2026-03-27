@@ -634,20 +634,20 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
 
   private bpToScreenX(
     absBp: number,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
   ) {
-    return (
-      block.screenStartPx +
-      ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
-    )
+    const frac = ((absBp - block.bpRangeX[0]) / bpLength) * fullBlockWidth
+    return block.reversed
+      ? block.screenEndPx - frac
+      : block.screenStartPx + frac
   }
 
   private drawReads(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -682,7 +682,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawGaps(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -720,7 +720,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawMismatches(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -746,7 +746,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawInsertions(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -790,7 +790,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
     count: number,
     regionStart: number,
     color: string,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -818,7 +818,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawSoftclipBases(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -847,7 +847,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawModifications(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -879,7 +879,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawCoverage(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -931,7 +931,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawSnpCoverage(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -961,7 +961,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawModCoverage(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -999,7 +999,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawArcs(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -1043,7 +1043,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawSashimiArcs(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -1080,7 +1080,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawConnectingLines(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: { bpRangeX: [number, number]; screenStartPx: number },
+    block: RenderBlock,
     bpLength: number,
     fullBlockWidth: number,
     state: RenderState,
@@ -1115,11 +1115,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawHighlightOverlays(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
+    block: RenderBlock,
     state: RenderState,
   ) {
     const covOffset = this.covOffset(state)
@@ -1161,11 +1157,7 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsBackend {
   private drawChainOverlays(
     ctx: CanvasRenderingContext2D,
     region: Canvas2DRegionData,
-    block: {
-      bpRangeX: [number, number]
-      screenStartPx: number
-      screenEndPx: number
-    },
+    block: RenderBlock,
     state: RenderState,
   ) {
     const covOffset = this.covOffset(state)

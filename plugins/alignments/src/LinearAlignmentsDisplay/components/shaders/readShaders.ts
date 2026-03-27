@@ -1,4 +1,4 @@
-import { HP_GLSL_FUNCTIONS } from './utils.ts'
+import { FLIP_GLSL, HP_GLSL_FUNCTIONS } from './utils.ts'
 
 export const READ_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -56,6 +56,7 @@ out vec2 v_featureSizePx;  // feature width and height in pixels
 out float v_edgeFlags;     // 0=normal, 1=suppress right, -1=suppress left, 2=chevron mode
 
 ${HP_GLSL_FUNCTIONS}
+${FLIP_GLSL}
 
 // SYNC(wgsl/readShader.ts): color schemes 0-9, flag bit checks (64=first-of-pair, 16=reverse), pair orientation codes (1=LR,2=RL,3=RR,4=LL)
 // Color scheme 1: strand
@@ -166,10 +167,10 @@ void main() {
 
   uint absStart = a_position.x + u_regionStart;
   uint absEnd = a_position.y + u_regionStart;
-  vec2 splitStart = hpSplitUint(absStart);
-  vec2 splitEnd = hpSplitUint(absEnd);
-  float sx1 = hpToClipX(splitStart, u_bpRangeX);
-  float sx2 = hpToClipX(splitEnd, u_bpRangeX);
+  vec2 splitStart = hp_split_uint(absStart);
+  vec2 splitEnd = hp_split_uint(absEnd);
+  float sx1 = hp_to_clip_x(splitStart, u_bpRangeX);
+  float sx2 = hp_to_clip_x(splitEnd, u_bpRangeX);
 
   // Calculate Y position in pixels (constant height per row)
   float rowHeight = u_featureHeight + u_featureSpacing;
@@ -203,8 +204,8 @@ void main() {
     // Highlight overlay uses full read span (not segment span) to cover introns
     uint hlAbsStart = a_readSpan.x + u_regionStart;
     uint hlAbsEnd = a_readSpan.y + u_regionStart;
-    float hlSx1 = hpToClipX(hpSplitUint(hlAbsStart), u_bpRangeX);
-    float hlSx2 = hpToClipX(hpSplitUint(hlAbsEnd), u_bpRangeX);
+    float hlSx1 = hp_to_clip_x(hp_split_uint(hlAbsStart), u_bpRangeX);
+    float hlSx2 = hp_to_clip_x(hp_split_uint(hlAbsEnd), u_bpRangeX);
     localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
     localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
     sx = mix(hlSx1, hlSx2, localX);
@@ -258,7 +259,7 @@ void main() {
 
   v_localPos = vec2(localX, localY);
   v_edgeFlags = edgeFlags;
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // SYNC(wgsl/readShader.ts): highlight-only dark overlay vec4(0,0,0,0.4), no chevrons
   if (u_highlightOnlyMode == 1) {

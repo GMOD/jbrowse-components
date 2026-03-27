@@ -54,6 +54,10 @@ export function renderCoverage(
     renderer.coverageUniforms.u_colorCoverage!,
     ...colors.colorCoverage,
   )
+  gl.uniform1f(
+    renderer.coverageUniforms.u_reversed!,
+    state.reversed ? 1.0 : 0.0,
+  )
 
   gl.bindVertexArray(renderer.buffers.coverageVAO)
   gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, renderer.buffers.coverageCount)
@@ -80,6 +84,10 @@ export function renderCoverage(
     gl.uniform1f(renderer.modCoverageUniforms.u_depthScale!, depthScale)
     gl.uniform1f(renderer.modCoverageUniforms.u_canvasHeight!, canvasHeight)
     gl.uniform1f(renderer.modCoverageUniforms.u_canvasWidth!, canvasWidth)
+    gl.uniform1f(
+      renderer.modCoverageUniforms.u_reversed!,
+      state.reversed ? 1.0 : 0.0,
+    )
 
     // Scissor clips modification bars to the coverage area
     const dpr = renderer.dpr
@@ -138,6 +146,10 @@ export function renderCoverage(
       renderer.snpCoverageUniforms.u_colorBaseT!,
       ...colors.colorBaseT,
     )
+    gl.uniform1f(
+      renderer.snpCoverageUniforms.u_reversed!,
+      state.reversed ? 1.0 : 0.0,
+    )
 
     gl.bindVertexArray(renderer.buffers.snpCoverageVAO)
     gl.drawArraysInstanced(
@@ -175,6 +187,10 @@ export function renderCoverage(
       renderer.noncovHistogramUniforms.u_colorHardclip!,
       ...colors.colorHardclip,
     )
+    gl.uniform1f(
+      renderer.noncovHistogramUniforms.u_reversed!,
+      state.reversed ? 1.0 : 0.0,
+    )
 
     gl.bindVertexArray(renderer.buffers.noncovHistogramVAO)
     gl.drawArraysInstanced(
@@ -209,6 +225,10 @@ export function renderCoverage(
     gl.uniform3f(
       renderer.indicatorUniforms.u_colorHardclip!,
       ...colors.colorHardclip,
+    )
+    gl.uniform1f(
+      renderer.indicatorUniforms.u_reversed!,
+      state.reversed ? 1.0 : 0.0,
     )
 
     gl.bindVertexArray(renderer.buffers.indicatorVAO)

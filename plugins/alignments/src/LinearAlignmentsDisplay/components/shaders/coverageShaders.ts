@@ -1,3 +1,5 @@
+import { FLIP_GLSL } from './utils.ts'
+
 // Coverage vertex shader - renders grey bars for total coverage
 // Uses explicit position attribute for consistent positioning with other coverage elements
 export const COVERAGE_VERTEX_SHADER = `#version 300 es
@@ -17,6 +19,8 @@ uniform float u_canvasWidth;
 
 // Coverage bar color (typically light grey)
 uniform vec3 u_colorCoverage;
+
+${FLIP_GLSL}
 
 out vec4 v_color;
 
@@ -50,7 +54,7 @@ void main() {
   float barTop = coverageBottom + (a_depth * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(coverageBottom, barTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = vec4(u_colorCoverage, 1.0);
 }
 `
@@ -88,6 +92,8 @@ uniform vec3 u_colorBaseC;
 uniform vec3 u_colorBaseG;
 uniform vec3 u_colorBaseT;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 
 void main() {
@@ -116,7 +122,7 @@ void main() {
   float segmentTop = segmentBot + (a_segmentHeight * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // Colors: A=green, C=blue, G=orange, T=red (from theme uniforms)
   int colorIdx = int(a_colorType);
@@ -159,6 +165,8 @@ uniform float u_depthScale;      // perRegionMax / nicedOverallMax correction
 uniform float u_canvasHeight;
 uniform float u_canvasWidth;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 
 void main() {
@@ -187,7 +195,7 @@ void main() {
   float segmentTop = segmentBot + (a_segmentHeight * u_depthScale * effectiveHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
   v_color = a_color;
 }
 `
@@ -223,6 +231,8 @@ uniform vec3 u_colorInsertion;
 uniform vec3 u_colorSoftclip;
 uniform vec3 u_colorHardclip;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 
 void main() {
@@ -250,7 +260,7 @@ void main() {
   float segmentBot = segmentTop - (a_segmentHeight * u_noncovHeight / u_canvasHeight) * 2.0;
   float sy = mix(segmentBot, segmentTop, localY);
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // Colors from theme uniforms
   int colorIdx = int(a_colorType);
@@ -292,6 +302,8 @@ uniform vec3 u_colorInsertion;
 uniform vec3 u_colorSoftclip;
 uniform vec3 u_colorHardclip;
 
+${FLIP_GLSL}
+
 out vec4 v_color;
 out vec3 v_bary;
 
@@ -325,7 +337,7 @@ void main() {
     v_bary = vec3(0.0, 0.0, 1.0);
   }
 
-  gl_Position = vec4(sx, sy, 0.0, 1.0);
+  gl_Position = vec4(flip_x(sx), sy, 0.0, 1.0);
 
   // Colors from theme uniforms
   int colorIdx = int(a_colorType);
@@ -357,12 +369,15 @@ void main() {
 }
 `
 
-// Simple line shader for drawing separator
+// Simple line shader for drawing separator and highlight overlays
 export const LINE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 in vec2 a_position;
+
+${FLIP_GLSL}
+
 void main() {
-  gl_Position = vec4(a_position, 0.0, 1.0);
+  gl_Position = vec4(flip_x(a_position.x), a_position.y, 0.0, 1.0);
 }
 `
 

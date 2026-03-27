@@ -1,4 +1,4 @@
-// SYNC(shaders/utils.ts): HP_LOW_MASK=0xFFF, hp_split_uint/hp_to_clip_x/hp_scale_linear must match hpSplitUint/hpToClipX/hpScaleLinear
+// SYNC(shaders/utils.ts): HP_LOW_MASK=0xFFF, hp_split_uint/hp_to_clip_x/hp_scale_linear must match GLSL equivalents
 export const HP_WGSL = `
 const HP_LOW_MASK: u32 = 0xFFFu;
 
@@ -31,6 +31,10 @@ fn hp_scale_linear(split_pos: vec2f, bp_range: vec3f) -> f32 {
 fn snap_to_pixel_x(clip_x: f32, canvas_width: f32) -> f32 {
   let px = (clip_x + 1.0) * 0.5 * canvas_width;
   return floor(px + 0.5) / canvas_width * 2.0 - 1.0;
+}
+
+fn flip_x(x: f32) -> f32 {
+  return mix(x, -x, uf(23u));
 }
 `
 
@@ -114,7 +118,7 @@ export const U_BIN_SIZE = 19
 export const U_NONCOV_HEIGHT = 20
 export const U_INSERT_UPPER = 21
 export const U_INSERT_LOWER = 22
-// slot 23 unused (was U_ERASE_MODE, removed with stencil pass)
+export const U_REVERSED = 23
 export const U_BLOCK_START_PX = 24
 export const U_BLOCK_WIDTH = 25
 export const U_LINE_WIDTH_PX = 26

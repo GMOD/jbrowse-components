@@ -92,6 +92,7 @@ import {
   U_RANGE_Y0,
   U_REGION_START,
   U_SASHIMI_COLORS,
+  U_REVERSED,
   U_SCROLL_TOP,
   U_SHOW_STROKE,
 } from './wgsl/common.ts'
@@ -927,6 +928,7 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
     region: GpuRegion,
     clippedBpStart: number,
     clippedBpEnd: number,
+    reversed: boolean,
   ) {
     const f = this.uF32
     const u = this.uU32
@@ -965,6 +967,7 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
     f[U_INSERT_UPPER] = region.insertSizeStats?.upper ?? 999999
     f[U_INSERT_LOWER] = region.insertSizeStats?.lower ?? 0
     f[U_SCROLL_TOP] = state.rangeY[0]
+    f[U_REVERSED] = reversed ? 1.0 : 0.0
     const c = state.colors
     this.writeColor(U_COLOR_FWD, c.colorFwdStrand)
     this.writeColor(U_COLOR_REV, c.colorRevStrand)
@@ -1081,6 +1084,7 @@ export class WebGPUAlignmentsRenderer implements AlignmentsBackend {
         region,
         clippedBpStart,
         clippedBpEnd,
+        block.reversed,
       )
 
       const mode = state.renderingMode ?? 'pileup'

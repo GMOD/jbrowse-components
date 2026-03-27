@@ -37,7 +37,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   if x2 - x1 < min_w { let m = (x1+x2)*0.5; x1 = m - min_w*0.5; x2 = m + min_w*0.5; }
 
   let bar_top = cov_bottom() + (inst.depth * depth_scale() * eff_height() / canvas_height()) * 2.0;
-  out.position = vec4f(mix(x1, x2, lx), mix(cov_bottom(), bar_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(x1, x2, lx)), mix(cov_bottom(), bar_top, ly), 0.0, 1.0);
   out.color = vec4f(color3(80u), 1.0);
   return out;
 }
@@ -70,7 +70,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let s_bot = cov_bottom() + (inst.y_offset * depth_scale() * eff_height() / canvas_height()) * 2.0;
   let s_top = s_bot + (inst.seg_height * depth_scale() * eff_height() / canvas_height()) * 2.0;
-  out.position = vec4f(mix(x1, x2, lx), mix(s_bot, s_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(x1, x2, lx)), mix(s_bot, s_top, ly), 0.0, 1.0);
 
   let ci = i32(inst.color_type);
   var c: vec3f;
@@ -110,7 +110,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let s_bot = cov_bottom() + (inst.y_offset * depth_scale() * eff_height() / canvas_height()) * 2.0;
   let s_top = s_bot + (inst.seg_height * depth_scale() * eff_height() / canvas_height()) * 2.0;
-  out.position = vec4f(mix(x1, x2, lx), mix(s_bot, s_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(x1, x2, lx)), mix(s_bot, s_top, ly), 0.0, 1.0);
 
   let pc = inst.packed_color;
   out.color = vec4f(
@@ -151,7 +151,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let s_top = 1.0 - ind_off - (inst.y_offset * noncov_h / canvas_height()) * 2.0;
   let s_bot = s_top - (inst.seg_height * noncov_h / canvas_height()) * 2.0;
 
-  out.position = vec4f(mix(cx - bar_w*0.5, cx + bar_w*0.5, lx), mix(s_bot, s_top, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(cx - bar_w*0.5, cx + bar_w*0.5, lx)), mix(s_bot, s_top, ly), 0.0, 1.0);
 
   let ci = i32(inst.color_type);
   var c: vec3f;
@@ -198,7 +198,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   else if v == 1u { sx = cx + tw * 0.5; sy = 1.0; out.bary = vec3f(0.0, 1.0, 0.0); }
   else { sx = cx; sy = 1.0 - th; out.bary = vec3f(0.0, 0.0, 1.0); }
 
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
   let ci = i32(inst.color_type);
   var c: vec3f;
   if ci == 1 { c = color3(65u); }

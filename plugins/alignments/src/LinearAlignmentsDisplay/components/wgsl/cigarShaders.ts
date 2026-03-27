@@ -51,7 +51,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let sx = mix(sx1, sx2, lx);
   let sy = mix(y_bot, y_top, ly);
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
 
   // SYNC(shaders/cigarShaders.ts): deletion sub-pixel alpha
   var alpha = 1.0;
@@ -104,7 +104,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
   let yy = pileup_y(f32(inst.y));
   let sy = mix(yy.y, yy.x, ly);
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
 
   var c: vec3f;
   let b = inst.base;
@@ -200,7 +200,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   if !is_long && px_per_bp < 1.0 { let base = px_per_bp * px_per_bp; alpha = base + inst.frequency * (1.0 - base); }
   if alpha <= 0.0 { out.position = vec4f(0.0); out.color = vec4f(0.0); return out; }
 
-  out.position = vec4f(sx, sy, 0.0, 1.0);
+  out.position = vec4f(flip_x(sx), sy, 0.0, 1.0);
   out.color = vec4f(color3(65u), alpha);
   return out;
 }
@@ -245,7 +245,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   }
 
   let yy = pileup_y(f32(inst.y));
-  out.position = vec4f(mix(sx1, sx2, lx), mix(yy.y, yy.x, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(sx1, sx2, lx)), mix(yy.y, yy.x, ly), 0.0, 1.0);
   out.color = vec4f(color3(${colorSlot}u), alpha);
   return out;
 }
@@ -285,7 +285,7 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   }
 
   let yy = pileup_y(f32(inst.y));
-  out.position = vec4f(mix(sx1, sx2, lx), mix(yy.y, yy.x, ly), 0.0, 1.0);
+  out.position = vec4f(flip_x(mix(sx1, sx2, lx)), mix(yy.y, yy.x, ly), 0.0, 1.0);
 
   let pc = inst.packed_color;
   out.color = vec4f(

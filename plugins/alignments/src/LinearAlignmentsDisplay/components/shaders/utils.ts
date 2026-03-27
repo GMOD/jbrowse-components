@@ -1,37 +1,21 @@
+import { HP_GLSL_CORE } from '@jbrowse/core/gpu/shaderConstants'
+
 export { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 
+export const FLIP_GLSL = `
+uniform float u_reversed;
+float flip_x(float x) { return mix(x, -x, u_reversed); }
+`
+
 export const HP_GLSL_FUNCTIONS = `
-// SYNC(wgsl/common.ts): HP_LOW_MASK=0xFFF, hpSplitUint/hpToClipX/hpScaleLinear must match hp_split_uint/hp_to_clip_x/hp_scale_linear
-const uint HP_LOW_MASK = 0xFFFu;
+${HP_GLSL_CORE}
 
-// WARNING: u_zero MUST be 0.0 at runtime. Produces runtime infinity (1.0/0.0)
-// that prevents the compiler from combining hi/lo subtractions.
-// A compile-time constant would be optimized away.
-// HP technique from genome-spy (MIT): https://github.com/genome-spy/genome-spy
-uniform float u_zero;
-
-vec2 hpSplitUint(uint value) {
-  uint lo = value & HP_LOW_MASK;
-  uint hi = value - lo;
-  return vec2(float(hi), float(lo));
-}
-
-// WARNING: max(-inf) and dot() prevent the compiler from combining hi/lo split
-// terms. Do not simplify.
-float hpToClipX(vec2 splitPos, vec3 bpRange) {
+// WARNING: same compiler guards as hp_to_clip_x. Do not simplify.
+float hp_scale_linear(vec2 split_pos, vec3 bp_range) {
   float inf = 1.0 / u_zero;
-  float step = 2.0 / bpRange.z;
-  float hi = max(splitPos.x - bpRange.x, -inf);
-  float lo = max(splitPos.y - bpRange.y, -inf);
-  return dot(vec3(-1.0, hi, lo), vec3(1.0, step, step));
-}
-
-// WARNING: same compiler guards as hpToClipX. Do not simplify.
-float hpScaleLinear(vec2 splitPos, vec3 bpRange) {
-  float inf = 1.0 / u_zero;
-  float step = 1.0 / bpRange.z;
-  float hi = max(splitPos.x - bpRange.x, -inf);
-  float lo = max(splitPos.y - bpRange.y, -inf);
+  float step = 1.0 / bp_range.z;
+  float hi = max(split_pos.x - bp_range.x, -inf);
+  float lo = max(split_pos.y - bp_range.y, -inf);
   return dot(vec2(hi, lo), vec2(step, step));
 }
 `

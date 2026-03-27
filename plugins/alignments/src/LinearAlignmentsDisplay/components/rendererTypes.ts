@@ -27,6 +27,7 @@ export interface RenderState {
   colors: ColorPalette
   renderingMode?: 'pileup' | 'linkedRead'
   flipStrandLongReadChains?: boolean
+  reversed?: boolean
   arcLineWidth?: number
   // Sashimi arcs (splice junctions overlaid on coverage)
   showSashimiArcs?: boolean
@@ -41,6 +42,7 @@ export interface RenderBlock {
   bpRangeX: [number, number]
   screenStartPx: number
   screenEndPx: number
+  reversed: boolean
 }
 
 export interface ReadUploadData {

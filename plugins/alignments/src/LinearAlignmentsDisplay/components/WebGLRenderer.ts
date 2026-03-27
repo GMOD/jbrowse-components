@@ -273,7 +273,10 @@ export class WebGLRenderer implements AlignmentsBackend {
       MOD_COVERAGE_FRAGMENT_SHADER,
     )
 
-    this.cacheUniforms(this.lineProgram, this.lineUniforms, ['u_color'])
+    this.cacheUniforms(this.lineProgram, this.lineUniforms, [
+      'u_color',
+      'u_reversed',
+    ])
 
     // Create line VAO and buffer for separator
     this.lineVAO = gl.createVertexArray()
@@ -317,6 +320,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_flipStrandLongReadChains',
       'u_showStroke',
       'u_zero',
+      'u_reversed',
     ])
 
     this.cacheUniforms(this.coverageProgram, this.coverageUniforms, [
@@ -328,6 +332,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_canvasHeight',
       'u_canvasWidth',
       'u_colorCoverage',
+      'u_reversed',
     ])
 
     // Base color uniforms for SNP/mismatch shaders
@@ -352,6 +357,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_canvasHeight',
       'u_canvasWidth',
       ...baseColorUniforms,
+      'u_reversed',
     ])
 
     this.cacheUniforms(
@@ -363,6 +369,7 @@ export class WebGLRenderer implements AlignmentsBackend {
         'u_canvasHeight',
         'u_canvasWidth',
         ...indelColorUniforms,
+        'u_reversed',
       ],
     )
 
@@ -371,6 +378,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_canvasHeight',
       'u_canvasWidth',
       ...indelColorUniforms,
+      'u_reversed',
     ])
 
     const cigarUniforms = [
@@ -381,6 +389,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_coverageOffset',
       'u_canvasHeight',
       'u_canvasWidth',
+      'u_reversed',
     ]
     this.cacheUniforms(this.gapProgram, this.gapUniforms, [
       ...cigarUniforms,
@@ -413,6 +422,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_depthScale',
       'u_canvasHeight',
       'u_canvasWidth',
+      'u_reversed',
     ])
 
     // Arcs programs
@@ -429,6 +439,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_lineWidthPx',
       'u_gradientHue',
       'u_numRegions',
+      'u_reversed',
     ])
     for (let i = 0; i < NUM_ARC_COLORS; i++) {
       this.arcUniforms[`u_arcColors[${i}]`] = gl.getUniformLocation(
@@ -452,6 +463,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_blockWidth',
       'u_canvasWidth',
       'u_zero',
+      'u_reversed',
     ])
     for (let i = 0; i < NUM_LINE_COLORS; i++) {
       this.arcLineUniforms[`u_arcLineColors[${i}]`] = gl.getUniformLocation(
@@ -486,6 +498,7 @@ export class WebGLRenderer implements AlignmentsBackend {
       'u_coverageOffset',
       'u_coverageHeight',
       'u_numRegions',
+      'u_reversed',
     ])
     for (let i = 0; i < NUM_SASHIMI_COLORS; i++) {
       this.sashimiUniforms[`u_sashimiColors[${i}]`] = gl.getUniformLocation(
@@ -517,6 +530,7 @@ export class WebGLRenderer implements AlignmentsBackend {
         'u_scrollTop',
         'u_coverageOffset',
         'u_zero',
+        'u_reversed',
       ],
     )
 
@@ -1935,6 +1949,7 @@ export class WebGLRenderer implements AlignmentsBackend {
         ...state,
         bpRangeX: [clippedBpStart, clippedBpEnd] as [number, number],
         canvasWidth: scissorW,
+        reversed: block.reversed,
       }
 
       renderCoverage(this, blockState, colors)

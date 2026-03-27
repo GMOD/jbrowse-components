@@ -1625,6 +1625,7 @@ export default function stateModelFactory(
                   bpRangeX: [r.start, r.end] as [number, number],
                   screenStartPx: r.screenStartPx,
                   screenEndPx: r.screenEndPx,
+                  reversed: r.reversed ?? false,
                 }))
                 renderer.renderBlocks(blocks, {
                   rangeY: self.currentRangeY,
