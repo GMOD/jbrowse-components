@@ -347,6 +347,7 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
         bpRangeX: [vr.start, vr.end],
         screenStartPx: vr.screenStartPx,
         screenEndPx: vr.screenEndPx,
+        reversed: vr.reversed ?? false,
       })
     }
 

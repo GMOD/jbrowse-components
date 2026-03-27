@@ -19,6 +19,7 @@ import {
 import type { WiggleRenderBlock } from '../../shared/wiggleBackendTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+import type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 export type { WiggleDisplayModel } from './buildSourceRenderData.ts'
 
 type LGV = LinearGenomeViewModel
