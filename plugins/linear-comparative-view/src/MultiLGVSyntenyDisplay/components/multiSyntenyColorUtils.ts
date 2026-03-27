@@ -5,6 +5,7 @@ import {
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
+  drawDeletion,
   drawInsertion,
 } from '@jbrowse/alignments-core'
 
@@ -52,18 +53,6 @@ export function getFeatureColor(feat: MultiPairFeature, colorBy: string) {
   }
 }
 
-function drawDeletion(
-  ctx: Ctx,
-  px: number,
-  y: number,
-  pw: number,
-  h: number,
-  colors: SyntenyColors,
-) {
-  ctx.fillStyle = colors.deletion
-  ctx.fillRect(px, y, Math.max(pw, 1), h)
-}
-
 export function drawCigarOps(
   ctx: Ctx,
   cigar: number[],
@@ -84,17 +73,16 @@ export function drawCigarOps(
     if (op === CIGAR_M || op === CIGAR_EQ) {
       refPos += len
     } else if (op === CIGAR_X) {
-      const px = x + refPos * pxPerBp
       const pw = len * pxPerBp
       if (pw >= 0.1) {
         ctx.fillStyle = colors.mismatch
-        ctx.fillRect(px, y, Math.max(pw, 1), h)
+        ctx.fillRect(x + refPos * pxPerBp, y, Math.max(pw, 1), h)
       }
       refPos += len
     } else if (op === CIGAR_D || op === CIGAR_N) {
       const pw = len * pxPerBp
       if (pw >= 0.1) {
-        drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, colors)
+        drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, colors.deletion)
       }
       refPos += len
     } else if (op === CIGAR_I) {
@@ -136,10 +124,8 @@ export function drawCsOps(
       refPos += num
     } else if (ch === '*') {
       const queryBase = cs[i + 2] ?? ''
-      const px = x + refPos * pxPerBp
-      const pw = Math.max(pxPerBp, 1)
       ctx.fillStyle = baseColors[queryBase.toLowerCase()] ?? colors.mismatch
-      ctx.fillRect(px, y, pw, h)
+      ctx.fillRect(x + refPos * pxPerBp, y, Math.max(pxPerBp, 1), h)
       i += 3
       refPos += 1
     } else if (ch === '-') {
@@ -149,7 +135,8 @@ export function drawCsOps(
       if (len > 0) {
         const pw = len * pxPerBp
         if (pw >= 0.1) {
-          drawDeletion(ctx, x + refPos * pxPerBp, y, pw, h, colors)
+          ctx.fillStyle = colors.deletion
+          ctx.fillRect(x + refPos * pxPerBp, y, Math.max(pw, 1), h)
         }
         refPos += len
       }

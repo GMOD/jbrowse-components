@@ -42,6 +42,33 @@ interface LabelContext {
   bpLen: number
 }
 
+function addInsertionLabel(
+  labels: VisibleLabel[],
+  px: number,
+  y: number,
+  h: number,
+  len: number,
+  pxPerBp: number,
+  fontSize: number,
+) {
+  const isLarge =
+    len >= LONG_INSERTION_MIN_LENGTH &&
+    len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
+  if (isLarge) {
+    labels.push({ type: 'insertion', x: px, y: y + h / 2, text: `${len}`, fontSize })
+  } else {
+    labels.push({
+      type: 'insertion',
+      x: px + 3,
+      y: y + h / 2,
+      text: `${len}`,
+      fontSize,
+      textAlign: 'left',
+      color: INSERTION_COLOR,
+    })
+  }
+}
+
 function addCigarLabels(ctx: LabelContext, cigar: number[]) {
   const { x, y, w, h, bpLen, labels } = ctx
   const pxPerBp = w / bpLen
@@ -82,29 +109,7 @@ function addCigarLabels(ctx: LabelContext, cigar: number[]) {
       refPos += len
     } else if (op === CIGAR_I) {
       if (h >= MIN_HEIGHT_FOR_TEXT) {
-        const isLarge =
-          len >= LONG_INSERTION_MIN_LENGTH &&
-          len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
-        const px = x + refPos * pxPerBp
-        if (isLarge) {
-          labels.push({
-            type: 'insertion',
-            x: px,
-            y: y + h / 2,
-            text: `${len}`,
-            fontSize,
-          })
-        } else {
-          labels.push({
-            type: 'insertion',
-            x: px + 3,
-            y: y + h / 2,
-            text: `${len}`,
-            fontSize,
-            textAlign: 'left',
-            color: INSERTION_COLOR,
-          })
-        }
+        addInsertionLabel(labels, x + refPos * pxPerBp, y, h, len, pxPerBp, fontSize)
       }
     }
   }

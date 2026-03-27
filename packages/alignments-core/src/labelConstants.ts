@@ -63,6 +63,18 @@ function drawSerifs(ctx: DrawCtx, px: number, y: number, h: number, triW: number
   ctx.fill()
 }
 
+export function drawDeletion(
+  ctx: DrawCtx,
+  px: number,
+  y: number,
+  pw: number,
+  h: number,
+  color: string,
+) {
+  ctx.fillStyle = color
+  ctx.fillRect(px, y, Math.max(pw, 1), h)
+}
+
 export function drawInsertion(
   ctx: DrawCtx,
   px: number,
