@@ -1451,13 +1451,13 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+        onFetchNeeded(needed: (Region & { regionNumber: number })[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(({ region, regionNumber }) =>
+            const promises = needed.map(item =>
               fetchFeaturesForRegion(
                 self.adapterConfigSnapshot,
-                region,
-                regionNumber,
+                item,
+                item.regionNumber,
                 ctx.stopToken,
               ),
             )

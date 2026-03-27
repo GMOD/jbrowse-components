@@ -650,14 +650,14 @@ export default function stateModelFactory(
           return null
         },
 
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+        onFetchNeeded(needed: (Region & { regionNumber: number })[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(({ region, regionNumber }) =>
+            const promises = needed.map(item =>
               fetchFeaturesForRegion(
-                region,
-                regionNumber,
+                item,
+                item.regionNumber,
                 bpPerPx,
                 ctx.stopToken,
               ),

@@ -118,7 +118,7 @@ export default function MultiRegionDisplayMixin() {
     }))
     .actions(self => ({
       // Overridable hooks — subclasses override these
-      onFetchNeeded(_needed: { region: Region; regionNumber: number }[]) {
+      onFetchNeeded(_needed: (Region & { regionNumber: number })[]) {
         // no-op base
       },
 
@@ -297,7 +297,7 @@ export default function MultiRegionDisplayMixin() {
                 const bufferedByRegion = new Map(
                   view.bufferedVisibleRegions.map(b => [b.regionNumber, b]),
                 )
-                const needed: { region: Region; regionNumber: number }[] = []
+                const needed: (Region & { regionNumber: number })[] = []
                 for (const vr of visibleMerged) {
                   const loaded = untracked(() =>
                     self.loadedRegions.get(vr.regionNumber),
