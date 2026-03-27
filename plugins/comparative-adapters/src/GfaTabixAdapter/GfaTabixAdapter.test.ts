@@ -770,6 +770,129 @@ describe('GfaTabixAdapter HPRC getSubgraph', () => {
   })
 })
 
+const pangenomePrefix = require
+  .resolve(
+    '../../../../test_data/volvox/volvox_pangenome_50.pos.bed.gz',
+  )
+  .replace('.pos.bed.gz', '')
+
+describe('GfaTabixAdapter bubbles (volvox pangenome 50)', () => {
+  function makeBubblesAdapter(assemblyNameMap?: Record<string, string>) {
+    return new Adapter(
+      MyConfigSchema.create({
+        posLocation: {
+          localPath: `${pangenomePrefix}.pos.bed.gz`,
+          locationType: 'LocalPathLocation',
+        },
+        posIndex: {
+          location: {
+            localPath: `${pangenomePrefix}.pos.bed.gz.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+        segmentsLocation: {
+          localPath: `${pangenomePrefix}.segments.bin`,
+          locationType: 'LocalPathLocation',
+        },
+        segmentsIdxLocation: {
+          localPath: `${pangenomePrefix}.segments.idx`,
+          locationType: 'LocalPathLocation',
+        },
+        edgesLocation: {
+          localPath: `${pangenomePrefix}.edges.bin`,
+          locationType: 'LocalPathLocation',
+        },
+        edgesIdxLocation: {
+          localPath: `${pangenomePrefix}.edges.idx`,
+          locationType: 'LocalPathLocation',
+        },
+        bubblesLocation: {
+          localPath: `${pangenomePrefix}.bubbles.bed.gz`,
+          locationType: 'LocalPathLocation',
+        },
+        bubblesIndex: {
+          location: {
+            localPath: `${pangenomePrefix}.bubbles.bed.gz.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+        ...(assemblyNameMap ? { assemblyNameMap } : {}),
+      }),
+    )
+  }
+
+  it('annotates features with bubble CS when zoomed in from ref', async () => {
+    const adapter = makeBubblesAdapter()
+    const result = await adapter.getMultiPairFeatures(
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'ref#0',
+      },
+      { bpPerPx: 1 },
+    )
+
+    expect(result.genomeRows.size).toBeGreaterThan(0)
+
+    let featuresWithCs = 0
+    for (const features of result.genomeRows.values()) {
+      for (const f of features) {
+        if (f.cs) {
+          featuresWithCs++
+        }
+      }
+    }
+    expect(featuresWithCs).toBeGreaterThan(0)
+  })
+
+  it('annotates features with bubble CS when viewing from a non-ref genome', async () => {
+    const adapter = makeBubblesAdapter()
+    const result = await adapter.getMultiPairFeatures(
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        assemblyName: 'sample01#0',
+      },
+      { bpPerPx: 1 },
+    )
+
+    expect(result.genomeRows.size).toBeGreaterThan(0)
+
+    let featuresWithCs = 0
+    for (const features of result.genomeRows.values()) {
+      for (const f of features) {
+        if (f.cs) {
+          featuresWithCs++
+        }
+      }
+    }
+    expect(featuresWithCs).toBeGreaterThan(0)
+  })
+
+  it('does not annotate bubbles when zoomed out', async () => {
+    const adapter = makeBubblesAdapter()
+    const result = await adapter.getMultiPairFeatures(
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 50000,
+        assemblyName: 'ref#0',
+      },
+      { bpPerPx: 100 },
+    )
+
+    expect(result.genomeRows.size).toBeGreaterThan(0)
+
+    for (const features of result.genomeRows.values()) {
+      for (const f of features) {
+        expect(f.cs).toBeUndefined()
+      }
+    }
+  })
+})
+
 // Note: aln.bed.gz e2e tests removed — the Rust converter does not produce
 // aln files. The adapter's aln code path is tested via pre-generated fixtures
 // if available.

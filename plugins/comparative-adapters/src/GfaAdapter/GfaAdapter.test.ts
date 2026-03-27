@@ -13,7 +13,7 @@ function makeAdapter(gfaPath: string) {
 }
 
 const pangenomePath =
-  require.resolve('../../../../test_data/volvox/volvox_pangenome.gfa')
+  require.resolve('../../../../test_data/volvox/volvox_indel_pangenome.gfa')
 const samplePath =
   require.resolve('../../../../test_data/volvox/volvox_sample.gfa')
 
@@ -143,7 +143,7 @@ describe('GfaAdapter getSubgraph', () => {
   })
 
   it('infers links from paths when source GFA has no L-lines', async () => {
-    // volvox_pangenome.gfa has W-lines but no L-lines
+    // volvox_indel_pangenome.gfa has W-lines but no L-lines
     const adapter = makeAdapter(pangenomePath)
     const result = await adapter.getSubgraph({
       refName: 'chr1',

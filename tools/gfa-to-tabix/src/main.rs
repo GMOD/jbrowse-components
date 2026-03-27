@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Read as IoRead, Seek, SeekFrom, Write};
 use std::process::{Command, Stdio};
 use std::time::Instant;
 
@@ -165,7 +165,7 @@ fn main() {
     let mut path_name_indices: HashMap<String, u64> = HashMap::new();
     let mut path_sizes: Vec<(String, u64)> = Vec::new();
     let mut path_count: u64 = 0;
-    let mut path_ord_walks: Vec<Vec<(u64, u64)>> = Vec::new();
+    let mut ref_ord_walks: HashMap<String, Vec<(u64, u64)>> = HashMap::new();
 
     for line in BufReader::new(File::open(&paths_tmp).expect("reopen paths tmp")).lines() {
         let line = line.expect("read error");
@@ -242,12 +242,10 @@ fn main() {
                 &mut ord_walk,
             );
 
-            ord_walk.sort_unstable_by_key(|&(off, _)| off);
-            let pi = path_index as usize;
-            while path_ord_walks.len() <= pi {
-                path_ord_walks.push(Vec::new());
+            if is_ref {
+                ord_walk.sort_unstable_by_key(|&(off, _)| off);
+                ref_ord_walks.insert(path_name.clone(), ord_walk);
             }
-            path_ord_walks[pi] = ord_walk;
 
             path_sizes.push((path_name, total));
             path_count += 1;
@@ -339,7 +337,7 @@ fn main() {
 
     let rewritten_vcf_path;
     if let Some(ref vcf_path) = bubbles_vcf {
-        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &path_ord_walks);
+        generate_bubbles_from_vcf(vcf_path, &output_prefix, &genomes, &path_names, &ref_ord_walks);
         rewritten_vcf_path = format!("{}.vcf.gz", output_prefix);
         // Write to a temp file first to avoid clobbering the input VCF
         // when the output path matches the input path
@@ -1232,31 +1230,66 @@ fn strip_pansn_contig(name: &str) -> &str {
     }
 }
 
+fn read_segments_for_ordinal(
+    bin_file: &mut File,
+    idx: &[u64],
+    bin_file_len: u64,
+    ordinal: u64,
+) -> Vec<(u16, u64, u64)> {
+    let ord_idx = ordinal as usize;
+    if ord_idx >= idx.len() {
+        return Vec::new();
+    }
+    let start_byte = idx[ord_idx];
+    let end_byte = if ord_idx + 1 < idx.len() {
+        idx[ord_idx + 1]
+    } else {
+        bin_file_len
+    };
+    if end_byte <= start_byte {
+        return Vec::new();
+    }
+    let num_bytes = (end_byte - start_byte) as usize;
+    let num_records = num_bytes / RECORD_SIZE as usize;
+    if num_records == 0 {
+        return Vec::new();
+    }
+    let mut buf = vec![0u8; num_bytes];
+    bin_file.seek(SeekFrom::Start(start_byte)).expect("seek segments.bin");
+    bin_file.read_exact(&mut buf).expect("read segments.bin");
+
+    let mut result = Vec::with_capacity(num_records);
+    for i in 0..num_records {
+        let base = i * RECORD_SIZE as usize;
+        // skip segOrd (4 bytes)
+        let path_name_idx = u16::from_le_bytes([buf[base + 4], buf[base + 5]]);
+        let offset = u32::from_le_bytes([buf[base + 6], buf[base + 7], buf[base + 8], buf[base + 9]]) as u64;
+        let seg_len = u32::from_le_bytes([buf[base + 10], buf[base + 11], buf[base + 12], buf[base + 13]]) as u64;
+        result.push((path_name_idx, offset, seg_len));
+    }
+    result
+}
+
 fn generate_bubbles_from_vcf(
     vcf_path: &str,
     output_prefix: &str,
     genomes: &[String],
     path_names: &[String],
-    path_ord_walks: &[Vec<(u64, u64)>],
+    ref_ord_walks: &HashMap<String, Vec<(u64, u64)>>,
 ) {
     eprintln!("Generating bubbles from VCF...");
     let t_start = Instant::now();
     let bubbles_file = format!("{}.bubbles.bed.gz", output_prefix);
 
-    // Build ordinal → [(path_idx, offset)] lookup from path walks
-    let mut ord_to_paths: HashMap<u64, Vec<(usize, u64)>> = HashMap::new();
-    for (pi, walk) in path_ord_walks.iter().enumerate() {
-        for &(offset, ordinal) in walk {
-            ord_to_paths.entry(ordinal).or_default().push((pi, offset));
-        }
-    }
-
-    // Build VCF-ref path index: chrom name → path_idx for the VCF-ref's paths
-    // (the VCF CHROM field is a PanSN path name like GRCh38#0#chr20)
-    let path_name_to_idx: HashMap<&str, usize> = path_names
-        .iter()
-        .enumerate()
-        .map(|(i, n)| (n.as_str(), i))
+    // Open segments.bin and read segments.idx for disk-backed ordinal lookups
+    let segments_bin_path = format!("{}.segments.bin", output_prefix);
+    let segments_idx_path = format!("{}.segments.idx", output_prefix);
+    let mut bin_file = File::open(&segments_bin_path).expect("open segments.bin");
+    let bin_file_len = bin_file.metadata().expect("segments.bin metadata").len();
+    let idx_bytes = fs::read(&segments_idx_path).expect("read segments.idx");
+    let seg_idx: Vec<u64> = idx_bytes
+        .chunks_exact(8)
+        .map(|chunk| u64::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3], chunk[4], chunk[5], chunk[6], chunk[7]]))
         .collect();
 
     let mut proc = spawn_sort_bgzip(&bubbles_file);
@@ -1354,10 +1387,10 @@ fn generate_bubbles_from_vcf(
             }
         }
 
-        // Find the ordinal at VCF-ref position `start` using that path's walk
-        let ref_path_idx = path_name_to_idx.get(chrom).copied();
-        let snarl_ordinal = ref_path_idx.and_then(|pi| {
-            let walk = &path_ord_walks[pi];
+        // Find the ordinal at VCF-ref position `start` using the ref path's walk.
+        // The VCF CHROM must be a full PanSN path name (e.g. ref#0#ctgA)
+        // matching a path in the GFA.
+        let snarl_ordinal = ref_ord_walks.get(chrom).and_then(|walk| {
             let idx = walk.partition_point(|&(off, _)| off <= start);
             if idx > 0 { Some(walk[idx - 1].1) } else { walk.first().map(|&(_, o)| o) }
         });
@@ -1416,16 +1449,19 @@ fn generate_bubbles_from_vcf(
         // Determine which genome each path belongs to by matching chromosome name
         let vcf_chrom_suffix = strip_pansn_contig(chrom);
 
-        // Collect paths to emit rows for: either from ordinal lookup or just the VCF-ref path
+        // Collect paths to emit rows for: read from segments.bin via the idx
         let paths_at_snarl: Vec<(usize, u64)> = if let Some(ord) = snarl_ordinal {
-            if let Some(entries) = ord_to_paths.get(&ord) {
-                entries.iter()
-                    .filter(|&&(pi, _)| strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix)
-                    .copied()
-                    .collect()
-            } else {
-                Vec::new()
-            }
+            let records = read_segments_for_ordinal(&mut bin_file, &seg_idx, bin_file_len, ord);
+            records.iter()
+                .filter_map(|&(pni, offset, _seg_len)| {
+                    let pi = pni as usize;
+                    if pi < path_names.len() && strip_pansn_contig(&path_names[pi]) == vcf_chrom_suffix {
+                        Some((pi, offset))
+                    } else {
+                        None
+                    }
+                })
+                .collect()
         } else {
             Vec::new()
         };

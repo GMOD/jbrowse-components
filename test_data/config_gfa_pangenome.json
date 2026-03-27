@@ -32,30 +32,30 @@
       "adapter": {
         "type": "GfaTabixAdapter",
         "posLocation": {
-          "uri": "volvox/volvox_pangenome.pos.bed.gz",
+          "uri": "volvox/volvox_indel_pangenome.pos.bed.gz",
           "locationType": "UriLocation"
         },
         "posIndex": {
           "location": {
-            "uri": "volvox/volvox_pangenome.pos.bed.gz.tbi",
+            "uri": "volvox/volvox_indel_pangenome.pos.bed.gz.tbi",
             "locationType": "UriLocation"
           }
         },
         "segmentsLocation": {
-          "uri": "volvox/volvox_pangenome.segments.bin",
+          "uri": "volvox/volvox_indel_pangenome.segments.bin",
           "locationType": "UriLocation"
         },
         "segmentsIdxLocation": {
-          "uri": "volvox/volvox_pangenome.segments.idx",
+          "uri": "volvox/volvox_indel_pangenome.segments.idx",
           "locationType": "UriLocation"
         },
         "alnLocation": {
-          "uri": "volvox/volvox_pangenome.aln.bed.gz",
+          "uri": "volvox/volvox_indel_pangenome.aln.bed.gz",
           "locationType": "UriLocation"
         },
         "alnIndex": {
           "location": {
-            "uri": "volvox/volvox_pangenome.aln.bed.gz.tbi",
+            "uri": "volvox/volvox_indel_pangenome.aln.bed.gz.tbi",
             "locationType": "UriLocation"
           }
         }
@@ -76,21 +76,21 @@
       "adapter": {
         "type": "GfaTabixAdapter",
         "posLocation": {
-          "uri": "volvox/volvox_pangenome.pos.bed.gz",
+          "uri": "volvox/volvox_indel_pangenome.pos.bed.gz",
           "locationType": "UriLocation"
         },
         "posIndex": {
           "location": {
-            "uri": "volvox/volvox_pangenome.pos.bed.gz.tbi",
+            "uri": "volvox/volvox_indel_pangenome.pos.bed.gz.tbi",
             "locationType": "UriLocation"
           }
         },
         "segmentsLocation": {
-          "uri": "volvox/volvox_pangenome.segments.bin",
+          "uri": "volvox/volvox_indel_pangenome.segments.bin",
           "locationType": "UriLocation"
         },
         "segmentsIdxLocation": {
-          "uri": "volvox/volvox_pangenome.segments.idx",
+          "uri": "volvox/volvox_indel_pangenome.segments.idx",
           "locationType": "UriLocation"
         }
       },

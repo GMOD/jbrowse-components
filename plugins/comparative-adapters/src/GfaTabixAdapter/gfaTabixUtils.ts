@@ -17,6 +17,7 @@ import {
   buildGfaFromEdges,
   buildGfaFromPathInference,
 } from './gfaSubgraphBuilders.ts'
+import { flipCs } from '../csUtils.ts'
 import { buildFeaturesForPath } from './segmentFeatureBuilder.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 
@@ -74,7 +75,10 @@ export abstract class BaseGfaTabixAdapter extends BaseFeatureDataAdapter {
     }
 
     const bubblesLoc = this.getConf('bubblesLocation') as FileLocation
-    if ('uri' in bubblesLoc && bubblesLoc.uri !== '') {
+    const hasBubbles =
+      ('uri' in bubblesLoc && bubblesLoc.uri !== '') ||
+      ('localPath' in bubblesLoc && bubblesLoc.localPath !== '')
+    if (hasBubbles) {
       const bubblesIdxLoc = this.getConf([
         'bubblesIndex',
         'location',
@@ -631,10 +635,14 @@ export function findBubblePairRecord(
 
   const lo = Math.min(viewRefAllele, queryAllele)
   const hi = Math.max(viewRefAllele, queryAllele)
+  const needsFlip = viewRefAllele > queryAllele
   for (let i = begin; i < end; i++) {
     const r = bubbles[i]!
     if (r.alleleA === lo && r.alleleB === hi) {
-      return { cs: r.cs, identity: r.identity }
+      return {
+        cs: needsFlip ? flipCs(r.cs) : r.cs,
+        identity: r.identity,
+      }
     }
   }
   return undefined
