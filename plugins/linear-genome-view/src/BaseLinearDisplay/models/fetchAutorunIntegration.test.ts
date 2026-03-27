@@ -1,15 +1,6 @@
 import { autorun, observable, runInAction, untracked } from 'mobx'
 
-interface Region {
-  refName: string
-  start: number
-  end: number
-  assemblyName: string
-}
-
-interface StaticRegion extends Region {
-  regionNumber: number
-}
+import type { Region, RegionWithNumber } from './MultiRegionDisplayMixin.ts'
 
 function createMockDisplayModel() {
   const state = observable({
@@ -18,7 +9,7 @@ function createMockDisplayModel() {
     regionTooLargeState: false,
     loadedRegions: new Map<number, Region>(),
     loadedBpPerPx: new Map<number, number>(),
-    fetchLog: [] as { regionNumber: number; region: Region }[][],
+    fetchLog: [] as RegionWithNumber[][],
   })
 
   return state
@@ -43,7 +34,7 @@ function computeStaticRegions(view: ReturnType<typeof createMockView>) {
   const windowLeftBp = view.offsetPx * view.bpPerPx
   const windowRightBp = (view.offsetPx + view.width) * view.bpPerPx
 
-  const regions: StaticRegion[] = []
+  const regions: RegionWithNumber[] = []
   for (const [idx, dr] of view.displayedRegions.entries()) {
     const blockStart = Math.floor((windowLeftBp - 0) / blockSizeBp)
     const blockEnd = Math.floor((windowRightBp - 0) / blockSizeBp)
@@ -85,7 +76,7 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
@@ -95,7 +86,7 @@ describe('fetch autorun integration with MobX observables', () => {
         if (boundsValid) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed)
@@ -121,7 +112,7 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
@@ -131,7 +122,7 @@ describe('fetch autorun integration with MobX observables', () => {
         if (boundsValid) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed.length)
@@ -173,7 +164,7 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
@@ -186,7 +177,7 @@ describe('fetch autorun integration with MobX observables', () => {
         ) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed.length)
@@ -236,7 +227,7 @@ describe('fetch autorun integration with MobX observables', () => {
       }
 
       const staticRegions = computeStaticRegions(view)
-      const needed: { region: Region; regionNumber: number }[] = []
+      const needed: RegionWithNumber[] = []
       for (const vr of staticRegions) {
         const loaded = untracked(() => model.loadedRegions.get(vr.regionNumber))
         const boundsValid =
@@ -249,7 +240,7 @@ describe('fetch autorun integration with MobX observables', () => {
         ) {
           continue
         }
-        needed.push({ region: vr, regionNumber: vr.regionNumber })
+        needed.push(vr)
       }
       if (needed.length > 0) {
         fetches.push(needed.length)

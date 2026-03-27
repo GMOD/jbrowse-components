@@ -92,6 +92,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
+  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -1162,8 +1163,7 @@ export default function stateModelFactory(
 
       async function fetchFeaturesForRegion(
         adapterConfig: unknown,
-        region: Region,
-        regionNumber: number,
+        region: RegionWithNumber,
         stopToken: StopToken,
       ) {
         const session = getSession(self)
@@ -1173,16 +1173,7 @@ export default function stateModelFactory(
           ? fetchChainData(adapterConfig, sequenceAdapter, region, stopToken)
           : fetchPileupData(adapterConfig, sequenceAdapter, region, stopToken))
 
-        return {
-          regionNumber,
-          result,
-          region: {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-            assemblyName: region.assemblyName,
-          },
-        }
+        return { region, result }
       }
 
       function reconstructFromArrays(data: PileupDataResult) {
@@ -1382,9 +1373,7 @@ export default function stateModelFactory(
         }
       }
 
-      function computeAndSetArcs(
-        regions: { region: Region; regionNumber: number }[],
-      ) {
+      function computeAndSetArcs(regions: RegionWithNumber[]) {
         const allRegionInfos: {
           refName: string
           start: number
@@ -1401,12 +1390,7 @@ export default function stateModelFactory(
         }
         for (const r of regions) {
           if (!allRegionInfos.some(ri => ri.regionNumber === r.regionNumber)) {
-            allRegionInfos.push({
-              refName: r.region.refName,
-              start: r.region.start,
-              end: r.region.end,
-              regionNumber: r.regionNumber,
-            })
+            allRegionInfos.push(r)
           }
         }
         const { arcs, lines } = computeArcsFromPileupData(
@@ -1439,7 +1423,7 @@ export default function stateModelFactory(
 
       return {
         async fetchFeatures(region: Region, regionNumber = 0) {
-          self.onFetchNeeded([{ region, regionNumber }])
+          self.onFetchNeeded([{ ...region, regionNumber }])
         },
 
         getByteEstimateConfig() {
@@ -1451,13 +1435,12 @@ export default function stateModelFactory(
           }
         },
 
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+        onFetchNeeded(needed: RegionWithNumber[]) {
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(({ region, regionNumber }) =>
+            const promises = needed.map(region =>
               fetchFeaturesForRegion(
                 self.adapterConfigSnapshot,
                 region,
-                regionNumber,
                 ctx.stopToken,
               ),
             )
@@ -1475,8 +1458,8 @@ export default function stateModelFactory(
               }
               self.setModificationsReady(true)
               self.setSimplexModifications(r.result.simplexModifications)
-              self.setLoadedRegion(r.regionNumber, r.region)
-              newDataMap.set(r.regionNumber, r.result)
+              self.setLoadedRegion(r.region.regionNumber, r.region)
+              newDataMap.set(r.region.regionNumber, r.result)
             }
             if (
               self.renderingMode !== 'linkedRead' &&
@@ -1726,11 +1709,7 @@ export default function stateModelFactory(
                 prevArcColorByType = colorByType
                 if (self.showArcs && self.rpcDataMap.size > 0) {
                   const view = getContainingView(self) as LGV
-                  const regions = view.mergedVisibleRegions.map(vr => ({
-                    region: vr as Region,
-                    regionNumber: vr.regionNumber,
-                  }))
-                  computeAndSetArcs(regions)
+                  computeAndSetArcs(view.mergedVisibleRegions)
                 }
               },
               { name: 'LinearAlignmentsDisplay:recomputeArcColors' },

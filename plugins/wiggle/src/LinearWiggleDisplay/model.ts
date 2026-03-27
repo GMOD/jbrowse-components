@@ -39,6 +39,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
+  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export type { MultiRegionRegion as Region } from '@jbrowse/plugin-linear-genome-view'
@@ -317,8 +318,7 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       async function fetchFeaturesForRegion(
-        region: Region,
-        regionNumber: number,
+        region: RegionWithNumber,
         stopToken: StopToken,
         bpPerPx: number,
         resolution: number,
@@ -351,14 +351,9 @@ export default function stateModelFactory(
         )
 
         if (isAlive(self) && generation === self.fetchGeneration) {
-          self.setRpcDataForRegion(regionNumber, result)
-          self.setLoadedRegionForRegion(regionNumber, {
-            refName: region.refName,
-            start: region.start,
-            end: region.end,
-            assemblyName: region.assemblyName,
-          })
-          self.setLoadedBpPerPxForRegion(regionNumber, bpPerPx)
+          self.setRpcDataForRegion(region.regionNumber, result)
+          self.setLoadedRegionForRegion(region.regionNumber, region)
+          self.setLoadedBpPerPxForRegion(region.regionNumber, bpPerPx)
         }
       }
 
@@ -378,15 +373,14 @@ export default function stateModelFactory(
           )
         },
 
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+        onFetchNeeded(needed: RegionWithNumber[]) {
           const view = getContainingView(self) as LGV
           const { bpPerPx } = view
           const { resolution } = self
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(({ region, regionNumber }) =>
+            const promises = needed.map(region =>
               fetchFeaturesForRegion(
                 region,
-                regionNumber,
                 ctx.stopToken,
                 bpPerPx,
                 resolution,

@@ -112,6 +112,7 @@ export type {
   FetchContext,
   MultiRegionDisplayMixinType,
   MultiRegionRegion,
+  MultiRegionRegionWithNumber,
   NonBlockCanvasDisplayMixinType,
   NonBlockCanvasDisplayModel,
 } from './BaseLinearDisplay/index.ts'

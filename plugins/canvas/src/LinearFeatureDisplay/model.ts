@@ -53,6 +53,7 @@ import type {
   FetchContext,
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
+  MultiRegionRegionWithNumber as RegionWithNumber,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ContextMenuFeatureInfo {
@@ -524,15 +525,13 @@ export default function stateModelFactory(
     })
     .actions(self => {
       interface FetchResult {
-        regionNumber: number
+        region: RegionWithNumber
         data: FeatureDataResult
-        region: Region
         bpPerPx: number
       }
 
       async function fetchFeaturesForRegion(
-        region: Region,
-        regionNumber: number,
+        region: RegionWithNumber,
         bpPerPx: number,
         stopToken: StopToken,
       ): Promise<FetchResult | 'regionTooLarge'> {
@@ -568,7 +567,7 @@ export default function stateModelFactory(
         if ('regionTooLarge' in result) {
           return 'regionTooLarge'
         }
-        return { regionNumber, data: result, region, bpPerPx }
+        return { region, data: result, bpPerPx }
       }
 
       function applyFetchResults(
@@ -580,22 +579,21 @@ export default function stateModelFactory(
         const newRegionNumbers = new Set<number>()
         for (const r of results) {
           if (r) {
-            dataMap.set(r.regionNumber, r.data)
-            newRegionNumbers.add(r.regionNumber)
+            const { regionNumber } = r.region
+            dataMap.set(regionNumber, r.data)
+            newRegionNumbers.add(regionNumber)
             regionKeys.set(
-              r.regionNumber,
+              regionNumber,
               `${r.region.assemblyName}:${r.region.refName}`,
             )
           }
         }
-        // Compute density BEFORE layout so effectiveShowDescriptions is
-        // accurate for the first layout pass (avoids a re-layout flash)
         let totalFeatures = 0
         let totalSpanPx = 0
         for (const r of results) {
           if (r) {
-            self.setLoadedRegionForRegion(r.regionNumber, r.region)
-            self.setLayoutBpPerPxForRegion(r.regionNumber, r.bpPerPx)
+            self.setLoadedRegionForRegion(r.region.regionNumber, r.region)
+            self.setLayoutBpPerPxForRegion(r.region.regionNumber, r.bpPerPx)
             totalFeatures += r.data.featureCount
             totalSpanPx += (r.region.end - r.region.start) / r.bpPerPx
           }
@@ -650,17 +648,12 @@ export default function stateModelFactory(
           return null
         },
 
-        onFetchNeeded(needed: { region: Region; regionNumber: number }[]) {
+        onFetchNeeded(needed: RegionWithNumber[]) {
           const view = getContainingView(self) as LGV
           const bpPerPx = view.bpPerPx
           self.withFetchLifecycle(needed, async (ctx: FetchContext) => {
-            const promises = needed.map(({ region, regionNumber }) =>
-              fetchFeaturesForRegion(
-                region,
-                regionNumber,
-                bpPerPx,
-                ctx.stopToken,
-              ),
+            const promises = needed.map(region =>
+              fetchFeaturesForRegion(region, bpPerPx, ctx.stopToken),
             )
             const results = await Promise.all(promises)
             if (ctx.isStale()) {
