@@ -324,7 +324,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _dv = model.dataVersion
         const { height, rowHeight, rowSpacing } = model
-        const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
         const contentBlocks = view.staticBlocks.contentBlocks
         renderer.renderGpu(
           contentBlocks,
@@ -333,7 +332,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           height,
           rowHeight,
           rowSpacing,
-          labelW,
         )
       }
     })

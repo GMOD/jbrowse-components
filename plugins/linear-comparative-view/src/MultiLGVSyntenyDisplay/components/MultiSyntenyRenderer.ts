@@ -103,7 +103,6 @@ export class MultiSyntenyRenderer {
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
-    labelW: number,
   ) {
     this.gpuBackend?.render(
       contentBlocks,
@@ -112,7 +111,6 @@ export class MultiSyntenyRenderer {
       height,
       rowHeight,
       rowSpacing,
-      labelW,
     )
   }
 

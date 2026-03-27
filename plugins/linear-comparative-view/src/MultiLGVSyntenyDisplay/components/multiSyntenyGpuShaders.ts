@@ -24,7 +24,7 @@ layout(std140) uniform Uniforms {
   float resolutionX;
   float resolutionY;
   float rowHeight;
-  float labelW;
+  float _pad0;
   float bpRangeHi;
   float bpRangeLo;
   float bpRangeLen;
@@ -113,7 +113,7 @@ struct Uniforms {
   resolutionX: f32,
   resolutionY: f32,
   rowHeight: f32,
-  labelW: f32,
+  _pad0: f32,
   bpRangeHi: f32,
   bpRangeLo: f32,
   bpRangeLen: f32,

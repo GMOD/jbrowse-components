@@ -69,7 +69,6 @@ export interface MultiSyntenyGpuBackend {
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
-    labelW: number,
   ): void
   pick(x: number, y: number): number
   dispose(): void

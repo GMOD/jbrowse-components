@@ -173,7 +173,6 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
-    labelW: number,
   ) {
     const gl = this.gl
     if (
@@ -224,7 +223,6 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         logicalW,
         logicalH,
         rowHeight,
-        labelW,
         params.bpRangeHi,
         params.bpRangeLo,
         params.bpRangeLen,
@@ -271,7 +269,6 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     width: number,
     height: number,
     rowHeight: number,
-    labelW: number,
     bpRangeHi: number,
     bpRangeLo: number,
     bpRangeLen: number,
@@ -284,7 +281,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     f[0] = width
     f[1] = height
     f[2] = rowHeight
-    f[3] = labelW
+    f[3] = 0
     f[4] = bpRangeHi
     f[5] = bpRangeLo
     f[6] = bpRangeLen
