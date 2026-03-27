@@ -66,7 +66,7 @@ describe('fetch autorun integration with MobX observables', () => {
   test('initial load triggers fetch for all regions', () => {
     const model = createMockDisplayModel()
     const view = createMockView()
-    const fetches: { regionNumber: number; region: Region }[][] = []
+    const fetches: RegionWithNumber[][] = []
 
     const dispose = autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions

@@ -21,6 +21,7 @@ export interface RenderPileupDataArgs {
     start: number
     end: number
     assemblyName?: string
+    reversed?: boolean
   }
   filterBy?: Record<string, unknown>
   colorBy?: {
