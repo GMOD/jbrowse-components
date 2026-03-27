@@ -35,7 +35,7 @@ const suite: TestSuite = {
         )
 
         const beforePixels = await page.evaluate(() => {
-          const canvas = document.querySelector(
+          const canvas = document.querySelector<HTMLCanvasElement>(
             '[data-testid="pileup-display"] canvas',
           )
           if (!canvas) {
