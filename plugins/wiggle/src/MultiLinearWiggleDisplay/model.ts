@@ -601,7 +601,7 @@ export default function stateModelFactory(
 
           try {
             const { setupTreeDrawingAutorun } =
-              await import('./treeDrawingAutorun.ts')
+              await import('@jbrowse/tree-sidebar')
             if (isAlive(self)) {
               setupTreeDrawingAutorun(self)
             }
