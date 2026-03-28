@@ -194,13 +194,15 @@ export function getColorSchemeMenuItem(model: LinearReadDisplayModel) {
   }
 }
 
+interface FilterByModel {
+  filterBy: FilterBy
+  setFilterBy: (arg: FilterBy) => void
+}
+
 /**
  * Shared filter by menu item for all LinearRead displays
  */
-export function getFilterByMenuItem(model: {
-  filterBy: FilterBy
-  setFilterBy: (arg: FilterBy) => void
-}) {
+export function getFilterByMenuItem(model: FilterByModel) {
   return {
     label: 'Filter by',
     icon: ClearAllIcon,
@@ -213,13 +215,11 @@ export function getFilterByMenuItem(model: {
   }
 }
 
-interface EditFiltersModel {
+interface EditFiltersModel extends FilterByModel {
   drawSingletons: boolean
   drawProperPairs: boolean
   setDrawSingletons: (arg: boolean) => void
   setDrawProperPairs: (arg: boolean) => void
-  filterBy: FilterBy
-  setFilterBy: (arg: FilterBy) => void
 }
 
 /**
