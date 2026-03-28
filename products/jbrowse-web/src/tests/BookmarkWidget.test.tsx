@@ -252,6 +252,7 @@ test('Downloads a BED file correctly', async () => {
   // @ts-expect-error
   session.showWidget('gridBookmarkWidget')
 
+  // @ts-expect-error
   bookmarkWidget.addBookmark({
     refName: 'ctgA',
     start: 0,
@@ -287,6 +288,7 @@ test('Downloads a TSV file correctly', async () => {
   // @ts-expect-error
   session.showWidget('gridBookmarkWidget')
 
+  // @ts-expect-error
   bookmarkWidget.addBookmark({
     refName: 'ctgA',
     start: 0,

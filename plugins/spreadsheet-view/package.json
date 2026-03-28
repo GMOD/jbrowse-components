@@ -32,13 +32,13 @@
   "dependencies": {
     "@gmod/vcf": "^7.0.0",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.5.0",
+    "@jbrowse/mobx-state-tree": "^5.6.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
-    "@mui/icons-material": "^7.3.8",
-    "@mui/material": "^7.3.8",
-    "@mui/x-data-grid": "^8.27.3",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
+    "@mui/x-data-grid": "^8.28.1",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1"
   },

@@ -18,7 +18,6 @@ function addGlobalCanvasUtils() {
 
 function addGlobalTextUtils() {
   global.TextEncoder = TextEncoder
-  // @ts-expect-error
   global.TextDecoder = TextDecoder
 }
 

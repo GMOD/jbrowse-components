@@ -28,7 +28,7 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
 }: {
   model: SpreadsheetViewModel
 }) {
-  const [initialHeight, setInitialHeight] = useState<number>(0)
+  const [initialHeight, setInitialHeight] = useState(0)
   const { classes } = useStyles()
   const { spreadsheet, hideVerticalResizeHandle, height } = model
   return spreadsheet ? (

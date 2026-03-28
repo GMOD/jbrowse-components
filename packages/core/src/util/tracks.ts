@@ -94,7 +94,7 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
     let currentNode = getParent<any>(node);
     !isRoot(currentNode);
-    currentNode = getParent<any>(currentNode)
+    currentNode = getParent(currentNode)
   ) {
     if ('renderProps' in currentNode) {
       return currentNode.renderProps()

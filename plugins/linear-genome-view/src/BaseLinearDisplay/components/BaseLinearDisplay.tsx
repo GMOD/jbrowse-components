@@ -29,8 +29,8 @@ const BaseLinearDisplay = observer(function BaseLinearDisplay(props: {
   const { classes } = useStyles()
   const ref = useRef<HTMLDivElement>(null)
   const [clientRect, setClientRect] = useState<DOMRect>()
-  const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
-  const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
+  const [offsetMouseCoord, setOffsetMouseCoord] = useState([0, 0])
+  const [clientMouseCoord, setClientMouseCoord] = useState([0, 0])
   const [contextCoord, setContextCoord] = useState<Coord>()
   const { model, children } = props
   const {

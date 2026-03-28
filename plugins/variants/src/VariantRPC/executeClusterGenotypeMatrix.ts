@@ -43,7 +43,6 @@ export async function executeClusterGenotypeMatrix({
   const result = await clusterData({
     data: Object.values(matrix),
     sampleLabels,
-    stopToken: args.stopToken,
     onProgress: args.statusCallback,
   })
   return {
