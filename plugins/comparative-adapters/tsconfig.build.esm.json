@@ -1,7 +1,13 @@
 {
   "extends": "../../tsconfig",
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
-  "include": ["src/**/*.ts*", "src/**/*.js*"],
+  "exclude": [
+    "src/**/*.test.ts*",
+    "src/**/*.test.js*"
+  ],
+  "include": [
+    "src/**/*.ts*",
+    "src/**/*.js*"
+  ],
   "compilerOptions": {
     "outDir": "esm",
     "rootDir": "src"

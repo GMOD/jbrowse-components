@@ -914,6 +914,13 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+    devDependencies:
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:*
+        version: link:../alignments
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:*
+        version: link:../linear-genome-view
 
   plugins/data-management:
     dependencies:
@@ -953,6 +960,22 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.4
+    devDependencies:
+      '@jbrowse/app-core':
+        specifier: workspace:*
+        version: link:../../packages/app-core
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:*
+        version: link:../alignments
+      '@jbrowse/plugin-hic':
+        specifier: workspace:*
+        version: link:../hic
+      '@jbrowse/plugin-variants':
+        specifier: workspace:*
+        version: link:../variants
+      '@jbrowse/web':
+        specifier: workspace:*
+        version: link:../../products/jbrowse-web
 
   plugins/dotplot-view:
     dependencies:
@@ -1292,6 +1315,10 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:*
+        version: link:../../products/jbrowse-web
 
   plugins/lollipop:
     dependencies:
