@@ -56,8 +56,5 @@
       }
     }
   },
-  "sideEffects": false,
-  "devDependencies": {
-    "@jbrowse/test-utils": "workspace:^"
-  }
+  "sideEffects": false
 }

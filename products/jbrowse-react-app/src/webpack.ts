@@ -1,3 +1,4 @@
+// @ts-expect-error
 import 'dockview-react/dist/styles/dockview.css'
 import * as React from 'react'
 

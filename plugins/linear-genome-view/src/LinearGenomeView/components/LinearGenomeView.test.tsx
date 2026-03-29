@@ -7,6 +7,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import LGVPlugin from '../../index.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
+import LGVPlugin from '../../index.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
