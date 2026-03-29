@@ -4,16 +4,6 @@ const baseConfig = {
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
     '^@jbrowse/text-indexing-core$':
       '<rootDir>/packages/text-indexing-core/src/index.ts',
-    '^@jbrowse/test-utils$': '<rootDir>/packages/test-utils/src/index.ts',
-    '^@jbrowse/plugin-alignments$': '<rootDir>/plugins/alignments/src/index.ts',
-    '^@jbrowse/plugin-config$': '<rootDir>/plugins/config/src/index.ts',
-    '^@jbrowse/plugin-hic$': '<rootDir>/plugins/hic/src/index.ts',
-    '^@jbrowse/plugin-linear-genome-view$':
-      '<rootDir>/plugins/linear-genome-view/src/index.ts',
-    '^@jbrowse/plugin-sequence$': '<rootDir>/plugins/sequence/src/index.ts',
-    '^@jbrowse/plugin-variants$': '<rootDir>/plugins/variants/src/index.ts',
-    '^@jbrowse/web/src/(.*)\\.js$': '<rootDir>/products/jbrowse-web/src/$1.ts',
-    '^@jbrowse/web/src/(.*)$': '<rootDir>/products/jbrowse-web/src/$1.ts',
   },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
