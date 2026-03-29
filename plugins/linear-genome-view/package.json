@@ -58,6 +58,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@jbrowse/web": "workspace:*"
+    "@jbrowse/test-utils": "workspace:^"
   }
 }

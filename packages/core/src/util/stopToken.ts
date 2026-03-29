@@ -113,7 +113,7 @@ export function checkStopToken(stopToken: StopToken | undefined) {
     if (Atomics.load(new Int32Array(stopToken), 0) === 1) {
       throw new Error('aborted')
     }
-  } else if (!('jest' in globalThis) && isWebWorker()) {
+  } else if (typeof jest === 'undefined' && isWebWorker()) {
     // Slow path: synchronous XHR (avoid on main thread)
     const xhr = new XMLHttpRequest()
     xhr.open('GET', stopToken, false)

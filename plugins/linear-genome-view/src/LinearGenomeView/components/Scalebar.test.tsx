@@ -1,9 +1,14 @@
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import Config from '@jbrowse/plugin-config'
+import Sequence from '@jbrowse/plugin-sequence'
+import { createTestSession as createTestSessionBase } from '@jbrowse/test-utils'
 import { render, waitFor } from '@testing-library/react'
 
+import LGVPlugin from '../../index.ts'
 import Scalebar from './Scalebar.tsx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+function createTestSession(args?: Parameters<typeof createTestSessionBase>[1]) {
+  return createTestSessionBase([Config, Sequence, LGVPlugin], args)
+}
 
 describe('Scalebar genome view component', () => {
   it('renders two regions', async () => {

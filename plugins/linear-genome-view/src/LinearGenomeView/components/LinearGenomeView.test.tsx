@@ -1,14 +1,18 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import Config from '@jbrowse/plugin-config'
+import Sequence from '@jbrowse/plugin-sequence'
+import { createTestSession as createTestSessionBase } from '@jbrowse/test-utils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
+import LGVPlugin from '../../index.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
-// mock
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+function createTestSession(args?: Parameters<typeof createTestSessionBase>[1]) {
+  return createTestSessionBase([Config, Sequence, LGVPlugin], args)
+}
 
 function LGV({ model }: { model: LinearGenomeViewModel }) {
   return (

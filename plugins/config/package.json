@@ -55,8 +55,5 @@
     }
   },
   "sideEffects": false,
-  "devDependencies": {
-    "@jbrowse/plugin-alignments": "workspace:*",
-    "@jbrowse/plugin-linear-genome-view": "workspace:*"
-  }
+  "devDependencies": {}
 }

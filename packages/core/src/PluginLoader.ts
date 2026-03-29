@@ -241,7 +241,7 @@ export default class PluginLoader {
     }
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    if (!('jest' in globalThis)) {
+    if (typeof jest === 'undefined') {
       await loadScript(addCacheBuster(parsedUrl.href))
     } else {
       // @ts-expect-error
