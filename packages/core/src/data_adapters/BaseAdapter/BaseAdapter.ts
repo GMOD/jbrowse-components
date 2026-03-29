@@ -27,7 +27,7 @@ export class BaseAdapter {
   ) {
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
-    if (typeof jest === 'undefined') {
+    if (!('jest' in globalThis)) {
       const data = isStateTreeNode(config) ? getSnapshot(config) : config
       this.id = `${idMaker(data)}`
     } else {

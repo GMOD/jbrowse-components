@@ -29,7 +29,6 @@ const useStyles = makeStyles()(theme => ({
 function makeFileLocation(file: File) {
   return isElectron
     ? {
-        // @ts-expect-error electron-specific
         localPath: window.require('electron').webUtils.getPathForFile(file),
         locationType: 'LocalPathLocation',
       }

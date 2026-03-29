@@ -96,7 +96,7 @@ function FilePickerButton({
           const file = target.files?.[0]
           if (file) {
             if (isElectron) {
-              // @ts-expect-error electron-specific
+              // @ts-ignore - electron injects require onto window
               const { webUtils } = window.require('electron')
               setLocation({
                 localPath: webUtils.getPathForFile(file),

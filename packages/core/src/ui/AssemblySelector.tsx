@@ -47,7 +47,7 @@ const AssemblySelector = observer(function AssemblySelector({
       localStorageKey,
     ].join('-')}`,
     selected,
-    typeof jest === 'undefined' && Boolean(localStorageKey),
+    !('jest' in globalThis) && Boolean(localStorageKey),
   )
 
   const selection = assemblyNames.includes(lastSelected || '')
