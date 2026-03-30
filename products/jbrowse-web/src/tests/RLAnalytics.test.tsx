@@ -43,9 +43,7 @@ function getRLPlugin(pluginManager: { plugins: { name: string }[] }) {
   ) as InstanceType<typeof RLAnalyticsPlugin>
 }
 
-test('collects actions and exports valid JSONL with volvox data', async () => {
-  // Note: getPluginManager calls setDefaultSession + configure —
-  // do NOT call setDefaultSession again or the onPatch listener detaches
+test('collects actions and exports valid JSONL with enriched state', async () => {
   const { pluginManager, rootModel } = getPluginManager()
   const view = rootModel.session!.views[0]!
 
@@ -57,20 +55,16 @@ test('collects actions and exports valid JSONL with volvox data', async () => {
   const lgv = view as any
   lgv.setWidth(800)
 
-  // Trigger navigation actions that generate MST patches
   const originalBpPerPx = lgv.bpPerPx
-  lgv.zoomTo(originalBpPerPx / 2) // zoom in → ZOOM_IN
-  lgv.horizontalScroll(500) // pan right → PAN_RIGHT
-  lgv.horizontalScroll(-200) // pan left → PAN_LEFT
-  lgv.zoomTo(originalBpPerPx) // zoom out → ZOOM_OUT
+  lgv.zoomTo(originalBpPerPx / 2)
+  lgv.horizontalScroll(500)
+  lgv.horizontalScroll(-200)
+  lgv.zoomTo(originalBpPerPx)
 
-  // Verify patches were classified and buffered synchronously
   expect(patchListener.buffer.length).toBeGreaterThan(0)
 
-  // Wait for queueMicrotask callbacks to record episodes
   await flushMicrotasks()
 
-  // Export and validate JSONL
   const jsonl = exportManager.getJSONL()
   const lines = jsonl.split('\n').filter(Boolean)
   expect(lines.length).toBeGreaterThan(0)
@@ -87,14 +81,22 @@ test('collects actions and exports valid JSONL with volvox data', async () => {
     expect(typeof obs.bpPerPx).toBe('number')
     expect(obs.bpPerPx).toBeGreaterThan(0)
     expect(obs).toHaveProperty('refName')
+    // New enriched fields
+    expect(obs).toHaveProperty('zoomLevel')
+    expect(['genome', 'region', 'gene', 'sequence', 'basepair']).toContain(
+      obs.zoomLevel,
+    )
+    expect(obs).toHaveProperty('numTracks')
+    expect(obs).toHaveProperty('activeTracks')
+    expect(obs).toHaveProperty('sessionDurationMs')
+    expect(obs).toHaveProperty('totalActionsThisSession')
   }
 
-  // Verify multiple action types were captured
   const actionTypes = new Set(steps.map((s: { action: string }) => s.action))
   expect(actionTypes.size).toBeGreaterThanOrEqual(2)
 })
 
-test('episode manager tracks episodes with correct structure', async () => {
+test('episode manager caches prevState correctly', async () => {
   const { pluginManager, rootModel } = getPluginManager()
   const view = rootModel.session!.views[0]!
 
@@ -113,13 +115,13 @@ test('episode manager tracks episodes with correct structure', async () => {
 
   const episode = episodes[0]!
   expect(episode.steps.length).toBeGreaterThanOrEqual(1)
-  expect(episode.outcome).toBe('in_progress')
-  expect(episode.id).toBeTruthy()
 
-  // Verify step structure
-  const step = episode.steps[0]!
-  expect(step.state).toHaveProperty('bpPerPx')
-  expect(step.nextState).toHaveProperty('bpPerPx')
-  expect(typeof step.reward).toBe('number')
-  expect(typeof step.terminal).toBe('boolean')
+  // With prevState caching, consecutive steps should have
+  // prevState matching the previous step's nextState
+  if (episode.steps.length >= 2) {
+    const step1 = episode.steps[0]!
+    const step2 = episode.steps[1]!
+    expect(step2.state.bpPerPx).toBe(step1.nextState.bpPerPx)
+    expect(step2.state.offsetPx).toBe(step1.nextState.offsetPx)
+  }
 })

@@ -2,23 +2,16 @@ import { lazy } from 'react'
 
 import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import {
-  isAbstractMenuManager,
-} from '@jbrowse/core/util'
-import AssessmentIcon from '@mui/icons-material/Assessment'
-import ExploreIcon from '@mui/icons-material/Explore'
+import { isAbstractMenuManager } from '@jbrowse/core/util'
 import SaveAltIcon from '@mui/icons-material/SaveAlt'
 
 import PatchListener from './ActionLogger/PatchListener.ts'
 import ExportManager from './Export/ExportManager.ts'
 import EpisodeManager from './RLPipeline/EpisodeManager.ts'
-import StateEncoder from './RLPipeline/StateEncoder.ts'
-import GameEngine from './ScavengerHunt/GameEngine.ts'
-import { setGameEngine } from './ScavengerHunt/components/ScavengerHuntView.tsx'
+import observerViewModelFactory from './ObserverView/viewModel.ts'
 import configSchema from './config.ts'
-import stateModelFactory from './ScavengerHunt/viewModel.ts'
 
-import type { TaskSet } from './ScavengerHunt/tasks/taskSchema.ts'
+import type { RLObserverViewModel } from './ObserverView/viewModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class RLAnalyticsPlugin extends Plugin {
@@ -28,18 +21,16 @@ export default class RLAnalyticsPlugin extends Plugin {
   private patchListener: PatchListener | null = null
   private episodeManager: EpisodeManager | null = null
   private exportManager: ExportManager | null = null
-  private gameEngine: GameEngine | null = null
-  private stateEncoder = new StateEncoder()
+  private observerModel: RLObserverViewModel | null = null
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => {
       return new ViewType({
-        name: 'ScavengerHuntView',
-        displayName: 'Scavenger Hunt',
-        stateModel: stateModelFactory(),
+        name: 'RLObserverView',
+        displayName: 'RL Observer',
+        stateModel: observerViewModelFactory(),
         ReactComponent: lazy(
-          () =>
-            import('./ScavengerHunt/components/ScavengerHuntView.tsx'),
+          () => import('./ObserverView/ObserverView.tsx'),
         ),
       })
     })
@@ -51,19 +42,16 @@ export default class RLAnalyticsPlugin extends Plugin {
       return
     }
 
-    // Clean up previous subsystems
+    // Clean up
     this.patchListener?.dispose()
     this.episodeManager?.dispose()
     this.exportManager?.dispose()
-    this.gameEngine?.dispose()
 
-    // Initialize subsystems
+    // Initialize
     this.patchListener = new PatchListener(10000, 500, false)
     this.episodeManager = new EpisodeManager(300_000)
     this.exportManager = new ExportManager(this.episodeManager)
-    this.gameEngine = new GameEngine()
 
-    // View accessor — finds first LinearGenomeView in session
     const getView = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const session = (rootModel as any).session
@@ -75,20 +63,13 @@ export default class RLAnalyticsPlugin extends Plugin {
     }
 
     this.episodeManager.setViewAccessor(getView)
-    this.gameEngine.setViewAccessor(getView)
 
-    // Make game engine available to the view component
-    setGameEngine(this.gameEngine)
-
-    // Connect debounced actions to episode manager + game engine
+    // Connect debounced actions → episode recording + observer logging
     this.patchListener.buffer.onDebouncedAction(action => {
       queueMicrotask(() => {
-        this.episodeManager!.recordAction(action)
-
-        const view = getView()
-        if (view && this.gameEngine) {
-          const state = this.stateEncoder.extractState(view, 0, 0)
-          this.gameEngine.onAction(action, state)
+        const result = this.episodeManager!.recordAction(action)
+        if (result && this.observerModel) {
+          this.logToObserver(result.step, result.nextState)
         }
       })
     })
@@ -100,16 +81,17 @@ export default class RLAnalyticsPlugin extends Plugin {
       this.patchListener.attach(session)
     }
 
-    // Add menu items
+    // Menu items
     if (isAbstractMenuManager(rootModel)) {
-      rootModel.appendToMenu('Tools', {
-        label: 'Scavenger Hunt',
-        icon: ExploreIcon,
+      rootModel.appendToMenu('Add', {
+        label: 'RL Observer',
         onClick: () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const session = (rootModel as any).session
           if (session) {
-            session.addView('ScavengerHuntView', {})
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const view = session.addView('RLObserverView', {}) as any
+            this.observerModel = view
           }
         },
       })
@@ -121,36 +103,72 @@ export default class RLAnalyticsPlugin extends Plugin {
           this.exportManager?.downloadJSONL()
         },
       })
-
-      rootModel.appendToMenu('Tools', {
-        label: 'RL Analytics Status',
-        icon: AssessmentIcon,
-        onClick: () => {
-          const episodes = this.episodeManager?.getAllEpisodes() ?? []
-          const totalSteps = episodes.reduce(
-            (sum, ep) => sum + ep.steps.length,
-            0,
-          )
-          const completed = episodes.filter(
-            ep => ep.outcome === 'completed',
-          ).length
-          // eslint-disable-next-line no-alert
-          alert(
-            `RL Analytics Status\n\n` +
-              `Episodes: ${episodes.length}\n` +
-              `Completed: ${completed}\n` +
-              `Total steps: ${totalSteps}\n` +
-              `Buffer size: ${this.patchListener?.buffer.length ?? 0}`,
-          )
-        },
-      })
     }
 
-    // Auto-load scavenger tasks from URL parameter
-    this.loadTasksFromUrl(pluginManager)
+    // Auto-open observer if URL param set
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.has('rlObserver')) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const session = (rootModel as any).session
+        if (session) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const view = session.addView('RLObserverView', {}) as any
+          this.observerModel = view
+        }
+      }
+    }
   }
 
-  /** Public accessors for testing and external integration */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private logToObserver(step: any, state: any) {
+    if (!this.observerModel) {
+      return
+    }
+    const ts = new Date(step.timestamp).toISOString().slice(11, 23)
+    const action = step.action
+    const meta = step.actionMetadata
+    const zl = state.zoomLevel
+    const bp = state.bpPerPx.toFixed(2)
+    const ref = state.refName
+    const tracks = state.numTracks
+    const reward = step.reward.toFixed(3)
+    const eps = this.episodeManager?.currentEpisodeStepCount ?? 0
+
+    // Action detail
+    let detail = ''
+    if (meta.deltaPixels !== undefined) {
+      detail = ` Δ${Math.round(meta.deltaPixels as number)}px`
+    }
+    if (meta.zoomFactor !== undefined) {
+      detail = ` ×${(meta.zoomFactor as number).toFixed(2)}`
+    }
+    if (meta.trackId !== undefined) {
+      detail = ` ${meta.trackId}`
+    }
+    if (meta.widgetType !== undefined) {
+      detail = ` ${meta.widgetType}`
+    }
+
+    const trackFlags = [
+      state.hasReferenceSequence ? 'ref' : null,
+      state.hasGeneTrack ? 'gene' : null,
+      state.hasAlignmentTrack ? 'aln' : null,
+      state.hasVariantTrack ? 'var' : null,
+      state.hasQuantitativeTrack ? 'quant' : null,
+    ]
+      .filter(Boolean)
+      .join(',')
+
+    const line =
+      `${ts} [${zl.padEnd(8)}] ${action.padEnd(14)}${detail.padEnd(20)} ` +
+      `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
+      `r=${reward}  step=${eps}`
+
+    this.observerModel.addLogEntry(line)
+  }
+
+  /** Public accessors for testing */
   getExportManager() {
     return this.exportManager
   }
@@ -162,58 +180,9 @@ export default class RLAnalyticsPlugin extends Plugin {
   getPatchListener() {
     return this.patchListener
   }
-
-  getGameEngine() {
-    return this.gameEngine
-  }
-
-  private loadTasksFromUrl(pluginManager: PluginManager) {
-    if (typeof window === 'undefined') {
-      return
-    }
-    const urlParams = new URLSearchParams(window.location.search)
-    const tasksUrl = urlParams.get('scavengerTasks')
-    const workerId = urlParams.get('workerId') ?? ''
-    const assignmentId = urlParams.get('assignmentId') ?? ''
-
-    if (tasksUrl) {
-      void fetch(tasksUrl)
-        .then(r => r.json() as Promise<TaskSet>)
-        .then(taskSet => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const session = (pluginManager.rootModel as any)?.session
-          if (session) {
-            // Add as a view (not a widget)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const view = session.addView('ScavengerHuntView', {}) as any
-            view.loadTaskSet(taskSet)
-            if (workerId) {
-              view.setWorkerId(workerId)
-            }
-            if (assignmentId) {
-              view.setAssignmentId(assignmentId)
-            }
-
-            // Wire game engine
-            if (this.gameEngine) {
-              this.gameEngine.setModel(view)
-              this.gameEngine.loadTaskSet(taskSet)
-              const firstTask = view.currentTask
-              if (firstTask) {
-                view.startCurrentTask()
-                this.gameEngine.startTask(firstTask)
-              }
-            }
-          }
-        })
-        .catch(err => {
-          console.error('Failed to load scavenger hunt tasks:', err)
-        })
-    }
-  }
 }
 
 export { configSchema }
 export { ActionType } from './ActionLogger/ActionTypes.ts'
 export type { ClassifiedAction } from './ActionLogger/ActionTypes.ts'
-export type { BrowserState, Episode, Step, TaskConfig } from './RLPipeline/types.ts'
+export type { BrowserState, Episode, Step } from './RLPipeline/types.ts'

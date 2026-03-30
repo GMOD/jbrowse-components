@@ -1,34 +1,63 @@
 import type { ActionType } from '../ActionLogger/ActionTypes.ts'
 
+/**
+ * Full browser state observation for RL training.
+ *
+ * Designed for an AI agent that needs to understand:
+ * - Where the player is looking (viewport geometry + genomic coordinates)
+ * - What data is available (tracks, their types, display configs)
+ * - What zoom "semantic level" they're at (can they see bases? genes? chromosomes?)
+ * - How they're behaving temporally (speed, action diversity, oscillation)
+ * - What content is visible (feature count, variant density, coverage stats)
+ */
 export interface BrowserState {
-  // Viewport (continuous)
+  // Viewport geometry
   bpPerPx: number
   offsetPx: number
   viewWidthPx: number
 
-  // Genomic context
+  // Genomic coordinates
   assemblyName: string
   refName: string
   startBp: number
   endBp: number
   viewportBp: number
 
+  // Semantic zoom level (derived from bpPerPx)
+  // genome: full chromosome overview (>100 bp/px)
+  // region: multi-gene region (10-100 bp/px)
+  // gene: individual gene visible (1-10 bp/px)
+  // sequence: near base resolution (0.1-1 bp/px)
+  // basepair: individual nucleotides visible (<0.1 bp/px)
+  zoomLevel: 'genome' | 'region' | 'gene' | 'sequence' | 'basepair'
+
   // Track state
-  activeTracks: string[]
+  activeTracks: TrackInfo[]
   numTracks: number
 
-  // Task context (if scavenger hunt active)
-  taskActive: boolean
-  targetRefName?: string
-  targetStartBp?: number
-  targetEndBp?: number
-  distanceToTargetBp?: number
-  targetVisible?: boolean
-  targetFullyVisible?: boolean
+  // Content visibility (what an agent could "see")
+  visibleContentBlocks: number
+  hasReferenceSequence: boolean
+  hasGeneTrack: boolean
+  hasAlignmentTrack: boolean
+  hasVariantTrack: boolean
+  hasQuantitativeTrack: boolean
 
   // Temporal features
   timeSinceLastAction: number
   actionsInLast5Seconds: number
+  sessionDurationMs: number
+
+  // Behavioral features (rolling window)
+  actionCountsByType: Record<string, number>
+  uniqueRefNamesVisited: string[]
+  totalActionsThisSession: number
+}
+
+export interface TrackInfo {
+  trackId: string
+  trackType: string
+  displayType?: string
 }
 
 export interface Step {
@@ -43,7 +72,6 @@ export interface Step {
 
 export interface Episode {
   id: string
-  taskId?: string
   startTime: number
   endTime?: number
   steps: Step[]
@@ -51,75 +79,5 @@ export interface Episode {
   metadata: {
     workerId?: string
     assignmentId?: string
-    taskConfig?: TaskConfig
-  }
-}
-
-export interface NavigationConstraint {
-  requiredActionTypes?: string[]
-  forbiddenActionTypes?: { type: string; mode: 'soft' | 'hard' }[]
-  zoomRange?: { min?: number; max?: number }
-  minActions?: number
-  minActionDiversity?: number
-}
-
-export interface AnswerValidation {
-  mode: 'exact' | 'fuzzy' | 'keyword_set' | 'any_nonempty'
-  keywords?: string[]
-  minLength?: number
-  fuzzyThreshold?: number
-}
-
-export interface TaskConfig {
-  id: string
-  type:
-    | 'navigate'
-    | 'navigate_constrained'
-    | 'action_required'
-    | 'identify'
-    | 'compare'
-    | 'freeform'
-  tier: 0 | 1 | 2 | 3 | 4
-  title: string
-  description: string
-  hints: string[]
-  target?: {
-    assemblyName: string
-    refName: string
-    start: number
-    end: number
-  }
-  expectedAnswer?: string
-  answerChoices?: string[]
-  validationFn?: string
-  minTimeSeconds?: number
-  maxTimeSeconds?: number
-  requiredTracks?: string[]
-  completionReward: number
-  requiredAwards?: string[]
-  navigationConstraints?: NavigationConstraint
-  searchPenalty?: number
-  awardOnComplete?: string
-  answerValidation?: AnswerValidation
-  maxRetries?: number
-  autoAdvanceOnFail?: boolean
-  coaching?: {
-    message: string
-    highlightElement?: string
-  }
-}
-
-export interface AwardDefinition {
-  id: string
-  name: string
-  description: string
-  flavorText?: string
-  triggerCondition: {
-    type: 'action_type' | 'state_threshold' | 'task_complete' | 'keyword_match'
-    actionType?: string
-    stateField?: string
-    threshold?: number
-    comparator?: 'lt' | 'gt' | 'eq'
-    keywords?: string[]
   }
 }

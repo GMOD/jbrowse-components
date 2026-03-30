@@ -96,20 +96,11 @@ describe('EpisodeManager', () => {
     expect(typeof step.terminal).toBe('boolean')
   })
 
-  it('records task config in episode metadata', () => {
-    const taskConfig = {
-      id: 'task-1',
-      type: 'navigate' as const,
-      tier: 1 as const,
-      title: 'test',
-      description: 'test',
-      hints: [],
-      completionReward: 10,
-    }
-    manager.startEpisode(taskConfig)
+  it('episode has id and metadata', () => {
+    manager.startEpisode()
     manager.recordAction(makeAction())
     const episode = manager.getAllEpisodes()[0]!
-    expect(episode.taskId).toBe('task-1')
-    expect(episode.metadata.taskConfig).toEqual(taskConfig)
+    expect(episode.id).toBeTruthy()
+    expect(episode.metadata).toBeDefined()
   })
 })

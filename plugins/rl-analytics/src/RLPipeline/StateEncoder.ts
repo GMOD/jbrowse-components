@@ -1,12 +1,45 @@
-import type { BrowserState, TaskConfig } from './types.ts'
+import type { BrowserState, TrackInfo } from './types.ts'
+
+function classifyZoomLevel(
+  bpPerPx: number,
+): BrowserState['zoomLevel'] {
+  if (bpPerPx > 100) {
+    return 'genome'
+  }
+  if (bpPerPx > 10) {
+    return 'region'
+  }
+  if (bpPerPx > 1) {
+    return 'gene'
+  }
+  if (bpPerPx > 0.1) {
+    return 'sequence'
+  }
+  return 'basepair'
+}
+
+const TRACK_TYPE_CATEGORIES: Record<string, keyof Pick<
+  BrowserState,
+  'hasGeneTrack' | 'hasAlignmentTrack' | 'hasVariantTrack' | 'hasQuantitativeTrack'
+>> = {
+  FeatureTrack: 'hasGeneTrack',
+  AlignmentsTrack: 'hasAlignmentTrack',
+  VariantTrack: 'hasVariantTrack',
+  QuantitativeTrack: 'hasQuantitativeTrack',
+  ReferenceSequenceTrack: 'hasGeneTrack', // also counts
+}
 
 export default class StateEncoder {
+  private sessionStartTime = Date.now()
+  private refNamesVisited = new Set<string>()
+  private actionCounts: Record<string, number> = {}
+  private totalActions = 0
+
   extractState(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     view: any,
     lastActionTimestamp: number,
     recentActionCount: number,
-    taskConfig?: TaskConfig,
   ): BrowserState {
     let bpPerPx = 1
     let offsetPx = 0
@@ -16,10 +49,10 @@ export default class StateEncoder {
       offsetPx = view.offsetPx ?? 0
       viewWidthPx = view.width ?? 800
     } catch {
-      // Computed properties may throw if view hasn't been rendered yet
+      // computed properties may throw if view not rendered
     }
-    const viewportBp = bpPerPx * viewWidthPx
 
+    const viewportBp = bpPerPx * viewWidthPx
     const displayedRegions = view.displayedRegions ?? []
     const firstRegion = displayedRegions[0] ?? {
       assemblyName: '',
@@ -28,41 +61,55 @@ export default class StateEncoder {
       end: 0,
     }
 
+    const refName = firstRegion.refName || ''
+    if (refName) {
+      this.refNamesVisited.add(refName)
+    }
+
+    // Extract track info
     const tracks = view.tracks ?? []
-    const activeTracks: string[] = tracks.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (t: any) => t.configuration?.trackId ?? '',
-    )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const activeTracks: TrackInfo[] = tracks.map((t: any) => {
+      const trackId = t.configuration?.trackId ?? ''
+      const trackType = t.type ?? ''
+      const displays = t.displays ?? []
+      const displayType = displays[0]?.type ?? ''
+      return { trackId, trackType, displayType }
+    })
 
-    let taskActive = false
-    let distanceToTargetBp: number | undefined
-    let targetVisible: boolean | undefined
-    let targetFullyVisible: boolean | undefined
+    // Categorize tracks
+    let hasReferenceSequence = false
+    let hasGeneTrack = false
+    let hasAlignmentTrack = false
+    let hasVariantTrack = false
+    let hasQuantitativeTrack = false
 
-    if (taskConfig?.target) {
-      taskActive = true
-      const viewCenterBp =
-        firstRegion.start + viewportBp / 2
-      const targetCenter =
-        (taskConfig.target.start + taskConfig.target.end) / 2
-
-      if (firstRegion.refName === taskConfig.target.refName) {
-        distanceToTargetBp = targetCenter - viewCenterBp
+    for (const track of activeTracks) {
+      if (track.trackType === 'ReferenceSequenceTrack') {
+        hasReferenceSequence = true
       }
+      const cat = TRACK_TYPE_CATEGORIES[track.trackType]
+      if (cat === 'hasGeneTrack') {
+        hasGeneTrack = true
+      }
+      if (cat === 'hasAlignmentTrack') {
+        hasAlignmentTrack = true
+      }
+      if (cat === 'hasVariantTrack') {
+        hasVariantTrack = true
+      }
+      if (cat === 'hasQuantitativeTrack') {
+        hasQuantitativeTrack = true
+      }
+    }
 
-      const contentBlocks = view.dynamicBlocks?.contentBlocks ?? []
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      targetVisible = contentBlocks.some((block: any) =>
-        block.refName === taskConfig.target!.refName &&
-        block.start <= taskConfig.target!.end &&
-        block.end >= taskConfig.target!.start,
-      )
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      targetFullyVisible = contentBlocks.some((block: any) =>
-        block.refName === taskConfig.target!.refName &&
-        block.start <= taskConfig.target!.start &&
-        block.end >= taskConfig.target!.end,
-      )
+    // Content blocks
+    let visibleContentBlocks = 0
+    try {
+      visibleContentBlocks =
+        view.dynamicBlocks?.contentBlocks?.length ?? 0
+    } catch {
+      // may throw
     }
 
     return {
@@ -70,25 +117,36 @@ export default class StateEncoder {
       offsetPx,
       viewWidthPx,
       assemblyName: firstRegion.assemblyName,
-      refName: firstRegion.refName,
+      refName,
       startBp: firstRegion.start,
       endBp: firstRegion.end,
       viewportBp,
+      zoomLevel: classifyZoomLevel(bpPerPx),
       activeTracks,
       numTracks: activeTracks.length,
-      taskActive,
-      targetRefName: taskConfig?.target?.refName,
-      targetStartBp: taskConfig?.target?.start,
-      targetEndBp: taskConfig?.target?.end,
-      distanceToTargetBp,
-      targetVisible,
-      targetFullyVisible,
+      visibleContentBlocks,
+      hasReferenceSequence,
+      hasGeneTrack,
+      hasAlignmentTrack,
+      hasVariantTrack,
+      hasQuantitativeTrack,
       timeSinceLastAction:
         lastActionTimestamp > 0 ? Date.now() - lastActionTimestamp : 0,
       actionsInLast5Seconds: recentActionCount,
+      sessionDurationMs: Date.now() - this.sessionStartTime,
+      actionCountsByType: { ...this.actionCounts },
+      uniqueRefNamesVisited: [...this.refNamesVisited],
+      totalActionsThisSession: this.totalActions,
     }
   }
 
+  recordAction(actionType: string) {
+    this.actionCounts[actionType] =
+      (this.actionCounts[actionType] ?? 0) + 1
+    this.totalActions++
+  }
+
+  /** Numeric vector for RL training */
   encode(state: BrowserState): number[] {
     return [
       Math.log(state.bpPerPx),
@@ -96,19 +154,28 @@ export default class StateEncoder {
       state.viewWidthPx / 1000,
       state.viewportBp / 1e6,
       state.numTracks / 10,
-      state.taskActive ? 1 : 0,
-      state.distanceToTargetBp
-        ? Math.sign(state.distanceToTargetBp) *
-          Math.log1p(Math.abs(state.distanceToTargetBp))
-        : 0,
-      state.targetVisible ? 1 : 0,
-      state.targetFullyVisible ? 1 : 0,
+      // Zoom level as ordinal (0-4)
+      ['genome', 'region', 'gene', 'sequence', 'basepair'].indexOf(
+        state.zoomLevel,
+      ) / 4,
+      // Track type booleans
+      state.hasReferenceSequence ? 1 : 0,
+      state.hasGeneTrack ? 1 : 0,
+      state.hasAlignmentTrack ? 1 : 0,
+      state.hasVariantTrack ? 1 : 0,
+      state.hasQuantitativeTrack ? 1 : 0,
+      // Temporal
       Math.log1p(state.timeSinceLastAction),
       state.actionsInLast5Seconds / 10,
+      Math.log1p(state.sessionDurationMs / 1000),
+      state.totalActionsThisSession / 100,
+      // Spatial diversity
+      state.uniqueRefNamesVisited.length / 10,
+      state.visibleContentBlocks / 10,
     ]
   }
 
   get dimensions(): number {
-    return 11
+    return 17
   }
 }
