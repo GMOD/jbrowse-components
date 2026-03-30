@@ -68,8 +68,14 @@ export default class RLAnalyticsPlugin extends Plugin {
     this.patchListener.buffer.onDebouncedAction(action => {
       queueMicrotask(() => {
         const result = this.episodeManager!.recordAction(action)
-        if (result && this.observerModel) {
-          this.logToObserver(result.step, result.nextState)
+        if (this.observerModel) {
+          if (result) {
+            this.logToObserver(result.step, result.nextState)
+          } else {
+            this.observerModel.addLogEntry(
+              `${action.type} — no view for state extraction`,
+            )
+          }
         }
       })
     })

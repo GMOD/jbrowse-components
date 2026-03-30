@@ -830,10 +830,8 @@ function stateModelFactory() {
       self.height = Math.max(60, height);
     },
     addLogEntry(entry) {
-      self.logEntries.push(entry);
-      if (self.logEntries.length > self.maxLogEntries) {
-        self.logEntries = self.logEntries.slice(-self.maxLogEntries);
-      }
+      const entries = [...self.logEntries, entry];
+      self.logEntries = entries.length > self.maxLogEntries ? entries.slice(-self.maxLogEntries) : entries;
     },
     clearLog() {
       self.logEntries = [];
@@ -947,8 +945,14 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.patchListener.buffer.onDebouncedAction((action) => {
       queueMicrotask(() => {
         const result = this.episodeManager.recordAction(action);
-        if (result && this.observerModel) {
-          this.logToObserver(result.step, result.nextState);
+        if (this.observerModel) {
+          if (result) {
+            this.logToObserver(result.step, result.nextState);
+          } else {
+            this.observerModel.addLogEntry(
+              `${action.type} \u2014 no view for state extraction`
+            );
+          }
         }
       });
     });

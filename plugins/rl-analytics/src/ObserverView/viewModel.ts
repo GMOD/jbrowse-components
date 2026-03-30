@@ -21,10 +21,13 @@ export default function stateModelFactory() {
         self.height = Math.max(60, height)
       },
       addLogEntry(entry: string) {
-        self.logEntries.push(entry)
-        if (self.logEntries.length > self.maxLogEntries) {
-          self.logEntries = self.logEntries.slice(-self.maxLogEntries)
-        }
+        // Reassign to trigger MobX reactivity (volatile arrays don't
+        // react to push)
+        const entries = [...self.logEntries, entry]
+        self.logEntries =
+          entries.length > self.maxLogEntries
+            ? entries.slice(-self.maxLogEntries)
+            : entries
       },
       clearLog() {
         self.logEntries = []
