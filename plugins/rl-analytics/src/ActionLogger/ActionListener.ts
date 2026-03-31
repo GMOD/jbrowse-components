@@ -195,8 +195,9 @@ export default class ActionListener {
         meta.target = args[0]
         break
       case 'navToLocString':
-        // args[0] is the raw location string (e.g., "ctgA:1000-2000")
-        meta.searchText = args[0]
+        // args[0] may be a string ("ctgA:1000-2000") or parsed location object
+        meta.searchText = typeof args[0] === 'string' ? args[0] : undefined
+        meta.target = args[0]
         break
       case 'navToSearchString':
         // args[0] is {input, assembly} — input is the raw search text
@@ -232,10 +233,12 @@ export default class ActionListener {
       case 'redo':
         meta.operation = name
         break
-      case 'setColorScheme':
+      case 'setColorScheme': {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        meta.colorBy = (args[0] as any)?.type ?? args[0]
+        const colorArg = args[0] as any
+        meta.colorBy = colorArg?.type ?? (typeof colorArg === 'string' ? colorArg : JSON.stringify(colorArg))
         break
+      }
       case 'setSortedBy':
       case 'setSortedByAtPosition':
         meta.sortBy = args[0]

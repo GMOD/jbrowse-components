@@ -342,7 +342,8 @@ var ActionListener = class {
         meta.target = args[0];
         break;
       case "navToLocString":
-        meta.searchText = args[0];
+        meta.searchText = typeof args[0] === "string" ? args[0] : void 0;
+        meta.target = args[0];
         break;
       case "navToSearchString":
         meta.searchText = args[0]?.input ?? args[0];
@@ -376,9 +377,11 @@ var ActionListener = class {
       case "redo":
         meta.operation = name;
         break;
-      case "setColorScheme":
-        meta.colorBy = args[0]?.type ?? args[0];
+      case "setColorScheme": {
+        const colorArg = args[0];
+        meta.colorBy = colorArg?.type ?? (typeof colorArg === "string" ? colorArg : JSON.stringify(colorArg));
         break;
+      }
       case "setSortedBy":
       case "setSortedByAtPosition":
         meta.sortBy = args[0];
