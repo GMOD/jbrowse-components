@@ -9,40 +9,55 @@ from pathlib import Path
 import numpy as np
 
 ACTION_MAP = {
-    "ZOOM_IN": 0,
-    "ZOOM_OUT": 1,
-    "PAN_LEFT": 2,
-    "PAN_RIGHT": 3,
-    "SEARCH": 4,
-    "TOGGLE_TRACK": 5,
-    "OPEN_WIDGET": 6,
-    "CLOSE_WIDGET": 7,
-    "SELECT_FEATURE": 8,
-    "ADD_VIEW": 9,
-    "UNKNOWN": 10,
+    "ZOOM": 0,
+    "PAN": 1,
+    "NAV_TO": 2,
+    "SHOW_TRACK": 3,
+    "HIDE_TRACK": 4,
+    "REORDER_TRACK": 5,
+    "CONFIG_CHANGE": 6,
+    "OPEN_WIDGET": 7,
+    "BOOKMARK": 8,
+    "UNDO": 9,
+    "ADD_VIEW": 10,
+    "REMOVE_VIEW": 11,
+    "FLIP_VIEW": 12,
+    "OTHER": 13,
 }
+
+ZOOM_LEVELS = {"genome": 0, "region": 1, "gene": 2, "sequence": 3, "basepair": 4}
 
 
 def encode_state(obs: dict) -> list[float]:
-    """Encode a BrowserState observation dict into a numeric vector."""
+    """Encode a BrowserState observation dict into a numeric vector (21 dims)."""
     bp_per_px = obs.get("bpPerPx", 1.0)
-    distance = obs.get("distanceToTargetBp")
+    zoom_level = ZOOM_LEVELS.get(obs.get("zoomLevel", "gene"), 2)
     return [
         math.log(max(bp_per_px, 1e-10)),
         obs.get("offsetPx", 0) / 1000,
         obs.get("viewWidthPx", 800) / 1000,
         obs.get("viewportBp", 0) / 1e6,
         obs.get("numTracks", 0) / 10,
-        1.0 if obs.get("taskActive") else 0.0,
-        (
-            math.copysign(1, distance) * math.log1p(abs(distance))
-            if distance is not None
-            else 0.0
-        ),
-        1.0 if obs.get("targetVisible") else 0.0,
-        1.0 if obs.get("targetFullyVisible") else 0.0,
+        zoom_level / 4,
+        # Track type booleans
+        1.0 if obs.get("hasReferenceSequence") else 0.0,
+        1.0 if obs.get("hasGeneTrack") else 0.0,
+        1.0 if obs.get("hasAlignmentTrack") else 0.0,
+        1.0 if obs.get("hasVariantTrack") else 0.0,
+        1.0 if obs.get("hasQuantitativeTrack") else 0.0,
+        # Temporal
         math.log1p(obs.get("timeSinceLastAction", 0)),
         obs.get("actionsInLast5Seconds", 0) / 10,
+        math.log1p(obs.get("sessionDurationMs", 0) / 1000),
+        obs.get("totalActionsThisSession", 0) / 100,
+        # Spatial diversity
+        len(obs.get("uniqueRefNamesVisited", [])) / 10,
+        obs.get("visibleContentBlocks", 0) / 10,
+        # New fields
+        obs.get("viewportCenterBp", 0) / 1e6,
+        1.0 if obs.get("labelsVisible") else 0.0,
+        len(obs.get("openWidgets", [])) / 5,
+        len(obs.get("displayedRegions", [])) / 5,
     ]
 
 
@@ -58,7 +73,7 @@ def convert(jsonl_path: str, output_path: str) -> None:
         [encode_state(s["observation"]) for s in steps], dtype=np.float32
     )
     actions = np.array(
-        [ACTION_MAP.get(s["action"], ACTION_MAP["UNKNOWN"]) for s in steps],
+        [ACTION_MAP.get(s["action"], ACTION_MAP["OTHER"]) for s in steps],
         dtype=np.int64,
     )
     rewards = np.array([s["reward"] for s in steps], dtype=np.float32)
@@ -77,6 +92,7 @@ def convert(jsonl_path: str, output_path: str) -> None:
     print(f"Converted {len(steps)} steps to {output_path}")
     print(f"  Observations shape: {observations.shape}")
     print(f"  Actions shape: {actions.shape}")
+    print(f"  Action types: {dict(zip(*np.unique(actions, return_counts=True)))}")
     print(f"  Episodes: {terminals.sum() + timeouts.sum()}")
 
 

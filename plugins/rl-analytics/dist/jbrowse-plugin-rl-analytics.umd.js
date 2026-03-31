@@ -655,11 +655,22 @@ var StateEncoder = class {
     }
     const tracks = view.tracks ?? [];
     const activeTracks = tracks.map((t) => {
-      const trackId = t.configuration?.trackId ?? "";
+      const config = t.configuration;
+      const trackId = typeof config === "string" ? config : config?.trackId ?? "";
       const trackType = t.type ?? "";
       const displays = t.displays ?? [];
-      const displayType = displays[0]?.type ?? "";
-      return { trackId, trackType, displayType };
+      const display = displays[0];
+      const displayType = display?.type ?? "";
+      let height;
+      let colorScheme;
+      let sortedBy;
+      try {
+        height = display?.height;
+        colorScheme = display?.colorBy?.type ?? display?.colorScheme?.type;
+        sortedBy = display?.sortedBy?.type;
+      } catch {
+      }
+      return { trackId, trackType, displayType, height, colorScheme, sortedBy };
     });
     let hasReferenceSequence = false;
     let hasGeneTrack = false;
@@ -689,6 +700,24 @@ var StateEncoder = class {
       visibleContentBlocks = view.dynamicBlocks?.contentBlocks?.length ?? 0;
     } catch {
     }
+    const viewportCenterBp = firstRegion.start + viewportBp / 2;
+    const regions = displayedRegions.map((r) => ({
+      refName: r.refName ?? "",
+      start: r.start ?? 0,
+      end: r.end ?? 0
+    }));
+    const labelsVisible = bpPerPx < 10;
+    let openWidgets = [];
+    try {
+      const session = view?.session;
+      if (session?.activeWidgets) {
+        openWidgets = [...session.activeWidgets.values()].map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (w) => w.type ?? "unknown"
+        );
+      }
+    } catch {
+    }
     return {
       bpPerPx,
       offsetPx,
@@ -698,6 +727,8 @@ var StateEncoder = class {
       startBp: firstRegion.start,
       endBp: firstRegion.end,
       viewportBp,
+      viewportCenterBp,
+      displayedRegions: regions,
       zoomLevel: classifyZoomLevel(bpPerPx),
       activeTracks,
       numTracks: activeTracks.length,
@@ -707,6 +738,8 @@ var StateEncoder = class {
       hasAlignmentTrack,
       hasVariantTrack,
       hasQuantitativeTrack,
+      labelsVisible,
+      openWidgets,
       timeSinceLastAction: lastActionTimestamp > 0 ? Date.now() - lastActionTimestamp : 0,
       actionsInLast5Seconds: recentActionCount,
       sessionDurationMs: Date.now() - this.sessionStartTime,
@@ -744,11 +777,16 @@ var StateEncoder = class {
       state.totalActionsThisSession / 100,
       // Spatial diversity
       state.uniqueRefNamesVisited.length / 10,
-      state.visibleContentBlocks / 10
+      state.visibleContentBlocks / 10,
+      // New: viewport center, labels, widgets
+      state.viewportCenterBp / 1e6,
+      state.labelsVisible ? 1 : 0,
+      state.openWidgets.length / 5,
+      state.displayedRegions.length / 5
     ];
   }
   get dimensions() {
-    return 17;
+    return 21;
   }
 };
 

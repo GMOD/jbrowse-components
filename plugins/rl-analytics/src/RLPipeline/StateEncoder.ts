@@ -66,15 +66,26 @@ export default class StateEncoder {
       this.refNamesVisited.add(refName)
     }
 
-    // Extract track info
+    // Extract track info with display config
     const tracks = view.tracks ?? []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const activeTracks: TrackInfo[] = tracks.map((t: any) => {
-      const trackId = t.configuration?.trackId ?? ''
+      const config = t.configuration
+      const trackId = typeof config === 'string' ? config : config?.trackId ?? ''
       const trackType = t.type ?? ''
       const displays = t.displays ?? []
-      const displayType = displays[0]?.type ?? ''
-      return { trackId, trackType, displayType }
+      const display = displays[0]
+      const displayType = display?.type ?? ''
+      // Extract display config state
+      let height: number | undefined
+      let colorScheme: string | undefined
+      let sortedBy: string | undefined
+      try {
+        height = display?.height
+        colorScheme = display?.colorBy?.type ?? display?.colorScheme?.type
+        sortedBy = display?.sortedBy?.type
+      } catch { /* some getters may throw */ }
+      return { trackId, trackType, displayType, height, colorScheme, sortedBy }
     })
 
     // Categorize tracks
@@ -112,6 +123,35 @@ export default class StateEncoder {
       // may throw
     }
 
+    // Viewport center in bp
+    const viewportCenterBp = firstRegion.start + viewportBp / 2
+
+    // All displayed regions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const regions = displayedRegions.map((r: any) => ({
+      refName: r.refName ?? '',
+      start: r.start ?? 0,
+      end: r.end ?? 0,
+    }))
+
+    // Labels visible heuristic: feature labels typically appear below ~10 bp/px
+    const labelsVisible = bpPerPx < 10
+
+    // Open widgets
+    let openWidgets: string[] = []
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const session = (view as any)?.session
+      if (session?.activeWidgets) {
+        openWidgets = [...session.activeWidgets.values()].map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (w: any) => w.type ?? 'unknown',
+        )
+      }
+    } catch {
+      // session access may fail
+    }
+
     return {
       bpPerPx,
       offsetPx,
@@ -121,6 +161,8 @@ export default class StateEncoder {
       startBp: firstRegion.start,
       endBp: firstRegion.end,
       viewportBp,
+      viewportCenterBp,
+      displayedRegions: regions,
       zoomLevel: classifyZoomLevel(bpPerPx),
       activeTracks,
       numTracks: activeTracks.length,
@@ -130,6 +172,8 @@ export default class StateEncoder {
       hasAlignmentTrack,
       hasVariantTrack,
       hasQuantitativeTrack,
+      labelsVisible,
+      openWidgets,
       timeSinceLastAction:
         lastActionTimestamp > 0 ? Date.now() - lastActionTimestamp : 0,
       actionsInLast5Seconds: recentActionCount,
@@ -172,10 +216,15 @@ export default class StateEncoder {
       // Spatial diversity
       state.uniqueRefNamesVisited.length / 10,
       state.visibleContentBlocks / 10,
+      // New: viewport center, labels, widgets
+      state.viewportCenterBp / 1e6,
+      state.labelsVisible ? 1 : 0,
+      state.openWidgets.length / 5,
+      state.displayedRegions.length / 5,
     ]
   }
 
   get dimensions(): number {
-    return 17
+    return 21
   }
 }

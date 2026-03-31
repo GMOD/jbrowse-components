@@ -31,7 +31,13 @@ export interface BrowserState {
   // basepair: individual nucleotides visible (<0.1 bp/px)
   zoomLevel: 'genome' | 'region' | 'gene' | 'sequence' | 'basepair'
 
-  // Track state
+  // Viewport center in genomic coordinates (useful for distance calculations)
+  viewportCenterBp: number
+
+  // Displayed regions (for multi-region / multi-chromosome views)
+  displayedRegions: { refName: string; start: number; end: number }[]
+
+  // Track state (detailed)
   activeTracks: TrackInfo[]
   numTracks: number
 
@@ -42,6 +48,12 @@ export interface BrowserState {
   hasAlignmentTrack: boolean
   hasVariantTrack: boolean
   hasQuantitativeTrack: boolean
+
+  // Labels readable at current zoom? (heuristic: bpPerPx < ~10)
+  labelsVisible: boolean
+
+  // Open widgets (feature detail panels, etc.)
+  openWidgets: string[]
 
   // Temporal features
   timeSinceLastAction: number
@@ -58,6 +70,10 @@ export interface TrackInfo {
   trackId: string
   trackType: string
   displayType?: string
+  // Display configuration state (track-level)
+  height?: number
+  colorScheme?: string
+  sortedBy?: string
 }
 
 export interface Step {
