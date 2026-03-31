@@ -569,37 +569,6 @@ var ExportManager = class {
   }
 };
 
-// plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
-var RewardCalculator = class {
-  constructor() {
-    __publicField(this, "recentActions", []);
-  }
-  calculate(_prevState, action, _nextState) {
-    let reward = 0;
-    reward -= 0.01;
-    if (this.isOscillation(action)) {
-      reward -= 0.5;
-    }
-    return reward;
-  }
-  isOscillation(action) {
-    this.recentActions.push(action.type);
-    if (this.recentActions.length > 6) {
-      this.recentActions.shift();
-    }
-    if (this.recentActions.length >= 4) {
-      const last4 = this.recentActions.slice(-4);
-      if (last4[0] === last4[2] && last4[1] === last4[3] && last4[0] !== last4[1]) {
-        return true;
-      }
-    }
-    return false;
-  }
-  reset() {
-    this.recentActions = [];
-  }
-};
-
 // plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
 function classifyZoomLevel(bpPerPx) {
   if (bpPerPx > 100) {
@@ -798,7 +767,6 @@ var EpisodeManager = class {
     __publicField(this, "inactivityTimeout");
     __publicField(this, "inactivityTimer", null);
     __publicField(this, "stateEncoder", new StateEncoder());
-    __publicField(this, "rewardCalculator", new RewardCalculator());
     __publicField(this, "lastActionTimestamp", 0);
     __publicField(this, "recentActionTimestamps", []);
     __publicField(this, "cachedState", null);
@@ -814,7 +782,6 @@ var EpisodeManager = class {
     if (this.currentEpisode) {
       this.endEpisode("abandoned");
     }
-    this.rewardCalculator.reset();
     this.cachedState = null;
     this.currentEpisode = {
       id: crypto.randomUUID(),
@@ -853,17 +820,12 @@ var EpisodeManager = class {
       now,
       this.recentActionTimestamps.length
     );
-    const reward = this.rewardCalculator.calculate(
-      prevState,
-      action,
-      nextState
-    );
     const step = {
       timestamp: now,
       state: prevState,
       action: action.type,
       actionMetadata: action.metadata,
-      reward,
+      reward: 0,
       nextState,
       terminal: false
     };
@@ -1128,7 +1090,6 @@ var RLAnalyticsPlugin = class extends Plugin {
     const bp = state.bpPerPx.toFixed(2);
     const ref = state.refName;
     const tracks = state.numTracks;
-    const reward = step.reward.toFixed(3);
     const eps = this.episodeManager?.currentEpisodeStepCount ?? 0;
     let detail = "";
     if (meta.distance !== void 0) {
@@ -1191,7 +1152,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       state.hasVariantTrack ? "var" : null,
       state.hasQuantitativeTrack ? "quant" : null
     ].filter(Boolean).join(",");
-    const line = `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]${detail.padEnd(25)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  r=${reward}  #${eps}`;
+    const line = `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]${detail.padEnd(25)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  #${eps}`;
     this.observerModel.addLogEntry(line);
   }
   /** Resolve MST instance ID → config trackId using the live view */

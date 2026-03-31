@@ -1,6 +1,5 @@
 import type { ClassifiedAction } from '../ActionLogger/ActionTypes.ts'
 
-import RewardCalculator from './RewardCalculator.ts'
 import StateEncoder from './StateEncoder.ts'
 
 import type { BrowserState, Episode, Step } from './types.ts'
@@ -11,7 +10,6 @@ export default class EpisodeManager {
   private inactivityTimeout: number
   private inactivityTimer: ReturnType<typeof setInterval> | null = null
   stateEncoder = new StateEncoder()
-  private rewardCalculator = new RewardCalculator()
   private lastActionTimestamp = 0
   private recentActionTimestamps: number[] = []
   private cachedState: BrowserState | null = null
@@ -31,7 +29,6 @@ export default class EpisodeManager {
     if (this.currentEpisode) {
       this.endEpisode('abandoned')
     }
-    this.rewardCalculator.reset()
     this.cachedState = null
     this.currentEpisode = {
       id: crypto.randomUUID(),
@@ -80,18 +77,12 @@ export default class EpisodeManager {
       this.recentActionTimestamps.length,
     )
 
-    const reward = this.rewardCalculator.calculate(
-      prevState,
-      action,
-      nextState,
-    )
-
     const step: Step = {
       timestamp: now,
       state: prevState,
       action: action.type,
       actionMetadata: action.metadata,
-      reward,
+      reward: 0,
       nextState,
       terminal: false,
     }

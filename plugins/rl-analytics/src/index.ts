@@ -145,7 +145,6 @@ export default class RLAnalyticsPlugin extends Plugin {
     const bp = state.bpPerPx.toFixed(2)
     const ref = state.refName
     const tracks = state.numTracks
-    const reward = step.reward.toFixed(3)
     const eps = this.episodeManager?.currentEpisodeStepCount ?? 0
 
     let detail = ''
@@ -220,7 +219,7 @@ export default class RLAnalyticsPlugin extends Plugin {
       `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]` +
       `${detail.padEnd(25)} ` +
       `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
-      `r=${reward}  #${eps}`
+      `#${eps}`
 
     this.observerModel.addLogEntry(line)
   }
