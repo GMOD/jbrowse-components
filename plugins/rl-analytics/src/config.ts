@@ -26,6 +26,11 @@ const configSchema = ConfigurationSchema('RLAnalyticsPlugin', {
     defaultValue: false,
     description: 'Log unclassified MST actions (for debugging/discovery)',
   },
+  webhookUrl: {
+    type: 'string',
+    defaultValue: '',
+    description: 'URL to POST action data to in real-time (empty = disabled)',
+  },
 })
 
 export default configSchema

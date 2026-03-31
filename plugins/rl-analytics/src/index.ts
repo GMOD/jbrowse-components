@@ -14,17 +14,27 @@ import observerViewModelFactory from './ObserverView/viewModel.ts'
 import configSchema from './config.ts'
 
 import type { RLObserverViewModel } from './ObserverView/viewModel.ts'
-import type { Step } from './RLPipeline/types.ts'
-import type { BrowserState } from './RLPipeline/types.ts'
+import type { BrowserState, Step } from './RLPipeline/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+/** Module-level storage for test access — keyed by plugin instance */
+const testRefs = new WeakMap<
+  RLAnalyticsPlugin,
+  {
+    actionListener: ActionListener
+    episodeManager: EpisodeManager
+    exportManager: ExportManager
+  }
+>()
+
+interface SessionLike {
+  views?: { type: string }[]
+  addView?: (typeName: string, initialState: object) => unknown
+}
 
 export default class RLAnalyticsPlugin extends Plugin {
   name = 'RLAnalyticsPlugin'
   configurationSchema = configSchema
-
-  // These are re-created on each configure() call.
-  // Not stored as class fields to avoid stale singleton state.
-  // Instead, configure() wires everything via closures.
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => {
@@ -45,7 +55,7 @@ export default class RLAnalyticsPlugin extends Plugin {
       return
     }
 
-    // Read config values (fall back to defaults if config not available)
+    // Read config (safe fallback for tests)
     let bufferSize = 10000
     let debounceMs = 500
     let inactivityMs = 300_000
@@ -53,7 +63,8 @@ export default class RLAnalyticsPlugin extends Plugin {
     let logOther = false
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const conf = (rootModel as any).jbrowse?.configuration?.RLAnalyticsPlugin
+      const conf = (rootModel as any).jbrowse?.configuration
+        ?.RLAnalyticsPlugin
       if (conf) {
         bufferSize = getConf(conf, 'actionBufferSize') ?? bufferSize
         debounceMs = getConf(conf, 'debounceMs') ?? debounceMs
@@ -62,47 +73,59 @@ export default class RLAnalyticsPlugin extends Plugin {
         logOther = getConf(conf, 'logOtherActions') ?? logOther
       }
     } catch {
-      // config not available (e.g., in tests)
+      // config not available
     }
 
-    // Create subsystems (local variables, not class fields)
-    const actionListener = new ActionListener(bufferSize, debounceMs, logOther)
-    const episodeManager = new EpisodeManager(inactivityMs, maxEpisodes)
-    const exportManager = new ExportManager(episodeManager)
+    // Session accessor
+    const getSession = (): SessionLike | undefined =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (rootModel as any).session as SessionLike | undefined
 
-    // Session accessor — rootModel.session is the standard path
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const getSessionSafe = () => (rootModel as any).session as
-      | { views?: { type: string }[]; addView?: (t: string, o: object) => unknown }
-      | undefined
-
-    // View accessor — finds first LinearGenomeView
+    // View accessors
     const getLinearGenomeView = () => {
       try {
-        return getSessionSafe()?.views?.find(v => v.type === 'LinearGenomeView')
+        return getSession()?.views?.find(v => v.type === 'LinearGenomeView')
       } catch {
         return undefined
       }
     }
 
-    // Find observer view safely (may have been destroyed)
     const getObserverView = (): RLObserverViewModel | undefined => {
       try {
-        const view = getSessionSafe()?.views?.find(
+        const view = getSession()?.views?.find(
           v => v.type === 'RLObserverView',
         )
         if (view && isAlive(view)) {
           return view as unknown as RLObserverViewModel
         }
       } catch {
-        // view may be destroyed
+        // destroyed
       }
       return undefined
     }
 
+    // Create subsystems
+    const actionListener = new ActionListener(bufferSize, debounceMs, logOther)
+    const episodeManager = new EpisodeManager(inactivityMs, maxEpisodes)
+    const exportManager = new ExportManager(episodeManager)
+
     episodeManager.setViewAccessor(getLinearGenomeView)
 
-    // Connect debounced actions → episode recording + observer logging
+    // Wire webhook if configured
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const conf = (rootModel as any).jbrowse?.configuration?.RLAnalyticsPlugin
+      if (conf) {
+        const webhookUrl = getConf(conf, 'webhookUrl')
+        if (webhookUrl) {
+          exportManager.configureWebhook(webhookUrl)
+        }
+      }
+    } catch {
+      // config not available
+    }
+
+    // Wire debounced actions → episode recording + observer
     actionListener.buffer.onDebouncedAction(action => {
       setTimeout(() => {
         const result = episodeManager.recordAction(action)
@@ -126,17 +149,22 @@ export default class RLAnalyticsPlugin extends Plugin {
       }, 0)
     })
 
-    // Attach middleware to rootModel
-    actionListener.attach(rootModel)
+    // Attach middleware to SESSION (not rootModel) to limit scope.
+    // This intercepts actions on session and all its children (views, tracks,
+    // widgets) without intercepting root-level config/assembly actions.
+    const session = getSession()
+    if (session) {
+      actionListener.attach(session as Parameters<typeof actionListener.attach>[0])
+    }
 
     // Menu items
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu('Add', {
         label: 'Action Monitor',
         onClick: () => {
-          const session = getSessionSafe()
-          if (session?.addView) {
-            const view = session.addView('RLObserverView', {})
+          const s = getSession()
+          if (s?.addView) {
+            const view = s.addView('RLObserverView', {})
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(view as any).setDisplayName?.('Action Monitor')
           }
@@ -152,42 +180,39 @@ export default class RLAnalyticsPlugin extends Plugin {
       })
     }
 
-    // Auto-open observer if URL param set, or find existing
+    // Auto-open observer
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       if (params.has('rlObserver') && !getObserverView()) {
-        const session = getSessionSafe()
-        if (session?.addView) {
-          const view = session.addView('RLObserverView', {})
+        const s = getSession()
+        if (s?.addView) {
+          const view = s.addView('RLObserverView', {})
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(view as any).setDisplayName?.('Action Monitor')
         }
       }
     }
 
-    // Store for testing access (the only class-level state)
-    this._testRefs = { actionListener, episodeManager, exportManager }
+    // Store for test access (WeakMap, not class field)
+    testRefs.set(this, { actionListener, episodeManager, exportManager })
   }
 
-  // Test-only accessors — not part of the public API
-  private _testRefs: {
-    actionListener: ActionListener
-    episodeManager: EpisodeManager
-    exportManager: ExportManager
-  } | null = null
-
+  /** @internal test-only */
   getExportManager() {
-    return this._testRefs?.exportManager ?? null
+    return testRefs.get(this)?.exportManager ?? null
   }
+  /** @internal test-only */
   getEpisodeManager() {
-    return this._testRefs?.episodeManager ?? null
+    return testRefs.get(this)?.episodeManager ?? null
   }
+  /** @internal test-only */
   getActionListener() {
-    return this._testRefs?.actionListener ?? null
+    return testRefs.get(this)?.actionListener ?? null
   }
 }
 
-/** Format a step for the observer log */
+// ---- Helper functions (module-level, not on the class) ----
+
 function logToObserver(
   observer: RLObserverViewModel,
   step: Step,
@@ -266,24 +291,19 @@ function logToObserver(
     .filter(Boolean)
     .join(',')
 
-  const line =
+  observer.addLogEntry(
     `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]` +
-    `${detail.padEnd(25)} ` +
-    `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
-    `#${eps}`
-
-  observer.addLogEntry(line)
+      `${detail.padEnd(25)} ` +
+      `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
+      `#${eps}`,
+  )
 }
 
-/** Resolve MST instance ID → config trackId */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function resolveInstanceId(instanceId: string, getView: () => any): string {
   try {
     const view = getView()
-    if (!view?.tracks) {
-      return instanceId
-    }
-    for (const t of view.tracks) {
+    for (const t of view?.tracks ?? []) {
       if (t.id === instanceId) {
         try {
           const tid = t.configuration?.trackId
@@ -293,9 +313,8 @@ function resolveInstanceId(instanceId: string, getView: () => any): string {
         } catch {
           /* */
         }
-        const config = t.configuration
-        if (typeof config === 'string') {
-          return config
+        if (typeof t.configuration === 'string') {
+          return t.configuration
         }
         return instanceId
       }

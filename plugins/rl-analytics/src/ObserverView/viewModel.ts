@@ -1,5 +1,6 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -31,14 +32,22 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      logEntries: [] as string[],
+      // Use MobX observable array for reactivity without O(n) copy
+      logEntries: observable.array<string>([], { deep: false }),
     }))
-    .views(() => ({
+    .views(self => ({
       /**
        * #getter
        */
       menuItems(): MenuItem[] {
-        return []
+        return [
+          {
+            label: 'Clear log',
+            onClick: () => {
+              self.logEntries.clear()
+            },
+          },
+        ]
       },
     }))
     .actions(self => ({
@@ -52,19 +61,23 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       addLogEntry(entry: string) {
-        const entries = [...self.logEntries, entry]
-        self.logEntries =
-          entries.length > self.maxLogEntries
-            ? entries.slice(-self.maxLogEntries)
-            : entries
+        self.logEntries.push(entry)
+        if (self.logEntries.length > self.maxLogEntries) {
+          self.logEntries.splice(0, self.logEntries.length - self.maxLogEntries)
+        }
       },
       /**
        * #action
        */
       clearLog() {
-        self.logEntries = []
+        self.logEntries.clear()
       },
     }))
+    .postProcessSnapshot(snap => {
+      // Strip volatile log entries from serialized snapshots
+      const { ...rest } = snap
+      return rest
+    })
 }
 
 export type RLObserverViewModel = ReturnType<
