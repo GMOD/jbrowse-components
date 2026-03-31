@@ -14,6 +14,7 @@ export function layoutFeats(props: PreProcessedRenderArgs) {
 
   const heightPx = readConfObject(config, 'height')
   const displayMode = readConfObject(config, 'displayMode')
+  const maxClippingSize = readConfObject(config, 'maxClippingSize') as number
 
   // Sort features by start position for PileupLayout's built-in hint optimization,
   // but only when not using explicit sorting (which has its own order)
@@ -30,6 +31,7 @@ export function layoutFeats(props: PreProcessedRenderArgs) {
       showSoftClip,
       heightPx,
       displayMode,
+      maxClippingSize,
     })
 
     if (result) {
