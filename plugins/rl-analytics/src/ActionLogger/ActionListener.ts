@@ -14,9 +14,11 @@ const ACTION_MAP: Record<string, ActionType> = {
   // Navigation — zoom
   zoomTo: ActionType.ZOOM,
   setNewView: ActionType.ZOOM,
+  moveTo: ActionType.ZOOM, // rubberband zoom — calls zoomTo + scrollTo internally
 
-  // Navigation — pan (only horizontalScroll, not internal scrollTo)
+  // Navigation — pan
   horizontalScroll: ActionType.PAN,
+  scrollTo: ActionType.PAN,
 
   // Navigation — search/jump
   navTo: ActionType.NAV_TO,
@@ -122,6 +124,13 @@ export default class ActionListener {
         break
       case 'horizontalScroll':
         meta.distance = args[0]
+        break
+      case 'scrollTo':
+        meta.offsetPx = args[0]
+        break
+      case 'moveTo':
+        meta.start = args[0]
+        meta.end = args[1]
         break
       case 'navTo':
       case 'navToLocString':
