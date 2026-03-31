@@ -261,6 +261,9 @@ var ActionListener = class {
       if (call.parentActionEvent) {
         return result;
       }
+      if (call.name === "moveTrack" && call.args?.[0] === call.args?.[1]) {
+        return result;
+      }
       const actionType = ACTION_MAP[call.name];
       if (!actionType && !this.logOther) {
         return result;
