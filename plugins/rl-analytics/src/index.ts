@@ -94,6 +94,7 @@ export default class RLAnalyticsPlugin extends Plugin {
           if (session) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const view = session.addView('RLObserverView', {}) as any
+            view.setDisplayName('Action Monitor')
             this.observerModel = view
           }
         },
@@ -152,6 +153,9 @@ export default class RLAnalyticsPlugin extends Plugin {
     }
     if (meta.trackId !== undefined) {
       detail = ` ${meta.trackId}`
+      if (meta.direction) {
+        detail += ` ${meta.direction}`
+      }
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`
@@ -161,6 +165,12 @@ export default class RLAnalyticsPlugin extends Plugin {
     }
     if (meta.target !== undefined) {
       detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`
+    }
+    if (meta.operation !== undefined) {
+      detail = ` ${meta.operation}`
+    }
+    if (meta.highlight !== undefined) {
+      detail = ` bookmark`
     }
 
     const trackFlags = [

@@ -7,6 +7,7 @@ export enum ActionType {
   // Track management
   SHOW_TRACK = 'SHOW_TRACK',
   HIDE_TRACK = 'HIDE_TRACK',
+  REORDER_TRACK = 'REORDER_TRACK',
 
   // View management
   ADD_VIEW = 'ADD_VIEW',
@@ -18,6 +19,12 @@ export enum ActionType {
 
   // Widgets
   OPEN_WIDGET = 'OPEN_WIDGET',
+
+  // Bookmarks / highlights
+  BOOKMARK = 'BOOKMARK',
+
+  // Undo / redo
+  UNDO = 'UNDO',
 
   // Other
   OTHER = 'OTHER',

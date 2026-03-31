@@ -186,11 +186,14 @@ var ActionType = /* @__PURE__ */ ((ActionType2) => {
   ActionType2["NAV_TO"] = "NAV_TO";
   ActionType2["SHOW_TRACK"] = "SHOW_TRACK";
   ActionType2["HIDE_TRACK"] = "HIDE_TRACK";
+  ActionType2["REORDER_TRACK"] = "REORDER_TRACK";
   ActionType2["ADD_VIEW"] = "ADD_VIEW";
   ActionType2["REMOVE_VIEW"] = "REMOVE_VIEW";
   ActionType2["FLIP_VIEW"] = "FLIP_VIEW";
   ActionType2["CONFIG_CHANGE"] = "CONFIG_CHANGE";
   ActionType2["OPEN_WIDGET"] = "OPEN_WIDGET";
+  ActionType2["BOOKMARK"] = "BOOKMARK";
+  ActionType2["UNDO"] = "UNDO";
   ActionType2["OTHER"] = "OTHER";
   return ActionType2;
 })(ActionType || {});
@@ -216,6 +219,8 @@ var ACTION_MAP = {
   showTrack: "SHOW_TRACK" /* SHOW_TRACK */,
   toggleTrack: "SHOW_TRACK" /* SHOW_TRACK */,
   hideTrack: "HIDE_TRACK" /* HIDE_TRACK */,
+  moveTrackUp: "REORDER_TRACK" /* REORDER_TRACK */,
+  moveTrackDown: "REORDER_TRACK" /* REORDER_TRACK */,
   // View management
   addView: "ADD_VIEW" /* ADD_VIEW */,
   removeView: "REMOVE_VIEW" /* REMOVE_VIEW */,
@@ -229,7 +234,13 @@ var ACTION_MAP = {
   setHideHeaderOverview: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   setShowTrackOutlines: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   // Widgets
-  addWidget: "OPEN_WIDGET" /* OPEN_WIDGET */
+  addWidget: "OPEN_WIDGET" /* OPEN_WIDGET */,
+  // Bookmarks / highlights
+  addToHighlights: "BOOKMARK" /* BOOKMARK */,
+  removeHighlight: "BOOKMARK" /* BOOKMARK */,
+  // Undo / redo
+  undo: "UNDO" /* UNDO */,
+  redo: "UNDO" /* UNDO */
 };
 var ActionListener = class {
   constructor(bufferSize = 1e4, debounceMs = 500, logOther = false) {
@@ -298,6 +309,18 @@ var ActionListener = class {
         break;
       case "hideTrack":
         meta.trackId = args[0];
+        break;
+      case "moveTrackUp":
+      case "moveTrackDown":
+        meta.trackId = args[0];
+        meta.direction = name === "moveTrackUp" ? "up" : "down";
+        break;
+      case "addToHighlights":
+        meta.highlight = args[0];
+        break;
+      case "undo":
+      case "redo":
+        meta.operation = name;
         break;
       case "addView":
         meta.viewType = args[0];
@@ -945,6 +968,7 @@ var RLAnalyticsPlugin = class extends Plugin {
           const session = rootModel.session;
           if (session) {
             const view = session.addView("RLObserverView", {});
+            view.setDisplayName("Action Monitor");
             this.observerModel = view;
           }
         }
@@ -996,6 +1020,9 @@ var RLAnalyticsPlugin = class extends Plugin {
     }
     if (meta.trackId !== void 0) {
       detail = ` ${meta.trackId}`;
+      if (meta.direction) {
+        detail += ` ${meta.direction}`;
+      }
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;
@@ -1005,6 +1032,12 @@ var RLAnalyticsPlugin = class extends Plugin {
     }
     if (meta.target !== void 0) {
       detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`;
+    }
+    if (meta.operation !== void 0) {
+      detail = ` ${meta.operation}`;
+    }
+    if (meta.highlight !== void 0) {
+      detail = ` bookmark`;
     }
     const trackFlags = [
       state.hasReferenceSequence ? "ref" : null,
