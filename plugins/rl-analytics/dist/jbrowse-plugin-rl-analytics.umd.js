@@ -221,6 +221,9 @@ var ACTION_MAP = {
   hideTrack: "HIDE_TRACK" /* HIDE_TRACK */,
   moveTrackUp: "REORDER_TRACK" /* REORDER_TRACK */,
   moveTrackDown: "REORDER_TRACK" /* REORDER_TRACK */,
+  moveTrackToTop: "REORDER_TRACK" /* REORDER_TRACK */,
+  moveTrackToBottom: "REORDER_TRACK" /* REORDER_TRACK */,
+  moveTrack: "REORDER_TRACK" /* REORDER_TRACK */,
   // View management
   addView: "ADD_VIEW" /* ADD_VIEW */,
   removeView: "REMOVE_VIEW" /* REMOVE_VIEW */,
@@ -236,6 +239,7 @@ var ACTION_MAP = {
   // Widgets
   addWidget: "OPEN_WIDGET" /* OPEN_WIDGET */,
   // Bookmarks / highlights
+  addBookmark: "BOOKMARK" /* BOOKMARK */,
   addToHighlights: "BOOKMARK" /* BOOKMARK */,
   removeHighlight: "BOOKMARK" /* BOOKMARK */,
   // Undo / redo
@@ -315,8 +319,18 @@ var ActionListener = class {
         meta.trackId = args[0];
         meta.direction = name === "moveTrackUp" ? "up" : "down";
         break;
+      case "addBookmark":
       case "addToHighlights":
         meta.highlight = args[0];
+        break;
+      case "moveTrack":
+        meta.movingId = args[0];
+        meta.targetId = args[1];
+        break;
+      case "moveTrackToTop":
+      case "moveTrackToBottom":
+        meta.trackId = args[0];
+        meta.direction = name === "moveTrackToTop" ? "top" : "bottom";
         break;
       case "undo":
       case "redo":
@@ -967,8 +981,9 @@ var RLAnalyticsPlugin = class extends Plugin {
         onClick: () => {
           const session = rootModel.session;
           if (session) {
-            const view = session.addView("RLObserverView", {});
-            view.setDisplayName("Action Monitor");
+            const view = session.addView("RLObserverView", {
+              displayName: "Action Monitor"
+            });
             this.observerModel = view;
           }
         }

@@ -93,8 +93,9 @@ export default class RLAnalyticsPlugin extends Plugin {
           const session = (rootModel as any).session
           if (session) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const view = session.addView('RLObserverView', {}) as any
-            view.setDisplayName('Action Monitor')
+            const view = session.addView('RLObserverView', {
+              displayName: 'Action Monitor',
+            }) as any
             this.observerModel = view
           }
         },

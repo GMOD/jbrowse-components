@@ -34,6 +34,9 @@ const ACTION_MAP: Record<string, ActionType> = {
   hideTrack: ActionType.HIDE_TRACK,
   moveTrackUp: ActionType.REORDER_TRACK,
   moveTrackDown: ActionType.REORDER_TRACK,
+  moveTrackToTop: ActionType.REORDER_TRACK,
+  moveTrackToBottom: ActionType.REORDER_TRACK,
+  moveTrack: ActionType.REORDER_TRACK,
 
   // View management
   addView: ActionType.ADD_VIEW,
@@ -53,6 +56,7 @@ const ACTION_MAP: Record<string, ActionType> = {
   addWidget: ActionType.OPEN_WIDGET,
 
   // Bookmarks / highlights
+  addBookmark: ActionType.BOOKMARK,
   addToHighlights: ActionType.BOOKMARK,
   removeHighlight: ActionType.BOOKMARK,
 
@@ -160,8 +164,18 @@ export default class ActionListener {
         meta.trackId = args[0]
         meta.direction = name === 'moveTrackUp' ? 'up' : 'down'
         break
+      case 'addBookmark':
       case 'addToHighlights':
         meta.highlight = args[0]
+        break
+      case 'moveTrack':
+        meta.movingId = args[0]
+        meta.targetId = args[1]
+        break
+      case 'moveTrackToTop':
+      case 'moveTrackToBottom':
+        meta.trackId = args[0]
+        meta.direction = name === 'moveTrackToTop' ? 'top' : 'bottom'
         break
       case 'undo':
       case 'redo':
