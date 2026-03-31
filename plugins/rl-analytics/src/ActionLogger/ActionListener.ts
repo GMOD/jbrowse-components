@@ -107,7 +107,7 @@ export default class ActionListener {
         timestamp: Date.now(),
         sourceAction: call.name,
         path: '',
-        metadata: this.extractMetadata(call.name, call.args ?? []),
+        metadata: this.extractMetadata(call.name, call.args ?? [], call.tree),
       }
 
       this.buffer.push(classified)
@@ -123,9 +123,24 @@ export default class ActionListener {
     })
   }
 
+  /** Resolve an MST instance ID to a config trackId using the view's track list */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private resolveTrackId(instanceId: string, tree: any): string {
+    try {
+      const tracks = tree?.tracks ?? []
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const track = tracks.find((t: any) => t.id === instanceId)
+      return track?.configuration?.trackId ?? instanceId
+    } catch {
+      return instanceId
+    }
+  }
+
   private extractMetadata(
     name: string,
     args: unknown[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tree?: any,
   ): Record<string, unknown> {
     const meta: Record<string, unknown> = {}
 
@@ -170,8 +185,8 @@ export default class ActionListener {
         meta.highlight = args[0]
         break
       case 'moveTrack':
-        meta.movingId = args[0]
-        meta.targetId = args[1]
+        meta.movingTrack = this.resolveTrackId(args[0] as string, tree)
+        meta.targetTrack = this.resolveTrackId(args[1] as string, tree)
         break
       case 'moveTrackToTop':
       case 'moveTrackToBottom':

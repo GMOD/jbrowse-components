@@ -270,7 +270,7 @@ var ActionListener = class {
         timestamp: Date.now(),
         sourceAction: call.name,
         path: "",
-        metadata: this.extractMetadata(call.name, call.args ?? [])
+        metadata: this.extractMetadata(call.name, call.args ?? [], call.tree)
       };
       this.buffer.push(classified);
       for (const cb of this.callbacks) {
@@ -282,7 +282,18 @@ var ActionListener = class {
       return result;
     });
   }
-  extractMetadata(name, args) {
+  /** Resolve an MST instance ID to a config trackId using the view's track list */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resolveTrackId(instanceId, tree) {
+    try {
+      const tracks = tree?.tracks ?? [];
+      const track = tracks.find((t) => t.id === instanceId);
+      return track?.configuration?.trackId ?? instanceId;
+    } catch {
+      return instanceId;
+    }
+  }
+  extractMetadata(name, args, tree) {
     const meta = {};
     switch (name) {
       case "zoomTo":
@@ -324,8 +335,8 @@ var ActionListener = class {
         meta.highlight = args[0];
         break;
       case "moveTrack":
-        meta.movingId = args[0];
-        meta.targetId = args[1];
+        meta.movingTrack = this.resolveTrackId(args[0], tree);
+        meta.targetTrack = this.resolveTrackId(args[1], tree);
         break;
       case "moveTrackToTop":
       case "moveTrackToBottom":
@@ -1052,8 +1063,8 @@ var RLAnalyticsPlugin = class extends Plugin {
         detail += ` ${meta.direction}`;
       }
     }
-    if (meta.movingId !== void 0) {
-      detail = ` reorder`;
+    if (meta.movingTrack !== void 0) {
+      detail = ` ${meta.movingTrack} \u2192 before ${meta.targetTrack}`;
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;

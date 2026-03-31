@@ -170,8 +170,8 @@ export default class RLAnalyticsPlugin extends Plugin {
         detail += ` ${meta.direction}`
       }
     }
-    if (meta.movingId !== undefined) {
-      detail = ` reorder`
+    if (meta.movingTrack !== undefined) {
+      detail = ` ${meta.movingTrack} → before ${meta.targetTrack}`
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`
