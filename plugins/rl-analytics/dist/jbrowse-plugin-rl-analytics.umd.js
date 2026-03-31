@@ -261,9 +261,6 @@ var ActionListener = class {
       if (call.parentActionEvent) {
         return result;
       }
-      if (call.name === "moveTrack" && call.args?.[0] === call.args?.[1]) {
-        return result;
-      }
       const actionType = ACTION_MAP[call.name];
       if (!actionType && !this.logOther) {
         return result;
@@ -1085,11 +1082,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     if (meta.movingId !== void 0) {
       const from = this.resolveInstanceId(meta.movingId);
       const to = this.resolveInstanceId(meta.targetId);
-      if (from === to) {
-        detail = ` ${from} (${String(meta.movingId).slice(0, 6)}\u2192${String(meta.targetId).slice(0, 6)})`;
-      } else {
-        detail = ` ${from} \u2192 before ${to}`;
-      }
+      detail = from === to ? ` ${from}` : ` ${from} \u2192 ${to}`;
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;

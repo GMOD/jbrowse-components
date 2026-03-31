@@ -97,11 +97,6 @@ export default class ActionListener {
         return result
       }
 
-      // Skip no-op moveTrack (drag start fires moveTrack(id, id))
-      if (call.name === 'moveTrack' && call.args?.[0] === call.args?.[1]) {
-        return result
-      }
-
       const actionType = ACTION_MAP[call.name]
       if (!actionType && !this.logOther) {
         return result
