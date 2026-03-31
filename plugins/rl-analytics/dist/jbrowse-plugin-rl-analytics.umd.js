@@ -214,6 +214,7 @@ var ACTION_MAP = {
   navToMultiple: "NAV_TO" /* NAV_TO */,
   // Track management
   showTrack: "SHOW_TRACK" /* SHOW_TRACK */,
+  toggleTrack: "SHOW_TRACK" /* SHOW_TRACK */,
   hideTrack: "HIDE_TRACK" /* HIDE_TRACK */,
   // View management
   addView: "ADD_VIEW" /* ADD_VIEW */,
@@ -244,9 +245,6 @@ var ActionListener = class {
       const result = next(call);
       if (call.parentActionEvent) {
         return result;
-      }
-      if (!call.name.startsWith("set") && call.name !== "addUndoState" && call.name !== "fetchSessionMetadata" && call.name !== "setSavedSessionMetadata") {
-        console.log(`[rl-analytics] TOP: ${call.name}`, call.args?.slice(0, 2));
       }
       const actionType = ACTION_MAP[call.name];
       if (!actionType && !this.logOther) {
@@ -295,6 +293,7 @@ var ActionListener = class {
         meta.target = args[0];
         break;
       case "showTrack":
+      case "toggleTrack":
         meta.trackId = args[0];
         break;
       case "hideTrack":

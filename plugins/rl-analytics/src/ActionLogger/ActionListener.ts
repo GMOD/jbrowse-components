@@ -30,6 +30,7 @@ const ACTION_MAP: Record<string, ActionType> = {
 
   // Track management
   showTrack: ActionType.SHOW_TRACK,
+  toggleTrack: ActionType.SHOW_TRACK,
   hideTrack: ActionType.HIDE_TRACK,
 
   // View management
@@ -80,12 +81,6 @@ export default class ActionListener {
       // Only capture top-level actions (not sub-actions like scrollTo inside zoomTo)
       if (call.parentActionEvent) {
         return result
-      }
-
-      // Temporary: log all top-level actions to find track-add action name
-      if (!call.name.startsWith('set') && call.name !== 'addUndoState' && call.name !== 'fetchSessionMetadata' && call.name !== 'setSavedSessionMetadata') {
-        // eslint-disable-next-line no-console
-        console.log(`[rl-analytics] TOP: ${call.name}`, call.args?.slice(0, 2))
       }
 
       const actionType = ACTION_MAP[call.name]
@@ -144,6 +139,7 @@ export default class ActionListener {
         meta.target = args[0]
         break
       case 'showTrack':
+      case 'toggleTrack':
         meta.trackId = args[0]
         break
       case 'hideTrack':
