@@ -258,6 +258,12 @@ export default class PileupLayout<T> implements BaseLayout<T> {
       this.rowMaxEnd[rowIdx] = maxEnd
     }
 
+    for (const [id, rect] of this.rectangles) {
+      if (rect.l >= left && rect.r <= right) {
+        this.rectangles.delete(id)
+      }
+    }
+
     // Reset hint when discarding
     this.lastLeft = -Infinity
     this.lastRow = 0

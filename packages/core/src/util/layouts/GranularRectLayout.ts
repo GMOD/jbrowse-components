@@ -494,6 +494,27 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     for (const row of bitmap) {
       row.discardRange(pLeft, pRight)
     }
+    // Drop layout entries for features fully inside the discarded span so we
+    // release references to feature data (alignments, etc.). Rows alone do not
+    // clear this.rectangles. Only fully contained rects: partial overlaps still
+    // have bitmap intervals trimmed by LayoutRow and must keep this entry until
+    // a later discard. See #4844 / #4860.
+    for (const [id, rect] of this.rectangles) {
+      if (rect.l >= pLeft && rect.r <= pRight) {
+        this.rectangles.delete(id)
+      }
+    }
+    this.recomputeTotalHeight()
+  }
+
+  private recomputeTotalHeight() {
+    let max = 0
+    for (const rect of this.rectangles.values()) {
+      if (rect.top !== null) {
+        max = Math.max(max, rect.top + rect.h)
+      }
+    }
+    this.pTotalHeight = max
   }
 
   hasSeen(id: string) {

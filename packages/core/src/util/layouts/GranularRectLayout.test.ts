@@ -94,6 +94,8 @@ test('discards regions', () => {
   l.discardRange(0, 220000)
   // @ts-expect-error
   expect(l.bitmap[0].intervals.length).toBe(0)
+  // @ts-expect-error — rectangle map should not retain discarded features
+  expect(l.rectangles.size).toBe(0)
 })
 
 // see issue #486
