@@ -271,9 +271,8 @@ var ActionListener = class {
     this.disposer = addMiddleware(target, (call, next) => {
       const result = next(call);
       if (call.parentActionEvent) {
-        if (call.name === "addBookmark" || call.name === "addToHighlights") {
-          console.log("[rl-analytics] bookmark sub-action, parent:", call.parentActionEvent?.name);
-        } else {
+        const isBookmark = call.name === "addBookmark" || call.name === "addToHighlights";
+        if (!isBookmark) {
           return result;
         }
       }
