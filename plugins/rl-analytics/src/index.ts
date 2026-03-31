@@ -93,9 +93,8 @@ export default class RLAnalyticsPlugin extends Plugin {
           const session = (rootModel as any).session
           if (session) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const view = session.addView('RLObserverView', {
-              displayName: 'Action Monitor',
-            }) as any
+            const view = session.addView('RLObserverView', {}) as any
+            try { view.setDisplayName('Action Monitor') } catch { /* */ }
             this.observerModel = view
           }
         },
@@ -146,8 +145,15 @@ export default class RLAnalyticsPlugin extends Plugin {
     } else if (meta.offsetPx !== undefined) {
       detail = ` @${Math.round(meta.offsetPx as number)}px`
     }
-    if (meta.start !== undefined && meta.end !== undefined) {
-      detail = ` ${Math.round(meta.start as number)}-${Math.round(meta.end as number)}`
+    if (meta.startOffset !== undefined) {
+      // BpOffset objects from moveTo
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const s = meta.startOffset as any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const e = meta.endOffset as any
+      if (s?.refName) {
+        detail = ` ${s.refName}`
+      }
     }
     if (meta.bpPerPx !== undefined) {
       detail += ` → ${(meta.bpPerPx as number).toFixed(2)}bp/px`
@@ -157,6 +163,9 @@ export default class RLAnalyticsPlugin extends Plugin {
       if (meta.direction) {
         detail += ` ${meta.direction}`
       }
+    }
+    if (meta.movingId !== undefined) {
+      detail = ` ${meta.movingId} → ${meta.targetId}`
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`

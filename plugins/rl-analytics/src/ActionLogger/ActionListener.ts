@@ -144,8 +144,9 @@ export default class ActionListener {
         meta.offsetPx = args[0]
         break
       case 'moveTo':
-        meta.start = args[0]
-        meta.end = args[1]
+        // args are BpOffset objects: {refName, index, offset}
+        meta.startOffset = args[0]
+        meta.endOffset = args[1]
         break
       case 'navTo':
       case 'navToLocString':

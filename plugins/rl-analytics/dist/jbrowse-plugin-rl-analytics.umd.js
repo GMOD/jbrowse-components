@@ -299,8 +299,8 @@ var ActionListener = class {
         meta.offsetPx = args[0];
         break;
       case "moveTo":
-        meta.start = args[0];
-        meta.end = args[1];
+        meta.startOffset = args[0];
+        meta.endOffset = args[1];
         break;
       case "navTo":
       case "navToLocString":
@@ -981,9 +981,11 @@ var RLAnalyticsPlugin = class extends Plugin {
         onClick: () => {
           const session = rootModel.session;
           if (session) {
-            const view = session.addView("RLObserverView", {
-              displayName: "Action Monitor"
-            });
+            const view = session.addView("RLObserverView", {});
+            try {
+              view.setDisplayName("Action Monitor");
+            } catch {
+            }
             this.observerModel = view;
           }
         }
@@ -1027,8 +1029,12 @@ var RLAnalyticsPlugin = class extends Plugin {
     } else if (meta.offsetPx !== void 0) {
       detail = ` @${Math.round(meta.offsetPx)}px`;
     }
-    if (meta.start !== void 0 && meta.end !== void 0) {
-      detail = ` ${Math.round(meta.start)}-${Math.round(meta.end)}`;
+    if (meta.startOffset !== void 0) {
+      const s = meta.startOffset;
+      const e = meta.endOffset;
+      if (s?.refName) {
+        detail = ` ${s.refName}`;
+      }
     }
     if (meta.bpPerPx !== void 0) {
       detail += ` \u2192 ${meta.bpPerPx.toFixed(2)}bp/px`;
@@ -1038,6 +1044,9 @@ var RLAnalyticsPlugin = class extends Plugin {
       if (meta.direction) {
         detail += ` ${meta.direction}`;
       }
+    }
+    if (meta.movingId !== void 0) {
+      detail = ` ${meta.movingId} \u2192 ${meta.targetId}`;
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;
