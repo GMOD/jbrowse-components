@@ -952,6 +952,8 @@ var RLAnalyticsPlugin = class extends Plugin {
     __publicField(this, "episodeManager", null);
     __publicField(this, "exportManager", null);
     __publicField(this, "observerModel", null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    __publicField(this, "getView", null);
   }
   install(pluginManager) {
     pluginManager.addViewType(() => {
@@ -983,6 +985,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       }
       return session2.views.find((v) => v.type === "LinearGenomeView");
     };
+    this.getView = getView;
     this.episodeManager.setViewAccessor(getView);
     this.actionListener.buffer.onDebouncedAction((action) => {
       queueMicrotask(() => {
@@ -1077,7 +1080,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       }
     }
     if (meta.movingTrack !== void 0) {
-      detail = ` ${meta.movingTrack} \u2192 before ${meta.targetTrack}`;
+      detail = ` ${this.resolveInstanceId(meta.movingTrack)} \u2192 before ${this.resolveInstanceId(meta.targetTrack)}`;
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;
@@ -1103,6 +1106,28 @@ var RLAnalyticsPlugin = class extends Plugin {
     ].filter(Boolean).join(",");
     const line = `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]${detail.padEnd(25)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  r=${reward}  #${eps}`;
     this.observerModel.addLogEntry(line);
+  }
+  /** Resolve MST instance ID → config trackId using the live view */
+  resolveInstanceId(instanceId) {
+    try {
+      const view = this.getView?.();
+      if (!view?.tracks) {
+        return instanceId;
+      }
+      for (const t of view.tracks) {
+        if (t.id === instanceId) {
+          const config = t.configuration;
+          if (typeof config === "string") {
+            return config;
+          }
+          if (config?.trackId) {
+            return String(config.trackId);
+          }
+        }
+      }
+    } catch {
+    }
+    return instanceId;
   }
   /** Public accessors for testing */
   getExportManager() {

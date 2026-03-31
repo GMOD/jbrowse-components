@@ -22,6 +22,8 @@ export default class RLAnalyticsPlugin extends Plugin {
   private episodeManager: EpisodeManager | null = null
   private exportManager: ExportManager | null = null
   private observerModel: RLObserverViewModel | null = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getView: (() => any) | null = null
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => {
@@ -62,6 +64,7 @@ export default class RLAnalyticsPlugin extends Plugin {
       return session.views.find((v: any) => v.type === 'LinearGenomeView')
     }
 
+    this.getView = getView
     this.episodeManager.setViewAccessor(getView)
 
     // Connect debounced actions → episode recording + observer logging
@@ -171,7 +174,7 @@ export default class RLAnalyticsPlugin extends Plugin {
       }
     }
     if (meta.movingTrack !== undefined) {
-      detail = ` ${meta.movingTrack} → before ${meta.targetTrack}`
+      detail = ` ${this.resolveInstanceId(meta.movingTrack as string)} → before ${this.resolveInstanceId(meta.targetTrack as string)}`
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`
@@ -206,6 +209,30 @@ export default class RLAnalyticsPlugin extends Plugin {
       `r=${reward}  #${eps}`
 
     this.observerModel.addLogEntry(line)
+  }
+
+  /** Resolve MST instance ID → config trackId using the live view */
+  private resolveInstanceId(instanceId: string): string {
+    try {
+      const view = this.getView?.()
+      if (!view?.tracks) {
+        return instanceId
+      }
+      for (const t of view.tracks) {
+        if (t.id === instanceId) {
+          const config = t.configuration
+          if (typeof config === 'string') {
+            return config
+          }
+          if (config?.trackId) {
+            return String(config.trackId)
+          }
+        }
+      }
+    } catch {
+      // fall through
+    }
+    return instanceId
   }
 
   /** Public accessors for testing */
