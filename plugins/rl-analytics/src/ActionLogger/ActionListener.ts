@@ -1,9 +1,9 @@
-import { onAction } from '@jbrowse/mobx-state-tree'
+import { addMiddleware } from '@jbrowse/mobx-state-tree'
 
 import ActionBuffer from './ActionBuffer.ts'
 import { ActionType, type ClassifiedAction } from './ActionTypes.ts'
 
-import type { IAnyStateTreeNode, ISerializedActionCall } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export type ActionCallback = (action: ClassifiedAction) => void
 
@@ -68,20 +68,29 @@ export default class ActionListener {
   }
 
   attach(target: IAnyStateTreeNode) {
-    this.disposer = onAction(target, (call: ISerializedActionCall) => {
-      const actionType = ACTION_MAP[call.name]
+    // addMiddleware intercepts ALL actions in the entire MST tree,
+    // including child nodes (views, tracks, etc.) — unlike onAction
+    // which only fires for the target node itself.
+    this.disposer = addMiddleware(target, (call, next) => {
+      // Always let the action proceed first
+      const result = next(call)
 
-      // Skip unknown actions unless logOther is enabled
+      // Only capture top-level actions (not sub-actions like scrollTo inside zoomTo)
+      if (call.parentActionEvent) {
+        return result
+      }
+
+      const actionType = ACTION_MAP[call.name]
       if (!actionType && !this.logOther) {
-        return
+        return result
       }
 
       const classified: ClassifiedAction = {
         type: actionType ?? ActionType.OTHER,
         timestamp: Date.now(),
         sourceAction: call.name,
-        path: call.path ?? '',
-        metadata: this.extractMetadata(call),
+        path: '',
+        metadata: this.extractMetadata(call.name, call.args ?? []),
       }
 
       this.buffer.push(classified)
@@ -92,16 +101,18 @@ export default class ActionListener {
           // don't break the listener
         }
       }
+
+      return result
     })
   }
 
   private extractMetadata(
-    call: ISerializedActionCall,
+    name: string,
+    args: unknown[],
   ): Record<string, unknown> {
-    const args = call.args ?? []
     const meta: Record<string, unknown> = {}
 
-    switch (call.name) {
+    switch (name) {
       case 'zoomTo':
         meta.bpPerPx = args[0]
         break

@@ -88,7 +88,7 @@ var {isAbstractMenuManager} = __jbx("@jbrowse/core/util");
 var SaveAltIcon = null;
 
 // plugins/rl-analytics/src/ActionLogger/ActionListener.ts
-var {onAction} = __jbx("@jbrowse/mobx-state-tree");
+var {addMiddleware} = __jbx("@jbrowse/mobx-state-tree");
 
 // plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
@@ -237,17 +237,21 @@ var ActionListener = class {
     this.logOther = logOther;
   }
   attach(target) {
-    this.disposer = onAction(target, (call) => {
+    this.disposer = addMiddleware(target, (call, next) => {
+      const result = next(call);
+      if (call.parentActionEvent) {
+        return result;
+      }
       const actionType = ACTION_MAP[call.name];
       if (!actionType && !this.logOther) {
-        return;
+        return result;
       }
       const classified = {
         type: actionType ?? "OTHER" /* OTHER */,
         timestamp: Date.now(),
         sourceAction: call.name,
-        path: call.path ?? "",
-        metadata: this.extractMetadata(call)
+        path: "",
+        metadata: this.extractMetadata(call.name, call.args ?? [])
       };
       this.buffer.push(classified);
       for (const cb of this.callbacks) {
@@ -256,12 +260,12 @@ var ActionListener = class {
         } catch {
         }
       }
+      return result;
     });
   }
-  extractMetadata(call) {
-    const args = call.args ?? [];
+  extractMetadata(name, args) {
     const meta = {};
-    switch (call.name) {
+    switch (name) {
       case "zoomTo":
         meta.bpPerPx = args[0];
         break;
