@@ -108,7 +108,14 @@ export default class ActionListener {
 
       // Only capture top-level actions (not sub-actions like scrollTo inside zoomTo)
       if (call.parentActionEvent) {
-        return result
+        // But always log bookmarks even as sub-actions
+        if (call.name === 'addBookmark' || call.name === 'addToHighlights') {
+          // eslint-disable-next-line no-console
+          console.log('[rl-analytics] bookmark sub-action, parent:', call.parentActionEvent?.name)
+          // fall through to capture
+        } else {
+          return result
+        }
       }
 
       const actionType = ACTION_MAP[call.name]
