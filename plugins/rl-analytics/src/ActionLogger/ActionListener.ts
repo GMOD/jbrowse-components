@@ -127,10 +127,24 @@ export default class ActionListener {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private resolveTrackId(instanceId: string, tree: any): string {
     try {
-      const tracks = tree?.tracks ?? []
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const track = tracks.find((t: any) => t.id === instanceId)
-      return track?.configuration?.trackId ?? instanceId
+      // tree might be the view directly, or we may need to search views
+      const views = tree?.views ?? (tree?.tracks ? [tree] : [])
+      for (const view of views) {
+        const tracks = view?.tracks ?? []
+        for (const t of tracks) {
+          if (t.id === instanceId) {
+            // configuration might be a reference (string) or an object with trackId
+            const config = t.configuration
+            if (typeof config === 'string') {
+              return config
+            }
+            if (config?.trackId) {
+              return String(config.trackId)
+            }
+          }
+        }
+      }
+      return instanceId
     } catch {
       return instanceId
     }

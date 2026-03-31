@@ -286,9 +286,22 @@ var ActionListener = class {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolveTrackId(instanceId, tree) {
     try {
-      const tracks = tree?.tracks ?? [];
-      const track = tracks.find((t) => t.id === instanceId);
-      return track?.configuration?.trackId ?? instanceId;
+      const views = tree?.views ?? (tree?.tracks ? [tree] : []);
+      for (const view of views) {
+        const tracks = view?.tracks ?? [];
+        for (const t of tracks) {
+          if (t.id === instanceId) {
+            const config = t.configuration;
+            if (typeof config === "string") {
+              return config;
+            }
+            if (config?.trackId) {
+              return String(config.trackId);
+            }
+          }
+        }
+      }
+      return instanceId;
     } catch {
       return instanceId;
     }
