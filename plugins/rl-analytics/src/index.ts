@@ -1,8 +1,10 @@
 import { lazy } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import SaveAltIcon from '@mui/icons-material/SaveAlt'
 
 import ActionListener from './ActionLogger/ActionListener.ts'
@@ -12,25 +14,24 @@ import observerViewModelFactory from './ObserverView/viewModel.ts'
 import configSchema from './config.ts'
 
 import type { RLObserverViewModel } from './ObserverView/viewModel.ts'
+import type { Step } from './RLPipeline/types.ts'
+import type { BrowserState } from './RLPipeline/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default class RLAnalyticsPlugin extends Plugin {
   name = 'RLAnalyticsPlugin'
   configurationSchema = configSchema
 
-  private actionListener: ActionListener | null = null
-  private episodeManager: EpisodeManager | null = null
-  private exportManager: ExportManager | null = null
-  private observerModel: RLObserverViewModel | null = null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getView: (() => any) | null = null
+  // These are re-created on each configure() call.
+  // Not stored as class fields to avoid stale singleton state.
+  // Instead, configure() wires everything via closures.
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => {
       return new ViewType({
         name: 'RLObserverView',
-        displayName: 'RL Observer',
-        stateModel: observerViewModelFactory(),
+        displayName: 'Action Monitor',
+        stateModel: observerViewModelFactory(pluginManager),
         ReactComponent: lazy(
           () => import('./ObserverView/ObserverView.tsx'),
         ),
@@ -44,61 +45,100 @@ export default class RLAnalyticsPlugin extends Plugin {
       return
     }
 
-    // Clean up
-    this.actionListener?.dispose()
-    this.episodeManager?.dispose()
-    this.exportManager?.dispose()
-
-    // Initialize
-    this.actionListener = new ActionListener(10000, 500, false)
-    this.episodeManager = new EpisodeManager(300_000)
-    this.exportManager = new ExportManager(this.episodeManager)
-
-    const getView = () => {
+    // Read config values (fall back to defaults if config not available)
+    let bufferSize = 10000
+    let debounceMs = 500
+    let inactivityMs = 300_000
+    let maxEpisodes = 100
+    let logOther = false
+    try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const session = (rootModel as any).session
-      if (!session?.views) {
-        return undefined
+      const conf = (rootModel as any).jbrowse?.configuration?.RLAnalyticsPlugin
+      if (conf) {
+        bufferSize = getConf(conf, 'actionBufferSize') ?? bufferSize
+        debounceMs = getConf(conf, 'debounceMs') ?? debounceMs
+        inactivityMs = getConf(conf, 'inactivityTimeoutMs') ?? inactivityMs
+        maxEpisodes = getConf(conf, 'maxEpisodes') ?? maxEpisodes
+        logOther = getConf(conf, 'logOtherActions') ?? logOther
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return session.views.find((v: any) => v.type === 'LinearGenomeView')
+    } catch {
+      // config not available (e.g., in tests)
     }
 
-    this.getView = getView
-    this.episodeManager.setViewAccessor(getView)
+    // Create subsystems (local variables, not class fields)
+    const actionListener = new ActionListener(bufferSize, debounceMs, logOther)
+    const episodeManager = new EpisodeManager(inactivityMs, maxEpisodes)
+    const exportManager = new ExportManager(episodeManager)
+
+    // Session accessor — rootModel.session is the standard path
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getSessionSafe = () => (rootModel as any).session as
+      | { views?: { type: string }[]; addView?: (t: string, o: object) => unknown }
+      | undefined
+
+    // View accessor — finds first LinearGenomeView
+    const getLinearGenomeView = () => {
+      try {
+        return getSessionSafe()?.views?.find(v => v.type === 'LinearGenomeView')
+      } catch {
+        return undefined
+      }
+    }
+
+    // Find observer view safely (may have been destroyed)
+    const getObserverView = (): RLObserverViewModel | undefined => {
+      try {
+        const view = getSessionSafe()?.views?.find(
+          v => v.type === 'RLObserverView',
+        )
+        if (view && isAlive(view)) {
+          return view as unknown as RLObserverViewModel
+        }
+      } catch {
+        // view may be destroyed
+      }
+      return undefined
+    }
+
+    episodeManager.setViewAccessor(getLinearGenomeView)
 
     // Connect debounced actions → episode recording + observer logging
-    this.actionListener.buffer.onDebouncedAction(action => {
-      queueMicrotask(() => {
-        const result = this.episodeManager!.recordAction(action)
-        if (this.observerModel) {
+    actionListener.buffer.onDebouncedAction(action => {
+      setTimeout(() => {
+        const result = episodeManager.recordAction(action)
+        const observer = getObserverView()
+        if (observer) {
           if (result) {
-            this.logToObserver(result.step, result.nextState, action.sourceAction)
+            logToObserver(
+              observer,
+              result.step,
+              result.nextState,
+              action.sourceAction,
+              episodeManager,
+              getLinearGenomeView,
+            )
           } else {
-            this.observerModel.addLogEntry(
-              `${action.type} (${action.sourceAction}) — no view for state extraction`,
+            observer.addLogEntry(
+              `${action.type} (${action.sourceAction}) — no view`,
             )
           }
         }
-      })
+      }, 0)
     })
 
-    // Attach to rootModel — addMiddleware on the root intercepts ALL actions
-    // in the entire MST tree, including views, tracks, and session
-    this.actionListener.attach(rootModel)
+    // Attach middleware to rootModel
+    actionListener.attach(rootModel)
 
     // Menu items
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu('Add', {
         label: 'Action Monitor',
         onClick: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const session = (rootModel as any).session
-          if (session) {
+          const session = getSessionSafe()
+          if (session?.addView) {
+            const view = session.addView('RLObserverView', {})
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const view = session.addView('RLObserverView', {}) as any
-            try { view.setDisplayName('Action Monitor') } catch { /* */ }
-            this.observerModel = view
+            ;(view as any).setDisplayName?.('Action Monitor')
           }
         },
       })
@@ -107,170 +147,163 @@ export default class RLAnalyticsPlugin extends Plugin {
         label: 'Export RL Data (JSONL)',
         icon: SaveAltIcon,
         onClick: () => {
-          this.exportManager?.downloadJSONL()
+          exportManager.downloadJSONL()
         },
       })
     }
 
-    // Auto-open observer if URL param set, or find existing one from session restore
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const session = (rootModel as any).session
-    if (session) {
-      // Check if observer view already exists (from session restore)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let existing = session.views?.find((v: any) => v.type === 'RLObserverView')
-      if (!existing && typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search)
-        if (params.has('rlObserver')) {
+    // Auto-open observer if URL param set, or find existing
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.has('rlObserver') && !getObserverView()) {
+        const session = getSessionSafe()
+        if (session?.addView) {
+          const view = session.addView('RLObserverView', {})
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          existing = session.addView('RLObserverView', {}) as any
+          ;(view as any).setDisplayName?.('Action Monitor')
         }
       }
-      if (existing) {
-        try { existing.setDisplayName('Action Monitor') } catch { /* */ }
-        this.observerModel = existing
-      }
     }
+
+    // Store for testing access (the only class-level state)
+    this._testRefs = { actionListener, episodeManager, exportManager }
   }
 
+  // Test-only accessors — not part of the public API
+  private _testRefs: {
+    actionListener: ActionListener
+    episodeManager: EpisodeManager
+    exportManager: ExportManager
+  } | null = null
+
+  getExportManager() {
+    return this._testRefs?.exportManager ?? null
+  }
+  getEpisodeManager() {
+    return this._testRefs?.episodeManager ?? null
+  }
+  getActionListener() {
+    return this._testRefs?.actionListener ?? null
+  }
+}
+
+/** Format a step for the observer log */
+function logToObserver(
+  observer: RLObserverViewModel,
+  step: Step,
+  state: BrowserState,
+  sourceAction: string,
+  episodeManager: EpisodeManager,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private logToObserver(step: any, state: any, sourceAction: string) {
-    if (!this.observerModel) {
-      return
-    }
-    const ts = new Date(step.timestamp).toISOString().slice(11, 23)
-    const action = step.action
-    const meta = step.actionMetadata
-    const zl = state.zoomLevel
-    const bp = state.bpPerPx.toFixed(2)
-    const ref = state.refName
-    const tracks = state.numTracks
-    const eps = this.episodeManager?.currentEpisodeStepCount ?? 0
+  getView: () => any,
+) {
+  const ts = new Date(step.timestamp).toISOString().slice(11, 23)
+  const meta = step.actionMetadata
+  const zl = state.zoomLevel
+  const bp = state.bpPerPx.toFixed(2)
+  const ref = state.refName
+  const tracks = state.numTracks
+  const eps = episodeManager.currentEpisodeStepCount
 
-    let detail = ''
-    if (meta.distance !== undefined) {
-      detail = ` Δ${Math.round(meta.distance as number)}px`
-    } else if (meta.offsetPx !== undefined) {
-      detail = ` @${Math.round(meta.offsetPx as number)}px`
+  let detail = ''
+  if (meta.distance !== undefined) {
+    detail = ` Δ${Math.round(meta.distance as number)}px`
+  } else if (meta.offsetPx !== undefined) {
+    detail = ` @${Math.round(meta.offsetPx as number)}px`
+  }
+  if (meta.startOffset !== undefined) {
+    const s = meta.startOffset as { refName?: string }
+    if (s?.refName) {
+      detail = ` ${s.refName}`
     }
-    if (meta.startOffset !== undefined) {
-      // BpOffset objects from moveTo
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const s = meta.startOffset as any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const e = meta.endOffset as any
-      if (s?.refName) {
-        detail = ` ${s.refName}`
-      }
+  }
+  if (meta.bpPerPx !== undefined) {
+    detail += ` → ${(meta.bpPerPx as number).toFixed(2)}bp/px`
+  }
+  if (meta.trackId !== undefined) {
+    detail = ` ${meta.trackId}`
+    if (meta.direction) {
+      detail += ` ${meta.direction}`
     }
-    if (meta.bpPerPx !== undefined) {
-      detail += ` → ${(meta.bpPerPx as number).toFixed(2)}bp/px`
-    }
-    if (meta.trackId !== undefined) {
-      detail = ` ${meta.trackId}`
-      if (meta.direction) {
-        detail += ` ${meta.direction}`
-      }
-    }
-    if (meta.movingId !== undefined) {
-      const from = this.resolveInstanceId(meta.movingId as string)
-      const to = this.resolveInstanceId(meta.targetId as string)
-      detail = from === to ? ` ${from}` : ` ${from} → ${to}`
-    }
-    if (meta.viewType !== undefined) {
-      detail = ` ${meta.viewType}`
-    }
-    if (meta.widgetType !== undefined) {
-      detail = ` ${meta.widgetType}`
-    }
-    if (meta.searchText !== undefined) {
-      detail = ` "${meta.searchText}"`
-    }
-    if (meta.target !== undefined && !meta.searchText) {
-      detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`
-    }
-    if (meta.colorBy !== undefined) {
-      detail = ` color=${meta.colorBy}`
-    }
-    if (meta.sortBy !== undefined) {
-      detail = ` sort=${meta.sortBy}`
-    }
-    if (meta.height !== undefined) {
-      detail = ` h=${meta.height}`
-    }
-    if (meta.operation !== undefined) {
-      detail = ` ${meta.operation}`
-    }
-    if (meta.highlight !== undefined) {
-      detail = ` bookmark`
-    }
-
-    const trackFlags = [
-      state.hasReferenceSequence ? 'ref' : null,
-      state.hasGeneTrack ? 'gene' : null,
-      state.hasAlignmentTrack ? 'aln' : null,
-      state.hasVariantTrack ? 'var' : null,
-      state.hasQuantitativeTrack ? 'quant' : null,
-    ]
-      .filter(Boolean)
-      .join(',')
-
-    const line =
-      `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]` +
-      `${detail.padEnd(25)} ` +
-      `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
-      `#${eps}`
-
-    this.observerModel.addLogEntry(line)
+  }
+  if (meta.movingId !== undefined) {
+    const from = resolveInstanceId(meta.movingId as string, getView)
+    const to = resolveInstanceId(meta.targetId as string, getView)
+    detail = from === to ? ` ${from}` : ` ${from} → ${to}`
+  }
+  if (meta.viewType !== undefined) {
+    detail = ` ${meta.viewType}`
+  }
+  if (meta.widgetType !== undefined) {
+    detail = ` ${meta.widgetType}`
+  }
+  if (meta.searchText !== undefined) {
+    detail = ` "${meta.searchText}"`
+  }
+  if (meta.target !== undefined && !meta.searchText) {
+    detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`
+  }
+  if (meta.colorBy !== undefined) {
+    detail = ` color=${meta.colorBy}`
+  }
+  if (meta.sortBy !== undefined) {
+    detail = ` sort=${meta.sortBy}`
+  }
+  if (meta.operation !== undefined) {
+    detail = ` ${meta.operation}`
+  }
+  if (meta.highlight !== undefined) {
+    detail = ` bookmark`
   }
 
-  /** Resolve MST instance ID → config trackId using the live view */
-  private resolveInstanceId(instanceId: string): string {
-    try {
-      const view = this.getView?.()
-      if (!view?.tracks) {
+  const trackFlags = [
+    state.hasReferenceSequence ? 'ref' : null,
+    state.hasGeneTrack ? 'gene' : null,
+    state.hasAlignmentTrack ? 'aln' : null,
+    state.hasVariantTrack ? 'var' : null,
+    state.hasQuantitativeTrack ? 'quant' : null,
+  ]
+    .filter(Boolean)
+    .join(',')
+
+  const line =
+    `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]` +
+    `${detail.padEnd(25)} ` +
+    `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
+    `#${eps}`
+
+  observer.addLogEntry(line)
+}
+
+/** Resolve MST instance ID → config trackId */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveInstanceId(instanceId: string, getView: () => any): string {
+  try {
+    const view = getView()
+    if (!view?.tracks) {
+      return instanceId
+    }
+    for (const t of view.tracks) {
+      if (t.id === instanceId) {
+        try {
+          const tid = t.configuration?.trackId
+          if (tid) {
+            return String(tid)
+          }
+        } catch {
+          /* */
+        }
+        const config = t.configuration
+        if (typeof config === 'string') {
+          return config
+        }
         return instanceId
       }
-      for (const t of view.tracks) {
-        if (t.id === instanceId) {
-          // Try multiple ways to get the trackId
-          // 1. configuration.trackId (most common)
-          try {
-            const tid = t.configuration?.trackId
-            if (tid) {
-              return String(tid)
-            }
-          } catch { /* */ }
-          // 2. configuration as string reference
-          const config = t.configuration
-          if (typeof config === 'string') {
-            return config
-          }
-          // 3. trackId directly on the track
-          if (t.trackId) {
-            return String(t.trackId)
-          }
-          return instanceId
-        }
-      }
-    } catch {
-      // fall through
     }
-    return instanceId
+  } catch {
+    // fall through
   }
-
-  /** Public accessors for testing */
-  getExportManager() {
-    return this.exportManager
-  }
-
-  getEpisodeManager() {
-    return this.episodeManager
-  }
-
-  getActionListener() {
-    return this.actionListener
-  }
+  return instanceId
 }
 
 export { configSchema }

@@ -8,6 +8,7 @@ export default class EpisodeManager {
   private currentEpisode: Episode | null = null
   private completedEpisodes: Episode[] = []
   private inactivityTimeout: number
+  private maxEpisodes: number
   private inactivityTimer: ReturnType<typeof setInterval> | null = null
   stateEncoder = new StateEncoder()
   private lastActionTimestamp = 0
@@ -16,8 +17,9 @@ export default class EpisodeManager {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getView: (() => any) | null = null
 
-  constructor(inactivityTimeoutMs = 300_000) {
+  constructor(inactivityTimeoutMs = 300_000, maxEpisodes = 100) {
     this.inactivityTimeout = inactivityTimeoutMs
+    this.maxEpisodes = maxEpisodes
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,6 +104,10 @@ export default class EpisodeManager {
     this.currentEpisode.endTime = Date.now()
     this.currentEpisode.outcome = outcome
     this.completedEpisodes.push(this.currentEpisode)
+    // Evict oldest episodes if over limit
+    while (this.completedEpisodes.length > this.maxEpisodes) {
+      this.completedEpisodes.shift()
+    }
     this.currentEpisode = null
     this.cachedState = null
     this.stopInactivityTimer()

@@ -5,8 +5,6 @@ import { ActionType, type ClassifiedAction } from './ActionTypes.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-export type ActionCallback = (action: ClassifiedAction) => void
-
 /**
  * Mapping from MST action names to semantic ActionTypes.
  */
@@ -90,7 +88,6 @@ const ACTION_MAP: Record<string, ActionType> = {
 export default class ActionListener {
   buffer: ActionBuffer
   private disposer: (() => void) | null = null
-  private callbacks: ActionCallback[] = []
   private logOther: boolean
 
   constructor(bufferSize = 10000, debounceMs = 500, logOther = false) {
@@ -130,43 +127,8 @@ export default class ActionListener {
       }
 
       this.buffer.push(classified)
-      for (const cb of this.callbacks) {
-        try {
-          cb(classified)
-        } catch {
-          // don't break the listener
-        }
-      }
-
       return result
     })
-  }
-
-  /** Resolve an MST instance ID to a config trackId using the view's track list */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private resolveTrackId(instanceId: string, tree: any): string {
-    try {
-      // tree might be the view directly, or we may need to search views
-      const views = tree?.views ?? (tree?.tracks ? [tree] : [])
-      for (const view of views) {
-        const tracks = view?.tracks ?? []
-        for (const t of tracks) {
-          if (t.id === instanceId) {
-            // configuration might be a reference (string) or an object with trackId
-            const config = t.configuration
-            if (typeof config === 'string') {
-              return config
-            }
-            if (config?.trackId) {
-              return String(config.trackId)
-            }
-          }
-        }
-      }
-      return instanceId
-    } catch {
-      return instanceId
-    }
   }
 
   private extractMetadata(
@@ -269,20 +231,9 @@ export default class ActionListener {
     return meta
   }
 
-  onAction(callback: ActionCallback) {
-    this.callbacks.push(callback)
-    return () => {
-      const idx = this.callbacks.indexOf(callback)
-      if (idx >= 0) {
-        this.callbacks.splice(idx, 1)
-      }
-    }
-  }
-
   dispose() {
     this.disposer?.()
     this.disposer = null
     this.buffer.dispose()
-    this.callbacks = []
   }
 }

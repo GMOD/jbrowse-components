@@ -8,7 +8,6 @@ export default class JSONLExporter {
         lines.push(
           JSON.stringify({
             episode_id: episode.id,
-            task_id: episode.taskId,
             timestamp: step.timestamp,
             observation: step.state,
             action: step.action,
