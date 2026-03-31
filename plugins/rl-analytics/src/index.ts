@@ -87,7 +87,7 @@ export default class RLAnalyticsPlugin extends Plugin {
     // Menu items
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu('Add', {
-        label: 'RL Observer',
+        label: 'Action Monitor',
         onClick: () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const session = (rootModel as any).session
@@ -109,17 +109,23 @@ export default class RLAnalyticsPlugin extends Plugin {
       })
     }
 
-    // Auto-open observer if URL param set
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      if (params.has('rlObserver')) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const session = (rootModel as any).session
-        if (session) {
+    // Auto-open observer if URL param set, or find existing one from session restore
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const session = (rootModel as any).session
+    if (session) {
+      // Check if observer view already exists (from session restore)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let existing = session.views?.find((v: any) => v.type === 'RLObserverView')
+      if (!existing && typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        if (params.has('rlObserver')) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const view = session.addView('RLObserverView', {}) as any
-          this.observerModel = view
+          existing = session.addView('RLObserverView', {}) as any
         }
+      }
+      if (existing) {
+        try { existing.setDisplayName('Action Monitor') } catch { /* */ }
+        this.observerModel = existing
       }
     }
   }
@@ -165,7 +171,7 @@ export default class RLAnalyticsPlugin extends Plugin {
       }
     }
     if (meta.movingId !== undefined) {
-      detail = ` ${meta.movingId} → ${meta.targetId}`
+      detail = ` reorder`
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`

@@ -953,11 +953,11 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.episodeManager = new EpisodeManager(3e5);
     this.exportManager = new ExportManager(this.episodeManager);
     const getView = () => {
-      const session = rootModel.session;
-      if (!session?.views) {
+      const session2 = rootModel.session;
+      if (!session2?.views) {
         return void 0;
       }
-      return session.views.find((v) => v.type === "LinearGenomeView");
+      return session2.views.find((v) => v.type === "LinearGenomeView");
     };
     this.episodeManager.setViewAccessor(getView);
     this.actionListener.buffer.onDebouncedAction((action) => {
@@ -977,11 +977,11 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.actionListener.attach(rootModel);
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu("Add", {
-        label: "RL Observer",
+        label: "Action Monitor",
         onClick: () => {
-          const session = rootModel.session;
-          if (session) {
-            const view = session.addView("RLObserverView", {});
+          const session2 = rootModel.session;
+          if (session2) {
+            const view = session2.addView("RLObserverView", {});
             try {
               view.setDisplayName("Action Monitor");
             } catch {
@@ -998,14 +998,21 @@ var RLAnalyticsPlugin = class extends Plugin {
         }
       });
     }
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.has("rlObserver")) {
-        const session = rootModel.session;
-        if (session) {
-          const view = session.addView("RLObserverView", {});
-          this.observerModel = view;
+    const session = rootModel.session;
+    if (session) {
+      let existing = session.views?.find((v) => v.type === "RLObserverView");
+      if (!existing && typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("rlObserver")) {
+          existing = session.addView("RLObserverView", {});
         }
+      }
+      if (existing) {
+        try {
+          existing.setDisplayName("Action Monitor");
+        } catch {
+        }
+        this.observerModel = existing;
       }
     }
   }
@@ -1046,7 +1053,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       }
     }
     if (meta.movingId !== void 0) {
-      detail = ` ${meta.movingId} \u2192 ${meta.targetId}`;
+      detail = ` reorder`;
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;
