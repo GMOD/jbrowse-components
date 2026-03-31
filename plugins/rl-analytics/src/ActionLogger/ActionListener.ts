@@ -82,6 +82,12 @@ export default class ActionListener {
         return result
       }
 
+      // Temporary: log all top-level actions to find track-add action name
+      if (!call.name.startsWith('set') && call.name !== 'addUndoState' && call.name !== 'fetchSessionMetadata' && call.name !== 'setSavedSessionMetadata') {
+        // eslint-disable-next-line no-console
+        console.log(`[rl-analytics] TOP: ${call.name}`, call.args?.slice(0, 2))
+      }
+
       const actionType = ACTION_MAP[call.name]
       if (!actionType && !this.logOther) {
         return result

@@ -21,7 +21,7 @@ var __export = (target, all) => {
 };
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
-// ../../plugins/rl-analytics/src/ObserverView/ObserverView.tsx
+// plugins/rl-analytics/src/ObserverView/ObserverView.tsx
 var ObserverView_exports = {};
 __export(ObserverView_exports, {
   default: () => ObserverView_default
@@ -32,7 +32,7 @@ var {useEffect, useRef} = __jbx("react");
 var {jsx, jsxs} = __jbx("react/jsx-runtime");
 var ObserverView, ObserverView_default;
 var init_ObserverView = __esm({
-  "../../plugins/rl-analytics/src/ObserverView/ObserverView.tsx"() {
+  "plugins/rl-analytics/src/ObserverView/ObserverView.tsx"() {
     "use strict";
     ObserverView = observer(function ObserverView2({
       model
@@ -80,17 +80,17 @@ var init_ObserverView = __esm({
   }
 });
 
-// ../../plugins/rl-analytics/src/index.ts
+// plugins/rl-analytics/src/index.ts
 var {lazy} = __jbx("react");
 var __t5 = __jbx("@jbrowse/core/Plugin"); var Plugin = __t5.default || __t5;
 var __t6 = __jbx("@jbrowse/core/pluggableElementTypes/ViewType"); var ViewType = __t6.default || __t6;
 var {isAbstractMenuManager} = __jbx("@jbrowse/core/util");
 var SaveAltIcon = null;
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionListener.ts
+// plugins/rl-analytics/src/ActionLogger/ActionListener.ts
 var {addMiddleware} = __jbx("@jbrowse/mobx-state-tree");
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
+// plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
   constructor(maxSize = 1e4, debounceMs = 500) {
     __publicField(this, "buffer", []);
@@ -179,7 +179,7 @@ var ActionBuffer = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
+// plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
 var ActionType = /* @__PURE__ */ ((ActionType2) => {
   ActionType2["ZOOM"] = "ZOOM";
   ActionType2["PAN"] = "PAN";
@@ -195,7 +195,7 @@ var ActionType = /* @__PURE__ */ ((ActionType2) => {
   return ActionType2;
 })(ActionType || {});
 
-// ../../plugins/rl-analytics/src/ActionLogger/ActionListener.ts
+// plugins/rl-analytics/src/ActionLogger/ActionListener.ts
 var ACTION_MAP = {
   // Navigation — zoom
   zoomTo: "ZOOM" /* ZOOM */,
@@ -244,6 +244,9 @@ var ActionListener = class {
       const result = next(call);
       if (call.parentActionEvent) {
         return result;
+      }
+      if (!call.name.startsWith("set") && call.name !== "addUndoState" && call.name !== "fetchSessionMetadata" && call.name !== "setSavedSessionMetadata") {
+        console.log(`[rl-analytics] TOP: ${call.name}`, call.args?.slice(0, 2));
       }
       const actionType = ACTION_MAP[call.name];
       if (!actionType && !this.logOther) {
@@ -327,7 +330,7 @@ var ActionListener = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/Export/JSONLExporter.ts
+// plugins/rl-analytics/src/Export/JSONLExporter.ts
 var JSONLExporter = class {
   export(episodes) {
     const lines = [];
@@ -362,7 +365,7 @@ var JSONLExporter = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/Export/WebhookExporter.ts
+// plugins/rl-analytics/src/Export/WebhookExporter.ts
 var WebhookExporter = class {
   constructor(url, batchSize = 50, intervalMs = 5e3) {
     __publicField(this, "url");
@@ -431,7 +434,7 @@ var WebhookExporter = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/Export/ExportManager.ts
+// plugins/rl-analytics/src/Export/ExportManager.ts
 var ExportManager = class {
   constructor(episodeManager) {
     __publicField(this, "jsonlExporter", new JSONLExporter());
@@ -471,7 +474,7 @@ var ExportManager = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
+// plugins/rl-analytics/src/RLPipeline/RewardCalculator.ts
 var RewardCalculator = class {
   constructor() {
     __publicField(this, "recentActions", []);
@@ -502,7 +505,7 @@ var RewardCalculator = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
+// plugins/rl-analytics/src/RLPipeline/StateEncoder.ts
 function classifyZoomLevel(bpPerPx) {
   if (bpPerPx > 100) {
     return "genome";
@@ -654,7 +657,7 @@ var StateEncoder = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/RLPipeline/EpisodeManager.ts
+// plugins/rl-analytics/src/RLPipeline/EpisodeManager.ts
 var EpisodeManager = class {
   constructor(inactivityTimeoutMs = 3e5) {
     __publicField(this, "currentEpisode", null);
@@ -790,7 +793,7 @@ var EpisodeManager = class {
   }
 };
 
-// ../../plugins/rl-analytics/src/ObserverView/viewModel.ts
+// plugins/rl-analytics/src/ObserverView/viewModel.ts
 var {BaseViewModel} = __jbx("@jbrowse/core/pluggableElementTypes/models");
 var {types} = __jbx("@jbrowse/mobx-state-tree");
 var defaultHeight = 200;
@@ -818,7 +821,7 @@ function stateModelFactory() {
   }));
 }
 
-// ../../plugins/rl-analytics/src/config.ts
+// plugins/rl-analytics/src/config.ts
 var {ConfigurationSchema} = __jbx("@jbrowse/core/configuration");
 var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
   enabled: {
@@ -879,7 +882,7 @@ var configSchema = ConfigurationSchema("RLAnalyticsPlugin", {
 });
 var config_default = configSchema;
 
-// ../../plugins/rl-analytics/src/index.ts
+// plugins/rl-analytics/src/index.ts
 var RLAnalyticsPlugin = class extends Plugin {
   constructor() {
     super(...arguments);
@@ -983,9 +986,14 @@ var RLAnalyticsPlugin = class extends Plugin {
     let detail = "";
     if (meta.distance !== void 0) {
       detail = ` \u0394${Math.round(meta.distance)}px`;
+    } else if (meta.offsetPx !== void 0) {
+      detail = ` @${Math.round(meta.offsetPx)}px`;
+    }
+    if (meta.start !== void 0 && meta.end !== void 0) {
+      detail = ` ${Math.round(meta.start)}-${Math.round(meta.end)}`;
     }
     if (meta.bpPerPx !== void 0) {
-      detail = ` \u2192 ${meta.bpPerPx.toFixed(2)}bp/px`;
+      detail += ` \u2192 ${meta.bpPerPx.toFixed(2)}bp/px`;
     }
     if (meta.trackId !== void 0) {
       detail = ` ${meta.trackId}`;

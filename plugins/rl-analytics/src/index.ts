@@ -141,9 +141,14 @@ export default class RLAnalyticsPlugin extends Plugin {
     let detail = ''
     if (meta.distance !== undefined) {
       detail = ` Δ${Math.round(meta.distance as number)}px`
+    } else if (meta.offsetPx !== undefined) {
+      detail = ` @${Math.round(meta.offsetPx as number)}px`
+    }
+    if (meta.start !== undefined && meta.end !== undefined) {
+      detail = ` ${Math.round(meta.start as number)}-${Math.round(meta.end as number)}`
     }
     if (meta.bpPerPx !== undefined) {
-      detail = ` → ${(meta.bpPerPx as number).toFixed(2)}bp/px`
+      detail += ` → ${(meta.bpPerPx as number).toFixed(2)}bp/px`
     }
     if (meta.trackId !== undefined) {
       detail = ` ${meta.trackId}`
