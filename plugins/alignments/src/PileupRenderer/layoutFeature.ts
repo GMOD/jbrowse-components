@@ -3,32 +3,22 @@ import type { Mismatch } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { BaseLayout } from '@jbrowse/core/util/layouts'
 
-export function layoutFeature({
-  feature,
-  layout,
-  showSoftClip,
-  heightPx,
-  displayMode,
-  maxClippingSize,
-}: {
-  feature: Feature
-  layout: BaseLayout<Feature>
-  showSoftClip?: boolean
-  heightPx: number
-  displayMode: string
-  /** Caps soft-clip expansion for layout; matches PileupRenderer region expansion (#3471). */
-  maxClippingSize: number
-}): LayoutFeature | null {
-  // Cache start/end to avoid multiple get() calls
+/**
+ * Genomic interval used for pileup collision detection. When soft clipping is
+ * on, left/right edges follow mismatch clips (capped by maxClippingSize).
+ * Must match the order used when laying out features — see layoutFeats sort
+ * (#4671).
+ */
+export function getPileupLayoutSpan(
+  feature: Feature,
+  showSoftClip: boolean,
+  maxClippingSize: number,
+): { s: number; e: number } {
   const featureStart = feature.get('start')
   const featureEnd = feature.get('end')
-
   let s = featureStart
   let e = featureEnd
 
-  // Expand the start and end of feature when softclipping enabled, capped by
-  // maxClippingSize per side (same bound as getExpandedRegion) so layout
-  // intervals cannot exceed what the block fetch accounts for.
   if (showSoftClip) {
     const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     if (mismatches) {
@@ -48,6 +38,30 @@ export function layoutFeature({
       e += Math.min(rightExtra, maxClippingSize)
     }
   }
+  return { s, e }
+}
+
+export function layoutFeature({
+  feature,
+  layout,
+  showSoftClip,
+  heightPx,
+  displayMode,
+  maxClippingSize,
+}: {
+  feature: Feature
+  layout: BaseLayout<Feature>
+  showSoftClip?: boolean
+  heightPx: number
+  displayMode: string
+  /** Caps soft-clip expansion for layout; matches PileupRenderer region expansion (#3471). */
+  maxClippingSize: number
+}): LayoutFeature | null {
+  const { s, e } = getPileupLayoutSpan(
+    feature,
+    !!showSoftClip,
+    maxClippingSize,
+  )
 
   if (displayMode === 'compact') {
     heightPx /= 3

@@ -1,17 +1,18 @@
 import { PileupLayout } from '@jbrowse/core/util/layouts'
 
-import { layoutFeature } from './layoutFeature.ts'
+import { getPileupLayoutSpan, layoutFeature } from './layoutFeature.ts'
 
-import type { Feature } from '@jbrowse/core/util'
 import type { Mismatch } from '../shared/types.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 function makeFeature(
+  id: string,
   start: number,
   end: number,
   mismatches: Mismatch[],
 ): Feature {
   return {
-    id: () => 'r1',
+    id: () => id,
     get(name: string) {
       if (name === 'start') {
         return start
@@ -33,7 +34,7 @@ test('soft clip layout expansion is capped by maxClippingSize', () => {
     spacing: 0,
     maxHeight: 1200,
   })
-  const feature = makeFeature(100_000, 100_100, [
+  const feature = makeFeature('r1', 100_000, 100_100, [
     { type: 'softclip', start: 0, cliplen: 50_000 },
     { type: 'softclip', start: 99, cliplen: 40_000 },
   ])
@@ -60,7 +61,7 @@ test('soft clip sums per side then applies cap', () => {
     spacing: 0,
     maxHeight: 1200,
   })
-  const feature = makeFeature(1000, 1100, [
+  const feature = makeFeature('r1', 1000, 1100, [
     { type: 'softclip', start: 0, cliplen: 3000 },
     { type: 'softclip', start: 0, cliplen: 4000 },
   ])
@@ -79,4 +80,15 @@ test('soft clip sums per side then applies cap', () => {
   const [left, , right] = tuple!
   expect(left).toBe(-4000)
   expect(right).toBe(1100)
+})
+
+test('getPileupLayoutSpan left edge can be left of a read with lower genomic start (#4671)', () => {
+  const laterStart = makeFeature('a', 5000, 5100, [
+    { type: 'softclip', start: 0, cliplen: 6000 },
+  ])
+  const earlierStart = makeFeature('b', 1000, 2000, [])
+  const { s: sa } = getPileupLayoutSpan(laterStart, true, 10_000)
+  const { s: sb } = getPileupLayoutSpan(earlierStart, true, 10_000)
+  expect(laterStart.get('start')).toBeGreaterThan(earlierStart.get('start'))
+  expect(sa).toBeLessThan(sb)
 })

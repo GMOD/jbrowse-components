@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { layoutFeature } from './layoutFeature.ts'
+import { getPileupLayoutSpan, layoutFeature } from './layoutFeature.ts'
 import { sortFeature } from './sortUtil.ts'
 
 import type { LayoutFeature, PreProcessedRenderArgs } from './types.ts'
@@ -16,11 +16,19 @@ export function layoutFeats(props: PreProcessedRenderArgs) {
   const displayMode = readConfObject(config, 'displayMode')
   const maxClippingSize = readConfObject(config, 'maxClippingSize') as number
 
-  // Sort features by start position for PileupLayout's built-in hint optimization,
-  // but only when not using explicit sorting (which has its own order)
+  // Sort by layout left edge (expanded when soft clipping) so iteration order
+  // matches PileupLayout's row-hint optimization (#4671). Plain start order
+  // disagrees with collision intervals when clips extend reads leftward.
   const featureArr = hasSortedBy
     ? [...featureMap.values()]
-    : [...featureMap.values()].sort((a, b) => a.get('start') - b.get('start'))
+    : [...featureMap.values()].sort((a, b) => {
+        const { s: as } = getPileupLayoutSpan(a, !!showSoftClip, maxClippingSize)
+        const { s: bs } = getPileupLayoutSpan(b, !!showSoftClip, maxClippingSize)
+        if (as !== bs) {
+          return as - bs
+        }
+        return a.get('start') - b.get('start')
+      })
 
   const layoutRecords: LayoutFeature[] = []
 
