@@ -30,8 +30,8 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bbi": "^9.0.0",
-    "@gmod/hclust": "^2.0.1",
+    "@gmod/bbi": "^9.0.4",
+    "@gmod/hclust": "^3.0.4",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/tree-sidebar": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.6.0",

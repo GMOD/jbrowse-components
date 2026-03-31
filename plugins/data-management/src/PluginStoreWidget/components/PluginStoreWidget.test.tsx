@@ -1,6 +1,7 @@
 import { DialogQueue } from '@jbrowse/app-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
+// @ts-expect-error
 import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
@@ -69,6 +70,7 @@ test('Installs a session plugin', async () => {
   await waitFor(() => {
     expect(reloadPluginManagerMock).toHaveBeenCalled()
   })
+  // @ts-expect-error
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
 })
 

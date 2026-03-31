@@ -118,7 +118,7 @@ export function getPileupLegendItems(
  */
 export function getSNPCoverageLegendItems(
   colorBy: ColorBy | undefined,
-  visibleModifications: Map<string, ModificationTypeWithColor>,
+  visibleModifications: ReadonlyMap<string, ModificationTypeWithColor>,
   theme: Theme,
 ): LegendItem[] {
   if (colorBy?.type === 'methylation') {
@@ -143,7 +143,7 @@ export function getSNPCoverageLegendItems(
  */
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
-  visibleModifications?: Map<string, ModificationTypeWithColor>,
+  visibleModifications?: ReadonlyMap<string, ModificationTypeWithColor>,
 ): LegendItem[] {
   const colorType = colorBy?.type
 

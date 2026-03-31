@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import type React from 'react'
 
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -120,11 +119,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => MenuItem[]
   getTrackActions?: (arg: AnyConfigurationModel) => MenuItem[]
   getTrackListMenuItems?: (arg: AnyConfigurationModel) => MenuItem[]
-  addAssembly?: Function
-  removeAssembly?: Function
+  addAssembly?: (conf: Record<string, unknown>) => void
+  removeAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
   connections: AnyConfigurationModel[]
-  deleteConnection?: Function
+  deleteConnection?: (arg: AnyConfigurationModel) => void
   temporaryAssemblies?: unknown[]
   addTemporaryAssembly?: (arg: Record<string, unknown>) => void
   removeTemporaryAssembly?: (arg: string) => void
@@ -135,17 +134,24 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     tracks: AnyConfigurationModel[]
     configuration: AnyConfigurationModel
   }[]
-  makeConnection?: Function
-  breakConnection?: Function
+  makeConnection?: (arg: AnyConfigurationModel) => void
+  breakConnection?: (arg: AnyConfigurationModel) => void
 
-  prepareToBreakConnection?: (arg: AnyConfigurationModel) => any
+  prepareToBreakConnection?: (
+    arg: AnyConfigurationModel,
+  ) => [() => void, Record<string, number>] | undefined
   adminMode?: boolean
-  showWidget?: Function
-  addWidget?: Function
+  showWidget?: (widget: unknown) => void
+  addWidget?: (
+    typeName: string,
+    id: string,
+    initialState?: Record<string, unknown>,
+    configuration?: { type: string },
+  ) => Widget
 
   DialogComponent?: DialogComponentType
 
-  DialogProps: any
+  DialogProps: Record<string, unknown> | undefined
   queueDialog<T extends DialogComponentType>(
     callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
   ): void
@@ -265,8 +271,8 @@ export function isSessionModelWithConnectionEditing(
 
 export interface SessionWithSessionPlugins extends AbstractSessionModel {
   sessionPlugins: JBrowsePlugin[]
-  addSessionPlugin: Function
-  removeSessionPlugin: Function
+  addSessionPlugin: (plugin: BasePlugin) => void
+  removeSessionPlugin: (plugin: Record<string, unknown> | undefined) => void
 }
 export function isSessionWithSessionPlugins(
   thing: unknown,

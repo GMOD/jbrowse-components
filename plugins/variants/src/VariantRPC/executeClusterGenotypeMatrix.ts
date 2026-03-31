@@ -1,6 +1,6 @@
-import { clusterData, toNewick } from '@gmod/hclust'
+import { clusterObject, toNewick } from '@gmod/hclust'
 import {
-  checkStopToken,
+  checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
@@ -49,21 +49,12 @@ export async function executeClusterGenotypeMatrix({
           pluginManager,
           args: { ...argsWithCheck, statusCallback: args.statusCallback },
         })
-  const sampleLabels = Object.keys(matrix)
-  const result = await clusterData({
-    data: Object.values(matrix),
-    sampleLabels,
-    checkCancellation: stopToken
-      ? () => {
-          try {
-            checkStopToken(stopToken)
-            return false
-          } catch {
-            return true
-          }
-        }
-      : undefined,
+  const result = await clusterObject({
+    data: matrix,
     onProgress: args.statusCallback,
+    checkCancellation: () => {
+      checkStopToken2(stopTokenCheck)
+    },
   })
   return {
     order: result.order,

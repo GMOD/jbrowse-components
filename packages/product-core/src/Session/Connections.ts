@@ -61,7 +61,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      prepareToBreakConnection(configuration: AnyConfigurationModel) {
+      prepareToBreakConnection(
+        configuration: AnyConfigurationModel,
+      ): [() => void, Record<string, number>] | undefined {
         const root = self as typeof self &
           Instance<SessionWithReferenceManagementType>
         const callbacksToDeref: (() => void)[] = []

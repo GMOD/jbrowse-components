@@ -30,8 +30,6 @@ import type {
   DockviewReadyEvent,
 } from 'dockview-react'
 
-import 'dockview-react/dist/styles/dockview.css'
-
 const useStyles = makeStyles()(() => ({
   container: {
     height: '100%',

@@ -21,6 +21,7 @@
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
+    "types": ["jest"],
     "paths": {
       "@jbrowse/core/*": ["./packages/core/src/*"],
       "@jbrowse/web/*": ["./products/jbrowse-web/*"],

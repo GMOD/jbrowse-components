@@ -328,6 +328,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
           const eventName = `JBrowseAuthWindow-${self.internetAccountId}`
           if (isElectron) {
+            // @ts-ignore - electron injects require onto window, has to be ignore for now
             const { ipcRenderer } = window.require('electron')
             const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
               internetAccountId: self.internetAccountId,
