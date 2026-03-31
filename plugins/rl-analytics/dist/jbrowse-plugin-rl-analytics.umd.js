@@ -904,11 +904,11 @@ var RLAnalyticsPlugin = class extends Plugin {
     this.episodeManager = new EpisodeManager(3e5);
     this.exportManager = new ExportManager(this.episodeManager);
     const getView = () => {
-      const session2 = rootModel.session;
-      if (!session2?.views) {
+      const session = rootModel.session;
+      if (!session?.views) {
         return void 0;
       }
-      return session2.views.find((v) => v.type === "LinearGenomeView");
+      return session.views.find((v) => v.type === "LinearGenomeView");
     };
     this.episodeManager.setViewAccessor(getView);
     this.actionListener.buffer.onDebouncedAction((action) => {
@@ -925,17 +925,14 @@ var RLAnalyticsPlugin = class extends Plugin {
         }
       });
     });
-    const session = rootModel.session;
-    if (session) {
-      this.actionListener.attach(session);
-    }
+    this.actionListener.attach(rootModel);
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu("Add", {
         label: "RL Observer",
         onClick: () => {
-          const session2 = rootModel.session;
-          if (session2) {
-            const view = session2.addView("RLObserverView", {});
+          const session = rootModel.session;
+          if (session) {
+            const view = session.addView("RLObserverView", {});
             this.observerModel = view;
           }
         }
@@ -951,9 +948,9 @@ var RLAnalyticsPlugin = class extends Plugin {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.has("rlObserver")) {
-        const session2 = rootModel.session;
-        if (session2) {
-          const view = session2.addView("RLObserverView", {});
+        const session = rootModel.session;
+        if (session) {
+          const view = session.addView("RLObserverView", {});
           this.observerModel = view;
         }
       }

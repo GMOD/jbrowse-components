@@ -80,12 +80,9 @@ export default class RLAnalyticsPlugin extends Plugin {
       })
     })
 
-    // Attach to session — onAction fires for all MST actions on the session tree
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const session = (rootModel as any).session
-    if (session) {
-      this.actionListener.attach(session)
-    }
+    // Attach to rootModel — addMiddleware on the root intercepts ALL actions
+    // in the entire MST tree, including views, tracks, and session
+    this.actionListener.attach(rootModel)
 
     // Menu items
     if (isAbstractMenuManager(rootModel)) {
