@@ -36,8 +36,8 @@ function makeAction(type: ActionType) {
   return {
     type,
     timestamp: Date.now(),
-    patch: { op: 'replace' as const, path: '/test', value: 0 },
-    reversePatch: { op: 'replace' as const, path: '/test', value: 0 },
+    sourceAction: 'test',
+    path: '/test',
     metadata: {},
   }
 }
@@ -62,13 +62,13 @@ describe('RewardCalculator', () => {
     const prev = makeState()
     const next = makeState()
 
-    calc.calculate(prev, makeAction(ActionType.ZOOM_IN), next)
-    calc.calculate(prev, makeAction(ActionType.ZOOM_OUT), next)
-    calc.calculate(prev, makeAction(ActionType.ZOOM_IN), next)
+    calc.calculate(prev, makeAction(ActionType.ZOOM), next)
+    calc.calculate(prev, makeAction(ActionType.PAN), next)
+    calc.calculate(prev, makeAction(ActionType.ZOOM), next)
 
     const reward = calc.calculate(
       prev,
-      makeAction(ActionType.ZOOM_OUT),
+      makeAction(ActionType.PAN),
       next,
     )
     expect(reward).toBeLessThan(-0.5)
@@ -78,12 +78,12 @@ describe('RewardCalculator', () => {
     const prev = makeState()
     const next = makeState()
 
-    calc.calculate(prev, makeAction(ActionType.PAN_RIGHT), next)
-    calc.calculate(prev, makeAction(ActionType.PAN_RIGHT), next)
-    calc.calculate(prev, makeAction(ActionType.PAN_RIGHT), next)
+    calc.calculate(prev, makeAction(ActionType.PAN), next)
+    calc.calculate(prev, makeAction(ActionType.PAN), next)
+    calc.calculate(prev, makeAction(ActionType.PAN), next)
     const reward = calc.calculate(
       prev,
-      makeAction(ActionType.PAN_RIGHT),
+      makeAction(ActionType.PAN),
       next,
     )
     expect(reward).toBeCloseTo(-0.01)

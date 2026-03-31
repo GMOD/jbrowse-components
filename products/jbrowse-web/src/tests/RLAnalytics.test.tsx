@@ -33,7 +33,7 @@ afterEach(() => {
 
 function flushMicrotasks() {
   return new Promise<void>(resolve => {
-    setTimeout(resolve, 100)
+    setTimeout(resolve, 700) // must exceed 500ms debounce window
   })
 }
 
@@ -43,13 +43,34 @@ function getRLPlugin(pluginManager: { plugins: { name: string }[] }) {
   ) as InstanceType<typeof RLAnalyticsPlugin>
 }
 
+test('MST onAction fires for view actions', () => {
+  const { onAction } = require('@jbrowse/mobx-state-tree')
+  const { rootModel } = getPluginManager()
+  const session = rootModel.session!
+  const view = session.views[0]!
+
+  const calls: string[] = []
+  const disposer = onAction(session, (call: { name: string }) => {
+    calls.push(call.name)
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lgv = view as any
+  lgv.setWidth(800)
+  lgv.zoomTo(lgv.bpPerPx / 2)
+  lgv.horizontalScroll(100)
+
+  disposer()
+  expect(calls.length).toBeGreaterThan(0)
+})
+
 test('collects actions and exports valid JSONL with enriched state', async () => {
   const { pluginManager, rootModel } = getPluginManager()
   const view = rootModel.session!.views[0]!
 
   const rlPlugin = getRLPlugin(pluginManager)
   const exportManager = rlPlugin.getExportManager()!
-  const patchListener = rlPlugin.getPatchListener()!
+  const actionListener = rlPlugin.getActionListener()!
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lgv = view as any
@@ -61,7 +82,7 @@ test('collects actions and exports valid JSONL with enriched state', async () =>
   lgv.horizontalScroll(-200)
   lgv.zoomTo(originalBpPerPx)
 
-  expect(patchListener.buffer.length).toBeGreaterThan(0)
+  expect(actionListener.buffer.length).toBeGreaterThan(0)
 
   await flushMicrotasks()
 

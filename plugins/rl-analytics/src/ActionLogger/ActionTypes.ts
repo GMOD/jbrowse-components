@@ -1,32 +1,35 @@
-import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
-
 export enum ActionType {
-  ZOOM_IN = 'ZOOM_IN',
-  ZOOM_OUT = 'ZOOM_OUT',
-  PAN_LEFT = 'PAN_LEFT',
-  PAN_RIGHT = 'PAN_RIGHT',
-  SEARCH = 'SEARCH',
-  TOGGLE_TRACK = 'TOGGLE_TRACK',
-  OPEN_WIDGET = 'OPEN_WIDGET',
-  CLOSE_WIDGET = 'CLOSE_WIDGET',
-  SELECT_FEATURE = 'SELECT_FEATURE',
+  // Navigation
+  ZOOM = 'ZOOM',
+  PAN = 'PAN',
+  NAV_TO = 'NAV_TO',
+
+  // Track management
+  SHOW_TRACK = 'SHOW_TRACK',
+  HIDE_TRACK = 'HIDE_TRACK',
+
+  // View management
   ADD_VIEW = 'ADD_VIEW',
-  UNKNOWN = 'UNKNOWN',
+  REMOVE_VIEW = 'REMOVE_VIEW',
+  FLIP_VIEW = 'FLIP_VIEW',
+
+  // Display config
+  CONFIG_CHANGE = 'CONFIG_CHANGE',
+
+  // Widgets
+  OPEN_WIDGET = 'OPEN_WIDGET',
+
+  // Other
+  OTHER = 'OTHER',
 }
 
 export interface ClassifiedAction {
   type: ActionType
   timestamp: number
-  patch: IJsonPatch
-  reversePatch: IJsonPatch
+  /** The MST action name that produced this (e.g. 'zoomTo', 'horizontalScroll') */
+  sourceAction: string
+  /** Path of the MST node where the action was called */
+  path: string
+  /** Action-specific data extracted from args */
   metadata: Record<string, unknown>
-}
-
-export interface ClassificationRule {
-  pathPattern: RegExp
-  op: string
-  classify: (
-    patch: IJsonPatch,
-    reversePatch: IJsonPatch,
-  ) => { type: ActionType; metadata: Record<string, unknown> }
 }

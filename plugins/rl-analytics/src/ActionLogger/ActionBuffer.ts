@@ -2,6 +2,17 @@ import type { ClassifiedAction } from './ActionTypes.ts'
 
 export type DebouncedActionCallback = (action: ClassifiedAction) => void
 
+/**
+ * Debouncing buffer for classified actions.
+ *
+ * Merges rapid same-type actions (e.g., rapid PAN from trackpad momentum)
+ * into single logical actions. Emits via onDebouncedAction callback after
+ * the debounce window closes.
+ *
+ * With the onAction-based listener, compound actions (zoomTo → scrollTo)
+ * are already handled at the source — only top-level actions arrive here.
+ * So the buffer only needs to merge same-type rapid events.
+ */
 export default class ActionBuffer {
   private buffer: ClassifiedAction[] = []
   private maxSize: number
@@ -10,56 +21,35 @@ export default class ActionBuffer {
   private debounceTimer: ReturnType<typeof setTimeout> | null = null
   private debouncedCallbacks: DebouncedActionCallback[] = []
 
-  constructor(maxSize = 10000, debounceMs = 100) {
+  constructor(maxSize = 10000, debounceMs = 500) {
     this.maxSize = maxSize
     this.debounceMs = debounceMs
   }
 
-  /** Register a callback that fires only for debounced (merged) actions */
   onDebouncedAction(cb: DebouncedActionCallback) {
     this.debouncedCallbacks.push(cb)
   }
 
   push(action: ClassifiedAction) {
-    if (this.pendingAction) {
-      const gap = action.timestamp - this.pendingAction.timestamp
-
-      // Same-type merge (e.g., rapid PAN_RIGHT events from trackpad)
-      if (action.type === this.pendingAction.type && gap < this.debounceMs) {
-        this.pendingAction = {
-          ...this.pendingAction,
-          timestamp: action.timestamp,
-          patch: action.patch,
-          reversePatch: this.pendingAction.reversePatch,
-          metadata: this.mergeMetadata(this.pendingAction.metadata, action.metadata),
-        }
-        this.resetDebounceTimer()
-        return
+    if (
+      this.pendingAction &&
+      action.type === this.pendingAction.type &&
+      action.timestamp - this.pendingAction.timestamp < this.debounceMs
+    ) {
+      // Merge: keep first action's metadata but update timestamp
+      this.pendingAction = {
+        ...this.pendingAction,
+        timestamp: action.timestamp,
+        metadata: this.mergeMetadata(
+          this.pendingAction.metadata,
+          action.metadata,
+        ),
       }
-
-      // Absorb PAN that's part of a compound zoom action.
-      // When zoomTo() internally calls scrollTo(), both patches share
-      // the same sourceAction. Also fall back to <10ms gap detection.
-      const pendingIsZoom =
-        this.pendingAction.type === 'ZOOM_IN' ||
-        this.pendingAction.type === 'ZOOM_OUT'
-      const actionIsPan =
-        action.type === 'PAN_LEFT' || action.type === 'PAN_RIGHT'
-      if (pendingIsZoom && actionIsPan) {
-        const sameSource =
-          this.pendingAction.metadata.sourceAction &&
-          action.metadata.sourceAction === this.pendingAction.metadata.sourceAction
-        if (sameSource || gap < 10) {
-          this.resetDebounceTimer()
-          return
-        }
-      }
+      this.resetDebounceTimer()
+      return
     }
 
-    // Flush any pending action
     this.flushPending()
-
-    // Start new debounce window
     this.pendingAction = action
     this.resetDebounceTimer()
   }
@@ -69,13 +59,13 @@ export default class ActionBuffer {
     next: Record<string, unknown>,
   ): Record<string, unknown> {
     const merged: Record<string, unknown> = { ...next }
-    // Accumulate delta for pan actions
-    if (typeof prev.deltaPixels === 'number' && typeof next.deltaPixels === 'number') {
-      merged.deltaPixels = (prev.deltaPixels as number) + (next.deltaPixels as number)
-    }
-    // Keep original values for zoom
-    if (prev.oldBpPerPx !== undefined) {
-      merged.oldBpPerPx = prev.oldBpPerPx
+    // Accumulate distance for pan actions
+    if (
+      typeof prev.distance === 'number' &&
+      typeof next.distance === 'number'
+    ) {
+      merged.distance =
+        (prev.distance as number) + (next.distance as number)
     }
     return merged
   }
@@ -114,7 +104,6 @@ export default class ActionBuffer {
     }
   }
 
-  /** Flush pending and return + clear all buffered actions */
   drain(): ClassifiedAction[] {
     this.flushPending()
     const actions = [...this.buffer]
@@ -122,7 +111,6 @@ export default class ActionBuffer {
     return actions
   }
 
-  /** Flush pending and return last N actions without clearing */
   getRecent(n: number): ClassifiedAction[] {
     this.flushPending()
     return this.buffer.slice(-n)

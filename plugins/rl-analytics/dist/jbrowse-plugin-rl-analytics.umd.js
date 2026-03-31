@@ -87,12 +87,12 @@ var __t6 = __jbx("@jbrowse/core/pluggableElementTypes/ViewType"); var ViewType =
 var {isAbstractMenuManager} = __jbx("@jbrowse/core/util");
 var SaveAltIcon = null;
 
-// plugins/rl-analytics/src/ActionLogger/PatchListener.ts
-var {onAction, onPatch} = __jbx("@jbrowse/mobx-state-tree");
+// plugins/rl-analytics/src/ActionLogger/ActionListener.ts
+var {onAction} = __jbx("@jbrowse/mobx-state-tree");
 
 // plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
-  constructor(maxSize = 1e4, debounceMs = 100) {
+  constructor(maxSize = 1e4, debounceMs = 500) {
     __publicField(this, "buffer", []);
     __publicField(this, "maxSize");
     __publicField(this, "debounceMs");
@@ -102,33 +102,21 @@ var ActionBuffer = class {
     this.maxSize = maxSize;
     this.debounceMs = debounceMs;
   }
-  /** Register a callback that fires only for debounced (merged) actions */
   onDebouncedAction(cb) {
     this.debouncedCallbacks.push(cb);
   }
   push(action) {
-    if (this.pendingAction) {
-      const gap = action.timestamp - this.pendingAction.timestamp;
-      if (action.type === this.pendingAction.type && gap < this.debounceMs) {
-        this.pendingAction = {
-          ...this.pendingAction,
-          timestamp: action.timestamp,
-          patch: action.patch,
-          reversePatch: this.pendingAction.reversePatch,
-          metadata: this.mergeMetadata(this.pendingAction.metadata, action.metadata)
-        };
-        this.resetDebounceTimer();
-        return;
-      }
-      const pendingIsZoom = this.pendingAction.type === "ZOOM_IN" || this.pendingAction.type === "ZOOM_OUT";
-      const actionIsPan = action.type === "PAN_LEFT" || action.type === "PAN_RIGHT";
-      if (pendingIsZoom && actionIsPan) {
-        const sameSource = this.pendingAction.metadata.sourceAction && action.metadata.sourceAction === this.pendingAction.metadata.sourceAction;
-        if (sameSource || gap < 10) {
-          this.resetDebounceTimer();
-          return;
-        }
-      }
+    if (this.pendingAction && action.type === this.pendingAction.type && action.timestamp - this.pendingAction.timestamp < this.debounceMs) {
+      this.pendingAction = {
+        ...this.pendingAction,
+        timestamp: action.timestamp,
+        metadata: this.mergeMetadata(
+          this.pendingAction.metadata,
+          action.metadata
+        )
+      };
+      this.resetDebounceTimer();
+      return;
     }
     this.flushPending();
     this.pendingAction = action;
@@ -136,11 +124,8 @@ var ActionBuffer = class {
   }
   mergeMetadata(prev, next) {
     const merged = { ...next };
-    if (typeof prev.deltaPixels === "number" && typeof next.deltaPixels === "number") {
-      merged.deltaPixels = prev.deltaPixels + next.deltaPixels;
-    }
-    if (prev.oldBpPerPx !== void 0) {
-      merged.oldBpPerPx = prev.oldBpPerPx;
+    if (typeof prev.distance === "number" && typeof next.distance === "number") {
+      merged.distance = prev.distance + next.distance;
     }
     return merged;
   }
@@ -174,14 +159,12 @@ var ActionBuffer = class {
       }
     }
   }
-  /** Flush pending and return + clear all buffered actions */
   drain() {
     this.flushPending();
     const actions = [...this.buffer];
     this.buffer = [];
     return actions;
   }
-  /** Flush pending and return last N actions without clearing */
   getRecent(n) {
     this.flushPending();
     return this.buffer.slice(-n);
@@ -198,161 +181,120 @@ var ActionBuffer = class {
 
 // plugins/rl-analytics/src/ActionLogger/ActionTypes.ts
 var ActionType = /* @__PURE__ */ ((ActionType2) => {
-  ActionType2["ZOOM_IN"] = "ZOOM_IN";
-  ActionType2["ZOOM_OUT"] = "ZOOM_OUT";
-  ActionType2["PAN_LEFT"] = "PAN_LEFT";
-  ActionType2["PAN_RIGHT"] = "PAN_RIGHT";
-  ActionType2["SEARCH"] = "SEARCH";
-  ActionType2["TOGGLE_TRACK"] = "TOGGLE_TRACK";
-  ActionType2["OPEN_WIDGET"] = "OPEN_WIDGET";
-  ActionType2["CLOSE_WIDGET"] = "CLOSE_WIDGET";
-  ActionType2["SELECT_FEATURE"] = "SELECT_FEATURE";
+  ActionType2["ZOOM"] = "ZOOM";
+  ActionType2["PAN"] = "PAN";
+  ActionType2["NAV_TO"] = "NAV_TO";
+  ActionType2["SHOW_TRACK"] = "SHOW_TRACK";
+  ActionType2["HIDE_TRACK"] = "HIDE_TRACK";
   ActionType2["ADD_VIEW"] = "ADD_VIEW";
-  ActionType2["UNKNOWN"] = "UNKNOWN";
+  ActionType2["REMOVE_VIEW"] = "REMOVE_VIEW";
+  ActionType2["FLIP_VIEW"] = "FLIP_VIEW";
+  ActionType2["CONFIG_CHANGE"] = "CONFIG_CHANGE";
+  ActionType2["OPEN_WIDGET"] = "OPEN_WIDGET";
+  ActionType2["OTHER"] = "OTHER";
   return ActionType2;
 })(ActionType || {});
 
-// plugins/rl-analytics/src/ActionLogger/ActionClassifier.ts
-var classificationRules = [
-  {
-    pathPattern: /\/views\/\d+\/bpPerPx$/,
-    op: "replace",
-    classify: (patch, reversePatch) => ({
-      type: patch.value < reversePatch.value ? "ZOOM_IN" /* ZOOM_IN */ : "ZOOM_OUT" /* ZOOM_OUT */,
-      metadata: {
-        oldBpPerPx: reversePatch.value,
-        newBpPerPx: patch.value,
-        zoomFactor: reversePatch.value / patch.value
-      }
-    })
-  },
-  {
-    pathPattern: /\/views\/\d+\/offsetPx$/,
-    op: "replace",
-    classify: (patch, reversePatch) => ({
-      type: patch.value > reversePatch.value ? "PAN_RIGHT" /* PAN_RIGHT */ : "PAN_LEFT" /* PAN_LEFT */,
-      metadata: {
-        deltaPixels: patch.value - reversePatch.value
-      }
-    })
-  },
-  {
-    pathPattern: /\/views\/\d+\/displayedRegions$/,
-    op: "replace",
-    classify: (patch) => ({
-      type: "SEARCH" /* SEARCH */,
-      metadata: { regions: patch.value }
-    })
-  },
-  {
-    pathPattern: /\/views\/\d+\/tracks\/\d+$/,
-    op: "add",
-    classify: (patch) => {
-      const val = patch.value;
-      const config = val?.configuration;
-      const trackId = typeof config === "string" ? config : config?.trackId ?? val?.trackId;
-      return {
-        type: "TOGGLE_TRACK" /* TOGGLE_TRACK */,
-        metadata: { trackId, added: true }
-      };
-    }
-  },
-  {
-    pathPattern: /\/views\/\d+\/tracks\/\d+$/,
-    op: "remove",
-    classify: (patch) => {
-      const val = patch.value;
-      const config = val?.configuration;
-      const trackId = typeof config === "string" ? config : config?.trackId ?? val?.trackId;
-      return {
-        type: "TOGGLE_TRACK" /* TOGGLE_TRACK */,
-        metadata: { trackId, added: false }
-      };
-    }
-  },
-  {
-    pathPattern: /\/widgets\/[^/]+$/,
-    op: "add",
-    classify: (patch) => ({
-      type: "OPEN_WIDGET" /* OPEN_WIDGET */,
-      metadata: {
-        widgetType: patch.value?.type
-      }
-    })
-  },
-  {
-    pathPattern: /\/widgets\/[^/]+$/,
-    op: "remove",
-    classify: () => ({
-      type: "CLOSE_WIDGET" /* CLOSE_WIDGET */,
-      metadata: {}
-    })
-  },
-  {
-    pathPattern: /\/views\/\d+$/,
-    op: "add",
-    classify: (patch) => ({
-      type: "ADD_VIEW" /* ADD_VIEW */,
-      metadata: {
-        viewType: patch.value?.type
-      }
-    })
-  }
-];
-var ActionClassifier = class {
-  classify(patch, reversePatch) {
-    for (const rule of classificationRules) {
-      if (rule.pathPattern.test(patch.path) && patch.op === rule.op) {
-        const { type, metadata } = rule.classify(patch, reversePatch);
-        return { type, timestamp: Date.now(), patch, reversePatch, metadata };
-      }
-    }
-    return {
-      type: "UNKNOWN" /* UNKNOWN */,
-      timestamp: Date.now(),
-      patch,
-      reversePatch,
-      metadata: {}
-    };
-  }
+// plugins/rl-analytics/src/ActionLogger/ActionListener.ts
+var ACTION_MAP = {
+  // Navigation — zoom
+  zoomTo: "ZOOM" /* ZOOM */,
+  setNewView: "ZOOM" /* ZOOM */,
+  // Navigation — pan (only horizontalScroll, not internal scrollTo)
+  horizontalScroll: "PAN" /* PAN */,
+  // Navigation — search/jump
+  navTo: "NAV_TO" /* NAV_TO */,
+  navToLocString: "NAV_TO" /* NAV_TO */,
+  navToSearchString: "NAV_TO" /* NAV_TO */,
+  navToLocation: "NAV_TO" /* NAV_TO */,
+  navToLocations: "NAV_TO" /* NAV_TO */,
+  navToMultiple: "NAV_TO" /* NAV_TO */,
+  // Track management
+  showTrack: "SHOW_TRACK" /* SHOW_TRACK */,
+  hideTrack: "HIDE_TRACK" /* HIDE_TRACK */,
+  // View management
+  addView: "ADD_VIEW" /* ADD_VIEW */,
+  removeView: "REMOVE_VIEW" /* REMOVE_VIEW */,
+  horizontallyFlip: "FLIP_VIEW" /* FLIP_VIEW */,
+  // Display config
+  setShowCenterLine: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setShowGridlines: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setColorByCDS: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setShowCytobands: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setHideHeader: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setHideHeaderOverview: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setShowTrackOutlines: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  // Widgets
+  addWidget: "OPEN_WIDGET" /* OPEN_WIDGET */
 };
-
-// plugins/rl-analytics/src/ActionLogger/PatchListener.ts
-var PatchListener = class {
-  constructor(bufferSize = 1e4, debounceMs = 100, logUnknown = false) {
-    __publicField(this, "classifier", new ActionClassifier());
+var ActionListener = class {
+  constructor(bufferSize = 1e4, debounceMs = 500, logOther = false) {
     __publicField(this, "buffer");
-    __publicField(this, "patchDisposer", null);
-    __publicField(this, "actionDisposer", null);
+    __publicField(this, "disposer", null);
     __publicField(this, "callbacks", []);
-    __publicField(this, "logUnknown");
-    __publicField(this, "activeAction", null);
+    __publicField(this, "logOther");
     this.buffer = new ActionBuffer(bufferSize, debounceMs);
-    this.logUnknown = logUnknown;
+    this.logOther = logOther;
   }
-  attach(rootModel) {
-    this.actionDisposer = onAction(rootModel, (call) => {
-      this.activeAction = call.name;
-    });
-    this.patchDisposer = onPatch(rootModel, (patch, reversePatch) => {
-      const action = this.classifier.classify(patch, reversePatch);
-      if (action.type === "UNKNOWN" /* UNKNOWN */ && !this.logUnknown) {
+  attach(target) {
+    this.disposer = onAction(target, (call) => {
+      const actionType = ACTION_MAP[call.name];
+      if (!actionType && !this.logOther) {
         return;
       }
-      if (this.activeAction) {
-        action.metadata = {
-          ...action.metadata,
-          sourceAction: this.activeAction
-        };
-      }
-      this.buffer.push(action);
+      const classified = {
+        type: actionType ?? "OTHER" /* OTHER */,
+        timestamp: Date.now(),
+        sourceAction: call.name,
+        path: call.path ?? "",
+        metadata: this.extractMetadata(call)
+      };
+      this.buffer.push(classified);
       for (const cb of this.callbacks) {
         try {
-          cb(action);
+          cb(classified);
         } catch {
         }
       }
     });
+  }
+  extractMetadata(call) {
+    const args = call.args ?? [];
+    const meta = {};
+    switch (call.name) {
+      case "zoomTo":
+        meta.bpPerPx = args[0];
+        break;
+      case "setNewView":
+        meta.bpPerPx = args[0];
+        meta.offsetPx = args[1];
+        break;
+      case "horizontalScroll":
+        meta.distance = args[0];
+        break;
+      case "navTo":
+      case "navToLocString":
+      case "navToSearchString":
+        meta.target = args[0];
+        break;
+      case "showTrack":
+        meta.trackId = args[0];
+        break;
+      case "hideTrack":
+        meta.trackId = args[0];
+        break;
+      case "addView":
+        meta.viewType = args[0];
+        break;
+      case "addWidget":
+        meta.widgetType = args[0];
+        break;
+      default:
+        if (args.length > 0) {
+          meta.args = args;
+        }
+    }
+    return meta;
   }
   onAction(callback) {
     this.callbacks.push(callback);
@@ -364,10 +306,8 @@ var PatchListener = class {
     };
   }
   dispose() {
-    this.patchDisposer?.();
-    this.actionDisposer?.();
-    this.patchDisposer = null;
-    this.actionDisposer = null;
+    this.disposer?.();
+    this.disposer = null;
     this.buffer.dispose();
     this.callbacks = [];
   }
@@ -931,7 +871,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     super(...arguments);
     __publicField(this, "name", "RLAnalyticsPlugin");
     __publicField(this, "configurationSchema", config_default);
-    __publicField(this, "patchListener", null);
+    __publicField(this, "actionListener", null);
     __publicField(this, "episodeManager", null);
     __publicField(this, "exportManager", null);
     __publicField(this, "observerModel", null);
@@ -953,10 +893,10 @@ var RLAnalyticsPlugin = class extends Plugin {
     if (!rootModel) {
       return;
     }
-    this.patchListener?.dispose();
+    this.actionListener?.dispose();
     this.episodeManager?.dispose();
     this.exportManager?.dispose();
-    this.patchListener = new PatchListener(1e4, 500, false);
+    this.actionListener = new ActionListener(1e4, 500, false);
     this.episodeManager = new EpisodeManager(3e5);
     this.exportManager = new ExportManager(this.episodeManager);
     const getView = () => {
@@ -967,15 +907,15 @@ var RLAnalyticsPlugin = class extends Plugin {
       return session2.views.find((v) => v.type === "LinearGenomeView");
     };
     this.episodeManager.setViewAccessor(getView);
-    this.patchListener.buffer.onDebouncedAction((action) => {
+    this.actionListener.buffer.onDebouncedAction((action) => {
       queueMicrotask(() => {
         const result = this.episodeManager.recordAction(action);
         if (this.observerModel) {
           if (result) {
-            this.logToObserver(result.step, result.nextState);
+            this.logToObserver(result.step, result.nextState, action.sourceAction);
           } else {
             this.observerModel.addLogEntry(
-              `${action.type} \u2014 no view for state extraction`
+              `${action.type} (${action.sourceAction}) \u2014 no view for state extraction`
             );
           }
         }
@@ -983,7 +923,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     });
     const session = rootModel.session;
     if (session) {
-      this.patchListener.attach(session);
+      this.actionListener.attach(session);
     }
     if (isAbstractMenuManager(rootModel)) {
       rootModel.appendToMenu("Add", {
@@ -1016,7 +956,7 @@ var RLAnalyticsPlugin = class extends Plugin {
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  logToObserver(step, state) {
+  logToObserver(step, state, sourceAction) {
     if (!this.observerModel) {
       return;
     }
@@ -1030,17 +970,23 @@ var RLAnalyticsPlugin = class extends Plugin {
     const reward = step.reward.toFixed(3);
     const eps = this.episodeManager?.currentEpisodeStepCount ?? 0;
     let detail = "";
-    if (meta.deltaPixels !== void 0) {
-      detail = ` \u0394${Math.round(meta.deltaPixels)}px`;
+    if (meta.distance !== void 0) {
+      detail = ` \u0394${Math.round(meta.distance)}px`;
     }
-    if (meta.zoomFactor !== void 0) {
-      detail = ` \xD7${meta.zoomFactor.toFixed(2)}`;
+    if (meta.bpPerPx !== void 0) {
+      detail = ` \u2192 ${meta.bpPerPx.toFixed(2)}bp/px`;
     }
     if (meta.trackId !== void 0) {
       detail = ` ${meta.trackId}`;
     }
+    if (meta.viewType !== void 0) {
+      detail = ` ${meta.viewType}`;
+    }
     if (meta.widgetType !== void 0) {
       detail = ` ${meta.widgetType}`;
+    }
+    if (meta.target !== void 0) {
+      detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`;
     }
     const trackFlags = [
       state.hasReferenceSequence ? "ref" : null,
@@ -1049,8 +995,7 @@ var RLAnalyticsPlugin = class extends Plugin {
       state.hasVariantTrack ? "var" : null,
       state.hasQuantitativeTrack ? "quant" : null
     ].filter(Boolean).join(",");
-    const src = meta.sourceAction ? ` (${meta.sourceAction})` : "";
-    const line = `${ts} [${zl.padEnd(8)}] ${action.padEnd(14)}${detail.padEnd(20)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  r=${reward}  step=${eps}${src}`;
+    const line = `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]${detail.padEnd(25)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  r=${reward}  #${eps}`;
     this.observerModel.addLogEntry(line);
   }
   /** Public accessors for testing */
@@ -1060,8 +1005,8 @@ var RLAnalyticsPlugin = class extends Plugin {
   getEpisodeManager() {
     return this.episodeManager;
   }
-  getPatchListener() {
-    return this.patchListener;
+  getActionListener() {
+    return this.actionListener;
   }
 };
 

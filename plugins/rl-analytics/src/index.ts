@@ -5,7 +5,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
 import SaveAltIcon from '@mui/icons-material/SaveAlt'
 
-import PatchListener from './ActionLogger/PatchListener.ts'
+import ActionListener from './ActionLogger/ActionListener.ts'
 import ExportManager from './Export/ExportManager.ts'
 import EpisodeManager from './RLPipeline/EpisodeManager.ts'
 import observerViewModelFactory from './ObserverView/viewModel.ts'
@@ -18,7 +18,7 @@ export default class RLAnalyticsPlugin extends Plugin {
   name = 'RLAnalyticsPlugin'
   configurationSchema = configSchema
 
-  private patchListener: PatchListener | null = null
+  private actionListener: ActionListener | null = null
   private episodeManager: EpisodeManager | null = null
   private exportManager: ExportManager | null = null
   private observerModel: RLObserverViewModel | null = null
@@ -43,12 +43,12 @@ export default class RLAnalyticsPlugin extends Plugin {
     }
 
     // Clean up
-    this.patchListener?.dispose()
+    this.actionListener?.dispose()
     this.episodeManager?.dispose()
     this.exportManager?.dispose()
 
     // Initialize
-    this.patchListener = new PatchListener(10000, 500, false)
+    this.actionListener = new ActionListener(10000, 500, false)
     this.episodeManager = new EpisodeManager(300_000)
     this.exportManager = new ExportManager(this.episodeManager)
 
@@ -65,26 +65,26 @@ export default class RLAnalyticsPlugin extends Plugin {
     this.episodeManager.setViewAccessor(getView)
 
     // Connect debounced actions → episode recording + observer logging
-    this.patchListener.buffer.onDebouncedAction(action => {
+    this.actionListener.buffer.onDebouncedAction(action => {
       queueMicrotask(() => {
         const result = this.episodeManager!.recordAction(action)
         if (this.observerModel) {
           if (result) {
-            this.logToObserver(result.step, result.nextState)
+            this.logToObserver(result.step, result.nextState, action.sourceAction)
           } else {
             this.observerModel.addLogEntry(
-              `${action.type} — no view for state extraction`,
+              `${action.type} (${action.sourceAction}) — no view for state extraction`,
             )
           }
         }
       })
     })
 
-    // Attach to session
+    // Attach to session — onAction fires for all MST actions on the session tree
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = (rootModel as any).session
     if (session) {
-      this.patchListener.attach(session)
+      this.actionListener.attach(session)
     }
 
     // Menu items
@@ -127,7 +127,7 @@ export default class RLAnalyticsPlugin extends Plugin {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private logToObserver(step: any, state: any) {
+  private logToObserver(step: any, state: any, sourceAction: string) {
     if (!this.observerModel) {
       return
     }
@@ -141,19 +141,24 @@ export default class RLAnalyticsPlugin extends Plugin {
     const reward = step.reward.toFixed(3)
     const eps = this.episodeManager?.currentEpisodeStepCount ?? 0
 
-    // Action detail
     let detail = ''
-    if (meta.deltaPixels !== undefined) {
-      detail = ` Δ${Math.round(meta.deltaPixels as number)}px`
+    if (meta.distance !== undefined) {
+      detail = ` Δ${Math.round(meta.distance as number)}px`
     }
-    if (meta.zoomFactor !== undefined) {
-      detail = ` ×${(meta.zoomFactor as number).toFixed(2)}`
+    if (meta.bpPerPx !== undefined) {
+      detail = ` → ${(meta.bpPerPx as number).toFixed(2)}bp/px`
     }
     if (meta.trackId !== undefined) {
       detail = ` ${meta.trackId}`
     }
+    if (meta.viewType !== undefined) {
+      detail = ` ${meta.viewType}`
+    }
     if (meta.widgetType !== undefined) {
       detail = ` ${meta.widgetType}`
+    }
+    if (meta.target !== undefined) {
+      detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`
     }
 
     const trackFlags = [
@@ -166,12 +171,11 @@ export default class RLAnalyticsPlugin extends Plugin {
       .filter(Boolean)
       .join(',')
 
-    const src = meta.sourceAction ? ` (${meta.sourceAction})` : ''
-
     const line =
-      `${ts} [${zl.padEnd(8)}] ${action.padEnd(14)}${detail.padEnd(20)} ` +
+      `${ts} ${sourceAction.padEnd(20)} [${zl.padEnd(8)}]` +
+      `${detail.padEnd(25)} ` +
       `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
-      `r=${reward}  step=${eps}${src}`
+      `r=${reward}  #${eps}`
 
     this.observerModel.addLogEntry(line)
   }
@@ -185,8 +189,8 @@ export default class RLAnalyticsPlugin extends Plugin {
     return this.episodeManager
   }
 
-  getPatchListener() {
-    return this.patchListener
+  getActionListener() {
+    return this.actionListener
   }
 }
 

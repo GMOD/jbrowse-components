@@ -1,17 +1,13 @@
 import { ActionType } from '../src/ActionLogger/ActionTypes.ts'
 import EpisodeManager from '../src/RLPipeline/EpisodeManager.ts'
 
-function makeAction(type: ActionType = ActionType.PAN_RIGHT) {
+function makeAction(type: ActionType = ActionType.PAN) {
   return {
     type,
     timestamp: Date.now(),
-    patch: { op: 'replace' as const, path: '/views/0/offsetPx', value: 100 },
-    reversePatch: {
-      op: 'replace' as const,
-      path: '/views/0/offsetPx',
-      value: 0,
-    },
-    metadata: { deltaPixels: 100 },
+    sourceAction: 'horizontalScroll',
+    path: '/views/0',
+    metadata: { distance: 100 },
   }
 }
 
@@ -48,8 +44,8 @@ describe('EpisodeManager', () => {
 
   it('records multiple steps in one episode', () => {
     manager.recordAction(makeAction())
-    manager.recordAction(makeAction(ActionType.ZOOM_IN))
-    manager.recordAction(makeAction(ActionType.PAN_LEFT))
+    manager.recordAction(makeAction(ActionType.ZOOM))
+    manager.recordAction(makeAction(ActionType.NAV_TO))
     expect(manager.currentEpisodeStepCount).toBe(3)
   })
 
@@ -90,7 +86,7 @@ describe('EpisodeManager', () => {
     const episodes = manager.getAllEpisodes()
     const step = episodes[0]!.steps[0]!
     expect(step.state).toBeDefined()
-    expect(step.action).toBe(ActionType.PAN_RIGHT)
+    expect(step.action).toBe(ActionType.PAN)
     expect(step.nextState).toBeDefined()
     expect(typeof step.reward).toBe('number')
     expect(typeof step.terminal).toBe('boolean')
