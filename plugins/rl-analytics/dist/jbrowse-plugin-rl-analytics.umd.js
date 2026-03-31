@@ -88,7 +88,7 @@ var {isAbstractMenuManager} = __jbx("@jbrowse/core/util");
 var SaveAltIcon = null;
 
 // plugins/rl-analytics/src/ActionLogger/PatchListener.ts
-var {onPatch} = __jbx("@jbrowse/mobx-state-tree");
+var {onAction, onPatch} = __jbx("@jbrowse/mobx-state-tree");
 
 // plugins/rl-analytics/src/ActionLogger/ActionBuffer.ts
 var ActionBuffer = class {
@@ -107,16 +107,28 @@ var ActionBuffer = class {
     this.debouncedCallbacks.push(cb);
   }
   push(action) {
-    if (this.pendingAction && action.type === this.pendingAction.type && action.timestamp - this.pendingAction.timestamp < this.debounceMs) {
-      this.pendingAction = {
-        ...this.pendingAction,
-        timestamp: action.timestamp,
-        patch: action.patch,
-        reversePatch: this.pendingAction.reversePatch,
-        metadata: this.mergeMetadata(this.pendingAction.metadata, action.metadata)
-      };
-      this.resetDebounceTimer();
-      return;
+    if (this.pendingAction) {
+      const gap = action.timestamp - this.pendingAction.timestamp;
+      if (action.type === this.pendingAction.type && gap < this.debounceMs) {
+        this.pendingAction = {
+          ...this.pendingAction,
+          timestamp: action.timestamp,
+          patch: action.patch,
+          reversePatch: this.pendingAction.reversePatch,
+          metadata: this.mergeMetadata(this.pendingAction.metadata, action.metadata)
+        };
+        this.resetDebounceTimer();
+        return;
+      }
+      const pendingIsZoom = this.pendingAction.type === "ZOOM_IN" || this.pendingAction.type === "ZOOM_OUT";
+      const actionIsPan = action.type === "PAN_LEFT" || action.type === "PAN_RIGHT";
+      if (pendingIsZoom && actionIsPan) {
+        const sameSource = this.pendingAction.metadata.sourceAction && action.metadata.sourceAction === this.pendingAction.metadata.sourceAction;
+        if (sameSource || gap < 10) {
+          this.resetDebounceTimer();
+          return;
+        }
+      }
     }
     this.flushPending();
     this.pendingAction = action;
@@ -310,17 +322,28 @@ var PatchListener = class {
   constructor(bufferSize = 1e4, debounceMs = 100, logUnknown = false) {
     __publicField(this, "classifier", new ActionClassifier());
     __publicField(this, "buffer");
-    __publicField(this, "disposer", null);
+    __publicField(this, "patchDisposer", null);
+    __publicField(this, "actionDisposer", null);
     __publicField(this, "callbacks", []);
     __publicField(this, "logUnknown");
+    __publicField(this, "activeAction", null);
     this.buffer = new ActionBuffer(bufferSize, debounceMs);
     this.logUnknown = logUnknown;
   }
   attach(rootModel) {
-    this.disposer = onPatch(rootModel, (patch, reversePatch) => {
+    this.actionDisposer = onAction(rootModel, (call) => {
+      this.activeAction = call.name;
+    });
+    this.patchDisposer = onPatch(rootModel, (patch, reversePatch) => {
       const action = this.classifier.classify(patch, reversePatch);
       if (action.type === "UNKNOWN" /* UNKNOWN */ && !this.logUnknown) {
         return;
+      }
+      if (this.activeAction) {
+        action.metadata = {
+          ...action.metadata,
+          sourceAction: this.activeAction
+        };
       }
       this.buffer.push(action);
       for (const cb of this.callbacks) {
@@ -341,8 +364,10 @@ var PatchListener = class {
     };
   }
   dispose() {
-    this.disposer?.();
-    this.disposer = null;
+    this.patchDisposer?.();
+    this.actionDisposer?.();
+    this.patchDisposer = null;
+    this.actionDisposer = null;
     this.buffer.dispose();
     this.callbacks = [];
   }
@@ -1024,7 +1049,8 @@ var RLAnalyticsPlugin = class extends Plugin {
       state.hasVariantTrack ? "var" : null,
       state.hasQuantitativeTrack ? "quant" : null
     ].filter(Boolean).join(",");
-    const line = `${ts} [${zl.padEnd(8)}] ${action.padEnd(14)}${detail.padEnd(20)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  r=${reward}  step=${eps}`;
+    const src = meta.sourceAction ? ` (${meta.sourceAction})` : "";
+    const line = `${ts} [${zl.padEnd(8)}] ${action.padEnd(14)}${detail.padEnd(20)} ${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  r=${reward}  step=${eps}${src}`;
     this.observerModel.addLogEntry(line);
   }
   /** Public accessors for testing */

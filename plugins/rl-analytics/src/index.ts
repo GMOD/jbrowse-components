@@ -166,10 +166,12 @@ export default class RLAnalyticsPlugin extends Plugin {
       .filter(Boolean)
       .join(',')
 
+    const src = meta.sourceAction ? ` (${meta.sourceAction})` : ''
+
     const line =
       `${ts} [${zl.padEnd(8)}] ${action.padEnd(14)}${detail.padEnd(20)} ` +
       `${ref}:${bp}bp/px  trk=${tracks}[${trackFlags}]  ` +
-      `r=${reward}  step=${eps}`
+      `r=${reward}  step=${eps}${src}`
 
     this.observerModel.addLogEntry(line)
   }

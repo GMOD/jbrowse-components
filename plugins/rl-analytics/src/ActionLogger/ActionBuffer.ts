@@ -21,21 +21,39 @@ export default class ActionBuffer {
   }
 
   push(action: ClassifiedAction) {
-    if (
-      this.pendingAction &&
-      action.type === this.pendingAction.type &&
-      action.timestamp - this.pendingAction.timestamp < this.debounceMs
-    ) {
-      // Merge into pending action — keep latest metadata and timestamp
-      this.pendingAction = {
-        ...this.pendingAction,
-        timestamp: action.timestamp,
-        patch: action.patch,
-        reversePatch: this.pendingAction.reversePatch,
-        metadata: this.mergeMetadata(this.pendingAction.metadata, action.metadata),
+    if (this.pendingAction) {
+      const gap = action.timestamp - this.pendingAction.timestamp
+
+      // Same-type merge (e.g., rapid PAN_RIGHT events from trackpad)
+      if (action.type === this.pendingAction.type && gap < this.debounceMs) {
+        this.pendingAction = {
+          ...this.pendingAction,
+          timestamp: action.timestamp,
+          patch: action.patch,
+          reversePatch: this.pendingAction.reversePatch,
+          metadata: this.mergeMetadata(this.pendingAction.metadata, action.metadata),
+        }
+        this.resetDebounceTimer()
+        return
       }
-      this.resetDebounceTimer()
-      return
+
+      // Absorb PAN that's part of a compound zoom action.
+      // When zoomTo() internally calls scrollTo(), both patches share
+      // the same sourceAction. Also fall back to <10ms gap detection.
+      const pendingIsZoom =
+        this.pendingAction.type === 'ZOOM_IN' ||
+        this.pendingAction.type === 'ZOOM_OUT'
+      const actionIsPan =
+        action.type === 'PAN_LEFT' || action.type === 'PAN_RIGHT'
+      if (pendingIsZoom && actionIsPan) {
+        const sameSource =
+          this.pendingAction.metadata.sourceAction &&
+          action.metadata.sourceAction === this.pendingAction.metadata.sourceAction
+        if (sameSource || gap < 10) {
+          this.resetDebounceTimer()
+          return
+        }
+      }
     }
 
     // Flush any pending action
