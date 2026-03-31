@@ -43,7 +43,7 @@ const ACTION_MAP: Record<string, ActionType> = {
   removeView: ActionType.REMOVE_VIEW,
   horizontallyFlip: ActionType.FLIP_VIEW,
 
-  // Display config
+  // View display config
   setShowCenterLine: ActionType.CONFIG_CHANGE,
   setShowGridlines: ActionType.CONFIG_CHANGE,
   setColorByCDS: ActionType.CONFIG_CHANGE,
@@ -51,6 +51,20 @@ const ACTION_MAP: Record<string, ActionType> = {
   setHideHeader: ActionType.CONFIG_CHANGE,
   setHideHeaderOverview: ActionType.CONFIG_CHANGE,
   setShowTrackOutlines: ActionType.CONFIG_CHANGE,
+
+  // Track display config (alignments, wiggle, etc.)
+  setColorScheme: ActionType.CONFIG_CHANGE,
+  setSortedBy: ActionType.CONFIG_CHANGE,
+  setSortedByAtPosition: ActionType.CONFIG_CHANGE,
+  setFeatureHeight: ActionType.CONFIG_CHANGE,
+  setDrawSingletons: ActionType.CONFIG_CHANGE,
+  setDrawProperPairs: ActionType.CONFIG_CHANGE,
+  setDrawInter: ActionType.CONFIG_CHANGE,
+  setDrawLongRange: ActionType.CONFIG_CHANGE,
+  setLineWidth: ActionType.CONFIG_CHANGE,
+
+  // Export
+  exportSvg: ActionType.CONFIG_CHANGE,
 
   // Widgets
   addWidget: ActionType.OPEN_WIDGET,
@@ -178,9 +192,16 @@ export default class ActionListener {
         meta.endOffset = args[1]
         break
       case 'navTo':
-      case 'navToLocString':
-      case 'navToSearchString':
         meta.target = args[0]
+        break
+      case 'navToLocString':
+        // args[0] is the raw location string (e.g., "ctgA:1000-2000")
+        meta.searchText = args[0]
+        break
+      case 'navToSearchString':
+        // args[0] is {input, assembly} — input is the raw search text
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        meta.searchText = (args[0] as any)?.input ?? args[0]
         break
       case 'showTrack':
       case 'toggleTrack':
@@ -210,6 +231,20 @@ export default class ActionListener {
       case 'undo':
       case 'redo':
         meta.operation = name
+        break
+      case 'setColorScheme':
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        meta.colorBy = (args[0] as any)?.type ?? args[0]
+        break
+      case 'setSortedBy':
+      case 'setSortedByAtPosition':
+        meta.sortBy = args[0]
+        break
+      case 'setFeatureHeight':
+        meta.height = args[0]
+        break
+      case 'exportSvg':
+        meta.operation = 'exportSvg'
         break
       case 'addView':
         meta.viewType = args[0]

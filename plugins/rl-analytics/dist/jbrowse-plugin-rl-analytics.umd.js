@@ -228,7 +228,7 @@ var ACTION_MAP = {
   addView: "ADD_VIEW" /* ADD_VIEW */,
   removeView: "REMOVE_VIEW" /* REMOVE_VIEW */,
   horizontallyFlip: "FLIP_VIEW" /* FLIP_VIEW */,
-  // Display config
+  // View display config
   setShowCenterLine: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   setShowGridlines: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   setColorByCDS: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
@@ -236,6 +236,18 @@ var ACTION_MAP = {
   setHideHeader: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   setHideHeaderOverview: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   setShowTrackOutlines: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  // Track display config (alignments, wiggle, etc.)
+  setColorScheme: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setSortedBy: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setSortedByAtPosition: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setFeatureHeight: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setDrawSingletons: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setDrawProperPairs: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setDrawInter: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setDrawLongRange: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  setLineWidth: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
+  // Export
+  exportSvg: "CONFIG_CHANGE" /* CONFIG_CHANGE */,
   // Widgets
   addWidget: "OPEN_WIDGET" /* OPEN_WIDGET */,
   // Bookmarks / highlights
@@ -327,9 +339,13 @@ var ActionListener = class {
         meta.endOffset = args[1];
         break;
       case "navTo":
-      case "navToLocString":
-      case "navToSearchString":
         meta.target = args[0];
+        break;
+      case "navToLocString":
+        meta.searchText = args[0];
+        break;
+      case "navToSearchString":
+        meta.searchText = args[0]?.input ?? args[0];
         break;
       case "showTrack":
       case "toggleTrack":
@@ -359,6 +375,19 @@ var ActionListener = class {
       case "undo":
       case "redo":
         meta.operation = name;
+        break;
+      case "setColorScheme":
+        meta.colorBy = args[0]?.type ?? args[0];
+        break;
+      case "setSortedBy":
+      case "setSortedByAtPosition":
+        meta.sortBy = args[0];
+        break;
+      case "setFeatureHeight":
+        meta.height = args[0];
+        break;
+      case "exportSvg":
+        meta.operation = "exportSvg";
         break;
       case "addView":
         meta.viewType = args[0];
@@ -1090,8 +1119,20 @@ var RLAnalyticsPlugin = class extends Plugin {
     if (meta.widgetType !== void 0) {
       detail = ` ${meta.widgetType}`;
     }
-    if (meta.target !== void 0) {
+    if (meta.searchText !== void 0) {
+      detail = ` "${meta.searchText}"`;
+    }
+    if (meta.target !== void 0 && !meta.searchText) {
       detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`;
+    }
+    if (meta.colorBy !== void 0) {
+      detail = ` color=${meta.colorBy}`;
+    }
+    if (meta.sortBy !== void 0) {
+      detail = ` sort=${meta.sortBy}`;
+    }
+    if (meta.height !== void 0) {
+      detail = ` h=${meta.height}`;
     }
     if (meta.operation !== void 0) {
       detail = ` ${meta.operation}`;

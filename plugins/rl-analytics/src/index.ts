@@ -184,8 +184,20 @@ export default class RLAnalyticsPlugin extends Plugin {
     if (meta.widgetType !== undefined) {
       detail = ` ${meta.widgetType}`
     }
-    if (meta.target !== undefined) {
+    if (meta.searchText !== undefined) {
+      detail = ` "${meta.searchText}"`
+    }
+    if (meta.target !== undefined && !meta.searchText) {
       detail = ` ${JSON.stringify(meta.target).slice(0, 40)}`
+    }
+    if (meta.colorBy !== undefined) {
+      detail = ` color=${meta.colorBy}`
+    }
+    if (meta.sortBy !== undefined) {
+      detail = ` sort=${meta.sortBy}`
+    }
+    if (meta.height !== undefined) {
+      detail = ` h=${meta.height}`
     }
     if (meta.operation !== undefined) {
       detail = ` ${meta.operation}`
