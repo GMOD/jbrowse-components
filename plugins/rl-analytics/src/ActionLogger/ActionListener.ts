@@ -199,8 +199,8 @@ export default class ActionListener {
         meta.highlight = args[0]
         break
       case 'moveTrack':
-        meta.movingTrack = this.resolveTrackId(args[0] as string, tree)
-        meta.targetTrack = this.resolveTrackId(args[1] as string, tree)
+        meta.movingId = args[0]
+        meta.targetId = args[1]
         break
       case 'moveTrackToTop':
       case 'moveTrackToBottom':

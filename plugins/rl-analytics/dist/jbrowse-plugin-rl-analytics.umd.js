@@ -348,8 +348,8 @@ var ActionListener = class {
         meta.highlight = args[0];
         break;
       case "moveTrack":
-        meta.movingTrack = this.resolveTrackId(args[0], tree);
-        meta.targetTrack = this.resolveTrackId(args[1], tree);
+        meta.movingId = args[0];
+        meta.targetId = args[1];
         break;
       case "moveTrackToTop":
       case "moveTrackToBottom":
@@ -1079,8 +1079,8 @@ var RLAnalyticsPlugin = class extends Plugin {
         detail += ` ${meta.direction}`;
       }
     }
-    if (meta.movingTrack !== void 0) {
-      detail = ` ${this.resolveInstanceId(meta.movingTrack)} \u2192 before ${this.resolveInstanceId(meta.targetTrack)}`;
+    if (meta.movingId !== void 0) {
+      detail = ` ${this.resolveInstanceId(meta.movingId)} \u2192 before ${this.resolveInstanceId(meta.targetId)}`;
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;
@@ -1116,13 +1116,21 @@ var RLAnalyticsPlugin = class extends Plugin {
       }
       for (const t of view.tracks) {
         if (t.id === instanceId) {
+          try {
+            const tid = t.configuration?.trackId;
+            if (tid) {
+              return String(tid);
+            }
+          } catch {
+          }
           const config = t.configuration;
           if (typeof config === "string") {
             return config;
           }
-          if (config?.trackId) {
-            return String(config.trackId);
+          if (t.trackId) {
+            return String(t.trackId);
           }
+          return instanceId;
         }
       }
     } catch {

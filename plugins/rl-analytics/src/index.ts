@@ -173,8 +173,8 @@ export default class RLAnalyticsPlugin extends Plugin {
         detail += ` ${meta.direction}`
       }
     }
-    if (meta.movingTrack !== undefined) {
-      detail = ` ${this.resolveInstanceId(meta.movingTrack as string)} → before ${this.resolveInstanceId(meta.targetTrack as string)}`
+    if (meta.movingId !== undefined) {
+      detail = ` ${this.resolveInstanceId(meta.movingId as string)} → before ${this.resolveInstanceId(meta.targetId as string)}`
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`
@@ -220,13 +220,24 @@ export default class RLAnalyticsPlugin extends Plugin {
       }
       for (const t of view.tracks) {
         if (t.id === instanceId) {
+          // Try multiple ways to get the trackId
+          // 1. configuration.trackId (most common)
+          try {
+            const tid = t.configuration?.trackId
+            if (tid) {
+              return String(tid)
+            }
+          } catch { /* */ }
+          // 2. configuration as string reference
           const config = t.configuration
           if (typeof config === 'string') {
             return config
           }
-          if (config?.trackId) {
-            return String(config.trackId)
+          // 3. trackId directly on the track
+          if (t.trackId) {
+            return String(t.trackId)
           }
+          return instanceId
         }
       }
     } catch {
