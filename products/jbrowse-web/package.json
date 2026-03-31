@@ -74,7 +74,7 @@
     "date-fns": "^4.1.0",
     "dockview-core": "^5.2.0",
     "file-saver-es": "^2.0.5",
-    "generic-filehandle2": "^2.0.18",
+    "generic-filehandle2": "^2.1.4",
     "idb": "^8.0.3",
     "mobx": "^6.15.0",
     "mobx-react": "^9.2.1",

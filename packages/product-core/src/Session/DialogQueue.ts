@@ -6,6 +6,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DialogComponentType } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
+type DoneCallback = (
+  doneCallback: () => void,
+) => [DialogComponentType, Record<string, unknown>]
 /**
  * #stateModel DialogQueueSessionMixin
  */
@@ -13,7 +16,7 @@ export function DialogQueueSessionMixin(_pluginManager: PluginManager) {
   return types
     .model('DialogQueueSessionMixin', {})
     .volatile(() => ({
-      queueOfDialogs: [] as [DialogComponentType, unknown][],
+      queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][],
     }))
     .views(self => ({
       /**
@@ -39,10 +42,8 @@ export function DialogQueueSessionMixin(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      queueDialog(
-        cb: (doneCallback: () => void) => [DialogComponentType, unknown],
-      ) {
-        const [component, props] = cb(() => {
+      queueDialog(doneCallback: DoneCallback) {
+        const [component, props] = doneCallback(() => {
           this.removeActiveDialog()
         })
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]

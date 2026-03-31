@@ -133,7 +133,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
               ),
             )
           },
-          stopToken,
         }),
       )
       observer.complete()

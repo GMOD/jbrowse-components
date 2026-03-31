@@ -54,5 +54,6 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {}
 }

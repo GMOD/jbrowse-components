@@ -1,3 +1,4 @@
+// import 'dockview-react/dist/styles/dockview.css'
 import * as React from 'react'
 
 export { default as JBrowseApp } from './JBrowseApp/index.ts'

@@ -1,4 +1,5 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
@@ -13,8 +14,9 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
       rpcDriverClassName,
     )
 
+    const stopTokenCheck = createStopTokenChecker(deserializedArgs.stopToken)
     return getScoreMatrix({
-      args: deserializedArgs,
+      args: { ...deserializedArgs, stopTokenCheck },
       pluginManager: this.pluginManager,
     })
   }

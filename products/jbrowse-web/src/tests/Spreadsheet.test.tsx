@@ -8,6 +8,12 @@ setup()
 
 beforeEach(() => {
   doBeforeEach()
+  const originalWarn = console.warn
+  jest.spyOn(console, 'warn').mockImplementation((...args) => {
+    if (!String(args).includes('unable to determine size of file')) {
+      originalWarn.call(console, ...args)
+    }
+  })
 })
 
 test('opens a vcf.gz file in the spreadsheet view', async () => {
