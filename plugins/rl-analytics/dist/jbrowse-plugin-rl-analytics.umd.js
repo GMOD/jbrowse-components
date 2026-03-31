@@ -1080,7 +1080,13 @@ var RLAnalyticsPlugin = class extends Plugin {
       }
     }
     if (meta.movingId !== void 0) {
-      detail = ` ${this.resolveInstanceId(meta.movingId)} \u2192 before ${this.resolveInstanceId(meta.targetId)}`;
+      const from = this.resolveInstanceId(meta.movingId);
+      const to = this.resolveInstanceId(meta.targetId);
+      if (from === to) {
+        detail = ` ${from} (${String(meta.movingId).slice(0, 6)}\u2192${String(meta.targetId).slice(0, 6)})`;
+      } else {
+        detail = ` ${from} \u2192 before ${to}`;
+      }
     }
     if (meta.viewType !== void 0) {
       detail = ` ${meta.viewType}`;

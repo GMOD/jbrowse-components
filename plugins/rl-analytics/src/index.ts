@@ -174,7 +174,14 @@ export default class RLAnalyticsPlugin extends Plugin {
       }
     }
     if (meta.movingId !== undefined) {
-      detail = ` ${this.resolveInstanceId(meta.movingId as string)} → before ${this.resolveInstanceId(meta.targetId as string)}`
+      const from = this.resolveInstanceId(meta.movingId as string)
+      const to = this.resolveInstanceId(meta.targetId as string)
+      // Show raw IDs too if they differ but resolved names are the same
+      if (from === to) {
+        detail = ` ${from} (${String(meta.movingId).slice(0,6)}→${String(meta.targetId).slice(0,6)})`
+      } else {
+        detail = ` ${from} → before ${to}`
+      }
     }
     if (meta.viewType !== undefined) {
       detail = ` ${meta.viewType}`
