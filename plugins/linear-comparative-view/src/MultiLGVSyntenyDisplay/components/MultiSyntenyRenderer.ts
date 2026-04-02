@@ -111,6 +111,7 @@ export class MultiSyntenyRenderer {
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
+    coverageColor?: [number, number, number],
   ) {
     this.gpuBackend?.render(
       contentBlocks,
@@ -120,6 +121,7 @@ export class MultiSyntenyRenderer {
       rowHeight,
       rowSpacing,
       coverageHeight,
+      coverageColor,
     )
   }
 

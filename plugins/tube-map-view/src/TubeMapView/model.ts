@@ -8,6 +8,7 @@ import type { TubeMapLayout } from '../layout/types.ts'
 
 const MIN_ZOOM = 0.05
 const MAX_ZOOM = 20
+export const CANVAS_HEIGHT = 500
 
 function clampZoom(zoom: number) {
   return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom))
@@ -25,6 +26,7 @@ export default function stateModelFactory() {
     .volatile(() => ({
       layout: undefined as TubeMapLayout | undefined,
       gfaText: undefined as string | undefined,
+      graphName: '' as string,
       error: undefined as string | undefined,
       isLoading: false,
       scale: 1,
@@ -87,13 +89,18 @@ export default function stateModelFactory() {
           padding +
           (containerHeight - padding * 2 - self.layout.maxY * newScale) / 2
       },
-      loadGFA(text: string) {
+      loadGFA(text: string, name = 'Imported GFA') {
         self.isLoading = true
         self.error = undefined
         self.gfaText = text
+        self.graphName = name
         const gfa = parseGFA(text)
         self.layout = layoutGFA(gfa, self.widthPerBp)
         self.isLoading = false
+        // auto zoom-to-fit so the graph fills the view
+        if (self.width > 0) {
+          this.zoomToFit(CANVAS_HEIGHT)
+        }
       },
       clearGraph() {
         self.layout = undefined

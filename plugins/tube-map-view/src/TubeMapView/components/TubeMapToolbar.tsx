@@ -19,7 +19,12 @@ const TubeMapToolbar = observer(function TubeMapToolbar({
         background: '#fafafa',
       }}
     >
-      <Typography variant="body2">
+      {model.graphName ? (
+        <Typography variant="body2" style={{ fontWeight: 500 }}>
+          {model.graphName}
+        </Typography>
+      ) : null}
+      <Typography variant="body2" color="textSecondary">
         {model.nodeCount} nodes, {model.trackCount} tracks
       </Typography>
       <Button

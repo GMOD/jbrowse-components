@@ -51,6 +51,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
           genomeRows,
           displayedGenomes,
           view.staticBlocks.contentBlocks,
+          Math.ceil(view.width),
         )
       : undefined
 

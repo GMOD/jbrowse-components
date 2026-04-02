@@ -6,12 +6,12 @@ import {
   CIGAR_N,
   CIGAR_X,
   InstanceBuilder,
+  downsampleMinMax,
+  parseCsSeqLen,
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
 import { computeCoverage, parseCigar2 } from '@jbrowse/plugin-alignments'
-
-import { parseCsSeqLen } from '@jbrowse/alignments-core'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 import { COVERAGE_BIN_BYTE_SIZE, INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
@@ -428,10 +428,10 @@ export function computeSyntenyCoverageGpuData(
   genomeRows: Map<string, MultiPairFeature[]>,
   displayedGenomes: string[],
   contentBlocks: BaseBlock[],
+  viewWidthPx = 2000,
 ): SyntenyCoverageData {
   const perRefName = new Map<string, CoveragePerRefName>()
 
-  // Collect all features grouped by refName
   const featuresByRefName = new Map<string, { start: number; end: number }[]>()
   for (const genome of displayedGenomes) {
     const features = genomeRows.get(genome)
@@ -447,7 +447,6 @@ export function computeSyntenyCoverageGpuData(
     }
   }
 
-  // Compute coverage for each visible refName
   for (const block of contentBlocks) {
     if (perRefName.has(block.refName)) {
       continue
@@ -468,15 +467,13 @@ export function computeSyntenyCoverageGpuData(
   }
 
   let globalMaxDepth = 0
-  let totalBins = 0
   for (const data of perRefName.values()) {
     if (data.maxDepth > globalMaxDepth) {
       globalMaxDepth = data.maxDepth
     }
-    totalBins += data.depths.length
   }
 
-  if (globalMaxDepth === 0 || totalBins === 0) {
+  if (globalMaxDepth === 0) {
     return {
       perRefName,
       globalMaxDepth: 0,
@@ -486,35 +483,51 @@ export function computeSyntenyCoverageGpuData(
     }
   }
 
-  // Pack into GPU buffer: [position: f32, depth: f32] per bin
+  // Downsample each refName's depths and pack into GPU buffer
+  // [position: f32, minDepth: f32, maxDepth: f32] per bin (12 bytes)
+  const downsampled = new Map<string, ReturnType<typeof downsampleMinMax>>()
+  let totalBins = 0
+  for (const [refName, data] of perRefName) {
+    const ds = downsampleMinMax(data.depths, data.startOffset, viewWidthPx, globalMaxDepth)
+    downsampled.set(refName, ds)
+    totalBins += ds.count
+  }
+
+  if (totalBins === 0) {
+    return {
+      perRefName,
+      globalMaxDepth,
+      buffer: new ArrayBuffer(0),
+      refNameIndex: new Map(),
+      totalBins: 0,
+    }
+  }
+
   const buffer = new ArrayBuffer(totalBins * COVERAGE_BIN_BYTE_SIZE)
   const f32 = new Float32Array(buffer)
   const refNameIndex: RefNameIndex = new Map()
   let offset = 0
 
-  for (const [refName, data] of perRefName) {
+  for (const [refName, ds] of downsampled) {
+    if (ds.count === 0) {
+      continue
+    }
     const startIdx = offset
-    for (let i = 0; i < data.depths.length; i++) {
-      const depth = data.depths[i]!
-      if (depth > 0) {
-        const binIdx = offset * 2
-        f32[binIdx] = data.startOffset + i
-        f32[binIdx + 1] = depth / globalMaxDepth
-        offset++
-      }
+    for (let i = 0; i < ds.count; i++) {
+      const binIdx = offset * 3
+      f32[binIdx] = ds.positions[i]!
+      f32[binIdx + 1] = ds.mins[i]!
+      f32[binIdx + 2] = ds.maxs[i]!
+      offset++
     }
-    if (offset > startIdx) {
-      refNameIndex.set(refName, { startIdx, count: offset - startIdx })
-    }
+    refNameIndex.set(refName, { startIdx, count: offset - startIdx })
   }
-
-  const trimmed = buffer.slice(0, offset * COVERAGE_BIN_BYTE_SIZE)
 
   return {
     perRefName,
     globalMaxDepth,
-    buffer: trimmed,
+    buffer,
     refNameIndex,
-    totalBins: offset,
+    totalBins,
   }
 }

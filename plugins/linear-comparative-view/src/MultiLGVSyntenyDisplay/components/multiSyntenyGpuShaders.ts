@@ -8,8 +8,8 @@ import {
 // in multiSyntenyGpuData.ts. 32 bytes per instance.
 export const INSTANCE_BYTE_SIZE = 32
 
-// Coverage bin: 8 bytes per bin (position: f32, depth: f32)
-export const COVERAGE_BIN_BYTE_SIZE = 8
+// Coverage bin: 12 bytes per bin (position: f32, minDepth: f32, maxDepth: f32)
+export const COVERAGE_BIN_BYTE_SIZE = 12
 
 // SYNC: uniform field order must match writeUniforms() in the renderers
 export const UNIFORM_BYTE_SIZE = 64
@@ -31,9 +31,9 @@ layout(std140) uniform Uniforms {
   float rowPadding;
   float coverageYOffset;      // padding at top/bottom for scalebar labels
   float depthScale;           // maxDepth / nicedMax correction
-  float _pad3;
-  float _pad4;
-  float _pad5;
+  float coverageR;            // coverage bar color RGB (from theme)
+  float coverageG;
+  float coverageB;
 } u;
 `
 
@@ -102,14 +102,18 @@ void main() {
 }
 `
 
-// Coverage vertex shader - renders grey bars in the coverage area at the top.
-// Each instance is one coverage bin with (position, depth) attributes.
+// Coverage vertex shader - renders min/max band bars in the coverage area.
+// Each instance is one coverage bin with (position, minDepth, maxDepth) attributes.
+// When zoomed in (no downsampling), minDepth == 0 and maxDepth == depth,
+// producing bars from baseline to depth (same as before).
+// When downsampled, the band from minDepth to maxDepth preserves peaks and valleys.
 // SYNC: attribute layout matches coverage buffer in multiSyntenyGpuData.ts
 export const COVERAGE_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
-in float a_position;    // position offset from region start (bp)
-in float a_depth;       // normalized depth (0-1, against global max)
+in float a_position;    // bin position offset from region start (bp)
+in float a_minDepth;    // normalized min depth in bin (0-1)
+in float a_maxDepth;    // normalized max depth in bin (0-1)
 
 ${UNIFORMS_GLSL}
 
@@ -136,12 +140,13 @@ void main() {
 
   float effectiveHeight = u.coverageHeight - 2.0 * u.coverageYOffset;
   float coverageBottom = u.coverageHeight - u.coverageYOffset;
-  float barTop = coverageBottom - a_depth * u.depthScale * effectiveHeight;
-  float sy = mix(coverageBottom, barTop, localY);
+  float bandBottom = coverageBottom - a_minDepth * u.depthScale * effectiveHeight;
+  float bandTop = coverageBottom - a_maxDepth * u.depthScale * effectiveHeight;
+  float sy = mix(bandBottom, bandTop, localY);
 
   vec2 clipPos = vec2(sx, sy) / vec2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
   gl_Position = vec4(clipPos.x, -clipPos.y, 0.0, 1.0);
-  v_color = vec4(0.6, 0.6, 0.6, 1.0);
+  v_color = vec4(u.coverageR, u.coverageG, u.coverageB, 1.0);
 }
 `
 
@@ -174,9 +179,9 @@ struct Uniforms {
   rowPadding: f32,
   coverageYOffset: f32,
   depthScale: f32,
-  _pad3: f32,
-  _pad4: f32,
-  _pad5: f32,
+  coverageR: f32,
+  coverageG: f32,
+  coverageB: f32,
 }
 `
 
@@ -243,13 +248,14 @@ fn fs_main(in: VOut) -> @location(0) vec4f {
 ${PICKING_FS_WGSL}
 `
 
-// WGSL coverage shader
+// WGSL coverage shader - min/max band rendering
 export const WGSL_COVERAGE_SHADER = `
 ${UNIFORMS_STRUCT_WGSL}
 
 struct CovBin {
   position: f32,
-  depth: f32,
+  minDepth: f32,
+  maxDepth: f32,
 }
 
 struct CovVOut {
@@ -264,7 +270,7 @@ struct CovVOut {
 fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> CovVOut {
   let bin = bins[iid];
   var out: CovVOut;
-  out.color = vec4f(0.6, 0.6, 0.6, 1.0);
+  out.color = vec4f(uniforms.coverageR, uniforms.coverageG, uniforms.coverageB, 1.0);
 
   let v = vid % 6u;
   let localX = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
@@ -284,8 +290,9 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let sx = mix(px1, px2, localX);
   let effectiveHeight = uniforms.coverageHeight - 2.0 * uniforms.coverageYOffset;
   let coverageBottom = uniforms.coverageHeight - uniforms.coverageYOffset;
-  let barTop = coverageBottom - bin.depth * uniforms.depthScale * effectiveHeight;
-  let sy = mix(coverageBottom, barTop, localY);
+  let bandBottom = coverageBottom - bin.minDepth * uniforms.depthScale * effectiveHeight;
+  let bandTop = coverageBottom - bin.maxDepth * uniforms.depthScale * effectiveHeight;
+  let sy = mix(bandBottom, bandTop, localY);
 
   let clipPos = vec2f(sx, sy) / vec2f(uniforms.resolutionX, uniforms.resolutionY) * 2.0 - 1.0;
   out.pos = vec4f(clipPos.x, -clipPos.y, 0.0, 1.0);

@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/gpu/webglUtils'
 
 import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
-import { YSCALEBAR_LABEL_OFFSET, niceNum } from './coverageUtils.ts'
+import { YSCALEBAR_LABEL_OFFSET, niceNum } from '@jbrowse/alignments-core'
 import {
   COVERAGE_VERTEX_SHADER,
   FILL_FRAGMENT_SHADER,
@@ -114,7 +114,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     const gl = this.gl
     const vao = gl.createVertexArray()
     gl.bindVertexArray(vao)
-    for (const name of ['a_position', 'a_depth']) {
+    for (const name of ['a_position', 'a_minDepth', 'a_maxDepth']) {
       const loc = gl.getAttribLocation(this.coverageProgram, name)
       if (loc >= 0) {
         gl.enableVertexAttribArray(loc)
@@ -172,9 +172,14 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       gl.vertexAttribPointer(posLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset)
     }
 
-    const depthLoc = gl.getAttribLocation(this.coverageProgram, 'a_depth')
-    if (depthLoc >= 0) {
-      gl.vertexAttribPointer(depthLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset + 4)
+    const minLoc = gl.getAttribLocation(this.coverageProgram, 'a_minDepth')
+    if (minLoc >= 0) {
+      gl.vertexAttribPointer(minLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset + 4)
+    }
+
+    const maxLoc = gl.getAttribLocation(this.coverageProgram, 'a_maxDepth')
+    if (maxLoc >= 0) {
+      gl.vertexAttribPointer(maxLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset + 8)
     }
   }
 
@@ -246,6 +251,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
+    coverageColor?: [number, number, number],
   ) {
     const gl = this.gl
 
@@ -306,6 +312,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           rowPadding,
           coverageHeight,
           depthScale,
+          coverageColor,
         )
 
         this.bindCoverageBuffer(params.instanceOffset)
@@ -353,6 +360,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           rowPadding,
           coverageHeight,
           depthScale,
+          coverageColor,
         )
 
         this.bindInstanceBuffer(this.fillProgram, params.instanceOffset)
@@ -405,6 +413,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
+    coverageColor?: [number, number, number],
   ) {
     const gl = this.gl
     const f = this.uniformF32
@@ -421,9 +430,9 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     f[10] = rowPadding
     f[11] = YSCALEBAR_LABEL_OFFSET
     f[12] = depthScale
-    f[13] = 0
-    f[14] = 0
-    f[15] = 0
+    f[13] = coverageColor ? coverageColor[0] : 0.6
+    f[14] = coverageColor ? coverageColor[1] : 0.6
+    f[15] = coverageColor ? coverageColor[2] : 0.6
 
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.uniformData)

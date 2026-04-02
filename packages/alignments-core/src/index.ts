@@ -54,3 +54,10 @@ export {
   resizeCanvas,
 } from './rendererUtils.ts'
 export type { PickingFbo } from './rendererUtils.ts'
+export {
+  YSCALEBAR_LABEL_OFFSET,
+  computeCoverageTicks,
+  downsampleMinMax,
+  niceNum,
+} from './coverageDownsampling.ts'
+export type { CoverageTicks, DownsampledBins } from './coverageDownsampling.ts'

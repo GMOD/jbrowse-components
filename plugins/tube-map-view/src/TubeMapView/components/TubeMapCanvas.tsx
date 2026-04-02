@@ -2,6 +2,8 @@ import { useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { CANVAS_HEIGHT } from '../model.ts'
+
 import type { TubeMapViewModel } from '../model.ts'
 import type { TubeMapLayout, TubeMapNode } from '../../layout/types.ts'
 
@@ -25,10 +27,12 @@ function getTrackColor(idx: number) {
 
 const NODE_RADIUS = 4
 
+const MIN_SEQ_DISPLAY_WIDTH = 50
 function NodeRect({
   node,
   isHovered,
   isSelected,
+  scale,
   onMouseEnter,
   onMouseLeave,
   onClick,
@@ -36,17 +40,38 @@ function NodeRect({
   node: TubeMapNode
   isHovered: boolean
   isSelected: boolean
+  scale: number
   onMouseEnter: () => void
   onMouseLeave: () => void
   onClick: () => void
 }) {
+  const screenWidth = node.pixelWidth * scale
+  const showSequence =
+    node.sequence && screenWidth > MIN_SEQ_DISPLAY_WIDTH
+  const nodeHeight = Math.max(node.contentHeight, 6)
+
+  // compute font size that fits the node height, capped at a reasonable size
+  const fontSize = showSequence
+    ? Math.min(10, nodeHeight * 0.7, (node.pixelWidth / node.sequenceLength) * 0.9)
+    : 0
+
+  // only show as many chars as will fit
+  const maxChars = showSequence
+    ? Math.floor(node.pixelWidth / (fontSize * 0.6))
+    : 0
+  const displaySeq = showSequence && node.sequence
+    ? node.sequence.length <= maxChars
+      ? node.sequence
+      : node.sequence.slice(0, maxChars)
+    : ''
+
   return (
     <g>
       <rect
         x={node.x}
         y={node.y}
         width={node.pixelWidth}
-        height={Math.max(node.contentHeight, 6)}
+        height={nodeHeight}
         rx={NODE_RADIUS}
         ry={NODE_RADIUS}
         fill={isSelected ? '#ffeb3b' : isHovered ? '#e3f2fd' : '#f5f5f5'}
@@ -65,7 +90,20 @@ function NodeRect({
         fill="#666"
       >
         {node.name}
+        {node.sequence ? ` (${node.sequenceLength}bp)` : ''}
       </text>
+      {displaySeq ? (
+        <text
+          x={node.x + 2}
+          y={node.y + nodeHeight / 2 + fontSize * 0.35}
+          fontSize={fontSize}
+          fontFamily="monospace"
+          fill="#333"
+          pointerEvents="none"
+        >
+          {displaySeq}
+        </text>
+      ) : null}
     </g>
   )
 }
@@ -73,9 +111,13 @@ function NodeRect({
 function TrackPaths({
   layout,
   hoveredTrack,
+  xMin,
+  xMax,
 }: {
   layout: TubeMapLayout
   hoveredTrack: number | null
+  xMin: number
+  xMax: number
 }) {
   return (
     <>
@@ -83,6 +125,22 @@ function TrackPaths({
         const color = getTrackColor(trackIdx)
         const isHovered = hoveredTrack === trackIdx
         const pathSegments = track.path
+
+        // skip tracks entirely outside horizontal visible range
+        let hasVisible = false
+        for (const seg of pathSegments) {
+          if (seg.node !== null) {
+            const n = layout.nodes[seg.node]!
+            if (n.x + n.pixelWidth >= xMin && n.x <= xMax) {
+              hasVisible = true
+              break
+            }
+          }
+        }
+        if (!hasVisible) {
+          return null
+        }
+
         const pathParts: string[] = []
 
         for (let i = 0; i < pathSegments.length; i++) {
@@ -96,7 +154,7 @@ function TrackPaths({
               pathParts.push(`L ${node.x + node.pixelWidth} ${seg.y + 3.5}`)
             } else {
               // edge segment at an intermediate order - find x from nodes at this order
-              const x = getXForOrder(layout, seg.order)
+              const x = layout.orderToX[seg.order]!
               pathParts.push(`M ${x} ${seg.y + 3.5}`)
             }
           } else {
@@ -106,7 +164,7 @@ function TrackPaths({
 
             const prevX = prevNode
               ? prevNode.x + prevNode.pixelWidth
-              : getXForOrder(layout, prev.order) + 5
+              : layout.orderToX[prev.order]! + 5
 
             if (node) {
               // curve from previous segment to this node
@@ -123,7 +181,7 @@ function TrackPaths({
               }
               pathParts.push(`L ${node.x + node.pixelWidth} ${targetY}`)
             } else {
-              const x = getXForOrder(layout, seg.order)
+              const x = layout.orderToX[seg.order]!
               const targetY = seg.y + 3.5
               const prevY = prev.y + 3.5
               if (Math.abs(targetY - prevY) < 1) {
@@ -156,13 +214,80 @@ function TrackPaths({
   )
 }
 
-function getXForOrder(layout: TubeMapLayout, order: number) {
-  for (const node of layout.nodes) {
-    if (node.order === order) {
-      return node.x
-    }
-  }
-  return 0
+
+function TrackLegend({
+  layout,
+  hoveredTrack,
+  onHoverTrack,
+}: {
+  layout: TubeMapLayout
+  hoveredTrack: number | null
+  onHoverTrack: (idx: number | null) => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        background: 'rgba(255,255,255,0.92)',
+        border: '1px solid #ccc',
+        borderRadius: 4,
+        padding: '6px 10px',
+        fontSize: 12,
+        zIndex: 10,
+        maxHeight: 200,
+        overflowY: 'auto',
+      }}
+    >
+      {layout.tracks.map((track, idx) => (
+        <div
+          key={track.id}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '2px 0',
+            opacity: hoveredTrack !== null && hoveredTrack !== idx ? 0.4 : 1,
+            cursor: 'pointer',
+            fontWeight: hoveredTrack === idx ? 600 : 400,
+          }}
+          onMouseEnter={() => {
+            onHoverTrack(idx)
+          }}
+          onMouseLeave={() => {
+            onHoverTrack(null)
+          }}
+        >
+          <div
+            style={{
+              width: 14,
+              height: 4,
+              borderRadius: 2,
+              background: getTrackColor(idx),
+              flexShrink: 0,
+            }}
+          />
+          <span>{track.name}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function useVisibleRange(
+  scale: number,
+  translateX: number,
+  translateY: number,
+  viewWidth: number,
+  viewHeight: number,
+) {
+  // convert screen bounds to graph-space bounds
+  const xMin = -translateX / scale
+  const xMax = (viewWidth - translateX) / scale
+  const yMin = -translateY / scale
+  const yMax = (viewHeight - translateY) / scale
+  return { xMin, xMax, yMin, yMax }
 }
 
 const TubeMapCanvas = observer(function TubeMapCanvas({
@@ -178,6 +303,14 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
   if (!layout) {
     return null
   }
+
+  const { xMin, xMax, yMin, yMax } = useVisibleRange(
+    model.scale,
+    model.translateX,
+    model.translateY,
+    model.width,
+    CANVAS_HEIGHT,
+  )
 
   function handleWheel(e: React.WheelEvent) {
     e.preventDefault()
@@ -213,11 +346,20 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
   }
 
   return (
-    <div style={{ overflow: 'hidden', height: 500, background: '#fff' }}>
+    <div
+      style={{ overflow: 'hidden', height: CANVAS_HEIGHT, background: '#fff', position: 'relative' }}
+    >
+      <TrackLegend
+        layout={layout}
+        hoveredTrack={model.hoveredTrack}
+        onHoverTrack={idx => {
+          model.setHoveredTrack(idx)
+        }}
+      />
       <svg
         ref={svgRef}
         width={model.width}
-        height={500}
+        height={CANVAS_HEIGHT}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -228,26 +370,36 @@ const TubeMapCanvas = observer(function TubeMapCanvas({
         <g
           transform={`translate(${model.translateX},${model.translateY}) scale(${model.scale})`}
         >
-          <TrackPaths layout={layout} hoveredTrack={model.hoveredTrack} />
-          {layout.nodes.map((node, i) => (
-            <NodeRect
-              key={node.name}
-              node={node}
-              isHovered={model.hoveredNode === i}
-              isSelected={model.selectedNode === i}
-              onMouseEnter={() => {
-                model.setHoveredNode(i)
-              }}
-              onMouseLeave={() => {
-                model.setHoveredNode(null)
-              }}
-              onClick={() => {
-                model.setSelectedNode(
-                  model.selectedNode === i ? null : i,
-                )
-              }}
-            />
-          ))}
+          <TrackPaths layout={layout} hoveredTrack={model.hoveredTrack} xMin={xMin} xMax={xMax} />
+          {layout.nodes.map((node, i) => {
+            // viewport culling: skip nodes entirely outside visible range
+            if (node.x + node.pixelWidth < xMin || node.x > xMax) {
+              return null
+            }
+            if (node.y + node.contentHeight < yMin || node.y > yMax) {
+              return null
+            }
+            return (
+              <NodeRect
+                key={node.name}
+                node={node}
+                isHovered={model.hoveredNode === i}
+                isSelected={model.selectedNode === i}
+                scale={model.scale}
+                onMouseEnter={() => {
+                  model.setHoveredNode(i)
+                }}
+                onMouseLeave={() => {
+                  model.setHoveredNode(null)
+                }}
+                onClick={() => {
+                  model.setSelectedNode(
+                    model.selectedNode === i ? null : i,
+                  )
+                }}
+              />
+            )
+          })}
         </g>
       </svg>
     </div>

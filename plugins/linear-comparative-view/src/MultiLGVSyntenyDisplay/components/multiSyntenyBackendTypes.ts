@@ -49,6 +49,7 @@ export interface MultiSyntenyGpuBackend {
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
+    coverageColor?: [number, number, number],
   ): void
   pick(x: number, y: number): number
   dispose(): void

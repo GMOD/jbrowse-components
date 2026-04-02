@@ -19,6 +19,7 @@ import BarChartIcon from '@mui/icons-material/BarChart'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
@@ -86,6 +87,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
+      coverageMaxDepth: 0,
+      coveragePerRefName: undefined as
+        | Map<string, { depths: Float32Array; maxDepth: number; startOffset: number; regionStart: number }>
+        | undefined,
     }))
     .views(self => ({
       get referenceGenomeName() {
@@ -175,6 +180,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setShowCoverage(val: boolean) {
         self.showCoverage = val
+      },
+      setCoverageData(
+        maxDepth: number,
+        perRefName?: Map<string, { depths: Float32Array; maxDepth: number; startOffset: number; regionStart: number }>,
+      ) {
+        self.coverageMaxDepth = maxDepth
+        self.coveragePerRefName = perRefName
       },
       setCoverageHeight(h: number) {
         self.coverageHeight = h
@@ -369,6 +381,54 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             },
           },
           {
+            label: 'Tube map view (feature)',
+            icon: TimelineIcon,
+            onClick: async () => {
+              const session = getSession(self)
+              const fStart = feature.get('start')
+              const fEnd = feature.get('end')
+              const padding = Math.max(10, Math.floor((fEnd - fStart) * 0.5))
+              const region = {
+                refName: feature.get('refName'),
+                assemblyName:
+                  (feature.get('assemblyName') as string | undefined) ??
+                  (getContainingView(self) as LGV).displayedRegions[0]
+                    ?.assemblyName ??
+                  '',
+                start: Math.max(0, fStart - padding),
+                end: fEnd + padding,
+              }
+              const regionLabel = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
+
+              const sessionId = getRpcSessionId(self)
+              try {
+                const gfaText: string = await session.rpcManager.call(
+                  sessionId,
+                  'GetSubgraph',
+                  { adapterConfig, region, sessionId },
+                )
+                if (!gfaText) {
+                  session.notify(
+                    'This adapter does not support graph subgraph extraction',
+                    'warning',
+                  )
+                  return
+                }
+                const tubeMapView = session.addView('TubeMapView', {})
+                ;(tubeMapView as unknown as { loadGFA: (t: string, n: string) => void }).loadGFA(
+                  gfaText,
+                  regionLabel,
+                )
+              } catch (e) {
+                console.error('[TubeMapView launch] Error:', e)
+                session.notify(
+                  `Failed to launch tube map view: ${e instanceof Error ? e.message : e}`,
+                  'error',
+                )
+              }
+            },
+          },
+          {
             label: 'Copy info to clipboard',
             icon: ContentCopyIcon,
             onClick: async () => {
@@ -430,55 +490,106 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
         }
 
-        launchSubMenu.push({
-          label: 'Graph genome view (local)',
-          icon: BubbleChartIcon,
-          onClick: async () => {
-            const session = getSession(self)
-            const dr = view.displayedRegions[0]
-            if (!dr) {
-              console.warn('[GraphView launch] No displayed region found')
-              return
-            }
-            const rawStart = view.offsetPx * view.bpPerPx
-            const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
-            const region = {
-              refName: dr.refName,
-              assemblyName: dr.assemblyName,
-              start: Math.max(0, Math.floor(rawStart)),
-              end: Math.floor(rawEnd),
-            }
-
-            const sessionId = getRpcSessionId(self)
-            const { rpcManager } = session
-            try {
-              const gfaText: string = await rpcManager.call(
-                sessionId,
-                'GetSubgraph',
-                { adapterConfig, region, sessionId },
-              )
-              if (!gfaText) {
-                session.notify(
-                  'This adapter does not support graph subgraph extraction',
-                  'warning',
-                )
+        launchSubMenu.push(
+          {
+            label: 'Graph genome view (local)',
+            icon: BubbleChartIcon,
+            onClick: async () => {
+              const session = getSession(self)
+              const dr = view.displayedRegions[0]
+              if (!dr) {
+                console.warn('[GraphView launch] No displayed region found')
                 return
               }
-              const graphView = session.addView('GraphGenomeView', {})
+              const rawStart = view.offsetPx * view.bpPerPx
+              const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
+              const region = {
+                refName: dr.refName,
+                assemblyName: dr.assemblyName,
+                start: Math.max(0, Math.floor(rawStart)),
+                end: Math.floor(rawEnd),
+              }
 
-              await (graphView as any).loadGFA(
-                gfaText,
-                `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
-              )
-            } catch (e) {
-              console.error('[GraphView launch] Error:', e)
-              session.notify(
-                `Failed to launch graph view: ${e instanceof Error ? e.message : e}`,
-                'error',
-              )
-            }
+              const sessionId = getRpcSessionId(self)
+              const { rpcManager } = session
+              try {
+                const gfaText: string = await rpcManager.call(
+                  sessionId,
+                  'GetSubgraph',
+                  { adapterConfig, region, sessionId },
+                )
+                if (!gfaText) {
+                  session.notify(
+                    'This adapter does not support graph subgraph extraction',
+                    'warning',
+                  )
+                  return
+                }
+                const graphView = session.addView('GraphGenomeView', {})
+
+                await (graphView as any).loadGFA(
+                  gfaText,
+                  `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
+                )
+              } catch (e) {
+                console.error('[GraphView launch] Error:', e)
+                session.notify(
+                  `Failed to launch graph view: ${e instanceof Error ? e.message : e}`,
+                  'error',
+                )
+              }
+            },
           },
-        })
+          {
+            label: 'Tube map view (local)',
+            icon: TimelineIcon,
+            onClick: async () => {
+              const session = getSession(self)
+              const dr = view.displayedRegions[0]
+              if (!dr) {
+                console.warn('[TubeMapView launch] No displayed region found')
+                return
+              }
+              const rawStart = view.offsetPx * view.bpPerPx
+              const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
+              const region = {
+                refName: dr.refName,
+                assemblyName: dr.assemblyName,
+                start: Math.max(0, Math.floor(rawStart)),
+                end: Math.floor(rawEnd),
+              }
+              const regionLabel = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
+
+              const sessionId = getRpcSessionId(self)
+              const { rpcManager } = session
+              try {
+                const gfaText: string = await rpcManager.call(
+                  sessionId,
+                  'GetSubgraph',
+                  { adapterConfig, region, sessionId },
+                )
+                if (!gfaText) {
+                  session.notify(
+                    'This adapter does not support graph subgraph extraction',
+                    'warning',
+                  )
+                  return
+                }
+                const tubeMapView = session.addView('TubeMapView', {})
+                ;(tubeMapView as unknown as { loadGFA: (t: string, n: string) => void }).loadGFA(
+                  gfaText,
+                  regionLabel,
+                )
+              } catch (e) {
+                console.error('[TubeMapView launch] Error:', e)
+                session.notify(
+                  `Failed to launch tube map view: ${e instanceof Error ? e.message : e}`,
+                  'error',
+                )
+              }
+            },
+          },
+        )
 
         return [
           {

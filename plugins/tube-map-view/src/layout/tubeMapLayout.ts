@@ -11,7 +11,6 @@
 import type {
   NodeAssignment,
   PathSegment,
-  TrackAssignment,
   TubeMapLayout,
   TubeMapNode,
   TubeMapTrack,
@@ -20,6 +19,7 @@ import type {
 const NODE_GAP = 10
 const TRACK_WIDTH = 7
 const NODE_PADDING = 25
+const MIN_NODE_WIDTH = 10
 
 interface InputNode {
   name: string
@@ -30,10 +30,13 @@ interface InputNode {
 interface InputTrack {
   id: string
   name: string
-  // node names; prepend '>' or '<' for orientation
   segments: { name: string; isForward: boolean }[]
   type: 'haplotype' | 'read'
   indexOfFirstBase: number
+}
+
+function absIdx(raw: number) {
+  return raw < 0 ? -(raw + 1) : raw
 }
 
 export function computeTubeMapLayout(
@@ -51,10 +54,10 @@ export function computeTubeMapLayout(
       order: -1,
       x: 0,
       y: 0,
-      pixelWidth: Math.max(n.sequenceLength * widthPerBp, 1),
+      pixelWidth: Math.max(n.sequenceLength * widthPerBp, MIN_NODE_WIDTH),
       contentHeight: 0,
-      successors: [],
-      predecessors: [],
+      successors: new Set<number>(),
+      predecessors: new Set<number>(),
       topLane: 0,
       degree: 0,
     }
@@ -79,14 +82,14 @@ export function computeTubeMapLayout(
   })
 
   if (nodes.length === 0) {
-    return { nodes, tracks, maxX: 0, maxY: 0 }
+    return { nodes, tracks, orderToX: new Float64Array(0), maxX: 0, maxY: 0 }
   }
 
   generateNodeOrder(nodes, tracks)
   generateNodeSuccessors(nodes, tracks)
   const assignments = generateLaneAssignment(nodes, tracks)
   applyVerticalPositions(nodes, tracks, assignments)
-  generateNodeXCoords(nodes, tracks)
+  const orderToX = generateNodeXCoords(nodes, tracks)
 
   let maxX = 0
   let maxY = 0
@@ -101,7 +104,17 @@ export function computeTubeMapLayout(
     }
   }
 
-  return { nodes, tracks, maxX, maxY }
+  return { nodes, tracks, orderToX, maxX, maxY }
+}
+
+function maxOrder(nodes: TubeMapNode[]) {
+  let max = 0
+  for (const n of nodes) {
+    if (n.order > max) {
+      max = n.order
+    }
+  }
+  return max
 }
 
 // Pass 1: assign horizontal order to nodes based on track traversal
@@ -113,29 +126,24 @@ function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
     const seq = track.sequence
 
     if (t === 0) {
-      // first track sets the base ordering
       for (const rawIdx of seq) {
-        const idx = rawIdx < 0 ? -(rawIdx + 1) : rawIdx
+        const idx = absIdx(rawIdx)
         if (nodes[idx]!.order === -1) {
           nodes[idx]!.order = nextOrder++
         }
       }
     } else {
-      // subsequent tracks: find anchors (already-ordered nodes) and fill gaps
       let prevAnchorPos = -1
       let prevAnchorOrder = -1
 
       for (let s = 0; s < seq.length; s++) {
-        const idx = seq[s]! < 0 ? -(seq[s]! + 1) : seq[s]!
+        const idx = absIdx(seq[s]!)
         const node = nodes[idx]!
 
         if (node.order !== -1) {
-          // this is an anchor
           if (prevAnchorPos !== -1 && s - prevAnchorPos > 1) {
-            // fill unordered nodes between anchors
             const gapCount = s - prevAnchorPos - 1
             const startOrder = prevAnchorOrder + 1
-            // shift subsequent nodes to make room
             for (const n of nodes) {
               if (n.order >= startOrder && n.order !== -1) {
                 n.order += gapCount
@@ -143,10 +151,7 @@ function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
             }
             nextOrder += gapCount
             for (let g = 1; g <= gapCount; g++) {
-              const gapIdx =
-                seq[prevAnchorPos + g]! < 0
-                  ? -(seq[prevAnchorPos + g]! + 1)
-                  : seq[prevAnchorPos + g]!
+              const gapIdx = absIdx(seq[prevAnchorPos + g]!)
               if (nodes[gapIdx]!.order === -1) {
                 nodes[gapIdx]!.order = startOrder + g - 1
               }
@@ -157,9 +162,8 @@ function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
         }
       }
 
-      // handle trailing unordered nodes
       for (const rawIdx of seq) {
-        const idx = rawIdx < 0 ? -(rawIdx + 1) : rawIdx
+        const idx = absIdx(rawIdx)
         if (nodes[idx]!.order === -1) {
           nodes[idx]!.order = nextOrder++
         }
@@ -167,7 +171,6 @@ function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
     }
   }
 
-  // any nodes not in any track get appended
   for (const node of nodes) {
     if (node.order === -1) {
       node.order = nextOrder++
@@ -175,7 +178,7 @@ function generateNodeOrder(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   }
 }
 
-// Pass 2: build successor/predecessor adjacency from tracks
+// Pass 2: build successor/predecessor adjacency from tracks (using Sets for O(1) lookup)
 function generateNodeSuccessors(
   nodes: TubeMapNode[],
   tracks: TubeMapTrack[],
@@ -183,31 +186,23 @@ function generateNodeSuccessors(
   for (const track of tracks) {
     const seq = track.sequence
     for (let i = 0; i < seq.length - 1; i++) {
-      const a = seq[i]! < 0 ? -(seq[i]! + 1) : seq[i]!
-      const b = seq[i + 1]! < 0 ? -(seq[i + 1]! + 1) : seq[i + 1]!
+      const a = absIdx(seq[i]!)
+      const b = absIdx(seq[i + 1]!)
       const nodeA = nodes[a]!
       const nodeB = nodes[b]!
 
       if (nodeA.order <= nodeB.order) {
-        if (!nodeA.successors.includes(b)) {
-          nodeA.successors.push(b)
-        }
-        if (!nodeB.predecessors.includes(a)) {
-          nodeB.predecessors.push(a)
-        }
+        nodeA.successors.add(b)
+        nodeB.predecessors.add(a)
       } else {
-        if (!nodeB.successors.includes(a)) {
-          nodeB.successors.push(a)
-        }
-        if (!nodeA.predecessors.includes(b)) {
-          nodeA.predecessors.push(b)
-        }
+        nodeB.successors.add(a)
+        nodeA.predecessors.add(b)
       }
     }
   }
 
   for (const node of nodes) {
-    node.degree = node.successors.length + node.predecessors.length
+    node.degree = node.successors.size + node.predecessors.size
   }
 }
 
@@ -216,11 +211,14 @@ function generateLaneAssignment(
   nodes: TubeMapNode[],
   tracks: TubeMapTrack[],
 ) {
-  const maxOrder = Math.max(...nodes.map(n => n.order), 0)
+  const mo = maxOrder(nodes)
   const assignments: NodeAssignment[][] = Array.from(
-    { length: maxOrder + 1 },
+    { length: mo + 1 },
     () => [],
   )
+
+  // map from (order, nodeIdx) → index in assignments[order] for O(1) lookup
+  const slotIndex = new Map<string, number>()
 
   for (let t = 0; t < tracks.length; t++) {
     const track = tracks[t]!
@@ -230,7 +228,7 @@ function generateLaneAssignment(
 
     for (let s = 0; s < seq.length; s++) {
       const rawIdx = seq[s]!
-      const idx = rawIdx < 0 ? -(rawIdx + 1) : rawIdx
+      const idx = absIdx(rawIdx)
       const isForward = rawIdx >= 0
       const node = nodes[idx]!
       const order = node.order
@@ -244,12 +242,11 @@ function generateLaneAssignment(
       }
       path.push(segment)
 
-      addToAssignment(assignments, order, idx, t, path.length - 1)
+      addToAssignment(assignments, slotIndex, order, idx, t, path.length - 1)
 
-      // add edge segments between consecutive nodes at different orders
       if (s < seq.length - 1) {
         const nextRaw = seq[s + 1]!
-        const nextIdx = nextRaw < 0 ? -(nextRaw + 1) : nextRaw
+        const nextIdx = absIdx(nextRaw)
         const nextOrder = nodes[nextIdx]!.order
 
         if (nextOrder !== order) {
@@ -264,7 +261,14 @@ function generateLaneAssignment(
               y: 0,
             }
             path.push(edgeSegment)
-            addToAssignment(assignments, cur, null, t, path.length - 1)
+            addToAssignment(
+              assignments,
+              slotIndex,
+              cur,
+              null,
+              t,
+              path.length - 1,
+            )
             cur += step
           }
         }
@@ -272,9 +276,8 @@ function generateLaneAssignment(
     }
   }
 
-  // now assign actual lane numbers within each order slot
-  for (let order = 0; order <= maxOrder; order++) {
-    assignLanesAtOrder(assignments[order]!, order, nodes, tracks)
+  for (let order = 0; order <= mo; order++) {
+    assignLanesAtOrder(assignments[order]!)
   }
 
   return assignments
@@ -282,51 +285,39 @@ function generateLaneAssignment(
 
 function addToAssignment(
   assignments: NodeAssignment[][],
+  slotIndex: Map<string, number>,
   order: number,
   nodeIdx: number | null,
   trackID: number,
   segmentID: number,
 ) {
   const slot = assignments[order]!
+  const ta = {
+    trackID,
+    segmentID,
+    lane: 0,
+    idealLane: trackID,
+    idealY: null,
+  }
 
-  // find existing assignment for this node
-  let existing: NodeAssignment | undefined
   if (nodeIdx !== null) {
-    existing = slot.find(a => a.node === nodeIdx)
+    const key = `${order}:${nodeIdx}`
+    const existingIdx = slotIndex.get(key)
+    if (existingIdx !== undefined) {
+      slot[existingIdx]!.tracks.push(ta)
+      return
+    }
+    slotIndex.set(key, slot.length)
   }
 
-  if (existing) {
-    existing.tracks.push({
-      trackID,
-      segmentID,
-      lane: 0,
-      idealLane: trackID,
-      idealY: null,
-    })
-  } else {
-    slot.push({
-      node: nodeIdx,
-      tracks: [
-        {
-          trackID,
-          segmentID,
-          lane: 0,
-          idealLane: trackID,
-          idealY: null,
-        },
-      ],
-      idealLane: 0,
-    })
-  }
+  slot.push({
+    node: nodeIdx,
+    tracks: [ta],
+    idealLane: 0,
+  })
 }
 
-function assignLanesAtOrder(
-  slot: NodeAssignment[],
-  _order: number,
-  _nodes: TubeMapNode[],
-  _tracks: TubeMapTrack[],
-) {
-  // compute ideal lanes based on predecessor positions
+function assignLanesAtOrder(slot: NodeAssignment[]) {
   for (const assignment of slot) {
     let sumIdeal = 0
     let count = 0
@@ -337,10 +328,8 @@ function assignLanesAtOrder(
     assignment.idealLane = count > 0 ? sumIdeal / count : 0
   }
 
-  // sort by ideal lane
   slot.sort((a, b) => a.idealLane - b.idealLane)
 
-  // assign sequential lanes
   let lane = 0
   for (const assignment of slot) {
     for (const ta of assignment.tracks) {
@@ -380,7 +369,6 @@ function applyVerticalPositions(
       y += NODE_PADDING
     }
 
-    // set content height on nodes at this order
     for (const assignment of slot) {
       if (assignment.node !== null) {
         const node = nodes[assignment.node]!
@@ -395,13 +383,13 @@ function applyVerticalPositions(
   }
 }
 
-// Pass 5: compute x coordinates for nodes
+// Pass 5: compute x coordinates for nodes; returns orderToX lookup
 function generateNodeXCoords(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
-  const maxOrder = Math.max(...nodes.map(n => n.order), 0)
-  const extraSpace = calculateExtraSpace(nodes, tracks, maxOrder)
+  const mo = maxOrder(nodes)
+  const extraSpace = calculateExtraSpace(nodes, tracks, mo)
 
-  // sort nodes by order
   const sorted = [...nodes].sort((a, b) => a.order - b.order)
+  const orderToX = new Float64Array(mo + 1)
 
   let nextX = 0
   let prevOrder = -1
@@ -409,19 +397,22 @@ function generateNodeXCoords(nodes: TubeMapNode[], tracks: TubeMapTrack[]) {
   for (const node of sorted) {
     if (node.order !== prevOrder) {
       nextX += NODE_GAP * (extraSpace[node.order] ?? 1)
+      orderToX[node.order] = nextX
       prevOrder = node.order
     }
     node.x = nextX
     nextX += node.pixelWidth + NODE_GAP
   }
+
+  return orderToX
 }
 
 function calculateExtraSpace(
   nodes: TubeMapNode[],
   tracks: TubeMapTrack[],
-  maxOrder: number,
+  mo: number,
 ) {
-  const extra = new Float32Array(maxOrder + 1)
+  const extra = new Float32Array(mo + 1)
   extra.fill(1)
 
   for (const track of tracks) {
@@ -440,12 +431,11 @@ function calculateExtraSpace(
     }
   }
 
-  // also add space for nodes at the same order (stacked)
-  const orderCount = new Uint16Array(maxOrder + 1)
+  const orderCount = new Uint16Array(mo + 1)
   for (const node of nodes) {
     orderCount[node.order]!++
   }
-  for (let i = 0; i <= maxOrder; i++) {
+  for (let i = 0; i <= mo; i++) {
     if (orderCount[i]! > 1 && extra[i]! < 2) {
       extra[i] = 2
     }

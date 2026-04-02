@@ -58,7 +58,6 @@ const suite: TestSuite = {
           () => {
             const svgs = document.querySelectorAll('svg')
             for (const svg of svgs) {
-              // look for the tube map SVG (has rect elements for nodes)
               if (svg.querySelectorAll('rect').length >= 15) {
                 return true
               }
@@ -66,6 +65,27 @@ const suite: TestSuite = {
             return false
           },
           { timeout: 10000, polling: 200 },
+        )
+
+        // Verify track legend shows both haplotype names
+        // Verify the legend is present by checking for track name text
+        // The example GFA has paths named 'x' and 'y'
+        await page.waitForFunction(
+          () => {
+            const divs = document.querySelectorAll('span')
+            let foundX = false
+            let foundY = false
+            for (const d of divs) {
+              if (d.textContent === 'x') {
+                foundX = true
+              }
+              if (d.textContent === 'y') {
+                foundY = true
+              }
+            }
+            return foundX && foundY
+          },
+          { timeout: 5000 },
         )
 
         await delay(500)
@@ -111,6 +131,55 @@ const suite: TestSuite = {
         }
 
         await snapshot(page, 'tube-map-node-hover', 0.15)
+      },
+    },
+    {
+      name: 'legend hover highlights track',
+      fn: async page => {
+        await navigateAndAddTubeMapView(page)
+
+        const exampleBtn = await findByText(
+          page,
+          'Load example (tiny pangenome, 15 nodes, 2 haplotypes)',
+          10000,
+        )
+        await exampleBtn?.click()
+
+        await page.waitForFunction(
+          () => {
+            const svgs = document.querySelectorAll('svg')
+            for (const svg of svgs) {
+              if (svg.querySelectorAll('rect').length >= 15) {
+                return true
+              }
+            }
+            return false
+          },
+          { timeout: 10000, polling: 200 },
+        )
+
+        await delay(300)
+
+        // Hover the first legend entry to highlight that track
+        // Find the legend container and hover the first entry
+        const legendEntry = await page.evaluateHandle(() => {
+          const spans = document.querySelectorAll('span')
+          for (const s of spans) {
+            if (s.textContent === 'x') {
+              return s.parentElement
+            }
+          }
+          return null
+        })
+        if (legendEntry) {
+          const box = await (legendEntry as import('puppeteer').ElementHandle).boundingBox()
+          if (box) {
+            await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+            await delay(300)
+          }
+        }
+
+        await snapshot(page, 'tube-map-legend-hover', 0.15)
       },
     },
     {

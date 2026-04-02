@@ -12,7 +12,11 @@ import type {
   MultiSyntenyCanvasRenderOpts,
 } from './multiSyntenyBackendTypes.ts'
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
-import { YSCALEBAR_LABEL_OFFSET, niceNum } from './coverageUtils.ts'
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  downsampleMinMax,
+  niceNum,
+} from '@jbrowse/alignments-core'
 
 import type { SyntenyCoverageData } from './multiSyntenyGpuData.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
@@ -32,21 +36,24 @@ function renderCoverageToCtx(
   }
 
   const nicedMax = niceNum(coverageData.globalMaxDepth)
+  const depthScale = coverageData.globalMaxDepth / nicedMax
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const coverageBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   ctx.fillStyle = '#999'
 
   for (const [refName, data] of coverageData.perRefName) {
-    for (let i = 0; i < data.depths.length; i++) {
-      const depth = data.depths[i]!
-      if (depth === 0) {
-        continue
-      }
+    const ds = downsampleMinMax(
+      data.depths,
+      data.startOffset,
+      Math.ceil(width),
+      coverageData.globalMaxDepth,
+    )
 
-      const genomicPos = data.regionStart + data.startOffset + i
-      const px = bpToPx(refName, genomicPos)
-      const px2 = bpToPx(refName, genomicPos + 1)
+    for (let i = 0; i < ds.count; i++) {
+      const binPos = data.regionStart + ds.positions[i]!
+      const px = bpToPx(refName, binPos)
+      const px2 = bpToPx(refName, binPos + 1)
       if (px === undefined || px2 === undefined) {
         continue
       }
@@ -54,9 +61,9 @@ function renderCoverageToCtx(
         continue
       }
 
-      const barHeight = (depth / nicedMax) * effectiveHeight
-      const y = coverageBottom - barHeight
-      ctx.fillRect(px, y, Math.max(px2 - px, 1), barHeight)
+      const bandBottom = coverageBottom - ds.mins[i]! * depthScale * effectiveHeight
+      const bandTop = coverageBottom - ds.maxs[i]! * depthScale * effectiveHeight
+      ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
     }
   }
 }

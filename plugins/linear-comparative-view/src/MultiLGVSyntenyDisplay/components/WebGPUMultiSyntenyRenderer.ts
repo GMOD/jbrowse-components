@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/gpu/webgpuUtils'
 
 import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
-import { YSCALEBAR_LABEL_OFFSET, niceNum } from './coverageUtils.ts'
+import { YSCALEBAR_LABEL_OFFSET, niceNum } from '@jbrowse/alignments-core'
 import {
   UNIFORM_BYTE_SIZE,
   WGSL_FILL_SHADER,
@@ -191,6 +191,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowHeight: number,
     rowSpacing: boolean,
     coverageHeight: number,
+    coverageColor?: [number, number, number],
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
     if (!device) {
@@ -253,6 +254,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           rowPadding,
           coverageHeight,
           depthScale,
+          coverageColor,
         )
 
         const encoder = device.createCommandEncoder()
@@ -316,6 +318,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
           rowPadding,
           coverageHeight,
           depthScale,
+          coverageColor,
         )
 
         const encoder = device.createCommandEncoder()
@@ -387,6 +390,7 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     rowPadding: number,
     coverageHeight: number,
     depthScale: number,
+    coverageColor?: [number, number, number],
   ) {
     const f = this.uniformF32
     f[0] = width
@@ -402,9 +406,9 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     f[10] = rowPadding
     f[11] = YSCALEBAR_LABEL_OFFSET
     f[12] = depthScale
-    f[13] = 0
-    f[14] = 0
-    f[15] = 0
+    f[13] = coverageColor ? coverageColor[0] : 0.6
+    f[14] = coverageColor ? coverageColor[1] : 0.6
+    f[15] = coverageColor ? coverageColor[2] : 0.6
     device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData)
   }
 }

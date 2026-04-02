@@ -7,8 +7,8 @@ export interface TubeMapNode {
   y: number
   pixelWidth: number
   contentHeight: number
-  successors: number[]
-  predecessors: number[]
+  successors: Set<number>
+  predecessors: Set<number>
   topLane: number
   degree: number
 }
@@ -48,6 +48,8 @@ export interface NodeAssignment {
 export interface TubeMapLayout {
   nodes: TubeMapNode[]
   tracks: TubeMapTrack[]
+  // order → x coordinate lookup for efficient edge rendering
+  orderToX: Float64Array
   maxX: number
   maxY: number
 }

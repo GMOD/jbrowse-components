@@ -10,11 +10,12 @@ import { observer } from 'mobx-react'
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
-import { computeCoverageTicks } from './coverageUtils.ts'
+import { computeCoverageTicks } from '@jbrowse/alignments-core'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_FONT_MAX, LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
 import { computeSyntenyCoverageGpuData } from './multiSyntenyGpuData.ts'
 
+import type { CoveragePerRefName } from './multiSyntenyGpuData.ts'
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -31,6 +32,12 @@ interface MultiSyntenyModel {
   showCoverage: boolean
   showSnps: boolean
   dataVersion: number
+  coverageMaxDepth: number
+  coveragePerRefName?: Map<string, CoveragePerRefName>
+  setCoverageData: (
+    maxDepth: number,
+    perRefName?: Map<string, CoveragePerRefName>,
+  ) => void
 }
 
 function formatTooltip(hit: FeatureHitResult) {
@@ -253,6 +260,15 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const rendererRef = useRef<MultiSyntenyRenderer | null>(null)
   const [ready, setReady] = useState(false)
   const { palette } = useTheme()
+  const coverageColorRgb = useMemo(() => {
+    const hex =
+      palette.mode === 'dark' ? palette.grey[700] : palette.grey[400]
+    // parse hex to normalized RGB
+    const r = parseInt(hex.slice(1, 3), 16) / 255
+    const g = parseInt(hex.slice(3, 5), 16) / 255
+    const b = parseInt(hex.slice(5, 7), 16) / 255
+    return [r, g, b] as [number, number, number]
+  }, [palette.mode, palette.grey])
   const [tooltip, setTooltip] = useState<{
     text: string
     open: boolean
@@ -260,7 +276,6 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const [hoveredHit, setHoveredHit] = useState<FeatureHitResult | undefined>()
   const [selectedHit, setSelectedHit] = useState<FeatureHitResult | undefined>()
   const prevViewRef = useRef({ bpPerPx: 0, offsetPx: 0 })
-  const [coverageMaxDepth, setCoverageMaxDepth] = useState(0)
 
   const view = getContainingView(model) as LinearGenomeViewModel
 
@@ -328,13 +343,14 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           genomeRows,
           displayedGenomes,
           contentBlocks,
+          Math.ceil(view.width),
         )
         if (renderer?.isGpu) {
           renderer.uploadCoverage(coverageData)
         }
-        setCoverageMaxDepth(coverageData.globalMaxDepth)
+        model.setCoverageData(coverageData.globalMaxDepth, coverageData.perRefName)
       } else {
-        setCoverageMaxDepth(0)
+        model.setCoverageData(0)
       }
     })
   }, [ready, model, view])
@@ -359,10 +375,11 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           rowHeight,
           rowSpacing,
           syntenyCoverageHeight,
+          coverageColorRgb,
         )
       }
     })
-  }, [ready, model, view])
+  }, [ready, model, view, coverageColorRgb])
 
   // Canvas2D fallback path
   useEffect(() => {
@@ -398,6 +415,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
             genomeRows,
             displayedGenomes,
             view.staticBlocks.contentBlocks,
+            Math.ceil(view.width),
           )
         }
         renderer.renderCanvas(genomeRows, displayedGenomes, {
@@ -431,11 +449,11 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
 
   const coverageTicks = useMemo(() => {
-    if (coverageMaxDepth === 0 || syntenyCoverageHeight === 0) {
+    if (model.coverageMaxDepth === 0 || syntenyCoverageHeight === 0) {
       return undefined
     }
-    return computeCoverageTicks(coverageMaxDepth, syntenyCoverageHeight)
-  }, [coverageMaxDepth, syntenyCoverageHeight])
+    return computeCoverageTicks(model.coverageMaxDepth, syntenyCoverageHeight)
+  }, [model.coverageMaxDepth, syntenyCoverageHeight])
 
   // Hide tooltip and hover on zoom or scroll changes
   useEffect(() => {
@@ -479,6 +497,35 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     [rowHeight, labelW, view, spatialIndex, syntenyCoverageHeight],
   )
 
+  const doCoverageHitTest = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (!model.coverageMaxDepth || syntenyCoverageHeight === 0) {
+        return undefined
+      }
+      const rect = e.currentTarget.getBoundingClientRect()
+      const y = e.clientY - rect.top
+      if (y < 0 || y >= syntenyCoverageHeight) {
+        return undefined
+      }
+      const x = e.clientX - rect.left
+      const bp = view.pxToBp(x + view.offsetPx)
+      if (!bp || bp.oob) {
+        return undefined
+      }
+      const covData = model.coveragePerRefName?.get(bp.refName)
+      if (!covData) {
+        return undefined
+      }
+      const idx = Math.floor(bp.coord - 1) - covData.regionStart - covData.startOffset
+      if (idx < 0 || idx >= covData.depths.length) {
+        return undefined
+      }
+      const depth = covData.depths[idx]!
+      return `${bp.refName}:${Math.floor(bp.coord).toLocaleString()} depth: ${depth}`
+    },
+    [model.coverageMaxDepth, model.coveragePerRefName, syntenyCoverageHeight, view],
+  )
+
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const hit = doHitTest(e)
@@ -486,10 +533,15 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       if (hit) {
         setTooltip({ text: formatTooltip(hit), open: true })
       } else {
-        setTooltip(t => (t.open ? { text: '', open: false } : t))
+        const covTip = doCoverageHitTest(e)
+        if (covTip) {
+          setTooltip({ text: covTip, open: true })
+        } else {
+          setTooltip(t => (t.open ? { text: '', open: false } : t))
+        }
       }
     },
-    [doHitTest],
+    [doHitTest, doCoverageHitTest],
   )
 
   const onMouseLeave = useCallback(() => {
