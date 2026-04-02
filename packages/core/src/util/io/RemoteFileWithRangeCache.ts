@@ -68,14 +68,12 @@ export class RemoteFileWithRangeCache extends RemoteFile {
 
   async stat() {
     if (!this.cachedStat) {
-      // Trigger a range fetch which will populate cachedStat from Content-Range
       await this.getCachedRange(this.url, 0, 1)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!this.cachedStat) {
-        throw new Error(`unable to determine size of file at ${this.url}`)
-      }
     }
-    return this.cachedStat
+    // Content-Range may not be exposed (CORS) — return size 0 rather than
+    // throwing so callers degrade gracefully.
+
+    return this.cachedStat ?? { size: 0 }
   }
 
   private async fetchRange(

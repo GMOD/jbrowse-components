@@ -278,6 +278,97 @@ describe('RemoteFileWithRangeCache', () => {
     expect(calls).toHaveLength(2)
   })
 
+  test('stat() returns file size from Content-Range header', async () => {
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      if (range) {
+        const m = /bytes=(\d+)-(\d+)/.exec(range)
+        if (m) {
+          const start = Number(m[1])
+          const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+          return new Response(slice(start, end), {
+            status: 206,
+            headers: {
+              'content-range': `bytes ${start}-${end}/${FILE_SIZE}`,
+            },
+          })
+        }
+      }
+      return new Response('', { status: 200 })
+    }
+    const file = new RemoteFileWithRangeCache('http://example.com/data.bin', {
+      fetch: mockFetch,
+    })
+    const stat = await file.stat()
+    expect(stat.size).toBe(FILE_SIZE)
+  })
+
+  test('stat() does not throw when Content-Range is not exposed (CORS)', async () => {
+    const { mockFetch } = createMockFetch() // no Content-Range headers
+    const file = makeFile(mockFetch)
+    // Falls back to parent stat() — should not crash
+    await expect(file.stat()).resolves.toBeDefined()
+  })
+
+  // Cold cache: the over-read request is the FIRST request, so no short chunk
+  // is cached yet. The coalesced fetch covers both a valid and past-EOF chunk
+  // in one HTTP request — the server clips the response, and the past-EOF
+  // chunk is cached as empty. No 416.
+  test('cold-cache over-read handles partial server response gracefully', async () => {
+    const smallFileSize = CHUNK + 210_000
+    const smallFile = new Uint8Array(smallFileSize)
+    for (let i = 0; i < smallFileSize; i++) {
+      smallFile[i] = i % 256
+    }
+
+    const calls: { start: number; end: number }[] = []
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      if (range) {
+        const m = /bytes=(\d+)-(\d+)/.exec(range)
+        if (m) {
+          const reqStart = Number(m[1])
+          const reqEnd = Number(m[2])
+          calls.push({ start: reqStart, end: reqEnd })
+          if (reqStart >= smallFileSize) {
+            return new Response('', { status: 416 })
+          }
+          const end = Math.min(reqEnd, smallFileSize - 1)
+          return new Response(smallFile.slice(reqStart, end + 1), {
+            status: 206,
+          })
+        }
+      }
+      return new Response('', { status: 200 })
+    }
+
+    const file = new RemoteFileWithRangeCache('http://example.com/small.bin', {
+      fetch: mockFetch,
+    })
+
+    // Single request spanning chunks 1 and 2, with no prior cached chunks.
+    // Chunk 1 has data, chunk 2 is past EOF.
+    const overreadStart = CHUNK + 200_000
+    const overreadEnd = overreadStart + 65_535
+    const res = await file.fetch('http://example.com/small.bin', {
+      headers: { range: `bytes=${overreadStart}-${overreadEnd}` },
+    })
+    const result = new Uint8Array(await res.arrayBuffer())
+
+    // Returns only the bytes that exist
+    expect(result).toEqual(smallFile.slice(overreadStart, smallFileSize))
+
+    // Both chunks were in one coalesced run — only one HTTP request
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.start).toBe(CHUNK)
+  })
+
   test('different URLs do not share cache', async () => {
     const { calls, mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)
