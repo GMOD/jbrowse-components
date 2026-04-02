@@ -64,6 +64,20 @@ function cacheKey(url: string, chunkIndex: number) {
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
+  private cachedStat?: { size: number }
+
+  async stat() {
+    if (!this.cachedStat) {
+      // Trigger a range fetch which will populate cachedStat from Content-Range
+      await this.getCachedRange(this.url, 0, 1)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!this.cachedStat) {
+        throw new Error(`unable to determine size of file at ${this.url}`)
+      }
+    }
+    return this.cachedStat
+  }
+
   private async fetchRange(
     url: string,
     start: number,
@@ -74,10 +88,22 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       signal: signal ?? undefined,
       headers: { range: `bytes=${start}-${end}` },
     })
+    if (res.status === 416) {
+      // Range Not Satisfiable: requested range starts past end of file
+      return new Uint8Array(0)
+    }
     if (!res.ok) {
-      const errorMessage = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}`
       const hint = ' (should be 206 for range requests)'
-      throw new Error(`${errorMessage}${res.status === 200 ? hint : ''}`)
+      const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${res.status === 200 ? hint : ''}`
+      throw Object.assign(new Error(msg), { status: res.status })
+    }
+    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345")
+    if (!this.cachedStat) {
+      const contentRange = res.headers.get('content-range')
+      const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
+      if (match) {
+        this.cachedStat = { size: parseInt(match[1]!, 10) }
+      }
     }
     return new Uint8Array(await res.arrayBuffer())
   }
@@ -92,33 +118,45 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     const endChunk = Math.floor((start + length - 1) / CHUNK_SIZE)
     const chunkCount = endChunk - startChunk + 1
 
-    const chunks = await Promise.all(
-      Array.from({ length: chunkCount }, (_, i) => {
-        const idx = startChunk + i
-        const key = cacheKey(url, idx)
-        const existing = getCached(key)
-        if (existing) {
-          return Promise.resolve(existing)
+    // Find contiguous runs of missing (uncached) chunks
+    const runs: { start: number; end: number }[] = []
+    for (let i = 0; i < chunkCount; i++) {
+      if (!getCached(cacheKey(url, startChunk + i))) {
+        const lastRun = runs[runs.length - 1]
+        if (lastRun && lastRun.end === i - 1) {
+          lastRun.end = i
+        } else {
+          runs.push({ start: i, end: i })
         }
-        return limitConcurrency(async () => {
-          const alreadyCached = getCached(key)
-          if (alreadyCached) {
-            return alreadyCached
+      }
+    }
+
+    // Fetch each contiguous run as a single HTTP range request
+    await Promise.all(
+      runs.map(run =>
+        limitConcurrency(async () => {
+          const runStartChunk = startChunk + run.start
+          const runEndChunk = startChunk + run.end
+          const rangeStart = runStartChunk * CHUNK_SIZE
+          const rangeEnd = (runEndChunk + 1) * CHUNK_SIZE - 1
+          const data = await this.fetchRange(url, rangeStart, rangeEnd, signal)
+          for (let i = run.start; i <= run.end; i++) {
+            const offset = (i - run.start) * CHUNK_SIZE
+            putCached(
+              cacheKey(url, startChunk + i),
+              data.subarray(offset, offset + CHUNK_SIZE),
+            )
           }
-          const chunkStart = idx * CHUNK_SIZE
-          const chunkEnd = chunkStart + CHUNK_SIZE - 1
-          const data = await this.fetchRange(url, chunkStart, chunkEnd, signal)
-          putCached(key, data)
-          return data
-        })
-      }),
+        }),
+      ),
     )
 
+    // Assemble result from cached chunks
     const offsetInFirstChunk = start - startChunk * CHUNK_SIZE
     const result = new Uint8Array(length)
     let written = 0
-    for (const [i, chunk_] of chunks.entries()) {
-      const chunk = chunk_
+    for (let i = 0; i < chunkCount; i++) {
+      const chunk = getCached(cacheKey(url, startChunk + i)) ?? new Uint8Array(0)
       const sourceStart = i === 0 ? offsetInFirstChunk : 0
       const available = chunk.length - sourceStart
       const needed = length - written
