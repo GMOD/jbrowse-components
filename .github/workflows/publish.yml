@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (build and pack but do not publish)'
+        type: boolean
+        default: true
 
 jobs:
   publish:
@@ -25,4 +31,4 @@ jobs:
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm publish -r --access public --no-git-checks
+      - run: pnpm publish -r --access public --no-git-checks ${{ inputs.dry_run == true && '--dry-run' || '' }}
