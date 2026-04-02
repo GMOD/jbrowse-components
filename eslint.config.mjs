@@ -28,7 +28,6 @@ export default defineConfig(
       'products/**/webpack.config.js',
       'products/**/webpack.config.mjs',
       '**/.storybook',
-      '**/output-version.js',
       '**/umd_plugin.js',
 
       'products/jbrowse-desktop/test/e2e.ts',
