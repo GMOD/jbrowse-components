@@ -226,8 +226,7 @@ function ConfigBlock(props) {
         size="small"
         startIcon={clickedCopy ? <AssignmentTurnedIn /> : <Assignment />}
         onClick={async () => {
-          const { default: copy } = await import('copy-to-clipboard')
-          copy(configString)
+          await navigator.clipboard.writeText(configString)
           setClickedCopy(true)
           setTimeout(() => setClickedCopy(false), 1000)
         }}

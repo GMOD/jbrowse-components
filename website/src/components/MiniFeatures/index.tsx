@@ -1,6 +1,3 @@
-import ReactPlayer from 'react-player'
-import clsx from 'clsx'
-
 import styles from './styles.module.css'
 
 const FeatureList = [
@@ -22,7 +19,7 @@ const FeatureList = [
 
 function Feature({ img, title, link, description }) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className="col col--4">
       <div className="text--center">
         {/* eslint-disable-next-line react/jsx-no-target-blank*/}
         <a href={link} target="_blank">
@@ -52,19 +49,18 @@ export default function MiniFeatures() {
     <section className={styles.features}>
       <div className="container">
         <div className="row">
-          <div className={clsx('col col--4')}>
+          <div className="col col--4">
             <div className="text--center">
-              <ReactPlayer
+              <iframe
                 style={{
                   borderRadius: '8px',
                   border: '4px solid #e0e0e0',
-                  height: 'auto',
-                  width: '100%',
                 }}
                 width={408}
                 height={275}
-                controls
-                src="https://www.youtube.com/watch?v=PmJGO26qXV4&list=PLq5A53v4jGTE8NWhSG9F2G5ckj5S3GH6p"
+                src="https://www.youtube.com/embed/PmJGO26qXV4?list=PLq5A53v4jGTE8NWhSG9F2G5ckj5S3GH6p"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
               />
             </div>
           </div>

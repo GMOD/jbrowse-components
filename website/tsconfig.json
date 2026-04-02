@@ -5,5 +5,5 @@
     "resolveJsonModule": true,
     "jsx": "react-jsx"
   },
-  "exclude":["build/"]
+  "exclude": ["build/"]
 }
