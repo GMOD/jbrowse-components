@@ -64,7 +64,7 @@ export default function MiniFeatures() {
                 width={408}
                 height={275}
                 controls
-                url="https://www.youtube.com/watch?v=PmJGO26qXV4&list=PLq5A53v4jGTE8NWhSG9F2G5ckj5S3GH6p"
+                src="https://www.youtube.com/watch?v=PmJGO26qXV4&list=PLq5A53v4jGTE8NWhSG9F2G5ckj5S3GH6p"
               />
             </div>
           </div>

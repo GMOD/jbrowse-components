@@ -30,28 +30,33 @@ const HierarchicalTree = observer(function HierarchicalTree({
       return
     }
 
+    let rafId: number | undefined
     const onScroll = () => {
-      const newScrollTop = container.scrollTop
-      setScrollTop(prev => {
-        // avoid re-render if scroll position hasn't changed enough to affect visible items
-        const { startIndex: prevStart, endIndex: prevEnd } = model.itemOffsets(
-          height,
-          prev,
-        )
-        const { startIndex: nextStart, endIndex: nextEnd } = model.itemOffsets(
-          height,
-          newScrollTop,
-        )
-        if (prevStart === nextStart && prevEnd === nextEnd) {
-          return prev
-        }
-        return newScrollTop
+      if (rafId !== undefined) {
+        return
+      }
+      rafId = requestAnimationFrame(() => {
+        rafId = undefined
+        const newScrollTop = container.scrollTop
+        setScrollTop(prev => {
+          const { startIndex: prevStart, endIndex: prevEnd } =
+            model.itemOffsets(height, prev)
+          const { startIndex: nextStart, endIndex: nextEnd } =
+            model.itemOffsets(height, newScrollTop)
+          if (prevStart === nextStart && prevEnd === nextEnd) {
+            return prev
+          }
+          return newScrollTop
+        })
       })
     }
 
     container.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       container.removeEventListener('scroll', onScroll)
+      if (rafId !== undefined) {
+        cancelAnimationFrame(rafId)
+      }
     }
   }, [height, model])
 

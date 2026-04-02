@@ -30,7 +30,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bbi": "^9.0.4",
+    "@gmod/bbi": "^9.0.7",
     "@gmod/hclust": "^3.0.4",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/tree-sidebar": "workspace:^",
@@ -41,7 +41,7 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@mui/x-charts-vendor": "^8.26.0",
-    "@mui/x-data-grid": "^8.28.1",
+    "@mui/x-data-grid": "^8.28.2",
     "@types/file-saver-es": "^2.0.3",
     "copy-to-clipboard": "^3.3.3",
     "fast-deep-equal": "^3.1.3",

@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import MiniFeatures from '@site/src/components/MiniFeatures'
+import MiniFeatures from '../components/MiniFeatures'
 
 import MiniPlugins from '../components/MiniPlugins'
 import styles from './styles.module.css'
@@ -27,7 +27,7 @@ function Header() {
           <Link
             className="button button--secondary button--lg"
             href={`https://jbrowse.org/code/jb2/${
-              /* @ts-expect-error */ siteConfig.customFields.currentVersion
+              siteConfig.customFields!.currentVersion
             }/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt`}
           >
             Browse a cancer annotations demo web instance
