@@ -28,9 +28,14 @@ const useStyles = makeStyles()(theme => ({
 
 function getAllSubcategories(node: TreeCategoryNode): string[] {
   const categoryIds: string[] = []
-  for (const child of node.children) {
-    if (child.type === 'category') {
-      categoryIds.push(child.id, ...getAllSubcategories(child))
+  const stack = [node] as TreeCategoryNode[]
+  while (stack.length > 0) {
+    const curr = stack.pop()!
+    for (const child of curr.children) {
+      if (child.type === 'category') {
+        categoryIds.push(child.id)
+        stack.push(child)
+      }
     }
   }
   return categoryIds

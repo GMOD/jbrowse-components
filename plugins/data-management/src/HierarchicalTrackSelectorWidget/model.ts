@@ -514,12 +514,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         return flatten(self.hierarchy.children)
       },
       get flattenedItemOffsets() {
+        const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
 
-        for (let i = 0, l = this.flattenedItems.length; i < l; i++) {
+        for (let i = 0, l = items.length; i < l; i++) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(this.flattenedItems[i]!)
+          cumulativeHeight += getItemHeight(items[i]!)
         }
         return { cumulativeHeight, offsets }
       },

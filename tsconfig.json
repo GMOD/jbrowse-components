@@ -6,7 +6,6 @@
     "outDir": "dist",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "noUncheckedIndexedAccess": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,47 +15,21 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "isolatedModules": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    "types": ["jest"],
-    "paths": {
-      "@jbrowse/core/*": ["./packages/core/src/*"],
-      "@jbrowse/web/*": ["./products/jbrowse-web/*"],
-      "@jbrowse/app-core": ["./packages/app-core/src/index.ts"],
-      "@jbrowse/text-indexing-core": [
-        "./packages/text-indexing-core/src/index.ts"
-      ],
-      "@jbrowse/plugin-alignments": ["./plugins/alignments/src/index.ts"],
-      "@jbrowse/plugin-hic": ["./plugins/hic/src/index.ts"],
-      "@jbrowse/plugin-linear-genome-view": [
-        "./plugins/linear-genome-view/src/index.ts"
-      ],
-      "@jbrowse/plugin-variants": ["./plugins/variants/src/index.ts"],
-      "@jbrowse/plugin-comparative-adapters": ["./plugins/comparative-adapters/src/index.ts"],
-      "@jbrowse/tree-sidebar": ["./packages/tree-sidebar/src/index.ts"],
-      "@jbrowse/alignments-core": ["./packages/alignments-core/src/index.ts"]
-    }
+    "types": ["jest"]
   },
   "exclude": [
     "**/build/",
     "**/docs/",
     "**/dist/",
     "**/esm/",
-    "**/lib/",
-    "**/umd/",
-    "**/esm/",
-    "**/tmp/",
     "**/config/jest/",
     "**/embedded_demos/",
     "**/component_tests/",
-    "**/plugin-development-tools/",
-    "**/webpack.config.js",
     "**/website",
-    "**/auth_test_utils",
-    "**/webgl-poc",
     "products/jbrowse-desktop/test"
   ]
 }

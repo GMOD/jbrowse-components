@@ -34,3 +34,13 @@ exports[`getModTypes 3`] = `
   },
 ]
 `;
+
+exports[`getModTypes 4`] = `
+[
+  {
+    "base": "C",
+    "strand": "+",
+    "type": "C",
+  },
+]
+`;
