@@ -9,6 +9,8 @@ set -o pipefail
 SEMVER_LEVEL="${1:-patch}"
 [[ "$SEMVER_LEVEL" =~ ^(patch|minor|major)$ ]] || { echo "Invalid semver level '$SEMVER_LEVEL'. Use patch, minor, or major." && exit 1; }
 
+trap 'rm -f tmp.json tmp_changelog.md' EXIT
+
 # Pre-flight checks
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
