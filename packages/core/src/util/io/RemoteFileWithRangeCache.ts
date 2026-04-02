@@ -116,7 +116,21 @@ export class RemoteFileWithRangeCache extends RemoteFile {
   ) {
     const startChunk = Math.floor(start / CHUNK_SIZE)
     const endChunk = Math.floor((start + length - 1) / CHUNK_SIZE)
-    const chunkCount = endChunk - startChunk + 1
+
+    // Pre-pass: if any already-cached chunk in [startChunk, endChunk) is
+    // shorter than CHUNK_SIZE, the file ended within it. Chunks beyond that
+    // point start past EOF — skip fetching them. This prevents @gmod/bam and
+    // @gmod/tabix's fetchedSize() over-read of (1<<16) bytes past the last
+    // bgzf block from triggering a 416 when the over-read crosses a chunk boundary.
+    let effectiveEndChunk = endChunk
+    for (let i = startChunk; i < endChunk; i++) {
+      const c = getCached(cacheKey(url, i))
+      if (c !== undefined && c.length < CHUNK_SIZE) {
+        effectiveEndChunk = i
+        break
+      }
+    }
+    const chunkCount = effectiveEndChunk - startChunk + 1
 
     // Find contiguous runs of missing (uncached) chunks
     const runs: { start: number; end: number }[] = []
@@ -156,7 +170,10 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     const result = new Uint8Array(length)
     let written = 0
     for (let i = 0; i < chunkCount; i++) {
-      const chunk = getCached(cacheKey(url, startChunk + i)) ?? new Uint8Array(0)
+      // Every chunk in [startChunk, effectiveEndChunk] is guaranteed cached
+      // here: either it was already present (skipped by the runs loop) or it
+      // was just fetched and putCached'd above.
+      const chunk = getCached(cacheKey(url, startChunk + i))!
       const sourceStart = i === 0 ? offsetInFirstChunk : 0
       const available = chunk.length - sourceStart
       const needed = length - written

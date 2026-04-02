@@ -201,6 +201,83 @@ describe('RemoteFileWithRangeCache', () => {
     expect(calls[3]!.end).toBe(CHUNK * 4 - 1)
   })
 
+  // Regression test: @gmod/bam and @gmod/tabix compute
+  // fetchedSize() = maxv.blockPosition + (1<<16) - minv.blockPosition to
+  // guarantee they read the complete final bgzf block. When the file ends
+  // near a 256 KiB chunk boundary, this over-read crosses into a chunk whose
+  // start is past EOF — the server would return 416 for that chunk.
+  //
+  // Fix: once a cached chunk is shorter than CHUNK_SIZE, the file ended
+  // within it. Any chunk beyond it starts past EOF and is skipped without a
+  // network request.
+  test('skips chunk past EOF when previous chunk was short (bam/tabix over-read pattern)', async () => {
+    // File ends 210 000 bytes into chunk 1 (chunks are 256 KiB = 262 144 bytes).
+    const smallFileSize = CHUNK + 210_000 // 472 144 bytes
+    const smallFile = new Uint8Array(smallFileSize)
+    for (let i = 0; i < smallFileSize; i++) {
+      smallFile[i] = i % 256
+    }
+
+    const calls: { start: number; end: number }[] = []
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      if (range) {
+        const m = /bytes=(\d+)-(\d+)/.exec(range)
+        if (m) {
+          const reqStart = Number(m[1])
+          const reqEnd = Number(m[2])
+          calls.push({ start: reqStart, end: reqEnd })
+          if (reqStart >= smallFileSize) {
+            // Should never reach here — the fix prevents this request
+            return new Response('', { status: 416 })
+          }
+          const end = Math.min(reqEnd, smallFileSize - 1)
+          return new Response(smallFile.slice(reqStart, end + 1), {
+            status: 206,
+          })
+        }
+      }
+      return new Response('', { status: 200 })
+    }
+
+    const file = new RemoteFileWithRangeCache('http://example.com/small.bin', {
+      fetch: mockFetch,
+    })
+
+    // Prime chunk 0 (full) and chunk 1 (short — server clips to smallFileSize)
+    await file.fetch('http://example.com/small.bin', {
+      headers: { range: `bytes=0-${CHUNK - 1}` },
+    })
+    await file.fetch('http://example.com/small.bin', {
+      headers: { range: `bytes=${CHUNK}-${2 * CHUNK - 1}` },
+    })
+    expect(calls).toHaveLength(2)
+    // Chunk 1 server response was shorter than CHUNK bytes
+
+    // Over-read pattern: start near end of chunk 1, length = 1<<16,
+    // which crosses into chunk 2 (starts at 2*CHUNK = 524 288 > smallFileSize)
+    const overreadStart = CHUNK + 200_000 // 462 144 — within chunk 1, within file
+    const overreadEnd = overreadStart + 65_535 // 527 679 — lands in chunk 2
+    expect(Math.floor(overreadEnd / CHUNK)).toBe(2) // confirm chunk 2 is involved
+
+    const res = await file.fetch('http://example.com/small.bin', {
+      headers: { range: `bytes=${overreadStart}-${overreadEnd}` },
+    })
+    const result = new Uint8Array(await res.arrayBuffer())
+
+    // Only the bytes that actually exist are returned
+    expect(result).toEqual(smallFile.slice(overreadStart, smallFileSize))
+
+    // Chunk 2 (starts at 2*CHUNK, past EOF) must NOT have been requested
+    const chunk2Requests = calls.filter(c => c.start >= 2 * CHUNK)
+    expect(chunk2Requests).toHaveLength(0)
+    // Total fetches: 2 priming + 0 new (chunk 1 already cached, chunk 2 skipped)
+    expect(calls).toHaveLength(2)
+  })
+
   test('different URLs do not share cache', async () => {
     const { calls, mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)
