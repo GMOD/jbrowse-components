@@ -100,8 +100,21 @@ export function buildGfaFromPathInference(
       }
     }
     if (firstShared >= 0) {
+      // Extend span to include adjacent alt segments that would
+      // otherwise be lost (e.g. terminal variants). Walk backwards
+      // from firstShared and forwards from lastShared, stopping at
+      // the next ref segment or path boundary.
+      let spanStart = firstShared
+      while (spanStart > 0 && !refOrdSet.has(records[spanStart - 1]!.segOrd)) {
+        spanStart--
+      }
+      let spanEnd = lastShared
+      while (spanEnd < records.length - 1 && !refOrdSet.has(records[spanEnd + 1]!.segOrd)) {
+        spanEnd++
+      }
+
       const span: { segOrd: number; orient: number; offset: number }[] = []
-      for (let i = firstShared; i <= lastShared; i++) {
+      for (let i = spanStart; i <= spanEnd; i++) {
         const r = records[i]!
         segLens.set(r.segOrd, r.segLen)
         span.push({ segOrd: r.segOrd, orient: r.orient, offset: r.offset })
