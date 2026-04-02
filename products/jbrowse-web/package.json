@@ -59,6 +59,7 @@
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-spreadsheet-view": "workspace:^",
     "@jbrowse/plugin-sv-inspector": "workspace:^",
+    "@jbrowse/plugin-tube-map-view": "workspace:^",
     "@jbrowse/plugin-trix": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",

@@ -26,6 +26,7 @@ import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import TrixPlugin from '@jbrowse/plugin-trix'
+import TubeMapView from '@jbrowse/plugin-tube-map-view'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
@@ -60,6 +61,7 @@ const corePlugins = [
   ComparativeAdapters,
   Arc,
   Graph,
+  TubeMapView,
 ]
 
 export default corePlugins
