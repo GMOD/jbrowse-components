@@ -276,6 +276,12 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     const allSegIds = new Set<string>()
     const pathSpans = new Map<string, { segId: string; orient: string }[]>()
 
+    const allRefSegIds = new Set(
+      gfa.paths
+        .find(p => p.genome === assemblyName && p.refName === refName)
+        ?.segments.map(s => s.segId) ?? [],
+    )
+
     for (const path of gfa.paths) {
       let firstShared = -1
       let lastShared = -1
@@ -288,8 +294,22 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
         }
       }
       if (firstShared >= 0) {
+        // Extend span to include alt segments adjacent to the shared
+        // region. Walk backwards from firstShared and forwards from
+        // lastShared, stopping when we hit another ref segment or the
+        // path boundary. This captures terminal variants (e.g. s12
+        // replacing s11 at a path tail) that would otherwise be lost.
+        let spanStart = firstShared
+        while (spanStart > 0 && !allRefSegIds.has(path.segments[spanStart - 1]!.segId)) {
+          spanStart--
+        }
+        let spanEnd = lastShared
+        while (spanEnd < path.segments.length - 1 && !allRefSegIds.has(path.segments[spanEnd + 1]!.segId)) {
+          spanEnd++
+        }
+
         const span: { segId: string; orient: string }[] = []
-        for (let i = firstShared; i <= lastShared; i++) {
+        for (let i = spanStart; i <= spanEnd; i++) {
           const seg = path.segments[i]!
           allSegIds.add(seg.segId)
           span.push(seg)
@@ -302,7 +322,7 @@ export default class GfaAdapter extends BaseFeatureDataAdapter {
     for (const segId of allSegIds) {
       const seg = gfa.segments.get(segId)
       if (seg) {
-        lines.push(`S\t${segId}\t${seg.sequence}\tLN:i:${seg.length}`)
+        lines.push(`S\t${segId}\t*\tLN:i:${seg.length}`)
       }
     }
     // Emit explicit links from source GFA
