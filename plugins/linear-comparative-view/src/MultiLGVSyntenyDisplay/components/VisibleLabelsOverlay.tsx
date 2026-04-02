@@ -13,10 +13,12 @@ export default function VisibleLabelsOverlay({
   labels,
   width,
   height,
+  yOffset = 0,
 }: {
   labels: VisibleLabel[]
   width: number
   height: number
+  yOffset?: number
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -39,9 +41,9 @@ export default function VisibleLabelsOverlay({
         fillColor = BASE_CONTRAST[label.text] ?? '#fff'
       }
       ctx.fillStyle = fillColor
-      ctx.fillText(label.text, label.x, label.y)
+      ctx.fillText(label.text, label.x, label.y + yOffset)
     }
-  }, [labels, width, height])
+  }, [labels, width, height, yOffset])
 
   if (labels.length === 0) {
     return null

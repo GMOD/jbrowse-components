@@ -11,19 +11,25 @@ import {
 } from '@jbrowse/core/gpu/webgpuUtils'
 
 import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
+import { YSCALEBAR_LABEL_OFFSET, niceNum } from './coverageUtils.ts'
 import {
   UNIFORM_BYTE_SIZE,
   WGSL_FILL_SHADER,
+  WGSL_COVERAGE_SHADER,
 } from './multiSyntenyGpuShaders.ts'
 
 import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
-import type { MultiSyntenyGpuInstanceData } from './multiSyntenyGpuData.ts'
+import type {
+  MultiSyntenyGpuInstanceData,
+  SyntenyCoverageData,
+} from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   private static device: GPUDevice | null = null
   private static fillPipeline: GPURenderPipeline | null = null
   private static pickingPipeline: GPURenderPipeline | null = null
+  private static coveragePipeline: GPURenderPipeline | null = null
   private static bindGroupLayout: GPUBindGroupLayout | null = null
   private static pipelinesReady: Promise<void> | null = null
 
@@ -36,6 +42,10 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   private instanceBuffer: GPUBuffer | null = null
   private bindGroup: GPUBindGroup | null = null
   private instanceData: MultiSyntenyGpuInstanceData | null = null
+
+  private coverageBuffer: GPUBuffer | null = null
+  private coverageBindGroup: GPUBindGroup | null = null
+  private coverageData: SyntenyCoverageData | null = null
 
   private constructor(
     canvas: HTMLCanvasElement,
@@ -84,17 +94,19 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       bindGroupLayouts: [WebGPUMultiSyntenyRenderer.bindGroupLayout],
     })
 
-    const module = device.createShaderModule({ code: WGSL_FILL_SHADER })
+    const fillModule = device.createShaderModule({ code: WGSL_FILL_SHADER })
+    const coverageModule = device.createShaderModule({ code: WGSL_COVERAGE_SHADER })
 
     ;[
       WebGPUMultiSyntenyRenderer.fillPipeline,
       WebGPUMultiSyntenyRenderer.pickingPipeline,
+      WebGPUMultiSyntenyRenderer.coveragePipeline,
     ] = await Promise.all([
       device.createRenderPipelineAsync({
         layout,
-        vertex: { module, entryPoint: 'vs_main' },
+        vertex: { module: fillModule, entryPoint: 'vs_main' },
         fragment: {
-          module,
+          module: fillModule,
           entryPoint: 'fs_main',
           targets: [{ format: 'bgra8unorm', blend: STANDARD_BLEND_STATE }],
         },
@@ -102,11 +114,21 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       }),
       device.createRenderPipelineAsync({
         layout,
-        vertex: { module, entryPoint: 'vs_main' },
+        vertex: { module: fillModule, entryPoint: 'vs_main' },
         fragment: {
-          module,
+          module: fillModule,
           entryPoint: 'fs_picking',
           targets: [{ format: 'rgba8unorm' }],
+        },
+        primitive: { topology: 'triangle-list' },
+      }),
+      device.createRenderPipelineAsync({
+        layout,
+        vertex: { module: coverageModule, entryPoint: 'vs_main' },
+        fragment: {
+          module: coverageModule,
+          entryPoint: 'fs_main',
+          targets: [{ format: 'bgra8unorm', blend: STANDARD_BLEND_STATE }],
         },
         primitive: { topology: 'triangle-list' },
       }),
@@ -136,6 +158,31 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     )
   }
 
+  uploadCoverage(data: SyntenyCoverageData) {
+    const device = WebGPUMultiSyntenyRenderer.device
+    if (!device || !WebGPUMultiSyntenyRenderer.bindGroupLayout) {
+      return
+    }
+
+    this.coverageData = data
+
+    this.coverageBuffer?.destroy()
+    this.coverageBuffer = null
+    this.coverageBindGroup = null
+
+    if (data.totalBins === 0) {
+      return
+    }
+
+    this.coverageBuffer = createStorageBuffer(device, data.buffer)
+    this.coverageBindGroup = createStandardBindGroup(
+      device,
+      WebGPUMultiSyntenyRenderer.bindGroupLayout,
+      this.coverageBuffer,
+      this.uniformBuffer,
+    )
+  }
+
   render(
     contentBlocks: BaseBlock[],
     viewOffsetPx: number,
@@ -143,16 +190,10 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
+    coverageHeight: number,
   ) {
     const device = WebGPUMultiSyntenyRenderer.device
-    if (
-      !device ||
-      !this.instanceBuffer ||
-      !this.instanceData ||
-      this.instanceData.instanceCount === 0 ||
-      !this.bindGroup ||
-      !WebGPUMultiSyntenyRenderer.fillPipeline
-    ) {
+    if (!device) {
       return
     }
 
@@ -162,65 +203,146 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     const logicalH = this.canvas.height / dpr
     const rowPadding = rowSpacing ? 1 : 0
 
+    const nicedMax = this.coverageData
+      ? niceNum(this.coverageData.globalMaxDepth)
+      : 1
+    const depthScale =
+      this.coverageData && nicedMax > 0
+        ? this.coverageData.globalMaxDepth / nicedMax
+        : 1
+
     const tv = this.context.getCurrentTexture().createView()
 
     let isFirstPass = true
 
-    // Each region needs its own submit because writeBuffer is a queue
-    // operation that must complete before the render pass reads the uniform
-    for (const block of contentBlocks) {
-      const params = computeRegionRenderParams(
-        block,
-        viewOffsetPx,
-        this.instanceData.refNameIndex,
-      )
-      if (!params) {
-        continue
-      }
-      if (
-        params.regionScreenLeft + params.regionScreenWidth < 0 ||
-        params.regionScreenLeft > logicalW
-      ) {
-        continue
-      }
+    // Draw coverage
+    if (
+      coverageHeight > 0 &&
+      this.coverageBuffer &&
+      this.coverageData &&
+      this.coverageData.totalBins > 0 &&
+      this.coverageBindGroup &&
+      WebGPUMultiSyntenyRenderer.coveragePipeline
+    ) {
+      for (const block of contentBlocks) {
+        const params = computeRegionRenderParams(
+          block,
+          viewOffsetPx,
+          this.coverageData.refNameIndex,
+        )
+        if (!params) {
+          continue
+        }
+        if (
+          params.regionScreenLeft + params.regionScreenWidth < 0 ||
+          params.regionScreenLeft > logicalW
+        ) {
+          continue
+        }
 
-      this.writeUniforms(
-        device,
-        logicalW,
-        logicalH,
-        rowHeight,
-        params.bpRangeHi,
-        params.bpRangeLo,
-        params.bpRangeLen,
-        params.regionScreenLeft,
-        params.regionScreenWidth,
-        rowPadding,
-      )
+        this.writeUniforms(
+          device,
+          logicalW,
+          logicalH,
+          rowHeight,
+          params.bpRangeHi,
+          params.bpRangeLo,
+          params.bpRangeLen,
+          params.regionScreenLeft,
+          params.regionScreenWidth,
+          rowPadding,
+          coverageHeight,
+          depthScale,
+        )
 
-      const encoder = device.createCommandEncoder()
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: tv,
-            loadOp: isFirstPass
-              ? ('clear' as GPULoadOp)
-              : ('load' as GPULoadOp),
-            storeOp: 'store' as GPUStoreOp,
-            ...(isFirstPass && {
-              clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 },
-            }),
-          },
-        ],
-      })
-      pass.setPipeline(WebGPUMultiSyntenyRenderer.fillPipeline)
-      pass.setBindGroup(0, this.bindGroup)
-      pass.draw(6, params.instanceCount, 0, params.instanceOffset)
-      pass.end()
-      device.queue.submit([encoder.finish()])
-      isFirstPass = false
+        const encoder = device.createCommandEncoder()
+        const pass = encoder.beginRenderPass({
+          colorAttachments: [
+            {
+              view: tv,
+              loadOp: isFirstPass
+                ? ('clear' as GPULoadOp)
+                : ('load' as GPULoadOp),
+              storeOp: 'store' as GPUStoreOp,
+              ...(isFirstPass && {
+                clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 },
+              }),
+            },
+          ],
+        })
+        pass.setPipeline(WebGPUMultiSyntenyRenderer.coveragePipeline)
+        pass.setBindGroup(0, this.coverageBindGroup)
+        pass.draw(6, params.instanceCount, 0, params.instanceOffset)
+        pass.end()
+        device.queue.submit([encoder.finish()])
+        isFirstPass = false
+      }
     }
 
-    // If no regions were drawn, still clear the canvas
+    // Draw synteny instances
+    if (
+      this.instanceBuffer &&
+      this.instanceData &&
+      this.instanceData.instanceCount > 0 &&
+      this.bindGroup &&
+      WebGPUMultiSyntenyRenderer.fillPipeline
+    ) {
+      for (const block of contentBlocks) {
+        const params = computeRegionRenderParams(
+          block,
+          viewOffsetPx,
+          this.instanceData.refNameIndex,
+        )
+        if (!params) {
+          continue
+        }
+        if (
+          params.regionScreenLeft + params.regionScreenWidth < 0 ||
+          params.regionScreenLeft > logicalW
+        ) {
+          continue
+        }
+
+        this.writeUniforms(
+          device,
+          logicalW,
+          logicalH,
+          rowHeight,
+          params.bpRangeHi,
+          params.bpRangeLo,
+          params.bpRangeLen,
+          params.regionScreenLeft,
+          params.regionScreenWidth,
+          rowPadding,
+          coverageHeight,
+          depthScale,
+        )
+
+        const encoder = device.createCommandEncoder()
+        const pass = encoder.beginRenderPass({
+          colorAttachments: [
+            {
+              view: tv,
+              loadOp: isFirstPass
+                ? ('clear' as GPULoadOp)
+                : ('load' as GPULoadOp),
+              storeOp: 'store' as GPUStoreOp,
+              ...(isFirstPass && {
+                clearValue: { r: 0.93, g: 0.93, b: 0.93, a: 1 },
+              }),
+            },
+          ],
+        })
+        pass.setPipeline(WebGPUMultiSyntenyRenderer.fillPipeline)
+        pass.setBindGroup(0, this.bindGroup)
+        pass.draw(6, params.instanceCount, 0, params.instanceOffset)
+        pass.end()
+        device.queue.submit([encoder.finish()])
+        isFirstPass = false
+      }
+    }
+
+    // If nothing was drawn, still clear the canvas
     if (isFirstPass) {
       const encoder = device.createCommandEncoder()
       const pass = encoder.beginRenderPass({
@@ -246,6 +368,9 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     this.instanceBuffer?.destroy()
     this.instanceBuffer = null
     this.bindGroup = null
+    this.coverageBuffer?.destroy()
+    this.coverageBuffer = null
+    this.coverageBindGroup = null
     this.uniformBuffer.destroy()
   }
 
@@ -260,12 +385,14 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     regionScreenLeft: number,
     regionScreenWidth: number,
     rowPadding: number,
+    coverageHeight: number,
+    depthScale: number,
   ) {
     const f = this.uniformF32
     f[0] = width
     f[1] = height
     f[2] = rowHeight
-    f[3] = 0
+    f[3] = coverageHeight
     f[4] = bpRangeHi
     f[5] = bpRangeLo
     f[6] = bpRangeLen
@@ -273,8 +400,8 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     f[8] = regionScreenWidth
     f[9] = 0 // hpZero — MUST be 0.0 at runtime
     f[10] = rowPadding
-    f[11] = 0
-    f[12] = 0
+    f[11] = YSCALEBAR_LABEL_OFFSET
+    f[12] = depthScale
     f[13] = 0
     f[14] = 0
     f[15] = 0

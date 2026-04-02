@@ -15,6 +15,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import BarChartIcon from '@mui/icons-material/BarChart'
 import BubbleChartIcon from '@mui/icons-material/BubbleChart'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -76,6 +77,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         rowHeightSetting: types.optional(types.number, 0),
         rowSpacing: types.optional(types.boolean, true),
         snpBpPerPxThreshold: types.optional(types.number, 100),
+        showCoverage: types.optional(types.boolean, true),
+        coverageHeight: types.optional(types.number, 45),
       }),
     )
     .volatile(() => ({
@@ -107,12 +110,18 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         }
         return names
       },
+      get syntenyCoverageHeight() {
+        return self.showCoverage ? self.coverageHeight : 0
+      },
+      get syntenyAreaHeight() {
+        return self.height - this.syntenyCoverageHeight
+      },
       get autoRowHeight() {
         const n = this.displayedGenomes.length
         if (n === 0) {
-          return self.height
+          return this.syntenyAreaHeight
         }
-        return self.height / n
+        return this.syntenyAreaHeight / n
       },
       get rowHeight() {
         if (self.rowHeightSetting === 0) {
@@ -152,7 +161,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = Math.max(self.height + distance, 20)
+        const minHeight = self.syntenyCoverageHeight + 20
+        const newHeight = Math.max(self.height + distance, minHeight)
         self.heightPreConfig = newHeight
         if (self.rowHeightSetting > 0) {
           self.rowHeightSetting =
@@ -162,6 +172,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       },
       setSnpBpPerPxThreshold(t: number) {
         self.snpBpPerPxThreshold = t
+      },
+      setShowCoverage(val: boolean) {
+        self.showCoverage = val
+      },
+      setCoverageHeight(h: number) {
+        self.coverageHeight = h
       },
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
@@ -465,6 +481,15 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         })
 
         return [
+          {
+            label: 'Show coverage',
+            icon: BarChartIcon,
+            type: 'checkbox' as const,
+            checked: self.showCoverage,
+            onClick: () => {
+              self.setShowCoverage(!self.showCoverage)
+            },
+          },
           {
             label: 'Color by',
             subMenu: colorByOptions.map(option => ({

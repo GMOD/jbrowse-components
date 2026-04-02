@@ -9,6 +9,7 @@ import type {
   MultiSyntenyGpuBackend,
   SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
+import type { SyntenyCoverageData } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -96,6 +97,12 @@ export class MultiSyntenyRenderer {
     }
   }
 
+  uploadCoverage(coverageData: SyntenyCoverageData) {
+    if (this.gpuBackend) {
+      this.gpuBackend.uploadCoverage(coverageData)
+    }
+  }
+
   renderGpu(
     contentBlocks: BaseBlock[],
     viewOffsetPx: number,
@@ -103,6 +110,7 @@ export class MultiSyntenyRenderer {
     height: number,
     rowHeight: number,
     rowSpacing: boolean,
+    coverageHeight: number,
   ) {
     this.gpuBackend?.render(
       contentBlocks,
@@ -111,6 +119,7 @@ export class MultiSyntenyRenderer {
       height,
       rowHeight,
       rowSpacing,
+      coverageHeight,
     )
   }
 

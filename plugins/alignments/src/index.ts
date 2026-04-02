@@ -58,3 +58,7 @@ export {
   parseCigar2,
   parseCigar,
 } from './MismatchParser/index.ts'
+export { computeCoverage } from './shared/computeCoverage.ts'
+export type { CoverageFeature } from './shared/computeCoverage.ts'
+export { default as CoverageYScaleBar } from './LinearAlignmentsDisplay/components/CoverageYScaleBar.tsx'
+export type { CoverageTicks } from './LinearAlignmentsDisplay/components/CoverageYScaleBar.tsx'

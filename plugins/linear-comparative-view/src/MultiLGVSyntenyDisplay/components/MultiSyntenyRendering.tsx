@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
 import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
 import { Tooltip, useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -9,8 +10,10 @@ import { observer } from 'mobx-react'
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
+import { computeCoverageTicks } from './coverageUtils.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_FONT_MAX, LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
+import { computeSyntenyCoverageGpuData } from './multiSyntenyGpuData.ts'
 
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -23,6 +26,9 @@ interface MultiSyntenyModel {
   rowSpacing: boolean
   colorBy: string
   height: number
+  syntenyAreaHeight: number
+  syntenyCoverageHeight: number
+  showCoverage: boolean
   showSnps: boolean
   dataVersion: number
 }
@@ -107,6 +113,7 @@ function FeatureHighlightOverlay({
   view,
   width,
   height,
+  yOffset = 0,
 }: {
   hoveredHit: FeatureHitResult | undefined
   selectedHit: FeatureHitResult | undefined
@@ -115,6 +122,7 @@ function FeatureHighlightOverlay({
   view: LinearGenomeViewModel
   width: number
   height: number
+  yOffset?: number
 }) {
   const hoverRect = hoveredHit
     ? featureToRect(
@@ -156,7 +164,7 @@ function FeatureHighlightOverlay({
       {hoverRect ? (
         <rect
           x={hoverRect.x}
-          y={hoverRect.y}
+          y={hoverRect.y + yOffset}
           width={hoverRect.x2 - hoverRect.x}
           height={hoverRect.h}
           fill="rgba(0,0,0,0.15)"
@@ -165,7 +173,7 @@ function FeatureHighlightOverlay({
       {selectRect ? (
         <rect
           x={selectRect.x}
-          y={selectRect.y}
+          y={selectRect.y + yOffset}
           width={selectRect.x2 - selectRect.x}
           height={selectRect.h}
           fill="none"
@@ -182,11 +190,13 @@ function GenomeNameOverlay({
   rowHeight,
   labelW,
   height,
+  yOffset = 0,
 }: {
   displayedGenomes: string[]
   rowHeight: number
   labelW: number
   height: number
+  yOffset?: number
 }) {
   if (labelW === 0) {
     return null
@@ -199,7 +209,7 @@ function GenomeNameOverlay({
     <div
       style={{
         position: 'absolute',
-        top: 0,
+        top: yOffset,
         left: 0,
         width: labelW,
         height,
@@ -250,6 +260,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const [hoveredHit, setHoveredHit] = useState<FeatureHitResult | undefined>()
   const [selectedHit, setSelectedHit] = useState<FeatureHitResult | undefined>()
   const prevViewRef = useRef({ bpPerPx: 0, offsetPx: 0 })
+  const [coverageMaxDepth, setCoverageMaxDepth] = useState(0)
 
   const view = getContainingView(model) as LinearGenomeViewModel
 
@@ -279,16 +290,8 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     }
   }, [])
 
-  // SYNC: GPU upload-before-draw autorun pattern mirrors
-  // LinearAlignmentsDisplay (plugins/alignments/src/LinearAlignmentsDisplay/model.ts).
-  // Upload is registered BEFORE draw so MobX runs it first when
-  // genomeRows changes, ensuring GPU buffers are populated before
-  // renderGpu() reads them.
-  //
-  // DEVIATION: These autoruns live in React useEffect hooks rather than
-  // in the model's afterAttach (as LinearAlignmentsDisplay does). This
-  // has no practical difference — the autoruns are disposed on unmount
-  // either way.
+  // GPU upload autorun: uploads geometry when data/colors change.
+  // Does NOT read view.staticBlocks so scrolling won't trigger re-upload.
   useEffect(() => {
     if (!ready) {
       return
@@ -310,10 +313,33 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
     })
   }, [ready, model, palette])
 
+  // Coverage upload autorun: separate from geometry so it can depend on
+  // contentBlocks (for refName filtering) without triggering geometry re-upload.
+  useEffect(() => {
+    if (!ready) {
+      return
+    }
+    return autorun(() => {
+      const renderer = rendererRef.current
+      const { genomeRows, displayedGenomes, showCoverage } = model
+      if (showCoverage && genomeRows.size > 0) {
+        const contentBlocks = view.staticBlocks.contentBlocks
+        const coverageData = computeSyntenyCoverageGpuData(
+          genomeRows,
+          displayedGenomes,
+          contentBlocks,
+        )
+        if (renderer?.isGpu) {
+          renderer.uploadCoverage(coverageData)
+        }
+        setCoverageMaxDepth(coverageData.globalMaxDepth)
+      } else {
+        setCoverageMaxDepth(0)
+      }
+    })
+  }, [ready, model, view])
+
   // GPU draw autorun: re-renders on view changes (scroll, zoom, resize)
-  // or new data. dataVersion is bumped by MultiRegionDisplayMixin when
-  // setLoadedRegionForRegion is called — same mechanism as the
-  // LinearAlignmentsDisplay:draw autorun tracking self.dataVersion.
   useEffect(() => {
     if (!ready) {
       return
@@ -323,7 +349,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       if (renderer?.isGpu) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _dv = model.dataVersion
-        const { height, rowHeight, rowSpacing } = model
+        const { height, rowHeight, rowSpacing, syntenyCoverageHeight } = model
         const contentBlocks = view.staticBlocks.contentBlocks
         renderer.renderGpu(
           contentBlocks,
@@ -332,6 +358,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           height,
           rowHeight,
           rowSpacing,
+          syntenyCoverageHeight,
         )
       }
     })
@@ -349,7 +376,9 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           genomeRows,
           displayedGenomes,
           colorBy,
-          height,
+          syntenyAreaHeight,
+          syntenyCoverageHeight,
+          showCoverage,
           rowHeight,
           rowSpacing,
           showSnps,
@@ -363,15 +392,25 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           }
           return result.offsetPx - offsetPx
         }
+        let coverageData = undefined
+        if (showCoverage && genomeRows.size > 0) {
+          coverageData = computeSyntenyCoverageGpuData(
+            genomeRows,
+            displayedGenomes,
+            view.staticBlocks.contentBlocks,
+          )
+        }
         renderer.renderCanvas(genomeRows, displayedGenomes, {
           width,
-          height,
+          height: syntenyAreaHeight,
           rowHeight,
           rowSpacing,
           bpToPx,
           colorBy,
           labelW,
           showSnps,
+          coverageHeight: syntenyCoverageHeight,
+          coverageData,
           colors: {
             mismatch: MISMATCH_COLOR,
             deletion: palette.deletion,
@@ -387,9 +426,16 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   }, [ready, model, view, palette])
 
   // Read observables during render for tooltip/style (observer tracks these)
-  const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, showSnps } = model
+  const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, syntenyCoverageHeight, showSnps } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
+
+  const coverageTicks = useMemo(() => {
+    if (coverageMaxDepth === 0 || syntenyCoverageHeight === 0) {
+      return undefined
+    }
+    return computeCoverageTicks(coverageMaxDepth, syntenyCoverageHeight)
+  }, [coverageMaxDepth, syntenyCoverageHeight])
 
   // Hide tooltip and hover on zoom or scroll changes
   useEffect(() => {
@@ -417,16 +463,20 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   const doHitTest = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
       const rect = e.currentTarget.getBoundingClientRect()
+      const y = e.clientY - rect.top - syntenyCoverageHeight
+      if (y < 0) {
+        return undefined
+      }
       return hitTestMultiSynteny(
         e.clientX - rect.left,
-        e.clientY - rect.top,
+        y,
         rowHeight,
         labelW,
         view,
         spatialIndex,
       )
     },
-    [rowHeight, labelW, view, spatialIndex],
+    [rowHeight, labelW, view, spatialIndex, syntenyCoverageHeight],
   )
 
   const onMouseMove = useCallback(
@@ -508,13 +558,29 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
             cursor: tooltip.open ? 'pointer' : 'default',
           }}
         />
+        {coverageTicks ? (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 50,
+              height: syntenyCoverageHeight,
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }}
+          >
+            <CoverageYScaleBar model={{ coverageTicks }} />
+          </svg>
+        ) : null}
         <GenomeNameOverlay
           displayedGenomes={displayedGenomes}
           rowHeight={rowHeight}
           labelW={labelW}
-          height={height}
+          height={height - syntenyCoverageHeight}
+          yOffset={syntenyCoverageHeight}
         />
-        <VisibleLabelsOverlay labels={labels} width={width} height={height} />
+        <VisibleLabelsOverlay labels={labels} width={width} height={height} yOffset={syntenyCoverageHeight} />
         <FeatureHighlightOverlay
           hoveredHit={hoveredHit}
           selectedHit={selectedHit}
@@ -523,6 +589,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
           view={view}
           width={width}
           height={height}
+          yOffset={syntenyCoverageHeight}
         />
       </div>
     </Tooltip>

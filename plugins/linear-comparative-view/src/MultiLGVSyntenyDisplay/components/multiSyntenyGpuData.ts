@@ -9,11 +9,11 @@ import {
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
-import { parseCigar2 } from '@jbrowse/plugin-alignments'
+import { computeCoverage, parseCigar2 } from '@jbrowse/plugin-alignments'
 
 import { parseCsSeqLen } from '@jbrowse/alignments-core'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
+import { COVERAGE_BIN_BYTE_SIZE, INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -405,4 +405,116 @@ export function computeRegionRenderParams(
     instanceOffset: entry.startIdx,
     instanceCount: entry.count,
   } satisfies RegionRenderParams
+}
+
+// ---- Coverage data ----
+
+export interface CoveragePerRefName {
+  depths: Float32Array
+  maxDepth: number
+  startOffset: number
+  regionStart: number
+}
+
+export interface SyntenyCoverageData {
+  perRefName: Map<string, CoveragePerRefName>
+  globalMaxDepth: number
+  buffer: ArrayBuffer
+  refNameIndex: RefNameIndex
+  totalBins: number
+}
+
+export function computeSyntenyCoverageGpuData(
+  genomeRows: Map<string, MultiPairFeature[]>,
+  displayedGenomes: string[],
+  contentBlocks: BaseBlock[],
+): SyntenyCoverageData {
+  const perRefName = new Map<string, CoveragePerRefName>()
+
+  // Collect all features grouped by refName
+  const featuresByRefName = new Map<string, { start: number; end: number }[]>()
+  for (const genome of displayedGenomes) {
+    const features = genomeRows.get(genome)
+    if (features) {
+      for (const f of features) {
+        let arr = featuresByRefName.get(f.origRefName)
+        if (!arr) {
+          arr = []
+          featuresByRefName.set(f.origRefName, arr)
+        }
+        arr.push({ start: f.start, end: f.end })
+      }
+    }
+  }
+
+  // Compute coverage for each visible refName
+  for (const block of contentBlocks) {
+    if (perRefName.has(block.refName)) {
+      continue
+    }
+    const features = featuresByRefName.get(block.refName)
+    if (!features || features.length === 0) {
+      continue
+    }
+    const regionStart = Math.floor(block.start)
+    const regionEnd = Math.ceil(block.end)
+    const result = computeCoverage(features, [], regionStart, regionEnd)
+    perRefName.set(block.refName, {
+      depths: result.depths,
+      maxDepth: result.maxDepth,
+      startOffset: result.startOffset,
+      regionStart,
+    })
+  }
+
+  let globalMaxDepth = 0
+  let totalBins = 0
+  for (const data of perRefName.values()) {
+    if (data.maxDepth > globalMaxDepth) {
+      globalMaxDepth = data.maxDepth
+    }
+    totalBins += data.depths.length
+  }
+
+  if (globalMaxDepth === 0 || totalBins === 0) {
+    return {
+      perRefName,
+      globalMaxDepth: 0,
+      buffer: new ArrayBuffer(0),
+      refNameIndex: new Map(),
+      totalBins: 0,
+    }
+  }
+
+  // Pack into GPU buffer: [position: f32, depth: f32] per bin
+  const buffer = new ArrayBuffer(totalBins * COVERAGE_BIN_BYTE_SIZE)
+  const f32 = new Float32Array(buffer)
+  const refNameIndex: RefNameIndex = new Map()
+  let offset = 0
+
+  for (const [refName, data] of perRefName) {
+    const startIdx = offset
+    for (let i = 0; i < data.depths.length; i++) {
+      const depth = data.depths[i]!
+      if (depth > 0) {
+        const binIdx = offset * 2
+        f32[binIdx] = data.startOffset + i
+        f32[binIdx + 1] = depth / globalMaxDepth
+        offset++
+      }
+    }
+    if (offset > startIdx) {
+      refNameIndex.set(refName, { startIdx, count: offset - startIdx })
+    }
+  }
+
+  const trimmed = buffer.slice(0, offset * COVERAGE_BIN_BYTE_SIZE)
+
+  return {
+    perRefName,
+    globalMaxDepth,
+    buffer: trimmed,
+    refNameIndex,
+    totalBins: offset,
+  }
 }

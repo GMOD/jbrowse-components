@@ -6,6 +6,7 @@ import { when } from 'mobx'
 
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
+import { computeSyntenyCoverageGpuData } from './components/multiSyntenyGpuData.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -20,7 +21,9 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     genomeRows,
     displayedGenomes,
     colorBy,
-    height,
+    syntenyAreaHeight,
+    syntenyCoverageHeight,
+    showCoverage,
     rowHeight,
     rowSpacing,
     showSnps,
@@ -42,15 +45,26 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     return result.offsetPx - offsetPx
   }
 
+  const coverageData =
+    showCoverage && genomeRows.size > 0
+      ? computeSyntenyCoverageGpuData(
+          genomeRows,
+          displayedGenomes,
+          view.staticBlocks.contentBlocks,
+        )
+      : undefined
+
   renderMultiSyntenyToCtx(ctx, genomeRows, displayedGenomes, {
     width,
-    height,
+    height: syntenyAreaHeight,
     rowHeight,
     rowSpacing,
     bpToPx,
     colorBy,
     labelW,
     showSnps,
+    coverageHeight: syntenyCoverageHeight,
+    coverageData,
     colors: {
       mismatch: MISMATCH_COLOR,
       deletion: palette.deletion,
