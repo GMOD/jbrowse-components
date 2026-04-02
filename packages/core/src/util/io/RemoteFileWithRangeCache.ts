@@ -45,7 +45,7 @@ function limitConcurrency<T>(fn: () => Promise<T>) {
         },
         (err: unknown) => {
           activeCount--
-          reject(err as Error)
+          reject(err instanceof Error ? err : new Error(String(err)))
           runNext()
         },
       )
@@ -137,7 +137,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     for (let i = 0; i < chunkCount; i++) {
       if (!getCached(cacheKey(url, startChunk + i))) {
         const lastRun = runs[runs.length - 1]
-        if (lastRun && lastRun.end === i - 1) {
+        if (lastRun?.end === i - 1) {
           lastRun.end = i
         } else {
           runs.push({ start: i, end: i })
