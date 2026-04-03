@@ -77,3 +77,19 @@ test('allows modifying a prop override', () => {
     muiButtonProps.defaultProps,
   )
 })
+
+test('default theme has coverage color', () => {
+  const theme = createJBrowseTheme()
+  expect(theme.palette.coverage).toBeDefined()
+  expect(typeof theme.palette.coverage).toBe('string')
+})
+
+test('dark theme has different coverage color', () => {
+  const light = createJBrowseTheme()
+  const dark = createJBrowseTheme(
+    {},
+    undefined,
+    'darkStock',
+  )
+  expect(light.palette.coverage).not.toBe(dark.palette.coverage)
+})

@@ -1,4 +1,4 @@
-import { colord } from './colord.ts'
+import { colord, hexToGLrgb } from './colord.ts'
 
 describe('colord wrapper over color-bits', () => {
   describe('parsing', () => {
@@ -141,6 +141,29 @@ describe('colord wrapper over color-bits', () => {
       const mixed = colord('#ff0000').mix('blue', 0.5)
       expect(mixed.toRgb().r).toBeCloseTo(128, 0)
       expect(mixed.toRgb().b).toBeCloseTo(128, 0)
+    })
+  })
+
+  describe('hexToGLrgb', () => {
+    test('converts hex to GL floats', () => {
+      const [r, g, b] = hexToGLrgb('#ff0000')
+      expect(r).toBeCloseTo(1.0)
+      expect(g).toBeCloseTo(0.0)
+      expect(b).toBeCloseTo(0.0)
+    })
+
+    test('handles grey', () => {
+      const [r, g, b] = hexToGLrgb('#808080')
+      expect(r).toBeCloseTo(128 / 255)
+      expect(g).toBeCloseTo(128 / 255)
+      expect(b).toBeCloseTo(128 / 255)
+    })
+
+    test('handles short hex', () => {
+      const [r, g, b] = hexToGLrgb('#fff')
+      expect(r).toBeCloseTo(1.0)
+      expect(g).toBeCloseTo(1.0)
+      expect(b).toBeCloseTo(1.0)
     })
   })
 })

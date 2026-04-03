@@ -1,6 +1,10 @@
+import {
+  computeSNPCoverage,
+  extractMismatchesFromCs,
+} from '@jbrowse/alignments-core'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
-import { mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { getGlobalMaxDepth, mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -32,7 +36,20 @@ function buildRegionData(
   const regionStart = Math.floor(region.start)
   const regionEnd = Math.ceil(region.end)
   const coverageFeatures = features.map(f => ({ start: f.start, end: f.end }))
+  const mismatches: { position: number; base: number; strand: number }[] = []
+  for (const f of features) {
+    if (f.cs) {
+      extractMismatchesFromCs(f.cs, f.start, mismatches)
+    }
+  }
   const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
+  const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+  const mismatchPositions = new Uint32Array(mismatches.length)
+  const mismatchBases = new Uint8Array(mismatches.length)
+  for (let i = 0; i < mismatches.length; i++) {
+    mismatchPositions[i] = mismatches[i]!.position - regionStart
+    mismatchBases[i] = mismatches[i]!.base
+  }
   return {
     refName: region.refName ?? 'chr1',
     regionStart,
@@ -40,14 +57,14 @@ function buildRegionData(
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
     coverageStartOffset: coverage.startOffset,
-    snpPositions: new Uint32Array(0),
-    snpYOffsets: new Float32Array(0),
-    snpHeights: new Float32Array(0),
-    snpColorTypes: new Uint8Array(0),
-    snpCount: 0,
-    mismatchPositions: new Uint32Array(0),
-    mismatchBases: new Uint8Array(0),
-    numMismatches: 0,
+    snpPositions: snp.positions,
+    snpYOffsets: snp.yOffsets,
+    snpHeights: snp.heights,
+    snpColorTypes: snp.colorTypes,
+    snpCount: snp.count,
+    mismatchPositions,
+    mismatchBases,
+    numMismatches: mismatches.length,
   }
 }
 
@@ -188,6 +205,140 @@ describe('coverage correctness for overlapping synteny features', () => {
   test('empty region produces zero coverage', () => {
     const data = buildRegionData({ start: 0, end: 1000 }, [])
     expect(data.coverageMaxDepth).toBe(0)
+  })
+})
+
+describe('getGlobalMaxDepth', () => {
+  test('returns max across all regions', () => {
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, buildRegionData({ start: 0, end: 100 }, [feat({ start: 10, end: 50 })])],
+      [1, buildRegionData({ start: 0, end: 100 }, [
+        feat({ start: 10, end: 50 }),
+        feat({ start: 20, end: 40 }),
+      ])],
+    ])
+    expect(getGlobalMaxDepth(rpcDataMap)).toBe(2)
+  })
+
+  test('returns 0 for empty map', () => {
+    expect(getGlobalMaxDepth(new Map())).toBe(0)
+  })
+})
+
+describe('SNP coverage from CS tags', () => {
+  test('extractMismatchesFromCs produces mismatch entries', () => {
+    const mismatches: { position: number; base: number; strand: number }[] = []
+    extractMismatchesFromCs(':5*ag:3', 100, mismatches)
+    expect(mismatches.length).toBe(1)
+    expect(mismatches[0]!.position).toBe(105)
+    expect(String.fromCharCode(mismatches[0]!.base)).toBe('G')
+  })
+
+  test('computeSNPCoverage produces stacked segments', () => {
+    const mismatches: { position: number; base: number; strand: number }[] = []
+    extractMismatchesFromCs(':5*ag*ct:3', 0, mismatches)
+    const result = computeSNPCoverage(mismatches, 10, 0)
+    expect(result.count).toBeGreaterThan(0)
+    expect(result.positions.length).toBe(result.count)
+    expect(result.colorTypes.length).toBe(result.count)
+  })
+
+  test('SyntenyRegionData with CS features has mismatch data', () => {
+    const features = [
+      feat({ start: 100, end: 110, cs: ':3*ag:3*ct:2' }),
+    ]
+    const region = { start: 0, end: 200 }
+    const regionStart = Math.floor(region.start)
+    const regionEnd = Math.ceil(region.end)
+    const coverageFeatures = features.map(f => ({ start: f.start, end: f.end }))
+    const mismatches: { position: number; base: number; strand: number }[] = []
+    for (const f of features) {
+      if (f.cs) {
+        extractMismatchesFromCs(f.cs, f.start, mismatches)
+      }
+    }
+    const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
+    const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+
+    expect(mismatches.length).toBe(2)
+    expect(snp.count).toBe(2)
+  })
+})
+
+describe('multi-region coverage rendering data', () => {
+  test('all regions are available for Canvas2D rendering', () => {
+    const rpcDataMap = new Map<number, SyntenyRegionData>([
+      [0, buildRegionData({ start: 0, end: 100, refName: 'chr1' }, [
+        feat({ start: 10, end: 50 }),
+      ])],
+      [1, buildRegionData({ start: 0, end: 100, refName: 'chr2' }, [
+        feat({ start: 20, end: 60 }),
+      ])],
+      [2, buildRegionData({ start: 0, end: 100, refName: 'chr3' }, [
+        feat({ start: 30, end: 70 }),
+      ])],
+    ])
+    const coverageRegions = [...rpcDataMap.values()]
+    expect(coverageRegions.length).toBe(3)
+    expect(coverageRegions[0]!.refName).toBe('chr1')
+    expect(coverageRegions[1]!.refName).toBe('chr2')
+    expect(coverageRegions[2]!.refName).toBe('chr3')
+    for (const region of coverageRegions) {
+      expect(region.coverageMaxDepth).toBe(1)
+    }
+  })
+
+  test('SyntenyRegionData satisfies CoverageRegion interface', () => {
+    const data = buildRegionData({ start: 100, end: 200 }, [
+      feat({ start: 120, end: 180 }),
+    ])
+    expect(data.coverageDepths).toBeInstanceOf(Float32Array)
+    expect(typeof data.coverageStartOffset).toBe('number')
+    expect(typeof data.regionStart).toBe('number')
+  })
+})
+
+describe('rendering parity: Canvas2D and GPU paths use same data', () => {
+  test('coverage data is identical for both rendering paths', () => {
+    const features = [
+      feat({ start: 100, end: 300, cs: ':50*ag:50*ct:99' }),
+      feat({ start: 200, end: 400 }),
+    ]
+    const data = buildRegionData({ start: 0, end: 500 }, features)
+
+    expect(data.coverageMaxDepth).toBeGreaterThan(0)
+    expect(data.coverageDepths.length).toBeGreaterThan(0)
+
+    expect(data.snpCount).toBeGreaterThan(0)
+    expect(data.snpPositions.length).toBe(data.snpCount)
+    expect(data.snpColorTypes.length).toBe(data.snpCount)
+    expect(data.snpHeights.length).toBe(data.snpCount)
+
+    expect(data.numMismatches).toBeGreaterThan(0)
+    expect(data.mismatchPositions.length).toBe(data.numMismatches)
+    expect(data.mismatchBases.length).toBe(data.numMismatches)
+  })
+
+  test('mismatch arrays match SNP coverage segments', () => {
+    const features = [
+      feat({ start: 100, end: 110, cs: ':3*ag:6' }),
+    ]
+    const region = { start: 0, end: 200 }
+    const regionStart = Math.floor(region.start)
+    const regionEnd = Math.ceil(region.end)
+    const coverageFeatures = features.map(f => ({ start: f.start, end: f.end }))
+    const mismatches: { position: number; base: number; strand: number }[] = []
+    for (const f of features) {
+      if (f.cs) {
+        extractMismatchesFromCs(f.cs, f.start, mismatches)
+      }
+    }
+    const coverage = computeCoverage(coverageFeatures, [], regionStart, regionEnd)
+    const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+
+    expect(mismatches.length).toBe(1)
+    expect(snp.count).toBe(1)
+    expect(snp.positions[0]).toBe(mismatches[0]!.position)
   })
 })
 

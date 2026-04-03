@@ -1,4 +1,12 @@
-import { downsampleMinMax, niceNum, computeCoverageTicks, computeVisibleMaxDepth } from './coverageDownsampling.ts'
+import {
+  buildCoverageTooltipBin,
+  computeCoverageTicks,
+  computeDepthScale,
+  computeVisibleMaxDepth,
+  countSnpsAtPosition,
+  downsampleMinMax,
+  niceNum,
+} from './coverageDownsampling.ts'
 
 describe('niceNum', () => {
   test('returns 1 for zero or negative', () => {
@@ -170,5 +178,125 @@ describe('computeVisibleMaxDepth', () => {
     expect(
       computeVisibleMaxDepth(blocks, b => dataMap.get(b.key)),
     ).toBe(10)
+  })
+})
+
+describe('computeDepthScale', () => {
+  test('returns 1 for zero depth', () => {
+    expect(computeDepthScale(0)).toBe(1)
+  })
+
+  test('returns ratio of maxDepth to niced max', () => {
+    expect(computeDepthScale(7)).toBeCloseTo(7 / 10)
+    expect(computeDepthScale(100)).toBe(1)
+    expect(computeDepthScale(45)).toBeCloseTo(45 / 50)
+  })
+})
+
+describe('countSnpsAtPosition', () => {
+  test('returns empty object when no mismatches at position', () => {
+    const mismatches = {
+      mismatchPositions: new Uint32Array([5, 10]),
+      mismatchBases: new Uint8Array([65, 67]),
+      numMismatches: 2,
+    }
+    const snps = countSnpsAtPosition(20, mismatches)
+    expect(Object.keys(snps).length).toBe(0)
+  })
+
+  test('counts bases at matching position', () => {
+    const mismatches = {
+      mismatchPositions: new Uint32Array([5, 5, 5, 10]),
+      mismatchBases: new Uint8Array([65, 65, 67, 71]),
+      numMismatches: 4,
+    }
+    const snps = countSnpsAtPosition(5, mismatches)
+    expect(snps.A.count).toBe(2)
+    expect(snps.C.count).toBe(1)
+    expect(snps.G).toBeUndefined()
+  })
+
+  test('tracks strand info when available', () => {
+    const mismatches = {
+      mismatchPositions: new Uint32Array([5, 5, 5]),
+      mismatchBases: new Uint8Array([65, 65, 65]),
+      mismatchStrands: new Int8Array([1, 1, -1]),
+      numMismatches: 3,
+    }
+    const snps = countSnpsAtPosition(5, mismatches)
+    expect(snps.A.count).toBe(3)
+    expect(snps.A.fwd).toBe(2)
+    expect(snps.A.rev).toBe(1)
+  })
+
+  test('leaves strand counts at zero when no strand data', () => {
+    const mismatches = {
+      mismatchPositions: new Uint32Array([5]),
+      mismatchBases: new Uint8Array([84]),
+      numMismatches: 1,
+    }
+    const snps = countSnpsAtPosition(5, mismatches)
+    expect(snps.T.count).toBe(1)
+    expect(snps.T.fwd).toBe(0)
+    expect(snps.T.rev).toBe(0)
+  })
+
+  test('handles non-standard bases like N', () => {
+    const mismatches = {
+      mismatchPositions: new Uint32Array([5]),
+      mismatchBases: new Uint8Array([78]),
+      numMismatches: 1,
+    }
+    const snps = countSnpsAtPosition(5, mismatches)
+    expect(snps.N.count).toBe(1)
+  })
+})
+
+describe('buildCoverageTooltipBin', () => {
+  function makeData(depths: number[], mismatches?: { pos: number; base: number }[]) {
+    const mm = mismatches ?? []
+    return {
+      coverageDepths: new Float32Array(depths),
+      coverageStartOffset: 0,
+      regionStart: 100,
+      mismatchPositions: new Uint32Array(mm.map(m => m.pos - 100)),
+      mismatchBases: new Uint8Array(mm.map(m => m.base)),
+      numMismatches: mm.length,
+    }
+  }
+
+  test('returns undefined when depth is zero', () => {
+    const data = makeData([0, 0, 0])
+    expect(buildCoverageTooltipBin(101, data, data)).toBeUndefined()
+  })
+
+  test('returns bin with depth and position', () => {
+    const data = makeData([0, 5, 10, 3])
+    const bin = buildCoverageTooltipBin(102, data, data)
+    expect(bin).toBeDefined()
+    expect(bin!.position).toBe(102)
+    expect(bin!.depth).toBe(10)
+    expect(bin!.interbaseDepth).toBe(0)
+    expect(Object.keys(bin!.interbase).length).toBe(0)
+  })
+
+  test('includes SNP counts from mismatch arrays', () => {
+    const data = makeData(
+      [0, 5, 5],
+      [
+        { pos: 102, base: 65 },
+        { pos: 102, base: 65 },
+        { pos: 102, base: 67 },
+      ],
+    )
+    const bin = buildCoverageTooltipBin(102, data, data)
+    expect(bin).toBeDefined()
+    expect(bin!.snps.A.count).toBe(2)
+    expect(bin!.snps.C.count).toBe(1)
+  })
+
+  test('position outside coverage array returns undefined', () => {
+    const data = makeData([5, 10])
+    expect(buildCoverageTooltipBin(200, data, data)).toBeUndefined()
   })
 })
