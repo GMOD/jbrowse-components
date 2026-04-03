@@ -11,30 +11,33 @@ import {
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
-import { computeCoverage, parseCigar2 } from '@jbrowse/plugin-alignments'
+import { parseCigar2 } from '@jbrowse/plugin-alignments'
 import { getFeatureColor } from './multiSyntenyColorUtils.ts'
-import { COVERAGE_BIN_BYTE_SIZE, INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
+import {
+  COVERAGE_BIN_BYTE_SIZE,
+  INSTANCE_BYTE_SIZE,
+} from './multiSyntenyGpuShaders.ts'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
-export type RefNameIndex = Map<string, { startIdx: number; count: number }>
-
-export interface MultiSyntenyGpuInstanceData {
+export interface BlockGeometryData {
   buffer: ArrayBuffer
   instanceCount: number
-  refNameIndex: RefNameIndex
 }
 
-export interface RegionRenderParams {
+export interface BlockRenderParams {
   bpRangeHi: number
   bpRangeLo: number
   bpRangeLen: number
   regionScreenLeft: number
   regionScreenWidth: number
-  instanceOffset: number
-  instanceCount: number
+}
+
+export interface BlockCoverageUploadData {
+  buffer: ArrayBuffer
+  binCount: number
 }
 
 type RGBA = [number, number, number, number]
@@ -62,7 +65,6 @@ function buildColorArrays(colors: SyntenyColors) {
 
 function addInstance(
   builder: InstanceBuilder,
-  origRefNames: string[],
   startBp: number,
   endBp: number,
   genomeRow: number,
@@ -71,7 +73,6 @@ function addInstance(
   g: number,
   b: number,
   a: number,
-  origRefName: string,
 ) {
   const off = builder.alloc()
   builder.u32[off] = startBp >>> 0
@@ -82,17 +83,14 @@ function addInstance(
   builder.f32[off + 5] = g
   builder.f32[off + 6] = b
   builder.f32[off + 7] = a
-  origRefNames.push(origRefName)
 }
 
 function expandCigarOps(
   builder: InstanceBuilder,
-  origRefNames: string[],
   cigar: number[],
   featStart: number,
   genomeRow: number,
   featureId: number,
-  origRefName: string,
   rgba: ReturnType<typeof buildColorArrays>,
 ) {
   let refPos = 0
@@ -106,7 +104,6 @@ function expandCigarOps(
       const [r, g, b, a] = rgba.mismatch
       addInstance(
         builder,
-        origRefNames,
         featStart + refPos,
         featStart + refPos + len,
         genomeRow,
@@ -115,14 +112,12 @@ function expandCigarOps(
         g,
         b,
         a,
-        origRefName,
       )
       refPos += len
     } else if (op === CIGAR_D || op === CIGAR_N) {
       const [r, g, b, a] = rgba.deletion
       addInstance(
         builder,
-        origRefNames,
         featStart + refPos,
         featStart + refPos + len,
         genomeRow,
@@ -131,14 +126,12 @@ function expandCigarOps(
         g,
         b,
         a,
-        origRefName,
       )
       refPos += len
     } else if (op === CIGAR_I) {
       const [r, g, b, a] = rgba.insertion
       addInstance(
         builder,
-        origRefNames,
         featStart + refPos,
         featStart + refPos,
         genomeRow,
@@ -147,7 +140,6 @@ function expandCigarOps(
         g,
         b,
         a,
-        origRefName,
       )
     }
   }
@@ -155,12 +147,10 @@ function expandCigarOps(
 
 function expandCsOps(
   builder: InstanceBuilder,
-  origRefNames: string[],
   cs: string,
   featStart: number,
   genomeRow: number,
   featureId: number,
-  origRefName: string,
   rgba: ReturnType<typeof buildColorArrays>,
 ) {
   let refPos = 0
@@ -182,7 +172,6 @@ function expandCsOps(
       const [r, g, b, a] = rgba.bases[queryBase] ?? rgba.mismatch
       addInstance(
         builder,
-        origRefNames,
         featStart + refPos,
         featStart + refPos + 1,
         genomeRow,
@@ -191,7 +180,6 @@ function expandCsOps(
         g,
         b,
         a,
-        origRefName,
       )
       i += 3
       refPos += 1
@@ -203,7 +191,6 @@ function expandCsOps(
         const [r, g, b, a] = rgba.deletion
         addInstance(
           builder,
-          origRefNames,
           featStart + refPos,
           featStart + refPos + len,
           genomeRow,
@@ -212,7 +199,6 @@ function expandCsOps(
           g,
           b,
           a,
-          origRefName,
         )
         refPos += len
       }
@@ -224,7 +210,6 @@ function expandCsOps(
         const [r, g, b, a] = rgba.insertion
         addInstance(
           builder,
-          origRefNames,
           featStart + refPos,
           featStart + refPos,
           genomeRow,
@@ -233,7 +218,6 @@ function expandCsOps(
           g,
           b,
           a,
-          origRefName,
         )
       }
     } else {
@@ -244,77 +228,45 @@ function expandCsOps(
 
 // SYNC: field layout must match Instance struct in multiSyntenyGpuShaders.ts
 // [startBp: u32, endBp: u32, genomeRow: u32, featureId: u32, r: f32, g: f32, b: f32, a: f32]
-export function prepareMultiSyntenyGpuData(
-  genomeRows: Map<string, MultiPairFeature[]>,
+export function prepareBlockGeometry(
+  genomeFeatures: [string, MultiPairFeature[]][],
   displayedGenomes: string[],
   colorBy: string,
   showSnps: boolean,
   colors: SyntenyColors,
-): MultiSyntenyGpuInstanceData {
+): BlockGeometryData {
   const rgba = buildColorArrays(colors)
-  // Estimate capacity
   let totalFeatures = 0
-  for (const genome of displayedGenomes) {
-    const features = genomeRows.get(genome)
-    if (features) {
-      totalFeatures += features.length
-    }
+  for (const [, features] of genomeFeatures) {
+    totalFeatures += features.length
   }
 
   const builder = new InstanceBuilder(INSTANCE_BYTE_SIZE, totalFeatures * 2)
-  const origRefNames: string[] = []
+
+  const genomeIndexMap = new Map<string, number>()
+  for (let i = 0; i < displayedGenomes.length; i++) {
+    genomeIndexMap.set(displayedGenomes[i]!, i)
+  }
 
   let featureIdx = 0
-  for (let g = 0; g < displayedGenomes.length; g++) {
-    const genomeName = displayedGenomes[g]!
-    const features = genomeRows.get(genomeName)
-    if (!features) {
+  for (const [genomeName, features] of genomeFeatures) {
+    const g = genomeIndexMap.get(genomeName)
+    if (g === undefined) {
       continue
     }
     for (const feat of features) {
       const fId = ++featureIdx
-      const origRefName = feat.origRefName
       const color = getFeatureColor(feat, colorBy)
       const [cr, cg, cb, ca] = cssColorToNormalizedRgba(color)
 
-      addInstance(
-        builder,
-        origRefNames,
-        feat.start,
-        feat.end,
-        g,
-        fId,
-        cr,
-        cg,
-        cb,
-        ca,
-        origRefName,
-      )
+      addInstance(builder, feat.start, feat.end, g, fId, cr, cg, cb, ca)
 
       if (showSnps) {
         if (feat.cs) {
-          expandCsOps(
-            builder,
-            origRefNames,
-            feat.cs,
-            feat.start,
-            g,
-            fId,
-            origRefName,
-            rgba,
-          )
+          expandCsOps(builder, feat.cs, feat.start, g, fId, rgba)
         } else if (feat.cigar) {
           const parsed = parseCigar2(feat.cigar)
-          expandCigarOps(
-            builder,
-            origRefNames,
-            parsed,
-            feat.start,
-            g,
-            fId,
-            origRefName,
-            rgba,
-          )
+          expandCigarOps(builder, parsed, feat.start, g, fId, rgba)
         }
       }
     }
@@ -322,9 +274,8 @@ export function prepareMultiSyntenyGpuData(
 
   const n = builder.getCount()
   const rawBuf = builder.getBuffer()
-  const names = origRefNames
 
-  // Create sort indices
+  // Sort by genomeRow then start position for rendering order
   const indices = new Uint32Array(n)
   for (let i = 0; i < n; i++) {
     indices[i] = i
@@ -333,21 +284,17 @@ export function prepareMultiSyntenyGpuData(
   const stride = INSTANCE_BYTE_SIZE / 4
 
   indices.sort((a, b) => {
-    const cmp = names[a]!.localeCompare(names[b]!)
-    if (cmp !== 0) {
-      return cmp
+    const rowA = u32View[a * stride + 2]!
+    const rowB = u32View[b * stride + 2]!
+    if (rowA !== rowB) {
+      return rowA - rowB
     }
     return u32View[a * stride]! - u32View[b * stride]!
   })
 
-  // Write sorted buffer
   const sortedBuf = new ArrayBuffer(n * INSTANCE_BYTE_SIZE)
   const srcBytes = new Uint8Array(rawBuf)
   const dstBytes = new Uint8Array(sortedBuf)
-
-  const refNameIndex: RefNameIndex = new Map()
-  let currentRefName = ''
-  let regionStartIdx = 0
 
   for (let i = 0; i < n; i++) {
     const srcIdx = indices[i]!
@@ -358,39 +305,15 @@ export function prepareMultiSyntenyGpuData(
       ),
       i * INSTANCE_BYTE_SIZE,
     )
-
-    const refName = names[srcIdx]!
-    if (refName !== currentRefName) {
-      if (currentRefName !== '' && i > regionStartIdx) {
-        refNameIndex.set(currentRefName, {
-          startIdx: regionStartIdx,
-          count: i - regionStartIdx,
-        })
-      }
-      currentRefName = refName
-      regionStartIdx = i
-    }
-  }
-  if (currentRefName !== '' && n > regionStartIdx) {
-    refNameIndex.set(currentRefName, {
-      startIdx: regionStartIdx,
-      count: n - regionStartIdx,
-    })
   }
 
-  return { buffer: sortedBuf, instanceCount: n, refNameIndex }
+  return { buffer: sortedBuf, instanceCount: n }
 }
 
-export function computeRegionRenderParams(
+export function computeBlockRenderParams(
   block: BaseBlock,
   viewOffsetPx: number,
-  refNameIndex: RefNameIndex,
-) {
-  const entry = refNameIndex.get(block.refName)
-  if (!entry || entry.count === 0) {
-    return undefined
-  }
-
+): BlockRenderParams {
   const [bpRangeHi, bpRangeLo] = splitPositionWithFrac(block.start)
   const bpRangeLen = block.end - block.start
   const regionScreenLeft = block.offsetPx - viewOffsetPx
@@ -402,132 +325,34 @@ export function computeRegionRenderParams(
     bpRangeLen,
     regionScreenLeft,
     regionScreenWidth,
-    instanceOffset: entry.startIdx,
-    instanceCount: entry.count,
-  } satisfies RegionRenderParams
+  }
 }
 
-// ---- Coverage data ----
-
-export interface CoveragePerRefName {
-  depths: Float32Array
-  maxDepth: number
-  startOffset: number
-  regionStart: number
-}
-
-export interface SyntenyCoverageData {
-  perRefName: Map<string, CoveragePerRefName>
-  globalMaxDepth: number
-  buffer: ArrayBuffer
-  refNameIndex: RefNameIndex
-  totalBins: number
-}
-
-export function computeSyntenyCoverageGpuData(
-  genomeRows: Map<string, MultiPairFeature[]>,
-  displayedGenomes: string[],
-  contentBlocks: BaseBlock[],
+// Pack per-bp coverage depths into a GPU buffer for a single block.
+// Returns downsampled min/max bands: [position: f32, minDepth: f32, maxDepth: f32] per bin.
+export function packCoverageForGpu(
+  depths: Float32Array,
+  startOffset: number,
+  maxDepth: number,
   viewWidthPx = 2000,
-): SyntenyCoverageData {
-  const perRefName = new Map<string, CoveragePerRefName>()
-
-  const featuresByRefName = new Map<string, { start: number; end: number }[]>()
-  for (const genome of displayedGenomes) {
-    const features = genomeRows.get(genome)
-    if (features) {
-      for (const f of features) {
-        let arr = featuresByRefName.get(f.origRefName)
-        if (!arr) {
-          arr = []
-          featuresByRefName.set(f.origRefName, arr)
-        }
-        arr.push({ start: f.start, end: f.end })
-      }
-    }
+): BlockCoverageUploadData {
+  if (maxDepth === 0 || depths.length === 0) {
+    return { buffer: new ArrayBuffer(0), binCount: 0 }
   }
 
-  for (const block of contentBlocks) {
-    if (perRefName.has(block.refName)) {
-      continue
-    }
-    const features = featuresByRefName.get(block.refName)
-    if (!features || features.length === 0) {
-      continue
-    }
-    const regionStart = Math.floor(block.start)
-    const regionEnd = Math.ceil(block.end)
-    const result = computeCoverage(features, [], regionStart, regionEnd)
-    perRefName.set(block.refName, {
-      depths: result.depths,
-      maxDepth: result.maxDepth,
-      startOffset: result.startOffset,
-      regionStart,
-    })
+  const ds = downsampleMinMax(depths, startOffset, viewWidthPx, maxDepth)
+  if (ds.count === 0) {
+    return { buffer: new ArrayBuffer(0), binCount: 0 }
   }
 
-  let globalMaxDepth = 0
-  for (const data of perRefName.values()) {
-    if (data.maxDepth > globalMaxDepth) {
-      globalMaxDepth = data.maxDepth
-    }
-  }
-
-  if (globalMaxDepth === 0) {
-    return {
-      perRefName,
-      globalMaxDepth: 0,
-      buffer: new ArrayBuffer(0),
-      refNameIndex: new Map(),
-      totalBins: 0,
-    }
-  }
-
-  // Downsample each refName's depths and pack into GPU buffer
-  // [position: f32, minDepth: f32, maxDepth: f32] per bin (12 bytes)
-  const downsampled = new Map<string, ReturnType<typeof downsampleMinMax>>()
-  let totalBins = 0
-  for (const [refName, data] of perRefName) {
-    const ds = downsampleMinMax(data.depths, data.startOffset, viewWidthPx, globalMaxDepth)
-    downsampled.set(refName, ds)
-    totalBins += ds.count
-  }
-
-  if (totalBins === 0) {
-    return {
-      perRefName,
-      globalMaxDepth,
-      buffer: new ArrayBuffer(0),
-      refNameIndex: new Map(),
-      totalBins: 0,
-    }
-  }
-
-  const buffer = new ArrayBuffer(totalBins * COVERAGE_BIN_BYTE_SIZE)
+  const buffer = new ArrayBuffer(ds.count * COVERAGE_BIN_BYTE_SIZE)
   const f32 = new Float32Array(buffer)
-  const refNameIndex: RefNameIndex = new Map()
-  let offset = 0
-
-  for (const [refName, ds] of downsampled) {
-    if (ds.count === 0) {
-      continue
-    }
-    const startIdx = offset
-    for (let i = 0; i < ds.count; i++) {
-      const binIdx = offset * 3
-      f32[binIdx] = ds.positions[i]!
-      f32[binIdx + 1] = ds.mins[i]!
-      f32[binIdx + 2] = ds.maxs[i]!
-      offset++
-    }
-    refNameIndex.set(refName, { startIdx, count: offset - startIdx })
+  for (let i = 0; i < ds.count; i++) {
+    const binIdx = i * 3
+    f32[binIdx] = ds.positions[i]!
+    f32[binIdx + 1] = ds.mins[i]!
+    f32[binIdx + 2] = ds.maxs[i]!
   }
 
-  return {
-    perRefName,
-    globalMaxDepth,
-    buffer,
-    refNameIndex,
-    totalBins,
-  }
+  return { buffer, binCount: ds.count }
 }

@@ -57,6 +57,47 @@ export function computeCoverageTicks(
   }
 }
 
+export interface CoverageRegion {
+  depths: Float32Array
+  startOffset: number
+  regionStart: number
+}
+
+// Scans visible coverage bins and returns the maximum depth in the viewport.
+// Used by debounced autoruns to normalize coverage Y-scale to visible data.
+export function computeVisibleMaxDepth<D>(
+  visibleBlocks: { start: number; end: number; key: string }[],
+  dataMap: Map<string, D>,
+  getCoverage: (data: D) => CoverageRegion | undefined,
+) {
+  let maxDepth = 0
+  for (const block of visibleBlocks) {
+    const data = dataMap.get(block.key)
+    if (!data) {
+      continue
+    }
+    const cov = getCoverage(data)
+    if (!cov) {
+      continue
+    }
+    const startBin = Math.max(
+      0,
+      Math.floor(block.start - cov.regionStart - cov.startOffset),
+    )
+    const endBin = Math.min(
+      cov.depths.length,
+      Math.ceil(block.end - cov.regionStart - cov.startOffset),
+    )
+    for (let i = startBin; i < endBin; i++) {
+      const d = cov.depths[i]!
+      if (d > maxDepth) {
+        maxDepth = d
+      }
+    }
+  }
+  return maxDepth
+}
+
 export interface DownsampledBins {
   positions: Float32Array
   mins: Float32Array

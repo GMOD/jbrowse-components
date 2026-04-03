@@ -1,27 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MISMATCH_COLOR } from '@jbrowse/alignments-core'
-import { getBpDisplayStr, getContainingView } from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView, useGpuRenderer } from '@jbrowse/core/util'
 import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
 import { Tooltip, useTheme } from '@mui/material'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
-import { computeCoverageTicks } from '@jbrowse/alignments-core'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_FONT_MAX, LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
-import { computeSyntenyCoverageGpuData } from './multiSyntenyGpuData.ts'
 
-import type { CoveragePerRefName } from './multiSyntenyGpuData.ts'
+import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import type { SyntenyColorPalette } from '../model.ts'
+import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface MultiSyntenyModel {
   genomeRows: Map<string, MultiPairFeature[]>
+  rpcDataMap: Map<string, SyntenyRegionData>
   displayedGenomes: string[]
   rowHeight: number
   rowSpacing: boolean
@@ -33,11 +33,9 @@ interface MultiSyntenyModel {
   showSnps: boolean
   dataVersion: number
   coverageMaxDepth: number
-  coveragePerRefName?: Map<string, CoveragePerRefName>
-  setCoverageData: (
-    maxDepth: number,
-    perRefName?: Map<string, CoveragePerRefName>,
-  ) => void
+  coverageTicks: CoverageTicks | undefined
+  setWebGLRenderer: (renderer: MultiSyntenyRenderer | null) => void
+  setColorPalette: (palette: SyntenyColorPalette | null) => void
 }
 
 function formatTooltip(hit: FeatureHitResult) {
@@ -257,18 +255,7 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   model: MultiSyntenyModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rendererRef = useRef<MultiSyntenyRenderer | null>(null)
-  const [ready, setReady] = useState(false)
   const { palette } = useTheme()
-  const coverageColorRgb = useMemo(() => {
-    const hex =
-      palette.mode === 'dark' ? palette.grey[700] : palette.grey[400]
-    // parse hex to normalized RGB
-    const r = parseInt(hex.slice(1, 3), 16) / 255
-    const g = parseInt(hex.slice(3, 5), 16) / 255
-    const b = parseInt(hex.slice(5, 7), 16) / 255
-    return [r, g, b] as [number, number, number]
-  }, [palette.mode, palette.grey])
   const [tooltip, setTooltip] = useState<{
     text: string
     open: boolean
@@ -279,181 +266,45 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
 
   const view = getContainingView(model) as LinearGenomeViewModel
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
-    }
-    let cancelled = false
-    const renderer = MultiSyntenyRenderer.getOrCreate(canvas)
-    renderer
-      .init()
-      .then(() => {
-        if (cancelled) {
-          return
-        }
-        rendererRef.current = renderer
-        setReady(true)
-      })
-      .catch((e: unknown) => {
-        console.error('Failed to initialize multi-synteny renderer:', e)
-      })
-    return () => {
-      cancelled = true
-      rendererRef.current?.dispose()
-      rendererRef.current = null
-    }
-  }, [])
+  // Renderer lifecycle: create, init, store in model
+  const gpuOpts = useMemo(
+    () => ({
+      onReady: (renderer: MultiSyntenyRenderer) => {
+        model.setWebGLRenderer(renderer)
+      },
+      onDispose: () => {
+        model.setWebGLRenderer(null)
+      },
+    }),
+    [model],
+  )
+  useGpuRenderer(canvasRef, MultiSyntenyRenderer, gpuOpts)
 
-  // GPU upload autorun: uploads geometry when data/colors change.
-  // Does NOT read view.staticBlocks so scrolling won't trigger re-upload.
+  // Theme color palette sync to model
   useEffect(() => {
-    if (!ready) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (renderer?.isGpu) {
-        const { genomeRows, displayedGenomes, colorBy, showSnps } = model
-        renderer.uploadGeometry(genomeRows, displayedGenomes, colorBy, showSnps, {
-          mismatch: MISMATCH_COLOR,
-          deletion: palette.deletion,
-          insertion: palette.insertion,
-          baseA: palette.bases.A.main,
-          baseC: palette.bases.C.main,
-          baseG: palette.bases.G.main,
-          baseT: palette.bases.T.main,
-        })
-      }
+    const hex =
+      palette.mode === 'dark' ? palette.grey[700] : palette.grey[400]
+    const r = parseInt(hex.slice(1, 3), 16) / 255
+    const g = parseInt(hex.slice(3, 5), 16) / 255
+    const b = parseInt(hex.slice(5, 7), 16) / 255
+    model.setColorPalette({
+      coverageColorRgb: [r, g, b],
+      syntenyColors: {
+        mismatch: MISMATCH_COLOR,
+        deletion: palette.deletion,
+        insertion: palette.insertion,
+        baseA: palette.bases.A.main,
+        baseC: palette.bases.C.main,
+        baseG: palette.bases.G.main,
+        baseT: palette.bases.T.main,
+      },
     })
-  }, [ready, model, palette])
-
-  // Coverage upload autorun: separate from geometry so it can depend on
-  // contentBlocks (for refName filtering) without triggering geometry re-upload.
-  useEffect(() => {
-    if (!ready) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      const { genomeRows, displayedGenomes, showCoverage } = model
-      if (showCoverage && genomeRows.size > 0) {
-        const contentBlocks = view.staticBlocks.contentBlocks
-        const coverageData = computeSyntenyCoverageGpuData(
-          genomeRows,
-          displayedGenomes,
-          contentBlocks,
-          Math.ceil(view.width),
-        )
-        if (renderer?.isGpu) {
-          renderer.uploadCoverage(coverageData)
-        }
-        model.setCoverageData(coverageData.globalMaxDepth, coverageData.perRefName)
-      } else {
-        model.setCoverageData(0)
-      }
-    })
-  }, [ready, model, view])
-
-  // GPU draw autorun: re-renders on view changes (scroll, zoom, resize)
-  useEffect(() => {
-    if (!ready) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (renderer?.isGpu) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _dv = model.dataVersion
-        const { height, rowHeight, rowSpacing, syntenyCoverageHeight } = model
-        const contentBlocks = view.staticBlocks.contentBlocks
-        renderer.renderGpu(
-          contentBlocks,
-          view.offsetPx,
-          view.width,
-          height,
-          rowHeight,
-          rowSpacing,
-          syntenyCoverageHeight,
-          coverageColorRgb,
-        )
-      }
-    })
-  }, [ready, model, view, coverageColorRgb])
-
-  // Canvas2D fallback path
-  useEffect(() => {
-    if (!ready) {
-      return
-    }
-    return autorun(() => {
-      const renderer = rendererRef.current
-      if (renderer && !renderer.isGpu) {
-        const {
-          genomeRows,
-          displayedGenomes,
-          colorBy,
-          syntenyAreaHeight,
-          syntenyCoverageHeight,
-          showCoverage,
-          rowHeight,
-          rowSpacing,
-          showSnps,
-        } = model
-        const { width, offsetPx } = view
-        const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-        const bpToPx = (refName: string, coord: number) => {
-          const result = view.bpToPx({ refName, coord })
-          if (result === undefined) {
-            return undefined
-          }
-          return result.offsetPx - offsetPx
-        }
-        let coverageData = undefined
-        if (showCoverage && genomeRows.size > 0) {
-          coverageData = computeSyntenyCoverageGpuData(
-            genomeRows,
-            displayedGenomes,
-            view.staticBlocks.contentBlocks,
-            Math.ceil(view.width),
-          )
-        }
-        renderer.renderCanvas(genomeRows, displayedGenomes, {
-          width,
-          height: syntenyAreaHeight,
-          rowHeight,
-          rowSpacing,
-          bpToPx,
-          colorBy,
-          labelW,
-          showSnps,
-          coverageHeight: syntenyCoverageHeight,
-          coverageData,
-          colors: {
-            mismatch: MISMATCH_COLOR,
-            deletion: palette.deletion,
-            insertion: palette.insertion,
-            baseA: palette.bases.A.main,
-            baseC: palette.bases.C.main,
-            baseG: palette.bases.G.main,
-            baseT: palette.bases.T.main,
-          },
-        })
-      }
-    })
-  }, [ready, model, view, palette])
+  }, [model, palette])
 
   // Read observables during render for tooltip/style (observer tracks these)
-  const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, syntenyCoverageHeight, showSnps } = model
+  const { genomeRows, displayedGenomes, rowHeight, rowSpacing, height, syntenyCoverageHeight, showSnps, coverageTicks } = model
   const { width, bpPerPx, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
-
-  const coverageTicks = useMemo(() => {
-    if (model.coverageMaxDepth === 0 || syntenyCoverageHeight === 0) {
-      return undefined
-    }
-    return computeCoverageTicks(model.coverageMaxDepth, syntenyCoverageHeight)
-  }, [model.coverageMaxDepth, syntenyCoverageHeight])
 
   // Hide tooltip and hover on zoom or scroll changes
   useEffect(() => {
@@ -512,18 +363,20 @@ const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
       if (!bp || bp.oob) {
         return undefined
       }
-      const covData = model.coveragePerRefName?.get(bp.refName)
-      if (!covData) {
-        return undefined
+      const regionKey = `${bp.assemblyName}:${bp.refName}:${bp.start}:${bp.end}${bp.reversed ? ':rev' : ''}`
+      const data = model.rpcDataMap.get(regionKey)
+      if (data) {
+        const idx = Math.floor(bp.coord - 1) - data.regionStart - data.coverageStartOffset
+        if (idx >= 0 && idx < data.coverageDepths.length) {
+          const depth = data.coverageDepths[idx]!
+          if (depth > 0) {
+            return `${bp.refName}:${Math.floor(bp.coord).toLocaleString()} depth: ${depth}`
+          }
+        }
       }
-      const idx = Math.floor(bp.coord - 1) - covData.regionStart - covData.startOffset
-      if (idx < 0 || idx >= covData.depths.length) {
-        return undefined
-      }
-      const depth = covData.depths[idx]!
-      return `${bp.refName}:${Math.floor(bp.coord).toLocaleString()} depth: ${depth}`
+      return undefined
     },
-    [model.coverageMaxDepth, model.coveragePerRefName, syntenyCoverageHeight, view],
+    [model.coverageMaxDepth, model.rpcDataMap, syntenyCoverageHeight, view],
   )
 
   const onMouseMove = useCallback(

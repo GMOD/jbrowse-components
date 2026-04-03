@@ -1,7 +1,7 @@
 import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 
 import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
-import { prepareMultiSyntenyGpuData } from './multiSyntenyGpuData.ts'
+import { prepareBlockGeometry, packCoverageForGpu } from './multiSyntenyGpuData.ts'
 
 import type {
   MultiSyntenyCanvasBackend,
@@ -9,9 +9,9 @@ import type {
   MultiSyntenyGpuBackend,
   SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
-import type { SyntenyCoverageData } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 const cache = new WeakMap<HTMLCanvasElement, MultiSyntenyRenderer>()
 
@@ -78,33 +78,57 @@ export class MultiSyntenyRenderer {
     return this.gpuBackend !== null
   }
 
-  uploadGeometry(
-    genomeRows: Map<string, MultiPairFeature[]>,
+  uploadGeometryForBlock(
+    blockKey: string,
+    regionData: SyntenyRegionData,
     displayedGenomes: string[],
     colorBy: string,
     showSnps: boolean,
     colors: SyntenyColors,
   ) {
     if (this.gpuBackend) {
-      const data = prepareMultiSyntenyGpuData(
-        genomeRows,
+      const geometry = prepareBlockGeometry(
+        regionData.genomeFeatures,
         displayedGenomes,
         colorBy,
         showSnps,
         colors,
       )
-      this.gpuBackend.uploadGeometry(data)
+      this.gpuBackend.uploadGeometryForBlock(blockKey, {
+        ...geometry,
+        regionStart: regionData.regionStart,
+      })
     }
   }
 
-  uploadCoverage(coverageData: SyntenyCoverageData) {
+  uploadCoverageForBlock(
+    blockKey: string,
+    regionData: SyntenyRegionData,
+    viewWidthPx: number,
+    globalMaxDepth: number,
+  ) {
     if (this.gpuBackend) {
-      this.gpuBackend.uploadCoverage(coverageData)
+      const packed = packCoverageForGpu(
+        regionData.coverageDepths,
+        regionData.coverageStartOffset,
+        globalMaxDepth,
+        viewWidthPx,
+      )
+      this.gpuBackend.uploadCoverageForBlock(blockKey, {
+        ...packed,
+        regionStart: regionData.regionStart,
+        maxDepth: regionData.coverageMaxDepth,
+      })
     }
+  }
+
+  clearAllBlocks() {
+    this.gpuBackend?.clearAllBlocks()
   }
 
   renderGpu(
     contentBlocks: BaseBlock[],
+    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,
@@ -115,6 +139,7 @@ export class MultiSyntenyRenderer {
   ) {
     this.gpuBackend?.render(
       contentBlocks,
+      regionKeyMap,
       viewOffsetPx,
       width,
       height,

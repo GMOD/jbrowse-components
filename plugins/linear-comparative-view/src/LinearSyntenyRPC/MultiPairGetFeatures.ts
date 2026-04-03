@@ -1,6 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { computeCoverage } from '@jbrowse/plugin-alignments'
 
+import type {
+  MultiPairGetFeaturesArgs,
+  MultiPairGetFeaturesResult,
+  SyntenyRegionData,
+} from './syntenyRegionTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -14,22 +20,6 @@ interface MultiPairAdapter {
   }>
   getSources(): Promise<{ name: string }[]>
   getChromSizes?(): Promise<Map<string, { refName: string; length: number }[]>>
-}
-
-export interface MultiPairGetFeaturesArgs {
-  adapterConfig: Record<string, unknown>
-  regions: Region[]
-  bpPerPx: number
-  sessionId: string
-  stopToken?: StopToken
-  fetchMetadata?: boolean
-  statusCallback?: (msg: string) => void
-}
-
-export interface MultiPairGetFeaturesResult {
-  genomeRows: [string, MultiPairFeature[]][]
-  sources?: { name: string }[]
-  chromSizes?: [string, { refName: string; length: number }[]][]
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -84,28 +74,48 @@ export class MultiPairGetFeatures extends RpcMethodType {
       }
     }
 
-    const allGenomeRows = new Map<string, MultiPairFeature[]>()
+    const regionData: [string, SyntenyRegionData][] = []
 
-    for (const region of regions) {
+    for (const { region, blockKey } of regions) {
       const { genomeRows } = await adapter.getMultiPairFeatures(region, {
         bpPerPx,
         stopToken,
       })
 
+      const regionStart = Math.floor(region.start)
+      const regionEnd = Math.ceil(region.end)
+
+      // Collect all features overlapping this region for coverage
+      const coverageFeatures: { start: number; end: number }[] = []
+      const genomeFeatures: [string, MultiPairFeature[]][] = []
       for (const [genome, features] of genomeRows) {
-        const existing = allGenomeRows.get(genome)
-        if (existing) {
-          for (const f of features) {
-            existing.push(f)
-          }
-        } else {
-          allGenomeRows.set(genome, [...features])
+        genomeFeatures.push([genome, features])
+        for (const f of features) {
+          coverageFeatures.push({ start: f.start, end: f.end })
         }
       }
+
+      const coverage = computeCoverage(
+        coverageFeatures,
+        [],
+        regionStart,
+        regionEnd,
+      )
+
+      regionData.push([
+        blockKey,
+        {
+          regionStart,
+          genomeFeatures,
+          coverageDepths: coverage.depths,
+          coverageMaxDepth: coverage.maxDepth,
+          coverageStartOffset: coverage.startOffset,
+        },
+      ])
     }
 
     return {
-      genomeRows: [...allGenomeRows.entries()],
+      regionData,
       sources,
       chromSizes,
     }

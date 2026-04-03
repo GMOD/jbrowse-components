@@ -10,9 +10,15 @@ interface GpuRendererCache<R extends GpuRenderer> {
   getOrCreate(canvas: HTMLCanvasElement): R
 }
 
+interface UseGpuRendererOptions<R> {
+  onReady?: (renderer: R) => void
+  onDispose?: () => void
+}
+
 /**
  * Shared hook for GPU renderer initialization, error handling, context loss
- * recovery, and retry. Used by wiggle, variant, and hic display components.
+ * recovery, and retry. Used by wiggle, variant, hic, synteny, and alignments
+ * display components.
  *
  * Pattern:
  * 1. Canvas mounts → useEffect creates renderer via getOrCreate + init()
@@ -20,12 +26,14 @@ interface GpuRendererCache<R extends GpuRenderer> {
  *    renderer → effect re-runs creating fresh renderer
  * 3. Error → ErrorBar with retry → retry resets state + bumps contextVersion
  *
- * Alignments uses a different pattern (renderer stored in MST model, rendering
- * driven by model autoruns) but follows the same contextVersion approach.
+ * For displays with model-driven autoruns (alignments, synteny), pass
+ * onReady/onDispose callbacks to store the renderer in the MST model
+ * volatile so autoruns can track it as a MobX observable.
  */
 export function useGpuRenderer<R extends GpuRenderer>(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   rendererCache: GpuRendererCache<R>,
+  opts?: UseGpuRendererOptions<R>,
 ) {
   const [error, setError] = useState<unknown>(null)
   const [ready, setReady] = useState(false)
@@ -60,6 +68,7 @@ export function useGpuRenderer<R extends GpuRenderer>(
           setError(new Error('GPU initialization failed'))
         } else {
           setReady(true)
+          opts?.onReady?.(renderer)
         }
       })
       .catch((e: unknown) => {
@@ -71,8 +80,9 @@ export function useGpuRenderer<R extends GpuRenderer>(
       cancelled = true
       rendererRef.current = null
       setReady(false)
+      opts?.onDispose?.()
     }
-  }, [contextVersion, rendererCache, canvasRef])
+  }, [contextVersion, rendererCache, canvasRef, opts])
 
   function retry() {
     setError(null)

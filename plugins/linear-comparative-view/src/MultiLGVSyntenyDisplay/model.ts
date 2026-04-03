@@ -1,6 +1,7 @@
 import type React from 'react'
 import { lazy } from 'react'
 
+import { computeCoverageTicks } from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -8,9 +9,11 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  makeDisplayedRegionKey,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -24,7 +27,11 @@ import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 
-import type { MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/MultiPairGetFeatures.ts'
+import { getFirstCoverageFromRpcDataMap } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+
+import type { SyntenyRegionData, MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import type { MultiSyntenyRenderer } from './components/MultiSyntenyRenderer.ts'
+import type { SyntenyColors } from './components/multiSyntenyBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -34,6 +41,11 @@ import type {
   LinearGenomeViewModel,
   MultiRegionRegion as Region,
 } from '@jbrowse/plugin-linear-genome-view'
+
+export interface SyntenyColorPalette {
+  coverageColorRgb: [number, number, number]
+  syntenyColors: SyntenyColors
+}
 
 type LGV = LinearGenomeViewModel
 
@@ -80,17 +92,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         snpBpPerPxThreshold: types.optional(types.number, 100),
         showCoverage: types.optional(types.boolean, true),
         coverageHeight: types.optional(types.number, 45),
+        resolution: types.optional(types.number, 1),
       }),
     )
     .volatile(() => ({
-      genomeRows: new Map<string, MultiPairFeature[]>(),
+      rpcDataMap: new Map<string, SyntenyRegionData>(),
       allGenomeNames: [] as string[],
       contextMenuFeature: undefined as Feature | undefined,
       statusMessage: undefined as string | undefined,
-      coverageMaxDepth: 0,
-      coveragePerRefName: undefined as
-        | Map<string, { depths: Float32Array; maxDepth: number; startOffset: number; regionStart: number }>
-        | undefined,
+      visibleMaxDepth: 0,
+      webglRenderer: null as MultiSyntenyRenderer | null,
+      colorPalette: null as SyntenyColorPalette | null,
     }))
     .views(self => ({
       get referenceGenomeName() {
@@ -114,6 +126,22 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           return names.filter(n => n !== ref)
         }
         return names
+      },
+      get genomeRows() {
+        const merged = new Map<string, MultiPairFeature[]>()
+        for (const data of self.rpcDataMap.values()) {
+          for (const [genome, features] of data.genomeFeatures) {
+            const existing = merged.get(genome)
+            if (existing) {
+              for (const f of features) {
+                existing.push(f)
+              }
+            } else {
+              merged.set(genome, [...features])
+            }
+          }
+        }
+        return merged
       },
       get syntenyCoverageHeight() {
         return self.showCoverage ? self.coverageHeight : 0
@@ -141,13 +169,24 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         const view = getContainingView(self) as LGV
         return view.bpPerPx < self.snpBpPerPxThreshold
       },
+      get coverageMaxDepth() {
+        return self.visibleMaxDepth
+      },
+      get coverageTicks() {
+        if (self.visibleMaxDepth === 0 || this.syntenyCoverageHeight === 0) {
+          return undefined
+        }
+        return computeCoverageTicks(self.visibleMaxDepth, this.syntenyCoverageHeight)
+      },
       legendItems() {
         return legendItemsMap[self.colorBy] ?? []
       },
     }))
     .actions(self => ({
-      setGenomeRows(rows: Map<string, MultiPairFeature[]>) {
-        self.genomeRows = rows
+      setRpcData(blockKey: string, data: SyntenyRegionData) {
+        const next = new Map(self.rpcDataMap)
+        next.set(blockKey, data)
+        self.rpcDataMap = next
       },
       setAllGenomeNames(names: string[]) {
         self.allGenomeNames = names
@@ -181,12 +220,8 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setShowCoverage(val: boolean) {
         self.showCoverage = val
       },
-      setCoverageData(
-        maxDepth: number,
-        perRefName?: Map<string, { depths: Float32Array; maxDepth: number; startOffset: number; regionStart: number }>,
-      ) {
-        self.coverageMaxDepth = maxDepth
-        self.coveragePerRefName = perRefName
+      setVisibleMaxDepth(depth: number) {
+        self.visibleMaxDepth = depth
       },
       setCoverageHeight(h: number) {
         self.coverageHeight = h
@@ -194,12 +229,22 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       setSelectedGenomes(genomes: string[]) {
         self.selectedGenomes.replace(genomes)
       },
+      setResolution(r: number) {
+        self.resolution = r
+      },
       setStatusMessage(msg?: string) {
         self.statusMessage = msg
       },
+      setWebGLRenderer(renderer: MultiSyntenyRenderer | null) {
+        self.webglRenderer = renderer
+      },
+      setColorPalette(palette: SyntenyColorPalette | null) {
+        self.colorPalette = palette
+      },
       clearDisplaySpecificData() {
-        self.genomeRows = new Map()
+        self.rpcDataMap = new Map()
         self.allGenomeNames = []
+        self.webglRenderer?.clearAllBlocks()
       },
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -231,7 +276,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             const { rpcManager } = session
             const view = getContainingView(self) as LGV
 
-            const regions = needed.map(n => n.region)
+            const regions = needed.map(n => ({
+              region: n.region,
+              blockKey: makeDisplayedRegionKey(view.displayedRegions[n.regionNumber]!),
+            }))
 
             const result: MultiPairGetFeaturesResult = await rpcManager.call(
               sessionId,
@@ -240,6 +288,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 adapterConfig,
                 regions,
                 bpPerPx: view.bpPerPx,
+                resolution: self.resolution,
                 sessionId,
                 stopToken: ctx.stopToken,
                 fetchMetadata: self.allGenomeNames.length === 0,
@@ -283,8 +332,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               self.setAllGenomeNames(result.sources.map(s => s.name))
             }
 
-            const genomeRowsMap = new Map(result.genomeRows)
-            self.setGenomeRows(genomeRowsMap)
+            for (const [blockKey, data] of result.regionData) {
+              self.setRpcData(blockKey, data)
+            }
 
             for (const { region, regionNumber } of needed) {
               self.setLoadedRegionForRegion(regionNumber, region)
@@ -294,6 +344,205 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
         afterAttach() {
           superAfterAttach()
+
+          // Autorun 1: upload geometry per region (keyed by regionKey)
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer?.isGpu) {
+                  return
+                }
+                const { rpcDataMap, displayedGenomes, colorBy, showSnps, colorPalette } = self
+                if (!colorPalette) {
+                  return
+                }
+                for (const [regionKey, data] of rpcDataMap) {
+                  renderer.uploadGeometryForBlock(
+                    regionKey,
+                    data,
+                    displayedGenomes,
+                    colorBy,
+                    showSnps,
+                    colorPalette.syntenyColors,
+                  )
+                }
+              },
+              { name: 'MultiLGVSyntenyDisplay:uploadGeometry' },
+            ),
+          )
+
+          // Autorun 2: upload coverage per region
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                if (!renderer?.isGpu || !self.showCoverage) {
+                  return
+                }
+                const { rpcDataMap } = self
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                let globalMax = 0
+                for (const data of rpcDataMap.values()) {
+                  if (data.coverageMaxDepth > globalMax) {
+                    globalMax = data.coverageMaxDepth
+                  }
+                }
+                for (const [regionKey, data] of rpcDataMap) {
+                  renderer.uploadCoverageForBlock(
+                    regionKey,
+                    data,
+                    Math.ceil(view.width),
+                    globalMax,
+                  )
+                }
+              },
+              { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },
+            ),
+          )
+
+          // Autorun 3: draw
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const renderer = self.webglRenderer
+                const palette = self.colorPalette
+                if (!renderer || !palette) {
+                  return
+                }
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const _dv = self.dataVersion
+                const { height, rowHeight, rowSpacing, syntenyCoverageHeight } = self
+                const contentBlocks = view.staticBlocks.contentBlocks
+                const regionKeyMap = new Map<number, string>()
+                for (let i = 0; i < view.displayedRegions.length; i++) {
+                  regionKeyMap.set(i, makeDisplayedRegionKey(view.displayedRegions[i]!))
+                }
+
+                if (renderer.isGpu) {
+                  renderer.renderGpu(
+                    contentBlocks,
+                    regionKeyMap,
+                    view.offsetPx,
+                    view.width,
+                    height,
+                    rowHeight,
+                    rowSpacing,
+                    syntenyCoverageHeight,
+                    palette.coverageColorRgb,
+                  )
+                } else {
+                  const { genomeRows, displayedGenomes, colorBy, syntenyAreaHeight, showSnps } = self
+                  const { width, offsetPx } = view
+                  const labelW = rowHeight >= 12 ? 120 : 0
+                  const bpToPx = (refName: string, coord: number) => {
+                    const result = view.bpToPx({ refName, coord })
+                    if (result === undefined) {
+                      return undefined
+                    }
+                    return result.offsetPx - offsetPx
+                  }
+                  renderer.renderCanvas(genomeRows, displayedGenomes, {
+                    width,
+                    height: syntenyAreaHeight,
+                    rowHeight,
+                    rowSpacing,
+                    bpToPx,
+                    colorBy,
+                    labelW,
+                    showSnps,
+                    coverageHeight: syntenyCoverageHeight,
+                    coverage: self.showCoverage
+                      ? getFirstCoverageFromRpcDataMap(self.rpcDataMap)
+                      : undefined,
+                    colors: palette.syntenyColors,
+                  })
+                }
+              },
+              { name: 'MultiLGVSyntenyDisplay:draw' },
+            ),
+          )
+
+          // Autorun 4: visible max depth (debounced).
+          // Uses dynamicBlocks for precise viewport, looks up data via
+          // displayedRegionKey computed from displayedRegions[regionNumber].
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                if (!self.showCoverage) {
+                  return
+                }
+                const view = getContainingView(self) as LGV
+                if (!view.initialized) {
+                  return
+                }
+                const blocks = view.dynamicBlocks.contentBlocks
+                let maxDepth = 0
+                for (const block of blocks) {
+                  if (block.regionNumber === undefined) {
+                    continue
+                  }
+                  const dr = view.displayedRegions[block.regionNumber]
+                  if (!dr) {
+                    continue
+                  }
+                  const data = self.rpcDataMap.get(makeDisplayedRegionKey(dr))
+                  if (!data) {
+                    continue
+                  }
+                  const startBin = Math.max(
+                    0,
+                    Math.floor(block.start - data.regionStart - data.coverageStartOffset),
+                  )
+                  const endBin = Math.min(
+                    data.coverageDepths.length,
+                    Math.ceil(block.end - data.regionStart - data.coverageStartOffset),
+                  )
+                  for (let i = startBin; i < endBin; i++) {
+                    const d = data.coverageDepths[i]!
+                    if (d > maxDepth) {
+                      maxDepth = d
+                    }
+                  }
+                }
+                self.setVisibleMaxDepth(maxDepth)
+              },
+              {
+                delay: 400,
+                name: 'MultiLGVSyntenyDisplay:visibleMaxDepth',
+              },
+            ),
+          )
+
+          // Autorun 5: data invalidation on resolution change
+          let prevResolution: number | undefined
+          addDisposer(
+            self,
+            autorun(
+              () => {
+                const { resolution } = self
+                if (
+                  prevResolution !== undefined &&
+                  resolution !== prevResolution
+                ) {
+                  self.clearAllRpcData()
+                }
+                prevResolution = resolution
+              },
+              { name: 'MultiLGVSyntenyDisplay:invalidateOnResolution' },
+            ),
+          )
         },
 
         async renderSvg(): Promise<React.ReactNode> {

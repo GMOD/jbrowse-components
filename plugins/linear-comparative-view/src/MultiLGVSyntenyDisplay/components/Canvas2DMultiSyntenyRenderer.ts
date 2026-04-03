@@ -18,7 +18,6 @@ import {
   niceNum,
 } from '@jbrowse/alignments-core'
 
-import type { SyntenyCoverageData } from './multiSyntenyGpuData.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -26,45 +25,42 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
 
 function renderCoverageToCtx(
   ctx: Ctx,
-  coverageData: SyntenyCoverageData,
+  depths: Float32Array,
+  maxDepth: number,
+  startOffset: number,
+  regionStart: number,
   bpToPx: (refName: string, coord: number) => number | undefined,
+  refName: string,
   width: number,
   coverageHeight: number,
 ) {
-  if (coverageData.globalMaxDepth === 0) {
+  if (maxDepth === 0) {
     return
   }
 
-  const nicedMax = niceNum(coverageData.globalMaxDepth)
-  const depthScale = coverageData.globalMaxDepth / nicedMax
+  const nicedMax = niceNum(maxDepth)
+  const depthScale = maxDepth / nicedMax
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const coverageBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
   ctx.fillStyle = '#999'
 
-  for (const [refName, data] of coverageData.perRefName) {
-    const ds = downsampleMinMax(
-      data.depths,
-      data.startOffset,
-      Math.ceil(width),
-      coverageData.globalMaxDepth,
-    )
+  const ds = downsampleMinMax(depths, startOffset, Math.ceil(width), maxDepth)
 
-    for (let i = 0; i < ds.count; i++) {
-      const binPos = data.regionStart + ds.positions[i]!
-      const px = bpToPx(refName, binPos)
-      const px2 = bpToPx(refName, binPos + 1)
-      if (px === undefined || px2 === undefined) {
-        continue
-      }
-      if (px > width || px2 < 0) {
-        continue
-      }
-
-      const bandBottom = coverageBottom - ds.mins[i]! * depthScale * effectiveHeight
-      const bandTop = coverageBottom - ds.maxs[i]! * depthScale * effectiveHeight
-      ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
+  for (let i = 0; i < ds.count; i++) {
+    const binPos = regionStart + ds.positions[i]!
+    const px = bpToPx(refName, binPos)
+    const px2 = bpToPx(refName, binPos + 1)
+    if (px === undefined || px2 === undefined) {
+      continue
     }
+    if (px > width || px2 < 0) {
+      continue
+    }
+
+    const bandBottom = coverageBottom - ds.mins[i]! * depthScale * effectiveHeight
+    const bandTop = coverageBottom - ds.maxs[i]! * depthScale * effectiveHeight
+    ctx.fillRect(px, bandTop, Math.max(px2 - px, 1), bandBottom - bandTop)
   }
 }
 
@@ -72,29 +68,26 @@ export function renderMultiSyntenyToCtx(
   ctx: Ctx,
   genomeRows: Map<string, MultiPairFeature[]>,
   displayedGenomes: string[],
-  opts: {
-    width: number
-    height: number
-    rowHeight: number
-    rowSpacing: boolean
-    bpToPx: (refName: string, coord: number) => number | undefined
-    colorBy: string
-    labelW: number
-    showSnps: boolean
-    colors: SyntenyColors
-    coverageHeight: number
-    coverageData: SyntenyCoverageData | undefined
-  },
+  opts: MultiSyntenyCanvasRenderOpts,
 ) {
-  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverageData } = opts
+  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverage } = opts
   const showLabels = labelW > 0
 
   ctx.fillStyle = '#ededed'
   ctx.fillRect(0, 0, width, coverageHeight + height)
 
-  // Draw coverage
-  if (coverageHeight > 0 && coverageData) {
-    renderCoverageToCtx(ctx, coverageData, bpToPx, width, coverageHeight)
+  if (coverageHeight > 0 && coverage) {
+    renderCoverageToCtx(
+      ctx,
+      coverage.coverageDepths,
+      coverage.coverageMaxDepth,
+      coverage.coverageStartOffset,
+      coverage.coverageRegionStart,
+      bpToPx,
+      '',
+      width,
+      coverageHeight,
+    )
   }
 
   for (let g = 0; g < displayedGenomes.length; g++) {

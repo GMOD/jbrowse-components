@@ -57,7 +57,12 @@ export type { PickingFbo } from './rendererUtils.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
+  computeVisibleMaxDepth,
   downsampleMinMax,
   niceNum,
 } from './coverageDownsampling.ts'
-export type { CoverageTicks, DownsampledBins } from './coverageDownsampling.ts'
+export type {
+  CoverageRegion,
+  CoverageTicks,
+  DownsampledBins,
+} from './coverageDownsampling.ts'

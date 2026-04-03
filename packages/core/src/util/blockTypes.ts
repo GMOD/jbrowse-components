@@ -1,3 +1,13 @@
+export function makeDisplayedRegionKey(r: {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+  reversed?: boolean
+}) {
+  return `${r.assemblyName}:${r.refName}:${r.start}:${r.end}${r.reversed ? ':rev' : ''}`
+}
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {

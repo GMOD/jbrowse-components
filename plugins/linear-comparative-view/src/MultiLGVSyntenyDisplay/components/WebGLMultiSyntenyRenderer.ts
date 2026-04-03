@@ -9,7 +9,7 @@ import {
   enableStandardBlend,
 } from '@jbrowse/core/gpu/webglUtils'
 
-import { computeRegionRenderParams } from './multiSyntenyGpuData.ts'
+import { computeBlockRenderParams } from './multiSyntenyGpuData.ts'
 import { YSCALEBAR_LABEL_OFFSET, niceNum } from '@jbrowse/alignments-core'
 import {
   COVERAGE_VERTEX_SHADER,
@@ -22,12 +22,18 @@ import {
 } from './multiSyntenyGpuShaders.ts'
 
 import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
-import type {
-  MultiSyntenyGpuInstanceData,
-  SyntenyCoverageData,
-} from './multiSyntenyGpuData.ts'
+import type { BlockGeometryData, BlockCoverageUploadData } from './multiSyntenyGpuData.ts'
 import type { PickingFbo } from '@jbrowse/alignments-core'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+
+interface SyntenyGpuRegion {
+  regionStart: number
+  instanceVbo: WebGLBuffer | null
+  instanceCount: number
+  coverageVbo: WebGLBuffer | null
+  coverageBinCount: number
+  coverageMaxDepth: number
+}
 
 export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   private gl: WebGL2RenderingContext
@@ -42,11 +48,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
   private uniformData = new ArrayBuffer(UNIFORM_BYTE_SIZE)
   private uniformF32 = new Float32Array(this.uniformData)
 
-  private instanceVbo: WebGLBuffer | null = null
-  private instanceData: MultiSyntenyGpuInstanceData | null = null
-
-  private coverageVbo: WebGLBuffer | null = null
-  private coverageData: SyntenyCoverageData | null = null
+  private regions = new Map<string, SyntenyGpuRegion>()
 
   private pickingFboState: PickingFbo | undefined
   private pickingDirty = true
@@ -125,62 +127,53 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     return vao
   }
 
-  private bindInstanceBuffer(program: WebGLProgram, instanceOffset = 0) {
+  private bindInstanceBufferDirect(
+    program: WebGLProgram,
+    vbo: WebGLBuffer,
+  ) {
     const gl = this.gl
-    if (!this.instanceVbo) {
-      return
-    }
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceVbo)
-    const byteOffset = instanceOffset * INSTANCE_BYTE_SIZE
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
-    // a_data0: uvec4 at offset 0 (4 × u32 = 16 bytes)
     const dataLoc = gl.getAttribLocation(program, 'a_data0')
     if (dataLoc >= 0) {
-      gl.vertexAttribIPointer(
-        dataLoc,
-        4,
-        gl.UNSIGNED_INT,
-        INSTANCE_BYTE_SIZE,
-        byteOffset,
-      )
+      gl.vertexAttribIPointer(dataLoc, 4, gl.UNSIGNED_INT, INSTANCE_BYTE_SIZE, 0)
     }
 
-    // a_color: vec4 at offset 16 (4 × f32 = 16 bytes)
     const colorLoc = gl.getAttribLocation(program, 'a_color')
     if (colorLoc >= 0) {
-      gl.vertexAttribPointer(
-        colorLoc,
-        4,
-        gl.FLOAT,
-        false,
-        INSTANCE_BYTE_SIZE,
-        byteOffset + 16,
-      )
+      gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, INSTANCE_BYTE_SIZE, 16)
     }
   }
 
-  private bindCoverageBuffer(binOffset = 0) {
+  private bindCoverageBufferDirect(vbo: WebGLBuffer) {
     const gl = this.gl
-    if (!this.coverageVbo) {
-      return
-    }
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.coverageVbo)
-    const byteOffset = binOffset * COVERAGE_BIN_BYTE_SIZE
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
     const posLoc = gl.getAttribLocation(this.coverageProgram, 'a_position')
     if (posLoc >= 0) {
-      gl.vertexAttribPointer(posLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset)
+      gl.vertexAttribPointer(posLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, 0)
     }
 
     const minLoc = gl.getAttribLocation(this.coverageProgram, 'a_minDepth')
     if (minLoc >= 0) {
-      gl.vertexAttribPointer(minLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset + 4)
+      gl.vertexAttribPointer(minLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, 4)
     }
 
     const maxLoc = gl.getAttribLocation(this.coverageProgram, 'a_maxDepth')
     if (maxLoc >= 0) {
-      gl.vertexAttribPointer(maxLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, byteOffset + 8)
+      gl.vertexAttribPointer(maxLoc, 1, gl.FLOAT, false, COVERAGE_BIN_BYTE_SIZE, 8)
     }
+  }
+
+  private getRegionForBlock(block: BaseBlock, regionKeyMap: Map<number, string>) {
+    if (block.regionNumber === undefined) {
+      return undefined
+    }
+    const key = regionKeyMap.get(block.regionNumber)
+    if (!key) {
+      return undefined
+    }
+    return this.regions.get(key)
   }
 
   resize(width: number, height: number) {
@@ -195,56 +188,115 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     }
   }
 
-  uploadGeometry(data: MultiSyntenyGpuInstanceData) {
+  uploadGeometryForBlock(
+    blockKey: string,
+    data: BlockGeometryData & { regionStart: number },
+  ) {
     const gl = this.gl
-    this.instanceData = data
+    let region = this.regions.get(blockKey)
 
-    if (this.instanceVbo) {
-      gl.deleteBuffer(this.instanceVbo)
-      this.instanceVbo = null
+    if (region?.instanceVbo) {
+      gl.deleteBuffer(region.instanceVbo)
     }
+
     if (data.instanceCount === 0) {
+      if (region) {
+        region.instanceVbo = null
+        region.instanceCount = 0
+      }
       return
     }
 
-    this.instanceVbo = gl.createBuffer()!
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceVbo)
+    if (!region) {
+      region = {
+        regionStart: data.regionStart,
+        instanceVbo: null,
+        instanceCount: 0,
+        coverageVbo: null,
+        coverageBinCount: 0,
+        coverageMaxDepth: 0,
+      }
+      this.regions.set(blockKey, region)
+    }
+
+    region.regionStart = data.regionStart
+    region.instanceVbo = gl.createBuffer()!
+    region.instanceCount = data.instanceCount
+    gl.bindBuffer(gl.ARRAY_BUFFER, region.instanceVbo)
     gl.bufferData(gl.ARRAY_BUFFER, data.buffer, gl.STATIC_DRAW)
 
-    for (const [vao, program] of [
-      [this.fillVAO, this.fillProgram],
-      [this.pickingVAO, this.pickingProgram],
-    ] as const) {
-      gl.bindVertexArray(vao)
-      this.bindInstanceBuffer(program)
-      gl.bindVertexArray(null)
-    }
     this.pickingDirty = true
   }
 
-  uploadCoverage(data: SyntenyCoverageData) {
+  uploadCoverageForBlock(
+    blockKey: string,
+    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
+  ) {
     const gl = this.gl
-    this.coverageData = data
+    let region = this.regions.get(blockKey)
 
-    if (this.coverageVbo) {
-      gl.deleteBuffer(this.coverageVbo)
-      this.coverageVbo = null
+    if (region?.coverageVbo) {
+      gl.deleteBuffer(region.coverageVbo)
     }
-    if (data.totalBins === 0) {
+
+    if (data.binCount === 0) {
+      if (region) {
+        region.coverageVbo = null
+        region.coverageBinCount = 0
+        region.coverageMaxDepth = data.maxDepth
+      }
       return
     }
 
-    this.coverageVbo = gl.createBuffer()!
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.coverageVbo)
-    gl.bufferData(gl.ARRAY_BUFFER, data.buffer, gl.STATIC_DRAW)
+    if (!region) {
+      region = {
+        regionStart: data.regionStart,
+        instanceVbo: null,
+        instanceCount: 0,
+        coverageVbo: null,
+        coverageBinCount: 0,
+        coverageMaxDepth: 0,
+      }
+      this.regions.set(blockKey, region)
+    }
 
-    gl.bindVertexArray(this.coverageVAO)
-    this.bindCoverageBuffer()
-    gl.bindVertexArray(null)
+    region.coverageVbo = gl.createBuffer()!
+    region.coverageBinCount = data.binCount
+    region.coverageMaxDepth = data.maxDepth
+    gl.bindBuffer(gl.ARRAY_BUFFER, region.coverageVbo)
+    gl.bufferData(gl.ARRAY_BUFFER, data.buffer, gl.STATIC_DRAW)
+  }
+
+  clearBlock(blockKey: string) {
+    const gl = this.gl
+    const region = this.regions.get(blockKey)
+    if (region) {
+      if (region.instanceVbo) {
+        gl.deleteBuffer(region.instanceVbo)
+      }
+      if (region.coverageVbo) {
+        gl.deleteBuffer(region.coverageVbo)
+      }
+      this.regions.delete(blockKey)
+    }
+  }
+
+  clearAllBlocks() {
+    const gl = this.gl
+    for (const region of this.regions.values()) {
+      if (region.instanceVbo) {
+        gl.deleteBuffer(region.instanceVbo)
+      }
+      if (region.coverageVbo) {
+        gl.deleteBuffer(region.coverageVbo)
+      }
+    }
+    this.regions.clear()
   }
 
   render(
     contentBlocks: BaseBlock[],
+    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,
@@ -266,33 +318,30 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     const rowPadding = rowSpacing ? 1 : 0
-    const nicedMax = this.coverageData
-      ? niceNum(this.coverageData.globalMaxDepth)
-      : 1
-    const depthScale =
-      this.coverageData && nicedMax > 0
-        ? this.coverageData.globalMaxDepth / nicedMax
-        : 1
 
-    // Draw coverage first
-    if (
-      coverageHeight > 0 &&
-      this.coverageVbo &&
-      this.coverageData &&
-      this.coverageData.totalBins > 0
-    ) {
+    // Compute global niced max from all visible regions
+    let globalMaxDepth = 0
+    for (const block of contentBlocks) {
+      const region = this.getRegionForBlock(block, regionKeyMap)
+      if (region && region.coverageMaxDepth > globalMaxDepth) {
+        globalMaxDepth = region.coverageMaxDepth
+      }
+    }
+    const nicedMax = globalMaxDepth > 0 ? niceNum(globalMaxDepth) : 1
+    const depthScale = globalMaxDepth > 0 ? globalMaxDepth / nicedMax : 1
+
+    // Draw coverage first (behind synteny features)
+    if (coverageHeight > 0) {
       gl.useProgram(this.coverageProgram)
       gl.bindVertexArray(this.coverageVAO)
 
       for (const block of contentBlocks) {
-        const params = computeRegionRenderParams(
-          block,
-          viewOffsetPx,
-          this.coverageData.refNameIndex,
-        )
-        if (!params) {
+        const region = this.getRegionForBlock(block, regionKeyMap)
+        if (!region?.coverageVbo || region.coverageBinCount === 0) {
           continue
         }
+
+        const params = computeBlockRenderParams(block, viewOffsetPx)
         if (
           params.regionScreenLeft + params.regionScreenWidth < 0 ||
           params.regionScreenLeft > logicalW
@@ -301,93 +350,59 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
         }
 
         this.writeUniforms(
-          logicalW,
-          logicalH,
-          rowHeight,
-          params.bpRangeHi,
-          params.bpRangeLo,
-          params.bpRangeLen,
-          params.regionScreenLeft,
-          params.regionScreenWidth,
-          rowPadding,
-          coverageHeight,
-          depthScale,
-          coverageColor,
+          logicalW, logicalH, rowHeight,
+          params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
+          params.regionScreenLeft, params.regionScreenWidth,
+          rowPadding, coverageHeight, depthScale, coverageColor,
         )
 
-        this.bindCoverageBuffer(params.instanceOffset)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, params.instanceCount)
+        this.bindCoverageBufferDirect(region.coverageVbo)
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.coverageBinCount)
       }
 
       gl.bindVertexArray(null)
     }
 
     // Draw synteny instances
-    if (
-      this.instanceVbo &&
-      this.instanceData &&
-      this.instanceData.instanceCount > 0
-    ) {
-      gl.useProgram(this.fillProgram)
-      gl.bindVertexArray(this.fillVAO)
+    gl.useProgram(this.fillProgram)
+    gl.bindVertexArray(this.fillVAO)
 
-      for (const block of contentBlocks) {
-        const params = computeRegionRenderParams(
-          block,
-          viewOffsetPx,
-          this.instanceData.refNameIndex,
-        )
-        if (!params) {
-          continue
-        }
-
-        if (
-          params.regionScreenLeft + params.regionScreenWidth < 0 ||
-          params.regionScreenLeft > logicalW
-        ) {
-          continue
-        }
-
-        this.writeUniforms(
-          logicalW,
-          logicalH,
-          rowHeight,
-          params.bpRangeHi,
-          params.bpRangeLo,
-          params.bpRangeLen,
-          params.regionScreenLeft,
-          params.regionScreenWidth,
-          rowPadding,
-          coverageHeight,
-          depthScale,
-          coverageColor,
-        )
-
-        this.bindInstanceBuffer(this.fillProgram, params.instanceOffset)
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, params.instanceCount)
+    for (const block of contentBlocks) {
+      const region = this.getRegionForBlock(block, regionKeyMap)
+      if (!region?.instanceVbo || region.instanceCount === 0) {
+        continue
       }
 
-      gl.bindVertexArray(null)
+      const params = computeBlockRenderParams(block, viewOffsetPx)
+      if (
+        params.regionScreenLeft + params.regionScreenWidth < 0 ||
+        params.regionScreenLeft > logicalW
+      ) {
+        continue
+      }
+
+      this.writeUniforms(
+        logicalW, logicalH, rowHeight,
+        params.bpRangeHi, params.bpRangeLo, params.bpRangeLen,
+        params.regionScreenLeft, params.regionScreenWidth,
+        rowPadding, coverageHeight, depthScale, coverageColor,
+      )
+
+      this.bindInstanceBufferDirect(this.fillProgram, region.instanceVbo)
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, region.instanceCount)
     }
 
+    gl.bindVertexArray(null)
     this.pickingDirty = true
   }
 
   pick(_x: number, _y: number) {
-    if (!this.instanceVbo || !this.instanceData || !this.pickingFboState) {
-      return -1
-    }
     return -1
   }
 
   dispose() {
     const gl = this.gl
-    if (this.instanceVbo) {
-      gl.deleteBuffer(this.instanceVbo)
-    }
-    if (this.coverageVbo) {
-      gl.deleteBuffer(this.coverageVbo)
-    }
+    this.clearAllBlocks()
     if (this.pickingFboState) {
       gl.deleteFramebuffer(this.pickingFboState.fbo)
       gl.deleteTexture(this.pickingFboState.colorTex)
@@ -426,7 +441,7 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     f[6] = bpRangeLen
     f[7] = regionScreenLeft
     f[8] = regionScreenWidth
-    f[9] = 0 // hpZero — MUST be 0.0 at runtime
+    f[9] = 0
     f[10] = rowPadding
     f[11] = YSCALEBAR_LABEL_OFFSET
     f[12] = depthScale

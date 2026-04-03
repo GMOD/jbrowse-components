@@ -4,9 +4,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { when } from 'mobx'
 
+import { getFirstCoverageFromRpcDataMap } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
-import { computeSyntenyCoverageGpuData } from './components/multiSyntenyGpuData.ts'
 
 import type { MultiLGVSyntenyDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -27,6 +27,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     rowHeight,
     rowSpacing,
     showSnps,
+    rpcDataMap,
   } = model
   const { width, offsetPx } = view
   const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
@@ -45,16 +46,6 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     return result.offsetPx - offsetPx
   }
 
-  const coverageData =
-    showCoverage && genomeRows.size > 0
-      ? computeSyntenyCoverageGpuData(
-          genomeRows,
-          displayedGenomes,
-          view.staticBlocks.contentBlocks,
-          Math.ceil(view.width),
-        )
-      : undefined
-
   renderMultiSyntenyToCtx(ctx, genomeRows, displayedGenomes, {
     width,
     height: syntenyAreaHeight,
@@ -65,7 +56,9 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     labelW,
     showSnps,
     coverageHeight: syntenyCoverageHeight,
-    coverageData,
+    coverage: showCoverage
+      ? getFirstCoverageFromRpcDataMap(rpcDataMap)
+      : undefined,
     colors: {
       mismatch: MISMATCH_COLOR,
       deletion: palette.deletion,

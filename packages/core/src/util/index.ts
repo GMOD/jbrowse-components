@@ -28,6 +28,8 @@ import {
 
 import type { ParsedLocString } from './locString.ts'
 import type PluginManager from '../PluginManager.ts'
+import { makeDisplayedRegionKey } from './blockTypes.ts'
+
 import type { BaseBlock } from './blockTypes.ts'
 import type { Feature } from './simpleFeature.ts'
 import type { StopToken } from './stopToken.ts'
@@ -1440,3 +1442,4 @@ export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
 export { setupWebGLContextLossHandler } from './webglContextLoss.ts'
 export { useGpuRenderer } from './useGpuRenderer.ts'
+export { makeDisplayedRegionKey } from './blockTypes.ts'

@@ -1,4 +1,4 @@
-import { downsampleMinMax, niceNum, computeCoverageTicks } from './coverageDownsampling.ts'
+import { downsampleMinMax, niceNum, computeCoverageTicks, computeVisibleMaxDepth } from './coverageDownsampling.ts'
 
 describe('niceNum', () => {
   test('returns 1 for zero or negative', () => {
@@ -116,5 +116,78 @@ describe('downsampleMinMax', () => {
     const result = downsampleMinMax(depths, 1000, 100, 10)
     expect(result.positions[0]).toBe(1000)
     expect(result.positions[1]).toBe(1001)
+  })
+})
+
+describe('computeVisibleMaxDepth', () => {
+  test('returns 0 for empty blocks', () => {
+    const result = computeVisibleMaxDepth([], new Map(), () => undefined)
+    expect(result).toBe(0)
+  })
+
+  test('returns 0 when no data matches blocks', () => {
+    const blocks = [{ start: 100, end: 200, key: 'block1' }]
+    const result = computeVisibleMaxDepth(blocks, new Map(), () => undefined)
+    expect(result).toBe(0)
+  })
+
+  test('finds max depth in visible range', () => {
+    const depths = new Float32Array([5, 10, 20, 8, 3])
+    const dataMap = new Map([
+      ['region1', { depths, startOffset: 0, regionStart: 100 }],
+    ])
+    const blocks = [{ start: 100, end: 105, key: 'region1' }]
+    const result = computeVisibleMaxDepth(
+      blocks,
+      dataMap,
+      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+    )
+    expect(result).toBe(20)
+  })
+
+  test('only scans bins within visible block range', () => {
+    const depths = new Float32Array([100, 5, 3, 2, 1])
+    const dataMap = new Map([
+      ['region1', { depths, startOffset: 0, regionStart: 0 }],
+    ])
+    // Only look at bins 2-4 (skip the 100 at bin 0)
+    const blocks = [{ start: 2, end: 5, key: 'region1' }]
+    const result = computeVisibleMaxDepth(
+      blocks,
+      dataMap,
+      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+    )
+    expect(result).toBe(3)
+  })
+
+  test('handles startOffset correctly', () => {
+    const depths = new Float32Array([10, 20, 30])
+    const dataMap = new Map([
+      ['region1', { depths, startOffset: 50, regionStart: 1000 }],
+    ])
+    const blocks = [{ start: 1050, end: 1053, key: 'region1' }]
+    const result = computeVisibleMaxDepth(
+      blocks,
+      dataMap,
+      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+    )
+    expect(result).toBe(30)
+  })
+
+  test('skips blocks with no matching data', () => {
+    const depths = new Float32Array([5, 10])
+    const dataMap = new Map([
+      ['region1', { depths, startOffset: 0, regionStart: 0 }],
+    ])
+    const blocks = [
+      { start: 0, end: 2, key: 'region1' },
+      { start: 100, end: 200, key: 'region2' },
+    ]
+    const result = computeVisibleMaxDepth(
+      blocks,
+      dataMap,
+      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+    )
+    expect(result).toBe(10)
   })
 })

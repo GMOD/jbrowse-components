@@ -3,8 +3,8 @@ export const LABEL_FONT_MAX = 12
 
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type {
-  MultiSyntenyGpuInstanceData,
-  SyntenyCoverageData,
+  BlockGeometryData,
+  BlockCoverageUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -12,6 +12,13 @@ import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 export type BpToPxFn = (refName: string, coord: number) => number | undefined
 
 export type SyntenyColors = CigarOpDrawColors
+
+export interface CanvasCoverageData {
+  coverageDepths: Float32Array
+  coverageMaxDepth: number
+  coverageStartOffset: number
+  coverageRegionStart: number
+}
 
 export interface MultiSyntenyCanvasRenderOpts {
   width: number
@@ -24,7 +31,7 @@ export interface MultiSyntenyCanvasRenderOpts {
   showSnps: boolean
   colors: SyntenyColors
   coverageHeight: number
-  coverageData: SyntenyCoverageData | undefined
+  coverage?: CanvasCoverageData
 }
 
 export interface MultiSyntenyCanvasBackend {
@@ -39,10 +46,19 @@ export interface MultiSyntenyCanvasBackend {
 
 export interface MultiSyntenyGpuBackend {
   resize(width: number, height: number): void
-  uploadGeometry(data: MultiSyntenyGpuInstanceData): void
-  uploadCoverage(data: SyntenyCoverageData): void
+  uploadGeometryForBlock(
+    blockKey: string,
+    data: BlockGeometryData & { regionStart: number },
+  ): void
+  uploadCoverageForBlock(
+    blockKey: string,
+    data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
+  ): void
+  clearBlock(blockKey: string): void
+  clearAllBlocks(): void
   render(
     contentBlocks: BaseBlock[],
+    regionKeyMap: Map<number, string>,
     viewOffsetPx: number,
     width: number,
     height: number,

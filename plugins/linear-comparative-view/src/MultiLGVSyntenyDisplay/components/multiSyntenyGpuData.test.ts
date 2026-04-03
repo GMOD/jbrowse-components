@@ -2,8 +2,9 @@ import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 import { DEFAULT_CIGAR_OP_DRAW_COLORS as DEFAULT_SYNTENY_COLORS } from '@jbrowse/alignments-core'
 import {
-  computeRegionRenderParams,
-  prepareMultiSyntenyGpuData,
+  computeBlockRenderParams,
+  packCoverageForGpu,
+  prepareBlockGeometry,
 } from './multiSyntenyGpuData.ts'
 import { INSTANCE_BYTE_SIZE } from './multiSyntenyGpuShaders.ts'
 
@@ -46,11 +47,10 @@ function readInstance(buf: ArrayBuffer, index: number) {
   }
 }
 
-describe('prepareMultiSyntenyGpuData', () => {
+describe('prepareBlockGeometry', () => {
   test('returns empty data for no features', () => {
-    const genomeRows = new Map<string, MultiPairFeature[]>()
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    const result = prepareBlockGeometry(
+      [],
       [],
       'strand',
       true,
@@ -58,13 +58,12 @@ describe('prepareMultiSyntenyGpuData', () => {
     )
     expect(result.instanceCount).toBe(0)
     expect(result.buffer.byteLength).toBe(0)
-    expect(result.refNameIndex.size).toBe(0)
   })
 
   test('packs single feature with correct bp coordinates', () => {
-    const genomeRows = new Map([['genomeA', [feat()]]])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    const genomeFeatures: [string, MultiPairFeature[]][] = [['genomeA', [feat()]]]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
@@ -82,13 +81,13 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('assigns correct genome row indices', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ origRefName: 'chr1' })]],
       ['genomeB', [feat({ origRefName: 'chr1' })]],
       ['genomeC', [feat({ origRefName: 'chr1' })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA', 'genomeB', 'genomeC'],
       'strand',
       true,
@@ -103,43 +102,8 @@ describe('prepareMultiSyntenyGpuData', () => {
     expect(rows).toEqual(new Set([0, 1, 2]))
   })
 
-  test('sorts features by refName and builds refNameIndex', () => {
-    const genomeRows = new Map([
-      [
-        'genomeA',
-        [
-          feat({ origRefName: 'chr2', start: 100, end: 200 }),
-          feat({ origRefName: 'chr1', start: 500, end: 600 }),
-        ],
-      ],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
-      ['genomeA'],
-      'strand',
-      true,
-      DEFAULT_SYNTENY_COLORS,
-    )
-    expect(result.instanceCount).toBe(2)
-
-    // chr1 should come before chr2 after sorting
-    const first = readInstance(result.buffer, 0)
-    const second = readInstance(result.buffer, 1)
-    expect(first.startBp).toBe(500)
-    expect(second.startBp).toBe(100)
-
-    expect(result.refNameIndex.get('chr1')).toEqual({
-      startIdx: 0,
-      count: 1,
-    })
-    expect(result.refNameIndex.get('chr2')).toEqual({
-      startIdx: 1,
-      count: 1,
-    })
-  })
-
-  test('sorts features within same refName by startBp', () => {
-    const genomeRows = new Map([
+  test('sorts features by genomeRow then startBp', () => {
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       [
         'genomeA',
         [
@@ -147,9 +111,9 @@ describe('prepareMultiSyntenyGpuData', () => {
           feat({ origRefName: 'chr1', start: 1000, end: 2000 }),
         ],
       ],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
@@ -162,26 +126,23 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('expands CIGAR deletions into sub-instances', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cigar: '100M50D100M', start: 1000, end: 1250 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base feature + 1 deletion sub-instance
     expect(result.instanceCount).toBe(2)
 
-    // Find the deletion instance (grey color, ~0.53 for #888)
     let foundDeletion = false
     for (let i = 0; i < result.instanceCount; i++) {
       const inst = readInstance(result.buffer, i)
       if (inst.startBp === 1100 && inst.endBp === 1150) {
         foundDeletion = true
-        // Deletion color is #888 → r≈0.533, g≈0.533, b≈0.533
         expect(inst.r).toBeCloseTo(0.533, 1)
       }
     }
@@ -189,17 +150,16 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('expands CIGAR mismatches (X) into sub-instances', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cigar: '50M10X40M', start: 1000, end: 1100 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base + 1 mismatch
     expect(result.instanceCount).toBe(2)
 
     let foundMismatch = false
@@ -207,7 +167,6 @@ describe('prepareMultiSyntenyGpuData', () => {
       const inst = readInstance(result.buffer, i)
       if (inst.startBp === 1050 && inst.endBp === 1060) {
         foundMismatch = true
-        // Mismatch color #f00 → r=1, g=0, b=0
         expect(inst.r).toBeCloseTo(1, 1)
         expect(inst.g).toBeCloseTo(0, 1)
       }
@@ -216,23 +175,21 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('expands CIGAR insertions as interbase markers', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cigar: '50M5I50M', start: 1000, end: 1100 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base + 1 insertion marker
     expect(result.instanceCount).toBe(2)
 
     let foundInsertion = false
     for (let i = 0; i < result.instanceCount; i++) {
       const inst = readInstance(result.buffer, i)
-      // Insertion at refPos=50, so startBp=endBp=1050 (interbase)
       if (inst.startBp === 1050 && inst.endBp === 1050) {
         foundInsertion = true
       }
@@ -241,20 +198,18 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('insertions do not advance reference position', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cigar: '50M5I10D40M', start: 1000, end: 1100 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base + 1 insertion + 1 deletion
     expect(result.instanceCount).toBe(3)
 
-    // Deletion should be at refPos=50 (not 55), since insertion doesn't advance ref
     let foundDeletion = false
     for (let i = 0; i < result.instanceCount; i++) {
       const inst = readInstance(result.buffer, i)
@@ -268,17 +223,16 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('expands cs substitutions with base-specific colors', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cs: ':50*ag:49', start: 1000, end: 1100 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base + 1 substitution
     expect(result.instanceCount).toBe(2)
 
     let foundSub = false
@@ -286,7 +240,6 @@ describe('prepareMultiSyntenyGpuData', () => {
       const inst = readInstance(result.buffer, i)
       if (inst.startBp === 1050 && inst.endBp === 1051) {
         foundSub = true
-        // query base is 'g' → color #d5bb04 → g≈0.733
         expect(inst.g).toBeGreaterThan(0.5)
       }
     }
@@ -294,17 +247,16 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('expands cs deletions', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cs: ':50-acgt:46', start: 1000, end: 1100 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base + 1 deletion
     expect(result.instanceCount).toBe(2)
 
     let foundDel = false
@@ -318,23 +270,21 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('expands cs insertions as interbase markers', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat({ cs: ':50+acgt:50', start: 1000, end: 1100 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
       DEFAULT_SYNTENY_COLORS,
     )
-    // 1 base + 1 insertion
     expect(result.instanceCount).toBe(2)
 
     let foundIns = false
     for (let i = 0; i < result.instanceCount; i++) {
       const inst = readInstance(result.buffer, i)
-      // Interbase: startBp == endBp
       if (inst.startBp === 1050 && inst.endBp === 1050) {
         foundIns = true
       }
@@ -343,7 +293,7 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 
   test('feature IDs are 1-based and unique per feature', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       [
         'genomeA',
         [
@@ -351,9 +301,9 @@ describe('prepareMultiSyntenyGpuData', () => {
           feat({ origRefName: 'chr1', start: 300, end: 400 }),
         ],
       ],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
@@ -367,44 +317,12 @@ describe('prepareMultiSyntenyGpuData', () => {
     expect(ids.size).toBe(2)
   })
 
-  test('handles multiple refNames in refNameIndex', () => {
-    const genomeRows = new Map([
-      [
-        'genomeA',
-        [
-          feat({ origRefName: 'chr1', start: 100, end: 200 }),
-          feat({ origRefName: 'chr1', start: 300, end: 400 }),
-          feat({ origRefName: 'chr2', start: 100, end: 200 }),
-          feat({ origRefName: 'chr3', start: 500, end: 600 }),
-        ],
-      ],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
-      ['genomeA'],
-      'strand',
-      true,
-      DEFAULT_SYNTENY_COLORS,
-    )
-    expect(result.refNameIndex.size).toBe(3)
-    expect(result.refNameIndex.get('chr1')!.count).toBe(2)
-    expect(result.refNameIndex.get('chr2')!.count).toBe(1)
-    expect(result.refNameIndex.get('chr3')!.count).toBe(1)
-
-    // Verify contiguous indices
-    const chr1 = result.refNameIndex.get('chr1')!
-    const chr2 = result.refNameIndex.get('chr2')!
-    const chr3 = result.refNameIndex.get('chr3')!
-    expect(chr1.startIdx + chr1.count).toBeLessThanOrEqual(chr2.startIdx)
-    expect(chr2.startIdx + chr2.count).toBeLessThanOrEqual(chr3.startIdx)
-  })
-
   test('instance buffer is exactly INSTANCE_BYTE_SIZE per instance', () => {
-    const genomeRows = new Map([
+    const genomeFeatures: [string, MultiPairFeature[]][] = [
       ['genomeA', [feat(), feat({ start: 3000, end: 4000 })]],
-    ])
-    const result = prepareMultiSyntenyGpuData(
-      genomeRows,
+    ]
+    const result = prepareBlockGeometry(
+      genomeFeatures,
       ['genomeA'],
       'strand',
       true,
@@ -416,23 +334,8 @@ describe('prepareMultiSyntenyGpuData', () => {
   })
 })
 
-describe('computeRegionRenderParams', () => {
-  test('returns undefined for unknown refName', () => {
-    const index = new Map()
-    const block = new BaseBlock({
-      refName: 'chrX',
-      start: 0,
-      end: 1000,
-      assemblyName: 'test',
-      key: 'k1',
-      offsetPx: 0,
-      widthPx: 500,
-    })
-    expect(computeRegionRenderParams(block, 0, index)).toBeUndefined()
-  })
-
-  test('returns correct params for matching block', () => {
-    const index = new Map([['chr1', { startIdx: 5, count: 10 }]])
+describe('computeBlockRenderParams', () => {
+  test('returns correct params for block', () => {
     const block = new BaseBlock({
       refName: 'chr1',
       start: 150000000,
@@ -442,17 +345,13 @@ describe('computeRegionRenderParams', () => {
       offsetPx: 1000,
       widthPx: 500,
     })
-    const params = computeRegionRenderParams(block, 200, index)!
-    expect(params).toBeDefined()
-    expect(params.instanceOffset).toBe(5)
-    expect(params.instanceCount).toBe(10)
+    const params = computeBlockRenderParams(block, 200)
     expect(params.bpRangeLen).toBe(10000000)
     expect(params.regionScreenLeft).toBe(800)
     expect(params.regionScreenWidth).toBe(500)
   })
 
   test('HP splits region start into hi/lo components', () => {
-    const index = new Map([['chr1', { startIdx: 0, count: 1 }]])
     const block = new BaseBlock({
       refName: 'chr1',
       start: 150000000,
@@ -462,17 +361,42 @@ describe('computeRegionRenderParams', () => {
       offsetPx: 0,
       widthPx: 500,
     })
-    const params = computeRegionRenderParams(block, 0, index)!
+    const params = computeBlockRenderParams(block, 0)
 
-    // HP split: hi has bottom 12 bits zeroed, lo has bottom 12 bits + frac
     const reconstructed = params.bpRangeHi + params.bpRangeLo
     expect(reconstructed).toBe(150000000)
 
-    // hi should be a multiple of 4096 (bottom 12 bits zeroed)
     expect(params.bpRangeHi % 4096).toBe(0)
-
-    // lo should be less than 4096
     expect(params.bpRangeLo).toBeLessThan(4096)
     expect(params.bpRangeLo).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('packCoverageForGpu', () => {
+  test('returns empty for zero maxDepth', () => {
+    const depths = new Float32Array([1, 2, 3])
+    const result = packCoverageForGpu(depths, 0, 0)
+    expect(result.binCount).toBe(0)
+    expect(result.buffer.byteLength).toBe(0)
+  })
+
+  test('returns empty for empty depths', () => {
+    const result = packCoverageForGpu(new Float32Array(0), 0, 10)
+    expect(result.binCount).toBe(0)
+  })
+
+  test('packs non-zero bins into 12-byte records', () => {
+    const depths = new Float32Array([0, 5, 10, 0])
+    const result = packCoverageForGpu(depths, 100, 10, 1000)
+    expect(result.binCount).toBeGreaterThan(0)
+    expect(result.buffer.byteLength).toBe(result.binCount * 12)
+  })
+
+  test('positions include startOffset', () => {
+    const depths = new Float32Array([5])
+    const result = packCoverageForGpu(depths, 500, 5, 1000)
+    expect(result.binCount).toBe(1)
+    const f32 = new Float32Array(result.buffer)
+    expect(f32[0]).toBe(500)
   })
 })
