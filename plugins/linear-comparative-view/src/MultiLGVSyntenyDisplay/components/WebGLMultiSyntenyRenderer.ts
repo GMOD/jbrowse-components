@@ -29,7 +29,7 @@ import {
 import { SNP_SEGMENT_BYTE_SIZE } from './multiSyntenyGpuData.ts'
 
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
-import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
+import type { GpuRenderOpts, MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
 import type { BlockGeometryData, BlockCoverageUploadData, BlockSnpUploadData } from './multiSyntenyGpuData.ts'
 import type { SyntenyColorPalette } from '../model.ts'
 import type { PickingFbo } from '@jbrowse/alignments-core'
@@ -370,16 +370,8 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     this.regions.clear()
   }
 
-  render(
-    contentBlocks: BaseBlock[],
-    viewOffsetPx: number,
-    width: number,
-    height: number,
-    rowHeight: number,
-    rowSpacing: boolean,
-    coverageHeight: number,
-    palette: SyntenyColorPalette,
-  ) {
+  render(opts: GpuRenderOpts) {
+    const { contentBlocks, viewOffsetPx, width, height, rowHeight, rowSpacing, coverageHeight, palette } = opts
     const gl = this.gl
 
     this.resize(width, height)
@@ -404,7 +396,6 @@ export class WebGLMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
       contentBlocks, this.regions, viewOffsetPx, logicalW,
     )
 
-    // Draw coverage first (behind synteny features)
     if (coverageHeight > 0) {
       gl.useProgram(this.coverageProgram)
       gl.bindVertexArray(this.coverageVAO)

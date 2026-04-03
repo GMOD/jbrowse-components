@@ -1,15 +1,3 @@
-export const LABEL_WIDTH = 120
-export const LABEL_FONT_MAX = 12
-
-// Background gray shared across GPU and Canvas2D renderers.
-// 0xed/255 ≈ 0.929; GPU uses the float form, Canvas2D uses the hex form.
-export const BG_COLOR_HEX = '#ededed'
-export const BG_COLOR_GL = 0.93
-
-export function truncateGenomeName(name: string) {
-  return name.length > 15 ? `${name.slice(0, 12)}...` : name
-}
-
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type {
   BlockGeometryData,
@@ -20,6 +8,16 @@ import type { SyntenyColorPalette } from '../model.ts'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
+
+export const LABEL_WIDTH = 120
+export const LABEL_FONT_MAX = 12
+
+export const BG_COLOR_HEX = '#ededed'
+export const BG_COLOR_GL = 0.93
+
+export function truncateGenomeName(name: string) {
+  return name.length > 15 ? `${name.slice(0, 12)}...` : name
+}
 
 export type BpToPxFn = (refName: string, coord: number) => number | undefined
 
@@ -50,6 +48,17 @@ export interface MultiSyntenyCanvasBackend {
   dispose(): void
 }
 
+export interface GpuRenderOpts {
+  contentBlocks: BaseBlock[]
+  viewOffsetPx: number
+  width: number
+  height: number
+  rowHeight: number
+  rowSpacing: boolean
+  coverageHeight: number
+  palette: SyntenyColorPalette
+}
+
 export interface MultiSyntenyGpuBackend {
   resize(width: number, height: number): void
   uploadGeometryForBlock(
@@ -66,16 +75,7 @@ export interface MultiSyntenyGpuBackend {
   ): void
   clearBlock(regionNumber: number): void
   clearAllBlocks(): void
-  render(
-    contentBlocks: BaseBlock[],
-    viewOffsetPx: number,
-    width: number,
-    height: number,
-    rowHeight: number,
-    rowSpacing: boolean,
-    coverageHeight: number,
-    palette: SyntenyColorPalette,
-  ): void
+  render(opts: GpuRenderOpts): void
   pick(x: number, y: number): number
   dispose(): void
 }

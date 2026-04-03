@@ -16,31 +16,10 @@ import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
 import { LABEL_FONT_MAX, LABEL_WIDTH, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
 
-import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
-import type { SyntenyColorPalette } from '../model.ts'
-import type { CoverageTicks } from '@jbrowse/alignments-core'
+import type { MultiLGVSyntenyDisplayModel } from '../model.ts'
 import type { FeatureHitResult } from './hitTesting.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-interface MultiSyntenyModel {
-  genomeRows: Map<string, MultiPairFeature[]>
-  rpcDataMap: Map<number, SyntenyRegionData>
-  displayedGenomes: string[]
-  rowHeight: number
-  rowSpacing: boolean
-  colorBy: string
-  height: number
-  syntenyAreaHeight: number
-  syntenyCoverageHeight: number
-  showCoverage: boolean
-  showSnps: boolean
-  dataVersion: number
-  coverageMaxDepth: number
-  coverageTicks: CoverageTicks | undefined
-  setWebGLRenderer: (renderer: MultiSyntenyRenderer | null) => void
-  setColorPalette: (palette: SyntenyColorPalette | null) => void
-}
 
 function formatTooltip(hit: FeatureHitResult) {
   const { feature: feat, genomeName, cigarItem } = hit
@@ -256,7 +235,7 @@ function GenomeNameOverlay({
 const MultiSyntenyRendering = observer(function MultiSyntenyRendering({
   model,
 }: {
-  model: MultiSyntenyModel
+  model: MultiLGVSyntenyDisplayModel
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { palette } = useTheme()

@@ -4,13 +4,12 @@ import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
 import { prepareBlockGeometry, packCoverageForGpu, packSnpCoverageForGpu } from './multiSyntenyGpuData.ts'
 
 import type {
+  GpuRenderOpts,
   MultiSyntenyCanvasBackend,
   MultiSyntenyCanvasRenderOpts,
   MultiSyntenyGpuBackend,
   SyntenyColors,
 } from './multiSyntenyBackendTypes.ts'
-import type { SyntenyColorPalette } from '../model.ts'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
@@ -145,26 +144,8 @@ export class MultiSyntenyRenderer {
     this.gpuBackend?.clearAllBlocks()
   }
 
-  renderGpu(
-    contentBlocks: BaseBlock[],
-    viewOffsetPx: number,
-    width: number,
-    height: number,
-    rowHeight: number,
-    rowSpacing: boolean,
-    coverageHeight: number,
-    palette: SyntenyColorPalette,
-  ) {
-    this.gpuBackend?.render(
-      contentBlocks,
-      viewOffsetPx,
-      width,
-      height,
-      rowHeight,
-      rowSpacing,
-      coverageHeight,
-      palette,
-    )
+  renderGpu(opts: GpuRenderOpts) {
+    this.gpuBackend?.render(opts)
   }
 
   renderCanvas(

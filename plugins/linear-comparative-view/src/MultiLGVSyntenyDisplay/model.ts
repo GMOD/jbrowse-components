@@ -494,16 +494,16 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 const contentBlocks = view.staticBlocks.contentBlocks
 
                 if (renderer.isGpu) {
-                  renderer.renderGpu(
+                  renderer.renderGpu({
                     contentBlocks,
-                    view.offsetPx,
-                    view.width,
+                    viewOffsetPx: view.offsetPx,
+                    width: view.width,
                     height,
                     rowHeight,
                     rowSpacing,
-                    syntenyCoverageHeight,
+                    coverageHeight: syntenyCoverageHeight,
                     palette,
-                  )
+                  })
                 } else {
                   const {
                     genomeRows,

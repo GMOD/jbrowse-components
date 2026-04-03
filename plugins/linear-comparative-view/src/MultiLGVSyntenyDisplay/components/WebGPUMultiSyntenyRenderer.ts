@@ -28,7 +28,7 @@ import {
 } from './multiSyntenyGpuShaders.ts'
 
 import { BG_COLOR_GL } from './multiSyntenyBackendTypes.ts'
-import type { MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
+import type { GpuRenderOpts, MultiSyntenyGpuBackend } from './multiSyntenyBackendTypes.ts'
 import type { BlockGeometryData, BlockCoverageUploadData, BlockSnpUploadData } from './multiSyntenyGpuData.ts'
 import type { SyntenyColorPalette } from '../model.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -320,16 +320,8 @@ export class WebGPUMultiSyntenyRenderer implements MultiSyntenyGpuBackend {
     this.regions.clear()
   }
 
-  render(
-    contentBlocks: BaseBlock[],
-    viewOffsetPx: number,
-    width: number,
-    height: number,
-    rowHeight: number,
-    rowSpacing: boolean,
-    coverageHeight: number,
-    palette: SyntenyColorPalette,
-  ) {
+  render(opts: GpuRenderOpts) {
+    const { contentBlocks, viewOffsetPx, width, height, rowHeight, rowSpacing, coverageHeight, palette } = opts
     const device = WebGPUMultiSyntenyRenderer.device
     if (!device) {
       return
