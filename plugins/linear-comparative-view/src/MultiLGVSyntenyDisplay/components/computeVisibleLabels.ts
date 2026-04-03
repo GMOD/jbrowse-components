@@ -1,18 +1,12 @@
 import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   computeLabelFontSize,
-  isCsOpChar,
-  isDigit,
 } from '@jbrowse/alignments-core'
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
+
+import { visitCigarOps, visitCsOps } from './syntenyOpsVisitor.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
 
@@ -34,135 +28,78 @@ interface LabelContext {
   w: number
   h: number
   bpLen: number
+  featStart: number
 }
 
-function addInsertionLabel(
-  labels: VisibleLabel[],
-  px: number,
-  y: number,
-  h: number,
-  len: number,
-  pxPerBp: number,
-  fontSize: number,
-) {
-  const isLarge =
-    len >= LONG_INSERTION_MIN_LENGTH &&
-    len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
-  if (isLarge) {
-    labels.push({ type: 'insertion', x: px, y: y + h / 2, text: `${len}`, fontSize })
-  }
-}
-
-function addCigarLabels(ctx: LabelContext, cigar: number[]) {
+function makeLabelVisitor(ctx: LabelContext) {
   const { x, y, w, h, bpLen, labels } = ctx
   const pxPerBp = w / bpLen
-  let refPos = 0
   const fontSize = computeLabelFontSize(h)
+  const featStart = ctx.featStart
 
-  for (const packed of cigar) {
-    const len = packed >>> 4
-    const op = packed & 0xf
-
-    if (op === CIGAR_M || op === CIGAR_EQ) {
-      refPos += len
-    } else if (op === CIGAR_X) {
-      if (len > 1) {
-        const pw = len * pxPerBp
-        if (pw > MIN_DELETION_WIDTH_PX && h >= MIN_HEIGHT_FOR_TEXT) {
+  return {
+    onMismatch(refPos: number, len: number, queryBase?: string) {
+      if (h < MIN_HEIGHT_FOR_TEXT) {
+        return
+      }
+      const localRefPos = refPos - featStart
+      if (queryBase && len === 1) {
+        if (pxPerBp >= MIN_MISMATCH_PX_PER_BP) {
           labels.push({
             type: 'mismatch',
-            x: x + (refPos + len / 2) * pxPerBp,
+            x: x + (localRefPos + 0.5) * pxPerBp,
+            y: y + h / 2,
+            text: queryBase.toUpperCase(),
+            fontSize,
+          })
+        }
+      } else if (len > 1) {
+        const pw = len * pxPerBp
+        if (pw > MIN_DELETION_WIDTH_PX) {
+          labels.push({
+            type: 'mismatch',
+            x: x + (localRefPos + len / 2) * pxPerBp,
             y: y + h / 2,
             text: `${len}`,
             fontSize,
           })
         }
       }
-      refPos += len
-    } else if (op === CIGAR_D || op === CIGAR_N) {
+    },
+    onDeletion(refPos: number, len: number) {
+      if (h < MIN_HEIGHT_FOR_TEXT) {
+        return
+      }
+      const localRefPos = refPos - featStart
       const pw = len * pxPerBp
-      if (pw > MIN_DELETION_WIDTH_PX && h >= MIN_HEIGHT_FOR_TEXT) {
+      if (pw > MIN_DELETION_WIDTH_PX) {
         labels.push({
           type: 'deletion',
-          x: x + (refPos + len / 2) * pxPerBp,
+          x: x + (localRefPos + len / 2) * pxPerBp,
           y: y + h / 2,
           text: `${len}`,
           fontSize,
         })
       }
-      refPos += len
-    } else if (op === CIGAR_I) {
-      if (h >= MIN_HEIGHT_FOR_TEXT) {
-        addInsertionLabel(labels, x + refPos * pxPerBp, y, h, len, pxPerBp, fontSize)
+    },
+    onInsertion(refPos: number, len: number) {
+      if (h < MIN_HEIGHT_FOR_TEXT) {
+        return
       }
-    }
-  }
-}
-
-function addCsLabels(ctx: LabelContext, cs: string) {
-  const { x, y, w, h, bpLen, labels } = ctx
-  const pxPerBp = w / bpLen
-  let refPos = 0
-  let i = 0
-  const fontSize = computeLabelFontSize(h)
-
-  while (i < cs.length) {
-    const ch = cs[i]!
-
-    if (ch === ':') {
-      i++
-      let num = 0
-      while (i < cs.length && isDigit(cs[i]!)) {
-        num = num * 10 + (cs.charCodeAt(i) - 48)
-        i++
-      }
-      refPos += num
-    } else if (ch === '*') {
-      const queryBase = cs[i + 2] ?? ''
-      if (pxPerBp >= MIN_MISMATCH_PX_PER_BP && h >= MIN_HEIGHT_FOR_TEXT) {
+      const localRefPos = refPos - featStart
+      const isLarge =
+        len >= LONG_INSERTION_MIN_LENGTH &&
+        len * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
+      if (isLarge) {
         labels.push({
-          type: 'mismatch',
-          x: x + (refPos + 0.5) * pxPerBp,
+          type: 'insertion',
+          x: x + localRefPos * pxPerBp,
           y: y + h / 2,
-          text: queryBase.toUpperCase(),
+          text: `${len}`,
           fontSize,
         })
       }
-      i += 3
-      refPos += 1
-    } else if (ch === '-') {
-      i++
-      let len = 0
-      while (i < cs.length && !isCsOpChar(cs[i])) {
-        len++
-        i++
-      }
-      if (len > 0) {
-        const pw = len * pxPerBp
-        if (pw > MIN_DELETION_WIDTH_PX && h >= MIN_HEIGHT_FOR_TEXT) {
-          labels.push({
-            type: 'deletion',
-            x: x + (refPos + len / 2) * pxPerBp,
-            y: y + h / 2,
-            text: `${len}`,
-            fontSize,
-          })
-        }
-        refPos += len
-      }
-    } else if (ch === '+') {
-      i++
-      let len = 0
-      while (i < cs.length && !isCsOpChar(cs[i])) {
-        len++
-        i++
-      }
-      if (len > 0 && h >= MIN_HEIGHT_FOR_TEXT) {
-        addInsertionLabel(labels, x + refPos * pxPerBp, y, h, len, pxPerBp, fontSize)
-      }
-    } else {
-      i++
-    }
+    },
   }
 }
 
@@ -221,12 +158,14 @@ export function computeMultiSyntenyLabels(
         w: blockWidth,
         h: fh,
         bpLen,
+        featStart: feat.start,
       }
+      const visitor = makeLabelVisitor(ctx)
 
       if (feat.cs) {
-        addCsLabels(ctx, feat.cs)
+        visitCsOps(feat.cs, feat.start, visitor)
       } else if (feat.cigar) {
-        addCigarLabels(ctx, parseCigar2(feat.cigar))
+        visitCigarOps(parseCigar2(feat.cigar), feat.start, visitor)
       }
     }
   }

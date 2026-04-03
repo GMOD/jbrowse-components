@@ -1,10 +1,20 @@
 export const LABEL_WIDTH = 120
 export const LABEL_FONT_MAX = 12
 
+// Background gray shared across GPU and Canvas2D renderers.
+// 0xed/255 ≈ 0.929; GPU uses the float form, Canvas2D uses the hex form.
+export const BG_COLOR_HEX = '#ededed'
+export const BG_COLOR_GL = 0.93
+
+export function truncateGenomeName(name: string) {
+  return name.length > 15 ? `${name.slice(0, 12)}...` : name
+}
+
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 import type {
   BlockGeometryData,
   BlockCoverageUploadData,
+  BlockSnpUploadData,
 } from './multiSyntenyGpuData.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -53,6 +63,10 @@ export interface MultiSyntenyGpuBackend {
   uploadCoverageForBlock(
     blockKey: string,
     data: BlockCoverageUploadData & { regionStart: number; maxDepth: number },
+  ): void
+  uploadSnpCoverageForBlock(
+    blockKey: string,
+    data: BlockSnpUploadData,
   ): void
   clearBlock(blockKey: string): void
   clearAllBlocks(): void

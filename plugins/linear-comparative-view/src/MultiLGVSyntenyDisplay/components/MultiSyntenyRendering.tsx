@@ -10,7 +10,7 @@ import { MultiSyntenyRenderer } from './MultiSyntenyRenderer.ts'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { computeMultiSyntenyLabels } from './computeVisibleLabels.ts'
 import { buildSyntenyIndex, hitTestMultiSynteny } from './hitTesting.ts'
-import { LABEL_FONT_MAX, LABEL_WIDTH } from './multiSyntenyBackendTypes.ts'
+import { LABEL_FONT_MAX, LABEL_WIDTH, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
 
 import type { SyntenyRegionData } from '../../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { SyntenyColorPalette } from '../model.ts'
@@ -242,7 +242,7 @@ function GenomeNameOverlay({
             boxSizing: 'border-box',
           }}
         >
-          {name.length > 15 ? `${name.slice(0, 12)}...` : name}
+          {truncateGenomeName(name)}
         </div>
       ))}
     </div>

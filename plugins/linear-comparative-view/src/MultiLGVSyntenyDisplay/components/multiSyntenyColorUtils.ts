@@ -1,5 +1,3 @@
-export { drawCigarOps, drawCsOps } from '@jbrowse/alignments-core'
-
 import { syriColors } from '../../LinearSyntenyDisplay/drawSyntenyUtils.ts'
 
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'

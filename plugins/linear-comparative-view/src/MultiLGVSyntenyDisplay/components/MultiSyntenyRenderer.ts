@@ -1,7 +1,7 @@
 import { getGpuOverride } from '@jbrowse/core/gpu/getGpuDevice'
 
 import { Canvas2DMultiSyntenyRenderer } from './Canvas2DMultiSyntenyRenderer.ts'
-import { prepareBlockGeometry, packCoverageForGpu } from './multiSyntenyGpuData.ts'
+import { prepareBlockGeometry, packCoverageForGpu, packSnpCoverageForGpu } from './multiSyntenyGpuData.ts'
 
 import type {
   MultiSyntenyCanvasBackend,
@@ -112,6 +112,7 @@ export class MultiSyntenyRenderer {
         regionData.coverageDepths,
         regionData.coverageStartOffset,
         globalMaxDepth,
+        regionData.regionStart,
         viewWidthPx,
       )
       this.gpuBackend.uploadCoverageForBlock(blockKey, {
@@ -119,6 +120,23 @@ export class MultiSyntenyRenderer {
         regionStart: regionData.regionStart,
         maxDepth: regionData.coverageMaxDepth,
       })
+    }
+  }
+
+  uploadSnpCoverageForBlock(
+    blockKey: string,
+    regionData: SyntenyRegionData,
+  ) {
+    if (this.gpuBackend) {
+      const packed = packSnpCoverageForGpu(
+        regionData.snpPositions,
+        regionData.snpYOffsets,
+        regionData.snpHeights,
+        regionData.snpColorTypes,
+        regionData.snpCount,
+        regionData.regionStart,
+      )
+      this.gpuBackend.uploadSnpCoverageForBlock(blockKey, packed)
     }
   }
 

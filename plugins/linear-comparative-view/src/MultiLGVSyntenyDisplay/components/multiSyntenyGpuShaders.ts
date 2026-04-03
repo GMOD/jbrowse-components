@@ -11,12 +11,12 @@ export const INSTANCE_BYTE_SIZE = 32
 // Coverage bin: 12 bytes per bin (position: f32, minDepth: f32, maxDepth: f32)
 export const COVERAGE_BIN_BYTE_SIZE = 12
 
-// SYNC: uniform field order must match writeUniforms() in the renderers
+// SYNC: uniform field order must match fillSyntenyUniforms() in multiSyntenyGpuUtils.ts
 export const UNIFORM_BYTE_SIZE = 64
 
 // Shared GLSL uniform block used by both synteny and coverage shaders
 const UNIFORMS_GLSL = `
-// SYNC: field order must match writeUniforms() in WebGLMultiSyntenyRenderer
+// SYNC: field order must match fillSyntenyUniforms() in multiSyntenyGpuUtils.ts
 layout(std140) uniform Uniforms {
   float resolutionX;
   float resolutionY;
@@ -124,8 +124,9 @@ void main() {
   float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
   float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
 
-  float t1 = a_position / u.bpRangeLen;
-  float t2 = (a_position + 1.0) / u.bpRangeLen;
+  float blockStart = u.bpRangeHi + u.bpRangeLo;
+  float t1 = (a_position - blockStart) / u.bpRangeLen;
+  float t2 = (a_position + 1.0 - blockStart) / u.bpRangeLen;
   float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth;
   float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth;
 
@@ -163,7 +164,7 @@ struct Instance {
 }
 `
 
-// SYNC: struct Uniforms field order must match writeUniforms()
+// SYNC: struct Uniforms field order must match fillSyntenyUniforms() in multiSyntenyGpuUtils.ts
 const UNIFORMS_STRUCT_WGSL = `
 struct Uniforms {
   resolutionX: f32,
@@ -276,8 +277,9 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
   let localX = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
   let localY = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
 
-  let t1 = bin.position / uniforms.bpRangeLen;
-  let t2 = (bin.position + 1.0) / uniforms.bpRangeLen;
+  let blockStart = uniforms.bpRangeHi + uniforms.bpRangeLo;
+  let t1 = (bin.position - blockStart) / uniforms.bpRangeLen;
+  let t2 = (bin.position + 1.0 - blockStart) / uniforms.bpRangeLen;
   var px1 = uniforms.regionScreenLeft + t1 * uniforms.regionScreenWidth;
   var px2 = uniforms.regionScreenLeft + t2 * uniforms.regionScreenWidth;
   px2 = max(px2, px1 + 1.0);
@@ -301,6 +303,129 @@ fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -
 
 @fragment
 fn fs_main(in: CovVOut) -> @location(0) vec4f {
+  return in.color;
+}
+`
+
+// SNP coverage colors: A=green, C=blue, G=orange, T=red
+const SNP_COLORS_GLSL = `
+vec3 snpColor(float ct) {
+  int ci = int(ct);
+  if (ci == 1) return vec3(0.0, 0.6, 0.0);       // A = green
+  else if (ci == 2) return vec3(0.0, 0.0, 0.8);   // C = blue
+  else if (ci == 3) return vec3(0.9, 0.6, 0.0);   // G = orange
+  else return vec3(0.8, 0.0, 0.0);                 // T = red
+}
+`
+
+// GLSL SNP coverage shader - colored segments on top of grey coverage
+export const GLSL_SNP_COVERAGE_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+layout(location = 0) in float a_position;  // absolute genome coordinate
+layout(location = 1) in float a_yOffset;   // normalized y offset (0-1)
+layout(location = 2) in float a_height;    // normalized segment height
+layout(location = 3) in float a_colorType; // 1=A, 2=C, 3=G, 4=T
+
+${UNIFORMS_GLSL}
+
+out vec4 v_color;
+
+${SNP_COLORS_GLSL}
+
+void main() {
+  int vid = gl_VertexID % 6;
+  float localX = (vid == 0 || vid == 2 || vid == 3) ? 0.0 : 1.0;
+  float localY = (vid == 0 || vid == 1 || vid == 4) ? 0.0 : 1.0;
+
+  float blockStart = u.bpRangeHi + u.bpRangeLo;
+  float t1 = (a_position - blockStart) / u.bpRangeLen;
+  float t2 = (a_position + 1.0 - blockStart) / u.bpRangeLen;
+  float px1 = u.regionScreenLeft + t1 * u.regionScreenWidth;
+  float px2 = u.regionScreenLeft + t2 * u.regionScreenWidth;
+  px2 = max(px2, px1 + 1.0);
+
+  if (px2 < 0.0 || px1 > u.resolutionX) {
+    gl_Position = vec4(0.0);
+    return;
+  }
+
+  float sx = mix(px1, px2, localX);
+  float effectiveHeight = u.coverageHeight - 2.0 * u.coverageYOffset;
+  float coverageBottom = u.coverageHeight - u.coverageYOffset;
+  float segBottom = coverageBottom - a_yOffset * u.depthScale * effectiveHeight;
+  float segTop = segBottom - a_height * u.depthScale * effectiveHeight;
+  float sy = mix(segBottom, segTop, localY);
+
+  vec2 clipPos = vec2(sx, sy) / vec2(u.resolutionX, u.resolutionY) * 2.0 - 1.0;
+  gl_Position = vec4(clipPos.x, -clipPos.y, 0.0, 1.0);
+  v_color = vec4(snpColor(a_colorType), 1.0);
+}
+`
+
+// WGSL SNP coverage shader - colored segments on top of grey coverage
+export const WGSL_SNP_COVERAGE_SHADER = `
+${UNIFORMS_STRUCT_WGSL}
+
+struct SnpSegment {
+  position: f32,
+  yOffset: f32,
+  segHeight: f32,
+  colorType: f32,
+}
+
+struct SnpVOut {
+  @builtin(position) pos: vec4f,
+  @location(0) color: vec4f,
+}
+
+@group(0) @binding(0) var<storage, read> segments: array<SnpSegment>;
+@group(0) @binding(1) var<uniform> uniforms: Uniforms;
+
+fn snpColor(ct: f32) -> vec3f {
+  let ci = i32(ct);
+  if ci == 1 { return vec3f(0.0, 0.6, 0.0); }       // A = green
+  else if ci == 2 { return vec3f(0.0, 0.0, 0.8); }   // C = blue
+  else if ci == 3 { return vec3f(0.9, 0.6, 0.0); }   // G = orange
+  else { return vec3f(0.8, 0.0, 0.0); }               // T = red
+}
+
+@vertex
+fn vs_main(@builtin(vertex_index) vid: u32, @builtin(instance_index) iid: u32) -> SnpVOut {
+  let seg = segments[iid];
+  var out: SnpVOut;
+
+  let v = vid % 6u;
+  let localX = select(1.0, 0.0, v == 0u || v == 2u || v == 3u);
+  let localY = select(1.0, 0.0, v == 0u || v == 1u || v == 4u);
+
+  let blockStart = uniforms.bpRangeHi + uniforms.bpRangeLo;
+  let t1 = (seg.position - blockStart) / uniforms.bpRangeLen;
+  let t2 = (seg.position + 1.0 - blockStart) / uniforms.bpRangeLen;
+  var px1 = uniforms.regionScreenLeft + t1 * uniforms.regionScreenWidth;
+  var px2 = uniforms.regionScreenLeft + t2 * uniforms.regionScreenWidth;
+  px2 = max(px2, px1 + 1.0);
+
+  if (px2 < 0.0 || px1 > uniforms.resolutionX) {
+    out.pos = vec4f(0.0, 0.0, 0.0, 0.0);
+    return out;
+  }
+
+  let sx = mix(px1, px2, localX);
+  let effectiveHeight = uniforms.coverageHeight - 2.0 * uniforms.coverageYOffset;
+  let coverageBottom = uniforms.coverageHeight - uniforms.coverageYOffset;
+  let segBottom = coverageBottom - seg.yOffset * uniforms.depthScale * effectiveHeight;
+  let segTop = segBottom - seg.segHeight * uniforms.depthScale * effectiveHeight;
+  let sy = mix(segBottom, segTop, localY);
+
+  let clipPos = vec2f(sx, sy) / vec2f(uniforms.resolutionX, uniforms.resolutionY) * 2.0 - 1.0;
+  out.pos = vec4f(clipPos.x, -clipPos.y, 0.0, 1.0);
+  out.color = vec4f(snpColor(seg.colorType), 1.0);
+  return out;
+}
+
+@fragment
+fn fs_main(in: SnpVOut) -> @location(0) vec4f {
   return in.color;
 }
 `

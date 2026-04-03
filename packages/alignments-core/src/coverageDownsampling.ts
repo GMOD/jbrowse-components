@@ -211,3 +211,130 @@ export function downsampleMinMax(
     count,
   }
 }
+
+export interface MismatchEntry {
+  position: number
+  base: number // ASCII code: 65=A, 67=C, 71=G, 84=T
+  strand: number
+}
+
+export interface SNPCoverageResult {
+  positions: Uint32Array
+  yOffsets: Float32Array
+  heights: Float32Array
+  colorTypes: Uint8Array
+  count: number
+}
+
+/**
+ * Compute SNP coverage segments for rendering colored bars in coverage area.
+ * Groups mismatches by position, counts A/C/G/T per position, and creates
+ * stacked segments normalized by maxDepth.
+ */
+export function computeSNPCoverage(
+  mismatches: MismatchEntry[],
+  maxDepth: number,
+  regionStart: number,
+): SNPCoverageResult {
+  if (mismatches.length === 0 || maxDepth === 0) {
+    return {
+      positions: new Uint32Array(0),
+      yOffsets: new Float32Array(0),
+      heights: new Float32Array(0),
+      colorTypes: new Uint8Array(0),
+      count: 0,
+    }
+  }
+
+  const snpByPosition = new Map<
+    number,
+    { position: number; a: number; c: number; g: number; t: number }
+  >()
+  for (const mm of mismatches) {
+    let entry = snpByPosition.get(mm.position)
+    if (!entry) {
+      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0 }
+      snpByPosition.set(mm.position, entry)
+    }
+    if (mm.base === 65) {
+      entry.a++
+    } else if (mm.base === 67) {
+      entry.c++
+    } else if (mm.base === 71) {
+      entry.g++
+    } else if (mm.base === 84) {
+      entry.t++
+    }
+  }
+
+  const segments: {
+    position: number
+    yOffset: number
+    height: number
+    colorType: number
+  }[] = []
+
+  for (const entry of snpByPosition.values()) {
+    const total = entry.a + entry.c + entry.g + entry.t
+    if (total === 0) {
+      continue
+    }
+    let yOffset = 0
+    if (entry.a > 0) {
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.a / maxDepth,
+        colorType: 1,
+      })
+      yOffset += entry.a / maxDepth
+    }
+    if (entry.c > 0) {
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.c / maxDepth,
+        colorType: 2,
+      })
+      yOffset += entry.c / maxDepth
+    }
+    if (entry.g > 0) {
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.g / maxDepth,
+        colorType: 3,
+      })
+      yOffset += entry.g / maxDepth
+    }
+    if (entry.t > 0) {
+      segments.push({
+        position: entry.position,
+        yOffset,
+        height: entry.t / maxDepth,
+        colorType: 4,
+      })
+    }
+  }
+
+  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
+  const positions = new Uint32Array(filteredSegments.length)
+  const yOffsets = new Float32Array(filteredSegments.length)
+  const heights = new Float32Array(filteredSegments.length)
+  const colorTypes = new Uint8Array(filteredSegments.length)
+
+  for (const [i, seg] of filteredSegments.entries()) {
+    positions[i] = seg.position - regionStart
+    yOffsets[i] = seg.yOffset
+    heights[i] = seg.height
+    colorTypes[i] = seg.colorType
+  }
+
+  return {
+    positions,
+    yOffsets,
+    heights,
+    colorTypes,
+    count: filteredSegments.length,
+  }
+}

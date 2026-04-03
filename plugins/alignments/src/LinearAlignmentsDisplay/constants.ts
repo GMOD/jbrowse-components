@@ -44,18 +44,15 @@ export function insertionBarWidth(len: number, pxPerBp: number) {
 
 // Returns the minimum frequency at which a feature (mismatch, insertion, etc.)
 // is shown at a given coverage depth. Features below this threshold are zeroed
-// out. At low depth we require high frequency (60%) since noise from individual
-// reads is more visible; at high depth we relax to 10% since the signal is more
-// statistically meaningful. Interpolates linearly through 0.2 at depth 30.
+// out. At low depth we require high frequency (80%) since a single read's noise
+// is more visible; at high depth we relax to 30% since the signal is more
+// statistically meaningful.
 export function featureFrequencyThreshold(depth: number) {
   if (depth < 10) {
-    return 0.6
+    return 0.8
   }
-  if (depth >= 40) {
-    return 0.1
+  if (depth >= 30) {
+    return 0.3
   }
-  if (depth < 30) {
-    return 0.6 + ((depth - 10) / 20) * (0.2 - 0.6)
-  }
-  return 0.2 + ((depth - 30) / 10) * (0.1 - 0.2)
+  return 0.8 + ((depth - 10) / 20) * (0.3 - 0.8)
 }

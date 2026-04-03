@@ -13,6 +13,11 @@ export interface SyntenyRegionData {
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageStartOffset: number
+  snpPositions: Uint32Array
+  snpYOffsets: Float32Array
+  snpHeights: Float32Array
+  snpColorTypes: Uint8Array
+  snpCount: number
 }
 
 function toCoverageRegion(data: SyntenyRegionData) {

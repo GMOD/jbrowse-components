@@ -40,6 +40,11 @@ function buildRegionData(
     coverageDepths: coverage.depths,
     coverageMaxDepth: coverage.maxDepth,
     coverageStartOffset: coverage.startOffset,
+    snpPositions: new Uint32Array(0),
+    snpYOffsets: new Float32Array(0),
+    snpHeights: new Float32Array(0),
+    snpColorTypes: new Uint8Array(0),
+    snpCount: 0,
   }
 }
 
@@ -143,6 +148,11 @@ describe('genomeRows aggregation across regions', () => {
         coverageDepths: new Float32Array(0),
         coverageMaxDepth: 0,
         coverageStartOffset: 0,
+        snpPositions: new Uint32Array(0),
+        snpYOffsets: new Float32Array(0),
+        snpHeights: new Float32Array(0),
+        snpColorTypes: new Uint8Array(0),
+        snpCount: 0,
       }],
     ])
 

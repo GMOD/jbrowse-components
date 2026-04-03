@@ -1,13 +1,6 @@
 import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
   InstanceBuilder,
   downsampleMinMax,
-  parseCsSeqLen,
 } from '@jbrowse/alignments-core'
 import { splitPositionWithFrac } from '@jbrowse/core/gpu/webglUtils'
 import { cssColorToNormalizedRgba } from '@jbrowse/core/util/colorBits'
@@ -17,6 +10,7 @@ import {
   COVERAGE_BIN_BYTE_SIZE,
   INSTANCE_BYTE_SIZE,
 } from './multiSyntenyGpuShaders.ts'
+import { visitCigarOps, visitCsOps } from './syntenyOpsVisitor.ts'
 
 import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -85,144 +79,25 @@ function addInstance(
   builder.f32[off + 7] = a
 }
 
-function expandCigarOps(
+function makeGpuOpsVisitor(
   builder: InstanceBuilder,
-  cigar: number[],
-  featStart: number,
   genomeRow: number,
   featureId: number,
   rgba: ReturnType<typeof buildColorArrays>,
 ) {
-  let refPos = 0
-  for (const packed of cigar) {
-    const len = packed >>> 4
-    const op = packed & 0xf
-
-    if (op === CIGAR_M || op === CIGAR_EQ) {
-      refPos += len
-    } else if (op === CIGAR_X) {
-      const [r, g, b, a] = rgba.mismatch
-      addInstance(
-        builder,
-        featStart + refPos,
-        featStart + refPos + len,
-        genomeRow,
-        featureId,
-        r,
-        g,
-        b,
-        a,
-      )
-      refPos += len
-    } else if (op === CIGAR_D || op === CIGAR_N) {
+  return {
+    onMismatch(refPos: number, len: number, queryBase?: string) {
+      const [r, g, b, a] = (queryBase ? rgba.bases[queryBase] : undefined) ?? rgba.mismatch
+      addInstance(builder, refPos, refPos + len, genomeRow, featureId, r, g, b, a)
+    },
+    onDeletion(refPos: number, len: number) {
       const [r, g, b, a] = rgba.deletion
-      addInstance(
-        builder,
-        featStart + refPos,
-        featStart + refPos + len,
-        genomeRow,
-        featureId,
-        r,
-        g,
-        b,
-        a,
-      )
-      refPos += len
-    } else if (op === CIGAR_I) {
+      addInstance(builder, refPos, refPos + len, genomeRow, featureId, r, g, b, a)
+    },
+    onInsertion(refPos: number, len: number) {
       const [r, g, b, a] = rgba.insertion
-      addInstance(
-        builder,
-        featStart + refPos,
-        featStart + refPos,
-        genomeRow,
-        featureId,
-        r,
-        g,
-        b,
-        a,
-      )
-    }
-  }
-}
-
-function expandCsOps(
-  builder: InstanceBuilder,
-  cs: string,
-  featStart: number,
-  genomeRow: number,
-  featureId: number,
-  rgba: ReturnType<typeof buildColorArrays>,
-) {
-  let refPos = 0
-  let i = 0
-
-  while (i < cs.length) {
-    const ch = cs[i]!
-
-    if (ch === ':') {
-      i++
-      let num = 0
-      while (i < cs.length && cs[i]! >= '0' && cs[i]! <= '9') {
-        num = num * 10 + (cs.charCodeAt(i) - 48)
-        i++
-      }
-      refPos += num
-    } else if (ch === '*') {
-      const queryBase = cs[i + 2] ?? ''
-      const [r, g, b, a] = rgba.bases[queryBase] ?? rgba.mismatch
-      addInstance(
-        builder,
-        featStart + refPos,
-        featStart + refPos + 1,
-        genomeRow,
-        featureId,
-        r,
-        g,
-        b,
-        a,
-      )
-      i += 3
-      refPos += 1
-    } else if (ch === '-') {
-      i++
-      const len = parseCsSeqLen(cs, i)
-      i += len
-      if (len > 0) {
-        const [r, g, b, a] = rgba.deletion
-        addInstance(
-          builder,
-          featStart + refPos,
-          featStart + refPos + len,
-          genomeRow,
-          featureId,
-          r,
-          g,
-          b,
-          a,
-        )
-        refPos += len
-      }
-    } else if (ch === '+') {
-      i++
-      const len = parseCsSeqLen(cs, i)
-      i += len
-      if (len > 0) {
-        const [r, g, b, a] = rgba.insertion
-        addInstance(
-          builder,
-          featStart + refPos,
-          featStart + refPos,
-          genomeRow,
-          featureId,
-          r,
-          g,
-          b,
-          a,
-        )
-      }
-    } else {
-      i++
-    }
+      addInstance(builder, refPos, refPos, genomeRow, featureId, r, g, b, a)
+    },
   }
 }
 
@@ -262,11 +137,11 @@ export function prepareBlockGeometry(
       addInstance(builder, feat.start, feat.end, g, fId, cr, cg, cb, ca)
 
       if (showSnps) {
+        const visitor = makeGpuOpsVisitor(builder, g, fId, rgba)
         if (feat.cs) {
-          expandCsOps(builder, feat.cs, feat.start, g, fId, rgba)
+          visitCsOps(feat.cs, feat.start, visitor)
         } else if (feat.cigar) {
-          const parsed = parseCigar2(feat.cigar)
-          expandCigarOps(builder, parsed, feat.start, g, fId, rgba)
+          visitCigarOps(parseCigar2(feat.cigar), feat.start, visitor)
         }
       }
     }
@@ -334,6 +209,7 @@ export function packCoverageForGpu(
   depths: Float32Array,
   startOffset: number,
   maxDepth: number,
+  regionStart: number,
   viewWidthPx = 2000,
 ): BlockCoverageUploadData {
   if (maxDepth === 0 || depths.length === 0) {
@@ -349,10 +225,50 @@ export function packCoverageForGpu(
   const f32 = new Float32Array(buffer)
   for (let i = 0; i < ds.count; i++) {
     const binIdx = i * 3
-    f32[binIdx] = ds.positions[i]!
+    // Store absolute genome coordinates so the shader can map bins to
+    // any content block by subtracting block.start (bpRangeHi+bpRangeLo)
+    f32[binIdx] = regionStart + ds.positions[i]!
     f32[binIdx + 1] = ds.mins[i]!
     f32[binIdx + 2] = ds.maxs[i]!
   }
 
   return { buffer, binCount: ds.count }
+}
+
+export interface BlockSnpUploadData {
+  buffer: ArrayBuffer
+  segmentCount: number
+}
+
+// SNP segment byte size: position(f32) + yOffset(f32) + height(f32) + colorType(f32) = 16 bytes
+export const SNP_SEGMENT_BYTE_SIZE = 16
+
+/**
+ * Pack SNP coverage segments for GPU upload.
+ * Positions are stored as absolute genome coordinates (regionStart + offset)
+ * so the shader can map them to any content block.
+ */
+export function packSnpCoverageForGpu(
+  snpPositions: Uint32Array,
+  snpYOffsets: Float32Array,
+  snpHeights: Float32Array,
+  snpColorTypes: Uint8Array,
+  snpCount: number,
+  regionStart: number,
+): BlockSnpUploadData {
+  if (snpCount === 0) {
+    return { buffer: new ArrayBuffer(0), segmentCount: 0 }
+  }
+
+  const buffer = new ArrayBuffer(snpCount * SNP_SEGMENT_BYTE_SIZE)
+  const f32 = new Float32Array(buffer)
+  for (let i = 0; i < snpCount; i++) {
+    const idx = i * 4
+    f32[idx] = regionStart + snpPositions[i]!
+    f32[idx + 1] = snpYOffsets[i]!
+    f32[idx + 2] = snpHeights[i]!
+    f32[idx + 3] = snpColorTypes[i]!
+  }
+
+  return { buffer, segmentCount: snpCount }
 }

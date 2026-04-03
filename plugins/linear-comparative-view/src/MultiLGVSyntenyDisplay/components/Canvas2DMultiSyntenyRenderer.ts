@@ -1,11 +1,9 @@
 import { parseCigar2 } from '@jbrowse/plugin-alignments'
 
-import { LABEL_FONT_MAX } from './multiSyntenyBackendTypes.ts'
-import {
-  drawCigarOps,
-  drawCsOps,
-  getFeatureColor,
-} from './multiSyntenyColorUtils.ts'
+import { drawCigarOps, drawCsOps } from '@jbrowse/alignments-core'
+
+import { BG_COLOR_HEX, LABEL_FONT_MAX, truncateGenomeName } from './multiSyntenyBackendTypes.ts'
+import { getFeatureColor } from './multiSyntenyColorUtils.ts'
 
 import type {
   MultiSyntenyCanvasBackend,
@@ -15,8 +13,8 @@ import type { SyntenyColors } from './multiSyntenyBackendTypes.ts'
 import {
   YSCALEBAR_LABEL_OFFSET,
   downsampleMinMax,
-  niceNum,
 } from '@jbrowse/alignments-core'
+import { computeDepthScale } from './multiSyntenyGpuUtils.ts'
 
 import type { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -38,8 +36,7 @@ function renderCoverageToCtx(
     return
   }
 
-  const nicedMax = niceNum(maxDepth)
-  const depthScale = maxDepth / nicedMax
+  const depthScale = computeDepthScale(maxDepth)
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const coverageBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
 
@@ -73,7 +70,7 @@ export function renderMultiSyntenyToCtx(
   const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverage } = opts
   const showLabels = labelW > 0
 
-  ctx.fillStyle = '#ededed'
+  ctx.fillStyle = BG_COLOR_HEX
   ctx.fillRect(0, 0, width, coverageHeight + height)
 
   if (coverageHeight > 0 && coverage) {
@@ -153,7 +150,7 @@ export function renderMultiSyntenyToCtx(
   // Re-draw sidebar area on top of features so genome labels are not
   // obscured by features that extend into the label region
   if (showLabels) {
-    ctx.fillStyle = '#ededed'
+    ctx.fillStyle = BG_COLOR_HEX
     ctx.fillRect(0, coverageHeight, labelW, height)
     for (let g = 0; g < displayedGenomes.length; g++) {
       const y = coverageHeight + g * rowHeight
@@ -165,8 +162,7 @@ export function renderMultiSyntenyToCtx(
       ctx.font = `${Math.min(rowHeight - 4, LABEL_FONT_MAX)}px sans-serif`
       ctx.textBaseline = 'middle'
       const genomeName = displayedGenomes[g]!
-      const displayName =
-        genomeName.length > 15 ? `${genomeName.slice(0, 12)}...` : genomeName
+      const displayName = truncateGenomeName(genomeName)
       ctx.fillText(displayName, 4, y + rowHeight / 2)
       if (rowHeight >= 4) {
         ctx.strokeStyle = '#e0e0e0'

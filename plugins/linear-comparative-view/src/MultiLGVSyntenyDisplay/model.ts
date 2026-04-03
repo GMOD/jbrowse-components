@@ -26,6 +26,7 @@ import TimelineIcon from '@mui/icons-material/Timeline'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
+import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 
 import {
   getFirstCoverage,
@@ -33,7 +34,7 @@ import {
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
-import type { SyntenyRegionData, MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiSyntenyRenderer } from './components/MultiSyntenyRenderer.ts'
 import type { SyntenyColors } from './components/multiSyntenyBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -54,6 +55,64 @@ export interface SyntenyColorPalette {
 type LGV = LinearGenomeViewModel
 
 const colorByOptions = ['strand', 'syri', 'identity'] as const
+
+function regionFromFeature(feature: Feature, fallbackAssembly: string) {
+  const fStart = feature.get('start')
+  const fEnd = feature.get('end')
+  const padding = Math.max(10, Math.floor((fEnd - fStart) * 0.5))
+  return {
+    refName: feature.get('refName'),
+    assemblyName:
+      (feature.get('assemblyName') as string | undefined) ?? fallbackAssembly,
+    start: Math.max(0, fStart - padding),
+    end: fEnd + padding,
+  }
+}
+
+function regionFromViewport(view: LGV) {
+  const dr = view.displayedRegions[0]
+  if (!dr) {
+    return undefined
+  }
+  const rawStart = view.offsetPx * view.bpPerPx
+  const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
+  return {
+    refName: dr.refName,
+    assemblyName: dr.assemblyName,
+    start: Math.max(0, Math.floor(rawStart)),
+    end: Math.floor(rawEnd),
+  }
+}
+
+function regionLabel(region: { refName: string; start: number; end: number }) {
+  return `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
+}
+
+async function launchSubgraphView(
+  session: ReturnType<typeof getSession>,
+  sessionId: string,
+  adapterConfig: Record<string, unknown>,
+  region: { refName: string; assemblyName: string; start: number; end: number },
+  viewType: 'GraphGenomeView' | 'TubeMapView',
+) {
+  const gfaText = await session.rpcManager.call(sessionId, 'GetSubgraph', {
+    adapterConfig,
+    region,
+    sessionId,
+  })
+  if (!gfaText) {
+    session.notify(
+      'This adapter does not support graph subgraph extraction',
+      'warning',
+    )
+    return
+  }
+  const view = session.addView(viewType, {})
+  ;(view as { loadGFA?: (gfa: string, label: string) => void }).loadGFA?.(
+    gfaText,
+    regionLabel(region),
+  )
+}
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('../LGVSyntenyDisplay/components/LaunchSyntenyViewDialog.tsx'),
@@ -109,6 +168,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       colorPalette: null as SyntenyColorPalette | null,
     }))
     .views(self => ({
+      get prefersOffset() {
+        return true
+      },
       get referenceGenomeName() {
         const view = getContainingView(self) as LGV
         return view.displayedRegions[0]?.assemblyName
@@ -167,7 +229,10 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         if (self.visibleMaxDepth === 0 || this.syntenyCoverageHeight === 0) {
           return undefined
         }
-        return computeCoverageTicks(self.visibleMaxDepth, this.syntenyCoverageHeight)
+        return computeCoverageTicks(
+          self.visibleMaxDepth,
+          this.syntenyCoverageHeight,
+        )
       },
       legendItems() {
         return legendItemsMap[self.colorBy] ?? []
@@ -269,10 +334,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
 
             const regions = needed.map(n => ({
               region: n.region,
-              blockKey: makeDisplayedRegionKey(view.displayedRegions[n.regionNumber]!),
+              blockKey: makeDisplayedRegionKey(
+                view.displayedRegions[n.regionNumber]!,
+              ),
             }))
 
-            const result: MultiPairGetFeaturesResult = await rpcManager.call(
+            const result = await rpcManager.call(
               sessionId,
               'MultiPairGetFeatures',
               {
@@ -345,7 +412,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 if (!renderer?.isGpu) {
                   return
                 }
-                const { rpcDataMap, displayedGenomes, colorBy, showSnps, colorPalette } = self
+                const {
+                  rpcDataMap,
+                  displayedGenomes,
+                  colorBy,
+                  showSnps,
+                  colorPalette,
+                } = self
                 if (!colorPalette) {
                   return
                 }
@@ -386,6 +459,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     Math.ceil(view.width),
                     globalMax,
                   )
+                  renderer.uploadSnpCoverageForBlock(regionKey, data)
                 }
               },
               { name: 'MultiLGVSyntenyDisplay:uploadCoverage' },
@@ -408,11 +482,15 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const _dv = self.dataVersion
-                const { height, rowHeight, rowSpacing, syntenyCoverageHeight } = self
+                const { height, rowHeight, rowSpacing, syntenyCoverageHeight } =
+                  self
                 const contentBlocks = view.staticBlocks.contentBlocks
                 const regionKeyMap = new Map<number, string>()
                 for (let i = 0; i < view.displayedRegions.length; i++) {
-                  regionKeyMap.set(i, makeDisplayedRegionKey(view.displayedRegions[i]!))
+                  regionKeyMap.set(
+                    i,
+                    makeDisplayedRegionKey(view.displayedRegions[i]!),
+                  )
                 }
 
                 if (renderer.isGpu) {
@@ -428,9 +506,15 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     palette.coverageColorRgb,
                   )
                 } else {
-                  const { genomeRows, displayedGenomes, colorBy, syntenyAreaHeight, showSnps } = self
+                  const {
+                    genomeRows,
+                    displayedGenomes,
+                    colorBy,
+                    syntenyAreaHeight,
+                    showSnps,
+                  } = self
                   const { width, offsetPx } = view
-                  const labelW = rowHeight >= 12 ? 120 : 0
+                  const labelW = rowHeight >= 12 ? LABEL_WIDTH : 0
                   const bpToPx = (refName: string, coord: number) => {
                     const result = view.bpToPx({ refName, coord })
                     if (result === undefined) {
@@ -489,11 +573,15 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   }
                   const startBin = Math.max(
                     0,
-                    Math.floor(block.start - data.regionStart - data.coverageStartOffset),
+                    Math.floor(
+                      block.start - data.regionStart - data.coverageStartOffset,
+                    ),
                   )
                   const endBin = Math.min(
                     data.coverageDepths.length,
-                    Math.ceil(block.end - data.regionStart - data.coverageStartOffset),
+                    Math.ceil(
+                      block.end - data.regionStart - data.coverageStartOffset,
+                    ),
                   )
                   for (let i = startBin; i < endBin; i++) {
                     const d = data.coverageDepths[i]!
@@ -568,101 +656,33 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ])
             },
           },
-          {
-            label: 'Graph genome view (feature)',
-            icon: BubbleChartIcon,
+          ...(['GraphGenomeView', 'TubeMapView'] as const).map(viewType => ({
+            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (feature)`,
+            icon:
+              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
             onClick: async () => {
               const session = getSession(self)
-              const fStart = feature.get('start')
-              const fEnd = feature.get('end')
-              const padding = Math.max(10, Math.floor((fEnd - fStart) * 0.5))
-              const region = {
-                refName: feature.get('refName'),
-                assemblyName:
-                  (feature.get('assemblyName') as string | undefined) ??
-                  (getContainingView(self) as LGV).displayedRegions[0]
-                    ?.assemblyName ??
-                  '',
-                start: Math.max(0, fStart - padding),
-                end: fEnd + padding,
-              }
-
-              const sessionId = getRpcSessionId(self)
+              const fallback =
+                (getContainingView(self) as LGV).displayedRegions[0]
+                  ?.assemblyName ?? ''
+              const region = regionFromFeature(feature, fallback)
               try {
-                const gfaText: string = await session.rpcManager.call(
-                  sessionId,
-                  'GetSubgraph',
-                  { adapterConfig, region, sessionId },
-                )
-                if (!gfaText) {
-                  session.notify(
-                    'This adapter does not support graph subgraph extraction',
-                    'warning',
-                  )
-                  return
-                }
-                const graphView = session.addView('GraphGenomeView', {})
-                await (graphView as any).loadGFA(
-                  gfaText,
-                  `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
+                await launchSubgraphView(
+                  session,
+                  getRpcSessionId(self),
+                  adapterConfig,
+                  region,
+                  viewType,
                 )
               } catch (e) {
-                console.error('[GraphView launch] Error:', e)
+                console.error(`[${viewType} launch] Error:`, e)
                 session.notify(
-                  `Failed to launch graph view: ${e instanceof Error ? e.message : e}`,
+                  `Failed to launch ${viewType}: ${e instanceof Error ? e.message : e}`,
                   'error',
                 )
               }
             },
-          },
-          {
-            label: 'Tube map view (feature)',
-            icon: TimelineIcon,
-            onClick: async () => {
-              const session = getSession(self)
-              const fStart = feature.get('start')
-              const fEnd = feature.get('end')
-              const padding = Math.max(10, Math.floor((fEnd - fStart) * 0.5))
-              const region = {
-                refName: feature.get('refName'),
-                assemblyName:
-                  (feature.get('assemblyName') as string | undefined) ??
-                  (getContainingView(self) as LGV).displayedRegions[0]
-                    ?.assemblyName ??
-                  '',
-                start: Math.max(0, fStart - padding),
-                end: fEnd + padding,
-              }
-              const regionLabel = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
-
-              const sessionId = getRpcSessionId(self)
-              try {
-                const gfaText: string = await session.rpcManager.call(
-                  sessionId,
-                  'GetSubgraph',
-                  { adapterConfig, region, sessionId },
-                )
-                if (!gfaText) {
-                  session.notify(
-                    'This adapter does not support graph subgraph extraction',
-                    'warning',
-                  )
-                  return
-                }
-                const tubeMapView = session.addView('TubeMapView', {})
-                ;(tubeMapView as unknown as { loadGFA: (t: string, n: string) => void }).loadGFA(
-                  gfaText,
-                  regionLabel,
-                )
-              } catch (e) {
-                console.error('[TubeMapView launch] Error:', e)
-                session.notify(
-                  `Failed to launch tube map view: ${e instanceof Error ? e.message : e}`,
-                  'error',
-                )
-              }
-            },
-          },
+          })),
           {
             label: 'Copy info to clipboard',
             icon: ContentCopyIcon,
@@ -725,106 +745,36 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           )
         }
 
-        launchSubMenu.push(
-          {
-            label: 'Graph genome view (local)',
-            icon: BubbleChartIcon,
+        for (const viewType of ['GraphGenomeView', 'TubeMapView'] as const) {
+          launchSubMenu.push({
+            label: `${viewType === 'GraphGenomeView' ? 'Graph genome' : 'Tube map'} view (local)`,
+            icon:
+              viewType === 'GraphGenomeView' ? BubbleChartIcon : TimelineIcon,
             onClick: async () => {
               const session = getSession(self)
-              const dr = view.displayedRegions[0]
-              if (!dr) {
-                console.warn('[GraphView launch] No displayed region found')
+              const region = regionFromViewport(view)
+              if (!region) {
+                console.warn(`[${viewType} launch] No displayed region found`)
                 return
               }
-              const rawStart = view.offsetPx * view.bpPerPx
-              const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
-              const region = {
-                refName: dr.refName,
-                assemblyName: dr.assemblyName,
-                start: Math.max(0, Math.floor(rawStart)),
-                end: Math.floor(rawEnd),
-              }
-
-              const sessionId = getRpcSessionId(self)
-              const { rpcManager } = session
               try {
-                const gfaText: string = await rpcManager.call(
-                  sessionId,
-                  'GetSubgraph',
-                  { adapterConfig, region, sessionId },
-                )
-                if (!gfaText) {
-                  session.notify(
-                    'This adapter does not support graph subgraph extraction',
-                    'warning',
-                  )
-                  return
-                }
-                const graphView = session.addView('GraphGenomeView', {})
-
-                await (graphView as any).loadGFA(
-                  gfaText,
-                  `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`,
+                await launchSubgraphView(
+                  session,
+                  getRpcSessionId(self),
+                  adapterConfig,
+                  region,
+                  viewType,
                 )
               } catch (e) {
-                console.error('[GraphView launch] Error:', e)
+                console.error(`[${viewType} launch] Error:`, e)
                 session.notify(
-                  `Failed to launch graph view: ${e instanceof Error ? e.message : e}`,
+                  `Failed to launch ${viewType}: ${e instanceof Error ? e.message : e}`,
                   'error',
                 )
               }
             },
-          },
-          {
-            label: 'Tube map view (local)',
-            icon: TimelineIcon,
-            onClick: async () => {
-              const session = getSession(self)
-              const dr = view.displayedRegions[0]
-              if (!dr) {
-                console.warn('[TubeMapView launch] No displayed region found')
-                return
-              }
-              const rawStart = view.offsetPx * view.bpPerPx
-              const rawEnd = (view.offsetPx + view.width) * view.bpPerPx
-              const region = {
-                refName: dr.refName,
-                assemblyName: dr.assemblyName,
-                start: Math.max(0, Math.floor(rawStart)),
-                end: Math.floor(rawEnd),
-              }
-              const regionLabel = `${region.refName}:${region.start.toLocaleString()}-${region.end.toLocaleString()}`
-
-              const sessionId = getRpcSessionId(self)
-              const { rpcManager } = session
-              try {
-                const gfaText: string = await rpcManager.call(
-                  sessionId,
-                  'GetSubgraph',
-                  { adapterConfig, region, sessionId },
-                )
-                if (!gfaText) {
-                  session.notify(
-                    'This adapter does not support graph subgraph extraction',
-                    'warning',
-                  )
-                  return
-                }
-                const tubeMapView = session.addView('TubeMapView', {})
-                ;(tubeMapView as unknown as { loadGFA: (t: string, n: string) => void }).loadGFA(
-                  gfaText,
-                  regionLabel,
-                )
-              } catch (e) {
-                console.error('[TubeMapView launch] Error:', e)
-                session.notify(
-                  `Failed to launch tube map view: ${e instanceof Error ? e.message : e}`,
-                  'error',
-                )
-              }
-            },
-          },
-        )
+          })
+        }
 
         return [
           {

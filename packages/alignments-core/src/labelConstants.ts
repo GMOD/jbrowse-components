@@ -152,6 +152,55 @@ export function parseCsSeqLen(cs: string, start: number) {
   return i - start
 }
 
+/**
+ * Extract substitution mismatches from a CS tag string.
+ * Pushes MismatchEntry objects (position + base ASCII code) into the output array.
+ * Handles all CS operations: `:N` (match), `*XY` (substitution), `-seq` (deletion), `+seq` (insertion).
+ */
+export function extractMismatchesFromCs(
+  cs: string,
+  featureStart: number,
+  mismatches: { position: number; base: number; strand: number }[],
+) {
+  let refPos = 0
+  let i = 0
+  while (i < cs.length) {
+    const ch = cs[i]!
+    if (ch === ':') {
+      i++
+      let num = 0
+      while (i < cs.length && isDigit(cs[i]!)) {
+        num = num * 10 + (cs.charCodeAt(i) - 48)
+        i++
+      }
+      refPos += num
+    } else if (ch === '*') {
+      // *XY = substitution: X=ref base, Y=query base
+      const queryBase = cs[i + 2]
+      if (queryBase) {
+        mismatches.push({
+          position: featureStart + refPos,
+          base: queryBase.toUpperCase().charCodeAt(0),
+          strand: 0,
+        })
+      }
+      i += 3
+      refPos += 1
+    } else if (ch === '-') {
+      i++
+      const len = parseCsSeqLen(cs, i)
+      i += len
+      refPos += len
+    } else if (ch === '+') {
+      i++
+      const len = parseCsSeqLen(cs, i)
+      i += len
+    } else {
+      i++
+    }
+  }
+}
+
 // Shared CIGAR/CS op drawing
 
 export function drawCigarOps(

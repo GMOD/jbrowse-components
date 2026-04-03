@@ -279,28 +279,23 @@ describe('computeNoncovCoverage (indicator triangles)', () => {
 })
 
 describe('featureFrequencyThreshold', () => {
-  it('returns 0.6 for shallow coverage (depth < 10)', () => {
-    expect(featureFrequencyThreshold(0)).toBe(0.6)
-    expect(featureFrequencyThreshold(5)).toBe(0.6)
-    expect(featureFrequencyThreshold(9)).toBe(0.6)
+  it('returns 0.8 for shallow coverage (depth < 10)', () => {
+    expect(featureFrequencyThreshold(0)).toBe(0.8)
+    expect(featureFrequencyThreshold(5)).toBe(0.8)
+    expect(featureFrequencyThreshold(9)).toBe(0.8)
   })
 
-  it('returns 0.1 for deep coverage (depth >= 40)', () => {
-    expect(featureFrequencyThreshold(40)).toBe(0.1)
-    expect(featureFrequencyThreshold(100)).toBe(0.1)
-    expect(featureFrequencyThreshold(1000)).toBe(0.1)
+  it('returns 0.3 for deep coverage (depth >= 30)', () => {
+    expect(featureFrequencyThreshold(30)).toBe(0.3)
+    expect(featureFrequencyThreshold(100)).toBe(0.3)
+    expect(featureFrequencyThreshold(1000)).toBe(0.3)
   })
 
-  it('interpolates between 0.6 and 0.2 for depth 10-30', () => {
-    // At depth 20 (midpoint of 10-30): 0.6 + (10/20) * (0.2-0.6) = 0.6 - 0.2 = 0.4
-    expect(featureFrequencyThreshold(20)).toBeCloseTo(0.4, 5)
-    expect(featureFrequencyThreshold(10)).toBeCloseTo(0.6, 5)
-    expect(featureFrequencyThreshold(30)).toBeCloseTo(0.2, 5)
-  })
-
-  it('interpolates between 0.2 and 0.1 for depth 30-40', () => {
-    // At depth 35 (midpoint of 30-40): 0.2 + (5/10) * (0.1-0.2) = 0.2 - 0.05 = 0.15
-    expect(featureFrequencyThreshold(35)).toBeCloseTo(0.15, 5)
+  it('interpolates between 0.8 and 0.3 for depth 10-30', () => {
+    // At depth 20 (midpoint of 10-30): 0.8 + (10/20) * (0.3-0.8) = 0.8 - 0.25 = 0.55
+    expect(featureFrequencyThreshold(20)).toBeCloseTo(0.55, 5)
+    expect(featureFrequencyThreshold(10)).toBeCloseTo(0.8, 5)
+    expect(featureFrequencyThreshold(30)).toBeCloseTo(0.3, 5)
   })
 
   it('is monotonically decreasing', () => {

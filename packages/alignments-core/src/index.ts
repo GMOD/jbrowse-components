@@ -15,6 +15,7 @@ export {
   drawCsOps,
   drawDeletion,
   drawInsertion,
+  extractMismatchesFromCs,
   isCsOpChar,
   isDigit,
   parseCsSeqLen,
@@ -57,6 +58,7 @@ export type { PickingFbo } from './rendererUtils.ts'
 export {
   YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
+  computeSNPCoverage,
   computeVisibleMaxDepth,
   downsampleMinMax,
   getFirstCoverageEntry,
@@ -67,4 +69,6 @@ export type {
   CoverageRegion,
   CoverageTicks,
   DownsampledBins,
+  MismatchEntry,
+  SNPCoverageResult,
 } from './coverageDownsampling.ts'

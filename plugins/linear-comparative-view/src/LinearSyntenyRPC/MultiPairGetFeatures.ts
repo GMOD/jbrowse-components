@@ -1,7 +1,12 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
+import {
+  computeSNPCoverage,
+  extractMismatchesFromCs,
+} from '@jbrowse/alignments-core'
 
+import type { MismatchEntry } from '@jbrowse/alignments-core'
 import type {
   MultiPairGetFeaturesArgs,
   MultiPairGetFeaturesResult,
@@ -87,11 +92,15 @@ export class MultiPairGetFeatures extends RpcMethodType {
 
       // Collect all features overlapping this region for coverage
       const coverageFeatures: { start: number; end: number }[] = []
+      const mismatches: MismatchEntry[] = []
       const genomeFeatures: [string, MultiPairFeature[]][] = []
       for (const [genome, features] of genomeRows) {
         genomeFeatures.push([genome, features])
         for (const f of features) {
           coverageFeatures.push({ start: f.start, end: f.end })
+          if (f.cs) {
+            extractMismatchesFromCs(f.cs, f.start, mismatches)
+          }
         }
       }
 
@@ -102,6 +111,8 @@ export class MultiPairGetFeatures extends RpcMethodType {
         regionEnd,
       )
 
+      const snp = computeSNPCoverage(mismatches, coverage.maxDepth, regionStart)
+
       regionData.push([
         blockKey,
         {
@@ -110,6 +121,11 @@ export class MultiPairGetFeatures extends RpcMethodType {
           coverageDepths: coverage.depths,
           coverageMaxDepth: coverage.maxDepth,
           coverageStartOffset: coverage.startOffset,
+          snpPositions: snp.positions,
+          snpYOffsets: snp.yOffsets,
+          snpHeights: snp.heights,
+          snpColorTypes: snp.colorTypes,
+          snpCount: snp.count,
         },
       ])
     }
