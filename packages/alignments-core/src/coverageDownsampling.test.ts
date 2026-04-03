@@ -121,13 +121,13 @@ describe('downsampleMinMax', () => {
 
 describe('computeVisibleMaxDepth', () => {
   test('returns 0 for empty blocks', () => {
-    const result = computeVisibleMaxDepth([], new Map(), () => undefined)
+    const result = computeVisibleMaxDepth([], () => undefined, () => undefined)
     expect(result).toBe(0)
   })
 
   test('returns 0 when no data matches blocks', () => {
     const blocks = [{ start: 100, end: 200, key: 'block1' }]
-    const result = computeVisibleMaxDepth(blocks, new Map(), () => undefined)
+    const result = computeVisibleMaxDepth(blocks, () => undefined, () => undefined)
     expect(result).toBe(0)
   })
 
@@ -136,11 +136,12 @@ describe('computeVisibleMaxDepth', () => {
     const dataMap = new Map([
       ['region1', { depths, startOffset: 0, regionStart: 100 }],
     ])
+    type D = { depths: Float32Array; startOffset: number; regionStart: number }
     const blocks = [{ start: 100, end: 105, key: 'region1' }]
     const result = computeVisibleMaxDepth(
       blocks,
-      dataMap,
-      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+      (b: { key: string }) => dataMap.get(b.key),
+      (d: D) => d,
     )
     expect(result).toBe(20)
   })
@@ -150,12 +151,12 @@ describe('computeVisibleMaxDepth', () => {
     const dataMap = new Map([
       ['region1', { depths, startOffset: 0, regionStart: 0 }],
     ])
-    // Only look at bins 2-4 (skip the 100 at bin 0)
+    type D = { depths: Float32Array; startOffset: number; regionStart: number }
     const blocks = [{ start: 2, end: 5, key: 'region1' }]
     const result = computeVisibleMaxDepth(
       blocks,
-      dataMap,
-      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+      (b: { key: string }) => dataMap.get(b.key),
+      (d: D) => d,
     )
     expect(result).toBe(3)
   })
@@ -165,11 +166,12 @@ describe('computeVisibleMaxDepth', () => {
     const dataMap = new Map([
       ['region1', { depths, startOffset: 50, regionStart: 1000 }],
     ])
+    type D = { depths: Float32Array; startOffset: number; regionStart: number }
     const blocks = [{ start: 1050, end: 1053, key: 'region1' }]
     const result = computeVisibleMaxDepth(
       blocks,
-      dataMap,
-      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+      (b: { key: string }) => dataMap.get(b.key),
+      (d: D) => d,
     )
     expect(result).toBe(30)
   })
@@ -179,14 +181,15 @@ describe('computeVisibleMaxDepth', () => {
     const dataMap = new Map([
       ['region1', { depths, startOffset: 0, regionStart: 0 }],
     ])
+    type D = { depths: Float32Array; startOffset: number; regionStart: number }
     const blocks = [
       { start: 0, end: 2, key: 'region1' },
       { start: 100, end: 200, key: 'region2' },
     ]
     const result = computeVisibleMaxDepth(
       blocks,
-      dataMap,
-      (d: { depths: Float32Array; startOffset: number; regionStart: number }) => d,
+      (b: { key: string }) => dataMap.get(b.key),
+      (d: D) => d,
     )
     expect(result).toBe(10)
   })

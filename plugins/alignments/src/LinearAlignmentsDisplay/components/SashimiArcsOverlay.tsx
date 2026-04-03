@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { formatSashimiTooltip } from './alignmentComponentUtils.ts'
 import { openSashimiWidget } from './openFeatureWidget.ts'
 

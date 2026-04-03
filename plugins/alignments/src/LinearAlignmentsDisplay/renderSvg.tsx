@@ -25,7 +25,7 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   insertionBarWidth,
 } from './constants.ts'
-import { YSCALEBAR_LABEL_OFFSET } from './model.ts'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 
 import type { ArcsDataResult } from '../RenderArcsDataRPC/types.ts'
 import type { PileupDataResult } from '../RenderPileupDataRPC/types.ts'

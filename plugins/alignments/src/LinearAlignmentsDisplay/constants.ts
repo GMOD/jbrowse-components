@@ -42,21 +42,20 @@ export function insertionBarWidth(len: number, pxPerBp: number) {
   return Math.min(pxPerBp, 1)
 }
 
-// Returns the frequency at which a feature (mismatch, insertion, etc.) reaches
-// full visibility at a given coverage depth. Features below this frequency are
-// continuously faded rather than hidden, so there are no hard spatial boundaries
-// where features pop in/out as depth varies across the view. At low depth we
-// require high frequency (80%) since a single read's noise is more visible; at
-// high depth we relax to 30% since the signal is more statistically meaningful.
-// The result is used by applyDepthDependentThreshold to produce a continuous
-// importance value: importance = clamp(freq / threshold, 0, 1), which the
-// renderer then blends with the zoom-based sub-pixel alpha.
+// Returns the minimum frequency at which a feature (mismatch, insertion, etc.)
+// is shown at a given coverage depth. Features below this threshold are zeroed
+// out. At low depth we require high frequency (60%) since noise from individual
+// reads is more visible; at high depth we relax to 10% since the signal is more
+// statistically meaningful. Interpolates linearly through 0.2 at depth 30.
 export function featureFrequencyThreshold(depth: number) {
   if (depth < 10) {
-    return 0.8
+    return 0.6
   }
-  if (depth >= 30) {
-    return 0.3
+  if (depth >= 40) {
+    return 0.1
   }
-  return 0.8 + ((depth - 10) / 20) * (0.3 - 0.8)
+  if (depth < 30) {
+    return 0.6 + ((depth - 10) / 20) * (0.2 - 0.6)
+  }
+  return 0.2 + ((depth - 30) / 10) * (0.1 - 0.2)
 }

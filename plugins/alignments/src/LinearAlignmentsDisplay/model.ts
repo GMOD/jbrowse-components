@@ -1,5 +1,10 @@
 import { lazy } from 'react'
 
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  computeCoverageTicks,
+  computeVisibleMaxDepth,
+} from '@jbrowse/alignments-core'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -25,7 +30,6 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import { scaleLinear } from '@mui/x-charts-vendor/d3-scale'
 import { autorun, observable } from 'mobx'
 
 import { ArcsSubModel } from './ArcsSubModel.ts'
@@ -65,7 +69,7 @@ import type {
   AlignmentsRenderer,
   ColorPalette,
 } from './components/AlignmentsRenderer.ts'
-import type { CoverageTicks } from './components/CoverageYScaleBar.tsx'
+import type { CoverageTicks } from '@jbrowse/alignments-core'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
 import type {
   CigarHitResult,
@@ -96,9 +100,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-// Offset for Y scalebar labels (same as wiggle plugin)
-export const YSCALEBAR_LABEL_OFFSET = 5
 
 export {
   getInsertionType,
@@ -500,37 +501,10 @@ export default function stateModelFactory(
       },
 
       get coverageTicks(): CoverageTicks | undefined {
-        if (!self.showCoverage) {
+        if (!self.showCoverage || self.visibleMaxDepth === 0) {
           return undefined
         }
-        const maxDepth = self.visibleMaxDepth
-        if (maxDepth === 0) {
-          return undefined
-        }
-        const height = self.coverageHeight
-        // Add offset so tick labels at top/bottom don't get clipped
-        const scale = scaleLinear()
-          .domain([0, maxDepth])
-          .range([height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET])
-          .nice()
-
-        // Use minimal ticks (just min/max) when height is small
-        const niceDomain = scale.domain()
-        const tickValues = height < 70 ? niceDomain : scale.ticks(4)
-        const ticks = tickValues.map(value => ({
-          value,
-          y: scale(value),
-        }))
-
-        const nicedMax = niceDomain[1] ?? maxDepth
-        return {
-          ticks,
-          height,
-          maxDepth,
-          nicedMax,
-          yTop: YSCALEBAR_LABEL_OFFSET,
-          yBottom: height - YSCALEBAR_LABEL_OFFSET,
-        }
+        return computeCoverageTicks(self.visibleMaxDepth, self.coverageHeight)
       },
 
       get totalPileupHeight() {
@@ -1580,32 +1554,20 @@ export default function stateModelFactory(
                   return
                 }
                 const blocks = view.dynamicBlocks.contentBlocks
-                let maxDepth = 0
-                for (const block of blocks) {
-                  if (block.regionNumber === undefined) {
-                    continue
-                  }
-                  const data = self.rpcDataMap.get(block.regionNumber)
-                  if (!data) {
-                    continue
-                  }
-                  const { coverageDepths, coverageStartOffset, regionStart } =
-                    data
-                  const startBin = Math.max(
-                    0,
-                    Math.floor(block.start - regionStart - coverageStartOffset),
-                  )
-                  const endBin = Math.min(
-                    coverageDepths.length,
-                    Math.ceil(block.end - regionStart - coverageStartOffset),
-                  )
-                  for (let i = startBin; i < endBin; i++) {
-                    const d = coverageDepths[i]!
-                    if (d > maxDepth) {
-                      maxDepth = d
+                const maxDepth = computeVisibleMaxDepth(
+                  blocks,
+                  block => {
+                    if (block.regionNumber === undefined) {
+                      return undefined
                     }
-                  }
-                }
+                    return self.rpcDataMap.get(block.regionNumber)
+                  },
+                  (data: PileupDataResult) => ({
+                    depths: data.coverageDepths,
+                    startOffset: data.coverageStartOffset,
+                    regionStart: data.regionStart,
+                  }),
+                )
                 self.setVisibleMaxDepth(maxDepth)
               },
               {

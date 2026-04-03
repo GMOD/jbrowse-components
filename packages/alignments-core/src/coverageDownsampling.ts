@@ -65,14 +65,16 @@ export interface CoverageRegion {
 
 // Scans visible coverage bins and returns the maximum depth in the viewport.
 // Used by debounced autoruns to normalize coverage Y-scale to visible data.
-export function computeVisibleMaxDepth<D>(
-  visibleBlocks: { start: number; end: number; key: string }[],
-  dataMap: Map<string, D>,
+// The getDataForBlock callback lets callers use any lookup strategy
+// (e.g. by block.key, block.regionNumber, or displayedRegionKey).
+export function computeVisibleMaxDepth<B extends { start: number; end: number }, D>(
+  visibleBlocks: B[],
+  getDataForBlock: (block: B) => D | undefined,
   getCoverage: (data: D) => CoverageRegion | undefined,
 ) {
   let maxDepth = 0
   for (const block of visibleBlocks) {
-    const data = dataMap.get(block.key)
+    const data = getDataForBlock(block)
     if (!data) {
       continue
     }

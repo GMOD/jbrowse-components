@@ -9,7 +9,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '../model.ts'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import CoverageYScaleBar from './CoverageYScaleBar.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
