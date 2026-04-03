@@ -5,7 +5,6 @@ import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { CoverageYScaleBar } from '@jbrowse/plugin-alignments'
 import { when } from 'mobx'
 
-import { getFirstCoverage } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
 
@@ -57,9 +56,9 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     labelW,
     showSnps,
     coverageHeight: syntenyCoverageHeight,
-    coverage: showCoverage
-      ? getFirstCoverage(rpcDataMap)
-      : undefined,
+    coverageRegions: showCoverage
+      ? [...rpcDataMap.values()]
+      : [],
     colors: {
       mismatch: MISMATCH_COLOR,
       deletion: palette.deletion,

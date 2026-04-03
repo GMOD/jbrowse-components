@@ -97,15 +97,17 @@ export function renderMultiSyntenyToCtx(
   displayedGenomes: string[],
   opts: MultiSyntenyCanvasRenderOpts,
 ) {
-  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverage, coverageColor } = opts
+  const { width, height, rowHeight, rowSpacing, bpToPx, colorBy, labelW, showSnps, colors, coverageHeight, coverageRegions, coverageColor } = opts
 
   const showLabels = labelW > 0
 
   ctx.fillStyle = BG_COLOR_HEX
   ctx.fillRect(0, 0, width, coverageHeight + height)
 
-  if (coverageHeight > 0 && coverage) {
-    renderCoverageToCtx(ctx, coverage, bpToPx, width, coverageHeight, coverageColor, colors)
+  if (coverageHeight > 0) {
+    for (const coverage of coverageRegions) {
+      renderCoverageToCtx(ctx, coverage, bpToPx, width, coverageHeight, coverageColor, colors)
+    }
   }
 
   for (let g = 0; g < displayedGenomes.length; g++) {

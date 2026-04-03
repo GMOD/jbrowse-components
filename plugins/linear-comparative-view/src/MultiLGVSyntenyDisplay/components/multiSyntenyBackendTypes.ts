@@ -34,7 +34,7 @@ export interface MultiSyntenyCanvasRenderOpts {
   showSnps: boolean
   colors: SyntenyColors
   coverageHeight: number
-  coverage?: SyntenyRegionData
+  coverageRegions: SyntenyRegionData[]
   coverageColor: string
 }
 

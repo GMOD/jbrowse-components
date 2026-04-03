@@ -1,6 +1,6 @@
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
-import { getFirstCoverage, mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -191,26 +191,3 @@ describe('coverage correctness for overlapping synteny features', () => {
   })
 })
 
-describe('getFirstCoverage', () => {
-  test('returns undefined for empty map', () => {
-    expect(getFirstCoverage(new Map())).toBeUndefined()
-  })
-
-  test('returns undefined when all regions have zero depth', () => {
-    const rpcDataMap = new Map<number, SyntenyRegionData>([
-      [0, buildRegionData({ start: 0, end: 100 }, [])],
-    ])
-    expect(getFirstCoverage(rpcDataMap)).toBeUndefined()
-  })
-
-  test('returns first region with non-zero coverage', () => {
-    const rpcDataMap = new Map<number, SyntenyRegionData>([
-      [0, buildRegionData({ start: 0, end: 100 }, [])],
-      [1, buildRegionData({ start: 0, end: 100, refName: 'chr2' }, [feat({ start: 10, end: 50 })])],
-    ])
-    const result = getFirstCoverage(rpcDataMap)
-    expect(result).toBeDefined()
-    expect(result!.coverageMaxDepth).toBe(1)
-    expect(result!.refName).toBe('chr2')
-  })
-})

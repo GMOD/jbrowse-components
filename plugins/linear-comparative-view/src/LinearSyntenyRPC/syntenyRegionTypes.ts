@@ -42,15 +42,6 @@ export function getGlobalMaxDepth(rpcDataMap: Map<number, SyntenyRegionData>) {
   return getGlobalMaxCoverageDepth(rpcDataMap, d => d.coverageMaxDepth)
 }
 
-export function getFirstCoverage(rpcDataMap: Map<number, SyntenyRegionData>) {
-  for (const data of rpcDataMap.values()) {
-    if (data.coverageMaxDepth > 0) {
-      return data
-    }
-  }
-  return undefined
-}
-
 export interface MultiPairGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
   regions: { region: Region; regionNumber: number }[]

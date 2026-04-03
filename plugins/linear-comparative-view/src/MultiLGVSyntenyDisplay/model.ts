@@ -31,7 +31,6 @@ import { legendItems as legendItemsMap } from './components/multiSyntenyColorUti
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 
 import {
-  getFirstCoverage,
   getGlobalMaxDepth,
   mergeGenomeRows,
 } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
@@ -531,9 +530,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     labelW,
                     showSnps,
                     coverageHeight: syntenyCoverageHeight,
-                    coverage: self.showCoverage
-                      ? getFirstCoverage(self.rpcDataMap)
-                      : undefined,
+                    coverageRegions: self.showCoverage
+                      ? [...self.rpcDataMap.values()]
+                      : [],
                     colors: palette.syntenyColors,
                     coverageColor: palette.coverageColorHex,
                   })

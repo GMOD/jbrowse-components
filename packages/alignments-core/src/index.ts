@@ -64,7 +64,6 @@ export {
   computeVisibleMaxDepth,
   countSnpsAtPosition,
   downsampleMinMax,
-  getFirstCoverageEntry,
   getGlobalMaxCoverageDepth,
   niceNum,
 } from './coverageDownsampling.ts'
