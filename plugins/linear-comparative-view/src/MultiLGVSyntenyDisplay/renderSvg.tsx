@@ -4,7 +4,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { SvgCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { when } from 'mobx'
 
-import { getFirstCoverageFromRpcDataMap } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { getFirstCoverage } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import { LABEL_WIDTH } from './components/multiSyntenyBackendTypes.ts'
 import { renderMultiSyntenyToCtx } from './components/Canvas2DMultiSyntenyRenderer.ts'
 
@@ -57,7 +57,7 @@ export async function renderSvg(model: MultiLGVSyntenyDisplayModel) {
     showSnps,
     coverageHeight: syntenyCoverageHeight,
     coverage: showCoverage
-      ? getFirstCoverageFromRpcDataMap(rpcDataMap)
+      ? getFirstCoverage(rpcDataMap)
       : undefined,
     colors: {
       mismatch: MISMATCH_COLOR,

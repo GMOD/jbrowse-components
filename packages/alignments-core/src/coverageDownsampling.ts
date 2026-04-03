@@ -98,6 +98,33 @@ export function computeVisibleMaxDepth<D>(
   return maxDepth
 }
 
+export function getGlobalMaxCoverageDepth<D>(
+  dataMap: Map<string, D>,
+  getMaxDepth: (data: D) => number,
+) {
+  let max = 0
+  for (const data of dataMap.values()) {
+    const d = getMaxDepth(data)
+    if (d > max) {
+      max = d
+    }
+  }
+  return max
+}
+
+export function getFirstCoverageEntry<D>(
+  dataMap: Map<string, D>,
+  getCoverage: (data: D) => (CoverageRegion & { maxDepth: number }) | undefined,
+) {
+  for (const data of dataMap.values()) {
+    const cov = getCoverage(data)
+    if (cov && cov.maxDepth > 0) {
+      return cov
+    }
+  }
+  return undefined
+}
+
 export interface DownsampledBins {
   positions: Float32Array
   mins: Float32Array

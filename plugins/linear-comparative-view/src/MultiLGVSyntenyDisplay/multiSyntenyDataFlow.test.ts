@@ -1,7 +1,7 @@
 import { makeDisplayedRegionKey } from '@jbrowse/core/util/blockTypes'
 import { computeCoverage } from '@jbrowse/plugin-alignments'
 
-import { getFirstCoverageFromRpcDataMap } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import { getFirstCoverage, mergeGenomeRows } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiPairFeature } from '@jbrowse/plugin-comparative-adapters'
@@ -125,20 +125,7 @@ describe('genomeRows aggregation across regions', () => {
       ])],
     ])
 
-    // Replicate the genomeRows getter logic
-    const merged = new Map<string, MultiPairFeature[]>()
-    for (const data of rpcDataMap.values()) {
-      for (const [genome, features] of data.genomeFeatures) {
-        const existing = merged.get(genome)
-        if (existing) {
-          for (const f of features) {
-            existing.push(f)
-          }
-        } else {
-          merged.set(genome, [...features])
-        }
-      }
-    }
+    const merged = mergeGenomeRows(rpcDataMap)
 
     expect(merged.get('genomeA')?.length).toBe(2)
     expect(merged.get('genomeA')![0]!.start).toBe(100)
@@ -159,19 +146,7 @@ describe('genomeRows aggregation across regions', () => {
       }],
     ])
 
-    const merged = new Map<string, MultiPairFeature[]>()
-    for (const data of rpcDataMap.values()) {
-      for (const [genome, features] of data.genomeFeatures) {
-        const existing = merged.get(genome)
-        if (existing) {
-          for (const f of features) {
-            existing.push(f)
-          }
-        } else {
-          merged.set(genome, [...features])
-        }
-      }
-    }
+    const merged = mergeGenomeRows(rpcDataMap)
 
     expect(merged.size).toBe(2)
     expect(merged.get('genomeA')?.length).toBe(1)
@@ -221,16 +196,16 @@ describe('coverage correctness for overlapping synteny features', () => {
   })
 })
 
-describe('getFirstCoverageFromRpcDataMap', () => {
+describe('getFirstCoverage', () => {
   test('returns undefined for empty map', () => {
-    expect(getFirstCoverageFromRpcDataMap(new Map())).toBeUndefined()
+    expect(getFirstCoverage(new Map())).toBeUndefined()
   })
 
   test('returns undefined when all regions have zero depth', () => {
     const rpcDataMap = new Map<string, SyntenyRegionData>([
       ['r1', buildRegionData({ start: 0, end: 100 }, [])],
     ])
-    expect(getFirstCoverageFromRpcDataMap(rpcDataMap)).toBeUndefined()
+    expect(getFirstCoverage(rpcDataMap)).toBeUndefined()
   })
 
   test('returns first region with non-zero coverage', () => {
@@ -238,7 +213,7 @@ describe('getFirstCoverageFromRpcDataMap', () => {
       ['r1', buildRegionData({ start: 0, end: 100 }, [])],
       ['r2', buildRegionData({ start: 0, end: 100 }, [feat({ start: 10, end: 50 })])],
     ])
-    const result = getFirstCoverageFromRpcDataMap(rpcDataMap)
+    const result = getFirstCoverage(rpcDataMap)
     expect(result).toBeDefined()
     expect(result!.coverageMaxDepth).toBe(1)
   })

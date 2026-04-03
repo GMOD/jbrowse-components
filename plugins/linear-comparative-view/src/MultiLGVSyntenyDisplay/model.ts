@@ -27,7 +27,11 @@ import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 
 import { legendItems as legendItemsMap } from './components/multiSyntenyColorUtils.ts'
 
-import { getFirstCoverageFromRpcDataMap } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
+import {
+  getFirstCoverage,
+  getGlobalMaxDepth,
+  mergeGenomeRows,
+} from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 
 import type { SyntenyRegionData, MultiPairGetFeaturesResult } from '../LinearSyntenyRPC/syntenyRegionTypes.ts'
 import type { MultiSyntenyRenderer } from './components/MultiSyntenyRenderer.ts'
@@ -128,20 +132,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         return names
       },
       get genomeRows() {
-        const merged = new Map<string, MultiPairFeature[]>()
-        for (const data of self.rpcDataMap.values()) {
-          for (const [genome, features] of data.genomeFeatures) {
-            const existing = merged.get(genome)
-            if (existing) {
-              for (const f of features) {
-                existing.push(f)
-              }
-            } else {
-              merged.set(genome, [...features])
-            }
-          }
-        }
-        return merged
+        return mergeGenomeRows(self.rpcDataMap)
       },
       get syntenyCoverageHeight() {
         return self.showCoverage ? self.coverageHeight : 0
@@ -387,12 +378,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 if (!view.initialized) {
                   return
                 }
-                let globalMax = 0
-                for (const data of rpcDataMap.values()) {
-                  if (data.coverageMaxDepth > globalMax) {
-                    globalMax = data.coverageMaxDepth
-                  }
-                }
+                const globalMax = getGlobalMaxDepth(rpcDataMap)
                 for (const [regionKey, data] of rpcDataMap) {
                   renderer.uploadCoverageForBlock(
                     regionKey,
@@ -463,7 +449,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     showSnps,
                     coverageHeight: syntenyCoverageHeight,
                     coverage: self.showCoverage
-                      ? getFirstCoverageFromRpcDataMap(self.rpcDataMap)
+                      ? getFirstCoverage(self.rpcDataMap)
                       : undefined,
                     colors: palette.syntenyColors,
                   })

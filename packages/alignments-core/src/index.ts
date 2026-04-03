@@ -59,6 +59,8 @@ export {
   computeCoverageTicks,
   computeVisibleMaxDepth,
   downsampleMinMax,
+  getFirstCoverageEntry,
+  getGlobalMaxCoverageDepth,
   niceNum,
 } from './coverageDownsampling.ts'
 export type {
